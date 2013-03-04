@@ -607,7 +607,7 @@
             (thenotes (sort thenotes '< :key 'y))
             (y-min (y (car thenotes)))
             (y-max (y   (car (last thenotes)))))
-       #+win32 (setf x (+ x 2)) 
+       #+(or linux win32) (setf x (+ x 2)) 
       (om-with-fg-color nil (mus-color (reference self))
                          (om-draw-line x (+ y (- y-min stemsize)) x (+ y y-max)))
       
@@ -719,7 +719,7 @@
 
 (defmethod draw-object ((self grap-note) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((realrealpos (+ 1 x (* (/ size 4) (delta-head self)) (* zoom (- (x self) (* (/ size 4) (delta-head self))))))
+  (let* ((realrealpos (+ #-linux 1 #+linux 2 x (* (/ size 4) (delta-head self)) (* zoom (- (x self) (* (/ size 4) (delta-head self))))))
          (realpos (round realrealpos))
          (altpos (if (alteration self) 
                      (round (- (+ realrealpos (* (- (alteration self) 1) (/ size 3))) (* (/ size 4) (delta-head self))))
@@ -1597,7 +1597,7 @@
 
 (defmethod draw-chord-beams ((self grap-ryth-chord) x0 y0 zoom numbeams  dir size)
    (when (x self) ;; security...
-     #+win32 (setf x0 (+ x0 2))
+     #+(or linux win32) (setf x0 (+ x0 2))
      (let* ((domaine (om+ y0 (get-min-max self)))
           (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
           (yfin  (if (string-equal dir "up") 
@@ -1774,7 +1774,7 @@
 
 
 (defmethod draw-beams-note-in-group ((self grap-group) dir x y rect zoom size)
-  #+win32 (setf x (+ x 1))
+  #+(or linux win32) (setf x (+ x 1))
   (let ((atoms (get-atoms-in-group self)))
     (loop for i from 0 to (- (length atoms) 1) do
           (let* ((cur-atom (nth i atoms))
@@ -1887,7 +1887,7 @@
            (ystart (if (string-equal dir "up") (second note-min-max) (first note-min-max)))
            (ygroup (if (string-equal dir "up") (second rect) (fourth rect) )))
       (setf y 0)
-      #+win32 (setf x (+ x 2))
+      #+(or linux win32) (setf x (+ x 2))
       (draw-stem-no-group (if (string-equal dir "up") 
                               (round (+  x (/ size 3.5) (* zoom (x self))))
                             (round (+  x (* zoom (x self))))) 

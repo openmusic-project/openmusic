@@ -154,14 +154,17 @@
                             wi he)
     ))
     
+
+
 (defmethod om-interior-size ((self om-abstract-window))
- ;(print (capi::interface-geometry self))
-  #+win32(if (capi::interface-visible-p (capi::pane-layout self))
-             (multiple-value-bind (w h) (capi::pinboard-pane-size (capi::pane-layout self))
-               (om-make-point w h))
-           (om-view-size self))
-  ;;;(om-subtract-points (om-view-size self) (om-make-point 30 30))
-  #-win32(om-view-size self)
+  ;; compensate for menus inside all windows on windows/linux:
+  #+(or linux win32)			
+  (if (capi::interface-visible-p (capi::pane-layout self))
+			 (multiple-value-bind (w h) (capi::pinboard-pane-size (capi::pane-layout self))
+			   (om-make-point w h))
+			 (om-view-size self))
+  (om-subtract-points (om-view-size self) (om-make-point 0 30))
+  #-(or linux win32) (om-view-size self)
   )
 
 (defmethod om-set-interior-size ((self om-abstract-window) size)

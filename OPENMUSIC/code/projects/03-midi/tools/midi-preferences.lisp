@@ -39,6 +39,7 @@
             (probe-file 
              #+cocoa(om-external-app '("MidiShare") "msDrivers")
              #+win32(om-make-pathname :directory (pathname (LISP-IMAGE-NAME)) :name "msDrivers" :type "exe")
+	     #+linux(om-make-pathname :directory (pathname (LISP-IMAGE-NAME)) :name "msDrivers") ;; placeholder for now. AV
              )))
   ;(print (string+ "MIDI Setup App: " (if *om-midi-settings-app-path* (namestring *om-midi-settings-app-path*) "NOT FOUND")))
   )

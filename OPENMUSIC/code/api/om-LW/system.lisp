@@ -310,7 +310,7 @@
 (defvar *om-compiled-type* 
   #+win32 "ofasl"
   #+macosx (if (member :X86 *features*) "xfasl" "nfasl")
-  #+linux "ufasl")
+  #+linux (pathname-type (cl-user::compile-file-pathname "")))
 
 (defvar *om-root* nil)
 
@@ -324,6 +324,7 @@
                        :directory 
                                      #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
                                      #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
+                                     #+linux(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
                                      ))
     (setf *om-root* cl-user::*om-src-directory*)))
 
@@ -526,7 +527,7 @@
      :directory 
      #+macosx(append (pathname-directory userhome) (list "Library" "Preferences"))
      #+win32(append (pathname-directory userhome) (list "Application Data"))
-     #+linux(pathname-directory userhome)
+     #+linux(append (pathname-directory userhome) (list ".local" "share"))
      )))
 
 (defun om-get-date ()
@@ -550,12 +551,13 @@
 
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
 
-  #+macosx 
+  #+(or linux macosx) 
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
 
-  (if (and (equal :mac *om-os*) (pathnamep redirect-output))
-      ;(let ((tempfile "~/om-log.txt"))
+  (if (and (member *om-os* '(:mac :linux))
+	   (pathnamep redirect-output))
+					;(let ((tempfile "~/om-log.txt"))
       (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
                              :if-output-exists :append :if-error-output-exists :append)
        ;(om-open-new-text-file (pathname tempfile)))
@@ -597,13 +599,13 @@
         (namestring path)))
 
 (defun om-run-application (path)
-  (system::call-system (format nil "open ~s" (namestring path)) :wait nil)
+  (system::call-system (format nil #-linux "open ~s" #+linux "~s" (namestring path)) :wait nil)
   (namestring path))
 
 
 ;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
 (defun om-select-program (id)
-  (system::call-system (concatenate 'string "open " (namestring id))))
+  (system::call-system (concatenate 'string #-linux "open " #+linux "" (namestring id))))
 
 
 
