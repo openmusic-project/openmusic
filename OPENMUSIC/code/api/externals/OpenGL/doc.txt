@@ -1,0 +1,107 @@
+;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/doc.txt,v 1.8.1.1 2007/10/23 22:17:07 davef Exp $" -*-
+
+;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+
+
+LispWorks OpenGL interface
+--------------------------
+
+
+The lispworks library directory examples/opengl contains source code
+for a Lisp interface to the OpenGL libraries.
+
+You can use CAPI output-panes as OpenGL windows.  
+
+
+Installation
+------------
+
+To install, copy the entire directory to a working directory of your
+own, load the host.lisp file, then evaluate this form:
+
+(let ((hcl:*packages-for-warn-on-redefinition*
+       (remove "CAPI" hcl:*packages-for-warn-on-redefinition* :test 'string=)))
+  (load "OPENGL:compile"))
+
+This will compile all the files needed for the CAPI interface.
+
+Note: the CAPI package is protected from definitions in LispWorks as
+shipped. The protection is controlled by the variables
+*PACKAGES-FOR-WARN-ON-REDEFINITION* and *HANDLE-WARN-ON-REDEFINITION*.
+
+
+CAPI Interfaces
+---------------
+
+The class CAPI:OPENGL-PANE is a CAPI:OUTPUT-PANE which can be used for
+OpenGL rendering.  There is an example of a simple CAPI interface
+using a CAPI:OPENGL-PANE at the bottom of the capi.lisp file.
+
+
+OpenGL Pane Configuration
+-------------------------
+
+When using the CAPI interface, you will need to pass a :configuration
+initarg to your OpenGL window in order to specify its attributes.  The value
+should be a plist with the following indicators:
+
+      :double-buffer, :double-buffered,
+               - synonyms, value T or NIL.
+      :buffer-size 
+               - color buffer size for indexed colormap visuals
+      :red-size, :green-size, :blue-size, :alpha-size 
+               - sizes of color buffer channels for RGB visuals.
+      :accum   - accumulator buffer size (per channel), or NIL.
+      :accum-red-size, accum-green-size, accum-blue-size, accum-alpha-size 
+               - sizes of accumulator buffer channels, which default to the
+                 :accum value.
+      :depth-buffer 
+               - value is a depth buffer size or NIL
+      :stencil-size 
+               - stencil buffer size or NIL.
+      :aux     - aux buffer size or NIL.
+      :direct  - when T, a direct connection to the graphics subsystem is
+                 made if it can be determined that the display is local; if
+                 this can't be determined, the connection will be indirect.
+                 when :FORCE, the connect is always made direct (it may fail)
+                 when NIL, the connect is always indirect. 
+                 ** Note that this option is only supported under GLX **
+
+
+The Functions
+-------------
+
+The interface contains foreign function definitions for the OpenGL Library and
+OpenGL Utility Library.  The C function names have been translated into Lisp
+function names using hyphens to separate the "gl" prefix and other places
+where transition case from lower to upper is used. For example glBitmap
+becomes the Lisp function OPENGL:GL-BITMAP, glBlendEquationEXT becomes
+OPENGL:GL-BLEND-EQUATION-EXT, gluLookAt becomes OPENGL:GL-LOOK-AT.
+
+In addition to the OpenGL functions, there are:
+
+PROCESS-HAS-OPENGL-LOCK-P            - test if a process is currently rendering.
+PROCESS-WITH-OPENGL-LOCK             - returns the process currently rendering.
+START-RENDERING                      - calls glXMakeCurrent to make the GLC context
+                                       for a window the current context, and attaches
+                                       it to the window.  It also deals with Lisp
+                                       multiprocessing issues.
+RENDERING-ON                         - macro for using START-RENDERING.
+SWAP-BUFFERS                         - swap foreground and background buffers on 
+                                       a double-buffered OpenGL window.
+DESCRIBE-CONFIGURATION               - prints a full description of the OpenGL 
+                                       configuration of an OpenGL window.
+
+OpenGL Rendering
+----------------
+
+With the CAPI interface, OpenGL rendering is done by enclosing your
+OpenGL calls in the OPENGL:RENDERING-ON macro.  This macro ensures that
+the GLX context is attached to the right window.  It also deals with
+multiprocessing issues by preventing multiple lightweight processes from
+rendering on the same OpenGL window at the same time.
+
+OPENGL:RENDERING-ON can be nested on a single OpenGL pane to any depth within
+a single lightweight Lisp process, but any nested entry to OPENGL:RENDERING-ON
+on another OpenGL pane will cause an error. An entry from another lightweight
+process will block.

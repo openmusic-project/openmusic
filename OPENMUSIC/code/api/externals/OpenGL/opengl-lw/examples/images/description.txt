@@ -1,0 +1,10 @@
+;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/9/LISPopengl-examples/RCS/images:description.txt,v 1.2.5.1 2007/10/23 22:17:09 davef Exp $" -*-
+
+;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+
+Description of images
+
+up-arrow.bmp      - up arrow
+down-arrow.bmp    - down arrow
+up-disabled.bmp   - disabled up arrow
+down-disabled.bmp - disabled down arrow
