@@ -1,4 +1,4 @@
-;;; OpenMusic build file               
+;;; OpenMusic build file
 ;;; load this file then evaluate the following form :
 ;;; (om::start-openmusic)
 
