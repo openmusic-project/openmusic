@@ -32,7 +32,7 @@
 
 (setf *stdout* #.*standard-output*)
 
-(load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "OSC")) :name "osc.asd"))
+(load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "osc")) :name "osc.asd"))
 (asdf:operate 'asdf:load-op 'osc)
 
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "oscoverudp"))

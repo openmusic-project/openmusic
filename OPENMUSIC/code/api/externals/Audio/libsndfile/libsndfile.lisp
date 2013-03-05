@@ -11,13 +11,13 @@
 ;;; MUST BE INSTALLED !
 ;;; or linked statically (in LibAudioStream / MacOS)
 
-#+win32
+#+(or win32 linux)
 (cffi:define-foreign-library libsndfile
   (:darwin "libsndfile.dylib")
   (:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
   (t (:default "libsndfile-1")))
 
-#+win32
+#+(or win32 linux)
 (cffi:use-foreign-library libsndfile)
 
 

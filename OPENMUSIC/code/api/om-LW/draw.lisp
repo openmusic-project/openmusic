@@ -109,7 +109,10 @@
 
 (defun draw-po (pane po)
    (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position po)
-    (let ((fff (if (gp::font-description-p (om-get-font po)) (gp::find-best-font pane (om-get-font po)) (om-get-font po))))
+    (let ((fff (or (if (gp::font-description-p (om-get-font po))
+		       (gp::find-best-font pane (om-get-font po))
+		       (om-get-font po))
+		   (gp::graphics-state-font (gp::port-graphics-state pane))))) ;; when po class is text-enter-view returns nil for fff... AV
       (gp::with-graphics-state (pane :font fff 
                                      :mask 
                                      ;#-win32

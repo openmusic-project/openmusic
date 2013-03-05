@@ -1,4 +1,4 @@
-;;; OpenMusic build file               
+;;; OpenMusic build file
 ;;; load this file then evaluate the following form :
 ;;; (om::start-openmusic)
 
@@ -44,7 +44,7 @@
                  :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
 
 (defvar *compile-type* "xfasl")
-;;; should be : "xfasl" on MacIntel, "nfasl" on MacPPC, "ofasl" on Win32.
+;;; should be : "xfasl" on MacIntel, "nfasl" on MacPPC, "ofasl" on Win32, "ufasl" on 32bit linux ("64ufasl" on 64bit linux)
 (setf *compile-type* (pathname-type (cl-user::compile-file-pathname "")))
 
 #+win32(editor::bind-key "Find Source" "Control-." :global :pc)
