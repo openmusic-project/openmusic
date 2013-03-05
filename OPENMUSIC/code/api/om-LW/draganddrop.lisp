@@ -112,6 +112,7 @@
 (defvar *last-pinboard-under-mouse* nil)
 
 (defun om-drop-callback (self drop-object stage)
+  (handler-bind ((error #'(lambda (e) (print "drag error: ~s" e) (abort e))))
   (flet ((set-effect-for-operation (drop-object)
            ;; In a real application, this would be clever about which effects to allow.
            (dolist (effect '(:move :copy))
@@ -175,7 +176,7 @@
                  (setf (capi:drop-object-drop-effect drop-object) nil)))
                )))))
           
-      )))
+      ))))
 
 
 (defmethod om-import-files-in-app ((self t) file-list) nil)
