@@ -126,7 +126,6 @@
 
 ;;; (capi::highlight-pinboard-object (item-container self) self t)
 (defmethod om-create-callback ((self om-item-view)) nil)
-  ;(print (list "initialize" self))
   ;(setf (initialized-p self) t)
 
 
@@ -160,7 +159,6 @@
   ;(capi::resize-pinboard-object self :width (om-point-h size-point) :height (om-point-v size-point))
   (setf (vw self) (om-point-h size-point))
   (setf (vh self) (om-point-v size-point))
-  ;(print (list "size" self))
   ;;(setf *om-locked-draw* t)
     (setf (capi::pinboard-pane-size self) (values (om-point-h size-point) (om-point-v size-point)))
     (capi::set-hint-table self (list :visible-min-width (vw self) :visible-min-height (vh self)
@@ -208,7 +206,8 @@
       )))
 
 (defmethod om-set-font ((self om-item-view) font) 
-  (setf (capi::pinboard-object-graphics-arg self :font) font)
+  #-linux (setf (capi::pinboard-object-graphics-arg self :font) font)
+  #+linux (setf (capi::pinboard-object-graphics-arg self :font) (or font *om-default-font1*))
   (capi:redraw-pinboard-object self))
 
 

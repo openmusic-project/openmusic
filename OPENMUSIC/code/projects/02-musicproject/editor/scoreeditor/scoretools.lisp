@@ -596,7 +596,8 @@
    ;;; jb
    
    (when (and (not grille-p) (stem self) (chordpos self))
-     (draw-stem self (+(chordpos self) (/ size 3.5)) y (selected self) (stem self)))
+     (draw-stem self (+ (chordpos self) (/ size 3.5)) y (selected self) (stem self))
+     )
    (collect-rectangles self)
    (draw-extras self view size staff)
   )
@@ -607,7 +608,7 @@
             (thenotes (sort thenotes '< :key 'y))
             (y-min (y (car thenotes)))
             (y-max (y   (car (last thenotes)))))
-       #+(or linux win32) (setf x (+ x 2)) 
+       #+(or win32 linux) (setf x (+ x 2)) 
       (om-with-fg-color nil (mus-color (reference self))
                          (om-draw-line x (+ y (- y-min stemsize)) x (+ y y-max)))
       
@@ -719,7 +720,7 @@
 
 (defmethod draw-object ((self grap-note) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((realrealpos (+ #-linux 1 #+linux 2 x (* (/ size 4) (delta-head self)) (* zoom (- (x self) (* (/ size 4) (delta-head self))))))
+  (let* ((realrealpos (+ 1 #+linux 0 x (* (/ size 4) (delta-head self)) (* zoom (- (x self) (* (/ size 4) (delta-head self))))))
          (realpos (round realrealpos))
          (altpos (if (alteration self) 
                      (round (- (+ realrealpos (* (- (alteration self) 1) (/ size 3))) (* (/ size 4) (delta-head self))))
@@ -1774,7 +1775,7 @@
 
 
 (defmethod draw-beams-note-in-group ((self grap-group) dir x y rect zoom size)
-  #+(or linux win32) (setf x (+ x 1))
+  #+(or win32 linux) (setf x (+ x 1))
   (let ((atoms (get-atoms-in-group self)))
     (loop for i from 0 to (- (length atoms) 1) do
           (let* ((cur-atom (nth i atoms))

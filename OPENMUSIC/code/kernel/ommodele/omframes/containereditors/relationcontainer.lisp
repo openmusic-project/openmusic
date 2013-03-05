@@ -351,20 +351,21 @@ this method set the select flag of the connection to T and return a list with th
   (redraw-after self dragged))
 
 (defmethod redraw-after ((self relationPanel) dragged)
-   "This method is called after moving one or more boxes, it redraw the connections involving in the moving operation."
-   (let* ((frames (get-subframes self))
-          (rest-frame (set-difference frames dragged :test 'equal)))
-     ;;; TEST
-     (om-with-delayed-redraw 
-     (mapc #'(lambda (oneobject)
-                       (redraw-connections oneobject)
-                       (mapc #'(lambda (source)
-                                         (when (is-connected? (object oneobject) (object source))
-                                             (redraw-connections source))) rest-frame)
-                       (om-invalidate-view oneobject)
-                       ) dragged)
-       ;(om-invalidate-view self)
-       t)))
+  "This method is called after moving one or more boxes, it redraw the connections involving in the moving operation."
+  (let* ((frames (get-subframes self))
+	 (rest-frame (set-difference frames dragged :test 'equal)))
+;;; TEST
+    (om-with-delayed-redraw 
+	(mapc #'(lambda (oneobject)
+		  (redraw-connections oneobject)
+		  (mapc #'(lambda (source)
+			    (when (is-connected? (object oneobject) (object source))
+			      (redraw-connections source))) rest-frame)
+		  (om-invalidate-view oneobject)
+		  ) dragged)
+      ;;(om-invalidate-view self)
+      t)
+    ))
 
 
 

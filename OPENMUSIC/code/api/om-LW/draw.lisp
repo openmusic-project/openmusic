@@ -152,7 +152,8 @@
   (when (and (interface-visible-p self) (om-get-view self))
     (capi::with-atomic-redisplay ((om-get-view self))
       (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-      #+win32(mapcar 'om-invalidate-view (om-subviews self))
+      #+win32 (mapcar 'om-invalidate-view (om-subviews self))
+      ;; #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
       )
   ))
 
@@ -175,13 +176,21 @@
 ;; deprecated
 (defmethod om-invalidate-corners ((self om-graphic-object) topleft bottomright)
   (when (interface-visible-p self)
-    (gp::invalidate-rectangle (om-get-view self) (om-point-h topleft) (om-point-v topleft) 
-                               (- (om-point-h bottomright) (om-point-h topleft)) 
-                               (- (om-point-v bottomright) (om-point-v topleft)))))
+    (capi::apply-in-pane-process (om-get-view self)
+				 'gp::invalidate-rectangle
+				 (om-get-view self)
+				 ;; (om-point-h topleft) (om-point-v topleft) 
+				 ;; (om-point-h bottomright) (om-point-v bottomright) 
+				 ;; (- (om-point-h bottomright) (om-point-h topleft)) 
+				 ;; (- (om-point-v bottomright) (om-point-v topleft))
+				 )))
 
 (defmethod om-invalidate-rectangle ((self om-graphic-object) x y w h)
   (when (interface-visible-p self)
-    (gp::invalidate-rectangle (om-get-view self) x y w h)))
+    (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self)
+				 ;;x y w h
+				 )
+    ))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
   (when (item-container self)

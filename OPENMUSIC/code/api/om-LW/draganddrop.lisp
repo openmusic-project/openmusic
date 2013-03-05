@@ -112,70 +112,71 @@
 (defvar *last-pinboard-under-mouse* nil)
 
 (defun om-drop-callback (self drop-object stage)
-  (flet ((set-effect-for-operation (drop-object)
-           ;; In a real application, this would be clever about which effects to allow.
-           (dolist (effect '(:move :copy))
-             (when (capi:drop-object-allows-drop-effect-p drop-object effect)
-               (setf (capi:drop-object-drop-effect drop-object) effect)
-               (return t)))))
-    (case stage
-      (:formats
-       (capi:set-drop-object-supported-formats drop-object '(:string :value :om-object :filename-list)))
-      (:enter
-      ; (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
-       ;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
-       ;                      self)))
-       ;    (set-effect-for-operation drop-object)
-       ;    (when (and *last-pinboard-under-mouse*
-       ;               (not (equal dropview *last-pinboard-under-mouse*)))
-       ;      (om-drag-leave-view *last-pinboard-under-mouse*))
-       ;    (om-drag-enter-view dropview)
-       ;    (setf *last-pinboard-under-mouse* dropview)))
-       (set-effect-for-operation drop-object))
-      (:leave
-      ; (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
-       ;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
-       ;                      self)))
-       ;    (set-effect-for-operation drop-object)
-       ;    (om-drag-leave-view dropview)))
-       (set-effect-for-operation drop-object))
-      (:drag        
-       ;(multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
-       ;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
-       ;                      self)))
-       ;    (when (and dropview (not (equal dropview *last-pinboard-under-mouse*)))
-       ;      (when *last-pinboard-under-mouse*
-       ;        (om-drag-leave-view *last-pinboard-under-mouse*))
-       ;      (om-drag-enter-view dropview)
-       ;      (setf *last-pinboard-under-mouse* dropview))
-       ;     ;(print (capi:drop-object-provides-format drop-object :om-object))
-       ;    ))
-       (set-effect-for-operation drop-object))
-      (:drop
-       (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
-         (let ((dropview (or (om-get-view (capi::pinboard-object-at-position self x y)) 
-                             self)))
-           (setf *last-pinboard-under-mouse* nil)
-           (if (or 
-                (and (capi:drop-object-provides-format drop-object :filename-list)
-                     (om-import-files-in-app self (capi:drop-object-get-object drop-object self :filename-list)))
-                (and (capi:drop-object-provides-format drop-object :string)
-                     (om-drag-string-in-app self (capi:drop-object-get-object drop-object self :string))))
-               (set-effect-for-operation drop-object)
-             (let ((dragged-view (capi:drop-object-get-object drop-object self :om-object)))
-               (set-effect-for-operation drop-object)
-               (when dragged-view
-               (unless (om-drag-receive
-                        dropview dragged-view
-                        (om-make-point (- (capi::drop-object-pane-x drop-object) 
-                                          (om-point-x (om-drag-view-cursor-pos dragged-view)))
-                                       (- (capi::drop-object-pane-y drop-object)
-                                          (om-point-y (om-drag-view-cursor-pos dragged-view))))
-                        (capi:drop-object-drop-effect drop-object))
-                 (setf (capi:drop-object-drop-effect drop-object) nil)))
-               )))))
+  (handler-bind ((error #'(lambda (error) (print error) (abort error))))
+    (flet ((set-effect-for-operation (drop-object)
+	     ;; In a real application, this would be clever about which effects to allow.
+	     (dolist (effect '(:move :copy))
+	       (when (capi:drop-object-allows-drop-effect-p drop-object effect)
+		 (setf (capi:drop-object-drop-effect drop-object) effect)
+		 (return t)))))
+      (case stage
+	(:formats
+	 (capi:set-drop-object-supported-formats drop-object '(:string :value :om-object :filename-list)))
+	(:enter
+					; (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
+					;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
+					;                      self)))
+					;    (set-effect-for-operation drop-object)
+					;    (when (and *last-pinboard-under-mouse*
+					;               (not (equal dropview *last-pinboard-under-mouse*)))
+					;      (om-drag-leave-view *last-pinboard-under-mouse*))
+					;    (om-drag-enter-view dropview)
+					;    (setf *last-pinboard-under-mouse* dropview)))
+	 (set-effect-for-operation drop-object))
+	(:leave
+					; (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
+					;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
+					;                      self)))
+					;    (set-effect-for-operation drop-object)
+					;    (om-drag-leave-view dropview)))
+	 (set-effect-for-operation drop-object))
+	(:drag        
+					;(multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
+					;  (let ((dropview (or (capi::pinboard-object-at-position self x y)  
+					;                      self)))
+					;    (when (and dropview (not (equal dropview *last-pinboard-under-mouse*)))
+					;      (when *last-pinboard-under-mouse*
+					;        (om-drag-leave-view *last-pinboard-under-mouse*))
+					;      (om-drag-enter-view dropview)
+					;      (setf *last-pinboard-under-mouse* dropview))
+					;     ;(print (capi:drop-object-provides-format drop-object :om-object))
+					;    ))
+	 (set-effect-for-operation drop-object))
+	(:drop
+	 (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
+	   (let ((dropview (or (om-get-view (capi::pinboard-object-at-position self x y)) 
+			       self)))
+	     (setf *last-pinboard-under-mouse* nil)
+	     (if (or 
+		  (and (capi:drop-object-provides-format drop-object :filename-list)
+		       (om-import-files-in-app self (capi:drop-object-get-object drop-object self :filename-list)))
+		  (and (capi:drop-object-provides-format drop-object :string)
+		       (om-drag-string-in-app self (capi:drop-object-get-object drop-object self :string))))
+		 (set-effect-for-operation drop-object)
+		 (let ((dragged-view (capi:drop-object-get-object drop-object self :om-object)))
+		   (set-effect-for-operation drop-object)
+		   (when dragged-view
+		     (unless (om-drag-receive
+			      dropview dragged-view
+			      (om-make-point (- (capi::drop-object-pane-x drop-object) 
+						(om-point-x (om-drag-view-cursor-pos dragged-view)))
+					     (- (capi::drop-object-pane-y drop-object)
+						(om-point-y (om-drag-view-cursor-pos dragged-view))))
+			      (capi:drop-object-drop-effect drop-object))
+		       (setf (capi:drop-object-drop-effect drop-object) nil)))
+		   )))))
           
-      )))
+	))))
 
 
 (defmethod om-import-files-in-app ((self t) file-list) nil)

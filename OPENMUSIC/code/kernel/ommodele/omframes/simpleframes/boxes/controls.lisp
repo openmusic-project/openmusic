@@ -82,26 +82,26 @@
 
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
-   (let* ((thetext (initial-text-ttybox self))
-          (panel (om-view-container (om-view-container self)))
-          (container (editor panel)))
-     (when (text-view container)
-       (om-remove-subviews panel (text-view container))
-         (setf (text-view container) nil))
-     (setf (text-view container) 
-       (om-make-dialog-item (open-ttybox-class self)
-                             (om-add-points (om-subtract-points 
-                                                                  (om-view-position self)
-                                                                  #+cocoa (om-make-point 2 2) #-cocoa (om-make-point 0 0)) 
-                                                                  (om-view-position (om-view-container self)))
-                            (om-view-size self)
-                            thetext
-                            :allow-returns (text-enter-multiline-p self)
-                            :focus t
-                            :object self
-                            :container panel
-                            :font *om-default-font1*))
-     ))
+  (let* ((thetext (initial-text-ttybox self))
+	 (panel (om-view-container (om-view-container self)))
+	 (container (editor panel)))
+    (when (text-view container)
+      (om-remove-subviews panel (text-view container))
+      (setf (text-view container) nil))
+    (setf (text-view container) 
+	  (om-make-dialog-item (open-ttybox-class self)
+			       (om-add-points (om-subtract-points 
+					       (om-view-position self)
+					       #-win32 (om-make-point 2 2) #+win32 (om-make-point 0 0)) 
+					      (om-view-position (om-view-container self)))
+			       (om-view-size self)
+			       thetext
+			       :allow-returns (text-enter-multiline-p self)
+			       :focus t
+			       :object self
+			       :container panel
+			       :font *om-default-font1*))
+    ))
 
 
 (omg-defclass change-text-enter-view (edit-text-enter-view) ())
@@ -421,7 +421,6 @@
 
 
 (defmethod numbox-release ((view numbox) pos) 
-  ;(print "sdfgjksdfghjk")
   (item-action-after-drag view)
   (om-invalidate-view view))
 
