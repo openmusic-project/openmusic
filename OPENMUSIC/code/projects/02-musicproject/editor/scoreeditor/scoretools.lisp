@@ -608,7 +608,7 @@
             (thenotes (sort thenotes '< :key 'y))
             (y-min (y (car thenotes)))
             (y-max (y   (car (last thenotes)))))
-       #+(or win32 linux) (setf x (+ x 2)) 
+       #+win32 (setf x (+ x 2)) 
       (om-with-fg-color nil (mus-color (reference self))
                          (om-draw-line x (+ y (- y-min stemsize)) x (+ y y-max)))
       
@@ -1598,7 +1598,7 @@
 
 (defmethod draw-chord-beams ((self grap-ryth-chord) x0 y0 zoom numbeams  dir size)
    (when (x self) ;; security...
-     #+(or linux win32) (setf x0 (+ x0 2))
+     #+win32 (setf x0 (+ x0 2))
      (let* ((domaine (om+ y0 (get-min-max self)))
           (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
           (yfin  (if (string-equal dir "up") 
