@@ -411,17 +411,17 @@
 
 (defmethod om-sound-get-info (path)
   (let ((filename path))
-  (multiple-value-bind (format nch sr ss size skip)
-      (sound-get-info filename)
-    #+libsndfile
-    (multiple-value-bind (format2 nch2 sr2 ss2 size2 skip2)
-        (au::sndfile-get-info (convert-filename-encoding filename))
-      (when (> nch2 0) (setf nch nch2))
-      (when (> sr2 0) (setf sr sr2))
-      (when (> size2 0) (setf size size2)))
-    (unless (and (numberp ss) (plusp ss)) (setf ss (default-sample-size format)))
-    (values format nch sr ss size skip)
-    )))
+    (multiple-value-bind (format nch sr ss size skip)
+	(sound-get-info filename)
+      #+libsndfile
+      (multiple-value-bind (format2 nch2 sr2 ss2 size2 skip2)
+	  (au::sndfile-get-info (convert-filename-encoding filename))
+	(when (> nch2 0) (setf nch nch2))
+	(when (> sr2 0) (setf sr sr2))
+	(when (> size2 0) (setf size size2)))
+      (unless (and (numberp ss) (plusp ss)) (setf ss (default-sample-size format)))
+      (values format nch sr ss size skip)
+      )))
 
 (defun sound-get-info (filename) 
   (let ((format (audio-file-type filename)))

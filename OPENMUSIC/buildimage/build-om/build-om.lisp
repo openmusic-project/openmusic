@@ -41,7 +41,9 @@
 (defvar *this-file* *load-pathname*)
 (defvar *om-src-directory*  
   (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2)
-                 :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
+                 :device (pathname-device *load-pathname*)
+		 #+win32 :host #+win32 (pathname-host *load-pathname*)
+		 ))
 
 (defvar *compile-type* "xfasl")
 ;;; should be : "xfasl" on MacIntel, "nfasl" on MacPPC, "ofasl" on Win32, "ufasl" on 32bit linux ("64ufasl" on 64bit linux)
