@@ -344,9 +344,9 @@
              (w  (om-point-h size))
              (h (om-point-v size)))
         (gp::with-graphics-state (port :mask (list dx dy pw ph))
-          #+cocoa(draw-metafile  port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)  ; (+ x dx) (+ y dy) w h)
-          #-cocoa(draw-metafile port (themetafile pict)  (+ x *pox*) (+ y *poy*) w h)
-        )
+          #+cocoa(draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)  ; (+ x dx) (+ y dy) w h)
+          #-cocoa(draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)
+	  )
       ;(capi::draw-metafile port (themetafile pict) 0 0 (om-point-h size)  (om-point-v size))
       ))))
 

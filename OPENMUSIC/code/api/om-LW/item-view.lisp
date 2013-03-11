@@ -83,13 +83,12 @@
 (defmethod po-add-subview ((self om-item-view) (subview om-item-view))
   (setf (item-container subview) (item-container self))
   (when (item-container self)
-    (setf (item-subviews (item-container self)) (append (item-subviews (item-container self)) (list subview)))
-    (update-po-position subview))
+    (setf (item-subviews (item-container self))
+	  (append (item-subviews (item-container self))
+		  (list subview)))
+    (update-po-position subview)
+    )
   (mapcar #'(lambda (sv) (po-add-subview subview sv)) (vsubviews subview)))
-
-
-
-
 
 
 (defmethod internal-remove-subview ((self om-view) (subview om-item-view))  
@@ -134,12 +133,15 @@
     (capi::apply-in-pane-process (item-container self)
                                  (lambda ()
                                    (let ((abs-pos (om-convert-coordinates (om-view-position self) (vcontainer self) (item-container self))))
-                                     (setf (item-x self) (om-point-h abs-pos) (item-y self) (om-point-v abs-pos))
-                                     (setf (capi::pinboard-pane-position self) (values (item-x self) (item-y self)))
+                                     (setf (item-x self) (om-point-h abs-pos)
+				     	   (item-y self) (om-point-v abs-pos))
+                                     (setf (capi::pinboard-pane-position self)
+				     	   (values (item-x self) (item-y self)))
                                      (capi::set-hint-table self (list :x (om-point-h abs-pos) :y (om-point-v abs-pos)
                                                                       :visible-min-width (vw self) :visible-min-height (vh self)
                                                                       :visible-max-width t :visible-max-height t))
-                                     (mapc 'update-po-position (vsubviews self))))
+                                     (mapc 'update-po-position (vsubviews self))
+				     ))
                                  )))
 
 

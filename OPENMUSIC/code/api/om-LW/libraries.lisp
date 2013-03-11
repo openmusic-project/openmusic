@@ -44,8 +44,10 @@
                  :name appname))
 
 (defun om-default-application-path (folders appname)
-  (make-pathname :directory (append (list :ABSOLUTE "Applications") folders 
-                                    (when appname (list (concatenate 'string appname ".app"))))))
+  #-linux  (make-pathname :directory (append (list :ABSOLUTE "Applications") folders 
+					     (when appname (list (concatenate 'string appname ".app")))))
+  #+linux (user-homedir-pathname)
+  )
 
 
 ;;;====================================

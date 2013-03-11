@@ -183,7 +183,8 @@
 
 (defmethod internal-add-subview ((self om-graphic-object) (subview om-graphic-object))
   (setf (vcontainer subview) self)
-  (setf (vsubviews self) (append (vsubviews self) (list subview))))
+  (setf (vsubviews self) (append (vsubviews self) (list subview)))
+  )
 
 (defmethod om-remove-subviews ((self om-graphic-object) &rest subviews)
   "Removes subviews from graphic object"
@@ -199,7 +200,7 @@
 
 
 ;;; different pour om-window
-(defmethod om-get-view ((self om-graphic-object)) (or *default-printer-port* self))
+(defmethod om-get-view ((self om-graphic-object))  (or *default-printer-port* self))
 
 (defmethod om-subviews ((self om-graphic-object)) 
   (vsubviews self))
@@ -244,7 +245,7 @@
       (setf (simple-pane-background (om-get-view self)) col))
     #+cocoa
     (setf (simple-pane-background (om-get-view self)) col)))
-      
+
 (defmethod om-get-bg-color ((self om-graphic-object))
   (let ((c (simple-pane-background (om-get-view self))))
     (when c (make-instance 'omcolor :c c))))

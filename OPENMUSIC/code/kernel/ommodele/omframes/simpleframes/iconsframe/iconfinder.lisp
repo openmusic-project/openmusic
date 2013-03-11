@@ -110,28 +110,31 @@ this slot store a subview containing it subview if exists.#triangle#
 ;(defmethod om-view-click-handler ((self patch-icon-frame) pos) (om-inspect self))
 
 (defmethod add-icon-finder ((self icon-finder) container)
-   ;(unless (equal (om-get-bg-color (nameview self)) *om-transparent-color*)
-   ;  (om-set-part-color (nameview self) :body (om-get-bg-color container)))
-   (om-add-subviews container self)
-   (set-size self container)
-   (if (big-icon-p (editor container))
-     (change-icon-position self (bx self) (by self))
-     (progn
-       (add-extras-infos self)
-       (flet ((match (x) (equal (col x) (col self))))
-         (let* ((controls (get-subframes container))
-                (pos (position-if #'match controls)) final-list)
-           (when pos
-             (setf final-list (subseq controls (+ pos 1)))
-             (change-icon-position self (fil self) (col self))
-             (mapc #'(lambda (icon)
-                               (change-icon-position icon (fil icon) (+ (col icon) 1))) final-list))))
-       (when (container-p self)
-         (add-triangle self container))
-       ;;; new jb
-       (om-invalidate-view container t)
-       ;;;
-       )))
+  ;; (unless (equal (om-get-bg-color (nameview self)) *om-transparent-color*)
+  ;;  (om-set-part-color (nameview self) :body (om-get-bg-color container)))
+  (om-add-subviews container self)
+  (set-size self container)
+  (if (big-icon-p (editor container))
+      (change-icon-position self (bx self) (by self))
+      (progn
+	(add-extras-infos self)
+	(flet ((match (x) (equal (col x) (col self))))
+	  (let* ((controls (get-subframes container))
+		 (pos (position-if #'match controls))
+		 final-list)
+	    (when pos
+	      (setf final-list (subseq controls (+ pos 1)))
+	      (change-icon-position self (fil self) (col self))
+	      (mapc #'(lambda (icon)
+			(change-icon-position icon (fil icon) (+ (col icon) 1)))
+		    final-list)
+	      )))
+	(when (container-p self)
+	  (add-triangle self container))
+	;; new jb
+	(om-invalidate-view container t)
+	;;
+	)))
 
 
 (defun add-triangle (self container)
@@ -576,7 +579,8 @@ this slot store a subview containing it subview if exists.#triangle#
                             (incf i)
                             (setf (fil elem) (+ 1 x1))
                             (setf (col elem) (+ i y1))
-                            (add-icon-finder elem container)) (sort-subframes container rep))
+                            (add-icon-finder elem container)
+			    ) (sort-subframes container rep))
           )
           )
         (delete-sub-icons icon container))

@@ -490,11 +490,11 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
 (defmethod min-max-draw-bpf (points w h ranges pix0 piy0)
   (let* ((winsize (/ (length points) w )))
     (loop for i from 0 to (- w 1)
-          for j = pix0 then (+ j 1) do
-          (let* ((minmax (get-minmax points i winsize))
-                 (min (point-to-pixel-with-sizes ranges (om-make-big-point 0 (car minmax)) w h))
-                 (max (point-to-pixel-with-sizes ranges (om-make-big-point 0 (second minmax)) w h)))
-            (om-draw-line j (+ piy0 (om-point-v min)) j (+ piy0 (om-point-v max)))))))
+       for j = pix0 then (+ j 1) do
+	 (let* ((minmax (get-minmax points i winsize))
+		(min (point-to-pixel-with-sizes ranges (om-make-big-point 0 (car minmax)) w h))
+		(max (point-to-pixel-with-sizes ranges (om-make-big-point 0 (second minmax)) w h)))
+	   (om-draw-line j (+ piy0 (om-point-v min)) j (+ piy0 (om-point-v max)))))))
 
 
 (defun draw-bpf-in-rect (bpf x x1 y y1 ranges)
@@ -503,21 +503,22 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
     (if (> points (* 4 pixels))
         (min-max-draw-bpf (point-list bpf) (- x1 x) (- y1 y) ranges x y)
         (loop for point-list on (point-list bpf) do
-              (let* ((thepoint (car point-list))
-                     (pix-point (point-to-pixel-with-sizes ranges thepoint (- x1 x) (- y1 y)))
-                     (points-prev-next (give-prev+next-x bpf thepoint))
-                     (prev-point (first points-prev-next))
-                     (next-point (second points-prev-next)))
-                (when prev-point
-                  (let ((prev-pixel (point-to-pixel-with-sizes ranges prev-point (- x1 x) (- y1 y))))
-                    (om-draw-line (+ x (om-point-h prev-pixel)) (+ y (om-point-v prev-pixel))
-                               (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point)))))
-                (when (or (and next-point (null (second point-list)))
-                          (and (second point-list) next-point ;; ?
-                               (not (equal next-point (second point-list)))))
-                  (let ((next-pixel (point-to-pixel-with-sizes ranges next-point (- x1 x) (- y1 y))))
-                    (om-draw-line (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point))
-                               (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel))))))))))
+	     (let* ((thepoint (car point-list))
+		    (pix-point (point-to-pixel-with-sizes ranges thepoint (- x1 x) (- y1 y)))
+		    (points-prev-next (give-prev+next-x bpf thepoint))
+		    (prev-point (first points-prev-next))
+		    (next-point (second points-prev-next)))
+	       (when prev-point
+		 (let ((prev-pixel (point-to-pixel-with-sizes ranges prev-point (- x1 x) (- y1 y))))
+		   (om-draw-line (+ x (om-point-h prev-pixel)) (+ y (om-point-v prev-pixel))
+				 (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point)))))
+	       (when (or (and next-point (null (second point-list)))
+			 (and (second point-list) next-point ;; ?
+			      (not (equal next-point (second point-list)))))
+		 (let ((next-pixel (point-to-pixel-with-sizes ranges next-point (- x1 x) (- y1 y))))
+		   ;;(print *curstream*)
+		   (om-draw-line (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point))
+				 (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel))))))))))
 
 
 

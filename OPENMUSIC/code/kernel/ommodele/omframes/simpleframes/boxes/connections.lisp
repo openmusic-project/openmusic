@@ -110,7 +110,6 @@
          (first-mouse *con-first-click*)
          (new-mouse old-mouse))
     (setq new-mouse where)
-    
     (draw-connection *cur-drag-connection* NIL)
     #+cocoa (invalidate-connection-region *cur-drag-connection* self)
     #+linux (invalidate-connection-region *cur-drag-connection* self)
@@ -218,7 +217,7 @@
          (color (if (zerop (ccolor self)) *om-black-color* (nth (-  (ccolor self) 1) *16-color-list*))))
     (om-with-focused-view (connection-container (thebox self)) 
       (om-with-fg-color nil color
-        (om-with-line-size (if sel? 2 1)
+	(om-with-line-size (if sel? 2 1)
           (if val
               (loop while thepoints do
 		   (om-draw-line (om-point-h prim) (om-point-v prim) 

@@ -90,7 +90,8 @@
           om-cmd-line
           om-run-application
           om-run-program
-          om-find-process
+          *om-open-cmd*
+	  om-find-process
           ;om-select-process
           om-select-program
           om-run-process
@@ -598,16 +599,15 @@
                                        (funcall afterfun))))
         (namestring path)))
 
+
+(defvar *om-open-cmd* #+linux "xdg-open " #+cocoa "open ")
+
 (defun om-run-application (path)
-  (system::call-system (format nil #-linux "open ~s" #+linux "~s" (namestring path)) :wait nil)
+  (system::call-system (format nil  "~A ~s" *om-open-cmd* (namestring path)) :wait nil)
   (namestring path))
+
 
 
 ;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
 (defun om-select-program (id)
-  (system::call-system (concatenate 'string #-linux "open " #+linux "" (namestring id))))
-
-
-
-
-
+  (system::call-system (concatenate 'string #-linux *om-open-cmd* #+linux "" (namestring id))))
