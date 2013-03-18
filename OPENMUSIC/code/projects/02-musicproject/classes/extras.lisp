@@ -213,7 +213,7 @@
    :doc "
 Adds one or more EXTRA object(s) (<extras> see classes in the Score/Extra/ package) in <self>.
 
-<path> is a list (a b c) determines the optional path to an internal object, e.g. (1 0) in a chord-seq means chord number 1 in teh sequence, note number 0 in the chord.
+<path> is a list (a b c) determines the optional path to an internal object, e.g. (1 0) in a chord-seq means chord number 1 in the sequence, note number 0 in the chord.
 
 <newobj> is an optional input determining if a new object should be returned (T), or if the input object should be modified (NIL).
 "
