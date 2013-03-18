@@ -62,7 +62,7 @@ Notes:
          (dur (or duration (- (car (last xinit)) (car xinit))))
          (begin (car xinit)) (end (+ begin dur))
          (dec (or decimals (and (bpf-p initval) (decimals initval)) 6))
-         (jit-bpfs (generate-function-bpfs function begin end kt))
+         (jit-bpfs (generate-function-bpfs process begin end kt))
          (final-jit (if (= 1 (length jit-bpfs)) (car jit-bpfs) (merge-bpfs jit-bpfs)))
          (jit-points (point-pairs final-jit))
          (ope (cond ((equal op 'a) #'(lambda (x a) (+ x (* x a))))
