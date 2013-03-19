@@ -624,11 +624,10 @@ current-atimes) list tmin beat-dur)
           pulses))))
 
 (defun minimum-pulses (attack-times tmin tmax)
-  (min *maximum-pulses*
-       (max 1 ;;;;;(1- (length attack-times))
-            (truncate  (- tmax tmin) (* 3 (apply 'min (- tmax tmin) (x->dx attack-times)))))))
-
-
+  (let ((deltas (* 3 (apply 'min (- tmax tmin) (x->dx (remove-duplicates attack-times)))))) ;truncate freaks if divisor=0
+    (min *maximum-pulses*
+	 (max 1 ;;;;;(1- (length attack-times))
+	      (truncate  (- tmax tmin) deltas)))))
 
 ;;euclidean distance
 (defun sqr (n) (* n n))
