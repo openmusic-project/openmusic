@@ -161,12 +161,12 @@
 
 (defmethod om-view-doubleclick-handler ((self di-miniview) where) nil)
 
-(defmethod draw-only-select ((self di-miniview))
-   (om-without-interrupts 
-     (om-invalidate-rectangle self 1 1 (w self) 2)
-     (om-invalidate-rectangle self 1 1 2 (- (h self) 2))
-     (om-invalidate-rectangle self 1 (- (h self) 3) (- (w self) 2) (- (h self) 2))
-     (om-invalidate-rectangle self (- (w self) 3) 1 (- (w self) 2) (- (h self) 2))))
+(defmethod draw-only-select ((self di-miniview)) (om-invalidate-view self))
+;   (om-without-interrupts 
+;     (om-invalidate-rectangle self 1 1 (w self) 2)
+;     (om-invalidate-rectangle self 1 1 2 (- (h self) 2))
+;     (om-invalidate-rectangle self 1 (- (h self) 3) (- (w self) 2) (- (h self) 2))
+;     (om-invalidate-rectangle self (- (w self) 3) 1 (- (w self) 2) (- (h self) 2))))
 
 (defmethod om-draw-contents ((self di-miniview))
   (om-with-focused-view self
@@ -184,13 +184,15 @@
         (when iconhdlr
           (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
           (om-draw-icon iconhdlr self posi (om-make-point xi yi)))
+        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 1)
         ))
     (when (show-name (object (om-view-container self)))
       (om-draw-string 4 (- (h self) 5) (name (object (om-view-container self)))))
-    (let ((line (if (selected-p self) 2 1)))
+    (if (selected-p self)
       (om-with-fg-color self (om-make-color 0 0 0) 
-        (om-draw-rect-outline 1 1 (w self) (h self) line))
-      )))
+        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 2)
+        ))
+      ))
 
 
 (defmethod change-edit-mode ((self DIEditorframe))

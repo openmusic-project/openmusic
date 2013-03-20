@@ -818,7 +818,7 @@
 (defmethod draw-after-box ((self boxtypeframe))
    (let ((deltay (if (zerop (numouts (object self))) 1 9)))
     (om-with-focused-view self
-      (om-draw-rect-outline 0 0 (- (w self) 1) (- (h self) deltay) 1)
+      (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1 deltay) :pensize 0.5)
       )
     t))
 
@@ -903,9 +903,10 @@
    ;  (om-set-part-color (nameview self) :body *instboxframe-color*))
 )
 
-(defmethod draw-after-box ((self instBoxframe))
-  (om-with-fg-color self *om-dark-gray-color*
-     (om-draw-rect-outline 0 0 (- (w self) 1) (- (h self) 9) (if (selected-p (iconview self)) 2 0))))
+(defmethod draw-after-box ((self instBoxframe)) nil)
+;  (om-with-fg-color self *om-dark-gray-color*
+;     (om-draw-rect-outline 0 0 (- (w self) 1) (- (h self) 9) 
+;                           (if (selected-p (iconview self)) 2 1))))
 
 (defmethod change-name-box ((self instBoxframe))
    "If 'self is a global variable you can not change its name."
