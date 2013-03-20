@@ -10,7 +10,8 @@
       (let* ((console (value box))
              (ptr (effect-ptr console))
              (track (tracknum console)))
-        (las::RemoveAudioEffect (gethash track *effects-lists*) ptr)
+        (if ptr
+            (las::RemoveAudioEffect (gethash track *effects-lists*) ptr))
         ))
   (call-next-method)
   )
