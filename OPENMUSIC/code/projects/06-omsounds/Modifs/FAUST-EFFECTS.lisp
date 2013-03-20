@@ -16,18 +16,6 @@
   )
 
 ;======================================================
-;===         DEAL WITH DEAD PORTAUDIO               ===
-;======================================================
-
-(defun ResetAudioPlayer ()
-  (let ()
-    (las::CloseAudioPlayer *audio-player*)
-    (setf *audio-player* (las::OpenAudioPlayer 0 2 32 44100 512 65536 65536 las::kCoreAudioRenderer 1))
-    (las::StartAudioPlayer *audio-player*)))
-
-(ResetAudioPlayer)
-
-;======================================================
 ;===         CREATE 32 EMPTY EFFECTS LISTS          ===
 ;======================================================
 (defvar *effects-lists* nil)
@@ -41,7 +29,28 @@
       (setf (gethash i *effects-lists*) (las::MakeAudioEffectList))
       (plug-faust-effect-list-on-channel *audio-player* (gethash i *effects-lists*) i)))
 
-(ResetEffectsLists)
+; (ResetEffectsLists)
+
+;======================================================
+;===         DEAL WITH DEAD PORTAUDIO               ===
+;======================================================
+
+;(defun ResetAudioPlayer ()
+;  (let ()
+ ;   (las::CloseAudioPlayer *audio-player*)
+ ;   (setf *audio-player* (las::OpenAudioPlayer 0 2 32 44100 512 65536 65536 las::kCoreAudioRenderer 1))
+ ;   (las::StartAudioPlayer *audio-player*)))
+
+;(ResetAudioPlayer)
+
+;(las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kPortAudioRenderer 1)
+(defun oa::om-open-audio-player ()
+  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
+    (las::StartAudioPlayer *audio-player*)
+    (ResetEffectsLists)
+    player))
+
+
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
 ;=== a single parameter of the general faust effect ===
@@ -392,5 +401,5 @@
                     (paramGraph self)
                     (paramReset self))))
 
-(ResetAudioPlayer)
-(ResetEffectsLists)
+;(ResetAudioPlayer)
+;(ResetEffectsLists)

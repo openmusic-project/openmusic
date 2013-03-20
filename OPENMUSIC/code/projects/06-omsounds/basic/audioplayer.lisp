@@ -50,7 +50,7 @@
           (om-add-sound-to-player *audio-player* s at (first interval) (second interval) (tracknum s) (float (/ (vol s) 100)) (- 1.0 (float (/ (+ (pan s) 100) 200))))
         (progn
           (call-next-method)
-          (om-stop-sound s)
+          ;;(om-stop-sound s)
           (om-prepare-sound s (first interval) (second interval))))))
   
 

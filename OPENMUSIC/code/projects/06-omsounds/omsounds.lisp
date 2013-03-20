@@ -46,6 +46,10 @@
     "synth;synthesize"
     "multi;sound-players"
     "multi;multiplayer"
+
+    "Modifs;FAUST-EFFECTS"
+    "Modifs;VERIFIED-MODIFS"
+    
  ))
 
 (eval-when (eval compile load)
