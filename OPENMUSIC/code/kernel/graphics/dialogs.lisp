@@ -875,7 +875,7 @@ ArtWork: A. Mohsen
        (om-draw-picture self (thepict (picture self)) (om-make-point 0 0) (om-make-point 48 48))
      (progn (om-with-fg-color self *om-white-color* (om-fill-rect 0 0 48 48))
        (om-draw-line 0 0 48 48) (om-draw-line 48 0 0 48)))
-   (om-draw-rect-outline 0 0 48 48)   
+   (om-draw-rect 0 0 48 48)   
    ))
 
 
