@@ -45,6 +45,7 @@
 
 ;; menu call
 (defun show-extra-palette (editor) 
+  (unless *extramanager* (setf *extramanager* (make-instance 'extramanager)))
   (setf (show *extramanager*) t)
   (show-extrapalette-win editor))
 

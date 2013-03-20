@@ -118,7 +118,7 @@
       (om-draw-string 4 (- (h self) 5) (name (object (om-view-container self)))))
     (let ((line (if (selected-p self) 2 1)))
       (om-with-fg-color self (om-make-color 0 0 0) 
-        (om-draw-rect-outline 1 1 (w self) (h self) line))
+        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize line))
       )
     )
   )
@@ -246,7 +246,7 @@
   (unless (and onlysel (and (iconview view) (not (selected-p (iconview view)))))
     (om-with-focused-view view
       (let ((line (if (and (iconview view) (selected-p (iconview view))) 2 1)))
-        (om-draw-rect-outline 0 0 (w view) (h view) line))
+        (om-draw-rect 0 0 (1- (w view)) (1- (h view)) :pensize line))
       )))
 
 (defmethod draw-editor-mode ((self t) view) 
