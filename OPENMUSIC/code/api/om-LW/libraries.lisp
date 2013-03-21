@@ -358,7 +358,7 @@
   (if (member :xml libs)
         (load (make-pathname :directory (append *externals-directory* (list "XML")) :name "load-xml"))
     )
-  (if (member :jason libs)
+  (if (member :json libs)
       (progn
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "package"))
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "parse")))
