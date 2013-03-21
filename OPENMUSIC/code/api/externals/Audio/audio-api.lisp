@@ -518,52 +518,49 @@
     (multiple-value-bind (data size nch) 
         (ignore-errors
           (au::load-audio-data (convert-filename-encoding sndpath) :float))
-      ;(print (list sndpath size nch))
+      ;;(print (list sndpath size nch))
       (if (and (> size 0) (> nch 0)) 
-          (let* ((pict-w (min #+win32 2000 #-win32 4000 size))  ; taille max de l'image en pixels
+          (let* ((pict-w (min #+win32 2000 #-win32 4000 size)) ; taille max de l'image en pixels
                  (pict-h 256)
                  (xstep (round size pict-w))
-                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
+                 (channels-h (round pict-h nch)) ; imag height = 256, channels-h = height of 1 channel
                  (offset-y (round channels-h 2))) ; draw from middle of each channels-h
             (if data 
                 (let ((datalist (loop for pix from 0 to (- pict-w 1) collect
-                                      (loop for chan from 0 to (- nch 1) collect 
-                                            (fli::dereference data 
-                                                              :index (+ (min (* (1- size) nch) (* pix xstep nch)) chan)
-                                                              :type :float)
-                                            )))                      
+				     (loop for chan from 0 to (- nch 1) collect 
+					  (fli::dereference data 
+							    :index (+ (min (* (1- size) nch) (* pix xstep nch)) chan)
+							    :type :float)
+					  )))                      
                       pixpoint)    
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (loop for i from 0 to (- nch 1) do  
-                                (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                           (om-with-fg-color *curstream* *om-gray-color*
                             (loop for sample in datalist
-                                  for i = 0 then (+ i 1) do 
-                                  (loop for val in sample 
-                                        for c = 0 then (+ c 1) do
-                                        (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
-                                ;(print (list i val pixpoint))
-                                        (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
-                                                       i (+ offset-y (* c channels-h) (- pixpoint))) 
-                                        ))
+			       for i = 0 then (+ i 1) do 
+				 (loop for val in sample 
+				    for c = 0 then (+ c 1) do
+				      (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
+					;(print (list i val pixpoint))
+				      (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
+						     i (+ offset-y (* c channels-h) (- pixpoint))) 
+				      ))
                             )))
                   (fli::free-foreign-object data) 
                   pict
                   )
-              (setf pict 
-                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                      (loop for i from 0 to (- nch 1) do  
-                            (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2)
-                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))
-                      )
-                      
-
-                      ))))
-        nil
-        ))))
+		(setf pict 
+		      (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+			(loop for i from 0 to (- nch 1) do  
+			     (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+			     (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2)
+			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))
+			     )))))
+	  nil
+	  ))))
 
 
 ;;; COCOA : read loop with LibAudioStream (plante sur windows)
@@ -571,35 +568,35 @@
 (defun las-cons-snd-pict (sndpath)
   (let* ((snd (las::makereadsound (namestring sndpath)))
          (pict nil)
-         (pict-w 5000) ; taille max de l'image en pixels
+         (pict-w 5000)		     ; taille max de l'image en pixels
          (pict-h 256)
          (numsamples (las::GetLengthSound snd))
          (numchannels (las::GetChannelsSound snd)))
     (unless (or (zerop numsamples) (zerop numchannels))
       (let* ((buffer-size (ceiling numsamples pict-w)) ; nb samples dans le buffer
-            (pict-w (round numsamples buffer-size)) ;nb exact de pixels
-            (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
-            (offset-y (round channels-h 2)) ; draw from middle of each channels
-            (sndr (las::MakeRendererSound snd))
-            (bytesread buffer-size)
-            (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+	     (pict-w (round numsamples buffer-size)) ;nb exact de pixels
+	     (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
+	     (offset-y (round channels-h 2)) ; draw from middle of each channels
+	     (sndr (las::MakeRendererSound snd))
+	     (bytesread buffer-size)
+	     (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
         (mp::with-interrupts-blocked 
           (setf pict 
                 (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                   (loop for i from 0 to (- numchannels 1) do  
-                        (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+		       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                   (las::ResetSound snd)
                   (om-with-fg-color *curstream* *om-dark-gray-color*
-                  (loop for i from 0 to (- pict-w 1) 
-                        while (= bytesread buffer-size) do 
-                        (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
-                        (loop for k from 0 to (- numchannels 1) do
+		    (loop for i from 0 to (- pict-w 1) 
+		       while (= bytesread buffer-size) do 
+			 (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
+			 (loop for k from 0 to (- numchannels 1) do
                               (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
                               (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
-                             (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+			      (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
                                              (+ offset-y (* k channels-h) pixpoint))  
-                             )
-                  ))
+			      )
+			 ))
                   ))
           )
         (om-free-pointer buffer)))

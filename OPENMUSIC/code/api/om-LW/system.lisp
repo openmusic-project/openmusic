@@ -558,18 +558,18 @@
 
   (if (and (member *om-os* '(:mac :linux))
 	   (pathnamep redirect-output))
-					;(let ((tempfile "~/om-log.txt"))
+      ;;(let ((tempfile "~/om-log.txt"))
       (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
                              :if-output-exists :append :if-error-output-exists :append)
-       ;(om-open-new-text-file (pathname tempfile)))
-    (progn
-      (if redirect-output
-          (sys:call-system-showing-output str :wait wait :output-stream *om-stream* 
-                                          :prefix ":: "
-                                          #+win32 :current-directory #+win32 current-path)
-        #-win32(sys:run-shell-command str :wait wait)
-        #+win32(sys:call-system str :wait wait  :current-directory current-path)
-        ))))
+					;(om-open-new-text-file (pathname tempfile)))
+      (progn
+	(if redirect-output
+	    (sys:call-system-showing-output str :wait wait :output-stream *om-stream* 
+					    :prefix ":: "
+					    #+win32 :current-directory #+win32 current-path)
+	    #-win32(sys:run-shell-command str :wait wait)
+	    #+win32(sys:call-system str :wait wait  :current-directory current-path)
+	    ))))
 
 ;(sys::change-directory  (om-make-pathname :directory om::*om-midi-settings-app-path*))
 ;(hcl::get-working-directory)

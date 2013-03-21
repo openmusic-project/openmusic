@@ -24,6 +24,7 @@
 ;Initial code from S. Ball's ANVITA editor
 ;;===========================================================================
 
+;;; (om-lisp::om-open-new-text-editor)
 
 ;;;======================================
 ;;; OM TEXT EDITOR GENERAL

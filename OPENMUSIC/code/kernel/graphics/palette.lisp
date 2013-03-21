@@ -120,7 +120,7 @@
 (defmethod palette-open ((win t))
   (unless *palette*  (setf *palette* (make-instance 'general-palette)))
   (unless *palette-win* (create-palette-win))
-   (om-show-window *palette-win*))
+  (om-show-window *palette-win*))
   
 (defun create-palette-win ()
    (setf *palette-win*
@@ -128,7 +128,7 @@
                          :window-title ""
                          :size (om-make-point 50 25)
                          :position (pos-palette *palette*)
-                         ;:close nil 
+                         ;;:close t
                          :resizable nil
                          :bg-color *om-window-def-color*
                          ))

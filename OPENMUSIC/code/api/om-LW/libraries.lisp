@@ -50,6 +50,8 @@
   )
 
 
+
+
 ;;;====================================
 ;;; POINTERS
 ;;;====================================
@@ -361,12 +363,3 @@
         (load (make-pathname :directory (append *externals-directory* (list "XML")) :name "load-xml"))
     )
   t)
-
-
-
-
-
-
-
-
-

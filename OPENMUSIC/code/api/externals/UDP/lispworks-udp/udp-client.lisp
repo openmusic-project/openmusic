@@ -37,12 +37,12 @@
                     server-addr
                     (if (eql family *socket_af_inet*)
                         (fli:size-of '(:struct sockaddr_in))
-                      (fli:size-of '(:struct sockaddr_in6))))))
-      :bad-host)))
+			(fli:size-of '(:struct sockaddr_in6))))))
+	:bad-host)))
 
 (defun open-udp-socket (&key errorp local-address (local-port #+mswindows 0 #-mswindows nil)
-                             (address-family *socket_af_inet*)
-                             read-timeout reuse-address)
+			  (address-family *socket_af_inet*)
+			  read-timeout reuse-address)
   "Open a unconnected UDP socket.
    For binding on address ANY(*), just not set LOCAL-ADDRESS (NIL),
    for binding on random free unused port, set LOCAL-PORT to 0."
@@ -62,36 +62,36 @@
 
   (let ((socket-fd (socket address-family *socket_sock_dgram* *socket_pf_unspec*)))
     (if socket-fd
-      (progn
-        (when read-timeout
-          (setf (socket-receive-timeout socket-fd) read-timeout))
-        (when reuse-address
-          (setf (socket-reuse-address socket-fd) reuse-address))
-        (if local-port
-          (progn ;; bind to local address/port if specified.
-            (fli:with-dynamic-foreign-objects ()
-              (multiple-value-bind (error local-address-family client-addr client-addr-length)
-                  (initialize-dynamic-sockaddr local-address local-port "udp")
-                (if (or error (not (eql address-family local-address-family)))
-                  (error "cannot resolve hostname ~S, service ~S: ~A"
-                         local-address local-port (or error "address family mismatch"))
-                  (if (bind socket-fd
-                            (fli:copy-pointer client-addr :type '(:struct sockaddr))
-                            client-addr-length)
-                    ;; success, return socket fd
-                    (make-inet-datagram socket-fd)
-                    (progn ;; fail, close socket and return nil
-                      (close-socket socket-fd)
-                      (when errorp
-                        (raise-socket-error "cannot bind to local"))))))))
-          (make-inet-datagram socket-fd)))
-      (when errorp
-        (raise-socket-error "cannot create socket")))))
+	(progn
+	  (when read-timeout
+	    (setf (socket-receive-timeout socket-fd) read-timeout))
+	  (when reuse-address
+	    (setf (socket-reuse-address socket-fd) reuse-address))
+	  (if local-port
+	      (progn ;; bind to local address/port if specified.
+		(fli:with-dynamic-foreign-objects ()
+		  (multiple-value-bind (error local-address-family client-addr client-addr-length)
+		      (initialize-dynamic-sockaddr local-address local-port "udp")
+		    (if (or error (not (eql address-family local-address-family)))
+			(error "cannot resolve hostname ~S, service ~S: ~A"
+			       local-address local-port (or error "address family mismatch"))
+			(if (bind socket-fd
+				  (fli:copy-pointer client-addr :type '(:struct sockaddr))
+				  client-addr-length)
+			    ;; success, return socket fd
+			    (make-inet-datagram socket-fd)
+			    (progn ;; fail, close socket and return nil
+			      (close-socket socket-fd)
+			      (when errorp
+				(raise-socket-error "cannot bind to local"))))))))
+	      (make-inet-datagram socket-fd)))
+	(when errorp
+	  (raise-socket-error "cannot create socket")))))
 
 (defmacro with-udp-socket ((socket &rest options) &body body)
   `(let ((,socket (open-udp-socket ,@options)))
      (unwind-protect
-         (progn ,@body)
+	  (progn ,@body)
        (close-datagram ,socket))))
 
 (defvar *inet-message-send-buffer*
@@ -114,17 +114,17 @@
                      (%sendto socket-fd ptr (min length +max-udp-message-size+) 0
                               (fli:copy-pointer client-addr :type '(:struct sockaddr))
                               client-addr-length)
-                   (%send socket-fd ptr (min length +max-udp-message-size+) 0)))))))
+		     (%send socket-fd ptr (min length +max-udp-message-size+) 0)))))))
     (if (and host service)
-      (fli:with-dynamic-foreign-objects ()
-        (multiple-value-bind (error address-family client-addr client-addr-length)
-            (initialize-dynamic-sockaddr host service "udp")
-          (declare (ignore address-family))
-          (if error
-              (error "cannot resolve hostname ~S, service ~S: ~A"
-                     host service error)
-            (send-it client-addr client-addr-length))))
-      (send-it nil nil))))
+	(fli:with-dynamic-foreign-objects ()
+	  (multiple-value-bind (error address-family client-addr client-addr-length)
+	      (initialize-dynamic-sockaddr host service "udp")
+	    (declare (ignore address-family))
+	    (if error
+		(error "cannot resolve hostname ~S, service ~S: ~A"
+		       host service error)
+		(send-it client-addr client-addr-length))))
+	(send-it nil nil))))
 
 (defvar *inet-message-receive-buffer*
   (make-array +max-udp-message-size+
@@ -134,7 +134,7 @@
 (defvar *inet-message-receive-lock* (mp:make-lock))
 
 (defmethod receive-message ((socket inet-datagram) &key buffer (length (length buffer))
-                            read-timeout (max-buffer-size +max-udp-message-size+))
+						     read-timeout (max-buffer-size +max-udp-message-size+))
   "Receive message from socket, read-timeout is a float number in seconds.
 
    This function will return 4 values:
@@ -160,65 +160,65 @@
                               (fli:copy-pointer client-addr :type '(:struct sockaddr))
                               len)))
             (if (plusp n)
-              (values (if buffer
-                        (replace buffer message
-                                 :end1 (min length max-buffer-size)
-                                 :end2 (min n max-buffer-size))
-                        (subseq message 0 (min n max-buffer-size)))
-                      (min n max-buffer-size)
-                      (ntohl (fli:foreign-slot-value
-                              (fli:foreign-slot-value client-addr
-                                                      'sin_addr
-                                                      :object-type '(:struct sockaddr_in)
-                                                      :type '(:struct in_addr)
-                                                      :copy-foreign-object nil)
-                              's_addr
-                              :object-type '(:struct in_addr)))
-                      (ntohs (fli:foreign-slot-value client-addr
-                                                     'sin_port
-                                                     :object-type '(:struct sockaddr_in)
-                                                     :type '(:unsigned :short))))
-              (values nil n 0 0))))))))
+		(values (if buffer
+			    (replace buffer message
+				     :end1 (min length max-buffer-size)
+				     :end2 (min n max-buffer-size))
+			    (subseq message 0 (min n max-buffer-size)))
+			(min n max-buffer-size)
+			(ntohl (fli:foreign-slot-value
+				(fli:foreign-slot-value client-addr
+							'sin_addr
+							:object-type '(:struct sockaddr_in)
+							:type '(:struct in_addr)
+							:copy-foreign-object nil)
+				's_addr
+				:object-type '(:struct in_addr)))
+			(ntohs (fli:foreign-slot-value client-addr
+						       'sin_port
+						       :object-type '(:struct sockaddr_in)
+						       :type '(:unsigned :short))))
+		(values nil n 0 0))))))))
 
 (defun connect-to-udp-server (hostname service &key errorp
-                                       local-address local-port read-timeout)
+						 local-address local-port read-timeout)
   "Something like CONNECT-TO-TCP-SERVER"
   (let ((socket (open-udp-socket :errorp errorp
                                  :local-address local-address
                                  :local-port local-port
                                  :read-timeout read-timeout)))
     (if socket
-      (let ((socket-fd (socket-datagram-socket socket)))
-        (fli:with-dynamic-foreign-objects ()
-          ;; connect to remote address/port
-          (multiple-value-bind (error address-family server-addr server-addr-length)
-              (initialize-dynamic-sockaddr hostname service "udp")
-            (declare (ignore address-family))
-            (if error
-              (error "cannot resolve hostname ~S, service ~S: ~A"
-                     hostname service error)
-              (if (connect socket-fd
-                           (fli:copy-pointer server-addr :type '(:struct sockaddr))
-                           server-addr-length)
-                ;; success, return socket fd
-                socket
-                ;; fail, close socket and return nil
-                (progn
-                  (close-datagram socket)
-                  (when errorp (raise-socket-error "cannot connect"))))))))
-      (when errorp
-        (error (raise-socket-error "cannot create socket"))))))
+	(let ((socket-fd (socket-datagram-socket socket)))
+	  (fli:with-dynamic-foreign-objects ()
+	    ;; connect to remote address/port
+	    (multiple-value-bind (error address-family server-addr server-addr-length)
+		(initialize-dynamic-sockaddr hostname service "udp")
+	      (declare (ignore address-family))
+	      (if error
+		  (error "cannot resolve hostname ~S, service ~S: ~A"
+			 hostname service error)
+		  (if (connect socket-fd
+			       (fli:copy-pointer server-addr :type '(:struct sockaddr))
+			       server-addr-length)
+		      ;; success, return socket fd
+		      socket
+		      ;; fail, close socket and return nil
+		      (progn
+			(close-datagram socket)
+			(when errorp (raise-socket-error "cannot connect"))))))))
+	(when errorp
+	  (error (raise-socket-error "cannot create socket"))))))
 
 (defmacro with-connected-udp-socket ((socket &rest options) &body body)
   `(let ((,socket (connect-to-udp-server ,@options)))
      (unwind-protect
-         (progn ,@body)
+	  (progn ,@body)
        (close-datagram ,socket))))
 
 (defun open-udp-stream (hostname service &key (direction :io)
-                                 (element-type 'base-char)
-                                 errorp read-timeout
-                                 local-address local-port)
+					   (element-type 'base-char)
+					   errorp read-timeout
+					   local-address local-port)
   "Something like OPEN-TCP-STREAM"
   (let* ((socket (connect-to-udp-server hostname service
                                         :errorp errorp
@@ -234,5 +234,5 @@
 (defmacro with-udp-stream ((stream &rest options) &body body)
   `(let ((,stream (open-udp-stream ,@options)))
      (unwind-protect
-         (progn ,@body)
+	  (progn ,@body)
        (close ,stream))))

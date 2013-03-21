@@ -388,21 +388,39 @@
                                         :font *om-default-font1*)
                        (om-make-dialog-item 'om-pop-up-dialog-item 
                                             (om-make-point 550 c1) 
+                                            ;; (om-make-point 100 18) ""
                                             (om-make-point 100 18) ""
                                             :font *om-default-font1*
-                                            :range (remove nil (list "Midishare" (if (find 'microplayer (assoc-players *general-player*)) "Microplayer")))
+                                            :range (remove nil (list "Midishare"
+								     (if (find 'microplayer (assoc-players *general-player*)) "Microplayer")
+								     (if (find 'scplayer (assoc-players *general-player*)) "SuperCollider")
+								     ))
                                             :value (cond ((equal (get-edit-param (om-view-container self) 'player) :microplayer) 
                                                           "Microplayer")
+							 ((equal (get-edit-param (om-view-container self) 'player) :SCplayer)
+                                                          "SuperCollider")
                                                          (t "Midishare"))
                                             :di-action  (om-dialog-item-act item 
-                                                          (if (= 1 (om-get-selected-item-index item))
-                                                             (progn
-                                                               (change-player (panel (om-view-container self)) :microplayer)
-                                                               (om-enable-dialog-item playerbutton nil)) 
-                                                            (progn
-                                                               (change-player (panel (om-view-container self)) :midishare)
-                                                               (om-enable-dialog-item playerbutton t)))
-                                                            ))
+                                                          ;; (if (= 1 (om-get-selected-item-index item))
+							  ;;     (progn
+							  ;; 	(change-player (panel (om-view-container self)) :microplayer)
+							  ;; 	(om-enable-dialog-item playerbutton nil)) 
+							  ;;     (progn
+							  ;; 	(change-player (panel (om-view-container self)) :midishare)
+							  ;; 	(om-enable-dialog-item playerbutton t)))
+							  (print (format nil "changed player to ~A" (om-get-selected-item item)))
+							  (cond ((string=  (om-get-selected-item item) "Microplayer")
+								 (progn
+								   (change-player (panel (om-view-container self)) :microplayer)
+								   (om-enable-dialog-item playerbutton nil)))
+								((string=  (om-get-selected-item item) "SuperCollider")
+								 (progn
+								   (change-player (panel (om-view-container self)) :scplayer)
+							  	   (om-enable-dialog-item playerbutton nil)))
+							  	(t (progn
+							  	     (change-player (panel (om-view-container self)) :midishare)
+							  	     (om-enable-dialog-item playerbutton t))))
+							  ))
                        (setf playerbutton (om-make-dialog-item 'om-button (om-make-point 650 2) (om-make-point 40 16) "..."
                                         :font *om-default-font1*
                                         :enable (equal (get-edit-param (om-view-container self) 'player) :midishare)
@@ -596,7 +614,8 @@
 
 (defmethod change-player ((panel scorepanel) val)
   (call-next-method)
-  (if (equal val :microplayer) (launch-microplayer-app)))
+  (if (equal val :microplayer) (launch-microplayer-app))
+  (if (equal val :scplayer) (launch-scplayer-app)))
 
 ;default pict help
 

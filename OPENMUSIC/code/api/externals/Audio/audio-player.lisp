@@ -63,7 +63,8 @@
   (loop for i from 0 to 32 do (setf (gethash i *init-settings-table*) (list 1.0 0.5)))
   (setf las::*libaudiostream* nil)
   (setf las::*libaudiostream-pathname* (om-lib-pathname las::*libaudiostream-pathname*))
-  (las::libaudiostream-framework))
+  (las::libaudiostream-framework)
+  )
 
 (defvar *om-player-sample-rate* 44100)
 (defvar *om-player-n-channels* 2)
@@ -76,7 +77,8 @@
 
 (defun om-close-audio-player (player)
   (when player
-    (las::CloseAudioPlayer player)))
+    (las::CloseAudioPlayer player)
+    ))
 
 
 ;; (las::MakeReadSound "/Users/bresson/Desktop/circle1a.aiff")

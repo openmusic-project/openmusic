@@ -95,24 +95,24 @@
 (defun accords? (source) (and (consp source) (loop for x in source always (notes? x))))
 
 (defun chr (source)
-	(cond
-		((or (chr? source) (chrl? source)) source)
-		((and (str? source) (equal (length source) 1)) (coerce source 'character))
-		((str? source) (coerce source 'list))
-		((strl? source) (loop for x in source collecting (coerce x 'list)))
-		((sym? source) (chr (format nil "~A" source)))
-		((syml? source) (loop for x in source collecting (chr x)))
-		(t (chr (format nil "~A" source)))))
+  (cond
+    ((or (chr? source) (chrl? source)) source)
+    ((and (str? source) (equal (length source) 1)) (coerce source 'character))
+    ((str? source) (coerce source 'list))
+    ((strl? source) (loop for x in source collecting (coerce x 'list)))
+    ((sym? source) (chr (format nil "~A" source)))
+    ((syml? source) (loop for x in source collecting (chr x)))
+    (t (chr (format nil "~A" source)))))
 
 (defun str (source)
-	(cond
-		((chr? source) (coerce (list source) 'string))
-		((chrl? source) (coerce source 'string))
-		((chrll? source) (loop for x in source collecting (coerce x 'string)))
-		((strl? source) (coerce (loop for x in source appending (coerce x 'list)) 'string))
-		((sym? source) (format nil "~A" source))
-		((syml? source) (loop for x in source collecting (format nil "~A" x)))
-		(t (format nil "~A" source))))
+  (cond
+    ((chr? source) (coerce (list source) 'string))
+    ((chrl? source) (coerce source 'string))
+    ((chrll? source) (loop for x in source collecting (coerce x 'string)))
+    ((strl? source) (coerce (loop for x in source appending (coerce x 'list)) 'string))
+    ((sym? source) (format nil "~A" source))
+    ((syml? source) (loop for x in source collecting (format nil "~A" x)))
+    (t (format nil "~A" source))))
 
 (oa::om-with-redefinitions 
   (defun // (source &optional diviseur) (if (null diviseur) (apply #'/ source) (sub_// source diviseur)))
@@ -175,22 +175,22 @@
 	(cons depart (loop for x in source summing x into output collecting (+ depart output))))
 
 (defun tp?* (source &optional temps_premier)
-	(if (nbr? source)
-		(multiple-value-list (floor (/ source temps_premier)))
-		(let ((multiplicateur (eval `(lcm ,@(loop for x in source collecting (denominator x))))))
-			(/ (eval `(gcd ,@(loop for x in source collecting (* x multiplicateur)))) multiplicateur))))
+  (if (nbr? source)
+      (multiple-value-list (floor (/ source temps_premier)))
+      (let ((multiplicateur (eval `(lcm ,@(loop for x in source collecting (denominator x))))))
+	(/ (eval `(gcd ,@(loop for x in source collecting (* x multiplicateur)))) multiplicateur))))
 
 (defun n! (source) (max 0 source))
 
 (defun ent* (source)
-	(loop 
-		with buffer = 0
-		and result = 0
-		for x in source
-		doing (setf result (floor x))
-		doing (setf buffer (+ buffer (mod x 1)))
-		when (>= buffer 1) collect (1+ result) and do (setf buffer (1- buffer)) else collect result
-	))
+  (loop 
+     with buffer = 0
+     and result = 0
+     for x in source
+     doing (setf result (floor x))
+     doing (setf buffer (+ buffer (mod x 1)))
+     when (>= buffer 1) collect (1+ result) and do (setf buffer (1- buffer)) else collect result
+       ))
 
 (defun amb* (&rest source)
 	(- (max* source) (min* source)))
@@ -498,7 +498,7 @@
 
 
 (defun duree (duree)
-	(append *t *t *t *t (chr "<duration>") (lister! (chr duree)) (chr "</duration>") *r))
+  (append *t *t *t *t (chr "<duration>") (lister! (chr duree)) (chr "</duration>") *r))
 
 (defun type-dur (fig)
                (append  *t *t *t *t (chr "<type>") (lister! (chr fig)) (chr "</type>") *r))
@@ -525,12 +525,12 @@
 
 
 (defun note (hauteur duree liaison &optional accord)
-	(append *t *t *t (chr "<note>") *r
-		(if accord (accord))
-		(if (equal hauteur -1) (silence) (hauteur hauteur))
-		(duree duree)
-		(if (not (equal '- liaison)) (liaison liaison))
-		*t *t *t (chr "</note>") *r))
+  (append *t *t *t (chr "<note>") *r
+	  (if accord (accord))
+	  (if (equal hauteur -1) (silence) (hauteur hauteur))
+	  (duree duree)
+	  (if (not (equal '- liaison)) (liaison liaison))
+	  *t *t *t (chr "</note>") *r))
 
 
 (defun cle (signe ligne)
@@ -548,9 +548,7 @@
 
 
 (defun divisions (divisions)
-	(append *t *t *t *t (chr "<divisions>") (lister! (chr divisions)) (chr "</divisions>") *r))
-
-
+  (append *t *t *t *t (chr "<divisions>") (lister! (chr divisions)) (chr "</divisions>") *r))
 
 ;;;pour les 1/4 de tons
 
@@ -567,13 +565,13 @@
 
 
 (defun mesure_entete (chiffrage &optional divisions clef temper)
-	(append 
-		*t *t *t (chr "<attributes>") *r
-		(if divisions (divisions divisions))
-                (if temper (key temper))
-		(chiffrage (first chiffrage) (second chiffrage))
-		(if clef (cle (first clef) (second clef)))
-		*t *t *t (chr "</attributes>") *r))
+  (append 
+   *t *t *t (chr "<attributes>") *r
+   (if divisions (divisions divisions))
+   (if temper (key temper))
+   (chiffrage (first chiffrage) (second chiffrage))
+   (if clef (cle (first clef) (second clef)))
+   *t *t *t (chr "</attributes>") *r))
 
 
 (defun mesure_corps (hauteurs durees liaisons accords)
@@ -742,7 +740,8 @@
          (xmltypes (om::flat (loop for i in note-type
                          collect (mycassq i *note-types*)))))
     
-    (list '(1/4) ratios xmltypes)))
+    (list '(1/4) ratios xmltypes)
+    ))
 
 
 (defmethod get-signature ((self om::measure))
@@ -849,20 +848,21 @@
          (real-beat-val (/ 1 (om::fdenominator (first tree))))
          (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
          (rep nil)
-         (meas-header (if (equal 1 mesnum) 
-                        (str (mesure_entete (get-signature self) (caar (dursdivisions self)) key approx)) ;;;voir comment obtenir les clefs !!!!
-                        (str (mesure_entete (get-signature self) (caar (dursdivisions self)))))))
+         (meas-header (if (equal 1 mesnum)
+			  (str (mesure_entete (get-signature self) (caar (dursdivisions self)) key approx)) ;;;voir comment obtenir les clefs !!!!
+			  (str (mesure_entete (get-signature self) (caar (dursdivisions self)))))))
+    
     
     
     (setf rep (list (str (append *t *t (chr "<measure number=") *g (lister! (chr mesnum)) *g (list (chr ">")) *r))))
     (setf rep (append rep (list (format nil "~d" meas-header))))
     (loop for obj in inside 
-          ;for fig in (cadr (dursdivisions self))  ;;;;;transmetre les note-types
-          do (setf rep (append rep
-                               (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
-                                      (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
-                                      (exp (cons-xml-expr obj (* symb-beat-val factor) t t)))
-                                 exp))))
+					;for fig in (cadr (dursdivisions self))  ;;;;;transmetre les note-types
+       do (setf rep (append rep
+			    (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
+				   (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
+				   (exp (cons-xml-expr obj (* symb-beat-val factor) t t)))
+			      exp))))
     
     (setf rep (append rep (list (str (append
 	                              *t *t (chr "</measure>") *r
