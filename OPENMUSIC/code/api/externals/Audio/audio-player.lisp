@@ -69,10 +69,28 @@
 (defvar *om-player-n-channels* 2)
 (setf *om-player-n-channels* 2)
 
+
+;======================================================
+;===         CREATE 32 EMPTY EFFECTS LISTS          ===
+;======================================================
+(defvar *effects-lists* nil)
+
+(defun plug-faust-effect-list-on-channel (player effectlist channel &optional (fadein 100) (fadeout 100))
+  (las::SetEffectListChannel player channel effectlist fadein fadeout))
+
+(defun ResetEffectsLists (player)
+  (setf *effects-lists* (make-hash-table))
+  (loop for i from 0 to 31 do 
+      (setf (gethash i oa::*effects-lists*) (las::MakeAudioEffectList))
+      (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)))
+
+
+
 (defun om-open-audio-player ()
-  ;(las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)
-  (las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kPortAudioRenderer 1)
-  )
+  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
+    (las::StartAudioPlayer player)
+    (ResetEffectsLists player)
+    player))
 
 (defun om-close-audio-player (player)
   (when player

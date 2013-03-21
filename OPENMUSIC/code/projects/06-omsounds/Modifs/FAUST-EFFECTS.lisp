@@ -16,21 +16,8 @@
   (call-next-method)
   )
 
-;======================================================
-;===         CREATE 32 EMPTY EFFECTS LISTS          ===
-;======================================================
-(defvar *effects-lists* nil)
 
-(defun plug-faust-effect-list-on-channel (player effectlist channel &optional (fadein 100) (fadeout 100))
-  (las::SetEffectListChannel player channel effectlist fadein fadeout))
-
-(defun ResetEffectsLists ()
-  (setf *effects-lists* (make-hash-table))
-  (loop for i from 0 to 31 do 
-      (setf (gethash i *effects-lists*) (las::MakeAudioEffectList))
-      (plug-faust-effect-list-on-channel *audio-player* (gethash i *effects-lists*) i)))
-
-; (ResetEffectsLists)
+;(ResetEffectsLists)
 
 ;======================================================
 ;===         DEAL WITH DEAD PORTAUDIO               ===
@@ -45,11 +32,11 @@
 ;(ResetAudioPlayer)
 
 ;(las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kPortAudioRenderer 1)
-(defun oa::om-open-audio-player ()
-  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
-    (las::StartAudioPlayer *audio-player*)
-    (ResetEffectsLists)
-    player))
+;(defun oa::om-open-audio-player ()
+;  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
+;    (las::StartAudioPlayer *audio-player*)
+;    (ResetEffectsLists)
+;    player))
 
 
 ;======================================================
@@ -97,7 +84,7 @@
           (let* ((ptr (effect-ptr self)) 
                 (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist)))
             (print (format nil "Effet Faust ~A créé avec succès ~%Cet effet s'applique sur la piste ~A" ptr (+ 1 (tracknum self))))
-            (las::AddAudioEffect (gethash (tracknum self) *effects-lists*) ptr)
+            (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
             ;(print (format nil "~%~%~%~A~%~%~%" (car (nth 1 (car effect-json)))))
             (setf (nbparams self) (las::getcontrolcount ptr))
             (if (> (nbparams self) 0)
