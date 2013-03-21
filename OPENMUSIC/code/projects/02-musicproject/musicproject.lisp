@@ -105,6 +105,7 @@
         "osc;receive"
         "osc;osc-events"
         "players;microplayer"
+        #+linux "players;SCplayer"
         
         "editor;scoreeditor;pagination"
         

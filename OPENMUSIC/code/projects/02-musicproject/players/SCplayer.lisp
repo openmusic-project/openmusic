@@ -1,6 +1,7 @@
 (in-package :om)
 
 
+;; FIXME: just redefining method from microplayer.lisp here
 (defmethod get-score-player ((self scorepanel)) 
   (if (equal (get-edit-param (editor self) 'player) :SCplayer)
       'scplayer
@@ -31,8 +32,6 @@
 (setf *SCplayer-host* "127.0.0.1")
 
 
-;; (defvar *max-buf-size* nil)
-;; definie dans l'api
 (setf *om-udp-max-buf-size* 500)
 
 (defvar *SC-listen-process* nil)
