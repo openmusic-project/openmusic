@@ -46,6 +46,7 @@
     "synth;synthesize"
     "multi;sound-players"
     "multi;multiplayer"
+
  ))
 
 (eval-when (eval compile load)
