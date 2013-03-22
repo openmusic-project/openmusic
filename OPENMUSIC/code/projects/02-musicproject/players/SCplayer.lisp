@@ -20,69 +20,78 @@
 (defvar *SCosc-packets* nil)
 (defvar *index-packets* 0)
 
-(defvar *SCplayer-in-port* nil)
-(setf *SCplayer-in-port* 57120)
-
 (defvar *SCplayer-out-port* nil)
 ;; TODO: get sclangs port after startup
-(setf *SCplayer-out-port* 57120)
-(setf *SCplayer-out-port* 57121)
+(setf *SCplayer-out-port* 57130)
+;; (setf *SCplayer-out-port* 57121)
 
 (defvar *SCplayer-host* nil)
 (setf *SCplayer-host* "127.0.0.1")
 
-
 (setf *om-udp-max-buf-size* 500)
-
-(defvar *SC-listen-process* nil)
-
-(defun open-SCplayer ()
-  (unless *SC-listen-process*
-    (setf *SC-listen-process* (om-start-osc-server *SCplayer-in-port* *SCplayer-host*  #'SC-send-more-notes))))
-
-(defun close-SCplayer ()
-  (when *SC-listen-process*
-    (om-stop-osc-server *SC-listen-process*)
-    (setf *SC-listen-process* nil)))
-
-;; (om-add-init-func 'open-SCplayer)
-;; (om-add-exit-cleanup-func 'close-SCplayer)
-
 
 ;;=====================================================
 ;;SCPLAYER APP
 
-(defvar *SC-player-app* nil)
+(defvar *SC-cmd-line* nil)
 (defvar *SC-player-path* nil)
+
 (defvar *SC-player-pid* nil)
+(defvar *SC-player-io* nil)
+(defvar *SC-setup-file* nil)
+
+(setf *SC-setup-file* (namestring (make-pathname :directory (pathname-directory *load-pathname*) :name "scratch_MIDI.sc")))
 
 (defun init-SCplayer-app ()
-  (setf *SC-player-path* 
-        #-linux (or (probe-file (om-default-application-path '("SCPlayer") "bm-SCton"))
-		    (probe-file (om-external-app nil "SCPlayer")))
-	#+linux "scplayer"))
+  (progn
+    (setf *SC-player-path* 
+	  #-linux (capi::prompt-for-file "Path to sclang executable:" :pathname (om-default-application-path "" "sclang"))
+	  #+linux "sclang")
+    (setf *SC-cmd-line*
+	  (format nil "~A -u ~A ~A"
+		  *SC-player-path* *SCplayer-out-port* *SC-setup-file*))))
 
 (om-add-init-func 'init-SCplayer-app)
 
-(setf *SC-player-path* "sclang")
-;; (om-cmd-line "ps aux | grep sclang")
-;; (om-cmd-line "pkill sclang")
-;; (setf *SC-player-pid* nil)
-
-;; (mp:find-process-from-name "sclang")
+(setf *SC-player-pid* nil)
+(setf *SC-player-io* nil)
 
 (defun launch-SCplayer-app ()
   (unless *SC-player-pid*
     (multiple-value-bind (io err pid)
-	(system:run-shell-command "sclang" :wait nil :input :stream :output :stream :error-output :stream)
+	(system:run-shell-command *SC-cmd-line*
+				  :wait nil
+				  :input :stream
+				  :output :stream
+				  :error-output :stream)
       (setf *SC-player-pid* pid)
+      (setf *SC-player-io* io)
       (print (format nil "started sclang: pid: ~A" pid)))))
 
-(setf *SC-player-pid* nil)
-
 ;; (launch-SCplayer-app)
+(om-add-init-func 'launch-SCplayer-app)
 
-;; (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  '(("/play.sc_om/start" 1209 1210 12 13)))
+(defun stop-and-cleanup-SCplayer-app ()
+  (progn
+    (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*)))
+    (sys:run-shell-command (format nil "pkill scsynth"))
+    (setf *SC-player-pid* nil)
+    (setf *SC-player-io* nil)))
+
+;; (stop-and-cleanup-scplayer-app)
+(om-add-exit-cleanup-func 'stop-and-cleanup-scplayer-app)
+
+
+
+(defun SCplayer-send-cmd (cmd)
+  (progn (unless *SC-player-pid* (launch-SCplayer-app))
+	 (format *sc-player-io* "~A~%" cmd)))
+
+(defun get-from-shell (stream &optional outputstr)
+  (do ((ch (read-char-no-hang stream)
+	   (read-char-no-hang stream)))
+      ((null ch))
+    (write-char ch outputstr)))
 
 ;;=====================================================
 ;;SCPLAYER PROTOCOL
@@ -112,7 +121,6 @@
 	 (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  (list event)))))
 
 ;;================
-
 
 (defun SC-send-more-notes (msg)
   (let ((message (om-decode-msg-or-bundle msg)))
@@ -158,18 +166,18 @@
 	  (pitch (/ (approx-scale (get-current-scale approx) (midic self)) 100.0))
 	  (vel (vel self))
 	  (dur (- (real-dur self) 2))
-	  (date (+  *MidiShare-start-time* at))
+	  (date at)
 	  )
       (if interval
 	  (let ((newinterval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))) 
 	    (when newinterval
 	      (playoscnote chan pitch vel
 			   (- (second newinterval) (first newinterval) 1) 
-			   (- (+  *MidiShare-start-time* (first newinterval)) 
-			      (first interval)))))
+			   (- (first newinterval) (first interval)))))
 	  (playoscnote chan pitch vel dur date)))))
 
 (defun playoscnote (chan pitch vel dur date)
+  ;; (print (list chan pitch vel dur date))
   (push (list "/play.sc_om/fifos" date pitch vel dur chan) *SCosc-packets*))
 
 (defmethod Play-player ((self (eql 'SCplayer)))

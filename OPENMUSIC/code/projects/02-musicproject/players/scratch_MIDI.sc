@@ -1,74 +1,92 @@
-s.boot;
-MIDIClient.init;
+s = Server.default;
 
-m.noteOn(16,80,100)
+s.options.device_("OpenMusic_SC3");		// give special device-name to identify in JACK
 
-(
+s = Server.default.waitForBoot({
 
-var sc_om_task;
-var deltas, freqs, durs, vels;
+	var sc_om_task;
+	var deltas, freqs, durs, vels, chans;
 
-deltas=[0];
-freqs=[0];
-durs=[0];
+	deltas=[];
+	freqs=[];
+	durs=[];
+	vels=[];
+	chans=[];
 
-m.free; m = MIDIOut(0);
+	MIDIClient.init;					// ALSA portname hardwired to "SuperCollider"
+	m.free; m = MIDIOut(0);
 
-OSCdef(\reset).clear;
-OSCdef(\reset, {
-	"reset".postln;
-	sc_om_task.stop;
-	m.allNotesOff(16);
-	deltas=[0]; freqs=[0]; durs=[0];
-}, '/play.sc_om/reset', nil);
+	OSCdef(\reset).clear;				
+	OSCdef(\reset, {}, '/play.sc_om/reset', nil);
+	OSCdef(\reset).add({
+		"reset".postln;
+		sc_om_task.stop;
+		m.allNotesOff(16);
+		deltas=[];
+		freqs=[];
+		durs=[];
+		vels=[];
+		chans=[];
+	});
 
+	OSCdef(\fifos).clear;
+	OSCdef(\fifos, {}, '/play.sc_om/fifos', nil);
+	OSCdef(\fifos).add({
+		|msg, time, addr, recvPort|
+		deltas = deltas.add(msg[1]);
+		freqs = freqs.add(msg[2]);
+		vels = vels.add(msg[3]);
+		durs = durs.add(msg[4]);
+		chans = chans.add(msg[5]);
+	});	
 
-OSCdef(\fifos).clear;
-OSCdef(\fifos, {
-	|msg, time, addr, recvPort|
-	deltas = deltas.add(msg[1]);
-	freqs = freqs.add(msg[2]);
-	durs = durs.add(msg[4]);
-}, '/play.sc_om/fifos', nil);
+	OSCdef(\start).clear;
+	OSCdef(\start, {}, '/play.sc_om/start', nil);
+	OSCdef(\start).add({
 
-OSCdef(\start).clear;
-OSCdef(\start,{
+		"playing MIDI sequence".postln;
 
-	"playing MIDI sequence".postln;
+		sc_om_task = Task({
+			var frstr, durstr, delstr, velstr, n;
+			n = freqs.size;
+			deltas=deltas.[1..];		// dont want first/0 offset
+			frstr = Pseq(freqs).asStream;
+			durstr = Pseq(durs/1000).asStream;
+			delstr = Pseq(deltas/1000).asStream;
+			velstr = Pseq(vels).asStream;
+			n.do({
+				var delta, key, vel, dur;
+				key = frstr.next;
+				delta = delstr.next;
+				dur = durstr.next;
+				vel = velstr.next;
+				m.noteOn(16,key,vel);
+				{m.noteOff(16,key)}.defer(dur);
+				delta.wait;
+			});
+		};
+		).start;
+	});
 
-	sc_om_task = Task({
-		var fr, dur, del, n;
-		n = freqs.size;
-		fr = Pseq(freqs).asStream;
-		dur = Pseq(durs/1000).asStream;
- 		del = Pseq(deltas/1000).asStream;
-		n.do({
-			var vent, key, notedur;
-			key = fr.next;
-			vent = del.next;
-			notedur = dur.next;
-			m.noteOn(16,key,100);
-			{m.noteOff(16,key)}.defer(notedur);
-			vent.wait;
-		});
-	};
-	).start;
-}, '/play.sc_om/start', nil);
-
-
-OSCdef(\resumeResp).clear;
-OSCdef(\resumeResp, {
+	OSCdef(\resumeResp).clear;
+	OSCdef(\resumeResp, {}, '/play.sc_om/continue', nil);
+	OSCdef(\resumeResp).add({
 		|msg, time, addr, recvPort|
 		"resume".postln;
 		sc_om_task.resume;
-}, '/play.sc_om/continue', nil);
+	});
 
-OSCdef(\pauseResp).clear;
-OSCdef(\pauseResp, {
-	|msg, time, addr, recvPort|
-	// sc_om_task.postln;
-	"pause".postln;
-	sc_om_task.pause;
-}, '/play.sc_om/pause', nil);
+	OSCdef(\pauseResp).clear;
+	OSCdef(\pauseResp, {}, '/play.sc_om/pause', nil);
+	OSCdef(\pauseResp).add({
+		|msg, time, addr, recvPort|
+		"pause".postln;
+		sc_om_task.pause;
+	});
 
-)
+	OSCdef.all.postln;
+
+	"booted".postln;
+
+})
+
