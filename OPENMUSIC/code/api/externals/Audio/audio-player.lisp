@@ -87,7 +87,7 @@
 
 
 (defun om-open-audio-player ()
-  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
+  (let ((player (las::OpenAudioPlayer 0 oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
     (las::StartAudioPlayer player)
     (ResetEffectsLists player)
     player))

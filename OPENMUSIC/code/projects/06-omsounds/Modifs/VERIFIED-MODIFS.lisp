@@ -52,6 +52,9 @@
     (data-position :accessor data-position :initarg :data-position :initform nil)
     (loaded :accessor loaded :initform nil)
 
+    ;tracknum utilisé par le système, par forcément celui de l'utilisateur
+    (tracknum-sys :accessor tracknum-sys :initform -1)
+
     ;buffer du son actuel (pas forcément d'origine, évolue)
     (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
 
