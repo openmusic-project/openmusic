@@ -55,14 +55,28 @@
     ;tracknum utilisé par le système, par forcément celui de l'utilisateur
     (tracknum-sys :accessor tracknum-sys :initform -1)
 
+    ;Savoir si ce son joue sur le player caché (pas de tracks) ou sur le visible (tracks system)
+    (assoc-player :accessor assoc-player :initform nil)
+
     ;buffer du son actuel (pas forcément d'origine, évolue)
     (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
 
     ;pointeur LAS fixe (son d'origine au cas où)
     (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
+
     ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
-    ;;;pointeur LAS servant "presse papier"
+
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-current :accessor number-of-samples-current :initform nil)
+
+    ;;;pointeur LAS envoyé à la lecture (dérivé de current)
+    (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
+
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)
+
+    ;;;pointeur LAS servant de "presse papier"
     (snd-slice-to-paste :accessor snd-slice-to-paste :initarg :snd-slice-to-paste :initform nil)
     )
    )
@@ -104,11 +118,15 @@
                 (sample-size sound) ss
                 (sample-rate sound) sr
                 (data-position sound) skip
+                (assoc-player sound) *audio-player-hidden*
                 (sndbuffer sound) (multiple-value-bind (data size nch) 
                                 (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
                               (let* ((sndbuffer data)) sndbuffer ))
                 (sndlasptr sound) (om::ptr (om::get-sound-data sound))
                 (sndlasptr-current sound) (sndlasptr sound)
+                (number-of-samples-current sound) (las::GetLengthSound (sndlasptr-current sound))
+                (sndlasptr-to-play sound) (sndlasptr sound)
+                (number-of-samples-to-play sound) (las::GetLengthSound (sndlasptr-to-play sound))
                 (snd-slice-to-paste sound) nil)
           (setf (loaded sound) t)
           (unless (om-supported-audio-format format)
@@ -120,7 +138,11 @@
     (loaded sound)))
 
 
-
+(defun om-update-sound-las-infos (sound)
+  (let ()
+    (setf (number-of-samples-current sound) (las::GetLengthSound (sndlasptr-current sound)))
+    (setf (number-of-samples-to-play sound) (las::GetLengthSound (sndlasptr-to-play sound)))
+    ))
 
 
 
