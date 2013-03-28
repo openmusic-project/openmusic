@@ -1,0 +1,4 @@
+; OM File Header - Saved 2010/11/16 19:27:30
+; (6.04 :patc (om-make-point 123 111) (om-make-point 50 50) (om-make-point 261 270) "No documentation " 183 0 nil "2010/11/16 19:27:30")
+; End File Header
+(in-package :om)(load-lib-for (quote nil))(setf *om-current-persistent* (om-load-patch1 "set-fixes" (quote ((om-load-boxcall (quote lispfun) "MEMBER" (quote member) (quote ((om-load-inputfun (quote input-funbox) "ITEM" "ITEM" nil) (om-load-inputfun (quote input-funbox) "LIST" "LIST" nil))) (om-make-point 72 121) (om-make-point 41 37) nil nil nil 1) (om-load-boxout "output" 0 (om-make-point 65 180) (quote ((om-load-inputfun (quote input-funbox) "out" "out" nil))) nil nil) (om-load-boxin "input1" 1 (om-make-point 15 22) "no documentation" nil nil nil) (om-load-boxin "input" 0 (om-make-point 125 38) "no documentation" nil nil nil))) (quote ((2 0 0 0 nil 0) (3 0 0 1 nil 0) (0 0 1 0 nil 0))) nil 6.04))
