@@ -584,7 +584,7 @@
                       (om-erase-movable-cursor view))
                   (attached-cursor-views self))
             )
-        (dfuncall #+win32 100 #-win32 50 'draw-play-cursor self st end change-win)))))
+        (dfuncall #+win32 100 #-win32 5 'draw-play-cursor self st end change-win)))))
 
 
 (defmethod scroll-play-window ((self cursor-play-view-mixin)) 

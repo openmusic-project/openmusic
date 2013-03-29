@@ -619,34 +619,49 @@ time with the :STEP mode.")
          *scheduler-time* (clock-time))
    nil))
 
+
+
 ;; Initializes the scheduler (called only once).
+
+
+;;;=========================
+(defvar *scheduler* nil)
+
+(defun kill-scheduler ()
+ (when *scheduler* (om-kill-process *scheduler*)))
 
 (defun init-scheduler ()
    (setf *default-task* (make-task 0 0 5 1 #'no-op nil))
    (reset-scheduler)
    (set-scheduler-state *scheduler-initial-state*)
-   (om-start-scheduler 'check-scheduler))
+   (start-scheduler 'check-scheduler))
+
+(defun start-scheduler (check-fun)
+  (kill-scheduler) ;;; just in case...
+  (om-with-priority 80000000
+    (setf *scheduler*
+          (om-run-process "OM SCHEDULER" 
+                           #'(lambda ()
+                              (loop while t do
+                                    (sleep 0.001)
+                                    (funcall check-fun nil)))))))
+
+(om-add-init-func 'init-scheduler)
+(om-add-exit-cleanup-func 'kill-scheduler t)
+
+; (kill-scheduler)
+; (init-scheduler)
 
 (proclaim '(optimize (speed 1) (safety 1) (space 1)))
 
-(defun exit-scheduler ()
- (om-stop-scheduler))
-
-(om-add-init-func 'init-scheduler)
-(om-add-exit-cleanup-func 'exit-scheduler t)
-
-;;;=========================================
-;(om-add-init-func 'scheduler-init)
-;(om-add-exit-cleanup-func 'scheduler-exit t)
-;;;=========================================   
 
 #|
 (defun bar (n) (repeat n (print 'bar)))
 (start
   (dfuncall 1000 'bar 1)
-  (dfuncall 2000 'bar 1)
-  (dfuncall 5000 'bar 1)
-  (dfuncall 10000 'bar 1)) )
+  (dfuncall 2000 'bar 3)
+  (dfuncall 5000 'bar 10)
+  (dfuncall 10000 'bar 1)
  (with-more-priority
-   (setq s1 (dfuncall 60 'princ 'foo))))
+   (setq s1 (dfuncall 60 'print 'foo))))
 |#

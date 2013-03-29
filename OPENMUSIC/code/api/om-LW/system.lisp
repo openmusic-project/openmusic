@@ -57,9 +57,6 @@
           om-set-load-verbose
           om-with-load-verbose
           
-          om-start-scheduler
-          om-stop-scheduler
-          
           *om-separator*
           *om-compiled-type*
           directoryp
@@ -95,7 +92,8 @@
           om-select-program
           om-run-process
           om-kill-process
-
+          om-with-priority
+          
           om-without-interrupts
 
           om-error-handle-funcall
@@ -234,21 +232,6 @@
 ;   (setq *scheduler-timer*  (mp:make-named-timer 'om-scheduler fun nil))
 ;   (mp:schedule-timer *scheduler-timer* 1 0.01))
 
-(defun om-stop-scheduler ()
-  (when *scheduler-timer*
-    (mp:process-kill *scheduler-timer*)))
-
-(defun om-start-scheduler (fun)
-  (om-stop-scheduler)
-  (setf *scheduler-timer*
-        (mp:process-run-function  "OM SCHEDULER" '(:priority 10)
-                                  #'(lambda ()
-                                      (loop while t do
-                                            (sleep 0.050)
-                                            (funcall fun nil))))))
-
-
-
 
 ;(defun om-stop-scheduler ()
 ;  (when *scheduler-timer*
@@ -260,7 +243,7 @@
   (flet ((scheduler-fun () (apply func args)))
     (mp:schedule-timer *scheduler-timer* time)))
 
-(om-add-exit-cleanup-func 'om-stop-scheduler)
+;(om-add-exit-cleanup-func 'om-stop-scheduler)
 
 
 
@@ -536,8 +519,14 @@
 ;;; multi-processing
 
 
+(defvar *current-priority* 1)
+
+(defmacro om-with-priority (priority &body body)
+  `(let ((*current-priority* ,priority)) ,@body))
+
 (defmacro om-run-process (name func &rest args)
-   `(mp:process-run-function ',name '(:priority 10) ',func ,.args))
+   `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10)) 
+                             (if (print (functionp ,func)) ,func ',func ,.args)))
 
 (defun om-kill-process (process)
    (mp:process-kill process))
