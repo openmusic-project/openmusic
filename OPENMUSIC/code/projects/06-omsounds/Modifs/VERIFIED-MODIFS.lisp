@@ -120,7 +120,6 @@
                 (sample-size sound) ss
                 (sample-rate sound) sr
                 (data-position sound) skip
-                (assoc-player sound) nil ;*audio-player-hidden*
                 (sndbuffer sound) (multiple-value-bind (data size nch) 
                                       (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
                                     (let* ((sndbuffer data)) sndbuffer))
