@@ -81,7 +81,7 @@
     )
    )
 
-;(defmethod initialize-instance ((self om-sound) &initargs nil)
+;(defmethod initialize-instance ((self om-sound) &rest initargs)
 ;  (setf (assoc-player self) *audio-player-hidden*)
 ;  self)
 
