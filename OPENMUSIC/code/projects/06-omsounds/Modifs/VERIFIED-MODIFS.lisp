@@ -81,7 +81,9 @@
     )
    )
 
-
+;(defmethod initialize-instance ((self om-sound) &initargs nil)
+;  (setf (assoc-player self) *audio-player-hidden*)
+;  self)
 
 ;;;Méthode d'accès au pointeur de stream
 (defmethod om-sound-sndbuffer ((self om-sound))
@@ -118,10 +120,10 @@
                 (sample-size sound) ss
                 (sample-rate sound) sr
                 (data-position sound) skip
-                (assoc-player sound) *audio-player-hidden*
+                (assoc-player sound) nil ;*audio-player-hidden*
                 (sndbuffer sound) (multiple-value-bind (data size nch) 
-                                (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
-                              (let* ((sndbuffer data)) sndbuffer ))
+                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
+                                    (let* ((sndbuffer data)) sndbuffer))
                 (sndlasptr sound) (om::ptr (om::get-sound-data sound))
                 (sndlasptr-current sound) (sndlasptr sound)
                 (number-of-samples-current sound) (las::GetLengthSound (sndlasptr-current sound))
@@ -194,7 +196,6 @@
 
 
 ;;;relisting des formats
-(in-package :au)
 
 (defconstant formatWAVint 0)
 (defconstant formatWAVfloat 1)
@@ -315,7 +316,7 @@
          (sr (om-sound-sample-rate thesound))
          (window-h-size (om-point-h (om-view-size self)))
          (window-v-size (om-point-v (om-view-size self)))
-         (stream-ptr (oa::sndbuffer thesound))
+         (stream-buffer (oa::sndbuffer thesound))
          (system-etat (get-system-etat self))
          (xmin (car (rangex self)))
          (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
@@ -387,7 +388,7 @@
          (nch (om-sound-n-channels thesound))
          (sr (om-sound-sample-rate thesound))
          (window-v-size (om-point-v (om-view-size self)))
-         (stream-ptr (oa::om-sound-sndbuffer thesound))
+         (stream-buffer (oa::om-sound-sndbuffer thesound))
          (system-etat (get-system-etat self))
          (xmin (car (rangex self)))
          (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
@@ -400,7 +401,7 @@
          (offset-y (round channels-h 2))
          (datalist (loop for pt from 0 to (* timestep xtime) collect
                                       (loop for chan from 0 to (- nch 1) collect 
-                                            (fli::dereference stream-ptr 
+                                            (fli::dereference stream-buffer 
                                                               :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
                                                               :type :float)))))
     (loop for i from 0 to (- nch 1) do  
@@ -416,4 +417,6 @@
                                         (om-draw-line  pixtimeprev (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev))))
                                                        pixtime (+ offset-y (* c channels-h) pixpoint)) 
                                         ) (setf sampleprev sample))))
+
+
 
