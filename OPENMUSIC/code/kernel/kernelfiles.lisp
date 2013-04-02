@@ -43,6 +43,7 @@
 
 ;--------------Scheduler----------------- 
 "tools/scheduler"   
+;"tools/new-scheduler"   
                                     
 ;-----------Containers---------------------------- 
 "classes/container"   
