@@ -35,6 +35,7 @@
 (defvar *om-outfiles-folder* nil)
 (defvar *om-tmpfiles-folder* nil)
 (defvar *om-infiles-folder* nil)
+(defvar *tmp-draw-filename* nil)
 
 
 ;;;=== IN FILE ==
@@ -162,6 +163,7 @@ Ex. (tmpfile \"myfile.midi\" :subdirs '(\"folder1\" \"folder2\") ==> #P\"/Users/
                        :device (pathname-device (mypathname *current-workspace*))
                        :host (pathname-host (mypathname *current-workspace*))
                        :directory (append (pathname-directory (mypathname *current-workspace*)) (list "in-files")))))
+  (setf *tmp-draw-filename* (om-make-pathname :directory (pathname-directory *om-outfiles-folder*) :name "tmpfile-to-draw" :type "aiff"))
   )
 
 (add-init-user-func 'init-user-folders)

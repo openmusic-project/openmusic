@@ -38,6 +38,7 @@
     "basic;snd-streams"
     "basic;sound-preferences"
 
+
     "tools;sound-tools"
     "tools;control-tools"
     "tools;param-process"
@@ -49,6 +50,9 @@
     
     "Modifs;FAUST-EFFECTS"
     "Modifs;VERIFIED-MODIFS"
+    "basic;newaudioplayer"
+    "Modifs;newsoundeditor"
+
 
  ))
 

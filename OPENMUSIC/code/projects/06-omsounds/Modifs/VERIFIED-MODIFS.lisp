@@ -81,9 +81,9 @@
     )
    )
 
-;(defmethod initialize-instance ((self om-sound) &rest initargs)
-;  (setf (assoc-player self) *audio-player-hidden*)
-;  self)
+(defmethod initialize-instance :after ((self om-sound) &rest initargs)
+  (setf (oa::assoc-player self) *audio-player-hidden*)
+  self)
 
 ;;;Méthode d'accès au pointeur de stream
 (defmethod om-sound-sndbuffer ((self om-sound))
@@ -418,4 +418,13 @@
                                         ) (setf sampleprev sample))))
 
 
+;(defvar *tmp-draw-filename* (om-make-pathname :directory (pathname-directory *om-outfiles-folder*) :name "tmpfile-to-draw" :type "aiff"))
+
+(defmethod update-buffer-with-current-las ((self sound))
+  (let* ((lasptr (oa::sndlasptr-current self)))
+    (om::save-sound-in-file lasptr *tmp-draw-filename*)
+    (setf (oa::sndbuffer self) (multiple-value-bind (data size nch) 
+                                   (au::load-audio-data (oa::convert-filename-encoding *tmp-draw-filename*) :float)
+                                 (let* ((sndbuffer data)) sndbuffer)))
+    (setf (pict-sound self) (oa::om-cons-snd-pict *tmp-draw-filename*))))
 

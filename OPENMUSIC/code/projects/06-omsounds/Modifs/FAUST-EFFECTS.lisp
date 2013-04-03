@@ -64,30 +64,81 @@
 (defclass* faust-effect-console (simple-score-element)
    ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt)
     (effect-ptr :initform nil :accessor effect-ptr)
-    (tracknum :initform 0 :initarg :tracknum :accessor tracknum)
+    (tracknum :initform nil :initarg :tracknum :accessor tracknum)
+    (sound :initform nil :initarg :sound :accessor sound)
     (nbparams :initform 0 :accessor nbparams :type t :documentation "number of parameters in the effect")
     (params-ctrl :initform nil :accessor params-ctrl :type t))
    (:documentation "Faust Effect"))
 
 
+;(defmethod initialize-instance :after ((self faust-effect-console) &rest l)
+;  (declare (ignore l))
+;  (if (= (tracknum self) 0) () (setf (tracknum self) (- (tracknum self) 1)))
+;  (if (effect-txt self)
+;      (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
+;            (effect-code))
+;        (loop for line in parlist do
+;              (setf effect-code (concatenate 'string effect-code " " line)))
+;        (setf (effect-ptr self) (las::MakeFaustAudioEffect effect-code))
+;        (if (las::las-null-ptr-p (effect-ptr self)) 
+;            (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (las::getlastliberror)))
+;          (let* ((ptr (effect-ptr self)) 
+;                (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist)))
+;            (print (format nil "Effet Faust ~A créé avec succès ~%Cet effet s'applique sur la piste ~A" ptr (+ 1 (tracknum self))))
+;            (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
+;            ;(print (format nil "~%~%~%~A~%~%~%" (car (nth 1 (car effect-json)))))
+;            (setf (nbparams self) (las::getcontrolcount ptr))
+;            (if (> (nbparams self) 0)
+;                  (setf (params-ctrl self)
+;                        (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
+;                                                                                               :param-type 'vslider ;;;EN ATTENTE
+;                                                                                               :label (car (las::getcontrolparam (effect-ptr self) param))
+;                                                                                               :index param
+;                                                                                               :defval (cadddr (las::getcontrolparam (effect-ptr self) param))
+;                                                                                               :minval (cadr (las::getcontrolparam (effect-ptr self) param))
+;                                                                                               :maxval (caddr (las::getcontrolparam (effect-ptr self) param))
+;                                                                                               :stepval nil ;;EN ATTENTE
+;                                                                                               :effect-ptr ptr
+;                                                                                               :tracknum (tracknum self)
+;                                                                                               ))) nil)))) nil))
+
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
-  (if (= (tracknum self) 0) () (setf (tracknum self) (- (tracknum self) 1)))
-  (if (effect-txt self)
-      (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
-            (effect-code))
-        (loop for line in parlist do
-              (setf effect-code (concatenate 'string effect-code " " line)))
-        (setf (effect-ptr self) (las::MakeFaustAudioEffect effect-code))
-        (if (las::las-null-ptr-p (effect-ptr self)) 
-            (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (las::getlastliberror)))
-          (let* ((ptr (effect-ptr self)) 
-                (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist)))
-            (print (format nil "Effet Faust ~A créé avec succès ~%Cet effet s'applique sur la piste ~A" ptr (+ 1 (tracknum self))))
-            (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
-            ;(print (format nil "~%~%~%~A~%~%~%" (car (nth 1 (car effect-json)))))
-            (setf (nbparams self) (las::getcontrolcount ptr))
-            (if (> (nbparams self) 0)
+  (let ()
+    (if (tracknum self) 
+        (if (< (tracknum self) 1) 
+            (let () (print "The track number is invalid") 
+              (setf (tracknum self) nil)) 
+          (setf (tracknum self) (- (tracknum self) 1))))
+    (if (sound self)
+        (if (not (typep (sound self) 'sound))
+            (print "You must connect a sound to the sound input.")))
+    (if (effect-txt self)
+        (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
+              (effect-code))
+          (loop for line in parlist do
+                (setf effect-code (concatenate 'string effect-code " " line)))
+          (setf (effect-ptr self) (las::MakeFaustAudioEffect effect-code))
+          (if (las::las-null-ptr-p (effect-ptr self)) 
+              (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (las::getlastliberror)))
+            (let* ((ptr (effect-ptr self)) 
+                   (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist))) (print "cond")
+              (print "Effet Faust crée avec succès")
+
+              (if (tracknum self)
+                  (let ()
+                       (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
+                       (print (format nil "Cet effet s'applique sur la piste ~A" (+ 1 (tracknum self))))))
+              (if (sound self)
+                  (let ((temp-effect-list (las::MakeAudioEffectList)))
+                       (las::AddAudioEffect temp-effect-list ptr)
+                       (setf (oa::sndlasptr-current (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100))
+                       (print (format nil "Cet effet s'applique sur l'objet sound ~A" (sound self)))
+                       ;(update-buffer-with-current-las (sound self))
+                       ))
+
+              (setf (nbparams self) (las::getcontrolcount ptr))
+              (if (> (nbparams self) 0)
                   (setf (params-ctrl self)
                         (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
                                                                                                :param-type 'vslider ;;;EN ATTENTE
@@ -99,7 +150,8 @@
                                                                                                :stepval nil ;;EN ATTENTE
                                                                                                :effect-ptr ptr
                                                                                                :tracknum (tracknum self)
-                                                                                               ))) nil)))) nil))
+                                                                                               ))) nil))))
+      (print "You are evaluating the Faust console without any Faust code as an input. It has no effect."))))
 
 
 
@@ -388,6 +440,3 @@
                     (paramVal self) 
                     (paramGraph self)
                     (paramReset self))))
-
-;(ResetAudioPlayer)
-;(ResetEffectsLists)
