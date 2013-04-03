@@ -417,7 +417,9 @@
       (push-button view (whoplay self)))
     (when (pause-push-p self)
       (push-button view 2))
-    (when (and (editor-assoc self) (loopplay? (panel (editor-assoc self))))
+    (when (and (editor-assoc self) 
+               ; (loopplay? (panel (editor-assoc self)))
+               (loop-play (panel (editor-assoc self))))
       (push-button view 5))))
 
 (defmethod click-button-inpal ((self Playing-Palette) x)
