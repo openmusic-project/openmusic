@@ -158,7 +158,9 @@
 ;Adaptation of display because of transport in window
 ;Adaptation of the track display : when it shows 1, it sends 0 to the system (las player channels start from 0)
 (defmethod make-snd-ctrl-list ((self Aiff-control))
-  (let ((x0 260))
+  (let ((x0 260)
+        (snd (object (om-view-container self)))
+        (sndpanel (panel (om-view-container self))))
     (list 
      (om-make-dialog-item 'numBox
                           (om-make-point x0 8)
@@ -169,8 +171,11 @@
                           :bg-color *om-white-color*
                           :value (tracknum (object (om-view-container self)))
                           :afterfun #'(lambda (item)
-                                        (setf (tracknum (object (om-view-container self))) (- (value item) 1))
-                                        (report-modifications (om-view-container self)))
+                                        (let ()
+                                          (if (eq (oa::assoc-player snd) *audio-player-visible*)
+                                            (oa::om-smart-stop snd sndpanel))
+                                          (setf (tracknum (object (om-view-container self))) (- (value item) 1))
+                                          (report-modifications (om-view-container self))))
                           )
      (om-make-dialog-item 'numBox
                           (om-make-point (incf x0 70) 8)
@@ -207,5 +212,3 @@
                                                                          (nth (om-get-selected-item-index item) *audio-players*)))
                                             )
      )))
-
-

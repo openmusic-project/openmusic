@@ -24,6 +24,8 @@
           pause-global-audio-context
           stop-global-audio-context
           get-free-channel
+          change-channel-vol
+          change-channel-pan
           play-one-channel
           cont-one-channel
           stop-one-channel
@@ -100,8 +102,8 @@
     (setf *audio-player-visible* (make-new-player))
     (setf *audio-player-hidden* (make-new-player))
     (loop for i from 0 to (- channels 1) do
-          (setf (gethash i *audio-player-hidden-tracks-info*) (list nil "Idle"))
-          (setf (gethash i *audio-player-visible-tracks-info*) (list nil "Idle"))
+          (setf (gethash i *audio-player-hidden-tracks-info*) (list nil "Idle" 1.0 1.0 0.0))
+          (setf (gethash i *audio-player-visible-tracks-info*) (list nil "Idle" 1.0 1.0 0.0))
           (setf (gethash i *channel-numbers-hash-table*) (cffi::foreign-alloc :int :initial-element i)))
     nil))
 
@@ -279,6 +281,36 @@
 
 
 ;///////////////////////////////////////////Channel Tools//////////////////////////////////////////////////////
+;/CHANGE CHANNEL VOL
+;Tool that change the volume of a channel
+(defun change-channel-vol (player channel vol)
+  (let ((status-list (if (eq player *audio-player-visible*)
+                          *audio-player-visible-tracks-info*
+                        *audio-player-hidden-tracks-info*)))
+    (las::SetVolChannel player channel vol)
+    (setf (nth 2 (gethash channel status-list)) vol)
+    ))
+
+;/CHANGE CHANNEL PAN
+;Tool that change the pan of a channel
+(defun change-channel-pan (player channel pan)
+  (let* ((status-list (if (eq player *audio-player-visible*)
+                          *audio-player-visible-tracks-info*
+                        *audio-player-hidden-tracks-info*))
+         (snd (car (gethash channel status-list)))
+         (nchnls 1)
+         (pan2 (pan2panpan pan)))
+    (if snd
+        (setf nchnls (las::GetChannelsSound (sndlasptr-current snd))
+              ))
+    (case nchnls 
+      (1 (las::SetPanChannel player channel pan pan))
+      (2 (las::SetPanChannel player channel (car pan2) (cadr pan2)))
+      (otherwise nil))
+    (setf (nth 3 (gethash channel status-list)) (car pan2))
+    (setf (nth 4 (gethash channel status-list)) (cadr pan2))
+    ))
+
 ;/EMPTY ONE CHANNEL FUNCTION
 ;Tool that load a single sample null sound to a track.
 (defun empty-one-channel (player channel)
@@ -291,11 +323,19 @@
 ;/LOAD SOUND ON ONE CHANNEL FUNCTION
 ;Tool that loads a sound (his sndlasptr-to-play) to a track, and update the appropriate status list.
 (defun load-sound-on-one-channel (player snd tracknum &optional (vol 1.0) (panLeft 1.0) (panRight 0.0))
-  (let ((ptr (oa::sndlasptr-to-play snd)))
-    (las::LoadChannel player ptr tracknum vol panLeft panRight)
-    (if (eq player *audio-player-hidden*)
-        (setf (car (gethash tracknum *audio-player-hidden-tracks-info*)) snd)
-      (setf (car (gethash tracknum *audio-player-visible-tracks-info*)) snd))))
+  (let ((ptr (oa::sndlasptr-to-play snd))
+        (status-list nil)
+        (vol 1.0)
+        (panL 1.0)
+        (panR 0.0)) (print "loading")
+    (if (eq player *audio-player-visible*)
+        (setf status-list *audio-player-visible-tracks-info*)
+      (setf status-list *audio-player-hidden-tracks-info*))
+    (setf vol (nth 2 (gethash tracknum status-list)))
+    (setf panL (nth 3 (gethash tracknum status-list)))
+    (setf panR (nth 4 (gethash tracknum status-list)))
+    (las::LoadChannel player ptr tracknum vol panL panR)
+    (setf (car (gethash tracknum status-list)) snd)))
 
 ;/GET CHANNEL STATUS FUNCTION
 ;Tools that get the current status of a channel.
