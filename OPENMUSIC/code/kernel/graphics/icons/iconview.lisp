@@ -206,13 +206,13 @@ this class inherite from view.#enddoc#
 (defmethod plot-icon-view ((self icon-view) &optional (selected nil))
   "Plot the icon referenced by (iconID self) in the view self,
 selected parameter is used to draw the icon in normal or selected mode"
-    (let* ((icon (iconID self))
-          (iconparams (get&corrige-icon icon))
-          (iconhdlr (second iconparams)))
+  (when(iconID self)
+    (let* ((iconparams (get&corrige-icon (iconID self)))
+           (iconhdlr (second iconparams)))
       (setf (iconID self) (first iconparams))
       (om-with-focused-view self
         (om-draw-icon iconhdlr self (om-make-point 0 0) (om-view-size self) selected)
-        )))
+        ))))
 
 
 (defmethod om-draw-contents ((self icon-view))
@@ -226,12 +226,14 @@ selected parameter is used to draw the icon in normal or selected mode"
 ;get the point ( (min 64 sizex) , (min 64 sizey)) where size is the size of the icon
 ; resizes according to the user pref ratio
 (defun icon-sizes (Icon &optional (defsize '(nil nil)))
-   (om-without-interrupts
-    (let (resource)
-      (setf resource (second (get&corrige-icon icon)))
-      (list (* *icon-size-factor* (or (car defsize) (min 40 (om-pict-width resource))))
-            (* *icon-size-factor* (or (cadr defsize) (min 40 (om-pict-height resource))))))))
-
+   (if icon
+       (om-without-interrupts
+         (let (resource)
+           (setf resource (second (get&corrige-icon icon)))
+           (list (* *icon-size-factor* (or (car defsize) (min 40 (om-pict-width resource))))
+                 (* *icon-size-factor* (or (cadr defsize) (min 40 (om-pict-height resource)))))))
+     (list 0 0)))
+   
 (defmethod om-view-cursor :around ((self icon-view))
    (if (and (om-control-key-p) (or (boxframe-p (om-view-container self)) (icon-finder-p (om-view-container self)))) 
        *om-contex-cursor*
