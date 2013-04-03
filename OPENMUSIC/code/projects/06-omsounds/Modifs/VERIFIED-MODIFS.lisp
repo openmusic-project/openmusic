@@ -66,6 +66,8 @@
 
     ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
+    (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
+    (current-is-original :accessor current-is-original :initarg :current-is-original :initform 1)
 
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-current :accessor number-of-samples-current :initform nil)
@@ -125,6 +127,7 @@
                                     (let* ((sndbuffer data)) sndbuffer))
                 (sndlasptr sound) (om::ptr (om::get-sound-data sound))
                 (sndlasptr-current sound) (sndlasptr sound)
+                (sndlasptr-current-save sound) (sndlasptr sound)
                 (number-of-samples-current sound) (las::GetLengthSound (sndlasptr-current sound))
                 (sndlasptr-to-play sound) (sndlasptr sound)
                 (number-of-samples-to-play sound) (las::GetLengthSound (sndlasptr-to-play sound))

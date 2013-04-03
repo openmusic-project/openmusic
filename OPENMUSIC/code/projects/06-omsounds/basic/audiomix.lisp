@@ -43,7 +43,7 @@ In this case, all internal events are sent simultaneously.
                                                    :track tr))))
     ((integerp (nbtracks self))
      (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
-     (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
+     (if (> (nbtracks self) 32) (setf (nbtracks self) 32))
      (setf (channels-ctrl self) 
            (loop for i from 1 to (nbtracks self) collect (make-instance 'audio-Channel-Ctrl 
                                                            :track i)))

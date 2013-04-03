@@ -62,19 +62,25 @@
                                                                      (oa::om-smart-stop snd sndpanel) 
                                                                      (oa::om-send-to-track sndpanel))))
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
-                                          "Vol" :font *om-default-font1* :bg-color *controls-color*)
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ x0 130) 4)
+                               (om-make-point 170 20) "Use Original Sound"
+                               :checked-p (if (= 1 (oa::current-is-original snd)) t nil)
+                               :di-action (om-dialog-item-act item (let ()
+                                                                     (oa::om-use-original-sound sndpanel))))
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
-                                          "Pan" :font *om-default-font1* :bg-color *controls-color*)
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
+                     ;                     "Vol" :font *om-default-font1* :bg-color *controls-color*)
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 50 20)
-                                          "Player" :font *om-default-font1*)
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
+                     ;                     "Pan" :font *om-default-font1* :bg-color *controls-color*)
+
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 50 20)
+                     ;                     "Player" :font *om-default-font1*)
                      
                      (first (dyn-ctrl-list self))
                      (second (dyn-ctrl-list self))
-                     (third (dyn-ctrl-list self))
-                     (fourth (dyn-ctrl-list self))
+                     ;(third (dyn-ctrl-list self))
+                     ;(fourth (dyn-ctrl-list self))
                      )
     t))
 
@@ -177,32 +183,32 @@
                                           (setf (tracknum (object (om-view-container self))) (- (value item) 1))
                                           (report-modifications (om-view-container self))))
                           )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 70) 8)
-                          (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
-                          :min-val 0
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (vol (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (vol (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 90) 8)
-                          (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
-                          :min-val -100
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (pan (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (pan (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
+     ;(om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 70) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
+     ;                     :min-val 0
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (vol (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (vol (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
+     ;(om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 90) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
+     ;                     :min-val -100
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (pan (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (pan (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
      (om-make-dialog-item 'om-pop-up-dialog-item 
-                                            (om-make-point (incf x0 90) 5) 
+                                            (om-make-point (incf x0 390) 5) 
                                             (om-make-point 100 20) ""
                                             :font *om-default-font1*
                                             :range (mapcar 'audio-player-name *audio-players*)

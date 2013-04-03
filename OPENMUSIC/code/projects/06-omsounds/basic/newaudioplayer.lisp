@@ -191,5 +191,18 @@
           (stop-one-channel player actual-track)
           (load-sound-on-one-channel player snd actual-track)))))
 
+;/USE ORIGINAL SOUND
+;This functions switch between the orginal stream and the modified stream
+(defun om-use-original-sound (sndpanel)
+  (let ((snd (om::object (om-view-container sndpanel))))
+    (if (= 0 (current-is-original snd))
+        (let ()
+          (setf (sndlasptr-current-save snd) (sndlasptr-current snd))
+          (setf (sndlasptr-current snd) (sndlasptr snd))
+          (setf (current-is-original snd) 1))
+      (let ()
+          (setf (sndlasptr-current snd) (sndlasptr-current-save snd))
+          (setf (current-is-original snd) 0)))))
+
 
 

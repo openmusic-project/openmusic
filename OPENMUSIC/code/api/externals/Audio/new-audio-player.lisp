@@ -327,7 +327,7 @@
         (status-list nil)
         (vol 1.0)
         (panL 1.0)
-        (panR 0.0)) (print "loading")
+        (panR 0.0))
     (if (eq player *audio-player-visible*)
         (setf status-list *audio-player-visible-tracks-info*)
       (setf status-list *audio-player-hidden-tracks-info*))
