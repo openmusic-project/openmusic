@@ -67,7 +67,7 @@
     ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
     (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
-    (current-is-original :accessor current-is-original :initarg :current-is-original :initform 1)
+    (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
 
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-current :accessor number-of-samples-current :initform nil)

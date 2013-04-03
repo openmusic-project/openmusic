@@ -43,16 +43,16 @@
     (setf (dyn-ctrl-list self) (make-snd-ctrl-list self))
     
     (om-add-subviews self
-                     (om-make-view 'om-icon-button :position (om-make-point (- x0 210) 5) :size (om-make-point 25 25)
-                                         :icon1 "play" :icon2 "play-pushed"
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 210) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_play" :icon2 "simple_play_pushed"
                                          :action #'(lambda (item) (oa::om-smart-play sndpanel)))
 
-                     (om-make-view 'om-icon-button :position (om-make-point (- x0 185) 5) :size (om-make-point 25 25)
-                                         :icon1 "pause" :icon2 "pause"
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 185) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_pause" :icon2 "simple_pause_pushed"
                                          :action #'(lambda (item) (oa::om-smart-pause sndpanel)))
 
-                     (om-make-view 'om-icon-button :position (om-make-point (- x0 160) 5) :size (om-make-point 25 25)
-                                         :icon1 "stop" :icon2 "stop-pushed"
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 160) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_stop" :icon2 "simple_stop_pushed"
                                          :action #'(lambda (item) (oa::om-smart-stop snd sndpanel)))
 
                      (om-make-dialog-item 'om-check-box (om-make-point (- x0 90) 4)
@@ -64,7 +64,8 @@
 
                      (om-make-dialog-item 'om-check-box (om-make-point (+ x0 130) 4)
                                (om-make-point 170 20) "Use Original Sound"
-                               :checked-p (if (= 1 (oa::current-is-original snd)) t nil)
+                               :checked-p (if (or (= -1 (oa::current-is-original snd)) 
+                                                  (= 0 (oa::current-is-original snd))) nil t)
                                :di-action (om-dialog-item-act item (let ()
                                                                      (oa::om-use-original-sound sndpanel))))
 

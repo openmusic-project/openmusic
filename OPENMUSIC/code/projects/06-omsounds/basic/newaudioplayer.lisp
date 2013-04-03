@@ -195,7 +195,7 @@
 ;This functions switch between the orginal stream and the modified stream
 (defun om-use-original-sound (sndpanel)
   (let ((snd (om::object (om-view-container sndpanel))))
-    (if (= 0 (current-is-original snd))
+    (if (or (= 0 (current-is-original snd)) (= -1 (current-is-original snd)))
         (let ()
           (setf (sndlasptr-current-save snd) (sndlasptr-current snd))
           (setf (sndlasptr-current snd) (sndlasptr snd))
