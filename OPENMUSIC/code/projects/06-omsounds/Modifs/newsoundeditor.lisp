@@ -5,9 +5,9 @@
     (if (typep (value box) 'faust-effect-console)
         (let* ((console (value box))
                (ptr (effect-ptr console))
-               (track (tracknum console)))
-          (if ptr ()
-              ;(las::RemoveAudioEffect (gethash track *effects-lists*) ptr))
+               (track (tracknum console))) (print ptr)
+          (if ptr 
+              (las::RemoveAudioEffect (gethash track oa::*effects-lists*) ptr)
           )))
     (if (typep (value box) 'sound)
         (let* ((snd (value box))
