@@ -236,10 +236,12 @@
    (unless (call-next-method)
        (let ((ed-view (panel (editor-assoc self))))
          (case x
-           (8 (setf (cursor-p ed-view) t) 
+           (8 ;(setf (cursor-p ed-view) t) 
+              (setf (cursor-mode ed-view) :interval) 
               (setf (mode (editor-assoc self)) x))
-           (7 (setf (cursor-p ed-view) nil)
-              (setf (mode (editor-assoc self)) x))
+           (7 ;(setf (cursor-p ed-view) nil)
+            (setf (cursor-mode ed-view) :normal)
+            (setf (mode (editor-assoc self)) x))
            (9 (init-coor-system ed-view))
            )
          (om-invalidate-view ed-view t)
@@ -295,12 +297,17 @@
      (setf (sndpict self) (sound-get-pict (object self)))
      ;(setf (sndptr self) (get-sound-data (object self)))
      ;(setf (sndpict self) (sound-get-pict (sndptr self)))
-     (setf (cursor-p (panel self)) t)
+     ;(setf (cursor-p (panel self)) t)
+     (setf (cursor-mode (panel self)) :interval)
      (setf (rulerx ed-view) rulerx)
      (setf (rangex ed-view) (list 0 (get-obj-dur (object self))))
      (setf (bounds-x ed-view) (list 0 (get-obj-dur (object self))))
      (set-units-ruler ed-view rulerx)
      (om-invalidate-view ed-view)))
+
+;;; temp compatibilité
+(defmethod (setf cursor-p) (val (self soundpanel))
+  (setf (cursor-mode self) (if val :interval :normal)))
 
 (defmethod update-editor-after-eval ((self soundEditor) val)
   (call-next-method)
@@ -475,7 +482,7 @@
 ;------------------------------------
 
 (defmethod om-view-cursor ((self soundPanel))
-   (if (cursor-p self)
+   (if (equal (cursor-mode self) :interval) ; (cursor-p self)
      ;(if (om-option-key-p)
      ;  *om-hand-cursor*
        *om-i-beam-cursor*;)
@@ -570,7 +577,7 @@
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
-    (if (cursor-p self)
+    (if (equal (cursor-mode self) :interval) ; (cursor-p self)
         (progn 
           (setf (selection? self) nil)
           (new-interval-cursor self where)
@@ -588,7 +595,7 @@
             ))))))
 
 (defmethod om-view-doubleclick-handler ((self soundPanel) Where)
-  (if (cursor-p self)
+  (if (equal (cursor-mode self) :interval) ; (cursor-p self)
       (progn
         (setf (cursor-pos self) (om-point-h (pixel2point self where)))
         (setf (cursor-interval self) (list (cursor-pos self) (cadr (bounds-x self))))
@@ -691,8 +698,9 @@
 
 (defmethod om-draw-contents ((self soundPanel))
   (call-next-method)  
-  (if (recording? self)
-       (om-with-focused-view self  
+  (if ;(recording? self)
+      (equal (state (player self)) :recording)
+      (om-with-focused-view self  
          (om-with-fg-color self *om-red2-color*
            (om-with-font *om-default-font4b*
               (let ((halftext (round (om-string-size "Recording" *om-default-font4b*) 2)))
@@ -738,18 +746,15 @@
 
 (defmethod draw-interval-cursor ((self soundPanel))
   (unless (zerop (or (om-sound-n-samples (object (om-view-container self))) 0))
-    (let* ((sys-etat (get-system-etat self))
-           (interval (cursor-interval self))
-           (pixel-interval (list (om-point-h (point2pixel self (om-make-big-point (car interval) 0) sys-etat))
-                                 (om-point-h (point2pixel self (om-make-big-point (second interval) 0) sys-etat))))
-           (cursor-pos-pix (om-point-h (point2pixel self (om-make-big-point (cursor-pos self) 0) sys-etat))))
+    (call-next-method)
+    (let ((cursor-pos-pix (om-point-h (point2pixel self (om-make-big-point (cursor-pos self) 0) (get-system-etat self)))))
       (om-with-focused-view self
-        (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t t)
         (om-with-fg-color self *om-red2-color*
           (om-with-dashline 
-            (om-with-line-size 2 
-              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
+              (om-with-line-size 2 
+                (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
         ))))
+
 
 
 
@@ -815,7 +820,8 @@
 ;;; DRAG SOUND
 
 (defmethod om-drag-selection-p ((self soundpanel) position) 
-  (and (not (cursor-p self)) (not (om-shift-key-p))
+  (and (equal (cursor-mode self) :normal) ; (not (cursor-p self)) 
+       (not (om-shift-key-p))
        (or (and (selection? self) (click-in-sound-marker-p self position))
            (and
             (<= (om-point-h (pixel2point self position)) (cadr (cursor-interval self)))
@@ -954,5 +960,7 @@
           (om-invalidate-view (car (frames box))))
         (update-editor-after-eval editor newsound)   
         ))
-    (setf (recording? self) nil)))
+    ;(setf (recording? self) nil)
+    (setf (state (player self)) :stop)
+    ))
 
