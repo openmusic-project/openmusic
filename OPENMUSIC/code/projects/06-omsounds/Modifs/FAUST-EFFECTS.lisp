@@ -122,7 +122,7 @@
           (if (las::las-null-ptr-p (effect-ptr self)) 
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (las::getlastliberror)))
             (let* ((ptr (effect-ptr self)) 
-                   (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist))) (print "cond")
+                   (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :alist)))
               (print "Effet Faust crée avec succès")
 
               (if (tracknum self)
