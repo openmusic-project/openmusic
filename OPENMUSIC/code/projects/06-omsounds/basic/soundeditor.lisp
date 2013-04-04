@@ -305,10 +305,6 @@
      (set-units-ruler ed-view rulerx)
      (om-invalidate-view ed-view)))
 
-;;; temp compatibilité
-(defmethod (setf cursor-p) (val (self soundpanel))
-  (setf (cursor-mode self) (if val :interval :normal)))
-
 (defmethod update-editor-after-eval ((self soundEditor) val)
   (call-next-method)
   (update-controls (control self))
@@ -414,6 +410,10 @@
   (:default-initargs
       #+win32 :draw-with-buffer #+win32 t)
      )
+
+;;; temp compatibilité
+(defmethod (setf cursor-p) (val (self soundpanel))
+  (setf (cursor-mode self) (if val :interval :normal)))
 
 (defmethod editor ((self soundpanel)) (om-view-container self)) 
 
