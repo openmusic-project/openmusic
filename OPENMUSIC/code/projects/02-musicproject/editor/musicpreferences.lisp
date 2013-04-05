@@ -25,17 +25,8 @@
 
 
 ;;;;=================================================
-;;;;MUSIC PREFERENCES MODULE  icon 225
+;;;;MUSIC PREFERENCES MODULE 
 ;;;;=================================================
-
-;;; PREF 225 =
-;;; 0 = default approx
-;;; 1 = font size
-;;; 2 = default staff
-;;; 3 = system-color
-;;; 4 = select system-color
-;;; 5 = dyn list
-
 
 ;;;--------
 (defvar *page-reglages* '(1 15 2 2 1))
@@ -58,6 +49,7 @@
      ;(setf *current-1/2-scale*  (or (nth 8 (defvals modulepref)) *2-tone-chromatic-scale*))
      ;(setf *current-1/4-scale* (or (nth 9 (defvals modulepref)) *4-tone-chromatic-scale*) )     
      ;(setf *current-1/8-scale* (or (nth 10 (defvals modulepref)) *8-tone-chromatic-scale*)  ) 
+     (setf *diapason-freq* (get-pref modulepref :diapason))
      ))
 
 
@@ -69,7 +61,8 @@
 (defmethod get-def-vals ((iconID (eql :score)))
    (list :approx 2 :fontsize 24 :staff 'g :sys-color *om-black-color* :select-color *om-gray-color* 
          :dyn-list '(-1 20 40 55 60 85 100 115 127)
-         :tonal-options (when *om-tonalite* (tonal-defaults))))
+         :tonal-options (when *om-tonalite* (tonal-defaults))
+         :diapason 440.0))
 
 ; *2-tone-chromatic-scale* *4-tone-chromatic-scale* *8-tone-chromatic-scale*))
 
@@ -179,7 +172,28 @@
                                           :bg-color *om-white-color*
                                           :object  modulepref 
                                           :i :select-color)
+
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 210) (om-make-point 150 20) "Diapason"
+                                          :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 235) (om-make-point 350 22) 
+                                              "(Frequency of the A4, used for freq-MIDI conversions)"
+                                              :font *om-default-font1*)
                      
+                     (om-make-dialog-item 'om-editable-text 
+                                              (om-make-point 160 210)
+                                              (om-make-point 60 13)
+                                              (format nil "~D" (get-pref modulepref :diapason)) 
+                                              :modify-action (om-dialog-item-act item
+                                                              (let ((text (om-dialog-item-text item))
+                                                                    number)
+                                                                (unless (string= "" text)
+                                                                  (setf number (ignore-errors (read-from-string text)))
+                                                                  (when (numberp number)
+                                                                    (set-pref modulepref :diapason number))
+                                                                  )))
+                                              :font *om-default-font2*)
+
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 30) 45) (om-make-point 80 20) "Dynamics"
                                           :font *controls-font*)
                      (om-make-view 'dynamics-view :position (om-make-point (+ l2 30) 70) :size (om-make-point 140 160) 
