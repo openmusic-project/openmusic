@@ -138,7 +138,7 @@
 
 ;--------------------Player---------------------- 
 "tools/player"
-
+"tools/new-player"
 
 
 ;-----------Persistant&copy--------------------- 
