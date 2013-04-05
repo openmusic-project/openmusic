@@ -284,9 +284,6 @@ Class methods are the init-instance method and slot reader and writer. #class-me
 ;            method)))))
 
 
-; (defmethod* test :before (a b) t)
-
-
 (defun def-method-icon () 150)
  
 (defmacro defmethod* (name &rest args)
@@ -309,7 +306,7 @@ Class methods are the init-instance method and slot reader and writer. #class-me
               (setf (inputs-default gen-fun) ,iv)
               (setf (inputs-doc gen-fun) ,id)
               (setf (outputs-doc gen-fun) ,od)
-              (setf (icon gen-fun) (or ,icon (def-method-icon)))
+              (setf (icon gen-fun) ,icon) ;;; (or ,icon (def-method-icon)))
               (setf (name gen-fun) ,(string name))))
           
           (unless gen-fun 

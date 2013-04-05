@@ -204,7 +204,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
            (setf (icon (fdefinition ',name))
                  (list (icon (fdefinition ',name)) thelib)))
          )
-       (setf (icon (fdefinition ',name)) nil))
+       )
      themethod))
 
 
