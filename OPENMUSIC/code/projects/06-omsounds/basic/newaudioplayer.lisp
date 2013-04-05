@@ -26,6 +26,27 @@
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
 
+;/SMART PLAY STOP LIST FUNCTION
+;This function take as argument a list of sound objects and call smart-play-stop for each one of these.
+(defun om-smart-play-stop-list (list)
+    (loop for snd in list do
+          (om-smart-play-stop snd)))
+
+;/SMART PLAY STOP FUNCTION
+;This function decides to play or stop a sound according to his current state.
+(defun om-smart-play-stop (snd &optional (sndpanel nil))
+  (let* ((player (assoc-player snd))
+         (chan (if (eq player *audio-player-hidden*)
+                   (tracknum-sys snd)
+                 (om::tracknum snd)))
+         (status-list (if (eq player *audio-player-hidden*)
+                          *audio-player-hidden-tracks-info*
+                        *audio-player-visible-tracks-info*)))
+    (if (eq snd (car (gethash chan status-list)))
+        (if (string-equal "Playing" (cadr (gethash chan status-list)))
+            (if sndpanel (om-smart-stop snd sndpanel) (om-smart-stop snd))
+          (if sndpanel (om-smart-play snd sndpanel) (om-smart-play snd)))
+      (if sndpanel (om-smart-play snd sndpanel) (om-smart-play snd)))))
 
 ;/SEND TO TRACK FUNCTION
 ;This function stops the sound and changes the associated player.
@@ -40,11 +61,12 @@
 ;/SMART PLAY FUNCTION
 ;This function makes the choice to call the right play function (hidden or visible)
 ;It also checks if there's a selection to play, or if it has to play the song straight ahead.
-(defun om-smart-play (sndpanel)
-  (let ((snd (om::object (om-view-container sndpanel))))
+(defun om-smart-play (sound &optional (sndpanel nil))
+  (let ((snd sound))
+    (if sndpanel (setf snd (om::object (om-view-container sndpanel))))
     (if (sndlasptr-current snd)
         (let ()
-          (if (om::selection-to-play-? sndpanel)
+          (if (and sndpanel (om::selection-to-play-? sndpanel))
               (let* ((interval (caddr (om::get-selection-to-play sndpanel)))
                      (begin-time (car interval))
                      (end-time (cadr interval))
@@ -67,12 +89,14 @@
 
 ;/SMART PAUSE FUNCTION
 ;This function makes the choice to call the right pause function (hidden or visible)
-(defun om-smart-pause (sndpanel)
-  (let ((snd (om::object (om-view-container sndpanel))))
+(defun om-smart-pause (sound &optional (sndpanel nil))
+  (let ((snd sound))
+    (if sndpanel (setf snd (om::object (om-view-container sndpanel))))
     (if (sndlasptr-current snd)
         (if (eq (assoc-player snd) *audio-player-hidden*)
             (om-smart-pause-hidden snd)
           (om-smart-pause-visible snd)))))
+
 
 ;/SMART STOP FUNCTION
 ;This function makes the choice to call the right stop function (hidden or visible)

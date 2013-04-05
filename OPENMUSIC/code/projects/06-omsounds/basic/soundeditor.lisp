@@ -415,6 +415,10 @@
 (defmethod (setf cursor-p) (val (self soundpanel))
   (setf (cursor-mode self) (if val :interval :normal)))
 
+(defmethod cursor-p ((self soundpanel))
+  (equal (cursor-mode self) :interval))
+
+
 (defmethod editor ((self soundpanel)) (om-view-container self)) 
 
 (defmethod om-view-scrolled ((self soundpanel) x y)

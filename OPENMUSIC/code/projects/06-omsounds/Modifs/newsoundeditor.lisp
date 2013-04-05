@@ -45,11 +45,11 @@
     (om-add-subviews self
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 210) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_play" :icon2 "simple_play_pushed"
-                                         :action #'(lambda (item) (oa::om-smart-play sndpanel)))
+                                         :action #'(lambda (item) (oa::om-smart-play snd sndpanel)))
 
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 185) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_pause" :icon2 "simple_pause_pushed"
-                                         :action #'(lambda (item) (oa::om-smart-pause sndpanel)))
+                                         :action #'(lambda (item) (oa::om-smart-pause snd sndpanel)))
 
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 160) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_stop" :icon2 "simple_stop_pushed"
@@ -136,19 +136,8 @@
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc (reset-cursor self))
-     (#\SPACE (let* ((snd (object (om-view-container self)))
-                     (player (oa::assoc-player snd))
-                     (chan (if (eq player oa::*audio-player-hidden*)
-                               (oa::tracknum-sys snd)
-                             (tracknum snd)))
-                     (status-list (if (eq player oa::*audio-player-hidden*)
-                                      oa::*audio-player-hidden-tracks-info*
-                                    oa::*audio-player-visible-tracks-info*)))
-                (if (eq snd (car (gethash chan status-list)))
-                    (if (string-equal "Playing" (cadr (gethash chan status-list)))
-                        (oa::om-smart-stop snd self)
-                      (oa::om-smart-play self))
-                  (oa::om-smart-play self))))
+     (#\SPACE (let ((snd (object (om-view-container self))))
+                (oa::om-smart-play-stop snd self)))
      (otherwise (call-next-method))))
 
 

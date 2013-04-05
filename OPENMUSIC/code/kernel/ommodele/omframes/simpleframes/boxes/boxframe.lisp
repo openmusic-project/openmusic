@@ -716,14 +716,20 @@
 
 (defmethod play-from-box ((self list))
   (let ((playlist (loop for box in self 
-                        when (play-obj? (value (object box))) 
-                        collect (object box))))
+                        when (and (play-obj? (value (object box))) (not (typep (value (object box)) 'sound)))
+                        collect (object box)))
+        (sndplaylist (loop for box in self 
+                           when (typep (value (object box)) 'sound)
+                           collect (value (object box))))) ;;Pas propre
+
     (when playlist
       (PlayAny t (make-instance 'listtoplay
                                 :thelist (loop for item in playlist
                                                collect (value item))
                                 :params (loop for item in playlist
-                                              collect (edition-params item)))))))
+                                              collect (edition-params item)))))
+    (when sndplaylist
+      (oa::om-smart-play-stop-list sndplaylist))))
 
 
 ;--------------DRAG AND DROP
