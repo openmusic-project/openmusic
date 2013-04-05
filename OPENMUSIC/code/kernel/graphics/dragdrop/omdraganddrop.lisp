@@ -126,6 +126,7 @@
        (and (boxframe-p  (true-target-view  D&DHandler)) (boxframe-p (dragged-view  D&DHandler)))))
 ;---------------------------------------------------------------------------------
 (defmethod finalize-drag&drop ((D&DHandler omdrag-drop))
+  
   (cond 
    ((opt-key-p *OM-drag&drop-handler*)
     (perform-duplicate-view D&DHandler))

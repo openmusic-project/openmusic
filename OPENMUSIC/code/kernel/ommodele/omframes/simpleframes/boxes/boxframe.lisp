@@ -818,7 +818,7 @@
 (defmethod draw-after-box ((self boxtypeframe))
    (let ((deltay (if (zerop (numouts (object self))) 1 9)))
     (om-with-focused-view self
-      (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1 deltay) :pensize 0.5)
+      (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1 deltay) :pensize 1)
       )
     t))
 
