@@ -391,8 +391,8 @@ The matrix \"components\" can be accessed and modified using the functions get-c
          (rep (make-instance (type-of self) :numcols nc))
          (initargs (get-all-initargs-of-class (type-of rep)))
          slot?)
-    (loop for slot in (fixed-slots-list rep)
-          for i = 1 then (+ i 1) do
+    (loop for slot in (cdr (fixed-slots-list rep))
+          for i = 2 then (+ i 1) do
           (setf (slot-value rep slot) (nth i args)))
     (loop while argkeys do
           (cond

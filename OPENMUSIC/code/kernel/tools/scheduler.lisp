@@ -19,18 +19,10 @@
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;;=========================================================================
-
-
 ; Scheduler -- CLPF V1.0  (after Lee Boynton) © 1991 IRCAM
 ;----------------------------------------------------------------------------------;
 ; preFORM 3.0 Scheduler © 1988 Lee Boynton, MIT Media Lab. For non-profit use only ;
 ;----------------------------------------------------------------------------------;
-
-
-;DocFile
-; Scheduler
-;DocFile
-
 
 ;;; Notes :
 ;;; setup des load et exit func (ccl) commente -> adapter pour ACL
@@ -42,8 +34,7 @@
 (setf *eventhook* nil)
 ;; User Constants
 
-(defconstant *highest-priority* 3 "This constant is the highest priority available.
-It cannot be changed, except in the source code.")
+(defconstant *highest-priority* 3 "This constant is the highest priority available.")
 
 ;; =============================================================================-======
 ;;;; 4-state Scheduler
@@ -227,8 +218,7 @@ than the current scheduler time) or the clock will jump to the next waiting task
 
 (defun check-start (form)
   (or *current-task*
-    (error "The form ~S must be called from within a call to the macro ~S."
-           form 'start)))
+    (error "The form ~S must be called from within a call to the macro ~S." form 'start)))
 
 (defmacro tcdr (task) `(task-link ,task))
 

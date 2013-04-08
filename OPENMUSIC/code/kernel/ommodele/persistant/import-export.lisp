@@ -315,7 +315,7 @@
             (set-finder-comment (mypathname newobj) newobj)
             (pushr (format nil "~s: header updated" (mypathname newobj)) *import-log*)
             (setf (wsparams newobj) (loop for i in (subseq wsparams 2 5) collect (eval i)))
-            (setf-doc newobj (or (str-with-nl (sixth wsparams)) ""))
+            (set-doc newobj (or (str-with-nl (sixth wsparams)) ""))
             ;;; test
             (setf (omversion newobj) (car wsparams))))
           newobj)))

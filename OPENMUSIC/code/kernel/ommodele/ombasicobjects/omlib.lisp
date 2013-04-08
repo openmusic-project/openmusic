@@ -197,13 +197,14 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
      ;;; function is in a user library and did not exist before
      (when (and thelib (not funb))
        (setf (lib-fun-p (fdefinition ',name)) (string-until-space (name *current-lib*))))
-     (when (find :icon ',args)
+     (if (find :icon ',args)
        (if (listp (icon (fdefinition ',name)))
            (setf (icon (fdefinition ',name)) (car (icon (fdefinition ',name))))
          (when (and thelib (lib-fun-p (fdefinition ',name)))
            (setf (icon (fdefinition ',name))
                  (list (icon (fdefinition ',name)) thelib)))
-         ))
+         )
+       )
      themethod))
 
 

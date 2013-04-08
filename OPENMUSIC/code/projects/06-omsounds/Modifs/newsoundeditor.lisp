@@ -128,6 +128,7 @@
 
 
 
+
 ;Correction of the Space bar key event
 (defmethod handle-key-event ((self soundPanel) char)
    (case char

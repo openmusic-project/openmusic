@@ -11,7 +11,7 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.060102)
+(defparameter *version* 6.060103)
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
@@ -29,7 +29,6 @@
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if (or (null show-beta) (zerop beta)) "" (format nil " beta ~d" beta))
-                 ;" MathTools Edition"
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
