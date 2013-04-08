@@ -413,9 +413,10 @@
 (in-package :om)
 
 (defvar *faust-effects-pool* (make-hash-table))
+(defconstant *max-effects-number* (* 4 channels))
 
 (defun init-faust-effects-pool ()
-    (loop for i from 0 to (* 2 channels) do
+    (loop for i from 0 to *max-effects-number* do
           (setf (gethash i *faust-effects-pool*) (list nil 0 "faust-effect")))) ;(ptr track name)
 
 (init-faust-effects-pool)
@@ -443,7 +444,10 @@
     (while (= found 0)
       (if (eq ptr (nth 0 (gethash i *faust-effects-pool*)))
           (setf found 1)
-        (incf i)))
+        (incf i))
+      (if (> i *max-effects-number*) (let ()
+                                       (setf found 1)
+                                       (setf i nil))))
     i))
 
 
@@ -466,7 +470,10 @@
               (let () (setf res nil) (setf found 1))
             (let () (setf res (- i 1)) (setf found 1)))
         (if (eq ptr nil) (setf marker 1)))
-      (incf i))
+      (incf i)
+      (if (> i *max-effects-number*) (let ()
+                                       (setf found 1)
+                                       (setf res nil))))
     res))
 
 (defun pack-faust-effects-pool (n)
@@ -668,26 +675,27 @@
                                           :bg-color *om-white-color*
                                           :font *om-default-font1*
                                           :value (tracknum effect)
-                                          :afterfun #'(lambda (item) (let ((trackdest (- (value item) 1))
-                                                                           (trackorigin (- (tracknum effect) 1)))
-                                                                       (if (< trackdest 0)
-                                                                           (if (>= trackorigin 0)
-                                                                               (let ()
-                                                                                 (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
-                                                                                 (report-modifications self)))
-                                                                         (let ()
-                                                                           (if (>= trackorigin 0)
-                                                                               (let ()
-                                                                                 (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
-                                                                                 (setf (tracknum effect) (value item))
-                                                                                 (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
-                                                                                 (report-modifications self))
+                                          :afterfun #'(lambda (item) (if (find-effect-index-in-pool ptr)
+                                                                         (let ((trackdest (- (value item) 1))
+                                                                               (trackorigin (- (tracknum effect) 1)))
+                                                                           (if (< trackdest 0)
+                                                                               (if (>= trackorigin 0)
+                                                                                   (let ()
+                                                                                     (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
+                                                                                     (report-modifications self)))
                                                                              (let ()
-                                                                               (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
-                                                                               (report-modifications self)))))
+                                                                               (if (>= trackorigin 0)
+                                                                                   (let ()
+                                                                                     (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
+                                                                                     (setf (tracknum effect) (value item))
+                                                                                     (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
+                                                                                     (report-modifications self))
+                                                                                 (let ()
+                                                                                   (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
+                                                                                   (report-modifications self)))))
 
-                                                                       (setf (tracknum effect) (value item))
-                                                                       (setf (nth 1 (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*)) (value item))))))
+                                                                           (setf (tracknum effect) (value item))
+                                                                           (setf (nth 1 (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*)) (value item)))))))
 
      (om-add-subviews self
                       nameview
