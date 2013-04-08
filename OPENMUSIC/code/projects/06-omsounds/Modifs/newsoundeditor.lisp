@@ -3,12 +3,17 @@
 (defmethod remove-extra ((self OMPatch) (box OMBoxEditCall))
   (let ()
     (if (typep (value box) 'faust-effect-console)
-        (let* ((console (value box))
-               (ptr (effect-ptr console))
-               (track (tracknum console))) (print ptr)
-          (if ptr 
-              (las::RemoveAudioEffect (gethash track oa::*effects-lists*) ptr)
-          )))
+      (let* ((console (value box))
+             (ptr (effect-ptr console)))
+        (if ptr
+            (let ((n (get-number-faust-effects-pool))
+                  (track (- (nth 1 (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*)) 1)))
+              (if (>= track 0)
+                  (las::RemoveAudioEffect (gethash track oa::*effects-lists*) ptr))
+              (setf (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*) (list nil 0 "faust-effect"))
+              (pack-faust-effects-pool n)
+              ))))
+
     (if (typep (value box) 'sound)
         (let* ((snd (value box))
                (player (oa::assoc-player snd))
@@ -25,8 +30,7 @@
                 (oa::om-smart-stop snd)
                 (setf (car (gethash chan status-list)) nil)))
           ))
-    (call-next-method))
-  )
+    (call-next-method)))
 ;/////////////////////////////////////////////////////////////////
 ;////////////////       SOUNDEDITOR.LISP       ///////////////////
 ;/////////////////////////////////////////////////////////////////
@@ -128,7 +132,6 @@
 
 
 
-
 ;Correction of the Space bar key event
 (defmethod handle-key-event ((self soundPanel) char)
    (case char
@@ -171,7 +174,7 @@
                                         (let ()
                                           (if (eq (oa::assoc-player snd) *audio-player-visible*)
                                             (oa::om-smart-stop snd sndpanel))
-                                          (setf (tracknum (object (om-view-container self))) (- (value item) 1))
+                                          (setf (tracknum (object (om-view-container self))) (- (value item) 1)) 
                                           (report-modifications (om-view-container self))))
                           )
      ;(om-make-dialog-item 'numBox

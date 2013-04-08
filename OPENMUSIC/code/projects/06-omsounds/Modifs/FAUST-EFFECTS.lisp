@@ -5,40 +5,6 @@
 (in-package :om)
 
 
-(defmethod remove-extra ((self OMPatch) (box OMBoxEditCall))
-  (if (typep (value box) 'faust-effect-console)
-      (let* ((console (value box))
-             (ptr (effect-ptr console))
-             (track (tracknum console)))
-        (if ptr
-            (las::RemoveAudioEffect (gethash track *effects-lists*) ptr))
-        ))
-  (call-next-method)
-  )
-
-
-;(ResetEffectsLists)
-
-;======================================================
-;===         DEAL WITH DEAD PORTAUDIO               ===
-;======================================================
-
-;(defun ResetAudioPlayer ()
-;  (let ()
- ;   (las::CloseAudioPlayer *audio-player*)
- ;   (setf *audio-player* (las::OpenAudioPlayer 0 2 32 44100 512 65536 65536 las::kCoreAudioRenderer 1))
- ;   (las::StartAudioPlayer *audio-player*)))
-
-;(ResetAudioPlayer)
-
-;(las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kPortAudioRenderer 1)
-;(defun oa::om-open-audio-player ()
-;  (let ((player (las::OpenAudioPlayer oa::*om-player-n-channels* oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
-;    (las::StartAudioPlayer *audio-player*)
-;    (ResetEffectsLists)
-;    player))
-
-
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
 ;=== a single parameter of the general faust effect ===
@@ -64,8 +30,9 @@
 (defclass* faust-effect-console (simple-score-element)
    ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt)
     (effect-ptr :initform nil :accessor effect-ptr)
-    (tracknum :initform nil :initarg :tracknum :accessor tracknum)
-    (sound :initform nil :initarg :sound :accessor sound)
+    (effect-name :initform nil :initarg :effect-name :accessor effect-name)
+    ;(tracknum :initform nil :initarg :tracknum :accessor tracknum)
+    ;(sound :initform nil :initarg :sound :accessor sound)
     (nbparams :initform 0 :accessor nbparams :type t :documentation "number of parameters in the effect")
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-type :initform nil :accessor ui-type)
@@ -76,14 +43,14 @@
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
   (let ()
-    (if (tracknum self) 
-        (if (< (tracknum self) 1) 
-            (let () (print "The track number is invalid") 
-              (setf (tracknum self) nil)) 
-          (setf (tracknum self) (- (tracknum self) 1))))
-    (if (sound self)
-        (if (not (typep (sound self) 'sound))
-            (print "You must connect a sound to the sound input.")))
+    ;(if (tracknum self) 
+    ;    (if (< (tracknum self) 1) 
+    ;        (let () (print "The track number is invalid") 
+    ;          (setf (tracknum self) nil)) 
+    ;      (setf (tracknum self) (- (tracknum self) 1))))
+    ;(if (sound self)
+    ;    (if (not (typep (sound self) 'sound))
+    ;        (print "You must connect a sound to the sound input.")))
     (if (effect-txt self)
         (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
               (effect-code))
@@ -94,8 +61,16 @@
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (las::getlastliberror)))
             (let* ((ptr (effect-ptr self)) 
                    (effect-json (yason::parse (las::GetJsonEffect ptr) :object-as :plist))
-                   (effect-ui (nth (- (length effect-json) 1) effect-json)))
-              (print "Effet Faust crée avec succès")
+                   (effect-ui (nth (- (length effect-json) 1) effect-json))
+                   (name (nth 1 effect-json)))
+              (print "Effet Faust créé avec succès")
+              (if (effect-name self)
+                  (setf name (effect-name self))
+                (let ()
+                  (print "WARNING : You didn't give a name to the effect. If there is no name definition in your Faust code, a default name will be set.")
+                  (if (string= name "") (setf name "Faust-FX"))))
+
+              (add-faust-effect-to-pool ptr name)
 
               ;///////////////////JSON parsing///////////////////////
               ;(setf (ui-type self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 1) (nth 1 (nth 0 effect-json)))))
@@ -108,20 +83,20 @@
 
               ;//////////////////////////////////////////////////////
 
-              (if (tracknum self)
-                  (let ()
-                       (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
-                       (print (format nil "Cet effet s'applique sur la piste ~A" (+ 1 (tracknum self))))))
-              (if (sound self)
-                  (let ((temp-effect-list (las::MakeAudioEffectList)))
-                    (if (not (oa::sndlasptr (sound self))) (oa::om-fill-sound-info (sound self)))
-                      (las::AddAudioEffect temp-effect-list ptr)
-                      (if (= (oa::current-is-original (sound self)) 1)
-                          (setf (oa::sndlasptr-current-save (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100))
-                        (setf (oa::sndlasptr-current (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100)))
-                      (print (format nil "Cet effet s'applique sur l'objet sound ~A" (sound self)))
-                       ;(update-buffer-with-current-las (sound self))
-                    ))
+              ;(if (tracknum self)
+              ;    (let ()
+              ;         (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
+              ;         (print (format nil "Cet effet s'applique sur la piste ~A" (+ 1 (tracknum self))))))
+              ;(if (sound self)
+              ;    (let ((temp-effect-list (las::MakeAudioEffectList)))
+              ;      (if (not (oa::sndlasptr (sound self))) (oa::om-fill-sound-info (sound self)))
+              ;        (las::AddAudioEffect temp-effect-list ptr)
+              ;        (if (= (oa::current-is-original (sound self)) 1)
+              ;            (setf (oa::sndlasptr-current-save (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100))
+              ;          (setf (oa::sndlasptr-current (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100)))
+              ;        (print (format nil "Cet effet s'applique sur l'objet sound ~A" (sound self)))
+              ;         ;(update-buffer-with-current-las (sound self))
+              ;      ))
 
               (setf (nbparams self) (las::getcontrolcount ptr))
               (if (> (nbparams self) 0)
@@ -135,7 +110,7 @@
                                                                                                :maxval (caddr (las::getcontrolparam (effect-ptr self) param))
                                                                                                :stepval nil ;;EN ATTENTE
                                                                                                :effect-ptr ptr
-                                                                                               :tracknum (tracknum self)
+                                                                                               ;:tracknum (tracknum self)
                                                                                                ))) nil))))
       (print "You are evaluating the Faust console without any Faust code as an input. It has no effect."))))
 
@@ -417,9 +392,306 @@
 
    (setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
                                          :icon1 "-" :icon2 "--pushed"
-                                         :action #'(lambda (item) (let () (las::SetControlValue ptr number def) (set-value (paramGraph self) val)))
+                                         :action #'(lambda (item) (let () (las::SetControlValue ptr number def) (set-value (paramGraph self) val)
+                                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
+                                                                                                               (format nil "~D" (round def))))))
                                          ))
    (om-add-subviews self (paramText self) 
                     (paramVal self) 
                     (paramGraph self)
                     (paramReset self))))
+
+
+
+
+
+
+;;;================================================================================================================================================================
+;;;                                                                            faust pool
+;;;================================================================================================================================================================
+
+(in-package :om)
+
+(defvar *faust-effects-pool* (make-hash-table))
+
+(defun init-faust-effects-pool ()
+    (loop for i from 0 to (* 2 channels) do
+          (setf (gethash i *faust-effects-pool*) (list nil 0 "faust-effect")))) ;(ptr track name)
+
+(init-faust-effects-pool)
+
+
+;;;//////////////////POOL TOOLS/////////////////////////////
+(defun add-faust-effect-to-pool (ptr name)
+  (let ((i 0))
+    (while (nth 0 (gethash i *faust-effects-pool*))
+          (incf i))
+    (setf (gethash i *faust-effects-pool*) (list ptr 0 name))
+  ))
+
+
+(defun remove-faust-effect-from-list (ptr list)
+  (las::RemoveAudioEffect list ptr))
+
+(defun add-faust-effect-to-list (ptr list)
+  (las::AddAudioEffect list ptr))
+
+
+(defun find-effect-index-in-pool (ptr)
+  (let ((i 0)
+        (found 0))
+    (while (= found 0)
+      (if (eq ptr (nth 0 (gethash i *faust-effects-pool*)))
+          (setf found 1)
+        (incf i)))
+    i))
+
+
+(defun get-number-faust-effects-pool ()
+  (let ((i 0))
+    (while (nth 0 (gethash i *faust-effects-pool*))
+          (incf i))
+    i))
+
+(defun find-hole-index-in-faust-effects-pool ()
+  (let ((i 0)
+        (found 0)
+        (ptr nil)
+        (marker 0)
+        (res nil))
+    (while (= found 0) 
+      (setf ptr (nth 0 (gethash i *faust-effects-pool*)))
+      (if (= 1 marker)
+          (if (eq ptr nil)
+              (let () (setf res nil) (setf found 1))
+            (let () (setf res (- i 1)) (setf found 1)))
+        (if (eq ptr nil) (setf marker 1)))
+      (incf i))
+    res))
+
+(defun pack-faust-effects-pool (n)
+  (let ()
+    (if (find-hole-index-in-faust-effects-pool)
+        (let ((index (find-hole-index-in-faust-effects-pool)))
+          (loop for i from index to (- n 1) do
+            (setf (gethash i *faust-effects-pool*) (gethash (+ i 1) *faust-effects-pool*)))))))
+;;;//////////////////////////////////////////////////////////
+
+(defclass* faust-effect-controller () 
+  ((label :initform nil :initarg :label :accessor label :type t)
+   (faust-ptr :initform nil :initarg :faust-ptr :accessor faust-ptr)
+   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)))
+
+
+(defclass* faust-pool (simple-score-element)
+   ((effect-list :initform nil :accessor effect-list))
+   (:documentation "Faust Pool"))
+
+
+
+
+(defmethod initialize-instance :after ((self faust-pool) &rest l)
+  (declare (ignore l))
+  (let ((nbeffects 0)
+        (i 0))
+    (while (nth 0 (gethash i *faust-effects-pool*))
+          (incf nbeffects)
+          (incf i))
+        (setf (effect-list self)
+              (loop for effect from 0 to (- nbeffects 1) collect (make-instance 'faust-effect-controller
+                                                                          :label (nth 2 (gethash effect *faust-effects-pool*))
+                                                                          :faust-ptr (nth 0 (gethash effect *faust-effects-pool*))
+                                                                          :tracknum (nth 1 (gethash effect *faust-effects-pool*))
+                                                                          )))))
+
+
+(defmethod allowed-in-maq-p ((self faust-pool))  nil)
+
+(defmethod Class-has-editor-p  ((self faust-pool)) t)
+
+(defmethod get-editor-class ((self faust-pool)) 'faust-pool-editor)
+
+(defmethod draw-mini-view  ((self t) (value faust-pool)) 
+   (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
+
+(defmethod update-miniview ((self t) (value faust-pool)) 
+   (om-invalidate-view self t))
+
+(defmethod draw-obj-in-rect ((self faust-pool) x x1 y y1 edparams view)
+  (let ((w (w view))
+        (pic (om-load-and-store-picture "faustlogo-pool-bg" 'internal)))
+    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
+
+;;;ATTETION VOIR POUR LA COPIE
+(defmethod omNG-copy ((self faust-pool))
+   "Cons a Lisp expression that return a copy of self when it is valuated."
+   `(let ((rep (make-instance ',(type-of self))))
+      rep
+      ))
+
+(defmethod copy-container  ((self faust-pool) &optional (pere nil))
+  "Cons a Lisp expression that return a copy of self when it is valuated."
+  (let ((rep (make-instance (type-of self))))
+    rep
+    ))
+
+(defmethod omNG-save ((self faust-pool) &optional (values? nil))
+  "Cons a Lisp expression that return a copy of self when it is valuated."
+  `(let ((rep (make-instance ',(type-of self))))
+     rep
+     ))
+
+(defmethod get-obj-dur ((self faust-pool)) 0)
+
+
+
+
+
+
+
+(omg-defclass faust-pool-editor (EditorView) 
+  ((effect-panels :initform nil :initarg :effect-panels :accessor effect-panels)))
+
+(defmethod make-editor-window ((class (eql 'faust-pool-editor)) object name ref &key 
+                                 winsize winpos (close-p t) (winshow t) 
+                                 (resize nil) (maximize nil))
+   (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
+                                                      :close-p t :winshow t
+                                                      )))
+    win))
+
+(defmethod get-win-ed-size ((self faust-pool))
+  (om-make-point 300 (max 33 (* 33 (length (effect-list self)))))
+  )
+
+(defmethod editor-has-palette-p ((self faust-pool-editor)) nil)
+
+(defmethod get-panel-class ((self faust-pool-editor)) 'faust-pool-panel)
+
+(defmethod update-subviews ((self faust-pool-editor))
+   (om-set-view-size (panel self) (om-make-point (w self) (h self))))
+
+
+(omg-defclass faust-pool-panel (om-scroller) ())
+
+(defmethod get-object ((Self faust-pool-panel))
+   (object (om-view-container self)))
+
+(defmethod report-modifications ((self faust-pool-panel))
+  (report-modifications (om-view-container self)))
+
+
+
+(omg-defclass faust-effect-panel () 
+  ((effect :initform nil :initarg :effect :accessor effect)
+   (tracknum :initform nil :initarg :tracknum :accessor paramVal)))
+
+
+(defclass faust-effect-panel-view (faust-effect-panel om-view) ())
+
+(defmethod update-subviews ((Self faust-effect-panel))
+   (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
+   (om-invalidate-view self t))
+
+(defmethod om-draw-contents ((self faust-effect-panel))
+   (call-next-method))
+
+
+
+(defmethod get-object ((Self faust-effect-panel))
+   (get-object (om-view-container self)))
+
+(defmethod report-modifications ((self faust-effect-panel))
+  (report-modifications (om-view-container self)))
+
+
+(defmethod get-effectpanel-class ((self faust-pool-panel)) 'faust-effect-panel-view)
+
+
+
+;=======================
+;=== INITIALIZATIONS ===
+;=======================
+
+(defmethod metaobj-scrollbars-params ((self faust-pool-editor))  '(:h t))
+
+(defmethod initialize-instance :after ((self faust-pool-editor) &rest l)
+   (declare (ignore l))
+   (let ((x (om-point-x (get-win-ed-size (object self))))
+         (y (om-point-y (get-win-ed-size (object self))))
+         (color (om-make-color 0.9 0.9 0.9))
+         (name "test"))
+     (setf (panel self) (om-make-view (get-panel-class self) 
+                                                     :owner self
+                                                     :position (om-make-point 0 0) 
+                                                     :scrollbars (first (metaobj-scrollbars-params self))
+                                                     :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                                     :field-size  (om-make-point x y)
+                                                     :size (om-make-point (w self) (h self))))
+     (setf (effect-panels self)
+           (loop for eff in (effect-list (object self))
+            for i = 0 then (+ i 1) collect
+            (om-make-view 'faust-effect-panel-view
+                          :effect eff
+                          :owner (panel self)
+                          :bg-color *om-light-gray-color*
+                          :position (om-make-point 0 (* 30 i))
+                          :size (om-make-point 1000 30))))))
+
+(defmethod initialize-instance :after ((self faust-effect-panel) &rest l)
+   (declare (ignore l))
+   (do-initialize-effect self))
+
+(defmethod do-initialize-effect ((self faust-effect-panel))  
+   (let* ((color (om-make-color 0.9 0.9 0.9))
+          (effect (effect self))
+          (name (label effect))
+          (ptr (faust-ptr effect)))
+   (om-set-bg-color self color)
+     (setf nameview (om-make-dialog-item 'om-static-text
+                                                  (om-make-point 5 3) 
+                                                  (om-make-point 200 30)
+                                                  (format nil "~D" name)
+                                                  :font *om-default-font1*
+                                                  :bg-color color))
+     (setf tracktextview (om-make-dialog-item 'om-static-text
+                                                  (om-make-point (+ 5 200) 3) 
+                                                  (om-make-point 50 30)
+                                                  (format nil "Track :")
+                                                  :font *om-default-font1*
+                                                  :bg-color color))
+     (setf trackview (om-make-dialog-item 'numBox
+                                          (om-make-point (+ 5 200 50) 3)
+                                          (om-make-point 28 19) (format () " ~D" (tracknum effect))
+                                          :min-val 0
+                                          :max-val 32
+                                          :bg-color *om-white-color*
+                                          :font *om-default-font1*
+                                          :value (tracknum effect)
+                                          :afterfun #'(lambda (item) (let ((trackdest (- (value item) 1))
+                                                                           (trackorigin (- (tracknum effect) 1)))
+                                                                       (if (< trackdest 0)
+                                                                           (if (>= trackorigin 0)
+                                                                               (let ()
+                                                                                 (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
+                                                                                 (report-modifications self)))
+                                                                         (let ()
+                                                                           (if (>= trackorigin 0)
+                                                                               (let ()
+                                                                                 (remove-faust-effect-from-list ptr (gethash trackorigin oa::*effects-lists*))
+                                                                                 (setf (tracknum effect) (value item))
+                                                                                 (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
+                                                                                 (report-modifications self))
+                                                                             (let ()
+                                                                               (add-faust-effect-to-list ptr (gethash trackdest oa::*effects-lists*))
+                                                                               (report-modifications self)))))
+
+                                                                       (setf (tracknum effect) (value item))
+                                                                       (setf (nth 1 (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*)) (value item))))))
+
+     (om-add-subviews self
+                      nameview
+                      tracktextview
+                      trackview)
+))
+
