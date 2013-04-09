@@ -59,10 +59,13 @@ Press 'space' to play/stop the sound file.
   )
 
 (defmethod extent ((self sound))
-  (unless (slot-value self 'extent) 
-    (setf (extent self) (sound-dur-ms self)))
+  (setf (extent self) (sound-dur-ms self))
   (call-next-method))
 
+;(defmethod extent ((self sound))
+;  (unless (slot-value self 'extent) 
+;    (setf (extent self) (sound-dur-ms self)))
+;  (call-next-method))
 
 (defmethod sound-name ((self sound))
    (pathname-name (om-sound-file-name self)))
@@ -302,10 +305,17 @@ Press 'space' to play/stop the sound file.
     (sound-dur (pathname sound))))
 
 (defmethod! sound-dur ((sound sound))
-   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
-            (> (om-sound-sample-rate sound) 0))
-       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
+   (if (and sound (oa::number-of-samples-current sound) oa::srate
+            (> oa::srate 0))
+       (float (/ (oa::number-of-samples-current sound) oa::srate))
      0))
+
+;(defmethod! sound-dur ((sound sound))
+;   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
+;            (> (om-sound-sample-rate sound) 0))
+;       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
+;     0))
+
 
 (defmethod! sound-dur-ms ((sound t))
   :initvals '(nil)
