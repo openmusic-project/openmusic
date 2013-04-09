@@ -4,13 +4,15 @@ s.options.device_("OpenMusic_SC3");		// give special device-name to identify in 
 s = Server.default.waitForBoot({
 
 	var sc_om_task;
-	var deltas, freqs, durs, vels, chans;
+	var deltas, freqs, durs, vels, chans, srcPort;
 
 	deltas=[];
 	freqs=[];
 	durs=[];
 	vels=[];
 	chans=[];
+
+	srcPort=NetAddr.langPort;			// need to grab this one and send back to OM.
 
 	MIDIClient.init;					// ALSA portname hardwired to "SuperCollider".  Change in sc-code...
 	m.free; m = MIDIOut(0);
@@ -20,7 +22,7 @@ s = Server.default.waitForBoot({
 	OSCdef(\reset).add({
 		"reset".postln;
 		sc_om_task.stop;
-		m.allNotesOff(16);
+		(1..16).do{|k|m.allNotesOff(k)};
 		deltas=[];
 		freqs=[];
 		durs=[];
@@ -46,21 +48,24 @@ s = Server.default.waitForBoot({
 		"playing MIDI sequence".postln;
 
 		sc_om_task = Task({
-			var frstr, durstr, delstr, velstr, n;
-			n = freqs.size;
-			deltas=deltas.[1..];		// dont want first/0 offset
+			var frstr, durstr, delstr, velstr, chanstr, n;
+			deltas=deltas.[1..] ++ 0;		// dont want first/0 offset
+			n = deltas.size;
 			frstr = Pseq(freqs).asStream;
 			durstr = Pseq(durs/1000).asStream;
 			delstr = Pseq(deltas/1000).asStream;
 			velstr = Pseq(vels).asStream;
+			chanstr = Pseq(chans).asStream;
 			n.do({
-				var delta, key, vel, dur;
+				var delta, key, vel, dur,chan;
 				key = frstr.next;
 				delta = delstr.next;
 				dur = durstr.next;
 				vel = velstr.next;
-				m.noteOn(16,key,vel);
-				{m.noteOff(16,key)}.defer(dur);
+				chan = chanstr.next;
+				// ("chan: " ++ chan).postln;
+				m.noteOn(chan,key,vel);
+				{m.noteOff(chan,key)}.defer(dur);
 				delta.wait;
 			});
 		};
@@ -94,11 +99,11 @@ s = Server.default.waitForBoot({
 		name = msg[1];
 		interval = msg[2];
 		Post << "open: " << msg;
-		b = Buffer.read(s, name, action: {
+		Buffer.read(s, name, action: {
 			|buffer|
 			var k = buffer.numChannels;
-			// TODO: need to store this node somewhere to address on pause/play
-			x = Synth.newPaused("OMPlayBuf"++k, [\bufnum, buffer, interval]);
+			// TODO: store nodeID somewhere to address w pause/play
+			x = Synth.newPaused("OMPlayBuf"++k, [\bufnum, buffer, \startPos, interval[0], \stopPos, interval[1]]);
 		});
 	});
 
@@ -108,7 +113,7 @@ s = Server.default.waitForBoot({
 		arg msg, time, addr, recvPort;
 		var playMsg;
 		playMsg = msg[1];
-		playMsg.postln;
+		// playMsg.postln;
 		Post << "play: " << msg;
 		x.run(playMsg);
 	});
@@ -117,9 +122,9 @@ s = Server.default.waitForBoot({
 	OSCdef(\pauseAudioResp, {}, '/scfileplayer/pause', nil);
 	OSCdef(\pauseAudioResp).add({
 		|msg, time, addr, recvPort|
-		var pauseMsg=msg[1];
+		var pauseMsg=msg[1].asBoolean.not; // pause(0)->run(1)
 		Post << "pause: " << msg;
-		x.run(pauseMsg.asBoolean.not);
+		x.run(pauseMsg);
 	});
 	OSCdef(\resetAudioResp).clear;
 	OSCdef(\resetAudioResp, {}, '/scfileplayer/reset', nil);
@@ -136,15 +141,14 @@ s = Server.default.waitForBoot({
 
 	(1..16).do {|n| var synthName;
 		SynthDef("OMPlayBuf" ++ n, {
-			arg bufnum, rate=1, looping=0, startPos=0, trigger=1;
+			arg bufnum, rate=1, looping=0, startPos=0, stopPos=bufnum.duration, trigger=1;
 			var sig;
-			sig = PlayBuf.ar(n,bufnum,rate,trigger,startPos,looping, 2);
+			Line.kr(dur: stopPos-startPos, doneAction: 2);
+			sig = PlayBuf.ar(n,bufnum,rate,trigger,startPos,looping, doneAction: 2);
 			Out.ar(0,sig);
-		}).add;							// in memory, dont write to synthdesclib
+		}).add;
 	};
-
-	"\nOM server booted".postln;
-
+	"\nYo: OM server booted".postln;
 })
 
 
