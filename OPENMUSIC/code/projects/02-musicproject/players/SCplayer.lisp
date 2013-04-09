@@ -10,8 +10,7 @@
 
 #+linux
 (add-assoc-player *general-player* 'scplayer)
-
-(assoc-players *general-player*)
+;;(assoc-players *general-player*)
 
 
 ;;=====================================================
@@ -22,7 +21,8 @@
 
 (defvar *SCplayer-out-port* nil)
 ;; TODO: get sclangs port after startup
-(setf *SCplayer-out-port* 57130)
+;; (setf *SCplayer-out-port* 57130)
+(setf *SCplayer-out-port* 57120)
 ;; (setf *SCplayer-out-port* 57121)
 
 (defvar *SCplayer-host* nil)
@@ -40,16 +40,23 @@
 (defvar *SC-player-io* nil)
 (defvar *SC-setup-file* nil)
 
-(setf *SC-setup-file* (namestring (make-pathname :directory (pathname-directory *load-pathname*) :name "scratch_MIDI.sc")))
 
 (defun init-SCplayer-app ()
-  (progn
-    (setf *SC-player-path* 
-	  #-linux (capi::prompt-for-file "Path to sclang executable:" :pathname (om-default-application-path "" "sclang"))
-	  #+linux "sclang")
-    (setf *SC-cmd-line*
-	  (format nil "~A -u ~A ~A"
-		  *SC-player-path* *SCplayer-out-port* *SC-setup-file*))))
+  (let ((*SC-setup-file*
+	 ;;(namestring (make-pathname :directory (pathname-directory *load-pathname*) :name "SC_OM_Player.sc"))
+	 (OMRoot "resources;SC;SC_OM_Player.sc")
+	  ))
+    (progn
+      (setf *SC-player-path* 
+	    #-linux (capi::prompt-for-file "Path to sclang executable:" :pathname (om-default-application-path "" "sclang"))
+	    #+linux "sclang")
+      ;; (setf *SC-cmd-line* (format nil "~A -u ~A ~A" *SC-player-path* *SCplayer-out-port* *SC-setup-file*))
+      (setf *SC-cmd-line* (format nil "~A  ~A" *SC-player-path* *SC-setup-file*)) ; find way to receive NetAddr.langPort from booted sclang...
+      )))
+
+;; (init-SCplayer-app)
+(print *SC-cmd-line*)
+
 
 (om-add-init-func 'init-SCplayer-app)
 
@@ -57,16 +64,18 @@
 (setf *SC-player-io* nil)
 
 (defun launch-SCplayer-app ()
-  (unless *SC-player-pid*
-    (multiple-value-bind (io err pid)
-	(system:run-shell-command *SC-cmd-line*
-				  :wait nil
-				  :input :stream
-				  :output :stream
-				  :error-output :stream)
-      (setf *SC-player-pid* pid)
-      (setf *SC-player-io* io)
-      (print (format nil "started sclang: pid: ~A" pid)))))
+  (if *SC-player-pid*
+      (print (format nil "sclang already running: ~A" *SC-player-pid*))
+      (multiple-value-bind (io err pid)
+	  (system:run-shell-command *SC-cmd-line*
+				    :wait nil
+				    :input :stream
+				    :output :stream
+				    :error-output :stream)
+	(setf *SC-player-pid* pid)
+	(setf *SC-player-io* io)
+	(print (format nil "started sclang: pid: ~A~%" pid))
+	(print *SC-cmd-line*))))
 
 ;; (launch-SCplayer-app)
 (om-add-init-func 'launch-SCplayer-app)
@@ -74,14 +83,13 @@
 (defun stop-and-cleanup-SCplayer-app ()
   (progn
     (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*)))
-    (sys:run-shell-command (format nil "pkill scsynth"))
+    (sys:run-shell-command (format nil "pkill -9 scsynth"))
+    (sys:run-shell-command (format nil "pkill -9 sclang"))
     (setf *SC-player-pid* nil)
     (setf *SC-player-io* nil)))
 
 ;; (stop-and-cleanup-scplayer-app)
 (om-add-exit-cleanup-func 'stop-and-cleanup-scplayer-app)
-
-
 
 (defun SCplayer-send-cmd (cmd)
   (progn (unless *SC-player-pid* (launch-SCplayer-app))
@@ -92,6 +100,9 @@
 	   (read-char-no-hang stream)))
       ((null ch))
     (write-char ch outputstr)))
+
+;; (SCplayer-send-cmd "NetAddr.langPort")
+;; (get-from-shell *sc-player-io*)
 
 ;;=====================================================
 ;;SCPLAYER PROTOCOL
@@ -165,7 +176,7 @@
     (let ((chan (chan self))
 	  (pitch (/ (approx-scale (get-current-scale approx) (midic self)) 100.0))
 	  (vel (vel self))
-	  (dur (- (real-dur self) 2))
+	  (dur (real-dur self))
 	  (date at)
 	  )
       (if interval
@@ -174,10 +185,13 @@
 	      (playoscnote chan pitch vel
 			   (- (second newinterval) (first newinterval) 1) 
 			   (- (first newinterval) (first interval)))))
-	  (playoscnote chan pitch vel dur date)))))
+	  (progn
+	    (print (list 'playoscnote chan pitch vel dur date))
+	    (playoscnote chan pitch vel dur date))))))
 
 (defun playoscnote (chan pitch vel dur date)
   ;; (print (list chan pitch vel dur date))
+  (print (list "/play.sc_om/fifos" date pitch vel dur chan))
   (push (list "/play.sc_om/fifos" date pitch vel dur chan) *SCosc-packets*))
 
 (defmethod Play-player ((self (eql 'SCplayer)))
