@@ -239,7 +239,11 @@ Press 'space' to play/stop the sound file.
       (setf (markers snd) (cadr slots-vals)))
     snd))
 
+(defmethod object-remove-extra ((self sound) box)
+  (box-stop-player box (player box)))
 
+(defmethod box-stop-player (box player) nil)
+  
 
 
 ;============

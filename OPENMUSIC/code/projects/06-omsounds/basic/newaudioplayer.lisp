@@ -1,3 +1,4 @@
+
 (in-package :oa)
 
 ;===============================================================================================================================================================
@@ -25,6 +26,10 @@
 ;===============================================================================================================================================================
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
+
+
+
+
 
 ;/SMART PLAY STOP LIST FUNCTION
 ;This function take as argument a list of sound objects and call smart-play-stop for each one of these.
@@ -145,7 +150,21 @@
             (let ((chan (get-free-channel player)))
               (setf (tracknum-sys snd) chan)
               (load-sound-on-one-channel player snd chan)
-              (play-one-channel player chan))))
+              (play-one-channel player chan))(defmethod box-stop-player (box (player las-player))  
+  (let* (;(player (oa::assoc-player self))
+         (status-list (if (eq player oa::*audio-player-hidden*)
+                          oa::*audio-player-hidden-tracks-info*
+                        oa::*audio-player-visible-tracks-info*))
+         (chan (if (eq player oa::*audio-player-hidden*)
+                   (oa::tracknum-sys snd)
+                 (tracknum snd)))
+         (loadedsnd (car (gethash chan status-list)))
+         (status (cadr (gethash chan status-list))))
+    (if (eq snd loadedsnd)
+        (let () 
+          (oa::om-smart-stop snd)
+          (setf (car (gethash chan status-list)) nil)))
+    ))))
       (let* ((chan (get-free-channel player)))
         (setf (tracknum-sys snd) chan)
         (load-sound-on-one-channel player snd chan)

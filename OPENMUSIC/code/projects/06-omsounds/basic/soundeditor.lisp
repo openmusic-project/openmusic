@@ -45,46 +45,51 @@
 
 
 (defmethod make-snd-ctrl-list ((self Aiff-control))
-  (let ((x0 50))
+  (let ((x0 260)
+        (snd (object (om-view-container self)))
+        (sndpanel (panel (om-view-container self))))
     (list 
      (om-make-dialog-item 'numBox
                           (om-make-point x0 8)
                           (om-make-point 28 18) (format () " ~D" (tracknum (object (om-view-container self))))
                           :min-val 1
-                          :max-val 16
+                          :max-val 32
                           :font *om-default-font1*
                           :bg-color *om-white-color*
                           :value (tracknum (object (om-view-container self)))
                           :afterfun #'(lambda (item)
-                                        (setf (tracknum (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
+                                        (let ()
+                                          (if (eq (oa::assoc-player snd) *audio-player-visible*)
+                                            (oa::om-smart-stop snd sndpanel))
+                                          (setf (tracknum (object (om-view-container self))) (- (value item) 1)) 
+                                          (report-modifications (om-view-container self))))
                           )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 70) 8)
-                          (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
-                          :min-val 0
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (vol (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (vol (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 90) 8)
-                          (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
-                          :min-val -100
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (pan (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (pan (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
+     ;(om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 70) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
+     ;                     :min-val 0
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (vol (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (vol (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
+     ;(om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 90) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
+     ;                     :min-val -100
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (pan (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (pan (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
      (om-make-dialog-item 'om-pop-up-dialog-item 
-                                            (om-make-point 395 5) 
+                                            (om-make-point (incf x0 390) 5) 
                                             (om-make-point 100 20) ""
                                             :font *om-default-font1*
                                             :range (mapcar 'audio-player-name *audio-players*)
@@ -95,24 +100,61 @@
                                             )
      )))
 
+
+
 (defmethod add-sound-params ((self Aiff-control))
-  (let ((x0 10))
+  (let* ((x0 220)
+        ;(snd (object (om-view-container self)))
+         (editor (om-view-container self))
+         (sndpanel (panel editor))) 
     (setf (dyn-ctrl-list self) (make-snd-ctrl-list self))
+    
     (om-add-subviews self
-                     (om-make-dialog-item 'om-static-text (om-make-point x0 8) (om-make-point 40 20)
-                                          "Track" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
-                                          "Vol" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
-                                          "Pan" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point 350 8) (om-make-point 50 20) 
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 210) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_play" :icon2 "simple_play_pushed"
+                                         :action #'(lambda (item) (editor-play editor))
+
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 185) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_pause" :icon2 "simple_pause_pushed"
+                                         :action #'(lambda (item) (oa::om-smart-pause snd sndpanel)))
+
+                     (om-make-view 'om-icon-button :position (om-make-point (- x0 160) 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_stop" :icon2 "simple_stop_pushed"
+                                         :action #'(lambda (item) (oa::om-smart-stop snd sndpanel)))
+
+                     (om-make-dialog-item 'om-check-box (om-make-point (- x0 90) 4)
+                               (om-make-point 130 20) "Send to track :"
+                               :checked-p (if (oa::assoc-player snd) (if (eq (oa::assoc-player snd) oa::*audio-player-hidden*) nil t) nil)
+                               :di-action (om-dialog-item-act item (let ()
+                                                                     (oa::om-smart-stop snd sndpanel) 
+                                                                     (oa::om-send-to-track sndpanel))))
+
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ x0 130) 4)
+                               (om-make-point 170 20) "Use Original Sound"
+                               :checked-p (if (or (= -1 (oa::current-is-original snd)) 
+                                                  (= 0 (oa::current-is-original snd))) nil t)
+                               :di-action (om-dialog-item-act item (let ()
+                                                                     (oa::om-use-original-sound sndpanel))))
+
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
+                     ;                     "Vol" :font *om-default-font1* :bg-color *controls-color*)
+
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
+                     ;                     "Pan" :font *om-default-font1* :bg-color *controls-color*)
+
+                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 380) 8) (om-make-point 50 20)
                                           "Player" :font *om-default-font1*)
+                     
                      (first (dyn-ctrl-list self))
                      (second (dyn-ctrl-list self))
-                     (third (dyn-ctrl-list self))
-                     (fourth (dyn-ctrl-list self))
-                     )   
+                     ;(third (dyn-ctrl-list self))
+                     ;(fourth (dyn-ctrl-list self))
+                     )
     t))
+
+
+
+
 
 (defmethod update-controls ((self Aiff-control))
   (loop for item in (dyn-ctrl-list self) do (om-remove-subviews self item))
@@ -219,48 +261,21 @@
 (defmethod get-control-h ((self soundEditor)) 36)
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
+(defmethod editor-has-palette-p ((self soundEditor)) nil)
+
+;;; AJOUTER DANS LES CONTROLS
+; (setf (cursor-mode view) :interval)
+; (setf (cursor-mode view) :normal)
+; (init-coor-system view)
 
 
-;;;==== PALETTE =====
 
-(defclass sound-palette (playing-palette)  () 
-   ;(:default-initargs :source-name "soundpalette")
-  )
-
-(defmethod editor-has-palette-p ((self soundeditor)) 'sound-palette)
-
-(defmethod get-palette-pict ((self soundeditor)) 
-  (om-load-and-store-picture "soundpalette" 'internal))
-
-(defmethod palette-act ((self sound-palette) x)
-   (unless (call-next-method)
-       (let ((ed-view (panel (editor-assoc self))))
-         (case x
-           (8 ;(setf (cursor-p ed-view) t) 
-              (setf (cursor-mode ed-view) :interval) 
-              (setf (mode (editor-assoc self)) x))
-           (7 ;(setf (cursor-p ed-view) nil)
-            (setf (cursor-mode ed-view) :normal)
-            (setf (mode (editor-assoc self)) x))
-           (9 (init-coor-system ed-view))
-           )
-         (om-invalidate-view ed-view t)
-         (om-invalidate-view (view *palette-win*) t)
-         )))
-
-(defmethod palette-init ((self soundeditor))
-  (call-next-method)
-  (init-play-palette self))
-
-;;; used for cut/copy/paste in sound editors
-(defvar *snd-clipboard* nil)
-
-;;; *mouse-window-event*
 (defmethod editor-null-event-handler :after ((self soundEditor))  ;chercher *mouse-window-event* par tout et enlever 
    (do-editor-null-event self))
 
-
 (defmethod editor-has-palette-p ((self soundEditor)) 'sound-palette)
+
+
 
 (defmethod initialize-instance :after ((self soundEditor) &rest l)
    (declare (ignore l))
@@ -285,25 +300,20 @@
                      :owner self
                      :position (om-make-point 0 (get-control-h self)) 
                      :size (om-make-point (w self) (get-control-h self)))))
-     
      (setf (mode self) 8)
-     
-     (add-sound-params control)
-     
-     (setf (control self) control)
      (setf (panel self) ed-view)
+     (setf (control self) control)
      (setf (preview self) prev)
      (om-set-bg-color (control self) *controls-color*)
      (setf (sndpict self) (sound-get-pict (object self)))
-     ;(setf (sndptr self) (get-sound-data (object self)))
-     ;(setf (sndpict self) (sound-get-pict (sndptr self)))
-     ;(setf (cursor-p (panel self)) t)
-     (setf (cursor-mode (panel self)) :interval)
+     (setf (cursor-p (panel self)) t)
      (setf (rulerx ed-view) rulerx)
      (setf (rangex ed-view) (list 0 (get-obj-dur (object self))))
      (setf (bounds-x ed-view) (list 0 (get-obj-dur (object self))))
      (set-units-ruler ed-view rulerx)
+     (add-sound-params control)
      (om-invalidate-view ed-view)))
+
 
 (defmethod update-editor-after-eval ((self soundEditor) val)
   (call-next-method)
@@ -492,6 +502,7 @@
        *om-i-beam-cursor*;)
      *om-arrow-cursor*))
 
+
 (defmethod handle-key-event ((self soundPanel) char)
    (case char
      (#\g (grille-on-off self))
@@ -499,11 +510,11 @@
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc (reset-cursor self))
-     (#\SPACE (when *palette*
-                (if (Idle-p *general-player*)
-                    (palette-act *palette* (if (selection-to-play-? self) 4 0))
-                  (palette-act *palette* 1))))
+     (#\SPACE (let ((snd (object (om-view-container self))))
+                (oa::om-smart-play-stop snd self)))
      (otherwise (call-next-method))))
+
+
 
 (defmethod reset-cursor ((self soundpanel))
   (setf (cursor-pos self) 0)
@@ -538,7 +549,11 @@
          (Xsize 80)
          (Mydialog (om-make-window 'om-dialog
                                    :size (om-make-point (+ xsize 110) 80)
-                                   :window-title "Marker Onset"
+                                   :window-(when (not *activate-handler*)
+        (setf *activate-handler* t)
+        (palette-open self)
+        (setf *activate-handler* nil)
+        (palette-init (editor self)))title "Marker Onset"
                                    :maximize nil :minimize nil :resizable nil
                                    :bg-color *om-window-def-color*
                                    :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))

@@ -51,8 +51,7 @@
     "Modifs;FAUST-EFFECTS"
     "Modifs;VERIFIED-MODIFS"
     "basic;newaudioplayer"
-    "Modifs;newsoundeditor"
-
+   
 
  ))
 
