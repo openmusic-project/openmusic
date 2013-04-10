@@ -9,9 +9,13 @@
    (start-time :accessor start-time :initform 0)
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)))
-  
+
+(defmethod class-from-player-type ((type t)) 'omplayer)
+
 (defmacro get-player-time (player)
+  (print a)
   `(cond ((equal (state ,player) :play)
+          (print (clock-time))
           (+ (player-offset ,player) (start-time ,player) (- (ref-clock-time ,player) (clock-time))))
          ((equal (state ,player) :pause)
           (+ (player-offset ,player) (start-time ,player)))
@@ -20,7 +24,7 @@
 (defmethod idle-p ((self omplayer)) 
   (not (equal (state self) :play)))
 
-(defun player-start (player)
+(defmethod player-start ((player omplayer) obj &key interval)
   (setf (state player) :play
         (start-time player) 0
         (ref-clock-time player) (clock-time)))
@@ -47,10 +51,11 @@
 ;;;=================================
 (defclass play-view-mixin ()
    ((player :initform nil :accessor player)
+    (player-type :initform nil :accessor player-type)
     (loop-play :initform nil :accessor loop-play)))
 
-(defmethod initialize-instance :after ((self cursor-play-view-mixin) &rest initargs)
-  (setf (player self) (make-instance 'omplayer)))
+(defmethod initialize-instance :after ((self play-view-mixin) &rest initargs)
+  (setf (player self) (make-instance (class-from-player-type (player-type self)))))
 
 ;;; RETURNS OBJ, TMIN, TMAX
 (defmethod get-obj-to-play ((self play-view-mixin))
@@ -60,13 +65,13 @@
   (setf (loop-play (player self)) (loop-play self))
   (multiple-value-bind (obj t1 t2)
       (get-obj-to-play self)
-    (playany (get-score-player self) obj :interval (and t1 t2 (list t1 t2)))))
+    (player-start (player self) obj :interval (and t1 t2 (list t1 t2)))))
 
 (defmethod om-draw-contents :after ((self play-view-mixin))
   ;(call-next-method)
   (om-with-focused-view self
   (om-draw-string (- (w self) 40) 20
-                  (format nil "~D" (get-player-time (player self))))))
+                  (format nil "~D" (print (get-player-time (player self)))))))
 
 ;;; temp compatibility
 (defmethod recording? ((self play-view-mixin))
@@ -100,6 +105,9 @@
 (defmethod set-cursor-mode ((self cursor-play-view-mixin))
   (setf (cursor-mode self) (if (equal (cursor-mode self) :normal) :interval :normal))
   (om-invalidate-view self t))
+
+(defmethod cursor-p ((self t)) 
+  (om-beep-msg "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"))
 
 (defmethod get-obj-to-play ((self cursor-play-view-mixin))
   (values (object (om-view-container self))

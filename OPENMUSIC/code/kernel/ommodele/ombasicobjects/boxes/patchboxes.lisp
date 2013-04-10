@@ -735,6 +735,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defclass OMBoxEditCall (OMBoxRelatedWClass) 
    ((numouts :initform 1 :accessor numouts)
+    (player :initform nil :accessor player)
     (showpict :initform nil :accessor showpict)
     (minieditor? :initform nil :accessor minieditor?)
     (view-of-patch :initform nil :accessor view-of-patch)
@@ -990,6 +991,13 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
           (t (open-instance-editor self))))
      ;)
    )
+
+
+(defmethod remove-extra ((self OMPatch) (box OMBoxEditCall))
+  (object-remove-extra (value box) box)
+  (call-next-method))
+
+(defmethod object-remove-extra ((self t)) nil)
 
 
 (defmethod player-menu-item ((self OMBoxEditCall)) 
