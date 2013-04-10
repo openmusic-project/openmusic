@@ -12,7 +12,7 @@
   (oa::om-smart-play obj))
 
 (defmethod player-stop ((player omplayer))
-  (oa::om-smart-stop obj))
+  (oa::om-smart-stop player))
 
 ;;; called when a box or editor attached to player is removed/closed
 (defmethod player-cleanup ((player las-player))
