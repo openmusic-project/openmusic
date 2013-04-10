@@ -112,7 +112,8 @@
                                                                                                :effect-ptr ptr
                                                                                                ;:tracknum (tracknum self)
                                                                                                ))) nil))))
-      (print "You are evaluating the Faust console without any Faust code as an input. It has no effect."))))
+      ;(print "You are evaluating the Faust console without any Faust code as an input. It has no effect.")
+      )))
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
