@@ -711,48 +711,126 @@
 (defmethod om-draw-contents ((self soundPanel))
   (call-next-method)  
   (if (equal (state (player (editor self))) :recording)
-      (om-with-focused-view self  
+       (om-with-focused-view self  
          (om-with-fg-color self *om-red2-color*
            (om-with-font *om-default-font4b*
               (let ((halftext (round (om-string-size "Recording" *om-default-font4b*) 2)))
                 (om-draw-string (- (round (w self) 2) halftext) (round (h self) 2) "Recording")))))
+  (if (om-sound-file-name (object (om-view-container self)))
+    (let* ((thesound (object (om-view-container self)))
+           (sr srate)
+           (size (oa::number-of-samples-current thesound))
+           (dur (or (and (and sr size)
+                         (/ size sr)) 0))
+           (dur-ms (round size (/ sr 1000.0)))
+           (total-width (om-point-h (om-field-size self)))
+           (thepicture (and dur (pic-to-draw thesound)))
+           
+           (window-h-size (om-point-h (om-view-size self)))
+           (window-v-size (om-point-v (om-view-size self)))
+           (stream-buffer (oa::sndbuffer thesound))
+           (system-etat (get-system-etat self))
+           (xmin (car (rangex self)))
+           (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+           (xmax (cadr (rangex self)))
+           (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+           (xview (- xmax xmin))
+           (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) 
+           (step-1smp 1)
+           (step-100us (/ sr 10000.0))
+           (step-200us (/ sr 5000.0))
+           (step-400us (/ sr 2500.0))
+           (step-800us (/ sr 1250.0))
+           (step-1ms (/ sr 1000.0))
+           (step-2ms (/ sr 500.0))
+           (step-5ms (/ sr 200.0))
+           (step-10ms (/ sr 100.0))
+           (step-20ms (/ sr 50.0))
+           (step-50ms (/ sr 25.0))
+           (step-100ms (/ sr 10.0)))
+      (om-with-focused-view self
+        (when (and thesound thepicture)
+          (om-with-fg-color self *om-dark-gray-color*
+            (when (>= xview pict-threshold)
+              (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;(when (and (< xview 15000) (>= xview 8000) (< xview pict-threshold)) 
+              ;      (om-draw-waveform self step-50ms))
+              ;(when (and (< xview 8000) (>= xview 5500) (< xview pict-threshold)) 
+              ;      (om-draw-waveform self step-20ms))
+              ;(when (and (< xview 5500) (>= xview 3000) (< xview pict-threshold)) 
+              ;      (om-draw-waveform self step-10ms))
+              ;(when (and (< xview 3000) (>= xview 1800) (< xview pict-threshold)) 
+              ;      (om-draw-waveform self step-5ms))
+            (when (and (< xview pict-threshold) (>= xview 15000) (< xview pict-threshold)) 
+              (om-draw-waveform self step-5ms))
+            (when (and (< xview 15000) (>= xview 10000) (< xview pict-threshold)) 
+              (om-draw-waveform self step-2ms))
+            (when (and (< xview 10000) (>= xview 5500) (< xview pict-threshold)) 
+              (om-draw-waveform self step-1ms))
+            (when (and (< xview 5500) (>= xview 3000) (< xview pict-threshold)) 
+              (om-draw-waveform self step-800us))
+            (when (and (< xview 3000) (>= xview 2000) (< xview pict-threshold)) 
+              (om-draw-waveform self step-400us))
+            (when (and (< xview 2000) (>= xview 500) (< xview pict-threshold)) 
+              (om-draw-waveform self step-200us))
+            (when (and (< xview 500) (>= xview 300) (< xview pict-threshold)) 
+              (om-draw-waveform self step-100us))
+            (when (and (< xview 300) (< xview pict-threshold)) 
+              (om-draw-waveform self step-1smp))
+            (om-with-fg-color self *om-blue-color*
+              (loop for item in (markers thesound) 
+                    for k = 0 then (+ k 1) do
+                    (om-with-line-size (if (member k (selection? self)) 2 1)
+                      (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
+                      (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
+          (when (grille-p self)
+            (draw-grille self))
+          (draw-interval-cursor self)
+          (unless thepicture
+            (if (and (om-sound-file-name thesound) (zerop dur))
+                (om-with-focused-view self
+                  (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
+              (om-with-focused-view self 
+                (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
+              )
+            )))) (om-with-focused-view self(om-draw-string 10 40 (format nil "You have to load a file."))))))
+
+
+(defmethod om-draw-waveform ((self soundPanel) smpstep)
   (let* ((thesound (object (om-view-container self)))
-         (dur (or (and (and (om-sound-sample-rate thesound) (om-sound-n-samples thesound))
-                       (/ (om-sound-n-samples thesound) (om-sound-sample-rate thesound)))
-                  0))
-         (total-width (om-point-h (om-field-size self)))
-         (thepicture (and dur (pic-to-draw thesound))))
-    (om-with-focused-view self
-      (when (and thesound thepicture)
-        (om-with-fg-color self *om-dark-gray-color*
-          ;(print (list (w self) (om-point-h (om-field-size self))))
-          (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self)
-                                                                                   (om-make-point 0 15))
-                           ;:srctopleft (om-make-point (round (* (/ (car (rangex self)) (- (cadr (bounds-x self)) (car (bounds-x self))))
-                           ;                                     (om-point-h (om-get-picture-size thepicture))))
-                           ;                           0)
-                           ;:srcsize (om-make-point (print (round (* (/ (- (cadr (rangex self)) (car (rangex self))) 
-                           ;                                            (- (cadr (bounds-x self)) (car (bounds-x self))))
-                           ;                                  (om-point-h (om-get-picture-size thepicture)))))
-                           ;                        (om-point-v (om-get-picture-size thepicture))))                 
-                           ))
-        (om-with-fg-color self *om-blue-color*
-          (loop for item in (markers thesound)
-                for k = 0 then (+ k 1) do
-                (om-with-line-size (if (member k (selection? self)) 2 1)
-                  (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
-                  (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
-      (when (grille-p self)
-        (draw-grille self))
-      (draw-interval-cursor self)
-      (unless thepicture
-        (if (and (om-sound-file-name thesound) (zerop dur))
-            (om-with-focused-view self
-              (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
-          (om-with-focused-view self 
-            (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
-          )
-        )))))
+         (nch (om-sound-n-channels thesound))
+         (sr (om-sound-sample-rate thesound))
+         (window-v-size (om-point-v (om-view-size self)))
+         (stream-buffer (oa::om-sound-sndbuffer thesound))
+         (system-etat (get-system-etat self))
+         (xmin (car (rangex self)))
+         (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+         (xmax (cadr (rangex self)))
+         (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+         (xtime (- xmax xmin))
+         (basicstep smpstep)
+         (timestep (/ (/ sr 1000.0) smpstep))
+         (channels-h (round window-v-size nch))
+         (offset-y (round channels-h 2))
+         (datalist (loop for pt from 0 to (* timestep xtime) collect
+                                      (loop for chan from 0 to (- nch 1) collect 
+                                            (fli::dereference stream-buffer 
+                                                              :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
+                                                              :type :float)))))
+    (loop for i from 0 to (- nch 1) do  
+                                (om-draw-line pixmin (+ (* i channels-h) offset-y) pixmax (+ (* i channels-h) offset-y)))
+    (setf sampleprev (car datalist))
+    (loop for sample in (cdr datalist)
+                                  for i = 0 then (+ i 1) do 
+                                  (loop for val in sample 
+                                        for c = 0 then (+ c 1) do
+                                        (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
+                                        (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
+                                        (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
+                                        (om-draw-line  pixtimeprev (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev))))
+                                                       pixtime (+ offset-y (* c channels-h) pixpoint)) 
+                                        ) (setf sampleprev sample))))
+
 
 
 (defmethod draw-interval-cursor ((self soundPanel))
@@ -800,19 +878,19 @@
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1b*
                                         )
-                   (om-make-dialog-item 'om-static-text (om-make-point 200 4) (om-make-point 120 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
                                         (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*
                                         )
-                   (om-make-dialog-item 'om-static-text (om-make-point 300 4) (om-make-point 80 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
                                         (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
                                                                  (round (om-sound-sample-rate (object self)))
                                                                "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*
                                         )
-                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 80 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 18)
                                         (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*

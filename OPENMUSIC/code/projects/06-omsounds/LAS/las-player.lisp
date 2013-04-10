@@ -1,7 +1,7 @@
 (in-package :om)
 
 (defclass las-player (omplayer) 
-  (sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
+  ((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play)))
 
 (defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
 

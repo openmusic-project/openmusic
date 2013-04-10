@@ -7,7 +7,6 @@
 ;         -One called *audio-player-hidden*, which is used when the user just wants to play sounds without going through a track system.
 ;The *audio-player-hidden* has a track system, but it's internally managed and it's impossible to apply effects or anything else on these tracks. They are "hidden".
 
-
 (in-package :oa)
 
 (export '(
@@ -36,7 +35,6 @@
           get-channel-curframe
 
           ) :om-api)
-
 
 (defvar *audio-player-visible* nil)
 (defvar *audio-player-hidden* nil)
@@ -369,8 +367,6 @@
 ;===============================================================================================================================================================
 ;=================================================================AUDIO INITIALIZATION==========================================================================
 ;===============================================================================================================================================================
-
-
 
 ;(instanciate-players)
 ;(start-global-audio-context)

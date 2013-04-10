@@ -151,15 +151,8 @@
        )))
 
 
-;--------------------
-; PLAY CURSOR
-;--------------------
 
-(defmethod play-from-palette ((self cursor-play-view-mixin))
-  (call-next-method))
 
-(defmethod play-selection-from-palette ((self cursor-play-view-mixin))
-  (call-next-method))
 
 
 #|
