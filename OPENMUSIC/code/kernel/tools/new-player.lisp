@@ -13,7 +13,6 @@
 (defmethod class-from-player-type ((type t)) 'omplayer)
 
 (defmacro get-player-time (player)
-  (print a)
   `(cond ((equal (state ,player) :play)
           (print (clock-time))
           (+ (player-offset ,player) (start-time ,player) (- (ref-clock-time ,player) (clock-time))))
@@ -29,17 +28,17 @@
         (start-time player) 0
         (ref-clock-time player) (clock-time)))
 
-(defun player-pause (player)
+(defmethod player-pause ((player omplayer))
   (setf (start-time player) (get-player-time player)
         (state player) :pause
         ))
 
-(defun continue-continue (player)
+(defmethod player-continue ((player omplayer))
   (setf (start-time player) (get-player-time player)
         (state player) :play
         ))
 
-(defun player-stop (player)
+(defmethod player-stop ((player omplayer))
   (setf (state player) :stop
         (ref-clock-time player) (clock-time)
         (start-time player) 0
@@ -47,57 +46,49 @@
 
 
 ;;;=================================
-;;; THE VIEW
+;;; AN EDITOR ASSOCIATED WITH A PLAYER
 ;;;=================================
-(defclass play-view-mixin ()
+(defclass play-editor-mixin ()
    ((player :initform nil :accessor player)
     (player-type :initform nil :accessor player-type)
     (loop-play :initform nil :accessor loop-play)))
 
-(defmethod initialize-instance :after ((self play-view-mixin) &rest initargs)
-  (setf (player self) (make-instance (class-from-player-type (player-type self)))))
+(defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
+  (setf (player self) (print (make-instance (print (class-from-player-type (print (get-score-player self))))))))
 
 ;;; RETURNS OBJ, TMIN, TMAX
-(defmethod get-obj-to-play ((self play-view-mixin))
-  (values (object (om-view-container self)) nil nil))
+(defmethod get-obj-to-play ((self play-editor-mixin))
+  (values (object self) nil nil))
 
-(defmethod editor-play ((self play-view-mixin))
+(defmethod editor-play ((self play-editor-mixin))
   (setf (loop-play (player self)) (loop-play self))
   (multiple-value-bind (obj t1 t2)
       (get-obj-to-play self)
     (player-start (player self) obj :interval (and t1 t2 (list t1 t2)))))
 
-(defmethod om-draw-contents :after ((self play-view-mixin))
+(defmethod editor-pause ((self play-editor-mixin))
+  (player-pause (player self)))
+
+(defmethod editor-stop ((self play-editor-mixin))
+  (player-stop (player self)))
+
+(defmethod om-draw-contents :after ((self play-editor-mixin))
   ;(call-next-method)
   (om-with-focused-view self
   (om-draw-string (- (w self) 40) 20
-                  (format nil "~D" (print (get-player-time (player self)))))))
+                  (format nil "~D" (get-player-time (player self))))))
 
 ;;; temp compatibility
-(defmethod recording? ((self play-view-mixin))
+(defmethod recording? ((self play-editor-mixin))
   (equal (state (player self)) :record))
 
-;;;===================================
-;;; PALETTE ACTIONS 
-;;;===================================
-
-(defmethod play-from-palette ((self play-view-mixin))
-  (when (idle-p (player self))
-    (editor-play self)
-    (palette-act *palette* 1)))
-
-(defmethod play-selection-from-palette ((self play-view-mixin))
-  (play-from-palette self))
-
-(defmethod push-loop-button ((self play-view-mixin))
-  (setf (loop-play (player self)) (loop-play (player self))))
 
 
 ;;;===================================
-; WINDOWS WITH CURSOR
+; VIEW WITH CURSOR
 ;;;===================================
 
-(defclass cursor-play-view-mixin (play-view-mixin om-view-cursor-play) 
+(defclass cursor-play-view-mixin (om-view-cursor-play) 
   ((cursor-mode  :initform :normal :accessor cursor-mode)   ;; :normal ou :interval
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))

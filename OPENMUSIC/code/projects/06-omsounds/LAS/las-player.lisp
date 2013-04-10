@@ -1,23 +1,28 @@
 (in-package :om)
 
+(defclass las-player (omplayer) 
+  (sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
 
-(defclass las-player (omplayer) ())
-
-(defmethod class-from-player-type ((type (eql :libaudiostream)) 'las-player))
+(defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
 
 ;;; called when a box or editor attached to player is played
 (defmethod player-start ((self las-player) obj &key interval)
-  (om-smart-play-stop obj))
+  (setf (sound-to-play self) obj)
+  (call-next-method)
+  (oa::om-smart-play obj))
+
+(defmethod player-stop ((player omplayer))
+  (oa::om-smart-stop obj))
 
 ;;; called when a box or editor attached to player is removed/closed
-(defmethod box-stop-player (box (player las-player))  
-  (let* (;(player (oa::assoc-player self))
+(defmethod player-cleanup ((player las-player))
+  (let* ((snd (sound-to-play player))
          (status-list (if (eq player oa::*audio-player-hidden*)
                           oa::*audio-player-hidden-tracks-info*
                         oa::*audio-player-visible-tracks-info*))
          (chan (if (eq player oa::*audio-player-hidden*)
-                   (oa::tracknum-sys snd)
-                 (tracknum snd)))
+                   (oa::tracknum-sys (sound-to-play player))
+                 (tracknum (sound-to-play player))))
          (loadedsnd (car (gethash chan status-list)))
          (status (cadr (gethash chan status-list))))
     (if (eq snd loadedsnd)

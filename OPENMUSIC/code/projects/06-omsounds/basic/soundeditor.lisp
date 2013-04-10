@@ -106,21 +106,22 @@
   (let* ((x0 220)
         ;(snd (object (om-view-container self)))
          (editor (om-view-container self))
-         (sndpanel (panel editor))) 
+         (sndpanel (panel editor))
+         (snd (object editor))) 
     (setf (dyn-ctrl-list self) (make-snd-ctrl-list self))
     
     (om-add-subviews self
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 210) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_play" :icon2 "simple_play_pushed"
-                                         :action #'(lambda (item) (editor-play editor))
+                                         :action #'(lambda (item) (editor-play editor)))
 
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 185) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_pause" :icon2 "simple_pause_pushed"
-                                         :action #'(lambda (item) (oa::om-smart-pause snd sndpanel)))
+                                         :action #'(lambda (item) (editor-pause editor)))
 
                      (om-make-view 'om-icon-button :position (om-make-point (- x0 160) 5) :size (om-make-point 20 20)
                                          :icon1 "simple_stop" :icon2 "simple_stop_pushed"
-                                         :action #'(lambda (item) (oa::om-smart-stop snd sndpanel)))
+                                         :action #'(lambda (item) (editor-stop editor)))
 
                      (om-make-dialog-item 'om-check-box (om-make-point (- x0 90) 4)
                                (om-make-point 130 20) "Send to track :"
@@ -151,9 +152,6 @@
                      ;(fourth (dyn-ctrl-list self))
                      )
     t))
-
-
-
 
 
 (defmethod update-controls ((self Aiff-control))
@@ -247,7 +245,7 @@
 
 ;=======================EDITOR====================
    
-(omg-defclass soundEditor (EditorView object-editor) 
+(omg-defclass soundEditor (EditorView object-editor play-editor-mixin)
    ((rulerx :initform nil :accessor rulerx)
     (mode :initform nil :accessor mode)
     (control :initform nil :accessor control)
@@ -269,12 +267,8 @@
 ; (init-coor-system view)
 
 
-
 (defmethod editor-null-event-handler :after ((self soundEditor))  ;chercher *mouse-window-event* par tout et enlever 
    (do-editor-null-event self))
-
-(defmethod editor-has-palette-p ((self soundEditor)) 'sound-palette)
-
 
 
 (defmethod initialize-instance :after ((self soundEditor) &rest l)
@@ -383,14 +377,14 @@
    (om-set-view-size (rulerx (panel self)) (om-make-point (w self) 25))
    (om-invalidate-view self))
 
-(defmethod om-get-menu-context ((self soundEditor))
-  (let* ((thesound (object self)))
-    (when (pict-spectre thesound)
-      (if (pict-spectre? thesound)
-        (list (om-new-leafmenu "show waveform" #'(lambda () (change-sound-pict (panel self))))
-              )
-        (list (om-new-leafmenu "show spectre" #'(lambda () (change-sound-pict (panel self))))
-              )))))
+;(defmethod om-get-menu-context ((self soundEditor))
+;  (let* ((thesound (object self)))
+;    (when (pict-spectre thesound)
+ ;     (if (pict-spectre? thesound)
+ ;       (list (om-new-leafmenu "show waveform" #'(lambda () (change-sound-pict (panel self))))
+ ;;             )
+ ;       (list (om-new-leafmenu "show spectre" #'(lambda () (change-sound-pict (panel self))))
+;              )))))
 
 (defmethod get-menubar ((self soundEditor)) 
   (list (om-make-menu "File" 
@@ -510,8 +504,7 @@
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc (reset-cursor self))
-     (#\SPACE (let ((snd (object (om-view-container self))))
-                (oa::om-smart-play-stop snd self)))
+     (#\SPACE (editor-play (editor self)))
      (otherwise (call-next-method))))
 
 
@@ -717,8 +710,7 @@
 
 (defmethod om-draw-contents ((self soundPanel))
   (call-next-method)  
-  (if ;(recording? self)
-      (equal (state (player self)) :recording)
+  (if (equal (state (player (editor self))) :recording)
       (om-with-focused-view self  
          (om-with-fg-color self *om-red2-color*
            (om-with-font *om-default-font4b*
@@ -773,10 +765,6 @@
               (om-with-line-size 2 
                 (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
         ))))
-
-
-
-
 
 (defmethod draw-grille  ((self soundpanel)) 
    (om-with-focused-view self

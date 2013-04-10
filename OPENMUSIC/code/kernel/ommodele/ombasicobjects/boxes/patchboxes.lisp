@@ -997,7 +997,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
   (object-remove-extra (value box) box)
   (call-next-method))
 
-(defmethod object-remove-extra ((self t)) nil)
+(defmethod object-remove-extra ((obj t) box) nil)
 
 
 (defmethod player-menu-item ((self OMBoxEditCall)) 

@@ -32,8 +32,6 @@
 
 (in-package :om-api)
 
-
-
 (export '(
           om-start-audio
           *om-player-sample-rate*
