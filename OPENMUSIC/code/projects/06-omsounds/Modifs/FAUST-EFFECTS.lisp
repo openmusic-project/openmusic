@@ -153,6 +153,19 @@
 
 (defmethod get-obj-dur ((self faust-effect-console)) 0)
 
+
+(defmethod object-remove-extra ((self faust-effect-console) box)
+  (let* ((ptr (effect-ptr self)))
+    (if ptr
+        (let ((n (get-number-faust-effects-pool))
+              (track (- (nth 1 (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*)) 1)))
+          (if (>= track 0)
+              (las::RemoveAudioEffect (gethash track oa::*effects-lists*) ptr))
+          (setf (gethash (find-effect-index-in-pool ptr) *faust-effects-pool*) (list nil 0 "faust-effect"))
+          (pack-faust-effects-pool n)
+          ))))
+
+
 ;================ CONTROLLER EDITOR ===================
 
 (omg-defclass faustcontrollerEditor (EditorView) 
