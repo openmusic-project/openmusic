@@ -48,9 +48,11 @@
     "multi;sound-players"
     "multi;multiplayer"
     
+    "LAS;las-player"
+
     "Modifs;FAUST-EFFECTS"
     "Modifs;VERIFIED-MODIFS"
-    "basic;newaudioplayer"
+    
    
 
  ))
