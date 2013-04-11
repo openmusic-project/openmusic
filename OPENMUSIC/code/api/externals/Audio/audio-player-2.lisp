@@ -1,10 +1,57 @@
 ;===============================================================================================================================================================
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
+;;;Ce fichier doit devenir une sorte d'API qui fournit une palette de fonctions pour gérer tout le transport des sons avec LAS.
+;;;/////
+;;;/////
+;;;/////
+;;;Il n'y a besoin que de :
 
+;las-register-players -> l'utilisateur enregistre ses deux players LAS pour que le système en utilise un en hidden un en visible
+;las-play ->capable de gérer une liste
+;las-pause ->capable de gérer une liste
+;las-stop ->capable de gérer une liste
+;(las-play-stop)/(las-play-pause) ->capable de gérer une liste
+
+;;;Pour ce qui est des intervalles à gérer, ne pas oublier que cela revient à faire un Cut sur le pointeur courant et updater le pointeur to-play
+;;;donc éventullement faire une fonction d'update du pointeur to-play à part 
+;;;/////
+;;;/////
+;;;/////
 
 (in-package :oa)
 
+
+
+(defun las-register-players (player1 player2)
+  (if (and (pointerp player1) (pointerp player2))
+      (let ()
+        (setf *audio-player-hidden* player1)
+        (setf *audio-player-visible* player2))))
+
+(defun las-play (obj)
+  (if (listp obj)
+      (loop for object in obj do
+          (om-smart-play object))
+    (om-smart-play obj)))
+
+(defun las-pause (obj)
+  (if (listp obj)
+      (loop for object in obj do
+          (om-smart-pause object))
+    (om-smart-pause obj))
+  )
+
+(defun las-stop (obj)
+  (if (listp obj)
+      (loop for object in obj do
+          (om-smart-stop object))
+    (om-smart-stop obj))
+  )
+
+
+
+;;;;////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ;/SMART PLAY STOP LIST FUNCTION
 ;This function take as argument a list of sound objects and call smart-play-stop for each one of these.
