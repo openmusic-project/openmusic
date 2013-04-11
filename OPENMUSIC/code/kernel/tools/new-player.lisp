@@ -27,7 +27,8 @@
 (defmethod idle-p ((self omplayer)) 
   (not (equal (state self) :play)))
 
-(defmethod player-start ((player omplayer) obj &key interval)
+
+(defmethod player-play ((player omplayer) obj &key interval)
   (setf (state player) :play
         (start-time player) 0
         (ref-clock-time player) (clock-time)))
@@ -42,7 +43,7 @@
         (state player) :play
         ))
 
-(defmethod player-stop ((player omplayer))
+(defmethod player-stop ((player omplayer) &optional object)
   (setf (state player) :stop
         (ref-clock-time player) (clock-time)
         (start-time player) 0
@@ -66,7 +67,7 @@
 (defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
   (setf (player self) (make-instance (class-from-player-type (get-score-player self)))))
 
-(defmethod reset-player ((self play-editor-mixin) player)
+(defmethod reset-editor-player ((self play-editor-mixin))
   (setf (player self) (make-instance (class-from-player-type (get-score-player self))))
   (player-init (player self)))
 
@@ -78,7 +79,7 @@
   (setf (loop-play (player self)) (loop-play self))
   (multiple-value-bind (obj t1 t2)
       (get-obj-to-play self)
-    (player-start (player self) obj :interval (and t1 t2 (list t1 t2)))))
+    (player-play (player self) obj :interval (and t1 t2 (list t1 t2)))))
 
 (defmethod editor-pause ((self play-editor-mixin))
   (player-pause (player self)))

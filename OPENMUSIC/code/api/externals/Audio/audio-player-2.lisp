@@ -40,20 +40,20 @@
 ;/SMART PLAY FUNCTION
 ;This function makes the choice to call the right play function (hidden or visible)
 ;It also checks if there's a selection to play, or if it has to play the song straight ahead.
-(defun om-smart-play (sound &optional (interval nil))
+(defun om-smart-play (sound &optional from to track)
   (let ((snd sound))
     (if (sndlasptr-current snd)
         (let ()
           ;(if (and sndpanel (om::selection-to-play-? sndpanel))
               (let* (;(interval (caddr (om::get-selection-to-play sndpanel)))
-                     (begin-time (car interval))
-                     (end-time (cadr interval))
+                     (begin-time from)
+                     (end-time to)
                      (nch (number-of-channels snd))
                      (nsmp (number-of-samples snd))
                      (sr (sample-rate snd))
                      (srdiv (* (/ sr srate) 1.0)))
                 
-                (when interval
+                (when (and from to)
                   (let ((begin (round (* begin-time (/ srate 1000.0))))
                         (end (round (* end-time (/ srate 1000.0)))))
                     (if (> end (las::GetLengthSound (sndlasptr-current snd)))
@@ -87,7 +87,7 @@
 (defun om-smart-stop (snd)
   (let ((sound snd))
     ;(if sndpanel (setf sound (om::object (om-view-container sndpanel))))
-    (if (sndlasptr-current sound)
+    (if (and sound (sndlasptr-current sound))
         (if (eq (assoc-player sound) *audio-player-hidden*)
             (let () 
               ;(if sndpanel 
@@ -145,7 +145,7 @@
 ;                       -if the selected track is already filled but Idle, the system allows the replacement
 ;                       -if the selected track is already filled but Play or Paused, the system forbid the replacement and notice the user.
 (defun om-smart-play-visible (snd &optional (tracknum 0))
-  (let* ((actual-track tracknum snd)
+  (let* ((actual-track tracknum)
          (player *audio-player-visible*)) 
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (cond ((string-equal "Idle" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
@@ -194,7 +194,7 @@
 ;/STOP FUNCTION FOR VISIBLE PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-stop-visible (snd &optional (tracknum 0))
-  (let ((actual-track tracknum snd)
+  (let ((actual-track tracknum)
         (player *audio-player-visible*)) 
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (let ()

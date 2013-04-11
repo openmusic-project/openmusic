@@ -156,7 +156,7 @@
     ;(set-value (pan-control self) (pan (object (editor self))))
     ))
 
-(defmethod make-player-specific-controls (t control-view) nil)
+(defmethod make-player-specific-controls (player control-view) nil)
 
 (defmethod update-player-controls ((self sound-control-view) player)
   (apply #'om-remove-subviews self (player-specific-controls self))
@@ -410,6 +410,7 @@
 ;;; PLAYER FEATURES
 (defmethod change-player ((self soundeditor) player)
   (call-next-method)
+  (reset-editor-player self) 
   (update-player-controls (control self) player))
 
 ;(defmethod editor-play ((sef soundeditor)) )

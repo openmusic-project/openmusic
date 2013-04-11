@@ -33,7 +33,7 @@
    (selec  :initform nil :accessor selec)))
 
 (defclass* sound (simple-score-element internalsound) 
-  ((tracknum :accessor tracknum :initarg :tracknum :initform 1 :documentation "a track index for multichannel mixing")
+  ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
    (pan :accessor pan :initform 0))  
@@ -227,7 +227,7 @@ Press 'space' to play/stop the sound file.
 (defmethod cons-new-object ((self sound) args objs)
   (let ((rep (call-next-method)))
     (when rep
-      (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 1))
+      (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 0))
       (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args))))
     rep))
 
