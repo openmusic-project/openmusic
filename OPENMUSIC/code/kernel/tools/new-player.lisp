@@ -12,6 +12,8 @@
 
 (defmethod class-from-player-type ((type t)) 'omplayer)
 
+(defmethod make-player-specific-controls ((self omplayer) control-view) nil)
+
 (defmacro get-player-time (player)
   `(cond ((equal (state ,player) :play)
           (print (clock-time))
@@ -19,6 +21,8 @@
          ((equal (state ,player) :pause)
           (+ (player-offset ,player) (start-time ,player)))
          (t 0)))
+
+(defmethod player-init ((self omplayer)) t)
 
 (defmethod idle-p ((self omplayer)) 
   (not (equal (state self) :play)))
@@ -45,6 +49,12 @@
         ))
 
 
+
+
+
+
+
+
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
 ;;;=================================
@@ -54,7 +64,11 @@
     (loop-play :initform nil :accessor loop-play)))
 
 (defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
-  (setf (player self) (print (make-instance (print (class-from-player-type (print (get-score-player self))))))))
+  (setf (player self) (make-instance (class-from-player-type (get-score-player self)))))
+
+(defmethod reset-player ((self play-editor-mixin) player)
+  (setf (player self) (make-instance (class-from-player-type (get-score-player self))))
+  (player-init (player self)))
 
 ;;; RETURNS OBJ, TMIN, TMAX
 (defmethod get-obj-to-play ((self play-editor-mixin))
@@ -71,6 +85,13 @@
 
 (defmethod editor-stop ((self play-editor-mixin))
   (player-stop (player self)))
+
+(defmethod editor-play/stop ((self play-editor-mixin))
+  (if (idle-p (player self))
+      (editor-play self)
+    (editor-stop self)))
+
+
 
 (defmethod om-draw-contents :after ((self play-editor-mixin))
   ;(call-next-method)
@@ -89,7 +110,7 @@
 ;;;===================================
 
 (defclass cursor-play-view-mixin (om-view-cursor-play) 
-  ((cursor-mode  :initform :normal :accessor cursor-mode)   ;; :normal ou :interval
+  ((cursor-mode  :initform :normal :accessor cursor-mode :initarg :cursor-mode)   ;; :normal ou :interval
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))
 

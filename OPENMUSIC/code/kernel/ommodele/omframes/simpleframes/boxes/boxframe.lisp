@@ -729,7 +729,7 @@
                                 :params (loop for item in playlist
                                               collect (edition-params item)))))
     (when sndplaylist
-      (oa::om-smart-play-stop-list sndplaylist))))
+      (oa::om-smart-play-stop-list sndplaylist)))) 
 
 
 ;--------------DRAG AND DROP
