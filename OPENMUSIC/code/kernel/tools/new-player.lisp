@@ -16,7 +16,6 @@
 
 (defmacro get-player-time (player)
   `(cond ((equal (state ,player) :play)
-          (print (clock-time))
           (+ (player-offset ,player) (start-time ,player) (- (ref-clock-time ,player) (clock-time))))
          ((equal (state ,player) :pause)
           (+ (player-offset ,player) (start-time ,player)))

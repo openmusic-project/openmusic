@@ -33,7 +33,7 @@
    (selec  :initform nil :accessor selec)))
 
 (defclass* sound (simple-score-element internalsound) 
-  ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing")
+  ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
    (pan :accessor pan :initform 0))  
