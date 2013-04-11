@@ -13,9 +13,6 @@
 (defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
 
 
-(defmethod player-play ((self las-player) (object t) &key interval)
-  (om-beep-msg "LAS player plays only SOUND objects"))
-
 
 ;;; called when a box or editor attached to player is played
 (defmethod player-play ((self las-player) (object sound) &key interval)
@@ -48,30 +45,32 @@
 
 ;;; creates the player-specific control on the sound editor control panel
 (defmethod make-player-specific-controls ((self las-player) control-view)
-  (let ((snd (object (editor control-view))))
+  (let* ((snd (object (editor control-view)))
+         (track (tracknum snd)))
     (list 
-     (om-make-dialog-item 'om-static-text (om-make-point 420 4)
-                          (om-make-point 80 20) "Track"
+     (om-make-dialog-item 'om-static-text (om-make-point 420 8)
+                          (om-make-point 40 20) "Track"
                           :font *om-default-font1*)
      (om-make-dialog-item 'numBox
-                          (om-make-point 530 8)
-                          (om-make-point 28 18) (format () " ~D" (tracknum (object (editor control-view))))
+                          (om-make-point 480 8)
+                          (om-make-point 60 18) (if (> track 0) (format () " ~D" track) "no track")
                           :min-val 0 :max-val 32
                           :font *om-default-font1*
                           :bg-color *om-white-color*
-                          :value (tracknum (object (editor control-view)))
+                          :fg-color (if (> track 0) *om-black-color* *om-gray-color*)
+                          :value track
                           :afterfun #'(lambda (item)
-                                        (let ()
-                                          (if (eq (oa::assoc-player snd) *audio-player-visible*)
-                                              (oa::om-smart-stop snd))
-                                          (print "test")
-                                          ;(setf (tracknum (object (om-view-container self))) (- (value item) 1))
-                                          (report-modifications (editor control-view)))))
-     (om-make-dialog-item 'om-check-box (om-make-point 590 4)
-                          (om-make-point 170 20) "Use Original Sound"
-                          :font *om-default-font1*
-                          :checked-p (if (or (= -1 (oa::current-is-original snd)) 
-                                             (= 0 (oa::current-is-original snd))) nil t)
-                          :di-action (om-dialog-item-act item (let ()
-                                                                (oa::om-use-original-sound sndpanel))))
+                                        (setf (tracknum snd) (value item))
+                                        (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
+                                        (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
+                                        (player-stop self snd)
+                                        ; (if (eq (oa::assoc-player snd) *audio-player-visible*) (oa::om-smart-stop snd))
+                                        (report-modifications (editor control-view))))
+     ;(om-make-dialog-item 'om-check-box (om-make-point 590 4)
+     ;                     (om-make-point 170 20) "Use Original Sound"
+     ;                     :font *om-default-font1*
+     ;                     :checked-p (if (or (= -1 (oa::current-is-original snd)) 
+     ;                                        (= 0 (oa::current-is-original snd))) nil t)
+     ;                     :di-action (om-dialog-item-act item (let ()
+     ;                                                           (oa::om-use-original-sound sndpanel))))
      )))

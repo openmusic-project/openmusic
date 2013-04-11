@@ -85,7 +85,7 @@
   (player-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
-  (player-stop (player self)))
+  (player-stop (player self) (get-obj-to-play self)))
 
 (defmethod editor-play/stop ((self play-editor-mixin))
   (if (idle-p (player self))

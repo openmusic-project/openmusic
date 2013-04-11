@@ -22,8 +22,6 @@
 
 (in-package :om) 
 
-
-
 ;;;====================== 
 ;;; TITLE BAR / SOUND INFO
 ;;;======================
@@ -146,12 +144,10 @@
                     
                      ))
                            
-
 (defmethod update-controls ((self sound-control-view))
-  (Let ((player (get-edit-param (editor self) 'player)))
-    (unless (equal player (nth (om-get-selected-item-index (player-control self)) *audio-players*))
-      (om-set-selected-item (player-control self) (audio-player-name player))
-      (update-player-controls self player))
+  (let ((player (get-edit-param (editor self) 'player)))
+    (om-set-selected-item (player-control self) (audio-player-name player))
+    (update-player-controls self player)
     ;(set-value (vol-control self) (vol (object (editor self))))
     ;(set-value (pan-control self) (pan (object (editor self))))
     ))
