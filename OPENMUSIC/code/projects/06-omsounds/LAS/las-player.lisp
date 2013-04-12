@@ -65,11 +65,10 @@
                           :fg-color (if (> track 0) *om-black-color* *om-gray-color*)
                           :value track
                           :afterfun #'(lambda (item)
-                                        (setf (tracknum snd) (value item))
-                                        (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
-                                        (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
                                         (player-stop self snd)
-                                        ; (if (eq (oa::assoc-player snd) *audio-player-visible*) (oa::om-smart-stop snd))
+                                        (setf (tracknum snd) (value item))
+                                        (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
+                                        (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
                                         (report-modifications (editor control-view))))
      ;(om-make-dialog-item 'om-check-box (om-make-point 590 4)
      ;                     (om-make-point 170 20) "Use Original Sound"

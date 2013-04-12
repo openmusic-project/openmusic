@@ -1,25 +1,10 @@
 ;===============================================================================================================================================================
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
-;;;Ce fichier doit devenir une sorte d'API qui fournit une palette de fonctions pour gérer tout le transport des sons avec LAS.
-;;;/////
-;;;/////
-;;;/////
-;;;Il n'y a besoin que de :
-
-;las-play ->capable de gérer une liste
-;las-pause ->capable de gérer une liste
-;las-stop ->capable de gérer une liste
-;(las-play-stop)/(las-play-pause) ->capable de gérer une liste
-
-;;;Pour ce qui est des intervalles à gérer, ne pas oublier que cela revient à faire un Cut sur le pointeur courant et updater le pointeur to-play
-;;;donc éventullement faire une fonction d'update du pointeur to-play à part 
-;;;/////
-;;;/////
-;;;/////
-
 (in-package :oa)
 
+
+;;;////////////////////"API"////////////////////
 (export '(
           las-play
           las-pause
@@ -49,41 +34,35 @@
 (defun las-play/stop (obj &optional track)
   (if (listp obj)
       (loop for object in obj do
-          (om-smart-play object from to track))
-    (om-smart-play obj from to track)))
+          (om-smart-play/stop object from to track))
+    (om-smart-play/stop obj from to track)))
+;;;/////////////////////////////////////////////
 
 ;;;;////////////////////////////////////////////////////////////////////////////////////////////////////
 
-;/SMART PLAY STOP LIST FUNCTION
-;This function take as argument a list of sound objects and call smart-play-stop for each one of these.
-(defun om-smart-play-stop-list (list)
-    (loop for snd in list do
-          (om-smart-play-stop snd)))
-
 ;/SMART PLAY STOP FUNCTION
 ;This function decides to play or stop a sound according to his current state.
-(defun om-smart-play-stop (snd &optional (tracknum 0))
-  (let* ((player (assoc-player snd))
-         (chan (if (eq player *audio-player-hidden*)
-                   (tracknum-sys snd)
-                 tracknum))
-         (status-list (if (eq player *audio-player-hidden*)
-                          *audio-player-hidden-tracks-info*
-                        *audio-player-visible-tracks-info*)))
-    (if (eq snd (car (gethash chan status-list)))
+(defun om-smart-play/stop (sound &optional track)
+  (let ((chan (if (and track (> 0 track)) 
+                  track
+                (tracknum-sys sound)))
+        (status-list (if (and track (> 0 track))
+                         *audio-player-visible-tracks-info*
+                       *audio-player-hidden-tracks-info*)))
+    (if (eq sound (car (gethash chan status-list)))
         (if (string-equal "Playing" (cadr (gethash chan status-list)))
-            (if sndpanel (om-smart-stop snd sndpanel) (om-smart-stop snd))
-          (if sndpanel (om-smart-play snd sndpanel) (om-smart-play snd)))
-      (if sndpanel (om-smart-play snd sndpanel) (om-smart-play snd)))))
+            (om-smart-stop sound track)
+          (om-smart-play sound track)
+      (om-smart-play sound)))))
 
 ;/SEND TO TRACK FUNCTION
 ;This function stops the sound and changes the associated player.
-(defun om-send-to-track (snd)
-  (if (assoc-player snd)
-      (let () (om-smart-stop snd)
-        (if (eq (assoc-player snd) *audio-player-hidden*)
-            (setf (assoc-player snd) *audio-player-visible*)
-          (setf (assoc-player snd) *audio-player-hidden*)))))
+;(defun om-send-to-track (snd)
+;  (if (assoc-player snd)
+;      (let () (om-smart-stop snd)
+;        (if (eq (assoc-player snd) *audio-player-hidden*)
+;            (setf (assoc-player snd) *audio-player-visible*)
+;          (setf (assoc-player snd) *audio-player-hidden*)))))
 
 ;/SMART PLAY FUNCTION
 ;This function makes the choice to call the right play function (hidden or visible)
