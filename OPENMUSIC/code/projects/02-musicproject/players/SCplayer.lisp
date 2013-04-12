@@ -19,14 +19,43 @@
 (defvar *SCosc-packets* nil)
 (defvar *index-packets* 0)
 
-(defvar *SCplayer-out-port* nil)
-;; TODO: get sclangs port after startup
-;; (setf *SCplayer-out-port* 57130)
-(setf *SCplayer-out-port* 57120)
-;; (setf *SCplayer-out-port* 57121)
-
 (defvar *SCplayer-host* nil)
 (setf *SCplayer-host* "127.0.0.1")
+
+(defvar *SCplayer-lang-port* nil)
+;; TODO: get sclangs port after startup
+;; (setf *SCplayer-lang-port* 57130)
+;; (setf *SCplayer-lang-port* 57120)
+;; (setf *SCplayer-lang-port* 57121)
+
+;;; created from SC_OM_Player.sc, holding portno. after boot:
+
+(defvar *sclang_tmp_file* "/tmp/OMSC.lang.port.tmp") 
+
+;; have sclang write its NetAddr.langPort to tempfile after boot, and
+;; read it in when its ready:
+
+(defun SC_read_new_sclang_port (file)
+  (loop 
+     (mp:process-wait (format nil "Waiting for file ~a" file) 'probe-file file)
+     (format *standard-output* "~&Reading new sclang port from ~a: " file)
+     (let ((temp-file (format nil "~a.temp" file))) 
+       (rename-file file temp-file) ;;atomic read, just in case
+       (with-open-file (istream temp-file)
+	 (loop (let ((line (read-line istream nil)))
+		 (unless line
+		   (return))
+		 (write-line line *standard-output*)
+		 (setf *SCplayer-lang-port* (parse-integer line :junk-allowed t)))))
+       (delete-file temp-file))))
+
+(defun SC-read-port-from-file ()
+  (delete-file *sclang_tmp_file*)
+  (mp:process-run-function "Reading sclang-port from file" ()
+                                  'SC_read_new_sclang_port
+                                  *sclang_tmp_file*))
+;; (SC-read-port-from-file)
+(om-add-init-func 'SC-read-port-from-file)
 
 (setf *om-udp-max-buf-size* 500)
 
@@ -40,7 +69,6 @@
 (defvar *SC-player-io* nil)
 (defvar *SC-setup-file* nil)
 
-
 (defun init-SCplayer-app ()
   (let ((*SC-setup-file*
 	 ;;(namestring (make-pathname :directory (pathname-directory *load-pathname*) :name "SC_OM_Player.sc"))
@@ -50,13 +78,11 @@
       (setf *SC-player-path* 
 	    #-linux (capi::prompt-for-file "Path to sclang executable:" :pathname (om-default-application-path "" "sclang"))
 	    #+linux "sclang")
-      ;; (setf *SC-cmd-line* (format nil "~A -u ~A ~A" *SC-player-path* *SCplayer-out-port* *SC-setup-file*))
-      (setf *SC-cmd-line* (format nil "~A  ~A" *SC-player-path* *SC-setup-file*)) ; find way to receive NetAddr.langPort from booted sclang...
+      (setf *SC-cmd-line* (format nil "~A ~A" *SC-player-path* *SC-setup-file*))
       )))
 
 ;; (init-SCplayer-app)
-(print *SC-cmd-line*)
-
+;; (print *SC-cmd-line*)
 
 (om-add-init-func 'init-SCplayer-app)
 
@@ -64,21 +90,24 @@
 (setf *SC-player-io* nil)
 
 (defun launch-SCplayer-app ()
-  (if *SC-player-pid*
-      (print (format nil "sclang already running: ~A" *SC-player-pid*))
-      (multiple-value-bind (io err pid)
-	  (system:run-shell-command *SC-cmd-line*
-				    :wait nil
-				    :input :stream
-				    :output :stream
-				    :error-output :stream)
-	(setf *SC-player-pid* pid)
-	(setf *SC-player-io* io)
-	(print (format nil "started sclang: pid: ~A~%" pid))
-	(print *SC-cmd-line*))))
+  (when (and (streamp *SC-player-io*) (open-stream-p *SC-player-io*)) (close *SC-player-io*))
+  (multiple-value-bind (io err pid)
+      (system:run-shell-command *SC-cmd-line*
+				:wait nil
+				:input :stream
+				:output :stream
+				:error-output nil)
+    (setf *SC-player-pid* pid)
+    (setf *SC-player-io* io)
+    (print (format nil "started sclang: pid: ~A~%" pid))))
 
 ;; (launch-SCplayer-app)
 (om-add-init-func 'launch-SCplayer-app)
+
+
+;; (setf *SC-cmd-line* (format nil "~A  ~A" "sclang" "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/projects/02-musicproject/players/SC_OM_Player.sc"))
+
+;; (format t "NetAddr.langPort~A~%" (string #\Page))
 
 (defun stop-and-cleanup-SCplayer-app ()
   (progn
@@ -108,12 +137,12 @@
 ;;SCPLAYER PROTOCOL
 
 (defun SC-reset ()
-  (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  '(("/play.sc_om/reset")))
+  (om-send-osc-bundle *SCplayer-lang-port* *SCplayer-host*  '(("/play.sc_om/reset")))
   (setf *SCosc-packets* nil))
 
 ;;================
 (defun SC-start ()
-  (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  '(("/play.sc_om/start"))))
+  (om-send-osc-bundle *SCplayer-lang-port* *SCplayer-host*  '(("/play.sc_om/start"))))
 
 ;;================
 (defun sort-SC-events ()
@@ -129,7 +158,7 @@
 	 (unless (zerop *index-packets*)
 	   (setf (nth 1 event) (- (nth 1 event) (second (nth  (- *index-packets* 1) *SCosc-packets*)))))
 	 (setf *index-packets* (+ *index-packets* 1))
-	 (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  (list event)))))
+	 (om-send-osc-bundle *SCplayer-lang-port* *SCplayer-host*  (list event)))))
 
 ;;================
 
@@ -186,12 +215,11 @@
 			   (- (second newinterval) (first newinterval) 1) 
 			   (- (first newinterval) (first interval)))))
 	  (progn
-	    (print (list 'playoscnote chan pitch vel dur date))
+	    ;;(print (list 'playoscnote chan pitch vel dur date))
 	    (playoscnote chan pitch vel dur date))))))
 
 (defun playoscnote (chan pitch vel dur date)
-  ;; (print (list chan pitch vel dur date))
-  (print (list "/play.sc_om/fifos" date pitch vel dur chan))
+  ;;(print (list "/play.sc_om/fifos" date pitch vel dur chan))
   (push (list "/play.sc_om/fifos" date pitch vel dur chan) *SCosc-packets*))
 
 (defmethod Play-player ((self (eql 'SCplayer)))
@@ -200,10 +228,10 @@
   (SC-start)) 
 
 (defmethod Continue-Player ((self (eql 'SCplayer)))
-  (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  '(("/play.sc_om/continue"))))
+  (om-send-osc-bundle *SCplayer-lang-port* *SCplayer-host*  '(("/play.sc_om/continue"))))
 
 (defmethod Pause-Player ((self (eql 'SCplayer)))
-  (om-send-osc-bundle *SCplayer-out-port* *SCplayer-host*  '(("/play.sc_om/pause"))))
+  (om-send-osc-bundle *SCplayer-lang-port* *SCplayer-host*  '(("/play.sc_om/pause"))))
 
 (defmethod Stop-Player ((self (eql 'SCplayer)) &optional view)
   (declare (ignore view))
