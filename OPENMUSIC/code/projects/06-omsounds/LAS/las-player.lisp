@@ -18,12 +18,17 @@
 (defmethod player-play ((self las-player) (object sound) &key interval)
   ;(setf (sound-to-play self) object)
   (call-next-method)
-  (oa::om-smart-play object (car interval) (cadr interval) (tracknum object)))
+  (las-play object (car interval) (cadr interval) (tracknum object)))
 
 ;;; called when a box or editor attached to player is stoped
-(defmethod player-stop ((player las-player) &optional object)
+(defmethod player-pause ((player las-player) &optional (object sound))
   (call-next-method)
-  (oa::om-smart-stop object))
+  (las-pause object (tracknum object)))
+
+;;; called when a box or editor attached to player is stoped
+(defmethod player-stop ((player las-player) &optional (object sound))
+  (call-next-method)
+  (las-stop object (tracknum object)))
 
 ;;; called when a box or editor attached to player is removed/closed
 (defmethod player-cleanup ((player las-player))

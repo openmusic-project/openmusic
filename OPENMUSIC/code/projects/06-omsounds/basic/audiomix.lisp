@@ -396,7 +396,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-volume ((self audiochannelPanel) value)
   (setf (vol-ctrl (channelctr self)) value)
-  (change-channel-vol *audio-player-visible* (- (track (channelctr self)) 1) (float (/ value 100)))
+  (change-channel-vol *audio-player-visible* (track (channelctr self)) (float (/ value 100)))
   (let ((new-str (integer-to-string value))
         (target (volumeVal self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -424,7 +424,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self audiochannelPanel) value)
   (setf (pan-ctrl (channelctr self)) value)
-  (change-channel-pan *audio-player-visible* (- (track (channelctr self)) 1) (- 1.0 (float (/ (+ value 100) 200))))
+  (change-channel-pan *audio-player-visible* (track (channelctr self)) (- 1.0 (float (/ (+ value 100) 200))))
   (let* ((target (panVal self))
          (new-str (audio-pan2str value)))
     (unless (string= new-str (om-dialog-item-text target))

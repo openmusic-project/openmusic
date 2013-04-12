@@ -32,7 +32,7 @@
         (start-time player) 0
         (ref-clock-time player) (clock-time)))
 
-(defmethod player-pause ((player omplayer))
+(defmethod player-pause ((player omplayer) &optional object)
   (setf (start-time player) (get-player-time player)
         (state player) :pause
         ))
@@ -72,7 +72,12 @@
 
 ;;; RETURNS OBJ, TMIN, TMAX
 (defmethod get-obj-to-play ((self play-editor-mixin))
-  (values (object self) nil nil))
+  (let* ((pan (panel (editor self)))
+         (interval (if (selection-to-play-? pan) 
+                       (nth 2 (get-selection-to-play pan))))
+         (tmin (if interval (car interval)))
+         (tmax (if interval (cadr interval))))
+    (values (object self) tmin tmax)))
 
 (defmethod editor-play ((self play-editor-mixin))
   (setf (loop-play (player self)) (loop-play self))
@@ -81,7 +86,7 @@
     (player-play (player self) obj :interval (and t1 t2 (list t1 t2)))))
 
 (defmethod editor-pause ((self play-editor-mixin))
-  (player-pause (player self)))
+  (player-pause (player self) (get-obj-to-play self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
   (player-stop (player self) (get-obj-to-play self)))

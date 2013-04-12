@@ -7,7 +7,6 @@
 ;;;/////
 ;;;Il n'y a besoin que de :
 
-;las-register-players -> l'utilisateur enregistre ses deux players LAS pour que le système en utilise un en hidden un en visible
 ;las-play ->capable de gérer une liste
 ;las-pause ->capable de gérer une liste
 ;las-stop ->capable de gérer une liste
@@ -21,35 +20,37 @@
 
 (in-package :oa)
 
+(export '(
+          las-play
+          las-pause
+          las-stop
+          las-play/stop ;en cours
+          ) :om-api)
 
 
-(defun las-register-players (player1 player2)
-  (if (and (pointerp player1) (pointerp player2))
-      (let ()
-        (setf *audio-player-hidden* player1)
-        (setf *audio-player-visible* player2))))
-
-(defun las-play (obj)
+(defun las-play (obj &optional from to track)
   (if (listp obj)
       (loop for object in obj do
-          (om-smart-play object))
-    (om-smart-play obj)))
+          (om-smart-play object from to track))
+    (om-smart-play obj from to track)))
 
-(defun las-pause (obj)
+(defun las-pause (obj &optional track)
   (if (listp obj)
       (loop for object in obj do
-          (om-smart-pause object))
-    (om-smart-pause obj))
-  )
+          (om-smart-pause object track))
+    (om-smart-pause obj track)))
 
-(defun las-stop (obj)
+(defun las-stop (obj &optional track)
   (if (listp obj)
       (loop for object in obj do
-          (om-smart-stop object))
-    (om-smart-stop obj))
-  )
+          (om-smart-stop object track))
+    (om-smart-stop obj track)))
 
-
+(defun las-play/stop (obj &optional track)
+  (if (listp obj)
+      (loop for object in obj do
+          (om-smart-play object from to track))
+    (om-smart-play obj from to track)))
 
 ;;;;////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -88,68 +89,39 @@
 ;This function makes the choice to call the right play function (hidden or visible)
 ;It also checks if there's a selection to play, or if it has to play the song straight ahead.
 (defun om-smart-play (sound &optional from to track)
-  (let ((snd sound))
-    (if (sndlasptr-current snd)
+  (if (sndlasptr-current sound)
         (let ()
-          ;(if (and sndpanel (om::selection-to-play-? sndpanel))
-              (let* (;(interval (caddr (om::get-selection-to-play sndpanel)))
-                     (begin-time from)
-                     (end-time to)
-                     (nch (number-of-channels snd))
-                     (nsmp (number-of-samples snd))
-                     (sr (sample-rate snd))
-                     (srdiv (* (/ sr srate) 1.0)))
-                
-                (when (and from to)
-                  (let ((begin (round (* begin-time (/ srate 1000.0))))
-                        (end (round (* end-time (/ srate 1000.0)))))
-                    (if (> end (las::GetLengthSound (sndlasptr-current snd)))
-                        (setf end (las::GetLengthSound (sndlasptr-current snd))))
-                    (setf (sndlasptr-to-play snd) (las::MakeCutSound (sndlasptr-current snd) begin end)))
-                  )
-                
-                (om-update-sound-las-infos snd))
-            ;(let ()
-            ;  (setf (sndlasptr-to-play snd) (sndlasptr-current snd))
-            ;  (om-update-sound-las-infos snd))
-            ;)
-          (if (eq (assoc-player snd) *audio-player-hidden*)
-              (om-smart-play-hidden snd)
-            (om-smart-play-visible snd))))))
+          (if (or from to)
+              (let ((begin (if from (round (* from (/ srate 1000.0)))))
+                    (end (if to (round (* to (/ srate 1000.0)))))
+                    (max (number-of-samples-current sound)))
+                (if (or (< begin 0) (not begin))
+                    (setf begin 0))
+                (if (or (> end max) (not end))
+                    (setf end max))
+                (setf (sndlasptr-to-play sound) (las::MakeCutSound (sndlasptr-current sound) begin end)))
+            (setf (sndlasptr-to-play sound) (sndlasptr-current sound)))
+          (om-update-sound-las-infos sound)
+          (if (and track (> track 0))
+              (om-smart-play-visible sound track)
+          (om-smart-play-hidden sound)))))
 
 ;/SMART PAUSE FUNCTION
 ;This function makes the choice to call the right pause function (hidden or visible)
-(defun om-smart-pause (sound)
-  (let ((snd sound))
-    ;(if sndpanel (setf snd (om::object (om-view-container sndpanel))))
-    (if (sndlasptr-current snd)
-        (if (eq (assoc-player snd) *audio-player-hidden*)
-            (om-smart-pause-hidden snd)
-          (om-smart-pause-visible snd)))))
+(defun om-smart-pause (sound &optional track)
+    (if (sndlasptr-current sound)
+        (if (and track (> track 0))
+            (om-smart-pause-visible sound track)
+          (om-smart-pause-hidden sound))))
 
 
 ;/SMART STOP FUNCTION
 ;This function makes the choice to call the right stop function (hidden or visible)
-;It also reset any selection in the sound to play.
-(defun om-smart-stop (snd)
-  (let ((sound snd))
-    ;(if sndpanel (setf sound (om::object (om-view-container sndpanel))))
-    (if (and sound (sndlasptr-current sound))
-        (if (eq (assoc-player sound) *audio-player-hidden*)
-            (let () 
-              ;(if sndpanel 
-              ;    (let () 
-              ;      (setf (om::cursor-pos sndpanel) 0)
-              ;      (setf (om::cursor-interval sndpanel) (list 0 0))
-              ;      (om::om-invalidate-view sndpanel)))
-              (om-smart-stop-hidden sound))
-          (let () 
-            ;(if sndpanel 
-            ;      (let () 
-            ;        (setf (om::cursor-pos sndpanel) 0)
-            ;        (setf (om::cursor-interval sndpanel) (list 0 0))
-            ;        (om::om-invalidate-view sndpanel)))
-            (om-smart-stop-visible sound))))))
+(defun om-smart-stop (sound &optional track)
+    (if (sndlasptr-current sound)
+        (if (and track (> track 0))
+            (om-smart-stop-visible sound track)
+          (om-smart-stop-hidden sound))))
 
 ;/PLAY FUNCTION FOR HIDDEN PLAYER
 ;This function works based on a little system that checks if the sound is already loaded :

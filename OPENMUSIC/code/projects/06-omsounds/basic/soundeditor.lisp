@@ -22,47 +22,7 @@
 
 (in-package :om) 
 
-;;;====================== 
-;;; TITLE BAR / SOUND INFO
-;;;======================
 
-(defclass sound-titlebar (editor-titlebar) ())
-
-(defmethod init-titlebar ((self soundeditor))
-  (let* ((pathname (om-sound-file-name (object self)))
-         (name (if pathname
-                   (if (stringp (pathname-type pathname))
-                       (string+ (pathname-name pathname) "." (pathname-type pathname))
-                     (pathname-name pathname))
-                 "No file attached"))) 
-  (om-add-subviews (title-bar self)
-                   (om-make-dialog-item 'om-static-text (om-make-point 10 4) 
-                                        (om-make-point 
-                                         (+ 10 (om-string-size (string+ (om-str :file) ": " name)
-                                                               *om-default-font1b*))
-                                         18)
-                                        (string+ (om-str :file) ": " name)
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1b*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
-                                        (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
-                                        (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
-                                                                 (round (om-sound-sample-rate (object self)))
-                                                               "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 18)
-                                        (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   )))
 
 ;===========================================================
 ;CONTROL VIEW
@@ -415,6 +375,47 @@
 
 ;;; (if (equal val :multiplayer) (launch-multiplayer-app))
 
+;;;====================== 
+;;; TITLE BAR / SOUND INFO
+;;;======================
+
+(defclass sound-titlebar (editor-titlebar) ())
+
+(defmethod init-titlebar ((self soundeditor))
+  (let* ((pathname (om-sound-file-name (object self)))
+         (name (if pathname
+                   (if (stringp (pathname-type pathname))
+                       (string+ (pathname-name pathname) "." (pathname-type pathname))
+                     (pathname-name pathname))
+                 "No file attached"))) 
+  (om-add-subviews (title-bar self)
+                   (om-make-dialog-item 'om-static-text (om-make-point 10 4) 
+                                        (om-make-point 
+                                         (+ 10 (om-string-size (string+ (om-str :file) ": " name)
+                                                               *om-default-font1b*))
+                                         18)
+                                        (string+ (om-str :file) ": " name)
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1b*
+                                        )
+                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
+                                        (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*
+                                        )
+                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
+                                        (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
+                                                                 (round (om-sound-sample-rate (object self)))
+                                                               "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*
+                                        )
+                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 18)
+                                        (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*
+                                        )
+                   )))
 
 
 ;;;======= PANEL =======
