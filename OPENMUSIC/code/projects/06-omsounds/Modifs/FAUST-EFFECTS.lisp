@@ -427,7 +427,7 @@
 (in-package :om)
 
 (defvar *faust-effects-pool* (make-hash-table))
-(defconstant *max-effects-number* (* 4 channels))
+(defconstant *max-effects-number* (* 4 las-channels))
 
 (defun init-faust-effects-pool ()
     (loop for i from 0 to *max-effects-number* do

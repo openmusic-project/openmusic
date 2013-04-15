@@ -309,9 +309,9 @@ Press 'space' to play/stop the sound file.
     (sound-dur (pathname sound))))
 
 (defmethod! sound-dur ((sound sound))
-   (if (and sound (oa::number-of-samples-current sound) oa::srate
-            (> oa::srate 0))
-       (float (/ (oa::number-of-samples-current sound) oa::srate))
+   (if (and sound (oa::number-of-samples-current sound) las-srate
+            (> las-srate 0))
+       (float (/ (oa::number-of-samples-current sound) las-srate))
      0))
 
 ;(defmethod! sound-dur ((sound sound))
