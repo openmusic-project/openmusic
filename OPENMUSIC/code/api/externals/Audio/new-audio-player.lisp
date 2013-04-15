@@ -432,7 +432,7 @@
             (setf (sndlasptr-to-play sound) (sndlasptr-current sound)))
           (om-update-sound-las-infos sound)
           (if (and track (> track 0))
-              (om-smart-play-visible sound track)
+              (om-smart-play-visible sound (- track 1))
           (om-smart-play-hidden sound)))))
 
 ;/SMART PAUSE FUNCTION
@@ -440,7 +440,7 @@
 (defun om-smart-pause (sound &optional track)
     (if (sndlasptr-current sound)
         (if (and track (> track 0))
-            (om-smart-pause-visible sound track)
+            (om-smart-pause-visible sound (- track 1))
           (om-smart-pause-hidden sound))))
 
 
@@ -449,7 +449,7 @@
 (defun om-smart-stop (sound &optional track)
     (if (sndlasptr-current sound)
         (if (and track (> track 0))
-            (om-smart-stop-visible sound track)
+            (om-smart-stop-visible sound (- track 1))
           (om-smart-stop-hidden sound))))
 
 ;/PLAY FUNCTION FOR HIDDEN PLAYER
