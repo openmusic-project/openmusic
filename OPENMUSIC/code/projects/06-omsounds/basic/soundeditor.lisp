@@ -730,7 +730,7 @@
                 (om-draw-string (- (round (w self) 2) halftext) (round (h self) 2) "Recording")))))
   (if (om-sound-file-name (object (om-view-container self)))
     (let* ((thesound (object (om-view-container self)))
-           (sr srate)
+           (sr las-srate)
            (size (oa::number-of-samples-current thesound))
            (dur (or (and (and sr size)
                          (/ size sr)) 0))

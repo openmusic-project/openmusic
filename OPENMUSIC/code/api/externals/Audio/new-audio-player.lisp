@@ -15,8 +15,8 @@
           *audio-context-state*
           *audio-player-hidden-tracks-info*
           *audio-player-visible-tracks-info*
-          channels
-          srate
+          las-channels
+          las-srate
           
 
           play-global-audio-context
@@ -46,7 +46,7 @@
 (defvar *audio-player-hidden-tracks-info* (make-hash-table))
 (defvar *audio-player-visible-tracks-info* (make-hash-table))
 
-;A hash table which contains pointers to numbers from 0 to (channels -1).
+;A hash table which contains pointers to numbers from 0 to (las-channels -1).
 ;It is used for the callback functions, which require pointers to numbers, and not numbers directly.
 (defvar *channel-numbers-hash-table* (make-hash-table))
 
@@ -104,7 +104,7 @@
   (progn
     (setf *audio-player-visible* (make-new-player))
     (setf *audio-player-hidden* (make-new-player))
-    (loop for i from 0 to (- channels 1) do
+    (loop for i from 0 to (- las-channels 1) do
           (setf (gethash i *audio-player-hidden-tracks-info*) (list nil "Idle" 1.0 1.0 0.0))
           (setf (gethash i *audio-player-visible-tracks-info*) (list nil "Idle" 1.0 1.0 0.0))
           (setf (gethash i *channel-numbers-hash-table*) (cffi::foreign-alloc :int :initial-element i)))
@@ -119,7 +119,7 @@
         (las::StartAudioPlayer *audio-player-visible*)
         (las::StartAudioPlayer *audio-player-hidden*)
         (ResetEffectsLists *audio-player-visible*)
-        (loop for i from 0 to (- channels 1) do
+        (loop for i from 0 to (- las-channels 1) do
               (las::SetStopCallbackChannel *audio-player-hidden* i (cffi:callback channel-stop-callback-hidden) (gethash i *channel-numbers-hash-table*))
               (las::SetStopCallbackChannel *audio-player-visible* i (cffi:callback channel-stop-callback-visible) (gethash i *channel-numbers-hash-table*)))
         "Audio is ready")
@@ -133,7 +133,7 @@
     (las::CloseAudioPlayer *audio-player-hidden*)
     (setf *audio-player-visible* nil)
     (setf *audio-player-hidden* nil)
-    (loop for i from 0 to (- channels 1) do
+    (loop for i from 0 to (- las-channels 1) do
           (setf (gethash i *audio-player-hidden-tracks-info*) (list nil "Idle"))
           (setf (gethash i *audio-player-visible-tracks-info*) (list nil "Idle")))))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,19 +201,19 @@
 ;/PLAY FULL PLAYER FUNCTION
 ;Play all tracks of a player using a loop (not really effective...)
 (defun play-full-player (player)
-  (loop for i from 0 to (- channels 1) do
+  (loop for i from 0 to (- las-channels 1) do
         (play-one-channel player i)))
 
 ;/CONT FULL PLAYER FUNCTION
 ;Cont all tracks of a player using a loop (not really effective...)
 (defun cont-full-player (player)
-  (loop for i from 0 to (- channels 1) do
+  (loop for i from 0 to (- las-channels 1) do
         (cont-one-channel player i)))
 
 ;/STOP FULL PLAYER FUNCTION
 ;Stop all tracks of a player using a loop (not really effective...)
 (defun stop-full-player (player)
-  (loop for i from 0 to (- channels 1) do
+  (loop for i from 0 to (- las-channels 1) do
         (stop-one-channel player i)))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -223,7 +223,7 @@
 ;Tool that loads a single sample null sound to all tracks using a loop.
 (defun empty-one-player (player)
   (let ((nullsnd (las::MakeNullSound 1)))
-    (loop for i from 0 to (- channels 1) do
+    (loop for i from 0 to (- las-channels 1) do
         (las::LoadChannel player nullsnd i 1.0 0.5 0.5))))
 
 ;/GET FREE CHANNEL FUNCTION
