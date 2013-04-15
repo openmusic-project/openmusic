@@ -69,6 +69,7 @@
                                         (setf (tracknum snd) (value item))
                                         (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
                                         (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
+                                        (if (> (value item) 0) (las-switch-sound-las-player snd 1) (las-switch-sound-las-player snd 0))
                                         (report-modifications (editor control-view))))
      ;(om-make-dialog-item 'om-check-box (om-make-point 590 4)
      ;                     (om-make-point 170 20) "Use Original Sound"

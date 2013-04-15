@@ -10,6 +10,7 @@
           las-pause
           las-stop
           las-play/stop ;en cours
+          las-switch-sound-las-player
           ) :om-api)
 
 
@@ -36,6 +37,11 @@
       (loop for object in obj do
           (om-smart-play/stop object from to track))
     (om-smart-play/stop obj from to track)))
+
+(defun las-switch-sound-las-player (sound kind)
+  (cond ((= kind 1) (setf (assoc-player sound) *audio-player-visible*))
+        ((= kind 0) (setf (assoc-player sound) *audio-player-hidden*))
+        (t (print "LAS couldn't set your sound associated player info properly (wrong argument)"))))
 ;;;/////////////////////////////////////////////
 
 ;;;;////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,4 +217,3 @@
       (let ()
           (setf (sndlasptr-current snd) (sndlasptr-current-save snd))
           (setf (current-is-original snd) 0))))
-

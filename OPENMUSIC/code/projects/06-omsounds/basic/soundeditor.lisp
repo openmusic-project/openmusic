@@ -51,7 +51,13 @@
                                          :icon1 "simple_stop" :icon2 "simple_stop_pushed"
                                          :action #'(lambda (item) (editor-stop (editor self))))
 
-                     
+                     (om-make-view 'om-icon-button :position (om-make-point 85 8) :size (om-make-point 17 17)
+                                         :icon1 "simple_loop" :icon2 "simple_loop_pushed"
+                                         :action #'(lambda (item) (print "Loop function")))
+
+                     (om-make-view 'om-icon-button :position (om-make-point 110 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_rec" :icon2 "simple_rec_pushed"
+                                         :action #'(lambda (item) (print "Rec function")))
                      
                       (om-make-dialog-item 'om-static-text (om-make-point 250 8) (om-make-point 50 20)
                                           "Player" :font *om-default-font1*)

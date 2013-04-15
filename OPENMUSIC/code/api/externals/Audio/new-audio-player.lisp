@@ -51,22 +51,27 @@
 (defvar *channel-numbers-hash-table* (make-hash-table))
 
 ;Constants to use to create players.
-(defconstant inchan 0)
-(defconstant outchan 2)
-(defconstant channels 32)
-(defconstant srate 44100)
-(defconstant buffsize 512)
-(defconstant streambuffsize 65536)
-(defconstant instreambuffsize 65536)
-(defconstant renderer las::kCoreAudioRenderer)
-(defconstant thread 1)
+(defconstant las-inchan 0)
+(defconstant las-outchan 2)
+(defconstant las-channels 32)
+(defconstant las-srate 44100)
+(defconstant las-buffsize 512)
+(defconstant las-streambuffsize 65536)
+(defconstant las-instreambuffsize 65536)
+(defconstant las-renderer las::kCoreAudioRenderer)
+(defconstant las-thread 1)
 
 
 ;Define callbacks when channels stop
 (cffi:defcallback channel-stop-callback-hidden :void ((chan :pointer))
-  (setf (cadr (gethash (cffi::mem-aref chan :int) *audio-player-hidden-tracks-info*)) "Idle"))
+  (let* ((status-list *audio-player-hidden-tracks-info*)
+         (snd (car (gethash (cffi::mem-aref chan :int) status-list))))
+    (las-stop snd)))
+
 (cffi:defcallback channel-stop-callback-visible :void ((chan :pointer))
-  (setf (cadr (gethash (cffi::mem-aref chan :int) *audio-player-visible-tracks-info*)) "Idle"))
+  (let* ((status-list *audio-player-visible-tracks-info*)
+         (snd (car (gethash (cffi::mem-aref chan :int) status-list))))
+    (las-stop snd (cffi::mem-aref chan :int))))
 
 ;======================================================
 ;===         CREATE 32 EMPTY EFFECTS LISTS          ===
@@ -91,7 +96,7 @@
 ;/MAKE NEW PLAYER FUCNTION
 ;Returns a LAS player pointer
 (defun make-new-player ()
-  (las::OpenAudioPlayer inchan outchan channels 44100 buffsize streambuffsize instreambuffsize renderer thread))
+  (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreambuffsize las-renderer las-thread))
 
 ;/INSTANCIATE PLAYERS FUCNTION
 ;Bind both *audio-player-visible* and *audio-player-hidden* with LAS player pointers, init players infos
