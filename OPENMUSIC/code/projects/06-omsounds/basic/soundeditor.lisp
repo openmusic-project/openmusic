@@ -53,7 +53,9 @@
 
                      (om-make-view 'om-icon-button :position (om-make-point 85 8) :size (om-make-point 17 17)
                                          :icon1 "simple_loop" :icon2 "simple_loop_pushed"
-                                         :action #'(lambda (item) (print "Loop function")))
+                                         :action #'(lambda (item) (if (loop-play (editor self)) 
+                                                                      (setf (loop-play (editor self)) nil) 
+                                                                    (setf (loop-play (editor self)) t))))
 
                      (om-make-view 'om-icon-button :position (om-make-point 110 5) :size (om-make-point 20 20)
                                          :icon1 "simple_rec" :icon2 "simple_rec_pushed"

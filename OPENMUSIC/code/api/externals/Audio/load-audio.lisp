@@ -8,7 +8,6 @@
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "libsndfile")) :name "libsndfile"))
 (compile&load (make-pathname :directory  (pathname-directory *load-pathname*) :name "audio-api"))
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "audio-player")) 
-(compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "audio-player-2")) 
 
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "new-audio-player"))          
 
