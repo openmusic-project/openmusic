@@ -40,7 +40,7 @@
 (defconstant las-srate 44100)
 (defconstant las-buffsize 512)
 (defconstant las-streambuffsize 65536)
-(defconstant las-instreambuffsize 65536)
+(defconstant las-instreamduration (* las-srate 600)) ;ici on limite l'entrée temps réel à 600 secondes (10 minutes)
 (defconstant las-renderer las::kCoreAudioRenderer)
 (defconstant las-thread 1)
 
@@ -113,7 +113,7 @@
 ;/MAKE NEW PLAYER FUCNTION
 ;Returns a LAS player pointer
 (defun make-new-player ()
-  (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreambuffsize las-renderer las-thread))
+  (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
 
 ;/INSTANCIATE PLAYERS FUCNTION
 ;Bind both *audio-player-visible* and *audio-player-hidden* with LAS player pointers, init players infos
