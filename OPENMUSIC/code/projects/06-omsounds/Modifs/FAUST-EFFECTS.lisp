@@ -43,14 +43,6 @@
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
   (let ()
-    ;(if (tracknum self) 
-    ;    (if (< (tracknum self) 1) 
-    ;        (let () (print "The track number is invalid") 
-    ;          (setf (tracknum self) nil)) 
-    ;      (setf (tracknum self) (- (tracknum self) 1))))
-    ;(if (sound self)
-    ;    (if (not (typep (sound self) 'sound))
-    ;        (print "You must connect a sound to the sound input.")))
     (if (effect-txt self)
         (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
               (effect-code))
@@ -83,21 +75,6 @@
 
               ;//////////////////////////////////////////////////////
 
-              ;(if (tracknum self)
-              ;    (let ()
-              ;         (las::AddAudioEffect (gethash (tracknum self) oa::*effects-lists*) ptr)
-              ;         (print (format nil "Cet effet s'applique sur la piste ~A" (+ 1 (tracknum self))))))
-              ;(if (sound self)
-              ;    (let ((temp-effect-list (las::MakeAudioEffectList)))
-              ;      (if (not (oa::sndlasptr (sound self))) (oa::om-fill-sound-info (sound self)))
-              ;        (las::AddAudioEffect temp-effect-list ptr)
-              ;        (if (= (oa::current-is-original (sound self)) 1)
-              ;            (setf (oa::sndlasptr-current-save (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100))
-              ;          (setf (oa::sndlasptr-current (sound self)) (las::MakeTransformSound (oa::sndlasptr-current (sound self)) temp-effect-list 100 100)))
-              ;        (print (format nil "Cet effet s'applique sur l'objet sound ~A" (sound self)))
-              ;         ;(update-buffer-with-current-las (sound self))
-              ;      ))
-
               (setf (nbparams self) (las::getcontrolcount ptr))
               (if (> (nbparams self) 0)
                   (setf (params-ctrl self)
@@ -111,9 +88,7 @@
                                                                                                :stepval nil ;;EN ATTENTE
                                                                                                :effect-ptr ptr
                                                                                                ;:tracknum (tracknum self)
-                                                                                               ))) nil))))
-      ;(print "You are evaluating the Faust console without any Faust code as an input. It has no effect.")
-      )))
+                                                                                               ))) nil)))))))
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
