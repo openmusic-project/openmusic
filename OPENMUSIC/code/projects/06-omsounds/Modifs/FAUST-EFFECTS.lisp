@@ -327,7 +327,7 @@
           (val 0)
           (tracknum (tracknum (paramctr self)))
           (editor (om-view-container (om-view-container self)))
-          (curval (las::GetControlValue ptr number)))
+          (curval (las-faust-get-effect-control-value ptr number)))
    (if (= min max) (let () (setf min 0) (setf max 1)) nil)
    (setf range (/ (- max min) 1.0))
    (setf val (* 100.0 (/ (- curval min) range)))

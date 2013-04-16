@@ -21,6 +21,8 @@
           las-channels
           las-change-channel-pan-visible
           las-change-channel-vol-visible
+          las-get-sound-infos
+          las-get-length-sound
           ) :om-api)
 
 (defvar *audio-player-visible* nil)
@@ -60,9 +62,6 @@
          (snd (car (gethash (cffi::mem-aref chan :int) status-list))))
     (las-stop snd (cffi::mem-aref chan :int))))
 
-
-
-
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
 ;===============================================================================================================================================================
@@ -94,10 +93,7 @@
     (om-smart-stop obj track)))
 
 (defun las-play/stop (obj &optional track)
-  (if (listp obj)
-      (loop for object in obj do
-          (om-smart-play/stop object from to track))
-    (om-smart-play/stop obj from to track)))
+  (print "Play/Stop function"))
 
 (defun las-switch-sound-las-player (sound kind)
   (cond ((= kind 1) (setf (assoc-player sound) *audio-player-visible*))
@@ -110,7 +106,15 @@
 (defun las-change-channel-vol-visible (channel vol)
   (change-channel-vol-visible (- channel 1) vol))
 
+(defun las-get-sound-infos (pathname)
+  (let (pointer
+        size)
+    (setf pointer (las::makereadsound pathname))
+    (setf size (las::getlengthsound pointer))
+    (list pointer size)))
 
+(defun las-get-length-sound (pointer)
+  (las::getlengthsound pointer))
 ;===============================================================================================================================================================
 ;===========================================================GLOBAL AUDIO CONTEXT FUNCTIONS======================================================================
 ;===============================================================================================================================================================
@@ -403,17 +407,9 @@
     (if (eq sound (car (gethash chan status-list)))
         (if (string-equal "Playing" (cadr (gethash chan status-list)))
             (om-smart-stop sound track)
-          (om-smart-play sound track)
-      (om-smart-play sound)))))
+          (om-smart-play sound nil nil track))
+     (om-smart-play sound nil nil track))))
 
-;/SEND TO TRACK FUNCTION
-;This function stops the sound and changes the associated player.
-;(defun om-send-to-track (snd)
-;  (if (assoc-player snd)
-;      (let () (om-smart-stop snd)
-;        (if (eq (assoc-player snd) *audio-player-hidden*)
-;            (setf (assoc-player snd) *audio-player-visible*)
-;          (setf (assoc-player snd) *audio-player-hidden*)))))
 
 ;/SMART PLAY FUNCTION
 ;This function makes the choice to call the right play function (hidden or visible)
@@ -425,9 +421,9 @@
               (let ((begin (if from (round (* from (/ las-srate 1000.0)))))
                     (end (if to (round (* to (/ las-srate 1000.0)))))
                     (max (number-of-samples-current sound)))
-                (if (or (< begin 0) (not begin))
+                (if (and begin (or (< begin 0) (not begin)))
                     (setf begin 0))
-                (if (or (> end max) (not end))
+                (if (and end (or (> end max) (not end)))
                     (setf end max))
                 (setf (sndlasptr-to-play sound) (las::MakeCutSound (sndlasptr-current sound) begin end)))
             (setf (sndlasptr-to-play sound) (sndlasptr-current sound)))
@@ -495,7 +491,7 @@
 ;                       -if the selected track is already filled but Play or Paused, the system forbid the replacement and notice the user.
 (defun om-smart-play-visible (snd &optional (tracknum 0))
   (let* ((actual-track tracknum)
-         (player *audio-player-visible*)) 
+         (player *audio-player-visible*))
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (cond ((string-equal "Idle" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
                (load-sound-on-one-channel player snd actual-track)

@@ -1,7 +1,6 @@
 ;;;==================================================================================================================================================================
 ;;;===================================================================FAUST AUDIO API================================================================================
 ;;;==================================================================================================================================================================
-
 (in-package :oa)
 
 (defvar *effects-lists* nil)
@@ -18,6 +17,7 @@
           las-faust-get-effect-json
           las-faust-get-effect-control-count
           las-faust-get-effect-control-params
+          las-faust-get-effect-control-value
           las-faust-set-effect-control-value
           las-faust-effect-cleanup
           las-faust-add-effect-to-pool
@@ -54,6 +54,9 @@
 
 (defun las-faust-get-effect-control-params (pointer number)
   (las::getcontrolparam pointer number))
+
+(defun las-faust-get-effect-control-value (pointer number)
+  (las::getcontrolvalue pointer number))
 
 (defun las-faust-set-effect-control-value (pointer number val)
   (las::SetControlValue pointer number val))
