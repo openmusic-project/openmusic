@@ -10,6 +10,8 @@
 (in-package :oa)
 
 (export '(
+          las-init-full-system
+          las-close-full-system
           las-play
           las-pause
           las-stop
@@ -17,6 +19,8 @@
           las-switch-sound-las-player
           las-srate
           las-channels
+          las-change-channel-pan-visible
+          las-change-channel-vol-visible
           ) :om-api)
 
 (defvar *audio-player-visible* nil)
@@ -40,7 +44,7 @@
 (defconstant las-srate 44100)
 (defconstant las-buffsize 512)
 (defconstant las-streambuffsize 65536)
-(defconstant las-instreamduration (* las-srate 600)) ;ici on limite l'entrée temps réel à 600 secondes (10 minutes)
+(defconstant las-instreamduration (* las-srate 600))
 (defconstant las-renderer las::kCoreAudioRenderer)
 (defconstant las-thread 1)
 
@@ -56,24 +60,20 @@
          (snd (car (gethash (cffi::mem-aref chan :int) status-list))))
     (las-stop snd (cffi::mem-aref chan :int))))
 
-;======================================================
-;===         CREATE 32 EMPTY EFFECTS LISTS          ===
-;======================================================
-(defvar *effects-lists* nil)
 
-(defun plug-faust-effect-list-on-channel (player effectlist channel &optional (fadein 100) (fadeout 100))
-  (las::SetEffectListChannel player channel effectlist fadein fadeout))
-
-(defun ResetEffectsLists (player)
-  (setf *effects-lists* (make-hash-table))
-  (loop for i from 0 to 31 do 
-      (setf (gethash i *effects-lists*) (las::MakeAudioEffectList))
-      (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)))
 
 
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
 ;===============================================================================================================================================================
+
+(defun las-init-full-system ()
+  (progn 
+    (instanciate-players)
+    (start-global-audio-context)))
+
+(defun las-close-full-system ()
+  (destroy-global-audio-context))
 
 (defun las-play (obj &optional from to track)
   (if (listp obj)
@@ -103,6 +103,12 @@
   (cond ((= kind 1) (setf (assoc-player sound) *audio-player-visible*))
         ((= kind 0) (setf (assoc-player sound) *audio-player-hidden*))
         (t (print "LAS couldn't set your sound associated player info properly (wrong argument)"))))
+
+(defun las-change-channel-pan-visible (channel pan)
+  (change-channel-pan-visible (- channel 1) pan))
+
+(defun las-change-channel-vol-visible (channel vol)
+  (change-channel-vol-visible (- channel 1) vol))
 
 
 ;===============================================================================================================================================================
@@ -303,20 +309,16 @@
 ;///////////////////////////////////////////Channel Tools//////////////////////////////////////////////////////
 ;/CHANGE CHANNEL VOL
 ;Tool that change the volume of a channel
-(defun change-channel-vol (player channel vol)
-  (let ((status-list (if (eq player *audio-player-visible*)
-                          *audio-player-visible-tracks-info*
-                        *audio-player-hidden-tracks-info*)))
-    (las::SetVolChannel player channel vol)
+(defun change-channel-vol-visible (channel vol)
+  (let ((status-list *audio-player-visible-tracks-info*))
+    (las::SetVolChannel *audio-player-visible* channel vol)
     (setf (nth 2 (gethash channel status-list)) vol)
     ))
 
 ;/CHANGE CHANNEL PAN
 ;Tool that change the pan of a channel
-(defun change-channel-pan (player channel pan)
-  (let* ((status-list (if (eq player *audio-player-visible*)
-                          *audio-player-visible-tracks-info*
-                        *audio-player-hidden-tracks-info*))
+(defun change-channel-pan-visible (channel pan)
+  (let* ((status-list *audio-player-visible-tracks-info*)
          (snd (car (gethash channel status-list)))
          (nchnls 1)
          (pan2 (pan2panpan pan)))
@@ -324,8 +326,8 @@
         (setf nchnls (las::GetChannelsSound (sndlasptr-current snd))
               ))
     (case nchnls 
-      (1 (las::SetPanChannel player channel pan pan))
-      (2 (las::SetPanChannel player channel (car pan2) (cadr pan2)))
+      (1 (las::SetPanChannel *audio-player-visible* channel pan pan))
+      (2 (las::SetPanChannel *audio-player-visible* channel (car pan2) (cadr pan2)))
       (otherwise nil))
     (setf (nth 3 (gethash channel status-list)) (car pan2))
     (setf (nth 4 (gethash channel status-list)) (cadr pan2))

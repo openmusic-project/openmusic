@@ -10,7 +10,7 @@
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "audio-player")) 
 
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "new-audio-player"))          
-
+(compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "faust-api"))
 
 (push :om-audio-api *features*)
 
