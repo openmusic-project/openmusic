@@ -906,20 +906,19 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    `(rep-editor ,(gen-code-call self) ,numout))
 
 
-;(defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
-;   (let ((varname (read-from-string (print (gen-box-string self)))))
-;     (print (list self varname))
-;     (if (not (member varname *let-list* :test 'equal))
-;       (progn
-;         (push varname  *let-list*)
-;         (if *start-repeat-generation*
-;           (progn
-;            (push `(setf ,varname  ,(gen-code-call self)) *repeat-ev-once-list*)
-;            `(rep-editor ,varname ,numout ))
-;           `(progn
-;              (setf ,varname ,(gen-code-call self))
-;              (rep-editor ,varname ,numout ))))
-;       `(rep-editor ,varname ,numout ))))
+(defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
+   (let ((varname (read-from-string (gen-box-string self))))
+     (if (not (member varname *let-list* :test 'equal))
+       (progn
+         (push varname  *let-list*)
+         (if *start-repeat-generation*
+           (progn
+            (push `(setf ,varname ,(gen-code-call self)) *repeat-ev-once-list*)
+            `(rep-editor ,varname ,numout ))
+           `(progn
+              (setf ,varname ,(gen-code-call self))
+              (rep-editor ,varname ,numout ))))
+       `(rep-editor ,varname ,numout ))))
 
 ;(defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
 ;   (let ((varname (read-from-string (gen-box-string self))))
@@ -930,9 +929,20 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;;; removed multiple-value-list for ev-once in abstractions (?)
 (defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
    (let ((varname (read-from-string (gen-box-string self))))
-     (when (not (member varname *let-list* :test 'equal :key 'car))
-        (push `(,varname ,(gen-code-call self)) *let-list*))
-     `(rep-editor ,varname ,numout)))
+     (if (not (member varname *let-list* :test 'equal :key 'car))
+        (progn 
+          (push `(,varname ,(gen-code-call self)) *let-list*)
+          `(progn
+             ;;; (*)
+             ;(setf ,varname ,(gen-code-call self))
+             (rep-editor ,varname ,numout ))
+          )
+       `(rep-editor ,varname ,numout))))
+
+;;; (*) here I needed to restore the setf because in some cases (e.g. Modalys) 
+;;; the box must not be evaluated before some other actions take place (e.g. "new")
+;;; The let list is evaluated before anything in the patch, while the body of the macro 
+;;; returned code evaluates following the function graph
 
 
 (defmethod update-if-editor ((self t)) t)

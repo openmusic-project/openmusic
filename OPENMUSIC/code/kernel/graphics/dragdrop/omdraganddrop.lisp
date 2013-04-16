@@ -133,7 +133,8 @@
    
    (;;; D&D IN FOLDERS ETC.
     (and (icon-finder-p (true-target-view  D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
-         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view  D&DHandler))))
+         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view  D&DHandler)))
+         (not (equal (true-target-view  D&DHandler) (dragged-view  D&DHandler))))
     (perform-change-view D&DHandler))
    
    (;;; AUTO MOVE

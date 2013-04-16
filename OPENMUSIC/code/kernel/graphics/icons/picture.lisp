@@ -270,6 +270,8 @@
      *om-def-pict*)
     ))
 
+
+
 (defun restore-pict-folder (folder)
   (cond ((equal folder 'user) 
          (or (and *current-workspace* (make-pathname :directory (append (pathname-directory (mypathname *current-workspace*))

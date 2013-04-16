@@ -31,25 +31,25 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                                     :name (pathname-name name)
                                     :type "midi")))
         (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (save-midifile name object approx (or format *def-midi-format*))
-        (namestring name)
-        ))))
+        (when (save-midifile name object approx (or format *def-midi-format*))
+          (namestring name)
+          )))))
 
 
 (defmethod* save-as-midi ((object voice) &optional filename &key (approx 2) (format nil)) 
-  (when *midiplayer*
-    (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                                                  :prompt (om-str :save-as) 
-                                                                                  :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
-      (when name 
-        (unless (stringp (pathname-type name))
-          (setf name (make-pathname :device (pathname-device name)
-                                    :directory (pathname-directory name)
-                                    :name (pathname-name name)
-                                    :type "midi")))
-        (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (save-midifile-with-tempo name object approx (tempo-a-la-noire (car (tempo object))) (or format *def-midi-format*))
-        (namestring name)))))
+            (when *midiplayer*
+              (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                                                            :prompt (om-str :save-as) 
+                                                                                            :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
+                (when name 
+                  (unless (stringp (pathname-type name))
+                    (setf name (make-pathname :device (pathname-device name)
+                                              :directory (pathname-directory name)
+                                              :name (pathname-name name)
+                                              :type "midi")))
+                  (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
+                  (when (save-midifile-with-tempo name object approx (tempo-a-la-noire (car (tempo object))) (or format *def-midi-format*))
+                    (namestring name))))))
 
 
 (defun save-midifile (name obj approx &optional (format 1))
@@ -60,7 +60,8 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
   (when *midiplayer*
     (setf *MidiShare-start-time* 0)
     (setf *playing-midi-seq* (om-midi-new-seq))
-    (PrepareToPlay t object 0 :approx approx :voice 1)))
+    (PrepareToPlay t object 0 :approx approx :voice 1)
+    ))
 
 
 ;==== Saves sequence with tempo 60
@@ -103,10 +104,10 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                                     :name (pathname-name name)
                                     :type "midi")))
         (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (if tempo 
+        (when (if tempo 
           (save-midifile-with-tempo name object approx (tempo-a-la-noire (car tempo)) (or format *def-midi-format*))
           (save-midifile name object approx (or format *def-midi-format*)))  
-        (namestring name)))))
+        (namestring name))))))
 
 
 ;=== Tests if all voices of a ply object have the same tempo
