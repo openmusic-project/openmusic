@@ -4,14 +4,16 @@
 
 (in-package :oa)
 
-;======================================================
-;===         CREATE 32 EMPTY EFFECTS LISTS          ===
-;======================================================
 (defvar *effects-lists* nil)
 (defvar *faust-effects-pool* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
+;===============================================================================================================================================================
+;============================================================================ API ==============================================================================
+;===============================================================================================================================================================
+
 (export '(
+          las-faust-init-system
           las-faust-make-effect
           las-faust-get-effect-json
           las-faust-get-effect-control-count
@@ -26,6 +28,12 @@
 
           *faust-effects-pool*
           ) :om-api)
+
+
+(defun las-faust-init-system ()
+  (progn
+    (init-faust-effects-pool)
+    (ResetEffectsLists *audio-player-visible*)))
 
 (defun las-faust-make-effect (string)
   (let ((result-state 1)
@@ -85,6 +93,9 @@
 
 
 
+;===============================================================================================================================================================
+;=========================================================================== TOOLS =============================================================================
+;===============================================================================================================================================================
 
 (defun plug-faust-effect-list-on-channel (player effectlist channel &optional (fadein 100) (fadeout 100))
   (las::SetEffectListChannel player channel effectlist fadein fadeout))
@@ -98,9 +109,6 @@
 (defun init-faust-effects-pool ()
     (loop for i from 0 to *max-effects-number* do
           (setf (gethash i *faust-effects-pool*) (list nil 0 "faust-effect")))) ;(ptr track name)
-
-(init-faust-effects-pool)
-
 
 ;;;//////////////////POOL TOOLS/////////////////////////////
 (defun add-faust-effect-to-pool (ptr name)
@@ -163,4 +171,3 @@
         (let ((index (find-hole-index-in-faust-effects-pool)))
           (loop for i from index to (- n 1) do
             (setf (gethash i *faust-effects-pool*) (gethash (+ i 1) *faust-effects-pool*)))))))
-;;;//////////////////////////////////////////////////////////

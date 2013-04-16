@@ -15,7 +15,9 @@
 
 (defun audio-open ()
  (if (om-start-audio)
-     (las-init-full-system)
+     (progn
+       (las-init-full-system)
+       (las-faust-init-system))
    (om-message-dialog (format nil (om-str :lib-error) "Audio"))))
 
 (defun audio-close ()
@@ -31,6 +33,7 @@
   ;(setq *audio-player* (om-open-audio-player))  
   (las-close-full-system)
   (las-init-full-system)
+  (las-faust-init-system)
   )
 
 (om-add-init-func 'audio-open)  

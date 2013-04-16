@@ -141,7 +141,6 @@
       (progn
         (las::StartAudioPlayer *audio-player-visible*)
         (las::StartAudioPlayer *audio-player-hidden*)
-        (ResetEffectsLists *audio-player-visible*)
         (loop for i from 0 to (- las-channels 1) do
               (las::SetStopCallbackChannel *audio-player-hidden* i (cffi:callback channel-stop-callback-hidden) (gethash i *channel-numbers-hash-table*))
               (las::SetStopCallbackChannel *audio-player-visible* i (cffi:callback channel-stop-callback-visible) (gethash i *channel-numbers-hash-table*)))
