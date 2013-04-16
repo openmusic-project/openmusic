@@ -49,12 +49,7 @@
     "multi;multiplayer"
     
     "LAS;las-player"
-
-    "Modifs;FAUST-EFFECTS"
-    "Modifs;VERIFIED-MODIFS"
-    
-   
-
+    "LAS;faust-objects"
  ))
 
 (eval-when (eval compile load)
