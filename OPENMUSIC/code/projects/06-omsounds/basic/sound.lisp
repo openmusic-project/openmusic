@@ -22,7 +22,6 @@
 
 (in-package :om)
 
-
 (defclass internalsound (om-sound)   
   ((sound-offset :accessor sound-offset)
    ;(soundpointer :initform nil :accessor soundpointer)
@@ -75,6 +74,10 @@ Press 'space' to play/stop the sound file.
     
 (defmethod sound-path ((self sound) )
    (om-sound-file-name self))
+
+(defmethod sound-update-pict ((self sound) pict)
+  (setf (pict-sound self) pict))
+
 
 (defmethod real-dur ((self sound)) 
   (round (extent->ms self)))
@@ -309,10 +312,10 @@ Press 'space' to play/stop the sound file.
     (sound-dur (pathname sound))))
 
 (defmethod! sound-dur ((sound sound))
-   (if (and sound (oa::number-of-samples-current sound) las-srate
-            (> las-srate 0))
-       (float (/ (oa::number-of-samples-current sound) las-srate))
-     0))
+            (if (and sound (om-sound-n-samples-current sound) las-srate
+                     (> las-srate 0))
+                (float (/ (om-sound-n-samples-current sound) las-srate))
+              0))
 
 ;(defmethod! sound-dur ((sound sound))
 ;   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
@@ -386,6 +389,10 @@ Press 'space' to play/stop the sound file.
           (unless (equal (pict-sound self) :error)
               (pict-sound self)
             )))))
+
+(defmethod sound-get-new-pict ((self sound) path) 
+  (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
+  (pict-sound self))
   
 (defmethod pic-to-draw ((self sound)) 
   (if (and (pict-spectre self) (pict-spectre? self))

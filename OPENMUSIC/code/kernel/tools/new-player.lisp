@@ -48,13 +48,6 @@
         (start-time player) 0
         ))
 
-
-
-
-
-
-
-
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
 ;;;=================================
@@ -96,7 +89,77 @@
       (editor-play self)
     (editor-stop self)))
 
+(defmethod editor-slice-copy ((self play-editor-mixin))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (pointer (om-sound-sndlasptr-current (object self)))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (om-sound-update-snd-slice-to-paste (object self) (las-slice-copy pointer from to))))
+            (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
+    (print "Nothing to copy! Please select a region to copy.")))
 
+(defmethod editor-slice-cut ((self play-editor-mixin))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (pointer (om-sound-sndlasptr-current (object self)))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
+               (om-sound-update-las-infos (object self))
+               (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+               (om-sound-update-buffer-and-pict (object self) *om-tmp-draw-filename*)
+               (update-subviews self)
+               (om-invalidate-view self)))
+            (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
+    (print "Nothing to cut! Please select a region to cut.")))
+
+(defmethod editor-slice-paste ((self play-editor-mixin))
+  (if (not (selection-to-slice-? (panel self)))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (pointer (om-sound-sndlasptr-current (object self)))
+                    (slice (om-sound-snd-slice-to-paste (object self)))
+                    (position (cursor-pos (panel self))))
+               (if slice
+                   (let ()
+                     (om-sound-update-sndlasptr-current (object self) (las-slice-paste pointer position slice))
+                     (om-sound-update-las-infos (object self))
+                     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+                     (om-sound-update-buffer-and-pict (object self) *om-tmp-draw-filename*)
+                     (update-subviews self)
+                     (om-invalidate-view self))
+                 (print "Nothing to paste! Please copy a sound region before."))))
+            (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
+    (print "You can't paste on a region!")))
+
+(defmethod editor-slice-delete ((self play-editor-mixin))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (pointer (om-sound-sndlasptr-current (object self)))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (om-sound-update-sndlasptr-current (object self) (las-slice-delete pointer from to))
+               (om-sound-update-las-infos (object self))
+               (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+               (om-sound-update-buffer-and-pict (object self) *om-tmp-draw-filename*)
+               (update-subviews self)
+               (om-invalidate-view self)))
+            (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
+    (print "Nothing to delete! Please select a region to delete.")))
+
+(defmethod editor-update-view ((self play-editor-mixin))
+  (let ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0))))
+    (setf (bounds-x (panel self)) (list 0 newdur))
+    (setf (rangex (panel self)) (list 0 newdur))
+    (set-units-ruler (panel self) (rulerx (panel self)))
+    (update-subviews self)))
 
 (defmethod om-draw-contents :after ((self play-editor-mixin))
   ;(call-next-method)

@@ -427,7 +427,7 @@
                     (setf end max))
                 (setf (sndlasptr-to-play sound) (las::MakeCutSound (sndlasptr-current sound) begin end)))
             (setf (sndlasptr-to-play sound) (sndlasptr-current sound)))
-          (om-update-sound-las-infos sound)
+          (om-sound-update-las-infos sound)
           (if (and track (> track 0))
               (om-smart-play-visible sound (- track 1))
           (om-smart-play-hidden sound)))))

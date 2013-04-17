@@ -28,14 +28,21 @@
           om-sound-snd-slice-to-paste
           om-sound-sndlasptr
           om-sound-sndlasptr-current
+          om-sound-n-samples-current
+          om-sound-sndlasptr-to-play
+          om-sound-n-samples-to-play
+
+          om-sound-update-sndlasptr-current
+          om-sound-update-snd-slice-to-paste
           
-          om-update-sound-las-infos
+          om-sound-update-buffer-and-pict
+
+          om-sound-update-las-infos
           
           om-cons-snd-pict
           om-sound-get-pict
           om-read-sound-data      
           ) :om-api)
-
 
 ;;==================================
 ;;; AUDIO TOOLS tools (AU)
@@ -474,10 +481,40 @@
    (when (or (loaded self) (om-fill-sound-info self))
     (sndlasptr-current self)))
 
+(defmethod om-sound-n-samples-current ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-current self)))
+
+(defmethod om-sound-sndlasptr-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr-to-play self)))
+
+(defmethod om-sound-n-samples-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-to-play self)))
+
 (defmethod om-sound-snd-slice-to-paste ((self om-sound))
    (when (or (loaded self) (om-fill-sound-info self))
     (snd-slice-to-paste self)))
 
+(defmethod om-sound-update-sndlasptr-current ((self om-sound) pointer)
+  (setf (sndlasptr-current self) pointer))
+
+(defmethod om-sound-update-snd-slice-to-paste ((self om-sound) pointer)
+  (setf (snd-slice-to-paste self) pointer))
+
+(defmethod om-sound-update-las-infos ((self om-sound))
+  (setf (number-of-samples-current self) (las-get-length-sound (sndlasptr-current self)))
+  (setf (number-of-samples-to-play self) (las-get-length-sound (sndlasptr-to-play self))))
+
+(defmethod om-sound-update-buffer-and-pict ((self om-sound) path)
+  (progn 
+    (fli:free-foreign-object (sndbuffer self))
+    (setf (sndbuffer self) (multiple-value-bind (data size nch) 
+                               (au::load-audio-data (convert-filename-encoding path) :float)
+                             data))
+    ;(om::sound-update-pict (om-cons-snd-pict path))
+    ))
 
 (defun audio-file-type (pathname)
   (or
@@ -546,21 +583,6 @@
           (print (format nil "Error while loading file ~s" (filename sound)))
           (setf (loaded sound) :error))))
     (loaded sound)))
-
-(defun om-update-sound-las-infos (sound)
-  (let ()
-    (setf (number-of-samples-current sound) (las-get-length-sound (sndlasptr-current sound)))
-    (setf (number-of-samples-to-play sound) (las-get-length-sound (sndlasptr-to-play sound)))
-    ))
-
-;(defmethod update-buffer-with-current-las ((self sound))
-;  (let* ()
-;    (om::save-sound-in-file (sndlasptr-current self) *tmp-draw-filename*)
-;    (fli:free-foreign-object (sndbuffer self))
-;    (setf (sndbuffer self) (multiple-value-bind (data size nch) 
-;                                   (au::load-audio-data (convert-filename-encoding *tmp-draw-filename*) :float)
-;                                 (let* ((sndbuffer data)) sndbuffer)))
-;    (setf (pict-sound self) (om-cons-snd-pict *tmp-draw-filename*))))
 
 
 (defun convert-filename-encoding (path)
@@ -672,6 +694,7 @@
       (om-cons-snd-pict (filename self))
       )
     ))
+
 
 ;(setf qqq (capi::prompt-for-file ""))
 ;(setf ppp #P"C:/Documents and Settings/Jean Bresson/test.aiff")
