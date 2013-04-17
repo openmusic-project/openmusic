@@ -70,7 +70,7 @@
          result
          ;new-length
          ;new-duration
-         )(print "bef")
+         )
     (if (>= pos size) (setf pos (- size 1)))
     (if (<= pos 0) (setf pos 1))
     (progn
@@ -81,7 +81,6 @@
       ;(setf new-length (las::getlengthsound result))
       ;(setf new-duration (round new-length sr-factor))
       ;(list result new-length new-duration)
-      (print "aft")
       result)))
 
 (defun las-slice-delete (pointer from to)
@@ -120,7 +119,17 @@
 (defun save-slicing-command (type position from to)
   (table-push-on-top (list type position from to) *las-slicing-history* *las-slicing-history-size*))
 
+(defun undo-slicing-command ()
+  (table-pop-on-top *las-slicing-history* *las-slicing-history-size*))
+
 (defun table-push-on-top (line table size)
   (loop for i from 0 to (- size 1) do
         (setf (gethash i table) (gethash (+ i 1) table)))
   (setf (gethash (- size 1) table) line))
+
+(defun table-pop-on-top (table size)
+  (let ((line-pop (gethash (- size 1) table)))
+    (loop for i from (- size 1) to 1 do
+        (setf (gethash i table) (gethash (- i 1) table)))
+    (setf (gethash 0 table) nil)
+    line-pop))

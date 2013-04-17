@@ -512,9 +512,7 @@
     (fli:free-foreign-object (sndbuffer self))
     (setf (sndbuffer self) (multiple-value-bind (data size nch) 
                                (au::load-audio-data (convert-filename-encoding path) :float)
-                             data))
-    ;(om::sound-update-pict (om-cons-snd-pict path))
-    ))
+                             data))))
 
 (defun audio-file-type (pathname)
   (or
