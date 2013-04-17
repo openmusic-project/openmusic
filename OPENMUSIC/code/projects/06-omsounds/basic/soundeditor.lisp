@@ -357,9 +357,62 @@
                         (om-new-leafmenu  "Import..." #'(lambda () (sound-import self)) nil))))
         (om-make-menu "Edit" 
                       (list
-                       (om-new-leafmenu  "Select All" #'(lambda () (editor-select-all self)) "a")))
+                       (om-new-leafmenu  "Select All" #'(lambda () (editor-select-all self)) "a")
+                       (om-new-leafmenu  "Copy" #'(lambda () (editor-slice-copy self)) "c")
+                       (om-new-leafmenu  "Cut" #'(lambda () (editor-slice-cut self)) "x")
+                       (om-new-leafmenu  "Paste" #'(lambda () (editor-slice-paste self)) "v")
+                       (om-new-leafmenu  "Delete" #'(lambda () (editor-slice-delete self)) "k")))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
+
+
+(defmethod editor-slice-copy ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (sound (nth 0 datalist))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (las-slice-copy sound from to)))
+            (t nil))
+    (print "Nothing to copy! Please select a region to copy.")))
+
+(defmethod editor-slice-cut ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (sound (nth 0 datalist))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (las-slice-cut sound from to)))
+            (t nil))
+    (print "Nothing to cut! Please select a region to cut.")))
+
+(defmethod editor-slice-paste ((self soundeditor))
+  (if (not (selection-to-slice-? (panel self)))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (sound (nth 0 datalist))
+                    (position (cursor-pos (panel self))))
+               (if slice
+                   (las-slice-paste sound position slice)
+                 (print "Nothing to paste! Please copy a sound region before."))))
+            (t nil))
+    (print "You can't paste on a region!")))
+
+(defmethod editor-slice-delete ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (cond ((typep (player self) 'las-player) 
+             (let* ((datalist (get-selection-to-play (panel self)))
+                    (sound (nth 0 datalist))
+                    (interval (nth 2 datalist))
+                    (from (car interval))
+                    (to (cadr interval)))
+               (las-slice-delete sound from to)))
+            (t nil))
+    (print "Nothing to delete! Please select a region to delete.")))
 
 
 (defmethod get-help-list ((self soundeditor))
@@ -493,6 +546,10 @@
                      :interval interval)
                (first interval)
                (second interval)))))
+
+(defmethod selection-to-slice-? ((self soundpanel))
+  (and (cursor-interval self) 
+           (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))))
 
 (defmethod attached-cursor-views ((self soundpanel)) (list (preview (editor self))))
 
