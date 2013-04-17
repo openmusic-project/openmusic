@@ -51,7 +51,7 @@
                    (om-run-process "editor player callback"
                                    #'(lambda ()
                                        (loop 
-                                        (if (>= (get-player-time player)e stop-time)
+                                        (if (>= (get-player-time player) stop-time)
                                             (progn 
                                               (player-stop player obj)
                                               (return))

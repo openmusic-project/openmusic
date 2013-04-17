@@ -153,10 +153,10 @@
 ;;; SOUND PREVIEW
 ;;;================
 
-(defclass full-preview (3Dborder-view om-view-cursor-play) ()
+(defclass full-preview (3Dborder-view cursor-play-view-mixin) ()
      (:default-initargs
       #+win32 :draw-with-buffer #+win32 t)
-     )
+     ) 
 
 (defvar *preview-size* "size of the preview pane")
 (setf *preview-size* 40)
