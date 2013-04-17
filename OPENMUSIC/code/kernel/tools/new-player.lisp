@@ -8,7 +8,12 @@
    (loop-play :accessor loop-play :initform nil)
    (start-time :accessor start-time :initform 0)
    (player-offset :accessor player-offset :initform 0)
-   (ref-clock-time :accessor ref-clock-time :initform 0)))
+   (ref-clock-time :accessor ref-clock-time :initform 0)
+   (caller :initform nil :accessor caller :initarg :caller)
+   (callback-fun :initform nil :accessor callback-fun :initarg :callback-fun)
+   (callback-process :initform nil :accessor callback-process)
+   (callback-tick :initform 0.01 :accessor callback-tick :initarg :callback-tick)
+   (stop-fun :initform nil :accessor stop-fun :initarg :stop-fun)))
 
 (defmethod class-from-player-type ((type t)) 'omplayer)
 
@@ -16,7 +21,7 @@
 
 (defmacro get-player-time (player)
   `(cond ((equal (state ,player) :play)
-          (+ (player-offset ,player) (start-time ,player) (- (ref-clock-time ,player) (clock-time))))
+          (+ (player-offset ,player) (start-time ,player) (- (clock-time) (ref-clock-time ,player))))
          ((equal (state ,player) :pause)
           (+ (player-offset ,player) (start-time ,player)))
          (t 0)))
@@ -27,26 +32,63 @@
   (not (equal (state self) :play)))
 
 
+(loop for i from 1 to 100
+      do
+      (if (= i 30) (return)
+        (print i)))
+
+
 (defmethod player-play ((player omplayer) obj &key interval)
-  (setf (state player) :play
-        (start-time player) 0
-        (ref-clock-time player) (clock-time)))
+  (cond ((equal (state player) :play) nil)
+        ((equal (state player) :pause)
+         (player-continue player))
+        (t 
+         (let ((stop-time (or (cadr interval) (get-obj-dur obj))))
+           (when (callback-process player)
+             (om-kill-process (callback-process player)))
+           (when (callback-fun player)
+             (setf (callback-process player)
+                   (om-run-process "editor player callback"
+                                   #'(lambda ()
+                                       (loop 
+                                        (if (>= (get-player-time player)e stop-time)
+                                            (progn 
+                                              (player-stop player obj)
+                                              (return))
+                                          (funcall (callback-fun player) 
+                                                   (caller player) 
+                                                   (get-player-time player)))
+                                        (sleep (callback-tick player))
+                                        )))
+                   ))
+           (setf (state player) :play
+                 (start-time player) (or (car interval) 0)
+                 (ref-clock-time player) (clock-time))
+           )
+        )))
+
 
 (defmethod player-pause ((player omplayer) &optional object)
-  (setf (start-time player) (get-player-time player)
-        (state player) :pause
-        ))
+  (when (equal (state player) :play)
+    (setf (start-time player) (get-player-time player)
+          (state player) :pause
+          )))
 
 (defmethod player-continue ((player omplayer))
-  (setf (start-time player) (get-player-time player)
+  (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
 
 (defmethod player-stop ((player omplayer) &optional object)
   (setf (state player) :stop
         (ref-clock-time player) (clock-time)
-        (start-time player) 0
-        ))
+        (start-time player) 0)
+  (when (stop-fun player)
+    (funcall (stop-fun player) (caller player)))
+  (when (callback-process player)
+    (om-kill-process (callback-process player))
+    (setf (callback-process player) nil)))
+
 
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
@@ -54,14 +96,22 @@
 (defclass play-editor-mixin ()
    ((player :initform nil :accessor player)
     (player-type :initform nil :accessor player-type)
-    (loop-play :initform nil :accessor loop-play)))
+    (loop-play :initform nil :accessor loop-play)
+    (end-callback :initform nil :accessor end-callback)))
+
+(defun init-editor-player (editor)
+  (setf (player editor) (make-instance (class-from-player-type (get-score-player editor))
+                                     :caller editor
+                                     :callback-fun 'play-editor-callback
+                                     :stop-fun 'stop-editor-callback)))
 
 (defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
-  (setf (player self) (make-instance (class-from-player-type (get-score-player self)))))
+  (init-editor-player self))
 
 (defmethod reset-editor-player ((self play-editor-mixin))
-  (setf (player self) (make-instance (class-from-player-type (get-score-player self))))
+  (init-editor-player self)
   (player-init (player self)))
+
 
 ;;; RETURNS OBJ, TMIN, TMAX
 (defmethod get-obj-to-play ((self play-editor-mixin))
@@ -72,11 +122,22 @@
          (tmax (if interval (cadr interval))))
     (values (object self) tmin tmax)))
 
+
 (defmethod editor-play ((self play-editor-mixin))
   (setf (loop-play (player self)) (loop-play self))
   (multiple-value-bind (obj t1 t2)
       (get-obj-to-play self)
-    (player-play (player self) obj :interval (and t1 t2 (list t1 t2)))))
+    (setf (callback-fun (player self))
+          #'(lambda (editor time)
+              (handler-bind ((error #'(lambda (e) 
+                                        (om-kill-process (callback-process (player self)))
+                                        (abort e))))
+                (play-editor-callback editor time)
+                )))
+    (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
+    (player-play (player self) obj :interval (and t1 t2 (list t1 t2)))
+    ))
+
 
 (defmethod editor-pause ((self play-editor-mixin))
   (player-pause (player self) (get-obj-to-play self)))
@@ -89,18 +150,19 @@
       (editor-play self)
     (editor-stop self)))
 
-
-(defmethod om-draw-contents :after ((self play-editor-mixin))
-  ;(call-next-method)
-  (om-with-focused-view self
-  (om-draw-string (- (w self) 40) 20
-                  (format nil "~D" (get-player-time (player self))))))
-
 ;;; temp compatibility
 (defmethod recording? ((self play-editor-mixin))
   (equal (state (player self)) :record))
 
 
+;;; A REDEFINIR PAR LES SOUS-CLASSES
+(defmethod cursor-panes ((self play-editor-mixin)) nil)
+
+(defmethod play-editor-callback ((self play-editor-mixin) time)
+  (mapcar #'(lambda (view) (update-cursor view time))
+          (cursor-panes self)))
+
+(defmethod stop-editor-callback ((self play-editor-mixin)) nil)
 
 ;;;===================================
 ; VIEW WITH CURSOR
@@ -170,16 +232,23 @@
 
 
 
+(defmethod start-cursor ((self cursor-play-view-mixin))
+  (om-erase-movable-cursor self)
+  (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line))
 
+(defmethod update-cursor ((self cursor-play-view-mixin) time &optional y1 y2)
+  (let ((y (or y1 0))
+        (h (if y2 (- y2 y1) (h self)))
+        (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self)))))
+    (om-update-movable-cursor self pixel y 4 h)))
 
 
 #|
 (defmethod editor-play :around ((self cursor-play-view-mixin))
   
 
-(defmethod start-cursor ((self cursor-play-view-mixin))
-  (om-erase-movable-cursor self)
-  (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)
+(mapc #'(lambda (view) (om-new-movable-cursor view (start-position self) 0 4 (h self) 'om-cursor-line))
+        (attached-cursor-views self))
 
 
 
@@ -228,10 +297,7 @@
 
 
 
-(defmethod draw-cursor-line ((self cursor-view-mixin) pixel &optional y1 y2)
-  (let ((y (or y1 0))
-        (h (if y2 (- y2 y1) (h self))))
-    (om-update-movable-cursor self pixel y 4 h)))
+
 
 
 

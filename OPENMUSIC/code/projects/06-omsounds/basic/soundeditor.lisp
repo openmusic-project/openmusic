@@ -161,12 +161,19 @@
 (defvar *preview-size* "size of the preview pane")
 (setf *preview-size* 40)
 
-(defmethod draw-line-cursor ((self full-preview) &key newpixel (draw? t))
-  (unless newpixel
-    (setf newpixel (round (* (/ (cursor-pos *general-player*) (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-  (when draw? 
-    (om-update-movable-cursor self newpixel 0 4 (h self)))
-   newpixel)
+;(defmethod draw-line-cursor ((self full-preview) &key newpixel (draw? t))
+;  (unless newpixel
+;    (setf newpixel (round (* (/ (cursor-pos *general-player*) (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
+;  (when draw? 
+;    (om-update-movable-cursor self newpixel 0 4 (h self)))
+;   newpixel)
+
+(defmethod update-cursor ((self full-preview) time &optional y1 y2)
+  (let ((y (or y1 0))
+        (h (if y2 (- y2 y1) (h self)))
+        (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
+    (om-update-movable-cursor self pixel y 4 h)))
+
 
 (defmethod om-draw-contents ((self full-preview))  
   (call-next-method)
@@ -467,6 +474,11 @@
 
 ;;; (if (equal val :multiplayer) (launch-multiplayer-app))
 
+(defmethod cursor-panes ((self soundeditor))
+  (list (panel self)
+        (preview self)))
+
+
 ;;;====================== 
 ;;; TITLE BAR / SOUND INFO
 ;;;======================
@@ -582,7 +594,9 @@
   (and (cursor-interval self) 
            (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))))
 
-(defmethod attached-cursor-views ((self soundpanel)) (list (preview (editor self))))
+;(defmethod attached-cursor-views ((self soundpanel)) (list (preview (editor self))))
+
+
 
 ;; no turn page
 (defmethod scroll-play-window ((self soundPanel)) t)
