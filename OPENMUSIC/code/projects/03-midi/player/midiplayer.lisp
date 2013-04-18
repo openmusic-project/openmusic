@@ -23,8 +23,14 @@
           finalevent)
     (setf finalevent (om-midi-new-evt (om-midi-get-num-from-type "Stop") :port port :date (+ dur 1)))
     (when finalevent (om-midi-seq-add-evt *playing-midi-seq* finalevent))
-    ;(midishare::setalltrackplayer *player* *playing-midi-seq* 500)
-    (om-midi-set-player *midiplayer* *playing-midi-seq* 1000)
+    
+    (handler-bind ((error #'(lambda (e) 
+                              (print "Error setting Midi player...")
+                              (midiplay-reset)
+                              (oa::om-midi-extend) ;;; restarts with more memory...
+                              (abort e))))
+      (om-midi-set-player *midiplayer* *playing-midi-seq* 1000)
+      )
     )))
   
 
