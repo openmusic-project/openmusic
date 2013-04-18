@@ -12,7 +12,7 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.060103)
+(defparameter *version* 6.060200)
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)

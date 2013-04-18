@@ -193,8 +193,10 @@
 
 ;-----------Folder target
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMFolder) (target OMFolder)) 
-   (if (ancestor-p dragged target)
-     (om-beep-msg "You can not place a folder into itself") t))
+   (cond ((equal target dragged) nil)
+         ((ancestor-p dragged target)
+          (om-beep-msg "You can not place a folder into itself"))
+         (t t)))
 
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMPatch) (target OMFolder)) t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMMaquette) (target OMFolder)) t)

@@ -137,7 +137,7 @@
       (cffi:foreign-slot-value e 'Pos 'unit)))
   
 ;; Record for state management
-  
+  23529
 (cffi:defcstruct PlayerState
   (date      :long)
   (tempo     :long)
