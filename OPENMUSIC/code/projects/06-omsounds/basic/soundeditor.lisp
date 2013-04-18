@@ -371,17 +371,20 @@
                                                     (editor-slice-copy self)) "c")
                        (om-new-leafmenu  "Cut" #'(lambda () 
                                                    (editor-slice-cut self)
-                                                   (editor-update-view self)) "x")
+                                                   ) "x")
                        (om-new-leafmenu  "Paste" #'(lambda () 
                                                      (editor-slice-paste self)
-                                                     (editor-update-view self)) "v")
+                                                     ) "v")
                        (om-new-leafmenu  "Delete" #'(lambda () 
                                                       (editor-slice-delete self)
-                                                      (editor-update-view self)) "k")))
+                                                      ) "k")))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
 
-(defmethod editor-slice-copy ((self play-editor-mixin))
+
+;////////////////////////////////////////////////AUDIO SLICING///////////////////////////////////////////////////////
+
+(defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (cond ((typep (player self) 'las-player) 
              (let* ((datalist (get-selection-to-play (panel self)))
@@ -393,7 +396,7 @@
             (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
     (print "Nothing to copy! Please select a region to copy.")))
 
-(defmethod editor-slice-cut ((self play-editor-mixin))
+(defmethod editor-slice-cut ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (cond ((typep (player self) 'las-player) 
              (let* ((datalist (get-selection-to-play (panel self)))
@@ -403,11 +406,11 @@
                     (to (cadr interval)))
                (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                (om-sound-update-las-infos (object self))
-               (editor-update-view self)))
+               (launch-editor-view-updater self)))
             (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
     (print "Nothing to cut! Please select a region to cut.")))
 
-(defmethod editor-slice-paste ((self play-editor-mixin))
+(defmethod editor-slice-paste ((self soundeditor))
   (if (not (selection-to-slice-? (panel self)))
       (cond ((typep (player self) 'las-player) 
              (let* ((datalist (get-selection-to-play (panel self)))
@@ -418,12 +421,12 @@
                    (let ()
                      (om-sound-update-sndlasptr-current (object self) (las-slice-paste pointer position slice))
                      (om-sound-update-las-infos (object self))
-                     (editor-update-view self))
+                     (launch-editor-view-updater self))
                  (print "Nothing to paste! Please copy a sound region before."))))
             (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
     (print "You can't paste on a region!")))
 
-(defmethod editor-slice-delete ((self play-editor-mixin))
+(defmethod editor-slice-delete ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (cond ((typep (player self) 'las-player) 
              (let* ((datalist (get-selection-to-play (panel self)))
@@ -433,20 +436,22 @@
                     (to (cadr interval)))
                (om-sound-update-sndlasptr-current (object self) (las-slice-delete pointer from to))
                (om-sound-update-las-infos (object self))
-               (editor-update-view self)))
+               (launch-editor-view-updater self)))
             (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
     (print "Nothing to delete! Please select a region to delete.")))
 
-;(defvar *editor-view-updater* nil)
-;(defmethod launch-editor-view-updater ((self play-editor-mixin))
-;  (if *editor-view-updater*
-;      (om-kill-process *editor-view-updater*))
-;  (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda() (editor-update-view self)))))
+(defvar *editor-view-updater* nil)
+(defmethod launch-editor-view-updater ((self soundeditor))
+  (if *editor-view-updater*
+      (om-kill-process *editor-view-updater*))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda () (editor-update-view self)))))
 
-(defmethod editor-update-view ((self play-editor-mixin))
+
+(defmethod editor-update-view ((self soundeditor))
   (let ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
         (min (car (rangex (panel self))))
-        (max (cadr (rangex (panel self)))))
+        (max (cadr (rangex (panel self))))
+        )
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
     (om-sound-update-buffer-and-pict (object self) *om-tmp-draw-filename*)
@@ -455,8 +460,10 @@
           ((>= max newdur) (setf max newdur)))
     (setf (rangex (panel self)) (list min max))
     (set-units-ruler (panel self) (rulerx (panel self)))
-    (update-subviews self)
     (om-invalidate-view self)))
+
+;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")

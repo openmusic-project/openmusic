@@ -147,10 +147,10 @@
 
 (defmethod om-invalidate-view ((self om-graphic-object) &optional (erase t))
   (when (and (interface-visible-p self) (om-get-view self))
-    (capi::with-atomic-redisplay ((om-get-view self))
+    ;(capi::with-atomic-redisplay ((om-get-view self))
       (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
       #+win32(mapcar 'om-invalidate-view (om-subviews self))
-      )
+    ;  )
   ))
 
 (defmethod om-invalidate-view ((self om-item-view) &optional (erase t))

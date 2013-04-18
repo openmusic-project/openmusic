@@ -31,13 +31,6 @@
 (defmethod idle-p ((self omplayer)) 
   (not (equal (state self) :play)))
 
-
-(loop for i from 1 to 100
-      do
-      (if (= i 30) (return)
-        (print i)))
-
-
 (defmethod player-play ((player omplayer) obj &key interval)
   (cond ((equal (state player) :play) nil)
         ((equal (state player) :pause)

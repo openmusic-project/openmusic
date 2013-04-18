@@ -526,7 +526,7 @@
 
 (defmacro om-run-process (name func &rest args)
    `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10)) 
-                             (if (print (functionp ,func)) ,func ',func ,.args)))
+                             (if (functionp ,func) ,func ',func) ,.args))
 
 (defun om-kill-process (process)
    (mp:process-kill process))
