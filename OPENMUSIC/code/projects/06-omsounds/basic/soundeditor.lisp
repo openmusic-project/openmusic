@@ -392,14 +392,14 @@
 (defmethod editor-undo-available ((self soundeditor))
   (let (res)
     (cond ((typep (player self) 'las-player) 
-           (setf res (table-top-? *las-slicing-past-stack* *las-slicing-history-size*)))
+           (setf res (table-top-? (slicing-past-stack self) *las-slicing-history-size*)))
           (t nil))
     (if res t nil)))
 
 (defmethod editor-redo-available ((self soundeditor))
   (let (res)
     (cond ((typep (player self) 'las-player) 
-           (setf res (table-top-? *las-slicing-future-stack* *las-slicing-history-size*)))
+           (setf res (table-top-? (slicing-future-stack self) *las-slicing-history-size*)))
           (t nil))
     (if res t nil)))
 ;================================================AUDIO SLICING=======================================================
