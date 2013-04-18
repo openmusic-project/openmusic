@@ -194,7 +194,6 @@
     (print (format nil "Error log written to ~a" path))
     (abort)))
 
-(dbg::executable-log-file)
 
 
 ;;;==========================
