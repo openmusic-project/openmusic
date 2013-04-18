@@ -25,6 +25,7 @@
           om-sound-n-channels
           om-sound-data-pos
           om-sound-format
+          om-sound-sndbuffer
           om-sound-snd-slice-to-paste
           om-sound-sndlasptr
           om-sound-sndlasptr-current
@@ -35,7 +36,8 @@
           om-sound-update-sndlasptr-current
           om-sound-update-snd-slice-to-paste
           
-          om-sound-update-buffer-and-pict
+          om-sound-update-buffer-with-path
+          om-sound-update-buffer-with-new
 
           om-sound-update-las-infos
           
@@ -507,12 +509,15 @@
   (setf (number-of-samples-current self) (las-get-length-sound (sndlasptr-current self)))
   (setf (number-of-samples-to-play self) (las-get-length-sound (sndlasptr-to-play self))))
 
-(defmethod om-sound-update-buffer-and-pict ((self om-sound) path)
+(defmethod om-sound-update-buffer-with-path ((self om-sound) path)
   (progn 
-    (fli:free-foreign-object (sndbuffer self))
+    ;(fli:free-foreign-object (sndbuffer self))
     (setf (sndbuffer self) (multiple-value-bind (data size nch) 
                                (au::load-audio-data (convert-filename-encoding path) :float)
                              data))))
+
+(defmethod om-sound-update-buffer-with-new ((self om-sound) buffer)
+  (setf (sndbuffer self) buffer))
 
 (defun audio-file-type (pathname)
   (or

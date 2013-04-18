@@ -220,8 +220,8 @@
     (preview :initform nil :accessor preview)
     (sndpict :initform nil :accessor sndpict)
     (timeunit :initform 0 :accessor timeunit :initarg :timeunit)
-    (slicing-past-stack :initform (make-hash-table) :accessor slicing-past-stack)
-    (slicing-future-stack :initform (make-hash-table) :accessor slicing-future-stack)))
+    (slicing-past-stack :initform nil :accessor slicing-past-stack)
+    (slicing-future-stack :initform nil :accessor slicing-future-stack)))
 
 (defmethod make-editor-window ((class (eql 'soundEditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
@@ -248,9 +248,10 @@
 (defmethod editor-null-event-handler :after ((self soundEditor))  ;chercher *mouse-window-event* par tout et enlever 
    (do-editor-null-event self))
 
+
 (defmethod initialize-instance :after ((self soundEditor) &rest args)
   (declare (ignore args))
-  
+
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
                                    :scrollbars :h
@@ -285,6 +286,8 @@
 
   (setf (sndpict self) (sound-get-pict (object self)))
   (set-units-ruler (panel self) (rulerx (panel self)))
+  (setf (slicing-past-stack self) (make-hash-table))
+  (setf (slicing-future-stack self) (make-hash-table))
   (update-controls (control self))
   (om-invalidate-view (panel self)))
 
@@ -371,9 +374,9 @@
                                                           (editor-select-all self)) "a")
                        (list
                         (om-new-leafmenu  "Undo" #'(lambda () 
-                                                     (editor-slice-copy self)) "z" (editor-undo-available self))
+                                                     (editor-slice-undo self)) "z")
                         (om-new-leafmenu  "Redo" #'(lambda () 
-                                                     (editor-slice-copy self)) "y" (editor-redo-available self)))
+                                                     (editor-slice-redo self)) "y"))
                         (list
                          (om-new-leafmenu  "Copy" #'(lambda () 
                                                       (editor-slice-copy self)) "c")
@@ -402,6 +405,8 @@
            (setf res (table-top-? (slicing-future-stack self) *las-slicing-history-size*)))
           (t nil))
     (if res t nil)))
+
+;(enable-this-menu-items '("File") '("Undo"))
 ;================================================AUDIO SLICING=======================================================
 
 ;;;///////////////////TOOLS//////////////////////
@@ -412,9 +417,11 @@
   (gethash (- size 1) table))
 
 (defun table-push-on-top (line table size)
-  (loop for i from 0 to (- size 1) do
-        (setf (gethash i table) (gethash (+ i 1) table)))
-  (setf (gethash (- size 1) table) line))
+  (let ((deleted-line (gethash 0 table)))
+    (loop for i from 0 to (- size 1) do
+          (setf (gethash i table) (gethash (+ i 1) table)))
+    (setf (gethash (- size 1) table) line)
+  deleted-line))
 
 (defun table-pop-on-top (table size)
   (let ((line-pop (gethash (- size 1) table)))
@@ -423,38 +430,45 @@
         (setf (gethash i table) (gethash (- i 1) table)))
     (setf (gethash 0 table) nil)
     line-pop))
+
+(defmethod save-las-datalist ((self soundeditor) table size)
+  (table-push-on-top 
+   (list 
+    (om-sound-sndlasptr-current (object self)) 
+    (om-sound-snd-slice-to-paste (object self))
+    (om-sound-sndbuffer (object self))
+    (get-sound-pict (object self)))
+   table size))
 ;;;////////////////////////////////////////////
 (defmethod editor-slice-undo ((self soundeditor))
   (cond ((typep (player self) 'las-player)
-         (progn
-           (table-push-on-top 
-            (list 
-             (om-sound-sndlasptr-current (object self)) 
-             (om-sound-snd-slice-to-paste (object self))
-             (get-sound-pict (object self))) 
-            (slicing-future-stack self) *las-slicing-history-size*)
-           (let ((pastline (table-pop-on-top (slicing-past-stack self) *las-slicing-history-size*)))
-             (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
-             (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
-             (sound-update-pict (object self) (nth 2 pastline)))))
+         (if (gethash (- *las-slicing-history-size* 1) (slicing-past-stack self))
+             (let ((del-line (save-las-datalist self (slicing-future-stack self) *las-slicing-history-size*)))
+               (if del-line (fli:free-foreign-object (nth 2 del-line)))
+               (let ((pastline (table-pop-on-top (slicing-past-stack self) *las-slicing-history-size*)))
+                 (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
+                 (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
+                 (om-sound-update-buffer-with-new (object self) (nth 2 pastline))
+                 (sound-update-pict (object self) (nth 3 pastline)))
+               (launch-editor-view-updater-light self)
+               )))
         (t nil)))
 
 (defmethod editor-slice-redo ((self soundeditor))
   (cond ((typep (player self) 'las-player)
-         (progn
-           (table-push-on-top 
-            (list 
-             (om-sound-sndlasptr-current (object self)) 
-             (om-sound-snd-slice-to-paste (object self))
-             (get-sound-pict (object self))) 
-            (slicing-past-stack self) *las-slicing-history-size*)
-           (let ((pastline (table-pop-on-top (slicing-future-stack self) *las-slicing-history-size*)))
-             (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
-             (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
-             (sound-update-pict (object self) (nth 2 pastline)))))
+         (if (gethash (- *las-slicing-history-size* 1) (slicing-future-stack self))
+             (let ((del-line (save-las-datalist self (slicing-past-stack self) *las-slicing-history-size*)))
+               (if del-line (fli:free-foreign-object (nth 2 del-line)))
+               (let ((futureline (table-pop-on-top (slicing-future-stack self) *las-slicing-history-size*)))
+                 (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
+                 (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
+                 (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
+                 (sound-update-pict (object self) (nth 3 futureline)))
+               (launch-editor-view-updater-light self))))
         (t nil)))
 
 (defmethod editor-slice-copy ((self soundeditor))
+        (print (gethash 4 (slicing-past-stack self)))
   (if (selection-to-slice-? (panel self))
       (cond ((typep (player self) 'las-player) 
              (let* ((datalist (get-selection-to-play (panel self)))
@@ -474,6 +488,7 @@
                     (interval (nth 2 datalist))
                     (from (car interval))
                     (to (cadr interval)))
+               (save-las-datalist self (slicing-past-stack self) *las-slicing-history-size*)
                (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                (om-sound-update-las-infos (object self))
                (launch-editor-view-updater self)))
@@ -489,6 +504,7 @@
                     (position (cursor-pos (panel self))))
                (if slice
                    (let ()
+                     (save-las-datalist self (slicing-past-stack self) *las-slicing-history-size*)
                      (om-sound-update-sndlasptr-current (object self) (las-slice-paste pointer position slice))
                      (om-sound-update-las-infos (object self))
                      (launch-editor-view-updater self))
@@ -504,6 +520,7 @@
                     (interval (nth 2 datalist))
                     (from (car interval))
                     (to (cadr interval)))
+               (save-las-datalist self (slicing-past-stack self) *las-slicing-history-size*)
                (om-sound-update-sndlasptr-current (object self) (las-slice-delete pointer from to))
                (om-sound-update-las-infos (object self))
                (launch-editor-view-updater self)))
@@ -515,6 +532,10 @@
       (om-kill-process *editor-view-updater*))
   (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda () (editor-update-view self)))))
 
+(defmethod launch-editor-view-updater-light ((self soundeditor))
+  (if *editor-view-updater*
+      (om-kill-process *editor-view-updater*))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater-light" #'(lambda () (editor-update-view-light self)))))
 
 (defmethod editor-update-view ((self soundeditor))
   (let ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
@@ -523,7 +544,7 @@
         )
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
-    (om-sound-update-buffer-and-pict (object self) *om-tmp-draw-filename*)
+    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (setf (bounds-x (panel self)) (list 0 newdur))
     (cond ((>= min newdur) (let () (setf min 0) (setf max newdur)))
           ((>= max newdur) (setf max newdur)))
@@ -531,6 +552,18 @@
     (set-units-ruler (panel self) (rulerx (panel self)))
     (om-invalidate-view self)))
  
+(defmethod editor-update-view-light ((self soundeditor))
+  (om-sound-update-las-infos (object self))
+  (let ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
+        (min (car (rangex (panel self))))
+        (max (cadr (rangex (panel self))))
+        )
+    (setf (bounds-x (panel self)) (list 0 newdur))
+    (cond ((>= min newdur) (let () (setf min 0) (setf max newdur)))
+          ((>= max newdur) (setf max newdur)))
+    (setf (rangex (panel self)) (list min max))
+    (set-units-ruler (panel self) (rulerx (panel self)))
+    (om-invalidate-view self)))
 ;====================================================================================================================
 
 
