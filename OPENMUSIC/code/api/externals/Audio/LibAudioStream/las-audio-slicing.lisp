@@ -10,8 +10,6 @@
           las-slice-delete
           ) :om-api)
 
-(defconstant *las-slicing-history-size* 5)
-(defvar *las-slicing-history* (make-hash-table))
 
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
@@ -106,28 +104,3 @@
       (progn
         (print "ERROR")
         nil))))
-
-
-
-
-
-
-
-;//////////////////////////TOOLS////////////////////////////////////////////////////////////////////////////////////////////////
-(defun save-slicing-command (type position from to)
-  (table-push-on-top (list type position from to) *las-slicing-history* *las-slicing-history-size*))
-
-(defun undo-slicing-command ()
-  (table-pop-on-top *las-slicing-history* *las-slicing-history-size*))
-
-(defun table-push-on-top (line table size)
-  (loop for i from 0 to (- size 1) do
-        (setf (gethash i table) (gethash (+ i 1) table)))
-  (setf (gethash (- size 1) table) line))
-
-(defun table-pop-on-top (table size)
-  (let ((line-pop (gethash (- size 1) table)))
-    (loop for i from (- size 1) to 1 do
-        (setf (gethash i table) (gethash (- i 1) table)))
-    (setf (gethash 0 table) nil)
-    line-pop))

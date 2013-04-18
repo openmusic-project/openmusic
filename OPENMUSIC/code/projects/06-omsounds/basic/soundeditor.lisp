@@ -219,7 +219,9 @@
     (control :initform nil :accessor control)
     (preview :initform nil :accessor preview)
     (sndpict :initform nil :accessor sndpict)
-    (timeunit :initform 0 :accessor timeunit :initarg :timeunit)))
+    (timeunit :initform 0 :accessor timeunit :initarg :timeunit)
+    (slicing-past-stack :initform (make-hash-table) :accessor slicing-past-stack)
+    (slicing-future-stack :initform (make-hash-table) :accessor slicing-future-stack)))
 
 (defmethod make-editor-window ((class (eql 'soundEditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
@@ -367,22 +369,90 @@
                       (list
                        (om-new-leafmenu  "Select All" #'(lambda () 
                                                           (editor-select-all self)) "a")
-                       (om-new-leafmenu  "Copy" #'(lambda () 
-                                                    (editor-slice-copy self)) "c")
-                       (om-new-leafmenu  "Cut" #'(lambda () 
-                                                   (editor-slice-cut self)
-                                                   ) "x")
-                       (om-new-leafmenu  "Paste" #'(lambda () 
-                                                     (editor-slice-paste self)
-                                                     ) "v")
-                       (om-new-leafmenu  "Delete" #'(lambda () 
-                                                      (editor-slice-delete self)
-                                                      ) "k")))
+                       (list
+                        (om-new-leafmenu  "Undo" #'(lambda () 
+                                                     (editor-slice-copy self)) "z" (editor-undo-available self))
+                        (om-new-leafmenu  "Redo" #'(lambda () 
+                                                     (editor-slice-copy self)) "y" (editor-redo-available self)))
+                        (list
+                         (om-new-leafmenu  "Copy" #'(lambda () 
+                                                      (editor-slice-copy self)) "c")
+                         (om-new-leafmenu  "Cut" #'(lambda () 
+                                                     (editor-slice-cut self)
+                                                     ) "x")
+                         (om-new-leafmenu  "Paste" #'(lambda () 
+                                                       (editor-slice-paste self)
+                                                       ) "v")
+                         (om-new-leafmenu  "Delete" #'(lambda () 
+                                                        (editor-slice-delete self)
+                                                        ) "d"))))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
 
+(defmethod editor-undo-available ((self soundeditor))
+  (let (res)
+    (cond ((typep (player self) 'las-player) 
+           (setf res (table-top-? *las-slicing-past-stack* *las-slicing-history-size*)))
+          (t nil))
+    (if res t nil)))
 
-;////////////////////////////////////////////////AUDIO SLICING///////////////////////////////////////////////////////
+(defmethod editor-redo-available ((self soundeditor))
+  (let (res)
+    (cond ((typep (player self) 'las-player) 
+           (setf res (table-top-? *las-slicing-future-stack* *las-slicing-history-size*)))
+          (t nil))
+    (if res t nil)))
+;================================================AUDIO SLICING=======================================================
+
+;;;///////////////////TOOLS//////////////////////
+(defvar *editor-view-updater* nil)
+(defconstant *las-slicing-history-size* 5)
+
+(defun table-top-? (table size)
+  (gethash (- size 1) table))
+
+(defun table-push-on-top (line table size)
+  (loop for i from 0 to (- size 1) do
+        (setf (gethash i table) (gethash (+ i 1) table)))
+  (setf (gethash (- size 1) table) line))
+
+(defun table-pop-on-top (table size)
+  (let ((line-pop (gethash (- size 1) table)))
+    (setf (gethash (- size 1) table) nil)
+    (loop for i from (- size 1) to 1 do
+        (setf (gethash i table) (gethash (- i 1) table)))
+    (setf (gethash 0 table) nil)
+    line-pop))
+;;;////////////////////////////////////////////
+(defmethod editor-slice-undo ((self soundeditor))
+  (cond ((typep (player self) 'las-player)
+         (progn
+           (table-push-on-top 
+            (list 
+             (om-sound-sndlasptr-current (object self)) 
+             (om-sound-snd-slice-to-paste (object self))
+             (get-sound-pict (object self))) 
+            (slicing-future-stack self) *las-slicing-history-size*)
+           (let ((pastline (table-pop-on-top (slicing-past-stack self) *las-slicing-history-size*)))
+             (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
+             (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
+             (sound-update-pict (object self) (nth 2 pastline)))))
+        (t nil)))
+
+(defmethod editor-slice-redo ((self soundeditor))
+  (cond ((typep (player self) 'las-player)
+         (progn
+           (table-push-on-top 
+            (list 
+             (om-sound-sndlasptr-current (object self)) 
+             (om-sound-snd-slice-to-paste (object self))
+             (get-sound-pict (object self))) 
+            (slicing-past-stack self) *las-slicing-history-size*)
+           (let ((pastline (table-pop-on-top (slicing-future-stack self) *las-slicing-history-size*)))
+             (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
+             (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
+             (sound-update-pict (object self) (nth 2 pastline)))))
+        (t nil)))
 
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
@@ -440,7 +510,6 @@
             (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player.")))
     (print "Nothing to delete! Please select a region to delete.")))
 
-(defvar *editor-view-updater* nil)
 (defmethod launch-editor-view-updater ((self soundeditor))
   (if *editor-view-updater*
       (om-kill-process *editor-view-updater*))
@@ -461,8 +530,8 @@
     (setf (rangex (panel self)) (list min max))
     (set-units-ruler (panel self) (rulerx (panel self)))
     (om-invalidate-view self)))
-
-;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+;====================================================================================================================
 
 
 (defmethod get-help-list ((self soundeditor))

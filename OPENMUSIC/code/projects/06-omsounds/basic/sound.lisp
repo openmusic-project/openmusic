@@ -78,6 +78,8 @@ Press 'space' to play/stop the sound file.
 (defmethod sound-update-pict ((self sound) pict)
   (setf (pict-sound self) pict))
 
+(defmethod get-sound-pict ((self sound))
+  (pict-sound self))
 
 (defmethod real-dur ((self sound)) 
   (round (extent->ms self)))
