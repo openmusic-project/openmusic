@@ -162,39 +162,6 @@
 (defun quit-callback (interface)
   (om::quit-om-callback))
 
-;;;==========================
-;;; ERROR HANDLER
-;;;==========================
-
-(setf *debugger-hook* 'om-debugger-hook)
-
-;(defun om-debugger-hook (condition debugger-hook)
-;  (declare (ignore debugger-hook))
-;  (collect-backtrace condition)
-;  (fatal-error-handler condition)
-;  (invoke-restart (first (compute-restarts condition))))
-
-;(defun unexpected-error-function (error &optional (debugger-hook nil debugger-hook-p))
-;  (declare (ignore debugger-hook))
-;  (capi::display-message "An unexpected error of type ~a occurred: ~a" (type-of error) error)
-;  (when debugger-hook-p ;we were called from the *debugger-hook-function*
-;    (abort error)))
-
-
-(defun om-debugger-hook (condition old-debugger-hook)
-  (declare (ignore old-debugger-hook))
-  (let* ((logpath (make-pathname :directory (append (butlast (pathname-directory (dbg::logs-directory))) (list "OpenMusic"))
-                                :name (concatenate 'string "OM-" (substitute #\- #\. *version-str*) "-Log_" 
-                                                   (substitute #\- #\: (substitute #\- #\/ (substitute #\_ #\Space (sys::date-string)))))))
-        (path 
-         (dbg:log-bug-form (format nil "An error occured : ~a" condition)
-                           :message-stream t
-                           :log-file logpath)))
-    (capi::display-message "An unexpected error occured : ~a~%~%A log file will be written in ~A." condition path)
-    (print (format nil "Error log written to ~a" path))
-    (abort)))
-
-
 
 ;;;==========================
 ;;; SOURCE DEFINITIONS
@@ -236,6 +203,7 @@
                                      :name *app-name+version* :type "exe"))
 
 
+(setf *debugger-hook* 'oa::om-debugger-hook)
 
 ;;; INIT FUNCALL
 (defun init-om ()
