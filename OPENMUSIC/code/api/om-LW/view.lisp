@@ -290,6 +290,8 @@
 (defmethod om-scroll-position ((self om-scroller))
   (om-make-point (om-h-scroll-position self) (om-v-scroll-position self)))
 
+(defmethod om-set-scroll-position ((self t) pos) nil)
+
 (defmethod om-set-scroll-position ((self om-scroller) pos)
   (capi::scroll self :pan :move (list (om-point-h pos) (om-point-v pos))))
 

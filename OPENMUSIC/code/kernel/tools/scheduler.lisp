@@ -237,7 +237,6 @@ than the current scheduler time) or the clock will jump to the next waiting task
 
 ;; Creates a new task.
 ;; Tries to get one from the free pool, otherwise physically creates a new one.
-
 (defun create-task (logtime adv pri delay fun args)
   (assert
    (or (typep fun 'function) (and (typep fun 'symbol) (fboundp fun)))

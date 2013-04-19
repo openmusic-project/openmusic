@@ -105,21 +105,26 @@
   (init-editor-player self)
   (player-init (player self)))
 
+(defmethod get-obj-to-play ((self play-editor-mixin)) nil)
 
-;;; RETURNS OBJ, TMIN, TMAX
-(defmethod get-obj-to-play ((self play-editor-mixin))
-  (let* ((pan (panel (editor self)))
-         (interval (if (selection-to-play-? pan) 
-                       (nth 2 (get-selection-to-play pan))))
-         (tmin (if interval (car interval)))
-         (tmax (if interval (cadr interval))))
-    (values (object self) tmin tmax)))
+(defmethod get-duration ((self play-editor-mixin)) 
+  (get-obj-dur (get-obj-to-play self)))   ;;; = 0 if obj = NIL
 
+(defmethod get-interval-to-play ((self play-editor-mixin))
+  (let ((selection-pane (car (cursor-panes self)))
+        (object (get-obj-to-play self)))
+    (when (and selection-pane object)
+      (cond ((and (cursor-interval selection-pane) 
+                  (not (= (car (cursor-interval selection-pane)) (cadr (cursor-interval selection-pane)))))
+             (cursor-interval selection-pane))
+            ((and (cursor-pos selection-pane) (not (zerop (cursor-pos selection-pane))))
+             (list (cursor-pos selection-pane) (get-duration self)))
+            (t nil)))))
 
-(defmethod editor-play ((self play-editor-mixin))
+(defmethod editor-play ((self play-editor-mixin) )
   (setf (loop-play (player self)) (loop-play self))
-  (multiple-value-bind (obj t1 t2)
-      (get-obj-to-play self)
+  (let ((obj (get-obj-to-play self))
+        (interval (get-interval-to-play self)))
     (setf (callback-fun (player self))
           #'(lambda (editor time)
               (handler-bind ((error #'(lambda (e) 
@@ -128,9 +133,8 @@
                 (play-editor-callback editor time)
                 )))
     (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
-    (player-play (player self) obj :interval (and t1 t2 (list t1 t2)))
+    (player-play (player self) obj :interval interval)
     ))
-
 
 (defmethod editor-pause ((self play-editor-mixin))
   (player-pause (player self) (get-obj-to-play self)))
@@ -146,7 +150,6 @@
 ;;; temp compatibility
 (defmethod recording? ((self play-editor-mixin))
   (equal (state (player self)) :record))
-
 
 ;;; A REDEFINIR PAR LES SOUS-CLASSES
 (defmethod cursor-panes ((self play-editor-mixin)) nil)
@@ -173,14 +176,16 @@
 (defmethod cursor-p ((self t)) 
   (om-beep-msg "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"))
 
-(defmethod get-obj-to-play ((self cursor-play-view-mixin))
-  (values (object (om-view-container self))
-          (car (cursor-interval self))
-          (cadr (cursor-interval self))
-          ))
+;(defmethod get-obj-to-play ((self cursor-play-view-mixin))
+;  (values (object (om-view-container self))
+;          (car (cursor-interval self))
+;          (cadr (cursor-interval self))
+;          ))
 
 (defmethod start-position ((self cursor-play-view-mixin)) 
   (or (cursor-pos self) 0))
+
+(defmethod view-turn-pages-p ((self cursor-play-view-mixin)) t)
 
 ;--------------------
 ; INTERVAL SELECTION
@@ -217,161 +222,33 @@
           (interval (cursor-interval self))
           pixel-interval)
      (when interval
-       (setq pixel-interval (list (om-point-h (point2pixel self (om-make-big-point (car interval) 0) sys-etat))
-                             (om-point-h (point2pixel self (om-make-big-point (second interval) 0) sys-etat))))
+       (setq pixel-interval (list (om-point-h (point2pixel self (om-make-point (car interval) 0) sys-etat))
+                             (om-point-h (point2pixel self (om-make-point (second interval) 0) sys-etat))))
        (om-with-focused-view self
          (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t))
        )))
 
 
-
 (defmethod start-cursor ((self cursor-play-view-mixin))
+  (when (view-turn-pages-p self)
+    (scroll-play-view self (om-point-x (point2pixel self (om-make-point (start-position self) 0) (get-system-etat self)))))
   (om-erase-movable-cursor self)
   (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line))
 
 (defmethod update-cursor ((self cursor-play-view-mixin) time &optional y1 y2)
   (let ((y (or y1 0))
         (h (if y2 (- y2 y1) (h self)))
-        (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self)))))
+        (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+        ;(pixel (xpoint2pixel self time (get-system-etat self)))
+        )
+    (when (and (view-turn-pages-p self)
+               (> pixel (+ (w self) (om-h-scroll-position self))))  ;;; test if we are still before the end.. ?
+      ;;; turn page
+      (scroll-play-view self pixel))
     (om-update-movable-cursor self pixel y 4 h)))
 
-
-#|
-(defmethod editor-play :around ((self cursor-play-view-mixin))
+(defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
+  (om-set-scroll-position self (om-make-point at-pixel 0)))
   
-
-(mapc #'(lambda (view) (om-new-movable-cursor view (start-position self) 0 4 (h self) 'om-cursor-line))
-        (attached-cursor-views self))
-
-
-
-(unless (= 0 (om-h-scroll-position self))
-        (om-set-scroll-position self (om-make-point 0 (om-v-scroll-position self)))
-        (mapc #'(lambda (view) (om-invalidate-view view)) (attached-cursor-views self)))
-  
-      (if (allowed-in-maq-p (car obj))
-           (progn 
-             
-             
-             (mapc #'(lambda (view) (om-new-movable-cursor view (start-position self) 0 4 (h self) 'om-cursor-line))
-                   (attached-cursor-views self))
-             (draw-line-cursor self :draw? t)
-
-
-
-(start (draw-play-cursor self 0 (get-obj-dur obj) t))
-
-
-
-;;; play from palette : draw? = nil
-(defmethod draw-play-cursor ((self cursor-play-view-mixin) st end &optional (draw? t))
-  (when (and (om-view-window self) (om-window-open-p (om-view-window self)))
-    (let* ((change-win t) (newpixel 0))
-      (setf newpixel (draw-line-cursor self :draw? draw?))
-      (mapc #'(lambda (view) 
-                (draw-line-cursor view :draw? t))
-            (attached-cursor-views self))
-      (when (and (> newpixel (+ (w self) (om-h-scroll-position self)))
-                 (< (cursor-pos *general-player*) end))
-        (setf newpixel 0 
-              change-win nil)
-        (scroll-play-window self))
-      (incf-cursor-pos *general-player*)
-      (if (Idle-p *general-player*)
-          (let ((palette *palette*))
-            (stop-play-on-palette palette)
-            (om-erase-movable-cursor self)
-            (mapc #'(lambda (view) 
-                      (om-erase-movable-cursor view))
-                  (attached-cursor-views self))
-            )
-        (dfuncall #+win32 100 #-win32 5 'draw-play-cursor self st end change-win)))))
-
-
-
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-(defmethod stop-play-on-palette ((self t)) nil)
-
-(defmethod stop-play-on-palette ((self playing-palette))
-  (setf (whoplay self) nil)
-  (when *palette-win* 
-    (om-invalidate-view (view *palette-win*) t)))
-
-
-
-
-
-(defmethod scroll-play-window ((self cursor-play-view-mixin)) 
-  ;(om-without-interrupts
-   (setf (rangex self) (list (cursor-pos *general-player*) 
-                             (+ (cursor-pos *general-player*) 
-                                (- (second (rangex self)) (first (rangex self))))))
-  (change-view-ranges self)
-  (om-redraw-view self)
-  (om-redraw-view (rulerx self))
-  );)
-
-
-
-(defmethod pause-from-palette ((self cursor-play-view-mixin))
-   (setf (loopplay? *general-player*) (loopplay? self))
-   (cond ((string-equal (get-player-etat *general-player*) "Playing")
-          (Pause-Player *general-player*))
-         ((string-equal (get-player-etat *general-player*) "Pause")
-          (Continue-Player *general-player*)
-          (om-erase-movable-cursor self )
-          (om-new-movable-cursor self 0 0 4 (h self) 'om-cursor-line)
-          (start (draw-play-cursor self 0 100000)))))
-
-
-(defmethod start-position ((self cursor-play-view-mixin)) 
-  (or (cursor-pos self) 0))
-
-(defmethod attached-cursor-views ((self cursor-play-view-mixin)) nil)
-
-(defmethod scroll-to-0 ((self cursor-play-view-mixin)) t)
-
-(defmethod stop-from-palette ((self cursor-play-view-mixin))
-  (om-erase-movable-cursor self)
-  (mapc #'om-erase-movable-cursor (attached-cursor-views self))
-  (Stop-Player *general-player* self))
-
-
-
-
-
-(defmethod panel-record ((self cursor-play-view-mixin)) t)
-(defmethod allow-record ((self cursor-play-view-mixin)) nil)
-
-(defmethod record-from-palette ((self cursor-play-view-mixin)) 
-  (if (allow-record self)
-      (when  (panel-record self)
-        (setf (recording-view *general-player*) self)
-        (setf (recording? self) t))
-    (om-beep-msg "This editor does not allow recording.")))
-
-(defmethod selection-to-play-? ((self cursor-play-view-mixin))
-  (and (cursor-p self) 
-       (cursor-interval self) 
-       (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))
-       ))
-
-|#
-
-
-
 
 
