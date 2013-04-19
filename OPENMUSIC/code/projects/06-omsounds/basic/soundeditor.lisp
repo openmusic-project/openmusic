@@ -521,7 +521,7 @@
                              (om-sound-update-sndlasptr-current (object self) result)
                              (om-sound-update-las-infos (object self))
                              (launch-editor-view-updater self))
-                         (print "An error has occured. Requested paste operation aborted."))
+                         (print "An error has occured. Requested paste operation aborted.")))
                    (print "Nothing to paste! Please copy a sound region before."))))
               (t (print "Copy/Paste/Cut/Delete is only available with the LibAudioStream player."))))
     (print "You can't paste on a region!")))
