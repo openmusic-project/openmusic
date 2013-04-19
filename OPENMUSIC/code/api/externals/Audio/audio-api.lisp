@@ -32,6 +32,8 @@
           om-sound-n-samples-current
           om-sound-sndlasptr-to-play
           om-sound-n-samples-to-play
+          om-sound-las-slicing-past-stack
+          om-sound-las-slicing-future-stack
 
           om-sound-update-sndlasptr-current
           om-sound-update-snd-slice-to-paste
@@ -410,32 +412,27 @@
 
     ;tracknum utilisé par le système, par forcément celui de l'utilisateur
     (tracknum-sys :accessor tracknum-sys :initform -1)
-
     ;Savoir si ce son joue sur le player caché (pas de tracks) ou sur le visible (tracks system)
     (assoc-player :accessor assoc-player :initform nil)
-
     ;buffer du son actuel (pas forcément d'origine, évolue)
     (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
-
     ;pointeur LAS fixe (son d'origine au cas où)
     (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
-
     ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
     (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
     (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
-
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-current :accessor number-of-samples-current :initform nil)
-
     ;;;pointeur LAS envoyé à la lecture (dérivé de current)
     (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
-
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)
-
     ;;;pointeur LAS servant de "presse papier"
     (snd-slice-to-paste :accessor snd-slice-to-paste :initarg :snd-slice-to-paste :initform nil)
+    ;;;Undo/Redo pool
+    (las-slicing-past-stack :accessor las-slicing-past-stack :initform (make-hash-table))
+    (las-slicing-future-stack :accessor las-slicing-future-stack :initform (make-hash-table))
     )
    )
 
@@ -518,6 +515,17 @@
 
 (defmethod om-sound-update-buffer-with-new ((self om-sound) buffer)
   (setf (sndbuffer self) buffer))
+
+
+(defmethod om-sound-las-slicing-past-stack ((self om-sound))
+  (las-slicing-past-stack self))
+
+(defmethod om-sound-las-slicing-future-stack ((self om-sound))
+  (las-slicing-future-stack self))
+
+
+
+
 
 (defun audio-file-type (pathname)
   (or
