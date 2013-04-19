@@ -298,7 +298,8 @@
     (om-set-window-title (om-view-window self) (if path (namestring path) "empty sound")))
   (setf (sndpict self) (sound-get-pict (object self)))
   (update-titlebar self)
-  (update-subviews self))
+  (update-subviews self)
+  (update-menubar self))
 
 
 (defmethod update-editor-controls ((self soundEditor)) 
@@ -375,16 +376,13 @@
                                                      (editor-slice-redo self)) "y" (editor-redo-available self)))
                         (list
                          (om-new-leafmenu  "Copy" #'(lambda () 
-                                                      (editor-slice-copy self)) "c")
+                                                       (editor-slice-copy self)) "c" (editor-slicing-available self))
                          (om-new-leafmenu  "Cut" #'(lambda () 
-                                                     (editor-slice-cut self)
-                                                     ) "x")
+                                                     (editor-slice-cut self)) "x" (editor-slicing-available self))
                          (om-new-leafmenu  "Paste" #'(lambda () 
-                                                       (editor-slice-paste self)
-                                                       ) "v")
+                                                       (editor-slice-paste self)) "v" (editor-slicing-available self))
                          (om-new-leafmenu  "Delete" #'(lambda () 
-                                                        (editor-slice-delete self)
-                                                        ) "d"))))
+                                                        (editor-slice-delete self)) "d" (editor-slicing-available self)))))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
 
@@ -402,7 +400,12 @@
           (t nil))
     (if res t nil)))
 
-;(enable-this-menu-items '("File") '("Undo"))
+(defmethod editor-slicing-available ((self soundeditor))
+  (let (res)
+    (cond ((typep (player self) 'las-player) 
+           (setf res (om-sound-sndlasptr-current (object self))))
+          (t nil))
+    (if res t nil)))
 ;================================================AUDIO SLICING=======================================================
 
 ;;;///////////////////TOOLS//////////////////////
@@ -449,7 +452,8 @@
                  (sound-update-pict (object self) (nth 3 pastline)))
                (launch-editor-view-updater-light self)
                )))
-        (t nil)))
+        (t nil))
+  (update-menubar self))
 
 (defmethod editor-slice-redo ((self soundeditor))
   (editor-stop self)
@@ -463,7 +467,8 @@
                  (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
                  (sound-update-pict (object self) (nth 3 futureline)))
                (launch-editor-view-updater-light self))))
-        (t nil)))
+        (t nil))
+  (update-menubar self))
 
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
@@ -496,6 +501,7 @@
                  (if result
                      (progn
                        (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                       (update-menubar self)
                        (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                        (om-sound-update-las-infos (object self))
                        (launch-editor-view-updater self))
@@ -518,6 +524,7 @@
                        (if result
                            (progn
                              (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                             (update-menubar self)
                              (om-sound-update-sndlasptr-current (object self) result)
                              (om-sound-update-las-infos (object self))
                              (launch-editor-view-updater self))
@@ -540,6 +547,7 @@
                  (if result
                      (progn
                        (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                       (update-menubar self)
                        (om-sound-update-sndlasptr-current (object self) result)
                        (om-sound-update-las-infos (object self))
                        (launch-editor-view-updater self))
@@ -964,13 +972,12 @@
   (if (om-sound-file-name (object (om-view-container self)))
     (let* ((thesound (object (om-view-container self)))
            (sr las-srate)
-           (size (oa::number-of-samples-current thesound))
+           (size (om-sound-n-samples-current thesound))
            (dur (or (and (and sr size)
                          (/ size sr)) 0))
            (dur-ms (round size (/ sr 1000.0)))
            (total-width (om-point-h (om-field-size self)))
            (thepicture (and dur (pic-to-draw thesound)))
-           
            (window-h-size (om-point-h (om-view-size self)))
            (window-v-size (om-point-v (om-view-size self)))
            (stream-buffer (oa::sndbuffer thesound))
