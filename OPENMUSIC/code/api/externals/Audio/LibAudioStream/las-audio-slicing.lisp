@@ -36,9 +36,7 @@
           (setf result (las::MakeSeqSound slice-before slice-after 0))))
     (if (not (las::las-null-ptr-p result)) 
         result
-      (progn
-        (print "ERROR")
-        nil))))
+      nil)))
 
 
 (defun las-slice-copy (pointer from to)
@@ -55,9 +53,7 @@
     (setf slice (las::MakeCutSound pointer begin end))
     (if (not (las::las-null-ptr-p slice)) 
         slice
-      (progn
-        (print "ERROR")
-        nil))))
+      nil)))
 
 (defun las-slice-paste (pointer position slice)
   (let* ((sr-factor (/ las-srate 1000.0))
@@ -75,10 +71,8 @@
       (setf slice-tmp (las::MakeSeqSound slice-before slice 0))
       (setf result (las::MakeSeqSound slice-tmp slice-after 0))
       (if (not (las::las-null-ptr-p result)) 
-        result
-      (progn
-        (print "ERROR")
-        nil)))))
+          result
+        nil))))
 
 (defun las-slice-delete (pointer from to)
   (let* ((sr-factor (/ las-srate 1000.0))
@@ -101,6 +95,4 @@
           ))
     (if (not (las::las-null-ptr-p result)) 
         result
-      (progn
-        (print "ERROR")
-        nil))))
+      nil)))
