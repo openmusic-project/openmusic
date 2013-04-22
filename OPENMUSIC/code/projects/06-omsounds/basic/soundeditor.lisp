@@ -455,7 +455,8 @@
     (setf (bounds-x (panel self)) (list 0 newdur))
     (setf (rangex (panel self)) (list (* mindiv newdur) (* maxdiv newdur)))
     (set-units-ruler (panel self) (rulerx (panel self)))
-    (om-invalidate-view self)))
+    ;(om-invalidate-view self)
+    ))
  
 (defmethod editor-update-view-light ((self soundeditor))
   (om-sound-update-las-infos (object self))
@@ -467,7 +468,6 @@
     (setf (bounds-x (panel self)) (list 0 newdur))
     (setf (rangex (panel self)) (list (* mindiv newdur) (* maxdiv newdur)))
     (set-units-ruler (panel self) (rulerx (panel self)))
-    (update-subviews self)
     (om-invalidate-view self)))
 ;;;///////////////////////////////////////////////
 (defmethod editor-slice-copy ((self soundeditor))
