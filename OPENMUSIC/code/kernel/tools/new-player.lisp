@@ -9,11 +9,16 @@
    (start-time :accessor start-time :initform 0)
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)
+   ;;; GRAPHICAL CALLBACKS
    (caller :initform nil :accessor caller :initarg :caller)
    (callback-fun :initform nil :accessor callback-fun :initarg :callback-fun)
    (callback-process :initform nil :accessor callback-process)
    (callback-tick :initform 0.01 :accessor callback-tick :initarg :callback-tick)
-   (stop-fun :initform nil :accessor stop-fun :initarg :stop-fun)))
+   (stop-fun :initform nil :accessor stop-fun :initarg :stop-fun)
+   ;;; SCHEDULING TASKS
+   (events :initform nil :accessor events :initarg :events)
+   (scheduling-process :initform nil :accessor scheduling-process)
+   ))
 
 (defmethod class-from-player-type ((type t)) 'omplayer)
 
@@ -39,26 +44,44 @@
          (let ((stop-time (or (cadr interval) (get-obj-dur obj))))
            (when (callback-process player)
              (om-kill-process (callback-process player)))
+           (when (scheduling-process player)
+             (om-kill-process (scheduling-process player)))
+           
+           ; a faire
+           ;(om-with-priority 100000
+           ;  (setf (scheduling-process player)
+           ;        (om-run-process "player scheduling"
+           ;                        #'(lambda ()
+           ;                            (loop 
+           ;                             (when (>= (get-player-time player) (car (car (events player))))
+           ;                               (loop while (and (events player) (>= (get-player-time player) (car (car (events player)))))
+            ;                                    (funcall (cdr (pop (events player))))))
+            ;                            (sleep (callback-tick player))
+            ;;                            )))
+            ;       ))
+
            (when (callback-fun player)
-             (setf (callback-process player)
-                   (om-run-process "editor player callback"
-                                   #'(lambda ()
-                                       (loop 
-                                        (if (>= (get-player-time player) stop-time)
-                                            (progn 
-                                              (player-stop player obj)
-                                              (return))
-                                          (funcall (callback-fun player) 
-                                                   (caller player) 
-                                                   (get-player-time player)))
-                                        (sleep (callback-tick player))
-                                        )))
-                   ))
+             (om-with-priority 10
+               (setf (callback-process player)
+                     (om-run-process "editor player callback"
+                                     #'(lambda ()
+                                         (loop 
+                                          (if (>= (get-player-time player) stop-time)
+                                              (progn 
+                                                (player-stop player obj)
+                                                (return))
+                                            (funcall (callback-fun player) 
+                                                     (caller player) 
+                                                     (get-player-time player)))
+                                          (sleep (callback-tick player))
+                                          )))
+                     )))
+           
            (setf (state player) :play
                  (start-time player) (or (car interval) 0)
                  (ref-clock-time player) (clock-time))
            )
-        )))
+         )))
 
 
 (defmethod player-pause ((player omplayer) &optional object)
@@ -82,6 +105,9 @@
     (om-kill-process (callback-process player))
     (setf (callback-process player) nil)))
 
+(defmethod player-schedule ((player omplayer) task at)
+  (push (cons at task) (events player))
+  (setf (events player) (sort (events player) '< :key 'car)))
 
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
