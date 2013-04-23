@@ -254,23 +254,38 @@
          (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t))
        )))
 
-
 (defmethod start-cursor ((self cursor-play-view-mixin))
-  (when (view-turn-pages-p self)
-    (scroll-play-view self (om-point-x (point2pixel self (om-make-point (start-position self) 0) (get-system-etat self)))))
-  (om-erase-movable-cursor self)
-  (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line))
+  (let* ((dur (get-obj-dur (object (om-view-container self))))
+         (range (rangex (panel (om-view-container self))))
+         (xview (- (second range) (first range)))
+         (start (start-position self))
+         (dest (+ start xview))
+         (at-pix (om-point-x (point2pixel self (om-make-point start 0) (get-system-etat self)))))
+    (when (and (view-turn-pages-p self) (< dest dur))
+      (scroll-play-view self at-pix))
+    (om-erase-movable-cursor self)
+    (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)))
 
 (defmethod update-cursor ((self cursor-play-view-mixin) time &optional y1 y2)
-  (let ((y (or y1 0))
-        (h (if y2 (- y2 y1) (h self)))
-        (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+  (let* ((y (or y1 0))
+         (h (if y2 (- y2 y1) (h self)))
+         (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+         (dur (get-obj-dur (object (om-view-container self))))
+         range
+         xview
+         dest
         ;(pixel (xpoint2pixel self time (get-system-etat self)))
-        )
+         )
     (when (and (view-turn-pages-p self)
-               (> pixel (+ (w self) (om-h-scroll-position self))))  ;;; test if we are still before the end.. ?
-      ;;; turn page
-      (scroll-play-view self pixel))
+               (> pixel (+ (w self) (om-h-scroll-position self)))
+               (< time dur)) 
+      (progn
+        (setf range (rangex (panel (om-view-container self))))
+        (setf xview (- (second range) (first range)))
+        (setf dest (+ time xview))
+        (if (> dest dur)
+            (setf pixel (om-point-x (point2pixel self (om-make-point (- dur xview) 0) (get-system-etat self)))))
+        (scroll-play-view self pixel)))
     (om-update-movable-cursor self pixel y 4 h)))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
