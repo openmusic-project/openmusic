@@ -436,9 +436,7 @@
     (las-slicing-past-stack :accessor las-slicing-past-stack :initform (make-hash-table))
     (las-slicing-future-stack :accessor las-slicing-future-stack :initform (make-hash-table))
     ;;;If sound has been saved in temp file and re-opened, srate is now the las srate
-    (las-using-srate :accessor las-using-srate :initform 0)
-    )
-   )
+    (las-using-srate :accessor las-using-srate :initform 0)))
 
 (defmethod initialize-instance :after ((self om-sound) &rest initargs)
   (setf (assoc-player self) *audio-player-hidden*)
