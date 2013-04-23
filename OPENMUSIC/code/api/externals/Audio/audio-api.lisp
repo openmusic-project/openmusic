@@ -42,6 +42,8 @@
           om-sound-update-buffer-with-new
 
           om-sound-update-las-infos
+          om-sound-las-using-srate
+          om-sound-las-using-srate-?
           
           om-cons-snd-pict
           om-sound-get-pict
@@ -433,6 +435,8 @@
     ;;;Undo/Redo pool
     (las-slicing-past-stack :accessor las-slicing-past-stack :initform (make-hash-table))
     (las-slicing-future-stack :accessor las-slicing-future-stack :initform (make-hash-table))
+    ;;;If sound has been saved in temp file and re-opened, srate is now the las srate
+    (las-using-srate :accessor las-using-srate :initform 0)
     )
    )
 
@@ -522,6 +526,14 @@
 
 (defmethod om-sound-las-slicing-future-stack ((self om-sound))
   (las-slicing-future-stack self))
+
+(defmethod om-sound-las-using-srate-? ((self om-sound))
+  (if (= 0 (las-using-srate self))
+      nil
+    t))
+
+(defmethod om-sound-las-using-srate ((self om-sound))
+  (setf (las-using-srate self) 1))
 
 
 

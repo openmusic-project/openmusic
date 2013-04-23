@@ -59,7 +59,7 @@
 
                      (om-make-view 'om-icon-button :position (om-make-point 110 5) :size (om-make-point 20 20)
                                          :icon1 "simple_rec" :icon2 "simple_rec_pushed"
-                                         :action #'(lambda (item) (print "Rec function")))
+                                         :action #'(lambda (item) (print (rangex (panel (editor self)))) (print "Rec function")))
                      
                       (om-make-dialog-item 'om-static-text (om-make-point 250 8) (om-make-point 50 20)
                                           "Player" :font *om-default-font1*)
@@ -451,18 +451,22 @@
          (maxdiv (float (/ max (cadr (bounds-x (panel self)))))))
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
+    (om-sound-las-using-srate (object self))
     (setf (sndpict self) (get-sound-pict (object self)))
     (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (setf (bounds-x (panel self)) (list 0 newdur))
     ;(setf (rangex (panel self)) (list (* mindiv newdur) (* maxdiv newdur)))
-    (if (> (cadr (rangex (panel self))) newdur) 
-        (setf (rangex (panel self)) (list (car (rangex (panel self))) (- newdur 1))))
-    (if (> (car (rangex (panel self))) newdur) 
-        (setf (rangex (panel self)) (list 0 (- newdur 1))))
-    (setf (cursor-pos (panel self)) (car (rangex (panel self))))
+    (cond ((eq (rangex (panel self)) (bounds-x (panel self))) 
+           (setf (rangex (panel self)) (list 0 (- newdur 1))))
+          ((> (cadr (rangex (panel self))) newdur)
+           (setf (rangex (panel self)) (list (car (rangex (panel self))) (- newdur 1))))
+          ((> (car (rangex (panel self))) newdur) 
+           (setf (rangex (panel self)) (list 0 (- newdur 1))))
+          (t (setf (rangex (panel self)) (list (+ 1 (car (rangex (panel self)))) (- (cadr (rangex (panel self))) 1)))))
+    ;(setf (cursor-pos (panel self)) (car (rangex (panel self))))
     (set-units-ruler (panel self) (rulerx (panel self)))
-    (om-invalidate-view self)
-    ))
+    (strech-ruler-release (rulerx (panel self)) 0)
+    (om-invalidate-view self)))
  
 (defmethod editor-update-view-light ((self soundeditor))
   (om-sound-update-las-infos (object self))
@@ -473,13 +477,16 @@
          (maxdiv (float (/ max (cadr (bounds-x (panel self)))))))
     (setf (bounds-x (panel self)) (list 0 newdur))
     ;(setf (rangex (panel self)) (list (* mindiv newdur) (* maxdiv newdur)))
-    (if (> (cadr (rangex (panel self))) newdur) 
-        (setf (rangex (panel self)) (list (car (rangex (panel self))) newdur)))
-    (if (> (car (rangex (panel self))) newdur) 
-        (setf (rangex (panel self)) (list 0 newdur)))
+    (cond ((eq (rangex (panel self)) (bounds-x (panel self))) 
+           (setf (rangex (panel self)) (list 0 (- newdur 1))))
+          ((> (cadr (rangex (panel self))) newdur)
+           (setf (rangex (panel self)) (list (car (rangex (panel self))) (- newdur 1))))
+          ((> (car (rangex (panel self))) newdur) 
+           (setf (rangex (panel self)) (list 0 (- newdur 1))))
+          (t (setf (rangex (panel self)) (list (+ 1 (car (rangex (panel self)))) (- (cadr (rangex (panel self))) 1)))))
+    
     (set-units-ruler (panel self) (rulerx (panel self)))
-    (om-invalidate-view self)
-    (update-editor-after-eval self (value (ref self)))))
+    (om-invalidate-view self)))
 ;;;///////////////////////////////////////////////
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
@@ -972,7 +979,9 @@
                 (om-draw-string (- (round (w self) 2) halftext) (round (h self) 2) "Recording")))))
     (if (om-sound-file-name (object (om-view-container self)))
         (let* ((thesound (object (om-view-container self)))
-               (sr las-srate)
+               (sr (if (om-sound-las-using-srate-? thesound) 
+                 las-srate
+               (om-sound-sample-rate thesound)))
                (size (om-sound-n-samples-current thesound))
                (dur (or (and (and sr size)
                              (/ size sr)) 0))
@@ -1000,7 +1009,7 @@
                (step-10ms (/ sr 100.0))
                (step-20ms (/ sr 50.0))
                (step-50ms (/ sr 25.0))
-               (step-100ms (/ sr 10.0)))
+               (step-100ms (/ sr 10.0))) (print sr)
           (om-with-focused-view self
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
@@ -1051,7 +1060,9 @@
 
 (defmethod om-draw-waveform ((self soundPanel) smpstep)
   (let* ((thesound (object (om-view-container self)))
-         (sr (om-sound-sample-rate thesound))
+         (sr (if (om-sound-las-using-srate-? thesound) 
+                 las-srate
+               (om-sound-sample-rate thesound)))
          (timestep (/ (/ sr 1000.0) smpstep))
          (nch (om-sound-n-channels thesound))
          (window-v-size (om-point-v (om-view-size self)))
@@ -1069,7 +1080,7 @@
                                       (loop for chan from 0 to (- nch 1) collect 
                                             (fli::dereference stream-buffer 
                                                               :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
-                                                              :type :float)))))
+                                                              :type :float))))) (print sr)
     (loop for i from 0 to (- nch 1) do  
                                 (om-draw-line pixmin (+ (* i channels-h) offset-y) pixmax (+ (* i channels-h) offset-y)))
     (setf sampleprev (car datalist))
