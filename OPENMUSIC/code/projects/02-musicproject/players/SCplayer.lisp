@@ -90,16 +90,17 @@
 (setf *SC-player-io* nil)
 
 (defun launch-SCplayer-app ()
-  (when (and (streamp *SC-player-io*) (open-stream-p *SC-player-io*)) (close *SC-player-io*))
-  (multiple-value-bind (io err pid)
-      (system:run-shell-command *SC-cmd-line*
-				:wait nil
-				:input :stream
-				:output :stream
-				:error-output nil)
-    (setf *SC-player-pid* pid)
-    (setf *SC-player-io* io)
-    (print (format nil "started sclang: pid: ~A~%" pid))))
+  (unless *SC-player-pid*
+    (when (and (streamp *SC-player-io*) (open-stream-p *SC-player-io*)) (close *SC-player-io*))
+    (multiple-value-bind (io err pid)
+	(system:run-shell-command *SC-cmd-line*
+				  :wait nil
+				  :input :stream
+				  :output :stream
+				  :error-output nil)
+      (setf *SC-player-pid* pid)
+      (setf *SC-player-io* io)
+      (print (format nil "started sclang: pid: ~A~%" pid)))))
 
 ;; (launch-SCplayer-app)
 (om-add-init-func 'launch-SCplayer-app)
@@ -111,11 +112,14 @@
 
 (defun stop-and-cleanup-SCplayer-app ()
   (progn
-    (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*)))
-    (sys:run-shell-command (format nil "pkill -9 scsynth"))
+    (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*))) 
+    (sys:run-shell-command (format nil "pkill -9 scsynth")) ;just rub everything for now...
     (sys:run-shell-command (format nil "pkill -9 sclang"))
+    (when *SC-player-io*
+      (close *SC-player-io*)
+      (setf *SC-player-io* nil))
     (setf *SC-player-pid* nil)
-    (setf *SC-player-io* nil)))
+    ))
 
 ;; (stop-and-cleanup-scplayer-app)
 (om-add-exit-cleanup-func 'stop-and-cleanup-scplayer-app)
