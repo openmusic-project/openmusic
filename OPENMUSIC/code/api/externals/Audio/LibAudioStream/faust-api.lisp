@@ -25,6 +25,7 @@
           las-faust-add-effect-to-track
           las-faust-remove-effect-from-track
           las-faust-set-effect-track-in-pool
+          las-get-number-faust-effects-pool
 
           *faust-effects-pool*
           ) :om-api)
@@ -83,6 +84,9 @@
 
 (defun las-faust-set-effect-track-in-pool (pointer track)
   (setf (nth 1 (gethash (find-effect-index-in-pool pointer) *faust-effects-pool*)) track))
+
+(defun las-get-number-faust-effects-pool ()
+  (get-number-faust-effects-pool))
 ;///////////////////JSON parsing///////////////////////
 ;(setf (ui-type self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 1) (nth 1 (nth 0 effect-json)))))
 ;(setf (ui-name self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 2) (nth 1 (nth 0 effect-json)))))

@@ -4,6 +4,8 @@
 
 (in-package :om)
 
+(defvar *faust-compiler-pathname* nil)
+
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -31,6 +33,8 @@
    ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt)
     (effect-ptr :initform nil :accessor effect-ptr)
     (effect-name :initform nil :initarg :effect-name :accessor effect-name)
+    (effect-dsp :initform nil :initarg :effect-dsp :accessor effect-dsp)
+    (effect-svg :initform nil :initarg :effect-svg :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t :documentation "number of parameters in the effect")
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-type :initform nil :accessor ui-type)
@@ -44,14 +48,18 @@
     (if (effect-txt self)
         (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
               effect-string
-              effect-result)
+              effect-result) 
+
           (loop for line in parlist do
-                (setf effect-string (concatenate 'string effect-string " " line)))
-          
+                (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
+
           (setf effect-result (las-faust-make-effect effect-string))
           (setf (effect-ptr self) (nth 1 effect-result))
+          (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-pool))))
+          (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-pool))))
+          (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-pool))))
 
-          (if (/= (car effect-result) 1) 
+          (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
    
             (let* ((effect-json (yason::parse (las-faust-get-effect-json (effect-ptr self)) :object-as :plist))
@@ -79,6 +87,7 @@
                                                                                                :stepval nil ;;EN ATTENTE
                                                                                                :effect-ptr (effect-ptr self)
                                                                                                ))) nil)))))))
+
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
@@ -128,7 +137,8 @@
 ;================ CONTROLLER EDITOR ===================
 
 (omg-defclass faustcontrollerEditor (EditorView) 
-  ((params-panels :initform nil :accessor params-panels :type list)))
+  ((params-panels :initform nil :accessor params-panels :type list)
+   (bottom-bar :initform nil :accessor bottom-bar :type t)))
 
 
 (defmethod make-editor-window ((class (eql 'faustcontrollerEditor)) object name ref &key 
@@ -185,7 +195,7 @@
     ;(setf ymax (apply 'max ylist))
     (setf xmax (* nvslider (+ 30 xvslider)))
     (setf ymax (+ 100 (cadr vsliderSize)))
-    (om-make-point xmax ymax)))
+    (om-make-point (if (= n 0) 60 xmax) (if (= n 0) 50 (+ ymax 50)))))
 
 
 
@@ -270,23 +280,61 @@
          (hvslider (+ (cadr hsliderSize) (cadr checkboxSize) (cadr buttonSize)))
          (hnumentry (+ (cadr vsliderSize) (cadr hsliderSize) (cadr checkboxSize) (cadr buttonSize))))
      (setf (panel self) (om-make-view (get-panel-class self) 
-                                                     :owner self
-                                                     :position (om-make-point 0 0) 
-                                                     :scrollbars (first (metaobj-scrollbars-params self))
-                                                     :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                                     :field-size  (om-make-point x y)
-                                                     :size (om-make-point (w self) (h self))))
-   
-   (setf (params-panels self) 
-      (loop for paractrl in (params-ctrl (object self))
-            for i = 0 then (+ i 1) collect
-            (om-make-view (get-parampanel-class (panel self))
-                          :paramctr paractrl
-                          :owner (panel self)
-                          :bg-color *om-light-gray-color*
-                          :position (om-make-point (* 60 i) 0)
-                          :size (om-make-point 60 200))))))
+                                      :owner self
+                                      :position (om-make-point 0 0) 
+                                      :scrollbars (first (metaobj-scrollbars-params self))
+                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                      :field-size  (om-make-point x (- y 50))
+                                      :size (om-make-point (w self) (h self))))
+     
+     (setf (params-panels self) 
+           (loop for paractrl in (params-ctrl (object self))
+                 for i = 0 then (+ i 1) collect
+                 (om-make-view (get-parampanel-class (panel self))
+                               :paramctr paractrl
+                               :owner (panel self)
+                               :bg-color *om-light-gray-color*
+                               :position (om-make-point (* 60 i) 0)
+                               :size (om-make-point 60 200))))
+     
+     (setf (bottom-bar self) (om-make-view (get-panel-class self)
+                                           :owner (panel self)
+                                           :bg-color *om-dark-gray-color*
+                                           :position (om-make-point 0 (- y 50))
+                                           :size (om-make-point x 50)))
+     
+     (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
+                                          "SVG"
+                                          :di-action (om-dialog-item-act item
+                                                       (faust-show-svg *om-outfiles-folder* (effect-dsp (object self)) (effect-svg (object self))))))))
 
+
+
+(defun faust-show-svg (pathname dsp svg)
+  (let (res)
+    (if *faust-compiler-pathname*
+        (progn
+          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
+          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
+                ((= res 126) (progn
+                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
+                               (set-faust-compiler-pathname)))
+                ((= res 127) (progn
+                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
+                               (set-faust-compiler-pathname)))
+                ((= res 2) (print "Incorrect usage of this command"))
+                (t (print "Failure"))))
+      (set-faust-compiler-pathname))))
+
+
+
+(defun set-faust-compiler-pathname ()
+  (let (new)
+    (setf new (om-choose-file-dialog 
+     :directory (om-user-home)
+     :prompt "Locate your Faust Compiler" :types (list (om-str :all-files) "*.*")))
+    (if new
+        (setf *faust-compiler-pathname* new))))
 
 
 
@@ -366,7 +414,8 @@
                                                        (las-faust-set-effect-control-value ptr number def) (set-value (paramGraph self) val)
                                                        (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
                                                                                                   (format nil "~D" (round def))))))))
-   (om-add-subviews self (paramText self) 
+   (om-add-subviews self 
+                    (paramText self) 
                     (paramVal self) 
                     (paramGraph self)
                     (paramReset self))))
@@ -519,8 +568,7 @@
    (declare (ignore l))
    (let ((x (om-point-x (get-win-ed-size (object self))))
          (y (om-point-y (get-win-ed-size (object self))))
-         (color (om-make-color 0.9 0.9 0.9))
-         (name "test"))
+         (color (om-make-color 0.9 0.9 0.9)))
      (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 

@@ -562,11 +562,9 @@
 ;;;; external apps 
 
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
-
   #+macosx 
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
-
   (if (and (equal :mac *om-os*) (pathnamep redirect-output))
       ;(let ((tempfile "~/om-log.txt"))
       (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
