@@ -33,8 +33,8 @@
    ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt)
     (effect-ptr :initform nil :accessor effect-ptr)
     (effect-name :initform nil :initarg :effect-name :accessor effect-name)
-    (effect-dsp :initform nil :initarg :effect-dsp :accessor effect-dsp)
-    (effect-svg :initform nil :initarg :effect-svg :accessor effect-svg)
+    (effect-dsp :initform nil :accessor effect-dsp)
+    (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t :documentation "number of parameters in the effect")
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-type :initform nil :accessor ui-type)
@@ -324,7 +324,9 @@
                                (set-faust-compiler-pathname)))
                 ((= res 2) (print "Incorrect usage of this command"))
                 (t (print "Failure"))))
-      (set-faust-compiler-pathname))))
+      (progn
+        (if (set-faust-compiler-pathname)
+            (faust-show-svg pathname dsp svg))))))
 
 
 
@@ -500,7 +502,8 @@
 
 
 (omg-defclass faust-pool-editor (EditorView) 
-  ((effect-panels :initform nil :initarg :effect-panels :accessor effect-panels)))
+  ((effect-panels :initform nil :initarg :effect-panels :accessor effect-panels)
+   (recap :initform nil :initarg :recap :accessor recap)))
 
 (defmethod make-editor-window ((class (eql 'faust-pool-editor)) object name ref &key 
                                  winsize winpos (close-p t) (winshow t) 
@@ -511,7 +514,7 @@
     win))
 
 (defmethod get-win-ed-size ((self faust-pool))
-  (om-make-point 300 (max 33 (* 33 (length (effect-list self)))))
+  (om-make-point (* 2 300) (max 200 (* 33 (length (effect-list self)))))
   )
 
 (defmethod editor-has-palette-p ((self faust-pool-editor)) nil)
@@ -561,6 +564,8 @@
 ;=======================
 ;=== INITIALIZATIONS ===
 ;=======================
+(defvar *track-name-list* nil) 
+(loop for i from las-channels downto 1 do  (push (format nil "Track ~A" i) *track-name-list*))
 
 (defmethod metaobj-scrollbars-params ((self faust-pool-editor))  '(:h t))
 
@@ -582,35 +587,66 @@
             (om-make-view 'faust-effect-panel-view
                           :effect eff
                           :owner (panel self)
-                          :bg-color *om-light-gray-color*
+                          :bg-color *om-white-color*
                           :position (om-make-point 0 (* 30 i))
-                          :size (om-make-point 1000 30))))))
+                          :size (om-make-point (round x 2) 200))))
+
+     (setf (recap self) (om-make-view (get-panel-class self) 
+                                      :owner self
+                                      :position (om-make-point 300 0)
+                                      :bg-color *om-dark-gray-color*
+                                      :scrollbars (first (metaobj-scrollbars-params self))
+                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                      :field-size  (om-make-point (round x 2) 200)
+                                      :size (om-make-point (w self) (h self))))
+     (setf effect-listing (om-make-view (get-panel-class self) 
+                                      :owner self
+                                      :position (om-make-point 50 50)
+                                      :bg-color *om-white-color*
+                                      :scrollbars (first (metaobj-scrollbars-params self))
+                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                      :field-size  (om-make-point 200 (- y 120))
+                                      :size (om-make-point 200 (- y 120))))
+
+     (om-add-subviews (recap self) 
+                      (om-make-dialog-item 'om-static-text (om-make-point (- (round 300 2) 48) 5) (om-make-point 96 20)
+                                          "Effects by tracks" :font *om-default-font1* :fg-color *om-white-color*)
+
+                      (om-make-dialog-item 'om-pop-up-dialog-item 
+                                                (om-make-point (- (round 300 2) 45) 25) 
+                                                (om-make-point 90 20) ""
+                                                :font *om-default-font1*
+                                                :range *track-name-list*
+                                                :value nil
+                                                :di-action  (om-dialog-item-act item 
+                                                              ))
+                      effect-listing)))
 
 (defmethod initialize-instance :after ((self faust-effect-panel) &rest l)
    (declare (ignore l))
    (do-initialize-effect self))
 
 (defmethod do-initialize-effect ((self faust-effect-panel))  
-   (let* ((color (om-make-color 0.9 0.9 0.9))
+   (let* ((color *om-light-gray-color*)
           (effect (effect self))
           (name (label effect))
           (ptr (faust-ptr effect)))
    (om-set-bg-color self color)
      (setf nameview (om-make-dialog-item 'om-static-text
                                                   (om-make-point 5 3) 
-                                                  (om-make-point 200 30)
+                                                  (om-make-point 200 19)
                                                   (format nil "~D" name)
                                                   :font *om-default-font1*
                                                   :bg-color color))
      (setf tracktextview (om-make-dialog-item 'om-static-text
                                                   (om-make-point (+ 5 200) 3) 
-                                                  (om-make-point 50 30)
+                                                  (om-make-point 50 19)
                                                   (format nil "Track :")
                                                   :font *om-default-font1*
                                                   :bg-color color))
      (setf trackview (om-make-dialog-item 'numBox
                                           (om-make-point (+ 5 200 50) 3)
-                                          (om-make-point 28 19) (format () " ~D" (tracknum effect))
+                                          (om-make-point 30 19) (format () " ~D" (tracknum effect))
                                           :min-val 0
                                           :max-val 32
                                           :bg-color *om-white-color*

@@ -52,13 +52,14 @@
            ;  (setf (scheduling-process player)
            ;        (om-run-process "player scheduling"
            ;                        #'(lambda ()
-           ;                            (loop 
-           ;                             (when (>= (get-player-time player) (car (car (events player))))
-           ;                               (loop while (and (events player) (>= (get-player-time player) (car (car (events player)))))
-            ;                                    (funcall (cdr (pop (events player))))))
-            ;                            (sleep (callback-tick player))
-            ;;                            )))
-            ;       ))
+           ;                            (if (car (events player))
+           ;                                (loop 
+           ;                                 (when (>= (get-player-time player) (car (car (events player))))
+           ;                                   (loop while (and (events player) (>= (get-player-time player) (car (car (events player)))))
+           ;                                         (funcall (cdr (pop (events player))))))
+           ;                                 (sleep (callback-tick player))
+           ;                                 ))))
+           ;        ))
 
            (when (callback-fun player)
              (om-with-priority 10
@@ -82,7 +83,6 @@
                  (ref-clock-time player) (clock-time))
            )
          )))
-
 
 (defmethod player-pause ((player omplayer) &optional object)
   (when (equal (state player) :play)
@@ -159,8 +159,7 @@
                 (play-editor-callback editor time)
                 )))
     (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
-    (player-play (player self) obj :interval interval)
-    ))
+    (player-play (player self) obj :interval interval)))
 
 (defmethod editor-pause ((self play-editor-mixin))
   (player-pause (player self) (get-obj-to-play self)))
