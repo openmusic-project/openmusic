@@ -5,6 +5,7 @@
 
 (defvar *effects-lists* nil)
 (defvar *faust-effects-pool* (make-hash-table))
+(defvar *faust-effects-by-track* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
 ;===============================================================================================================================================================
@@ -26,7 +27,8 @@
           las-faust-remove-effect-from-track
           las-faust-set-effect-track-in-pool
           las-get-number-faust-effects-pool
-
+          las-faust-get-track-effects
+          
           *faust-effects-pool*
           ) :om-api)
 
@@ -76,10 +78,17 @@
 (defun las-faust-find-effect-in-pool (pointer)
   (find-effect-index-in-pool pointer))
 
-(defun las-faust-add-effect-to-track (pointer track)
-  (add-faust-effect-to-list pointer (gethash track *effects-lists*)))
+(defun las-faust-add-effect-to-track (pointer name track)
+  (let ((liste (gethash track *faust-effects-by-track*))
+        (i 0)) 
+    (while (gethash i liste)
+      (incf i))
+    (setf (gethash i liste) (list pointer name))
+    (add-faust-effect-to-list pointer (gethash track *effects-lists*))
+  ))
 
 (defun las-faust-remove-effect-from-track (pointer track)
+  (remove-effect-in-register pointer track)
   (remove-faust-effect-from-list pointer (gethash track *effects-lists*)))
 
 (defun las-faust-set-effect-track-in-pool (pointer track)
@@ -87,6 +96,17 @@
 
 (defun las-get-number-faust-effects-pool ()
   (get-number-faust-effects-pool))
+
+(defun las-faust-get-track-effects (track)
+  (let ((liste (gethash track *faust-effects-by-track*))
+        (i 0)
+        (res (list)))
+    (while (gethash i liste)
+      (setf res (append res (list (nth 1 (gethash i liste)))))
+      (incf i)
+      )
+    res
+    ))
 ;///////////////////JSON parsing///////////////////////
 ;(setf (ui-type self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 1) (nth 1 (nth 0 effect-json)))))
 ;(setf (ui-name self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 2) (nth 1 (nth 0 effect-json)))))
@@ -111,7 +131,8 @@
   (setf *effects-lists* (make-hash-table))
   (loop for i from 0 to 31 do 
       (setf (gethash i *effects-lists*) (las::MakeAudioEffectList))
-      (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)))
+      (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)
+      (setf (gethash i *faust-effects-by-track*) (make-hash-table))))
 
 (defun init-faust-effects-pool ()
     (loop for i from 0 to *max-effects-number* do
@@ -132,20 +153,6 @@
 
 (defun add-faust-effect-to-list (ptr list)
   (las::AddAudioEffect list ptr))
-
-
-(defun find-effect-index-in-pool (ptr)
-  (let ((i 0)
-        (found 0))
-    (while (= found 0)
-      (if (eq ptr (nth 0 (gethash i *faust-effects-pool*)))
-          (setf found 1)
-        (incf i))
-      (if (> i *max-effects-number*) (let ()
-                                       (setf found 1)
-                                       (setf i nil))))
-    i))
-
 
 (defun get-number-faust-effects-pool ()
   (let ((i 0))
@@ -172,9 +179,35 @@
                                        (setf res nil))))
     res))
 
+(defun find-effect-index-in-pool (ptr)
+  (let ((i 0)
+        (found 0))
+    (while (= found 0)
+      (if (eq ptr (nth 0 (gethash i *faust-effects-pool*)))
+          (setf found 1)
+        (incf i))
+        (if (> i *max-effects-number*)
+            (progn 
+              (setf found 1)
+              (setf i nil))
+         ))
+    i))
+
 (defun pack-faust-effects-pool (n)
   (let ()
     (if (find-hole-index-in-faust-effects-pool)
         (let ((index (find-hole-index-in-faust-effects-pool)))
           (loop for i from index to (- n 1) do
             (setf (gethash i *faust-effects-pool*) (gethash (+ i 1) *faust-effects-pool*)))))))
+
+
+
+(defun remove-effect-in-register (pointer track)
+  (let ((i 0)
+        (found 0))
+    (while (not (eq pointer (car (gethash i (gethash track *faust-effects-by-track*))))) 
+      (incf i))
+    (setf (gethash i (gethash track *faust-effects-by-track*)) nil)
+    (loop for k from i to *max-effects-number* do
+          (setf (gethash k (gethash track *faust-effects-by-track*)) (gethash (+ k 1) (gethash track *faust-effects-by-track*))))
+      ))
