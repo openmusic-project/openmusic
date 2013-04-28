@@ -44,7 +44,8 @@
           om-confirmed-quit
           om-eval-enqueue
           om-set-eval-process
-          
+          om-delayed-funcall
+
           om-gc
           om-with-redefinitions
           om-redefinition-warnings
@@ -262,9 +263,9 @@
 ;    (setf *scheduler-timer* nil)))
   
 (defun om-delayed-funcall (time func &rest args)
-  (when *scheduler-timer* (mp:unschedule-timer *scheduler-timer*))
-  (flet ((scheduler-fun () (apply func args)))
-    (mp:schedule-timer *scheduler-timer* time)))
+  (let ((timer (apply 'mp:make-timer (cons func args))))
+    (mp:schedule-timer-relative-milliseconds timer time)
+    timer))
 
 ;(om-add-exit-cleanup-func 'om-stop-scheduler)
 

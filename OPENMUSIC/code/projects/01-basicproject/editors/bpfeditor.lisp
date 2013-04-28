@@ -166,7 +166,7 @@
 ;BPF EDITOR Class definition and initialization
 ;------------------------------------
 
-(omg-defclass bpfeditor (editorview object-editor) 
+(defclass bpfeditor (editorview object-editor) 
    ((multibpf? :initform nil :accessor multibpf?)
     (control :initform nil :accessor control)
     (pict :initform nil :accessor pict)
@@ -551,6 +551,7 @@
 (defmethod handle-key-event ((Self bpfpanel) Char)
     (let ((myobj (get-bpf-obj self)))
      (case char
+       
        (:om-key-tab (when (multibpf? (editor self))
                       (change-current-bpf self myobj)
                       (om-invalidate-view (editor self) t)))

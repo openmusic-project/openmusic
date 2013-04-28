@@ -13,7 +13,6 @@
 (defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
 
 
-
 ;;; called when a box or editor attached to player is played
 (defmethod player-play ((self las-player) (object sound) &key interval)
   ;(setf (sound-to-play self) object)
