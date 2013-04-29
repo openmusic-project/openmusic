@@ -504,6 +504,7 @@
 (omg-defclass faust-pool-editor (EditorView) 
   ((effect-panels :initform nil :initarg :effect-panels :accessor effect-panels)
    (recap :initform nil :initarg :recap :accessor recap)
+   (recap-track :initform 0 :initarg :recap-track :accessor recap-track)
    (track-effect-list :initform nil :initarg :track-effect-list :accessor track-effect-list)))
 
 (defmethod make-editor-window ((class (eql 'faust-pool-editor)) object name ref &key 
@@ -576,7 +577,6 @@
          (y (om-point-y (get-win-ed-size (object self))))
          (color (om-make-color 0.9 0.9 0.9))
          (pool (object self)))
-
      (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
@@ -593,7 +593,6 @@
                           :bg-color *om-white-color*
                           :position (om-make-point 0 (* 30 i))
                           :size (om-make-point (round x 2) 200))))
-
      (setf (recap self) (om-make-view (get-panel-class self) 
                                       :owner self
                                       :position (om-make-point 300 0)
@@ -602,7 +601,6 @@
                                       :retain-scrollbars (second (metaobj-scrollbars-params self))
                                       :field-size  (om-make-point (round x 2) 200)
                                       :size (om-make-point (w self) (h self))))
-
      (setf track-menu (om-make-dialog-item 'om-pop-up-dialog-item 
                                                 (om-make-point (- (round 300 2) 45) 25) 
                                                 (om-make-point 90 20) ""
@@ -611,7 +609,6 @@
                                                 :value nil
                                                 :di-action  (om-dialog-item-act item
                                                               (update-effect-list-display self (om-get-selected-item-index item)))))
-
      (setf (track-effect-list self)
            (om-make-view (get-panel-class self) 
                                       :owner self
@@ -621,35 +618,23 @@
                                       :retain-scrollbars (second (metaobj-scrollbars-params self))
                                       :field-size  (om-make-point 200 (- y 80))
                                       :size (om-make-point 200 (- y 80))))
-
      (om-add-subviews (recap self) 
                       (om-make-dialog-item 'om-static-text (om-make-point (- (round 300 2) 48) 5) (om-make-point 96 20)
                                           "Effects by tracks" :font *om-default-font1* :fg-color *om-white-color*)
                       track-menu
-                      (track-effect-list self))))
+                      (track-effect-list self))
+     (update-effect-list-display self (recap-track self))))
 
 (defmethod update-effect-list-display ((self faust-pool-editor) track)
   (declare (ignore l))
-
+  (setf (recap-track self) track)
   (let ((effect-list (las-faust-get-track-effects track))
         (res (list))
         (i 0)
+        (x (om-point-x (get-win-ed-size (object self))))
         (y (om-point-y (get-win-ed-size (object self)))))
-
-    (om-remove-subviews (recap self) (track-effect-list self))
-
-    (setf (track-effect-list self)
-          (om-make-view (get-panel-class self) 
-                        :owner self
-                        :position (om-make-point 50 50)
-                        :bg-color *om-white-color*
-                        :scrollbars (first (metaobj-scrollbars-params self))
-                        :retain-scrollbars (second (metaobj-scrollbars-params self))
-                        :field-size  (om-make-point 200 (- y 80))
-                        :size (om-make-point 200 (- y 80))))
-
-    (om-add-subviews (recap self) (track-effect-list self))
-
+    (loop for subv in (om-subviews (track-effect-list self)) do
+          (om-remove-subviews (track-effect-list self) subv))
     (loop for effect in effect-list do 
           (om-add-subviews (track-effect-list self) 
                            (om-make-dialog-item 'om-static-text
@@ -658,8 +643,7 @@
                                                 (format nil "~A" (nth i effect-list))
                                                 :font *om-default-font1*
                                                 :bg-color *om-white-color*))
-          (incf i))
-))
+          (incf i))))
 
 
 (defmethod initialize-instance :after ((self faust-effect-panel) &rest l)
@@ -670,7 +654,8 @@
    (let* ((color *om-light-gray-color*)
           (effect (effect self))
           (name (label effect))
-          (ptr (faust-ptr effect)))
+          (ptr (faust-ptr effect))
+          (pool (om-view-container (om-view-container self))))
    (om-set-bg-color self color)
      (setf nameview (om-make-dialog-item 'om-static-text
                                                   (om-make-point 5 3) 
@@ -695,28 +680,28 @@
                                           :afterfun #'(lambda (item) (if (las-faust-find-effect-in-pool ptr)
                                                                          (let ((trackdest (- (value item) 1))
                                                                                (trackorigin (- (tracknum effect) 1)))
-                                                                           (if (< trackdest 0)
-                                                                               (if (>= trackorigin 0)
-                                                                                   (let ()
-                                                                                     (las-faust-remove-effect-from-track ptr trackorigin)
-                                                                                     (report-modifications self)))
-                                                                             (let ()
-                                                                               (if (>= trackorigin 0)
-                                                                                   (let ()
-                                                                                     (las-faust-remove-effect-from-track ptr trackorigin)
-                                                                                     (setf (tracknum effect) (value item))
-                                                                                     (las-faust-add-effect-to-track ptr name trackdest)
-                                                                                     (report-modifications self))
-                                                                                 (let ()
-                                                                                   (las-faust-add-effect-to-track ptr name trackdest)
-                                                                                   (report-modifications self)))))
-
-                                                                           (setf (tracknum effect) (value item))
-                                                                           (las-faust-set-effect-track-in-pool ptr (value item)))))))
-
+                                                                           (cond ((= trackdest trackorigin) nil)
+                                                                                 (t (progn 
+                                                                                      (if (< trackdest 0)
+                                                                                          (if (>= trackorigin 0)
+                                                                                              (let ()
+                                                                                                (las-faust-remove-effect-from-track ptr trackorigin)
+                                                                                                (report-modifications self)))
+                                                                                        (let ()
+                                                                                          (if (>= trackorigin 0)
+                                                                                              (let ()
+                                                                                                (las-faust-remove-effect-from-track ptr trackorigin)
+                                                                                                (setf (tracknum effect) (value item))
+                                                                                                (las-faust-add-effect-to-track ptr name trackdest)
+                                                                                                (report-modifications self))
+                                                                                            (let ()
+                                                                                              (las-faust-add-effect-to-track ptr name trackdest)
+                                                                                              (report-modifications self)))))
+                                                                                      (setf (tracknum effect) (value item))
+                                                                                      (las-faust-set-effect-track-in-pool ptr (value item))
+                                                                                      (update-effect-list-display pool (recap-track pool))))))))))
      (om-add-subviews self
                       nameview
                       tracktextview
-                      trackview)
-))
+                      trackview)))
 
