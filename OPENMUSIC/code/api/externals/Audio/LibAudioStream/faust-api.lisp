@@ -27,7 +27,8 @@
           las-faust-remove-effect-from-track
           las-faust-set-effect-track-in-pool
           las-get-number-faust-effects-pool
-          las-faust-get-track-effects
+          las-faust-get-track-effects-name
+          las-faust-get-track-effects-pointer
           
           *faust-effects-pool*
           ) :om-api)
@@ -97,12 +98,23 @@
 (defun las-get-number-faust-effects-pool ()
   (get-number-faust-effects-pool))
 
-(defun las-faust-get-track-effects (track)
+(defun las-faust-get-track-effects-name (track)
   (let ((liste (gethash track *faust-effects-by-track*))
         (i 0)
         (res (list)))
     (while (gethash i liste)
       (setf res (append res (list (nth 1 (gethash i liste)))))
+      (incf i)
+      )
+    res
+    ))
+
+(defun las-faust-get-track-effects-pointer (track)
+  (let ((liste (gethash track *faust-effects-by-track*))
+        (i 0)
+        (res (list)))
+    (while (gethash i liste)
+      (setf res (append res (list (nth 0 (gethash i liste)))))
       (incf i)
       )
     res

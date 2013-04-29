@@ -505,6 +505,7 @@
   ((effect-panels :initform nil :initarg :effect-panels :accessor effect-panels)
    (recap :initform nil :initarg :recap :accessor recap)
    (recap-track :initform 0 :initarg :recap-track :accessor recap-track)
+   (recap-item-list :initform nil :initarg :recap-item-list :accessor recap-item-list)
    (track-effect-list :initform nil :initarg :track-effect-list :accessor track-effect-list)))
 
 (defmethod make-editor-window ((class (eql 'faust-pool-editor)) object name ref &key 
@@ -516,7 +517,7 @@
     win))
 
 (defmethod get-win-ed-size ((self faust-pool))
-  (om-make-point (* 2 300) (max 200 (* 33 (length (effect-list self)))))
+  (om-make-point (* 2 300) (max 200 (* 30 (length (effect-list self)))))
   )
 
 (defmethod editor-has-palette-p ((self faust-pool-editor)) nil)
@@ -580,8 +581,8 @@
      (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
-                                                     :scrollbars (first (metaobj-scrollbars-params self))
-                                                     :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                                     :scrollbars nil
+                                                     :retain-scrollbars nil
                                                      :field-size  (om-make-point x y)
                                                      :size (om-make-point (w self) (h self))))
      (setf (effect-panels self)
@@ -597,8 +598,8 @@
                                       :owner self
                                       :position (om-make-point 300 0)
                                       :bg-color *om-dark-gray-color*
-                                      :scrollbars (first (metaobj-scrollbars-params self))
-                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                      :scrollbars nil
+                                      :retain-scrollbars nil
                                       :field-size  (om-make-point (round x 2) 200)
                                       :size (om-make-point (w self) (h self))))
      (setf track-menu (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -610,15 +611,77 @@
                                                 :di-action  (om-dialog-item-act item
                                                               (update-effect-list-display self (om-get-selected-item-index item)))))
      (setf (track-effect-list self)
-           (om-make-view (get-panel-class self) 
+           (om-make-view (get-panel-class self)
                                       :owner self
                                       :position (om-make-point 50 50)
                                       :bg-color *om-white-color*
-                                      :scrollbars (first (metaobj-scrollbars-params self))
-                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                      :scrollbars nil
+                                      :retain-scrollbars nil
                                       :field-size  (om-make-point 200 (- y 80))
                                       :size (om-make-point 200 (- y 80))))
+     (setf move-up (om-make-dialog-item 'om-button (om-make-point 5 (round (- y 80) 2)) (om-make-point 40 24)  "+"
+                                        :di-action (om-dialog-item-act item 
+                                                     (if (las-faust-get-track-effects-pointer (om-get-selected-item-index track-menu))
+                                                         (let* ((tracknum (om-get-selected-item-index track-menu))
+                                                                (effectnum (om-get-selected-item-index (recap-item-list self)))
+                                                                (namelist (las-faust-get-track-effects-name tracknum))
+                                                                (ptrlist (las-faust-get-track-effects-pointer tracknum))
+                                                                (max (length namelist))
+                                                                select-ptr select-name next pivot-ptr pivot-name)
+                                                           (if effectnum
+                                                               (progn
+                                                                 (setf select-ptr (nth effectnum ptrlist))
+                                                                 (setf select-name (nth effectnum namelist))
+                                                                 (setf next (if (>= (- effectnum 1) 0) (- effectnum 1) 0))
+                                                                 (setf pivot-ptr (nth next ptrlist))
+                                                                 (setf pivot-name (nth next namelist))
+                                                                 (if (/= 0 effectnum)
+                                                                     (progn
+                                                                       (loop for ptr in ptrlist do
+                                                                             (las-faust-remove-effect-from-track ptr tracknum))
+                                                                       (setf (nth effectnum ptrlist) pivot-ptr)
+                                                                       (setf (nth effectnum namelist) pivot-name)
+                                                                       (setf (nth next ptrlist) select-ptr)
+                                                                       (setf (nth next namelist) select-name)
+                                                                       (loop for ptr in ptrlist do
+                                                                             for name in namelist do
+                                                                             (las-faust-add-effect-to-track ptr name tracknum))
+                                                                       (update-effect-list-display self tracknum)
+                                                                       (om-set-selected-item-index (recap-item-list self) next)
+                                                                       )))
+                                                         ))))))
+     (setf move-down (om-make-dialog-item 'om-button (om-make-point 5 (+ (round (- y 80) 2) 30)) (om-make-point 40 24)  "-" 
+                                            :di-action (om-dialog-item-act item
+                                                         (if (las-faust-get-track-effects-pointer (om-get-selected-item-index track-menu))
+                                                             (let* ((tracknum (om-get-selected-item-index track-menu))
+                                                                    (effectnum (om-get-selected-item-index (recap-item-list self)))
+                                                                    (namelist (las-faust-get-track-effects-name tracknum))
+                                                                    (max (length namelist))
+                                                                    (ptrlist (las-faust-get-track-effects-pointer tracknum))
+                                                                    select-ptr select-name next pivot-ptr pivot-name)
+                                                               (if effectnum
+                                                                   (progn
+                                                                     (setf select-ptr (nth effectnum ptrlist))
+                                                                     (setf select-name (nth effectnum namelist))
+                                                                     (setf pivot-ptr (nth (+ effectnum 1) ptrlist))
+                                                                     (setf pivot-name (nth (+ effectnum 1) namelist))
+                                                                     (if (/= (- max 1) effectnum)
+                                                                         (progn
+                                                                           (loop for ptr in ptrlist do
+                                                                                 (las-faust-remove-effect-from-track ptr tracknum))
+                                                                           (setf (nth effectnum ptrlist) pivot-ptr)
+                                                                           (setf (nth effectnum namelist) pivot-name)
+                                                                           (setf (nth (+ effectnum 1) ptrlist) select-ptr)
+                                                                           (setf (nth (+ effectnum 1) namelist) select-name)
+                                                                           (loop for ptr in ptrlist do
+                                                                                 for name in namelist do
+                                                                                 (las-faust-add-effect-to-track ptr name tracknum))
+                                                                           (update-effect-list-display self tracknum)
+                                                                           (om-set-selected-item-index (recap-item-list self) (+ effectnum 1))
+                                                                           )))))))))
      (om-add-subviews (recap self) 
+                      move-up
+                      move-down
                       (om-make-dialog-item 'om-static-text (om-make-point (- (round 300 2) 48) 5) (om-make-point 96 20)
                                           "Effects by tracks" :font *om-default-font1* :fg-color *om-white-color*)
                       track-menu
@@ -628,23 +691,22 @@
 (defmethod update-effect-list-display ((self faust-pool-editor) track)
   (declare (ignore l))
   (setf (recap-track self) track)
-  (let ((effect-list (las-faust-get-track-effects track))
+  (let ((effect-list (las-faust-get-track-effects-name track))
         (res (list))
         (i 0)
         (x (om-point-x (get-win-ed-size (object self))))
         (y (om-point-y (get-win-ed-size (object self)))))
     (loop for subv in (om-subviews (track-effect-list self)) do
           (om-remove-subviews (track-effect-list self) subv))
-    (loop for effect in effect-list do 
-          (om-add-subviews (track-effect-list self) 
-                           (om-make-dialog-item 'om-static-text
-                                                (om-make-point 5 (+ 5 (* 20 i))) 
-                                                (om-make-point 100 20)
-                                                (format nil "~A" (nth i effect-list))
-                                                :font *om-default-font1*
-                                                :bg-color *om-white-color*))
-          (incf i))))
-
+    (setf (recap-item-list self) (om-make-dialog-item 'om-single-item-list 
+                         (om-make-point 0 0) 
+                         (om-make-point 215 (- y 80)) 
+                         "Effects on this track"  
+                         :scrollbars :v
+                         :bg-color *om-white-color*
+                         :di-action (om-dialog-item-act item (om-get-selected-item item))
+                         :range effect-list
+                         :container (track-effect-list self)))))
 
 (defmethod initialize-instance :after ((self faust-effect-panel) &rest l)
    (declare (ignore l))
