@@ -139,7 +139,6 @@
 ;--------------------Player---------------------- 
 "scheduler-player/player"
 "scheduler-player/new-player"
-"scheduler-player/bpf-player"
 
 ;-----------Persistant&copy--------------------- 
 "ommodele/persistant/copy"  
