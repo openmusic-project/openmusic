@@ -42,8 +42,8 @@
 "tools/traduction" 
 
 ;--------------Scheduler----------------- 
-"tools/scheduler"   
-;"tools/new-scheduler"   
+"scheduler-player/scheduler"   
+;"scheduler-player/new-scheduler"
                                     
 ;-----------Containers---------------------------- 
 "classes/container"   
@@ -137,9 +137,9 @@
 "graphics/print"   
 
 ;--------------------Player---------------------- 
-"tools/player"
-"tools/new-player"
-
+"scheduler-player/player"
+"scheduler-player/new-player"
+"scheduler-player/bpf-player"
 
 ;-----------Persistant&copy--------------------- 
 "ommodele/persistant/copy"  
