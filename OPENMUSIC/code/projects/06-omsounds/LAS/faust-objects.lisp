@@ -6,7 +6,6 @@
 
 (defvar *faust-compiler-pathname* nil)
 
-
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
 ;=== a single parameter of the general faust effect ===
@@ -30,12 +29,13 @@
 ;=======================================
 
 (defclass* faust-effect-console (simple-score-element)
-   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt)
+   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt :documentation "Faust Code, written in a Textfile")
     (effect-ptr :initform nil :accessor effect-ptr)
-    (effect-name :initform nil :initarg :effect-name :accessor effect-name)
+    (effect-name :initform nil :initarg :effect-name :accessor effect-name :documentation "The name of the Faust Effect")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the effect will be pluged (0 = no specific track)")
     (effect-dsp :initform nil :accessor effect-dsp)
     (effect-svg :initform nil :accessor effect-svg)
-    (nbparams :initform 0 :accessor nbparams :type t :documentation "number of parameters in the effect")
+    (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-type :initform nil :accessor ui-type)
     (ui-name :initform nil :accessor ui-name))
@@ -55,9 +55,9 @@
 
           (setf effect-result (las-faust-make-effect effect-string))
           (setf (effect-ptr self) (nth 1 effect-result))
-          (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-pool))))
-          (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-pool))))
-          (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-pool))))
+          (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+          (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+          (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
 
           (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
@@ -72,8 +72,6 @@
                   (print "WARNING : You didn't give a name to the effect. If there is no name definition in your Faust code, a default name will be set.")
                   (if (string= name "") (setf name "Faust-FX"))))
 
-              (las-faust-add-effect-to-pool (effect-ptr self) name)
-
               (setf (nbparams self) (las-faust-get-effect-control-count (effect-ptr self)))
               (if (> (nbparams self) 0)
                   (setf (params-ctrl self)
@@ -86,6 +84,7 @@
                                                                                                :maxval (caddr (las-faust-get-effect-control-params (effect-ptr self) param))
                                                                                                :stepval nil ;;EN ATTENTE
                                                                                                :effect-ptr (effect-ptr self)
+                                                                                               :tracknum (tracknum self)
                                                                                                ))) nil)))))))
 
 
@@ -106,24 +105,24 @@
         (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
 
-;;;ATTETION VOIR POUR LA COPIE
+;;;ATTENTION : ON CONSIDERE QUE L'ON COPIE JUSTE LA BOITE, VIDE.
+;;;POUR COPIER L'EFFET ON DOIT EGALEMENT COPIER LE CODE ET LE NOM, ET EVALUER
 (defmethod omNG-copy ((self faust-effect-console))
    "Cons a Lisp expression that return a copy of self when it is valuated."
    `(let ((rep (make-instance ',(type-of self))))
-      rep
-      ))
-
+      rep))
 (defmethod copy-container  ((self faust-effect-console) &optional (pere nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((rep (make-instance (type-of self))))
-    rep
-    ))
+    rep))
 
+;;;ATTENTION : POUR LA SAUVEGARDE, ON SAUVEGARDE JUSTE LA BOITE VIDE EGALEMENT.
+;;;LE CODE ASSOCIE AINSI QUE LE NOM ETANT SAUVEGARDES, IL SUFFIT DE REEVALUER LA BOITE
+;;;LA POSITION DES SLIDERS EST DONC REINITIALISEE, SEULS LES AUTOMATIONS PEUVENT ETRE CONSERVEES
 (defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   `(let ((rep (make-instance ',(type-of self))))
-     rep
-     ))
+     rep))
 
 (defmethod get-obj-dur ((self faust-effect-console)) 0)
 
@@ -338,8 +337,6 @@
     (if new
         (setf *faust-compiler-pathname* new))))
 
-
-
 (defmethod update-editor-after-eval ((self faustcontrollerEditor) val)
   (setf (object self) val)
   (let ((n (nbparams (object self))))
@@ -435,31 +432,35 @@
 
 
 (defclass* faust-effect-controller () 
-  ((label :initform nil :initarg :label :accessor label :type t)
-   (faust-ptr :initform nil :initarg :faust-ptr :accessor faust-ptr)
-   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)))
+           ((effect-console :initform nil :initarg :effect-console :accessor effect-console)))
 
 
 (defclass* faust-pool (simple-score-element)
-   ((effect-list :initform nil :accessor effect-list))
-   (:documentation "Faust Pool"))
-
-
+           ((list-of-effects :initarg :list-of-effects :initform nil :accessor list-of-effects :documentation "A list of Faust-effect-console")
+            (effect-list :initform nil :accessor effect-list :documentation "A list of Faust effects"))
+           (:documentation 
+            "Faust Pool is used to collect a list of Faust Effects and manage them through the track system.
+            You need ONLY ONE Faust Pool, or you might make mistake by pluging the same effect many times.
+            The Faust Pool display is as it's described below :
+                         -Left Panel : Summary of registered effects in the pool, with their affected track. You can change it dynamically.
+                         -Right Panel : Summary of the effects by tracks. Here you can change the order of the effect list."))
 
 
 (defmethod initialize-instance :after ((self faust-pool) &rest l)
   (declare (ignore l))
-  (let ((nbeffects 0)
-        (i 0))
-    (while (nth 0 (gethash i *faust-effects-pool*))
-          (incf nbeffects)
-          (incf i))
-        (setf (effect-list self)
-              (loop for effect from 0 to (- nbeffects 1) collect (make-instance 'faust-effect-controller
-                                                                          :label (nth 2 (gethash effect *faust-effects-pool*))
-                                                                          :faust-ptr (nth 0 (gethash effect *faust-effects-pool*))
-                                                                          :tracknum (nth 1 (gethash effect *faust-effects-pool*))
-                                                                          )))))
+  (let ((nbeffects (length (list-of-effects self)))
+        (i 0)
+        plugres)
+        (setf (effect-list self) (list))
+        (loop for effect in (list-of-effects self) do 
+              (progn
+                (setf plugres (las-faust-effect-already-plugged-? (effect-ptr effect)))
+                (if plugres (print plugres))
+                (setf (effect-list self) (append (effect-list self) (list (make-instance 'faust-effect-controller
+                                                                                         :effect-console effect))))
+                (if (> (tracknum effect) 0)
+                    (las-faust-add-effect-to-track (effect-ptr effect) (or (effect-name effect) (format nil "Faust-FX ~A" i)) (tracknum effect)))
+                (incf i)))))
 
 
 (defmethod allowed-in-maq-p ((self faust-pool))  nil)
@@ -577,7 +578,7 @@
    (let ((x (om-point-x (get-win-ed-size (object self))))
          (y (om-point-y (get-win-ed-size (object self))))
          (color (om-make-color 0.9 0.9 0.9))
-         (pool (object self)))
+         (pool (object self))) (print (effect-list (object self)))
      (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
@@ -713,10 +714,13 @@
    (do-initialize-effect self))
 
 (defmethod do-initialize-effect ((self faust-effect-panel))  
-   (let* ((color *om-light-gray-color*)
+  (print (effect self)) 
+  (print (effect-console (effect self)))
+  (let* ((color *om-light-gray-color*)
           (effect (effect self))
-          (name (label effect))
-          (ptr (faust-ptr effect))
+          (console (effect-console effect))
+          (name (effect-name console))
+          (ptr (effect-ptr console))
           (pool (om-view-container (om-view-container self))))
    (om-set-bg-color self color)
      (setf nameview (om-make-dialog-item 'om-static-text
@@ -733,35 +737,33 @@
                                                   :bg-color color))
      (setf trackview (om-make-dialog-item 'numBox
                                           (om-make-point (+ 5 200 50) 3)
-                                          (om-make-point 30 19) (format () " ~D" (tracknum effect))
+                                          (om-make-point 30 19) (format () " ~D" (tracknum console))
                                           :min-val 0
                                           :max-val 32
                                           :bg-color *om-white-color*
                                           :font *om-default-font1*
-                                          :value (tracknum effect)
-                                          :afterfun #'(lambda (item) (if (las-faust-find-effect-in-pool ptr)
-                                                                         (let ((trackdest (- (value item) 1))
-                                                                               (trackorigin (- (tracknum effect) 1)))
-                                                                           (cond ((= trackdest trackorigin) nil)
-                                                                                 (t (progn 
-                                                                                      (if (< trackdest 0)
-                                                                                          (if (>= trackorigin 0)
-                                                                                              (let ()
-                                                                                                (las-faust-remove-effect-from-track ptr trackorigin)
-                                                                                                (report-modifications self)))
-                                                                                        (let ()
-                                                                                          (if (>= trackorigin 0)
-                                                                                              (let ()
-                                                                                                (las-faust-remove-effect-from-track ptr trackorigin)
-                                                                                                (setf (tracknum effect) (value item))
-                                                                                                (las-faust-add-effect-to-track ptr name trackdest)
-                                                                                                (report-modifications self))
-                                                                                            (let ()
-                                                                                              (las-faust-add-effect-to-track ptr name trackdest)
-                                                                                              (report-modifications self)))))
-                                                                                      (setf (tracknum effect) (value item))
-                                                                                      (las-faust-set-effect-track-in-pool ptr (value item))
-                                                                                      (update-effect-list-display pool (recap-track pool))))))))))
+                                          :value (tracknum console)
+                                          :afterfun #'(lambda (item) 
+                                                        (let ((trackdest (- (value item) 1))
+                                                              (trackorigin (- (tracknum console) 1)))
+                                                          (cond ((= trackdest trackorigin) nil)
+                                                                (t (progn 
+                                                                     (if (< trackdest 0)
+                                                                         (if (>= trackorigin 0)
+                                                                             (let ()
+                                                                               (las-faust-remove-effect-from-track ptr trackorigin)
+                                                                               (report-modifications self)))
+                                                                       (let ()
+                                                                         (if (>= trackorigin 0)
+                                                                             (let ()
+                                                                               (las-faust-remove-effect-from-track ptr trackorigin)
+                                                                               (las-faust-add-effect-to-track ptr name trackdest)
+                                                                               (report-modifications self))
+                                                                           (let ()
+                                                                             (las-faust-add-effect-to-track ptr name trackdest)
+                                                                             (report-modifications self)))))
+                                                                     (setf (tracknum console) (value item))
+                                                                     (update-effect-list-display pool (recap-track pool)))))))))
      (om-add-subviews self
                       nameview
                       tracktextview
