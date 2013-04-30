@@ -455,11 +455,11 @@
         (loop for effect in (list-of-effects self) do 
               (progn
                 (setf plugres (las-faust-effect-already-plugged-? (effect-ptr effect)))
-                (if plugres (print plugres))
                 (setf (effect-list self) (append (effect-list self) (list (make-instance 'faust-effect-controller
                                                                                          :effect-console effect))))
-                (if (> (tracknum effect) 0)
-                    (las-faust-add-effect-to-track (effect-ptr effect) (or (effect-name effect) (format nil "Faust-FX ~A" i)) (tracknum effect)))
+                (if (not plugres)
+                    (if (> (tracknum effect) 0)
+                        (las-faust-add-effect-to-track (effect-ptr effect) (or (effect-name effect) (format nil "Faust-FX ~A" i)) (tracknum effect))))
                 (incf i)))))
 
 
