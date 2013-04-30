@@ -9,6 +9,11 @@
     (setf (c-action bpf) (nth 3 slots-vals))
     bpf))
 
+
+
+
+
+
 (defclass bpf-player (omplayer) ())
 (defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
 
@@ -40,6 +45,7 @@
 
 (defclass bpfcontrolpanel (bpfpanel cursor-play-view-mixin) ())
 (defmethod view-turn-pages-p ((self bpfcontrolpanel)) nil)
+(defmethod get-panel-class ((Self bpfcontroleditor)) 'bpfcontrolpanel)
 
 (defmethod handle-key-event ((Self bpfcontrolpanel) Char)
   (cond ((equal char #\SPACE) (editor-play/stop (editor self)))
