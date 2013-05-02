@@ -62,15 +62,19 @@
           (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
    
-            (let* ((effect-json (yason::parse (las-faust-get-effect-json (effect-ptr self)) :object-as :plist))
-                   (name (nth 1 effect-json)))
+            (let (test)
               (print "Effet Faust créé avec succès")
+
+              ;(setf test (oa::las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
+              ;(print (oa::label test))
+              ;(print (oa::group-type test))
+              ;(print (oa::items test))
 
               (if (effect-name self)
                   (setf name (effect-name self))
                 (let ()
-                  (print "WARNING : You didn't give a name to the effect. If there is no name definition in your Faust code, a default name will be set.")
-                  (if (string= name "") (setf name "Faust-FX"))))
+                  (print "WARNING : You didn't give a name to the effect. A default name will be set.")
+                  (setf name "Faust-FX")))
 
               (setf (nbparams self) (las-faust-get-effect-control-count (effect-ptr self)))
               (if (> (nbparams self) 0)
@@ -86,6 +90,7 @@
                                                                                                :effect-ptr (effect-ptr self)
                                                                                                :tracknum (tracknum self)
                                                                                                ))) nil)))))))
+
 
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
@@ -437,7 +442,7 @@
 
 (defclass* faust-pool (simple-score-element)
            ((list-of-effects :initarg :list-of-effects :initform nil :accessor list-of-effects :documentation "A list of Faust-effect-console")
-            (effect-list :initform nil :accessor effect-list :documentation "A list of Faust effects"))
+            (effect-list :initform (list) :accessor effect-list :documentation "A list of Faust effects"))
            (:documentation 
             "Faust Pool is used to collect a list of Faust Effects and manage them through the track system.
             You need ONLY ONE Faust Pool, or you might make mistake by pluging the same effect many times.
@@ -451,16 +456,17 @@
   (let ((nbeffects (length (list-of-effects self)))
         (i 0)
         plugres)
-        (setf (effect-list self) (list))
-        (loop for effect in (list-of-effects self) do 
-              (progn
-                (setf plugres (las-faust-effect-already-plugged-? (effect-ptr effect)))
-                (setf (effect-list self) (append (effect-list self) (list (make-instance 'faust-effect-controller
-                                                                                         :effect-console effect))))
-                (if (not plugres)
-                    (if (> (tracknum effect) 0)
-                        (las-faust-add-effect-to-track (effect-ptr effect) (or (effect-name effect) (format nil "Faust-FX ~A" i)) (tracknum effect))))
-                (incf i)))))
+    (loop for effect in (list-of-effects self) do 
+          (if (typep effect 'faust-effect-console)
+              (if (and (effect-ptr effect) (not (las-faust-null-ptr-p (effect-ptr effect))))
+                  (progn
+                    (setf plugres (las-faust-effect-already-plugged-? (effect-ptr effect)))
+                    (setf (effect-list self) (append (effect-list self) (list (make-instance 'faust-effect-controller
+                                                                                             :effect-console effect))))
+                    (if (not plugres)
+                        (if (> (tracknum effect) 0)
+                            (las-faust-add-effect-to-track (effect-ptr effect) (or (effect-name effect) (format nil "Faust-FX ~A" i)) (tracknum effect))))
+                    (incf i)))))))
 
 
 (defmethod allowed-in-maq-p ((self faust-pool))  nil)

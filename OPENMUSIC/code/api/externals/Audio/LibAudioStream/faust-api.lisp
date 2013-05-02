@@ -31,6 +31,7 @@
           las-faust-get-track-effects-pointer
           las-faust-unplug-all
           las-faust-effect-already-plugged-?
+          las-faust-null-ptr-p
           
           *faust-effects-register*
           ) :om-api)
@@ -54,6 +55,9 @@
           (setf result-error (las::getlastliberror))
           (setf result-state 0)))
     (list result-state result-pointer result-error)))
+
+(defun las-faust-null-ptr-p (pointer)
+  (las::las-null-ptr-p pointer))
 
 (defun las-faust-get-effect-json (pointer)
   (las::getjsoneffect pointer))
