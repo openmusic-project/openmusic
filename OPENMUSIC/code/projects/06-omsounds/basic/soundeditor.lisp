@@ -434,12 +434,16 @@
 (defmethod launch-editor-view-updater ((self soundeditor))
   (if *editor-view-updater*
       (om-kill-process *editor-view-updater*))
-  (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda () (editor-update-view self)))))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda () 
+                                                                        #+cocoa(objc:make-autorelease-pool) 
+                                                                        (editor-update-view self)))))
 
 (defmethod launch-editor-view-updater-light ((self soundeditor))
   (if *editor-view-updater*
       (om-kill-process *editor-view-updater*))
-  (setf *editor-view-updater* (om-run-process "editor-view-updater-light" #'(lambda () (editor-update-view-light self)))))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater-light" #'(lambda () 
+                                                                              #+cocoa(objc:make-autorelease-pool)
+                                                                              (editor-update-view-light self)))))
 
 (defmethod editor-update-view ((self soundeditor))
   (let* ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
