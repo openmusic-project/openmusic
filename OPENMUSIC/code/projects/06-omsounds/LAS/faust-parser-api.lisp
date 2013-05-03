@@ -182,11 +182,11 @@
 ;;;================================================================================================================================================================
 ;;;==========================================================================  GRAPH TOOLS   ======================================================================
 ;;;================================================================================================================================================================
-(defconstant buttonSize (list 20 20))
-(defconstant checkboxSize (list 20 20))
-(defconstant hsliderSize (list 94 31))
-(defconstant vsliderSize (list 31 94))
-(defconstant numentrySize (list 30 25))
+(defconstant buttonSize (list 60 25))
+(defconstant checkboxSize (list 60 70))
+(defconstant hsliderSize (list 94 81))
+(defconstant vsliderSize (list 60 144))
+(defconstant numentrySize (list 60 45))
 
 (defmethod set-param-size ((self faust-param))
   (cond ((string= (param-type self) "checkbox") (setf (size self) checkboxSize))

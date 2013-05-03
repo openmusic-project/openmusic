@@ -63,7 +63,6 @@
    
             (let ()
               (print "Effet Faust créé avec succès")
-              
               (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
 
               (if (effect-name self)
@@ -151,45 +150,7 @@
 
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
-  (let* ((n (nbparams self))
-         (paramlist (params-ctrl self))
-         (parameter nil)
-         (parameter-type nil)
-         (nbutton 0)
-         (ncheckbox 0)
-         (nhslider 0)
-         (nvslider 0)
-         (nnumentry 0)
-         (xmax 0)
-         (ymax 0)
-         (xbutton (car buttonSize))
-         (ybutton (cadr buttonSize))
-         (xcheckbox (car checkboxSize))
-         (ycheckbox (cadr checkboxSize))
-         (xhslider (car hsliderSize))
-         (yhslider (cadr hsliderSize))
-         (xvslider (car vsliderSize))
-         (yvslider (cadr vsliderSize))
-         (xnumentry (car numentrySize))
-         (ynumentry (cadr numentrySize))
-         (xlist nil)
-         (ylist nil))
-    (loop for i from 0 to (- n 1) do
-          (let ()
-            (setf parameter (nth i paramlist))
-            (setf parameter-type (param-type parameter))
-            (cond ((eql parameter-type 'button) (incf nbutton))
-                  ((eql parameter-type 'checkbox) (incf ncheckbox))
-                  ((eql parameter-type 'hslider) (incf nhslider))
-                  ((eql parameter-type 'vslider) (incf nvslider))
-                  ((eql parameter-type 'numentry) (incf nnumentry)))))
-    ;(setf xlist (list (* nbutton xbutton) (* ncheckbox xcheckbox) (* nhslider xhslider) (* nvslider xvslider) (* nnumentry xnumentry)))
-    ;(setf ylist (list (* nbutton ybutton) (* ncheckbox ycheckbox) (* nhslider yhslider) (* nvslider yvslider) (* nnumentry ynumentry)))
-    ;(setf xmax (apply 'max xlist))
-    ;(setf ymax (apply 'max ylist))
-    (setf xmax (* nvslider (+ 30 xvslider)))
-    (setf ymax (+ 100 (cadr vsliderSize)))
-    (om-make-point (if (= n 0) 60 xmax) (if (= n 0) 50 (+ ymax 50)))))
+  (om-make-point (car (las-faust-get-group-size (ui-tree self))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
 
 
 
