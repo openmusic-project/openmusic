@@ -37,8 +37,7 @@
     (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
-    (ui-type :initform nil :accessor ui-type)
-    (ui-name :initform nil :accessor ui-name))
+    (ui-tree :initform nil :initarg :ui-tree :accessor ui-tree))
    (:documentation "Faust Effect"))
 
 
@@ -62,13 +61,10 @@
           (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
    
-            (let (test)
+            (let ()
               (print "Effet Faust créé avec succès")
-
-              ;(setf test (oa::las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
-              ;(print (oa::label test))
-              ;(print (oa::group-type test))
-              ;(print (oa::items test))
+              
+              (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
 
               (if (effect-name self)
                   (setf name (effect-name self))
@@ -153,12 +149,6 @@
                                                       )))
     win))
 
-
-(defconstant buttonSize (list 30 20))
-(defconstant checkboxSize (list 30 20))
-(defconstant hsliderSize (list 50 20))
-(defconstant vsliderSize (list 30 94))
-(defconstant numentrySize (list 20 15))
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
   (let* ((n (nbparams self))

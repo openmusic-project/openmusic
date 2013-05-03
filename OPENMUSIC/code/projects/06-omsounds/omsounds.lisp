@@ -50,6 +50,7 @@
     
     "LAS;las-player"
     "LAS;faust-objects"
+    "LAS;faust-parser-api"
  ))
 
 (eval-when (eval compile load)
