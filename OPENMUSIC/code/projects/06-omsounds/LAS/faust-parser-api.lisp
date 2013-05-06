@@ -74,6 +74,41 @@
     father
     ))
 
+(defun las-faust-translate-tree (tree)
+  (let (children final-list)
+    (setf children (las-faust-get-group-items tree))
+    (if (> (length children) 0)
+        (loop for i from 0 to (- (length children) 1) do
+              (cond ((typep (nth i children) 'faust-group)
+                     (setf final-list (append final-list (las-faust-translate-tree (nth i children)))))
+                    ((typep (nth i children) 'faust-param)
+                     (setf final-list (append final-list (list (nth i children)))))))
+        (setf final-list (list)))
+    final-list))
+
+(defun las-faust-get-groups-only (tree)
+  (let (children final-list)
+    (setf children (las-faust-get-group-items tree))
+    (if (> (length children) 0)
+        (loop for i from 0 to (- (length children) 1) do
+              (cond ((typep (nth i children) 'faust-group)
+                     (setf final-list (append final-list (list (nth i children)))))
+                    ((typep (nth i children) 'faust-param)
+                     nil)))
+        (setf final-list (list)))
+    final-list))
+
+(defun las-faust-get-params-only (tree)
+  (let (children final-list)
+    (setf children (las-faust-get-group-items tree))
+    (if (> (length children) 0)
+        (loop for i from 0 to (- (length children) 1) do
+              (cond ((typep (nth i children) 'faust-group)
+                     nil)
+                    ((typep (nth i children) 'faust-param)
+                     (setf final-list (append final-list (list (nth i children)))))))
+        (setf final-list (list)))
+    final-list))
 ;;;================================================================================================================================================================
 ;;;=========================================================================  PARSING TOOLS   =====================================================================
 ;;;================================================================================================================================================================
@@ -102,7 +137,8 @@
 (defun group-items-to-objects (group &optional (ground 0))
   (let (type
         (top-list (list))
-        (children-list (list)))
+        (children-list (list))
+        (max 100))
   (if (items group)
         (loop for i from 0 to (- (length (items group)) 1) do
               (setf type (check-type-key (nth i (items group))))
@@ -111,13 +147,13 @@
                            (construct-faust-group (nth i (items group))))
                           (t
                            (construct-faust-param (nth i (items group))))))
-              (if (= ground 0) (setf top-list (append top-list (list obj))))
+              (if (<= ground max) (setf top-list (append top-list (list obj))))
               (if (typep obj 'faust-group) 
-                  (group-items-to-objects obj 1)
+                  (group-items-to-objects obj (+ ground 1))
                 (set-param-size obj))
               (setf children-list (append children-list (list obj)))))
   (setf (items group) children-list)
-  (if (= ground 0) (setf (items group) top-list))))
+  (if (<= ground max) (setf (items group) top-list))))
 
 
 (defun construct-faust-ui (ui)
@@ -183,8 +219,8 @@
 ;;;==========================================================================  GRAPH TOOLS   ======================================================================
 ;;;================================================================================================================================================================
 (defconstant buttonSize (list 60 25))
-(defconstant checkboxSize (list 60 70))
-(defconstant hsliderSize (list 94 81))
+(defconstant checkboxSize (list 60 100))
+(defconstant hsliderSize (list 124 81))
 (defconstant vsliderSize (list 60 144))
 (defconstant numentrySize (list 60 45))
 

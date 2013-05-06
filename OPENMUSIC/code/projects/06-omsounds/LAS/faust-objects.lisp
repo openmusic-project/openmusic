@@ -37,7 +37,8 @@
     (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
-    (ui-tree :initform nil :initarg :ui-tree :accessor ui-tree))
+    (params-groups :initform (list) :accessor params-groups :type t)
+    (ui-tree :initform nil :accessor ui-tree))
    (:documentation "Faust Effect"))
 
 
@@ -61,9 +62,16 @@
           (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
    
-            (let ()
+            (let (param-list group-list)
               (print "Effet Faust créé avec succès")
               (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
+              (setf param-list (las-faust-translate-tree (ui-tree self)))
+              (setf treetest (ui-tree self))
+             ; (setf (params-groups self) 
+               ;     (if (typep (car (las-faust-get-group-items (ui-tree self))) 'faust-group)
+                ;                             (las-faust-get-group-items (ui-tree self))
+                 ;                          nil))
+
 
               (if (effect-name self)
                   (setf name (effect-name self))
@@ -71,21 +79,22 @@
                   (print "WARNING : You didn't give a name to the effect. A default name will be set.")
                   (setf name "Faust-FX")))
 
-              (setf (nbparams self) (las-faust-get-effect-control-count (effect-ptr self)))
+             ; (print (las-faust-get-effect-json (effect-ptr self)))
+
+              (setf (nbparams self) (length param-list))
               (if (> (nbparams self) 0)
                   (setf (params-ctrl self)
                         (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
-                                                                                               :param-type 'vslider ;;;EN ATTENTE
-                                                                                               :label (car (las-faust-get-effect-control-params (effect-ptr self) param))
+                                                                                               :param-type (param-type (nth param param-list))
+                                                                                               :label (label (nth param param-list))
                                                                                                :index param
-                                                                                               :defval (cadddr (las-faust-get-effect-control-params (effect-ptr self) param))
-                                                                                               :minval (cadr (las-faust-get-effect-control-params (effect-ptr self) param))
-                                                                                               :maxval (caddr (las-faust-get-effect-control-params (effect-ptr self) param))
-                                                                                               :stepval nil ;;EN ATTENTE
+                                                                                               :defval (string-to-number (init-val (nth param param-list)))
+                                                                                               :minval (string-to-number (min-val (nth param param-list)))
+                                                                                               :maxval (string-to-number (max-val (nth param param-list)))
+                                                                                               :stepval (string-to-number (step-val (nth param param-list)))
                                                                                                :effect-ptr (effect-ptr self)
                                                                                                :tracknum (tracknum self)
                                                                                                ))) nil)))))))
-
 
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
@@ -137,6 +146,7 @@
 
 (omg-defclass faustcontrollerEditor (EditorView) 
   ((params-panels :initform nil :accessor params-panels :type list)
+   (tree :initform nil :accessor tree :type nil)
    (bottom-bar :initform nil :accessor bottom-bar :type t)))
 
 
@@ -144,13 +154,13 @@
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
-                                                      :close-p t :winshow t
+                                :close-p t :winshow t :bg-color *om-dark-gray-color*
                                                       )))
     win))
 
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
-  (om-make-point (car (las-faust-get-group-size (ui-tree self))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
+  (om-make-point (max 75 (+ 5 (car (las-faust-get-group-size (ui-tree self))))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
 
 
 
@@ -214,43 +224,34 @@
    (declare (ignore l))
    (let ((x (om-point-x (get-win-ed-size (object self))))
          (y (om-point-y (get-win-ed-size (object self))))
-         (nbutton -1)
-         (ncheckbox -1)
-         (nhslider -1)
-         (nvslider -1)
-         (nnumentry -1)
-         (xbutton (car buttonSize))
-         (ybutton (cadr buttonSize))
-         (xcheckbox (car checkboxSize))
-         (ycheckbox (cadr checkboxSize))
-         (xhslider (car hsliderSize))
-         (yhslider (cadr hsliderSize))
-         (xvslider (car vsliderSize))
-         (yvslider (cadr vsliderSize))
-         (xnumentry (car numentrySize))
-         (ynumentry (cadr numentrySize))
-         (hbutton 0)
-         (hcheckbox (cadr buttonSize))
-         (hhslider (+ (cadr checkboxSize) (cadr buttonSize)))
-         (hvslider (+ (cadr hsliderSize) (cadr checkboxSize) (cadr buttonSize)))
-         (hnumentry (+ (cadr vsliderSize) (cadr hsliderSize) (cadr checkboxSize) (cadr buttonSize))))
+         group-type
+         groups
+         (xgrp 0)
+         (ygrp 0)
+         (xpars 0)
+         (ypars 0)
+         (offset 0))
+     (setf (tree self) (ui-tree (object self)))
+     (setf group-type (las-faust-get-group-type (tree self)))
+     (setf groups (las-faust-get-groups-only (tree self)))
+     (setf params (las-faust-get-params-only (tree self)))
+
+     ;(print groups)
+     ;(print group-type)
+
      (setf (panel self) (om-make-view (get-panel-class self) 
                                       :owner self
                                       :position (om-make-point 0 0) 
                                       :scrollbars (first (metaobj-scrollbars-params self))
                                       :retain-scrollbars (second (metaobj-scrollbars-params self))
                                       :field-size  (om-make-point x (- y 50))
-                                      :size (om-make-point (w self) (h self))))
+                                      :size (om-make-point (w self) (h self))
+                                      :bg-color *om-dark-gray-color*))
+
      
-     (setf (params-panels self) 
-           (loop for paractrl in (params-ctrl (object self))
-                 for i = 0 then (+ i 1) collect
-                 (om-make-view (get-parampanel-class (panel self))
-                               :paramctr paractrl
-                               :owner (panel self)
-                               :bg-color *om-light-gray-color*
-                               :position (om-make-point (* 60 i) 0)
-                               :size (om-make-point 60 200))))
+     (make-faust-group-view self (tree self))
+     (setf paramnum 0)
+     
      
      (setf (bottom-bar self) (om-make-view (get-panel-class self)
                                            :owner (panel self)
@@ -263,6 +264,63 @@
                                           :di-action (om-dialog-item-act item
                                                        (faust-show-svg *om-outfiles-folder* (effect-dsp (object self)) (effect-svg (object self))))))))
 
+(defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
+  (om-make-view (get-parampanel-class (panel self))
+                :paramctr paractrl
+                :owner (panel self)
+                :bg-color *om-light-gray-color*
+                :position (om-make-point x y)
+                :size (om-make-point (car size) (cadr size))))
+
+(defvar paramnum 0)
+
+(defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
+  (let* ((grouptype (las-faust-get-group-type group))
+         (children (las-faust-get-group-items group))
+         (numchildren (length children))
+         (size (las-faust-get-group-size group))
+         childlist) 
+    ;;//////////////////////////////////////////////////////////////////////////////////////ON DESSINE UNE BARRE
+    (if (string= grouptype "hgroup") 
+        (progn
+          (om-add-subviews (panel self) (om-make-view 'bar-item 
+                                                      :position (om-make-point x y) 
+                                                      :size (om-make-point 5 (cadr size))
+                                                      :bg-color *om-dark-gray-color*))
+          (incf x 5))
+      (progn
+        (om-add-subviews (panel self) (om-make-view 'bar-item 
+                                                    :position (om-make-point x y) 
+                                                    :size (om-make-point (car size) 5)
+                                                    :bg-color *om-dark-gray-color*))
+        (incf y 5)))
+    ;;//////////////////////////////////////////////////////////////////////////////////////ON CREE L'ESPACE DU GROUPE
+    (om-make-view 'om-view
+                  :owner (panel self)
+                  :bg-color *om-light-gray-color*
+                  :position (om-make-point x y)
+                  :size (om-make-point (car size) (cadr size)))
+    ;;//////////////////////////////////////////////////////////////////////////////////////ON CREE LES VIEW DES ENFANTS
+    (loop for i from 0 to (- numchildren 1) do
+          (if (typep (nth i children) 'faust-group)
+              (progn
+                (make-faust-group-view self (nth i children) x y)
+                (if (string= (las-faust-get-group-type (nth i children)) "hgroup")
+                    (incf x (+ 5 (car (las-faust-get-group-size (nth i children)))))
+                  (incf y (+ 5 (cadr (las-faust-get-group-size (nth i children)))))))
+            (let* ((type (param-type (nth i children)))
+                   (size (cond ((string= type "hslider") hsliderSize)
+                               ((string= type "vslider") vsliderSize)
+                               ((string= type "checkbox") checkboxSize)
+                               ((string= type "numentry") numentrySize)
+                               ((string= type "button") buttonSize))))
+              (make-faust-param-view self (nth paramnum (params-ctrl (object self))) x y size)
+              (incf paramnum)
+              (if (string= grouptype "hgroup") 
+                  (incf x (car size))
+                (incf y (cadr size))))))
+    )
+  )
 
 
 (defun faust-show-svg (pathname dsp svg)
@@ -344,11 +402,54 @@
    (setf (paramVal self) (om-make-dialog-item 'om-static-text 
                                               (om-make-point 11 15) 
                                               (om-make-point 60 30)
-                                              (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                              (if (<= range 100) (if (= 1 range) (format nil "~D" (round curval)) (format nil "~$" curval)) (format nil "~D" (round curval)))
                                               :font *om-default-font1*
                                               :bg-color color
                                               ))
-   (setf (paramGraph self) (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
+
+   (setf (paramGraph self) 
+         (cond ((string= type "hslider")
+                (om-make-dialog-item 'om-slider  
+                                     (om-make-point 10 45) 
+                                     (om-make-point 94 31) ""
+                                     :di-action 
+                                     (om-dialog-item-act item
+                                       (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                         (las-faust-set-effect-control-value ptr number valeur)
+                                         (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                     :increment 1
+                                     :range '(0 100)
+                                     :value val
+                                     :direction :horizontal
+                                     :tick-side :none
+                                     ))
+               ((string= type "vslider")
+                (om-make-dialog-item 'om-slider  
+                                     (om-make-point 10 45) 
+                                     (om-make-point 31 94) ""
+                                     :di-action 
+                                     (om-dialog-item-act item
+                                       (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                         (las-faust-set-effect-control-value ptr number valeur)
+                                         (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                     :increment 1
+                                     :range '(0 100)
+                                     :value val
+                                     :direction :vertical
+                                     :tick-side :none
+                                     ))
+               ((string= type "checkbox")
+                (om-make-dialog-item 'om-check-box  
+                                     (om-make-point 20 5) 
+                                     (om-make-point 31 94) ""
+                                     :di-action 
+                                     (om-dialog-item-act item 
+                                       (if (= (las-faust-get-effect-control-value ptr number) 1.0) (las-faust-set-effect-control-value ptr number 0.0) (las-faust-set-effect-control-value ptr number 1.0))
+                                         (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                     :font *om-default-font1*
+                                     :checked-p (if (= (las-faust-get-effect-control-value ptr number) 1.0) t nil)
+                                     ))
+               (t (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
                                          :size (om-make-point 31 94)
                                          :pict (om-load-and-store-picture "fader" 'di)
                                          :nbpict 77
@@ -360,7 +461,7 @@
                                          :font *om-default-font2*
                                          :value val
                                          :min-val 0
-                                         :max-val 100))
+                                         :max-val 100))))
 
    (setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
                                          :icon1 "-" :icon2 "--pushed"
@@ -535,7 +636,7 @@
    (let ((x (om-point-x (get-win-ed-size (object self))))
          (y (om-point-y (get-win-ed-size (object self))))
          (color (om-make-color 0.9 0.9 0.9))
-         (pool (object self))) (print (effect-list (object self)))
+         (pool (object self))) 
      (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
