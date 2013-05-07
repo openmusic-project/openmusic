@@ -32,6 +32,7 @@
           las-faust-unplug-all
           las-faust-effect-already-plugged-?
           las-faust-null-ptr-p
+          las-faust-search-name-in-register
           
           *faust-effects-register*
           ) :om-api)
@@ -99,7 +100,7 @@
 (defun las-faust-remove-effect-from-track (pointer track)
   (let ((res (las-faust-effect-already-plugged-? pointer)))
     (if res 
-        (setf (gethash (cadr res) (gethash (car res) *faust-effects-by-track*))))
+        (setf (gethash (cadr res) (gethash (car res) *faust-effects-by-track*)) nil))
     (remove-effect-in-track-register pointer track)
     (remove-faust-effect-from-list pointer (gethash track *effects-lists*))
     ))
@@ -160,6 +161,15 @@
                  (setf res nil))))
     res))
 
+
+(defun las-faust-search-name-in-register (name)
+  (let ((i 0)
+        res)
+    (while (and (not res) (car (gethash i *faust-effects-register*)))
+      (if (string= name (nth 2 (gethash i *faust-effects-register*)))
+          (setf res t)
+        (incf i)))
+    res))
 ;===============================================================================================================================================================
 ;=========================================================================== TOOLS =============================================================================
 ;===============================================================================================================================================================

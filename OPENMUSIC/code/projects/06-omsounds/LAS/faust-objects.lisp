@@ -43,55 +43,57 @@
 
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
-  (let ()
-    (if (effect-txt self)
-        (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
-              effect-string
-              effect-result) 
-
-          (loop for line in parlist do
-                (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
-
-          (setf effect-result (las-faust-make-effect effect-string))
-          (setf (effect-ptr self) (nth 1 effect-result))
-          (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-          (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
-          (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-
-          (if (/= (car effect-result) 1)
-              (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
-   
-            (let (param-list group-list name)
-              (print "Effet Faust créé avec succès")
-              (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
-              (setf param-list (las-faust-translate-tree (ui-tree self)))
-              (setf treetest (ui-tree self))
-
-              (if (effect-name self)
-                  (setf name (effect-name self))
-                (let ()
-                  (print "WARNING : You didn't give a name to the effect. A default name will be set.")
-                  (setf name "Faust-FX")))
-
-              (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
-              
-              (if (and (tracknum self) (> (tracknum self) 0))
-                  (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
-
-              (setf (nbparams self) (length param-list))
-              (if (> (nbparams self) 0)
-                  (setf (params-ctrl self)
-                        (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
-                                                                                               :param-type (param-type (nth param param-list))
-                                                                                               :label (label (nth param param-list))
-                                                                                               :index param
-                                                                                               :defval (string-to-number (init-val (nth param param-list)))
-                                                                                               :minval (string-to-number (min-val (nth param param-list)))
-                                                                                               :maxval (string-to-number (max-val (nth param param-list)))
-                                                                                               :stepval (string-to-number (step-val (nth param param-list)))
-                                                                                               :effect-ptr (effect-ptr self)
-                                                                                               :tracknum (tracknum self)
-                                                                                               ))) nil)))))))
+  (let (name)
+    ;;Set name, or add a default name
+    (if (effect-name self)
+        (setf name (effect-name self))
+      (progn
+        (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
+        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
+    
+    ;;Check if the name is already used. If yes, exit. If no, build effect.
+    (if (las-faust-search-name-in-register name)
+        (print (format nil "An effect called ~A already exists. Please choose a new name." name))
+      ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
+      (if (effect-txt self)
+          (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
+                effect-string
+                effect-result) 
+            ;;Build string from textfile
+            (loop for line in parlist do
+                  (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
+            ;;Get result from the compilation with the faust-api.
+            (setf effect-result (las-faust-make-effect effect-string))
+            (setf (effect-ptr self) (nth 1 effect-result))
+            ;;Save code as DSP and set some slots for SVG display
+            (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+            (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+            (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+            ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
+            (if (/= (car effect-result) 1)
+                (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
+              ;;Get tree from Json, init params, register effect, plug i a track is specified.
+              (let (param-list)
+                (print "Effet Faust créé avec succès")
+                (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
+                (setf param-list (las-faust-translate-tree (ui-tree self)))
+                (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
+                (if (and (tracknum self) (> (tracknum self) 0))
+                    (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
+                (setf (nbparams self) (length param-list))
+                (if (> (nbparams self) 0)
+                    (setf (params-ctrl self)
+                          (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
+                                                                                                 :param-type (param-type (nth param param-list))
+                                                                                                 :label (label (nth param param-list))
+                                                                                                 :index param
+                                                                                                 :defval (string-to-number (init-val (nth param param-list)))
+                                                                                                 :minval (string-to-number (min-val (nth param param-list)))
+                                                                                                 :maxval (string-to-number (max-val (nth param param-list)))
+                                                                                                 :stepval (string-to-number (step-val (nth param param-list)))
+                                                                                                 :effect-ptr (effect-ptr self)
+                                                                                                 :tracknum (tracknum self)
+                                                                                                 ))) nil))))))))
 
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
