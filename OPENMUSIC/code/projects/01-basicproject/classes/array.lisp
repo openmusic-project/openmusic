@@ -626,7 +626,6 @@ The matrix \"components\" can be accessed and modified using the functions get-c
     ))
 
 
-
 ;;;=====================================
 ;;; Box VAlue
 (defmethod omNG-box-value ((self arrayBox) &optional (numout 0))
