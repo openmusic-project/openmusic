@@ -160,7 +160,6 @@
 
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
-  (print (list "edsize" (max 75 (+ 0 (car (las-faust-get-group-size (ui-tree self))))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
   (om-make-point (max 75 (+ 0 (car (las-faust-get-group-size (ui-tree self))))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
 
 
