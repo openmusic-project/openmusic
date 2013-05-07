@@ -78,12 +78,12 @@
   (let ((n (get-number-faust-effects-register))
         (track (- (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 1)))
     (if (>= track 0)
-        (las::RemoveAudioEffect (gethash track *effects-lists*) pointer))
-    (setf (gethash (find-effect-index-in-register pointer) *faust-effects-register*) (list nil track "faust-effect"))
+        (las-faust-remove-effect-from-track pointer track))
+    (setf (gethash (find-effect-index-in-register pointer) *faust-effects-register*) (list nil 0 "faust-effect"))
     (pack-faust-effects-register n)))
 
-(defun las-faust-add-effect-to-register (pointer name)
-  (add-faust-effect-to-register pointer name))
+(defun las-faust-add-effect-to-register (pointer track name)
+  (add-faust-effect-to-register pointer track name))
 
 (defun las-faust-find-effect-in-register (pointer)
   (find-effect-index-in-register pointer))
@@ -97,8 +97,12 @@
     (add-faust-effect-to-list pointer (gethash track *effects-lists*))))
 
 (defun las-faust-remove-effect-from-track (pointer track)
-  (remove-effect-in-track-register pointer track)
-  (remove-faust-effect-from-list pointer (gethash track *effects-lists*)))
+  (let ((res (las-faust-effect-already-plugged-? pointer)))
+    (if res 
+        (setf (gethash (cadr res) (gethash (car res) *faust-effects-by-track*))))
+    (remove-effect-in-track-register pointer track)
+    (remove-faust-effect-from-list pointer (gethash track *effects-lists*))
+    ))
 
 (defun las-faust-set-effect-track-in-register (pointer track)
   (setf (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) track))
@@ -155,18 +159,6 @@
                  (setf found 1)
                  (setf res nil))))
     res))
-;///////////////////JSON parsing///////////////////////
-;(setf (ui-type self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 1) (nth 1 (nth 0 effect-json)))))
-;(setf (ui-name self) (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 2) (nth 1 (nth 0 effect-json)))))
-;(print effect-json)
-;(effect-ui (nth (- (length effect-json) 1) effect-json))
-;(print effect-ui)
-;(print (ui-name self))
-;(print (length ui-items))
-;(print (cdr (nth (- (length (nth 1 (nth 0 effect-json))) 2) (nth 1 (nth 0 effect-json)))))
-;//////////////////////////////////////////////////////
-
-
 
 ;===============================================================================================================================================================
 ;=========================================================================== TOOLS =============================================================================
@@ -188,7 +180,7 @@
           (setf (gethash i *faust-effects-register*) (list nil 0 "faust-effect")))) ;(ptr track name)
 
 ;;;//////////////////REGISTER TOOLS/////////////////////////////
-(defun add-faust-effect-to-register (ptr name track)
+(defun add-faust-effect-to-register (ptr track name)
   (let ((i 0))
     (while (nth 0 (gethash i *faust-effects-register*))
           (incf i)
@@ -228,6 +220,8 @@
                                        (setf res nil))))
     res))
 
+
+
 (defun find-effect-index-in-register (ptr)
   (let ((i 0)
         (found 0))
@@ -241,6 +235,7 @@
               (setf i nil))
          ))
     i))
+
 
 (defun pack-faust-effects-register (n)
   (let ()
@@ -268,3 +263,18 @@
           (setf (gethash i (gethash track *faust-effects-by-track*)) nil)
           (loop for k from i to *max-effects-number* do
                 (setf (gethash k (gethash track *faust-effects-by-track*)) (gethash (+ k 1) (gethash track *faust-effects-by-track*))))))))
+
+
+
+
+(defun faust-system-recap ()
+  (print "///////////////////////////////")
+  (print "Registre complet (15 premiers) :")
+  (loop for i from 0 to 15 do
+        (print (gethash i *faust-effects-register*)))
+  (print "///////////////////////////////")
+  (loop for i from 0 to 31 do
+        (print (format nil "Track ~A :" i))
+        (loop for j from 0 to 4 do
+              (print (gethash j (gethash i *faust-effects-by-track*))))))
+;(faust-system-recap)

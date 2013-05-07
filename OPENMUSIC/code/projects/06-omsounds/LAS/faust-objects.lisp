@@ -37,7 +37,6 @@
     (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
-    (params-groups :initform (list) :accessor params-groups :type t)
     (ui-tree :initform nil :accessor ui-tree))
    (:documentation "Faust Effect"))
 
@@ -62,16 +61,11 @@
           (if (/= (car effect-result) 1)
               (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
    
-            (let (param-list group-list)
+            (let (param-list group-list name)
               (print "Effet Faust créé avec succès")
               (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
               (setf param-list (las-faust-translate-tree (ui-tree self)))
               (setf treetest (ui-tree self))
-             ; (setf (params-groups self) 
-               ;     (if (typep (car (las-faust-get-group-items (ui-tree self))) 'faust-group)
-                ;                             (las-faust-get-group-items (ui-tree self))
-                 ;                          nil))
-
 
               (if (effect-name self)
                   (setf name (effect-name self))
@@ -79,7 +73,10 @@
                   (print "WARNING : You didn't give a name to the effect. A default name will be set.")
                   (setf name "Faust-FX")))
 
-             ; (print (las-faust-get-effect-json (effect-ptr self)))
+              (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
+              
+              (if (and (tracknum self) (> (tracknum self) 0))
+                  (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
 
               (setf (nbparams self) (length param-list))
               (if (> (nbparams self) 0)
@@ -160,7 +157,9 @@
 
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
-  (om-make-point (max 75 (+ 0 (car (las-faust-get-group-size (ui-tree self))))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self))))))
+  (if (effect-ptr self)
+      (om-make-point (max 75 (car (las-faust-get-group-size (ui-tree self)))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self)))))
+    (om-make-point 75 50)))
 
 
 
@@ -221,49 +220,54 @@
 (defmethod metaobj-scrollbars-params ((self faustcontrollerEditor))  '(:h nil))
 
 (defmethod initialize-instance :after ((self faustcontrollerEditor) &rest l)
-   (declare (ignore l))
-   (let ((x (om-point-x (get-win-ed-size (object self))))
-         (y (om-point-y (get-win-ed-size (object self))))
-         (orange (om-make-color 1 0.5 0))
-         group-type
-         groups
-         (xgrp 0)
-         (ygrp 0)
-         (xpars 0)
-         (ypars 0)
-         (offset 0))
-     (setf (tree self) (ui-tree (object self)))
-     (setf group-type (las-faust-get-group-type (tree self)))
-     (setf groups (las-faust-get-groups-only (tree self)))
-     (setf params (las-faust-get-params-only (tree self)))
+  (declare (ignore l))
+  (let ((x (om-point-x (get-win-ed-size (object self))))
+        (y (om-point-y (get-win-ed-size (object self))))
+        (orange (om-make-color 1 0.5 0))
+        group-type
+        groups
+        (xgrp 0)
+        (ygrp 0)
+        (xpars 0)
+        (ypars 0)
+        (offset 0))
+    (if (effect-ptr (object self))
+        (progn
+          (setf (tree self) (ui-tree (object self)))
+          (setf group-type (las-faust-get-group-type (tree self)))
+          (setf groups (las-faust-get-groups-only (tree self)))
+          (setf params (las-faust-get-params-only (tree self)))
 
-     ;(print groups)
-     ;(print group-type)
-
-     (setf (panel self) (om-make-view (get-panel-class self) 
-                                      :owner self
-                                      :position (om-make-point 0 0) 
-                                      :scrollbars (first (metaobj-scrollbars-params self))
-                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                      :field-size  (om-make-point x (- y 50))
-                                      :size (om-make-point (w self) (h self))
-                                      :bg-color orange))
-
+          (setf (panel self) (om-make-view (get-panel-class self) 
+                                           :owner self
+                                           :position (om-make-point 0 0) 
+                                           :scrollbars (first (metaobj-scrollbars-params self))
+                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                           :field-size  (om-make-point x (- y 50))
+                                           :size (om-make-point (w self) (h self))
+                                           :bg-color orange))
      
-     (make-faust-group-view self (tree self))
-     (setf paramnum 0)
+          (make-faust-group-view self (tree self))
+          (setf paramnum 0)
      
+          (setf (bottom-bar self) (om-make-view (get-panel-class self)
+                                                :owner (panel self)
+                                                :bg-color *om-dark-gray-color*
+                                                :position (om-make-point 0 (- y 50))
+                                                :size (om-make-point x 50)))
      
-     (setf (bottom-bar self) (om-make-view (get-panel-class self)
-                                           :owner (panel self)
-                                           :bg-color *om-dark-gray-color*
-                                           :position (om-make-point 0 (- y 50))
-                                           :size (om-make-point x 50)))
-     
-     (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
-                                          "SVG"
-                                          :di-action (om-dialog-item-act item
-                                                       (faust-show-svg *om-outfiles-folder* (effect-dsp (object self)) (effect-svg (object self))))))))
+          (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
+                                                                  "SVG"
+                                                                  :di-action (om-dialog-item-act item
+                                                                               (faust-show-svg *om-outfiles-folder* (effect-dsp (object self)) (effect-svg (object self)))))))
+      (setf (panel self) (om-make-view (get-panel-class self) 
+                                           :owner self
+                                           :position (om-make-point 0 0) 
+                                           :scrollbars (first (metaobj-scrollbars-params self))
+                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                           :field-size  (om-make-point x (- y 50))
+                                           :size (om-make-point (w self) (h self))
+                                           :bg-color orange)))))
 
 (defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
   (om-make-view (get-parampanel-class (panel self))
@@ -274,7 +278,6 @@
                 :size (om-make-point (car size) (cadr size))))
 
 (defvar paramnum 0)
-
 (defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
   (let* ((grouptype (las-faust-get-group-type group))
          (orange (om-make-color 1 0.5 0))
@@ -282,13 +285,13 @@
          (numchildren (length children))
          (size (las-faust-get-group-size group))
          childlist)
-    ;;//////////////////////////////////////////////////////////////////////////////////////ON CREE L'ESPACE DU GROUPE
+    ;;///////////////////ON CREE L'ESPACE DU GROUPE
     (om-make-view 'om-view
                   :owner (panel self)
                   :bg-color orange
                   :position (om-make-point x y)
                   :size (om-make-point (car size) (cadr size)))
-    ;;//////////////////////////////////////////////////////////////////////////////////////ON CREE LES VIEW DES ENFANTS
+    ;;///////////////////ON CREE LES VIEW DES ENFANTS
     (loop for i from 0 to (- numchildren 1) do
           (if (typep (nth i children) 'faust-group)
               (progn
@@ -342,17 +345,12 @@
   (let ((n (nbparams (object self))))
     (om-set-view-size (window self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
     (om-set-field-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
+    (update-for-subviews-changes (panel self))
+    (print (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self))))
     (loop for parampan in (params-panels self) do 
           (om-remove-subviews (panel self) parampan))
-    (setf (params-panels self) 
-          (loop for paractrl in (params-ctrl (object self))
-            for i = 0 then (+ i 1) collect
-            (om-make-view (get-parampanel-class (panel self))
-                          :paramctr paractrl
-                          :owner (panel self)
-                          :bg-color *om-light-gray-color*
-                          :position (om-make-point (* 60 i) 0)
-                          :size (om-make-point 60 200))))))
+    (make-faust-group-view self (ui-tree (object self)))
+    (setf paramnum 0)))
 
 
 (defmethod initialize-instance :after ((self faustparamPanel) &rest l)
