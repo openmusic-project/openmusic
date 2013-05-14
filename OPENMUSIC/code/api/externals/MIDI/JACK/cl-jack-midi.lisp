@@ -46,6 +46,9 @@
 (defconstant noteofftag #0x80)
 (defconstant noteontag #0x90)
 
+;; TODO: expand with support for channels, messages more of midi to
+;; come...
+
 (defun seqhash-note-on (seq time noteno velocity &optional (channel 0))
   (multiple-value-bind (period offset)
       (frame->period-offset time)
