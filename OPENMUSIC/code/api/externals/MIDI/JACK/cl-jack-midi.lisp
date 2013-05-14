@@ -62,8 +62,18 @@
 
 ;;; MIDI EVENTS
 
-(defconstant noteofftag #0x80)
-(defconstant noteontag #0x90)
+(defconstant noteofftag #x80)
+(defconstant noteontag #x90)
+(defconstant programchangetag #xC0)
+
+(defun make-midi-note-on-tag (&optional (channel 0))
+  (dpb channel (byte 4 0) noteontag))
+
+(defun make-midi-note-off-tag (&optional (channel 0))
+  (dpb channel (byte 4 0) noteofftag))
+
+(defun make-midi-programchange-tag (&optional (channel 0))
+  (dpb channel (byte 4 0) programchangetag))
 
 ;; TODO: expand with support for channels, messages more of midi to
 ;; come...
@@ -71,7 +81,7 @@
 (defun seqhash-note-on (seq time noteno velocity &optional (channel 0))
   (multiple-value-bind (period offset)
       (frame->period-offset time)
-    (let ((noteon (list offset noteontag noteno velocity channel)))
+    (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
       (setf (gethash period seq)
 	    (sort (nconc (gethash period seq) (list noteon)) ;TODO - prio-q
 		  #'(lambda (a b) (< (car a) (car b))))))))
@@ -79,7 +89,7 @@
 (defun seqhash-note-off (seq time noteno velocity &optional (channel 0))
   (multiple-value-bind (period offset)
       (frame->period-offset time)
-    (let ((noteoff (list offset noteofftag noteno velocity channel)))
+    (let ((noteoff (list offset (make-midi-note-off-tag channel) noteno velocity channel)))
       (setf (gethash period seq)
 	    (sort (nconc (gethash period seq) (list noteoff))
 		  #'(lambda (a b) (< (car a) (car b))))))))
@@ -182,10 +192,11 @@
      for sek from 0 to dur by tempo
      do
        (let* ((start (framenow sek))
-	      (end (+ start 1200)))
+	      (end (+ start 10000))
+	      (channel (random 16)))
 	 (progn
-	   (seqhash-note-on *om-seq* start (setf *thisnote* (+ 20 (random 100))) 80 0)
-	   (seqhash-note-off *om-seq* end *thisnote* 50 0)))))
+	   (seqhash-note-on *om-seq* start (setf *thisnote* (+ 20 (random 100))) 80 channel)
+	   (seqhash-note-off *om-seq* end *thisnote* 50 channel)))))
 
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   (loop with offset = 0
@@ -202,8 +213,10 @@
 
 (loop repeat 3 do (play-some-notes (+ 1/30 (random 0.1)) 12))
 
-(clrhash *om-seq*)
+(hash-table-count *om-seq*)
 (hash-table-size *om-seq*)
+(clrhash *om-seq*)
+
 
 
 |#
