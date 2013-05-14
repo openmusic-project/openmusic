@@ -112,6 +112,7 @@
     (let ((this-period (jack-last-frame-time *OMJackMidiClient*)))
       (let ((notes-this-period (gethash this-period seq)))
 	(when notes-this-period
+	  (remhash this-period seq)
 	  (loop for note in notes-this-period
 	     for offset = (first note)
 	     do 
@@ -216,7 +217,5 @@
 (hash-table-count *om-seq*)
 (hash-table-size *om-seq*)
 (clrhash *om-seq*)
-
-
 
 |#
