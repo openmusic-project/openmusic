@@ -72,7 +72,7 @@
             ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
             (if (/= (car effect-result) 1)
                 (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
-              ;;Get tree from Json, init params, register effect, plug i a track is specified.
+              ;;Get tree from Json, init params, register effect, plug if a track is specified.
               (let (param-list)
                 (print "Effet Faust créé avec succès")
                 (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
@@ -488,9 +488,9 @@
    ;                                                    (las-faust-set-effect-control-value ptr number def) (set-value (paramGraph self) val)
    ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
    ;                                                                                               (format nil "~D" (round def))))))))
-   (om-add-subviews self 
-                    (paramText self) 
-                    (paramVal self) 
+   (om-add-subviews self
+                    (paramText self)
+                    (paramVal self)
                     (paramGraph self)
                     ;(paramReset self)
                     )))

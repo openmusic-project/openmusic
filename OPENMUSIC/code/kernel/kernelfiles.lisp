@@ -153,6 +153,9 @@
 "graphics/preferences"
 "graphics/default-prefs"
 
+;-------------General Mixer----------------------- 
+"graphics/general-mixer"
+
 ;--------------OM-Drag-and-Drop----------------- 
 "graphics/dragdrop/omdraganddrop"
 "graphics/dragdrop/dropallowp"    
