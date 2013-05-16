@@ -46,16 +46,17 @@
 (defun las-faust-unplug-all ()
   (ResetEffectsLists *audio-player-visible*))
 
-(defun las-faust-make-effect (string)
+(defun las-faust-make-effect (string outfiles-path)
   (let ((result-state 1)
         result-pointer
         result-error) 
-    (setf result-pointer (las::MakeFaustAudioEffect string))
+    (setf result-pointer (las::MakeFaustAudioEffect string "" (directory-namestring outfiles-path)))
     (if (las::las-null-ptr-p result-pointer)
         (progn
           (setf result-error (las::getlastliberror))
           (setf result-state 0)))
     (list result-state result-pointer result-error)))
+
 
 (defun las-faust-null-ptr-p (pointer)
   (las::las-null-ptr-p pointer))

@@ -188,9 +188,9 @@
                      :label label
                      :osc-address address
                      :metadata metadata
-                     :init-val init-val
-                     :min-val min-val
-                     :max-val max-val
+                     :init-val (if init-val init-val "0")
+                     :min-val (if min-val min-val "0")
+                     :max-val (if max-val max-val "1000000")
                      :step-val step-val))))
 
 (defun construct-faust-group (list)
@@ -218,7 +218,7 @@
 ;;;================================================================================================================================================================
 ;;;==========================================================================  GRAPH TOOLS   ======================================================================
 ;;;================================================================================================================================================================
-(defconstant buttonSize (list 80 65))
+(defconstant buttonSize (list 124 40))
 (defconstant checkboxSize (list 80 81))
 (defconstant hsliderSize (list 124 81))
 (defconstant vsliderSize (list 80 154))

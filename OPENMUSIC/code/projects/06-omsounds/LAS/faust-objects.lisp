@@ -4,7 +4,7 @@
 
 (in-package :om)
 
-(defvar *faust-compiler-pathname* nil)
+;(defvar *faust-compiler-pathname* nil)
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -62,13 +62,16 @@
             ;;Build string from textfile
             (loop for line in parlist do
                   (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
+            ;;Save as a dsp file
+            (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
             ;;Get result from the compilation with the faust-api.
-            (setf effect-result (las-faust-make-effect effect-string))
+            (setf effect-result (las-faust-make-effect 
+                                 (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
+                                 *om-outfiles-folder*))
             (setf (effect-ptr self) (nth 1 effect-result))
             ;;Save code as DSP and set some slots for SVG display
             (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
             (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
-            (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
             ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
             (if (/= (car effect-result) 1)
                 (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
@@ -94,6 +97,7 @@
                                                                                                  :effect-ptr (effect-ptr self)
                                                                                                  :tracknum (tracknum self)
                                                                                                  ))) nil))))))))
+
 
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
@@ -314,23 +318,25 @@
                 (incf y (cadr size))))))))
 
 
+;(defun faust-show-svg (pathname dsp svg)
+;  (let (res)
+;    (if *faust-compiler-pathname*
+;        (progn
+;          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
+;          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
+;                ((= res 126) (progn
+;                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
+;                               (set-faust-compiler-pathname)))
+;                ((= res 127) (progn
+;                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
+;                               (set-faust-compiler-pathname)))
+;                ((= res 2) (print "Incorrect usage of this command"))
+;                (t (print "Failure"))))
+;      (progn
+;        (if (set-faust-compiler-pathname)
+;            (faust-show-svg pathname dsp svg))))))
 (defun faust-show-svg (pathname dsp svg)
-  (let (res)
-    (if *faust-compiler-pathname*
-        (progn
-          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
-          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
-                ((= res 126) (progn
-                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
-                               (set-faust-compiler-pathname)))
-                ((= res 127) (progn
-                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
-                               (set-faust-compiler-pathname)))
-                ((= res 2) (print "Incorrect usage of this command"))
-                (t (print "Failure"))))
-      (progn
-        (if (set-faust-compiler-pathname)
-            (faust-show-svg pathname dsp svg))))))
+  (om-cmd-line (format nil "open ~A" svg) nil t pathname))
 
 
 
@@ -374,7 +380,7 @@
           (val 0)
           (tracknum (tracknum (paramctr self)))
           (editor (om-view-container (om-view-container self)))
-          (curval (las-faust-get-effect-control-value ptr number))) 
+          (curval (las-faust-get-effect-control-value ptr number)))
    (if (= min max) (let () (setf min 0) (setf max 1)) nil)
    (setf range (/ (- max min) 1.0))
    (setf val (* 100.0 (/ (- curval min) range)))
@@ -465,21 +471,64 @@
                                                (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
                                              :font *om-default-font1*
                                              :checked-p (if (= (las-faust-get-effect-control-value ptr number) 1.0) t nil)))))
+               ((string= type "button")
+                (progn
+                  (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                              (om-make-point 5 0) 
+                                                              (om-make-point (- (car checkboxSize) 5) 50)
+                                                              ""
+                                                              :font *om-default-font1*
+                                                              :bg-color color))
+                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                             (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
+                                                             (om-make-point 60 20)
+                                                             ""
+                                                             :font *om-default-font1*
+                                                             :fg-color *om-blue-color*
+                                                             :bg-color color))
+                  (setf (paramGraph self)
+                        (om-make-dialog-item 'om-button  
+                                             (om-make-point 20 5) 
+                                             (om-make-point 80 30) 
+                                             (format nil "~D" name)
+                                             :di-action 
+                                             (om-dialog-item-act item
+                                               (if (= (las-faust-get-effect-control-value ptr number) max) 
+                                                   (progn
+                                                     (las-faust-set-effect-control-value ptr number 0.0)
+                                                     (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number))))
+                                                   (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number)))
+                                                 )
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                             :font *om-default-font1*))))
                (t (progn
+                    (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                                (om-make-point 5 0) 
+                                                                (om-make-point (- (car vsliderSize) 15) 50)
+                                                                (format nil "~D" name)
+                                                                :font *om-default-font1*
+                                                                :bg-color color))
+                    (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                               (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
+                                                               (om-make-point 60 20)
+                                                               (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                               :font *om-default-font1*
+                                                               :fg-color orange
+                                                               :bg-color color))
                     (setf (paramGraph self)
                           (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
                                         :size (om-make-point 31 94)
                                         :pict (om-load-and-store-picture "fader" 'di)
                                         :nbpict 77
                                         :pict-size (om-make-point 31 94)
-                                         :di-action (om-dialog-item-act item
-                                                      (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
-                                                        (las-faust-set-effect-control-value ptr number valeur)
-                                                        (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
-                                         :font *om-default-font2*
-                                         :value val
-                                         :min-val 0
-                                         :max-val 100)))))
+                                        :di-action (om-dialog-item-act item
+                                                     (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
+                                                       (las-faust-set-effect-control-value ptr number valeur)
+                                                       (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                        :font *om-default-font2*
+                                        :value val
+                                        :min-val 0
+                                        :max-val 100)))))
 
    ;(setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
    ;                                      :icon1 "-" :icon2 "--pushed"
