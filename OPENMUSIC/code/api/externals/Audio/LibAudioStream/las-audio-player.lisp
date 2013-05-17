@@ -60,7 +60,7 @@
 (cffi:defcallback channel-stop-callback-visible :void ((chan :pointer))
   (let* ((status-list *audio-player-visible-tracks-info*)
          (snd (car (gethash (cffi::mem-aref chan :int) status-list))))
-    (las-stop snd (cffi::mem-aref chan :int))))
+    (las-stop snd (+ (cffi::mem-aref chan :int) 1))))
 
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
@@ -530,7 +530,7 @@
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-stop-hidden (snd)
   (let ((actual-track (tracknum-sys snd))
-        (player *audio-player-hidden*)) 
+        (player *audio-player-hidden*))
     (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
         (let ()
           (stop-one-channel player actual-track)
@@ -540,7 +540,7 @@
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-stop-visible (snd &optional (tracknum 0))
   (let ((actual-track tracknum)
-        (player *audio-player-visible*)) 
+        (player *audio-player-visible*))
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (let ()
           (stop-one-channel player actual-track)
