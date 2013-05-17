@@ -534,7 +534,8 @@
     (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
         (let ()
           (stop-one-channel player actual-track)
-          (load-sound-on-one-channel player snd actual-track)))))
+          ;(load-sound-on-one-channel player snd actual-track)
+          ))))
 
 ;/STOP FUNCTION FOR VISIBLE PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
@@ -544,7 +545,8 @@
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (let ()
           (stop-one-channel player actual-track)
-          (load-sound-on-one-channel player snd actual-track)))))
+          ;(load-sound-on-one-channel player snd actual-track)
+          ))))
 
 ;/USE ORIGINAL SOUND
 ;This functions switch between the orginal stream and the modified stream
