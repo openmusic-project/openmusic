@@ -38,6 +38,7 @@
     (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-tree :initform nil :accessor ui-tree))
+   (:icon 918)
    (:documentation "Faust Effect"))
 
 
