@@ -99,7 +99,6 @@
                                                                                                  ))) nil))))))))
 
 
-
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
 (defmethod Class-has-editor-p  ((self faust-effect-console)) t)

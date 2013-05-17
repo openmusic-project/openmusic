@@ -173,8 +173,10 @@
         (setf label (append label (pop list))))
       (pop list)
       (setf address (pop list))
-      (pop list)
-      (setf metadata (pop list))
+      (if (string= (car list) "meta")
+          (progn
+            (pop list)
+            (setf metadata (pop list))))
       (pop list)
       (setf init-val (pop list))
       (pop list)
