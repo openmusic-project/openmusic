@@ -57,6 +57,7 @@
         bar2
         vol-text
         vol-val
+        vol-slider
         bar3
         )
     (setf channel-text (om-make-dialog-item 'om-static-text
@@ -78,7 +79,7 @@
     (setf pan-val (om-make-dialog-item 'om-static-text
                                              (om-make-point 45 pos) 
                                              (om-make-point 30 16)
-                                             "64"
+                                             "0"
                                              :font *om-default-font2*
                                              ))
     (incf pos 16)
@@ -88,13 +89,44 @@
                                    :nbpict 65
                                    :pict-size (om-make-point 24 24)
                                    :di-action (om-dialog-item-act item
-                                                )
+                                                (om-set-dialog-item-text pan-val (number-to-string (value item))))
                                    :font *om-default-font2*
-                                   :value 64
-                                   :min-val 0
-                                   :max-val 127))
+                                   :value 0
+                                   :min-val -100
+                                   :max-val 100))
     (incf pos 25)
     (setf bar2 (om-make-view 'bar-item 
+                             :position (om-make-point 3 pos) 
+                             :size (om-make-point 69 10)
+                             :bg-color *om-light-gray-color*))
+    (incf pos 10)
+    (setf vol-text (om-make-dialog-item 'om-static-text 
+                                                 (om-make-point 11 pos) 
+                                                 (om-make-point 40 16)
+                                                 "Vol"
+                                                 :font *om-default-font2*
+                                                 ))
+    (setf vol-val (om-make-dialog-item 'om-static-text 
+                                        (om-make-point 40 pos) 
+                                        (om-make-point 30 16)
+                                        "100"
+                                        :font *om-default-font2*
+                                        ))
+    
+    (incf pos 20)
+    (setf vol-slider (om-make-dialog-item 'om-slider  
+                                          (om-make-point 20 pos) 
+                                          (om-make-point 30 100) ""
+                                          :di-action (om-dialog-item-act item
+                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item))))
+                                          :increment 1
+                                          :range '(0 100)
+                                          :value 100
+                                          :direction :vertical
+                                          :tick-side :none
+                                          ))
+    (incf pos 110)
+    (setf bar3 (om-make-view 'bar-item 
                              :position (om-make-point 3 pos) 
                              :size (om-make-point 69 10)
                              :bg-color *om-light-gray-color*))
@@ -106,9 +138,10 @@
                      pan-val
                      pan-slider
                      bar2
-                     ;vol-text
-                     ;vol-val
-                     ;bar3
+                     vol-text
+                     vol-val
+                     vol-slider
+                     bar3
                      )
     main-view)
   )
