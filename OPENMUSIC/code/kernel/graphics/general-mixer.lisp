@@ -6,16 +6,16 @@
   (loop for i from 0 to (- las-channels 1) do
         (setf (gethash i *general-mixer-values*) (list 0 100))))
 
-
+(init-genmixer-values)
 
 (defun build-faust-pool-list ()
   (let ((n (- (las-get-number-faust-effects-register) 1))
-        (final-list (list "-"))) 
+        (final-list (list "-" "No Effect"))) 
     (loop for i from 0 to n do
-          (setf final-list (append final-list (list (nth 2 (gethash i *faust-effects-register*))))))
+          (if (not (las-faust-effect-already-plugged-? (nth 0 (gethash i *faust-effects-register*))))
+              (setf final-list (append final-list (list (nth 2 (gethash i *faust-effects-register*)))))))
     final-list))
 
-(defun update-faust-pool-list)
 
 
 
@@ -40,7 +40,6 @@
     (om-add-subviews newwindow panel)
     (loop for i from 0 to (- las-channels 1) do
           (om-add-subviews panel (genmixer-make-single-channel-view panel i)))
-    (print (om-subviews (car (om-subviews panel))))
     newwindow))
 
 (defun omG-make-genmixer-dialog ()
@@ -139,9 +138,9 @@
 
     (incf pos 4)
     (setf faust-text (om-make-dialog-item 'om-static-text 
-                                          (om-make-point 7 pos) 
+                                          (om-make-point 27 pos) 
                                           (om-make-point 75 16)
-                                          "Faust Pool"
+                                          "FX"
                                           :font *om-default-font1*))
 
     (incf pos 20)
@@ -152,8 +151,8 @@
                                        :di-action (om-dialog-item-act item
                                                     (om-get-selected-item-index item))
                                        :font *om-default-font1*
-                                       :range (build-faust-pool-list)
-                                       :value nil))
+                                       :range (append (build-faust-pool-list) (cdr (gethash 0 (gethash channel *faust-effects-by-track*))))
+                                       :value (cadr (gethash 0 (gethash channel *faust-effects-by-track*)))))
 
     (incf pos 20)
     (setf effect2 (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -163,8 +162,8 @@
                                        :di-action (om-dialog-item-act item
                                                     )
                                        :font *om-default-font1*
-                                       :range (build-faust-pool-list)
-                                       :value nil))
+                                       :range (append (build-faust-pool-list) (cdr (gethash 1 (gethash channel *faust-effects-by-track*))))
+                                       :value (cadr (gethash 1 (gethash channel *faust-effects-by-track*)))))
 
     (incf pos 20)
     (setf effect3 (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -174,8 +173,8 @@
                                        :di-action (om-dialog-item-act item
                                                     )
                                        :font *om-default-font1*
-                                       :range (build-faust-pool-list)
-                                       :value nil))
+                                       :range (append (build-faust-pool-list) (cdr (gethash 2 (gethash channel *faust-effects-by-track*))))
+                                       :value (cadr (gethash 2 (gethash channel *faust-effects-by-track*)))))
 
     (incf pos 20)
     (setf effect4 (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -185,8 +184,8 @@
                                        :di-action (om-dialog-item-act item
                                                     )
                                        :font *om-default-font1*
-                                       :range (build-faust-pool-list)
-                                       :value nil))
+                                       :range (append (build-faust-pool-list) (cdr (gethash 3 (gethash channel *faust-effects-by-track*))))
+                                       :value (cadr (gethash 3 (gethash channel *faust-effects-by-track*)))))
 
     (incf pos 20)
     (setf effect5 (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -196,8 +195,8 @@
                                        :di-action (om-dialog-item-act item
                                                     )
                                        :font *om-default-font1*
-                                       :range (build-faust-pool-list)
-                                       :value nil))
+                                       :range (append (build-faust-pool-list) (cdr (gethash 4 (gethash channel *faust-effects-by-track*))))
+                                       :value (cadr (gethash 4 (gethash channel *faust-effects-by-track*)))))
 
 
 
@@ -243,7 +242,6 @@
                      effect4
                      effect5)
     main-view))
-
 
 (defun change-genmixer-channel-vol (channel value)
   (progn

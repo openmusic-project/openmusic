@@ -35,6 +35,7 @@
           las-faust-search-name-in-register
           
           *faust-effects-register*
+          *faust-effects-by-track*
           ) :om-api)
 
 
