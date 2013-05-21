@@ -53,7 +53,7 @@
         (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
     
     ;;Check if the name is already used. If yes, exit. If no, build effect.
-    (if (las-faust-search-name-in-register name)
+    (if (car (las-faust-search-name-in-register name))
         (print (format nil "An effect called ~A already exists. Please choose a new name." name))
       ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
       (if (effect-txt self)
