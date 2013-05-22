@@ -97,6 +97,7 @@
     (while (gethash i liste)
       (incf i))
     (setf (gethash i liste) (list pointer name))
+    (setf (nth 1 (gethash (cadr (las-faust-search-name-in-register name)) *faust-effects-register*)) (+ track 1))
     (add-faust-effect-to-list pointer (gethash track *effects-lists*))))
 
 (defun las-faust-remove-effect-from-track (pointer track)
@@ -104,8 +105,8 @@
     (if res 
         (setf (gethash (cadr res) (gethash (car res) *faust-effects-by-track*)) nil))
     (remove-effect-in-track-register pointer track)
-    (remove-faust-effect-from-list pointer (gethash track *effects-lists*))
-    ))
+    (setf (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 0)
+    (remove-faust-effect-from-list pointer (gethash track *effects-lists*))))
 
 (defun las-faust-set-effect-track-in-register (pointer track)
   (setf (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) track))
@@ -121,8 +122,7 @@
       (setf res (append res (list (nth 1 (gethash i liste)))))
       (incf i)
       )
-    res
-    ))
+    res))
 
 
 (defun las-faust-get-track-effects-pointer (track)
@@ -133,8 +133,7 @@
       (setf res (append res (list (nth 0 (gethash i liste)))))
       (incf i)
       )
-    res
-    ))
+    res))
 
 (defun las-faust-effect-already-plugged-? (pointer)
   (let ((x 0)
@@ -197,8 +196,7 @@
     (while (nth 0 (gethash i *faust-effects-register*))
           (incf i)
           (if (> i *max-effects-number*) (setf i nil)))
-    (if i (setf (gethash i *faust-effects-register*) (list ptr track name)))
-  ))
+    (if i (setf (gethash i *faust-effects-register*) (list ptr track name)))))
 
 
 (defun remove-faust-effect-from-list (ptr list)
@@ -290,3 +288,5 @@
         (loop for j from 0 to 4 do
               (print (gethash j (gethash i *faust-effects-by-track*))))))
 ;(faust-system-recap)
+;(progn (reseteffectslists *audio-player-visible*) (loop for i from 0 to 15 do (setf (gethash i *faust-effects-register*) (list nil 0 "faust-effect"))))
+ 
