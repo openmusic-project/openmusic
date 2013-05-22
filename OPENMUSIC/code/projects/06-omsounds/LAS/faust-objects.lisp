@@ -45,60 +45,61 @@
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
   (let (name)
-    ;;Set name, or add a default name
-    (if (effect-name self)
-        (setf name (effect-name self))
-      (progn
-        (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
-        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
+    (if (effect-txt self)
+        (progn
+          ;;Set name, or add a default name
+          (if (effect-name self)
+              (setf name (effect-name self))
+            (progn
+              (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
+              (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
     
-    ;;Check if the name is already used. If yes, exit. If no, build effect.
-    (if (car (las-faust-search-name-in-register name))
-        (print (format nil "An effect called ~A already exists. Please choose a new name." name))
-      ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
-      (if (effect-txt self)
-          (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
-                effect-string
-                effect-result) 
-            ;;Build string from textfile
-            (loop for line in parlist do
-                  (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
-            ;;Save as a dsp file
-            (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-            ;;Get result from the compilation with the faust-api.
-            (setf effect-result (las-faust-make-effect 
-                                 (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
-                                 *om-outfiles-folder*))
-            (setf (effect-ptr self) (nth 1 effect-result))
-            ;;Save code as DSP and set some slots for SVG display
-            (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-            (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
-            ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
-            (if (/= (car effect-result) 1)
-                (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
-              ;;Get tree from Json, init params, register effect, plug if a track is specified.
-              (let (param-list)
-                (print "Effet Faust créé avec succès")
-                (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
-                (setf param-list (las-faust-translate-tree (ui-tree self)))
-                (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
-                (if (and (tracknum self) (> (tracknum self) 0))
-                    (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
-                (setf (nbparams self) (length param-list))
-                (if (> (nbparams self) 0)
-                    (setf (params-ctrl self)
-                          (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
-                                                                                                 :param-type (param-type (nth param param-list))
-                                                                                                 :label (label (nth param param-list))
-                                                                                                 :index param
-                                                                                                 :defval (string-to-number (init-val (nth param param-list)))
-                                                                                                 :minval (string-to-number (min-val (nth param param-list)))
-                                                                                                 :maxval (string-to-number (max-val (nth param param-list)))
-                                                                                                 :stepval (string-to-number (step-val (nth param param-list)))
-                                                                                                 :effect-ptr (effect-ptr self)
-                                                                                                 :tracknum (tracknum self)
-                                                                                                 ))) nil))))))))
-
+          ;;Check if the name is already used. If yes, exit. If no, build effect.
+          (if (car (las-faust-search-name-in-register name))
+              (print (format nil "An effect called ~A already exists. Please choose a new name." name))
+            ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
+            (if (effect-txt self)
+                (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
+                      effect-string
+                      effect-result) 
+                  ;;Build string from textfile
+                  (loop for line in parlist do
+                        (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
+                  ;;Save as a dsp file
+                  (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                  ;;Get result from the compilation with the faust-api.
+                  (setf effect-result (las-faust-make-effect 
+                                       (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
+                                       *om-outfiles-folder*))
+                  (setf (effect-ptr self) (nth 1 effect-result))
+                  ;;Save code as DSP and set some slots for SVG display
+                  (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                  (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+                  ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
+                  (if (/= (car effect-result) 1)
+                      (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
+                    ;;Get tree from Json, init params, register effect, plug if a track is specified.
+                    (let (param-list)
+                      (print "Effet Faust créé avec succès")
+                      (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
+                      (setf param-list (las-faust-translate-tree (ui-tree self)))
+                      (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
+                      (if (and (tracknum self) (> (tracknum self) 0))
+                          (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
+                      (setf (nbparams self) (length param-list))
+                      (if (> (nbparams self) 0)
+                          (setf (params-ctrl self)
+                                (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
+                                                                                                       :param-type (param-type (nth param param-list))
+                                                                                                       :label (label (nth param param-list))
+                                                                                                       :index param
+                                                                                                       :defval (string-to-number (init-val (nth param param-list)))
+                                                                                                       :minval (string-to-number (min-val (nth param param-list)))
+                                                                                                       :maxval (string-to-number (max-val (nth param param-list)))
+                                                                                                       :stepval (string-to-number (step-val (nth param param-list)))
+                                                                                                       :effect-ptr (effect-ptr self)
+                                                                                                       :tracknum (tracknum self)
+                                                                                                       ))) nil))))))))))
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
@@ -898,3 +899,552 @@
                       tracktextview
                       trackview)))
 
+
+
+
+
+
+
+
+;;;================================================================================================================================================================
+;;;                                                                            faust SYNTH
+;;;================================================================================================================================================================
+
+
+
+(defclass* faust-synth-parameter-controller () 
+  ((param-type :initform 'vslider :initarg :param-type :accessor param-type :type t)
+   (label :initform nil :initarg :label :accessor label :type t)
+   (index :initform nil :initarg :index :accessor index)
+   (defval :initform nil :initarg :defval :accessor defval :type float)
+   (minval :initform nil :initarg :minval :accessor minval :type float)
+   (maxval :initform nil :initarg :maxval :accessor maxval :type float)
+   (stepval :initform nil :initarg :stepval :accessor stepval :type float)
+   (synth-ptr :initform nil :initarg :synth-ptr :accessor synth-ptr)
+   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)))
+
+
+;=======================================
+;===     PARAMETERS CONTROLLER       ===
+;=== a set of parameters controllers ===
+;=======================================
+
+(defclass* faust-synth-console (simple-score-element)
+   ((synth-txt :initform nil :initarg :synth-txt :accessor synth-txt :documentation "Faust Code, written in a Textfile")
+    (synth-ptr :initform nil :accessor synth-ptr)
+    (synth-name :initform nil :initarg :synth-name :accessor synth-name :documentation "The name of the Faust synth")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the synth will be pluged (0 = no specific track)")
+    (synth-dsp :initform nil :accessor synth-dsp)
+    (synth-svg :initform nil :accessor synth-svg)
+    (nbparams :initform 0 :accessor nbparams :type t)
+    (params-ctrl :initform nil :accessor params-ctrl :type t)
+    (ui-tree :initform nil :accessor ui-tree))
+   (:icon 918)
+   (:documentation "Faust synth"))
+
+
+(defmethod initialize-instance :after ((self faust-synth-console) &rest l)
+  (declare (ignore l))
+  (let (name)
+    (if (synth-txt self)
+        (progn
+          ;;Set name, or add a default name
+          (if (synth-name self)
+              (setf name (synth-name self))
+            (progn
+              (setf name (format nil "Faust-synth-~A" (+ 1 (las-get-number-faust-effects-register))))
+              (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))))
+          ;;Check if the name is already used. If yes, exit. If no, build synth.
+          (if (car (las-faust-search-name-in-register name))
+              (print (format nil "An synth called ~A already exists. Please choose a new name." name))
+            ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
+            (if (synth-txt self)
+                (let ((parlist (list-of-lines (buffer-text (synth-txt self))))
+                      synth-string
+                      synth-result) 
+                  ;;Build string from textfile
+                  (loop for line in parlist do
+                        (setf synth-string (concatenate 'string synth-string (format nil "~%") line)))
+                  ;;Save as a dsp file
+                  (save-data (list (list synth-string)) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                  ;;Get result from the compilation with the faust-api.
+                  (setf synth-result (las-faust-make-effect 
+                                      (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
+                                      *om-outfiles-folder*))
+                  (setf (synth-ptr self) (nth 1 synth-result))
+                  ;;Save code as DSP and set some slots for SVG display
+                  (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                  (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+                  ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
+                  (if (/= (car synth-result) 1)
+                      (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 synth-result)))
+                    ;;Get tree from Json, init params, register synth, plug if a track is specified.
+                    (let (param-list)
+                      (print "Synthetiseur Faust créé avec succès")
+                      (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (synth-ptr self))))
+                      (setf param-list (las-faust-translate-tree (ui-tree self)))
+                      (las-faust-add-effect-to-register (synth-ptr self) (tracknum self) name)
+                      (if (and (tracknum self) (> (tracknum self) 0))
+                          (las-faust-add-effect-to-track (synth-ptr self) name (- (tracknum self) 1)))
+                      (setf (nbparams self) (length param-list))
+                      (if (> (nbparams self) 0)
+                          (setf (params-ctrl self)
+                                (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-synth-parameter-controller
+                                                                                                       :param-type (param-type (nth param param-list))
+                                                                                                       :label (label (nth param param-list))
+                                                                                                       :index param
+                                                                                                       :defval (string-to-number (init-val (nth param param-list)))
+                                                                                                       :minval (string-to-number (min-val (nth param param-list)))
+                                                                                                       :maxval (string-to-number (max-val (nth param param-list)))
+                                                                                                       :stepval (string-to-number (step-val (nth param param-list)))
+                                                                                                       :synth-ptr (synth-ptr self)
+                                                                                                       :tracknum (tracknum self)
+                                                                                                       ))) nil))))))))))
+
+
+(defmethod allowed-in-maq-p ((self faust-synth-console))  nil)
+
+(defmethod Class-has-editor-p  ((self faust-synth-console)) t)
+
+(defmethod get-editor-class ((self faust-synth-console)) 'faustcontrollerEditor)
+
+(defmethod draw-mini-view  ((self t) (value faust-synth-console)) 
+   (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
+
+(defmethod update-miniview ((self t) (value faust-synth-console)) 
+   (om-invalidate-view self t))
+
+(defmethod draw-obj-in-rect ((self faust-synth-console) x x1 y y1 edparams view)
+  (let ((w (w view))
+        (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
+    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
+
+;;;ATTENTION : ON CONSIDERE QUE L'ON COPIE JUSTE LA BOITE, VIDE.
+;;;POUR COPIER L'EFFET ON DOIT EGALEMENT COPIER LE CODE ET LE NOM, ET EVALUER
+(defmethod omNG-copy ((self faust-synth-console))
+   "Cons a Lisp expression that return a copy of self when it is valuated."
+   `(let ((rep (make-instance ',(type-of self))))
+      rep))
+(defmethod copy-container  ((self faust-synth-console) &optional (pere nil))
+  "Cons a Lisp expression that return a copy of self when it is valuated."
+  (let ((rep (make-instance (type-of self))))
+    rep))
+
+;;;ATTENTION : POUR LA SAUVEGARDE, ON SAUVEGARDE JUSTE LA BOITE VIDE EGALEMENT.
+;;;LE CODE ASSOCIE AINSI QUE LE NOM ETANT SAUVEGARDES, IL SUFFIT DE REEVALUER LA BOITE
+;;;LA POSITION DES SLIDERS EST DONC REINITIALISEE, SEULS LES AUTOMATIONS PEUVENT ETRE CONSERVEES
+(defmethod omNG-save ((self faust-synth-console) &optional (values? nil))
+  "Cons a Lisp expression that return a copy of self when it is valuated."
+  `(let ((rep (make-instance ',(type-of self))))
+     rep))
+
+(defmethod get-obj-dur ((self faust-synth-console)) 0)
+
+
+(defmethod object-remove-extra ((self faust-synth-console) box)
+  (let* ((ptr (synth-ptr self)))
+    (if ptr
+        (las-faust-synth-cleanup ptr))))
+
+
+;================ CONTROLLER EDITOR ===================
+
+(omg-defclass faustcontrollerEditor (EditorView) 
+  ((params-panels :initform nil :accessor params-panels :type list)
+   (tree :initform nil :accessor tree :type nil)
+   (bottom-bar :initform nil :accessor bottom-bar :type t)))
+
+
+(defmethod make-editor-window ((class (eql 'faustcontrollerEditor)) object name ref &key 
+                                 winsize winpos (close-p t) (winshow t) 
+                                 (resize nil) (maximize nil))
+   (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
+                                :close-p t :winshow t :bg-color *om-dark-gray-color*
+                                                      )))
+    win))
+
+
+(defmethod get-win-ed-size ((self faust-synth-console)) 
+  (if (synth-ptr self)
+      (om-make-point (max 75 (car (las-faust-get-group-size (ui-tree self)))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self)))))
+    (om-make-point 75 50)))
+
+
+
+(defmethod editor-has-palette-p ((self faustcontrollerEditor)) nil)
+
+(defmethod get-panel-class ((self faustcontrollerEditor)) 'faustcontrollerPanel)
+
+(defmethod update-subviews ((self faustcontrollerEditor))
+   (om-set-view-size (panel self) (om-make-point (w self) (h self))))
+
+
+;=== MAIN PANEL ===
+(omg-defclass faustcontrollerPanel (om-scroller) ())
+
+(defmethod get-object ((Self faustcontrollerPanel))
+   (object (om-view-container self)))
+
+(defmethod report-modifications ((self faustcontrollerPanel))
+  (report-modifications (om-view-container self)))
+
+
+;======== Parameters controllers panels =====
+
+(omg-defclass faustparamPanel () 
+  ((paramctr :initform nil :initarg :paramctr :accessor paramctr)
+   (paramText :initform nil :accessor paramText :type t)
+   (paramVal :initform nil :accessor paramVal :type t)
+   (paramGraph :initform nil :accessor paramGraph :type t)
+   (paramReset :initform nil :accessor paramReset :type t)))
+
+
+(defclass faustparamPanelview (faustparamPanel om-view) ())
+
+(defmethod update-subviews ((Self faustparamPanel))
+   (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
+   (om-invalidate-view self t))
+
+(defmethod om-draw-contents ((self faustparamPanel))
+   (call-next-method))
+
+
+
+(defmethod get-object ((Self faustparamPanel))
+   (get-object (om-view-container self)))
+
+(defmethod report-modifications ((self faustparamPanel))
+  (report-modifications (om-view-container self)))
+
+
+(defmethod get-parampanel-class ((self faustcontrollerPanel)) 'faustparamPanelview)
+
+
+
+;=======================
+;=== INITIALIZATIONS ===
+;=======================
+
+(defmethod metaobj-scrollbars-params ((self faustcontrollerEditor))  '(:h nil))
+
+(defmethod initialize-instance :after ((self faustcontrollerEditor) &rest l)
+  (declare (ignore l))
+  (let ((x (om-point-x (get-win-ed-size (object self))))
+        (y (om-point-y (get-win-ed-size (object self))))
+        (orange (om-make-color 1 0.5 0))
+        group-type
+        groups
+        (xgrp 0)
+        (ygrp 0)
+        (xpars 0)
+        (ypars 0)
+        (offset 0))
+    (if (synth-ptr (object self))
+        (progn
+          (setf (tree self) (ui-tree (object self)))
+          (setf group-type (las-faust-get-group-type (tree self)))
+          (setf groups (las-faust-get-groups-only (tree self)))
+          (setf params (las-faust-get-params-only (tree self)))
+
+          (setf (panel self) (om-make-view (get-panel-class self) 
+                                           :owner self
+                                           :position (om-make-point 0 0) 
+                                           :scrollbars (first (metaobj-scrollbars-params self))
+                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                           :field-size  (om-make-point x (- y 50))
+                                           :size (om-make-point (w self) (h self))
+                                           :bg-color orange))
+     
+          (make-faust-group-view self (tree self))
+          (setf paramnum 0)
+     
+          (setf (bottom-bar self) (om-make-view (get-panel-class self)
+                                                :owner (panel self)
+                                                :bg-color *om-dark-gray-color*
+                                                :position (om-make-point 0 (- y 50))
+                                                :size (om-make-point x 50)))
+     
+          (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
+                                                                  "SVG"
+                                                                  :di-action (om-dialog-item-act item
+                                                                               (faust-show-svg *om-outfiles-folder* (synth-dsp (object self)) (synth-svg (object self)))))))
+      (setf (panel self) (om-make-view (get-panel-class self) 
+                                           :owner self
+                                           :position (om-make-point 0 0) 
+                                           :scrollbars (first (metaobj-scrollbars-params self))
+                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                           :field-size  (om-make-point x (- y 50))
+                                           :size (om-make-point (w self) (h self))
+                                           :bg-color orange)))))
+
+(defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
+  (om-make-view (get-parampanel-class (panel self))
+                :paramctr paractrl
+                :owner (panel self)
+                :bg-color *om-light-gray-color*
+                :position (om-make-point x y)
+                :size (om-make-point (car size) (cadr size))))
+
+(defvar paramnum 0)
+(defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
+  (let* ((grouptype (las-faust-get-group-type group))
+         (orange (om-make-color 1 0.5 0))
+         (children (las-faust-get-group-items group))
+         (numchildren (length children))
+         (size (las-faust-get-group-size group))
+         childlist)
+    ;;///////////////////ON CREE L'ESPACE DU GROUPE
+    (om-make-view 'om-view
+                  :owner (panel self)
+                  :bg-color orange
+                  :position (om-make-point x y)
+                  :size (om-make-point (car size) (cadr size)))
+    ;;///////////////////ON CREE LES VIEW DES ENFANTS
+    (loop for i from 0 to (- numchildren 1) do
+          (if (typep (nth i children) 'faust-group)
+              (progn
+                (make-faust-group-view self (nth i children) x y)
+                (if (string= grouptype "hgroup")
+                    (incf x (+ 5 (car (las-faust-get-group-size (nth i children)))))
+                  (incf y (+ 5 (cadr (las-faust-get-group-size (nth i children)))))))
+            (let* ((type (param-type (nth i children)))
+                   (disable 0)
+                   (size (cond ((string= type "hslider") hsliderSize)
+                               ((string= type "vslider") vsliderSize)
+                               ((string= type "checkbox") checkboxSize)
+                               ((string= type "numentry") numentrySize)
+                               ((string= type "button") buttonSize)
+                               (t (progn (setf disable 1) buttonsize)))))
+              (if (= disable 0)
+                  (make-faust-param-view self (nth paramnum (params-ctrl (object self))) x y size))
+              (incf paramnum)
+              (if (string= grouptype "hgroup") 
+                  (incf x (car size))
+                (incf y (cadr size))))))))
+
+
+;(defun faust-show-svg (pathname dsp svg)
+;  (let (res)
+;    (if *faust-compiler-pathname*
+;        (progn
+;          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
+;          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
+;                ((= res 126) (progn
+;                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
+;                               (set-faust-compiler-pathname)))
+;                ((= res 127) (progn
+;                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
+;                               (set-faust-compiler-pathname)))
+;                ((= res 2) (print "Incorrect usage of this command"))
+;                (t (print "Failure"))))
+;      (progn
+;        (if (set-faust-compiler-pathname)
+;            (faust-show-svg pathname dsp svg))))))
+(defun faust-show-svg (pathname dsp svg)
+  (om-cmd-line (format nil "open ~A" svg) nil t pathname))
+
+
+
+(defun set-faust-compiler-pathname ()
+  (let (new)
+    (setf new (om-choose-file-dialog 
+     :directory (om-user-home)
+     :prompt "Locate your Faust Compiler" :types (list (om-str :all-files) "*.*")))
+    (if new
+        (setf *faust-compiler-pathname* new))))
+
+(defmethod update-editor-after-eval ((self faustcontrollerEditor) val)
+  (setf (object self) val)
+  (let ((n (nbparams (object self))))
+    (om-set-view-size (window self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
+    (om-set-field-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
+    (update-for-subviews-changes (panel self))
+    (print (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self))))
+    (loop for parampan in (params-panels self) do 
+          (om-remove-subviews (panel self) parampan))
+    (make-faust-group-view self (ui-tree (object self)))
+    (setf paramnum 0)))
+
+
+(defmethod initialize-instance :after ((self faustparamPanel) &rest l)
+   (declare (ignore l))
+   (do-initialize-param self))
+
+
+(defmethod do-initialize-param ((self faustparamPanel))  
+   (let* ((ptr (synth-ptr (paramctr self)))
+          (number (index (paramctr self)))
+          (color (om-make-color 0.9 0.9 0.9))
+          (orange (om-make-color 1 0.5 0))
+          (type (param-type (paramctr self)))
+          (name (label (paramctr self)))
+          (min (minval (paramctr self)))
+          (max (maxval (paramctr self)))
+          (def (defval (paramctr self)))
+          (range 0)
+          (val 0)
+          (tracknum (tracknum (paramctr self)))
+          (editor (om-view-container (om-view-container self)))
+          (curval (las-faust-get-effect-control-value ptr number)))
+   (if (= min max) (let () (setf min 0) (setf max 1)) nil)
+   (setf range (/ (- max min) 1.0))
+   (setf val (* 100.0 (/ (- curval min) range)))
+   (om-set-bg-color self color) 
+
+    
+         (cond ((string= type "hslider")
+                (progn
+                  (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                              (om-make-point 5 0) 
+                                                              (om-make-point (- (car hsliderSize) 5) 40)
+                                                              (format nil "~D" name)
+                                                              :font *om-default-font1*
+                                                              :bg-color color))
+                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                             (om-make-point (- (round (car hsliderSize) 2) 30) (- (cadr hsliderSize) 31 20)) 
+                                                             (om-make-point 60 20)
+                                                             (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                             :font *om-default-font1*
+                                                             :fg-color orange
+                                                             :bg-color color))
+                  (setf (paramGraph self) (om-make-dialog-item 'om-slider  
+                                                               (om-make-point 10 (- (cadr hsliderSize) 36)) 
+                                                               (om-make-point 94 31) ""
+                                                               :di-action 
+                                                               (om-dialog-item-act item
+                                                                 (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                                                   (las-faust-set-effect-control-value ptr number valeur)
+                                                                   (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                                               :increment 1
+                                                               :range '(0 100)
+                                                               :value val
+                                                               :direction :horizontal
+                                                               :tick-side :none))))
+               ((string= type "vslider")
+                (progn
+                  (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                              (om-make-point 5 0) 
+                                                              (om-make-point (- (car vsliderSize) 15) 50)
+                                                              (format nil "~D" name)
+                                                              :font *om-default-font1*
+                                                              :bg-color color))
+                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                             (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
+                                                             (om-make-point 60 20)
+                                                             (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                             :font *om-default-font1*
+                                                             :fg-color orange
+                                                             :bg-color color))
+                  (setf (paramGraph self)
+                        (om-make-dialog-item 'om-slider  
+                                             (om-make-point 10 (- (cadr vsliderSize) 104)) 
+                                             (om-make-point 31 94) ""
+                                             :di-action 
+                                             (om-dialog-item-act item
+                                               (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                                 (las-faust-set-effect-control-value ptr number valeur)
+                                                 (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                             :increment 1
+                                             :range '(0 100)
+                                             :value val
+                                             :direction :vertical
+                                             :tick-side :none))))
+               ((string= type "checkbox")
+                (progn
+                  (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                              (om-make-point 5 0) 
+                                                              (om-make-point (- (car checkboxSize) 5) 50)
+                                                              (format nil "~D" name)
+                                                              :font *om-default-font1*
+                                                              :bg-color color))
+                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                             (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
+                                                             (om-make-point 60 20)
+                                                             ""
+                                                             :font *om-default-font1*
+                                                             :fg-color *om-blue-color*
+                                                             :bg-color color))
+                  (setf (paramGraph self)
+                        (om-make-dialog-item 'om-check-box  
+                                             (om-make-point 20 5) 
+                                             (om-make-point 31 94) ""
+                                             :di-action 
+                                             (om-dialog-item-act item 
+                                               (if (= (las-faust-get-effect-control-value ptr number) 1.0) 
+                                                   (las-faust-set-effect-control-value ptr number 0.0) 
+                                                 (las-faust-set-effect-control-value ptr number 1.0))
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                             :font *om-default-font1*
+                                             :checked-p (if (= (las-faust-get-effect-control-value ptr number) 1.0) t nil)))))
+               ((string= type "button")
+                (progn
+                  (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                              (om-make-point 5 0) 
+                                                              (om-make-point (- (car checkboxSize) 5) 50)
+                                                              ""
+                                                              :font *om-default-font1*
+                                                              :bg-color color))
+                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                             (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
+                                                             (om-make-point 60 20)
+                                                             ""
+                                                             :font *om-default-font1*
+                                                             :fg-color *om-blue-color*
+                                                             :bg-color color))
+                  (setf (paramGraph self)
+                        (om-make-dialog-item 'om-button  
+                                             (om-make-point 20 5) 
+                                             (om-make-point 80 30) 
+                                             (format nil "~D" name)
+                                             :di-action 
+                                             (om-dialog-item-act item
+                                               (if (= (las-faust-get-effect-control-value ptr number) max) 
+                                                   (progn
+                                                     (las-faust-set-effect-control-value ptr number 0.0)
+                                                     (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number))))
+                                                   (las-faust-set-synth-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number)))
+                                                 )
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                             :font *om-default-font1*))))
+               (t (progn
+                    (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                                (om-make-point 5 0) 
+                                                                (om-make-point (- (car vsliderSize) 15) 50)
+                                                                (format nil "~D" name)
+                                                                :font *om-default-font1*
+                                                                :bg-color color))
+                    (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                               (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
+                                                               (om-make-point 60 20)
+                                                               (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                               :font *om-default-font1*
+                                                               :fg-color orange
+                                                               :bg-color color))
+                    (setf (paramGraph self)
+                          (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
+                                        :size (om-make-point 31 94)
+                                        :pict (om-load-and-store-picture "fader" 'di)
+                                        :nbpict 77
+                                        :pict-size (om-make-point 31 94)
+                                        :di-action (om-dialog-item-act item
+                                                     (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
+                                                       (las-faust-set-effect-control-value ptr number valeur)
+                                                       (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                        :font *om-default-font2*
+                                        :value val
+                                        :min-val 0
+                                        :max-val 100)))))
+
+   ;(setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
+   ;                                      :icon1 "-" :icon2 "--pushed"
+   ;                                      :action #'(lambda (item) 
+   ;                                                  (let () 
+   ;                                                    (las-faust-set-synth-control-value ptr number def) (set-value (paramGraph self) val)
+   ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
+   ;                                                                                               (format nil "~D" (round def))))))))
+   (om-add-subviews self
+                    (paramText self)
+                    (paramVal self)
+                    (paramGraph self)
+                    ;(paramReset self)
+                    )))

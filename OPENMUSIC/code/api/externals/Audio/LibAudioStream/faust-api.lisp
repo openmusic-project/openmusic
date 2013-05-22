@@ -5,6 +5,7 @@
 
 (defvar *effects-lists* nil)
 (defvar *faust-effects-register* (make-hash-table))
+(defvar *faust-synths-register* (make-hash-table))
 (defvar *faust-effects-by-track* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
