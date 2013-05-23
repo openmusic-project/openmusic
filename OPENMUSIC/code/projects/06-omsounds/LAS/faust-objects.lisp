@@ -1049,13 +1049,13 @@
 
 ;================ CONTROLLER EDITOR ===================
 
-(omg-defclass faustcontrollerEditor (EditorView) 
+(omg-defclass faustSynthcontrollerEditor (EditorView) 
   ((params-panels :initform nil :accessor params-panels :type list)
    (tree :initform nil :accessor tree :type nil)
    (bottom-bar :initform nil :accessor bottom-bar :type t)))
 
 
-(defmethod make-editor-window ((class (eql 'faustcontrollerEditor)) object name ref &key 
+(defmethod make-editor-window ((class (eql 'faustSynthcontrollerEditor)) object name ref &key 
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
@@ -1070,27 +1070,27 @@
 
 
 
-(defmethod editor-has-palette-p ((self faustcontrollerEditor)) nil)
+(defmethod editor-has-palette-p ((self faustSynthcontrollerEditor)) nil)
 
-(defmethod get-panel-class ((self faustcontrollerEditor)) 'faustcontrollerPanel)
+(defmethod get-panel-class ((self faustSynthcontrollerEditor)) 'faustcontrollerPanel)
 
-(defmethod update-subviews ((self faustcontrollerEditor))
+(defmethod update-subviews ((self faustSynthcontrollerEditor))
    (om-set-view-size (panel self) (om-make-point (w self) (h self))))
 
 
 ;=== MAIN PANEL ===
-(omg-defclass faustcontrollerPanel (om-scroller) ())
+(omg-defclass faustSynthcontrollerPanel (om-scroller) ())
 
-(defmethod get-object ((Self faustcontrollerPanel))
+(defmethod get-object ((Self faustSynthcontrollerPanel))
    (object (om-view-container self)))
 
-(defmethod report-modifications ((self faustcontrollerPanel))
+(defmethod report-modifications ((self faustSynthcontrollerPanel))
   (report-modifications (om-view-container self)))
 
 
 ;======== Parameters controllers panels =====
 
-(omg-defclass faustparamPanel () 
+(omg-defclass faustSynthparamPanel () 
   ((paramctr :initform nil :initarg :paramctr :accessor paramctr)
    (paramText :initform nil :accessor paramText :type t)
    (paramVal :initform nil :accessor paramVal :type t)
@@ -1098,25 +1098,25 @@
    (paramReset :initform nil :accessor paramReset :type t)))
 
 
-(defclass faustparamPanelview (faustparamPanel om-view) ())
+(defclass faustSynthparamPanelview (faustSynthparamPanel om-view) ())
 
-(defmethod update-subviews ((Self faustparamPanel))
+(defmethod update-subviews ((Self faustSynthparamPanel))
    (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
    (om-invalidate-view self t))
 
-(defmethod om-draw-contents ((self faustparamPanel))
+(defmethod om-draw-contents ((self faustSynthparamPanel))
    (call-next-method))
 
 
 
-(defmethod get-object ((Self faustparamPanel))
+(defmethod get-object ((Self faustSynthparamPanel))
    (get-object (om-view-container self)))
 
-(defmethod report-modifications ((self faustparamPanel))
+(defmethod report-modifications ((self faustSynthparamPanel))
   (report-modifications (om-view-container self)))
 
 
-(defmethod get-parampanel-class ((self faustcontrollerPanel)) 'faustparamPanelview)
+(defmethod get-parampanel-class ((self faustSynthcontrollerPanel)) 'faustSynthparamPanelview)
 
 
 
@@ -1124,9 +1124,9 @@
 ;=== INITIALIZATIONS ===
 ;=======================
 
-(defmethod metaobj-scrollbars-params ((self faustcontrollerEditor))  '(:h nil))
+(defmethod metaobj-scrollbars-params ((self faustSynthcontrollerEditor))  '(:h nil))
 
-(defmethod initialize-instance :after ((self faustcontrollerEditor) &rest l)
+(defmethod initialize-instance :after ((self faustSynthcontrollerEditor) &rest l)
   (declare (ignore l))
   (let ((x (om-point-x (get-win-ed-size (object self))))
         (y (om-point-y (get-win-ed-size (object self))))
@@ -1176,7 +1176,7 @@
                                            :size (om-make-point (w self) (h self))
                                            :bg-color orange)))))
 
-(defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
+(defmethod make-faust-param-view ((self faustSynthcontrollerEditor) paractrl x y size)
   (om-make-view (get-parampanel-class (panel self))
                 :paramctr paractrl
                 :owner (panel self)
@@ -1185,7 +1185,7 @@
                 :size (om-make-point (car size) (cadr size))))
 
 (defvar paramnum 0)
-(defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
+(defmethod make-faust-group-view ((self faustSynthcontrollerEditor) group &optional (x 0) (y 0))
   (let* ((grouptype (las-faust-get-group-type group))
          (orange (om-make-color 1 0.5 0))
          (children (las-faust-get-group-items group))
@@ -1251,7 +1251,7 @@
     (if new
         (setf *faust-compiler-pathname* new))))
 
-(defmethod update-editor-after-eval ((self faustcontrollerEditor) val)
+(defmethod update-editor-after-eval ((self faustSynthcontrollerEditor) val)
   (setf (object self) val)
   (let ((n (nbparams (object self))))
     (om-set-view-size (window self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
@@ -1264,12 +1264,12 @@
     (setf paramnum 0)))
 
 
-(defmethod initialize-instance :after ((self faustparamPanel) &rest l)
+(defmethod initialize-instance :after ((self faustSynthparamPanel) &rest l)
    (declare (ignore l))
    (do-initialize-param self))
 
 
-(defmethod do-initialize-param ((self faustparamPanel))  
+(defmethod do-initialize-param ((self faustSynthparamPanel))  
    (let* ((ptr (synth-ptr (paramctr self)))
           (number (index (paramctr self)))
           (color (om-make-color 0.9 0.9 0.9))
@@ -1400,7 +1400,7 @@
                                                    (progn
                                                      (las-faust-set-control-value ptr number 0.0)
                                                      (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number))))
-                                                   (las-faust-set-synth-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
+                                                   (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
                                                  )
                                                (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
                                              :font *om-default-font1*))))
@@ -1437,7 +1437,7 @@
    ;                                      :icon1 "-" :icon2 "--pushed"
    ;                                      :action #'(lambda (item) 
    ;                                                  (let () 
-   ;                                                    (las-faust-set-synth-control-value ptr number def) (set-value (paramGraph self) val)
+   ;                                                    (las-faust-set-control-value ptr number def) (set-value (paramGraph self) val)
    ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
    ;                                                                                               (format nil "~D" (round def))))))))
    (om-add-subviews self

@@ -146,10 +146,11 @@
                                      (om-make-point 0 pos) 
                                      (om-make-point 75 12)
                                      ""
-                                     :di-action (om-dialog-item-act item)
+                                     :di-action (om-dialog-item-act item
+                                                  (pop-up-las-synth-plug panel item channel (om-get-item-list item)))
                                      :font *om-default-font1*
                                      :range synthlist
-                                     :value nil))
+                                     :value (cadr (gethash 0 (gethash channel *faust-synths-by-track*)))))
     (incf pos 25)
     (setf bar4 (om-make-view 'bar-item 
                              :position (om-make-point 3 pos) 
@@ -335,3 +336,19 @@
                           (setf (gethash j newlistn) (remove (cadr (gethash k (gethash i *faust-effects-by-track*))) (gethash j newlistn) :test #'string=))))
                 (om-set-item-list (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (gethash j newlistn))
                 (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*))))))))
+(defun pop-up-las-synth-plug (panel item channel synthlist)
+  (let ((pointer (car (gethash (cadr (las-faust-search-synth-name-in-register (om-get-selected-item item))) *faust-synths-register*)))
+        (name (nth (om-get-selected-item-index item) synthlist))
+        newlist)
+    (print pointer)
+    ;unplug old one
+    (if (gethash 0 (gethash channel *faust-synths-by-track*))
+        (las-faust-remove-synth-from-track (car (gethash 0 (gethash channel *faust-synths-by-track*))) channel))
+    ;plug new one
+    (if pointer
+        (las-faust-add-synth-to-track pointer name channel))
+    ;update effects lists
+    (loop for i from 0 to (- las-channels 1) do
+          (setf newlist (build-faust-synth-list i))
+          (om-set-item-list (nth 11 (om-subviews (nth i (om-subviews panel)))) newlist)
+          (om-set-selected-item (nth 11 (om-subviews (nth i (om-subviews panel)))) (cadr (gethash 0 (gethash i *faust-synths-by-track*)))))))
