@@ -2,9 +2,6 @@
 
 (defvar *general-mixer-window* nil)
 (defvar *general-mixer-values* (make-hash-table))
-(defvar *available-effects* (list))
-
-
 
 (defun init-genmixer-values ()
   (loop for i from 0 to (- las-channels 1) do
@@ -12,15 +9,6 @@
 
 (init-genmixer-values)
 
-(defun build-faust-pool-list (channel)
-  (let ((n (- (las-get-number-faust-effects-register) 1))
-        (final-list (list "-------"))) 
-    (loop for i from 0 to n do
-          (if (or (= 0 (nth 1 (gethash i *faust-effects-register*))) (= (+ channel 1) (nth 1 (gethash i *faust-effects-register*))))
-              (setf final-list (append final-list (list (nth 2 (gethash i *faust-effects-register*)))))))
-    final-list))
-
-;(not (las-faust-effect-already-plugged-? (nth 0 (gethash i *faust-effects-register*))))
 
 
 (defclass omgenmixer-window (om-window)
@@ -28,9 +16,12 @@
 
 (defclass omgenmixer-view (om-view) ())
 
+
+
+
 (defun make-general-mixer-win ()
   (let ((newwindow (om-make-window 'omgenmixer-window :window-title "OpenMusic General Mixer" 
-                                   :size (om-make-point (+ 5 (* *channel-w* 10)) 370) 
+                                   :size (om-make-point (+ 5 (* *channel-w* 10)) 420) 
                                    :scrollbars :h
                                    :position (om-make-point 100 50) :close t :resizable nil))
         panel)
@@ -40,7 +31,7 @@
                               :scrollbars :h
                               :retain-scrollbars t
                               :bg-color *om-steel-blue-color*
-                              :field-size  (om-make-point (+ 5 (* *channel-w* las-channels)) 350)
+                              :field-size  (om-make-point (+ 5 (* *channel-w* las-channels)) 400)
                               :size (om-make-point (w newwindow) (h newwindow))))
     (loop for i from 0 to (- las-channels 1) do
           (genmixer-make-single-channel-view panel i))
@@ -57,17 +48,18 @@
                                   :position (om-make-point (+ 5 (* channel *channel-w*)) 5) 
                                   :scrollbars nil
                                   :retain-scrollbars nil
-                                  :field-size  (om-make-point (- *channel-w* 5) 345)
-                                  :size (om-make-point (- *channel-w* 5) 345)
+                                  :field-size  (om-make-point (- *channel-w* 5) 395)
+                                  :size (om-make-point (- *channel-w* 5) 395)
                                   :bg-color *om-light-gray-color*))
          (pos 8)
          (volval (cadr (gethash channel *general-mixer-values*)))
          (panval (car (gethash channel *general-mixer-values*)))
-         (effectlist (build-faust-pool-list channel))
+         (effectlist (build-faust-effect-list channel))
+         (synthlist (build-faust-synth-list channel))
          (effectlist1 effectlist) (effectlist2 effectlist) (effectlist3 effectlist) 
          (effectlist4 effectlist) (effectlist5 effectlist)
          channel-text bar1 pan-text pan-val pan-slider bar2 vol-text vol-val vol-slider
-         bar3 faust-text effect1 effect2 effect3 effect4 effect5)
+         bar3 synth-text synth bar4 faust-text effect1 effect2 effect3 effect4 effect5)
 
 
     (setf channel-text (om-make-dialog-item 'om-static-text
@@ -143,7 +135,26 @@
                              :position (om-make-point 3 pos) 
                              :size (om-make-point 69 10)
                              :bg-color *om-light-gray-color*))
-
+    (incf pos 4)
+    (setf synth-text (om-make-dialog-item 'om-static-text 
+                                          (om-make-point 17 pos) 
+                                          (om-make-point 75 16)
+                                          "SYNTH"
+                                          :font *om-default-font1*))
+    (incf pos 20)
+    (setf synth (om-make-dialog-item 'om-pop-up-dialog-item 
+                                     (om-make-point 0 pos) 
+                                     (om-make-point 75 12)
+                                     ""
+                                     :di-action (om-dialog-item-act item)
+                                     :font *om-default-font1*
+                                     :range synthlist
+                                     :value nil))
+    (incf pos 25)
+    (setf bar4 (om-make-view 'bar-item 
+                             :position (om-make-point 3 pos) 
+                             :size (om-make-point 69 10)
+                             :bg-color *om-light-gray-color*))
     (incf pos 4)
     (setf faust-text (om-make-dialog-item 'om-static-text 
                                           (om-make-point 27 pos) 
@@ -160,7 +171,7 @@
                                        (om-make-point 75 12)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                    (pop-up-las-plug panel item channel 0 effectlist)
+                                                    (pop-up-las-effect-plug panel item channel 0 (om-get-item-list item))
                                                     (update-available-effects-slots effect1 effect2 effect3 effect4 effect5))
                                        :font *om-default-font1*
                                        :range effectlist1
@@ -174,7 +185,7 @@
                                        (om-make-point 75 12)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                    (pop-up-las-plug panel item channel 1 effectlist)
+                                                    (pop-up-las-effect-plug panel item channel 1 (om-get-item-list item))
                                                     (update-available-effects-slots effect1 effect2 effect3 effect4 effect5))
                                        :font *om-default-font1*
                                        :range effectlist2
@@ -189,7 +200,7 @@
                                        (om-make-point 75 12)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                    (pop-up-las-plug panel item channel 2 effectlist)
+                                                    (pop-up-las-effect-plug panel item channel 2 (om-get-item-list item))
                                                     (update-available-effects-slots effect1 effect2 effect3 effect4 effect5))
                                        :font *om-default-font1*
                                        :range effectlist3
@@ -204,7 +215,7 @@
                                        (om-make-point 75 12)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                    (pop-up-las-plug panel item channel 3 effectlist)
+                                                    (pop-up-las-effect-plug panel item channel 3 (om-get-item-list item))
                                                     (update-available-effects-slots effect1 effect2 effect3 effect4 effect5))
                                        :font *om-default-font1*
                                        :range effectlist4
@@ -219,7 +230,7 @@
                                        (om-make-point 75 12)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                    (pop-up-las-plug panel item channel 4 effectlist)
+                                                    (pop-up-las-effect-plug panel item channel 4 (om-get-item-list item))
                                                     (update-available-effects-slots effect1 effect2 effect3 effect4 effect5))
                                        :font *om-default-font1*
                                        :range effectlist5
@@ -238,6 +249,9 @@
                      vol-val
                      vol-slider
                      bar3
+                     synth-text
+                     synth
+                     bar4
                      faust-text
                      effect1
                      effect2
@@ -283,14 +297,41 @@
                     (om-enable-dialog-item effect5 nil))
                 (om-enable-dialog-item effect5 t)))))))))
 
-(defun pop-up-las-plug (panel item channel effect-number effectlist)
-  (let ((pointer (car (gethash (cadr (las-faust-search-name-in-register (om-get-selected-item item))) *faust-effects-register*)))
+(defun build-faust-effect-list (channel)
+  (let ((n (- (las-get-number-faust-effects-register) 1))
+        (final-list (list "-------"))) 
+    (loop for i from 0 to n do
+          (if (or (= 0 (nth 1 (gethash i *faust-effects-register*))) (= (+ channel 1) (nth 1 (gethash i *faust-effects-register*))))
+              (setf final-list (append final-list (list (nth 2 (gethash i *faust-effects-register*)))))))
+    final-list))
+(defun build-faust-synth-list (channel)
+  (let ((n (- (las-get-number-faust-synths-register) 1))
+        (final-list (list "-------"))) 
+    (loop for i from 0 to n do
+          (if (or (= 0 (nth 1 (gethash i *faust-synths-register*))) (= (+ channel 1) (nth 1 (gethash i *faust-synths-register*))))
+              (setf final-list (append final-list (list (nth 2 (gethash i *faust-synths-register*)))))))
+    final-list))
+
+
+(defun pop-up-las-effect-plug (panel item channel effect-number effectlist)
+  (let ((pointer (car (gethash (cadr (las-faust-search-effect-name-in-register (om-get-selected-item item))) *faust-effects-register*)))
         (name (nth (om-get-selected-item-index item) effectlist))
         newlist
-        )
-
+        (newlistn (make-hash-table)))
+    ;unplug old one
     (if (gethash effect-number (gethash channel *faust-effects-by-track*))
         (las-faust-remove-effect-from-track (car (gethash effect-number (gethash channel *faust-effects-by-track*))) channel))
-
+    ;plug new one
     (if pointer
-        (las-faust-add-effect-to-track pointer name channel))))
+        (las-faust-add-effect-to-track pointer name channel))
+    ;update effects lists
+    (loop for i from 0 to (- las-channels 1) do
+          (setf newlist (build-faust-effect-list i))
+          (loop for k from 0 to 4 do
+                (setf (gethash k newlistn) newlist))
+          (loop for j from 0 to 4 do
+                (loop for k from 0 to 4 do
+                      (if (/= j k)
+                          (setf (gethash j newlistn) (remove (cadr (gethash k (gethash i *faust-effects-by-track*))) (gethash j newlistn) :test #'string=))))
+                (om-set-item-list (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (gethash j newlistn))
+                (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*))))))))

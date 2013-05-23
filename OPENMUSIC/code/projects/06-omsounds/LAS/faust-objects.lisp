@@ -55,7 +55,7 @@
               (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
     
           ;;Check if the name is already used. If yes, exit. If no, build effect.
-          (if (car (las-faust-search-name-in-register name))
+          (if (car (las-faust-search-effect-name-in-register name))
               (print (format nil "An effect called ~A already exists. Please choose a new name." name))
             ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
             (if (effect-txt self)
@@ -81,7 +81,7 @@
                     ;;Get tree from Json, init params, register effect, plug if a track is specified.
                     (let (param-list)
                       (print "Effet Faust créé avec succès")
-                      (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (effect-ptr self))))
+                      (setf (ui-tree self) (las-faust-parse (las-faust-get-json (effect-ptr self))))
                       (setf param-list (las-faust-translate-tree (ui-tree self)))
                       (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
                       (if (and (tracknum self) (> (tracknum self) 0))
@@ -384,7 +384,7 @@
           (val 0)
           (tracknum (tracknum (paramctr self)))
           (editor (om-view-container (om-view-container self)))
-          (curval (las-faust-get-effect-control-value ptr number)))
+          (curval (las-faust-get-control-value ptr number)))
    (if (= min max) (let () (setf min 0) (setf max 1)) nil)
    (setf range (/ (- max min) 1.0))
    (setf val (* 100.0 (/ (- curval min) range)))
@@ -412,7 +412,7 @@
                                                                :di-action 
                                                                (om-dialog-item-act item
                                                                  (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                                   (las-faust-set-effect-control-value ptr number valeur)
+                                                                   (las-faust-set-control-value ptr number valeur)
                                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                                                :increment 1
                                                                :range '(0 100)
@@ -441,7 +441,7 @@
                                              :di-action 
                                              (om-dialog-item-act item
                                                (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                 (las-faust-set-effect-control-value ptr number valeur)
+                                                 (las-faust-set-control-value ptr number valeur)
                                                  (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                              :increment 1
                                              :range '(0 100)
@@ -469,12 +469,12 @@
                                              (om-make-point 31 94) ""
                                              :di-action 
                                              (om-dialog-item-act item 
-                                               (if (= (las-faust-get-effect-control-value ptr number) 1.0) 
-                                                   (las-faust-set-effect-control-value ptr number 0.0) 
-                                                 (las-faust-set-effect-control-value ptr number 1.0))
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                               (if (= (las-faust-get-control-value ptr number) 1.0) 
+                                                   (las-faust-set-control-value ptr number 0.0) 
+                                                 (las-faust-set-control-value ptr number 1.0))
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
                                              :font *om-default-font1*
-                                             :checked-p (if (= (las-faust-get-effect-control-value ptr number) 1.0) t nil)))))
+                                             :checked-p (if (= (las-faust-get-control-value ptr number) 1.0) t nil)))))
                ((string= type "button")
                 (progn
                   (setf (paramText self) (om-make-dialog-item 'om-static-text
@@ -497,13 +497,13 @@
                                              (format nil "~D" name)
                                              :di-action 
                                              (om-dialog-item-act item
-                                               (if (= (las-faust-get-effect-control-value ptr number) max) 
+                                               (if (= (las-faust-get-control-value ptr number) max) 
                                                    (progn
-                                                     (las-faust-set-effect-control-value ptr number 0.0)
-                                                     (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number))))
-                                                   (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number)))
+                                                     (las-faust-set-control-value ptr number 0.0)
+                                                     (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number))))
+                                                   (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
                                                  )
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
                                              :font *om-default-font1*))))
                (t (progn
                     (setf (paramText self) (om-make-dialog-item 'om-static-text
@@ -527,7 +527,7 @@
                                         :pict-size (om-make-point 31 94)
                                         :di-action (om-dialog-item-act item
                                                      (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
-                                                       (las-faust-set-effect-control-value ptr number valeur)
+                                                       (las-faust-set-control-value ptr number valeur)
                                                        (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                         :font *om-default-font2*
                                         :value val
@@ -538,7 +538,7 @@
    ;                                      :icon1 "-" :icon2 "--pushed"
    ;                                      :action #'(lambda (item) 
    ;                                                  (let () 
-   ;                                                    (las-faust-set-effect-control-value ptr number def) (set-value (paramGraph self) val)
+   ;                                                    (las-faust-set-control-value ptr number def) (set-value (paramGraph self) val)
    ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
    ;                                                                                               (format nil "~D" (round def))))))))
    (om-add-subviews self
@@ -939,7 +939,7 @@
     (nbparams :initform 0 :accessor nbparams :type t)
     (params-ctrl :initform nil :accessor params-ctrl :type t)
     (ui-tree :initform nil :accessor ui-tree))
-   (:icon 918)
+   (:icon 917)
    (:documentation "Faust synth"))
 
 
@@ -952,40 +952,40 @@
           (if (synth-name self)
               (setf name (synth-name self))
             (progn
-              (setf name (format nil "Faust-synth-~A" (+ 1 (las-get-number-faust-effects-register))))
+              (setf name (format nil "Faust-synth-~A" (+ 1 (las-get-number-faust-synths-register))))
               (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))))
           ;;Check if the name is already used. If yes, exit. If no, build synth.
-          (if (car (las-faust-search-name-in-register name))
+          (if (car (las-faust-search-synth-name-in-register name))
               (print (format nil "An synth called ~A already exists. Please choose a new name." name))
             ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
             (if (synth-txt self)
                 (let ((parlist (list-of-lines (buffer-text (synth-txt self))))
                       synth-string
-                      synth-result) 
+                      synth-result)
                   ;;Build string from textfile
                   (loop for line in parlist do
                         (setf synth-string (concatenate 'string synth-string (format nil "~%") line)))
                   ;;Save as a dsp file
-                  (save-data (list (list synth-string)) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                  (save-data (list (list synth-string)) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
                   ;;Get result from the compilation with the faust-api.
                   (setf synth-result (las-faust-make-effect 
-                                      (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
+                                      (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register)))) 
                                       *om-outfiles-folder*))
                   (setf (synth-ptr self) (nth 1 synth-result))
                   ;;Save code as DSP and set some slots for SVG display
-                  (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-                  (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+                  (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
+                  (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register))))
                   ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
                   (if (/= (car synth-result) 1)
                       (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 synth-result)))
                     ;;Get tree from Json, init params, register synth, plug if a track is specified.
                     (let (param-list)
                       (print "Synthetiseur Faust créé avec succès")
-                      (setf (ui-tree self) (las-faust-parse (las-faust-get-effect-json (synth-ptr self))))
+                      (setf (ui-tree self) (las-faust-parse (las-faust-get-json (synth-ptr self))))
                       (setf param-list (las-faust-translate-tree (ui-tree self)))
-                      (las-faust-add-effect-to-register (synth-ptr self) (tracknum self) name)
+                      (las-faust-add-synth-to-register (synth-ptr self) (tracknum self) name)
                       (if (and (tracknum self) (> (tracknum self) 0))
-                          (las-faust-add-effect-to-track (synth-ptr self) name (- (tracknum self) 1)))
+                          (las-faust-add-synth-to-track (synth-ptr self) name (- (tracknum self) 1)))
                       (setf (nbparams self) (length param-list))
                       (if (> (nbparams self) 0)
                           (setf (params-ctrl self)
@@ -1059,8 +1059,7 @@
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
-                                :close-p t :winshow t :bg-color *om-dark-gray-color*
-                                                      )))
+                                :close-p t :winshow t :bg-color *om-dark-gray-color*)))
     win))
 
 
@@ -1244,7 +1243,6 @@
   (om-cmd-line (format nil "open ~A" svg) nil t pathname))
 
 
-
 (defun set-faust-compiler-pathname ()
   (let (new)
     (setf new (om-choose-file-dialog 
@@ -1285,7 +1283,7 @@
           (val 0)
           (tracknum (tracknum (paramctr self)))
           (editor (om-view-container (om-view-container self)))
-          (curval (las-faust-get-effect-control-value ptr number)))
+          (curval (las-faust-get-control-value ptr number)))
    (if (= min max) (let () (setf min 0) (setf max 1)) nil)
    (setf range (/ (- max min) 1.0))
    (setf val (* 100.0 (/ (- curval min) range)))
@@ -1313,7 +1311,7 @@
                                                                :di-action 
                                                                (om-dialog-item-act item
                                                                  (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                                   (las-faust-set-effect-control-value ptr number valeur)
+                                                                   (las-faust-set-control-value ptr number valeur)
                                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                                                :increment 1
                                                                :range '(0 100)
@@ -1342,7 +1340,7 @@
                                              :di-action 
                                              (om-dialog-item-act item
                                                (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                 (las-faust-set-effect-control-value ptr number valeur)
+                                                 (las-faust-set-control-value ptr number valeur)
                                                  (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                              :increment 1
                                              :range '(0 100)
@@ -1370,12 +1368,12 @@
                                              (om-make-point 31 94) ""
                                              :di-action 
                                              (om-dialog-item-act item 
-                                               (if (= (las-faust-get-effect-control-value ptr number) 1.0) 
-                                                   (las-faust-set-effect-control-value ptr number 0.0) 
-                                                 (las-faust-set-effect-control-value ptr number 1.0))
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                               (if (= (las-faust-get-control-value ptr number) 1.0) 
+                                                   (las-faust-set-control-value ptr number 0.0) 
+                                                 (las-faust-set-control-value ptr number 1.0))
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
                                              :font *om-default-font1*
-                                             :checked-p (if (= (las-faust-get-effect-control-value ptr number) 1.0) t nil)))))
+                                             :checked-p (if (= (las-faust-get-control-value ptr number) 1.0) t nil)))))
                ((string= type "button")
                 (progn
                   (setf (paramText self) (om-make-dialog-item 'om-static-text
@@ -1398,13 +1396,13 @@
                                              (format nil "~D" name)
                                              :di-action 
                                              (om-dialog-item-act item
-                                               (if (= (las-faust-get-effect-control-value ptr number) max) 
+                                               (if (= (las-faust-get-control-value ptr number) max) 
                                                    (progn
-                                                     (las-faust-set-effect-control-value ptr number 0.0)
-                                                     (las-faust-set-effect-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number))))
-                                                   (las-faust-set-synth-control-value ptr number (+ 0.000001 (las-faust-get-effect-control-value ptr number)))
+                                                     (las-faust-set-control-value ptr number 0.0)
+                                                     (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number))))
+                                                   (las-faust-set-synth-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
                                                  )
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-effect-control-value ptr number)))))
+                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
                                              :font *om-default-font1*))))
                (t (progn
                     (setf (paramText self) (om-make-dialog-item 'om-static-text
@@ -1428,7 +1426,7 @@
                                         :pict-size (om-make-point 31 94)
                                         :di-action (om-dialog-item-act item
                                                      (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
-                                                       (las-faust-set-effect-control-value ptr number valeur)
+                                                       (las-faust-set-control-value ptr number valeur)
                                                        (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
                                         :font *om-default-font2*
                                         :value val

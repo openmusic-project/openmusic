@@ -7,6 +7,7 @@
 (defvar *faust-effects-register* (make-hash-table))
 (defvar *faust-synths-register* (make-hash-table))
 (defvar *faust-effects-by-track* (make-hash-table))
+(defvar *faust-synths-by-track* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
 ;===============================================================================================================================================================
@@ -16,33 +17,55 @@
 (export '(
           las-faust-init-system
           las-faust-make-effect
-          las-faust-get-effect-json
-          las-faust-get-effect-control-count
-          las-faust-get-effect-control-params
-          las-faust-get-effect-control-value
-          las-faust-set-effect-control-value
+          las-faust-get-json
+          las-faust-get-control-count
+          las-faust-get-control-params
+          las-faust-get-control-value
+          las-faust-set-control-value
           las-faust-effect-cleanup
+          las-faust-synth-cleanup
           las-faust-add-effect-to-register
+          las-faust-add-synth-to-register
           las-faust-find-effect-in-register
+          las-faust-find-synth-in-register
           las-faust-add-effect-to-track
+          las-faust-add-synth-to-track
           las-faust-remove-effect-from-track
           las-faust-set-effect-track-in-register
           las-get-number-faust-effects-register
+          las-get-number-faust-synths-register
           las-faust-get-track-effects-name
+          las-faust-get-track-synths-name
           las-faust-get-track-effects-pointer
           las-faust-unplug-all
           las-faust-effect-already-plugged-?
           las-faust-null-ptr-p
-          las-faust-search-name-in-register
+          las-faust-search-effect-name-in-register
+          las-faust-search-synth-name-in-register
           
           *faust-effects-register*
+          *faust-synths-register*
           *faust-effects-by-track*
           ) :om-api)
+
+
+
+
+;?????las-faust-add-effect-to-track
+;?????las-faust-remove-effect-from-track
+
+
+
+;????oldpool????las-faust-get-track-effects-name
+;????oldpool????las-faust-get-track-effects-pointer
+;????notused????las-faust-set-effect-track-in-register
+
 
 
 (defun las-faust-init-system ()
   (progn
     (init-faust-effects-register)
+    (init-faust-synths-register)
     (ResetEffectsLists *audio-player-visible*)))
 
 (defun las-faust-unplug-all ()
@@ -63,34 +86,50 @@
 (defun las-faust-null-ptr-p (pointer)
   (las::las-null-ptr-p pointer))
 
-(defun las-faust-get-effect-json (pointer)
+(defun las-faust-get-json (pointer)
   (las::getjsoneffect pointer))
 
-(defun las-faust-get-effect-control-count (pointer)
+(defun las-faust-get-control-count (pointer)
   (las::getcontrolcount pointer))
 
-(defun las-faust-get-effect-control-params (pointer number)
+(defun las-faust-get-control-params (pointer number)
   (las::getcontrolparam pointer number))
 
-(defun las-faust-get-effect-control-value (pointer number)
+(defun las-faust-get-control-value (pointer number)
   (las::getcontrolvalue pointer number))
 
-(defun las-faust-set-effect-control-value (pointer number val)
+(defun las-faust-set-control-value (pointer number val)
   (las::SetControlValue pointer number val))
 
 (defun las-faust-effect-cleanup (pointer)
-  (let ((n (get-number-faust-effects-register))
-        (track (- (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 1)))
-    (if (>= track 0)
-        (las-faust-remove-effect-from-track pointer track))
-    (setf (gethash (find-effect-index-in-register pointer) *faust-effects-register*) (list nil 0 "faust-effect"))
-    (pack-faust-effects-register n)))
+  (if (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*))
+      (let ((n (get-number-faust-effects-register))
+            (track (- (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 1)))
+        (if (>= track 0)
+            (las-faust-remove-effect-from-track pointer track))
+        (setf (gethash (find-effect-index-in-register pointer) *faust-effects-register*) (list nil 0 "faust-effect"))
+        (pack-faust-effects-register n))))
+
+(defun las-faust-synth-cleanup (pointer)
+  (if (nth 1 (gethash (find-synth-index-in-register pointer) *faust-synths-register*))
+      (let ((n (get-number-faust-synths-register))
+            (track (- (nth 1 (gethash (find-synth-index-in-register pointer) *faust-synths-register*)) 1)))
+        (if (>= track 0)
+            (las-faust-remove-synth-from-track pointer track))
+        (setf (gethash (find-synth-index-in-register pointer) *faust-synths-register*) (list nil 0 "faust-synth"))
+        (pack-faust-synths-register n))))
 
 (defun las-faust-add-effect-to-register (pointer track name)
   (add-faust-effect-to-register pointer track name))
 
+(defun las-faust-add-synth-to-register (pointer track name)
+  (add-faust-synth-to-register pointer track name))
+
 (defun las-faust-find-effect-in-register (pointer)
   (find-effect-index-in-register pointer))
+
+(defun las-faust-find-synth-in-register (pointer)
+  (find-synth-index-in-register pointer))
 
 (defun las-faust-add-effect-to-track (pointer name track)
   (let ((liste (gethash track *faust-effects-by-track*))
@@ -98,7 +137,15 @@
     (while (gethash i liste)
       (incf i))
     (setf (gethash i liste) (list pointer name))
-    (setf (nth 1 (gethash (cadr (las-faust-search-name-in-register name)) *faust-effects-register*)) (+ track 1))
+    (setf (nth 1 (gethash (cadr (las-faust-search-effect-name-in-register name)) *faust-effects-register*)) (+ track 1))
+    (add-faust-effect-to-list pointer (gethash track *effects-lists*))))
+(defun las-faust-add-synth-to-track (pointer name track)
+  (let ((liste (gethash track *faust-synths-by-track*))
+        (i 0)) 
+    (while (gethash i liste)
+      (incf i))
+    (setf (gethash i liste) (list pointer name))
+    (setf (nth 1 (gethash (cadr (las-faust-search-effect-name-in-register name)) *faust-synths-register*)) (+ track 1))
     (add-faust-effect-to-list pointer (gethash track *effects-lists*))))
 
 (defun las-faust-remove-effect-from-track (pointer track)
@@ -108,6 +155,13 @@
     (remove-effect-in-track-register pointer track)
     (setf (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 0)
     (remove-faust-effect-from-list pointer (gethash track *effects-lists*))))
+(defun las-faust-remove-synth-from-track (pointer track)
+  (let ((res (las-faust-synth-already-plugged-? pointer)))
+    (if res 
+        (setf (gethash (cadr res) (gethash (car res) *faust-synths-by-track*)) nil))
+    (remove-synth-in-track-register pointer track)
+    (setf (nth 1 (gethash (find-synth-index-in-register pointer) *faust-synths-register*)) 0)
+    (remove-faust-effect-from-list pointer (gethash track *effects-lists*))))
 
 (defun las-faust-set-effect-track-in-register (pointer track)
   (setf (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) track))
@@ -115,8 +169,20 @@
 (defun las-get-number-faust-effects-register ()
   (get-number-faust-effects-register))
 
+(defun las-get-number-faust-synths-register ()
+  (get-number-faust-synths-register))
+
 (defun las-faust-get-track-effects-name (track)
   (let ((liste (gethash track *faust-effects-by-track*))
+        (i 0)
+        (res (list)))
+    (while (gethash i liste)
+      (setf res (append res (list (nth 1 (gethash i liste)))))
+      (incf i)
+      )
+    res))
+(defun las-faust-get-track-synths-name (track)
+  (let ((liste (gethash track *faust-synths-by-track*))
         (i 0)
         (res (list)))
     (while (gethash i liste)
@@ -162,13 +228,47 @@
                  (setf found 1)
                  (setf res nil))))
     res))
+(defun las-faust-synth-already-plugged-? (pointer)
+  (let ((x 0)
+        (y 0)
+        (found 0)
+        res
+        curlist)
+    (while (= found 0)
+           (setf curlist (gethash x *faust-synths-by-track*))
+           (while (and (= found 0) (gethash y curlist))
+             (if (eq pointer (nth 0 (gethash y curlist)))
+                 (progn
+                   (setf res (list x y))
+                   (setf found 1))
+               (progn
+                 (incf y)
+                 (if (> y *max-effects-number*)
+                     (progn 
+                       (setf res nil)
+                       (setf found 1))))))
+           (setf y 0)
+           (incf x)
+           (if (>= x las-channels)
+               (progn
+                 (setf found 1)
+                 (setf res nil))))
+    res))
 
 
-(defun las-faust-search-name-in-register (name)
+(defun las-faust-search-effect-name-in-register (name)
   (let ((i 0)
         res)
     (while (and (not res) (car (gethash i *faust-effects-register*)))
       (if (string= name (nth 2 (gethash i *faust-effects-register*)))
+          (setf res t)
+        (incf i)))
+    (list res i)))
+(defun las-faust-search-synth-name-in-register (name)
+  (let ((i 0)
+        res)
+    (while (and (not res) (car (gethash i *faust-synths-register*)))
+      (if (string= name (nth 2 (gethash i *faust-synths-register*)))
           (setf res t)
         (incf i)))
     (list res i)))
@@ -185,11 +285,15 @@
   (loop for i from 0 to (- las-channels 1) do 
       (setf (gethash i *effects-lists*) (las::MakeAudioEffectList))
       (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)
-      (setf (gethash i *faust-effects-by-track*) (make-hash-table))))
+      (setf (gethash i *faust-effects-by-track*) (make-hash-table))
+      (setf (gethash i *faust-synths-by-track*) (make-hash-table))))
 
 (defun init-faust-effects-register ()
     (loop for i from 0 to *max-effects-number* do
           (setf (gethash i *faust-effects-register*) (list nil 0 "faust-effect")))) ;(ptr track name)
+(defun init-faust-synths-register ()
+    (loop for i from 0 to *max-effects-number* do
+          (setf (gethash i *faust-synths-register*) (list nil 0 "faust-synth"))))
 
 ;;;//////////////////REGISTER TOOLS/////////////////////////////
 (defun add-faust-effect-to-register (ptr track name)
@@ -198,7 +302,12 @@
           (incf i)
           (if (> i *max-effects-number*) (setf i nil)))
     (if i (setf (gethash i *faust-effects-register*) (list ptr track name)))))
-
+(defun add-faust-synth-to-register (ptr track name)
+  (let ((i 0))
+    (while (nth 0 (gethash i *faust-synths-register*))
+          (incf i)
+          (if (> i *max-effects-number*) (setf i nil)))
+    (if i (setf (gethash i *faust-synths-register*) (list ptr track name)))))
 
 (defun remove-faust-effect-from-list (ptr list)
   (las::RemoveAudioEffect list ptr))
@@ -211,6 +320,11 @@
     (while (nth 0 (gethash i *faust-effects-register*))
           (incf i))
     i))
+(defun get-number-faust-synths-register ()
+  (let ((i 0))
+    (while (nth 0 (gethash i *faust-synths-register*))
+          (incf i))
+    i))
 
 (defun find-hole-index-in-faust-effects-register ()
   (let ((i 0)
@@ -220,6 +334,24 @@
         (res nil))
     (while (= found 0) 
       (setf ptr (nth 0 (gethash i *faust-effects-register*)))
+      (if (= 1 marker)
+          (if (eq ptr nil)
+              (let () (setf res nil) (setf found 1))
+            (let () (setf res (- i 1)) (setf found 1)))
+        (if (eq ptr nil) (setf marker 1)))
+      (incf i)
+      (if (> i *max-effects-number*) (let ()
+                                       (setf found 1)
+                                       (setf res nil))))
+    res))
+(defun find-hole-index-in-faust-synths-register ()
+  (let ((i 0)
+        (found 0)
+        (ptr nil)
+        (marker 0)
+        (res nil))
+    (while (= found 0) 
+      (setf ptr (nth 0 (gethash i *faust-synths-register*)))
       (if (= 1 marker)
           (if (eq ptr nil)
               (let () (setf res nil) (setf found 1))
@@ -243,8 +375,19 @@
         (if (> i *max-effects-number*)
             (progn 
               (setf found 1)
-              (setf i nil))
-         ))
+              (setf i nil))))
+    i))
+(defun find-synth-index-in-register (ptr)
+  (let ((i 0)
+        (found 0))
+    (while (= found 0)
+      (if (eq ptr (nth 0 (gethash i *faust-synths-register*)))
+          (setf found 1)
+        (incf i))
+        (if (> i *max-effects-number*)
+            (progn 
+              (setf found 1)
+              (setf i nil))))
     i))
 
 
@@ -254,7 +397,12 @@
         (let ((index (find-hole-index-in-faust-effects-register)))
           (loop for i from index to (- n 1) do
             (setf (gethash i *faust-effects-register*) (gethash (+ i 1) *faust-effects-register*)))))))
-
+(defun pack-faust-synths-register (n)
+  (let ()
+    (if (find-hole-index-in-faust-synths-register)
+        (let ((index (find-hole-index-in-faust-synths-register)))
+          (loop for i from index to (- n 1) do
+            (setf (gethash i *faust-synths-register*) (gethash (+ i 1) *faust-synths-register*)))))))
 
 
 (defun remove-effect-in-track-register (pointer track)
@@ -274,15 +422,35 @@
           (setf (gethash i (gethash track *faust-effects-by-track*)) nil)
           (loop for k from i to *max-effects-number* do
                 (setf (gethash k (gethash track *faust-effects-by-track*)) (gethash (+ k 1) (gethash track *faust-effects-by-track*))))))))
-
+(defun remove-synth-in-track-register (pointer track)
+  (let ((i 0)
+        (found 0))
+    (while (= found 0) 
+      (if (not (eq pointer (car (gethash i (gethash track *faust-synths-by-track*))))) 
+          (progn 
+            (incf i)
+            (if (> i *max-effects-number*)
+                (progn 
+                  (setf found 1)
+                  (setf i nil))))
+        (setf found 1)))
+    (if i
+        (progn
+          (setf (gethash i (gethash track *faust-synths-by-track*)) nil)
+          (loop for k from i to *max-effects-number* do
+                (setf (gethash k (gethash track *faust-synths-by-track*)) (gethash (+ k 1) (gethash track *faust-synths-by-track*))))))))
 
 
 
 (defun faust-system-recap ()
   (print "///////////////////////////////")
-  (print "Registre complet (15 premiers) :")
+  (print "Registre EFFECTS (15 premiers) :")
   (loop for i from 0 to 15 do
         (print (gethash i *faust-effects-register*)))
+  (print "///////////////////////////////")
+  (print "Registre SYNTHS (15 premiers) :")
+  (loop for i from 0 to 15 do
+        (print (gethash i *faust-synths-register*)))
   (print "///////////////////////////////")
   (loop for i from 0 to 31 do
         (print (format nil "Track ~A :" i))
