@@ -340,7 +340,6 @@
   (let ((pointer (car (gethash (cadr (las-faust-search-synth-name-in-register (om-get-selected-item item))) *faust-synths-register*)))
         (name (nth (om-get-selected-item-index item) synthlist))
         newlist)
-    (print pointer)
     ;unplug old one
     (if (gethash 0 (gethash channel *faust-synths-by-track*))
         (las-faust-remove-synth-from-track (car (gethash 0 (gethash channel *faust-synths-by-track*))) channel))

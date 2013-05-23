@@ -6,6 +6,7 @@
 
 ;(defvar *faust-compiler-pathname* nil)
 
+
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
 ;=== a single parameter of the general faust effect ===
@@ -354,14 +355,15 @@
 
 (defmethod update-editor-after-eval ((self faustcontrollerEditor) val)
   (setf (object self) val)
-  (let ((n (nbparams (object self))))
+  (progn
     (om-set-view-size (window self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
+    (om-set-view-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
     (om-set-field-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
-    (update-for-subviews-changes (panel self))
     (print (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self))))
     (loop for parampan in (params-panels self) do 
           (om-remove-subviews (panel self) parampan))
-    (make-faust-group-view self (ui-tree (object self)))
+    (if (ui-tree (object self))
+        (make-faust-group-view self (ui-tree (object self))))
     (setf paramnum 0)))
 
 
@@ -1006,7 +1008,7 @@
 
 (defmethod Class-has-editor-p  ((self faust-synth-console)) t)
 
-(defmethod get-editor-class ((self faust-synth-console)) 'faustcontrollerEditor)
+(defmethod get-editor-class ((self faust-synth-console)) 'faustSynthcontrollerEditor)
 
 (defmethod draw-mini-view  ((self t) (value faust-synth-console)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
@@ -1072,7 +1074,7 @@
 
 (defmethod editor-has-palette-p ((self faustSynthcontrollerEditor)) nil)
 
-(defmethod get-panel-class ((self faustSynthcontrollerEditor)) 'faustcontrollerPanel)
+(defmethod get-panel-class ((self faustSynthcontrollerEditor)) 'faustSynthcontrollerPanel)
 
 (defmethod update-subviews ((self faustSynthcontrollerEditor))
    (om-set-view-size (panel self) (om-make-point (w self) (h self))))
@@ -1253,14 +1255,15 @@
 
 (defmethod update-editor-after-eval ((self faustSynthcontrollerEditor) val)
   (setf (object self) val)
-  (let ((n (nbparams (object self))))
+  (progn
     (om-set-view-size (window self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
+    (om-set-view-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
     (om-set-field-size (panel self) (om-make-point (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self)))))
-    (update-for-subviews-changes (panel self))
     (print (om-point-h (get-win-ed-size (object self))) (om-point-v (get-win-ed-size (object self))))
     (loop for parampan in (params-panels self) do 
           (om-remove-subviews (panel self) parampan))
-    (make-faust-group-view self (ui-tree (object self)))
+    (if (ui-tree (object self))
+        (make-faust-group-view self (ui-tree (object self))))
     (setf paramnum 0)))
 
 
