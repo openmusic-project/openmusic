@@ -51,19 +51,6 @@
           ) :om-api)
 
 
-
-
-;?????las-faust-add-effect-to-track
-;?????las-faust-remove-effect-from-track
-
-
-
-;????oldpool????las-faust-get-track-effects-name
-;????oldpool????las-faust-get-track-effects-pointer
-;????notused????las-faust-set-effect-track-in-register
-
-
-
 (defun las-faust-init-system ()
   (progn
     (init-faust-effects-register)

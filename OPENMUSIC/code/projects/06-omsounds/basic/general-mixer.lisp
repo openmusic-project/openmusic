@@ -1,3 +1,9 @@
+;;;==================================================================================================================================================================
+;;;===================================================================GENERAL MIXER (LAS)============================================================================
+;;;==================================================================================================================================================================
+;;;This general mixer is a single windows which controls the *audio-player-visible* vol and pan, but also the effect and synth plug system.
+;;;You can plug up to 5 effects by channel and only one synth.
+
 (in-package :om)
 
 (defvar *general-mixer-window* nil)
@@ -7,18 +13,17 @@
   (loop for i from 0 to (- las-channels 1) do
         (setf (gethash i *general-mixer-values*) (list 0 100))))
 
+
+;;;WAITING FOR A PARAM SAVE
 (init-genmixer-values)
-
-
 
 (defclass omgenmixer-window (om-window)
   ())
 
 (defclass omgenmixer-view (om-view) ())
 
-
-
-
+;/MAKE GENERAL MIXER WINDOW FUNCTION
+;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
   (let ((newwindow (om-make-window 'omgenmixer-window :window-title "OpenMusic General Mixer" 
                                    :size (om-make-point (+ 5 (* *channel-w* 10)) 420) 
@@ -37,11 +42,15 @@
           (genmixer-make-single-channel-view panel i))
     newwindow))
 
+;/MAKE GENMIXER DIALOG
+;This function checks if the general mixer window is already opened. If yes, it focus on it, else it builds a new one.
 (defun omG-make-genmixer-dialog ()
   (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
       (om-select-window *general-mixer-window*)
     (setf *general-mixer-window* (om-select-window (make-general-mixer-win)))))
 
+;/GENMIXER MAKE SINGLE CHANNEL
+;This function builds one channel view
 (defun genmixer-make-single-channel-view (panel channel)
   (let* ((main-view (om-make-view 'om-view 
                                   :owner panel
@@ -261,16 +270,23 @@
                      effect5)
     main-view))
 
+
+;/CHANGE GENMIXER CHANNEL VOL FUNCTION
+;This function changes a channel volume
 (defun change-genmixer-channel-vol (channel value)
   (progn
     (las-change-channel-vol-visible channel (float (/ value 100)))
     (setf (cadr (gethash (- channel 1) *general-mixer-values*)) value)))
 
+;/CHANGE GENMIXER CHANNEL PAN
+;This function changes a channel pan
 (defun change-genmixer-channel-pan (channel value)
   (progn
     (las-change-channel-pan-visible channel (- 1.0 (float (/ (+ value 100) 200))))
     (setf (car (gethash (- channel 1) *general-mixer-values*)) value)))
 
+;/UPDATE AVAILABLE EFFECTS SLOTS
+;This function makes effects pop-up dialogs available or not according to the number of plugged effect on each channel
 (defun update-available-effects-slots (effect1 effect2 effect3 effect4 effect5)
   (if (= (om-get-selected-item-index effect1) 0)
       (progn
@@ -298,6 +314,9 @@
                     (om-enable-dialog-item effect5 nil))
                 (om-enable-dialog-item effect5 t)))))))))
 
+
+;/BUILD FAUST EFFECT LIST FUNCTION
+;This function returns a list of availables effects for each channel.
 (defun build-faust-effect-list (channel)
   (let ((n (- (las-get-number-faust-effects-register) 1))
         (final-list (list "-------"))) 
@@ -305,6 +324,9 @@
           (if (or (= 0 (nth 1 (gethash i *faust-effects-register*))) (= (+ channel 1) (nth 1 (gethash i *faust-effects-register*))))
               (setf final-list (append final-list (list (nth 2 (gethash i *faust-effects-register*)))))))
     final-list))
+
+;/BUILD FAUST SYNTH LIST FUNCTION
+;This function returns a list of availables effects for each channel.
 (defun build-faust-synth-list (channel)
   (let ((n (- (las-get-number-faust-synths-register) 1))
         (final-list (list "-------"))) 
@@ -313,7 +335,9 @@
               (setf final-list (append final-list (list (nth 2 (gethash i *faust-synths-register*)))))))
     final-list))
 
-
+;/POP UP LAS EFFECT PLUG FUNCTION
+;This function plug and/or unplug effect according to the user action on a pop-up effect dialog.
+;It also update effect lists on each pop-up
 (defun pop-up-las-effect-plug (panel item channel effect-number effectlist)
   (let ((pointer (car (gethash (cadr (las-faust-search-effect-name-in-register (om-get-selected-item item))) *faust-effects-register*)))
         (name (nth (om-get-selected-item-index item) effectlist))
@@ -327,6 +351,10 @@
         (las-faust-add-effect-to-track pointer name channel))
     ;update effects lists
     (update-general-mixer-effects-lists panel)))
+
+;/POP UP LAS SYNTH FUNCTION
+;This function plug and/or unplug a synth according to the user action on a pop-up synth dialog.
+;It also update synth lists on each channel.
 (defun pop-up-las-synth-plug (panel item channel synthlist)
   (let ((pointer (car (gethash (cadr (las-faust-search-synth-name-in-register (om-get-selected-item item))) *faust-synths-register*)))
         (name (nth (om-get-selected-item-index item) synthlist))
@@ -340,9 +368,12 @@
     ;update effects lists
     (update-general-mixer-synths-lists panel)))
 
+;/UPDATE GENMIXER EFFECTS LISTS FUNCTION
+;This function updates the effect lists on each pop-up effect dialog.
 (defun update-general-mixer-effects-lists (panel)
   (let ((newlistn (make-hash-table))
-        newlist)
+        newlist
+        (effectn (make-hash-table)))
     (loop for i from 0 to (- las-channels 1) do
           (setf newlist (build-faust-effect-list i))
           (loop for k from 0 to 4 do
@@ -351,9 +382,17 @@
                 (loop for k from 0 to 4 do
                       (if (/= j k)
                           (setf (gethash j newlistn) (remove (cadr (gethash k (gethash i *faust-effects-by-track*))) (gethash j newlistn) :test #'string=))))
+                (setf (gethash j effectn) (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))))
                 (om-set-item-list (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (gethash j newlistn))
-                (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*))))))))
+                (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*)))))
+          (update-available-effects-slots (gethash 0 effectn) 
+                                          (gethash 1 effectn) 
+                                          (gethash 2 effectn) 
+                                          (gethash 3 effectn) 
+                                          (gethash 4 effectn)))))
 
+;/UPDATE GENMIXER SYNTHS LISTS FUNCTION
+;This function updates the synth lists on each pop-up synth dialog.
 (defun update-general-mixer-synths-lists (panel)
   (let (newlist)
     (loop for i from 0 to (- las-channels 1) do
