@@ -318,7 +318,7 @@
   (let ((pointer (car (gethash (cadr (las-faust-search-effect-name-in-register (om-get-selected-item item))) *faust-effects-register*)))
         (name (nth (om-get-selected-item-index item) effectlist))
         newlist
-        (newlistn (make-hash-table)))
+        )
     ;unplug old one
     (if (gethash effect-number (gethash channel *faust-effects-by-track*))
         (las-faust-remove-effect-from-track (car (gethash effect-number (gethash channel *faust-effects-by-track*))) channel))
@@ -326,16 +326,7 @@
     (if pointer
         (las-faust-add-effect-to-track pointer name channel))
     ;update effects lists
-    (loop for i from 0 to (- las-channels 1) do
-          (setf newlist (build-faust-effect-list i))
-          (loop for k from 0 to 4 do
-                (setf (gethash k newlistn) newlist))
-          (loop for j from 0 to 4 do
-                (loop for k from 0 to 4 do
-                      (if (/= j k)
-                          (setf (gethash j newlistn) (remove (cadr (gethash k (gethash i *faust-effects-by-track*))) (gethash j newlistn) :test #'string=))))
-                (om-set-item-list (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (gethash j newlistn))
-                (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*))))))))
+    (update-general-mixer-effects-lists panel)))
 (defun pop-up-las-synth-plug (panel item channel synthlist)
   (let ((pointer (car (gethash (cadr (las-faust-search-synth-name-in-register (om-get-selected-item item))) *faust-synths-register*)))
         (name (nth (om-get-selected-item-index item) synthlist))
@@ -347,6 +338,24 @@
     (if pointer
         (las-faust-add-synth-to-track pointer name channel))
     ;update effects lists
+    (update-general-mixer-synths-lists panel)))
+
+(defun update-general-mixer-effects-lists (panel)
+  (let ((newlistn (make-hash-table))
+        newlist)
+    (loop for i from 0 to (- las-channels 1) do
+          (setf newlist (build-faust-effect-list i))
+          (loop for k from 0 to 4 do
+                (setf (gethash k newlistn) newlist))
+          (loop for j from 0 to 4 do
+                (loop for k from 0 to 4 do
+                      (if (/= j k)
+                          (setf (gethash j newlistn) (remove (cadr (gethash k (gethash i *faust-effects-by-track*))) (gethash j newlistn) :test #'string=))))
+                (om-set-item-list (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (gethash j newlistn))
+                (om-set-selected-item (nth (+ j 14) (om-subviews (nth i (om-subviews panel)))) (cadr (gethash j (gethash i *faust-effects-by-track*))))))))
+
+(defun update-general-mixer-synths-lists (panel)
+  (let (newlist)
     (loop for i from 0 to (- las-channels 1) do
           (setf newlist (build-faust-synth-list i))
           (om-set-item-list (nth 11 (om-subviews (nth i (om-subviews panel)))) newlist)

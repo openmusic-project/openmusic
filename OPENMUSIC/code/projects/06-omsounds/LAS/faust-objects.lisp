@@ -87,6 +87,7 @@
                       (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
                       (if (and (tracknum self) (> (tracknum self) 0))
                           (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
+                      (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*)))
                       (setf (nbparams self) (length param-list))
                       (if (> (nbparams self) 0)
                           (setf (params-ctrl self)
@@ -986,14 +987,16 @@
                       (setf (ui-tree self) (las-faust-parse (las-faust-get-json (synth-ptr self))))
                       (setf param-list (las-faust-translate-tree (ui-tree self)))
                       (if (and (tracknum self) (> (tracknum self) 0))
-                          (progn
-                            (if (not (gethash 0 (gethash (- (tracknum self) 1) *faust-synths-by-track*)))
-                                (progn
-                                  (las-faust-add-synth-to-track (synth-ptr self) name (- (tracknum self) 1))
-                                  (las-faust-add-synth-to-register (synth-ptr self) (tracknum self) name))
+                          (if (not (gethash 0 (gethash (- (tracknum self) 1) *faust-synths-by-track*)))
                               (progn
-                                (print (format nil "A synth is already plugged on channel ~A. Your synth has been created but not plugged" (tracknum self)))
-                                (las-faust-add-synth-to-register (synth-ptr self) 0 name)))))
+                                (las-faust-add-synth-to-track (synth-ptr self) name (- (tracknum self) 1))
+                                (las-faust-add-synth-to-register (synth-ptr self) (tracknum self) name))
+                            (progn
+                              (print (format nil "A synth is already plugged on channel ~A. Your synth has been created but not plugged" (tracknum self)))
+                              (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
+                        (progn
+                          (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
+                      (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*)))
                       (setf (nbparams self) (length param-list))
                       (if (> (nbparams self) 0)
                           (setf (params-ctrl self)
