@@ -153,7 +153,8 @@
           (add-faust-effect-to-list pointer (gethash track *effects-lists*))
           (loop for ptr in ptrlist do
                 for name in namelist do
-                (las-faust-add-effect-to-track ptr name track))))))
+                (las-faust-add-effect-to-track ptr name track)))
+      (add-faust-effect-to-list pointer (gethash track *effects-lists*)))))
 
 (defun las-faust-remove-effect-from-track (pointer track)
   (let ((res (las-faust-effect-already-plugged-? pointer)))

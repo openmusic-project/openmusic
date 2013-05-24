@@ -736,7 +736,7 @@
     (when sndplaylist
       (las-play/stop sndplaylist))
     (when synthplaylist
-      (las-synth-preview-play synthplaylist))))
+      (las-synth-preview-play/stop synthplaylist))))
 
 
 ;--------------DRAG AND DROP
