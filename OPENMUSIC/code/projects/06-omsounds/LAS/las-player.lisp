@@ -10,15 +10,16 @@
 
 ;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
 (defmethod prepare-to-play ((engine (eql :libaudio)) (player omplayer) object at interval)
-  (call-next-method))
+  (call-next-method)
+)
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
 (defmethod player-start ((engine (eql :libaudio)) &optional play-list)
-  ;(call-next-method)
-  (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
-            (player-play-object engine (nth i play-list)))
-    )
+  (call-next-method)
+ ; (if play-list
+ ;     (loop for i from 0 to (- (length play-list) 1) do
+ ;           (player-play-object engine (nth i play-list)))
+  ;  )
   )
 
 ;;; PAUSE
@@ -42,10 +43,8 @@
 ;;; STOP
 (defmethod player-stop ((engine (eql :libaudio)) &optional play-list)
   (if play-list
-      (if (listp play-list)
-          (loop for i from 0 to (- (length play-list) 1) do
-                (player-stop-object engine (nth i play-list)))
-        (player-stop-object engine play-list))
+      (loop for i from 0 to (- (length play-list) 1) do
+            (player-stop-object engine (nth i play-list)))
     (oa::stop-full-player  oa::*audio-player-hidden*)
     ))
 
@@ -133,7 +132,7 @@
                           :afterfun #'(lambda (item)
                                         (if (/= (tracknum snd) (value item))
                                             (progn
-                                              (player-stop self snd)
+                                              (general-stop (player (editor control-view)))
                                               (setf (tracknum snd) (value item))
                                               (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
                                               (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
