@@ -206,7 +206,7 @@
 ;;;=================================
 
 (defparameter *general-player* (make-instance 'omplayer 
-                                              :callback-fun 'general-player-callback
+                                              ;;; :callback-fun 'general-player-callback
                                               :callback-tick 1.0
                                               :stop-fun 'general-player-stop
                                               ))
@@ -221,7 +221,6 @@
 (defun general-player-stop (caller)
   (mapcar #'(lambda (box)
               (setf (play-state box) nil)
-              (print box)
               (om-invalidate-view (car (frames box))))
           *play-boxes*)
   (setf *play-boxes* nil))
@@ -232,8 +231,9 @@
 (defmethod play-boxes ((boxlist list))
   (mapcar #'(lambda (box)
               (when (play-obj? (value box))
-                (player-schedule *general-player* (value box) 
-                                 (get-edit-param box 'player))
+                (player-schedule *general-player*
+                                 (value box) 
+                                 (get-edit-param box 'player) :at (get-player-time *general-player*))
                 (setf (play-state box) t)
                 (push box *play-boxes*)
                 ))
@@ -254,6 +254,7 @@
   )
 
 (defmethod stop-all-boxes ()
+  (general-player-stop nil)
   (stop-boxes *play-boxes*))
 
 

@@ -1012,7 +1012,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 
 (defmethod player-menu-item ((self OMBoxEditCall)) 
-  (when (allowed-in-maq-p (value self))
+  (when (play-obj? (value self))
     (list (om-new-leafmenu "Player" #'(lambda () (select-player self))))
     ))
 

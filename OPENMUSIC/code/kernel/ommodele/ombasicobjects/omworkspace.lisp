@@ -257,31 +257,32 @@
 (defvar *ws-params* nil)
 
 (defun workspace-from-name (name)
-  (when (probe-file (om-make-pathname :directory name :name  "modifs" :type "lisp"))
-    (load (om-make-pathname :directory name :name  "modifs" :type "lisp")))
-  (unless (probe-file (om-make-pathname :directory name))
-    (om-create-directory (om-make-pathname :directory name) :if-exists nil))
-  (unless (probe-file (om-make-pathname :directory name :name  "preferences" :type "lisp"))
-    (WITH-OPEN-FILE (out (om-make-pathname :directory name :name  "preferences" :type "lisp")
-                         :direction :output 
-                         :if-does-not-exist :create :if-exists :supersede) 
-      (write-line (format nil ";~D" *om-version*) out)
-      (prin1 '(in-package :om) out)))
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "elements"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "elements"))) :if-exists nil))
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "globals"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "globals"))) :if-exists nil))
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "user"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "user"))) :if-exists nil))
-  ;;; --- new for resources
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources"))) :if-exists nil))
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "icon"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "icon"))) :if-exists nil))
-  (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "pict"))))
-    (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "pict"))) :if-exists nil))
-
   (let ((preffile (om-make-pathname :directory  name :name  "preferences" :type "lisp")))
+    (when (probe-file (om-make-pathname :directory name :name  "modifs" :type "lisp"))
+      (load (om-make-pathname :directory name :name  "modifs" :type "lisp")))
+    (unless (probe-file (om-make-pathname :directory name))
+      (om-create-directory (om-make-pathname :directory name) :if-exists nil))
+    (unless (probe-file (om-make-pathname :directory name :name  "preferences" :type "lisp"))
+      (WITH-OPEN-FILE (out (om-make-pathname :directory name :name  "preferences" :type "lisp")
+                           :direction :output 
+                           :if-does-not-exist :create :if-exists :supersede) 
+        (write-line (format nil ";~D" *om-version*) out)
+        (prin1 '(in-package :om) out)))
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "elements"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "elements"))) :if-exists nil))
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "globals"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "globals"))) :if-exists nil))
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "user"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "user"))) :if-exists nil))
+    ;;; --- new for resources
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources"))) :if-exists nil))
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "icon"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "icon"))) :if-exists nil))
+    (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "pict"))))
+      (om-create-directory (om-make-pathname :device name :directory (append (pathname-directory name) (list "resources" "pict"))) :if-exists nil))
+
+  
     (unless (get-preferences-version name)
       (WITH-OPEN-FILE (out preffile
                            :direction :output 
@@ -293,37 +294,37 @@
                     (om-message-dialog (format nil "Warning: An error occurred while loading the workspace preferences.~%=> ~A" err))
                     (delete-file preffile nil))))
       (load preffile))    
-    )
     
-  (setf  *current-workSpace* (make-new-WorkSpace name))
+    
+    (setf  *current-workSpace* (make-new-WorkSpace name))
   
   
 
   ;new by AAA
-  (when (probe-file (om-make-pathname :directory name :name  "wsparams" :type "lisp"))
-    (load (om-make-pathname :directory  name :name  "wsparams" :type "lisp")))
+    (when (probe-file (om-make-pathname :directory name :name  "wsparams" :type "lisp"))
+      (load (om-make-pathname :directory  name :name  "wsparams" :type "lisp")))
 
-  (when *ws-params*
-    (setf (wsparams *current-workSpace*) *ws-params*))
+    (when *ws-params*
+      (setf (wsparams *current-workSpace*) *ws-params*))
   
-  ;;; new
-  (user-init-funcs)
+    ;;; new
+    (user-init-funcs)
   
-  (catch :load-prefs 
-    (handler-bind 
-        ((error #'(lambda (err)
-                    (om-message-dialog (format nil "Warning: An error occurred while setting the workspace preferences.~%=> ~A" err))
-                    (delete-file preffile nil)
-                    (setf *saved-pref* nil)
-                    (throw :load-prefs :err)
-                    )))
-      (restore-preferences)
-      ))
+    (catch :load-prefs 
+      (handler-bind 
+          ((error #'(lambda (err)
+                      (om-message-dialog (format nil "Warning: An error occurred while setting the workspace preferences.~%=> ~A" err))
+                      (delete-file preffile nil)
+                      (setf *saved-pref* nil)
+                      (throw :load-prefs :err)
+                      )))
+        (restore-preferences)
+        ))
 
-  (libs-autoload)
+    (libs-autoload)
 
   
-  )
+    ))
 
 (defvar *libs-auto-load* nil)
 

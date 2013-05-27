@@ -41,6 +41,11 @@
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
+
+
+
+;;; NOT IN OM PLAYER API
+
 ;;; PAUSE ONLY ONE OBJECT
 (defmethod player-pause-object ((engine (eql :libaudio)) object &key interval)
   (las-pause object (tracknum object)))
@@ -57,31 +62,12 @@
   ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
 ;  ())
 
-;;; retrieve the class from the 'stored' attribute of the sound editor
-;(defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
-
-
-;;; called when a box or editor attached to player is played
-;(defmethod player-play ((self las-player) (object sound) &key interval)
-  ;(setf (sound-to-play self) object)
-;  (call-next-method)
-;  (las-play object (car interval) (cadr interval) (tracknum object)))
-
-;;; called when a box or editor attached to player is stoped
-;(defmethod player-pause ((player las-player) &optional (object sound))
-;  (call-next-method)
-;  (las-pause object (tracknum object)))
-
-;;; called when a box or editor attached to player is stoped
-;(defmethod player-stop ((player las-player) &optional (object sound))
-;  (call-next-method)
-;  (las-stop object (tracknum object)))
 
 
 
 ;;; TODO
 ;;; called when a box or editor attached to player is removed/closed
-(defmethod player-cleanup ((player las-player))
+(defmethod player-cleanup ((player (eql :libaudio)))
   (let* ((snd (sound-to-play player))
          (status-list (if (eq player oa::*audio-player-hidden*)
                           oa::*audio-player-hidden-tracks-info*

@@ -9,6 +9,7 @@
     (setf (c-action bpf) (nth 3 slots-vals))
     bpf))
 
+(defmethod play-obj? ((self bpf-control)) t)
 
 ;(defclass bpf-player (omplayer) ())
 ;(defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
@@ -22,13 +23,16 @@
                         (schedule-task player #'(lambda () (funcall (c-action object) (cadr point))) (+ at (car point)))))
                 (point-pairs object))
       (mapcar #'(lambda (point) 
-                  (schedule-task player #'(lambda () (funcall (c-action object) (cadr point))) (print (+ at (car point)))))
+                  (schedule-task player #'(lambda () (funcall (c-action object) (cadr point))) (+ at (car point))))
               (point-pairs object)))
     ))
 
 ;(defmethod player-stop ((player bpf-player) &optional object)
 ;  (call-next-method)
 ;  (player-unschedule-all player))
+
+(defmethod default-edition-params ((self bpf-control)) 
+  (pairlis '(player) '(:bpfplayer) (call-next-method)))
 
 
 ;;;=======================================================
@@ -37,7 +41,7 @@
 
 (defclass bpfcontroleditor (bpfeditor play-editor-mixin) ())
 ;;(defmethod get-score-player ((self bpfcontroleditor)) :bpfplayer)
-(defmethod get-edit-param ((self bpfcontroleditor) (param (eql 'player))) :bpfplayer)
+;(defmethod get-edit-param ((self bpfcontroleditor) (param (eql 'player))) :bpfplayer)
 (defmethod cursor-panes ((self bpfcontroleditor)) (list (panel self)))
 
 (defclass bpfcontrolpanel (bpfpanel cursor-play-view-mixin) ())

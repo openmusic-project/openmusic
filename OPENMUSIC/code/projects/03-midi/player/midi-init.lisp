@@ -53,7 +53,7 @@ the recorder, this function is called by a def-load-pointers"
       (om-without-interrupts  
         ;;; open player
         (open-ms-players)
-        (add-assoc-player *general-player* 'midishare)
+        ;(add-assoc-player *general-player* 'midishare)
         ;;; set scheduler time to midi time
         ;(om-stop-scheduler)
         ;(defun clock-time () (om-midi-get-time))

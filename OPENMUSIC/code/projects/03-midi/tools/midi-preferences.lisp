@@ -260,18 +260,19 @@
          (when (get-pref modulepref :ms-drivers) 
            (sleep 0.5)
            (om-without-interrupts (restore-midishare-connections (get-pref modulepref :ms-drivers)))))
-       (when (find 'microplayer (assoc-players *general-player*))
-         (setf *microplayer-out-port* (get-pref modulepref :micro-out))
-         ;(setf *microplayer-host* (get-pref modulepref :micro-host))
-         (setf *micro-player-path* (get-pref modulepref :micro-path))
-         (unless (= *microplayer-in-port* (get-pref modulepref :micro-in))
-           (show-message-win (format nil "Updating OSC connection.~%Please wait..."))    
-           (close-microplayer)
-           (setf *microplayer-in-port* (get-pref modulepref :micro-in))
-           (open-microplayer)
-           (hide-message-win))
-         
-         ))) 
+       ;(when (find 'microplayer (assoc-players *general-player*))
+       ;  (setf *microplayer-out-port* (get-pref modulepref :micro-out))
+       ;  ;(setf *microplayer-host* (get-pref modulepref :micro-host))
+       ;  (setf *micro-player-path* (get-pref modulepref :micro-path))
+       ;  (unless (= *microplayer-in-port* (get-pref modulepref :micro-in))
+       ;    (show-message-win (format nil "Updating OSC connection.~%Please wait..."))    
+       ;    (close-microplayer)
+       ;    (setf *microplayer-in-port* (get-pref modulepref :micro-in))
+       ;    (open-microplayer)
+       ;    (hide-message-win))
+       ;  
+       ;  )
+       )) 
 
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
                                                    :ms-drivers nil
