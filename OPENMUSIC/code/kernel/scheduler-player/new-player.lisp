@@ -46,19 +46,23 @@
 (defmethod unschedule-all ((player omplayer))
   (setf (events player) nil))
 
+(defun get-my-play-list (engine play-list)
+  (mapcar 'cadr (remove-if-not #'(lambda (x) (equal x engine)) play-list :key 'car)))
+
+
 
 ;;; THIS METHOD WHEN THE PLAYER HAS TO PLAY SEVERAL THINGS OR PREPARE THEM IN ADVANCE
 ;;; SAYS ENGINE TO PREPARE FOR PLAYING <INTERVAL> (optional) IN <OBJ> WITH< ENGINE> AT TIME <at>
 (defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval)
   (unless (find engine (engines player)) (push engine (engines player)))
-  (push obj (play-list player))
+  (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
   
 
 (defmethod general-play ((player omplayer) start-t end-t)
   (cond ((equal (state player) :play) nil)
         ((equal (state player) :pause)
-         (player-continue player))
+         (general-continue player))
         (t 
          (let ((stop-time end-t))
            (when (callback-process player)
@@ -90,7 +94,8 @@
                                          )))
                      )))
            
-           (mapcar #'player-start (engines player))
+           (mapcar #'player-start (engines player) 
+                   (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
            
            (setf (state player) :play
                  (start-time player) start-t
@@ -101,21 +106,24 @@
          )))
 
 
-(defmethod general-pause ((player omplayer) &optional object)
-  (mapcar #'player-pause (engines player))
+(defmethod general-pause ((player omplayer))
+  (mapcar #'player-pause (engines player)
+          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
   (when (equal (state player) :play)
     (setf (start-time player) (get-player-time player)
           (state player) :pause
           )))
 
 (defmethod general-continue ((player omplayer))
-  (mapcar #'player-continue (engines player))
+  (mapcar #'player-continue (engines player)
+          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
   (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
 
-(defmethod general-stop ((player omplayer) &optional object)
-  (mapcar #'player-stop (engines player))
+(defmethod general-stop ((player omplayer))
+  (mapcar #'player-stop (engines player)
+          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
   (unschedule-all player)
   (setf (engines player) nil
         (play-list player) nil)
@@ -152,38 +160,41 @@
                             (player-play-object engine object :interval interval))
                         at))
 
-;;; START (PLAY WHAT IS SCHEDULED)
-(defmethod player-start ((engine t))
-  (print (format nil "~A : start" engine)))
-
-;;; PAUSE (all)
-(defmethod player-pause ((engine t))
-  (print (format nil "~A : pause" engine)))
-
-;;; CONTINUE (all)
-(defmethod player-continue ((engine t))
-  (print (format nil "~A : continue" engine)))
-
-;;; STOP (all)
-(defmethod player-stop ((engine t))
-  (print (format nil "~A : stop" engine)))
-
-
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval)
   (print (format nil "~A : play ~A - ~A" engine object interval)))
 
+
+;;; START (PLAY WHAT IS SCHEDULED)
+(defmethod player-start ((engine t) &optional play-list)
+  (print (format nil "~A : start" engine)))
+
+;;; PAUSE (all)
+(defmethod player-pause ((engine t) &optional play-list)
+  (print (format nil "~A : pause" engine)))
+
+;;; CONTINUE (all)
+(defmethod player-continue ((engine t) &optional play-list)
+  (print (format nil "~A : continue" engine)))
+
+;;; STOP (all)
+(defmethod player-stop ((engine t) &optional play-list)
+  (print (format nil "~A : stop" engine)))
+
+
+
+
 ;;; PAUSE ONLY ONE OBJECT
-(defmethod player-pause-object ((engine t) object &key interval)
-  (print (format nil "~A : pause ~A - ~A" engine object interval)))
+;(defmethod player-pause-object ((engine t) object)
+;  (print (format nil "~A : pause ~A - ~A" engine object)))
 
 ;;; RESTART ONLY ONE OBJECT
-(defmethod player-continue-object ((engine t) object &key interval)
-  (print (format nil "~A : continue ~A - ~A" engine object interval)))
+;(defmethod player-continue-object ((engine t) object)
+;  (print (format nil "~A : continue ~A - ~A" engine object)))
 
 ;;; STOP ONLY ONE OBJECT
-(defmethod player-stop-object ((engine t) object &key interval)
-  (print (format nil "~A : stop ~A - ~A" engine object interval)))
+;(defmethod player-stop-object ((engine t) object)
+;  (print (format nil "~A : stop ~A - ~A" engine object)))
 
 
 ;;;=================================

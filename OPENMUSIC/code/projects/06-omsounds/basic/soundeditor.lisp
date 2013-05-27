@@ -120,7 +120,7 @@
 (defmethod update-player-controls ((self sound-control-view) player)
   (apply #'om-remove-subviews self (player-specific-controls self))
   (setf (player-specific-controls self)
-        (make-player-specific-controls (player (editor self)) self))
+        (make-player-specific-controls player self))
   (apply #'om-add-subviews self (player-specific-controls self)))
   
 

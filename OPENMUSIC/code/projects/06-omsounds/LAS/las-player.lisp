@@ -32,7 +32,17 @@
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
+;;; PAUSE ONLY ONE OBJECT
+(defmethod player-pause-object ((engine (eql :libaudio)) object &key interval)
+  (las-pause object (tracknum object)))
 
+;;; RESTART ONLY ONE OBJECT
+(defmethod player-continue-object ((engine (eql :libaudio)) object &key interval)
+  (las-play object (car interval) (cadr interval) (tracknum object)))
+
+;;; STOP ONLY ONE OBJECT
+(defmethod player-stop-object ((engine (eql :libaudio)) object &key interval)
+  (las-stop object (tracknum object)))
 
 (defclass las-player (omplayer) 
   ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
@@ -84,7 +94,7 @@
 
 
 ;;; creates the player-specific control on the sound editor control panel
-(defmethod make-player-specific-controls ((self las-player) control-view)
+(defmethod make-player-specific-controls ((self (eql :libaudio)) control-view)
   (let* ((snd (object (editor control-view)))
          (track (tracknum snd)))
     (list 
