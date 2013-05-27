@@ -13,19 +13,19 @@
   (call-next-method))
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
-(defmethod player-start ((engine (eql :libaudio)))
+(defmethod player-start ((engine (eql :libaudio)) &optional play-list)
   (call-next-method))
 
 ;;; PAUSE
-(defmethod player-pause ((engine (eql :libaudio)))
+(defmethod player-pause ((engine (eql :libaudio)) &optional play-list)
   (oa::stop-full-player  oa::*audio-player-hidden*))
 
 ;;; CONTINUE
-(defmethod player-continue ((engine (eql :libaudio)))
+(defmethod player-continue ((engine (eql :libaudio)) &optional play-list)
   (oa::cont-full-player  oa::*audio-player-hidden*))
 
 ;;; STOP
-(defmethod player-stop ((engine (eql :libaudio)))
+(defmethod player-stop ((engine (eql :libaudio)) &optional play-list)
   (oa::stop-full-player  oa::*audio-player-hidden*))
 
 ;;; PLAY (NOW)

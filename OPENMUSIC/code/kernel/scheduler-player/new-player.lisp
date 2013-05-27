@@ -95,7 +95,7 @@
                      )))
            
            (mapcar #'player-start (engines player) 
-                   (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
+                   (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
            
            (setf (state player) :play
                  (start-time player) start-t
@@ -108,7 +108,7 @@
 
 (defmethod general-pause ((player omplayer))
   (mapcar #'player-pause (engines player)
-          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
+          (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
   (when (equal (state player) :play)
     (setf (start-time player) (get-player-time player)
           (state player) :pause
@@ -116,14 +116,14 @@
 
 (defmethod general-continue ((player omplayer))
   (mapcar #'player-continue (engines player)
-          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
+          (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
   (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
 
 (defmethod general-stop ((player omplayer))
   (mapcar #'player-stop (engines player)
-          (mapcar #'(lambda (engine) (get-my-play-list engine) (play-list player))))
+          (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
   (unschedule-all player)
   (setf (engines player) nil
         (play-list player) nil)
