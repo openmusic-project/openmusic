@@ -14,19 +14,40 @@
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
 (defmethod player-start ((engine (eql :libaudio)) &optional play-list)
-  (call-next-method))
+  ;(call-next-method)
+  (if play-list
+      (loop for i from 0 to (- (length play-list) 1) do
+            (player-play-object engine (nth i play-list)))
+    )
+  )
 
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :libaudio)) &optional play-list)
-  (oa::stop-full-player  oa::*audio-player-hidden*))
+  (if play-list
+      (loop for i from 0 to (- (length play-list) 1) do
+            (player-pause-object engine (nth i play-list)))
+    (oa::stop-full-player  oa::*audio-player-hidden*)
+    )
+  )
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :libaudio)) &optional play-list)
-  (oa::cont-full-player  oa::*audio-player-hidden*))
+  (if play-list
+      (loop for i from 0 to (- (length play-list) 1) do
+            (player-continue-object engine (nth i play-list)))
+    (oa::cont-full-player  oa::*audio-player-hidden*)
+    )
+  )
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :libaudio)) &optional play-list)
-  (oa::stop-full-player  oa::*audio-player-hidden*))
+  (if play-list
+      (if (listp play-list)
+          (loop for i from 0 to (- (length play-list) 1) do
+                (player-stop-object engine (nth i play-list)))
+        (player-stop-object engine play-list))
+    (oa::stop-full-player  oa::*audio-player-hidden*)
+    ))
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
