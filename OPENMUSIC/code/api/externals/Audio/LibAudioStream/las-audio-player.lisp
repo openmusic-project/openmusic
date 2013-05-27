@@ -435,6 +435,8 @@
 ;/SYNTH PREVIEW PLAY STOP FUNCTION
 ;This function plays a 10 sec preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
 ;TODO
+;;; !!! OM API CAN NOT COMPILE WITH OM SYMBOLS
+#|
 (defun om-synth-preview-play/stop (obj)
   (if (om::synth-ptr obj)
       (let* ((synth-ptr (om::synth-ptr obj))
@@ -451,7 +453,8 @@
             (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
             (las::AddAudioEffect liste synth-ptr)
             (om-smart-play/stop nullsnd))))))
-            
+|#
+          
 
 
 ;/SMART PLAY STOP FUNCTION

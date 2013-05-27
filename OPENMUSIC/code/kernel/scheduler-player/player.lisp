@@ -30,146 +30,147 @@
 
 (in-package :om)
 
-(defclass general-player ()
-   ((playing-etat :initform "Idle" :accessor playing-etat)
-    (list-to-play :initform nil :accessor list-to-play)
-    (playing-list :initform nil :accessor playing-list)
-    (cursor-pos :initform 0 :accessor cursor-pos)
-    (delta-cursor-pos :initform 0 :accessor delta-cursor-pos)
-    (recording-view :initform nil :accessor recording-view)
-    (pausetime :initform 0 :accessor pausetime)
-    (loopplay? :initform nil :accessor loopplay?)
-    (forlooplist :initform nil :accessor forlooplist)
-    (start-time :initform 0 :accessor start-time)
-    (playedobjdur :initform 0 :accessor playedobjdur)
-    (assoc-players :initform nil :accessor assoc-players)))
+;(defclass general-player ()
+;   ((playing-etat :initform "Idle" :accessor playing-etat)
+;    (list-to-play :initform nil :accessor list-to-play)
+;    (playing-list :initform nil :accessor playing-list)
+;    (cursor-pos :initform 0 :accessor cursor-pos)
+;    (delta-cursor-pos :initform 0 :accessor delta-cursor-pos)
+;    (recording-view :initform nil :accessor recording-view)
+;    (pausetime :initform 0 :accessor pausetime)
+;    (loopplay? :initform nil :accessor loopplay?)
+;    (forlooplist :initform nil :accessor forlooplist)
+;    (start-time :initform 0 :accessor start-time)
+;    (playedobjdur :initform 0 :accessor playedobjdur)
+;    (assoc-players :initform nil :accessor assoc-players)))
 
 ;etats "Idle" "Playing" "Pause"
 
-(defvar *general-player* (make-instance 'general-player))
-
-(defmethod Idle-p ((self general-player))
-  (and (string-equal (playing-etat self) "Idle")
-       (Idle-p (assoc-players self))))
+;(defvar *general-player* (make-instance 'general-player))
+(defparameter *general-player* (make-instance 'omplayer))
 
 
-(defmethod reset-player ((self t)  &optional view) nil)
-
-(defmethod reset-player ((self general-player) &optional view)
-   (setf (playing-etat self) "Idle")
-   (setf (playing-list self) nil)
-   (setf (forlooplist self) nil)
-   (setf (list-to-play self) nil)
-   (loop for player in (assoc-players self) do
-         (reset-player player))
-   (if (equal view (recording-view *general-player*))
-     (setf (recording-view self) nil))
-   (setf (cursor-pos self) 0)
-   (setf (delta-cursor-pos self) 0)
-   (setf (playedobjdur self) 0)
-   (setf (pausetime self) 0)
-   (reset-scheduler))
-
-(defmethod get-player-etat ((self general-player))
-   (playing-etat self))
+;(defmethod Idle-p ((self general-player))
+;  (and (string-equal (playing-etat self) "Idle")
+;       (Idle-p (assoc-players self))))
 
 
-(defmethod set-player-etat ((self general-player) etat)
-   (setf (playing-etat self) etat)) 
+;(defmethod reset-player ((self t)  &optional view) nil)
 
-(defmethod add-assoc-player ((self general-player) newplayer)
-  (unless (member newplayer (assoc-players self))
-    (pushr newplayer (assoc-players self))))
+;(defmethod reset-player ((self general-player) &optional view)
+;   (setf (playing-etat self) "Idle")
+;   (setf (playing-list self) nil)
+;   (setf (forlooplist self) nil)
+;   (setf (list-to-play self) nil)
+;   (loop for player in (assoc-players self) do
+;         (reset-player player))
+;   (if (equal view (recording-view *general-player*))
+;     (setf (recording-view self) nil))
+;   (setf (cursor-pos self) 0)
+;   (setf (delta-cursor-pos self) 0)
+;   (setf (playedobjdur self) 0)
+;   (setf (pausetime self) 0)
+;   (reset-scheduler))
 
-(defmethod remove-assoc-player ((self general-player) player)
-  (remove player (assoc-players self)))
+;(defmethod get-player-etat ((self general-player))
+;   (playing-etat self))
 
-(defmethod Play-player ((self general-player))
-   (when (or (list-to-play self) (assoc-players self))
-     (setf (playing-etat self) "Playing")
-     (setf (cursor-pos self) 0)
-     (setf (pausetime self) 0)
-     (setf (forlooplist self) (copy-list (list-to-play self)))
-     (loop for player in (assoc-players self) do
-           (play-player player))
-     ;; test...
-     (om-with-error-handle 
-       (om-without-interrupts
-         (start
-           (loop for item in (list-to-play self) do
-                 (let ((start (or (car (third item)) 0))
-                       (end (or (second (third item)) (extent (first item)))))
-                   ;(setf (cursor-pos self) start)
-                   (dfuncall (second item) 'DoPlay (first item) start end)
-                   (dfuncall (+ (second item) end) 'DoStop (first item))
-                   ))
-           (dfuncall (playedobjdur *general-player*) 'FinalPlay)
-           )
-         ))
-     (setf (start-time self) (real-time)))
-   )
 
-(defmethod Continue-Player ((self general-player))
-   (setf (playing-etat self) "Playing")
-   (setf (start-time self) (real-time))
-   (loop for item in (playing-list self) do
-         (DoContinue item))
-   (loop for player in (assoc-players self) do
-           (Continue-player player))
-   (start
-     (loop for item in (list-to-play self) do
-           (dfuncall (- (second item) (pausetime self)) 'DoPlay (first item) 0 (extent (first item))))
-     (dfuncall (- (playedobjdur self) (pausetime self)) 'FinalPlay)))
+;(defmethod set-player-etat ((self general-player) etat)
+;   (setf (playing-etat self) etat)) 
 
-(defmethod Pause-Player ((self general-player))
-   (setf (playing-etat self) "Pause")
-   (setf (pausetime self) (+ (pausetime self) (- (real-time) (start-time self))))
-   (loop for item in (playing-list self) do
-         (DoPause item))
-   (loop for player in (assoc-players self) do
-           (Pause-player player))
-   (reset-scheduler))
+;(defmethod add-assoc-player ((self general-player) newplayer)
+;  (unless (member newplayer (assoc-players self))
+;    (pushr newplayer (assoc-players self))))
 
-(defmethod Stop-Player ((self general-player) &optional view)
-   (if (and view (equal view (recording-view self)))
-     (doStopRecord (recording-view self))
-     ;;; test
-     (om-with-error-handle 
+;(defmethod remove-assoc-player ((self general-player) player)
+;  (remove player (assoc-players self)))
+
+;(defmethod Play-player ((self general-player))
+;   (when (or (list-to-play self) (assoc-players self))
+;     (setf (playing-etat self) "Playing")
+;     (setf (cursor-pos self) 0)
+;     (setf (pausetime self) 0)
+;     (setf (forlooplist self) (copy-list (list-to-play self)))
+;    (loop for player in (assoc-players self) do
+;           (play-player player))
+;     ;; test...
+;     (om-with-error-handle 
+;       (om-without-interrupts
+;         (start
+;           (loop for item in (list-to-play self) do
+;                 (let ((start (or (car (third item)) 0))
+;                       (end (or (second (third item)) (extent (first item)))))
+;                   ;(setf (cursor-pos self) start)
+;                   (dfuncall (second item) 'DoPlay (first item) start end)
+;                   (dfuncall (+ (second item) end) 'DoStop (first item))
+;                   ))
+;           (dfuncall (playedobjdur *general-player*) 'FinalPlay)
+;           )
+;         ))
+;     (setf (start-time self) (real-time)))
+;   )
+
+;(defmethod Continue-Player ((self general-player))
+;   (setf (playing-etat self) "Playing")
+;   (setf (start-time self) (real-time))
+;   (loop for item in (playing-list self) do
+;         (DoContinue item))
+;   (loop for player in (assoc-players self) do
+;           (Continue-player player))
+;   (start
+;     (loop for item in (list-to-play self) do
+;           (dfuncall (- (second item) (pausetime self)) 'DoPlay (first item) 0 (extent (first item))))
+;     (dfuncall (- (playedobjdur self) (pausetime self)) 'FinalPlay)))
+
+;(defmethod Pause-Player ((self general-player))
+;   (setf (playing-etat self) "Pause")
+;   (setf (pausetime self) (+ (pausetime self) (- (real-time) (start-time self))))
+;   (loop for item in (playing-list self) do
+;         (DoPause item))
+;   (loop for player in (assoc-players self) do
+;           (Pause-player player))
+;   (reset-scheduler))
+
+;(defmethod Stop-Player ((self general-player) &optional view)
+;   (if (and view (equal view (recording-view self)))
+;     (doStopRecord (recording-view self))
+;     ;;; test
+;     (om-with-error-handle 
        ;(om-without-interrupts 
-         (loop for item in (playing-list self) do
-               (DoStop item))
-         (loop for player in (assoc-players self) do
-            (Stop-player player view))
+;         (loop for item in (playing-list self) do
+;               (DoStop item))
+;         (loop for player in (assoc-players self) do
+;            (Stop-player player view))
         ;  )
-     ))
-   (reset-player self view))
+;     ))
+;   (reset-player self view))
 
-(defmethod InitPlayingSeq ((self general-player) dur &key port)
-  (loop for player in (assoc-players self) do
-        (InitPlayingSeq player dur :port port)))
+;(defmethod InitPlayingSeq ((self general-player) dur &key port)
+;  (loop for player in (assoc-players self) do
+;        (InitPlayingSeq player dur :port port)))
 
-(defmethod InitPlayingSeq ((self t) dur &key port) nil)
+;(defmethod InitPlayingSeq ((self t) dur &key port) nil)
 
 
-(defmethod FinalizePlayingSeq ((self general-player) dur &key port)
-  (loop for player in (assoc-players self) do
-        (FinalizePlayingSeq player dur :port port)))
+;(defmethod FinalizePlayingSeq ((self general-player) dur &key port)
+;  (loop for player in (assoc-players self) do
+;        (FinalizePlayingSeq player dur :port port)))
 
-(defmethod FinalizePlayingSeq ((self t) dur &key port) nil)
+;(defmethod FinalizePlayingSeq ((self t) dur &key port) nil)
 
-(defmethod incf-cursor-pos ((self general-player))
-   (setf (cursor-pos self) (round (+ (pausetime self) (- (real-time) (start-time self)) (delta-cursor-pos self)))))
+;(defmethod incf-cursor-pos ((self general-player))
+;   (setf (cursor-pos self) (round (+ (pausetime self) (- (real-time) (start-time self)) (delta-cursor-pos self)))))
 
-(defun Finalplay ()
-  (if (loopplay? *general-player*)
-      (when (or (forlooplist *general-player*) (assoc-players *general-player*))
-        (setf (playing-etat *general-player*) "Playing")
-        (setf (cursor-pos *general-player*) 0)
-        (setf (pausetime *general-player*) 0)
-        (setf (list-to-play *general-player*) (copy-list (forlooplist *general-player*)))
-        (loop for player in (assoc-players *general-player*) do
-              (play-player player))
-        (om-without-interrupts
+;(defun Finalplay ()
+;  (if (loopplay? *general-player*)
+;      (when (or (forlooplist *general-player*) (assoc-players *general-player*))
+ ;       (setf (playing-etat *general-player*) "Playing")
+;        (setf (cursor-pos *general-player*) 0)
+;        (setf (pausetime *general-player*) 0)
+;        (setf (list-to-play *general-player*) (copy-list (forlooplist *general-player*)))
+;        (loop for player in (assoc-players *general-player*) do
+;              (play-player ;        (om-without-interrupts
         (om-with-error-handle 
           (loop for item in (list-to-play *general-player*) do
                 (let ((start (or (car (third item)) 0))

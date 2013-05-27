@@ -7,10 +7,11 @@
   ((state :accessor state :initform :stop)    ; :play :pause :stop :record
    (loop-play :accessor loop-play :initform nil)
    (start-time :accessor start-time :initform 0)
+   (stop-time :accessor stop-time :initform 0)
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)
    ;;; CALLBACKS
-   (callback-tick :initform 0.01 :accessor callback-tick :initarg :callback-tick)
+   (callback-tick :initform 0.05 :accessor callback-tick :initarg :callback-tick)
    (caller :initform nil :accessor caller :initarg :caller)
    (callback-fun :initform nil :accessor callback-fun :initarg :callback-fun)
    (callback-process :initform nil :accessor callback-process)
@@ -18,6 +19,7 @@
    ;;; SCHEDULING TASKS
    (events :initform nil :accessor events :initarg :events)
    (scheduling-process :initform nil :accessor scheduling-process)
+   (scheduler-tick :initform 0.01 :accessor scheduler-tick :initarg :scheduler-tick)
    ;;; OBJECTS
    (play-list :initform nil :accessor play-list :initarg :play-list)
    ;;; ENGINES
@@ -59,12 +61,14 @@
   (prepare-to-play engine player obj at interval))
   
 
-(defmethod general-play ((player omplayer) start-t end-t)
-  (cond ((equal (state player) :play) nil)
+(defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
+  (cond ((equal (state player) :play) 
+         ;;; prolonge la durée de vie du player
+         (setf (stop-time player) (max (stop-time player) end-t)))
         ((equal (state player) :pause)
          (general-continue player))
         (t 
-         (let ((stop-time end-t))
+         (setf (stop-time player) end-t)
            (when (callback-process player)
              (om-kill-process (callback-process player)))
            (when (scheduling-process player)
@@ -77,8 +81,8 @@
                                        (loop
                                         (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
                                               (funcall (cdr (pop (events player)))))
-                                        (if (> (get-player-time player) stop-time) (general-stop player))
-                                        (sleep (callback-tick player))
+                                        (if (> (get-player-time player) (stop-time player)) (general-stop player))
+                                        (sleep (scheduler-tick player))
                                         )))))
            
            (when (callback-fun player)
@@ -103,7 +107,7 @@
            
            ;(om-delayed-funcall stop-time #'player-stop player obj)
            )
-         )))
+         ))
 
 
 (defmethod general-pause ((player omplayer))
@@ -139,7 +143,6 @@
     (om-kill-process (scheduling-process player))
     (setf (scheduling-process player) nil))
   )
-
 
 ;;;=====================
 ;;; ENGINES METHODS
@@ -195,6 +198,90 @@
 ;;; STOP ONLY ONE OBJECT
 ;(defmethod player-stop-object ((engine t) object)
 ;  (print (format nil "~A : stop ~A - ~A" engine object)))
+
+
+
+;;;=================================
+;;; GENERAL PLAYER: USED IN PATCH EDITORS
+;;;=================================
+
+(defparameter *general-player* (make-instance 'omplayer 
+                                              :callback-fun 'general-player-callback
+                                              :callback-tick 1.0
+                                              :stop-fun 'general-player-stop
+                                              ))
+
+(defvar *play-boxes* nil)
+
+;(defun general-player-callback (caller time)
+;  (mapcar #'(lambda (box)
+;              (om-invalidate-view (car (frames box))))
+;          *play-boxes*))
+
+(defun general-player-stop (caller)
+  (mapcar #'(lambda (box)
+              (setf (play-state box) nil)
+              (print box)
+              (om-invalidate-view (car (frames box))))
+          *play-boxes*)
+  (setf *play-boxes* nil))
+
+(defmethod play-obj? ((self t)) (allowed-in-maq-p self))
+
+
+(defmethod play-boxes ((boxlist list))
+  (mapcar #'(lambda (box)
+              (when (play-obj? (value box))
+                (player-schedule *general-player* (value box) 
+                                 (get-edit-param box 'player))
+                (setf (play-state box) t)
+                (push box *play-boxes*)
+                ))
+          boxlist)
+  (when *play-boxes*
+    (general-play *general-player* :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))))
+
+
+(defmethod stop-boxes ((boxlist list))
+  (mapcar #'(lambda (box)
+              (when (play-obj? (value box))
+                (player-stop (get-edit-param box 'player) (list (value box)))
+                (setf (play-state box) nil)
+                (setf *play-boxes* (remove box *play-boxes*))
+                ))
+          boxlist)
+  (unless *play-boxes* (general-stop *general-player*))
+  )
+
+(defmethod stop-all-boxes ()
+  (stop-boxes *play-boxes*))
+
+
+;;; DEPRECATED !!
+;(defmethod play-from-box ((self list))
+;  (let ((playlist (loop for box in self 
+;                        when (and (play-obj? (value (object box))) 
+;                                  (not (typep (value (object box)) 'sound)) 
+;                                  (not (typep (value (object box)) 'faust-synth-console)))
+;                        collect (object box)))
+;        (sndplaylist (loop for box in self 
+;                           when (typep (value (object box)) 'sound)
+;                           collect (value (object box))))
+;        (synthplaylist (loop for box in self 
+;                           when (typep (value (object box)) 'faust-synth-console)
+;                           collect (value (object box))))) ;;PAS PROPRE
+
+;    (when playlist
+;      (PlayAny t (make-instance 'listtoplay
+;                                :thelist (loop for item in playlist
+;                                               collect (value item))
+;                                :params (loop for item in playlist
+;                                              collect (edition-params item)))))
+;    (when sndplaylist
+;      (las-play/stop sndplaylist))
+;    (when synthplaylist
+;      (las-synth-preview-play/stop synthplaylist)
+;      )))
 
 
 ;;;=================================
@@ -256,8 +343,8 @@
     (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
     (player-schedule (player self) obj engine :at 0 :interval interval)
     (general-play (player self) 
-                   (or (car interval) 0)
-                   (or (cadr interval) (get-obj-dur obj)))))
+                  :start-t (or (car interval) 0)
+                  :end-t (or (cadr interval) (get-obj-dur obj)))))
 
 
 (defmethod editor-pause ((self play-editor-mixin))

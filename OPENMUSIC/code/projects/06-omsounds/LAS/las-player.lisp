@@ -53,12 +53,12 @@
 (defmethod player-stop-object ((engine (eql :libaudio)) object &key interval)
   (las-stop object (tracknum object)))
 
-(defclass las-player (omplayer) 
+;(defclass las-player (omplayer) 
   ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
-  ())
+;  ())
 
 ;;; retrieve the class from the 'stored' attribute of the sound editor
-(defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
+;(defmethod class-from-player-type ((type (eql :libaudio))) 'las-player)
 
 
 ;;; called when a box or editor attached to player is played
@@ -76,10 +76,6 @@
 ;(defmethod player-stop ((player las-player) &optional (object sound))
 ;  (call-next-method)
 ;  (las-stop object (tracknum object)))
-
-
-
-
 
 
 

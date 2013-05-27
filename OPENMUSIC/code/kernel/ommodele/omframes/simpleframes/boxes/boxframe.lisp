@@ -690,56 +690,6 @@
 (defmethod show-con? ((self omboxframe)) (show-con? (om-view-container self)))
 
 
-
-;PLAYING BOXES
-(defclass listtoplay ()
-   ((thelist :initform nil :initarg :thelist :accessor thelist)
-    (params :initform nil :initarg :params :accessor params)))
-
-
-(defmethod real-duration ((self listtoplay) time)
-  (loop for item in (thelist self) 
-        maximize (second (multiple-value-list (real-duration item time))) into max
-        minimize (real-duration item time) into min
-        finally (return (values min max))))
-
-(defmethod get-obj-dur ((self listtoplay))
-  (get-obj-dur (thelist self)))
-
-(defmethod play-from-box ((self null)) t)
-(defmethod play-from-box ((self t)) t)
-
-(defmethod play-from-box ((self boxframe)) 
-  (play-from-box (list self)))
-
-(defmethod play-obj? ((self t)) (allowed-in-maq-p self))
-
-(defmethod play-from-box ((self list))
-  (let ((playlist (loop for box in self 
-                        when (and (play-obj? (value (object box))) 
-                                  (not (typep (value (object box)) 'sound)) 
-                                  (not (typep (value (object box)) 'faust-synth-console)))
-                        collect (object box)))
-        (sndplaylist (loop for box in self 
-                           when (typep (value (object box)) 'sound)
-                           collect (value (object box))))
-        (synthplaylist (loop for box in self 
-                           when (typep (value (object box)) 'faust-synth-console)
-                           collect (value (object box))))) ;;PAS PROPRE
-
-    (when playlist
-      (PlayAny t (make-instance 'listtoplay
-                                :thelist (loop for item in playlist
-                                               collect (value item))
-                                :params (loop for item in playlist
-                                              collect (edition-params item)))))
-    (when sndplaylist
-      (las-play/stop sndplaylist))
-    (when synthplaylist
-      (las-synth-preview-play/stop synthplaylist)
-      )))
-
-
 ;--------------DRAG AND DROP
 
 (defmethod make-drag-region ((self omboxframe) region x0 y0 view)
@@ -1129,7 +1079,7 @@
 ;Frame for editor boxes
 ;-----------------------------------------
 
-(omg-defclass boxEditorFrame (boxframe) ()
+(defclass boxEditorFrame (boxframe) ()
    (:documentation "Simple frame for OMBoxEditCall meta objects. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
 
@@ -1241,7 +1191,8 @@
 (defmethod draw-after-box ((self boxEditorFrame)) 
    (when (view-of-patch (object self))
      (om-with-focused-view self
-          (om-draw-hilite-rect 0 0 (w self) (h self)))))
+          (om-draw-hilite-rect 0 0 (w self) (h self))))
+   )
 
 (defmethod close-frame ((box boxEditorFrame))
    "If miniview show a picture we must kill it."
