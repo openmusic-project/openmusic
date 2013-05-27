@@ -78,6 +78,9 @@
 ;      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
 ;      (values format channels sample-rate 0 frames skip))))
 
+
+
+
 (defun sndfile-get-info (path)
   "Returns a matrix of sound data"
   (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)

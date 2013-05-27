@@ -437,8 +437,8 @@
      
 (defmethod draw-bpf ((Self Bpfpanel) (Bpf Bpf) Minx Maxx Miny Maxy &optional (Deltax 0) (Deltay 0) (dr-points nil)) 
    (let* ((X-Points (give-points-in-x-range bpf minx maxx))
-            (Y-Points (give-points-in-y-range bpf miny maxy))
-            (Points (sort (intersection x-points y-points :test 'equal)  '< :key 'om-point-h)))
+          (Y-Points (give-points-in-y-range bpf miny maxy))
+          (Points (sort (intersection x-points y-points :test 'equal)  '< :key 'om-point-h)))
      (draw-bpf-points self bpf points deltax deltay dr-points)
      
      ;;; optimizacion!

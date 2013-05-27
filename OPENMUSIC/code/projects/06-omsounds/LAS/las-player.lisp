@@ -5,6 +5,35 @@
 
 (in-package :om)
 
+
+;;; METHODES A REDEFINIR QUAND ON UTILISE OMPLAYER
+
+;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
+(defmethod prepare-to-play ((engine (eql :libaudio)) (player omplayer) object at interval)
+  (call-next-method))
+
+;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
+(defmethod player-start ((engine (eql :libaudio)))
+  (call-next-method))
+
+;;; PAUSE
+(defmethod player-pause ((engine (eql :libaudio)))
+  (oa::stop-full-player  oa::*audio-player-hidden*))
+
+;;; CONTINUE
+(defmethod player-continue ((engine (eql :libaudio)))
+  (oa::cont-full-player  oa::*audio-player-hidden*))
+
+;;; STOP
+(defmethod player-stop ((engine (eql :libaudio)))
+  (oa::stop-full-player  oa::*audio-player-hidden*))
+
+;;; PLAY (NOW)
+(defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
+  (las-play object (car interval) (cadr interval) (tracknum object)))
+
+
+
 (defclass las-player (omplayer) 
   ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
   ())
@@ -14,21 +43,28 @@
 
 
 ;;; called when a box or editor attached to player is played
-(defmethod player-play ((self las-player) (object sound) &key interval)
+;(defmethod player-play ((self las-player) (object sound) &key interval)
   ;(setf (sound-to-play self) object)
-  (call-next-method)
-  (las-play object (car interval) (cadr interval) (tracknum object)))
+;  (call-next-method)
+;  (las-play object (car interval) (cadr interval) (tracknum object)))
 
 ;;; called when a box or editor attached to player is stoped
-(defmethod player-pause ((player las-player) &optional (object sound))
-  (call-next-method)
-  (las-pause object (tracknum object)))
+;(defmethod player-pause ((player las-player) &optional (object sound))
+;  (call-next-method)
+;  (las-pause object (tracknum object)))
 
 ;;; called when a box or editor attached to player is stoped
-(defmethod player-stop ((player las-player) &optional (object sound))
-  (call-next-method)
-  (las-stop object (tracknum object)))
+;(defmethod player-stop ((player las-player) &optional (object sound))
+;  (call-next-method)
+;  (las-stop object (tracknum object)))
 
+
+
+
+
+
+
+;;; TODO
 ;;; called when a box or editor attached to player is removed/closed
 (defmethod player-cleanup ((player las-player))
   (let* ((snd (sound-to-play player))

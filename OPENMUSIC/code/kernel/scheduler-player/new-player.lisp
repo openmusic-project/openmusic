@@ -18,11 +18,16 @@
    ;;; SCHEDULING TASKS
    (events :initform nil :accessor events :initarg :events)
    (scheduling-process :initform nil :accessor scheduling-process)
+   ;;; OBJECTS
+   (play-list :initform nil :accessor play-list :initarg :play-list)
+   ;;; ENGINES
+   (engines :initform nil :accessor engines :initarg :engines)
    ))
 
-(defmethod class-from-player-type ((type t)) 'omplayer)
 
-(defmethod make-player-specific-controls ((self omplayer) control-view) nil)
+;(defstruct player-task (object nil) (engine nil) (at 0) (interval nil))
+
+(defmethod player-init ((self omplayer)) t)
 
 (defmacro get-player-time (player)
   `(cond ((equal (state ,player) :play)
@@ -31,17 +36,31 @@
           (+ (player-offset ,player) (start-time ,player)))
          (t 0)))
 
-(defmethod player-init ((self omplayer)) t)
-
 (defmethod idle-p ((self omplayer)) 
   (not (equal (state self) :play)))
 
-(defmethod player-play ((player omplayer) obj &key interval)
+(defmethod schedule-task ((player omplayer) task at)
+  (push (cons at task) (events player))
+  (setf (events player) (sort (events player) '< :key 'car)))
+
+(defmethod unschedule-all ((player omplayer))
+  (setf (events player) nil))
+
+
+;;; THIS METHOD WHEN THE PLAYER HAS TO PLAY SEVERAL THINGS OR PREPARE THEM IN ADVANCE
+;;; SAYS ENGINE TO PREPARE FOR PLAYING <INTERVAL> (optional) IN <OBJ> WITH< ENGINE> AT TIME <at>
+(defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval)
+  (unless (find engine (engines player)) (push engine (engines player)))
+  (push obj (play-list player))
+  (prepare-to-play engine player obj at interval))
+  
+
+(defmethod general-play ((player omplayer) start-t end-t)
   (cond ((equal (state player) :play) nil)
         ((equal (state player) :pause)
          (player-continue player))
         (t 
-         (let ((stop-time (or (cadr interval) (get-obj-dur obj))))
+         (let ((stop-time end-t))
            (when (callback-process player)
              (om-kill-process (callback-process player)))
            (when (scheduling-process player)
@@ -54,7 +73,7 @@
                                        (loop
                                         (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
                                               (funcall (cdr (pop (events player)))))
-                                        (if (> (get-player-time player) stop-time) (player-stop player obj))
+                                        (if (> (get-player-time player) stop-time) (general-stop player))
                                         (sleep (callback-tick player))
                                         )))))
            
@@ -71,45 +90,101 @@
                                          )))
                      )))
            
+           (mapcar #'player-start (engines player))
+           
            (setf (state player) :play
-                 (start-time player) (or (car interval) 0)
+                 (start-time player) start-t
                  (ref-clock-time player) (clock-time))
            
            ;(om-delayed-funcall stop-time #'player-stop player obj)
            )
-         )))  
+         )))
 
-(defmethod player-pause ((player omplayer) &optional object)
+
+(defmethod general-pause ((player omplayer) &optional object)
+  (mapcar #'player-pause (engines player))
   (when (equal (state player) :play)
     (setf (start-time player) (get-player-time player)
           (state player) :pause
           )))
 
-(defmethod player-continue ((player omplayer))
+(defmethod general-continue ((player omplayer))
+  (mapcar #'player-continue (engines player))
   (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
 
-(defmethod player-stop ((player omplayer) &optional object)
-  (setf (state player) :stop
-        (ref-clock-time player) (clock-time)
-        (start-time player) 0)
+(defmethod general-stop ((player omplayer) &optional object)
+  (mapcar #'player-stop (engines player))
+  (unschedule-all player)
+  (setf (engines player) nil
+        (play-list player) nil)
   (when (stop-fun player)
     (funcall (stop-fun player) (caller player)))
   (when (callback-process player)
     (om-kill-process (callback-process player))
     (setf (callback-process player) nil))
+  (setf (state player) :stop
+        (ref-clock-time player) (clock-time)
+        (start-time player) 0)
   (when (scheduling-process player)
     (om-kill-process (scheduling-process player))
     (setf (scheduling-process player) nil))
   )
 
-(defmethod player-schedule ((player omplayer) task at)
-  (push (cons at task) (events player))
-  (setf (events player) (sort (events player) '< :key 'car)))
 
-(defmethod player-unschedule-all ((player omplayer))
-  (setf (events player) nil))
+;;;=====================
+;;; ENGINES METHODS
+;;;=====================
+
+;;; TO BE REDEFINED BY THE DIFFERENT ENGINES
+;(defclass player-engine () ())
+;(defmethod class-from-player-type ((type t)) 'player-engine)
+
+(defmethod make-player-specific-controls ((self t) control-view) nil)
+
+
+;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST TEH CALL TO PLAYER-start
+;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
+(defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
+  (schedule-task player 
+                        #'(lambda () 
+                            (player-play-object engine object :interval interval))
+                        at))
+
+;;; START (PLAY WHAT IS SCHEDULED)
+(defmethod player-start ((engine t))
+  (print (format nil "~A : start" engine)))
+
+;;; PAUSE (all)
+(defmethod player-pause ((engine t))
+  (print (format nil "~A : pause" engine)))
+
+;;; CONTINUE (all)
+(defmethod player-continue ((engine t))
+  (print (format nil "~A : continue" engine)))
+
+;;; STOP (all)
+(defmethod player-stop ((engine t))
+  (print (format nil "~A : stop" engine)))
+
+
+;;; PLAY (NOW)
+(defmethod player-play-object ((engine t) object &key interval)
+  (print (format nil "~A : play ~A - ~A" engine object interval)))
+
+;;; PAUSE ONLY ONE OBJECT
+(defmethod player-pause-object ((engine t) object &key interval)
+  (print (format nil "~A : pause ~A - ~A" engine object interval)))
+
+;;; RESTART ONLY ONE OBJECT
+(defmethod player-continue-object ((engine t) object &key interval)
+  (print (format nil "~A : continue ~A - ~A" engine object interval)))
+
+;;; STOP ONLY ONE OBJECT
+(defmethod player-stop-object ((engine t) object &key interval)
+  (print (format nil "~A : stop ~A - ~A" engine object interval)))
+
 
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
@@ -121,13 +196,17 @@
     (end-callback :initform nil :accessor end-callback)))
 
 (defun init-editor-player (editor)
-  (setf (player editor) (make-instance (class-from-player-type (get-score-player editor))
+  (setf (player editor) (make-instance 'omplayer ;; (class-from-player-type (get-score-player editor))
                                      :caller editor
                                      :callback-fun 'play-editor-callback
                                      :stop-fun 'stop-editor-callback)))
 
 (defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
   (init-editor-player self))
+
+(defmethod get-player-engine ((self play-editor-mixin)) t)
+(defmethod get-player-engine ((self editorview)) (get-edit-param self 'player))
+
 
 (defmethod reset-editor-player ((self play-editor-mixin))
   (init-editor-player self)
@@ -149,25 +228,32 @@
              (list (cursor-pos selection-pane) (get-duration self)))
             (t nil)))))
 
+;;; THE USER PRESSES PLAY IN THE EDITOR
 (defmethod editor-play ((self play-editor-mixin) )
   (setf (loop-play (player self)) (loop-play self))
   (let ((obj (get-obj-to-play self))
-        (interval (get-interval-to-play self)))
+        (interval (get-interval-to-play self))
+        (engine (get-player-engine self)))
     (setf (callback-fun (player self))
           #'(lambda (editor time)
               (handler-bind ((error #'(lambda (e) 
+                                        (print e)
                                         (om-kill-process (callback-process (player self)))
                                         (abort e))))
                 (play-editor-callback editor time)
                 )))
     (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
-    (player-play (player self) obj :interval interval)))
+    (player-schedule (player self) obj engine :at 0 :interval interval)
+    (general-play (player self) 
+                   (or (car interval) 0)
+                   (or (cadr interval) (get-obj-dur obj)))))
+
 
 (defmethod editor-pause ((self play-editor-mixin))
-  (player-pause (player self) (get-obj-to-play self)))
+  (general-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
-  (player-stop (player self) (get-obj-to-play self)))
+  (general-stop (player self)))
 
 (defmethod editor-play/stop ((self play-editor-mixin))
   (if (idle-p (player self))
@@ -186,6 +272,11 @@
           (cursor-panes self)))
 
 (defmethod stop-editor-callback ((self play-editor-mixin)) nil)
+
+
+
+
+
 
 ;;;===================================
 ; VIEW WITH CURSOR
@@ -267,10 +358,14 @@
     (om-erase-movable-cursor self)
     (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)))
 
+
+(defmethod time2pixel ((self t) time)
+  (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+
 (defmethod update-cursor ((self cursor-play-view-mixin) time &optional y1 y2)
   (let* ((y (or y1 0))
          (h (if y2 (- y2 y1) (h self)))
-         (pixel (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+         (pixel (time2pixel self time))
          (dur (get-obj-dur (object (om-view-container self))))
          range
          xview
@@ -279,13 +374,13 @@
          )
     (when (and (view-turn-pages-p self)
                (> pixel (+ (w self) (om-h-scroll-position self)))
-               (< time dur)) 
+               (< time dur))
       (progn
         (setf range (rangex (panel (om-view-container self))))
         (setf xview (- (second range) (first range)))
         (setf dest (+ time xview))
         (if (> dest dur)
-            (setf pixel (om-point-x (point2pixel self (om-make-point (- dur xview) 0) (get-system-etat self)))))
+            (setf pixel (time2pixel self (- dur xview))))
         (scroll-play-view self pixel)))
     (om-update-movable-cursor self pixel y 4 h)))
 

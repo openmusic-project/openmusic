@@ -106,7 +106,7 @@
      ;                                   (report-modifications (om-view-container self)))
      ;                     )
                      ))
-                           
+            
 (defmethod update-controls ((self sound-control-view))
   (let ((player (get-edit-param (editor self) 'player)))
     (om-set-selected-item (player-control self) (audio-player-name player))
