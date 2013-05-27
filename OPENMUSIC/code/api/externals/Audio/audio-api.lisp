@@ -31,6 +31,7 @@
           om-sound-sndlasptr-current
           om-sound-n-samples-current
           om-sound-sndlasptr-to-play
+          om-sound-set-sndlasptr-to-play
           om-sound-n-samples-to-play
           om-sound-las-slicing-past-stack
           om-sound-las-slicing-future-stack
@@ -492,6 +493,9 @@
 (defmethod om-sound-sndlasptr-to-play ((self om-sound))
   (when (or (loaded self) (om-fill-sound-info self))
     (sndlasptr-to-play self)))
+
+(defmethod om-sound-set-sndlasptr-to-play ((self om-sound) ptr)
+    (setf (sndlasptr-to-play self) ptr))
 
 (defmethod om-sound-n-samples-to-play ((self om-sound))
   (when (or (loaded self) (om-fill-sound-info self))

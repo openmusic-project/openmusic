@@ -725,7 +725,7 @@
                            collect (value (object box))))
         (synthplaylist (loop for box in self 
                            when (typep (value (object box)) 'faust-synth-console)
-                           collect (synth-ptr (value (object box)))))) ;;PAS PROPRE
+                           collect (value (object box))))) ;;PAS PROPRE
 
     (when playlist
       (PlayAny t (make-instance 'listtoplay
@@ -736,7 +736,8 @@
     (when sndplaylist
       (las-play/stop sndplaylist))
     (when synthplaylist
-      (las-synth-preview-play/stop synthplaylist))))
+      (las-synth-preview-play/stop synthplaylist)
+      )))
 
 
 ;--------------DRAG AND DROP

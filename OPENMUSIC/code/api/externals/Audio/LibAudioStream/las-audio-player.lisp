@@ -12,11 +12,18 @@
 (export '(
           las-init-full-system
           las-close-full-system
+
+          las-play-all-players
+          las-pause-all-players
+          las-stop-all-players
+          las-cont-all-players
+
           las-play
           las-pause
           las-stop
           las-play/stop ;en cours
           las-synth-preview-play/stop
+
           las-switch-sound-las-player
           las-srate
           las-channels
@@ -51,9 +58,6 @@
 (defconstant las-renderer las::kCoreAudioRenderer)
 (defconstant las-thread 1)
 
-(defvar *las-null-sounds* (make-hash-table))
-(defvar *synth-preview-counter* 0)
-
 ;Define callbacks when channels stop
 (cffi:defcallback channel-stop-callback-hidden :void ((chan :pointer))
   (let* ((status-list *audio-player-hidden-tracks-info*)
@@ -70,20 +74,23 @@
 ;===============================================================================================================================================================
 
 (defun las-init-full-system ()
-  (let ((nullptr (las::makestereosound (las::makenullsound (* las-srate 10)))))
-    (progn
-      (loop for i from 0 to 9 do
-            (setf (gethash i *las-null-sounds*) (make-instance 'om-sound
-                                                               :number-of-channels 2
-                                                               :sndlasptr nullptr
-                                                               :sndlasptr-current nullptr
-                                                               :sndlasptr-current-save nullptr))
-            (setf (sndlasptr-to-play (gethash i *las-null-sounds*)) nullptr))
-      (instanciate-players)
-      (start-global-audio-context))))
+  (progn
+    (instanciate-players)
+    (start-global-audio-context)))
 
 (defun las-close-full-system ()
   (destroy-global-audio-context))
+
+
+(defun las-play-all-players ()
+  (play-full-audio-context))
+(defun las-pause-all-players ()
+  (pause-full-audio-context))
+(defun las-stop-all-players ()
+  (stop-full-audio-context))
+(defun las-cont-all-players ()
+  (cont-full-audio-context))
+
 
 (defun las-play (obj &optional from to track)
   (if (listp obj)
@@ -102,6 +109,7 @@
       (loop for object in obj do
           (om-smart-stop object track))
     (om-smart-stop obj track)))
+
 
 (defun las-synth-preview-play/stop (obj)
   (if (listp obj)
@@ -196,6 +204,12 @@
   (stop-full-player *audio-player-visible*)
   (stop-full-player *audio-player-hidden*))
 
+;/STOP FULL AUDIO CONTEXT FUNCTION
+;Tool that pause both players, by pausing all channels using loops (not really effective...)
+(defun pause-full-audio-context ()
+  (pause-full-player *audio-player-visible*)
+  (pause-full-player *audio-player-hidden*))
+
 ;/CONT FULL AUDIO CONTEXT FUNCTION
 ;Tool that continues both players, by stopping all channels using loops (not really effective...)
 (defun cont-full-audio-context ()
@@ -259,6 +273,12 @@
 (defun stop-full-player (player)
   (loop for i from 0 to (- las-channels 1) do
         (stop-one-channel player i)))
+
+;/PAUSE FULL PLAYER FUNCTION
+;Pause all tracks of a player using a loop (not really effective...)
+(defun pause-full-player (player)
+  (loop for i from 0 to (- las-channels 1) do
+        (pause-one-channel player i)))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -414,24 +434,24 @@
 ;===============================================================================================================================================================
 ;/SYNTH PREVIEW PLAY STOP FUNCTION
 ;This function plays a 10 sec preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
-(defun om-synth-preview-play/stop (synth-ptr)
-  (if synth-ptr
-      (let ((res (las-faust-synth-already-plugged-? synth-ptr))
-            chan liste)
+;TODO
+(defun om-synth-preview-play/stop (obj)
+  (if (om::synth-ptr obj)
+      (let* ((synth-ptr (om::synth-ptr obj))
+             (duration (om::duration obj))
+             (nullsnd (om::nullsnd obj))
+             (res (las-faust-synth-already-plugged-? synth-ptr))
+             chan liste)
         (if res
             (progn
-              (om-smart-play/stop (gethash *synth-preview-counter* *las-null-sounds*) (+ (car res) 1))
-              (incf *synth-preview-counter*))
+              (om-smart-play/stop nullsnd (+ (car res) 1)))
           (progn
             (setf chan (get-free-channel *audio-player-hidden*))
             (setf liste (las::MakeAudioEffectList)) 
             (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
             (las::AddAudioEffect liste synth-ptr)
-            (om-smart-play/stop (gethash *synth-preview-counter* *las-null-sounds*))
-            (incf *synth-preview-counter*))))
-    (if (> *synth-preview-counter* 9)
-        (setf *synth-preview-counter* 0))))
-
+            (om-smart-play/stop nullsnd))))))
+            
 
 
 ;/SMART PLAY STOP FUNCTION

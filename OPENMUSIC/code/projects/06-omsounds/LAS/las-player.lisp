@@ -10,43 +10,32 @@
 
 ;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
 (defmethod prepare-to-play ((engine (eql :libaudio)) (player omplayer) object at interval)
-  (call-next-method)
-)
+  (call-next-method))
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
 (defmethod player-start ((engine (eql :libaudio)) &optional play-list)
-  (call-next-method)
- ; (if play-list
- ;     (loop for i from 0 to (- (length play-list) 1) do
- ;           (player-play-object engine (nth i play-list)))
-  ;  )
-  )
+  (call-next-method))
 
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :libaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-pause-object engine (nth i play-list)))
-    (oa::stop-full-player  oa::*audio-player-hidden*)
-    )
-  )
+    (las-pause-all-players)))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :libaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-continue-object engine (nth i play-list)))
-    (oa::cont-full-player  oa::*audio-player-hidden*)
-    )
-  )
+    (las-cont-all-players)))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :libaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-stop-object engine (nth i play-list)))
-    (oa::stop-full-player  oa::*audio-player-hidden*)
-    ))
+    (las-stop-all-players)))
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
