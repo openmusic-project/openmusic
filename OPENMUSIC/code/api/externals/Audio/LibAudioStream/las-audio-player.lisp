@@ -439,9 +439,8 @@
 ;===============================================================================================================================================================
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
-;/SYNTH PREVIEW PLAY STOP FUNCTION
+;/SYNTH PREVIEW PLAY FUNCTION
 ;This function plays a preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
-
 (defun om-synth-preview-play (obj)
   (let ((search-res (las-faust-search-synth-console-in-register obj)))
     (if (car search-res)
@@ -460,6 +459,8 @@
               (las::AddAudioEffect liste synth-ptr)
               (om-smart-play nullsnd)))))))
 
+;/SYNTH PREVIEW STOP FUNCTION
+;This function stops a preview of a selected synth.
 (defun om-synth-preview-stop (obj)
   (let ((search-res (las-faust-search-synth-console-in-register obj)))
     (if (car search-res)
@@ -469,14 +470,8 @@
                (res (las-faust-synth-already-plugged-? synth-ptr))
                chan liste)
           (if res
-              (progn
-                (om-smart-stop nullsnd (+ (car res) 1)))
-            (progn
-              (setf chan (get-free-channel *audio-player-hidden*))
-              (setf liste (las::MakeAudioEffectList)) 
-              (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
-              (las::AddAudioEffect liste synth-ptr)
-              (om-smart-stop nullsnd)))))))
+              (om-smart-stop-visible nullsnd (car res))
+            (om-smart-stop-hidden nullsnd))))))
 
           
 
@@ -614,14 +609,11 @@
 
 ;/STOP FUNCTION FOR HIDDEN PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
-(defun om-smart-stop-hidden (snd)
+(defun om-smart-stop-hidden (snd &optional synth)
   (let ((actual-track (tracknum-sys snd))
         (player *audio-player-hidden*))
     (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
-        (let ()
-          (stop-one-channel player actual-track)
-          ;(load-sound-on-one-channel player snd actual-track)
-          ))))
+        (stop-one-channel player actual-track))))
 
 ;/STOP FUNCTION FOR VISIBLE PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
@@ -629,10 +621,7 @@
   (let ((actual-track tracknum)
         (player *audio-player-visible*))
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
-        (let ()
-          (stop-one-channel player actual-track)
-          ;(load-sound-on-one-channel player snd actual-track)
-          ))))
+        (stop-one-channel player actual-track))))
 
 ;/USE ORIGINAL SOUND
 ;This functions switch between the orginal stream and the modified stream
