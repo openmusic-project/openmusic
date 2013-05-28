@@ -1,7 +1,7 @@
 
 (in-package :om)
 
-(defclass! bpf-control (BPF) 
+(defclass! bpf-control (simple-container BPF) 
    ((c-action :initform nil :accessor c-action :initarg :c-action)))
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
@@ -9,8 +9,18 @@
     (setf (c-action bpf) (nth 3 slots-vals))
     bpf))
 
-(defmethod play-obj? ((self bpf-control)) t)
+(defmethod omng-copy ((self bpf-control))
+  (let ((bpf (eval (call-next-method))))
+    (setf (c-action bpf) (c-action self))
+    bpf))
 
+(defmethod print-object ((self bpf-control) stream)
+  (call-next-method))
+;  (format stream "BPF-CONTROL: ~A ~D" (c-action self) (slot-value self 'offset)))
+
+(defmethod play-obj? ((self bpf-control)) t)
+(defmethod allowed-in-maq-p ((self bpf-control)) t)
+(defmethod get-obj-dur ((self bpf-control)) (last-elem (x-points self)))
 ;(defclass bpf-player (omplayer) ())
 ;(defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
 

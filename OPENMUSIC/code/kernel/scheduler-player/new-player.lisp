@@ -187,20 +187,6 @@
 
 
 
-;;; PAUSE ONLY ONE OBJECT
-;(defmethod player-pause-object ((engine t) object)
-;  (print (format nil "~A : pause ~A - ~A" engine object)))
-
-;;; RESTART ONLY ONE OBJECT
-;(defmethod player-continue-object ((engine t) object)
-;  (print (format nil "~A : continue ~A - ~A" engine object)))
-
-;;; STOP ONLY ONE OBJECT
-;(defmethod player-stop-object ((engine t) object)
-;  (print (format nil "~A : stop ~A - ~A" engine object)))
-
-
-
 ;;;=================================
 ;;; GENERAL PLAYER: USED IN PATCH EDITORS
 ;;;=================================
@@ -258,32 +244,6 @@
   (stop-boxes *play-boxes*))
 
 
-;;; DEPRECATED !!
-;(defmethod play-from-box ((self list))
-;  (let ((playlist (loop for box in self 
-;                        when (and (play-obj? (value (object box))) 
-;                                  (not (typep (value (object box)) 'sound)) 
-;                                  (not (typep (value (object box)) 'faust-synth-console)))
-;                        collect (object box)))
-;        (sndplaylist (loop for box in self 
-;                           when (typep (value (object box)) 'sound)
-;                           collect (value (object box))))
-;        (synthplaylist (loop for box in self 
-;                           when (typep (value (object box)) 'faust-synth-console)
-;                           collect (value (object box))))) ;;PAS PROPRE
-
-;    (when playlist
-;      (PlayAny t (make-instance 'listtoplay
-;                                :thelist (loop for item in playlist
-;                                               collect (value item))
-;                                :params (loop for item in playlist
-;                                              collect (edition-params item)))))
-;    (when sndplaylist
-;      (las-play/stop sndplaylist))
-;    (when synthplaylist
-;      (las-synth-preview-play/stop synthplaylist)
-;      )))
-
 
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
@@ -328,11 +288,18 @@
             (t nil)))))
 
 ;;; THE USER PRESSES PLAY IN THE EDITOR
+
+(defmethod schedule-editor-contents ((self play-editor-mixin))
+  (player-schedule (player self) 
+                   (get-obj-to-play self) 
+                   (get-player-engine self) 
+                   :at 0 
+                   :interval (get-interval-to-play self)))
+
 (defmethod editor-play ((self play-editor-mixin) )
   (setf (loop-play (player self)) (loop-play self))
   (let ((obj (get-obj-to-play self))
-        (interval (get-interval-to-play self))
-        (engine (get-player-engine self)))
+        (interval (get-interval-to-play self)))
     (setf (callback-fun (player self))
           #'(lambda (editor time)
               (handler-bind ((error #'(lambda (e) 
@@ -342,7 +309,7 @@
                 (play-editor-callback editor time)
                 )))
     (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
-    (player-schedule (player self) obj engine :at 0 :interval interval)
+    (schedule-editor-contents self)
     (general-play (player self) 
                   :start-t (or (car interval) 0)
                   :end-t (or (cadr interval) (get-obj-dur obj)))))
@@ -391,7 +358,8 @@
   (om-invalidate-view self t))
 
 (defmethod cursor-p ((self t)) 
-  (om-beep-msg "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"))
+  (equal (cursor-mode self) :interval))
+;; "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"
 
 ;(defmethod get-obj-to-play ((self cursor-play-view-mixin))
 ;  (values (object (om-view-container self))

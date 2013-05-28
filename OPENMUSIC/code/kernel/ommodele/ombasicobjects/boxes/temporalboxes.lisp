@@ -549,7 +549,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
      (if (car (frames self))
        (let* ((container (om-view-container (car (frames self))))
               (sys-etat (get-system-etat container))
-              (new-pos (point2pixel container  (om-make-big-point offset (posy self)) sys-etat)))
+              (new-pos (point2pixel container (om-make-big-point offset (posy self)) sys-etat)))
          (OMGMoveObject (car (frames self)) new-pos)))
      (setf (slot-value self 'offset) offset))
     (t (om-beep-msg "Incorrect offset value"))))
