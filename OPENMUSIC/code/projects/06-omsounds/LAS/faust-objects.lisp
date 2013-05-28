@@ -593,6 +593,15 @@
    (:documentation "Faust synth"))
 
 
+(defmethod play-obj? ((self faust-synth-console)) t)
+
+;/Redefinition of transport functions for this kind of box
+(defmethod player-play-object ((engine (eql :libaudio)) (object faust-synth-console) &key interval)
+  (las-synth-preview-play object))
+(defmethod player-stop-object ((engine (eql :libaudio)) (object faust-synth-console) &key interval)
+  (las-synth-preview-stop object))
+
+
 (defmethod initialize-instance :after ((self faust-synth-console) &rest l)
   (declare (ignore l))
   (let (name)
@@ -706,7 +715,7 @@
   `(let ((rep (make-instance ',(type-of self))))
      rep))
 
-(defmethod get-obj-dur ((self faust-synth-console)) 0)
+(defmethod get-obj-dur ((self faust-synth-console)) (* 1000 (duration self)))
 
 
 (defmethod object-remove-extra ((self faust-synth-console) box)

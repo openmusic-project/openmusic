@@ -41,29 +41,23 @@
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
-
-
-
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT
-(defmethod player-pause-object ((engine (eql :libaudio)) object &key interval)
+(defmethod player-pause-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-pause object (tracknum object)))
 
 ;;; RESTART ONLY ONE OBJECT
-(defmethod player-continue-object ((engine (eql :libaudio)) object &key interval)
+(defmethod player-continue-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 ;;; STOP ONLY ONE OBJECT
-(defmethod player-stop-object ((engine (eql :libaudio)) object &key interval)
+(defmethod player-stop-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-stop object (tracknum object)))
 
 ;(defclass las-player (omplayer) 
   ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
 ;  ())
-
-
-
 
 ;;; TODO
 ;;; called when a box or editor attached to player is removed/closed

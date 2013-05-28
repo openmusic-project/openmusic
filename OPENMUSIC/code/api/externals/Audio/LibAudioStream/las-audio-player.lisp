@@ -22,7 +22,8 @@
           las-pause
           las-stop
           las-play/stop ;en cours
-          las-synth-preview-play/stop
+          las-synth-preview-play
+          las-synth-preview-stop
 
           las-switch-sound-las-player
           las-srate
@@ -111,11 +112,17 @@
     (om-smart-stop obj track)))
 
 
-(defun las-synth-preview-play/stop (obj)
+(defun las-synth-preview-play (obj)
   (if (listp obj)
       (loop for object in obj do
-            (om-synth-preview-play/stop object))
-    (om-synth-preview-play/stop obj)))
+            (om-synth-preview-play object))
+    (om-synth-preview-play obj)))
+
+(defun las-synth-preview-stop (obj)
+  (if (listp obj)
+      (loop for object in obj do
+            (om-synth-preview-stop object))
+    (om-synth-preview-stop obj)))
 
 
 (defun las-play/stop (obj &optional track)
@@ -435,7 +442,7 @@
 ;/SYNTH PREVIEW PLAY STOP FUNCTION
 ;This function plays a preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
 
-(defun om-synth-preview-play/stop (obj)
+(defun om-synth-preview-play (obj)
   (let ((search-res (las-faust-search-synth-console-in-register obj)))
     (if (car search-res)
         (let* ((info (cadr search-res))
@@ -445,13 +452,31 @@
                chan liste)
           (if res
               (progn
-                (om-smart-play/stop nullsnd (+ (car res) 1)))
+                (om-smart-play nullsnd nil nil (+ (car res) 1)))
             (progn
               (setf chan (get-free-channel *audio-player-hidden*))
               (setf liste (las::MakeAudioEffectList)) 
               (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
               (las::AddAudioEffect liste synth-ptr)
-              (om-smart-play/stop nullsnd)))))))
+              (om-smart-play nullsnd)))))))
+
+(defun om-synth-preview-stop (obj)
+  (let ((search-res (las-faust-search-synth-console-in-register obj)))
+    (if (car search-res)
+        (let* ((info (cadr search-res))
+               (synth-ptr (nth 1 info))
+               (nullsnd (nth 2 info))
+               (res (las-faust-synth-already-plugged-? synth-ptr))
+               chan liste)
+          (if res
+              (progn
+                (om-smart-stop nullsnd (+ (car res) 1)))
+            (progn
+              (setf chan (get-free-channel *audio-player-hidden*))
+              (setf liste (las::MakeAudioEffectList)) 
+              (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
+              (las::AddAudioEffect liste synth-ptr)
+              (om-smart-stop nullsnd)))))))
 
           
 
