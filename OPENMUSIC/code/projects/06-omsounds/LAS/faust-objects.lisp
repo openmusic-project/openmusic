@@ -651,6 +651,7 @@
                               (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
                         (progn
                           (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
+                      (las-faust-add-synth-console-to-register self (synth-ptr self) (nullsnd self))
                       (if *general-mixer-window*
                           (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*))))
                       (setf (nbparams self) (length param-list))
@@ -794,6 +795,7 @@
 (defmethod metaobj-scrollbars-params ((self faustSynthcontrollerEditor))  '(:h nil))
 
 (defmethod initialize-instance :after ((self faustSynthcontrollerEditor) &rest l)
+  (set-edit-param self 'player :libaudio)
   (declare (ignore l))
   (let ((x (om-point-x (get-win-ed-size (object self))))
         (y (om-point-y (get-win-ed-size (object self))))

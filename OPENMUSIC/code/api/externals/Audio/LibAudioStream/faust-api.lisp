@@ -8,6 +8,7 @@
 (defvar *faust-synths-register* (make-hash-table))
 (defvar *faust-effects-by-track* (make-hash-table))
 (defvar *faust-synths-by-track* (make-hash-table))
+(defvar *faust-synths-console* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
 ;===============================================================================================================================================================
@@ -26,6 +27,7 @@
           las-faust-synth-cleanup
           las-faust-add-effect-to-register
           las-faust-add-synth-to-register
+          las-faust-add-synth-console-to-register
           las-faust-find-effect-in-register
           las-faust-find-synth-in-register
           las-faust-add-effect-to-track
@@ -43,6 +45,7 @@
           las-faust-null-ptr-p
           las-faust-search-effect-name-in-register
           las-faust-search-synth-name-in-register
+          las-faust-search-synth-console-in-register
           
           *faust-effects-register*
           *faust-synths-register*
@@ -113,6 +116,15 @@
 
 (defun las-faust-add-synth-to-register (pointer track name)
   (add-faust-synth-to-register pointer track name))
+
+(defun las-faust-add-synth-console-to-register (console pointer nullsnd)
+  (let ((i 0))
+    (while (gethash i *faust-synths-console*)
+      (incf i)
+      (if (> i *max-effects-number*) (setf i nil)))
+    (if i
+        (setf (gethash i *faust-synths-console*) (list console pointer nullsnd))
+      (print "You reached the maximum number of synths"))))
 
 (defun las-faust-find-effect-in-register (pointer)
   (find-effect-index-in-register pointer))
@@ -267,6 +279,14 @@
           (setf res t)
         (incf i)))
     (list res i)))
+(defun las-faust-search-synth-console-in-register (console)
+  (let ((i 0)
+        res)
+    (while (and (not res) (car (gethash i *faust-synths-console*)))
+      (if (eq console (car (gethash i *faust-synths-console*)))
+          (setf res t)
+        (incf i)))
+    (list res (gethash i *faust-synths-console*))))
 ;===============================================================================================================================================================
 ;=========================================================================== TOOLS =============================================================================
 ;===============================================================================================================================================================

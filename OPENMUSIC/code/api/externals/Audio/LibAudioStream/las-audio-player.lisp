@@ -433,29 +433,27 @@
 ;=================================================================SMART TRANSPORT SYSTEM========================================================================
 ;===============================================================================================================================================================
 ;/SYNTH PREVIEW PLAY STOP FUNCTION
-;This function plays a 10 sec preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
-;TODO
-;;; !!! OM API CAN NOT COMPILE WITH OM SYMBOLS
-#|
-(defun om-synth-preview-play/stop (obj)
-  (if (om::synth-ptr obj)
-      (let* ((synth-ptr (om::synth-ptr obj))
-             (duration (om::duration obj))
-             (nullsnd (om::nullsnd obj))
-             (res (las-faust-synth-already-plugged-? synth-ptr))
-             chan liste)
-        (if res
-            (progn
-              (om-smart-play/stop nullsnd (+ (car res) 1)))
-          (progn
-            (setf chan (get-free-channel *audio-player-hidden*))
-            (setf liste (las::MakeAudioEffectList)) 
-            (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
-            (las::AddAudioEffect liste synth-ptr)
-            (om-smart-play/stop nullsnd))))))
-|#
-          
+;This function plays a preview of a selected synth, on the track which it's plugged or on the hidden player if it's not plugged.
 
+(defun om-synth-preview-play/stop (obj)
+  (let ((search-res (las-faust-search-synth-console-in-register obj)))
+    (if (car search-res)
+        (let* ((info (cadr search-res))
+               (synth-ptr (nth 1 info))
+               (nullsnd (nth 2 info))
+               (res (las-faust-synth-already-plugged-? synth-ptr))
+               chan liste)
+          (if res
+              (progn
+                (om-smart-play/stop nullsnd (+ (car res) 1)))
+            (progn
+              (setf chan (get-free-channel *audio-player-hidden*))
+              (setf liste (las::MakeAudioEffectList)) 
+              (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
+              (las::AddAudioEffect liste synth-ptr)
+              (om-smart-play/stop nullsnd)))))))
+
+          
 
 ;/SMART PLAY STOP FUNCTION
 ;This function decides to play or stop a sound according to his current state.
