@@ -120,7 +120,7 @@
       (when (play-state box)
         (om-with-focused-view self
           (om-with-fg-color self *om-green2-color*
-            (om-fill-polygon '((5 5) (10 8) (5 11))))))
+            (om-fill-polygon '((15 5) (20 8) (15 11))))))
       (let ((line (if (selected-p self) 2 1)))
         (om-with-fg-color self (om-make-color 0 0 0) 
           (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize line))
