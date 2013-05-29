@@ -471,8 +471,10 @@
           (if res
               (om-smart-stop-visible nullsnd (car res))
             (let ((chan1 (find-synth-hidden synth-ptr)))
-              (remove-faust-effect-from-list synth-ptr (gethash chan1 *effects-lists-hidden*))
-              (setf (gethash 0 (gethash chan1 *faust-synths-by-track-hidden*)) nil)
+              (if chan1
+                  (progn
+                    (remove-faust-effect-from-list synth-ptr (gethash chan1 *effects-lists-hidden*))
+                    (setf (gethash 0 (gethash chan1 *faust-synths-by-track-hidden*)) nil)))
               (om-smart-stop-hidden nullsnd)))))))
 ;;;;WARNING : HAVE TO DELETE PLUGGED LISTS ON HIDDEN PLAYER
           

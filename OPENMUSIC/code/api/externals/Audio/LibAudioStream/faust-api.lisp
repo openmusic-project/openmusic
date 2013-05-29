@@ -129,11 +129,9 @@
 (defun las-faust-add-synth-console-to-register (console pointer nullsnd)
   (let ((i 0))
     (while (gethash i *faust-synths-console*)
-      (incf i)
-      (if (> i *max-effects-number*) (setf i nil)))
-    (if i
-        (setf (gethash i *faust-synths-console*) (list console pointer nullsnd))
-      (print "You reached the maximum number of synths"))))
+      (incf i))
+    (setf (gethash i *faust-synths-console*) (list console pointer nullsnd))
+    ))
 
 (defun las-faust-find-effect-in-register (pointer)
   (find-effect-index-in-register pointer))
@@ -426,10 +424,11 @@
   (let ((i 0)
         (found 0))
     (while (= found 0)
-      (if (eq ptr (gethash 0 (gethash i *faust-synths-by-track-hidden*)))
+      (if (and (gethash 0 (gethash i *faust-synths-by-track-hidden*))
+               (eq ptr (gethash 0 (gethash i *faust-synths-by-track-hidden*))))
           (setf found 1)
         (incf i))
-      (if (> i las-channels)
+      (if (>= i las-channels)
           (progn 
             (setf found 1)
             (setf i nil))))

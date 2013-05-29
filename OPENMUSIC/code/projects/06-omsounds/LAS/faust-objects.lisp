@@ -771,6 +771,7 @@ nil)
           (params-ctrl rep) (params-ctrl self)
           (ui-tree rep) (ui-tree self)
           (is-copy rep) t)
+    (las-faust-add-synth-console-to-register rep (synth-ptr rep) (nullsnd rep))
     rep))
 
 ;;;ATTENTION : POUR LA SAUVEGARDE, ON SAUVEGARDE JUSTE LA BOITE VIDE EGALEMENT.
