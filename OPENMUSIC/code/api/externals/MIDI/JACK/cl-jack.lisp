@@ -18,7 +18,6 @@
 ;;Author: Anders Vinjar
 
 (require :cffi "../../FFI/CFFI/load-cffi")
-
 (defpackage :cl-jack (:use :common-lisp :cffi))
 (in-package :cl-jack)
 
@@ -200,6 +199,10 @@
   (rb (:pointer jack_ringbuffer_t)))
 
 ;;; end of wrappers for jack/ringbuffer.h
+
+;; provide one default global client-name 
+
+(defparameter *OMJackClient* nil)
 
 (provide :cl-jack)
 

@@ -17,18 +17,20 @@
 ;;
 ;;Author: Anders Vinjar
 
+(require :cffi "../../FFI/load-cffi.lisp")
 (load "cl-jack")
+
 (in-package :cl-jack)
 
 (defparameter *OM-midi-output-port* nil)
 (defparameter *OM-midi-input-port* nil)
-(defparameter *OMJackMidiClient* nil)
 
-(setq *OMJackMidiClient* (jack-client-open "OpenMusic" JackNullOption 0))
+(unless *OMJackClient*
+  (setq *OMJackClient* (jack-client-open "OpenMusic" JackNullOption 0)))
 
 (setf *OM-midi-output-port*
       (let ((port (jack-port-register
-		   *OMJackMidiClient*
+		   *OMJackClient*
 		   "midiout"
 		   *jack-default-midi-type*
 		   (foreign-enum-value 'jackportflags :jackportisoutput)
@@ -44,15 +46,16 @@
 
 ;;; TIME HANDLING - SEQUENCING
 
+(defparameter *jack-buffer-size* (jack-get-buffer-size *OMJackClient*))
+
 (defun framenow (&optional (sek 0))
-  (round (+ (jack-last-frame-time *OMJackMidiClient*)
+  (round (+ (jack-last-frame-time *OMJackClient*)
 			    *jack-buffer-size*
-			    (* sek (jack-get-sample-rate *OMJackMidiClient*)))))
+			    (* sek (jack-get-sample-rate *OMJackClient*)))))
 
-;; (list (- (framenow 2) (framenow 1))
-;;       (- (framenow 2.0) (framenow 1.0)))
+;; (list (- (framenow 1) (framenow 0))
+;;       (- (framenow 1.0) (framenow 0.0)))
 
-(defvar *jack-buffer-size* (jack-get-buffer-size *OMJackMidiClient*))
 
 (defun frame->period-offset (time)
   "returns 2 frame nos: start of period & offset within period"
@@ -109,7 +112,7 @@
 
 (defun play-from-seq (port-buf seq)
   (when *playing*
-    (let ((this-period (jack-last-frame-time *OMJackMidiClient*)))
+    (let ((this-period (jack-last-frame-time *OMJackClient*)))
       (let ((notes-this-period (gethash this-period seq)))
 	(when notes-this-period
 	  (remhash this-period seq)
@@ -129,17 +132,19 @@
     (play-from-seq port-buf *om-seq*))
   0)
 
-(jack-set-process-callback *OMJackMidiClient* (callback process) 0)
+(jack-set-process-callback *OMJackClient* (callback process) 0)
 
-(jack-activate *OMJackMidiClient*)	;get up and running
+(jack-activate *OMJackClient*)	;get up and running
 
-
+;;(jack-deactivate *OMJackClient*)
 
 #|
 
-(setq nframes (jack-get-buffer-size *OMJackMidiClient*))
-(jack-get-sample-rate *OMJackMidiClient*)
-(jack-client-close *OMJackMidiClient*)
+
+
+(setq nframes (jack-get-buffer-size *OMJackClient*))
+(jack-get-sample-rate *OMJackClient*)
+(jack-client-close *OMJackClient*)
 (jack-port-get-buffer *OM-midi-output-port* nframes)
 (setf port-buf (jack-port-get-buffer *OM-midi-output-port* nframes))
 (jack-midi-clear-buffer port-buf)
@@ -149,14 +154,14 @@
 (pointer-address port-buf)
 (pointer-address buffer)
 
-(setf midiports (jack-get-ports *OMJackMidiClient* "" "midi" 0))
+(setf midiports (jack-get-ports *OMJackClient* "" "midi" 0))
 
 (loop for i from 0
      and port = (mem-aref midiports :string i)
      while port
      collect port)
 
-(jack-client-close *OMJackMidiClient*)
+(jack-client-close *OMJackClient*)
 
 
 (seqhash-note-on *om-seq* (framenow) (setf *thisnote* (+ 40 (random 40))) 127 1)
@@ -169,7 +174,7 @@
   (sleep 0.4)
   (all-notes-off 1))
 
-
+(all-notes-off 1)
 (maphash #'(lambda (key val) (print (list key val))) *om-seq*)
 
 (with-hash-table-iterator (get-note *om-seq*)
@@ -190,7 +195,7 @@
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   ;;(clrhash *om-seq*)
   (loop with offset = 0
-     for sek from 0 to dur by tempo
+     for sek from 0 below dur by tempo
      do
        (let* ((start (framenow sek))
 	      (end (+ start 10000))
@@ -199,23 +204,37 @@
 	   (seqhash-note-on *om-seq* start (setf *thisnote* (+ 20 (random 100))) 80 channel)
 	   (seqhash-note-off *om-seq* end *thisnote* 50 channel)))))
 
+
+
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   (loop with offset = 0
        with note = 0
-     for sek from 0 to dur by tempo
+     for sek from 0  by tempo
      do
        (let* ((start (framenow sek))
-	      (end (framenow (+ sek (* 8 tempo)))))
+	      (end (framenow 3)))
+	 (when  (>= sek dur)
+	   (loop-finish)
+	   (seqhash-note-off *om-seq* end (+ 40 note) 50 0))
 	 (progn
-	   (seqhash-note-on *om-seq* start (+ 30 (setf note (mod (incf note) 80))) 80 0)
-	   (seqhash-note-off *om-seq* end (+ 30 note) 50 0)))))
+	   (seqhash-note-on *om-seq* start (+ 40 (setf note (mod (incf note) 60))) 80 0)
+	   (seqhash-note-off *om-seq* end (+ 40 note) 50 0)))))
 
-(play-some-notes 1/24 8)
+(compile-file "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/api/externals/MIDI/JACK/cl-jack")
+
+(let ((rytme 1/32))
+  (play-some-notes rytme 3))
 
 (loop repeat 3 do (play-some-notes (+ 1/30 (random 0.1)) 12))
 
 (hash-table-count *om-seq*)
 (hash-table-size *om-seq*)
 (clrhash *om-seq*)
+
+
+
+(cl-user::set-up-profiler :packages '(cl-jack))
+(cl-user::profile (loop repeat 300 do (play-some-notes (+ 1/30 (random 0.1)) 12)))
+(env:start-environment)
 
 |#
