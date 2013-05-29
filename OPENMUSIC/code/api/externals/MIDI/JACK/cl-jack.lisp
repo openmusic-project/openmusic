@@ -17,6 +17,8 @@
 ;;
 ;;Author: Anders Vinjar
 
+(require :cffi "../../FFI/CFFI/load-cffi")
+
 (defpackage :cl-jack (:use :common-lisp :cffi))
 (in-package :cl-jack)
 
@@ -25,8 +27,12 @@
 
 (use-foreign-library libjack) 
 
+;;; MOST OF THE BELOW IS FFI-WRAPPERS FOR THE JACK-API
+
+;;; JACK.H - CLIENTS, PORTS...
+
 (defcfun "jack_get_version_string" :string)
-;; (jack-get-version-string)
+;;(jack-get-version-string)
 
 (defctype size_t :unsigned-int)
 
@@ -35,13 +41,9 @@
 (defctype jack_options_t :pointer)
 (defctype jack_time_t :unsigned-long)	;:unsigned-long = :uint64?
 
-
 (defconstant *jack-default-audio-type* "32 bit float mono audio")
 (defconstant *jack-default-midi-type* "8 bit raw midi")
-
-(defcfun "jack_client_name_size" :int)
-
-(defcvar "input_port" jack_port_t)
+(defctype jack_default_audio_sample_t :float)
 
 (defcenum jackoptions
   (:jacknulloption #0x00)
@@ -59,12 +61,16 @@
   (:JackPortCanMonitor  #0x8)
   (:JackPortIsTerminal  #0x10))
 
+(defparameter JackNullOption (foreign-enum-value 'jackoptions :jacknulloption))
+
+(defcfun "jack_client_name_size" :int)
+
+(defcvar "input_port" jack_port_t)
+
 (defcfun "jack_client_open" :pointer
   (name :string)
   (option :int)
   (status :int))
-
-(defparameter JackNullOption (foreign-enum-value 'jackoptions :jacknulloption))
 
 (defcfun "jack_get_sample_rate" :int
   (client :pointer))
@@ -74,6 +80,9 @@
   (port-type :string))
 
 (defcfun "jack_get_buffer_size" jack_nframes_t
+  (client :pointer))
+
+(defcfun "jack_get_client_name" :string
   (client :pointer))
 
 (defcfun "jack_port_get_buffer" :pointer
@@ -116,8 +125,7 @@
   (data-size :unsigned-char))
 
 
-;;; time
-
+;;; TIME
 
 (defcfun "jack_get_time" jack_time_t)
 
@@ -134,4 +142,64 @@
 
 (defcfun "jack_frame_time" jack_nframes_t
   (client :pointer))
+
+;;; JACK/RINGBUFFER.H
+
+(defcstruct jack_ringbuffer_t
+  (buf (:pointer :char))
+  (write-ptr size_t)
+  (read-ptr size_t)
+  (size size_t)
+  (size-mask size_t)
+  (mlocked :int))
+
+(defcstruct jack_ringbuffer_data_t
+  (buf (:pointer :float))
+  (len size_t))
+
+;; vec[0].buf
+(defun rb-data-buf (arr index)		;index is 0 or 1 from jack
+  (foreign-slot-value			
+   (mem-aref arr 'jack_ringbuffer_data_t index)
+   'jack_ringbuffer_data_t 'buf))
+
+;;vec[0].len
+(defun rb-data-len (arr index)
+  (foreign-slot-value			
+   (mem-aref arr 'jack_ringbuffer_data_t index)
+   'jack_ringbuffer_data_t 'len))
+
+;;(rb-data-len vec 0) 
+(defun rb-data-len-p (arr index)	;len=0 := nothing to get
+  (plusp (rb-data-len arr index)))
+
+(defcfun "jack_ringbuffer_create" (:pointer jack_ringbuffer_t)
+  (sz size_t))
+
+(defcfun "jack_ringbuffer_free" :void
+  (rb jack_ringbuffer_t))
+
+(defcfun "jack_ringbuffer_get_read_vector" :void
+  (rb (:pointer jack_ringbuffer_t))
+  (vec (:pointer jack_ringbuffer_data_t)))
+
+(defcfun "jack_ringbuffer_get_write_vector" :void
+  (rb (:pointer jack_ringbuffer_t))
+  (vec (:pointer jack_ringbuffer_data_t)))
+
+(defcfun "jack_ringbuffer_write_advance" :void
+  (rb (:pointer jack_ringbuffer_t))
+  (cnt size_t))
+
+(defcfun "jack_ringbuffer_read" size_t
+  (rb (:pointer jack_ringbuffer_t))
+  (dest (:pointer :char))
+  (cnt size_t))
+
+(defcfun "jack_ringbuffer_read_space" size_t
+  (rb (:pointer jack_ringbuffer_t)))
+
+;;; end of wrappers for jack/ringbuffer.h
+
+(provide :cl-jack)
 
