@@ -3,11 +3,13 @@
 ;;;==================================================================================================================================================================
 (in-package :oa)
 
-(defvar *effects-lists* nil)
+(defvar *effects-lists* (make-hash-table))
+(defvar *effects-lists-hidden* (make-hash-table))
 (defvar *faust-effects-register* (make-hash-table))
 (defvar *faust-synths-register* (make-hash-table))
 (defvar *faust-effects-by-track* (make-hash-table))
 (defvar *faust-synths-by-track* (make-hash-table))
+(defvar *faust-synths-by-track-hidden* (make-hash-table))
 (defvar *faust-synths-console* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
@@ -46,11 +48,14 @@
           las-faust-search-effect-name-in-register
           las-faust-search-synth-name-in-register
           las-faust-search-synth-console-in-register
+          las-faust-make-null-sound
           
           *faust-effects-register*
           *faust-synths-register*
           *faust-effects-by-track*
           *faust-synths-by-track*
+          *faust-synths-by-track-hidden*
+          *faust-synths-console*
           ) :om-api)
 
 
@@ -58,7 +63,8 @@
   (progn
     (init-faust-effects-register)
     (init-faust-synths-register)
-    (ResetEffectsLists *audio-player-visible*)))
+    (ResetEffectsLists *audio-player-visible*)
+    (Plug-Empty-Effects-Lists-On-Hidden)))
 
 (defun las-faust-unplug-all ()
   (ResetEffectsLists *audio-player-visible*))
@@ -77,6 +83,9 @@
 
 (defun las-faust-null-ptr-p (pointer)
   (las::las-null-ptr-p pointer))
+
+(defun las-faust-make-null-sound (duration)
+  (las::makestereosound (las::makenullsound (* las-srate duration))))
 
 (defun las-faust-get-json (pointer)
   (las::getjsoneffect pointer))
@@ -295,7 +304,7 @@
   (las::SetEffectListChannel player channel effectlist fadein fadeout))
 
 (defun ResetEffectsLists (player)
-  (setf *effects-lists* (make-hash-table))
+  (setf *effect-list* (make-hash-table))
   (setf *faust-effects-by-track* (make-hash-table))
   (setf *faust-synths-by-track* (make-hash-table))
   (loop for i from 0 to (- las-channels 1) do 
@@ -303,6 +312,13 @@
       (plug-faust-effect-list-on-channel player (gethash i *effects-lists*) i)
       (setf (gethash i *faust-effects-by-track*) (make-hash-table))
       (setf (gethash i *faust-synths-by-track*) (make-hash-table))))
+
+(defun Plug-Empty-Effects-Lists-On-Hidden ()
+  (setf *effects-lists-hidden* (make-hash-table))
+  (loop for i from 0 to (- las-channels 1) do 
+        (setf (gethash i *effects-lists-hidden*) (las::MakeAudioEffectList))
+        (plug-faust-effect-list-on-channel *audio-player-hidden* (gethash i *effects-lists-hidden*) i)
+        (setf (gethash i *faust-synths-by-track-hidden*) (make-hash-table))))
 
 (defun init-faust-effects-register ()
     (loop for i from 0 to *max-effects-number* do
@@ -406,6 +422,18 @@
               (setf i nil))))
     i))
 
+(defun find-synth-hidden (ptr)
+  (let ((i 0)
+        (found 0))
+    (while (= found 0)
+      (if (eq ptr (gethash 0 (gethash i *faust-synths-by-track-hidden*)))
+          (setf found 1)
+        (incf i))
+      (if (> i las-channels)
+          (progn 
+            (setf found 1)
+            (setf i nil))))
+    i))
 
 (defun pack-faust-effects-register (n)
   (let ()

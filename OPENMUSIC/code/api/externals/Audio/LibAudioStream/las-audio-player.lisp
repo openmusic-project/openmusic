@@ -454,9 +454,8 @@
                 (om-smart-play nullsnd nil nil (+ (car res) 1)))
             (progn
               (setf chan (get-free-channel *audio-player-hidden*))
-              (setf liste (las::MakeAudioEffectList)) 
-              (plug-faust-effect-list-on-channel *audio-player-hidden* liste chan)
-              (las::AddAudioEffect liste synth-ptr)
+              (setf (gethash 0 (gethash chan *faust-synths-by-track-hidden*)) synth-ptr)
+              (las::AddAudioEffect (gethash chan *effects-lists-hidden*) synth-ptr)
               (om-smart-play nullsnd)))))))
 
 ;/SYNTH PREVIEW STOP FUNCTION
@@ -471,10 +470,12 @@
                chan liste)
           (if res
               (om-smart-stop-visible nullsnd (car res))
-            (om-smart-stop-hidden nullsnd))))))
-
+            (let ((chan1 (find-synth-hidden synth-ptr)))
+              (remove-faust-effect-from-list synth-ptr (gethash chan1 *effects-lists-hidden*))
+              (setf (gethash 0 (gethash chan1 *faust-synths-by-track-hidden*)) nil)
+              (om-smart-stop-hidden nullsnd)))))))
+;;;;WARNING : HAVE TO DELETE PLUGGED LISTS ON HIDDEN PLAYER
           
-
 ;/SMART PLAY STOP FUNCTION
 ;This function decides to play or stop a sound according to his current state.
 (defun om-smart-play/stop (sound &optional track)
