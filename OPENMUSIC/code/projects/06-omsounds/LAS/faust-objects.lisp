@@ -604,6 +604,9 @@
 (defmethod player-stop-object ((engine (eql :libaudio)) (object faust-synth-console) &key interval)
   (las-synth-preview-stop object))
 
+(defmethod default-edition-params ((self faust-synth-console)) 
+  (pairlis '(player) '(:libaudio) (call-next-method)))
+
 
 (defmethod initialize-instance :after ((self faust-synth-console) &rest l)
   (declare (ignore l))

@@ -101,29 +101,41 @@
          (console (car faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
          (maxnum (las-faust-get-control-count ptr))
+         infos
+         minval
+         maxval
+         range
          found
          text-to-up
+         display
          graph-to-up
          paramtype)
     (loop for i from 0 to (- maxnum 1) do
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
-    (setf graph-to-up (display (nth found (params-ctrl console))))
-    (setf text-to-up (paramval graph-to-up))
+    (setf infos (las-faust-get-control-params ptr found))
+    (setf minval (nth 1 infos))
+    (setf maxval (nth 2 infos))
+    (setf range (- maxval minval))
+    (setf display (display (nth found (params-ctrl console))))
+    (setf text-to-up (paramval display))
+    (setf graph-to-up (paramgraph display))
     (setf paramtype (param-type (nth found (params-ctrl console))))
     (if graph-to-up
         #'(lambda (val) 
+            (if (< val minval) (setf val minval))
+            (if (> val maxval) (setf val maxval))
             (las-faust-set-control-value ptr found (float val))
             (cond ((string= paramtype "checkbox")
-                   (om-set-check-box graph-to-up "t?????"))
+                   (om-set-check-box graph-to-up (if (> val 1) t)))
                   ((string= paramtype "numentry")
                    (progn
-                     (om-set-dialog-item-text text-to-up (float val))
-                     (set-value graph-to-up (float val))))
+                     (om-set-dialog-item-text text-to-up (number-to-string (float val)))
+                     (set-value graph-to-up (* 100 (/ (- val minval) range)))))
                   (t 
                    (progn
-                     (om-set-dialog-item-text text-to-up (float val))
-                     (om-set-slider-value graph-to-up (float val))))))
+                     (om-set-dialog-item-text text-to-up (number-to-string (float val)))
+                     (om-set-slider-value graph-to-up (* 100 (/ (- val minval) range)))))))
       #'(lambda (val) 
           (las-faust-set-control-value ptr found (float val))))))
 
