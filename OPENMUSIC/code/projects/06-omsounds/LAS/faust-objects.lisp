@@ -699,6 +699,7 @@
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
 
 
+#|
 (defmethod omNG-copy ((self faust-synth-console))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   `(let* ((nullptr (las-faust-make-null-sound ',(duration self)))
@@ -753,6 +754,7 @@
                                                                                          :tracknum (tracknum rep)
                                                                                          ))) nil)))
      rep))
+|#
 (defmethod omNG-copy ((self faust-synth-console))
 nil)
 

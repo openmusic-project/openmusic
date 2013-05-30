@@ -44,6 +44,7 @@
           las-faust-get-track-effects-pointer
           las-faust-unplug-all
           las-faust-effect-already-plugged-?
+          las-faust-synth-hidden-already-plugged-?
           las-faust-null-ptr-p
           las-faust-search-effect-name-in-register
           las-faust-search-synth-name-in-register
@@ -268,6 +269,23 @@
                  (setf found 1)
                  (setf res nil))))
     res))
+(defun las-faust-synth-hidden-already-plugged-? (pointer)
+  (let ((i 0)
+        (found 0)
+        res
+        curlist)
+    (while (= found 0)
+      (if (eq pointer (gethash i *faust-synths-by-track-hidden*))
+          (progn
+            (setf res i)
+            (setf found 1))
+        (progn
+          (incf i)
+          (if (>= i las-channels)
+              (progn 
+                (setf res nil)
+                (setf found 1))))))
+    res))
 
 
 (defun las-faust-search-effect-name-in-register (name)
@@ -316,7 +334,7 @@
   (loop for i from 0 to (- las-channels 1) do 
         (setf (gethash i *effects-lists-hidden*) (las::MakeAudioEffectList))
         (plug-faust-effect-list-on-channel *audio-player-hidden* (gethash i *effects-lists-hidden*) i)
-        (setf (gethash i *faust-synths-by-track-hidden*) (make-hash-table))))
+        (setf (gethash i *faust-synths-by-track-hidden*) nil)))
 
 (defun init-faust-effects-register ()
     (loop for i from 0 to *max-effects-number* do
@@ -424,8 +442,8 @@
   (let ((i 0)
         (found 0))
     (while (= found 0)
-      (if (and (gethash 0 (gethash i *faust-synths-by-track-hidden*))
-               (eq ptr (gethash 0 (gethash i *faust-synths-by-track-hidden*))))
+      (if (and (gethash i *faust-synths-by-track-hidden*)
+               (eq ptr (gethash i *faust-synths-by-track-hidden*)))
           (setf found 1)
         (incf i))
       (if (>= i las-channels)

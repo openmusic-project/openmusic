@@ -447,16 +447,20 @@
         (let* ((info (cadr search-res))
                (synth-ptr (nth 1 info))
                (nullsnd (nth 2 info))
+               (actual-track (tracknum-sys nullsnd))
                (res (las-faust-synth-already-plugged-? synth-ptr))
                chan liste)
           (if res
               (progn
                 (om-smart-play nullsnd nil nil (+ (car res) 1)))
-            (progn
-              (setf chan (get-free-channel *audio-player-hidden*))
-              (setf (gethash 0 (gethash chan *faust-synths-by-track-hidden*)) synth-ptr)
-              (las::AddAudioEffect (gethash chan *effects-lists-hidden*) synth-ptr)
-              (om-smart-play nullsnd)))))))
+            (if (not (las-faust-synth-hidden-already-plugged-? synth-ptr))
+                (progn
+                  (if (/= -1 actual-track)
+                      (setf chan actual-track)
+                    (setf chan (get-free-channel *audio-player-hidden*)))
+                  (setf (gethash chan *faust-synths-by-track-hidden*) synth-ptr)
+                  (las::AddAudioEffect (gethash chan *effects-lists-hidden*) synth-ptr)
+                  (om-smart-play nullsnd))))))))
 
 ;/SYNTH PREVIEW STOP FUNCTION
 ;This function stops a preview of a selected synth.
@@ -474,7 +478,7 @@
               (if chan1
                   (progn
                     (remove-faust-effect-from-list synth-ptr (gethash chan1 *effects-lists-hidden*))
-                    (setf (gethash 0 (gethash chan1 *faust-synths-by-track-hidden*)) nil)))
+                    (setf (gethash chan1 *faust-synths-by-track-hidden*) nil)))
               (om-smart-stop-hidden nullsnd)))))))
 ;;;;WARNING : HAVE TO DELETE PLUGGED LISTS ON HIDDEN PLAYER
           
