@@ -154,7 +154,6 @@
 
 (defmethod make-player-specific-controls ((self t) control-view) nil)
 
-
 ;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST TEH CALL TO PLAYER-start
 ;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
@@ -166,7 +165,6 @@
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval)
   (print (format nil "~A : play ~A - ~A" engine object interval)))
-
 
 ;;; START (PLAY WHAT IS SCHEDULED)
 (defmethod player-start ((engine t) &optional play-list)

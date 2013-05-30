@@ -41,6 +41,10 @@
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
+
+
+
+
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT

@@ -137,7 +137,7 @@ This patch should handle and process the incoming messages.
 ;; selector "/lisp", the rest of the message is executed as a normal lisp
 ;; function call.
 ;;-----------------------------------------------------------------------------
-(defun deliver-bundle (bundle fun)
+(defun deliver-bundle (bundle patch)
   (let ((tt nil))
     (loop for item in bundle collect
           (cond ((and (arrayp item) (not (stringp item))) (setf tt item))

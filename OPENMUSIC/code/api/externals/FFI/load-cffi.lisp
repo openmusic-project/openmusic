@@ -48,12 +48,12 @@
                     "foreign-vars"
                     ))
 
-
+(unless (fboundp 'compile&load)
 (defun compile&load (file &optional (verbose t))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
           (fasl-file (probe-file (make-pathname :directory (pathname-directory lisp-file)
                                                 :device (pathname-device lisp-file)
-                                                :name (pathname-name lisp-file) :type (pathname-type (cl-user::compile-file-pathname "")))))
+                                                :name (pathname-name lisp-file) :type *compile-type*)))
           (fasl-outofdate (and fasl-file
                                (or (not (file-write-date lisp-file))
                                    (not (file-write-date fasl-file))
@@ -81,6 +81,7 @@
                                                     )))
            (load file :verbose verbose)
            )))))
+)
 
 (defun load-cffi ()
   (mapc #'(lambda (filename) 

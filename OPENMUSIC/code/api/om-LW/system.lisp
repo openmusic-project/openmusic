@@ -549,7 +549,7 @@
   `(let ((*current-priority* ,priority)) ,@body))
 
 (defmacro om-run-process (name func &rest args)
-   `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10)) 
+   `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10))
                              (if (functionp ,func) ,func ',func) ,.args))
 
 (defun om-kill-process (process)

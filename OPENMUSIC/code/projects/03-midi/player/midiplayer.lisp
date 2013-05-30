@@ -25,9 +25,9 @@
     (when finalevent (om-midi-seq-add-evt *playing-midi-seq* finalevent))
     
     (handler-bind ((error #'(lambda (e) 
-                              (print "Error setting Midi player...")
-                              (midiplay-reset)
-                              (oa::om-midi-extend) ;;; restarts with more memory...
+                              (om-beep-msg "Error setting Midi player...")
+                              ;(midiplay-reset)
+                              ;(oa::om-midi-extend) ;;; restarts with more memory...
                               (abort e))))
       (om-midi-set-player *midiplayer* *playing-midi-seq* 1000)
       )

@@ -690,6 +690,7 @@
 (defmethod show-con? ((self omboxframe)) (show-con? (om-view-container self)))
 
 
+
 ;--------------DRAG AND DROP
 
 (defmethod make-drag-region ((self omboxframe) region x0 y0 view)
