@@ -125,16 +125,21 @@
 		       (mem-aref buffer :int8 1) (third note)  ;noteno
 		       (mem-aref buffer :int8 2) (fourth note)))))))))) ;vel
 
-(defcallback process :int ((nframes jack_nframes_t) (arg :pointer))
-  (declare (ignore arg))
+(defun cl-jack-handle-midi-seq (nframes)
   (let ((port-buf (jack-port-get-buffer *OM-midi-output-port* nframes)))
     (jack-midi-clear-buffer port-buf)
-    (play-from-seq port-buf *om-seq*))
+    (play-from-seq port-buf *om-seq*)))
+
+(defcallback process :int ((nframes jack_nframes_t) (arg :pointer))
+  (declare (ignore arg))
+  (cl-jack-handle-midi-seq nframes)
   0)
 
 (jack-set-process-callback *OMJackClient* (callback process) 0)
+(jack-activate *OMJackClient*)
 
-(jack-activate *OMJackClient*)	;get up and running
+(unless *OMJackClient*
+  (jack-activate *OMJackClient*))	;get up and running
 
 ;;(jack-deactivate *OMJackClient*)
 
@@ -170,7 +175,7 @@
 (progn
   (loop for i from 20 to 127 by 1
      do
-       (seqhash-note-on *om-seq* (framenow (random 0.1)) i 80 0))
+       (seqhash-note-on *om-seq* (framenow (random 0.1)) i 80 1))
   (sleep 0.4)
   (all-notes-off 1))
 
@@ -190,8 +195,6 @@
 
 (seqhash-note-on *om-seq* (framenow 0.0) 70 127 0)
 
-
-
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   ;;(clrhash *om-seq*)
   (loop with offset = 0
@@ -204,11 +207,9 @@
 	   (seqhash-note-on *om-seq* start (setf *thisnote* (+ 20 (random 100))) 80 channel)
 	   (seqhash-note-off *om-seq* end *thisnote* 50 channel)))))
 
-
-
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   (loop with offset = 0
-       with note = 0
+     with note = 0
      for sek from 0  by tempo
      do
        (let* ((start (framenow sek))
@@ -217,13 +218,23 @@
 	   (loop-finish)
 	   (seqhash-note-off *om-seq* end (+ 40 note) 50 0))
 	 (progn
-	   (seqhash-note-on *om-seq* start (+ 40 (setf note (mod (incf note) 60))) 80 0)
-	   (seqhash-note-off *om-seq* end (+ 40 note) 50 0)))))
+	   (seqhash-note-on *om-seq* start (+ 40 (setf note (mod (incf note) 60))) 60 0)
+	   (seqhash-note-off *om-seq* end (+ 40 note) 50 0)
+	   ))))
 
-(compile-file "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/api/externals/MIDI/JACK/cl-jack")
+(seqhash-note-on *om-seq* (framenow) 40 127 0)
+(seqhash-note-off *om-seq* (framenow) 40 127 0)
 
-(let ((rytme 1/32))
-  (play-some-notes rytme 3))
+(dotimes (i 80)
+  (let* ((note (mod (+ 40 i (random 80)) 120))
+	 (rytme (/ i 21))
+	 (dur (* rytme 1)))
+    (seqhash-note-on *om-seq* (framenow rytme) note  100 0)
+    (seqhash-note-off *om-seq* (framenow (+ rytme dur)) note 0 0)
+    ))
+
+(let ((rytme 1/8))
+  (play-some-notes rytme (+ 3 rytme)))
 
 (loop repeat 3 do (play-some-notes (+ 1/30 (random 0.1)) 12))
 

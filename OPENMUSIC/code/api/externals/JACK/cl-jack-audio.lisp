@@ -22,11 +22,6 @@
 
 (in-package :cl-jack)
 
-(defparameter *OM-midi-output-port* nil)
-(defparameter *OM-midi-input-port* nil)
-(defparameter *OMJackClient* nil)
-
-
 (unless *OMJackClient*
   (setq *OMJackClient* (jack-client-open "OpenMusic" JackNullOption 0)))
 
@@ -70,6 +65,7 @@
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
   (declare (ignore arg))
+  (cl-jack-handle-midi-seq nframes)
   (loop for inport in *OM-jack-audio-input-ports*
      for outport in *OM-jack-audio-output-ports*
      do
@@ -82,3 +78,4 @@
 
 (jack-set-process-callback *OMJackClient* (callback cl-jack-process-callback) 0)
 (jack-activate *OMJackClient*)
+;;(jack-deactivate *OMJackClient*)

@@ -178,10 +178,6 @@
 (defcfun "jack_ringbuffer_free" :void
   (rb jack_ringbuffer_t))
 
-(defcfun "jack_ringbuffer_get_read_vector" :void
-  (rb (:pointer jack_ringbuffer_t))
-  (vec (:pointer jack_ringbuffer_data_t)))
-
 (defcfun "jack_ringbuffer_get_write_vector" :void
   (rb (:pointer jack_ringbuffer_t))
   (vec (:pointer jack_ringbuffer_data_t)))
@@ -189,6 +185,18 @@
 (defcfun "jack_ringbuffer_write_advance" :void
   (rb (:pointer jack_ringbuffer_t))
   (cnt size_t))
+
+(defcfun "jack_ringbuffer_write_space" size_t
+  (rb (:pointer jack_ringbuffer_t)))
+
+(defcfun "jack_ringbuffer_write" size_t
+  (rb (:pointer jack_ringbuffer_t))
+  (src (:pointer :char))
+  (cnt size_t))	       
+
+(defcfun "jack_ringbuffer_get_read_vector" :void
+  (rb (:pointer jack_ringbuffer_t))
+  (vec (:pointer jack_ringbuffer_data_t)))
 
 (defcfun "jack_ringbuffer_read" size_t
   (rb (:pointer jack_ringbuffer_t))

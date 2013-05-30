@@ -23,16 +23,33 @@
 (require :cl-jack "cl-jack")
 (require :libsndfile "../Audio/libsndfile/libsndfile")
 
+
+(cffi:defcfun ("sf_seek" sf_seek) :double
+  (sndfile :pointer)
+  (frames size_t)
+  (whence :int))
+
 ;; open some soundfile
 
-(let* ((path "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
-       (datatype 'jack_default_audio_sample_t)
-       (sfinfo (foreign-alloc 'sf::SF_INFO))
-       (handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-       (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels)))
-  (defparameter *outchannels* channels)
-  (defparameter *current-loop* 0)
-  (defparameter sndfile-handle handle))
+(setf mysound "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
+(setf mysound "/home/andersvi/Musikk/Bruckner/Anton_Bruckner_Symphonie_Nr.7_E-Dur.ogg")
+
+(sf::sf_close sndfile-handle)
+
+(coerce 40000 'double-float)
+
+(sf_seek sndfile-handle 0 0)
+
+(progn
+  (sf::sf_close sndfile-handle)
+  (let* ((path mysound)
+	 (datatype 'jack_default_audio_sample_t)
+	 (sfinfo (foreign-alloc 'sf::SF_INFO))
+	 (handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
+	 (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels)))
+    (defparameter *outchannels* channels)
+    (defparameter *current-loop* 0)
+    (defparameter sndfile-handle handle)))
 
 ;; set up a jack ringbuffer for buffered I/O
 
@@ -90,6 +107,7 @@
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
   (declare (ignore arg))
+  (cl-jack-handle-midi-seq nframes)	;plug to handle midi-seq
   (let ((read-count 0)
 	(outs-arr (make-array *outchannels*)))
     (dotimes (n *outchannels*)
