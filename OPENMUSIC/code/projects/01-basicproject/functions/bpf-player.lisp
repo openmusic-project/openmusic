@@ -2,11 +2,13 @@
 (in-package :om)
 
 (defclass! bpf-control (simple-container BPF) 
-   ((c-action :initform nil :accessor c-action :initarg :c-action)))
+   ((c-action :initform nil :accessor c-action :initarg :c-action)
+    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A list of a Faust Effect (or Synth) and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")))
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
   (let ((bpf (call-next-method)))
     (setf (c-action bpf) (nth 3 slots-vals))
+    (setf (faust-control bpf) (nth 4 slots-vals))
     bpf))
 
 (defmethod omng-copy ((self bpf-control))
@@ -26,16 +28,33 @@
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf-control) at interval)
   ;(player-unschedule-all self)
-  (when (c-action object)
-    (if interval
-        (mapcar #'(lambda (point) 
-                    (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
-                        (schedule-task player #'(lambda () (funcall (c-action object) (cadr point))) (+ at (car point)))))
-                (point-pairs object))
-      (mapcar #'(lambda (point) 
-                  (schedule-task player #'(lambda () (funcall (c-action object) (cadr point))) (+ at (car point))))
-              (point-pairs object)))
-    ))
+  (let ((faustfun (if (faust-control object)
+                      (get-function-from-faust-control (faust-control object)))))
+    (print faustfun)
+    (when (or (c-action object) (faust-control object))
+      (if interval
+          (mapcar #'(lambda (point) 
+                      (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
+                          (progn
+                            (if (c-action object) 
+                                (schedule-task player 
+                                               #'(lambda () (funcall (c-action object) (cadr point))) 
+                                               (+ at (car point))))
+                            (if (faust-control object) 
+                                (schedule-task player
+                                               #'(lambda () (funcall faustfun (cadr point))) 
+                                               (+ at (car point)))))))
+                  (point-pairs object))
+        (mapcar #'(lambda (point)
+                    (if (c-action object)
+                        (schedule-task player 
+                                       #'(lambda () (funcall (c-action object) (cadr point))) 
+                                       (+ at (car point))))
+                    (if (faust-control object) 
+                        (schedule-task player
+                                       #'(lambda () (funcall faustfun (cadr point))) 
+                                       (+ at (car point)))))
+                (point-pairs object))))))
 
 ;(defmethod player-stop ((player bpf-player) &optional object)
 ;  (call-next-method)
@@ -64,3 +83,15 @@
 (defmethod handle-key-event ((Self bpfcontrolpanel) Char)
   (cond ((equal char #\SPACE) (editor-play/stop (editor self)))
         (t (call-next-method))))
+
+(defun get-function-from-faust-control (faust-control)
+  (print 123)
+  (let* ((name (cadr faust-control))
+         (console (car faust-control))
+         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
+         (maxnum (las-faust-get-control-count ptr))
+         found)
+    (loop for i from 0 to (- maxnum 1) do
+          (if (string= name (car (las-faust-get-control-params ptr i)))
+              (setf found i)))
+    #'(lambda (val) (las-faust-set-control-value ptr found (float val)))))

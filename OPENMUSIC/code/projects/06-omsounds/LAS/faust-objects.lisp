@@ -394,7 +394,6 @@
    (setf val (* 100.0 (/ (- curval min) range)))
    (om-set-bg-color self color) 
 
-    
          (cond ((string= type "hslider")
                 (progn
                   (setf (paramText self) (om-make-dialog-item 'om-static-text
@@ -551,7 +550,6 @@
                     (paramGraph self)
                     ;(paramReset self)
                     )))
-
 
 
 ;;;================================================================================================================================================================
@@ -892,6 +890,7 @@ nil)
           (setf groups (las-faust-get-groups-only (tree self)))
           (setf params (las-faust-get-params-only (tree self)))
 
+
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
@@ -1037,7 +1036,6 @@ nil)
    (setf val (* 100.0 (/ (- curval min) range)))
    (om-set-bg-color self color) 
 
-    
          (cond ((string= type "hslider")
                 (progn
                   (setf (paramText self) (om-make-dialog-item 'om-static-text
