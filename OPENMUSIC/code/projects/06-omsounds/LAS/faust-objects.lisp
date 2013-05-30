@@ -21,7 +21,8 @@
    (maxval :initform nil :initarg :maxval :accessor maxval :type float)
    (stepval :initform nil :initarg :stepval :accessor stepval :type float)
    (effect-ptr :initform nil :initarg :effect-ptr :accessor effect-ptr)
-   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)))
+   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)
+   (display :initform nil :initarg :display :accessor display)))
 
 
 ;=======================================
@@ -280,12 +281,14 @@
                                            :bg-color orange)))))
 
 (defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
-  (om-make-view (get-parampanel-class (panel self))
-                :paramctr paractrl
-                :owner (panel self)
-                :bg-color *om-light-gray-color*
-                :position (om-make-point x y)
-                :size (om-make-point (car size) (cadr size))))
+  (let ((res (om-make-view (get-parampanel-class (panel self))
+                           :paramctr paractrl
+                           :owner (panel self)
+                           :bg-color *om-light-gray-color*
+                           :position (om-make-point x y)
+                           :size (om-make-point (car size) (cadr size)))))
+    (setf (display paractrl) res)
+    res))
 
 (defvar paramnum 0)
 (defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
@@ -567,7 +570,8 @@
    (maxval :initform nil :initarg :maxval :accessor maxval :type float)
    (stepval :initform nil :initarg :stepval :accessor stepval :type float)
    (synth-ptr :initform nil :initarg :synth-ptr :accessor synth-ptr)
-   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)))
+   (tracknum :initform 0 :initarg :tracknum :accessor tracknum)
+   (display :initform nil :initarg :display :accessor display)))
 
 
 ;=======================================
@@ -914,21 +918,23 @@ nil)
                                                                   :di-action (om-dialog-item-act item
                                                                                (faust-show-svg *om-outfiles-folder* (synth-dsp (object self)) (synth-svg (object self)))))))
       (setf (panel self) (om-make-view (get-panel-class self) 
-                                           :owner self
-                                           :position (om-make-point 0 0) 
-                                           :scrollbars (first (metaobj-scrollbars-params self))
-                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                           :field-size  (om-make-point x (- y 50))
-                                           :size (om-make-point (w self) (h self))
-                                           :bg-color orange)))))
+                                       :owner self
+                                       :position (om-make-point 0 0) 
+                                       :scrollbars (first (metaobj-scrollbars-params self))
+                                       :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                       :field-size  (om-make-point x (- y 50))
+                                       :size (om-make-point (w self) (h self))
+                                       :bg-color orange)))))
 
 (defmethod make-faust-param-view ((self faustSynthcontrollerEditor) paractrl x y size)
-  (om-make-view (get-parampanel-class (panel self))
+  (let ((res (om-make-view (get-parampanel-class (panel self))
                 :paramctr paractrl
                 :owner (panel self)
                 :bg-color *om-light-gray-color*
                 :position (om-make-point x y)
-                :size (om-make-point (car size) (cadr size))))
+                :size (om-make-point (car size) (cadr size)))))
+    (setf (display paractrl) res)
+    res))
 
 (defvar paramnum 0)
 (defmethod make-faust-group-view ((self faustSynthcontrollerEditor) group &optional (x 0) (y 0))

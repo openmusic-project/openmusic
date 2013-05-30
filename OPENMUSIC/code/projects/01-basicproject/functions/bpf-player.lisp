@@ -6,14 +6,26 @@
     (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A list of a Faust Effect (or Synth) and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")))
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
-  (let ((bpf (call-next-method)))
+  (let ((bpf (call-next-method))
+        infos)
     (setf (c-action bpf) (nth 3 slots-vals))
     (setf (faust-control bpf) (nth 4 slots-vals))
+    (if (faust-control bpf)
+        (progn
+          (setf infos (get-infos-from-faust-control (faust-control bpf)))
+          (if (<= (- (nth 2 infos) (nth 1 infos)) 10)
+                    (setf (decimals bpf) 1))
+          (setf (y-points bpf) (list (nth 1 infos) (nth 2 infos)))
+          (setf (x-points bpf) (list 0 1000))))
     bpf))
 
 (defmethod omng-copy ((self bpf-control))
   (let ((bpf (eval (call-next-method))))
-    (setf (c-action bpf) (c-action self))
+    (setf (c-action bpf) (c-action self)
+          (faust-control bpf) (faust-control self)
+          (decimals bpf) (decimals self)
+          (x-points bpf) (x-points self)
+          (y-points bpf) (y-points self))
     bpf))
 
 (defmethod print-object ((self bpf-control) stream)
@@ -85,7 +97,37 @@
         (t (call-next-method))))
 
 (defun get-function-from-faust-control (faust-control)
-  (print 123)
+  (let* ((name (cadr faust-control))
+         (console (car faust-control))
+         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
+         (maxnum (las-faust-get-control-count ptr))
+         found
+         text-to-up
+         graph-to-up
+         paramtype)
+    (loop for i from 0 to (- maxnum 1) do
+          (if (string= name (car (las-faust-get-control-params ptr i)))
+              (setf found i)))
+    (setf graph-to-up (display (nth found (params-ctrl console))))
+    (setf text-to-up (paramval graph-to-up))
+    (setf paramtype (param-type (nth found (params-ctrl console))))
+    (if graph-to-up
+        #'(lambda (val) 
+            (las-faust-set-control-value ptr found (float val))
+            (cond ((string= paramtype "checkbox")
+                   (om-set-check-box graph-to-up "t?????"))
+                  ((string= paramtype "numentry")
+                   (progn
+                     (om-set-dialog-item-text text-to-up (float val))
+                     (set-value graph-to-up (float val))))
+                  (t 
+                   (progn
+                     (om-set-dialog-item-text text-to-up (float val))
+                     (om-set-slider-value graph-to-up (float val))))))
+      #'(lambda (val) 
+          (las-faust-set-control-value ptr found (float val))))))
+
+(defun get-infos-from-faust-control (faust-control)
   (let* ((name (cadr faust-control))
          (console (car faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
@@ -94,4 +136,13 @@
     (loop for i from 0 to (- maxnum 1) do
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
-    #'(lambda (val) (las-faust-set-control-value ptr found (float val)))))
+    (las-faust-get-control-params ptr found)))
+
+;(print (display (nth found (params-ctrl console))))
+
+;(om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))
+
+;(paramgraph self)
+;SLIDER om-set-slider-value
+;CHECKBOX om-set-check-box
+;NUMBOX set-value
