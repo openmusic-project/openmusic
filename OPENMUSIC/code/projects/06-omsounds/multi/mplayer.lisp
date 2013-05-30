@@ -1,9 +1,6 @@
 (in-package :om)
 
 
-#+linux
-(add-assoc-player *general-player* 'mplayer)
- 
 ;==================
 ; APP
 ;==================

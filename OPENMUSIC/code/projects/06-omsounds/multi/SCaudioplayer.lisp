@@ -1,7 +1,5 @@
 (in-package :om)
 
-#+linux(add-assoc-player *general-player* 'SCAudioPlayer)
-
 ;; application-control and communication defined in
 ;; 02-musicproject/players/SCplayer.lisp
 

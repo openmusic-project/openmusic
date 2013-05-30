@@ -9,7 +9,7 @@
 
 
 #+linux
-(add-assoc-player *general-player* 'scplayer)
+;; (add-assoc-player *general-player* 'scplayer)
 ;;(assoc-players *general-player*)
 
 

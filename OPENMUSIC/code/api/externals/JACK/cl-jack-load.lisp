@@ -8,4 +8,4 @@
 (setf cl-jack-files '("cl-jack" "cl-jack-midi" "cl-jack-audio"))
 
 (dolist (file cl-jack-files)
-  (compile?-and-load file))
+  (compile?-and-load (make-pathname :directory *load-pathname* :name file)))

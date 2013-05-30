@@ -41,7 +41,7 @@
 (sf_seek sndfile-handle 0 0)
 
 (progn
-  (sf::sf_close sndfile-handle)
+  ;;(sf::sf_close sndfile-handle)
   (let* ((path mysound)
 	 (datatype 'jack_default_audio_sample_t)
 	 (sfinfo (foreign-alloc 'sf::SF_INFO))
@@ -142,7 +142,7 @@
 
 ;; 'silence' callback
 
-(defcallback om-play-sf :int ((nframes jack_nframes_t) (arg :pointer))
+(defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
   (declare (ignore arg))
   (with-foreign-object (outbuf 'jack_default_audio_sample_t *outchannels*)
     (setf outs (loop for n in *OM-jack-audio-input-ports*
