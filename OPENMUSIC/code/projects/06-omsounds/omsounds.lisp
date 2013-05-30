@@ -34,9 +34,11 @@
     "basic;sound"
     "basic;soundeditor"
     "basic;audiomix"
+    "basic;general-mixer"   
     "basic;audioplayer"
     "basic;snd-streams"
     "basic;sound-preferences"
+
 
     "tools;sound-tools"
     "tools;control-tools"
@@ -47,6 +49,10 @@
     "multi;sound-players"
     "multi;multiplayer"
     #+linux "multi;mplayer"
+    #+linux "multi;SCaudioplayer"
+    "LAS;las-player"
+    "LAS;faust-objects"
+    "LAS;faust-parser-api"
  ))
 
 (eval-when (eval compile load)

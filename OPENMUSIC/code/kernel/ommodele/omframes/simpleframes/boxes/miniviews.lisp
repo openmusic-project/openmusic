@@ -91,37 +91,42 @@
 
 
 (defmethod om-draw-contents ((self miniview))
-  (om-with-focused-view self
-    (if (showpict (object (om-view-container self)))
-        (progn
-          (om-with-fg-color self *om-white-color*
-            (om-fill-rect 0 0 (w self) (h self)))
-          (draw-mini-view self (value (object (om-view-container self))))
-          )
-      (let* ((icon (icon (reference (object (om-view-container self)))))
-             (sizeicn (icon-sizes icon (def-icon-size (object (om-view-container self)))))
-             (xi (car sizeicn)) (yi (cadr sizeicn))
-             (iconhdlr (second (get&corrige-icon icon)))
-             (pic (get-fonde-pict (value (object (om-view-container self)))))
-             posi)
-        (if pic
-            (om-draw-picture self pic 
-                             (om-make-point 0 0) (om-make-point (w self) (h self)))
-          (om-with-fg-color self (or (get-fonde-color (value (object (om-view-container self))))
-                                     *om-light-gray-color*)
-            (om-fill-rect 0 0 (w self) (h self))))
-        (when iconhdlr
-          (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
-          (om-draw-icon iconhdlr self posi (om-make-point xi yi)))
-        ))
-    (when (show-name (object (om-view-container self)))
-      (om-draw-string 4 (- (h self) 5) (name (object (om-view-container self)))))
-    (let ((line (if (selected-p self) 2 1)))
-      (om-with-fg-color self (om-make-color 0 0 0) 
-        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize line))
+  (let ((box (object (om-view-container self))))
+    (om-with-focused-view self
+      (if (showpict box)
+          (progn
+            (om-with-fg-color self *om-white-color*
+              (om-fill-rect 0 0 (w self) (h self)))
+            (draw-mini-view self (value box))
+            )
+        (let* ((icon (icon (reference box)))
+               (sizeicn (icon-sizes icon (def-icon-size box)))
+               (xi (car sizeicn)) (yi (cadr sizeicn))
+               (iconhdlr (second (get&corrige-icon icon)))
+               (pic (get-fonde-pict (value box)))
+               posi)
+          (if pic
+              (om-draw-picture self pic 
+                               (om-make-point 0 0) (om-make-point (w self) (h self)))
+            (om-with-fg-color self (or (get-fonde-color (value box))
+                                       *om-light-gray-color*)
+              (om-fill-rect 0 0 (w self) (h self))))
+          (when iconhdlr
+            (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
+            (om-draw-icon iconhdlr self posi (om-make-point xi yi)))
+          ))
+      (when (show-name box)
+        (om-draw-string 4 (- (h self) 5) (name box)))
+      (when (play-state box)
+        (om-with-focused-view self
+          (om-with-fg-color self *om-green2-color*
+            (om-fill-polygon '((15 5) (20 8) (15 11))))))
+      (let ((line (if (selected-p self) 2 1)))
+        (om-with-fg-color self (om-make-color 0 0 0) 
+          (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize line))
+        )
       )
-    )
-  )
+    ))
 
 
 

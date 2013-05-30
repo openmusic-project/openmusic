@@ -6,7 +6,7 @@
 
 
 #+(and cocoa om-osc-api) 
-(add-assoc-player *general-player* 'microplayer)
+;(add-assoc-player *general-player* 'microplayer)
 
 
 ;=====================================================

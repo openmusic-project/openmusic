@@ -50,19 +50,28 @@
   #+(or darwin macos macosx) 
   "/Library/Frameworks/SDIF.framework/SDIF"
   #+(or linux (and clisp unix (not macos)))
-  "/usr/lib/libsdif.so")
+  ;; "/usr/lib/libsdif.so"
+  "libsdif.so"
+  )
 
 ;;; !!! *sdif-pathname* is modified in OM
 
 (defun init-sdif-framework ()
-  (setf *sdif-framework* (if (probe-file *sdif-pathname*)
-                             (progn 
-                               (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
-                               ;(cffi:load-foreign-library *sdif-pathname*)
-                               (fli:register-module "SDIF" 
-                                                    :real-name (namestring *sdif-pathname*)
-                                                    :connection-style :immediate)
-                               t))))
+  (setf *sdif-framework*
+	#-linux (if (probe-file *sdif-pathname*)
+		    (progn 
+		      (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
+					;(cffi:load-foreign-library *sdif-pathname*)
+		      (fli:register-module "SDIF" 
+					   :real-name (namestring *sdif-pathname*)
+					   :connection-style :immediate)
+		      t))
+	#+linux (progn 
+		  (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
+		  (fli:register-module "SDIF" 
+				       :real-name (namestring *sdif-pathname*)
+				       :connection-style :immediate)
+		  t)))
 
 ; (oa::om-start-sdif)
 ; (cffi:load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")

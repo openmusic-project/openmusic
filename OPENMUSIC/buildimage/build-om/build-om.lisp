@@ -2,6 +2,7 @@
 ;;; load this file then evaluate the following form :
 ;;; (om::start-openmusic)
 
+
 (in-package "CL-USER") 
 
 ;(set-up-profiler :package :all)
@@ -11,7 +12,7 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.070000)
+(defparameter *version* 6.060200)
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
@@ -29,7 +30,6 @@
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if (or (null show-beta) (zerop beta)) "" (format nil " beta ~d" beta))
-                 ;" MathTools Edition"
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
@@ -209,7 +209,7 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
-(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl))
+(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :json :yason))
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"

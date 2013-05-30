@@ -32,7 +32,7 @@
     (keyline :initform 2 :initarg :keyline :accessor keyline)))
 
 (defmethod draw-key ((self Omkey) x y ls)
-   (om-draw-char x (round y) (key self))
+  (om-draw-char x (round y) (key self))
    (when (octave self)
      (om-draw-string x (round (+ y (* ls (second (octave self)))))
                   (chif2sstr (car (octave self))))))
@@ -78,7 +78,7 @@
           (om-draw-line x (round  (+  y (* i linespace)))
                         (+ x xsize) (round (+  y (* i linespace)))))
     (when (key-obj self)
-      (om-with-font (get-font-to-draw 2)                
+      (om-with-font (get-font-to-draw 2)            
                     (draw-key (key-obj self) (+ x linespace) 
                               (round (+ y (* (- (numlines self) (keyline (key-obj self))) linespace))) linespace)))
     (when limits

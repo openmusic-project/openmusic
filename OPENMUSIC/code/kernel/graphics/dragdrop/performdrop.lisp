@@ -398,15 +398,17 @@
                        (iconID (iconview dragged)))
    )
 
-(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged instance-icon-frame) 
-                           (target slot-icon-frame) position)
+;;; + DEF VALUE
+;;; ===> does NOT work
+(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged instance-icon-frame) (target slot-icon-frame) position)
    (declare (ignore position))
-   (changing-slot-type target (type-of (instance (object dragged))) (iconID (iconview dragged))))
+   (when (changing-slot-type target (type-of (instance (object dragged))) (iconID (iconview dragged)))
+     (omg-change-initform (object target) (clone (instance (object dragged))))))
 
-(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged instboxframe) 
-                           (target slot-icon-frame) position)
+(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged instboxframe) (target slot-icon-frame) position)
    (declare (ignore position))
-   (changing-slot-type target (type-of (instance (reference (object dragged)))) (iconID (iconview dragged))))
+   (when (changing-slot-type target (type-of (instance (reference (object dragged)))) (iconID (iconview dragged)))
+     (omg-change-initform (object target) (clone (instance (reference (object dragged)))))))
 
 
 ;-------------------Class-tree target-----------------------

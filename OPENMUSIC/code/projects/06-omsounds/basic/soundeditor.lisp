@@ -23,151 +23,151 @@
 (in-package :om) 
 
 
+
 ;===========================================================
-;EDITOR
+;CONTROL VIEW
 ;===========================================================
-
-(defmethod make-editor-window ((class (eql 'soundEditor)) object name ref &key 
-                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
-                               (wintype nil))
-  (call-next-method class object (if (om-sound-file-name object)
-                                     (namestring (om-sound-file-name object))
-                                   "empty sound")
-                                   ref :winsize winsize :winpos winpos :resize resize 
-                    :close-p close-p :winshow winshow :resize resize
-                    :retain-scroll retain-scroll :wintype wintype
-                    ))
-
-     
-;============= CONTROLS ===========
-(omg-defclass Aiff-control (3dBorder-view) 
-  ((dyn-ctrls-list :initform nil :accessor dyn-ctrl-list)))
+(defclass sound-control-view (3dBorder-view) 
+  ((editor :initform nil :accessor editor :initarg :editor)    ;;; a reference to the main editor
+   ;;; a list of controls
+   (player-control :initform nil :accessor player-control)
+   (player-specific-controls :initform nil :accessor player-specific-controls)
+   (vol-control :initform nil :accessor vol-control)
+   (pan-control :initform nil :accessor pan-control)))
 
 
-(defmethod make-snd-ctrl-list ((self Aiff-control))
-  (let ((x0 50))
-    (list 
-     (om-make-dialog-item 'numBox
-                          (om-make-point x0 8)
-                          (om-make-point 28 18) (format () " ~D" (tracknum (object (om-view-container self))))
-                          :min-val 1
-                          :max-val 16
-                          :font *om-default-font1*
-                          :bg-color *om-white-color*
-                          :value (tracknum (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (tracknum (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 70) 8)
-                          (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
-                          :min-val 0
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (vol (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (vol (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
-     (om-make-dialog-item 'numBox
-                          (om-make-point (incf x0 90) 8)
-                          (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
-                          :min-val -100
-                          :max-val 100
-                          :bg-color *om-white-color*
-                          :font *om-default-font1*
-                          :value (pan (object (om-view-container self)))
-                          :afterfun #'(lambda (item)
-                                        (setf (pan (object (om-view-container self))) (value item))
-                                        (report-modifications (om-view-container self)))
-                          )
-     (om-make-dialog-item 'om-pop-up-dialog-item 
-                                            (om-make-point 395 5) 
-                                            (om-make-point 100 20) ""
-                                            :font *om-default-font1*
-                                            :range (mapcar 'audio-player-name *audio-players*)
-                                            :value (audio-player-name (get-edit-param (om-view-container self) 'player))
-                                            :di-action  (om-dialog-item-act item 
-                                                          (change-player (panel (om-view-container self)) 
-                                                                         (nth (om-get-selected-item-index item) *audio-players*)))
-                                            )
-     )))
+(defmethod initialize-instance :after ((self sound-control-view) &rest args)
+  ;;; editor self MUST BE SET BEFORE
+  (om-add-subviews self
+                   (om-make-view 'om-icon-button :position (om-make-point 10 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_play" :icon2 "simple_play_pushed"
+                                         :action #'(lambda (item) (editor-play (editor self))))
 
-(defmethod add-sound-params ((self Aiff-control))
-  (let ((x0 10))
-    (setf (dyn-ctrl-list self) (make-snd-ctrl-list self))
-    (om-add-subviews self
-                     (om-make-dialog-item 'om-static-text (om-make-point x0 8) (om-make-point 40 20)
-                                          "Track" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
-                                          "Vol" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
-                                          "Pan" :font *om-default-font1* :bg-color *controls-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point 350 8) (om-make-point 50 20) 
+                     (om-make-view 'om-icon-button :position (om-make-point 35 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_pause" :icon2 "simple_pause_pushed"
+                                         :action #'(lambda (item) (editor-pause (editor self))))
+
+                     (om-make-view 'om-icon-button :position (om-make-point 60 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_stop" :icon2 "simple_stop_pushed"
+                                         :action #'(lambda (item) (editor-stop (editor self))))
+
+                     (om-make-view 'om-icon-button :position (om-make-point 85 8) :size (om-make-point 17 17)
+                                         :icon1 "simple_loop" :icon2 "simple_loop_pushed"
+                                         :action #'(lambda (item) (if (loop-play (editor self)) 
+                                                                      (setf (loop-play (editor self)) nil) 
+                                                                    (setf (loop-play (editor self)) t))))
+
+                     (om-make-view 'om-icon-button :position (om-make-point 110 5) :size (om-make-point 20 20)
+                                         :icon1 "simple_rec" :icon2 "simple_rec_pushed"
+                                         :action #'(lambda (item) (print "Rec function")))
+                     
+                      (om-make-dialog-item 'om-static-text (om-make-point 250 8) (om-make-point 50 20)
                                           "Player" :font *om-default-font1*)
-                     (first (dyn-ctrl-list self))
-                     (second (dyn-ctrl-list self))
-                     (third (dyn-ctrl-list self))
-                     (fourth (dyn-ctrl-list self))
-                     )   
-    t))
 
-(defmethod update-controls ((self Aiff-control))
-  (loop for item in (dyn-ctrl-list self) do (om-remove-subviews self item))
-  (setf (dyn-ctrl-list self) (make-snd-ctrl-list self))
-  (loop for item in (dyn-ctrl-list self) do (om-add-subviews self item))  
-  t)
+                     (setf (player-control self)
+                           (om-make-dialog-item 'om-pop-up-dialog-item 
+                                                (om-make-point 300 5) 
+                                                (om-make-point 100 20) ""
+                                                :font *om-default-font1*
+                                                :range (mapcar 'audio-player-name *audio-players*)
+                                                :value (audio-player-name (get-edit-param (om-view-container self) 'player))
+                                                :di-action  (om-dialog-item-act item 
+                                                              (change-player (editor self)
+                                                                             (nth (om-get-selected-item-index item) *audio-players*)))))
 
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
+                     ;                     "Vol" :font *om-default-font1* :bg-color *controls-color*)
 
-;== RULERS ==========
+                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
+                     ;                     "Pan" :font *om-default-font1* :bg-color *controls-color*)
 
-(omg-defclass static-ruler (ruler) () )
+                          ; (setf (vol-control self)  (om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 70) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
+     ;                     :min-val 0
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (vol (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (vol (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
+     ; (setf (pan-control sefl) (om-make-dialog-item 'numBox
+     ;                     (om-make-point (incf x0 90) 8)
+     ;                     (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
+     ;                     :min-val -100
+     ;                     :max-val 100
+     ;                     :bg-color *om-white-color*
+     ;                     :font *om-default-font1*
+     ;                     :value (pan (object (om-view-container self)))
+     ;                     :afterfun #'(lambda (item)
+     ;                                   (setf (pan (object (om-view-container self))) (value item))
+     ;                                   (report-modifications (om-view-container self)))
+     ;                     )
+                     ))
+            
+(defmethod update-controls ((self sound-control-view))
+  (let ((player (get-edit-param (editor self) 'player)))
+    (om-set-selected-item (player-control self) (audio-player-name player))
+    (update-player-controls self player)
+    ;(set-value (vol-control self) (vol (object (editor self))))
+    ;(set-value (pan-control self) (pan (object (editor self))))
+    ))
 
-(defmethod strech-ruler-motion ((self static-ruler) pos) t)
+(defmethod make-player-specific-controls (player control-view) nil)
 
-(defmethod strech-ruler-release ((view static-ruler) pos) t)
+(defmethod update-player-controls ((self sound-control-view) player)
+  (apply #'om-remove-subviews self (player-specific-controls self))
+  (setf (player-specific-controls self)
+        (make-player-specific-controls player self))
+  (apply #'om-add-subviews self (player-specific-controls self)))
+  
 
-(defmethod om-view-cursor ((self static-ruler)) nil)
+;;;==============
+;;; RULER 
+;;;==============
 
-
-(omg-defclass sound-ruler (ruler) ())
-
-(defmethod strech-ruler-motion ((self sound-ruler) pos) 
-  (call-next-method))
+(defclass sound-ruler (ruler) ())
 
 (defmethod strech-ruler-release ((self sound-ruler) pos) 
   (call-next-method)
   (let ((size (- (cadr (rangex (assoc-view self))) (car (rangex (assoc-view self))))))
     (when (> (cadr (rangex (assoc-view self))) (cadr (bounds-x (assoc-view self))))
-      ;(om-beep)
       (setf (rangex (assoc-view self))
             (list 
              (max 0 (- (cadr (bounds-x (assoc-view self))) size))
              (cadr (bounds-x (assoc-view self)))
              ))
       ))
-  (update-subviews (om-view-container self))
-  )
+  (update-subviews (om-view-container self)))
 
 
-;=========PREVIEW===========
+;;;================
+;;; SOUND PREVIEW
+;;;================
 
-(defclass full-preview (3Dborder-view om-view-cursor-play) ()
+(defclass full-preview (3Dborder-view cursor-play-view-mixin) ()
      (:default-initargs
       #+win32 :draw-with-buffer #+win32 t)
-     )
+     ) 
 
 (defvar *preview-size* "size of the preview pane")
 (setf *preview-size* 40)
 
-(defmethod draw-line-cursor ((self full-preview) &key newpixel (draw? t))
-  (unless newpixel
-    (setf newpixel (round (* (/ (cursor-pos *general-player*) (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-  (when draw? 
-    (om-update-movable-cursor self newpixel 0 4 (h self)))
-   newpixel)
+;(defmethod draw-line-cursor ((self full-preview) &key newpixel (draw? t))
+;  (unless newpixel
+;    (setf newpixel (round (* (/ (cursor-pos *general-player*) (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
+;  (when draw? 
+;    (om-update-movable-cursor self newpixel 0 4 (h self)))
+;   newpixel)
+
+(defmethod update-cursor ((self full-preview) time &optional y1 y2)
+  (let ((y (or y1 0))
+        (h (if y2 (- y2 y1) (h self)))
+        (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
+    (om-update-movable-cursor self pixel y 4 h)))
+
 
 (defmethod om-draw-contents ((self full-preview))  
   (call-next-method)
@@ -200,107 +200,86 @@
       )
     (om-with-focused-view self 
       (om-with-fg-color self *om-gray-color*
-          (om-draw-string 10 24 "sound preview not available"))) 
-    ))
+          (om-draw-string 10 24 "sound preview not available")))))
 
-;=======================EDITOR====================
-   
-(omg-defclass soundEditor (EditorView object-editor) 
-   ((rulerx :initform nil :accessor rulerx)
-    (mode :initform nil :accessor mode)
+
+;===========================================================
+;EDITOR 
+;===========================================================
+
+(defclass soundEditor (EditorView object-editor play-editor-mixin)
+   ((mode :initform nil :accessor mode)
     (control :initform nil :accessor control)
     (preview :initform nil :accessor preview)
     (sndpict :initform nil :accessor sndpict)
-    ;(sndptr :initform nil :accessor sndptr)
     (timeunit :initform 0 :accessor timeunit :initarg :timeunit)))
 
-(defmethod get-score-class-ctrls ((self soundeditor)) 'Aiff-control)
+(defmethod make-editor-window ((class (eql 'soundEditor)) object name ref &key 
+                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               (wintype nil))
+  (call-next-method class object (if (om-sound-file-name object)
+                                     (namestring (om-sound-file-name object))
+                                   "empty sound")
+                    ref :winsize winsize :winpos winpos :resize resize 
+                    :close-p close-p :winshow winshow :resize resize
+                    :retain-scroll retain-scroll :wintype wintype))
+
+
 (defmethod get-panel-class ((self soundEditor)) 'soundpanel)
 (defmethod get-control-h ((self soundEditor)) 36)
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
+(defmethod editor-has-palette-p ((self soundEditor)) nil)
 
+;;; AJOUTER DANS LES CONTROLS
+; (setf (cursor-mode view) :interval)
+; (setf (cursor-mode view) :normal)
+; (init-coor-system view)
 
-;;;==== PALETTE =====
-
-(defclass sound-palette (playing-palette)  () 
-   ;(:default-initargs :source-name "soundpalette")
-  )
-
-(defmethod editor-has-palette-p ((self soundeditor)) 'sound-palette)
-
-(defmethod get-palette-pict ((self soundeditor)) 
-  (om-load-and-store-picture "soundpalette" 'internal))
-
-(defmethod palette-act ((self sound-palette) x)
-   (unless (call-next-method)
-       (let ((ed-view (panel (editor-assoc self))))
-         (case x
-           (8 (setf (cursor-p ed-view) t) 
-              (setf (mode (editor-assoc self)) x))
-           (7 (setf (cursor-p ed-view) nil)
-              (setf (mode (editor-assoc self)) x))
-           (9 (init-coor-system ed-view))
-           )
-         (om-invalidate-view ed-view t)
-         (om-invalidate-view (view *palette-win*) t)
-         )))
-
-(defmethod palette-init ((self soundeditor))
-  (call-next-method)
-  (init-play-palette self))
-
-;;; used for cut/copy/paste in sound editors
-(defvar *snd-clipboard* nil)
-
-;;; *mouse-window-event*
 (defmethod editor-null-event-handler :after ((self soundEditor))  ;chercher *mouse-window-event* par tout et enlever 
    (do-editor-null-event self))
 
 
-(defmethod editor-has-palette-p ((self soundEditor)) 'sound-palette)
+(defmethod initialize-instance :after ((self soundEditor) &rest args)
+  (declare (ignore args))
 
-(defmethod initialize-instance :after ((self soundEditor) &rest l)
-   (declare (ignore l))
-   (let* ((ed-view (om-make-view (get-panel-class self) 
-                     :owner self
-                     :scrollbars :h
-                     :position (om-make-point 0 *titlebars-h*) 
-                     :size (om-make-point (w self) (- (h self) (+ 25 *titlebars-h* (get-control-h self))))))
-          (rulerx (om-make-view 'sound-ruler
-                    :owner self
-                    :axe 'x
-                    :assoc-view ed-view
-                    :zoom 1000
-                    :minzoom 1
-                    :position (om-make-point 0 (- (h self) (get-control-h self) 25)) 
-                    :size (om-make-point (w self) 25)))
-          (control (om-make-view (get-score-class-ctrls self) 
-                     :owner self
-                     :position (om-make-point 0 (- (h self) (get-control-h self))) 
-                     :size (om-make-point (w self) (get-control-h self))))
-          (prev (om-make-view 'full-preview 
-                     :owner self
-                     :position (om-make-point 0 (get-control-h self)) 
-                     :size (om-make-point (w self) (get-control-h self)))))
-     
-     (setf (mode self) 8)
-     
-     (add-sound-params control)
-     
-     (setf (control self) control)
-     (setf (panel self) ed-view)
-     (setf (preview self) prev)
-     (om-set-bg-color (control self) *controls-color*)
-     (setf (sndpict self) (sound-get-pict (object self)))
-     ;(setf (sndptr self) (get-sound-data (object self)))
-     ;(setf (sndpict self) (sound-get-pict (sndptr self)))
-     (setf (cursor-p (panel self)) t)
-     (setf (rulerx ed-view) rulerx)
-     (setf (rangex ed-view) (list 0 (get-obj-dur (object self))))
-     (setf (bounds-x ed-view) (list 0 (get-obj-dur (object self))))
-     (set-units-ruler ed-view rulerx)
-     (om-invalidate-view ed-view)))
+  (setf (panel self) (om-make-view (get-panel-class self) 
+                                   :owner self
+                                   :scrollbars :h
+                                   :position (om-make-point 0 *titlebars-h*) 
+                                   :size (om-make-point (w self) (- (h self) (+ 25 *titlebars-h* (get-control-h self))))
+                                   :cursor-mode :interval
+                                   :rangex (list 0 (get-obj-dur (object self)))
+                                   :bounds-x (list 0 (get-obj-dur (object self)))
+                                   ))
+
+  (setf (rulerx (panel self)) (om-make-view 'sound-ruler
+                                     :owner self
+                                     :axe 'x
+                                     :assoc-view (panel self)
+                                     :zoom 1000
+                                     :minzoom 1
+                                     :position (om-make-point 0 (- (h self) (get-control-h self) 25)) 
+                                     :size (om-make-point (w self) 25)))
+  
+  (setf (control self) (om-make-view 'sound-control-view 
+                                     :owner self
+                                     :editor self
+                                     :position (om-make-point 0 (- (h self) (get-control-h self))) 
+                                     :size (om-make-point (w self) (get-control-h self))
+                                     :bg-color *controls-color*))
+  
+  (setf (preview self) (om-make-view 'full-preview 
+                                     :owner self
+                                     :position (om-make-point 0 (get-control-h self)) 
+                                     :size (om-make-point (w self) (get-control-h self))))
+
+
+  (setf (sndpict self) (sound-get-pict (object self)))
+  (set-units-ruler (panel self) (rulerx (panel self)))
+  (update-controls (control self))
+  (om-invalidate-view (panel self)))
+
 
 (defmethod update-editor-after-eval ((self soundEditor) val)
   (call-next-method)
@@ -312,7 +291,9 @@
     (om-set-window-title (om-view-window self) (if path (namestring path) "empty sound")))
   (setf (sndpict self) (sound-get-pict (object self)))
   (update-titlebar self)
-  (update-subviews self))
+  (update-subviews self)
+  (update-menubar self))
+
 
 (defmethod update-editor-controls ((self soundEditor)) 
   (update-controls (control self)))
@@ -359,8 +340,7 @@
      (om-set-scroll-position (panel self)
                              (om-make-point (round (* (om-point-h (om-field-size (panel self)))
                                                       (/ (car (rangex (panel self)))
-                                                         (cadr (bounds-x (panel self))))))
-                                            0)))
+                                                         (cadr (bounds-x (panel self)))))) 0)))
     
    (om-set-view-position (preview self) (om-make-point 0 *titlebars-h*))
    (om-set-view-size (preview self) (om-make-point (w self) *preview-size*))
@@ -370,14 +350,6 @@
    (om-set-view-size (rulerx (panel self)) (om-make-point (w self) 25))
    (om-invalidate-view self))
 
-(defmethod om-get-menu-context ((self soundEditor))
-  (let* ((thesound (object self)))
-    (when (pict-spectre thesound)
-      (if (pict-spectre? thesound)
-        (list (om-new-leafmenu "show waveform" #'(lambda () (change-sound-pict (panel self))))
-              )
-        (list (om-new-leafmenu "show spectre" #'(lambda () (change-sound-pict (panel self))))
-              )))))
 
 (defmethod get-menubar ((self soundEditor)) 
   (list (om-make-menu "File" 
@@ -387,9 +359,233 @@
                         (om-new-leafmenu  "Import..." #'(lambda () (sound-import self)) nil))))
         (om-make-menu "Edit" 
                       (list
-                       (om-new-leafmenu  "Select All" #'(lambda () (editor-select-all self)) "a")))
+                       (om-new-leafmenu  "Select All" #'(lambda () (editor-select-all self)) "a")
+                       (list
+                        (om-new-leafmenu  "Undo" #'(lambda () 
+                                                     (editor-slice-undo self)) "z" (editor-undo-available self))
+                        (om-new-leafmenu  "Redo" #'(lambda () 
+                                                     (editor-slice-redo self)) "y" (editor-redo-available self)))
+                        (list
+                         (om-new-leafmenu  "Copy" #'(lambda () 
+                                                       (editor-slice-copy self)) "c" (editor-slicing-available self))
+                         (om-new-leafmenu  "Cut" #'(lambda () 
+                                                     (editor-slice-cut self)) "x" (editor-slicing-available self))
+                         (om-new-leafmenu  "Paste" #'(lambda () 
+                                                       (editor-slice-paste self)) "v" (editor-slicing-available self))
+                         (om-new-leafmenu  "Delete" #'(lambda () 
+                                                        (editor-slice-delete self)) "d" (editor-slicing-available self)))))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
+
+(defmethod editor-undo-available ((self soundeditor))
+  (let (res)
+    (setf res (table-top-? (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*))
+    (if res t nil)))
+
+(defmethod editor-redo-available ((self soundeditor))
+  (let (res)
+    (setf res (table-top-? (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*))
+    (if res t nil)))
+
+(defmethod editor-slicing-available ((self soundeditor))
+  (let (res)
+    (setf res (om-sound-sndlasptr-current (object self)))
+    (if res t nil)))
+;================================================AUDIO SLICING=======================================================
+;;;///////////////////TOOLS//////////////////////
+(defvar *editor-view-updater* nil)
+(defconstant *las-slicing-history-size* 5)
+
+(defun table-top-? (table size)
+  (gethash (- size 1) table))
+
+(defun table-push-on-top (line table size)
+  (let ((deleted-line (gethash 0 table)))
+    (loop for i from 0 to (- size 1) do
+          (setf (gethash i table) (gethash (+ i 1) table)))
+    (setf (gethash (- size 1) table) line)
+  deleted-line))
+
+(defun table-pop-on-top (table size)
+  (let ((line-pop (gethash (- size 1) table)))
+    (setf (gethash (- size 1) table) nil)
+    (loop for i from (- size 1) downto 1 do
+        (setf (gethash i table) (gethash (- i 1) table)))
+    (setf (gethash 0 table) nil)
+    line-pop))
+
+(defmethod save-las-datalist ((self soundeditor) table size)
+  (table-push-on-top 
+   (list 
+    (om-sound-sndlasptr-current (object self)) 
+    (om-sound-snd-slice-to-paste (object self))
+    (om-sound-sndbuffer (object self))
+    (get-sound-pict (object self)))
+   table size))
+;;;///////////////////////////////////////////////
+
+;;;////////////////GRAPH TOOLS///////////////////
+(defmethod launch-editor-view-updater ((self soundeditor))
+  (if *editor-view-updater*
+      (om-kill-process *editor-view-updater*))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater" #'(lambda () 
+                                                                        #+cocoa(objc:make-autorelease-pool) 
+                                                                        (editor-update-view self)))))
+
+(defmethod launch-editor-view-updater-light ((self soundeditor))
+  (if *editor-view-updater*
+      (om-kill-process *editor-view-updater*))
+  (setf *editor-view-updater* (om-run-process "editor-view-updater-light" #'(lambda () 
+                                                                              #+cocoa(objc:make-autorelease-pool)
+                                                                              (editor-update-view-light self)))))
+
+(defmethod editor-update-view ((self soundeditor))
+  (let* ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
+         (min (car (rangex (panel self))))
+         (max (cadr (rangex (panel self))))
+         (xview (- max min)))
+    (init-message-win)
+    (change-message-win "Please Wait...")
+    (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+    (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
+    (om-sound-las-using-srate (object self))
+    (setf (sndpict self) (get-sound-pict (object self)))
+    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
+    (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
+           (setf (rangex (panel self)) (list 0 newdur)))
+          ((or (> min newdur) (> max newdur))
+           (setf (rangex (panel self)) (list 0 newdur)))
+          (t (setf (rangex (panel self)) (list min max))))
+    (setf (bounds-x (panel self)) (list 0 newdur))
+    (set-units-ruler (panel self) (rulerx (panel self)))
+    (strech-ruler-release (rulerx (panel self)) 0)
+    (om-invalidate-view self)
+    (close-message-win)))
+ 
+(defmethod editor-update-view-light ((self soundeditor))
+  (om-sound-update-las-infos (object self))
+  (let* ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
+         (min (car (rangex (panel self))))
+         (max (cadr (rangex (panel self)))))
+    (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
+           (setf (rangex (panel self)) (list 0 newdur)))
+          ((or (> min newdur) (> max newdur))
+           (setf (rangex (panel self)) (list 0 newdur)))
+          (t (setf (rangex (panel self)) (list min max))))
+    (setf (bounds-x (panel self)) (list 0 newdur))
+    (strech-ruler-release (rulerx (panel self)) 0)
+    (set-units-ruler (panel self) (rulerx (panel self)))
+    (om-invalidate-view self)))
+;;;///////////////////////////////////////////////
+(defmethod editor-slice-copy ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (progn
+        (editor-stop self)
+        (let* ((datalist (get-selection-to-play (panel self)))
+               (pointer (om-sound-sndlasptr-current (object self)))
+               (interval (nth 2 datalist))
+               (from (car interval))
+               (to (cadr interval))
+               (result (las-slice-copy pointer from to)))
+          (if result
+              (om-sound-update-snd-slice-to-paste (object self) result)
+            (print "An error has occured. Requested copy operation aborted."))))
+    (print "Nothing to copy! Please select a region to copy.")))
+
+(defmethod editor-slice-cut ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (progn
+        (editor-stop self)
+        (let* ((datalist (get-selection-to-play (panel self)))
+               (pointer (om-sound-sndlasptr-current (object self)))
+               (interval (nth 2 datalist))
+               (from (car interval))
+               (to (cadr interval))
+               (result (las-slice-cut pointer from to)))
+          (if result
+              (progn
+                (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                (update-menubar self)
+                (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
+                (om-sound-update-las-infos (object self))
+                (launch-editor-view-updater self))
+            (print "An error has occured. Requested cut operation aborted."))))
+    (print "Nothing to cut! Please select a region to cut.")))
+
+(defmethod editor-slice-paste ((self soundeditor))
+  (if (not (selection-to-slice-? (panel self)))
+      (progn
+        (editor-stop self)
+        (let* ((datalist (get-selection-to-play (panel self)))
+               (pointer (om-sound-sndlasptr-current (object self)))
+               (slice (om-sound-snd-slice-to-paste (object self)))
+               (position (cursor-pos (panel self)))
+               (result (las-slice-paste pointer position slice)))
+          (if slice
+              (let ()
+                (if result
+                    (progn
+                      (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                      (update-menubar self)
+                      (om-sound-update-sndlasptr-current (object self) result)
+                      (om-sound-update-las-infos (object self))
+                      (launch-editor-view-updater self))
+                  (print "An error has occured. Requested paste operation aborted.")))
+            (print "Nothing to paste! Please copy a sound region before."))))
+    (print "You can't paste on a region!")))
+
+(defmethod editor-slice-delete ((self soundeditor))
+  (if (selection-to-slice-? (panel self))
+      (progn
+        (editor-stop self)
+        (let* ((datalist (get-selection-to-play (panel self)))
+               (pointer (om-sound-sndlasptr-current (object self)))
+               (interval (nth 2 datalist))
+               (from (car interval))
+               (to (cadr interval))
+               (result (las-slice-delete pointer from to)))
+          (if result
+              (progn
+                (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+                (update-menubar self)
+                (om-sound-update-sndlasptr-current (object self) result)
+                (om-sound-update-las-infos (object self))
+                (launch-editor-view-updater self))
+            (print "An error has occured. Requested delete operation aborted."))))
+    (print "Nothing to delete! Please select a region to delete.")))
+
+(defmethod editor-slice-undo ((self soundeditor))
+  (editor-stop self)
+  (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-past-stack (object self)))
+      (let ((del-line (save-las-datalist self (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
+        (if del-line (fli:free-foreign-object (nth 2 del-line)))
+        (let ((pastline (table-pop-on-top (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
+          (om-sound-update-sndlasptr-current (object self) (nth 0 pastline))
+          (om-sound-update-snd-slice-to-paste (object self) (nth 1 pastline))
+          (om-sound-update-buffer-with-new (object self) (nth 2 pastline))
+          (sound-update-pict (object self) (nth 3 pastline))
+          (setf (sndpict self) (get-sound-pict (object self))))
+        (launch-editor-view-updater-light self)
+        ))
+  (update-menubar self))
+
+(defmethod editor-slice-redo ((self soundeditor))
+  (editor-stop self)
+  (cond ((typep (player self) 'las-player)
+         (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-future-stack (object self)))
+             (let ((del-line (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
+               (if del-line (fli:free-foreign-object (nth 2 del-line)))
+               (let ((futureline (table-pop-on-top (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
+                 (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
+                 (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
+                 (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
+                 (sound-update-pict (object self) (nth 3 futureline))
+                 (setf (sndpict self) (get-sound-pict (object self))))
+               (launch-editor-view-updater-light self))))
+        (t nil))
+  (update-menubar self))
+;====================================================================================================================
+
 
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")
@@ -399,14 +595,72 @@
           (esc "Reset cursor")
           (space "Play/Stop"))))
 
+
+;;; PLAYER FEATURES
+(defmethod change-player ((self soundeditor) player)
+  (call-next-method)
+  (reset-editor-player self) 
+  (update-player-controls (control self) player))
+
+;;; (if (equal val :multiplayer) (launch-multiplayer-app))
+
+(defmethod cursor-panes ((self soundeditor))
+  (list (panel self)
+        (preview self)))
+
+
+;;;====================== 
+;;; TITLE BAR / SOUND INFO
+;;;======================
+
+(defclass sound-titlebar (editor-titlebar) ())
+
+(defmethod init-titlebar ((self soundeditor))
+  (let* ((pathname (om-sound-file-name (object self)))
+         (name (if pathname
+                   (if (stringp (pathname-type pathname))
+                       (string+ (pathname-name pathname) "." (pathname-type pathname))
+                     (pathname-name pathname))
+                 "No file attached"))) 
+  (om-add-subviews (title-bar self)
+                   (om-make-dialog-item 'om-static-text (om-make-point 10 4) 
+                                        (om-make-point 
+                                         (+ 10 (om-string-size (string+ (om-str :file) ": " name)
+                                                               *om-default-font1b*))
+                                         18)
+                                        (string+ (om-str :file) ": " name)
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1b*)
+                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
+                                        (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*)
+                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
+                                        (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
+                                                                 (round (om-sound-sample-rate (object self)))
+                                                               "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*)
+                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 18)
+                                        (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
+                                        :bg-color *editor-bar-color*
+                                        :font *om-default-font1*))))
+
+
 ;;;======= PANEL =======
 (omg-defclass soundPanel (om-scroller view-with-ruler-x cursor-play-view-mixin om-view-drag) 
-  ((mode :initform 0 :accessor mode)
-   (selection? :initform nil :accessor selection?)
-   (bounds-x :initform '(0 1) :accessor bounds-x :initarg :bounds-x))
-  (:default-initargs
-      #+win32 :draw-with-buffer #+win32 t)
-     )
+              ((mode :initform 0 :accessor mode)
+               (selection? :initform nil :accessor selection?)
+               (bounds-x :initform '(0 1) :accessor bounds-x :initarg :bounds-x))
+              (:default-initargs
+               #+win32 :draw-with-buffer #+win32 t))
+
+;;; temp compatibilité
+(defmethod (setf cursor-p) (val (self soundpanel))
+  (setf (cursor-mode self) (if val :interval :normal)))
+(defmethod cursor-p ((self soundpanel))
+  (equal (cursor-mode self) :interval))
+
 
 (defmethod editor ((self soundpanel)) (om-view-container self)) 
 
@@ -460,24 +714,28 @@
                (first interval)
                (second interval)))))
 
-(defmethod attached-cursor-views ((self soundpanel)) (list (preview (editor self))))
+(defmethod selection-to-slice-? ((self soundpanel))
+  (and (cursor-interval self) 
+           (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))))
+
+;(defmethod attached-cursor-views ((self soundpanel)) (list (preview (editor self))))
+
+
 
 ;; no turn page
 (defmethod scroll-play-window ((self soundPanel)) t)
 
-
 (defmethod change-player ((panel soundpanel) val)
   (call-next-method)
-  (if (equal val :multiplayer) (launch-multiplayer-app)))
+  (change-player (editor panel) val))
+
 
 ;------------------------------------
 ;Events
 ;------------------------------------
 
 (defmethod om-view-cursor ((self soundPanel))
-   (if (cursor-p self)
-     ;(if (om-option-key-p)
-     ;  *om-hand-cursor*
+   (if (equal (cursor-mode self) :interval)
        *om-i-beam-cursor*;)
      *om-arrow-cursor*))
 
@@ -488,10 +746,7 @@
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc (reset-cursor self))
-     (#\SPACE (when *palette*
-                (if (Idle-p *general-player*)
-                    (palette-act *palette* (if (selection-to-play-? self) 4 0))
-                  (palette-act *palette* 1))))
+     (#\SPACE (editor-play/stop (editor self)))
      (otherwise (call-next-method))))
 
 (defmethod reset-cursor ((self soundpanel))
@@ -527,7 +782,11 @@
          (Xsize 80)
          (Mydialog (om-make-window 'om-dialog
                                    :size (om-make-point (+ xsize 110) 80)
-                                   :window-title "Marker Onset"
+                                   :window-(when (not *activate-handler*)
+        (setf *activate-handler* t)
+        (palette-open self)
+        (setf *activate-handler* nil)
+        (palette-init (editor self)))title "Marker Onset"
                                    :maximize nil :minimize nil :resizable nil
                                    :bg-color *om-window-def-color*
                                    :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
@@ -570,7 +829,7 @@
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
-    (if (cursor-p self)
+    (if (equal (cursor-mode self) :interval) ; (cursor-p self)
         (progn 
           (setf (selection? self) nil)
           (new-interval-cursor self where)
@@ -588,7 +847,7 @@
             ))))))
 
 (defmethod om-view-doubleclick-handler ((self soundPanel) Where)
-  (if (cursor-p self)
+  (if (equal (cursor-mode self) :interval) ; (cursor-p self)
       (progn
         (setf (cursor-pos self) (om-point-h (pixel2point self where)))
         (setf (cursor-interval self) (list (cursor-pos self) (cadr (bounds-x self))))
@@ -691,68 +950,137 @@
 
 (defmethod om-draw-contents ((self soundPanel))
   (call-next-method)  
-  (if (recording? self)
+  (if (equal (state (player (editor self))) :recording)
        (om-with-focused-view self  
          (om-with-fg-color self *om-red2-color*
            (om-with-font *om-default-font4b*
               (let ((halftext (round (om-string-size "Recording" *om-default-font4b*) 2)))
                 (om-draw-string (- (round (w self) 2) halftext) (round (h self) 2) "Recording")))))
+    (if (om-sound-file-name (object (om-view-container self)))
+        (let* ((thesound (object (om-view-container self)))
+               (sr (if (om-sound-las-using-srate-? thesound) 
+                 las-srate
+               (om-sound-sample-rate thesound)))
+               (size (om-sound-n-samples-current thesound))
+               (dur (or (and (and sr size)
+                             (/ size sr)) 0))
+               (dur-ms (round size (/ sr 1000.0)))
+               (total-width (om-point-h (om-field-size self)))
+               (thepicture (and dur (pic-to-draw thesound)))
+               (window-h-size (om-point-h (om-view-size self)))
+               (window-v-size (om-point-v (om-view-size self)))
+               (stream-buffer (om-sound-sndbuffer thesound))
+               (system-etat (get-system-etat self))
+               (xmin (car (rangex self)))
+               (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+               (xmax (cadr (rangex self)))
+               (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+               (xview (- xmax xmin))
+               (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) 
+               (step-1smp 1)
+               (step-100us (/ sr 10000.0))
+               (step-200us (/ sr 5000.0))
+               (step-400us (/ sr 2500.0))
+               (step-800us (/ sr 1250.0))
+               (step-1ms (/ sr 1000.0))
+               (step-2ms (/ sr 500.0))
+               (step-3ms (/ sr 333.3333))
+               (step-4ms (/ sr 250.0))
+               (step-5ms (/ sr 200.0))
+               (step-10ms (/ sr 100.0))
+               (step-20ms (/ sr 50.0))
+               (step-30ms (/ sr 33.3333))
+               (step-40ms (/ sr 25.0))
+               (step-50ms (/ sr 20.0)))
+          (om-with-focused-view self
+            (when (and thesound thepicture)
+              (om-with-fg-color self *om-dark-gray-color*
+                (if (< xview pict-threshold)
+                    (cond ((>= xview 300000) (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                          ((and (< xview 300000) (>= xview 250000)) (om-draw-waveform self step-50ms))
+                          ((and (< xview 250000) (>= xview 190000)) (om-draw-waveform self step-40ms))
+                          ((and (< xview 190000) (>= xview 130000)) (om-draw-waveform self step-30ms))
+                          ((and (< xview 130000) (>= xview 80000)) (om-draw-waveform self step-20ms))
+                          ((and (< xview 80000) (>= xview 40000)) (om-draw-waveform self step-10ms))
+                          ((and (< xview 40000) (>= xview 25000)) (om-draw-waveform self step-5ms))
+                          ((and (< xview 25000) (>= xview 20000)) (om-draw-waveform self step-4ms))
+                          ((and (< xview 20000) (>= xview 14000)) (om-draw-waveform self step-3ms))
+                          ((and (< xview 14000) (>= xview 7500)) (om-draw-waveform self step-2ms))
+                          ((and (< xview 7500) (>= xview 5000)) (om-draw-waveform self step-1ms))
+                          ((and (< xview 5000) (>= xview 3000)) (om-draw-waveform self step-800us))
+                          ((and (< xview 3000) (>= xview 1750)) (om-draw-waveform self step-400us))
+                          ((and (< xview 1750) (>= xview 900)) (om-draw-waveform self step-200us))
+                          ((and (< xview 900) (>= xview 500)) (om-draw-waveform self step-100us))
+                          ((< xview 500) (om-draw-waveform self step-1smp)))
+                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                (om-with-fg-color self *om-blue-color*
+                  (loop for item in (markers thesound) 
+                        for k = 0 then (+ k 1) do
+                        (om-with-line-size (if (member k (selection? self)) 2 1)
+                          (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
+                          (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
+              (when (grille-p self)
+                (draw-grille self))
+              (draw-interval-cursor self)
+              (unless thepicture
+                (if (and (om-sound-file-name thesound) (zerop dur))
+                    (om-with-focused-view self
+                      (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
+                  (om-with-focused-view self 
+                    (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
+                  )
+                )))) (om-with-focused-view self (om-draw-string 10 40 (format nil "You have to load a file."))))))
+
+
+(defmethod om-draw-waveform ((self soundPanel) smpstep)
   (let* ((thesound (object (om-view-container self)))
-         (dur (or (and (and (om-sound-sample-rate thesound) (om-sound-n-samples thesound))
-                       (/ (om-sound-n-samples thesound) (om-sound-sample-rate thesound)))
-                  0))
-         (total-width (om-point-h (om-field-size self)))
-         (thepicture (and dur (pic-to-draw thesound))))
-    (om-with-focused-view self
-      (when (and thesound thepicture)
-        (om-with-fg-color self *om-dark-gray-color*
-          ;(print (list (w self) (om-point-h (om-field-size self))))
-          (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self)
-                                                                                   (om-make-point 0 15))
-                           ;:srctopleft (om-make-point (round (* (/ (car (rangex self)) (- (cadr (bounds-x self)) (car (bounds-x self))))
-                           ;                                     (om-point-h (om-get-picture-size thepicture))))
-                           ;                           0)
-                           ;:srcsize (om-make-point (print (round (* (/ (- (cadr (rangex self)) (car (rangex self))) 
-                           ;                                            (- (cadr (bounds-x self)) (car (bounds-x self))))
-                           ;                                  (om-point-h (om-get-picture-size thepicture)))))
-                           ;                        (om-point-v (om-get-picture-size thepicture))))                 
-                           ))
-        (om-with-fg-color self *om-blue-color*
-          (loop for item in (markers thesound)
-                for k = 0 then (+ k 1) do
-                (om-with-line-size (if (member k (selection? self)) 2 1)
-                  (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
-                  (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
-      (when (grille-p self)
-        (draw-grille self))
-      (draw-interval-cursor self)
-      (unless thepicture
-        (if (and (om-sound-file-name thesound) (zerop dur))
-            (om-with-focused-view self
-              (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
-          (om-with-focused-view self 
-            (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
-          )
-        )))))
+         (sr (if (om-sound-las-using-srate-? thesound) 
+                 las-srate
+               (om-sound-sample-rate thesound)))
+         (timestep (/ (/ sr 1000.0) smpstep))
+         (nch (om-sound-n-channels thesound))
+         (window-v-size (om-point-v (om-view-size self)))
+         (stream-buffer (om-sound-sndbuffer thesound))
+         (system-etat (get-system-etat self))
+         (xmin (car (rangex self)))
+         (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+         (xmax (cadr (rangex self)))
+         (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+         (xtime (- xmax xmin))
+         (basicstep smpstep)
+         (channels-h (round window-v-size nch))
+         (offset-y (round channels-h 2))
+         (datalist (loop for pt from 0 to (* timestep xtime) collect
+                                      (loop for chan from 0 to (- nch 1) collect 
+                                            (fli::dereference stream-buffer 
+                                                              :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
+                                                              :type :float)))))
+    (loop for i from 0 to (- nch 1) do  
+                                (om-draw-line pixmin (+ (* i channels-h) offset-y) pixmax (+ (* i channels-h) offset-y)))
+    (setf sampleprev (car datalist))
+    (loop for sample in (cdr datalist)
+                                  for i = 0 then (+ i 1) do 
+                                  (loop for val in sample 
+                                        for c = 0 then (+ c 1) do
+                                        (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
+                                        (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
+                                        (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
+                                        (om-draw-line  pixtimeprev (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev))))
+                                                       pixtime (+ offset-y (* c channels-h) pixpoint)) 
+                                        ) (setf sampleprev sample))))
+
 
 
 (defmethod draw-interval-cursor ((self soundPanel))
   (unless (zerop (or (om-sound-n-samples (object (om-view-container self))) 0))
-    (let* ((sys-etat (get-system-etat self))
-           (interval (cursor-interval self))
-           (pixel-interval (list (om-point-h (point2pixel self (om-make-big-point (car interval) 0) sys-etat))
-                                 (om-point-h (point2pixel self (om-make-big-point (second interval) 0) sys-etat))))
-           (cursor-pos-pix (om-point-h (point2pixel self (om-make-big-point (cursor-pos self) 0) sys-etat))))
+    (call-next-method)
+    (let ((cursor-pos-pix (om-point-h (point2pixel self (om-make-big-point (cursor-pos self) 0) (get-system-etat self)))))
       (om-with-focused-view self
-        (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t t)
         (om-with-fg-color self *om-red2-color*
           (om-with-dashline 
-            (om-with-line-size 2 
-              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
+              (om-with-line-size 2 
+                (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
         ))))
-
-
-
 
 (defmethod draw-grille  ((self soundpanel)) 
    (om-with-focused-view self
@@ -767,55 +1095,12 @@
   (om-invalidate-view (preview (editor self))))
 
 
-;;;=========== BAR ===========
-
-(omg-defclass sound-titlebar (editor-titlebar) ())
-
-(defmethod init-titlebar ((self soundeditor))
-  (let* ((pathname (om-sound-file-name (object self)))
-         (name (if pathname
-                   (if (stringp (pathname-type pathname))
-                       (string+ (pathname-name pathname) "." (pathname-type pathname))
-                     (pathname-name pathname))
-                 "No file attached"))) 
-  (om-add-subviews (title-bar self)
-                   (om-make-dialog-item 'om-static-text (om-make-point 10 4) 
-                                        (om-make-point 
-                                         (+ 10 (om-string-size (string+ (om-str :file) ": " name)
-                                                               *om-default-font1b*))
-                                         18)
-                                        (string+ (om-str :file) ": " name)
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1b*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 200 4) (om-make-point 120 18)
-                                        (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 300 4) (om-make-point 80 18)
-                                        (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
-                                                                 (round (om-sound-sample-rate (object self)))
-                                                               "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 80 18)
-                                        (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
-                                        :bg-color *editor-bar-color*
-                                        :font *om-default-font1*
-                                        )
-                   )))
-
-
-
-
-
 ;;;------------------------------
 ;;; DRAG SOUND
 
 (defmethod om-drag-selection-p ((self soundpanel) position) 
-  (and (not (cursor-p self)) (not (om-shift-key-p))
+  (and (equal (cursor-mode self) :normal) ; (not (cursor-p self)) 
+       (not (om-shift-key-p))
        (or (and (selection? self) (click-in-sound-marker-p self position))
            (and
             (<= (om-point-h (pixel2point self position)) (cadr (cursor-interval self)))
@@ -954,5 +1239,7 @@
           (om-invalidate-view (car (frames box))))
         (update-editor-after-eval editor newsound)   
         ))
-    (setf (recording? self) nil)))
+    ;(setf (recording? self) nil)
+    (setf (state (player self)) :stop)
+    ))
 

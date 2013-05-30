@@ -519,8 +519,8 @@ Returns T if the test is verified and NIL if not." :icon 258
   (>= num1 num2))
 
 
-(defmethod* om= (a b &optional (test-predicate 'equal)) 
-  :initvals '(0 0 equal) :indoc '("a number" "a number" "an equality-test function")
+(defmethod* om= (a b &optional (test-predicate '=)) 
+  :initvals '(0 0 =) :indoc '("a number" "a number" "an equality-test function")
   :menuins '((2 (("=" '=) ("equal" 'equal) ("eq" 'eq) ("eql" 'eql) ("string-equal" 'string-equal))))
   :doc "Tests if <a> is equal to <b>.
 Tests by default with '=' (numbers) or with another test function as specified in <test-predicate>.

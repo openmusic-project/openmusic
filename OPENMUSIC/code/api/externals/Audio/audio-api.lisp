@@ -25,12 +25,31 @@
           om-sound-n-channels
           om-sound-data-pos
           om-sound-format
+          om-sound-sndbuffer
+          om-sound-snd-slice-to-paste
+          om-sound-sndlasptr
+          om-sound-sndlasptr-current
+          om-sound-n-samples-current
+          om-sound-sndlasptr-to-play
+          om-sound-set-sndlasptr-to-play
+          om-sound-n-samples-to-play
+          om-sound-las-slicing-past-stack
+          om-sound-las-slicing-future-stack
+
+          om-sound-update-sndlasptr-current
+          om-sound-update-snd-slice-to-paste
+          
+          om-sound-update-buffer-with-path
+          om-sound-update-buffer-with-new
+
+          om-sound-update-las-infos
+          om-sound-las-using-srate
+          om-sound-las-using-srate-?
           
           om-cons-snd-pict
           om-sound-get-pict
           om-read-sound-data      
           ) :om-api)
-
 
 ;;==================================
 ;;; AUDIO TOOLS tools (AU)
@@ -47,6 +66,22 @@
 ;;; LIBSNDFILE tools
 ;;==================================
 
+;(defun sndfile-get-info (path)
+;  "Returns a matrix of sound data"
+;  (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)
+;    (setf (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::format) 0) ; Initialize the slots
+;    (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
+;           (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::frames) :type :int))	  
+;	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::format) :type :int))
+;           (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels))
+;	   (skip (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::seekable))
+;	   (sample-rate (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::samplerate)))
+;      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
+;      (values format channels sample-rate 0 frames skip))))
+
+
+
+
 (defun sndfile-get-info (path)
   "Returns a matrix of sound data"
   (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)
@@ -54,11 +89,24 @@
     (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
            (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::frames) :type :int))	  
 	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::format) :type :int))
+           (format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string format :base 16))))
            (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels))
 	   (skip (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::seekable))
-	   (sample-rate (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::samplerate)))
+	   (sample-rate (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::samplerate))
+           (ss 0))
+                 (when (and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) (setf format 0))
+                 (when (and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) (setf format 1))
+                 (when (and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) (setf format 2))
+                 (when (and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) (setf format 3))
+                 ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open
+                 (when (= 1 (cadddr (cddr format_list))) (setf ss 8))
+                 (when (= 2 (cadddr (cddr format_list))) (setf ss 16))
+                 (when (= 3 (cadddr (cddr format_list))) (setf ss 24))
+                 (when (= 4 (cadddr (cddr format_list))) (setf ss 32))
+                 (when (= 5 (cadddr (cddr format_list))) (setf ss 8))
+                 (when (= 6 (cadddr (cddr format_list))) (setf ss 32))
       (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-      (values format channels sample-rate 0 frames skip))))
+      (values format channels sample-rate ss frames skip))))
 
 (defun load-audio-data (path &optional (datatype :float))
   "Returns a matrix of sound data"
@@ -91,6 +139,11 @@
 (defconstant formatAiff 0)
 (defconstant formatWave 1)
 (defconstant formatAifc 2)
+(defconstant formatWAVint 0)
+(defconstant formatWAVfloat 1)
+(defconstant formatAIFFint 2)
+(defconstant formatAIFFfloat 3)
+
 
 (defun read-short (s)
   (let ((a (read-byte s))
@@ -303,26 +356,55 @@
 (in-package :oa)
 
 (defvar *supported-audio-formats* nil)
-(setf *supported-audio-formats* (list au::formatAiff au::formatAifc au::formatWave))
+;(setf *supported-audio-formats* (list au::formatAiff au::formatAifc au::formatWave))
+(setf *supported-audio-formats* (list au::formatWAVint au::formatWAVfloat au::formatAIFFint au::formatAIFFfloat))
 
 (defun om-supported-audio-format (format)
   (member format *supported-audio-formats*))
 
+;(defun om-format-name (format)
+;  (cond 
+;    ((equal format au::formatAiff) "AIFF")
+;    ((equal format au::formatWave) "WAVE")
+;    ((equal format au::formatAifc) "AIFC")))
+
 (defun om-format-name (format)
   (cond 
-    ((equal format au::formatAiff) "AIFF")
-    ((equal format au::formatWave) "WAVE")
-    ((equal format au::formatAifc) "AIFC")))
+    ((equal format au::formatWAVint) "WAVE(int)")
+    ((equal format au::formatWAVfloat) "WAVE(float)")
+    ((equal format au::formatAIFFint) "AIFF(int)")
+    ((equal format au::formatAIFFfloat) "AIFF(float)")))
+
+
+;(defun default-sample-size (format)
+;  (cond 
+;    ((equal format au::formatAiff) 16)
+;    ((equal format au::formatWave) 16)
+;    ((equal format au::formatAifc) 32)))
 
 (defun default-sample-size (format)
   (cond 
-    ((equal format au::formatAiff) 16)
-    ((equal format au::formatWave) 16)
-    ((equal format au::formatAifc) 32)))
+    ((equal format au::formatWAVint) 16)
+    ((equal format au::formatWAVfloat) 32)
+    ((equal format au::formatAIFFint) 16)
+    ((equal format au::formatAIFFfloat) 32)))
 
 ;;;===================
 ;;; SOUND CLASS
 ;;;===================
+;(defclass om-sound ()  
+;   ((filename :accessor filename :initarg :filename :initform nil)
+;    (audio-format :accessor audio-format :initarg :audio-format :initform nil)
+;    (device :accessor device :initarg :device :initform nil)
+;    (number-of-samples :accessor number-of-samples :initarg :number-of-samples :initform nil)
+;    (sample-rate  :accessor sample-rate :initarg :sample-rate :initform nil)
+;    (number-of-channels :accessor number-of-channels :initarg :number-of-channels :initform nil)
+;    (sample-size :accessor sample-size :initarg :sample-size :initform nil)
+;    (data-position :accessor data-position :initarg :data-position :initform nil)
+;    (loaded :accessor loaded :initform nil)
+;    )
+;   )
+
 (defclass om-sound ()  
    ((filename :accessor filename :initarg :filename :initform nil)
     (audio-format :accessor audio-format :initarg :audio-format :initform nil)
@@ -333,8 +415,36 @@
     (sample-size :accessor sample-size :initarg :sample-size :initform nil)
     (data-position :accessor data-position :initarg :data-position :initform nil)
     (loaded :accessor loaded :initform nil)
-    )
-   )
+
+    ;tracknum utilisé par le système, par forcément celui de l'utilisateur
+    (tracknum-sys :accessor tracknum-sys :initform -1)
+    ;Savoir si ce son joue sur le player caché (pas de tracks) ou sur le visible (tracks system)
+    (assoc-player :accessor assoc-player :initform nil)
+    ;buffer du son actuel (pas forcément d'origine, évolue)
+    (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
+    ;pointeur LAS fixe (son d'origine au cas où)
+    (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
+    ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
+    (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
+    (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
+    (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-current :accessor number-of-samples-current :initform nil)
+    ;;;pointeur LAS envoyé à la lecture (dérivé de current)
+    (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)
+    ;;;pointeur LAS servant de "presse papier"
+    (snd-slice-to-paste :accessor snd-slice-to-paste :initarg :snd-slice-to-paste :initform nil)
+    ;;;Undo/Redo pool
+    (las-slicing-past-stack :accessor las-slicing-past-stack :initform (make-hash-table))
+    (las-slicing-future-stack :accessor las-slicing-future-stack :initform (make-hash-table))
+    ;;;If sound has been saved in temp file and re-opened, srate is now the las srate
+    (las-using-srate :accessor las-using-srate :initform 0)))
+
+(defmethod initialize-instance :after ((self om-sound) &rest initargs)
+  (setf (assoc-player self) *audio-player-hidden*)
+  self)
 
 (defmethod om-sound-file-name ((self om-sound))
    (filename self))
@@ -364,6 +474,76 @@
   (when (or (loaded self) (om-fill-sound-info self))
     (audio-format self)))
 
+(defmethod om-sound-sndbuffer ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndbuffer self)))
+
+(defmethod om-sound-sndlasptr ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr self)))
+
+(defmethod om-sound-sndlasptr-current ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr-current self)))
+
+(defmethod om-sound-n-samples-current ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-current self)))
+
+(defmethod om-sound-sndlasptr-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr-to-play self)))
+
+(defmethod om-sound-set-sndlasptr-to-play ((self om-sound) ptr)
+    (setf (sndlasptr-to-play self) ptr))
+
+(defmethod om-sound-n-samples-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-to-play self)))
+
+(defmethod om-sound-snd-slice-to-paste ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (snd-slice-to-paste self)))
+
+(defmethod om-sound-update-sndlasptr-current ((self om-sound) pointer)
+  (setf (sndlasptr-current self) pointer))
+
+(defmethod om-sound-update-snd-slice-to-paste ((self om-sound) pointer)
+  (setf (snd-slice-to-paste self) pointer))
+
+(defmethod om-sound-update-las-infos ((self om-sound))
+  (setf (number-of-samples-current self) (las-get-length-sound (sndlasptr-current self)))
+  (setf (number-of-samples-to-play self) (las-get-length-sound (sndlasptr-to-play self))))
+
+(defmethod om-sound-update-buffer-with-path ((self om-sound) path)
+  (progn 
+    ;(fli:free-foreign-object (sndbuffer self))
+    (setf (sndbuffer self) (multiple-value-bind (data size nch) 
+                               (au::load-audio-data (convert-filename-encoding path) :float)
+                             data))))
+
+(defmethod om-sound-update-buffer-with-new ((self om-sound) buffer)
+  (setf (sndbuffer self) buffer))
+
+
+(defmethod om-sound-las-slicing-past-stack ((self om-sound))
+  (las-slicing-past-stack self))
+
+(defmethod om-sound-las-slicing-future-stack ((self om-sound))
+  (las-slicing-future-stack self))
+
+(defmethod om-sound-las-using-srate-? ((self om-sound))
+  (if (= 0 (las-using-srate self))
+      nil
+    t))
+
+(defmethod om-sound-las-using-srate ((self om-sound))
+  (setf (las-using-srate self) 1))
+
+
+
+
+
 (defun audio-file-type (pathname)
   (or
    (au::wave-file-p pathname)
@@ -375,28 +555,63 @@
  (make-instance class :filename filename))
 
 
+;(defun om-fill-sound-info (sound)
+;  (when (and sound (filename sound) (probe-file (filename sound)))
+;    (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
+;    (multiple-value-bind (format nch sr ss size skip)
+;        (om-sound-get-info (filename sound))
+      ;(print (list format nch sr ss size skip))
+;      (if (and format size nch (> size 0) (> nch 0))
+;        (progn 
+;          (setf (audio-format sound) format
+;                (number-of-samples sound) size
+;                (number-of-channels sound) nch
+;                (sample-size sound) ss
+;                (sample-rate sound) sr
+;                (data-position sound) skip)
+;          (setf (loaded sound) t)
+;          (unless (om-supported-audio-format format)
+;            (print (format nil "Warning : unsupported audio format ~A" format))
+;            (setf (loaded sound) :error)))
+;        (progn 
+;          (print (format nil "Error whie loading file ~s" (filename sound)))
+;          (setf (loaded sound) :error))))
+;    (loaded sound)))
+
+
 (defun om-fill-sound-info (sound)
   (when (and sound (filename sound) (probe-file (filename sound)))
     (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
     (multiple-value-bind (format nch sr ss size skip)
-        (om-sound-get-info (filename sound))
-      ;(print (list format nch sr ss size skip))
+        (sound-get-info (filename sound))
       (if (and format size nch (> size 0) (> nch 0))
-        (progn 
+        (progn
+          (setf las-infos (las-get-sound-infos (om-path2cmdpath (filename sound))))
           (setf (audio-format sound) format
                 (number-of-samples sound) size
                 (number-of-channels sound) nch
                 (sample-size sound) ss
                 (sample-rate sound) sr
-                (data-position sound) skip)
+                (data-position sound) skip
+                (sndbuffer sound) (multiple-value-bind (data size nch) 
+                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
+                                    (let* ((sndbuffer data)) sndbuffer))
+                (sndlasptr sound) (car las-infos)
+                (sndlasptr-current sound) (sndlasptr sound)
+                (sndlasptr-current-save sound) (sndlasptr sound)
+                (number-of-samples-current sound) (cadr las-infos)
+                (sndlasptr-to-play sound) (sndlasptr sound)
+                (number-of-samples-to-play sound) (cadr las-infos)
+                (snd-slice-to-paste sound) nil)
           (setf (loaded sound) t)
           (unless (om-supported-audio-format format)
             (print (format nil "Warning : unsupported audio format ~A" format))
             (setf (loaded sound) :error)))
         (progn 
-          (print (format nil "Error whie loading file ~s" (filename sound)))
+          (print (format nil "Error while loading file ~s" (filename sound)))
           (setf (loaded sound) :error))))
     (loaded sound)))
+
 
 (defun convert-filename-encoding (path)
   #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
@@ -409,34 +624,41 @@
  
 ;;; a refaire bien
 
-(defmethod om-sound-get-info (path)
-  (let ((filename path))
-    (multiple-value-bind (format nch sr ss size skip)
-	(sound-get-info filename)
-      #+libsndfile
-      (multiple-value-bind (format2 nch2 sr2 ss2 size2 skip2)
-	  (au::sndfile-get-info (convert-filename-encoding filename))
-	(when (> nch2 0) (setf nch nch2))
-	(when (> sr2 0) (setf sr sr2))
-	(when (> size2 0) (setf size size2)))
-      (unless (and (numberp ss) (plusp ss)) (setf ss (default-sample-size format)))
-      (values format nch sr ss size skip)
-      )))
+;(defmethod om-sound-get-info (path)
+;  (let ((filename path))
+;  (multiple-value-bind (format nch sr ss size skip)
+;      (sound-get-info filename)
+;    #+libsndfile
+;    (multiple-value-bind (format2 nch2 sr2 ss2 size2 skip2)
+;        (au::sndfile-get-info (convert-filename-encoding filename))
+;      (when (> nch2 0) (setf nch nch2))
+;      (when (> sr2 0) (setf sr sr2))
+;      (when (> size2 0) (setf size size2)))
+;    (unless (and (numberp ss) (plusp ss)) (setf ss (default-sample-size format)))
+;    (values format nch sr ss size skip)
+;    )))
+
+;(defun sound-get-info (filename) 
+;  (let ((format (audio-file-type filename)))
+;    (when (om-supported-audio-format format)
+;      (multiple-value-bind (nch sr ss size skip)
+;          (cond 
+;           ((equal format au::formatWave) (au::sound-get-info-wave filename))
+;           ((or (equal format au::formatAiff) (equal format au::formatAifc)) (au::sound-get-info-aiff filename))
+;           (t nil))
+;        #+libaudiostream (let ((tmpptr (las::MakeReadSound (convert-filename-encoding filename))))
+;                           (setf size (las::GetLengthSound tmpptr))
+;                           (setf nch (las::GetChannelsSound tmpptr))
+;                           )
+;        (values format nch sr ss size skip)
+;      ))))
 
 (defun sound-get-info (filename) 
-  (let ((format (audio-file-type filename)))
-    (when (om-supported-audio-format format)
-      (multiple-value-bind (nch sr ss size skip)
-          (cond 
-           ((equal format au::formatWave) (au::sound-get-info-wave filename))
-           ((or (equal format au::formatAiff) (equal format au::formatAifc)) (au::sound-get-info-aiff filename))
-           (t nil))
-        #+libaudiostream (let ((tmpptr (las::MakeReadSound (convert-filename-encoding filename))))
-                           (setf size (las::GetLengthSound tmpptr))
-                           (setf nch (las::GetChannelsSound tmpptr))
-                           )
-        (values format nch sr ss size skip)
-      ))))
+  (let ((format_save (audio-file-type filename)))
+    (when (om-supported-audio-format format_save)
+        (multiple-value-bind (format nch sr ss size skip)
+            (au::sndfile-get-info (convert-filename-encoding filename))
+            (values format nch sr ss size skip)))))
 
 ;(defparameter soundfile1 "/Users/bresson/Desktop/ngyengb/beyi-ngyengb.aiff")
 
@@ -452,17 +674,17 @@
 
 ;;; !!! c'est pas du tout efficace. 
 ;;; en refaire une avec le fichier deja ouvert.
-(defmethod om-read-sound-data2 ((self om-sound) position nbytes)
-   (let ((in (open (filename self) :element-type 'unsigned-byte))
-         (data 0))
-       (file-position in position)
-       (setf data (cond 
-                   ((equal (audio-format self) au::formatWave) (au::read-wav-sample in nbytes))
-                   ((or (equal (audio-format self) au::formatAiff) (equal (audio-format self) au::formatAifc))
-                    (au::read-aiff-sample in nbytes))
-                   (t 0)))
-       (close in)
-       data))
+;(defmethod om-read-sound-data2 ((self om-sound) position nbytes)
+;   (let ((in (open (filename self) :element-type 'unsigned-byte))
+;         (data 0))
+;       (file-position in position)
+;       (setf data (cond 
+;                   ((equal (audio-format self) au::formatWave) (au::read-wav-sample in nbytes))
+;                   ((or (equal (audio-format self) au::formatAiff) (equal (audio-format self) au::formatAifc))
+;                    (au::read-aiff-sample in nbytes))
+;                   (t 0)))
+;       (close in)
+;       data))
 
 (defmethod om-read-sound-data ((self om-sound) position &optional (datatype :short))
   (let ((filename (convert-filename-encoding (filename self))))
@@ -501,6 +723,7 @@
       )
     ))
 
+
 ;(setf qqq (capi::prompt-for-file ""))
 ;(setf ppp #P"C:/Documents and Settings/Jean Bresson/test.aiff")
 ;(setf qqq #P"C:/Documents and Settings/Jean Bresson/Bureau/mlmaq-tests/Maquette Bolero et fichiers/Bolero extrait violons.AIFF")
@@ -518,49 +741,52 @@
     (multiple-value-bind (data size nch) 
         (ignore-errors
           (au::load-audio-data (convert-filename-encoding sndpath) :float))
-      ;;(print (list sndpath size nch))
+      ;(print (list sndpath size nch))
       (if (and (> size 0) (> nch 0)) 
-          (let* ((pict-w (min #+win32 2000 #-win32 4000 size)) ; taille max de l'image en pixels
+          (let* ((pict-w (min #+win32 2000 #-win32 4000 size))  ; taille max de l'image en pixels
                  (pict-h 256)
                  (xstep (round size pict-w))
-                 (channels-h (round pict-h nch)) ; imag height = 256, channels-h = height of 1 channel
+                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
                  (offset-y (round channels-h 2))) ; draw from middle of each channels-h
             (if data 
                 (let ((datalist (loop for pix from 0 to (- pict-w 1) collect
-				     (loop for chan from 0 to (- nch 1) collect 
-					  (fli::dereference data 
-							    :index (+ (min (* (1- size) nch) (* pix xstep nch)) chan)
-							    :type :float)
-					  )))                      
+                                      (loop for chan from 0 to (- nch 1) collect 
+                                            (fli::dereference data 
+                                                              :index (+ (min (* (1- size) nch) (* pix xstep nch)) chan)
+                                                              :type :float)
+                                            )))                      
                       pixpoint)    
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (loop for i from 0 to (- nch 1) do  
-			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                                (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                           (om-with-fg-color *curstream* *om-gray-color*
                             (loop for sample in datalist
-			       for i = 0 then (+ i 1) do 
-				 (loop for val in sample 
-				    for c = 0 then (+ c 1) do
-				      (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
-					;(print (list i val pixpoint))
-				      (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
-						     i (+ offset-y (* c channels-h) (- pixpoint))) 
-				      ))
+                                  for i = 0 then (+ i 1) do 
+                                  (loop for val in sample 
+                                        for c = 0 then (+ c 1) do
+                                        (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
+                                ;(print (list i val pixpoint))
+                                        (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
+                                                       i (+ offset-y (* c channels-h) (- pixpoint))) 
+                                        ))
                             )))
                   (fli::free-foreign-object data) 
                   pict
                   )
-		(setf pict 
-		      (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-			(loop for i from 0 to (- nch 1) do  
-			     (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-			     (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2)
-			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-			       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))
-			     )))))
-	  nil
-	  ))))
+              (setf pict 
+                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                      (loop for i from 0 to (- nch 1) do  
+                            (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2)
+                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))
+                      )
+                      
+
+                      ))))
+        nil
+        ))))
 
 
 ;;; COCOA : read loop with LibAudioStream (plante sur windows)
@@ -568,35 +794,35 @@
 (defun las-cons-snd-pict (sndpath)
   (let* ((snd (las::makereadsound (namestring sndpath)))
          (pict nil)
-         (pict-w 5000)		     ; taille max de l'image en pixels
+         (pict-w 5000) ; taille max de l'image en pixels
          (pict-h 256)
          (numsamples (las::GetLengthSound snd))
          (numchannels (las::GetChannelsSound snd)))
     (unless (or (zerop numsamples) (zerop numchannels))
       (let* ((buffer-size (ceiling numsamples pict-w)) ; nb samples dans le buffer
-	     (pict-w (round numsamples buffer-size)) ;nb exact de pixels
-	     (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
-	     (offset-y (round channels-h 2)) ; draw from middle of each channels
-	     (sndr (las::MakeRendererSound snd))
-	     (bytesread buffer-size)
-	     (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+            (pict-w (round numsamples buffer-size)) ;nb exact de pixels
+            (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
+            (offset-y (round channels-h 2)) ; draw from middle of each channels
+            (sndr (las::MakeRendererSound snd))
+            (bytesread buffer-size)
+            (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
         (mp::with-interrupts-blocked 
           (setf pict 
                 (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                   (loop for i from 0 to (- numchannels 1) do  
-		       (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                        (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                   (las::ResetSound snd)
                   (om-with-fg-color *curstream* *om-dark-gray-color*
-		    (loop for i from 0 to (- pict-w 1) 
-		       while (= bytesread buffer-size) do 
-			 (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
-			 (loop for k from 0 to (- numchannels 1) do
+                  (loop for i from 0 to (- pict-w 1) 
+                        while (= bytesread buffer-size) do 
+                        (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
+                        (loop for k from 0 to (- numchannels 1) do
                               (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
                               (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
-			      (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+                             (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
                                              (+ offset-y (* k channels-h) pixpoint))  
-			      )
-			 ))
+                             )
+                  ))
                   ))
           )
         (om-free-pointer buffer)))
@@ -646,15 +872,3 @@
                                    ))))
                 (close in))))
       firstpict)))
-
-
-
-
-
-
-
-
-
-
-
-

@@ -128,13 +128,15 @@
        (and (boxframe-p  (true-target-view  D&DHandler)) (boxframe-p (dragged-view  D&DHandler)))))
 ;---------------------------------------------------------------------------------
 (defmethod finalize-drag&drop ((D&DHandler omdrag-drop))
+  
   (cond 
    ((opt-key-p *OM-drag&drop-handler*)
     (perform-duplicate-view D&DHandler))
    
    (;;; D&D IN FOLDERS ETC.
     (and (icon-finder-p (true-target-view  D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
-         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view  D&DHandler))))
+         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view  D&DHandler)))
+         (not (equal (true-target-view  D&DHandler) (dragged-view  D&DHandler))))
     (perform-change-view D&DHandler))
    
    (;;; AUTO MOVE

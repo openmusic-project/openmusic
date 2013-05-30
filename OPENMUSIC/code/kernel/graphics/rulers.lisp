@@ -54,8 +54,7 @@ for exemple 0.01 implic that the centieme is the smallest sub division of the un
    (if (equal (axe self) 'x)
        *om-horiz-size-cursor*
      *om-verti-size-cursor*
-     )
-   )
+     ))
     
 
 (defmethod om-draw-contents  ((self ruler))
@@ -239,6 +238,16 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
      )
     ))
 
+;-------------------------------------------
+;static rulers
+;-------------------------------------------
+
+
+(omg-defclass static-ruler (ruler) () )
+
+(defmethod strech-ruler-motion ((self static-ruler) pos) t)
+(defmethod strech-ruler-release ((view static-ruler) pos) t)
+(defmethod om-view-cursor ((self static-ruler)) nil)
 
 ;-------------------------------------------
 ;metric rulers
@@ -507,7 +516,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 ;------------
 
 (defclass view-with-ruler-x (view-with-ruler-mixin) 
-   ((rangex :initform nil :accessor rangex)
+   ((rangex :initform nil :accessor rangex :initarg :rangex)
     (rulerx :initform nil :accessor rulerx)))
 
 (defmethod get-system-etat ((self view-with-ruler-x)) 
@@ -523,7 +532,10 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    "Convert 'point' to pixels in the view 'self', 'sys-etat' is calculated by the 'get-system-etat' function."
    (let* ((x  (om-point-h point))
           (x1 (round (* x (first sys-etat)))))
-     (om-make-point  (- x1 (second sys-etat))  0)))
+     (om-make-point (- x1 (second sys-etat))  0)))
+
+(defmethod xpoint2pixel ((self view-with-ruler-x) x sys-etat)
+  (- (round (* x (first sys-etat))) (second sys-etat)))
 
 (defmethod pixel2point ((self view-with-ruler-x) pixel)
    (let* ((x (om-point-h pixel))

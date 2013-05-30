@@ -438,6 +438,12 @@
    (setf (slot-value self 'selected-p) selected-p))
 
 
+;;; play-editor-mixin method
+(defmethod get-obj-to-play ((self editorview)) (object self))
+
+
+
+
 
 
 

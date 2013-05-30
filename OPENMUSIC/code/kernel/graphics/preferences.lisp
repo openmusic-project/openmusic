@@ -228,20 +228,3 @@
   (setf *pref-window* nil))
 
 (om-add-init-func 'init-preferences)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

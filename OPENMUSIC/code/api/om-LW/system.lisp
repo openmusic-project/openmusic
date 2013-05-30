@@ -44,7 +44,8 @@
           om-confirmed-quit
           om-eval-enqueue
           om-set-eval-process
-          
+          om-delayed-funcall
+
           om-gc
           om-with-redefinitions
           om-redefinition-warnings
@@ -56,9 +57,6 @@
           om-load-verbose
           om-set-load-verbose
           om-with-load-verbose
-          
-          om-start-scheduler
-          om-stop-scheduler
           
           *om-separator*
           *om-compiled-type*
@@ -96,7 +94,8 @@
           om-select-program
           om-run-process
           om-kill-process
-
+          om-with-priority
+          
           om-without-interrupts
 
           om-error-handle-funcall
@@ -136,14 +135,16 @@
 
 
 
+;;;==========================
+;;; ERROR HANDLERS
+;;;==========================
+
 (defun om-error-handle-funcall (func)
   (handler-bind 
       ((error #'(lambda (err)
                   (capi::display-message "An error of type ~a occurred: ~a" (type-of err) (format nil "~A" err))
                   (abort err))))
     (funcall func)))
-
-
 
 (defmacro om-with-error-handle (&body body)
   `(if (om-standalone-p)
@@ -154,6 +155,27 @@
          ,@body)
     (progn ,@body))
   )
+
+
+(defparameter *log-location* nil)
+
+;;; Bind this function to cl::*debugger-hook* in order to catch all unexpected errors...
+(defun om-debugger-hook (condition old-debugger-hook)
+  (declare (ignore old-debugger-hook))
+  (let ((log (capi:prompt-for-confirmation (format nil "An  error occured : ~a~%~%Create Log file ?" condition)
+                                           :default-button  nil)))
+    (when log
+      (let* ((logpath (make-pathname :directory (append (butlast (pathname-directory (dbg::logs-directory))) (list "OpenMusic"))
+                                     :name (concatenate 'string "OM-" (substitute #\- #\. *version-str*) "-Log_" 
+                                                        (substitute #\- #\: (substitute #\- #\/ (substitute #\_ #\Space (sys::date-string)))))))
+             (path 
+              (dbg:log-bug-form (format nil "An error occured : ~a" condition)
+                                :message-stream t
+                                :log-file logpath)))
+        (unless *log-location*
+          (setf *log-location* t)
+          (capi::display-message "A log file will be written in ~a" path))))
+    (abort)))
 
 
 (defun om-gc () 
@@ -235,21 +257,6 @@
 ;   (setq *scheduler-timer*  (mp:make-named-timer 'om-scheduler fun nil))
 ;   (mp:schedule-timer *scheduler-timer* 1 0.01))
 
-(defun om-stop-scheduler ()
-  (when *scheduler-timer*
-    (mp:process-kill *scheduler-timer*)))
-
-(defun om-start-scheduler (fun)
-  (om-stop-scheduler)
-  (setf *scheduler-timer*
-        (mp:process-run-function  "OM SCHEDULER" '(:priority 10)
-                                  #'(lambda ()
-                                      (loop while t do
-                                            (sleep 0.050)
-                                            (funcall fun nil))))))
-
-
-
 
 ;(defun om-stop-scheduler ()
 ;  (when *scheduler-timer*
@@ -257,11 +264,11 @@
 ;    (setf *scheduler-timer* nil)))
   
 (defun om-delayed-funcall (time func &rest args)
-  (when *scheduler-timer* (mp:unschedule-timer *scheduler-timer*))
-  (flet ((scheduler-fun () (apply func args)))
-    (mp:schedule-timer *scheduler-timer* time)))
+  (let ((timer (apply 'mp:make-timer (cons func args))))
+    (mp:schedule-timer-relative-milliseconds timer time)
+    timer))
 
-(om-add-exit-cleanup-func 'om-stop-scheduler)
+;(om-add-exit-cleanup-func 'om-stop-scheduler)
 
 
 
@@ -538,8 +545,14 @@
 ;;; multi-processing
 
 
+(defvar *current-priority* 1)
+
+(defmacro om-with-priority (priority &body body)
+  `(let ((*current-priority* ,priority)) ,@body))
+
 (defmacro om-run-process (name func &rest args)
-   `(mp:process-run-function ',name '(:priority 10) ',func ,.args))
+   `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10))
+                             (if (functionp ,func) ,func ',func) ,.args))
 
 (defun om-kill-process (process)
    (mp:process-kill process))
@@ -547,15 +560,14 @@
 (defun om-find-process (id)
   (mp:find-process-from-name id))
 
+
 ;;;===================
 ;;;; external apps 
 
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
-
   #+(or linux macosx) 
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
-
   (if (and (member *om-os* '(:mac :linux))
 	   (pathnamep redirect-output))
       ;;(let ((tempfile "~/om-log.txt"))
@@ -600,7 +612,7 @@
         (namestring path)))
 
 
-(defvar *om-open-cmd* #+linux "xdg-open " #+cocoa "open ")
+(defvar *om-open-cmd* #+linux "xdg-open" #+(or win32 cocoa) "open")
 
 (defun om-run-application (path)
   (system::call-system (format nil  "~A ~s" *om-open-cmd* (namestring path)) :wait nil)
@@ -610,4 +622,4 @@
 
 ;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
 (defun om-select-program (id)
-  (system::call-system (concatenate 'string #-linux *om-open-cmd* #+linux "" (namestring id))))
+  (system::call-system (concatenate 'string *om-open-cmd* " " (namestring id))))

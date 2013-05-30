@@ -166,7 +166,7 @@
 ;BPF EDITOR Class definition and initialization
 ;------------------------------------
 
-(omg-defclass bpfeditor (editorview object-editor) 
+(defclass bpfeditor (editorview object-editor) 
    ((multibpf? :initform nil :accessor multibpf?)
     (control :initform nil :accessor control)
     (pict :initform nil :accessor pict)
@@ -437,8 +437,8 @@
      
 (defmethod draw-bpf ((Self Bpfpanel) (Bpf Bpf) Minx Maxx Miny Maxy &optional (Deltax 0) (Deltay 0) (dr-points nil)) 
    (let* ((X-Points (give-points-in-x-range bpf minx maxx))
-            (Y-Points (give-points-in-y-range bpf miny maxy))
-            (Points (sort (intersection x-points y-points :test 'equal)  '< :key 'om-point-h)))
+          (Y-Points (give-points-in-y-range bpf miny maxy))
+          (Points (sort (intersection x-points y-points :test 'equal)  '< :key 'om-point-h)))
      (draw-bpf-points self bpf points deltax deltay dr-points)
      
      ;;; optimizacion!
@@ -551,6 +551,7 @@
 (defmethod handle-key-event ((Self bpfpanel) Char)
     (let ((myobj (get-bpf-obj self)))
      (case char
+       
        (:om-key-tab (when (multibpf? (editor self))
                       (change-current-bpf self myobj)
                       (om-invalidate-view (editor self) t)))

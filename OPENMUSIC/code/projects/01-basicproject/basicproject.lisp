@@ -57,6 +57,8 @@
     ; advanced time array
     "classes;time-array" 
     
+    "functions;bpf-player"
+
     ;------- PACK
     "basic-pack"
     

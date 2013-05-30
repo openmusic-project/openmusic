@@ -81,11 +81,11 @@
 ;EDITOR
 ;-------------------------------------------------
 
-(defclass MaquetteEditor (patchEditor) 
+(defclass MaquetteEditor (patchEditor play-editor-mixin) 
    ((rulermetric :initform nil :accessor rulermetric)
     (patchview :accessor patchview :initform nil :initarg :patchview)))
 
-(defmethod editor-has-palette-p ((self MaquetteEditor)) 'maq-palette)
+(defmethod editor-has-palette-p ((self MaquetteEditor)) nil)
 (defmethod get-palette-pict ((self maquetteeditor)) 
   (om-load-and-store-picture "maq-pal" 'internal))
 
@@ -953,19 +953,33 @@
     ))
 
 
+;;; computes the value...
+(defmethod get-obj-to-play ((self maquetteeditor)) (get-obj-to-play (panel self)))
 
-;----------------------------------------------------
-;Play from palette
-;----------------------------------------------------
+(defmethod cursor-panes ((self maquetteeditor)) (list (panel self)))
 
+(defmethod schedule-editor-contents ((self maquetteeditor))
+  (loop for object in (inside (value (object self)))
+        for param in (param-list (value (object self))) do
+        (let ((objstart (offset->ms object))
+              (pl (cdr (assoc 'player param))))
+          (print (list object objstart))
+          (player-schedule (player self) 
+                           object 
+                           pl 
+                           :at objstart
+                           :interval (get-interval-to-play self)))
+        ))
 
+;(when *palette*
+;  (if (Idle-p *general-player*)
+;      (palette-act *palette* (if (selection-to-play-? self) 4 0))
+;    (palette-act *palette* 1)))
 
 (defmethod handle-key-event ((self MaquettePanel) char) 
    (case char
-     (#\SPACE (when *palette*
-                (if (Idle-p *general-player*)
-                    (palette-act *palette* (if (selection-to-play-? self) 4 0))
-                  (palette-act *palette* 1))))
+     (#\SPACE
+      (editor-play/stop (editor self)))
      (#\x (mute-boxes self))
      (#\p (when (and (Idle-p *general-player*) (selection-to-play-? self) *palette*)
             (palette-act *palette* 4)))

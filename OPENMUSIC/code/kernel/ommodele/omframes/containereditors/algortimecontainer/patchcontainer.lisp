@@ -195,8 +195,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
 (defmethod handle-key-event ((self patchPanel) char) 
   (modify-patch self)
-  (let ((actives (get-actives self)))
-  (case char
+  (let* ((actives (get-actives self))
+         (activeboxes (mapcar 'object actives)))
+    (case char
       (:om-key-delete (delete-general self))
       ;;;(#\f (make-undefined-box self (om-mouse-position self)))
       (#\D  (om-invalidate-view self t))
@@ -228,11 +229,13 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\a (mapc 'internalize-patch actives))
       (#\A (mapc 'align-one-boxframe actives)
            (make-move-after self actives))
-      (#\p (play-from-box (if (= 1 (length actives)) (car actives) actives)))
-      (#\s (Stop-Player *general-player*))
-      (#\Space (if (Idle-p *general-player*)
-                   (play-from-box actives)
-                 (Stop-Player *general-player*)))
+
+      (#\p (play-boxes activeboxes) (mapcar 'om-invalidate-view actives))
+      (#\s (stop-boxes activeboxes) (mapcar 'om-invalidate-view actives))      
+      (#\Space (if (idle-p *general-player*)
+                   (play-boxes activeboxes)
+                 (stop-all-boxes))
+               (mapcar 'om-invalidate-view actives))
       
       (#\t (mapc 'show-online-tutorial actives))
       

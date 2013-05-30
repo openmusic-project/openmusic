@@ -172,8 +172,10 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
          (mrk-partials (make-hash-table)) (trc-partials (make-hash-table))
           mlist bmat emat pmat time
           (ptrfile (sdif-open self)))
-     (sdif::SdifFReadGeneralHeader ptrfile)
-     (sdif::SdifFReadAllASCIIChunks ptrfile)
+     (if (null ptrfile) (om-beep-msg (string+ "NULL POINTER FOR SDIF-FILE: " (filepathname self)))
+       (progn 
+         (sdif::SdifFReadGeneralHeader ptrfile)
+         (sdif::SdifFReadAllASCIIChunks ptrfile)
      (loop for item in (framesdesc self) do
            (when (or (null stream) (member (nth 2 item) (list! stream) :test '=))
              (when (equal "1MRK" (car item))
@@ -266,7 +268,7 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
      
      (sort (reverse data) '< :key #'(lambda (dataitem) (if (consp (car dataitem)) (caar dataitem) (car dataitem))))
      
-     ))
+     ))))
 
 
 (defmethod! GetSDIFChords ((self sdiffile))

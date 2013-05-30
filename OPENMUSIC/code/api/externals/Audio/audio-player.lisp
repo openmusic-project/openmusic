@@ -32,8 +32,6 @@
 
 (in-package :om-api)
 
-
-
 (export '(
           om-start-audio
           *om-player-sample-rate*
@@ -70,10 +68,11 @@
 (defvar *om-player-n-channels* 2)
 (setf *om-player-n-channels* 2)
 
+
 (defun om-open-audio-player ()
-  ;(las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)
-  (las::OpenAudioPlayer *om-player-n-channels* *om-player-n-channels* 32 *om-player-sample-rate* 512 65536 65536 las::kPortAudioRenderer 1)
-  )
+  (let ((player (las::OpenAudioPlayer 0 oa::*om-player-n-channels* 32 oa::*om-player-sample-rate* 512 65536 65536 las::kCoreAudioRenderer 1)))
+    (las::StartAudioPlayer player)
+    player))
 
 (defun om-close-audio-player (player)
   (when player

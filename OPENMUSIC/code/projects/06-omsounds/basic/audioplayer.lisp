@@ -16,25 +16,31 @@
 (defun audio-open ()
  (if (om-start-audio)
      (progn
-       (setq *audio-player* (om-open-audio-player))
-       (add-assoc-player *general-player* 'libaudio))
+       (las-init-full-system)
+       (las-faust-init-system))
    (om-message-dialog (format nil (om-str :lib-error) "Audio"))))
 
 (defun audio-close ()
  (when *audio-player*
-   ;(print "close audio")
    (ignore-errors (om-close-audio-player *audio-player*))
-   (remove-assoc-player *general-player* 'libaudio)
-   (setf *audio-player* nil)
-   ;(print "done")
+   ;(remove-assoc-player *general-player* 'libaudio)
+   ;(setf *audio-player* nil)
+   (las-close-full-system)
    ))
 
 (defun audio-reset ()
   (ignore-errors (om-close-audio-player *audio-player*))
-  (setq *audio-player* (om-open-audio-player)))
+  ;(setq *audio-player* (om-open-audio-player))  
+  (las-close-full-system)
+  (las-init-full-system)
+  (las-faust-init-system)
+  )
 
 (om-add-init-func 'audio-open)  
 (om-add-exit-cleanup-func 'audio-close t)
+
+
+
 
 
 ;===================

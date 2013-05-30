@@ -22,7 +22,6 @@
 
 (in-package :om)
 
-
 (defclass internalsound (om-sound)   
   ((sound-offset :accessor sound-offset)
    ;(soundpointer :initform nil :accessor soundpointer)
@@ -33,7 +32,7 @@
    (selec  :initform nil :accessor selec)))
 
 (defclass* sound (simple-score-element internalsound) 
-  ((tracknum :accessor tracknum :initarg :tracknum :initform 1 :documentation "a track index for multichannel mixing")
+  ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
    (pan :accessor pan :initform 0))  
@@ -59,10 +58,13 @@ Press 'space' to play/stop the sound file.
   )
 
 (defmethod extent ((self sound))
-  (unless (slot-value self 'extent) 
-    (setf (extent self) (sound-dur-ms self)))
+  (setf (extent self) (sound-dur-ms self))
   (call-next-method))
 
+;(defmethod extent ((self sound))
+;  (unless (slot-value self 'extent) 
+;    (setf (extent self) (sound-dur-ms self)))
+;  (call-next-method))
 
 (defmethod sound-name ((self sound))
    (pathname-name (om-sound-file-name self)))
@@ -72,6 +74,12 @@ Press 'space' to play/stop the sound file.
     
 (defmethod sound-path ((self sound) )
    (om-sound-file-name self))
+
+(defmethod sound-update-pict ((self sound) pict)
+  (setf (pict-sound self) pict))
+
+(defmethod get-sound-pict ((self sound))
+  (pict-sound self))
 
 (defmethod real-dur ((self sound)) 
   (round (extent->ms self)))
@@ -224,7 +232,7 @@ Press 'space' to play/stop the sound file.
 (defmethod cons-new-object ((self sound) args objs)
   (let ((rep (call-next-method)))
     (when rep
-      (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 1))
+      (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 0))
       (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args))))
     rep))
 
@@ -236,7 +244,11 @@ Press 'space' to play/stop the sound file.
       (setf (markers snd) (cadr slots-vals)))
     snd))
 
+(defmethod object-remove-extra ((self sound) box)
+  (player-cleanup (player box)))
 
+(defmethod player-cleanup (player) nil)
+  
 
 
 ;============
@@ -302,10 +314,17 @@ Press 'space' to play/stop the sound file.
     (sound-dur (pathname sound))))
 
 (defmethod! sound-dur ((sound sound))
-   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
-            (> (om-sound-sample-rate sound) 0))
-       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
-     0))
+            (if (and sound (om-sound-n-samples-current sound) las-srate
+                     (> las-srate 0))
+                (float (/ (om-sound-n-samples-current sound) las-srate))
+              0))
+
+;(defmethod! sound-dur ((sound sound))
+;   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
+;            (> (om-sound-sample-rate sound) 0))
+;       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
+;     0))
+
 
 (defmethod! sound-dur-ms ((sound t))
   :initvals '(nil)
@@ -372,6 +391,10 @@ Press 'space' to play/stop the sound file.
           (unless (equal (pict-sound self) :error)
               (pict-sound self)
             )))))
+
+(defmethod sound-get-new-pict ((self sound) path) 
+  (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
+  (pict-sound self))
   
 (defmethod pic-to-draw ((self sound)) 
   (if (and (pict-spectre self) (pict-spectre? self))

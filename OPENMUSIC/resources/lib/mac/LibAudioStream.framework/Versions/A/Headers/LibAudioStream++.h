@@ -1,6 +1,6 @@
 /*
 
-Copyright © Grame 2002-2007
+Copyright (C) Grame 2002-2013
 
 This library is free software; you can redistribute it and modify it under
 the terms of the GNU Library General Public License as published by the
@@ -47,8 +47,7 @@ typedef struct ChannelInfo {
 	float fPanRight;
 	long fLeftOut;
 	long fRightOut;
-}
-ChannelInfo;
+} ChannelInfo;
 
 /*!
 \brief Audio device info.
@@ -62,10 +61,31 @@ typedef struct DeviceInfo {
 	double fDefaultSampleRate;
 } DeviceInfo;
 
+/*!
+\brief Renderer state.
+*/
+typedef struct RendererInfo* RendererInfoPtr;
+typedef struct RendererInfo {
+    long fInput;   				// Number of input channels
+    long fOutput;   			// Number of output channels
+    long fSampleRate; 			// Sampling Rate
+    long fBufferSize;			// I/O Buffer size
+    uint64_t fCurFrame;			// Currrent sample
+    uint64_t fCurUsec;			// Current microsecond
+    long fOutputLatencyFrame;	// Output latency in frames
+    long fOutputLatencyUsec;	// Output latency in microsecond
+    long fInputLatencyFrame;	// Input latency in frames
+    long fInputLatencyUsec;		// Input latency in microsecond
+} RendererInfo;
+    
 class TAudioStream : public la_smartable {
+
 	public:
+    
 		virtual ~TAudioStream() {}
+        
 };
+
 typedef LA_SMARTP<TAudioStream> TAudioStreamPtr;
 
 class TAudioEffectInterface : public la_smartable
@@ -95,8 +115,9 @@ class TAudioEffectInterface : public la_smartable
 
         void ProcessAux(float** input, float** output, long framesNum, long channels)
         {
-            if (fState)
+            if (fState) {
                 Process(input, output, framesNum, channels);
+            }
         }
 
         // Pure virtual : to be implemented by sub-classes
@@ -116,9 +137,13 @@ class TAudioEffectInterface : public la_smartable
 typedef LA_SMARTP<TAudioEffectInterface> TAudioEffectInterfacePtr;
 
 class TAudioEffectList : public std::list<TAudioEffectInterfacePtr>, public la_smartable {
+
 	public:
+    
 		virtual ~TAudioEffectList() {}
+        
 };
+
 typedef LA_SMARTP<TAudioEffectList> TAudioEffectListPtr;
 
 // Opaque pointers
@@ -223,12 +248,17 @@ AudioStream MakePitchSchiftTimeStretchSound(AudioStream sound, double* pitch_shi
 */
 AudioStream MakeWriteSound(char* name, AudioStream sound, long format);
 /*!
-\brief Create an inputstream.
+\brief Create an input stream.
 \return A pointer to new stream object.
 */
 AudioStream MakeInputSound();
 /*!
-\brief Create an renderer "wrapper" on a stream, to be used for direct access to the stream content.
+\brief Create a shared stream on the input stream.
+\return A pointer to new stream object.
+*/
+AudioStream MakeSharedInputSound();
+/*!
+\brief Create a renderer "wrapper" on a stream, to be used for direct access to the stream content.
 \return A pointer to new stream object.
 */
 AudioStream MakeRendererSound(AudioStream sound);
@@ -314,9 +344,11 @@ AudioEffect MakePitchShiftAudioEffect(float pitch);
 /*!
 \brief Create an effect described in the Faust DSP language.
 \param name The name of the Faust effect shared library.
+\param library_path The pathname where to locate additional DSP libraries.
+\param draw_path The pathname where to save additional resources produced during compilation (like SVG files).
 \return A pointer to new effect object or NULL if the effect cannot be located or created.
 */
-AudioEffect MakeFaustAudioEffect(const char* name);
+AudioEffect MakeFaustAudioEffect(const char* name, const char* library_path, const char* draw_path);
 /*!
 \brief Create an effect by "wrapping" an externally built effect.
 \param effect The effect to be wrapped.
@@ -376,6 +408,8 @@ void ResetEffect(AudioEffect effect);
 */
 void ProcessEffect(AudioEffect effect, float** input, float** output, long framesNum, long channels);
 
+const char* GetJsonEffect(AudioEffect effect);
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -386,6 +420,12 @@ extern "C"
 \return the library version number as a 3 digits long value.
 */
 long LibVersion();
+
+/*!
+\brief Return a string describing the last error.
+\return the error.
+*/
+const char* GetLastLibError();
 	
 // Open/Close
 /*!
@@ -404,7 +444,7 @@ void SetAudioLatencies(long inputLatency, long outputLatency);
 \param sample_rate The sampling rate.
 \param buffer_size The audio player internal buffer size.
 \param stream_buffer_size The file reader/writer buffer size (used for double buffering).
-\param rtstream_buffer_size The input stream buffer size.
+\param rtstream_duration The input stream duration in frames.
 \param renderer The audio renderer used to access audio I/O : can be kPortAudioRenderer or kJackRenderer.
 \param thread_num The number of additionnal low-priority threads used to precompute data : must be a least one.
 \return A pointer to new audio player object.
@@ -415,7 +455,7 @@ AudioPlayerPtr OpenAudioPlayer(long inChan,
 							   long sample_rate,
 							   long buffer_size,
 							   long stream_buffer_size,
-							   long rtstream_buffer_size,
+							   long rtstream_duration,
 							   long renderer,
 							   long thread_num);
 /*!
@@ -451,7 +491,8 @@ long LoadChannel(AudioPlayerPtr player, AudioStream sound, long chan, float vol,
 \param chan The audio channel number to be used.
 \param info The channel info structure to be filled.
 */
-void GetInfoChannel(AudioPlayerPtr player, long chan, ChannelInfoPtr info);
+void GetInfoChannel(AudioPlayerPtr player, long chan, ChannelInfoPtr info); // Obsolete version
+void GetChannelInfo(AudioPlayerPtr player, long chan, ChannelInfoPtr info);
 /*!
 \brief Set a callback to be called when the channel stops.
 \param player The audio player.
@@ -544,6 +585,13 @@ void SetPanAudioPlayer(AudioPlayerPtr player, float panLeft, float panRight);
 */
 void SetEffectListAudioPlayer(AudioPlayerPtr player, AudioEffectList effect_list, long fadeIn, long fadeOut);
 
+/*!
+\brief Get the audio player internal renderer.
+\param player The audio player.
+\return The internal audio renderer.
+*/
+AudioRendererPtr GetAudioPlayerRenderer(AudioPlayerPtr player);
+
 // Devices scanning
 /*!
 \brief Scan and return the number of available devices on the machine.
@@ -594,7 +642,7 @@ void DeleteAudioRenderer(AudioRendererPtr renderer);
 \param sampleRate The sampling rate. On input, contains the wanted value, on return the really used one.
 \return An error code.
 */
-int OpenAudioRenderer(AudioRendererPtr renderer, long inputDevice, long outputDevice, long inChan, long outChan, long bufferSize, long sampleRate);  
+long OpenAudioRenderer(AudioRendererPtr renderer, long inputDevice, long outputDevice, long inChan, long outChan, long bufferSize, long sampleRate);  
 /*!
 \brief Close an audio renderer.
 \param renderer The audio renderer to be closed.
@@ -608,10 +656,17 @@ void CloseAudioRenderer(AudioRendererPtr renderer);
 void StartAudioRenderer(AudioRendererPtr renderer); 
 /*!
 \brief Stop an audio renderer.
-\param renderer The audio renderer to be stoped.
+\param renderer The audio renderer to be stopped.
 */
 void StopAudioRenderer(AudioRendererPtr renderer); 
 
+/*!
+\brief Get audio renderer infos.
+\param renderer The audio renderer.
+\param info The audio renderer info to be filled.
+*/
+void GetAudioRendererInfo(AudioRendererPtr renderer, RendererInfoPtr info); 
+    
 /*!
 \brief Add an audio client to the renderer internal client list.
 \param renderer The audio renderer to be used.
@@ -626,14 +681,14 @@ void AddAudioClient(AudioRendererPtr renderer, AudioClientPtr client);
 void RemoveAudioClient(AudioRendererPtr renderer, AudioClientPtr client); 
 
 /*!
-\brief Init the global audio context. There is <B> unique </B> to be accesed by all components that need it.
+\brief Init the global audio context. There is <B> unique </B> to be accessed by all components that need it.
 \param inChan The number of input channels. <B>Only stereo players are currently supported </b>
 \param outChan The number of output channels.
 \param channels The number of stream channels.
 \param sample_rate The sampling rate.
 \param buffer_size The audio player internal buffer size.
 \param stream_buffer_size The file reader/writer buffer size (used for double buffering).
-\param rtstream_buffer_size The input stream buffer size.
+\param rtstream_duration The input stream duration in frames.
 \param thread_num The number of additionnal low-priority threads used to precompute data : must be a least one.
 */
 void AudioGlobalsInit(long inChan, 
@@ -642,18 +697,16 @@ void AudioGlobalsInit(long inChan,
 					long sample_rate,
 					long buffer_size, 
 					long stream_buffer_size, 
-					long rtstream_buffer_size,
+					long rtstream_duration,
 					long thread_num);
 /*!
 \brief Destroy the global audio context.
 */
 void AudioGlobalsDestroy();
 
-
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif
 

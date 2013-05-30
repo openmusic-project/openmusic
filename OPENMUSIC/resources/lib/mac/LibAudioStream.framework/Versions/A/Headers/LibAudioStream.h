@@ -1,6 +1,6 @@
 /*
 
-Copyright © Grame 2002-2007
+Copyright (C) Grame 2002-2013
 
 This library is free software; you can redistribute it and modify it under
 the terms of the GNU Library General Public License as published by the
@@ -68,6 +68,23 @@ extern "C"
 		long fDefaultBufferSize; 
 		double fDefaultSampleRate;
 	} DeviceInfo;
+    
+    /*!
+    \brief Renderer state.
+    */
+    typedef struct RendererInfo* RendererInfoPtr;
+    typedef struct RendererInfo {
+        long fInput;   				// Number of input channels
+        long fOutput;   			// Number of output channels
+        long fSampleRate; 			// Sampling Rate
+        long fBufferSize;			// I/O Buffer size
+        uint64_t fCurFrame;			// Currrent sample
+        uint64_t fCurUsec;			// Current microsecond
+        long fOutputLatencyFrame;	// Output latency in frames
+        long fOutputLatencyUsec;	// Output latency in microsecond
+        long fInputLatencyFrame;	// Input latency in frames
+        long fInputLatencyUsec;		// Input latency in microsecond
+    } RendererInfo;
 
     // Opaque pointers
     typedef void* AudioPlayerPtr;
@@ -86,7 +103,18 @@ extern "C"
     \return the library version number as a 3 digits long value.
     */
 	long LibVersion();
+    
+    /*!
+    \brief Return a string describing the last error.
+    \return the error.
+    */
+	const char* GetLastLibError();
 	
+    /**
+     * @defgroup SoundFunctions Sound creation and manipulation functions
+     * @{
+     */
+ 
 	/*!
     \brief Create a stream that will produce "silence".
     \param lengthFrame The number of null frame to be produced.
@@ -177,12 +205,19 @@ extern "C"
     */
     AudioStreamPtr MakeWriteSoundPtr(char* name, AudioStreamPtr sound, long format);
     /*!
-    \brief Create an inputstream.
+    \brief Create an input stream.
     \return A pointer to new stream object.
     */
     AudioStreamPtr MakeInputSoundPtr();
+    
     /*!
-    \brief Create an renderer "wrapper" on a stream, to be used for direct access to the stream content.
+    \brief Create a shared stream on the input stream.
+    \return A pointer to new stream object.
+    */
+    AudioStreamPtr MakeSharedInputSoundPtr();
+    
+    /*!
+    \brief Create a renderer "wrapper" on a stream, to be used for direct access to the stream content.
     \return A pointer to new stream object.
     */
     AudioStreamPtr MakeRendererSoundPtr(AudioStreamPtr sound);
@@ -217,6 +252,13 @@ extern "C"
     \param sound The stream to be reseted.
     */
 	void ResetSoundPtr(AudioStreamPtr sound);
+    
+    /*@}*/
+    
+    /**
+     * @defgroup EffectsFunctions Effects creation and manipulation functions
+     * @{
+     */
 
     // Effect management
     /*!
@@ -272,16 +314,18 @@ extern "C"
 	/*!
 	\brief Create an effect described in the Faust DSP language.
 	\param name The name of the Faust effect shared library.
+    \param library_path The pathname where to locate additional DSP libraries.
+    \param draw_path The pathname where to save additional resources produced during compilation (like SVG files).
     \return A pointer to new effect object or NULL if the effect cannot be located or created.
 	*/
-	AudioEffectPtr MakeFaustAudioEffectPtr(const char* name);
+	AudioEffectPtr MakeFaustAudioEffectPtr(const char* name, const char* library_path, const char* draw_path);
+    AudioEffectPtr MakeDispatchFaustAudioEffectPtr(const char* name, const char* library_path, const char* draw_path);
 	/*!
 	\brief Create an effect by "wrapping" an externally built effect.
 	\param effect The effect to be wrapped.
     \return A pointer to new effect object or NULL if the effect cannot be located or created.
 	*/
 	AudioEffectPtr MakeWrapperAudioEffectPtr(AudioEffectInterfacePtr effect);
-
 	/*!
     \brief Return the number of effect controls.
     \param effect The effect pointer.
@@ -343,6 +387,15 @@ extern "C"
 	\param effect The effect pointer.
 	*/
 	void DeleteEffectPtr(AudioEffectPtr effect);
+    
+    const char* GetJsonEffect(AudioEffectPtr effect);
+    
+    /*@}*/
+    
+    /**
+     * @defgroup PlayerFunctions Player creation and manipulation functions
+     * @{
+     */
 
     // Open/Close
 	/*!
@@ -361,8 +414,8 @@ extern "C"
     \param sample_rate The sampling rate.
     \param buffer_size The audio player internal buffer size.
     \param stream_buffer_size The file reader/writer buffer size (used for double buffering).
-    \param rtstream_buffer_size The input stream buffer size.
-    \param renderer The audio renderer used to access audio I/O : can be kPortAudioRenderer or kJackRenderer.
+    \param rtstream_duration The input stream duration in frames.
+    \param renderer The audio renderer used to access audio I/O : can be kPortAudioRenderer, kJackRenderer or kCoreAudioRenderer.
     \param thread_num The number of additionnal low-priority threads used to precompute data : must be a least one.
     \return A pointer to new audio player object.
     */
@@ -372,7 +425,7 @@ extern "C"
                                    long sample_rate,
                                    long buffer_size,
                                    long stream_buffer_size,
-                                   long rtstream_buffer_size,
+                                   long rtstream_duration,
                                    long renderer,
                                    long thread_num);
 								   
@@ -380,20 +433,55 @@ extern "C"
     \brief Close the audio player.
     \param player The audio player to be closed.
     */
-    void CloseAudioPlayer(AudioPlayerPtr player);								   
-								   
+    void CloseAudioPlayer(AudioPlayerPtr player);	
+    
+    // Transport
+    /*!
+    \brief Start the audio player.
+    \param player The audio player.
+    */
+    void StartAudioPlayer(AudioPlayerPtr player);
+    /*!
+    \brief Stop the audio player.
+    \param player The audio player.
+    */
+    void StopAudioPlayer(AudioPlayerPtr player);
+  
+    // Master
+    /*!
+    \brief Set the audio player volume [0...1]
+    \param player The audio player.
+    \param vol The new volume value.
+    */
+    void SetVolAudioPlayer(AudioPlayerPtr player, float vol);
+    /*!
+    \brief Set the audio player panning [0...1]
+    \param player The audio player.
+    \param pan The new panning value.
+    */
+    void SetPanAudioPlayer(AudioPlayerPtr player, float panLeft, float panRight);
 	/*!
-    \brief Opens the audio client to be added to an externally allocated renderer.
-	\param renderer The audio renderer that will "drive" (call Audio callback) the player.
-	\return A pointer to new audio player object.
-	*/					
-	AudioPlayerPtr OpenAudioClient(AudioRendererPtr renderer);	
-	 							   						   
- 	/*!
-    \brief Close an audio client that was previously added to an externally allocated audio renderer using OpenAudioClient.
-    \param player The audio client to be closed and be "detached" from the renderer.
-    */					
-	void CloseAudioClient(AudioPlayerPtr player);
+    \brief Set the master audio effect list.
+    \param player The audio player.
+    \param effect_list A list of audio effects.
+	\param fadeIn The fadein length in frames.
+    \param fadeOut The fadeout length in frames.
+	*/
+	void SetEffectListAudioPlayerPtr(AudioPlayerPtr player, AudioEffectListPtr effect_list, long fadeIn, long fadeOut);
+    
+    /*!
+    \brief Get the audio player internal renderer.
+    \param player The audio player.
+    \return The internal audio renderer.
+    */
+    AudioRendererPtr GetAudioPlayerRenderer(AudioPlayerPtr player);
+        
+    /*@}*/
+    
+    /**
+     * @defgroup ChannelFunctions Sound channel creation and manipulation functions
+     * @{
+     */
 	
     /*!
     \brief Load a sound in a channel.
@@ -411,7 +499,8 @@ extern "C"
     \param chan The audio channel number to be used.
     \param info The channel info structure to be filled.
     */
-    void GetInfoChannel(AudioPlayerPtr player, long chan, ChannelInfoPtr info);
+    void GetInfoChannel(AudioPlayerPtr player, long chan, ChannelInfoPtr info); // Obsolete version
+    void GetChannelInfo(AudioPlayerPtr player, long chan, ChannelInfoPtr info);
 	/*!
     \brief Set a callback to be called when the channel stops.
     \param player The audio player.
@@ -420,23 +509,11 @@ extern "C"
 	\param context A pointer to data to be given to the callback.
     */
 	void SetStopCallbackChannel(AudioPlayerPtr player, long chan, StopCallback callback, void* context);
-	
-    // Transport
-    /*!
-    \brief Start the audio player.
-    \param player The audio player.
-    */
-    void StartAudioPlayer(AudioPlayerPtr player);
-    /*!
-    \brief Stop the audio player.
-    \param player The audio player.
-    */
-    void StopAudioPlayer(AudioPlayerPtr player);
     /*!
     \brief Start a sound channel from the beginning.
     \param player The audio player.
     \param chan The audio channel number to be used.
-    */
+    */	
     void StartChannel(AudioPlayerPtr player, long chan);
     /*!
     \brief Play a sound channel from the current location.
@@ -456,7 +533,7 @@ extern "C"
     \param chan The audio channel number to be used.
     */
 	void AbortChannel(AudioPlayerPtr player, long chan);
-
+    
     // Params
     /*!
     \brief Set the channel volume [0...1]
@@ -481,29 +558,27 @@ extern "C"
     \param fadeOut The fadeout length in frames.
 	*/
 	void SetEffectListChannelPtr(AudioPlayerPtr player, long chan, AudioEffectListPtr effect_list, long fadeIn, long fadeOut);
-
-    // Master
-    /*!
-    \brief Set the audio player volume [0...1]
-    \param player The audio player.
-    \param vol The new volume value.
-    */
-    void SetVolAudioPlayer(AudioPlayerPtr player, float vol);
-    /*!
-    \brief Set the audio player panning [0...1]
-    \param player The audio player.
-    \param pan The new panning value.
-    */
-    void SetPanAudioPlayer(AudioPlayerPtr player, float panLeft, float panRight);
+    
+    /*@}*/
+    
+     /**
+     * @defgroup RendererFunctions Low-level renderer and client creation and manipulation fonctions
+     * @{
+     */
+    								   
 	/*!
-    \brief Set the master audio effect list.
-    \param player The audio player.
-    \param effect_list A list of audio effects.
-	\param fadeIn The fadein length in frames.
-    \param fadeOut The fadeout length in frames.
-	*/
-	void SetEffectListAudioPlayerPtr(AudioPlayerPtr player, AudioEffectListPtr effect_list, long fadeIn, long fadeOut);
-	
+    \brief Opens the audio client to be added to an externally allocated renderer.
+	\param renderer The audio renderer that will "drive" (call Audio callback) the player.
+	\return A pointer to new audio player object.
+	*/					
+	AudioPlayerPtr OpenAudioClient(AudioRendererPtr renderer);	
+	 							   						   
+ 	/*!
+    \brief Close an audio client that was previously added to an externally allocated audio renderer using OpenAudioClient.
+    \param player The audio client to be closed and be "detached" from the renderer.
+    */					
+	void CloseAudioClient(AudioPlayerPtr player);
+
 	// Devices scanning
 	/*!
 	\brief Scan and return the number of available devices on the machine.
@@ -534,7 +609,7 @@ extern "C"
 	// Renderer
 	/*!
     \brief Create a new audio renderer.
-    \param renderer The audio renderer used to access audio I/O : can be kPortAudioRenderer or kJackRenderer.
+    \param renderer The audio renderer used to access audio I/O : can be kPortAudioRenderer, kJackRenderer or kCoreAudioRenderer.
 	\return A pointer to new audio renderer object.
 	*/
 	AudioRendererPtr MakeAudioRenderer(long renderer);
@@ -554,7 +629,7 @@ extern "C"
     \param sampleRate The sampling rate. On input, contains the wanted value, on return the really used one.
  	\return An error code.
 	*/
-	int OpenAudioRenderer(AudioRendererPtr renderer, long inputDevice, long outputDevice, long inChan, long outChan, long bufferSize, long sampleRate);  
+	long OpenAudioRenderer(AudioRendererPtr renderer, long inputDevice, long outputDevice, long inChan, long outChan, long bufferSize, long sampleRate);  
 	/*!
     \brief Close an audio renderer.
     \param renderer The audio renderer to be closed.
@@ -568,9 +643,16 @@ extern "C"
 	void StartAudioRenderer(AudioRendererPtr renderer); 
 	/*!
     \brief Stop an audio renderer.
-    \param renderer The audio renderer to be stoped.
+    \param renderer The audio renderer to be stopped.
 	*/
 	void StopAudioRenderer(AudioRendererPtr renderer); 
+    
+    /*!
+    \brief Get audio renderer infos.
+    \param renderer The audio renderer.
+    \param info The audio renderer info to be filled.
+	*/
+	void GetAudioRendererInfo(AudioRendererPtr renderer, RendererInfoPtr info); 
 	
 	/*!
     \brief Add an audio client to the renderer internal client list.
@@ -586,14 +668,14 @@ extern "C"
 	void RemoveAudioClient(AudioRendererPtr renderer, AudioClientPtr client); 
 	
 	/*!
-    \brief Init the global audio context. There is <B> unique </B> to be accesed by all components that need it.
+    \brief Init the global audio context. There is <B> unique </B> to be accessed by all components that need it.
     \param inChan The number of input channels. <B>Only stereo players are currently supported </b>
     \param outChan The number of output channels.
     \param channels The number of stream channels.
     \param sample_rate The sampling rate.
     \param buffer_size The audio player internal buffer size.
     \param stream_buffer_size The file reader/writer buffer size (used for double buffering).
-    \param rtstream_buffer_size The input stream buffer size.
+    \param rtstream_duration The input stream duration in frames.
     \param thread_num The number of additionnal low-priority threads used to precompute data : must be a least one.
     */
 	void AudioGlobalsInit(long inChan, 
@@ -602,12 +684,14 @@ extern "C"
 						long sample_rate,
 						long buffer_size, 
 						long stream_buffer_size, 
-						long rtstream_buffer_size,
+						long rtstream_duration,
 						long thread_num);
 	/*!
     \brief Destroy the global audio context.
   	*/
 	void AudioGlobalsDestroy();
+    
+    /*@}*/
 
 /*! @} */
 

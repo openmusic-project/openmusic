@@ -691,41 +691,6 @@
 
 
 
-;PLAYING BOXES
-(defclass listtoplay ()
-   ((thelist :initform nil :initarg :thelist :accessor thelist)
-    (params :initform nil :initarg :params :accessor params)))
-
-
-(defmethod real-duration ((self listtoplay) time)
-  (loop for item in (thelist self) 
-        maximize (second (multiple-value-list (real-duration item time))) into max
-        minimize (real-duration item time) into min
-        finally (return (values min max))))
-
-(defmethod get-obj-dur ((self listtoplay))
-  (get-obj-dur (thelist self)))
-
-(defmethod play-from-box ((self null)) t)
-(defmethod play-from-box ((self t)) t)
-
-(defmethod play-from-box ((self boxframe)) 
-  (play-from-box (list self)))
-
-(defmethod play-obj? ((self t)) (allowed-in-maq-p self))
-
-(defmethod play-from-box ((self list))
-  (let ((playlist (loop for box in self 
-                        when (play-obj? (value (object box))) 
-                        collect (object box))))
-    (when playlist
-      (PlayAny t (make-instance 'listtoplay
-                                :thelist (loop for item in playlist
-                                               collect (value item))
-                                :params (loop for item in playlist
-                                              collect (edition-params item)))))))
-
-
 ;--------------DRAG AND DROP
 
 (defmethod make-drag-region ((self omboxframe) region x0 y0 view)
@@ -818,7 +783,7 @@
 (defmethod draw-after-box ((self boxtypeframe))
    (let ((deltay (if (zerop (numouts (object self))) 1 9)))
     (om-with-focused-view self
-      (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1 deltay) :pensize 0.5)
+      (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1 deltay) :pensize 1)
       )
     t))
 
@@ -1115,7 +1080,7 @@
 ;Frame for editor boxes
 ;-----------------------------------------
 
-(omg-defclass boxEditorFrame (boxframe) ()
+(defclass boxEditorFrame (boxframe) ()
    (:documentation "Simple frame for OMBoxEditCall meta objects. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
 
@@ -1227,7 +1192,8 @@
 (defmethod draw-after-box ((self boxEditorFrame)) 
    (when (view-of-patch (object self))
      (om-with-focused-view self
-          (om-draw-hilite-rect 0 0 (w self) (h self)))))
+          (om-draw-hilite-rect 0 0 (w self) (h self))))
+   )
 
 (defmethod close-frame ((box boxEditorFrame))
    "If miniview show a picture we must kill it."
