@@ -78,7 +78,8 @@
 ; (init-sdif-framework)
 ; (sdif::sdifprintversion)
 
-(cffi:define-foreign-type sdif-name () ':pointer)
+#-cffi-new (cffi:define-foreign-type sdif-name () ':pointer)
+#+cffi-new (cffi:defctype sdif-name :pointer)
 
 (defconstant eUnknownFileMode 0)
 (defconstant eWriteFile 1)

@@ -333,11 +333,11 @@
 
 (defun load-om-libs (&optional libs)
   
-  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-cffi"))
+  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux "load-cffi" #+linux "load-new-cffi"))
   (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
 
   (loop for lib in libs do
-        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml))
+        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml :json :yason))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   (if (member :midi libs)

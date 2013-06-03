@@ -116,7 +116,8 @@
   (beat :short)     
   (unit :short))
 
-(cffi:define-foreign-type PosPtr () ':pointer)
+#-cffi-new (cffi:define-foreign-type PosPtr () ':pointer)
+#+cffi-new (cffi:defctype PosPtr :pointer)
   
 (defun MidiNewPos ()
   (cffi:foreign-alloc 'Pos))
@@ -152,7 +153,8 @@
   (syncin    :short)
   (syncout   :short))
 
-(cffi:define-foreign-type PlayerStatePtr () ':pointer)
+#-cffi-new(cffi:define-foreign-type PlayerStatePtr () ':pointer)
+#+cffi-new(cffi:defctype PlayerStatePtr :pointer)
   
 (defun MidiNewPlayerState ()
   (cffi:foreign-alloc 'PlayerState))
@@ -203,7 +205,8 @@
   (clicks  :long)      
   (tracks  :long))
 
-(cffi:define-foreign-type MidiFileInfosPtr () ':pointer)
+#-cffi-new(cffi:define-foreign-type MidiFileInfosPtr () ':pointer)
+#+cffi-new(cffi:defctype MidiFileInfosPtr :pointer)
     
 (defun MidiNewMidiFileInfos ()
   (cffi:foreign-alloc 'MidiFileInfos))
