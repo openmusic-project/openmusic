@@ -122,8 +122,6 @@
         (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
 
-;;;ATTENTION : ON CONSIDERE QUE L'ON COPIE JUSTE LA BOITE, VIDE.
-;;;POUR COPIER L'EFFET ON DOIT EGALEMENT COPIER LE CODE ET LE NOM, ET EVALUER
 (defmethod omNG-copy ((self faust-effect-console))
    "Cons a Lisp expression that return a copy of self when it is valuated."
    `(let ((rep (make-instance ',(type-of self))))
@@ -133,9 +131,6 @@
   (let ((rep (make-instance (type-of self))))
     rep))
 
-;;;ATTENTION : POUR LA SAUVEGARDE, ON SAUVEGARDE JUSTE LA BOITE VIDE EGALEMENT.
-;;;LE CODE ASSOCIE AINSI QUE LE NOM ETANT SAUVEGARDES, IL SUFFIT DE REEVALUER LA BOITE
-;;;LA POSITION DES SLIDERS EST DONC REINITIALISEE, SEULS LES AUTOMATIONS PEUVENT ETRE CONSERVEES
 (defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   `(let ((rep (make-instance ',(type-of self))))
@@ -147,7 +142,9 @@
 (defmethod object-remove-extra ((self faust-effect-console) box)
   (let* ((ptr (effect-ptr self)))
     (if ptr
-        (las-faust-effect-cleanup ptr))))
+        (las-faust-effect-cleanup ptr))
+    (if *general-mixer-window*
+        (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*))))))
 
 
 ;================ CONTROLLER EDITOR ===================
@@ -795,7 +792,9 @@ nil)
 (defmethod object-remove-extra ((self faust-synth-console) box)
   (let* ((ptr (synth-ptr self)))
     (if ptr
-        (las-faust-synth-cleanup ptr))))
+        (las-faust-synth-cleanup ptr))
+    (if *general-mixer-window*
+        (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*))))))
 
 
 ;================ CONTROLLER EDITOR ===================

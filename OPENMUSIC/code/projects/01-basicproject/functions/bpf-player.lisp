@@ -14,9 +14,11 @@
         (progn
           (setf infos (get-infos-from-faust-control (faust-control bpf)))
           (if (<= (- (nth 2 infos) (nth 1 infos)) 10)
-                    (setf (decimals bpf) 1))
-          (setf (y-points bpf) (list (nth 1 infos) (nth 2 infos)))
-          (setf (x-points bpf) (list 0 1000))))
+              (setf (decimals bpf) 1))
+          (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
+              (progn
+                (setf (y-points bpf) (list (nth 3 infos) (nth 3 infos)))
+                (setf (x-points bpf) (list 0 1000))))))
     bpf))
 
 (defmethod omng-copy ((self bpf-control))
@@ -101,15 +103,7 @@
          (console (car faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
          (maxnum (las-faust-get-control-count ptr))
-         infos
-         minval
-         maxval
-         range
-         found
-         text-to-up
-         display
-         graph-to-up
-         paramtype)
+         infos minval maxval range found text-to-up display graph-to-up paramtype)
     (loop for i from 0 to (- maxnum 1) do
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
@@ -149,12 +143,3 @@
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
     (las-faust-get-control-params ptr found)))
-
-;(print (display (nth found (params-ctrl console))))
-
-;(om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))
-
-;(paramgraph self)
-;SLIDER om-set-slider-value
-;CHECKBOX om-set-check-box
-;NUMBOX set-value
