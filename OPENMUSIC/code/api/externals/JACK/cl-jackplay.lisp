@@ -18,8 +18,7 @@
 ;;Author: Anders Vinjar
 ;; 
 
-(in-package :cl-jack)
-(require :cffi "../FFI/load-cffi.lisp")
+(require :cffi  "../../load-new-cffi")
 (require :cl-jack "cl-jack")
 (require :libsndfile "../Audio/libsndfile/libsndfile")
 
