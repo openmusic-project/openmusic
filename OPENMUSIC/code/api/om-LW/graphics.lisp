@@ -929,7 +929,7 @@
 (defvar *om-select-color-alpha* nil)
 ;(setf *om-select-color-alpha* (make-instance 'omcolor :c (color::make-rgb 0.2 0.35 0.6 0.2)))
 (setf *om-select-color-alpha* (make-instance 'omcolor :c
-                                             #+cocoa (color::make-rgb 0.7 0.7 0.7 0.2)
+                                             #-win32 (color::make-rgb 0.7 0.7 0.7 0.2)
                                              #+win32  (color::make-rgb 0.2 0.35 0.6 0.2)))
 
 (defun om-draw-selection-rect (x y w h &key (mode :xor))
@@ -970,7 +970,7 @@
   `(let ((siz #-win32 ,size #+win32 (max 1 (round ,size))))
      (gp::with-graphics-state (*curstream* :thickness siz
                                            :shape-mode :plain
-                                           #-linux :scale-thickness t
+                                           :scale-thickness t
 					   :line-joint-style :miter   ; :bevel :round
                                            :line-end-style :round)    ; :butt :projecting 
     ,@body)))
