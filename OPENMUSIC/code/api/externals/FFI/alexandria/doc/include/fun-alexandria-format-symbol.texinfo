@@ -1,0 +1,11 @@
+@anchor{Function format-symbol}
+@deffn {Function} {format-symbol} package control @&rest arguments
+@findex format-symbol
+Constructs a string by applying @code{arguments} to string designator @code{control} as
+if by @code{format} within @code{with-standard-io-syntax}, and then creates a symbol named
+by that string.
+
+If @code{package} is @code{nil}, returns an uninterned symbol, if package is @code{t}, returns a
+symbol interned in the current package, and otherwise returns a symbol
+interned in the package designated by @code{package}.
+@end deffn

@@ -1,0 +1,5 @@
+@anchor{Function proper-list-p}
+@deffn {Function} {proper-list-p} object
+@findex proper-list-p
+Returns true if @code{object} is a proper list.
+@end deffn

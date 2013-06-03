@@ -1,0 +1,270 @@
+<html lang="en">
+<head>
+<title>Comprehensive Index - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="prev" href="Glossary.html#Glossary" title="Glossary">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Comprehensive-Index"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Glossary.html#Glossary">Glossary</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="index.html#Top">Top</a>
+<hr>
+</div>
+
+<h2 class="unnumbered">Index</h2>
+
+<ul class="index-cp" compact>
+<li><a href="Other-Types.html#index-g_t_003aboolean-71"><code>:boolean</code></a>: <a href="Other-Types.html#Other-Types">Other Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003achar-40"><code>:char</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003adouble-65"><code>:double</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003afloat-64"><code>:float</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aint-44"><code>:int</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aint16-58"><code>:int16</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aint32-60"><code>:int32</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aint64-62"><code>:int64</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aint8-56"><code>:int8</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003allong-54"><code>:llong</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003along-46"><code>:long</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003along_002ddouble-66"><code>:long-double</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003along_002dlong-48"><code>:long-long</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003apointer-67"><code>:pointer</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003ashort-42"><code>:short</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Other-Types.html#index-g_t_003astring-69"><code>:string</code></a>: <a href="Other-Types.html#Other-Types">Other Types</a></li>
+<li><a href="Other-Types.html#index-g_t_003astring_002bptr-70"><code>:string+ptr</code></a>: <a href="Other-Types.html#Other-Types">Other Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auchar-50"><code>:uchar</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auint-52"><code>:uint</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auint16-59"><code>:uint16</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auint32-61"><code>:uint32</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auint64-63"><code>:uint64</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003auint8-57"><code>:uint8</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aullong-55"><code>:ullong</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aulong-53"><code>:ulong</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aunsigned_002dchar-41"><code>:unsigned-char</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aunsigned_002dint-45"><code>:unsigned-int</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aunsigned_002dlong-47"><code>:unsigned-long</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aunsigned_002dlong_002dlong-49"><code>:unsigned-long-long</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aunsigned_002dshort-43"><code>:unsigned-short</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003aushort-51"><code>:ushort</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Built_002dIn-Types.html#index-g_t_003avoid-68"><code>:void</code></a>: <a href="Built_002dIn-Types.html#Built_002dIn-Types">Built-In Types</a></li>
+<li><a href="Other-Types.html#index-g_t_003awrapper-72"><code>:wrapper</code></a>: <a href="Other-Types.html#Other-Types">Other Types</a></li>
+<li><a href="Tutorial_002dAbstraction.html#index-abstraction-breaking-26">abstraction breaking</a>: <a href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction">Tutorial-Abstraction</a></li>
+<li><a href="Tutorial_002dComparison.html#index-abstractions-in-C-11">abstractions in C</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="Tutorial_002dComparison.html#index-advantages-of-_0040acronym_007bFFI_007d-7">advantages of <acronym>FFI</acronym></a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="Tutorial_002dComparison.html#index-benefits-of-_0040acronym_007bFFI_007d-8">benefits of <acronym>FFI</acronym></a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="Groveller-Syntax.html#index-bitfield-159"><code>bitfield</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Tutorial_002dAbstraction.html#index-breaking-the-abstraction-25">breaking the abstraction</a>: <a href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction">Tutorial-Abstraction</a></li>
+<li><a href="Tutorial_002dComparison.html#index-C-abstractions-10">C abstractions</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="callback.html#index-callback-143"><code>callback</code></a>: <a href="callback.html#callback">callback</a></li>
+<li><a href="Tutorial_002dCallbacks.html#index-callback-definition-34">callback definition</a>: <a href="Tutorial_002dCallbacks.html#Tutorial_002dCallbacks">Tutorial-Callbacks</a></li>
+<li><a href="Tutorial_002dInitializing.html#index-calling-foreign-functions-19">calling foreign functions</a>: <a href="Tutorial_002dInitializing.html#Tutorial_002dInitializing">Tutorial-Initializing</a></li>
+<li><a href="Groveller-Syntax.html#index-cc_002dflags-152"><code>cc-flags</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Groveller-Syntax.html#index-cenum-157"><code>cenum</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="close_002dforeign_002dlibrary.html#index-close_002dforeign_002dlibrary-136"><code>close-foreign-library</code></a>: <a href="close_002dforeign_002dlibrary.html#close_002dforeign_002dlibrary">close-foreign-library</a></li>
+<li><a href="Optimizing-Type-Translators.html#index-compiler-macros-for-type-translation-74">compiler macros for type translation</a>: <a href="Optimizing-Type-Translators.html#Optimizing-Type-Translators">Optimizing Type Translators</a></li>
+<li><a href="Groveller-Syntax.html#index-constant-150"><code>constant</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Groveller-Syntax.html#index-constantenum-158"><code>constantenum</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="convert_002dfrom_002dforeign.html#index-convert_002dfrom_002dforeign-76"><code>convert-from-foreign</code></a>: <a href="convert_002dfrom_002dforeign.html#convert_002dfrom_002dforeign">convert-from-foreign</a></li>
+<li><a href="convert_002dto_002dforeign.html#index-convert_002dto_002dforeign-77"><code>convert-to-foreign</code></a>: <a href="convert_002dto_002dforeign.html#convert_002dto_002dforeign">convert-to-foreign</a></li>
+<li><a href="Groveller-Syntax.html#index-cstruct-153"><code>cstruct</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Groveller-Syntax.html#index-cstruct_002dand_002dclass-155"><code>cstruct-and-class</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Groveller-Syntax.html#index-ctype-149"><code>ctype</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Groveller-Syntax.html#index-cunion-154"><code>cunion</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Tutorial_002dGetting-a-URL.html#index-c_0040acronym_007bURL_007d-13">c<acronym>URL</acronym></a>: <a href="Tutorial_002dGetting-a-URL.html#Tutorial_002dGetting-a-URL">Tutorial-Getting a URL</a></li>
+<li><a href="Groveller-Syntax.html#index-cvar-156"><code>cvar</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Tutorial_002dTypes.html#index-data-in-Lisp-and-C-37">data in Lisp and C</a>: <a href="Tutorial_002dTypes.html#Tutorial_002dTypes">Tutorial-Types</a></li>
+<li><a href="defbitfield.html#index-defbitfield-78"><code>defbitfield</code></a>: <a href="defbitfield.html#defbitfield">defbitfield</a></li>
+<li><a href="defcallback.html#index-defcallback-144"><code>defcallback</code></a>: <a href="defcallback.html#defcallback">defcallback</a></li>
+<li><a href="defcenum.html#index-defcenum-82"><code>defcenum</code></a>: <a href="defcenum.html#defcenum">defcenum</a></li>
+<li><a href="defcfun.html#index-defcfun-129"><code>defcfun</code></a>: <a href="defcfun.html#defcfun">defcfun</a></li>
+<li><a href="defcstruct.html#index-defcstruct-79"><code>defcstruct</code></a>: <a href="defcstruct.html#defcstruct">defcstruct</a></li>
+<li><a href="defctype.html#index-defctype-81"><code>defctype</code></a>: <a href="defctype.html#defctype">defctype</a></li>
+<li><a href="defcunion.html#index-defcunion-80"><code>defcunion</code></a>: <a href="defcunion.html#defcunion">defcunion</a></li>
+<li><a href="defcvar.html#index-defcvar-127"><code>defcvar</code></a>: <a href="defcvar.html#defcvar">defcvar</a></li>
+<li><a href="Groveller-Syntax.html#index-define-151"><code>define</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="define_002dforeign_002dlibrary.html#index-define_002dforeign_002dlibrary-138"><code>define-foreign-library</code></a>: <a href="define_002dforeign_002dlibrary.html#define_002dforeign_002dlibrary">define-foreign-library</a></li>
+<li><a href="define_002dforeign_002dtype.html#index-define_002dforeign_002dtype-83"><code>define-foreign-type</code></a>: <a href="define_002dforeign_002dtype.html#define_002dforeign_002dtype">define-foreign-type</a></li>
+<li><a href="define_002dparse_002dmethod.html#index-define_002dparse_002dmethod-84"><code>define-parse-method</code></a>: <a href="define_002dparse_002dmethod.html#define_002dparse_002dmethod">define-parse-method</a></li>
+<li><a href="Tutorial_002dCallbacks.html#index-defining-callbacks-35">defining callbacks</a>: <a href="Tutorial_002dCallbacks.html#Tutorial_002dCallbacks">Tutorial-Callbacks</a></li>
+<li><a href="Optimizing-Type-Translators.html#index-defining-type_002dtranslation-compiler-macros-75">defining type-translation compiler macros</a>: <a href="Optimizing-Type-Translators.html#Optimizing-Type-Translators">Optimizing Type Translators</a></li>
+<li><a href="Tutorial_002dMemory.html#index-dynamic-extent-30">dynamic extent</a>: <a href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a></li>
+<li><a href="Tutorial_002deasy_005fsetopt.html#index-enumeration_002c-C-24">enumeration, C</a>: <a href="Tutorial_002deasy_005fsetopt.html#Tutorial_002deasy_005fsetopt">Tutorial-easy_setopt</a></li>
+<li><a href="Tutorial_002dAbstraction.html#index-g_t_0040sc_007bfile_007d_002a-and-streams-28"><span class="sc">file</span>* and streams</a>: <a href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction">Tutorial-Abstraction</a></li>
+<li><a href="Tutorial_002deasy_005fsetopt.html#index-foreign-arguments-23">foreign arguments</a>: <a href="Tutorial_002deasy_005fsetopt.html#Tutorial_002deasy_005fsetopt">Tutorial-easy_setopt</a></li>
+<li><a href="Tutorial.html#index-foreign-functions-and-data-2">foreign functions and data</a>: <a href="Tutorial.html#Tutorial">Tutorial</a></li>
+<li><a href="Tutorial_002dLoading.html#index-foreign-library-load-16">foreign library load</a>: <a href="Tutorial_002dLoading.html#Tutorial_002dLoading">Tutorial-Loading</a></li>
+<li><a href="Tutorial_002dMemory.html#index-foreign-values-with-dynamic-extent-31">foreign values with dynamic extent</a>: <a href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a></li>
+<li><a href="foreign_002dalloc.html#index-foreign_002dalloc-103"><code>foreign-alloc</code></a>: <a href="foreign_002dalloc.html#foreign_002dalloc">foreign-alloc</a></li>
+<li><a href="foreign_002dbitfield_002dsymbols.html#index-foreign_002dbitfield_002dsymbols-85"><code>foreign-bitfield-symbols</code></a>: <a href="foreign_002dbitfield_002dsymbols.html#foreign_002dbitfield_002dsymbols">foreign-bitfield-symbols</a></li>
+<li><a href="foreign_002dbitfield_002dvalue.html#index-foreign_002dbitfield_002dvalue-86"><code>foreign-bitfield-value</code></a>: <a href="foreign_002dbitfield_002dvalue.html#foreign_002dbitfield_002dvalue">foreign-bitfield-value</a></li>
+<li><a href="foreign_002denum_002dkeyword.html#index-foreign_002denum_002dkeyword-87"><code>foreign-enum-keyword</code></a>: <a href="foreign_002denum_002dkeyword.html#foreign_002denum_002dkeyword">foreign-enum-keyword</a></li>
+<li><a href="foreign_002denum_002dvalue.html#index-foreign_002denum_002dvalue-88"><code>foreign-enum-value</code></a>: <a href="foreign_002denum_002dvalue.html#foreign_002denum_002dvalue">foreign-enum-value</a></li>
+<li><a href="foreign_002dfree.html#index-foreign_002dfree-102"><code>foreign-free</code></a>: <a href="foreign_002dfree.html#foreign_002dfree">foreign-free</a></li>
+<li><a href="foreign_002dfuncall.html#index-foreign_002dfuncall-130"><code>foreign-funcall</code></a>: <a href="foreign_002dfuncall.html#foreign_002dfuncall">foreign-funcall</a></li>
+<li><a href="foreign_002dfuncall_002dpointer.html#index-foreign_002dfuncall_002dpointer-131"><code>foreign-funcall-pointer</code></a>: <a href="foreign_002dfuncall_002dpointer.html#foreign_002dfuncall_002dpointer">foreign-funcall-pointer</a></li>
+<li><a href="Basic-Pointer-Operations.html#index-foreign_002dpointer-101"><code>foreign-pointer</code></a>: <a href="Basic-Pointer-Operations.html#Basic-Pointer-Operations">Basic Pointer Operations</a></li>
+<li><a href="foreign_002dslot_002dnames.html#index-foreign_002dslot_002dnames-89"><code>foreign-slot-names</code></a>: <a href="foreign_002dslot_002dnames.html#foreign_002dslot_002dnames">foreign-slot-names</a></li>
+<li><a href="foreign_002dslot_002doffset.html#index-foreign_002dslot_002doffset-90"><code>foreign-slot-offset</code></a>: <a href="foreign_002dslot_002doffset.html#foreign_002dslot_002doffset">foreign-slot-offset</a></li>
+<li><a href="foreign_002dslot_002dpointer.html#index-foreign_002dslot_002dpointer-91"><code>foreign-slot-pointer</code></a>: <a href="foreign_002dslot_002dpointer.html#foreign_002dslot_002dpointer">foreign-slot-pointer</a></li>
+<li><a href="foreign_002dslot_002dvalue.html#index-foreign_002dslot_002dvalue-92"><code>foreign-slot-value</code></a>: <a href="foreign_002dslot_002dvalue.html#foreign_002dslot_002dvalue">foreign-slot-value</a></li>
+<li><a href="foreign_002dstring_002dalloc.html#index-foreign_002dstring_002dalloc-120"><code>foreign-string-alloc</code></a>: <a href="foreign_002dstring_002dalloc.html#foreign_002dstring_002dalloc">foreign-string-alloc</a></li>
+<li><a href="foreign_002dstring_002dfree.html#index-foreign_002dstring_002dfree-121"><code>foreign-string-free</code></a>: <a href="foreign_002dstring_002dfree.html#foreign_002dstring_002dfree">foreign-string-free</a></li>
+<li><a href="foreign_002dstring_002dto_002dlisp.html#index-foreign_002dstring_002dto_002dlisp-122"><code>foreign-string-to-lisp</code></a>: <a href="foreign_002dstring_002dto_002dlisp.html#foreign_002dstring_002dto_002dlisp">foreign-string-to-lisp</a></li>
+<li><a href="foreign_002dsymbol_002dpointer.html#index-foreign_002dsymbol_002dpointer-104"><code>foreign-symbol-pointer</code></a>: <a href="foreign_002dsymbol_002dpointer.html#foreign_002dsymbol_002dpointer">foreign-symbol-pointer</a></li>
+<li><a href="foreign_002dtype_002dalignment.html#index-foreign_002dtype_002dalignment-93"><code>foreign-type-alignment</code></a>: <a href="foreign_002dtype_002dalignment.html#foreign_002dtype_002dalignment">foreign-type-alignment</a></li>
+<li><a href="foreign_002dtype_002dsize.html#index-foreign_002dtype_002dsize-94"><code>foreign-type-size</code></a>: <a href="foreign_002dtype_002dsize.html#foreign_002dtype_002dsize">foreign-type-size</a></li>
+<li><a href="free_002dconverted_002dobject.html#index-free_002dconverted_002dobject-95"><code>free-converted-object</code></a>: <a href="free_002dconverted_002dobject.html#free_002dconverted_002dobject">free-converted-object</a></li>
+<li><a href="free_002dtranslated_002dobject.html#index-free_002dtranslated_002dobject-96"><code>free-translated-object</code></a>: <a href="free_002dtranslated_002dobject.html#free_002dtranslated_002dobject">free-translated-object</a></li>
+<li><a href="Tutorial_002dInitializing.html#index-function-definition-18">function definition</a>: <a href="Tutorial_002dInitializing.html#Tutorial_002dInitializing">Tutorial-Initializing</a></li>
+<li><a href="get_002dcallback.html#index-get_002dcallback-145"><code>get-callback</code></a>: <a href="get_002dcallback.html#get_002dcallback">get-callback</a></li>
+<li><a href="get_002dvar_002dpointer.html#index-get_002dvar_002dpointer-128"><code>get-var-pointer</code></a>: <a href="get_002dvar_002dpointer.html#get_002dvar_002dpointer">get-var-pointer</a></li>
+<li><a href="Groveller-Syntax.html#index-in_002dpackage-148"><code>in-package</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="inc_002dpointer.html#index-inc_002dpointer-105"><code>inc-pointer</code></a>: <a href="inc_002dpointer.html#inc_002dpointer">inc-pointer</a></li>
+<li><a href="incf_002dpointer.html#index-incf_002dpointer-106"><code>incf-pointer</code></a>: <a href="incf_002dpointer.html#incf_002dpointer">incf-pointer</a></li>
+<li><a href="Groveller-Syntax.html#index-include-147"><code>include</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Tutorial_002dLoading.html#index-library_002c-foreign-17">library, foreign</a>: <a href="Tutorial_002dLoading.html#Tutorial_002dLoading">Tutorial-Loading</a></li>
+<li><a href="Tutorial_002dTypes.html#index-limitations-of-type-translators-39">limitations of type translators</a>: <a href="Tutorial_002dTypes.html#Tutorial_002dTypes">Tutorial-Types</a></li>
+<li><a href="lisp_002dstring_002dto_002dforeign.html#index-lisp_002dstring_002dto_002dforeign-123"><code>lisp-string-to-foreign</code></a>: <a href="lisp_002dstring_002dto_002dforeign.html#lisp_002dstring_002dto_002dforeign">lisp-string-to-foreign</a></li>
+<li><a href="Tutorial_002dLisp-easy_005fsetopt.html#index-Lispy-C-functions-29">Lispy C functions</a>: <a href="Tutorial_002dLisp-easy_005fsetopt.html#Tutorial_002dLisp-easy_005fsetopt">Tutorial-Lisp easy_setopt</a></li>
+<li><a href="load_002dforeign_002dlibrary.html#index-load_002dforeign_002dlibrary-140"><code>load-foreign-library</code></a>: <a href="load_002dforeign_002dlibrary.html#load_002dforeign_002dlibrary">load-foreign-library</a></li>
+<li><a href="load_002dforeign_002dlibrary_002derror.html#index-load_002dforeign_002dlibrary_002derror-141"><code>load-foreign-library-error</code></a>: <a href="load_002dforeign_002dlibrary_002derror.html#load_002dforeign_002dlibrary_002derror">load-foreign-library-error</a></li>
+<li><a href="Tutorial_002dLoading.html#index-loading-_0040cffi_007b_007d-14">loading <acronym>CFFI</acronym></a>: <a href="Tutorial_002dLoading.html#Tutorial_002dLoading">Tutorial-Loading</a></li>
+<li><a href="Tutorial_002dInitializing.html#index-looks-like-it-worked-20">looks like it worked</a>: <a href="Tutorial_002dInitializing.html#Tutorial_002dInitializing">Tutorial-Initializing</a></li>
+<li><a href="make_002dpointer.html#index-make_002dpointer-107"><code>make-pointer</code></a>: <a href="make_002dpointer.html#make_002dpointer">make-pointer</a></li>
+<li><a href="mem_002daptr.html#index-mem_002daptr-108"><code>mem-aptr</code></a>: <a href="mem_002daptr.html#mem_002daptr">mem-aptr</a></li>
+<li><a href="mem_002daref.html#index-mem_002daref-109"><code>mem-aref</code></a>: <a href="mem_002daref.html#mem_002daref">mem-aref</a></li>
+<li><a href="mem_002dref.html#index-mem_002dref-110"><code>mem-ref</code></a>: <a href="mem_002dref.html#mem_002dref">mem-ref</a></li>
+<li><a href="Tutorial_002dComparison.html#index-minimal-bindings-9">minimal bindings</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="null_002dpointer.html#index-null_002dpointer-111"><code>null-pointer</code></a>: <a href="null_002dpointer.html#null_002dpointer">null-pointer</a></li>
+<li><a href="null_002dpointer_002dp.html#index-null_002dpointer_002dp-112"><code>null-pointer-p</code></a>: <a href="null_002dpointer_002dp.html#null_002dpointer_002dp">null-pointer-p</a></li>
+<li><a href="Tutorial_002dComparison.html#index-Perl-4">Perl</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="pointer_002daddress.html#index-pointer_002daddress-114"><code>pointer-address</code></a>: <a href="pointer_002daddress.html#pointer_002daddress">pointer-address</a></li>
+<li><a href="pointer_002deq.html#index-pointer_002deq-115"><code>pointer-eq</code></a>: <a href="pointer_002deq.html#pointer_002deq">pointer-eq</a></li>
+<li><a href="pointerp.html#index-pointerp-113"><code>pointerp</code></a>: <a href="pointerp.html#pointerp">pointerp</a></li>
+<li><a href="Tutorial_002dInitializing.html#index-pointers-in-Lisp-21">pointers in Lisp</a>: <a href="Tutorial_002dInitializing.html#Tutorial_002dInitializing">Tutorial-Initializing</a></li>
+<li><a href="Tutorial_002dMemory.html#index-premature-deallocation-32">premature deallocation</a>: <a href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a></li>
+<li><a href="Groveller-Syntax.html#index-progn-146"><code>progn</code></a>: <a href="Groveller-Syntax.html#Groveller-Syntax">Groveller Syntax</a></li>
+<li><a href="Tutorial_002dComparison.html#index-Python-5">Python</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="Tutorial_002dLoading.html#index-requiring-_0040cffi_007b_007d-15">requiring <acronym>CFFI</acronym></a>: <a href="Tutorial_002dLoading.html#Tutorial_002dLoading">Tutorial-Loading</a></li>
+<li><a href="Tutorial_002dComparison.html#index-g_t_0040acronym_007bSLIME_007d-6"><acronym>SLIME</acronym></a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="Tutorial_002dAbstraction.html#index-streams-and-C-27">streams and C</a>: <a href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction">Tutorial-Abstraction</a></li>
+<li><a href="Tutorial_002dMemory.html#index-strings-33">strings</a>: <a href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a></li>
+<li><a href="Tutorial_002dComparison.html#index-g_t_0040acronym_007bSWIG_007d-3"><acronym>SWIG</acronym></a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+<li><a href="translate_002dcamelcase_002dname.html#index-translate_002dcamelcase_002dname-132"><code>translate-camelcase-name</code></a>: <a href="translate_002dcamelcase_002dname.html#translate_002dcamelcase_002dname">translate-camelcase-name</a></li>
+<li><a href="translate_002dfrom_002dforeign.html#index-translate_002dfrom_002dforeign-97"><code>translate-from-foreign</code></a>: <a href="translate_002dfrom_002dforeign.html#translate_002dfrom_002dforeign">translate-from-foreign</a></li>
+<li><a href="translate_002dinto_002dforeign_002dmemory.html#index-translate_002dinto_002dforeign_002dmemory-99"><code>translate-into-foreign-memory</code></a>: <a href="translate_002dinto_002dforeign_002dmemory.html#translate_002dinto_002dforeign_002dmemory">translate-into-foreign-memory</a></li>
+<li><a href="translate_002dname_002dfrom_002dforeign.html#index-translate_002dname_002dfrom_002dforeign-133"><code>translate-name-from-foreign</code></a>: <a href="translate_002dname_002dfrom_002dforeign.html#translate_002dname_002dfrom_002dforeign">translate-name-from-foreign</a></li>
+<li><a href="translate_002dname_002dto_002dforeign.html#index-translate_002dname_002dto_002dforeign-134"><code>translate-name-to-foreign</code></a>: <a href="translate_002dname_002dto_002dforeign.html#translate_002dname_002dto_002dforeign">translate-name-to-foreign</a></li>
+<li><a href="translate_002dto_002dforeign.html#index-translate_002dto_002dforeign-98"><code>translate-to-foreign</code></a>: <a href="translate_002dto_002dforeign.html#translate_002dto_002dforeign">translate-to-foreign</a></li>
+<li><a href="translate_002dunderscore_002dseparated_002dname.html#index-translate_002dunderscore_002dseparated_002dname-135"><code>translate-underscore-separated-name</code></a>: <a href="translate_002dunderscore_002dseparated_002dname.html#translate_002dunderscore_002dseparated_002dname">translate-underscore-separated-name</a></li>
+<li><a href="Tutorial_002dTypes.html#index-translating-types-38">translating types</a>: <a href="Tutorial_002dTypes.html#Tutorial_002dTypes">Tutorial-Types</a></li>
+<li><a href="Tutorial.html#index-tutorial_002c-_0040cffi_007b_007d-1">tutorial, <acronym>CFFI</acronym></a>: <a href="Tutorial.html#Tutorial">Tutorial</a></li>
+<li><a href="Tutorial_002dTypes.html#index-type-definition-36">type definition</a>: <a href="Tutorial_002dTypes.html#Tutorial_002dTypes">Tutorial-Types</a></li>
+<li><a href="Optimizing-Type-Translators.html#index-type-translators_002c-optimizing-73">type translators, optimizing</a>: <a href="Optimizing-Type-Translators.html#Optimizing-Type-Translators">Optimizing Type Translators</a></li>
+<li><a href="use_002dforeign_002dlibrary.html#index-use_002dforeign_002dlibrary-142"><code>use-foreign-library</code></a>: <a href="use_002dforeign_002dlibrary.html#use_002dforeign_002dlibrary">use-foreign-library</a></li>
+<li><a href="Tutorial_002deasy_005fsetopt.html#index-varargs-22">varargs</a>: <a href="Tutorial_002deasy_005fsetopt.html#Tutorial_002deasy_005fsetopt">Tutorial-easy_setopt</a></li>
+<li><a href="with_002dforeign_002dobject.html#index-with_002dforeign_002dobject-116"><code>with-foreign-object</code></a>: <a href="with_002dforeign_002dobject.html#with_002dforeign_002dobject">with-foreign-object</a></li>
+<li><a href="with_002dforeign_002dobject.html#index-with_002dforeign_002dobjects-117"><code>with-foreign-objects</code></a>: <a href="with_002dforeign_002dobject.html#with_002dforeign_002dobject">with-foreign-object</a></li>
+<li><a href="with_002dforeign_002dpointer.html#index-with_002dforeign_002dpointer-118"><code>with-foreign-pointer</code></a>: <a href="with_002dforeign_002dpointer.html#with_002dforeign_002dpointer">with-foreign-pointer</a></li>
+<li><a href="with_002dforeign_002dpointer_002das_002dstring.html#index-with_002dforeign_002dpointer_002das_002dstring-126"><code>with-foreign-pointer-as-string</code></a>: <a href="with_002dforeign_002dpointer_002das_002dstring.html#with_002dforeign_002dpointer_002das_002dstring">with-foreign-pointer-as-string</a></li>
+<li><a href="with_002dforeign_002dslots.html#index-with_002dforeign_002dslots-100"><code>with-foreign-slots</code></a>: <a href="with_002dforeign_002dslots.html#with_002dforeign_002dslots">with-foreign-slots</a></li>
+<li><a href="with_002dforeign_002dstring.html#index-with_002dforeign_002dstring-124"><code>with-foreign-string</code></a>: <a href="with_002dforeign_002dstring.html#with_002dforeign_002dstring">with-foreign-string</a></li>
+<li><a href="with_002dforeign_002dstring.html#index-with_002dforeign_002dstrings-125"><code>with-foreign-strings</code></a>: <a href="with_002dforeign_002dstring.html#with_002dforeign_002dstring">with-foreign-string</a></li>
+<li><a href="Tutorial_002dComparison.html#index-workaround-for-C-12">workaround for C</a>: <a href="Tutorial_002dComparison.html#Tutorial_002dComparison">Tutorial-Comparison</a></li>
+   </ul></body></html>
+

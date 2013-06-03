@@ -1,0 +1,163 @@
+<html lang="en">
+<head>
+<title>with-foreign-object - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Pointers.html#Pointers" title="Pointers">
+<link rel="prev" href="pointer_002deq.html#pointer_002deq" title="pointer-eq">
+<link rel="next" href="with_002dforeign_002dpointer.html#with_002dforeign_002dpointer" title="with-foreign-pointer">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="with-foreign-object"></a>
+<a name="with_002dforeign_002dobject"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="with_002dforeign_002dpointer.html#with_002dforeign_002dpointer">with-foreign-pointer</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="pointer_002deq.html#pointer_002deq">pointer-eq</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Pointers.html#Pointers">Pointers</a>
+<hr>
+</div>
+
+<h3 class="heading">with-foreign-object, with-foreign-objects</h3>
+
+<h4 class="subheading">Syntax</h4>
+
+<div class="defun">
+&mdash; Macro: <b>with-foreign-object</b> (<var>var type &amp;optional count</var>)<var> &amp;body body<a name="index-with_002dforeign_002dobject-116"></a></var><br>
+     </div>
+
+   <p><a name="with_002dforeign_002dobjects"></a>
+
+<div class="defun">
+&mdash; Macro: <b>with-foreign-objects</b> (<var>bindings</var>)<var> &amp;body body<a name="index-with_002dforeign_002dobjects-117"></a></var><br>
+        </div>
+
+   <p>bindings ::= {(var type &amp;optional count)}*
+
+<h4 class="subheading">Arguments and Values</h4>
+
+     <dl>
+<dt><var>var</var><dd>A symbol.
+
+     <br><dt><var>type</var><dd>A foreign type, evaluated.
+
+     <br><dt><var>count</var><dd>An integer. 
+</dl>
+
+<h4 class="subheading">Description</h4>
+
+<p>The macros <code>with-foreign-object</code> and <code>with-foreign-objects</code>
+bind <var>var</var> to a pointer to <var>count</var> newly allocated objects
+of type <var>type</var> during <var>body</var>. The buffer has dynamic extent
+and may be stack allocated if supported by the host Lisp.
+
+<h4 class="subheading">Examples</h4>
+
+<pre class="lisp">  CFFI&gt; <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">with-foreign-object</span></i> <span class="paren2">(<span class="lisp-bg">array <span class="keyword">:int</span> 10</span>)</span>
+          <span class="paren2">(<span class="lisp-bg">dotimes <span class="paren3">(<span class="lisp-bg">i 10</span>)</span>
+            <span class="paren3">(<span class="lisp-bg">setf <span class="paren4">(<span class="lisp-bg">mem-aref array <span class="keyword">:int</span> i</span>)</span> <span class="paren4">(<span class="lisp-bg">random 100</span>)</span></span>)</span></span>)</span>
+          <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">loop</span></i> for i below 10
+                collect <span class="paren3">(<span class="lisp-bg">mem-aref array <span class="keyword">:int</span> i</span>)</span></span>)</span></span>)</span>
+  =&gt; <span class="paren1">(<span class="lisp-bg">22 7 22 52 69 1 46 93 90 65</span>)</span>
+</pre>
+<h4 class="subheading">See Also</h4>
+
+<p><a href="foreign_002dalloc.html#foreign_002dalloc">foreign-alloc</a>
+
+<!-- =================================================================== -->
+<!-- WITH-FOREIGN-POINTER -->
+   </body></html>
+

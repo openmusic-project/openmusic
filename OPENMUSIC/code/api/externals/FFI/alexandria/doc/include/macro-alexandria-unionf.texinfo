@@ -1,0 +1,6 @@
+@anchor{Macro unionf}
+@deffn {Macro} {unionf} place list @&rest args env
+@findex unionf
+Modify-macro for @code{union}. Saves the union of @code{list} and the contents of the
+place designated by the first argument to the designated place.
+@end deffn

@@ -1,0 +1,199 @@
+<html lang="en">
+<head>
+<title>Tutorial-Comparison - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Tutorial.html#Tutorial" title="Tutorial">
+<link rel="prev" href="Tutorial.html#Tutorial" title="Tutorial">
+<link rel="next" href="Tutorial_002dGetting-a-URL.html#Tutorial_002dGetting-a-URL" title="Tutorial-Getting a URL">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tutorial-Comparison"></a>
+<a name="Tutorial_002dComparison"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Tutorial_002dGetting-a-URL.html#Tutorial_002dGetting-a-URL">Tutorial-Getting a URL</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Tutorial.html#Tutorial">Tutorial</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Tutorial.html#Tutorial">Tutorial</a>
+<hr>
+</div>
+
+<h3 class="section">4.1 What makes Lisp different</h3>
+
+<p>The following sums up how bindings to foreign libraries are usually
+implemented in other languages, then in Common Lisp:
+
+     <dl>
+<dt>Perl, Python, Java, other one-implementation languages<dd><a name="index-g_t_0040acronym_007bSWIG_007d-3"></a><a name="index-Perl-4"></a><a name="index-Python-5"></a>Bindings are implemented as shared objects written in C.  In some
+cases, the C code is generated by a tool, such as <acronym>SWIG</acronym>, but
+the result is the same: a new C library that manually translates
+between the language implementation's objects, such as <code>PyObject</code>
+in Python, and whatever C object is called for, often using C
+functions provided by the implementation.  It also translates between
+the calling conventions of the language and C.
+
+     <br><dt>Common Lisp<dd><a name="index-g_t_0040acronym_007bSLIME_007d-6"></a>Bindings are written in Lisp.  They can be created at-will by Lisp
+programs.  Lisp programmers can write new bindings and add them to the
+image, using a listener such as <acronym>SLIME</acronym>, as easily as with
+regular Lisp definitions.  The only foreign library to load is the one
+being wrapped&mdash;the one with the pure C interface; no C or other
+non-Lisp compilation is required. 
+</dl>
+
+   <p><a name="index-advantages-of-_0040acronym_007bFFI_007d-7"></a><a name="index-benefits-of-_0040acronym_007bFFI_007d-8"></a>We believe the advantages of the Common Lisp approach far outweigh any
+disadvantages.  Incremental development with a listener can be as
+productive for C binding development as it is with other Lisp
+development.  Keeping it &ldquo;in the [Lisp] family&rdquo;, as it were, makes
+it much easier for you and other Lisp programmers to load and use the
+bindings.  Common Lisp implementations such as <acronym>CMUCL</acronym>, freed
+from having to provide a C interface to their own objects, are thus
+freed to be implemented in another language (as <acronym>CMUCL</acronym> is)
+while still allowing programmers to call foreign functions.
+
+   <p><a name="index-minimal-bindings-9"></a>Perhaps the greatest advantage is that using an <acronym>FFI</acronym> doesn't
+obligate you to become a professional binding developer.  Writers of
+bindings for other languages usually end up maintaining or failing to
+maintain complete bindings to the foreign library.  Using an
+<acronym>FFI</acronym>, however, means if you only need one or two functions,
+you can write bindings for only those functions, and be assured that
+you can just as easily add to the bindings if need be.
+
+   <p><a name="index-C-abstractions-10"></a><a name="index-abstractions-in-C-11"></a>The removal of the C compiler, or C interpretation of any kind,
+creates the main disadvantage: some of C's &ldquo;abstractions&rdquo; are not
+available, violating information encapsulation.  For example,
+<code>struct</code>s that must be passed on the stack, or used as return
+values, without corresponding functional abstractions to create and
+manage the <code>struct</code>s, must be declared explicitly in Lisp.  This
+is fine for structs whose contents are &ldquo;public&rdquo;, but is not so
+pleasant when a struct is supposed to be &ldquo;opaque&rdquo; by convention,
+even though it is not so defined.<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>
+
+   <p>Without an abstraction to create the struct, Lisp needs to be able to
+lay out the struct in memory, so must know its internal details.
+
+   <p><a name="index-workaround-for-C-12"></a>In these cases, you can create a minimal C library to provide the
+missing abstractions, without destroying all the advantages of the
+Common Lisp approach discussed above.  In the case of <code>struct</code>s,
+you can write simple, pure C functions that tell you how many bytes a
+struct requires or allocate new structs, read and write fields of the
+struct, or whatever operations are supposed to be
+public.<a rel="footnote" href="#fn-2" name="fnd-2"><sup>2</sup></a>
+
+   <blockquote>
+<strong>Implementor's note:</strong> <em>cffi-grovel, a project not yet part of <acronym>CFFI</acronym>, automates
+this and other processes.</em>
+</blockquote>
+
+   <p>Another disadvantage appears when you would rather use the foreign
+language than Lisp.  However, someone who prefers C to Lisp is not a
+likely candidate for developing a Lisp interface to a C library.
+
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> Admittedly, this is an
+advanced issue, and we encourage you to leave this text until you are
+more familiar with how <acronym>CFFI</acronym> works.</p>
+
+   <p class="footnote"><small>[<a name="fn-2" href="#fnd-2">2</a>]</small> This does not apply to structs whose contents are
+intended to be part of the public library interface.  In those cases,
+a pure Lisp struct definition is always preferred.  In fact, many
+prefer to stay in Lisp and break the encapsulation anyway, placing the
+burden of correct library interface definition on the library.</p>
+
+   <hr></div>
+
+   </body></html>
+

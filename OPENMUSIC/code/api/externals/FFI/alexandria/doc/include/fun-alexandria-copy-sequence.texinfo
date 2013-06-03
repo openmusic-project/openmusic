@@ -1,0 +1,6 @@
+@anchor{Function copy-sequence}
+@deffn {Function} {copy-sequence} type sequence
+@findex copy-sequence
+Returns a fresh sequence of @code{type}, which has the same elements as
+@code{sequence}.
+@end deffn

@@ -1,0 +1,8 @@
+@anchor{Function remove-from-plist}
+@deffn {Function} {remove-from-plist} plist @&rest keys
+@findex remove-from-plist
+Returns a propery-list with same keys and values as @code{plist}, except that keys
+in the list designated by @code{keys} and values corresponding to them are removed.
+The returned property-list may share structure with the @code{plist}, but @code{plist} is
+not destructively modified. Keys are compared using @code{eq}.
+@end deffn

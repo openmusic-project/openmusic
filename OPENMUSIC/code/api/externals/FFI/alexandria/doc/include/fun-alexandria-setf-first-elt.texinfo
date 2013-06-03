@@ -1,0 +1,6 @@
+@anchor{Function (setf first-elt)}
+@deffn {Function} {(setf first-elt)}
+@findex (setf first-elt)
+Sets the first element of @code{sequence}. Signals a type-error if @code{sequence} is
+not a sequence, is an empty sequence, or if @code{object} cannot be stored in @code{sequence}.
+@end deffn

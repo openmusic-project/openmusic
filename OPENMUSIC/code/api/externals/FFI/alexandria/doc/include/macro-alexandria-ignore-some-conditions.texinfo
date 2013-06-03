@@ -1,0 +1,6 @@
+@anchor{Macro ignore-some-conditions}
+@deffn {Macro} {ignore-some-conditions} (&rest conditions) @&body body
+@findex ignore-some-conditions
+Similar to @code{cl:ignore-errors} but the (unevaluated) @code{conditions}
+list determines which specific conditions are to be ignored.
+@end deffn

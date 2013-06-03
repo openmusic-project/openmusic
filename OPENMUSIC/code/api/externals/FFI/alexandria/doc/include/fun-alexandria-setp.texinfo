@@ -1,0 +1,6 @@
+@anchor{Function setp}
+@deffn {Function} {setp} object @&key test key
+@findex setp
+Returns true if @code{object} is a list that denotes a set, @code{nil} otherwise. A list
+denotes a set if each element of the list is unique under @code{key} and @code{test}.
+@end deffn

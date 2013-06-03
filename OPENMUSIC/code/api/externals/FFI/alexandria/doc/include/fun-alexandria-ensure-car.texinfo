@@ -1,0 +1,5 @@
+@anchor{Function ensure-car}
+@deffn {Function} {ensure-car} thing
+@findex ensure-car
+If @code{thing} is a @code{cons}, its @code{car} is returned. Otherwise @code{thing} is returned.
+@end deffn

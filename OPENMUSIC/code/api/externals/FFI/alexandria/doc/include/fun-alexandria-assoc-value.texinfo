@@ -1,0 +1,6 @@
+@anchor{Function assoc-value}
+@deffn {Function} {assoc-value} alist key @&key test
+@findex assoc-value
+@code{assoc-value} is an alist accessor very much like @code{assoc}, but it can
+be used with @code{setf}.
+@end deffn

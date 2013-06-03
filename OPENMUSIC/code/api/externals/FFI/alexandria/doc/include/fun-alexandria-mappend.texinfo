@@ -1,0 +1,6 @@
+@anchor{Function mappend}
+@deffn {Function} {mappend} function @&rest lists
+@findex mappend
+Applies @code{function} to respective element(s) of each @code{list}, appending all the
+all the result list to a single list. @code{function} must return a list.
+@end deffn

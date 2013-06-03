@@ -1,0 +1,252 @@
+<html lang="en">
+<head>
+<title>Tutorial-Lisp easy_setopt - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Tutorial.html#Tutorial" title="Tutorial">
+<link rel="prev" href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction" title="Tutorial-Abstraction">
+<link rel="next" href="Tutorial_002dMemory.html#Tutorial_002dMemory" title="Tutorial-Memory">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tutorial-Lisp-easy_setopt"></a>
+<a name="Tutorial_002dLisp-easy_005fsetopt"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Tutorial_002dAbstraction.html#Tutorial_002dAbstraction">Tutorial-Abstraction</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Tutorial.html#Tutorial">Tutorial</a>
+<hr>
+</div>
+
+<h3 class="section">4.7 Option functions in Lisp</h3>
+
+<p>We could use <code>foreign-funcall</code> directly every time we wanted to
+call <code>curl_easy_setopt</code>.  However, we can encapsulate some of the
+necessary information with the following.
+
+<pre class="lisp">  <span class="comment">;;; We will use this type later in a more creative way.  For
+  </span><span class="comment">;;; now, just consider it a marker that this isn't just any
+  </span><span class="comment">;;; pointer.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defctype</span></i> easy-handle <span class="keyword">:pointer</span></span>)</span>
+   
+  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmacro</span></i> curl-easy-setopt <span class="paren2">(<span class="lisp-bg">easy-handle enumerated-name
+                              value-type new-value</span>)</span>
+    <span class="string">"Call `curl_easy_setopt' on EASY-HANDLE, using ENUMERATED-NAME
+  as the OPTION.  VALUE-TYPE is the CFFI foreign type of the third
+  argument, and NEW-VALUE is the Lisp data to be translated to the
+  third argument.  VALUE-TYPE is not evaluated."</span>
+    `<span class="paren2">(<span class="lisp-bg">foreign-funcall <span class="string">"curl_easy_setopt"</span> easy-handle ,easy-handle
+                      curl-option ,enumerated-name
+                      ,value-type ,new-value curl-code</span>)</span></span>)</span>
+</pre>
+   <p>Now we define a function for each kind of argument that encodes the
+correct <code>value-type</code> in the above.  This can be done reasonably
+in the <code>define-curl-options</code> macroexpansion; after all, that is
+where the different options are listed!
+
+   <p><a name="index-Lispy-C-functions-29"></a>We could make <code>cl:defun</code> forms in the expansion that simply call
+<code>curl-easy-setopt</code>; however, it is probably easier and clearer to
+use <code>defcfun</code>.  <code>define-curl-options</code> was becoming unwieldy,
+so I defined some helpers in this new definition.
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defun</span></i> curry-curl-option-setter <span class="paren2">(<span class="lisp-bg">function-name option-keyword</span>)</span>
+    <span class="string">"Wrap the function named by FUNCTION-NAME with a version that
+  curries the second argument as OPTION-KEYWORD.
+   
+  This function is intended for use in DEFINE-CURL-OPTION-SETTER."</span>
+    <span class="paren2">(<span class="lisp-bg">setf <span class="paren3">(<span class="lisp-bg">symbol-function function-name</span>)</span>
+            <span class="paren3">(<span class="lisp-bg"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="lisp-bg"><span class="paren5">(<span class="lisp-bg">c-function <span class="paren6">(<span class="lisp-bg">symbol-function function-name</span>)</span></span>)</span></span>)</span>
+              <span class="paren4">(<span class="lisp-bg"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="lisp-bg">easy-handle new-value</span>)</span>
+                <span class="paren5">(<span class="lisp-bg">funcall c-function easy-handle option-keyword
+                         new-value</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+   
+  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmacro</span></i> <i><span class="symbol">define-curl-option-setter</span></i> <span class="paren2">(<span class="lisp-bg">name option-type
+                                       option-value foreign-type</span>)</span>
+    <span class="string">"Define (with DEFCFUN) a function NAME that calls
+  curl_easy_setopt.  OPTION-TYPE and OPTION-VALUE are the CFFI
+  foreign type and value to be passed as the second argument to
+  easy_setopt, and FOREIGN-TYPE is the CFFI foreign type to be used
+  for the resultant function's third argument.
+   
+  This macro is intended for use in DEFINE-CURL-OPTIONS."</span>
+    `<span class="paren2">(<span class="lisp-bg"><i><span class="symbol">progn</span></i>
+       <span class="paren3">(<span class="lisp-bg"><i><span class="symbol">defcfun</span></i> <span class="paren4">(<span class="lisp-bg"><span class="string">"curl_easy_setopt"</span> ,name</span>)</span> curl-code
+         <span class="paren4">(<span class="lisp-bg">easy-handle easy-handle</span>)</span>
+         <span class="paren4">(<span class="lisp-bg">option ,option-type</span>)</span>
+         <span class="paren4">(<span class="lisp-bg">new-value ,foreign-type</span>)</span></span>)</span>
+       <span class="paren3">(<span class="lisp-bg">curry-curl-option-setter ',name ',option-value</span>)</span></span>)</span></span>)</span>
+   
+  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmacro</span></i> <i><span class="symbol">define-curl-options</span></i> <span class="paren2">(<span class="lisp-bg">type-name type-offsets &amp;rest enum-args</span>)</span>
+    <span class="string">"As with CFFI:DEFCENUM, except each of ENUM-ARGS is as follows:
+   
+      (NAME TYPE NUMBER)
+   
+  Where the arguments are as they are with the CINIT macro defined
+  in curl.h, except NAME is a keyword.
+   
+  TYPE-OFFSETS is a plist of TYPEs to their integer offsets, as
+  defined by the CURLOPTTYPE_LONG et al constants in curl.h.
+   
+  Also, define functions for each option named
+  set-`TYPE-NAME'-`OPTION-NAME', where OPTION-NAME is the NAME from
+  the above destructuring."</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">flet</span></i> <span class="paren3">(<span class="lisp-bg"><span class="paren4">(<span class="lisp-bg">enumerated-value <span class="paren5">(<span class="lisp-bg">type offset</span>)</span>
+             <span class="paren5">(<span class="lisp-bg">+ <span class="paren6">(<span class="lisp-bg">getf type-offsets type</span>)</span> offset</span>)</span></span>)</span>
+           <span class="comment">;; map PROCEDURE, destructuring each of ENUM-ARGS
+  </span>         <span class="paren4">(<span class="lisp-bg">map-enum-args <span class="paren5">(<span class="lisp-bg">procedure</span>)</span>
+             <span class="paren5">(<span class="lisp-bg">mapcar <span class="paren6">(<span class="lisp-bg"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="lisp-bg">arg</span>)</span> <span class="paren1">(<span class="lisp-bg">apply procedure arg</span>)</span></span>)</span> enum-args</span>)</span></span>)</span>
+           <span class="comment">;; build a name like SET-CURL-OPTION-NOSIGNAL
+  </span>         <span class="paren4">(<span class="lisp-bg">make-setter-name <span class="paren5">(<span class="lisp-bg">option-name</span>)</span>
+             <span class="paren5">(<span class="lisp-bg">intern <span class="paren6">(<span class="lisp-bg">concatenate
+                      'string <span class="string">"SET-"</span> <span class="paren1">(<span class="lisp-bg">symbol-name type-name</span>)</span>
+                      <span class="string">"-"</span> <span class="paren1">(<span class="lisp-bg">symbol-name option-name</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      `<span class="paren3">(<span class="lisp-bg"><i><span class="symbol">progn</span></i>
+         <span class="paren4">(<span class="lisp-bg"><i><span class="symbol">defcenum</span></i> ,type-name
+           ,@<span class="paren5">(<span class="lisp-bg">map-enum-args
+              <span class="paren6">(<span class="lisp-bg"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="lisp-bg">name type number</span>)</span>
+                <span class="paren1">(<span class="lisp-bg">list name <span class="paren2">(<span class="lisp-bg">enumerated-value type number</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+         ,@<span class="paren4">(<span class="lisp-bg">map-enum-args
+            <span class="paren5">(<span class="lisp-bg"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="lisp-bg">name type number</span>)</span>
+              <span class="paren6">(<span class="lisp-bg">declare <span class="paren1">(<span class="lisp-bg">ignore number</span>)</span></span>)</span>
+              `<span class="paren6">(<span class="lisp-bg"><i><span class="symbol">define-curl-option-setter</span></i> ,<span class="paren1">(<span class="lisp-bg">make-setter-name name</span>)</span>
+                 ,type-name ,name ,<span class="paren1">(<span class="lisp-bg">ecase type
+                                     <span class="paren2">(<span class="lisp-bg">long <span class="keyword">:long</span></span>)</span>
+                                     <span class="paren2">(<span class="lisp-bg">objectpoint <span class="keyword">:pointer</span></span>)</span>
+                                     <span class="paren2">(<span class="lisp-bg">functionpoint <span class="keyword">:pointer</span></span>)</span>
+                                     <span class="paren2">(<span class="lisp-bg">off-t <span class="keyword">:long</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+         ',type-name</span>)</span></span>)</span></span>)</span>
+</pre>
+   <p class="noindent">Macroexpanding our <code>define-curl-options</code> form once more, we
+see something different:
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">progn</span></i>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">defcenum</span></i> curl-option
+      <span class="paren3">(<span class="lisp-bg"><span class="keyword">:noprogress</span> 43</span>)</span>
+      <span class="paren3">(<span class="lisp-bg"><span class="keyword">:nosignal</span> 99</span>)</span>
+      <span class="paren3">(<span class="lisp-bg"><span class="keyword">:errorbuffer</span> 10010</span>)</span>
+      <span class="paren3">(<span class="lisp-bg"><span class="keyword">:url</span> 10002</span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">define-curl-option-setter</span></i> set-curl-option-noprogress
+      curl-option <span class="keyword">:noprogress</span> <span class="keyword">:long</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">define-curl-option-setter</span></i> set-curl-option-nosignal
+      curl-option <span class="keyword">:nosignal</span> <span class="keyword">:long</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">define-curl-option-setter</span></i> set-curl-option-errorbuffer
+      curl-option <span class="keyword">:errorbuffer</span> <span class="keyword">:pointer</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">define-curl-option-setter</span></i> set-curl-option-url
+      curl-option <span class="keyword">:url</span> <span class="keyword">:pointer</span></span>)</span>
+    'curl-option</span>)</span>
+</pre>
+   <p class="noindent">Macroexpanding one of the new <code>define-curl-option-setter</code>
+forms yields the following:
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">progn</span></i>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">defcfun</span></i> <span class="paren3">(<span class="lisp-bg"><span class="string">"curl_easy_setopt"</span> set-curl-option-nosignal</span>)</span> curl-code
+      <span class="paren3">(<span class="lisp-bg">easy-handle easy-handle</span>)</span>
+      <span class="paren3">(<span class="lisp-bg">option curl-option</span>)</span>
+      <span class="paren3">(<span class="lisp-bg">new-value <span class="keyword">:long</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg">curry-curl-option-setter 'set-curl-option-nosignal '<span class="keyword">:nosignal</span></span>)</span></span>)</span>
+</pre>
+   <p class="noindent">Finally, let's try this out:
+
+<pre class="example">  <span class="sc">cffi-user&gt;</span> (set-curl-option-nosignal *easy-handle* 1)
+  =&gt; 0
+</pre>
+   <p class="noindent">Looks like it works just as well.  This interface is now reasonably
+high-level to wash out some of the ugliness of the thinnest possible
+<code>curl_easy_setopt</code> <acronym>FFI</acronym>, without obscuring the remaining
+C bookkeeping details we will explore.
+
+   </body></html>
+

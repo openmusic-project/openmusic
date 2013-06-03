@@ -1,0 +1,5 @@
+@anchor{Type negative-real}
+@deftp {Type} {negative-real}
+@tindex negative-real
+Type specifier denoting the real range from -inf to @code{0}.
+@end deftp

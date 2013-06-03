@@ -1,0 +1,6 @@
+@anchor{Function rassoc-value}
+@deffn {Function} {rassoc-value} alist key @&key test
+@findex rassoc-value
+@code{rassoc-value} is an alist accessor very much like @code{rassoc}, but it can
+be used with @code{setf}.
+@end deffn

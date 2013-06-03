@@ -1,0 +1,6 @@
+@anchor{Macro multiple-value-prog2}
+@deffn {Macro} {multiple-value-prog2} first-form second-form @&body forms
+@findex multiple-value-prog2
+Evaluates @code{first-form}, then @code{second-form}, and then @code{forms}. Yields as its value
+all the value returned by @code{second-form}.
+@end deffn

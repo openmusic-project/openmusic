@@ -1,0 +1,8 @@
+@anchor{Function standard-deviation}
+@deffn {Function} {standard-deviation} sample @&key biased
+@findex standard-deviation
+Standard deviation of @code{sample}. Returns the biased standard deviation if
+@code{biased} is true (the default), and the square root of the unbiased estimator
+for variance if @code{biased} is false (which is not the same as the unbiased
+estimator for standard deviation). @code{sample} must be a sequence of numbers.
+@end deffn

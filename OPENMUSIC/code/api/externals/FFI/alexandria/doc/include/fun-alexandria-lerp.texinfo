@@ -1,0 +1,6 @@
+@anchor{Function lerp}
+@deffn {Function} {lerp} v a b
+@findex lerp
+Returns the result of linear interpolation between A and @code{b}, using the
+interpolation coefficient @code{v}.
+@end deffn

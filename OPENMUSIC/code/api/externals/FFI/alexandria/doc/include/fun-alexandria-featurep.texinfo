@@ -1,0 +1,7 @@
+@anchor{Function featurep}
+@deffn {Function} {featurep} feature-expression
+@findex featurep
+Returns @code{t} if the argument matches the state of the @code{*features*}
+list and @code{nil} if it does not. @code{feature-expression} can be any atom
+or list acceptable to the reader macros @code{#+} and @code{#-}.
+@end deffn

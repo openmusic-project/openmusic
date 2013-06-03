@@ -1,0 +1,7 @@
+@anchor{Type circular-list}
+@deftp {Type} {circular-list}
+@tindex circular-list
+Type designator for circular lists. Implemented as a @code{satisfies} type, so not
+recommended for performance intensive use. Main usefullness as the
+expected-type designator of a @code{type-error}.
+@end deftp

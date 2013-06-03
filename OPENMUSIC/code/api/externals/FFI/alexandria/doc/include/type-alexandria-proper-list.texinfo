@@ -1,0 +1,7 @@
+@anchor{Type proper-list}
+@deftp {Type} {proper-list}
+@tindex proper-list
+Type designator for proper lists. Implemented as a @code{satisfies} type, hence
+not recommended for performance intensive use. Main usefullness as a type
+designator of the expected type in a @code{type-error}.
+@end deftp

@@ -1,0 +1,5 @@
+@anchor{Function flatten}
+@deffn {Function} {flatten} tree
+@findex flatten
+Traverses the tree in order, collecting non-null leaves into a list.
+@end deffn

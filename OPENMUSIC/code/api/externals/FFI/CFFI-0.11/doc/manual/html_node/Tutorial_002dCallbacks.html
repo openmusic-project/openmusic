@@ -1,0 +1,236 @@
+<html lang="en">
+<head>
+<title>Tutorial-Callbacks - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Tutorial.html#Tutorial" title="Tutorial">
+<link rel="prev" href="Tutorial_002dMemory.html#Tutorial_002dMemory" title="Tutorial-Memory">
+<link rel="next" href="Tutorial_002dCompletion.html#Tutorial_002dCompletion" title="Tutorial-Completion">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Tutorial-Callbacks"></a>
+<a name="Tutorial_002dCallbacks"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Tutorial_002dCompletion.html#Tutorial_002dCompletion">Tutorial-Completion</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Tutorial_002dMemory.html#Tutorial_002dMemory">Tutorial-Memory</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Tutorial.html#Tutorial">Tutorial</a>
+<hr>
+</div>
+
+<h3 class="section">4.9 Calling Lisp from C</h3>
+
+<p>If you have been reading
+<a href="http://curl.haxx.se/libcurl/c/curl_easy_setopt.html"><code>curl_easy_setopt(3)</code></a>, you should have noticed that some options
+accept a function pointer.  In particular, we need one function
+pointer to set as <code>CURLOPT_WRITEFUNCTION</code>, to be called by
+<code>libcurl</code> rather than the reverse, in order to receive data as it
+is downloaded.
+
+   <p>A binding writer without the aid of <acronym>FFI</acronym> usually approaches
+this problem by writing a C function that accepts C data, converts to
+the language's internal objects, and calls the callback provided by
+the user, again in a reverse of usual practices.
+
+   <p>The <acronym>CFFI</acronym> approach to callbacks precisely mirrors its differences
+with the non-<acronym>FFI</acronym> approach on the &ldquo;calling C from Lisp&rdquo;
+side, which we have dealt with exclusively up to now.  That is, you
+define a callback function in Lisp using <code>defcallback</code>, and
+<acronym>CFFI</acronym> effectively creates a C function to be passed as a function
+pointer.
+
+   <blockquote>
+<strong>Implementor's note:</strong> <em>This is much trickier than calling C functions from Lisp, as
+it literally involves somehow generating a new C function that is as
+good as any created by the compiler.  Therefore, not all Lisps support
+them.  See <a href="Implementation-Support.html#Implementation-Support">Implementation Support</a>, for information about <acronym>CFFI</acronym>
+support issues in this and other areas.  You may want to consider
+changing to a Lisp that supports callbacks in order to continue with
+this tutorial.</em>
+</blockquote>
+
+   <p><a name="index-callback-definition-34"></a><a name="index-defining-callbacks-35"></a>Defining a callback is very similar to defining a callout; the main
+difference is that we must provide some Lisp forms to be evaluated as
+part of the callback.  Here is the signature for the function the
+<code>:writefunction</code> option takes:
+
+<pre class="example">  size_t
+  <var>function</var>(void *ptr, size_t size, size_t nmemb, void *stream);
+</pre>
+   <blockquote>
+<strong>Implementor's note:</strong> <em>size_t is almost always an unsigned int.  You can get this
+and many other types using feature tests for your system by using
+cffi-grovel.</em>
+</blockquote>
+
+   <p>The above signature trivially translates into a <acronym>CFFI</acronym>
+<code>defcallback</code> form, as follows.
+
+<pre class="lisp">  <span class="comment">;;; Alias in case size_t changes.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defctype</span></i> size <span class="keyword">:unsigned-int</span></span>)</span>
+   
+  <span class="comment">;;; To be set as the CURLOPT_WRITEFUNCTION of every easy handle.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defcallback</span></i> easy-write size <span class="paren2">(<span class="lisp-bg"><span class="paren3">(<span class="lisp-bg">ptr <span class="keyword">:pointer</span></span>)</span> <span class="paren3">(<span class="lisp-bg">size size</span>)</span>
+                                <span class="paren3">(<span class="lisp-bg">nmemb size</span>)</span> <span class="paren3">(<span class="lisp-bg">stream <span class="keyword">:pointer</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="lisp-bg"><span class="paren4">(<span class="lisp-bg">data-size <span class="paren5">(<span class="lisp-bg">* size nmemb</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="lisp-bg">handler-case
+        <span class="comment">;; We use the dynamically-bound *easy-write-procedure* to
+  </span>      <span class="comment">;; call a closure with useful lexical context.
+  </span>      <span class="paren4">(<span class="lisp-bg"><i><span class="symbol">progn</span></i> <span class="paren5">(<span class="lisp-bg">funcall <span class="paren6">(<span class="lisp-bg">symbol-value '<span class="special">*easy-write-procedure*</span></span>)</span>
+                        <span class="paren6">(<span class="lisp-bg">foreign-string-to-lisp ptr data-size nil</span>)</span></span>)</span>
+               data-size</span>)</span>         <span class="comment">;indicates success
+  </span>      <span class="comment">;; The WRITEFUNCTION should return something other than the
+  </span>      <span class="comment">;; #bytes available to signal an error.
+  </span>      <span class="paren4">(<span class="lisp-bg">error <span class="paren5">(<span class="lisp-bg"></span>)</span> <span class="paren5">(<span class="lisp-bg"><i><span class="symbol">if</span></i> <span class="paren6">(<span class="lisp-bg">zerop data-size</span>)</span> 1 0</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+</pre>
+   <p>First, note the correlation of the first few forms, used to declare
+the C function's signature, with the signature in C syntax.  We
+provide a Lisp name for the function, its return type, and a name and
+type for each argument.
+
+   <p>In the body, we call the dynamically-bound
+<code>*easy-write-procedure*</code> with a &ldquo;finished&rdquo; translation, of
+pulling together the raw data and size into a Lisp string, rather than
+deal with the data directly.  As part of calling
+<code>curl_easy_perform</code> later, we'll bind that variable to a closure
+with more useful lexical bindings than the top-level
+<code>defcallback</code> form.
+
+   <p>Finally, we make a halfhearted effort to prevent non-local exits from
+unwinding the C stack, covering the most likely case with an
+<code>error</code> handler, which is usually triggered
+unexpectedly.<a rel="footnote" href="#fn-1" name="fnd-1"><sup>1</sup></a>  The reason is that most C code is written to
+understand its own idiosyncratic error condition, implemented above in
+the case of <code>curl_easy_perform</code>, and more &ldquo;undefined behavior&rdquo;
+can result if we just wipe C stack frames without allowing them to
+execute whatever cleanup actions as they like.
+
+   <p>Using the <code>CURLoption</code> enumeration in <samp><span class="file">curl.h</span></samp> once more, we
+can describe the new option by modifying and reevaluating
+<code>define-curl-options</code>.
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">define-curl-options</span></i> curl-option
+      <span class="paren2">(<span class="lisp-bg">long 0 objectpoint 10000 functionpoint 20000 off-t 30000</span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:noprogress</span> long 43</span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:nosignal</span> long 99</span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:errorbuffer</span> objectpoint 10</span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:url</span> objectpoint 2</span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:writefunction</span> functionpoint 11</span>)</span></span>)</span> ;new item here
+</pre>
+   <p>Finally, we can use the defined callback and the new
+<code>set-curl-option-writefunction</code> to finish configuring the easy
+handle, using the <code>callback</code> macro to retrieve a <acronym>CFFI</acronym>
+<code>:pointer</code>, which works like a function pointer in C code.
+
+<pre class="example">  <span class="sc">cffi-user&gt;</span> (set-curl-option-writefunction
+              *easy-handle* (callback easy-write))
+  =&gt; 0
+</pre>
+   <div class="footnote">
+<hr>
+<h4>Footnotes</h4><p class="footnote"><small>[<a name="fn-1" href="#fnd-1">1</a>]</small> Unfortunately, we can't protect against
+<em>all</em> non-local exits, such as <code>return</code>s and <code>throw</code>s,
+because <code>unwind-protect</code> cannot be used to &ldquo;short-circuit&rdquo; a
+non-local exit in Common Lisp, due to proposal <code>minimal</code> in
+<a href="http://www.lisp.org/HyperSpec/Issues/iss152-writeup.html"><acronym>ANSI</acronym> issue <span class="sc">Exit-Extent</span></a>.  Furthermore, binding an
+<code>error</code> handler prevents higher-up code from invoking restarts
+that may be provided under the callback's dynamic context.  Such is
+the way of compromise.</p>
+
+   <hr></div>
+
+   </body></html>
+

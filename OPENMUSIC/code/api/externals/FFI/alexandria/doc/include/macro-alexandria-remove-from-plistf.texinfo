@@ -1,0 +1,5 @@
+@anchor{Macro remove-from-plistf}
+@deffn {Macro} {remove-from-plistf} place @&rest keys env
+@findex remove-from-plistf
+Modify macro for @code{remove-from-plist}.
+@end deffn

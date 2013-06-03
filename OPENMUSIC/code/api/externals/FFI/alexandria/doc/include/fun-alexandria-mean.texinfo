@@ -1,0 +1,5 @@
+@anchor{Function mean}
+@deffn {Function} {mean} sample
+@findex mean
+Returns the mean of @code{sample}. @code{sample} must be a sequence of numbers.
+@end deffn

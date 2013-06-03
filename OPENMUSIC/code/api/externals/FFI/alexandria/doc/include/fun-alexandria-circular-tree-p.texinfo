@@ -1,0 +1,5 @@
+@anchor{Function circular-tree-p}
+@deffn {Function} {circular-tree-p} object
+@findex circular-tree-p
+Returns true if @code{object} is a circular tree, @code{nil} otherwise.
+@end deffn

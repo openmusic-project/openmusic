@@ -1,0 +1,12 @@
+@anchor{Function map-combinations}
+@deffn {Function} {map-combinations} function sequence @&key start end length copy
+@findex map-combinations
+Calls @code{function} with each combination of @code{length} constructable from the
+elements of the subsequence of @code{sequence} delimited by @code{start} and @code{end}. @code{start}
+defaults to @code{0}, @code{end} to length of @code{sequence}, and @code{length} to the length of the
+delimited subsequence. (So unless @code{length} is specified there is only a single
+combination, which has the same elements as the delimited subsequence.) If
+@code{copy} is true (the default) each combination is freshly allocated. If @code{copy} is
+false all combinations are @code{eq} to each other, in which case consequences are
+specified if a combination is modified by @code{function}.
+@end deffn

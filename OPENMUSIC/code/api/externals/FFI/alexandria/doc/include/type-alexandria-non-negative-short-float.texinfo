@@ -1,0 +1,5 @@
+@anchor{Type non-negative-short-float}
+@deftp {Type} {non-negative-short-float}
+@tindex non-negative-short-float
+Type specifier denoting the short-float range from @code{0}.@code{0} to +inf.
+@end deftp

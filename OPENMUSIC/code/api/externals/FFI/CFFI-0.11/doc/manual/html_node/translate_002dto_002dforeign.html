@@ -1,0 +1,172 @@
+<html lang="en">
+<head>
+<title>translate-to-foreign - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Foreign-Types.html#Foreign-Types" title="Foreign Types">
+<link rel="prev" href="translate_002dfrom_002dforeign.html#translate_002dfrom_002dforeign" title="translate-from-foreign">
+<link rel="next" href="translate_002dinto_002dforeign_002dmemory.html#translate_002dinto_002dforeign_002dmemory" title="translate-into-foreign-memory">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="translate-to-foreign"></a>
+<a name="translate_002dto_002dforeign"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="translate_002dinto_002dforeign_002dmemory.html#translate_002dinto_002dforeign_002dmemory">translate-into-foreign-memory</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="translate_002dfrom_002dforeign.html#translate_002dfrom_002dforeign">translate-from-foreign</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Foreign-Types.html#Foreign-Types">Foreign Types</a>
+<hr>
+</div>
+
+<h3 class="heading">translate-to-foreign</h3>
+
+<h4 class="subheading">Syntax</h4>
+
+<div class="defun">
+&mdash; Generic Function: <b>translate-to-foreign</b><var> lisp-value type-name &rArr; foreign-value, alloc-param<a name="index-translate_002dto_002dforeign-98"></a></var><br>
+     </div>
+
+<h4 class="subheading">Arguments and Values</h4>
+
+     <dl>
+<dt><var>lisp-value</var><dd>The Lisp value to convert to foreign representation.
+
+     <br><dt><var>type-name</var><dd>A symbol naming a foreign type defined by <code>defctype</code>.
+
+     <br><dt><var>foreign-value</var><dd>The foreign value to pass in place of <code>lisp-value</code> to foreign code.
+
+     <br><dt><var>alloc-param</var><dd>If present, this value will be passed to
+<code>free-translated-object</code>. 
+</dl>
+
+<h4 class="subheading">Description</h4>
+
+<p>This generic function is invoked by <acronym>CFFI</acronym> to convert a Lisp value to a
+foreign value, such as when passing arguments to a foreign function,
+returning a value from a callback, or setting a foreign variable.  A
+&ldquo;foreign value&rdquo; is one appropriate for passing to the next-lowest
+translator, including the low-level translators that are ultimately
+invoked invisibly with <acronym>CFFI</acronym>.
+
+   <p>To extend the <acronym>CFFI</acronym> type system by performing custom translations, this
+method may be specialized by <span class="sc">eql</span>-specializing <code>type-name</code> on a
+symbol naming a foreign type defined with <code>defctype</code>.  This
+method should return the appropriate foreign value to use in place of
+the Lisp value.
+
+   <p>In cases where <acronym>CFFI</acronym> can determine the lifetime of the foreign object
+returned by this method, it will invoke <code>free-translated-object</code>
+on the foreign object at the appropriate time.  If
+<code>translate-to-foreign</code> returns a second value, it will be passed
+as the <code>param</code> argument to <code>free-translated-object</code>.  This
+can be used to establish communication between the allocation and
+deallocation methods.
+
+   <p>The results are undefined if the <code>type-name</code> parameter is
+specialized in any way except an <span class="sc">eql</span> specializer on a foreign type
+defined with <code>defctype</code>.  Specifically, translations may not be
+defined for built-in types.
+
+<h4 class="subheading">See Also</h4>
+
+<p><a href="Foreign-Type-Translators.html#Foreign-Type-Translators">Foreign Type Translators</a> <br>
+<a href="translate_002dfrom_002dforeign.html#translate_002dfrom_002dforeign">translate-from-foreign</a> <br>
+<a href="free_002dtranslated_002dobject.html#free_002dtranslated_002dobject">free-translated-object</a>
+
+<!-- =================================================================== -->
+<!-- TRANSLATE-INTO-FOREIGN-MEMORY -->
+   </body></html>
+

@@ -1,0 +1,6 @@
+@anchor{Function ensure-cons}
+@deffn {Function} {ensure-cons} cons
+@findex ensure-cons
+If @code{cons} is a cons, it is returned. Otherwise returns a fresh cons with @code{cons}
+  in the car, and @code{nil} in the cdr.
+@end deffn

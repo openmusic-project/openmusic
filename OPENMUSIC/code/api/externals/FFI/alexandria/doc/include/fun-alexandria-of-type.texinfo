@@ -1,0 +1,6 @@
+@anchor{Function of-type}
+@deffn {Function} {of-type} type
+@findex of-type
+Returns a function of one argument, which returns true when its argument is
+of @code{type}.
+@end deffn

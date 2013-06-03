@@ -1,0 +1,8 @@
+@anchor{Function shuffle}
+@deffn {Function} {shuffle} sequence @&key start end
+@findex shuffle
+Returns a random permutation of @code{sequence} bounded by @code{start} and @code{end}.
+Original sequece may be destructively modified, and share storage with
+the original one. Signals an error if @code{sequence} is not a proper
+sequence.
+@end deffn

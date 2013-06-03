@@ -1,0 +1,8 @@
+@anchor{Function map-permutations}
+@deffn {Function} {map-permutations} function sequence @&key start end length copy
+@findex map-permutations
+Calls function with each permutation of @code{length} constructable
+from the subsequence of @code{sequence} delimited by @code{start} and @code{end}. @code{start}
+defaults to @code{0}, @code{end} to length of the sequence, and @code{length} to the
+length of the delimited subsequence.
+@end deffn

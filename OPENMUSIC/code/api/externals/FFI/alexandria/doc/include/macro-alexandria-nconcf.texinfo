@@ -1,0 +1,6 @@
+@anchor{Macro nconcf}
+@deffn {Macro} {nconcf} place @&rest lists env
+@findex nconcf
+Modify-macro for @code{nconc}. Concatenates @code{lists} to place designated by the first
+argument.
+@end deffn

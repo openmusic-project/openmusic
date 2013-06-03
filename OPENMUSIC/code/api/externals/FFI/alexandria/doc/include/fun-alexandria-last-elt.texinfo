@@ -1,0 +1,6 @@
+@anchor{Function last-elt}
+@deffn {Function} {last-elt} sequence
+@findex last-elt
+Returns the last element of @code{sequence}. Signals a type-error if @code{sequence} is
+not a proper sequence, or is an empty sequence.
+@end deffn

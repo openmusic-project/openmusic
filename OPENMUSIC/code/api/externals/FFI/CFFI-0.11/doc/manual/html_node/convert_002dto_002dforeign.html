@@ -1,0 +1,171 @@
+<html lang="en">
+<head>
+<title>convert-to-foreign - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Foreign-Types.html#Foreign-Types" title="Foreign Types">
+<link rel="prev" href="convert_002dfrom_002dforeign.html#convert_002dfrom_002dforeign" title="convert-from-foreign">
+<link rel="next" href="defbitfield.html#defbitfield" title="defbitfield">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="convert-to-foreign"></a>
+<a name="convert_002dto_002dforeign"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="defbitfield.html#defbitfield">defbitfield</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="convert_002dfrom_002dforeign.html#convert_002dfrom_002dforeign">convert-from-foreign</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Foreign-Types.html#Foreign-Types">Foreign Types</a>
+<hr>
+</div>
+
+<h3 class="heading">convert-to-foreign</h3>
+
+<h4 class="subheading">Syntax</h4>
+
+<div class="defun">
+&mdash; Function: <b>convert-to-foreign</b><var> value type &rArr; foreign-value, alloc-params<a name="index-convert_002dto_002dforeign-77"></a></var><br>
+     </div>
+
+<h4 class="subheading">Arguments and Values</h4>
+
+     <dl>
+<dt><var>value</var><dd>The Lisp object to be translated to a foreign object.
+
+     <br><dt><var>type</var><dd>A <acronym>CFFI</acronym> type specifier.
+
+     <br><dt><var>foreign-value</var><dd>The primitive C value, ready to be passed to a primitive foreign
+function.
+
+     <br><dt><var>alloc-params</var><dd>Something of a translation state; you must pass it to
+<code>free-converted-object</code> along with the foreign value for that to
+work. 
+</dl>
+
+<h4 class="subheading">Description</h4>
+
+<p>This is an external interface to the type translation facility.  In
+the implementation, all foreign functions are ultimately defined as
+type translation wrappers around primitive foreign function
+invocations.
+
+   <p>This function is available mostly for inspection of the type
+translation process, and possibly optimization of special cases of
+your foreign function calls.
+
+   <p>Its behavior is better described under <code>translate-to-foreign</code>'s
+documentation.
+
+<h4 class="subheading">Examples</h4>
+
+<pre class="lisp">  CFFI-USER&gt; <span class="paren1">(<span class="lisp-bg">convert-to-foreign t <span class="keyword">:boolean</span></span>)</span>
+  =&gt; 1
+  =&gt; NIL
+  CFFI-USER&gt; <span class="paren1">(<span class="lisp-bg">convert-to-foreign <span class="string">"hello, world"</span> <span class="keyword">:string</span></span>)</span>
+  =&gt; #&lt;FOREIGN-ADDRESS #x097C5F80&gt;
+  =&gt; T
+  CFFI-USER&gt; <span class="paren1">(<span class="lisp-bg">code-char <span class="paren2">(<span class="lisp-bg">mem-aref * <span class="keyword">:char</span> 5</span>)</span></span>)</span>
+  =&gt; #\,
+</pre>
+<h4 class="subheading">See Also</h4>
+
+<p><a href="convert_002dfrom_002dforeign.html#convert_002dfrom_002dforeign">convert-from-foreign</a> <br>
+<a href="free_002dconverted_002dobject.html#free_002dconverted_002dobject">free-converted-object</a> <br>
+<a href="translate_002dto_002dforeign.html#translate_002dto_002dforeign">translate-to-foreign</a>
+
+<!-- =================================================================== -->
+<!-- DEFBITFIELD -->
+   </body></html>
+

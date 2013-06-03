@@ -1,0 +1,6 @@
+@anchor{Function hash-table-plist}
+@deffn {Function} {hash-table-plist} table
+@findex hash-table-plist
+Returns a property list containing the keys and values of hash table
+@code{table}.
+@end deffn

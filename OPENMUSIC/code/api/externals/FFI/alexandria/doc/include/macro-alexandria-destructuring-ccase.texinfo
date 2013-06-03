@@ -1,0 +1,58 @@
+@anchor{Macro destructuring-ccase}
+@deffn {Macro} {destructuring-ccase} keyform @&body clauses
+@findex destructuring-ccase
+@code{destructuring-case}, @code{-ccase}, and @code{-ecase} are a combination of @code{case} and @code{destructuring-bind}.
+@code{keyform} must evaluate to a @code{cons}.
+
+Clauses are of the form:
+
+@lisp
+  ((CASE-KEYS . DESTRUCTURING-LAMBDA-LIST) FORM*)
+@end lisp
+
+The clause whose @code{case-keys} matches @code{car} of @code{key}, as if by @code{case}, @code{ccase}, or @code{ecase},
+is selected, and FORMs are then executed with @code{cdr} of @code{key} is destructured and
+bound by the @code{destructuring-lambda-list}.
+
+Example:
+
+@lisp
+ (defun dcase (x)
+   (destructuring-case x
+     ((:foo a b)
+      (format nil "foo: ~S, ~S" a b))
+     ((:bar &key a b)
+      (format nil "bar, ~S, ~S" a b))
+     (((:alt1 :alt2) a)
+      (format nil "alt: ~S" a))
+     ((t &rest rest)
+      (format nil "unknown: ~S" rest))))
+@end lisp
+
+@lisp
+  (dcase (list :foo 1 2))        ; => "foo: 1, 2"
+  (dcase (list :bar :a 1 :b 2))  ; => "bar: 1, 2"
+  (dcase (list :alt1 1))         ; => "alt: 1"
+  (dcase (list :alt2 2))         ; => "alt: 2"
+  (dcase (list :quux 1 2 3))     ; => "unknown: 1, 2, 3"
+@end lisp
+
+@lisp
+ (defun decase (x)
+   (destructuring-case x
+     ((:foo a b)
+      (format nil "foo: ~S, ~S" a b))
+     ((:bar &key a b)
+      (format nil "bar, ~S, ~S" a b))
+     (((:alt1 :alt2) a)
+      (format nil "alt: ~S" a))))
+@end lisp
+
+@lisp
+  (decase (list :foo 1 2))        ; => "foo: 1, 2"
+  (decase (list :bar :a 1 :b 2))  ; => "bar: 1, 2"
+  (decase (list :alt1 1))         ; => "alt: 1"
+  (decase (list :alt2 2))         ; => "alt: 2"
+  (decase (list :quux 1 2 3))     ; =| error
+@end lisp
+@end deffn

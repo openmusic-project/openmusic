@@ -1,0 +1,6 @@
+@anchor{Macro ensure-functionf}
+@deffn {Macro} {ensure-functionf} @&rest places
+@findex ensure-functionf
+Multiple-place modify macro for @code{ensure-function:} ensures that each of
+@code{places} contains a function.
+@end deffn

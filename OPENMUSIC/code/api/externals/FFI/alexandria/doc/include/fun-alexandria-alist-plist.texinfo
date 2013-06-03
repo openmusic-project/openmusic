@@ -1,0 +1,6 @@
+@anchor{Function alist-plist}
+@deffn {Function} {alist-plist} alist
+@findex alist-plist
+Returns a property list containing the same keys and values as the
+association list @code{alist} in the same order.
+@end deffn

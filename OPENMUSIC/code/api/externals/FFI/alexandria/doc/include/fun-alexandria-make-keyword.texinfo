@@ -1,0 +1,5 @@
+@anchor{Function make-keyword}
+@deffn {Function} {make-keyword} name
+@findex make-keyword
+Interns the string designated by @code{name} in the @code{keyword} package.
+@end deffn

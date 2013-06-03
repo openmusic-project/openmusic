@@ -1,0 +1,176 @@
+<html lang="en">
+<head>
+<title>Foreign Type Translators - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Foreign-Types.html#Foreign-Types" title="Foreign Types">
+<link rel="prev" href="Defining-Foreign-Types.html#Defining-Foreign-Types" title="Defining Foreign Types">
+<link rel="next" href="Optimizing-Type-Translators.html#Optimizing-Type-Translators" title="Optimizing Type Translators">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Foreign-Type-Translators"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Optimizing-Type-Translators.html#Optimizing-Type-Translators">Optimizing Type Translators</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Defining-Foreign-Types.html#Defining-Foreign-Types">Defining Foreign Types</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Foreign-Types.html#Foreign-Types">Foreign Types</a>
+<hr>
+</div>
+
+<h3 class="section">6.4 Foreign Type Translators</h3>
+
+<p>Type translators are used to automatically convert Lisp values to or
+from foreign values.  For example, using type translators, one can
+take the <code>my-string</code> type defined in the previous section and
+specify that it should:
+
+     <ul>
+<li>convert C strings to Lisp strings;
+<li>convert Lisp strings to newly allocated C strings;
+<li>free said C strings when they are no longer needed. 
+</ul>
+
+   <p>In order to tell <acronym>CFFI</acronym> how to automatically convert Lisp values to
+foreign values, define a specialized method for the
+<code>translate-to-foreign</code> generic function:
+
+<pre class="lisp">  <span class="comment">;;; Define a method that converts Lisp strings to C strings.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmethod</span></i> translate-to-foreign <span class="paren2">(<span class="lisp-bg">string <span class="paren3">(<span class="lisp-bg">type my-string-type</span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg">foreign-string-alloc string <span class="keyword">:encoding</span> <span class="paren3">(<span class="lisp-bg">string-type-encoding type</span>)</span></span>)</span></span>)</span>
+</pre>
+   <p class="noindent">From now on, whenever an object is passed as a <code>my-string</code> to a
+foreign function, this method will be invoked to convert the Lisp
+value. To perform the inverse operation, which is needed for functions
+that return a <code>my-string</code>, specialize the
+<code>translate-from-foreign</code> generic function in the same manner:
+
+<pre class="lisp">  <span class="comment">;;; Define a method that converts C strings to Lisp strings.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmethod</span></i> translate-from-foreign <span class="paren2">(<span class="lisp-bg">pointer <span class="paren3">(<span class="lisp-bg">type my-string-type</span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg">foreign-string-to-lisp pointer <span class="keyword">:encoding</span> <span class="paren3">(<span class="lisp-bg">string-type-encoding type</span>)</span></span>)</span></span>)</span>
+</pre>
+   <p class="noindent">When a <code>translate-to-foreign</code> method requires allocation of
+foreign memory, you must also define a <code>free-translated-object</code>
+method to free the memory once the foreign object is no longer needed,
+otherwise you'll be faced with memory leaks.  This generic function is
+called automatically by <acronym>CFFI</acronym> when passing objects to foreign
+functions. Let's do that:
+
+<pre class="lisp">  <span class="comment">;;; Free strings allocated by translate-to-foreign.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defmethod</span></i> free-translated-object <span class="paren2">(<span class="lisp-bg">pointer <span class="paren3">(<span class="lisp-bg">type my-string-type</span>)</span> param</span>)</span>
+    <span class="paren2">(<span class="lisp-bg">declare <span class="paren3">(<span class="lisp-bg">ignore param</span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg">foreign-string-free pointer</span>)</span></span>)</span>
+</pre>
+   <p class="noindent">In this specific example, we don't need the <var>param</var> argument, so
+we ignore it. See <a href="free_002dtranslated_002dobject.html#free_002dtranslated_002dobject">free-translated-object</a>, for an explanation of
+its purpose and how you can use it.
+
+   <p>A type translator does not necessarily need to convert the value.  For
+example, one could define a typedef for <code>:pointer</code> that ensures,
+in the <code>translate-to-foreign</code> method, that the value is not a
+null pointer, signalling an error if a null pointer is passed.  This
+would prevent some pointer errors when calling foreign functions that
+cannot handle null pointers.
+
+   <p><strong>Please note:</strong> these methods are meant as extensible hooks
+only, and you should not call them directly.  Use
+<code>convert-to-foreign</code>, <code>convert-from-foreign</code> and
+<code>free-converted-object</code> instead.
+
+   <p>See <a href="Tutorial_002dTypes.html#Tutorial_002dTypes">Defining new types</a>, for another example of
+type translators.
+
+   </body></html>
+

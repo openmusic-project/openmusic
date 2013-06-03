@@ -1,0 +1,6 @@
+@anchor{Function hash-table-alist}
+@deffn {Function} {hash-table-alist} table
+@findex hash-table-alist
+Returns an association list containing the keys and values of hash table
+@code{table}.
+@end deffn

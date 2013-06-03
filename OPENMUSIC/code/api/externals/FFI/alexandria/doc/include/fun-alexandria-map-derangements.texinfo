@@ -1,0 +1,9 @@
+@anchor{Function map-derangements}
+@deffn {Function} {map-derangements} function sequence @&key start end copy
+@findex map-derangements
+Calls @code{function} with each derangement of the subsequence of @code{sequence} denoted
+by the bounding index designators @code{start} and @code{end}. Derangement is a permutation
+of the sequence where no element remains in place. @code{sequence} is not modified,
+but individual derangements are @code{eq} to each other. Consequences are unspecified
+if calling @code{function} modifies either the derangement or @code{sequence}.
+@end deffn

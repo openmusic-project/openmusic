@@ -1,0 +1,5 @@
+@anchor{Function make-circular-list}
+@deffn {Function} {make-circular-list} length @&key initial-element
+@findex make-circular-list
+Creates a circular list of @code{length} with the given @code{initial-element}.
+@end deffn
