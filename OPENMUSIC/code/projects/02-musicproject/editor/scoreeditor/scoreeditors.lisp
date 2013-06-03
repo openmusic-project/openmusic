@@ -391,10 +391,10 @@
                                             ;; (om-make-point 100 18) ""
                                             (om-make-point 100 18) ""
                                             :font *om-default-font1*
-                                            :range (remove nil (list "Midishare"
-								     (if (find 'microplayer (assoc-players *general-player*)) "Microplayer")
-								     (if (find 'scplayer (assoc-players *general-player*)) "SuperCollider")
-								     ))
+                                            ;; :range (remove nil (list "Midishare"
+					    ;; 			     (if (find 'microplayer (assoc-players *general-player*)) "Microplayer")
+					    ;; 			     (if (find 'scplayer (assoc-players *general-player*)) "SuperCollider")
+					    ;; 			     ))
                                             :value (cond ((equal (get-edit-param (om-view-container self) 'player) :microplayer) 
                                                           "Microplayer")
 							 ((equal (get-edit-param (om-view-container self) 'player) :SCplayer)

@@ -36,7 +36,7 @@
   (las-faust-init-system)
   )
 
-(om-add-init-func 'audio-open)  
+#-linux (om-add-init-func 'audio-open)  
 (om-add-exit-cleanup-func 'audio-close t)
 
 

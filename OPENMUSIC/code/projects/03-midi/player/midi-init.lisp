@@ -92,7 +92,7 @@ the recorder, this function is called by a def-load-pointers"
 (defun make-port-menu (list posi) (declare (ignore list posi)))
 
 ;;;===============================
-(om-add-init-func 'midi-open)  
+#-linux (om-add-init-func 'midi-open)  
 (om-add-exit-cleanup-func 'midi-close t)
 ;;;===============================
 
