@@ -35,6 +35,8 @@
 ;; have sclang write its NetAddr.langPort to tempfile after boot, and
 ;; read it in when its ready:
 
+(defparameter SCplayer-read-port-proc nil)
+
 (defun SC_read_new_sclang_port (file)
   (loop 
      (mp:process-wait (format nil "Waiting for file ~a" file) 'probe-file file)
@@ -46,14 +48,18 @@
 		 (unless line
 		   (return))
 		 (write-line line *standard-output*)
-		 (setf *SCplayer-lang-port* (parse-integer line :junk-allowed t)))))
-       (delete-file temp-file))))
+		 (setf *SCplayer-lang-port* (parse-integer line :junk-allowed t))
+		 (format *standard-output* "~a ~%" *SCplayer-lang-port*))))
+       (delete-file temp-file)
+       (mp:process-kill SCplayer-read-port-proc) ;kill proc when done
+       )))
 
 (defun SC-read-port-from-file ()
   (delete-file *sclang_tmp_file*)
-  (mp:process-run-function "Reading sclang-port from file" ()
-                                  'SC_read_new_sclang_port
-                                  *sclang_tmp_file*))
+  (setf SCplayer-read-port-proc
+	(mp:process-run-function "Reading sclang-port from file" ()
+				 'SC_read_new_sclang_port
+				 *sclang_tmp_file*)))
 ;; (SC-read-port-from-file)
 (om-add-init-func 'SC-read-port-from-file)
 
