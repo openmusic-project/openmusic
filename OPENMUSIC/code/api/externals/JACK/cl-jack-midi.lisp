@@ -192,8 +192,6 @@ const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 	      (jack-port-name *OM-midi-output-port*)
 	      "fluidsynth:midi")
 
-
-
 (defcfun "jack_port_by_name" :pointer
   (client :pointer)
   (port-name :string))

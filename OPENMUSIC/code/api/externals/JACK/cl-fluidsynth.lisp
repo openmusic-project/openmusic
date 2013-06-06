@@ -28,16 +28,16 @@
 (defparameter *fluid-synth-cmd* nil)
 (defparameter *fluid-soundfont* "/usr/share/soundfonts/default.sf2")
 
-(setf *fluid-synth-cmd*
+(setf *fluidsynth-cmd*
       (format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*))
 
-(defun launch-fluidsynth ()
+(defun fluidsynth-launch ()
   (unless *fluidsynth-pid*
     (when (and (streamp *fluidynth-io*) (open-stream-p *fluidynth-io*))
       (close *fluidynth-io*))
     (setf *fluidsynth-pid* nil)
     (multiple-value-bind (io err pid)
-	(system:run-shell-command *fluid-synth-cmd*
+	(system:run-shell-command *fluidsynth-cmd*
 				  :wait nil
 				  :input :stream
 				  :output :stream
@@ -47,21 +47,27 @@
       (format *standard-output* "started fluidsynth: pid: ~A" pid)
       (list pid io))))
 
-(unless *fluidsynth-pid*
-  (launch-fluidsynth))
 
-(when (and *OMJackClient* *OM-midi-output-port*)
-  (jack-connect *OMJackClient*
-		(jack-port-name *OM-midi-output-port*)
-		"fluidsynth:midi"))
+(defun fluidsynth-start-and-connect ()
+  (unless *fluidsynth-pid*
+    (fluidsynth-launch))
+  (mp:process-run-function "waiting-to-start-fluidsynth" nil
+			   #'(lambda ()
+			       (mp:process-wait "getting fluidsynth running first"
+						#'(lambda ()
+						    (and *OMJackClient* *OM-midi-output-port* *fluidsynth-pid*)))
+			       (sleep 1.0)
+			       (jack-connect *OMJackClient*
+					     (jack-port-name *OM-midi-output-port*)
+					     "fluidsynth:midi"))))
 
-(defun quit-fluidsynth ()
+(defun fluidsynth-quit ()
   (when (and (open-stream-p *fluidynth-io*) *fluidsynth-pid*)
     (format *fluidynth-io* "quit~%")
-    (format *standard-output* "stopped fluidsynth: pid: ~A" *fluidsynth-pid*)
+    (format *standard-output* "~&stopped fluidsynth: pid: ~A~%" *fluidsynth-pid*)
     (setf *fluidsynth-pid* nil)
     (when (open-stream-p *fluidynth-io*)
       (close *fluidynth-io*))))
 
-(om::om-add-init-func 'launch-fluidsynth)
-(om::om-add-exit-cleanup-func 'quit-fluidsynth)
+(om::om-add-init-func 'fluidsynth-start-and-connect)
+(om::om-add-exit-cleanup-func 'fluidsynth-quit)
