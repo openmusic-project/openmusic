@@ -29,7 +29,7 @@
 (defparameter *fluid-soundfont* "/usr/share/soundfonts/default.sf2")
 
 (setf *fluid-synth-cmd*
-      (format nil "fluidsynth -j -m jack -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*))
+      (format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*))
 
 (defun launch-fluidsynth ()
   (unless *fluidsynth-pid*
