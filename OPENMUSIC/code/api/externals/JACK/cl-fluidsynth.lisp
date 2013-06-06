@@ -50,6 +50,10 @@
 (unless *fluidsynth-pid*
   (launch-fluidsynth))
 
+(when (and *OMJackClient* *OM-midi-output-port*)
+  (jack-connect *OMJackClient*
+		(jack-port-name *OM-midi-output-port*)
+		"fluidsynth:midi"))
 
 (defun quit-fluidsynth ()
   (when (and (open-stream-p *fluidynth-io*) *fluidsynth-pid*)

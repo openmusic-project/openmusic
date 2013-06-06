@@ -163,23 +163,36 @@
 (pointer-address port-buf)
 (pointer-address buffer)
 
-(setf midiports (jack-get-ports *OMJackClient*  "playback" "audio" 0))
+(setf midiports (jack-get-ports *OMJackClient*  "" "midi" 0))
 
 (loop for i from 0
      and port = (mem-aref midiports :string i)
      while port
      collect port)
+("OpenMusic:midiout" "OpenMusic:midiout" "fluidsynth:midi")
 
-int jack_connect (jack_client_t *client,
-                  const char *source_port,
-                  const char *destination_port) JACK_OPTIONAL_WEAK_EXPORT;
+
+
+
+const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 
 (defcfun "jack_connect" :int
   (client :pointer)
-  (source-port :pointer)
-  (destination-port :pointer))
+  (source-port :string)
+  (destination-port :string))
 
-jack_port_t * jack_port_by_name (jack_client_t *client, const char *port_name) JACK_OPTIONAL_WEAK_EXPORT;
+(defcfun "jack_port_name" :string
+  (port (:pointer jack_port_t)))
+
+(jack-connect *OMJackClient*
+	      (jack-port-name *OM-midi-output-port*)
+	      "fluidsynth:midi")
+
+(jack-disconnect *OMJackClient*
+	      (jack-port-name *OM-midi-output-port*)
+	      "fluidsynth:midi")
+
+
 
 (defcfun "jack_port_by_name" :pointer
   (client :pointer)

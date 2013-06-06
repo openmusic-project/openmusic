@@ -87,6 +87,19 @@
   (port :pointer)
   (frames jack_nframes_t))
 
+(defcfun "jack_port_name" :string
+  (port (:pointer jack_port_t)))
+
+(defcfun "jack_connect" :int
+  (client :pointer)
+  (source-port :string)
+  (destination-port :string))
+
+(defcfun "jack_disconnect" :int
+  (client :pointer)
+  (source-port :string)
+  (destination-port :string))
+
 (defcfun "jack_get_ports" :pointer
   (client :pointer)
   (port_name_pattern :string)

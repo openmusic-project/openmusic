@@ -5,7 +5,7 @@
   (compile-file-if-needed file)
   (load file))
 
-(setf cl-jack-files '("cl-jack" "cl-fluidsynth.lisp" "cl-jack-midi" "cl-jack-audio"))
+(setf cl-jack-files '("cl-jack" "cl-jack-midi" "cl-jack-audio" "cl-fluidsynth.lisp"))
 
 (dolist (file cl-jack-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
