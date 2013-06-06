@@ -17,7 +17,6 @@
 ;;
 ;;Author: Anders Vinjar
 
-(require :cffi "../FFI/CFFI/load-cffi")
 (defpackage :cl-jack (:use :common-lisp :cffi))
 (in-package :cl-jack)
 
@@ -158,59 +157,59 @@
 
 ;; vec[0].buf
 (defun rb-data-buf (arr index)		;index is 0 or 1 from jack
-  (foreign-slot-value			
+  (foreign-slot-value
    (mem-aref arr 'jack_ringbuffer_data_t index)
-   'jack_ringbuffer_data_t 'buf))
+   'jack_ringbuffer_data_t
+   'buf))
 
 ;;vec[0].len
 (defun rb-data-len (arr index)
   (foreign-slot-value			
    (mem-aref arr 'jack_ringbuffer_data_t index)
-   'jack_ringbuffer_data_t 'len))
+   'jack_ringbuffer_data_t
+   'len))
 
 ;;(rb-data-len vec 0) 
 (defun rb-data-len-p (arr index)	;len=0 := nothing to get
   (plusp (rb-data-len arr index)))
 
-(defcfun "jack_ringbuffer_create" (:pointer jack_ringbuffer_t)
+(defcfun "jack_ringbuffer_create" (:pointer (:struct jack_ringbuffer_t))
   (sz size_t))
 
-(defcfun "jack_ringbuffer_free" :void
-  (rb jack_ringbuffer_t))
-
 (defcfun "jack_ringbuffer_get_write_vector" :void
-  (rb (:pointer jack_ringbuffer_t))
-  (vec (:pointer jack_ringbuffer_data_t)))
+  (rb (:pointer (:struct jack_ringbuffer_t)))
+  (vec (:pointer (:struct jack_ringbuffer_data_t))))
+
+(defcfun "jack_ringbuffer_free" :void
+  (rb (:pointer (:struct jack_ringbuffer_t))))
 
 (defcfun "jack_ringbuffer_write_advance" :void
-  (rb (:pointer jack_ringbuffer_t))
+  (rb (:pointer (:struct jack_ringbuffer_t)))
   (cnt size_t))
 
 (defcfun "jack_ringbuffer_write_space" size_t
-  (rb (:pointer jack_ringbuffer_t)))
+  (rb (:pointer (:struct jack_ringbuffer_t))))
 
 (defcfun "jack_ringbuffer_write" size_t
-  (rb (:pointer jack_ringbuffer_t))
+  (rb (:pointer (:struct jack_ringbuffer_t)))
   (src (:pointer :char))
   (cnt size_t))	       
 
 (defcfun "jack_ringbuffer_get_read_vector" :void
-  (rb (:pointer jack_ringbuffer_t))
-  (vec (:pointer jack_ringbuffer_data_t)))
+  (rb (:pointer (:struct jack_ringbuffer_t)))
+  (vec (:pointer (:struct jack_ringbuffer_data_t))))
 
 (defcfun "jack_ringbuffer_read" size_t
-  (rb (:pointer jack_ringbuffer_t))
+  (rb (:pointer (:struct jack_ringbuffer_t)))
   (dest (:pointer :char))
   (cnt size_t))
 
 (defcfun "jack_ringbuffer_read_space" size_t
-  (rb (:pointer jack_ringbuffer_t)))
+  (rb (:pointer (:struct jack_ringbuffer_t))))
 
 ;;; end of wrappers for jack/ringbuffer.h
+
 
 ;; provide one default global client-name 
 
 (defparameter *OMJackClient* nil)
-
-(provide :cl-jack)
-

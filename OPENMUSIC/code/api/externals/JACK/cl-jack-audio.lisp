@@ -17,9 +17,6 @@
 ;;
 ;;Author: Anders Vinjar
 
-(require :cffi "../FFI/load-cffi.lisp")
-(load "cl-jack")
-
 (in-package :cl-jack)
 
 (unless *OMJackClient*
