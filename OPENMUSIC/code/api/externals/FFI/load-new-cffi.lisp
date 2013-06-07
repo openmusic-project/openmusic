@@ -1,7 +1,7 @@
 ;;===========================================================================
 ;;Load in recent CFFI 
 ;;
-;;Time-stamp: <2013-06-03 13:20:55>
+;;Time-stamp: <2013-06-04 14:11:06 andersvi>
 ;;
 ;;This program is free software; you can redistribute it and/or modify
 ;;it under the terms of the GNU Lesser General Public License as published by
@@ -34,8 +34,10 @@
 	"babel"
 	"trivial-features"
 	("CFFI-0.11" . "cffi")
+	("CFFI-0.11" . "cffi-grovel")
+	("CFFI-0.11" . "cffi-libffi")
 	))
 
 (pushnew :cffi-new *features*)
-
+(provide :cffi-new)
 (asdf:load-system :cffi)

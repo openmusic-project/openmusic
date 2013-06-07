@@ -253,7 +253,7 @@
                                            :retain-scrollbars (second (metaobj-scrollbars-params self))
                                            :field-size  (om-make-point x (- y 50))
                                            :size (om-make-point (w self) (h self))
-                                           :bg-color orange))
+                                           :bg-color *om-dark-gray-color*))
      
           (make-faust-group-view self (tree self))
           (setf paramnum 0)
@@ -275,7 +275,7 @@
                                            :retain-scrollbars (second (metaobj-scrollbars-params self))
                                            :field-size  (om-make-point x (- y 50))
                                            :size (om-make-point (w self) (h self))
-                                           :bg-color orange)))))
+                                           :bg-color *om-dark-gray-color*)))))
 
 (defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
   (let ((res (om-make-view (get-parampanel-class (panel self))
@@ -298,7 +298,7 @@
     ;;///////////////////ON CREE L'ESPACE DU GROUPE
     (om-make-view 'om-view
                   :owner (panel self)
-                  :bg-color orange
+                  :bg-color *om-light-gray-color*
                   :position (om-make-point x y)
                   :size (om-make-point (car size) (cadr size)))
     ;;///////////////////ON CREE LES VIEW DES ENFANTS
@@ -949,7 +949,7 @@ nil)
     ;;///////////////////ON CREE L'ESPACE DU GROUPE
     (om-make-view 'om-view
                   :owner (panel self)
-                  :bg-color orange
+                  :bg-color *om-light-gray-color*
                   :position (om-make-point x y)
                   :size (om-make-point (car size) (cadr size)))
     ;;///////////////////ON CREE LES VIEW DES ENFANTS

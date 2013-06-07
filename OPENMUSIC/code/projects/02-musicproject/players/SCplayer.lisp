@@ -118,13 +118,13 @@
 
 (defun stop-and-cleanup-SCplayer-app ()
   (progn
-    (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*))) 
-    (sys:run-shell-command (format nil "pkill -9 scsynth")) ;just rub everything for now...
-    (sys:run-shell-command (format nil "pkill -9 sclang"))
-    (when *SC-player-io*
+    (when *SC-player-pid* (sys:run-shell-command (format nil "kill -9 ~A"  *SC-player-pid*) :wait t))
+    (when (open-stream-p *SC-player-io*)
       (close *SC-player-io*)
       (setf *SC-player-io* nil))
     (setf *SC-player-pid* nil)
+    (sys:run-shell-command (format nil "pkill -9 scsynth") :wait t) ;just rub everything for now...
+    (sys:run-shell-command (format nil "pkill -9 sclang") :wait t)
     ))
 
 ;; (stop-and-cleanup-scplayer-app)

@@ -30,6 +30,17 @@
           (y-points bpf) (y-points self))
     bpf))
 
+(defmethod copy-container ((self bpf-control) &optional (pere ()))
+   "Builds a copy of a bpf control"
+   (let ((bpf (eval (call-next-method))))
+    (setf (c-action bpf) (c-action self)
+          (faust-control bpf) (faust-control self)
+          (decimals bpf) (decimals self)
+          (x-points bpf) (x-points self)
+          (y-points bpf) (y-points self))
+    bpf))
+
+
 (defmethod print-object ((self bpf-control) stream)
   (call-next-method))
 ;  (format stream "BPF-CONTROL: ~A ~D" (c-action self) (slot-value self 'offset)))
@@ -110,18 +121,20 @@
     (setf infos (las-faust-get-control-params ptr found))
     (setf minval (nth 1 infos))
     (setf maxval (nth 2 infos))
+    (if (= minval maxval) (setf minval 0
+                                maxval 1))
     (setf range (- maxval minval))
     (setf display (display (nth found (params-ctrl console))))
     (setf text-to-up (paramval display))
     (setf graph-to-up (paramgraph display))
     (setf paramtype (param-type (nth found (params-ctrl console))))
     (if graph-to-up
-        #'(lambda (val) 
+        #'(lambda (val)
             (if (< val minval) (setf val minval))
             (if (> val maxval) (setf val maxval))
             (las-faust-set-control-value ptr found (float val))
             (cond ((string= paramtype "checkbox")
-                   (om-set-check-box graph-to-up (if (> val 1) t)))
+                   (om-set-check-box graph-to-up (if (>= val 1) t)))
                   ((string= paramtype "numentry")
                    (progn
                      (om-set-dialog-item-text text-to-up (number-to-string (float val)))
