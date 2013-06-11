@@ -160,6 +160,10 @@
 (cffi:defctype tmidi-st tmidi-st-1)
 (cffi:defctype tmidi-sex tmidi-sex-1)
 
+
+
+
+
 (eval-when (:compile-toplevel)
   ;; unfortunately cffi:foreign-slot-value doesn't handle slot paths yet
   ;; so I hack it using metainfo about the structs defined above.
@@ -990,7 +994,7 @@
   (cffi:foreign-free location))
 
 (defun MidiNewSyncInfo ()
-  (cffi:foreign-alloc 'tsinc-info))
+  (cffi:foreign-alloc 'tsync-info))
 
 (defun MidiFreeSyncInfo (location)
   (cffi:foreign-free location))

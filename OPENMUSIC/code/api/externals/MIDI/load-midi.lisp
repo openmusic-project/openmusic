@@ -46,3 +46,5 @@
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))
  
 (push :om-midi-api *features*)
+
+*features*

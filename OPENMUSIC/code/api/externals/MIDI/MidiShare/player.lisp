@@ -118,7 +118,7 @@
 
 #-cffi-new (cffi:define-foreign-type PosPtr () ':pointer)
 #+cffi-new (cffi:defctype PosPtr :pointer)
-  
+ 
 (defun MidiNewPos ()
   (cffi:foreign-alloc 'Pos))
 

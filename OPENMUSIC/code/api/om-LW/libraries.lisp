@@ -333,7 +333,7 @@
 
 (defun load-om-libs (&optional libs)
   
-  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux "load-cffi" #+linux "load-new-cffi"))
+  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-new-cffi"))
   ;(load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
 
   (loop for lib in libs do
@@ -362,9 +362,14 @@
   (if (member :xml libs)
         (load (make-pathname :directory (append *externals-directory* (list "XML")) :name "load-xml"))
     )
-  (if (member :json libs)
+  (if (member :yason libs)
       (progn
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "package"))
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "parse")))
     )
+
+  (if (member :jack libs)
+      (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load"))
+    )
+    
   t)

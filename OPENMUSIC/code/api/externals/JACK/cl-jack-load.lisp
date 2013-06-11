@@ -1,3 +1,5 @@
+(in-package :cl-user)
+
 (unless (find :cffi-new *features*)
   (require :cffi (make-pathname :directory (append om-api::*externals-directory* '("FFI")) :name "load-new-cffi")))
 
