@@ -291,6 +291,7 @@
      (frames :long-long))
   :result-type :long-long)
 
+#+linux
 (cffi:defcfun (sf-readf-float "sf_readf_float") :long-long
   (sndfile :pointer)
   (ptr :pointer)

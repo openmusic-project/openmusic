@@ -223,6 +223,9 @@ const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 
 (seqhash-note-on *om-seq* (framenow 0.0) 70 127 0)
 
+
+
+ 
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   ;;(clrhash *om-seq*)
   (loop with offset = 0

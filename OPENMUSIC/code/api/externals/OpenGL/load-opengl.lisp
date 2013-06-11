@@ -34,6 +34,7 @@
 
 
 ;;; LOAD LW OpenGL
+(require "asdf")
 
 (load (make-pathname :directory (append (pathname-directory *load-pathname*) '("opengl-lw"))
                      :name "host" :type "lisp"))

@@ -21,7 +21,7 @@
 (in-package :cl-jack)
 
 (define-foreign-library libjack
-  (t (:default "/usr/lib/libjack")))
+  (t (:default "/usr/local/lib/libjack")))
 
 (use-foreign-library libjack) 
 

@@ -30,8 +30,8 @@
 (defparameter *jack-sndfile-handle* nil)
 
 (setf somesounds
-      '("/home/andersvi/lyd/andersvi/Floratone-1m.wav"
-	"/home/andersvi/Musikk/Bruckner/Anton_Bruckner_Symphonie_Nr.7_E-Dur.ogg"))
+      '("/Users/bresson/FILES/Audio/Bassclarinet1.aif"
+	"/Users/bresson/FILES/Audio/africa.aiff"))
 
 (defun jack-open-sound (path)
   "sets the current sound read in, closes any previously open at the same handle for now"

@@ -348,7 +348,8 @@ this method set the select flag of the connection to T and return a list with th
 
 
 (defmethod make-move-after ((self relationPanel) dragged)
-  (redraw-after self dragged))
+  (redraw-after self dragged)
+  )
 
 (defmethod redraw-after ((self relationPanel) dragged)
   "This method is called after moving one or more boxes, it redraw the connections involving in the moving operation."
