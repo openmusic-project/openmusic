@@ -4,6 +4,7 @@
 
 (in-package :om)
 
+;(defvar *faust-consoles-to-build* nil)
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -147,6 +148,22 @@
     rep))
 
 
+;(defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
+;  "Cons a Lisp expression that return a copy of self when it is valuated."
+;  (let ((text (effect-txt self))
+;        (name (effect-name self))
+;;        (track (tracknum self))
+;        rep)
+;    (if (and (effect-ptr self) (not (las-faust-null-ptr-p (effect-ptr self))))
+;        (progn
+;          `(setf rep (make-instance ',(type-of self) 
+;                                    :effect-txt ,(omng-save text)
+;                                    :effect-name ',name
+;                                    :tracknum ',track)
+;          '(setf *faust-consoles-to-build* (append *faust-consoles-to-build* (list rep))))
+;      `(make-instance ',(type-of self))
+;      )))
+
 (defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((text (effect-txt self))
@@ -165,7 +182,6 @@
       (progn
         `(let ((rep (make-instance ',(type-of self))))
            rep)))))
-
 
 (defmethod get-obj-dur ((self faust-effect-console)) 0)
 
@@ -785,6 +801,7 @@
                    (synth-name rep) ',name
                    (tracknum rep) ',track
                    (is-copy rep) ',copy-state)
+             ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
              (if (om-y-or-n-dialog "A Faust synth is trying to compile. Accept?" :default-button t)
                  (om-run-process ,name #'(lambda () (build-faust-synth-console rep))))
              rep))
