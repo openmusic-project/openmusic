@@ -78,12 +78,12 @@
 	 (when (rb-data-len-p *framebuf* 0) ;fill 1st part of available ringbuffer
 	   (let ((buf-available (floor (rb-data-len *framebuf* 0) *bytes-per-frame*)))
 	     (setf read-frames-cnt
-		   (sf::sf-readf-float *jack-sndfile-handle* (rb-data-buf *framebuf* 0) buf-available))
+		   (sf::sf-readf-float *jack-sndfile-handle* (rb-data-buf *framebuf* 0) buf-available)))
 
-	     (when (rb-data-len-p *framebuf* 1) ;perhaps fill 2nd part of available ringbuffer?
-	       (let ((buf-available (floor (rb-data-len *framebuf* 1) *bytes-per-frame*)))
-		 (incf read-frames-cnt
-		       (sf::sf-readf-float *jack-sndfile-handle* (rb-data-buf *framebuf* 1) buf-available))))))
+	   (when (rb-data-len-p *framebuf* 1) ;perhaps fill 2nd part of available ringbuffer?
+	     (let ((buf-available (floor (rb-data-len *framebuf* 1) *bytes-per-frame*)))
+	       (incf read-frames-cnt
+		     (sf::sf-readf-float *jack-sndfile-handle* (rb-data-buf *framebuf* 1) buf-available)))))
 
 	 (when (zerop read-frames-cnt)	;loop back to 0 in soundfile
 	   (sf::sf_seek *jack-sndfile-handle* 0.d0 0))
@@ -101,7 +101,7 @@
   (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '() 'disk-to-ringbuffer-proc)))
 
 
-;;(setf *stop-reading* t)
+;;(setf *stop-reading* nil)
 ;;(jackplay-toggle-pause)
 
 ;; ... disk work done
