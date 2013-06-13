@@ -8,6 +8,7 @@
 
 (defvar *general-mixer-window* nil)
 (defvar *general-mixer-values* (make-hash-table))
+(defvar *general-mixer-presets (list)) ;;;A LIST OF *general-mixer-values* (hash tables), with a name
 
 (defun init-genmixer-values ()
   (loop for i from 0 to (- las-channels 1) do
@@ -26,10 +27,11 @@
 ;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
   (let ((newwindow (om-make-window 'omgenmixer-window :window-title "OpenMusic General Mixer" 
-                                   :size (om-make-point (+ 5 (* *channel-w* 10)) 420) 
+                                   :size (om-make-point (+ 5 (* *channel-w* 10)) (+ 420 50)) 
                                    :scrollbars :h
                                    :position (om-make-point 100 50) :close t :resizable nil))
-        panel)
+        panel
+        presets)
     (setf panel (om-make-view 'omgenmixer-view
                               :owner newwindow
                               :position (om-make-point 0 0) 
@@ -40,6 +42,15 @@
                               :size (om-make-point (w newwindow) (h newwindow))))
     (loop for i from 0 to (- las-channels 1) do
           (genmixer-make-single-channel-view panel i))
+    (setf presets (om-make-view 'om-view
+                                :owner panel
+                                :position (om-make-point 5 405)
+                                :scrollbars nil
+                                :retain-scrollbars nil
+                                :bg-color *om-dark-gray-color*
+                                :field-size (om-make-point (- (* *channel-w* las-channels) 5) 45) 
+                                :size (om-make-point (- (* *channel-w* las-channels) 5) 45)))
+    (genmixer-make-preset-view presets)
     newwindow))
 
 ;/MAKE GENMIXER DIALOG
@@ -48,6 +59,70 @@
   (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
       (om-select-window *general-mixer-window*)
     (setf *general-mixer-window* (om-select-window (make-general-mixer-win)))))
+
+
+;/GENMIXER MAKE PRESET VIEW
+;This function builds the mixer preset management view
+(defun genmixer-make-preset-view (presets)
+  (let ((preset-view (om-make-view 'om-view 
+                                   :owner presets
+                                   :position (om-make-point 0 0) 
+                                   :scrollbars nil
+                                   :retain-scrollbars nil
+                                   :field-size  (om-make-point (- (* *channel-w* las-channels) 5) 45)
+                                   :size (om-make-point (- (* *channel-w* las-channels) 5) 45)
+                                   :bg-color *om-dark-gray-color*))
+        text
+        preset-list
+        text1
+        save-preset
+        text2
+        delete-preset)
+    (setf text (om-make-dialog-item 'om-static-text
+                                    (om-make-point 10 13)
+                                    (om-make-point 130 20) "LOAD SETTINGS :"
+                                    :font *om-default-font1*
+                                    :fg-color *om-white-color*))
+    
+    (setf preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
+                                           (om-make-point 125 12) 
+                                           (om-make-point 75 12)
+                                           ""
+                                           :di-action (om-dialog-item-act item)
+                                           :font *om-default-font1*
+                                           :range '("-------" "0" "1")
+                                           :value "-------"))
+
+    (setf text1 (om-make-dialog-item 'om-static-text
+                                    (om-make-point 250 13)
+                                    (om-make-point 130 20) "SAVE SETTINGS :"
+                                    :font *om-default-font1*
+                                    :fg-color *om-white-color*))
+
+    (setf save-preset (om-make-dialog-item 'om-button
+                                           (om-make-point 350 10)
+                                           (om-make-point 75 12)
+                                           "SAVE"
+                                           :di-action (om-dialog-item-act item)
+                                           :font *om-default-font1*))
+
+    (setf text2 (om-make-dialog-item 'om-static-text
+                                    (om-make-point 475 13)
+                                    (om-make-point 130 20) "DELETE SETTINGS :"
+                                    :font *om-default-font1*
+                                    :fg-color *om-white-color*))
+
+    (setf delete-preset (om-make-dialog-item 'om-pop-up-dialog-item 
+                                           (om-make-point 595 12) 
+                                           (om-make-point 75 12)
+                                           ""
+                                           :di-action (om-dialog-item-act item)
+                                           :font *om-default-font1*
+                                           :range '("-------" "0" "1")
+                                           :value "-------"))
+
+    (om-add-subviews preset-view text preset-list text1 save-preset text2 delete-preset)
+    preset-view))
 
 ;/GENMIXER MAKE SINGLE CHANNEL
 ;This function builds one channel view
