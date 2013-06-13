@@ -8,7 +8,7 @@
 
 (defvar *general-mixer-window* nil)
 (defvar *general-mixer-values* (make-hash-table))
-(defvar *general-mixer-presets (list)) ;;;A LIST OF *general-mixer-values* (hash tables), with a name
+(defvar *general-mixer-presets* nil) ;;;A LIST OF *general-mixer-values* (hash tables), with a name
 
 (defun init-genmixer-values ()
   (loop for i from 0 to (- las-channels 1) do
@@ -16,7 +16,7 @@
 
 
 ;;;WAITING FOR A PARAM SAVE
-(init-genmixer-values)
+;(init-genmixer-values)
 
 (defclass omgenmixer-window (om-window)
   ())

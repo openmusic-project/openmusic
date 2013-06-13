@@ -19,6 +19,10 @@
 (defvar *normalizer* :csound)
 (defvar *loaded-normalizers* '(:csound))
 
+;;; redefined in general-mixer.lisp
+(defvar *general-mixer-presets* nil)
+(defun default-genmixer-values () nil)
+
 (defmethod put-preferences ((iconID (eql :audio)))
   (let* ((modulepref (find-pref-module iconID))
          (defpref (get-def-vals iconID))
@@ -59,7 +63,9 @@
     (setf *multiplayer-out-port* (get-pref modulepref :multi-out))
     (setf *multiplayer-in-port* (get-pref modulepref :multi-in))
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
-         
+    
+    (setf *general-mixer-presets* (get-pref modulepref :audio-presets))
+    
     t))
 
 
@@ -79,13 +85,16 @@
               :normalizer ,*normalizer*
               :multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
               :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*))
+              :audio-presets ,*general-mixer-presets*
               ) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :audio)))
   (list :audio-format 'aiff :sys-console t :audio-sr 44100 :audio-res 16
         :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :csound
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
-        :multip-path (when *multiplayer-path* (probe-file *multiplayer-path*))))
+        :multip-path (when *multiplayer-path* (probe-file *multiplayer-path*))
+        :audio-presets (default-genmixer-values)))
+
 
 (defmethod get-def-normalize-value ((self t)) 0.0)
 (defmethod get-module-name ((self t)) "...")
