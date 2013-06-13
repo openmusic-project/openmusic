@@ -61,6 +61,11 @@
 (defparameter *stop-reading* t)
 ;;
 
+(defun jackplay-toggle-pause (&optional val)
+  (if val
+      (setf *pause-reading* val)
+      (setf *pause-reading* (not *pause-reading*))))
+
 (defun disk-to-ringbuffer-proc ()
   (with-foreign-object (*framebuf* '(:struct jack_ringbuffer_data_t))
     (loop
@@ -89,14 +94,14 @@
 	 (mp:process-wait-local (format nil "cl-jack diskin ~:[reading~;pausing~]" *pause-reading*)
 				#'(lambda () *jack-get-me-some*))))))
 
+(progn  
+  (jack-open-sound (first somesounds))  
+  (setf *pause-reading* nil)
+  (setf *stop-reading* nil)
+  (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '() 'disk-to-ringbuffer-proc)))
+
 
 ;;(setf *stop-reading* t)
-
-(defun jackplay-toggle-pause (&optional val)
-  (if val
-      (setf *pause-reading* val)
-      (setf *pause-reading* (not *pause-reading*))))
-
 ;;(jackplay-toggle-pause)
 
 ;; ... disk work done
@@ -128,26 +133,18 @@
   0)				 ;return 0 or get kicked out from jack
 
 
-;; start 'disk-to-ringbuffer-proc (= play sound)
-
-;(jack-open-sound (first somesounds))
+;;(jack-activate *OMJackClient*)
 ;; (jack-open-sound (second somesounds))
-
-#|
-(progn  
-  (setf *pause-reading* nil)
-  (setf *stop-reading* nil)
-  (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '() 'disk-to-ringbuffer-proc)))
-|#
 
 
 #|
 ;; plug new callback into jack-client. note: current callback can be
 ;; re-evaluated while everything is running to provide changed process-callback
 
+(jack-activate *OMJackClient*)
 (jack-deactivate *OMJackClient*)
 (jack-set-process-callback *OMJackClient* (callback cl-jack-process-callback) 0)
-(jack-activate *OMJackClient*)
+
 
 ;; various cleanups
 
