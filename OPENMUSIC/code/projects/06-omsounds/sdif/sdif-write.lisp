@@ -43,10 +43,12 @@
          (values (om-make-pointer (* datatype (num-fields matrix) (num-elts matrix)))))
     (loop for val in (data matrix) 
           for i = 0 then (+ i 1) do
-          (om-write-ptr values (* i datatype) :float (coerce val 'single-float)))
+          (om-write-ptr values (* i datatype) :float (coerce val 'single-float))
+          )
     (sdif::SdifFWriteMatrix ptr (sdif::SdifStringToSignature (signature matrix)) datatype
                             (num-elts matrix) 
-                            (num-fields matrix) values)))
+                            (num-fields matrix) values)
+    ))
 
 
 (defmethod calcul-sdif-size ((self raw-sdifmatrix))
@@ -62,12 +64,13 @@
 
 (defmethod save-sdif ((self sdifframe) fileptr)
   (let ((framesize (calcul-sdif-size self)))
-     (sdif::SdifFSetCurrFrameHeader fileptr (sdif::SdifStringToSignature (signature self)) framesize (length (Lmatrix self)) 
-                             (streamId self) (coerce (Ftime self) 'double-float))
-     (sdif::SdifFWriteFrameHeader fileptr)
-     (loop for item in (LMatrix self) do
-           (save-sdif item fileptr))
-     ))
+    (sdif::SdifFSetCurrFrameHeader fileptr (sdif::SdifStringToSignature (signature self)) framesize (length (Lmatrix self))
+                                   (streamId self) (coerce (Ftime self) 'double-float))
+    (sdif::SdifFWriteFrameHeader fileptr)
+    (loop for item in (LMatrix self) do
+          (save-sdif item fileptr)
+          )
+    ))
 
 
 
