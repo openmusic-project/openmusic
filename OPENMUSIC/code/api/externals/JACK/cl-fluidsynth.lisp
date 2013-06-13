@@ -69,5 +69,6 @@
     (when (open-stream-p *fluidynth-io*)
       (close *fluidynth-io*))))
 
-(om::om-add-init-func 'fluidsynth-start-and-connect)
-(om::om-add-exit-cleanup-func 'fluidsynth-quit)
+
+;; (om::fluidsynth-start-and-connect)
+;; (om::om-add-exit-cleanup-func 'fluidsynth-quit)
