@@ -4,8 +4,7 @@
 
 (in-package :om)
 
-;(defvar *faust-compiler-pathname* nil)
-
+;(defvar *faust-consoles-to-build* nil)
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -46,16 +45,14 @@
 
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
+  (build-faust-effect-console self))
+
+(defmethod build-faust-effect-console ((self faust-effect-console))
   (let (name)
     (if (effect-txt self)
         (progn
           ;;Set name, or add a default name
-          (if (effect-name self)
-              (setf name (effect-name self))
-            (progn
-              (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
-              (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
-    
+          (setf name (set-effect-name self))
           ;;Check if the name is already used. If yes, exit. If no, build effect.
           (if (car (las-faust-search-effect-name-in-register name))
               (print (format nil "An effect called ~A already exists. Please choose a new name." name))
@@ -63,7 +60,7 @@
             (if (effect-txt self)
                 (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
                       effect-string
-                      effect-result) 
+                      effect-result)
                   ;;Build string from textfile
                   (loop for line in parlist do
                         (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
@@ -75,22 +72,13 @@
                                        *om-outfiles-folder*))
                   (setf (effect-ptr self) (nth 1 effect-result))
                   ;;Save code as DSP and set some slots for SVG display
-                  (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-                  (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register))))
+                  (set-effect-dsp-and-svg self)
                   ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
                   (if (/= (car effect-result) 1)
                       (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
                     ;;Get tree from Json, init params, register effect, plug if a track is specified.
                     (let (param-list)
-                      (print "Effet Faust créé avec succès")
-                      (setf (ui-tree self) (las-faust-parse (las-faust-get-json (effect-ptr self))))
-                      (setf param-list (las-faust-translate-tree (ui-tree self)))
-                      (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
-                      (if (and (tracknum self) (> (tracknum self) 0))
-                          (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
-                      (if *general-mixer-window*
-                          (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*))))
-                      (setf (nbparams self) (length param-list))
+                      (setf param-list (finalize-effect-building self name))
                       (if (> (nbparams self) 0)
                           (setf (params-ctrl self)
                                 (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
@@ -104,6 +92,34 @@
                                                                                                        :effect-ptr (effect-ptr self)
                                                                                                        :tracknum (tracknum self)
                                                                                                        ))) nil))))))))))
+
+
+(defmethod set-effect-name ((self faust-effect-console))
+  (let (name)
+    (if (effect-name self)
+        (setf name (effect-name self))
+      (progn
+        (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
+        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
+    name))
+
+(defmethod set-effect-dsp-and-svg ((self faust-effect-console))
+  (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+  (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register)))))
+
+(defmethod finalize-effect-building ((self faust-effect-console) name)
+  (progn
+    (print "Effet Faust créé avec succès")
+    (setf (ui-tree self) (las-faust-parse (las-faust-get-json (effect-ptr self))))
+    (setf param-list (las-faust-translate-tree (ui-tree self)))
+    (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name)
+    (if (and (tracknum self) (> (tracknum self) 0))
+        (las-faust-add-effect-to-track (effect-ptr self) name (- (tracknum self) 1)))
+    (if *general-mixer-window*
+        (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*))))
+    (setf (nbparams self) (length param-list))
+    param-list))
+
 
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
@@ -131,10 +147,41 @@
   (let ((rep (make-instance (type-of self))))
     rep))
 
+
+;(defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
+;  "Cons a Lisp expression that return a copy of self when it is valuated."
+;  (let ((text (effect-txt self))
+;        (name (effect-name self))
+;;        (track (tracknum self))
+;        rep)
+;    (if (and (effect-ptr self) (not (las-faust-null-ptr-p (effect-ptr self))))
+;        (progn
+;          `(setf rep (make-instance ',(type-of self) 
+;                                    :effect-txt ,(omng-save text)
+;                                    :effect-name ',name
+;                                    :tracknum ',track)
+;          '(setf *faust-consoles-to-build* (append *faust-consoles-to-build* (list rep))))
+;      `(make-instance ',(type-of self))
+;      )))
+
 (defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
-  `(let ((rep (make-instance ',(type-of self))))
-     rep))
+  (let ((text (effect-txt self))
+        (name (effect-name self))
+        (track (tracknum self)))
+    (if (and (effect-ptr self) (not (las-faust-null-ptr-p (effect-ptr self))))
+        (progn
+          `(let ((rep (make-instance ',(type-of self))))
+             (setf (effect-txt rep) ,(omng-save text)
+                   (effect-name rep) ',name
+                   (tracknum rep) ',track)
+             ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
+             (if (om-y-or-n-dialog "A Faust effect is trying to compile. Accept?" :default-button t)
+                 (om-run-process ,name #'(lambda () (build-faust-effect-console rep))))
+             rep))
+      (progn
+        `(let ((rep (make-instance ',(type-of self))))
+           rep)))))
 
 (defmethod get-obj-dur ((self faust-effect-console)) 0)
 
@@ -607,16 +654,15 @@
 
 (defmethod initialize-instance :after ((self faust-synth-console) &rest l)
   (declare (ignore l))
+  (build-faust-synth-console self))
+
+(defmethod build-faust-synth-console ((self faust-synth-console))
   (if (not (is-copy self))
       (let (name)
         (if (synth-txt self)
             (progn
               ;;Set name, or add a default name
-              (if (synth-name self)
-                  (setf name (synth-name self))
-                (progn
-                  (setf name (format nil "Faust-synth-~A" (+ 1 (las-get-number-faust-synths-register))))
-                  (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))))
+              (setf name (set-synth-name self))
               ;;Check if the name is already used. If yes, exit. If no, build synth.
               (if (car (las-faust-search-synth-name-in-register name))
                   (print (format nil "An synth called ~A already exists. Please choose a new name." name))
@@ -644,30 +690,13 @@
                                                           :sndlasptr-current-save nullptr))
                       (om-sound-set-sndlasptr-to-play (nullsnd self) nullptr)
                       ;;Save code as DSP and set some slots for SVG display
-                      (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
-                      (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register))))
+                      (set-synth-dsp-and-svg self)
                       ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
                       (if (/= (car synth-result) 1)
                           (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 synth-result)))
                         ;;Get tree from Json, init params, register synth, plug if a track is specified.
                         (let (param-list)
-                          (print "Synthetiseur Faust créé avec succès")
-                          (setf (ui-tree self) (las-faust-parse (las-faust-get-json (synth-ptr self))))
-                          (setf param-list (las-faust-translate-tree (ui-tree self)))
-                          (if (and (tracknum self) (> (tracknum self) 0))
-                              (if (not (gethash 0 (gethash (- (tracknum self) 1) *faust-synths-by-track*)))
-                                  (progn
-                                    (las-faust-add-synth-to-track (synth-ptr self) name (- (tracknum self) 1))
-                                    (las-faust-add-synth-to-register (synth-ptr self) (tracknum self) name))
-                                (progn
-                                  (print (format nil "A synth is already plugged on channel ~A. Your synth has been created but not plugged" (tracknum self)))
-                                  (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
-                            (progn
-                              (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
-                          (las-faust-add-synth-console-to-register self (synth-ptr self) (nullsnd self))
-                          (if *general-mixer-window*
-                              (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*))))
-                          (setf (nbparams self) (length param-list))
+                          (setf param-list (finalize-synth-building self name))
                           (if (> (nbparams self) 0)
                               (setf (params-ctrl self)
                                     (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-synth-parameter-controller
@@ -681,6 +710,41 @@
                                                                                                            :synth-ptr (synth-ptr self)
                                                                                                            :tracknum (tracknum self)
                                                                                                            ))) nil)))))))))))
+
+
+(defmethod set-synth-name ((self faust-synth-console))
+  (let (name)
+    (if (synth-name self)
+        (setf name (synth-name self))
+      (progn
+        (setf name (format nil "Faust-synth-~A" (+ 1 (las-get-number-faust-synths-register))))
+        (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))))
+    name))
+
+(defmethod set-synth-dsp-and-svg ((self faust-synth-console))
+  (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
+  (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register)))))
+
+(defmethod finalize-synth-building ((self faust-synth-console) name)
+  (let (param-list)
+    (print "Synthetiseur Faust créé avec succès")
+    (setf (ui-tree self) (las-faust-parse (las-faust-get-json (synth-ptr self))))
+    (setf param-list (las-faust-translate-tree (ui-tree self)))
+    (if (and (tracknum self) (> (tracknum self) 0))
+        (if (not (gethash 0 (gethash (- (tracknum self) 1) *faust-synths-by-track*)))
+            (progn
+              (las-faust-add-synth-to-track (synth-ptr self) name (- (tracknum self) 1))
+              (las-faust-add-synth-to-register (synth-ptr self) (tracknum self) name))
+          (progn
+            (print (format nil "A synth is already plugged on channel ~A. Your synth has been created but not plugged" (tracknum self)))
+            (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
+      (progn
+        (las-faust-add-synth-to-register (synth-ptr self) 0 name)))
+    (las-faust-add-synth-console-to-register self (synth-ptr self) (nullsnd self))
+    (if *general-mixer-window*
+        (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*))))
+    (setf (nbparams self) (length param-list))
+    param-list))
 
 
 (defmethod allowed-in-maq-p ((self faust-synth-console))  t)
@@ -701,64 +765,9 @@
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
 
 
-#|
+
 (defmethod omNG-copy ((self faust-synth-console))
-  "Cons a Lisp expression that return a copy of self when it is valuated."
-  `(let* ((nullptr (las-faust-make-null-sound ',(duration self)))
-          (rep (make-instance 'faust-synth-console
-                              :synth-txt ',(synth-txt self)
-                              :synth-name ',(concatenate 'string (synth-name self) "-copy")
-                              :tracknum 0
-                              :duration ',(duration self)
-                              :nullsnd (make-instance 'om-sound
-                                                      :number-of-channels 2
-                                                      :sndlasptr nullptr
-                                                      :sndlasptr-current nullptr
-                                                      :sndlasptr-current-save nullptr)
-                              :synth-dsp (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register)))
-                              :synth-svg (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register)))
-                              :nbparams ',(nbparams self)
-                              :ui-tree ',(ui-tree self)))
-          (parlist (list-of-lines (buffer-text ',(synth-txt self))))
-          synth-string
-          synth-result)
-     (om-sound-set-sndlasptr-to-play (nullsnd self) nullptr)
-     (loop for line in parlist do
-           (setf synth-string (concatenate 'string synth-string (format nil "~%") line)))
-     (save-data (list (list synth-string)) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
-     (setf synth-result (las-faust-make-effect 
-                         (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register)))) 
-                         *om-outfiles-folder*))
-     (setf (synth-ptr rep) (nth 1 synth-result))
-      
-     (if (/= (car synth-result) 1)
-         (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 synth-result)))
-       ;;Get tree from Json, init params, register synth, plug if a track is specified.
-       (let (param-list)
-         (print "Synthetiseur Faust créé avec succès")
-         (setf param-list (las-faust-translate-tree (ui-tree rep)))
-         (las-faust-add-synth-to-register (synth-ptr rep) 0 name)
-         (las-faust-add-synth-console-to-register self (synth-ptr rep) (nullsnd rep))
-         (if *general-mixer-window*
-             (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*))))
-         (setf (nbparams rep) (length param-list))
-         (if (> (nbparams rep) 0)
-             (setf (params-ctrl rep)
-                   (loop for param from 0 to (- (nbparams rep) 1) collect (make-instance 'faust-synth-parameter-controller
-                                                                                         :param-type (param-type (nth param param-list))
-                                                                                         :label (label (nth param param-list))
-                                                                                         :index param
-                                                                                         :defval (string-to-number (init-val (nth param param-list)))
-                                                                                         :minval (string-to-number (min-val (nth param param-list)))
-                                                                                         :maxval (string-to-number (max-val (nth param param-list)))
-                                                                                         :stepval (string-to-number (step-val (nth param param-list)))
-                                                                                         :synth-ptr (synth-ptr rep)
-                                                                                         :tracknum (tracknum rep)
-                                                                                         ))) nil)))
-     rep))
-|#
-(defmethod omNG-copy ((self faust-synth-console))
-nil)
+  (call-next-method))
 
 (defmethod copy-container  ((self faust-synth-console) &optional (pere nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
@@ -778,13 +787,27 @@ nil)
     (las-faust-add-synth-console-to-register rep (synth-ptr rep) (nullsnd rep))
     rep))
 
-;;;ATTENTION : POUR LA SAUVEGARDE, ON SAUVEGARDE JUSTE LA BOITE VIDE EGALEMENT.
-;;;LE CODE ASSOCIE AINSI QUE LE NOM ETANT SAUVEGARDES, IL SUFFIT DE REEVALUER LA BOITE
-;;;LA POSITION DES SLIDERS EST DONC REINITIALISEE, SEULS LES AUTOMATIONS PEUVENT ETRE CONSERVEES
+
 (defmethod omNG-save ((self faust-synth-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
-  `(let ((rep (make-instance ',(type-of self))))
-     rep))
+  (let ((text (synth-txt self))
+        (name (synth-name self))
+        (track (tracknum self))
+        (copy-state (is-copy self)))
+    (if (and (synth-ptr self) (not (las-faust-null-ptr-p (synth-ptr self))))
+        (progn
+          `(let ((rep (make-instance ',(type-of self))))
+             (setf (synth-txt rep) ,(omng-save text)
+                   (synth-name rep) ',name
+                   (tracknum rep) ',track
+                   (is-copy rep) ',copy-state)
+             ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
+             (if (om-y-or-n-dialog "A Faust synth is trying to compile. Accept?" :default-button t)
+                 (om-run-process ,name #'(lambda () (build-faust-synth-console rep))))
+             rep))
+      (progn
+        `(let ((rep (make-instance ',(type-of self))))
+           rep)))))
 
 (defmethod get-obj-dur ((self faust-synth-console)) (* 1000 (duration self)))
 
@@ -895,7 +918,6 @@ nil)
           (setf group-type (las-faust-get-group-type (tree self)))
           (setf groups (las-faust-get-groups-only (tree self)))
           (setf params (las-faust-get-params-only (tree self)))
-
 
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
