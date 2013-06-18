@@ -129,7 +129,8 @@
 		    0.0)))
 	  ))
     (setf *jack-get-me-some* t)
-    (mp:process-poke *producer*))
+    (when (mp:process-alive-p *producer*)
+      (mp:process-poke *producer*)))
   0)				 ;return 0 or get kicked out from jack
 
 
