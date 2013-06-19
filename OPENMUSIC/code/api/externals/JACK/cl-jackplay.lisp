@@ -57,8 +57,8 @@
 (defparameter *can-process* nil)
 (defparameter *jack-get-me-some* t)
 (defparameter *producer* nil)
-(defparameter *pause-reading* t)
-(defparameter *stop-reading* t)
+(defparameter *pause-reading* nil)
+(defparameter *stop-reading* nil)
 ;;
 
 (defun jackplay-toggle-pause (&optional val)
@@ -94,14 +94,22 @@
 	 (mp:process-wait-local (format nil "cl-jack diskin ~:[reading~;pausing~]" *pause-reading*)
 				#'(lambda () *jack-get-me-some*))))))
 
+;; (progn  
+;;   (jack-open-sound (first somesounds))  
+;;   (setf *pause-reading* nil)
+;;   (setf *stop-reading* nil)
+;;   (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '() 'disk-to-ringbuffer-proc)))
+
 (progn  
+  (when (and *producer*
+	     (mp:process-alive-p *producer*)
+	     (mp:process-kill *producer*)))
   (jack-open-sound (first somesounds))  
-  (setf *pause-reading* nil)
-  (setf *stop-reading* nil)
   (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '() 'disk-to-ringbuffer-proc)))
 
 
 ;;(setf *stop-reading* nil)
+;; (setf *stop-reading* t)
 ;;(jackplay-toggle-pause)
 
 ;; ... disk work done
@@ -110,7 +118,7 @@
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
   (declare (ignore arg))
-  (cl-jack-handle-midi-seq nframes)	;plug to handle midi-seq
+  (funcall #'cl-jack-handle-midi-seq nframes)	;plug to handle midi-seq
   (let ((read-count 0)
 	(outs-arr (make-array *outchannels*)))
     (dotimes (n *outchannels*)
@@ -118,16 +126,12 @@
     (with-foreign-object (outbuf 'jack_default_audio_sample_t (* nframes *outchannels*))
       (setf read-count
 	    (jack-ringbuffer-read *jack-ringbuffer* outbuf (* nframes *sample-size* *outchannels*)))
-      (if (and (plusp read-count) (mp:process-alive-p *producer*) (not *pause-reading*))
-	  (dotimes (outframe nframes)
-	    (dotimes (n *outchannels*)	;deinterleave frames
-	      (setf (mem-aref (aref outs-arr n) 'jack_default_audio_sample_t outframe)
-		    (mem-aref outbuf 'jack_default_audio_sample_t (+ (* outframe *outchannels*) n)))))
-	  (dotimes (outframe nframes)
-	    (dotimes (n *outchannels*)	
-	      (setf (mem-aref (aref outs-arr n) 'jack_default_audio_sample_t outframe)
-		    0.0)))
-	  ))
+      (dotimes (outframe nframes)
+	(dotimes (n *outchannels*)	;deinterleave frames
+	  (setf (mem-aref (aref outs-arr n) 'jack_default_audio_sample_t outframe)
+		(if (and (plusp read-count) (mp:process-alive-p *producer*) (not *pause-reading*))
+		    (mem-aref outbuf 'jack_default_audio_sample_t (+ (* outframe *outchannels*) n))
+		    0.0)))))		;pipe out silence
     (setf *jack-get-me-some* t)
     (when (mp:process-alive-p *producer*)
       (mp:process-poke *producer*)))
