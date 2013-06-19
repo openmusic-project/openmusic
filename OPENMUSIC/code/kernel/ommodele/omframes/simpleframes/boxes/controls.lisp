@@ -186,8 +186,9 @@
 
 (defmethod exit-from-dialog ((self new-fun-enter-view) str)
   (handler-bind ((error #'(lambda (c) ;(declare (ignore c)) 
-                            (setf (text-view (editor (om-view-container self))) nil)
-                            (om-remove-subviews (panel (editor (om-view-container self))) self)
+                            (when (om-view-container self)
+			      (setf (text-view (editor (om-view-container self))) nil)
+			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
                             (print c)
                             (om-abort))))
@@ -254,7 +255,7 @@
             (om-beep)
           (om-beep-msg  (string+ "function " str " does not exist!"))))
        ((OMGenfun-p (fdefinition funname))
-        (setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
+	(setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
                                             (mk-unique-name scroller (string funname))))
         (when args (add-args-to-box newbox args))
         )
@@ -345,8 +346,9 @@
 ;;;new : panel au lieu de editor
 (defmethod exit-from-dialog ((self new-slot-initform-view) newtext)
    (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
-                            (setf (text-view (editor (om-view-container self))) nil)
-                            (om-remove-subviews (panel (editor (om-view-container self))) self)
+                            (when (om-view-container self)
+			      (setf (text-view (editor (om-view-container self))) nil)
+			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
                             (om-abort))))
      (let ((*package* (find-package :om))
