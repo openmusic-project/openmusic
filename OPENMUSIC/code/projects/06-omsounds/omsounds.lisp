@@ -35,7 +35,7 @@
     "basic;soundeditor"
     "basic;audiomix"
     "basic;general-mixer"   
-    "basic;audioplayer"
+    #-linux "basic;audioplayer"
     "basic;snd-streams"
     "basic;sound-preferences"
 
