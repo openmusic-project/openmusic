@@ -1,6 +1,6 @@
-;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/doc.txt,v 1.8.1.1 2007/10/23 22:17:07 davef Exp $" -*-
+;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/doc.txt,v 1.9.2.1 2011/08/24 13:27:19 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 
 LispWorks OpenGL interface
@@ -8,34 +8,41 @@ LispWorks OpenGL interface
 
 
 The lispworks library directory examples/opengl contains source code
-for a Lisp interface to the OpenGL libraries.
-
-You can use CAPI output-panes as OpenGL windows.  
+for a Lisp interface to the OpenGL libraries. This interface allows
+creating of CAPI panes on which you can draw using OPENGL.
+	
 
 
 Installation
 ------------
 
 To install, copy the entire directory to a working directory of your
-own, load the host.lisp file, then evaluate this form:
+own, and then do
 
-(let ((hcl:*packages-for-warn-on-redefinition*
-       (remove "CAPI" hcl:*packages-for-warn-on-redefinition* :test 'string=)))
-  (load "OPENGL:compile"))
+(load "<working directory>/load")
 
-This will compile all the files needed for the CAPI interface.
-
-Note: the CAPI package is protected from definitions in LispWorks as
-shipped. The protection is controlled by the variables
-*PACKAGES-FOR-WARN-ON-REDEFINITION* and *HANDLE-WARN-ON-REDEFINITION*.
+This will compile and load all the files needed for the CAPI interface.
 
 
 CAPI Interfaces
 ---------------
 
-The class CAPI:OPENGL-PANE is a CAPI:OUTPUT-PANE which can be used for
-OpenGL rendering.  There is an example of a simple CAPI interface
-using a CAPI:OPENGL-PANE at the bottom of the capi.lisp file.
+The class OPENGL:OPENGL-PANE is a subclass of CAPI:OUTPUT-PANE which
+can be used for OpenGL rendering.  To draw using OpenGL functions
+on a OPENGL:OPENGL-PANE, the calls to the OpenGL functions must be
+wrapped by the macro OPENGL:RENDERING-ON this way:
+
+   (OPENGL:RENDERING-ON (opengl-pane)
+     <opengl-drawing-operations>)
+
+OPENGL:RENDERING-ON sets the GL context, and anything else that must
+be set to integrate with CAPI. 
+
+There is an example of a simple CAPI interface using a
+OPENGL:OPENGL-PANE at the bottom of the capi.lisp file, which just
+puts an OPENGL-PANE in an interface. There ia fuller example in
+the sub-directory examples. see the comment at the top of
+examples/icosahedron. 
 
 
 OpenGL Pane Configuration
@@ -79,14 +86,12 @@ becomes the Lisp function OPENGL:GL-BITMAP, glBlendEquationEXT becomes
 OPENGL:GL-BLEND-EQUATION-EXT, gluLookAt becomes OPENGL:GL-LOOK-AT.
 
 In addition to the OpenGL functions, there are:
+RENDERING-ON                         - macro that must be used around
+                                       any rendering with OpenGl
+                                       functions to an OPENGL:OPENGL-PANE 
 
 PROCESS-HAS-OPENGL-LOCK-P            - test if a process is currently rendering.
 PROCESS-WITH-OPENGL-LOCK             - returns the process currently rendering.
-START-RENDERING                      - calls glXMakeCurrent to make the GLC context
-                                       for a window the current context, and attaches
-                                       it to the window.  It also deals with Lisp
-                                       multiprocessing issues.
-RENDERING-ON                         - macro for using START-RENDERING.
 SWAP-BUFFERS                         - swap foreground and background buffers on 
                                        a double-buffered OpenGL window.
 DESCRIBE-CONFIGURATION               - prints a full description of the OpenGL 
@@ -105,3 +110,11 @@ OPENGL:RENDERING-ON can be nested on a single OpenGL pane to any depth within
 a single lightweight Lisp process, but any nested entry to OPENGL:RENDERING-ON
 on another OpenGL pane will cause an error. An entry from another lightweight
 process will block.
+
+On platforms that need locking around drawing operations,
+OPENGL:RENDERING-ON also locks. That prevents other processes from
+using CAPI while a process is inside the body of OPENGL:RENDERING-ON.
+That means that the body of OPENGL:RENDERING-ON needs to avoid lengthy
+computations and any I/O (which can hang), and must not wait for
+something which depends on another process which may be trying to use
+CAPI.

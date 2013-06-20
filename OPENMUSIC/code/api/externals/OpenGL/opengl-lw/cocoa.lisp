@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.5.1.1 2007/10/23 22:17:07 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.6.2.1 2011/08/24 13:27:19 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 ;; Support for OpenGL with CAPI/Cocoa.
 ;; Symbols in the CAPI-COCOA-LIB package are not part of a supported API.
@@ -155,7 +155,7 @@
                                      &optional screen)
   (fli:with-dynamic-foreign-objects ()
     (let ((value (fli:allocate-dynamic-foreign-object
-                  :type (ns-open-gl-pixel-format-attribute-type))))
+                  :type :int)))
       (objc:invoke pixel-format "getValues:forAttribute:forVirtualScreen:"
                    value ; this is an out parameter
                    attribute

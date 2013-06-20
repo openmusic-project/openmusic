@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/pkg.lisp,v 1.13.1.1 2007/10/23 22:17:07 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/pkg.lisp,v 1.14.2.1 2011/08/24 13:27:20 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 
 (in-package "USER")
@@ -1798,8 +1798,11 @@
    GL-VECTOR-AREF
    WITH-GL-VECTORS
    )
+  (:export
+   "OPENGL-PANE"
+   )
   )
 
 #+(and pthreads ffi-x11)
-(pushnew (find-package "OPENGL") fli::*packages-foreign-callers-keep-lock*)
+(fli::mark-package-foreign-callers-keep-lock "OPENGL" :non-concurrent)
 

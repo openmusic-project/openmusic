@@ -1,73 +1,85 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/9/LISPopengl-examples/RCS/icosahedron.lisp,v 1.17.3.1 2007/10/23 22:17:08 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/9/LISPopengl-examples/RCS/icosahedron.lisp,v 1.20.2.1 2011/08/24 13:27:20 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 
 (in-package "USER")
 
-;;; This file contains a demonstration of the LispWorks FLI for OpenGL.
-;;; To see the demonstration, compile and load the system OPENGL-EXAMPLES
+;;; This file contains a demonstration of the LispWorks FLI for
+;;; OpenGL.  To see the demonstration, compile and load the system
+;;; OPENGL-EXAMPLES by
+;;;
 ;;;    (load "<opengl-directory>/host")
 ;;;    (load "OPENGL:EXAMPLES;load")
-;;; then evaluate (setf v (capi:display (make-instance 'icosahedron-viewer)))
 ;;;
-;;; An icosahedron is draw in random colors illumnated by a single light.
-;;; The object's faces can be subdivided to approximate a sphere.
+;;; then evaluate
 ;;;
-;;;   The < and > keys decrease and increase the number of triangles
-;;;       used to draw the sphere.
+;;;    (setf v (capi:display (make-instance 'icosahedron-viewer)))
 ;;;
-;;;   The o key toggles smooth shading.
+;;; An icosahedron is drawn with faces colored randomly and
+;;; illuminated by a single light source.  The faces can be subdivided
+;;; to approximate a sphere. The following keys and mouse gestures
+;;; control it:
 ;;;
-;;;   The p and P keys increase and decrease material shininess.
+;;;   < and > decrease and increase the number of triangles.
 ;;;
-;;;   The s and S keys increase and decrease material specular reflection component.
+;;;   Left mouse button rotates the sphere.
 ;;;
-;;;   The e and E keys increase and decrease material emission component.
+;;;   Middle mouse button rotates the light position.
 ;;;
-;;;   The a and A keys increase and decrease light source ambient component.
+;;;   Home resets the rotation state.
 ;;;
-;;;   The t key toggles a texture map applied to the icosahedron
+;;;   o toggles smooth shading.
 ;;;
-;;;   You can rotate the sphere using the left mouse button.
+;;;   p and P increase and decrease material shininess.
 ;;;
-;;;   You can rotate the light position using the middle mouse button.
+;;;   s and S increase and decrease material specular reflection component.
 ;;;
-;;;   The Home key resets the rotation state.
+;;;   e and E increase and decrease material emission component.
 ;;;
-;;;   The Insert key resets the light and material parameters.
+;;;   a and A increase and decrease light source ambient component.
 ;;;
-;;;   The Escape key quits the interface.
+;;;   t toggles a texture map applied to the icosahedron
+;;;
+;;;   Insert resets the light and material parameters.
+;;;
+;;;   Escape quits the interface.
 ;;;
 ;;;
-;;;       The material ambient and diffuse components are not controllable.
-;;;       Note that light source ambient, material emission and material specular reflection
-;;;       can all have negative values, resulting in some strange effects, such as 
-;;;       negative light specular reflections.
+;;; The material ambient and diffuse components are not controllable.
+;;; Note that light source ambient, material emission and material
+;;; specular reflection can all have negative values, resulting in
+;;; some strange effects, such as negative light specular reflections.
 ;;;
 
 
 ;;; ------------------------------------------------------------
 ;;; Programmming notes:
 ;;;
-;;; - Vectors and arrays are converted to gl-vectors which is Harlequin's
-;;;   platform independent mechanism for passing through arrays. gl-vectors
-;;;   behave in much the same way as normal vectors except that:
-;;;   1. They are allocated statically - the memory location of vector contents
-;;;      will not be moved by the Lisp garbage collector. (Note that the garbage
-;;;      collector will still reclaim the data if nolonger referenced by lisp)
-;;;   2. gl-vectors are not guaranteed to survive image-saving.
-;;;   The implementation of gl-vectors can be found in the file "OPENGL:vectors.lisp"
+;;; - Vectors and arrays are converted to gl-vectors which is a
+;;;   platform independent mechanism for passing through arrays.
+;;;   gl-vectors behave in much the same way as normal vectors
+;;;   except that:
+;;;   1. They are allocated statically - the memory location of vector
+;;;      contents will not be moved by the Lisp garbage collector. 
+;;;      (Note that the garbage collector will still reclaim the data if
+;;;      no longer referenced by Lisp.)
+;;;   2. gl-vectors are not guaranteed to survive image-saving. The
+;;;      implementation of gl-vectors can be found in "OPENGL:vectors.lisp"
 ;;;
-;;; - The drawing of the icosahedron, when it is subdivided a lot, is quite
-;;;   slow.  That code is not optimized.  However, a display list is used, which
-;;;   means that its redisplay is very fast.
+;;; - The drawing of a heavily subdivided icosahedron is quite slow.
+;;;   That code is not optimized.  However, a display list is used,
+;;;   which means that its redisplay is very fast.
 ;;;
-;;; - The OpenGL window is by default double-buffered, so you don't see the 
-;;;   drawing in progress. If you want to see the drawing process, use the call
-;;;   (setf v (capi:display (make-instance 'icosahedron-viewer :double-buffered-p nil))) 
+;;; - The OpenGL window is by default double-buffered, so you do not
+;;;   see the drawing in progress. If you want to see the drawing
+;;;   process, use the call
 ;;;
-;;; - This demo works on 8-bit screens only when double-buffering is turned off.
+;;;   (setf v (capi:display (make-instance 'icosahedron-viewer
+;;;                                        :double-buffered-p nil)))
+;;;
+;;; - This demo works on 8-bit screens only when double-buffering is
+;;;   turned off.
 
 
 ;;; ------------------------------------------------------------
@@ -78,6 +90,7 @@
 (deftype gl-single () 'single-float)
 (deftype gl-single-vector (n) `(opengl:gl-vector :float ,n))
 
+
 (defun gl-float-vector (type contents)
   (opengl:make-gl-vector type (length contents) :contents contents))
 
@@ -86,6 +99,7 @@
 
 (defun gl-single-vector (&rest contents)
   (gl-float-vector :float contents))
+
 
 (defun make-gl-double-vector (size)
   (opengl:make-gl-vector :double size))
@@ -96,7 +110,7 @@
 
 ;;; ------------------------------
 ;;; Vertex can be pass through to 'C'
-;;; vertexes list of gl-vertexes (not passed to 'C')
+;;; vertexes list of gl-vertexes (not passed to 'C'
 ;;; ------------------------------
 
 (declaim (inline gl-vertex gl-vertexes))
@@ -115,6 +129,8 @@
   (x  0.0d0 :type double-float)
   (y  0.0d0 :type double-float)
   (z  0.0d0 :type double-float))
+
+
 
 ;;; ------------------------------------------------------------
 ;;; Class object
@@ -155,7 +171,8 @@
 
 (defmethod (setf use-display-list) :after (value (object object))
   (unless value
-    (delete-display-list object)))
+    (opengl:rendering-on ((canvas (viewer object)))
+        (delete-display-list object))))
 
 (defmethod delete-display-list ((object object))
   (when (display-list object)
@@ -691,7 +708,7 @@
    (ambient-buttons :initform (make-ico-button-panel (list #\a #\A) "Ambient"))
    (shine-buttons :initform (make-ico-button-panel (list #\p #\P) "Shine.")))
   (:panes 
-   (canvas capi:opengl-pane
+   (canvas opengl:opengl-pane
 	   :configuration (list :rgba t :depth nil :double-buffered double-buffered-p)
            :min-width 400
            :min-height 400
@@ -876,9 +893,9 @@
     (opengl:gl-disable opengl:*gl-texture-2d*)))
 
 (defun turn-on-texture (viewer)
-  (setf (texturep (object viewer)) t)
-  (setf (texturep viewer) t)
   (opengl:rendering-on ((canvas viewer))
+    (setf (texturep (object viewer)) t)
+    (setf (texturep viewer) t)
     (opengl:gl-pixel-storei opengl:*gl-unpack-alignment* 1)
     (opengl:gl-tex-image2-d opengl:*gl-texture-2d* 0 3 64 64 0 opengl:*gl-rgba* opengl:*gl-unsigned-byte* 
 			    (texture-image viewer))

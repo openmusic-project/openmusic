@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/win32.lisp,v 1.8.3.1 2007/10/23 22:17:08 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/win32.lisp,v 1.9.2.1 2011/08/24 13:27:20 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 (in-package "WIN32")
 
@@ -201,7 +201,7 @@
 ;;;                                START COUNT ERRORP LIST-BASE)
 ;;; Create a display-list for a given font.
 ;;; Arguments :
-;;;  OPENGL-PANE : CAPI:OPENGL-PANE
+;;;  OPENGL-PANE : OPENGL-PANE
 ;;;  FONT : capi font specification. If no font is specified then the
 ;;;         font for the OPENGL-PANE will be used.
 ;;;  OUTLINEP : BOOLEAN - When NULL - A display list containing bitmap representation
