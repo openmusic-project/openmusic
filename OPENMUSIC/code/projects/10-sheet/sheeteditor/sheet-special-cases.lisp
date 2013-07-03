@@ -120,9 +120,9 @@
          (drawh (- boxh deltah))
          (begtime (start-t sheet-object))
          (begpos (get-x-pos sheetpanel begtime 1)))
-    (om-with-fg-color view *om-gray-color* ;;; (maq-color (params self))
-      (om-with-line-size 1 
-        (om-draw-rect 0 0 (- boxw 2) (- boxh 1))))
+    ;(om-with-fg-color view *om-gray-color* ;;; (maq-color (params self))
+    ;  (om-with-line-size 1 
+    ;    (om-draw-rect 0 0 (- boxw 2) (- boxh 1))))
     (when (boxes self)
       (loop for item in (remove-if-not 'boxtempobj-p (boxes self)) do
             (let ((x1 (- (get-x-pos sheetpanel (+ (slot-value item 'offset) begtime) 1) begpos))
@@ -130,8 +130,8 @@
                   (ry (+ y0 (- drawh (round (* drawh (- (posy item) miny)) rangey))))
                   (rh (round (* drawh (sizey item)) rangey)))
                 (om-with-fg-color view (colorframe item)
-                  (om-fill-rect x1 ry (- x2 x1) rh)
-                  ;(draw-editor-mode (car (value item)) view)
+                  ;(om-fill-rect x1 ry (- x2 x1) rh)
+                  (draw-obj-in-rect (car (value item)) x1 x2 ry (+ ry rh) (view-get-ed-params view) view)
                   )))
         (setf deltah (- deltah 8))
         (when (eval-func self)
