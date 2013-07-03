@@ -675,7 +675,7 @@
           om-3Dobj-points
           om-3Dobj-color) :om-api)
 
-(defclass om-opengl-view (capi:opengl-pane om-view)
+(defclass om-opengl-view (opengl:opengl-pane om-view)
   ((g-object :initarg :g-object :accessor g-object :initform nil)
    (icotransform :initform nil :initarg :icotransform :accessor icotransform)
    (light-transform :initform nil :initarg :light-transform :accessor light-transform)
