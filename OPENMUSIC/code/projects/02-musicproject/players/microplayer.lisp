@@ -1,9 +1,17 @@
 (in-package :om)
 
 
-(defmethod get-score-player ((self scorepanel)) 
-  (if (equal (get-edit-param (editor self) 'player) :microplayer) 'microplayer 'midishare))
 
+;;; METHODS TO REDEFINE FOR EVERY PLAYER                   
+(defmethod player-name ((player (eql :microplayer))) "MicroPlayer")   ;;; A short name
+(defmethod player-desc ((player (eql :microplayer))) "external Max player")   ;;; a description
+(defmethod player-special-action ((player (eql :microplayer))) (launch-microplayer-app))  ;;; an action to perform when the player is selected for an object (e.g. activate...)
+(defmethod player-params ((player (eql :microplayer))) nil)   ;;; the default values for the player params
+(defmethod player-type ((player (eql :microplayer))) :UDP)   ;;; communication protocol (:midi / :udp)
+
+
+;(defmethod get-score-player ((self scorepanel)) 
+;  (if (equal (get-edit-param (editor self) 'player) :microplayer) 'microplayer 'midishare))
 
 #+(and cocoa om-osc-api) 
 ;(add-assoc-player *general-player* 'microplayer)
@@ -179,6 +187,138 @@
 (defmethod Reset-Player ((self (eql 'microplayer)) &optional view)
    (declare (ignore view))
    (micro-reset))
+
+
+
+
+;;;; ADD EXTERNAL PREF MODULE
+
+(add-external-pref-module 'microplayer)
+
+(defmethod get-external-name ((module (eql 'microplayer))) "MicroPlayer")
+(defmethod get-external-icon ((module (eql 'microplayer))) 950)
+
+(defmethod get-external-module-vals ((module (eql 'microplayer)) modulepref) (get-pref modulepref :microplay-options))
+(defmethod get-external-module-path ((module (eql 'microplayer)) modulepref) (get-pref modulepref :microplay-path))
+(defmethod set-external-module-vals ((module (eql 'microplayer)) modulepref vals) (set-pref modulepref :microplay-options vals))
+(defmethod set-external-module-path ((module (eql 'microplayer)) modulepref path) 
+  (set-pref modulepref :microplay-path path))
+
+(defun def-microplay-options () '(3000 3010 "127.0.0.1"))
+
+(defmethod get-external-def-vals ((module (eql 'microplayer))) 
+  (let ((libpath (lib-pathname (find-library "OM-Spat"))))
+    (list :microplay-path (when *micro-player-path* (probe-file *micro-player-path*))
+          :microplay-options (def-microplay-options))))
+
+(defmethod save-external-prefs ((module (eql 'microplayer))) 
+  `(:microplay-path ,(om-save-pathname *micro-player-path*) 
+    :microplay-options (list ,*microplayer-out-port* ,*microplayer-in-port* ,*microplayer-host*)))
+
+
+(defmethod put-external-preferences ((module (eql 'microplayer)) moduleprefs)
+  (let ((list-prefs (get-pref moduleprefs :microplay-options)))
+    (when list-prefs 
+      (setf *microplayer-out-port* (nth 0 list-prefs))
+      (setf *microplayer-in-port* (nth 1 list-prefs))
+      (setf *microplayer-host* (nth 2 list-prefs))
+      )
+    (when (get-pref moduleprefs :microplay-path)
+      (setf *spat-renderer* (find-true-external (get-pref moduleprefs :microplay-path))))
+    ))
+
+(put-external-preferences 'microplayer (find-pref-module :externals))
+
+
+
+(defmethod show-external-prefs-dialog ((module (eql 'microplayer)) prefvals)
+
+  (let* ((rep-list (copy-list prefvals))
+         (dialog (om-make-window 'om-dialog
+                                 :window-title "MicroPlayer Options"
+                                 :size (om-make-point 360 220)
+                                 :position :centered
+                                 :resizable nil :maximize nil :close nil))
+         (i 10) initem outitem hostitem)
+    
+    (om-add-subviews dialog
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point 10 i) (om-make-point 250 24) "MicroPlayer settings" :font *om-default-font2b*)
+
+                     (om-make-dialog-item 'om-static-text (om-make-point 10 (incf i 35)) (om-make-point 150 24) "UDP Ports" :font *om-default-font2*);
+
+                     (om-make-dialog-item 'om-static-text (om-make-point 120 i) (om-make-point 150 20) "OM Out" :font *om-default-font2*)
+                     
+                     (setf outitem (om-make-dialog-item 'om-editable-text (om-make-point 190 i) (om-make-point 42 13)
+                                          (format nil "~D" (nth 0 prefvals))
+                                          :font *om-default-font1*))
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point 120 (incf i 25)) (om-make-point 150 24) "OM In" :font *om-default-font2*)
+                     
+                     (setf initem (om-make-dialog-item 'om-editable-text (om-make-point 190 i) (om-make-point 42 13)
+                                          (format nil "~D" (nth 1 prefvals))
+                                          :font *om-default-font1*))
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point 10 (incf i 35)) (om-make-point 150 24) 
+                                          "MicroPlayer Host " :font *om-default-font2*)
+                     
+                     (setf hostitem (om-make-dialog-item 'om-editable-text (om-make-point 165 i) 
+                                                         (om-make-point 100 13)
+                                                         (nth 2 prefvals) 
+                                                         :font *om-default-font1*))
+
+
+
+
+      
+      ;;; boutons
+      (om-make-dialog-item 'om-button (om-make-point 15 (incf i 55)) (om-make-point 90 20) "Restore"
+                           :di-action (om-dialog-item-act item
+                                        (om-set-dialog-item-text outitem (number-to-string (nth 0 (def-microplay-options))))
+                                        (om-set-dialog-item-text initem (number-to-string (nth 1 (def-microplay-options))))
+                                        (om-set-dialog-item-text hostitem (number-to-string (nth 2 (def-microplay-options))))
+                                        ))
+      
+      (om-make-dialog-item 'om-button (om-make-point 160 i) (om-make-point 90 20) "Cancel"
+                           :di-action (om-dialog-item-act item
+                                        (om-return-from-modal-dialog dialog nil)))
+      
+      (om-make-dialog-item 'om-button (om-make-point 250 i) (om-make-point 90 20) "OK"
+                           :di-action (om-dialog-item-act item
+                                        (let* ((argerror nil)
+                                               (intxt (om-dialog-item-text initem)) 
+                                               (in (and (not (string= "" intxt)) (read-from-string intxt)))
+                                               (outtxt (om-dialog-item-text outitem)) 
+                                               (out (and (not (string= "" outtxt)) (read-from-string outtxt))))
+                                         
+                                          (if (and (integerp in)
+                                                   (>= in 0)
+                                                   (integerp out)
+                                                   (>= out 0)
+                                                   (not (= in out)))
+                                              (setf (nth 0 rep-list) out
+                                                    (nth 1 rep-list) in)
+                                            (setf argerror t))
+                                          
+                                          (if (not (string= "" (om-dialog-item-text hostitem)))
+                                              (setf (nth 2 rep-list) (om-dialog-item-text hostitem))
+                                            (setf argerror t))
+                                          
+                                          (if argerror
+                                              (om-message-dialog (format nil "Error in a MicroPlayer option!~%Preference values could not be set."))
+                                            (om-return-from-modal-dialog dialog rep-list))
+                                          ))
+                           :default-button t :focus t)
+      )
+    (om-modal-dialog dialog)))
+
+
+
+
+
+;(and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-in))))
+     
+
 
 
 

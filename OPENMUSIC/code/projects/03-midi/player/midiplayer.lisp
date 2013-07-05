@@ -325,64 +325,6 @@
 
 
 ;;;==============================
-;;; Stop/play/pause for MidiShare player
-;;;==============================
-(defmethod Play-player ((self (eql 'midishare)))
-   (when *midiplayer* (om-midi-start-player *midiplayer*)))
-
-(defmethod Continue-Player ((self (eql 'midishare)))
-   (when *midiplayer* (om-midi-cont-player *midiplayer*)))
-
-(defmethod Pause-Player ((self (eql 'midishare)))
-   (when *midiplayer* (om-midi-pause-player *midiplayer*)))
-
-(defmethod Stop-Player ((self (eql 'midishare)) &optional view)
-   (declare (ignore view))
-   (when *midiplayer* (om-midi-stop-player *midiplayer*)
-     (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
-     ))
-
-(defun setPlayLoop (start end)
-  (om-midi-set-loop-player *midiplayer* start end))
-
-
-
-;================================
-;RECORD
-;================================
-
-(defun midi-start-record ()
-  (if *recording-midi-p*
-    (om-beep-msg "Recording is on")
-    (when *midirecorder*
-      (om-print "Recording...")
-      ; pour entendre ce qu'on enregistre
-      (om-midi-connect 0 0)
-
-      (setf *recording-midi-p* t)
-      (om-midi-set-player *midirecorder* (om-midi-new-seq) 1000)
-      (om-midi-record-player *midirecorder* 1)
-      (om-midi-start-player *midirecorder*) t)))
-
-(defun midi-stop-record (port)
-   (when *recording-midi-p*
-     (let (recording-seq rep)
-       (om-print "Recording Off...")
-       ; pour entendre ce qu'on enregistre
-       (om-midi-disconnect 0 0)
-       (om-midi-stop-player *midirecorder*)
-       (setf recording-seq (om-midi-player-get-seq *midirecorder*))
-       (when recording-seq
-         (let ((newseq (delete-tempo-info recording-seq 1000)))
-           (setf rep (mievents2midilist newseq port))
-           (om-midi-free-seq newseq))
-         (setf *recording-midi-p* nil)
-         (loop for note in rep 
-               when (not (minusp (third note))) collect note)))))
-
-
-
-;;;==============================
 ;;; MICROTONALITE
 ;;;==============================
 

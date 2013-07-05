@@ -65,8 +65,7 @@
   (cond ((equal (state player) :play) 
          ;;; prolonge la durée de vie du player
          (setf (stop-time player) (max (stop-time player) end-t)))
-        ((equal (state player) :pause)
-         (general-continue player))
+        
         (t 
          (setf (stop-time player) end-t)
            (when (callback-process player)
@@ -154,7 +153,7 @@
 
 (defmethod make-player-specific-controls ((self t) control-view) nil)
 
-;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST TEH CALL TO PLAYER-start
+;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST THE CALL TO PLAYER-START
 ;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
@@ -296,21 +295,24 @@
 
 (defmethod editor-play ((self play-editor-mixin) )
   (setf (loop-play (player self)) (loop-play self))
-  (let ((obj (get-obj-to-play self))
-        (interval (get-interval-to-play self)))
-    (setf (callback-fun (player self))
-          #'(lambda (editor time)
-              (handler-bind ((error #'(lambda (e) 
-                                        (print e)
-                                        (om-kill-process (callback-process (player self)))
-                                        (abort e))))
-                (play-editor-callback editor time)
-                )))
-    (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
-    (schedule-editor-contents self)
-    (general-play (player self) 
-                  :start-t (or (car interval) 0)
-                  :end-t (or (cadr interval) (get-obj-dur obj)))))
+  (if (equal (state (player self)) :pause)
+      (general-continue (player self))
+    (let ((obj (get-obj-to-play self))
+          (interval (get-interval-to-play self)))
+      (setf (callback-fun (player self))
+            #'(lambda (editor time)
+                (handler-bind ((error #'(lambda (e) 
+                                          (print e)
+                                          (om-kill-process (callback-process (player self)))
+                                          (abort e))))
+                  (play-editor-callback editor time)
+                  )))
+      (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
+      (schedule-editor-contents self)
+      (general-play (player self) 
+                    :start-t (or (car interval) 0)
+                    :end-t (or (cadr interval) (get-obj-dur obj))))
+    ))
 
 
 (defmethod editor-pause ((self play-editor-mixin))

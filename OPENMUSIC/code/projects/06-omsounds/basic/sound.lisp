@@ -52,6 +52,9 @@ NOTE: These inputs can be connected and will be evaluated even if something is c
 Press 'space' to play/stop the sound file.
 "))
 
+
+(defmethod players-for-object ((self sound)) '(:libaudiostream :multiplayer :jack))
+
 (defmethod initialize-instance :after ((self sound) &rest args)
   (setf (Qvalue self) 1000)
   ;;;(setf (soundpointer self) (get-sound-data self))

@@ -198,8 +198,8 @@
 
 
 (defmethod draw-more-palette ((self playing-palette) view)
-  (if (and (editor-assoc self) (equal (panel (editor-assoc self)) (recording-view *general-player*)))
-      (setf (whoplay self) 3))
+  ;(if (and (editor-assoc self) (equal (panel (editor-assoc self)) (recording-view *general-player*)))
+  ;    (setf (whoplay self) 3))
   (om-with-focused-view view
     (om-draw-picture view *play-controls-pict*)
     (when (whoplay self)
@@ -208,7 +208,7 @@
       (push-button view 2))
     (when (and (editor-assoc self) 
                ; (loopplay? (panel (editor-assoc self)))
-               (loop-play (panel (editor-assoc self))))
+               (loop-play (editor-assoc self)))
       (push-button view 5))))
 
 (defmethod click-button-inpal ((self Playing-Palette) x)
@@ -221,10 +221,11 @@
    (when (<= x 5) 
      (case x
        ;PLAY
-       (0 (unless (whoplay self)
-            (setf (whoplay self) 0)
+       (0 ;(unless (print (whoplay self))
+          ;  (setf (whoplay self) 0)
             (play-from-palette ed-view)
-            ))
+           ; )
+            )
        ;STOP
        (1 
         (setf (whoplay self) nil
@@ -232,11 +233,13 @@
         (Stop-from-palette ed-view))
        ;PAUSE
        (2 
-        (when (whoplay self)
-          (if (string-equal (get-player-etat *general-player*) "Playing")
-            (setf (pause-push-p self) t)
-            (setf (pause-push-p self) nil))
-          (pause-from-palette ed-view)))
+        ;(when (whoplay self)
+          ;(if (string-equal (get-player-etat *general-player*) "Playing")
+          ;  (setf (pause-push-p self) t)
+          ;  (setf (pause-push-p self) nil))
+          (pause-from-palette ed-view)
+          ;)
+       )
        ;RECORD
        (3 (unless (whoplay self)
             (setf (whoplay self) 3)
@@ -460,9 +463,9 @@
 (defmethod stop-from-palette ((self cursor-play-view-mixin))
   (om-erase-movable-cursor self)
   (mapc #'om-erase-movable-cursor (attached-cursor-views self))
-  (Stop-Player *general-player* self))
-
-
+  (editor-stop (editor self))
+  ;;(Stop-Player *general-player* self)
+  )
 
 
 (defmethod push-loop-button ((self cursor-play-view-mixin))

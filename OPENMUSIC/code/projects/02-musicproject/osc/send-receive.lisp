@@ -11,7 +11,7 @@
     buff
     ))
 
-(om::defmethod! om-send (host port data-buffer size)
+(defmethod! om-send (host port data-buffer size)
   :icon 130
   :doc "Sends data-buffer out to host (host) via port (port)."
   (let* ((conn (om-make-send-connection host port)))

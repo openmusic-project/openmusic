@@ -259,35 +259,20 @@
          (setf *def-midi-format* (get-pref modulepref :midi-format))
          (when (get-pref modulepref :ms-drivers) 
            (sleep 0.5)
-           (om-without-interrupts (restore-midishare-connections (get-pref modulepref :ms-drivers)))))
-       ;(when (find 'microplayer (assoc-players *general-player*))
-       ;  (setf *microplayer-out-port* (get-pref modulepref :micro-out))
-       ;  ;(setf *microplayer-host* (get-pref modulepref :micro-host))
-       ;  (setf *micro-player-path* (get-pref modulepref :micro-path))
-       ;  (unless (= *microplayer-in-port* (get-pref modulepref :micro-in))
-       ;    (show-message-win (format nil "Updating OSC connection.~%Please wait..."))    
-       ;    (close-microplayer)
-       ;    (setf *microplayer-in-port* (get-pref modulepref :micro-in))
-       ;    (open-microplayer)
-       ;    (hide-message-win))
-       ;  
-       ;  )
-       )) 
+           (om-without-interrupts (restore-midishare-connections (get-pref modulepref :ms-drivers)))))   
+       ))
 
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
                                                    :ms-drivers nil
                                                    :midi-format 1
                                                    :midisetup-path (when *om-midi-settings-app-default-path* 
                                                                      (probe-file *om-midi-settings-app-default-path*))
-                                                   :micro-out 3000 :micro-in 3010 :micro-host "127.0.0.1" 
-                                                   :micro-path (when *micro-player-path* (probe-file *micro-player-path*))
-                                                   
                                                    ))
 
 
 (defmethod make-new-pref-scroll ((num (eql :midi)) modulepref)
    (let ((thescroll (om-make-view 'preference-pane
-                                  :name "MIDI / OSC"
+                                  :name "MIDI"
                                   :pref-id num
                                   :size (get-pref-scroll-size)
                                   :position (om-make-point 66 0)
@@ -297,7 +282,7 @@
                                   :bg-color *om-light-gray-color*
                                   ))
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
-         msapp microapp
+         msapp
          (i 0))
     (om-add-subviews thescroll
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 200 30) "MIDIShare"
@@ -423,107 +408,6 @@
       ;                                                 ))
       
         ) 
-
-   
-    (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point l2 (setf i 25)) (om-make-point 200 30) "MicroPlayer"
-                                          :font *om-default-font3b*)
-                     
-                     (om-make-dialog-item 'om-static-text (om-make-point l2 (incf i 35)) (om-make-point 150 24) "UDP Ports:" :font *controls-font*);
-
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 110) i) (om-make-point 150 20) "Out" :font *controls-font*)
-                     
-                     (om-make-dialog-item 'om-editable-text (om-make-point (+ l2 145) i) (om-make-point 42 13)
-                                          (format nil "~D" (get-pref modulepref :micro-out)) 
-                                          :after-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-in))))
-                                                                  (set-pref modulepref :micro-out number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :micro-out))))
-                                                                ))))
-                                          :di-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-in))))
-                                                                  (set-pref modulepref :micro-out number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :micro-out))))
-                                                                ))))
-                                          :font *om-default-font2*)
-                     
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 220) i) (om-make-point 150 24) "In" :font *controls-font*)
-                     
-                     (om-make-dialog-item 'om-editable-text (om-make-point (+ l2 250) i) (om-make-point 42 13)
-                                          (format nil "~D" (get-pref modulepref :micro-in)) 
-                                          :after-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-out))))
-                                                                  (set-pref modulepref :micro-in number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :micro-in))))))))
-                                          :di-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-out))))
-                                                                  (set-pref modulepref :micro-in number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :micro-in))))))))
-                                          :font *om-default-font2*)
-                     
-                     ;(om-make-dialog-item 'om-static-text (om-make-point 20 246) (om-make-point 150 24) 
-                     ;                     "Default UDP Host:" :font *controls-font*)
-                     
-                     ;(om-make-dialog-item 'om-editable-text (om-make-point 165 241) 
-                     ;                     (om-make-point 100 13)
-                     ;                     (get-pref modulepref :micro-host) 
-                     ;                     :after-action (om-dialog-item-act item
-                     ;                                     (let ((text (om-dialog-item-text item)))
-                     ;                                       (unless (string= "" text)
-                     ;                                         (set-pref modulepref :micro-host text)
-                     ;                                         )))
-                     ;                     :font *om24-default-font2*)
-                     
-                     (om-make-dialog-item 'om-static-text (om-make-point l2 (incf i 40)) (om-make-point 180 24) "MicroPlayer App." :font *controls-font*)
-                     
-                     
-                     (setf microapp (om-make-dialog-item 'om-static-text (om-make-point l2 (incf i 20)) (om-make-point 280 50) 
-                                                         (if (get-pref modulepref :micro-path) 
-                                                             (namestring (get-pref modulepref :micro-path))
-                                                           "NOT FOUND")
-                                                         :font *om-default-font2*
-                                                         :fg-color (if (get-pref modulepref :micro-path) *om-black-color* *om-red-color*)))
-                     
-                     (om-make-view 'om-icon-button 
-                                                      :icon1 "folder" :icon2 "folder-pushed"
-                                                      :position (om-make-point (+ l2 300) i) :size (om-make-point 26 25) 
-                                                      :action (om-dialog-item-act item
-                                                                (declare (ignore button))
-                                                                (let* ((path (om-choose-file-dialog :directory (om-default-application-path nil nil))))
-                                                                  (if path
-                                                                      (if (probe-file path)
-                                                                          (progn 
-                                                                            (set-pref modulepref :micro-path path)
-                                                                            (om-set-dialog-item-text microapp (namestring path))
-                                                                            (om-invalidate-view thescroll))
-                                                                        (om-beep-msg "Bad path for MicroPlayer app."))))))
-
-                     
-                     )
 
     thescroll))
 
