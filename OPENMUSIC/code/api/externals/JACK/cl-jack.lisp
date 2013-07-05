@@ -189,6 +189,9 @@
 (defcfun "jack_ringbuffer_create" (:pointer (:struct jack_ringbuffer_t))
   (sz size_t))
 
+(defcfun "jack_ringbuffer_reset" :void
+  (rb (:pointer (:struct jack_ringbuffer_t))))
+
 (defcfun "jack_ringbuffer_get_write_vector" :void
   (rb (:pointer (:struct jack_ringbuffer_t)))
   (vec (:pointer (:struct jack_ringbuffer_data_t))))
