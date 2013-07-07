@@ -27,7 +27,7 @@
 ;======================================================
 ;VIEW   abstract class
 ;======================================================
-(defclass scoreEditor (EditorView object-editor) 
+(defclass scoreEditor (EditorView object-editor play-editor-mixin) 
   ((ctr-view :initform nil :accessor ctr-view)
    (mode :initform nil :accessor mode)
    ))
@@ -381,53 +381,53 @@
     
     (setf (slotedit self) minied)
     (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied  sizebut)
-          
-    (let ((playerbutton nil))
+     
+
+    (om-add-subviews self 
+                    (om-make-dialog-item 'om-static-text (om-make-point 500 (+ c1 2)) (om-make-point 50 20) 
+                                            (string+ "Player: " (player-name (get-edit-param (om-view-container self) 'player)))
+                                        :font *om-default-font1b*)
+
+                    (om-make-dialog-item 'om-button (om-make-point 650 2) (om-make-point 40 16) "edit"
+                                                               :font *om-default-font1*
+                                                               :enable t
+                                                               :di-action (om-dialog-item-act item
+                                                                            (select-player-dialog 
+                                                                            (edit-player-params (get-edit-param (om-view-container self) 'player) 
+                                                                                                
+                                                                                                (om-view-container self))))
+
+                                                               )
+                    )
+                    
+#|     
+    (let ((playerbutton nil)
+          (players (copy-list *enabled-score-players*)))
       (om-add-subviews self
-                       (om-make-dialog-item 'om-static-text (om-make-point 500 (+ c1 2)) (om-make-point 50 20) "Player"
-                                        :font *om-default-font1*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 500 (+ c1 2)) (om-make-point 50 20) 
+                                            (string+ "Player: " (player-name (get-edit-param (om-view-container self) 'player)))
+                                        :font *om-default-font1b*)
                        (om-make-dialog-item 'om-pop-up-dialog-item 
                                             (om-make-point 550 c1) 
                                             ;; (om-make-point 100 18) ""
                                             (om-make-point 100 18) ""
                                             :font *om-default-font1*
-                                            ;; :range (remove nil (list "Midishare"
-					    ;; 			     (if (find 'microplayer (assoc-players *general-player*)) "Microplayer")
-					    ;; 			     (if (find 'scplayer (assoc-players *general-player*)) "SuperCollider")
-					    ;; 			     ))
-                                            :value (cond ((equal (get-edit-param (om-view-container self) 'player) :microplayer) 
-                                                          "Microplayer")
-							 ((equal (get-edit-param (om-view-container self) 'player) :SCplayer)
-                                                          "SuperCollider")
-                                                         (t "Midishare"))
-                                            :di-action  (om-dialog-item-act item 
-                                                          ;; (if (= 1 (om-get-selected-item-index item))
-							  ;;     (progn
-							  ;; 	(change-player (panel (om-view-container self)) :microplayer)
-							  ;; 	(om-enable-dialog-item playerbutton nil)) 
-							  ;;     (progn
-							  ;; 	(change-player (panel (om-view-container self)) :midishare)
-							  ;; 	(om-enable-dialog-item playerbutton t)))
-							  (print (format nil "changed player to ~A" (om-get-selected-item item)))
-							  (cond ((string=  (om-get-selected-item item) "Microplayer")
-								 (progn
-								   (change-player (panel (om-view-container self)) :microplayer)
-								   (om-enable-dialog-item playerbutton nil)))
-								((string=  (om-get-selected-item item) "SuperCollider")
-								 (progn
-								   (change-player (panel (om-view-container self)) :scplayer)
-							  	   (om-enable-dialog-item playerbutton nil)))
-							  	(t (progn
-							  	     (change-player (panel (om-view-container self)) :midishare)
-							  	     (om-enable-dialog-item playerbutton t))))
-							  ))
+                                            :range (mapcar 'player-name players)
+                                            :value (player-name (get-edit-param (om-view-container self) 'player))
+                                            :di-action (om-dialog-item-act item 
+                                                         (let ((selected-player (nth (om-get-selected-item-index item) players)))
+                                                           (change-player (panel (om-view-container self)) selected-player)
+                                                           (om-enable-dialog-item playerbutton (player-params selected-player))))
+                                            )
                        (setf playerbutton (om-make-dialog-item 'om-button (om-make-point 650 2) (om-make-point 40 16) "..."
-                                        :font *om-default-font1*
-                                        :enable (equal (get-edit-param (om-view-container self) 'player) :midishare)
-                                        :di-action (om-dialog-item-act item
-                                                     (select-player (om-view-container self) :midishare))))
+                                                               :font *om-default-font1*
+                                                               :enable (player-params (get-edit-param (om-view-container self) 'player))
+                                                               :di-action (om-dialog-item-act item
+                                                                            (edit-player-params (get-edit-param (om-view-container self) 'player) 
+                                                                                                
+                                                                                                (om-view-container self)))))
                        ))
-             
+|#             
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     
@@ -1722,33 +1722,38 @@
      (flat (reverse rep) 1)))
 
 (defmethod play-from-palette ((self scorepanel))
-  (setf (loopplay? *general-player*) (loopplay? self))
-  (let* ((obj (get-obj-to-play self))
-         (cursor (and (graphic-obj self) (panel-show-cursor-p self))))
-    (when (> (get-obj-dur obj) 0)
-      (om-set-scroll-position self (om-make-point 0 0))
-      (when cursor
-        (setf *metric-strat-time* (clock-time))  
-        (setf *events-play-cursor* (mixed-collect-cursor-objects self))
-        (om-erase-movable-cursor self)
-        (om-new-movable-cursor self 0 0 4 (h self) 'om-cursor-line))
-      (apply 'PlayAny (cons (get-score-player self) obj))
-      (play-boxes-in-score self)
-      (when cursor
-        (start (dfuncall (caar *events-play-cursor*) 'draw-measure-cursor self (graphic-obj self)))
-        )
-      ))
-  (palette-restore-stop))
+  (editor-play (editor self)))
+
+;  (setf (loopplay? *general-player*) (loopplay? self))
+;  (let* ((obj (get-obj-to-play self))
+;         (cursor (and (graphic-obj self) (panel-show-cursor-p self))))
+;    (when (> (get-obj-dur obj) 0)
+;      (om-set-scroll-position self (om-make-point 0 0))
+;      (when cursor
+;        (setf *metric-strat-time* (clock-time))  
+;        (setf *events-play-cursor* (mixed-collect-cursor-objects self))
+;        (om-erase-movable-cursor self)
+;        (om-new-movable-cursor self 0 0 4 (h self) 'om-cursor-line))
+;      (apply 'PlayAny (cons (get-score-player self) obj))
+;      (play-boxes-in-score self)
+;      (when cursor
+;        (start (dfuncall (caar *events-play-cursor*) 'draw-measure-cursor self (graphic-obj self)))
+;        )
+;      ))
+;  (palette-restore-stop))
+
 
 (defmethod pause-from-palette ((self scorepanel))
-  (setf (loopplay? *general-player*) (loopplay? self))
-  (cond ((string-equal (get-player-etat *general-player*) "Playing")
-         (setf *stop-time-play* (- (clock-time) *metric-strat-time*))
-         (Pause-Player *general-player*))
-        ((string-equal (get-player-etat *general-player*) "Pause")
-         (setf *metric-strat-time*  (- (clock-time) *stop-time-play*))
-         (Continue-Player *general-player*)
-         (start (draw-measure-cursor self (graphic-obj self))))))
+  (editor-pause (editor self)))
+
+;  (setf (loopplay? *general-player*) (loopplay? self))
+;  (cond ((string-equal (get-player-etat *general-player*) "Playing")
+;         (setf *stop-time-play* (- (clock-time) *metric-strat-time*))
+;         (Pause-Player *general-player*))
+;        ((string-equal (get-player-etat *general-player*) "Pause")
+;        (setf *metric-strat-time*  (- (clock-time) *stop-time-play*))
+;        (Continue-Player *general-player*)
+;         (start (draw-measure-cursor self (graphic-obj self))))))
   
 
 (defmethod draw-measure-cursor ((self scorepanel) voice)
