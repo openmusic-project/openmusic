@@ -113,7 +113,7 @@
   (and *producer*
        (mp:process-alive-p *producer*)
        (mp:process-kill *producer*))
-  (sleep 0.03)
+  (sleep 0.1)				;todo...
   (loop for rb across *jack-ringbuffers*
      do (jack-ringbuffer-reset rb))
   (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '()
@@ -121,6 +121,8 @@
 					    *jack-sndfile-handle*
 					    4096
 					    *read-sound-channels*)))
+
+(jackplay-toggle-pause)
 
 (setf *stop-reading* t)
 (progn

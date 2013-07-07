@@ -68,6 +68,7 @@
 
 (defun disk-to-ringbuffer-proc ()
   (with-foreign-object (*framebuf* '(:struct jack_ringbuffer_data_t))
+    ;;(format t "~&~A~%" *framebuf*)
     (loop
        (setf *jack-get-me-some* nil)
        (when *stop-reading* (return))

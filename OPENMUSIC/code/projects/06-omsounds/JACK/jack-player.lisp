@@ -67,7 +67,6 @@
           (oa::om-smart-stop snd)
           (setf (car (gethash chan status-list)) nil)))))
 
-
 ;;; creates the player-specific control on the sound editor control panel
 (defmethod make-player-specific-controls ((self (eql :jackaudio)) control-view)
   (let* ((snd (object (editor control-view)))

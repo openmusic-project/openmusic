@@ -555,62 +555,64 @@
  (make-instance class :filename filename))
 
 
-;(defun om-fill-sound-info (sound)
-;  (when (and sound (filename sound) (probe-file (filename sound)))
-;    (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
-;    (multiple-value-bind (format nch sr ss size skip)
-;        (om-sound-get-info (filename sound))
-      ;(print (list format nch sr ss size skip))
-;      (if (and format size nch (> size 0) (> nch 0))
-;        (progn 
-;          (setf (audio-format sound) format
-;                (number-of-samples sound) size
-;                (number-of-channels sound) nch
-;                (sample-size sound) ss
-;                (sample-rate sound) sr
-;                (data-position sound) skip)
-;          (setf (loaded sound) t)
-;          (unless (om-supported-audio-format format)
-;            (print (format nil "Warning : unsupported audio format ~A" format))
-;            (setf (loaded sound) :error)))
-;        (progn 
-;          (print (format nil "Error whie loading file ~s" (filename sound)))
-;          (setf (loaded sound) :error))))
-;    (loaded sound)))
-
-
 (defun om-fill-sound-info (sound)
   (when (and sound (filename sound) (probe-file (filename sound)))
     (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
     (multiple-value-bind (format nch sr ss size skip)
-        (sound-get-info (filename sound))
+	(om-sound-get-info (filename sound))
+      (print (list format nch sr ss size skip))
       (if (and format size nch (> size 0) (> nch 0))
-        (progn
-          (setf las-infos (las-get-sound-infos (om-path2cmdpath (filename sound))))
-          (setf (audio-format sound) format
-                (number-of-samples sound) size
-                (number-of-channels sound) nch
-                (sample-size sound) ss
-                (sample-rate sound) sr
-                (data-position sound) skip
-                (sndbuffer sound) (multiple-value-bind (data size nch) 
-                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
-                                    (let* ((sndbuffer data)) sndbuffer))
-                (sndlasptr sound) (car las-infos)
-                (sndlasptr-current sound) (sndlasptr sound)
-                (sndlasptr-current-save sound) (sndlasptr sound)
-                (number-of-samples-current sound) (cadr las-infos)
-                (sndlasptr-to-play sound) (sndlasptr sound)
-                (number-of-samples-to-play sound) (cadr las-infos)
-                (snd-slice-to-paste sound) nil)
-          (setf (loaded sound) t)
-          (unless (om-supported-audio-format format)
-            (print (format nil "Warning : unsupported audio format ~A" format))
-            (setf (loaded sound) :error)))
-        (progn 
-          (print (format nil "Error while loading file ~s" (filename sound)))
-          (setf (loaded sound) :error))))
+	  (progn 
+	    (setf (audio-format sound) format
+		  (number-of-samples sound) size
+		  (number-of-channels sound) nch
+		  (sample-size sound) ss
+		  (sample-rate sound) sr
+		  (data-position sound) skip
+		  (number-of-samples-current sound) size ;TODO: JB is doing something w. las + sound-editor
+		  )
+	    (setf (loaded sound) t)
+	    (unless (om-supported-audio-format format)
+	      (print (format nil "Warning : unsupported audio format ~A" format))
+	      (setf (loaded sound) :error)))
+	  (progn 
+	    (print (format nil "Error whie loading file ~s" (filename sound)))
+	    (setf (loaded sound) :error))))
     (loaded sound)))
+
+
+;; (defun om-fill-sound-info (sound)
+;;   (when (and sound (filename sound) (probe-file (filename sound)))
+;;     (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
+;;     (multiple-value-bind (format nch sr ss size skip)
+;;         (sound-get-info (filename sound))
+;;       (if (and format size nch (> size 0) (> nch 0))
+;;         (progn
+;;           (setf las-infos (las-get-sound-infos (om-path2cmdpath (filename sound))))
+;;           (setf (audio-format sound) format
+;;                 (number-of-samples sound) size
+;;                 (number-of-channels sound) nch
+;;                 (sample-size sound) ss
+;;                 (sample-rate sound) sr
+;;                 (data-position sound) skip
+;;                 (sndbuffer sound) (multiple-value-bind (data size nch) 
+;;                                       (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
+;;                                     (let* ((sndbuffer data)) sndbuffer))
+;;                 (sndlasptr sound) (car las-infos)
+;;                 (sndlasptr-current sound) (sndlasptr sound)
+;;                 (sndlasptr-current-save sound) (sndlasptr sound)
+;;                 (number-of-samples-current sound) (cadr las-infos)
+;;                 (sndlasptr-to-play sound) (sndlasptr sound)
+;;                 (number-of-samples-to-play sound) (cadr las-infos)
+;;                 (snd-slice-to-paste sound) nil)
+;;           (setf (loaded sound) t)
+;;           (unless (om-supported-audio-format format)
+;;             (print (format nil "Warning : unsupported audio format ~A" format))
+;;             (setf (loaded sound) :error)))
+;;         (progn 
+;;           (print (format nil "Error while loading file ~s" (filename sound)))
+;;           (setf (loaded sound) :error))))
+;;     (loaded sound)))
 
 
 (defun convert-filename-encoding (path)
@@ -659,6 +661,9 @@
         (multiple-value-bind (format nch sr ss size skip)
             (au::sndfile-get-info (convert-filename-encoding filename))
             (values format nch sr ss size skip)))))
+
+(defun om-sound-get-info (filename)
+  (sound-get-info filename))
 
 ;(defparameter soundfile1 "/Users/bresson/Desktop/ngyengb/beyi-ngyengb.aiff")
 
