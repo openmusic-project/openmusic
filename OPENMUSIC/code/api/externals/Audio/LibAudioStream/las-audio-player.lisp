@@ -308,6 +308,7 @@
                        *audio-player-visible-tracks-info*)))
     (while (not (string-equal status "Idle"))
       (setf status (cadr (gethash i status-list)))
+      (print status)
       (setf freetrack i)
       (incf i)
       )
@@ -564,9 +565,11 @@
               (play-one-channel player chan))
             ))
       (let* ((chan (get-free-channel player)))
-        (setf (tracknum-sys snd) chan)
-        (load-sound-on-one-channel player snd chan)
-        (play-one-channel player chan)))))
+        (if (< chan las-channels)
+            (progn
+              (setf (tracknum-sys snd) chan)
+              (load-sound-on-one-channel player snd chan)
+              (play-one-channel player chan)))))))
 
 
 
