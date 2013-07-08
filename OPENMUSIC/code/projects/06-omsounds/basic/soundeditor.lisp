@@ -31,7 +31,6 @@
   ((editor :initform nil :accessor editor :initarg :editor)    ;;; a reference to the main editor
    ;;; a list of controls
    (player-control :initform nil :accessor player-control)
-   (player-specific-controls :initform nil :accessor player-specific-controls)
    (vol-control :initform nil :accessor vol-control)
    (pan-control :initform nil :accessor pan-control)))
 
@@ -110,19 +109,12 @@
 (defmethod update-controls ((self sound-control-view))
   (let ((player (get-edit-param (editor self) 'player)))
     (om-set-selected-item (player-control self) (audio-player-name player))
-    (update-player-controls self player)
+    (update-player-controls (editor self) player self)
     ;(set-value (vol-control self) (vol (object (editor self))))
     ;(set-value (pan-control self) (pan (object (editor self))))
     ))
 
-(defmethod make-player-specific-controls (player control-view) nil)
 
-(defmethod update-player-controls ((self sound-control-view) player)
-  (apply #'om-remove-subviews self (player-specific-controls self))
-  (setf (player-specific-controls self)
-        (make-player-specific-controls player self))
-  (apply #'om-add-subviews self (player-specific-controls self)))
-  
 
 ;;;==============
 ;;; RULER 
@@ -595,14 +587,6 @@
           (space "Play/Stop"))))
 
 
-;;; PLAYER FEATURES
-(defmethod change-player ((self soundeditor) player)
-  (call-next-method)
-  (reset-editor-player self) 
-  (update-player-controls (control self) player))
-
-;;; (if (equal val :multiplayer) (launch-multiplayer-app))
-
 (defmethod cursor-panes ((self soundeditor))
   (list (panel self)
         (preview self)))
@@ -724,10 +708,6 @@
 ;; no turn page
 (defmethod scroll-play-window ((self soundPanel)) t)
 
-(defmethod change-player ((panel soundpanel) val)
-  (call-next-method)
-  (change-player (editor panel) val))
-
 
 ;------------------------------------
 ;Events
@@ -828,7 +808,7 @@
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
-    (if (equal (cursor-mode self) :interval) ; (cursor-p self)
+    (if (equal (cursor-mode self) :interval)
         (progn 
           (setf (selection? self) nil)
           (new-interval-cursor self where)

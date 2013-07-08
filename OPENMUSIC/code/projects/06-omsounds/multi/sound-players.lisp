@@ -21,8 +21,8 @@
 (defmethod audio-record-start ((self t)) (om-beep-msg "This player has no audio recording feature"))
 (defmethod audio-record-stop ((self t)) (om-beep))
 
-(defmethod get-score-player ((self soundeditor)) 
-  (get-edit-param (editor self) 'player))
+;(defmethod get-score-player ((self soundeditor)) 
+;  (get-edit-param (editor self) 'player))
   
 (defparameter *audio-players* '(:libaudio :multiplayer))
 

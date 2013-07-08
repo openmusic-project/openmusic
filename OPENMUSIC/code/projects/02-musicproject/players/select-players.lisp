@@ -39,8 +39,12 @@
 
 ;; called by 'reference' (e.g. Box or Editor) to change the player
 ;; reference maty have stored options for the other players as well
+;; this functions manages all the edition-params settings in reference but not the possible extra actions to perform after these changes
+
+(defmethod reference-object ((self t)) (object self))
+
 (defun select-player (reference)
-  (let* ((players-in-dialog (enabled-players-for-object (value reference)))
+  (let* ((players-in-dialog (enabled-players-for-object (reference-object reference)))
          
          (dialog (om-make-window 'om-dialog
                                  :window-title (string+ "Player Settings for " (name reference))
@@ -56,7 +60,7 @@
           (paneplayer (om-make-view 'om-view :bg-color *om-white-color*
                               :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 60)))))
           (paneports (om-make-view 'om-view :bg-color *om-white-color*
-                              :position (om-make-point 350 40) :size (om-make-point 320 (+ 20 (if midi? 60 0) (if udp? 80 0)))))
+                              :position (om-make-point 350 40) :size (om-make-point 320 170)))
           (y 10) (y2 10)
           (selected-player (get-edit-param reference 'player))
           midilabel midiportmenu midiporttext udplabel udpportmenu udpporttext udphosttext)
@@ -104,8 +108,9 @@
       
       (when udp?
         (let ((udpport (get-edit-param reference 'udp-outport)))
+          (incf y2 40)
           (om-add-subviews paneports
-                           (setf udplabel (om-make-dialog-item 'om-static-text (om-make-point 10 (incf y2 40)) (om-make-point 300 20) 
+                           (setf udplabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
                                                 "UDP port mode:"
                                                 :enable (equal :udp (player-type selected-player)) 
                                                 :font *om-default-font1b*))
@@ -154,14 +159,16 @@
                                                                  (declare (ignore item))
                                                                  (setf selected-player p)
                                                                  (let ((midiplay (equal :midi (player-type p))))
-                                                                   (om-enable-dialog-item midilabel midiplay)
-                                                                   (om-enable-dialog-item midiportmenu midiplay)
-                                                                   (enable-numbox midiporttext midiplay)
-                                                                   (om-enable-dialog-item udplabel (not midiplay))
-                                                                   (om-enable-dialog-item udpportmenu (not midiplay))
-                                                                   (enable-numbox udpporttext (not midiplay))
-                                                                   (om-enable-dialog-item udphosttext (not midiplay))
-                                                                   )))
+                                                                   (when midi?
+                                                                     (om-enable-dialog-item midilabel midiplay)
+                                                                     (om-enable-dialog-item midiportmenu midiplay)
+                                                                     (enable-numbox midiporttext midiplay))
+                                                                   (when udp?
+                                                                     (om-enable-dialog-item udplabel (not midiplay))
+                                                                     (om-enable-dialog-item udpportmenu (not midiplay))
+                                                                     (enable-numbox udpporttext (not midiplay))
+                                                                     (om-enable-dialog-item udphosttext (not midiplay))
+                                                                     ))))
                                                   :font *om-default-font2*)
                              (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 160 20) 
                                                   (string+ "type: " (symbol-name (player-type pl)))
@@ -183,7 +190,7 @@
                        (om-make-dialog-item 'om-button (om-make-point 260 y) (om-make-point 80 24) "OK" 
                                             :di-action (om-dialog-item-act item
                                                          (declare (ignore item))
-                                                         (set-edit-param reference 'player (print selected-player))
+                                                         (set-edit-param reference 'player selected-player)
                                                          (when midi?
                                                            (set-edit-param reference 'outport (case (om-get-selected-item-index midiportmenu)
                                                                                                 (0 nil)
@@ -195,9 +202,8 @@
                                                                                                     (0 (value udpporttext))
                                                                                                     (1 :default)))
                                                            )
-                                                           (when (editorframe reference) 
-                                                           (update-controls-view (editorframe reference)))
-                                                         (om-return-from-modal-dialog dialog t)
+                                                           
+                                                         (om-return-from-modal-dialog dialog selected-player)
                                                          )
                                             :default-button t))
       (om-modal-dialog dialog)))

@@ -332,9 +332,7 @@
        (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t))
      ))
 
-(defmethod set-unset-cursor ((self cursor-play-view-mixin))
-   (setf (cursor-p self) (not (cursor-p self)))
-   (om-invalidate-view self t))
+
 
 
 

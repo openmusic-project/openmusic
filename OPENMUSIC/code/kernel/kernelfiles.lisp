@@ -42,7 +42,7 @@
 "tools/traduction" 
 
 ;--------------Scheduler----------------- 
-"scheduler-player/scheduler"   
+;"scheduler-player/scheduler"   
 ;"scheduler-player/new-scheduler"
                                     
 ;-----------Containers---------------------------- 
@@ -137,7 +137,7 @@
 "graphics/print"   
 
 ;--------------------Player---------------------- 
-"scheduler-player/player"
+;"scheduler-player/player"
 "scheduler-player/new-player"
 
 ;-----------Persistant&copy--------------------- 

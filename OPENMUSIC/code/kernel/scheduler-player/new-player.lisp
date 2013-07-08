@@ -151,6 +151,8 @@
 ;(defclass player-engine () ())
 ;(defmethod class-from-player-type ((type t)) 'player-engine)
 
+(defmethod player-init ((self t)) nil)
+
 (defmethod make-player-specific-controls ((self t) control-view) nil)
 
 ;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST THE CALL TO PLAYER-START
@@ -249,7 +251,8 @@
    ((player :initform nil :accessor player)
     (player-type :initform nil :accessor player-type)
     (loop-play :initform nil :accessor loop-play)
-    (end-callback :initform nil :accessor end-callback)))
+    (end-callback :initform nil :accessor end-callback)
+    (player-specific-controls :initform nil :accessor player-specific-controls)))
 
 (defun init-editor-player (editor)
   (setf (player editor) (make-instance 'omplayer ;; (class-from-player-type (get-score-player editor))
@@ -260,13 +263,19 @@
 (defmethod initialize-instance :after ((self play-editor-mixin) &rest initargs)
   (init-editor-player self))
 
+
+(defmethod make-player-specific-controls (player control-view) nil)
+
+(defmethod update-player-controls ((self play-editor-mixin) player &optional view)
+  (apply #'om-remove-subviews (or view self) (player-specific-controls self))
+  (setf (player-specific-controls self)
+        (make-player-specific-controls player self))
+  (apply #'om-add-subviews (or view self) (player-specific-controls self)))
+  
+
+
 (defmethod get-player-engine ((self play-editor-mixin)) t)
 (defmethod get-player-engine ((self editorview)) (get-edit-param self 'player))
-
-
-(defmethod reset-editor-player ((self play-editor-mixin))
-  (init-editor-player self)
-  (player-init (player self)))
 
 (defmethod get-obj-to-play ((self play-editor-mixin)) nil)
 
@@ -353,13 +362,15 @@
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))
 
-(defmethod set-cursor-mode ((self cursor-play-view-mixin))
-  (setf (cursor-mode self) (if (equal (cursor-mode self) :normal) :interval :normal))
+(defmethod change-cursor-mode ((self cursor-play-view-mixin) &optional mode)
+  (setf (cursor-mode self) (or mode (if (equal (cursor-mode self) :normal) :interval :normal)))
   (om-invalidate-view self t))
 
 (defmethod cursor-p ((self t)) 
   (equal (cursor-mode self) :interval))
 ;; "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"
+
+
 
 ;(defmethod get-obj-to-play ((self cursor-play-view-mixin))
 ;  (values (object (om-view-container self))
@@ -396,43 +407,63 @@
                        (car rect)))
       (if (listp position)
           (setf (cursor-interval self) (list (om-point-x (pixel2point self (om-make-point (car position) 0)))
-                                             (om-point-x (pixel2point self (om-make-point (cadr position) 0)))))
+                                             (om-point-x (pixel2point self (om-make-point (cadr position) 0))))
+                (cursor-pos self) (om-point-x (pixel2point self (om-make-point (car position) 0))))
         (progn
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
       (om-invalidate-view self))))
 
 (defmethod draw-interval-cursor ((self cursor-play-view-mixin))
-   (let* ((sys-etat (get-system-etat self))
-          (interval (cursor-interval self))
-          pixel-interval)
-     (when interval
-       (setq pixel-interval (list (om-point-h (point2pixel self (om-make-point (car interval) 0) sys-etat))
-                             (om-point-h (point2pixel self (om-make-point (second interval) 0) sys-etat))))
-       (om-with-focused-view self
-         (draw-h-rectangle (list (car pixel-interval) 0 (second pixel-interval) (h self)) t))
-       )))
+  (let* ((cursor-pos-pix (time-to-pixels self (cursor-pos self)))
+         (interval (cursor-interval self)))
+    (om-with-focused-view self
+      (when interval
+        (draw-h-rectangle (list (time-to-pixels self (car interval)) 0 (time-to-pixels self (cadr interval)) (h self)) t))
+       
+      ;;; start pos
+      (om-with-fg-color self *om-red2-color*
+        (om-with-dashline 
+            (om-with-line-size 2 
+              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
+      )))
+
+
+(defmethod get-x-range ((self om-scroller)) (list (max 0 (om-point-x (pixel2point self (om-scroll-position self))))
+                                                  (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
 
 (defmethod start-cursor ((self cursor-play-view-mixin))
   (let* ((dur (get-obj-dur (object (om-view-container self))))
-         (range (rangex (panel (om-view-container self))))
+         (range (get-x-range (panel (om-view-container self))))
          (xview (- (second range) (first range)))
          (start (start-position self))
-         (dest (+ start xview))
-         (at-pix (om-point-x (point2pixel self (om-make-point start 0) (get-system-etat self)))))
-    (when (and (view-turn-pages-p self) (< dest dur))
-      (scroll-play-view self at-pix))
+         (at-pix (om-point-x (point2pixel self (om-make-point start 0) (get-system-etat self))))
+         (dest (+ start xview)))
+    (when (and (view-turn-pages-p self) (or (< start (car range))
+                                                   (> start (cadr range))))
+      (scroll-play-view self at-pix)
+      )
     (om-erase-movable-cursor self)
     (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)))
 
 
-(defmethod time2pixel ((self t) time)
+;;;===================
+;;; TOOLS
+;;; NEEDS CLEANUP !!!
+;;;===================
+
+(defmethod time-to-pixels ((self t) time)
   (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
+
+
+
+
+;;;===================
 
 (defmethod update-cursor ((self cursor-play-view-mixin) time &optional y1 y2)
   (let* ((y (or y1 0))
          (h (if y2 (- y2 y1) (h self)))
-         (pixel (time2pixel self time))
+         (pixel (time-to-pixels self time))
          (dur (get-obj-dur (object (om-view-container self))))
          range
          xview
@@ -440,15 +471,15 @@
         ;(pixel (xpoint2pixel self time (get-system-etat self)))
          )
     (when (and (view-turn-pages-p self)
-               (> pixel (+ (w self) (om-h-scroll-position self)))
+               (> pixel (+ (w self) (om-h-scroll-position self) -20))
                (< time dur))
-      (progn
-        (setf range (rangex (panel (om-view-container self))))
-        (setf xview (- (second range) (first range)))
-        (setf dest (+ time xview))
+        (setf range (get-x-range (panel (om-view-container self))))
+        (setf durview (- (second range) (first range)))
+        (setf dest (+ time durview))
         (if (> dest dur)
-            (setf pixel (time2pixel self (- dur xview))))
-        (scroll-play-view self pixel)))
+            (setf pixel (time-to-pixels self (- dur durview))))
+        (scroll-play-view self (- pixel (get-key-space self)))
+        (om-invalidate-view self))
     (om-update-movable-cursor self pixel y 4 h)))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)

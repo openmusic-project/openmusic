@@ -58,7 +58,7 @@
         "editor;scoreeditor;scoreeditors" 
         "editor;scoreeditor;edition"
         "editor;scoreeditor;scorepatch"       
-        "editor;scoreeditor;scorepalette"    
+        ;;"editor;scoreeditor;scorepalette"    
         "editor;scoreeditor;inspectorpalette"    
         "editor;musminiboxes"           
         "editor;scoreeditor;scoretools"
@@ -110,6 +110,7 @@
         
         "editor;musicpreferences"
         "players;select-players"  
+        "players;ms-players"  
         
         "music-package"  
         ))
