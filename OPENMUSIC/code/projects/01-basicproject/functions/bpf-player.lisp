@@ -17,7 +17,7 @@
               (setf (decimals bpf) 1))
           (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
               (progn
-                (setf (y-points bpf) (list (nth 3 infos) (nth 3 infos)))
+                (setf (y-points bpf) (list (nth 1 infos) (nth 2 infos)))
                 (setf (x-points bpf) (list 0 1000))))))
     bpf))
 

@@ -489,7 +489,7 @@
                (result (las-slice-copy pointer from to)))
           (if result
               (om-sound-update-snd-slice-to-paste (object self) result)
-            (print "An error has occured. Requested copy operation aborted."))))
+            (print "An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to copy! Please select a region to copy.")))
 
 (defmethod editor-slice-cut ((self soundeditor))
@@ -509,7 +509,7 @@
                 (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested cut operation aborted."))))
+            (print "An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to cut! Please select a region to cut.")))
 
 (defmethod editor-slice-paste ((self soundeditor))
@@ -530,7 +530,7 @@
                       (om-sound-update-sndlasptr-current (object self) result)
                       (om-sound-update-las-infos (object self))
                       (launch-editor-view-updater self))
-                  (print "An error has occured. Requested paste operation aborted.")))
+                  (print "An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.")))
             (print "Nothing to paste! Please copy a sound region before."))))
     (print "You can't paste on a region!")))
 
@@ -551,7 +551,7 @@
                 (om-sound-update-sndlasptr-current (object self) result)
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested delete operation aborted."))))
+            (print "An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to delete! Please select a region to delete.")))
 
 (defmethod editor-slice-undo ((self soundeditor))
@@ -571,18 +571,17 @@
 
 (defmethod editor-slice-redo ((self soundeditor))
   (editor-stop self)
-  (cond ((typep (player self) 'las-player)
-         (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-future-stack (object self)))
-             (let ((del-line (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
-               (if del-line (fli:free-foreign-object (nth 2 del-line)))
-               (let ((futureline (table-pop-on-top (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
-                 (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
-                 (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
-                 (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
-                 (sound-update-pict (object self) (nth 3 futureline))
-                 (setf (sndpict self) (get-sound-pict (object self))))
-               (launch-editor-view-updater-light self))))
-        (t nil))
+  (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-future-stack (object self)))
+      (let ((del-line (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
+        (if del-line (fli:free-foreign-object (nth 2 del-line)))
+        (let ((futureline (table-pop-on-top (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
+          (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
+          (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
+          (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
+          (sound-update-pict (object self) (nth 3 futureline))
+          (setf (sndpict self) (get-sound-pict (object self))))
+        (launch-editor-view-updater-light self)))
+        
   (update-menubar self))
 ;====================================================================================================================
 

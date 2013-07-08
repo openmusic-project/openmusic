@@ -207,7 +207,7 @@
 (defun def-microplay-options () '(3000 3010 "127.0.0.1"))
 
 (defmethod get-external-def-vals ((module (eql 'microplayer))) 
-  (let ((libpath (lib-pathname (find-library "OM-Spat"))))
+  (let ((libpath (if (find-library "OM-Spat") (lib-pathname (find-library "OM-Spat")))))
     (list :microplay-path (when *micro-player-path* (probe-file *micro-player-path*))
           :microplay-options (def-microplay-options))))
 
