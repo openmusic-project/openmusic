@@ -151,8 +151,19 @@
          (console (car faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
          (maxnum (las-faust-get-control-count ptr))
-         found)
+         found
+         listing)
     (loop for i from 0 to (- maxnum 1) do
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
-    (las-faust-get-control-params ptr found)))
+    (while (not found)
+      (progn
+        (setf listing
+              (loop for i from 0 to (- maxnum 1) collect
+                    (list (car (las-faust-get-control-params ptr i)))))
+        (setf name (om-get-user-string (format nil "This parameter name is invalid. Please use one of this list : ~A" listing)))
+        (loop for i from 0 to (- maxnum 1) do
+              (if (string= name (car (las-faust-get-control-params ptr i)))
+                  (setf found i)))))
+    (las-faust-get-control-params ptr found)
+    ))
