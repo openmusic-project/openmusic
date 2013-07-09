@@ -156,6 +156,7 @@
 
 ;===========
 ;OBJECT ORDER
+;(omg-defclass noteEditor (scoreEditor) ())
 
 (defmethod object-order ((self scoreeditor)) '("note" "chord" "chord-seq"))
 (defmethod object-order ((self chordeditor)) '("note" "chord"))
