@@ -173,59 +173,54 @@
 
 (defun verify-port (port) t)
 
-
-
-(defmethod convert-interval ((self cursor-play-view-mixin))
-  ;;; attention ici on fait des copies de tous les sound files de la maquette...
-   (let* ((obj (car (get-obj-to-play self)))
-          (dur (get-obj-dur obj))
-          (int (cursor-interval self))  
-          x x1
-          rep)
-     
-     (if (listp int)
-       (setf x (max 0 (om-point-h (pixel2point self (om-make-point (car int) 0))))
-             x1 (min dur (om-point-h (pixel2point self (om-make-point (second int) 0)))))
-       (setf x (max 0 (om-point-h (pixel2point self (om-make-point int 0)))) 
-             x1 (get-obj-dur obj)
-             ))
-
-     (setf (cursor-pos self) x)
-     
-       (setf rep (if (<= x x1)
-                   (list x x1)
-                   (list x1 x)))
-       (if (< (car rep) dur)
-         rep
-         '(0 0))
-       ))
-
-
-(defmethod scroll-play-window ((self cursor-play-view-mixin)) 
-  ;(om-without-interrupts
-   (setf (rangex self) (list (cursor-pos *general-player*) 
-                             (+ (cursor-pos *general-player*) 
-                                (- (second (rangex self)) (first (rangex self))))))
-  (change-view-ranges self)
-  (om-redraw-view self)
-  (om-redraw-view (rulerx self))
-  );)
-
-
 (defmethod get-obj-to-play ((self cursor-play-view-mixin))
    (list (object (om-view-container self))))
-
-
-(defmethod start-position ((self cursor-play-view-mixin)) 
-  (or (cursor-pos self) 0))
-
-(defmethod scroll-to-0 ((self cursor-play-view-mixin)) t)
 
 (defmethod selection-to-play-? ((self cursor-play-view-mixin))
   (and (cursor-p self) 
        (cursor-interval self) 
        (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))
        ))
+
+
+
+;(defmethod convert-interval ((self cursor-play-view-mixin))
+  ;;; attention ici on fait des copies de tous les sound files de la maquette...
+;   (let* ((obj (car (get-obj-to-play self)))
+;          (dur (get-obj-dur obj))
+;          (int (cursor-interval self))  
+;          x x1
+;          rep)
+;     
+;     (if (listp int)
+;       (setf x (max 0 (om-point-h (pixel2point self (om-make-point (car int) 0))))
+;             x1 (min dur (om-point-h (pixel2point self (om-make-point (second int) 0)))))
+;       (setf x (max 0 (om-point-h (pixel2point self (om-make-point int 0)))) 
+;             x1 (get-obj-dur obj)
+;             ));;
+;
+;     (setf (cursor-pos self) x)
+;     
+;       (setf rep (if (<= x x1)
+;                   (list x x1)
+;                   (list x1 x)))
+;       (if (< (car rep) dur)
+;         rep
+;         '(0 0))
+;       ))
+
+
+;(defmethod scroll-play-window ((self cursor-play-view-mixin)) 
+  ;(om-without-interrupts
+;   (setf (rangex self) (list (cursor-pos *general-player*) 
+;                             (+ (cursor-pos *general-player*) 
+;                                (- (second (rangex self)) (first (rangex self))))))
+;  (change-view-ranges self)
+;  (om-redraw-view self)
+;  (om-redraw-view (rulerx self))
+;  );)
+
+
 
 
 

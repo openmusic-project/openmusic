@@ -29,6 +29,8 @@
 
 ;(defstruct player-task (object nil) (engine nil) (at 0) (interval nil))
 
+(defun clock-time () (get-internal-real-time))
+
 (defmethod player-init ((self omplayer)) t)
 
 (defmacro get-player-time (player)
@@ -285,7 +287,7 @@
 (defmethod get-interval-to-play ((self play-editor-mixin))
   (let ((selection-pane (car (cursor-panes self)))
         (object (get-obj-to-play self)))
-    (when (and selection-pane object)
+    (when (and selection-pane (equal (cursor-mode selection-pane) :interval) object)
       (cond ((and (cursor-interval selection-pane) 
                   (not (= (car (cursor-interval selection-pane)) (cadr (cursor-interval selection-pane)))))
              (cursor-interval selection-pane))

@@ -86,19 +86,21 @@
                             :icon1 mode :icon2 (string+ mode "-pushed"))))
 
   (setf (play-buttons (title-bar self))
-        (list (om-make-view 'om-icon-button :position (om-make-point 400 3) :size (om-make-point 20 20)
+        (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
                             :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
                             :action #'(lambda (item) (editor-play self)))
               
-              (om-make-view 'om-icon-button :position (om-make-point 420 3) :size (om-make-point 20 20)
+              (om-make-view 'om-icon-button :position (om-make-point 421 2) :size (om-make-point 22 22)
                             :icon1 "pause" :icon2 "pause-pushed"
+                            :lock-push t
                             :action #'(lambda (item) (editor-pause self)))
               
-              (om-make-view 'om-icon-button :position (om-make-point 440 3) :size (om-make-point 20 20)
+              (om-make-view 'om-icon-button :position (om-make-point 442 2) :size (om-make-point 22 22)
                             :icon1 "stop" :icon2 "stop-pushed"
                             :action #'(lambda (item) (editor-stop self)))
               
-              (om-make-view 'om-icon-button :position (om-make-point 480 3) :size (om-make-point 20 20)
+              (om-make-view 'om-icon-button :position (om-make-point 483 2) :size (om-make-point 22 22)
                             :icon1 "player" :icon2 "player-pushed"
                             :action #'(lambda (item) 
                                         (let* ((editor self)
@@ -129,6 +131,27 @@
     (setf (selected-p (car (edit-buttons self))) (equal mode :normal)
           (selected-p (cadr (edit-buttons self))) (equal mode :interval))
     (om-invalidate-view self)))
+
+(defmethod update-play-buttons ((self score-titlebar))
+  (let ((state (state (player (om-view-container self)))))
+    (setf (selected-p (first (play-buttons self))) (or (equal state :play) (equal state :pause))
+          (selected-p (second (play-buttons self))) (equal state :pause)
+          (selected-p (third (play-buttons self))) (equal state :stop))
+    (om-invalidate-view self)
+    (setf (selected-p (third (play-buttons self))) nil)))
+
+
+(defmethod editor-play ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+(defmethod editor-pause ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+(defmethod editor-stop ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
 
 
 ;===========
@@ -1940,8 +1963,8 @@
 (omg-defclass noteEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self noteEditor)) 'notePanel)
 (defmethod get-score-class-ctrls ((self noteEditor)) 'omnote-controls-view)
-(defmethod editor-has-palette-p ((self noteeditor)) 'chord-palette)
-(defmethod get-palette-pict ((self noteeditor)) nil)
+;(defmethod editor-has-palette-p ((self noteeditor)) 'chord-palette)
+;(defmethod get-palette-pict ((self noteeditor)) nil)
 
 ;CONTROLS
 (omg-defclass omnote-controls-view (omcontrols-view) ())
@@ -1996,10 +2019,8 @@
 
 (omg-defclass chordEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self chordEditor)) 'chordPanel)
-(defmethod editor-has-palette-p ((self chordeditor)) 'chord-palette)
+;(defmethod editor-has-palette-p ((self chordeditor)) 'chord-palette)
 (defmethod get-score-class-ctrls ((self chordEditor)) 'omchord-controls-view)
-
-(defmethod get-palette-pict ((self chordEditor)) nil)
 
 (omg-defclass omchord-controls-view (omcontrols-view) ())
 
@@ -2766,7 +2787,7 @@
 
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
-(defmethod editor-has-palette-p ((self voiceEditor)) 'ryth-palette)
+;(defmethod editor-has-palette-p ((self voiceEditor)) 'ryth-palette)
 
 (defmethod show-position-ms ((self voiceEditor) point) t)
 
@@ -2998,7 +3019,7 @@
 
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
-(defmethod editor-has-palette-p ((self polyEditor)) 'ryth-palette)
+;(defmethod editor-has-palette-p ((self polyEditor)) 'ryth-palette)
 (defmethod show-position-ms ((self polyEditor) point) t)
 
 
