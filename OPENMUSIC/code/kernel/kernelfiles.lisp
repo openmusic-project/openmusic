@@ -137,7 +137,7 @@
 "graphics/print"   
 
 ;--------------------Player---------------------- 
-;"scheduler-player/player"
+"scheduler-player/play"
 "scheduler-player/new-player"
 
 ;-----------Persistant&copy--------------------- 
