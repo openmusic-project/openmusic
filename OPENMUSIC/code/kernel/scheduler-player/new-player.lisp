@@ -349,7 +349,9 @@
 
 (defmethod stop-editor-callback ((self play-editor-mixin)) nil)
 
-
+(defmethod close-editor-before ((self play-editor-mixin))
+  (general-stop (player self))
+  (call-next-method))
 
 
 
