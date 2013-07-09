@@ -199,12 +199,6 @@
 ;EDITOR 
 ;===========================================================
 
-(defclass soundEditor (EditorView object-editor play-editor-mixin)
-   ((mode :initform nil :accessor mode)
-    (control :initform nil :accessor control)
-    (preview :initform nil :accessor preview)
-    (sndpict :initform nil :accessor sndpict)
-    (timeunit :initform 0 :accessor timeunit :initarg :timeunit)))
 
 (defmethod make-editor-window ((class (eql 'soundEditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)

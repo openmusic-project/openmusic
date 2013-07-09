@@ -788,7 +788,7 @@
 (defun om-draw-line (x1 y1 x2 y2  &key (erasable nil))  
   (gp:draw-line *curstream* (+ x1 *pox* 0.5) (+ y1 *poy* 0.5) (+ x2 *pox* 0.5) (+ y2 *poy* 0.5)
                 #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
-                :shape-mode t
+                :shape-mode :best
 		))
 
 (defun om-erase-line (x1 y1 x2 y2) 
