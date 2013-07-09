@@ -110,7 +110,6 @@
            )
          ))
 
-
 (defmethod general-pause ((player omplayer))
   (mapcar #'player-pause (engines player)
           (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
