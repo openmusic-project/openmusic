@@ -20,7 +20,8 @@
                 (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
                     (progn
                       (setf (y-points bpf) (list (nth 1 infos) (nth 3 infos) (nth 3 infos) (nth 2 infos)))
-                      (setf (x-points bpf) (list 0 500 9500 10000))))))
+                      (setf (x-points bpf) (list 0 500 9500 10000)))))
+            (print "I cannot build a bpf-control with these parameters"))
           bpf))))
 
 (defmethod omng-copy ((self bpf-control))
@@ -41,12 +42,6 @@
           (x-points bpf) (x-points self)
           (y-points bpf) (y-points self))
     bpf))
-
-(defmethod get-x-range ((self bpfcontrolpanel))
-  (let ((range (real-bpf-range (object (editor self))))
-        x)
-    (setf x (list (nth 0 range) (nth 1 range)))
-    x))
 
 (defmethod print-object ((self bpf-control) stream)
   (call-next-method))
@@ -109,6 +104,12 @@
 (defmethod view-turn-pages-p ((self bpfcontrolpanel)) nil)
 (defmethod get-panel-class ((Self bpfcontroleditor)) 'bpfcontrolpanel)
 
+(defmethod get-x-range ((self bpfcontrolpanel))
+  (let ((range (real-bpf-range (object (editor self))))
+        x)
+    (setf x (list (nth 0 range) (nth 1 range)))
+    x))
+
 (defmethod time2pixel ((self bpfcontrolpanel) time)
   (call-next-method self (* time (expt 10 (decimals (object (editor self)))))))
 
@@ -165,8 +166,67 @@
               (setf found i)))
     (if found
         (las-faust-get-control-params ptr found)
-      (if (om-y-or-n-dialog "The parameter name you chose is invalid. Do you want to print a list of all available parameter in te OM Listener?")
-          (progn
-            (print "All available parameters name are :")
-            (loop for i from 0 to (- maxnum 1) do
-                  (print (car (las-faust-get-control-params ptr i)))))))))
+      (let ((param-n (make-param-select-window 
+                      (loop for i from 0 to (- maxnum 1) collect
+                            (car (las-faust-get-control-params ptr i))))))
+        (if param-n 
+            (las-faust-get-control-params ptr param-n)
+          nil)))))
+
+
+
+
+(defun make-param-select-window (listing)
+  (let ((win (om-make-window 'om-dialog
+                             :window-title "Parameter selection" 
+                             :size (om-make-point 400 220) 
+                             :scrollbars nil
+                             :position (om-make-point 100 50) 
+                             :close t 
+                             :resizable nil)))
+    (setf panel (om-make-view 'om-view
+                              :owner win
+                              :position (om-make-point 0 0) 
+                              :scrollbars nil
+                              :retain-scrollbars nil
+                              :bg-color *om-dark-gray-color*
+                              :field-size  (om-make-point 400 200)
+                              :size (om-make-point (w win) (h win))))
+
+    (setf text1 (om-make-dialog-item 'om-static-text 
+                                    (om-make-point 90 5) 
+                                    (om-make-point 340 20)
+                                    (format nil "Your parameter slot is empty or invalid.")
+                                    :font *om-default-font1* 
+                                    :fg-color *om-white-color*))
+    (setf text2 (om-make-dialog-item 'om-static-text 
+                                    (om-make-point 30 25) 
+                                    (om-make-point 390 20)
+                                    (format nil "Please select the parameter you want to automate in this list :")
+                                    :font *om-default-font1* 
+                                    :fg-color *om-white-color*))
+
+    (setf paramlist (om-make-dialog-item  'om-single-item-list 
+                                         (om-make-point 50 55) 
+                                         (om-make-point 300 100) 
+                                         "Available parameters"  
+                                         :scrollbars :v
+                                         :bg-color *om-white-color*
+                                         :after-action (om-dialog-item-act item 
+                                                         (om-return-from-modal-dialog win (om-get-selected-item-index item)))
+                                         :range listing
+                                         ))
+    (setf ok (om-make-dialog-item 'om-button 
+                                  (om-make-point 105 163) 
+                                  (om-make-point 70 24)  "OK"
+                                        :di-action (om-dialog-item-act item 
+                                                     (om-return-from-modal-dialog win (om-get-selected-item-index paramlist)))))
+    (setf cancel (om-make-dialog-item 'om-button 
+                                  (om-make-point 225 163) 
+                                  (om-make-point 70 24)  "Cancel"
+                                        :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
+    (om-add-subviews panel text1 text2 paramlist ok cancel)
+    (om-add-subviews win panel)
+    (om-modal-dialog win)
+    ))
+
