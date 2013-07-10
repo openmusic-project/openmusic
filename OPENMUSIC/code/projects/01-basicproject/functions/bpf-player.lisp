@@ -13,13 +13,15 @@
     (if (faust-control bpf)
         (progn
           (setf infos (get-infos-from-faust-control (faust-control bpf)))
-          (if (<= (- (nth 2 infos) (nth 1 infos)) 10)
-              (setf (decimals bpf) 1))
-          (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
+          (if infos
               (progn
-                (setf (y-points bpf) (list (nth 1 infos) (nth 2 infos)))
-                (setf (x-points bpf) (list 0 1000))))))
-    bpf))
+                (if (<= (- (nth 2 infos) (nth 1 infos)) 10)
+                    (setf (decimals bpf) 1))
+                (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
+                    (progn
+                      (setf (y-points bpf) (list (nth 1 infos) (nth 3 infos) (nth 3 infos) (nth 2 infos)))
+                      (setf (x-points bpf) (list 0 500 9500 10000))))))
+          bpf))))
 
 (defmethod omng-copy ((self bpf-control))
   (let ((bpf (eval (call-next-method))))
@@ -40,6 +42,11 @@
           (y-points bpf) (y-points self))
     bpf))
 
+(defmethod get-x-range ((self bpfcontrolpanel))
+  (let ((range (real-bpf-range (object (editor self))))
+        x)
+    (setf x (list (nth 0 range) (nth 1 range)))
+    x))
 
 (defmethod print-object ((self bpf-control) stream)
   (call-next-method))
@@ -156,14 +163,10 @@
     (loop for i from 0 to (- maxnum 1) do
           (if (string= name (car (las-faust-get-control-params ptr i)))
               (setf found i)))
-    (while (not found)
-      (progn
-        (setf listing
-              (loop for i from 0 to (- maxnum 1) collect
-                    (list (car (las-faust-get-control-params ptr i)))))
-        (setf name (om-get-user-string (format nil "This parameter name is invalid. Please use one of this list : ~A" listing)))
-        (loop for i from 0 to (- maxnum 1) do
-              (if (string= name (car (las-faust-get-control-params ptr i)))
-                  (setf found i)))))
-    (las-faust-get-control-params ptr found)
-    ))
+    (if found
+        (las-faust-get-control-params ptr found)
+      (if (om-y-or-n-dialog "The parameter name you chose is invalid. Do you want to print a list of all available parameter in te OM Listener?")
+          (progn
+            (print "All available parameters name are :")
+            (loop for i from 0 to (- maxnum 1) do
+                  (print (car (las-faust-get-control-params ptr i)))))))))
