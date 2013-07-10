@@ -131,7 +131,7 @@
 
 ;-----------Aux windows------------------------------ 
 "graphics/infowindow"
-;"graphics/palette"
+"graphics/palette"
 
 ;--------------------Print---------------------- ???
 "graphics/print"   
