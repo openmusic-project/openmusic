@@ -156,32 +156,14 @@
 
 ;===========
 ;OBJECT ORDER
-;(omg-defclass noteEditor (scoreEditor) ())
 
+;;; to be redefined for each class
 (defmethod object-order ((self scoreeditor)) '("note" "chord" "chord-seq"))
-(defmethod object-order ((self chordeditor)) '("note" "chord"))
-(defmethod object-order ((self noteeditor)) '("note"))
-(defmethod object-order ((self chordseqeditor)) '("note" "chord" "chord-seq"))
-(defmethod object-order ((self multiseqeditor)) '("note" "chord" "chord-seq" "multi-seq"))
-(defmethod object-order ((self voiceeditor)) '("note" "chord" "group" "measure" "voice"))
-(defmethod object-order ((self polyeditor)) '("note" "chord" "group" "measure" "voice" "poly"))
 
 
 (defmethod set-obj-mode ((self scoreeditor) n)
   (setf (obj-mode (panel self)) (nth n (object-order self)))
   (set-edit-param self 'obj-mode n))
-
-
-(defmethod cursor-by-obj-mode ((self scorePanel))
-   (cond
-    ((string-equal (obj-mode self) "note") *c-nota*)
-    ((string-equal (obj-mode self) "chord") *c-chord*)
-    ((string-equal (obj-mode self) "group") *c-group*)  
-    ((string-equal (obj-mode self) "measure") *c-measure*)
-    ((or (string-equal (obj-mode self) "voice")
-         (string-equal (obj-mode self) "chord-seq"))
-         *c-voice*)
-    (t *om-arrow-cursor*)))
 
 
 (defun grap-class-from-type (str)
@@ -685,6 +667,19 @@
 (defmethod linear? ((self scorepanel)) (not (= (score-mode self) 2)))
 (defmethod in-patch-mode? ((self scorepanel)) (= (score-mode self) 1))
 (defmethod in-page-mode? ((self scorepanel)) (= (score-mode self) 2))
+
+
+(defmethod cursor-by-obj-mode ((self scorePanel))
+   (cond
+    ((string-equal (obj-mode self) "note") *c-nota*)
+    ((string-equal (obj-mode self) "chord") *c-chord*)
+    ((string-equal (obj-mode self) "group") *c-group*)  
+    ((string-equal (obj-mode self) "measure") *c-measure*)
+    ((or (string-equal (obj-mode self) "voice")
+         (string-equal (obj-mode self) "chord-seq"))
+         *c-voice*)
+    (t *om-arrow-cursor*)))
+
 
 ;;; pour pas perdre les scrollbars quand on commence a mettre des objets dans le score-patch...
 (defmethod set-field-size ((self scoreeditor)) 
@@ -5340,6 +5335,15 @@
                    
                    (t (om-beep))))))
     editor-obj))
+
+
+(defmethod object-order ((self chordeditor)) '("note" "chord"))
+(defmethod object-order ((self noteeditor)) '("note"))
+(defmethod object-order ((self chordseqeditor)) '("note" "chord" "chord-seq"))
+(defmethod object-order ((self multiseqeditor)) '("note" "chord" "chord-seq" "multi-seq"))
+(defmethod object-order ((self voiceeditor)) '("note" "chord" "group" "measure" "voice"))
+(defmethod object-order ((self polyeditor)) '("note" "chord" "group" "measure" "voice" "poly"))
+
 
 
 ;===================================
