@@ -79,7 +79,7 @@
    (if interval
      (let ((newinterval (interval-intersec interval (list at (+ at (get-obj-dur self))))))
        (when newinterval
-         (push (list self (- at (first interval)) (loop for pos in newinterval collect (- pos at)))
+         (push (list self (- at (first interval)) (om- newinterval at))
                (list-to-play *general-player*))))
      (push (list self at interval) (list-to-play *general-player*))) t)
 
@@ -155,6 +155,8 @@
                             :port port
                             :voice voice)))))
 
+
+(defmethod* PrepareToPlay ((player t) (self rest) at &key approx port interval voice) nil)
 
 ;(defmethod* PrepareToPlay ((player t) (self listtoplay) at &key  approx port interval voice)
 ;   (declare (ignore approx))
