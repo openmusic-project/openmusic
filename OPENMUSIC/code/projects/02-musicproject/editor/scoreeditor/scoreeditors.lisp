@@ -266,6 +266,9 @@
 ;(defmethod get-palette-pict ((self scoreeditor))
 ;  (om-load-and-store-picture "musicpalette" 'internal))
 
+(defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
+
+
 (defmethod get-control-h ((self scoreEditor)) 50)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
@@ -319,7 +322,7 @@
     (when (equal score-mode 1) (setf score-mode 0))
     (change-score-mode ed-view score-mode)
     (setf (score-mode ed-view) score-mode)
-    (setf (obj-mode ed-view) (print (nth obj-mode (object-order self))))
+    (setf (obj-mode ed-view) (nth obj-mode (object-order self)))
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (get-edit-param self 'cursor-mode))
     (init-draw self)

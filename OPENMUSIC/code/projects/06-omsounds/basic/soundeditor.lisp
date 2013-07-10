@@ -760,11 +760,7 @@
          (Xsize 80)
          (Mydialog (om-make-window 'om-dialog
                                    :size (om-make-point (+ xsize 110) 80)
-                                   :window-(when (not *activate-handler*)
-        (setf *activate-handler* t)
-        (palette-open self)
-        (setf *activate-handler* nil)
-        (palette-init (editor self)))title "Marker Onset"
+                                   :window-title "Marker Onset"
                                    :maximize nil :minimize nil :resizable nil
                                    :bg-color *om-window-def-color*
                                    :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))

@@ -24,6 +24,50 @@
 
 (in-package :om)
 
+(defmethod editor-palettes ((self t)) nil)
+
+(defmethod open-win-palettes (pal ed) nil)
+(defmethod close-win-palettes (pal ed) nil)
+
+(defmethod editor-open-palettes ((self editorview))
+  (mapc #'(lambda (pal) (open-win-palettes pal self)) 
+        (editor-palettes self)))
+
+(defmethod editor-close-palettes ((self editorview))
+  (mapc #'(lambda (pal) (close-win-palettes pal self)) 
+        (editor-palettes self)))
+
+
+;;; PALETTES MUST APPEAR / DISAPPEAR WITH THEIR ASSOCIATED EDITOR
+
+;;; Editor window appears
+(defmethod om-select-window ((self EditorWindow))
+  (let ((rep (call-next-method)))
+    (editor-open-palettes (editor self))
+    rep))
+
+;;; Editor window is closed
+(defmethod om-window-close-event ((self EditorWindow)) 
+  (editor-close-palettes (editor self))
+  (call-next-method))
+
+;;; Editor window is activated/deactivated
+(defmethod om-window-activate ((self EditorWindow) &optional (activatep t))
+  (call-next-method)
+  (if activatep
+    (editor-open-palettes (editor self))
+    (editor-close-palettes (editor self))
+    ))
+
+;;; Editor is programmatically selected / unselected
+(defmethod (setf selected-p) :after (selected-p (self EditorView))
+  (if selected-p
+      (editor-open-palettes self) 
+    (editor-close-palettes self)))
+
+
+
+#|
 ;;;===============================
 ;;; GESTION PALETTES
 ;;;===============================
@@ -138,56 +182,15 @@
                                         :size  (om-make-point 50 25)
                                         :bg-color *om-window-def-color*)))
    *palette-win*)
+|#
 
 
-;;==================
-;; SECONDARY PALETTES
-;;==================
-(defvar *palettes* nil)
-(defmethod open-win-palettes ((pal t) editor) nil)
-(defmethod close-win-palettes ((pal t)) nil)
-
-;;==================
-;; OPEN
-;;==================
-(defparameter *activate-handler* nil)
-
-(defmethod window-open-palette ((self t))
-  (if (window-has-palette-p self)
-      (when (not *activate-handler*)
-        (setf *activate-handler* t)
-        (palette-open self)
-        (setf *activate-handler* nil)
-        (palette-init (editor self)))
-    (palette-close)
-    ))
-
-(defmethod om-window-activate ((self EditorWindow) &optional (activatep t))
-  (call-next-method)
-  (if  activatep
-    (window-open-palette self)
-    ))
-
-(defmethod om-select-window ((self EditorWindow))
-  (call-next-method)
-  (setf *activate-handler* nil)
-  (window-open-palette self)
-  self)
-
-(defmethod (setf selected-p) :after (selected-p (self EditorView))
-   (if selected-p
-       (progn (palette-open (window self)) (palette-init self))
-     (palette-close)))
-
-(defmethod om-window-close-event ((self EditorWindow)) 
-  (when (and *palette* (equal (editor-assoc *palette*) (editor self)))
-    (palette-close))
-  (call-next-method)
-  )
 
 
+#|
 ;===================================
 ;==========Buttons in palettes==========
+
 
 (defmethod push-button ((view palette-view) i)
   (draw-push-button view i))
@@ -230,11 +233,7 @@
 (defmethod palette-act ((self general-palette) x) 
   (editor-palette-act (editor-assoc self) x))
 
-
-
-
-
-
+|#
 
 
 #|
