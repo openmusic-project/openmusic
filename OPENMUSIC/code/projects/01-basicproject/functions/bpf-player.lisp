@@ -179,11 +179,10 @@
 (defun make-param-select-window (listing)
   (let ((win (om-make-window 'om-dialog
                              :window-title "Parameter selection" 
-                             :size (om-make-point 400 220) 
+                             :size (om-make-point 400 210) 
                              :scrollbars nil
-                             :position (om-make-point 100 50) 
-                             :close t 
-                             :resizable nil)))
+                             :position (om-make-point 100 50))))
+
     (setf panel (om-make-view 'om-view
                               :owner win
                               :position (om-make-point 0 0) 
@@ -192,41 +191,37 @@
                               :bg-color *om-dark-gray-color*
                               :field-size  (om-make-point 400 200)
                               :size (om-make-point (w win) (h win))))
-
     (setf text1 (om-make-dialog-item 'om-static-text 
-                                    (om-make-point 90 5) 
-                                    (om-make-point 340 20)
-                                    (format nil "Your parameter slot is empty or invalid.")
-                                    :font *om-default-font1* 
-                                    :fg-color *om-white-color*))
+                                     (om-make-point 90 5) 
+                                     (om-make-point 340 20)
+                                     (format nil "Your parameter slot is empty or invalid.")
+                                     :font *om-default-font1* 
+                                     :fg-color *om-white-color*))
     (setf text2 (om-make-dialog-item 'om-static-text 
-                                    (om-make-point 30 25) 
-                                    (om-make-point 390 20)
-                                    (format nil "Please select the parameter you want to automate in this list :")
-                                    :font *om-default-font1* 
-                                    :fg-color *om-white-color*))
-
+                                     (om-make-point 30 25) 
+                                     (om-make-point 390 20)
+                                     (format nil "Please select the parameter you want to automate in this list :")
+                                     :font *om-default-font1* 
+                                     :fg-color *om-white-color*))
     (setf paramlist (om-make-dialog-item  'om-single-item-list 
-                                         (om-make-point 50 55) 
-                                         (om-make-point 300 100) 
-                                         "Available parameters"  
-                                         :scrollbars :v
-                                         :bg-color *om-white-color*
-                                         :after-action (om-dialog-item-act item 
-                                                         (om-return-from-modal-dialog win (om-get-selected-item-index item)))
-                                         :range listing
-                                         ))
+                                          (om-make-point 50 55) 
+                                          (om-make-point 300 100) 
+                                          "Available parameters"  
+                                          :scrollbars :v
+                                          :bg-color *om-white-color*
+                                          :after-action (om-dialog-item-act item 
+                                                          (om-return-from-modal-dialog win (om-get-selected-item-index item)))
+                                          :range listing))
     (setf ok (om-make-dialog-item 'om-button 
                                   (om-make-point 105 163) 
                                   (om-make-point 70 24)  "OK"
-                                        :di-action (om-dialog-item-act item 
-                                                     (om-return-from-modal-dialog win (om-get-selected-item-index paramlist)))))
+                                  :di-action (om-dialog-item-act item 
+                                               (if (om-get-selected-item-index paramlist)
+                                                   (om-return-from-modal-dialog win (om-get-selected-item-index paramlist))))))
     (setf cancel (om-make-dialog-item 'om-button 
-                                  (om-make-point 225 163) 
-                                  (om-make-point 70 24)  "Cancel"
-                                        :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
+                                      (om-make-point 225 163) 
+                                      (om-make-point 70 24)  "Cancel"
+                                      :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
     (om-add-subviews panel text1 text2 paramlist ok cancel)
     (om-add-subviews win panel)
-    (om-modal-dialog win)
-    ))
-
+    (om-modal-dialog win)))
