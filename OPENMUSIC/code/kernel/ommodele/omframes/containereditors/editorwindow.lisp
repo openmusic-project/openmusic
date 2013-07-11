@@ -275,10 +275,12 @@
 (defmethod get-info-window-components ((self EditorView))
   (mapcar 'get-obj-for-info (get-actives (panel self))))
 
+(defmethod close-editor-before ((self t)) nil)
 
 (defmethod close-editor-before ((self EditorView))  
   (set-win-position (ref self) (om-view-position (om-view-window self)))
-  (set-win-size (ref self) (om-view-size (om-view-window self))))
+  (set-win-size (ref self) (om-view-size (om-view-window self)))
+  (call-next-method))
 
 (defmethod close-editor-after ((self EditorView))
   nil)

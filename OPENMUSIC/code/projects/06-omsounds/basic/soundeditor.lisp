@@ -31,7 +31,6 @@
   ((editor :initform nil :accessor editor :initarg :editor)    ;;; a reference to the main editor
    ;;; a list of controls
    (player-control :initform nil :accessor player-control)
-   (player-specific-controls :initform nil :accessor player-specific-controls)
    (vol-control :initform nil :accessor vol-control)
    (pan-control :initform nil :accessor pan-control)))
 
@@ -110,19 +109,12 @@
 (defmethod update-controls ((self sound-control-view))
   (let ((player (get-edit-param (editor self) 'player)))
     (om-set-selected-item (player-control self) (audio-player-name player))
-    (update-player-controls self player)
+    (update-player-controls (editor self) player self)
     ;(set-value (vol-control self) (vol (object (editor self))))
     ;(set-value (pan-control self) (pan (object (editor self))))
     ))
 
-(defmethod make-player-specific-controls (player control-view) nil)
 
-(defmethod update-player-controls ((self sound-control-view) player)
-  (apply #'om-remove-subviews self (player-specific-controls self))
-  (setf (player-specific-controls self)
-        (make-player-specific-controls player self))
-  (apply #'om-add-subviews self (player-specific-controls self)))
-  
 
 ;;;==============
 ;;; RULER 
@@ -206,7 +198,6 @@
 ;===========================================================
 ;EDITOR 
 ;===========================================================
-
 (defclass soundEditor (EditorView object-editor play-editor-mixin)
    ((mode :initform nil :accessor mode)
     (control :initform nil :accessor control)
@@ -489,7 +480,7 @@
                (result (las-slice-copy pointer from to)))
           (if result
               (om-sound-update-snd-slice-to-paste (object self) result)
-            (print "An error has occured. Requested copy operation aborted."))))
+            (print "An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to copy! Please select a region to copy.")))
 
 (defmethod editor-slice-cut ((self soundeditor))
@@ -509,7 +500,7 @@
                 (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested cut operation aborted."))))
+            (print "An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to cut! Please select a region to cut.")))
 
 (defmethod editor-slice-paste ((self soundeditor))
@@ -530,7 +521,7 @@
                       (om-sound-update-sndlasptr-current (object self) result)
                       (om-sound-update-las-infos (object self))
                       (launch-editor-view-updater self))
-                  (print "An error has occured. Requested paste operation aborted.")))
+                  (print "An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.")))
             (print "Nothing to paste! Please copy a sound region before."))))
     (print "You can't paste on a region!")))
 
@@ -551,7 +542,7 @@
                 (om-sound-update-sndlasptr-current (object self) result)
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested delete operation aborted."))))
+            (print "An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file."))))
     (print "Nothing to delete! Please select a region to delete.")))
 
 (defmethod editor-slice-undo ((self soundeditor))
@@ -571,18 +562,17 @@
 
 (defmethod editor-slice-redo ((self soundeditor))
   (editor-stop self)
-  (cond ((typep (player self) 'las-player)
-         (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-future-stack (object self)))
-             (let ((del-line (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
-               (if del-line (fli:free-foreign-object (nth 2 del-line)))
-               (let ((futureline (table-pop-on-top (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
-                 (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
-                 (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
-                 (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
-                 (sound-update-pict (object self) (nth 3 futureline))
-                 (setf (sndpict self) (get-sound-pict (object self))))
-               (launch-editor-view-updater-light self))))
-        (t nil))
+  (if (gethash (- *las-slicing-history-size* 1) (om-sound-las-slicing-future-stack (object self)))
+      (let ((del-line (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)))
+        (if del-line (fli:free-foreign-object (nth 2 del-line)))
+        (let ((futureline (table-pop-on-top (om-sound-las-slicing-future-stack (object self)) *las-slicing-history-size*)))
+          (om-sound-update-sndlasptr-current (object self) (nth 0 futureline))
+          (om-sound-update-snd-slice-to-paste (object self) (nth 1 futureline))
+          (om-sound-update-buffer-with-new (object self) (nth 2 futureline))
+          (sound-update-pict (object self) (nth 3 futureline))
+          (setf (sndpict self) (get-sound-pict (object self))))
+        (launch-editor-view-updater-light self)))
+        
   (update-menubar self))
 ;====================================================================================================================
 
@@ -595,14 +585,6 @@
           (esc "Reset cursor")
           (space "Play/Stop"))))
 
-
-;;; PLAYER FEATURES
-(defmethod change-player ((self soundeditor) player)
-  (call-next-method)
-  (reset-editor-player self) 
-  (update-player-controls (control self) player))
-
-;;; (if (equal val :multiplayer) (launch-multiplayer-app))
 
 (defmethod cursor-panes ((self soundeditor))
   (list (panel self)
@@ -725,10 +707,6 @@
 ;; no turn page
 (defmethod scroll-play-window ((self soundPanel)) t)
 
-(defmethod change-player ((panel soundpanel) val)
-  (call-next-method)
-  (change-player (editor panel) val))
-
 
 ;------------------------------------
 ;Events
@@ -782,11 +760,7 @@
          (Xsize 80)
          (Mydialog (om-make-window 'om-dialog
                                    :size (om-make-point (+ xsize 110) 80)
-                                   :window-(when (not *activate-handler*)
-        (setf *activate-handler* t)
-        (palette-open self)
-        (setf *activate-handler* nil)
-        (palette-init (editor self)))title "Marker Onset"
+                                   :window-title "Marker Onset"
                                    :maximize nil :minimize nil :resizable nil
                                    :bg-color *om-window-def-color*
                                    :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
@@ -829,7 +803,7 @@
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
-    (if (equal (cursor-mode self) :interval) ; (cursor-p self)
+    (if (equal (cursor-mode self) :interval)
         (progn 
           (setf (selection? self) nil)
           (new-interval-cursor self where)

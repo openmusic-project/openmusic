@@ -10,7 +10,7 @@
 
 (defmethod get-inspector ((self t)) t)
 
-(omg-defclass score-inspector-win (om-windoid) 
+(defclass score-inspector-win (om-windoid) 
               ((inspector :initform nil :initarg :inspector :accessor inspector)))
 
 (defclass score-inspector ()
@@ -24,17 +24,17 @@
   (setf (winpos *scoreinspector*) (om-view-position self))
   (setf (win *scoreinspector*) nil)
   (setf (show *scoreinspector*) nil)
-  (when (om-front-window)
-    (om-add-menu-to-win (om-front-window))))
+  ;(when (om-front-window) (om-add-menu-to-win (om-front-window)))
+  )
 
-(push 'inspector *palettes*)
+;;(push 'inspector *palettes*)
 
 (defmethod open-win-palettes ((pal (eql 'inspector)) editor)
-    (when (and *scoreinspector* (win *scoreinspector*))
-      (om-hide-window (win *scoreinspector*)))
-    (get-inspector editor))
+    ;(when (and *scoreinspector* (win *scoreinspector*))
+    ;  (om-hide-window (win *scoreinspector*)))
+  (get-inspector editor))
 
-(defmethod close-win-palettes ((pal (eql 'inspector)))
+(defmethod close-win-palettes ((pal (eql 'inspector)) editor)
   (when (and *scoreinspector* (win *scoreinspector*))
     (let ((show? (show *scoreinspector*)))
       (om-close-window (win *scoreinspector*))
@@ -43,6 +43,7 @@
   
 ;; menu call
 (defun show-score-inspector (editor) 
+  (unless *scoreinspector* (setf *scoreinspector* (make-instance 'score-inspector)))
   (setf (show *scoreinspector*) t)
   (get-inspector editor))
 
@@ -59,11 +60,10 @@
                             :inspector *scoreinspector*
                             :resizable nil
                             :position (or (winpos *scoreinspector*)
-                                          (and *palette-win*
-                                               (om-make-point (+ (x *palette-win*)
-                                                                 (w *palette-win*)
-                                                                 6)
-                                                              (y *palette-win*)))
+                                          (om-make-point (+ (x (window self))
+                                                            (w (window self))
+                                                            6)
+                                                         (y (window self)))
                                           (om-make-point 40 400))
                             :size (om-make-point 250 54))))
     (update-inspector self 0)))

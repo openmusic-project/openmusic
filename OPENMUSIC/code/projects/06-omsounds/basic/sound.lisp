@@ -94,19 +94,21 @@ Press 'space' to play/stop the sound file.
   (setf (tracknum self) chan))
  
 (defmethod copy-container ((self sound) &optional (pere ()))
-   (let ((snd (if (om-sound-file-name self) 
-                  (let ((copy (load-sound-file (om-sound-file-name self)))
-                        (slots  (class-instance-slots (find-class 'simple-container))))
-                    (setf (slot-value copy 'parent) pere)
-                    (loop for slot in slots
-                        when (not (eq (slot-definition-name slot) 'parent))
-                        do (setf (slot-value  copy  (slot-definition-name slot))
-                             (copy-container (slot-value self  (slot-definition-name slot)) copy)))
-                    copy)
-                (make-instance 'sound))))
-     (setf (tracknum snd) (tracknum self))
-     (setf (markers snd) (markers self))
-     snd))
+  (let ((snd (if (om-sound-file-name self) 
+                 (let ((copy (load-sound-file (om-sound-file-name self)))
+                       (slots  (class-instance-slots (find-class 'simple-container))))
+                   (setf (slot-value copy 'parent) pere)
+                   (loop for slot in slots
+                         when (not (eq (slot-definition-name slot) 'parent))
+                         do (setf (slot-value  copy  (slot-definition-name slot))
+                                  (copy-container (slot-value self  (slot-definition-name slot)) copy)))
+                   copy)
+               (make-instance 'sound))))
+    (setf (tracknum snd) (tracknum self))
+    (setf (markers snd) (markers self))
+    snd))
+
+
 
 ;;; copie : meme ptrs (pour le maquette play)
 (defun copy-sound-file (sound)
@@ -140,7 +142,6 @@ Press 'space' to play/stop the sound file.
           when (not (eq (slot-definition-name slot) 'parent))
           do (setf (slot-value  copy  (slot-definition-name slot))
                    (copy-container (slot-value self (slot-definition-name slot)) copy)))
-    
     copy))
 
 ;;; maquette interface

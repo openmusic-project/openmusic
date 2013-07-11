@@ -398,7 +398,7 @@
 
 
 (defmethod get-score-class-panel ((self scaleeditor)) 'scalePanel)
-(defmethod editor-has-palette-p ((self scaleeditor)) 'nil)
+
 (defmethod get-score-class-ctrls ((self scaleeditor)) 'omscale-controls-view)
 
 (defmethod get-win-ed-size  ((self scale)) (om-make-point 700 200))

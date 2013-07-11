@@ -10,23 +10,7 @@
   (loop for an in (list! (analysis (object (editor self))))
         do (analysis-update an (object (editor self)))))
 
-;;;============================
-;;; TOOLS => TO BE ADDED TO OM SCORE TOOLS
-;;;============================
 
-(defmethod time-to-pixels (view time-ms)
-  (+ (get-key-space view) (ms2pixel time-ms (/ (staff-size view) 4) (staff-zoom view))))
-
-(defmethod time-to-pixels ((view voicepanel) time-ms)
-  (get-x-pos view time-ms (staff-zoom view)))
-
-
-(defmethod pixels-to-time (view pix)
-  (pixel2ms (- pix (get-key-space view)) 
-            (/ (staff-size view) 4) (staff-zoom view)))
-
-(defmethod pixels-to-time ((view voicepanel) pix)
-  (get-ms-pos view pix (staff-zoom view)))
 
 ;;;============================
 ;;; DRAW

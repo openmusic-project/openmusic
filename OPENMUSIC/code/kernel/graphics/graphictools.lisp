@@ -593,8 +593,8 @@ into the unaire-fun-view.#action#"))
 (defvar *titlebars-h* nil)
 (setf *titlebars-h* 26)
 
-(omg-defclass editor-titlebar (3dborder-view) ()
-              (:default-initargs :draw-with-buffer t))
+(defclass editor-titlebar (3dborder-view) ()
+  (:default-initargs :draw-with-buffer t))
 
 ;=====================================
 ;   MIXIN CLASSES
@@ -623,12 +623,12 @@ into the unaire-fun-view.#action#"))
   (let ((name (string (class-name (class-of (object self))))))
     (om-add-subviews (title-bar self)
                      (om-make-dialog-item 'om-static-text (om-make-point 10 2) 
-                                          (om-make-point 200 ;(+ (om-string-size name *om-default-font2b*) 4)
+                                          (om-make-point 160 ;(+ (om-string-size name *om-default-font2b*) 4)
                                                          18)
                                           name
                                           :bg-color *editor-bar-color*
                                           :fg-color *om-dark-gray-color*
-                                          :font *om-default-font2b*
+                                          :font *om-default-font1b*
                                           ))))
 
 (defmethod update-titlebar ((self object-editor)) 

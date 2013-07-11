@@ -519,6 +519,8 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    ((rangex :initform nil :accessor rangex :initarg :rangex)
     (rulerx :initform nil :accessor rulerx)))
 
+(defmethod get-x-range ((self view-with-ruler-x)) (rangex self))
+
 (defmethod get-system-etat ((self view-with-ruler-x)) 
    "Return some factors used for unit conversions"
    (let ((durrangex (abs (- (second (rangex self)) (first (rangex self))))))

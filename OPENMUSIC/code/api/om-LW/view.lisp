@@ -293,7 +293,10 @@
 (defmethod om-set-scroll-position ((self t) pos) nil)
 
 (defmethod om-set-scroll-position ((self om-scroller) pos)
-  (capi::scroll self :pan :move (list (om-point-h pos) (om-point-v pos))))
+  (capi::apply-in-pane-process 
+   self
+   'capi::scroll self :pan :move 
+   (list (om-point-h pos) (om-point-v pos))))
 
 (defmethod om-h-scroll-position ((self om-scroller))
   (or (capi::get-horizontal-scroll-parameters self :slug-position) 0))

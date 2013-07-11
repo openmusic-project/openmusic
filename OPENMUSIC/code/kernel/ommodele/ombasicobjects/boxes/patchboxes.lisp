@@ -1010,10 +1010,19 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod object-remove-extra ((obj t) box) nil)
 
+(defmethod reference-object ((self OMBox)) (value self))
 
 (defmethod player-menu-item ((self OMBoxEditCall)) 
   (when (play-obj? (value self))
-    (list (om-new-leafmenu "Player" #'(lambda () (select-player self))))
+    (list (om-new-leafmenu "Player" #'(lambda () 
+                                        (let ((previousplayer (get-edit-param self 'player))
+                                              (newplayer (select-player self)))
+                                          (when (and newplayer (not (equal previousplayer newplayer)))
+                                            (player-special-action newplayer)
+                                            (player-init newplayer)
+                                            (when (editorframe self) 
+                                              (update-controls-view (editorframe self)))
+                                            )))))
     ))
 
 ;-----------------------------------------------------------------

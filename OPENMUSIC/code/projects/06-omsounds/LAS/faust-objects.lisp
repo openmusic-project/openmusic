@@ -206,15 +206,15 @@
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
-                                :close-p t :winshow t :bg-color *om-dark-gray-color*
+                                :close-p t :winshow t :bg-color *om-light-gray-color*
                                                       )))
     win))
 
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
-  (if (effect-ptr self)
-      (om-make-point (max 75 (car (las-faust-get-group-size (ui-tree self)))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self)))))
-    (om-make-point 75 50)))
+  (if (ui-tree self)
+     (om-make-point (min 500 (car (las-faust-get-group-size (ui-tree self)))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
+    (om-make-point 75 75)))
 
 
 
@@ -223,7 +223,7 @@
 (defmethod get-panel-class ((self faustcontrollerEditor)) 'faustcontrollerPanel)
 
 (defmethod update-subviews ((self faustcontrollerEditor))
-   (om-set-view-size (panel self) (om-make-point (w self) (h self))))
+   (om-set-view-size (panel self) (om-make-point (min 500 (w self)) (min 500 (h self)))))
 
 
 ;=== MAIN PANEL ===
@@ -276,8 +276,15 @@
 
 (defmethod initialize-instance :after ((self faustcontrollerEditor) &rest l)
   (declare (ignore l))
-  (let ((x (om-point-x (get-win-ed-size (object self))))
-        (y (om-point-y (get-win-ed-size (object self))))
+  (let ((x (if (ui-tree (object self))
+               (max 75 (car (las-faust-get-group-size (ui-tree (object self)))))
+             75))
+        
+        (y (if (ui-tree (object self))
+               (+ 75 (cadr (las-faust-get-group-size (ui-tree (object self)))))
+             75))
+        (xwin (om-point-h (get-win-ed-size (object self))))
+        (ywin (om-point-v (get-win-ed-size (object self))))
         (orange (om-make-color 1 0.5 0))
         group-type
         groups
@@ -286,21 +293,21 @@
         (xpars 0)
         (ypars 0)
         (offset 0))
-    (if (effect-ptr (object self))
+    (if (and (effect-ptr (object self)) (ui-tree (object self)))
         (progn
           (setf (tree self) (ui-tree (object self)))
           (setf group-type (las-faust-get-group-type (tree self)))
           (setf groups (las-faust-get-groups-only (tree self)))
           (setf params (las-faust-get-params-only (tree self)))
-
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
-                                           :scrollbars (first (metaobj-scrollbars-params self))
-                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                           :field-size  (om-make-point x (- y 50))
+                                           :scrollbars t
+                                           :retain-scrollbars nil
+                                           :field-size  (om-make-point (if (< xwin x) x (- x 20)) 
+                                                                       (if (< ywin y) y (- y 20)))
                                            :size (om-make-point (w self) (h self))
-                                           :bg-color *om-dark-gray-color*))
+                                           :bg-color *om-light-gray-color*))
      
           (make-faust-group-view self (tree self))
           (setf paramnum 0)
@@ -318,11 +325,11 @@
       (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
-                                           :scrollbars (first (metaobj-scrollbars-params self))
-                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                           :scrollbars t
+                                           :retain-scrollbars nil
                                            :field-size  (om-make-point x (- y 50))
                                            :size (om-make-point (w self) (h self))
-                                           :bg-color *om-dark-gray-color*)))))
+                                           :bg-color *om-light-gray-color*)))))
 
 (defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
   (let ((res (om-make-view (get-parampanel-class (panel self))
@@ -837,8 +844,8 @@
 
 
 (defmethod get-win-ed-size ((self faust-synth-console)) 
-  (if (synth-ptr self)
-      (om-make-point (max 75 (car (las-faust-get-group-size (ui-tree self)))) (+ 50 (cadr (las-faust-get-group-size (ui-tree self)))))
+  (if (ui-tree self)
+      (om-make-point (min 500 (car (las-faust-get-group-size (ui-tree self)))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
     (om-make-point 75 50)))
 
 
@@ -848,7 +855,7 @@
 (defmethod get-panel-class ((self faustSynthcontrollerEditor)) 'faustSynthcontrollerPanel)
 
 (defmethod update-subviews ((self faustSynthcontrollerEditor))
-   (om-set-view-size (panel self) (om-make-point (w self) (h self))))
+   (om-set-view-size (panel self) (om-make-point (min 500 (w self)) (min 500 (h self)))))
 
 
 ;=== MAIN PANEL ===
@@ -902,8 +909,15 @@
 (defmethod initialize-instance :after ((self faustSynthcontrollerEditor) &rest l)
   (set-edit-param self 'player :libaudio)
   (declare (ignore l))
-  (let ((x (om-point-x (get-win-ed-size (object self))))
-        (y (om-point-y (get-win-ed-size (object self))))
+  (let ((x (if (ui-tree (object self))
+               (max 75 (car (las-faust-get-group-size (ui-tree (object self)))))
+             75))
+        
+        (y (if (ui-tree (object self))
+               (+ 75 (cadr (las-faust-get-group-size (ui-tree (object self)))))
+             75))
+        (xwin (om-point-h (get-win-ed-size (object self))))
+        (ywin (om-point-v (get-win-ed-size (object self))))
         (orange (om-make-color 1 0.5 0))
         group-type
         groups
@@ -912,7 +926,7 @@
         (xpars 0)
         (ypars 0)
         (offset 0))
-    (if (synth-ptr (object self))
+    (if (and (synth-ptr (object self)) (ui-tree (object self)))
         (progn
           (setf (tree self) (ui-tree (object self)))
           (setf group-type (las-faust-get-group-type (tree self)))
@@ -922,11 +936,12 @@
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
-                                           :scrollbars (first (metaobj-scrollbars-params self))
-                                           :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                           :field-size  (om-make-point x (- y 50))
+                                           :scrollbars t
+                                           :retain-scrollbars t
+                                           :field-size  (om-make-point (if (< xwin x) x (- x 20)) 
+                                                                       (if (< ywin y) y (- y 20)))
                                            :size (om-make-point (w self) (h self))
-                                           :bg-color orange))
+                                           :bg-color *om-light-gray-color*))
      
           (make-faust-group-view self (tree self))
           (setf paramnum 0)
@@ -944,8 +959,8 @@
       (setf (panel self) (om-make-view (get-panel-class self) 
                                        :owner self
                                        :position (om-make-point 0 0) 
-                                       :scrollbars (first (metaobj-scrollbars-params self))
-                                       :retain-scrollbars (second (metaobj-scrollbars-params self))
+                                       :scrollbars t
+                                       :retain-scrollbars t
                                        :field-size  (om-make-point x (- y 50))
                                        :size (om-make-point (w self) (h self))
                                        :bg-color orange)))))

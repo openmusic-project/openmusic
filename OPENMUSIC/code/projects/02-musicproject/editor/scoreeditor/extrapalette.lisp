@@ -25,23 +25,17 @@
   (setf (show *extramanager*) nil)
   (setf (edit-mode *extramanager*) nil)
   (setf (current-editor *extramanager*) nil)
-  (when (om-front-window)
-    (om-add-menu-to-win (om-front-window))
-    ))
+  ;(when (om-front-window) (om-add-menu-to-win (om-front-window)))
+  )
 
-(push 'extrapal *palettes*)
+;;(push 'extrapal *palettes*)
 
+;;; automatic call on window activate
 (defmethod open-win-palettes ((pal (eql 'extrapal)) editor)
-  (when (and *extramanager* (win *extramanager*))
-    (om-hide-window (win *extramanager*)))
+  (unless *extramanager* (setf *extramanager* (make-instance 'extramanager)))  
+  ;(when (and *extramanager* (win *extramanager*))
+  ;  (om-hide-window (win *extramanager*)))
   (show-extrapalette-win editor))
-
-(defmethod close-win-palettes ((pal (eql 'extrapal)))
-  (when (and *extramanager* (win *extramanager*))
-    (let ((show? (show *extramanager*)))
-      (om-close-window (win *extramanager*))
-      (setf (show *extramanager*) show?))))
-
 
 ;; menu call
 (defun show-extra-palette (editor) 
@@ -49,15 +43,22 @@
   (setf (show *extramanager*) t)
   (show-extrapalette-win editor))
 
+(defmethod close-win-palettes ((pal (eql 'extrapal)) editor)
+  (when (and *extramanager* (win *extramanager*))
+    (let ((show? (show *extramanager*)))
+      (om-close-window (win *extramanager*))
+      (setf (show *extramanager*) show?))))
+
+;;; enables or not the menu
 (defun show-extra-palette-enabled ()
   (or (not *extramanager*)
       (not (win *extramanager*))))
 
+
 (defmethod show-extrapalette-win ((self t)) nil)
 
-(defmethod show-extrapalette-win ((self scoreeditor))
-  (unless *extramanager* (setf *extramanager* (make-instance 'extramanager)))
-  (when (and (show *extramanager*) (= (score-mode (panel self)) 0))
+(defmethod show-extrapalette-win ((self scoreeditor)) 
+  (when (and *extramanager* (show *extramanager*) (= (score-mode (panel self)) 0))
     (if (win *extramanager*) (om-select-window (win *extramanager*))
       (progn 
         (setf (win *extramanager*)
@@ -65,12 +66,12 @@
                               :extramanager *extramanager*
                               :resizable nil :close nil
                               :position (or (winpos *extramanager*)
-                                            (and *palette-win*
-                                                 (om-make-point (x *palette-win*)
-                                                                (+ (y *palette-win*)
-                                                                   (h *palette-win*)
+                                            (om-make-point (x (window self))
+                                                                (+ (y (window self))
+                                                                   (h (window self))
                                                                    25)
-                                                                )))
+                                                                )
+                                            (om-make-point 100 400))
                               :size (om-make-point 182 50)))
         (add-buttons (win *extramanager*))
         (setf (edit-mode *extramanager*) nil)

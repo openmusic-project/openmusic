@@ -9,7 +9,8 @@
 (defvar *general-mixer-window* nil)
 (defvar *general-mixer-values* nil)
 (defvar *general-mixer-current-preset* 1)
-;(setf *general-mixer-current-preset* 1)
+;(setf *general-mixer-values* '((0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100)))
+;(setf *general-mixer-presets* (init-genmixer-values))
 
 
 (defun  init-genmixer-values ()

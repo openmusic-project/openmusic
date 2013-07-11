@@ -8,7 +8,7 @@
 (defmethod player-special-action ((player (eql :microplayer))) (launch-microplayer-app))  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player (eql :microplayer))) nil)   ;;; the default values for the player params
 (defmethod player-type ((player (eql :microplayer))) :UDP)   ;;; communication protocol (:midi / :udp)
-
+(defmethod player-init ((player (eql :microplayer))) (restart-microplayer))  ;;; called when this player is selected / options changed etc.
 
 ;(defmethod get-score-player ((self scorepanel)) 
 ;  (if (equal (get-edit-param (editor self) 'player) :microplayer) 'microplayer 'midishare))
@@ -43,6 +43,10 @@
   (unless *micro-listen-process*
     (setf *micro-listen-process* (om-start-osc-server *microplayer-in-port* *microplayer-host*  #'send-more-notes))))
 
+(defun restart-microplayer ()
+  (close-microplayer)
+  (open-microplayer))
+    
 (defun close-microplayer ()
   (when *micro-listen-process*
     (om-stop-osc-server *micro-listen-process*)
@@ -189,8 +193,6 @@
    (micro-reset))
 
 
-
-
 ;;;; ADD EXTERNAL PREF MODULE
 
 (add-external-pref-module 'microplayer)
@@ -207,9 +209,8 @@
 (defun def-microplay-options () '(3000 3010 "127.0.0.1"))
 
 (defmethod get-external-def-vals ((module (eql 'microplayer))) 
-  (let ((libpath (lib-pathname (find-library "OM-Spat"))))
     (list :microplay-path (when *micro-player-path* (probe-file *micro-player-path*))
-          :microplay-options (def-microplay-options))))
+          :microplay-options (def-microplay-options)))
 
 (defmethod save-external-prefs ((module (eql 'microplayer))) 
   `(:microplay-path ,(om-save-pathname *micro-player-path*) 

@@ -5,23 +5,22 @@
 ;PALETTE   abstract class
 ;======================================================
 
-(defun but-function (item)
-  (let* ((pwin (om-view-window item))
-         (buttons (buttons *palette*))
-         (ed-view (panel (editor-assoc *palette*)))
-         (newval (position item (car buttons) :test 'equal)))
-    (loop for b in (car (buttons *palette*)) do
-          (when (selected-p b)
-            (setf (selected-p b) nil)
-            (om-invalidate-view b t)))
-    (setf (selected-p item) t)
-    (om-invalidate-view item t)
-    (setf (obj-mode ed-view) (nth newval (object-order ed-view)))
-    (off-selection ed-view)
-    (setf (selection? ed-view)  nil)
-    (set-edit-param (om-view-container ed-view) 'obj-mode newval)
-    (om-invalidate-view ed-view t)
-    (om-invalidate-view (title-bar (editor-assoc *palette*)))))
+;(defun but-function (item)
+;  (let* ((pwin (om-view-window item))
+;         (buttons (buttons *palette*))
+;         (ed-view (panel (editor-assoc *palette*)))
+;         (newval (position item (car buttons) :test 'equal)))
+;    (loop for b in (car (buttons *palette*)) do
+;          (when (selected-p b)
+;            (setf (selected-p b) nil)
+;            (om-invalidate-view b t)))
+;    (setf (selected-p item) t)
+;    (om-invalidate-view item t)
+;    (setf (obj-mode ed-view) (nth newval (object-order ed-view)))
+;    (off-selection ed-view)
+;    (setf (selection? ed-view)  nil)
+;    (om-invalidate-view ed-view t)
+;   (om-invalidate-view (title-bar (editor-assoc *palette*)))))
 
 ;Buttons
 
@@ -34,88 +33,6 @@
 (defvar *bvoice* nil)
 (defvar *bsys* nil)
 (defvar *bfleches* nil)
-
-(defun bnote ()
-          (om-make-view 'om-icon-button
-                                :lock-push t
-                                :position (om-make-point  0 25)
-                                :size (om-make-point 26 25)
-                                :action #'(lambda (item)
-                                            (but-function item))
-                                :icon1 "note"))
-   
-(defun bchord ()
-      (om-make-view 'om-icon-button
-                                 :lock-push t
-                                   :position (om-make-point  25 25)
-                                   :size (om-make-point 26 25)
-                                   :action #'(lambda (item)
-                                                      (but-function item))
-                                   :icon1 "chord"))
-   
-(defun bgroup ()
-  (om-make-view 'om-icon-button
-                :lock-push t
-                :position (om-make-point  50 25)
-                :size (om-make-point 26 25)
-                :action #'(lambda (item)
-                            (but-function item))
-                :icon1 "group"))
-
-(defun bmes ()
-  (om-make-view 'om-icon-button
-                :lock-push t
-                :position (om-make-point  75 25)
-                :size (om-make-point 26 25)
-                :action #'(lambda (item)
-                            (but-function item))
-                :icon1 "meas"))
-   
-(defun bvoice ()
-  (om-make-view 'om-icon-button
-                :lock-push t
-                :position (om-make-point  100 25)
-                :size (om-make-point 26 25)
-                :action #'(lambda (item)
-                            (but-function item))
-                :icon1 "voice"))
-   
-(defun bsys ()
-  (om-make-view 'om-icon-button
-                :lock-push t
-                :position (om-make-point  125 25)
-                :size (om-make-point 26 25)
-                :action #'(lambda (item)
-                            (but-function item))
-                :icon1 "poly"))
-
-   ;Buttons
-(defun bfleches ()
-      (list (om-make-view 'om-icon-button
-                                           :position (om-make-point  175 25)
-                                           :size (om-make-point 26 25)
-                                           :action #'(lambda (item)
-                                                              (update-inspector (om-view-container item) 0))
-                                           :icon1 "first") 
-             (om-make-view 'om-icon-button
-                                          :position (om-make-point  200 25)
-                                          :size (om-make-point 26 25)
-                                          :action #'(lambda (item)
-                                                             (but-function item))
-                                          :icon1 "prev")
-             (om-make-view 'om-icon-button
-                                          :position (om-make-point  225 25)
-                                          :size (om-make-point 26 25)
-                                          :action #'(lambda (item)
-                                                             (but-function item))
-                                          :icon1 "next")
-             (om-make-view 'om-icon-button
-                                          :position (om-make-point  250 25)
-                                          :size (om-make-point 26 25)
-                                          :action #'(lambda (item)
-                                                             (let* ((selection (selection? (panel (editor-assoc (om-view-container item))))))
-                                                               (update-inspector (om-view-container item) (- (length selection) 1))))
-                                          :icon1 "last")))
 
 
 (defun int-scorepal-buttons ()

@@ -143,7 +143,7 @@
         (loop for i from 0 to (- (length (items group)) 1) do
               (setf type (check-type-key (nth i (items group))))
               (setf obj
-                    (cond ((or (string= type "hgroup") (string= type "vgroup"))
+                    (cond ((or (string= type "hgroup") (string= type "vgroup") (string= type "tgroup"))
                            (construct-faust-group (nth i (items group))))
                           (t
                            (construct-faust-param (nth i (items group))))))
