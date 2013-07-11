@@ -3,11 +3,14 @@
 
 (defclass! bpf-control (simple-container BPF) 
    ((c-action :initform nil :accessor c-action :initarg :c-action)
-    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A Faust Effect/Synth, or a list of a Faust Effect/Synth and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")))
+    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A Faust Effect/Synth, or a list of a Faust Effect/Synth and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")
+    (paraminfos :initform nil :accessor paraminfos)
+    (paramnum :initform nil :accessor paramnum)
+    (faustfun :initform nil :accessor faustfun)))
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
   (let ((bpf (call-next-method))
-        infos)
+        infos fullinf)
     (setf (c-action bpf) (nth 3 slots-vals))
     (setf (faust-control bpf) (nth 4 slots-vals))
     (if (and (faust-control bpf) 
@@ -20,14 +23,17 @@
                (not (listp (faust-control bpf)))
                (or (typep (faust-control bpf) 'faust-effect-console) (typep (faust-control bpf) 'faust-synth-console)))))
         (progn
-          (setf infos (get-infos-from-faust-control (faust-control bpf)))
-          (if infos
+          (setf fullinf (get-infos-from-faust-control (faust-control bpf)))
+          (setf (paraminfos bpf) (car fullinf))
+          (if (paraminfos bpf)
               (progn
-                (if (<= (- (nth 2 infos) (nth 1 infos)) 10)
+                (setf (paramnum bpf) (cadr fullinf))
+                (setf (faustfun bpf) (get-function-from-faust-control bpf))
+                (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 10)
                     (setf (decimals bpf) 1))
                 (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
                     (progn
-                      (setf (y-points bpf) (list (nth 1 infos) (nth 3 infos) (nth 3 infos) (nth 2 infos)))
+                      (setf (y-points bpf) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))))
                       (setf (x-points bpf) (list 0 500 9500 10000)))))
             (print "I cannot build a bpf-control with these parameters"))
           bpf))))
@@ -62,13 +68,11 @@
 ;(defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf-control) at interval)
-  ;(player-unschedule-all self)
-  (let ((faustfun (if (faust-control object)
-                      (get-function-from-faust-control (faust-control object)))))
-    (print faustfun)
+	  ;(player-unschedule-all self)
+  (let ((faustfun (faustfun object)))
     (when (or (c-action object) (faust-control object))
       (if interval
-          (mapcar #'(lambda (point) 
+          (mapcar #'(lambda (point)
                       (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
                           (progn
                             (if (c-action object) 
@@ -113,7 +117,7 @@
 (defmethod get-panel-class ((Self bpfcontroleditor)) 'bpfcontrolpanel)
 
 (defmethod get-x-range ((self bpfcontrolpanel))
-  (let ((range (real-bpf-range (object (editor self))))
+  (let ((range (give-bpf-range (object (editor self))))
         x)
     (setf x (list (nth 0 range) (nth 1 range)))
     x))
@@ -125,16 +129,15 @@
   (cond ((equal char #\SPACE) (editor-play/stop (editor self)))
         (t (call-next-method))))
 
-(defun get-function-from-faust-control (faust-control)
-  (let* ((name (cadr faust-control))
-         (console (car faust-control))
+(defun get-function-from-faust-control (bpf)
+  (let* ((faust-control (faust-control bpf))
+         (console (if (listp faust-control) (car faust-control) faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
          (maxnum (las-faust-get-control-count ptr))
-         infos minval maxval range found text-to-up display graph-to-up paramtype)
-    (loop for i from 0 to (- maxnum 1) do
-          (if (string= name (car (las-faust-get-control-params ptr i)))
-              (setf found i)))
-    (setf infos (las-faust-get-control-params ptr found))
+         (infos (paraminfos bpf))
+         (found (paramnum bpf))
+         minval maxval range text-to-up display graph-to-up paramtype)
+    (print infos)
     (setf minval (nth 1 infos))
     (setf maxval (nth 2 infos))
     (if (= minval maxval) (setf minval 0
@@ -174,36 +177,14 @@
               (if (string= name (car (las-faust-get-control-params ptr i)))
                   (setf found i))))
     (if found
-        (las-faust-get-control-params ptr found)
+        (list (las-faust-get-control-params ptr found) found)
       (let ((param-n (make-param-select-window 
                       (loop for i from 0 to (- maxnum 1) collect
                             (car (las-faust-get-control-params ptr i))))))
         (if param-n 
-            (las-faust-get-control-params ptr param-n)
-          nil))))
-    
-  )
-
-
-
-
-  (let* ((name (cadr faust-control))
-         (console (car faust-control))
-         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
-         (maxnum (las-faust-get-control-count ptr))
-         found
-         listing)
-    (loop for i from 0 to (- maxnum 1) do
-          (if (string= name (car (las-faust-get-control-params ptr i)))
-              (setf found i)))
-    (if found
-        (las-faust-get-control-params ptr found)
-      (let ((param-n (make-param-select-window 
-                      (loop for i from 0 to (- maxnum 1) collect
-                            (car (las-faust-get-control-params ptr i))))))
-        (if param-n 
-            (las-faust-get-control-params ptr param-n)
+            (list (las-faust-get-control-params ptr param-n) param-n)
           nil)))))
+
 
 
 
@@ -257,3 +238,4 @@
     (om-add-subviews panel text1 text2 paramlist ok cancel)
     (om-add-subviews win panel)
     (om-modal-dialog win)))
+
