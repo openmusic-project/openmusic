@@ -1,4 +1,3 @@
-
 (in-package :om)
 
 (defclass! bpf-control (simple-container BPF) 
@@ -137,7 +136,6 @@
          (infos (paraminfos bpf))
          (found (paramnum bpf))
          minval maxval range text-to-up display graph-to-up paramtype)
-    (print infos)
     (setf minval (nth 1 infos))
     (setf maxval (nth 2 infos))
     (if (= minval maxval) (setf minval 0
@@ -192,8 +190,11 @@
                              :window-title "Parameter selection" 
                              :size (om-make-point 400 210) 
                              :scrollbars nil
-                             :position (om-make-point 100 50))))
-
+                             :position (om-make-point 100 50)))
+        (maxchar 0))
+   (loop for i from 0 to (1- (length listing)) do
+         (if (< maxchar (count-if #'standard-char-p (nth i listing)))
+             (setf maxchar (count-if #'standard-char-p (nth i listing)))))
     (setf panel (om-make-view 'om-view
                               :owner win
                               :position (om-make-point 0 0) 
@@ -203,13 +204,13 @@
                               :field-size  (om-make-point 400 200)
                               :size (om-make-point (w win) (h win))))
     (setf text1 (om-make-dialog-item 'om-static-text 
-                                     (om-make-point 90 5) 
-                                     (om-make-point 340 20)
-                                     (format nil "Your parameter slot is empty or invalid.")
-                                     :font *om-default-font1* 
+                                     (om-make-point 85 5) 
+                                     (om-make-point 295 20)
+                                     (format nil "Empty or invalid parameter name.")
+                                     :font *om-default-font2b* 
                                      :fg-color *om-white-color*))
     (setf text2 (om-make-dialog-item 'om-static-text 
-                                     (om-make-point 30 25) 
+                                     (om-make-point 25 25) 
                                      (om-make-point 390 20)
                                      (format nil "Please select the parameter you want to automate in this list :")
                                      :font *om-default-font1* 
@@ -218,8 +219,12 @@
                                           (om-make-point 50 55) 
                                           (om-make-point 300 100) 
                                           "Available parameters"  
-                                          :scrollbars t
-                                          :bg-color *om-white-color*
+                                          :scrollbars (cond ((and (> (length listing) 4) (not (> maxchar 43))) :v)
+                                                            ((and (> maxchar 43) (not (> (length listing) 4))) :h)
+                                                            ((and (> (length listing) 4) (> maxchar 10)) t)
+                                                            (t nil))
+                                          :bg-color *om-dark-gray-color*
+                                          :fg-color *om-white-color*
                                           :after-action (om-dialog-item-act item 
                                                           (om-return-from-modal-dialog win (om-get-selected-item-index item)))
                                           :range listing))
@@ -234,6 +239,4 @@
                                       (om-make-point 70 24)  "Cancel"
                                       :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
     (om-add-subviews panel text1 text2 paramlist ok cancel)
-    (om-add-subviews win panel)
     (om-modal-dialog win)))
-
