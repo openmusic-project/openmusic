@@ -200,7 +200,7 @@
                                                          (om-return-from-modal-dialog dialog t)
                                                          )
                                             :default-button t))
-      (om-modal-dialog dialog))))
+      (om-modal-dialog dialog)))
 
 
 
