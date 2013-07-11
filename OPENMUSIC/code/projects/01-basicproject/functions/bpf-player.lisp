@@ -68,7 +68,7 @@
 ;(defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf-control) at interval)
-	  ;(player-unschedule-all self)
+  ;(player-unschedule-all self)
   (let ((faustfun (faustfun object)))
     (when (or (c-action object) (faust-control object))
       (if interval
@@ -143,25 +143,22 @@
     (if (= minval maxval) (setf minval 0
                                 maxval 1))
     (setf range (- maxval minval))
-    (setf display (display (nth found (params-ctrl console))))
-    (setf text-to-up (paramval display))
-    (setf graph-to-up (paramgraph display))
     (setf paramtype (param-type (nth found (params-ctrl console))))
-    (if graph-to-up
+    (if (display (nth found (params-ctrl console)))
         #'(lambda (val)
             (if (< val minval) (setf val minval))
             (if (> val maxval) (setf val maxval))
             (las-faust-set-control-value ptr found (float val))
             (cond ((string= paramtype "checkbox")
-                   (om-set-check-box graph-to-up (if (>= val 1) t)))
+                   (om-set-check-box (paramgraph (display (nth found (params-ctrl console)))) (if (>= val 1) t)))
                   ((string= paramtype "numentry")
                    (progn
-                     (om-set-dialog-item-text text-to-up (number-to-string (float val)))
-                     (set-value graph-to-up (* 100 (/ (- val minval) range)))))
+                     (om-set-dialog-item-text (paramval (display (nth found (params-ctrl console)))) (number-to-string (float val)))
+                     (set-value (paramgraph (display (nth found (params-ctrl console)))) (* 100 (/ (- val minval) range)))))
                   (t 
                    (progn
-                     (om-set-dialog-item-text text-to-up (number-to-string (float val)))
-                     (om-set-slider-value graph-to-up (* 100 (/ (- val minval) range)))))))
+                     (om-set-dialog-item-text (paramval (display (nth found (params-ctrl console)))) (number-to-string (float val)))
+                     (om-set-slider-value (paramgraph (display (nth found (params-ctrl console)))) (* 100 (/ (- val minval) range)))))))
       #'(lambda (val) 
           (las-faust-set-control-value ptr found (float val))))))
 
@@ -169,23 +166,24 @@
   (let* ((name (if (listp faust-control) (cadr faust-control)))
          (console (if (listp faust-control) (car faust-control) faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
-         (maxnum (las-faust-get-control-count ptr))
+         maxnum
          found
          listing)
-    (if name
-        (loop for i from 0 to (- maxnum 1) do
-              (if (string= name (car (las-faust-get-control-params ptr i)))
-                  (setf found i))))
-    (if found
-        (list (las-faust-get-control-params ptr found) found)
-      (let ((param-n (make-param-select-window 
-                      (loop for i from 0 to (- maxnum 1) collect
-                            (car (las-faust-get-control-params ptr i))))))
-        (if param-n 
-            (list (las-faust-get-control-params ptr param-n) param-n)
-          nil)))))
-
-
+    (if (and ptr (not (las-faust-null-ptr-p ptr)))
+        (progn
+          (setf maxnum (las-faust-get-control-count ptr))
+          (if name
+              (loop for i from 0 to (- maxnum 1) do
+                    (if (string= name (car (las-faust-get-control-params ptr i)))
+                        (setf found i))))
+          (if found
+              (list (las-faust-get-control-params ptr found) found)
+            (let ((param-n (make-param-select-window 
+                            (loop for i from 0 to (- maxnum 1) collect
+                                  (car (las-faust-get-control-params ptr i))))))
+              (if param-n 
+                  (list (las-faust-get-control-params ptr param-n) param-n)
+                nil)))))))
 
 
 
