@@ -33,7 +33,12 @@
    ))
 
 ;;; SPECIAL TITLEBAR
-(omg-defclass score-titlebar (editor-titlebar) ())
+(defclass score-titlebar (editor-titlebar) 
+  ((play-buttons :accessor play-buttons :initform nil)
+  (edit-buttons :accessor edit-buttons :initform nil)
+  (mode-buttons :accessor mode-buttons :initform nil)
+  ))
+
 (defmethod get-titlebar-class ((self scoreeditor)) 'score-titlebar)
 
 (defmethod title-bar-infostring ((self scoreeditor))
@@ -41,11 +46,138 @@
          (analysis-infostring self))
         (t (format nil "Selection: ~A" (string-upcase (string (obj-mode (panel self))))))))
 
-(defmethod om-draw-contents :after ((self score-titlebar))
-  (let ((str (title-bar-infostring (om-view-container self))))
-  (om-with-focused-view self
-    (om-with-font *om-default-font1*
-                  (om-draw-string (- (w self) (om-string-size str *om-default-font1*) 8) 17 str)))))
+(defmethod om-draw-contents :after ((self score-titlebar)) nil)
+;  (let ((str (title-bar-infostring (om-view-container self))))
+;  (om-with-focused-view self
+;    (om-with-font *om-default-font1*
+;                  (om-draw-string (- (w self) (om-string-size str *om-default-font1*) 8) 17 str)))))
+
+
+(defmethod init-titlebar ((self scoreeditor))
+  (call-next-method)
+  
+  (setf (edit-buttons (title-bar self))
+        (list (om-make-view 'om-icon-button :position (om-make-point 180 2) :size (om-make-point 22 22)
+                            :icon1 "mousecursor" :icon2 "mousecursor-pushed"
+                            :lock-push t
+                            :selected-p (equal :normal (get-edit-param self 'cursor-mode))
+                            :action #'(lambda (item) (set-cursor-mode self :normal)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 201 2) :size (om-make-point 22 22)
+                            :icon1 "beamcursor" :icon2 "beamcursor-pushed"
+                            :lock-push t
+                            :selected-p (equal :interval (get-edit-param self 'cursor-mode))
+                            :action #'(lambda (item) (set-cursor-mode self :interval)))))
+
+  (setf (mode-buttons (title-bar self))
+        (loop for mode in (object-order self) 
+              for x = 240 then (+ x 21) for 
+              n = 0 then (+ n 1) 
+              collect
+              (om-make-view 'om-icon-button
+                            :lock-push t
+                            :position (om-make-point x 2)
+                            :selected-p (= (get-edit-param self 'obj-mode) n)
+                            :size (om-make-point 22 22)
+                            :action (let ((m n))
+                                      #'(lambda (item)
+                                          (set-obj-mode self m)
+                                          (update-mode-buttons (title-bar self))))
+                            :icon1 mode :icon2 (string+ mode "-pushed"))))
+
+  (setf (play-buttons (title-bar self))
+        (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
+                            :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-play self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 421 2) :size (om-make-point 22 22)
+                            :icon1 "pause" :icon2 "pause-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-pause self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 442 2) :size (om-make-point 22 22)
+                            :icon1 "stop" :icon2 "stop-pushed"
+                            :action #'(lambda (item) (editor-stop self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 483 2) :size (om-make-point 22 22)
+                            :icon1 "player" :icon2 "player-pushed"
+                            :action #'(lambda (item) 
+                                        (let* ((editor self)
+                                               (previousplayer (get-edit-param editor 'player))
+                                               (newplayer (select-player editor)))
+                                          (when (and newplayer (not (equal previousplayer newplayer)))
+                                                     ;(om-set-dialog-item-text playertext (player-name newplayer))
+                                            (player-special-action newplayer)
+                                            (player-init newplayer)
+                                            (update-player-controls editor newplayer)))))))
+
+  (apply 'om-add-subviews (cons (title-bar self) 
+                                (append (play-buttons (title-bar self))
+                                        (edit-buttons (title-bar self))
+                                        (mode-buttons (title-bar self))))         
+         ))
+
+(defmethod update-mode-buttons ((self score-titlebar))
+  (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
+    (loop for b in (mode-buttons self)
+          for i = 0 then (+ i 1) do
+          (setf (selected-p b) (= i n)))
+    (om-invalidate-view self)))
+
+
+(defmethod update-cursor-mode-buttons ((self score-titlebar))
+  (let ((mode (get-edit-param (om-view-container self) 'cursor-mode)))
+    (setf (selected-p (car (edit-buttons self))) (equal mode :normal)
+          (selected-p (cadr (edit-buttons self))) (equal mode :interval))
+    (om-invalidate-view self)))
+
+(defmethod update-play-buttons ((self score-titlebar))
+  (let ((state (state (player (om-view-container self)))))
+    (setf (selected-p (first (play-buttons self))) (or (equal state :play) (equal state :pause))
+          (selected-p (second (play-buttons self))) (equal state :pause)
+          (selected-p (third (play-buttons self))) (equal state :stop))
+    (om-invalidate-view self)
+    (setf (selected-p (third (play-buttons self))) nil)))
+
+
+(defmethod editor-play ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+(defmethod editor-pause ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+(defmethod editor-stop ((self scoreeditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+
+;===========
+;OBJECT ORDER
+
+;;; to be redefined for each class
+(defmethod object-order ((self scoreeditor)) '("note" "chord" "chord-seq"))
+
+
+(defmethod set-obj-mode ((self scoreeditor) n)
+  (setf (obj-mode (panel self)) (nth n (object-order self)))
+  (set-edit-param self 'obj-mode n))
+
+
+(defun grap-class-from-type (str)
+   (cond
+    ((string-equal str "note") 'grap-note)
+    ((string-equal str "chord") 'grap-chord)
+    ((string-equal str "chord-seq") 'grap-chord-seq)
+    ((string-equal str "res") 'grap-note)
+    ((string-equal str "group") 'grap-group)
+    ((string-equal str "measure") 'grap-measure)
+    ((string-equal str "voice") 'grap-voice)
+    ((string-equal str "poly") 'grap-poly)
+    ((string-equal str "multi-seq") 'grap-multiseq)))
+
 
 ;--------- MENU actions
 
@@ -130,19 +262,23 @@
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
 (defmethod get-score-class-ctrls ((self scoreEditor)) 'omcontrols-view)
 
-(defmethod editor-has-palette-p ((self scoreEditor)) 'music-score-palette)
-(defmethod get-palette-pict ((self scoreeditor))
-  (om-load-and-store-picture "musicpalette" 'internal))
+;(defmethod editor-has-palette-p ((self scoreEditor)) 'music-score-palette)
+;(defmethod get-palette-pict ((self scoreeditor))
+;  (om-load-and-store-picture "musicpalette" 'internal))
+
+(defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
+
 
 (defmethod get-control-h ((self scoreEditor)) 50)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
+;;(default-edition-params (object self))
 
 (defmethod initialize-instance :after ((self scoreEditor) &rest l)
   (declare (ignore l))
   (let* ((size (get-edit-param self 'fontsize))
          (mode (get-edit-param self 'mode))
-         (obj-mode (get-edit-param (default-edition-params (object self)) 'obj-mode))
+         (obj-mode (get-edit-param self 'obj-mode))
          (zoom (get-edit-param self 'zoom))
          (score-mode (or (get-edit-param self 'score-mode) 0))
          (noteaschan (get-edit-param self 'notechancolor?))
@@ -186,12 +322,16 @@
     (when (equal score-mode 1) (setf score-mode 0))
     (change-score-mode ed-view score-mode)
     (setf (score-mode ed-view) score-mode)
-    (setf (obj-mode ed-view) (nth obj-mode (object-order ed-view)))
+    (setf (obj-mode ed-view) (nth obj-mode (object-order self)))
     (change-slot-edit ed-view (slots-mode ed-view))
+    (change-cursor-mode (panel self) (get-edit-param self 'cursor-mode))
     (init-draw self)
     (init-boxes-in-score ed-view)))
 
-
+(defmethod set-cursor-mode ((self scoreeditor) &optional mode)
+  (change-cursor-mode (panel self) mode)
+  (set-edit-param self 'cursor-mode (cursor-mode (panel self)))
+  (update-cursor-mode-buttons (title-bar self)))
 
 (defmethod update-controls-view ((self scoreeditor))
   (let ((size (get-edit-param self 'fontsize))
@@ -269,7 +409,7 @@
 ;Controls par default
 ;===========================================================
 
-(omg-defclass omcontrols-view (3dBorder-view) 
+(defclass omcontrols-view (3dBorder-view) 
   ((slotedit :initform nil :accessor slotedit))
   (:default-initargs 
    :draw-with-buffer t
@@ -328,7 +468,7 @@
          ;;; Font Size
          (sizeitem (om-make-dialog-item 'om-static-text 
                                         (om-make-point (- l1 (om-string-size "Font size" *om-default-font1*) 8) (+ c2 2)) 
-                                        (om-make-point 90 20) "Font size"
+                                        (om-make-point 90 16) "Font size"
                                         :font *om-default-font1*
                                         :bg-color *controls-color*))
          (sizebut (om-make-dialog-item 'om-pop-up-dialog-item 
@@ -381,53 +521,7 @@
     
     (setf (slotedit self) minied)
     (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied  sizebut)
-     
-
-    (om-add-subviews self 
-                    (om-make-dialog-item 'om-static-text (om-make-point 500 (+ c1 2)) (om-make-point 50 20) 
-                                            (string+ "Player: " (player-name (get-edit-param (om-view-container self) 'player)))
-                                        :font *om-default-font1b*)
-
-                    (om-make-dialog-item 'om-button (om-make-point 650 2) (om-make-point 40 16) "edit"
-                                                               :font *om-default-font1*
-                                                               :enable t
-                                                               :di-action (om-dialog-item-act item
-                                                                            (select-player-dialog 
-                                                                            (edit-player-params (get-edit-param (om-view-container self) 'player) 
-                                                                                                
-                                                                                                (om-view-container self))))
-
-                                                               )
-                    )
-                    
-#|     
-    (let ((playerbutton nil)
-          (players (copy-list *enabled-score-players*)))
-      (om-add-subviews self
-                       (om-make-dialog-item 'om-static-text (om-make-point 500 (+ c1 2)) (om-make-point 50 20) 
-                                            (string+ "Player: " (player-name (get-edit-param (om-view-container self) 'player)))
-                                        :font *om-default-font1b*)
-                       (om-make-dialog-item 'om-pop-up-dialog-item 
-                                            (om-make-point 550 c1) 
-                                            ;; (om-make-point 100 18) ""
-                                            (om-make-point 100 18) ""
-                                            :font *om-default-font1*
-                                            :range (mapcar 'player-name players)
-                                            :value (player-name (get-edit-param (om-view-container self) 'player))
-                                            :di-action (om-dialog-item-act item 
-                                                         (let ((selected-player (nth (om-get-selected-item-index item) players)))
-                                                           (change-player (panel (om-view-container self)) selected-player)
-                                                           (om-enable-dialog-item playerbutton (player-params selected-player))))
-                                            )
-                       (setf playerbutton (om-make-dialog-item 'om-button (om-make-point 650 2) (om-make-point 40 16) "..."
-                                                               :font *om-default-font1*
-                                                               :enable (player-params (get-edit-param (om-view-container self) 'player))
-                                                               :di-action (om-dialog-item-act item
-                                                                            (edit-player-params (get-edit-param (om-view-container self) 'player) 
-                                                                                                
-                                                                                                (om-view-container self)))))
-                       ))
-|#             
+                            
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     
@@ -436,8 +530,7 @@
     )
 )
 
-(defmethod change-player ((panel t) val)
-  (set-edit-param (editor panel) 'player val))
+
 
 
 
@@ -578,6 +671,19 @@
 (defmethod in-patch-mode? ((self scorepanel)) (= (score-mode self) 1))
 (defmethod in-page-mode? ((self scorepanel)) (= (score-mode self) 2))
 
+
+(defmethod cursor-by-obj-mode ((self scorePanel))
+   (cond
+    ((string-equal (obj-mode self) "note") *c-nota*)
+    ((string-equal (obj-mode self) "chord") *c-chord*)
+    ((string-equal (obj-mode self) "group") *c-group*)  
+    ((string-equal (obj-mode self) "measure") *c-measure*)
+    ((or (string-equal (obj-mode self) "voice")
+         (string-equal (obj-mode self) "chord-seq"))
+         *c-voice*)
+    (t *om-arrow-cursor*)))
+
+
 ;;; pour pas perdre les scrollbars quand on commence a mettre des objets dans le score-patch...
 (defmethod set-field-size ((self scoreeditor)) 
    t)
@@ -604,18 +710,17 @@
     (setf *redraw-diamonds* t)
     (set-panel-boxes self)))
 
-(defmethod set-unset-cursor ((self scorepanel))
-  (call-next-method)
-  (setf (mode (editor self)) (if (cursor-p self) 8 7))
-  (when *palette-win*
-    (om-invalidate-view (view *palette-win*))))
+;(defmethod set-unset-cursor ((self scorepanel))
+;  (call-next-method)
+;  (setf (cursor-mode (editor self)) (if (cursor-p self) :normal :interval))
+  ;(when *palette-win*
+  ;  (om-invalidate-view (view *palette-win*)))
+;  )
 
-(defmethod get-score-player ((self t)) t)
+;(defmethod get-score-player ((self t)) t)
 
-(defmethod change-player ((panel scorepanel) val)
-  (call-next-method)
-  (if (equal val :microplayer) (launch-microplayer-app))
-  (if (equal val :scplayer) (launch-scplayer-app)))
+(defmethod cursor-panes ((self scoreeditor))
+  (list (panel self)))
 
 ;default pict help
 
@@ -676,10 +781,7 @@
           ))
         (t 
          (case char
-           (#\SPACE (when *palette*
-                      (if (Idle-p *general-player*)
-                          (palette-act *palette* (if (selection-to-play-? self) 4 0))
-                        (palette-act *palette* 1))))
+           (#\SPACE (editor-play/stop (editor self)))
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
            (#\h (show-help-window (format nil "Commands for ~A Editor" 
@@ -781,6 +883,7 @@
 (defmethod om-view-doubleclick-handler  ((self scorePanel) where)
    (when (equal (om-score-click-handler self where t) :call-next-method)
      (call-next-method)))
+
 
 (defun click-in-key? (self system x y width size score where)
   (let ((posy y) rep)
@@ -1516,22 +1619,16 @@
      )))
 
 (defmethod change-obj-mode ((self scorePanel) val)
-  (let* ((list (object-order self))
-          (oldval (position (obj-mode self) list :test 'string-equal))
-          (newval (mod (+ val (position (obj-mode self) list :test 'string-equal)) (length list))))
+  (let* ((list (object-order (editor self)))
+         (oldval (position (obj-mode self) list :test 'string-equal))
+         (newval (mod (+ val (position (obj-mode self) list :test 'string-equal)) (length list))))
     
     (setf (obj-mode self) (nth newval list))
-    
-    (when *palette*
-      (let ((button (nth newval (car (buttons *palette*)))))
-        (setf (selected-p (nth oldval (car (buttons *palette*)))) nil)
-        (setf (selected-p button) t)
-        (om-invalidate-view (view *palette-win*) t)))
-
-     (set-edit-param (om-view-container self) 'obj-mode  newval)
-     (make-unselect self)
-     (update-panel self)
-     (om-invalidate-view (title-bar (om-view-container self)))))
+    (set-edit-param (om-view-container self) 'obj-mode newval)
+    (make-unselect self)
+    (update-mode-buttons (title-bar (om-view-container self)))
+    (update-panel self)
+    ))
 
    
 (defmethod change-slot-edit ((self scorePanel) slotedit)
@@ -1767,11 +1864,11 @@
       (draw-rhythm-cursor self voice posy)))) 
 
 
-(defun palette-restore-stop ()
-  (when (and *palette-win* (view *palette-win*))
-    (om-invalidate-view (view *palette-win*))))
+;(defun palette-restore-stop ()
+;  (when (and *palette-win* (view *palette-win*))
+;    (om-invalidate-view (view *palette-win*))))
 
-(defmethod stop-palette ((self t)) nil)
+;(defmethod stop-palette ((self t)) nil)
 
 
 
@@ -1804,7 +1901,7 @@
             (rect-line (sixth (car *events-play-cursor*)))
             (rect-page (fourth (car *events-play-cursor*)))
             (rect-event (rectlist-page-to-pixel rect-page (or (score-scale self) 1)  (rectangle cur-evt))) )
-       (om-update-movable-cursor self  (car rect-event) (- (om-rect-top rect-line) (round (staff-size self) 2))  
+       (om-update-movable-cursor self (car interval) (car rect-event) (- (om-rect-top rect-line) (round (staff-size self) 2))  
                                  4 (- (om-rect-bottom rect-line) (om-rect-top rect-line)))
        (let ((next (second *events-play-cursor*)))
          (if (or (Idle-p *general-player*) (not next))
@@ -1865,8 +1962,8 @@
 (omg-defclass noteEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self noteEditor)) 'notePanel)
 (defmethod get-score-class-ctrls ((self noteEditor)) 'omnote-controls-view)
-(defmethod editor-has-palette-p ((self noteeditor)) 'chord-palette)
-(defmethod get-palette-pict ((self noteeditor)) nil)
+;(defmethod editor-has-palette-p ((self noteeditor)) 'chord-palette)
+;(defmethod get-palette-pict ((self noteeditor)) nil)
 
 ;CONTROLS
 (omg-defclass omnote-controls-view (omcontrols-view) ())
@@ -1921,10 +2018,8 @@
 
 (omg-defclass chordEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self chordEditor)) 'chordPanel)
-(defmethod editor-has-palette-p ((self chordeditor)) 'chord-palette)
+;(defmethod editor-has-palette-p ((self chordeditor)) 'chord-palette)
 (defmethod get-score-class-ctrls ((self chordEditor)) 'omchord-controls-view)
-
-(defmethod get-palette-pict ((self chordEditor)) nil)
 
 (omg-defclass omchord-controls-view (omcontrols-view) ())
 
@@ -2057,7 +2152,7 @@
 
 ;PANEL
 
-(omg-defclass chordseqPanel (scorePanel)  
+(defclass chordseqPanel (scorePanel)  
    ((grille-p :initform nil :accessor grille-p)
     (grille-step :initform 1000 :accessor grille-step)
     (clic-pos :initform nil :accessor clic-pos)
@@ -2073,7 +2168,7 @@
                   (h self) -32))
             (b 0) 
             (e (get-obj-dur (object (editor self)))))
-        (if (and (linear? self) (cursor-p self) (not (= (car (cursor-interval self)) (cadr (cursor-interval self)))))
+        (if (and (linear? self) (cursor-p self) (cursor-interval self) (not (= (car (cursor-interval self)) (cadr (cursor-interval self)))))
             (setf b (car (cursor-interval self))
                   e (cadr (cursor-interval self)))
         ;nil
@@ -2325,7 +2420,7 @@
     (#\a (if (equal (slots-mode self) 'dur)
            (adjoust-grille-durs self)
            (adjoust-grille-chords self)))
-    (#\z (set-unset-cursor self))
+    (#\z (set-cursor-mode (editor self)))
     (otherwise (call-next-method)))))
 
 (defmethod selection-to-play-? ((self chordseqPanel)) 
@@ -2357,23 +2452,24 @@
        rep
        '(0 0))))
 
-(defmethod draw-interval-cursor ((self chordseqPanel))
-   (let* ((ls (/ (staff-size self) 4))
-          (zoom (staff-zoom self))
-          (interval (cursor-interval self))
-          (pixel-interval (om+ (get-key-space self) (list (ms2pixel (car interval) ls zoom)
-                                                          (ms2pixel (second interval) ls zoom))))
-          (cursor-pos-pix (+ (get-key-space self) (ms2pixel (cursor-pos self) ls zoom))))
-     (om-with-focused-view self
-       (unless (= (car pixel-interval) (cadr pixel-interval))
-         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
-                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
-       (when (cursor-p self)
-         (om-with-fg-color self *om-gray-color*
-           (om-with-dashline 
-               (om-with-line-size 1.5 
-                 (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
-                               cursor-pos-pix (+ (om-v-scroll-position self) (h self))))))))))
+
+;(defmethod draw-interval-cursor ((self chordseqPanel)) 
+;   (let* ((ls (/ (staff-size self) 4))
+;          (zoom (staff-zoom self))
+ ;         (interval (cursor-interval self))
+ ;         (pixel-interval (om+ (get-key-space self) (list (ms2pixel (car interval) ls zoom)
+;                                                          (ms2pixel (second interval) ls zoom))))
+;          (cursor-pos-pix (+ (get-key-space self) (ms2pixel (cursor-pos self) ls zoom))))
+;     (om-with-focused-view self
+;       (unless (= (car pixel-interval) (cadr pixel-interval))
+;         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
+;                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
+;       (when (cursor-p self)
+;         (om-with-fg-color self *om-gray-color*
+ ;          (om-with-dashline 
+;               (om-with-line-size 1.5 
+;                 (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
+;                               cursor-pos-pix (+ (om-v-scroll-position self) (h self))))))))))
    
   
 (defmethod get-selection-to-play ((self chordseqPanel))
@@ -2690,7 +2786,7 @@
 
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
-(defmethod editor-has-palette-p ((self voiceEditor)) 'ryth-palette)
+;(defmethod editor-has-palette-p ((self voiceEditor)) 'ryth-palette)
 
 (defmethod show-position-ms ((self voiceEditor) point) t)
 
@@ -2922,7 +3018,7 @@
 
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
-(defmethod editor-has-palette-p ((self polyEditor)) 'ryth-palette)
+;(defmethod editor-has-palette-p ((self polyEditor)) 'ryth-palette)
 (defmethod show-position-ms ((self polyEditor) point) t)
 
 
@@ -3117,62 +3213,8 @@
 (defmethod control-actives ((self maqobjPanel) where) t)
 (defmethod get-key-space ((self maqobjPanel)) 0)
 
-;============================
+(defmethod get-key-space ((self t)) 0)
 
-
-
-
-;===========
-
-;===========
-;OBJECT ORDER
-
-(defmethod object-order ((self scorePanel)) '("note" "chord" "chord-seq"))
-(defmethod object-order ((self chordPanel)) '("note" "chord"))
-(defmethod object-order ((self notePanel)) '("note"))
-(defmethod object-order ((self chordseqPanel)) '("note" "chord" "chord-seq"))
-(defmethod object-order ((self multiseqPanel)) '("note" "chord" "chord-seq" "multi-seq"))
-(defmethod object-order ((self voicePanel)) '("note" "chord" "group" "measure" "voice"))
-(defmethod object-order ((self polyPanel)) '("note" "chord" "group" "measure" "voice" "poly"))
-
-;==============
-(defmethod buttons-list ((self notepanel)) (list (list *bnote*)))
-(defmethod buttons-list ((self chordpanel)) (list (list *bnote* *bchord*)))
-(defmethod buttons-list ((self chordseqpanel)) (list (list *bnote* *bchord* *bvoice*)))
-(defmethod buttons-list ((self multiseqpanel))  (list (list *bnote* *bchord* *bvoice* *bsys*)))
-(defmethod buttons-list ((self voicepanel)) (list (list *bnote* *bchord* *bgroup* *bmes* *bvoice*)))
-(defmethod buttons-list ((self polypanel)) (list (list *bnote* *bchord* *bgroup* *bmes* *bvoice* *bsys*)))
-
-(defmethod buttons-list ((self notepanel)) (list (list (bnote))))
-(defmethod buttons-list ((self chordpanel)) (list (list (bnote) (bchord))))
-(defmethod buttons-list ((self chordseqpanel)) (list (list (bnote) (bchord) (bvoice))))
-(defmethod buttons-list ((self multiseqpanel))  (list (list (bnote) (bchord) (bvoice) (bsys))))
-(defmethod buttons-list ((self voicepanel)) (list (list (bnote) (bchord) (bgroup) (bmes) (bvoice))))
-(defmethod buttons-list ((self polypanel)) (list (list (bnote) (bchord) (bgroup) (bmes) (bvoice) (bsys))))
-
-(defmethod cursor-by-obj-mode ((self scorePanel))
-   (cond
-    ((string-equal (obj-mode self) "note") *c-nota*)
-    ((string-equal (obj-mode self) "chord") *c-chord*)
-    ((string-equal (obj-mode self) "group") *c-group*)  
-    ((string-equal (obj-mode self) "measure") *c-measure*)
-    ((or (string-equal (obj-mode self) "voice")
-         (string-equal (obj-mode self) "chord-seq"))
-         *c-voice*)
-    (t *om-arrow-cursor*)))
-
-
-(defun grap-class-from-type (str)
-   (cond
-    ((string-equal str "note") 'grap-note)
-    ((string-equal str "chord") 'grap-chord)
-    ((string-equal str "chord-seq") 'grap-chord-seq)
-    ((string-equal str "res") 'grap-note)
-    ((string-equal str "group") 'grap-group)
-    ((string-equal str "measure") 'grap-measure)
-    ((string-equal str "voice") 'grap-voice)
-    ((string-equal str "poly") 'grap-poly)
-    ((string-equal str "multi-seq") 'grap-multiseq)))
 
 ;=========================================================
 ;EDITION
@@ -5298,6 +5340,31 @@
     editor-obj))
 
 
+(defmethod object-order ((self chordeditor)) '("note" "chord"))
+(defmethod object-order ((self noteeditor)) '("note"))
+(defmethod object-order ((self chordseqeditor)) '("note" "chord" "chord-seq"))
+(defmethod object-order ((self multiseqeditor)) '("note" "chord" "chord-seq" "multi-seq"))
+(defmethod object-order ((self voiceeditor)) '("note" "chord" "group" "measure" "voice"))
+(defmethod object-order ((self polyeditor)) '("note" "chord" "group" "measure" "voice" "poly"))
+
+
+
+;===================================
+; TOOLS : NEEDS CLEANUP
+;===================================
+
+(defmethod time-to-pixels ((view scorepanel) time-ms)
+  (+ (get-key-space view) (ms2pixel time-ms (/ (staff-size view) 4) (staff-zoom view))))
+
+(defmethod time-to-pixels ((view voicepanel) time-ms)
+  (get-x-pos view time-ms (staff-zoom view)))
+
+(defmethod pixels-to-time ((view scorepanel) pix)
+  (pixel2ms (- pix (get-key-space view)) 
+            (/ (staff-size view) 4) (staff-zoom view)))
+
+(defmethod pixels-to-time ((view voicepanel) pix)
+  (get-ms-pos view pix (staff-zoom view)))
 
 ;===================================
 ; PRINT
