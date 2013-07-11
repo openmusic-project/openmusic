@@ -3,14 +3,22 @@
 
 (defclass! bpf-control (simple-container BPF) 
    ((c-action :initform nil :accessor c-action :initarg :c-action)
-    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A list of a Faust Effect (or Synth) and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")))
+    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A Faust Effect/Synth, or a list of a Faust Effect/Synth and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")))
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
   (let ((bpf (call-next-method))
         infos)
     (setf (c-action bpf) (nth 3 slots-vals))
     (setf (faust-control bpf) (nth 4 slots-vals))
-    (if (faust-control bpf)
+    (if (and (faust-control bpf) 
+             (or
+              (and
+               (listp (faust-control bpf)) 
+               (or (typep (car (faust-control bpf)) 'faust-effect-console) (typep (car (faust-control bpf)) 'faust-synth-console)) 
+               (typep (cadr (faust-control bpf)) 'string))
+              (and
+               (not (listp (faust-control bpf)))
+               (or (typep (faust-control bpf) 'faust-effect-console) (typep (faust-control bpf) 'faust-synth-console)))))
         (progn
           (setf infos (get-infos-from-faust-control (faust-control bpf)))
           (if infos
@@ -155,6 +163,30 @@
           (las-faust-set-control-value ptr found (float val))))))
 
 (defun get-infos-from-faust-control (faust-control)
+  (let* ((name (if (listp faust-control) (cadr faust-control)))
+         (console (if (listp faust-control) (car faust-control) faust-control))
+         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
+         (maxnum (las-faust-get-control-count ptr))
+         found
+         listing)
+    (if name
+        (loop for i from 0 to (- maxnum 1) do
+              (if (string= name (car (las-faust-get-control-params ptr i)))
+                  (setf found i))))
+    (if found
+        (las-faust-get-control-params ptr found)
+      (let ((param-n (make-param-select-window 
+                      (loop for i from 0 to (- maxnum 1) collect
+                            (car (las-faust-get-control-params ptr i))))))
+        (if param-n 
+            (las-faust-get-control-params ptr param-n)
+          nil))))
+    
+  )
+
+
+
+
   (let* ((name (cadr faust-control))
          (console (car faust-control))
          (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
@@ -207,7 +239,7 @@
                                           (om-make-point 50 55) 
                                           (om-make-point 300 100) 
                                           "Available parameters"  
-                                          :scrollbars :v
+                                          :scrollbars t
                                           :bg-color *om-white-color*
                                           :after-action (om-dialog-item-act item 
                                                           (om-return-from-modal-dialog win (om-get-selected-item-index item)))

@@ -156,7 +156,8 @@
                             :voice voice)))))
 
 
-(defmethod* PrepareToPlay ((player t) (self rest) at &key approx port interval voice) nil)
+;(defmethod* PrepareToPlay ((player t) (self rest) at &key approx port interval voice) nil)
+(defmethod* PrepareToPlay ((player t) (self t) at &key approx port interval voice) nil)
 
 ;(defmethod* PrepareToPlay ((player t) (self listtoplay) at &key  approx port interval voice)
 ;   (declare (ignore approx))
