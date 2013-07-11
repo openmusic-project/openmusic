@@ -49,10 +49,10 @@
   "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) 
   "/Library/Frameworks/SDIF.framework/SDIF"
-  #+(or linux (and clisp unix (not macos)))
+  #+linux
   ;; "/usr/lib/libsdif.so"
-  "libsdif.so"
-  )
+  (or (probe-file "/usr/local/lib/libsdif.so")
+      "libsdif.so"))
 
 ;;; !!! *sdif-pathname* is modified in OM
 
@@ -61,16 +61,16 @@
 	#-linux (if (probe-file *sdif-pathname*)
 		    (progn 
 		      (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
-					;(cffi:load-foreign-library *sdif-pathname*)
 		      (fli:register-module "SDIF" 
 					   :real-name (namestring *sdif-pathname*)
 					   :connection-style :immediate)
 		      t))
 	#+linux (progn 
 		  (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
-		  (fli:register-module "SDIF" 
-				       :real-name (namestring *sdif-pathname*)
-				       :connection-style :immediate)
+		  (cffi:load-foreign-library *sdif-pathname*)
+		  ;; (fli:register-module "SDIF" 
+		  ;; 		       :real-name (namestring *sdif-pathname*)
+		  ;; 		       :connection-style :immediate)
 		  t)))
 
 ; (oa::om-start-sdif)
