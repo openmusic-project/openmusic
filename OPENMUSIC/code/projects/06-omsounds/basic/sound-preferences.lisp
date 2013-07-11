@@ -65,10 +65,11 @@
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
     
     (setf *general-mixer-presets* (get-pref modulepref :audio-presets))
+    (if (not *general-mixer-presets*)
+        (setf *general-mixer-presets* (init-genmixer-values)))
     ;;;set vol and pan values according to "current setting", which is the last used
     (setf *general-mixer-values* (nth 1 (nth 1 *general-mixer-presets*)))
     (apply-mixer-values)
-    
     t))
 
 
