@@ -135,7 +135,12 @@
 (defmethod cursor-panes ((self bpfcontroleditor)) (list (panel self)))
 
 (defclass bpfcontrolpanel (bpfpanel cursor-play-view-mixin) ())
-(defmethod view-turn-pages-p ((self bpfcontrolpanel)) nil)
+
+(defmethod view-turn-pages-p ((self bpfcontrolpanel)) t)
+
+;;;TODO
+(defmethod om-set-scroll-position ((self bpfcontrolpanel) pos) nil)
+
 (defmethod get-panel-class ((Self bpfcontroleditor)) 'bpfcontrolpanel)
 
 (defmethod get-x-range ((self bpfcontrolpanel))
