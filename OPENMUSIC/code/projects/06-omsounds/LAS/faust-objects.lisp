@@ -4,7 +4,7 @@
 
 (in-package :om)
 
-;(defvar *faust-consoles-to-build* nil)
+(defvar paramnum 0) ;For graphic purpose
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -213,7 +213,9 @@
 
 (defmethod get-win-ed-size ((self faust-effect-console)) 
   (if (ui-tree self)
-     (om-make-point (min 500 (car (las-faust-get-group-size (ui-tree self)))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
+     (om-make-point (min 500 (if (> (+ 75 (cadr (las-faust-get-group-size (ui-tree self)))) 500)
+                                 (+ (car (las-faust-get-group-size (ui-tree self))) 14)
+                               (car (las-faust-get-group-size (ui-tree self))))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
     (om-make-point 75 75)))
 
 
@@ -302,10 +304,12 @@
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
-                                           :scrollbars t
+                                           :scrollbars (cond ((and (>= x 500) (>= y 500)) t)
+                                                             ((and (>= x 500) (< y 500)) :h)
+                                                             ((and (< x 500) (>= y 500)) :v)
+                                                             (t nil))
                                            :retain-scrollbars nil
-                                           :field-size  (om-make-point (if (< xwin x) x (- x 20)) 
-                                                                       (if (< ywin y) y (- y 20)))
+                                           :field-size  (om-make-point x y)
                                            :size (om-make-point (w self) (h self))
                                            :bg-color *om-light-gray-color*))
      
@@ -322,14 +326,22 @@
                                                                   "SVG"
                                                                   :di-action (om-dialog-item-act item
                                                                                (faust-show-svg *om-outfiles-folder* (effect-dsp (object self)) (effect-svg (object self)))))))
-      (setf (panel self) (om-make-view (get-panel-class self) 
-                                           :owner self
-                                           :position (om-make-point 0 0) 
-                                           :scrollbars t
-                                           :retain-scrollbars nil
-                                           :field-size  (om-make-point x (- y 50))
-                                           :size (om-make-point (w self) (h self))
-                                           :bg-color *om-light-gray-color*)))))
+      (progn
+        (setf (panel self) (om-make-view (get-panel-class self) 
+                                         :owner self
+                                         :position (om-make-point 0 0) 
+                                         :scrollbars nil
+                                         :retain-scrollbars t
+                                         :field-size  (om-make-point x (- y 50))
+                                         :size (om-make-point (w self) (h self))
+                                         :bg-color *om-dark-gray-color*))
+        (om-add-subviews (panel self) (om-make-dialog-item 'om-static-text
+                                                           (om-make-point 17 0)
+                                                           (om-make-point 75 75)
+                                                           "X"
+                                                           :fg-color *om-white-color*
+                                                           :font (om-make-font oa::*om-def-bold-font-face* 48 :style '(:bold))))
+        ))))
 
 (defmethod make-faust-param-view ((self faustcontrollerEditor) paractrl x y size)
   (let ((res (om-make-view (get-parampanel-class (panel self))
@@ -341,7 +353,6 @@
     (setf (display paractrl) res)
     res))
 
-(defvar paramnum 0)
 (defmethod make-faust-group-view ((self faustcontrollerEditor) group &optional (x 0) (y 0))
   (let* ((grouptype (las-faust-get-group-type group))
          (orange (om-make-color 1 0.5 0))
@@ -378,36 +389,6 @@
                   (incf x (car size))
                 (incf y (cadr size))))))))
 
-
-;(defun faust-show-svg (pathname dsp svg)
-;  (let (res)
-;    (if *faust-compiler-pathname*
-;        (progn
-;          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
-;          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
-;                ((= res 126) (progn
-;                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
-;                               (set-faust-compiler-pathname)))
-;                ((= res 127) (progn
-;                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
-;                               (set-faust-compiler-pathname)))
-;                ((= res 2) (print "Incorrect usage of this command"))
-;                (t (print "Failure"))))
-;      (progn
-;        (if (set-faust-compiler-pathname)
-;            (faust-show-svg pathname dsp svg))))))
-(defun faust-show-svg (pathname dsp svg)
-  (om-cmd-line (format nil "open ~A" svg) nil t pathname))
-
-
-
-(defun set-faust-compiler-pathname ()
-  (let (new)
-    (setf new (om-choose-file-dialog 
-     :directory (om-user-home)
-     :prompt "Locate your Faust Compiler" :types (list (om-str :all-files) "*.*")))
-    (if new
-        (setf *faust-compiler-pathname* new))))
 
 (defmethod update-editor-after-eval ((self faustcontrollerEditor) val)
   (setf (object self) val)
@@ -591,13 +572,6 @@
                                         :min-val 0
                                         :max-val 100)))))
 
-   ;(setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
-   ;                                      :icon1 "-" :icon2 "--pushed"
-   ;                                      :action #'(lambda (item) 
-   ;                                                  (let () 
-   ;                                                    (las-faust-set-control-value ptr number def) (set-value (paramGraph self) val)
-   ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
-   ;                                                                                               (format nil "~D" (round def))))))))
    (om-add-subviews self
                     (paramText self)
                     (paramVal self)
@@ -845,10 +819,10 @@
 
 (defmethod get-win-ed-size ((self faust-synth-console)) 
   (if (ui-tree self)
-      (om-make-point (min 500 (car (las-faust-get-group-size (ui-tree self)))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
-    (om-make-point 75 50)))
-
-
+      (om-make-point (min 500 (if (> (+ 75 (cadr (las-faust-get-group-size (ui-tree self)))) 500)
+                                  (+ (car (las-faust-get-group-size (ui-tree self))) 14)
+                                (car (las-faust-get-group-size (ui-tree self))))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
+    (om-make-point 75 75)))
 
 (defmethod editor-has-palette-p ((self faustSynthcontrollerEditor)) nil)
 
@@ -936,10 +910,12 @@
           (setf (panel self) (om-make-view (get-panel-class self) 
                                            :owner self
                                            :position (om-make-point 0 0) 
-                                           :scrollbars t
+                                           :scrollbars (cond ((and (>= x 500) (>= y 500)) t)
+                                                             ((and (>= x 500) (< y 500)) :h)
+                                                             ((and (< x 500) (>= y 500)) :v)
+                                                             (t nil))
                                            :retain-scrollbars t
-                                           :field-size  (om-make-point (if (< xwin x) x (- x 20)) 
-                                                                       (if (< ywin y) y (- y 20)))
+                                           :field-size  (om-make-point x y)
                                            :size (om-make-point (w self) (h self))
                                            :bg-color *om-light-gray-color*))
      
@@ -956,14 +932,22 @@
                                                                   "SVG"
                                                                   :di-action (om-dialog-item-act item
                                                                                (faust-show-svg *om-outfiles-folder* (synth-dsp (object self)) (synth-svg (object self)))))))
-      (setf (panel self) (om-make-view (get-panel-class self) 
-                                       :owner self
-                                       :position (om-make-point 0 0) 
-                                       :scrollbars t
-                                       :retain-scrollbars t
-                                       :field-size  (om-make-point x (- y 50))
-                                       :size (om-make-point (w self) (h self))
-                                       :bg-color orange)))))
+      (progn
+        (setf (panel self) (om-make-view (get-panel-class self) 
+                                         :owner self
+                                         :position (om-make-point 0 0) 
+                                         :scrollbars nil
+                                         :retain-scrollbars t
+                                         :field-size  (om-make-point x (- y 50))
+                                         :size (om-make-point (w self) (h self))
+                                         :bg-color orange))
+        (om-add-subviews (panel self) (om-make-dialog-item 'om-static-text
+                                                           (om-make-point 17 0)
+                                                           (om-make-point 75 75)
+                                                           "X"
+                                                           :fg-color *om-white-color*
+                                                           :font (om-make-font oa::*om-def-bold-font-face* 48 :style '(:bold))))
+        ))))
 
 (defmethod make-faust-param-view ((self faustSynthcontrollerEditor) paractrl x y size)
   (let ((res (om-make-view (get-parampanel-class (panel self))
@@ -975,7 +959,6 @@
     (setf (display paractrl) res)
     res))
 
-(defvar paramnum 0)
 (defmethod make-faust-group-view ((self faustSynthcontrollerEditor) group &optional (x 0) (y 0))
   (let* ((grouptype (las-faust-get-group-type group))
          (orange (om-make-color 1 0.5 0))
@@ -1013,35 +996,6 @@
                 (incf y (cadr size))))))))
 
 
-;(defun faust-show-svg (pathname dsp svg)
-;  (let (res)
-;    (if *faust-compiler-pathname*
-;        (progn
-;          (setf res (om-cmd-line (format nil "~A faust ~A -svg" *faust-compiler-pathname* dsp) nil t pathname))
-;          (cond ((= res 0) (om-cmd-line (format nil "open ~A" svg) nil t pathname))
-;                ((= res 126) (progn
-;                               (om-message-dialog "The compiler you chose is not an executable. please locate it again.")
-;                               (set-faust-compiler-pathname)))
-;                ((= res 127) (progn
-;                               (om-message-dialog "Command not found! Please locate your Faust compiler again.")
-;                               (set-faust-compiler-pathname)))
-;                ((= res 2) (print "Incorrect usage of this command"))
-;                (t (print "Failure"))))
-;      (progn
-;        (if (set-faust-compiler-pathname)
-;            (faust-show-svg pathname dsp svg))))))
-(defun faust-show-svg (pathname dsp svg)
-  (om-cmd-line (format nil "open ~A" svg) nil t pathname))
-
-
-(defun set-faust-compiler-pathname ()
-  (let (new)
-    (setf new (om-choose-file-dialog 
-     :directory (om-user-home)
-     :prompt "Locate your Faust Compiler" :types (list (om-str :all-files) "*.*")))
-    (if new
-        (setf *faust-compiler-pathname* new))))
-
 (defmethod update-editor-after-eval ((self faustSynthcontrollerEditor) val)
   (setf (object self) val)
   (progn
@@ -1062,181 +1016,174 @@
 
 
 (defmethod do-initialize-param ((self faustSynthparamPanel))  
-   (let* ((ptr (synth-ptr (paramctr self)))
-          (number (index (paramctr self)))
-          (color (om-make-color 0.9 0.9 0.9))
-          (orange (om-make-color 1 0.5 0))
-          (type (param-type (paramctr self)))
-          (name (label (paramctr self)))
-          (min (minval (paramctr self)))
-          (max (maxval (paramctr self)))
-          (def (defval (paramctr self)))
-          (range 0)
-          (val 0)
-          (tracknum (tracknum (paramctr self)))
-          (editor (om-view-container (om-view-container self)))
-          (curval (las-faust-get-control-value ptr number)))
-   (if (= min max) (let () (setf min 0) (setf max 1)) nil)
-   (setf range (/ (- max min) 1.0))
-   (setf val (* 100.0 (/ (- curval min) range)))
-   (om-set-bg-color self color) 
+  (let* ((ptr (synth-ptr (paramctr self)))
+         (number (index (paramctr self)))
+         (color (om-make-color 0.9 0.9 0.9))
+         (orange (om-make-color 1 0.5 0))
+         (type (param-type (paramctr self)))
+         (name (label (paramctr self)))
+         (min (minval (paramctr self)))
+         (max (maxval (paramctr self)))
+         (def (defval (paramctr self)))
+         (range 0)
+         (val 0)
+         (tracknum (tracknum (paramctr self)))
+         (editor (om-view-container (om-view-container self)))
+         (curval (las-faust-get-control-value ptr number)))
+    (if (= min max) (let () (setf min 0) (setf max 1)) nil)
+    (setf range (/ (- max min) 1.0))
+    (setf val (* 100.0 (/ (- curval min) range)))
+    (om-set-bg-color self color) 
 
-         (cond ((string= type "hslider")
-                (progn
-                  (setf (paramText self) (om-make-dialog-item 'om-static-text
-                                                              (om-make-point 5 0) 
-                                                              (om-make-point (- (car hsliderSize) 5) 40)
-                                                              (format nil "~D" name)
-                                                              :font *om-default-font1*
-                                                              :bg-color color))
-                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
-                                                             (om-make-point (- (round (car hsliderSize) 2) 30) (- (cadr hsliderSize) 31 20)) 
-                                                             (om-make-point 60 20)
-                                                             (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
-                                                             :font *om-default-font1*
-                                                             :fg-color orange
-                                                             :bg-color color))
-                  (setf (paramGraph self) (om-make-dialog-item 'om-slider  
-                                                               (om-make-point 10 (- (cadr hsliderSize) 36)) 
-                                                               (om-make-point 94 31) ""
-                                                               :di-action 
-                                                               (om-dialog-item-act item
-                                                                 (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                                   (las-faust-set-control-value ptr number valeur)
-                                                                   (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
-                                                               :increment 1
-                                                               :range '(0 100)
-                                                               :value val
-                                                               :direction :horizontal
-                                                               :tick-side :none))))
-               ((string= type "vslider")
-                (progn
-                  (setf (paramText self) (om-make-dialog-item 'om-static-text
-                                                              (om-make-point 5 0) 
-                                                              (om-make-point (- (car vsliderSize) 15) 50)
-                                                              (format nil "~D" name)
-                                                              :font *om-default-font1*
-                                                              :bg-color color))
-                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
-                                                             (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
-                                                             (om-make-point 60 20)
-                                                             (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
-                                                             :font *om-default-font1*
-                                                             :fg-color orange
-                                                             :bg-color color))
-                  (setf (paramGraph self)
-                        (om-make-dialog-item 'om-slider  
-                                             (om-make-point 10 (- (cadr vsliderSize) 104)) 
-                                             (om-make-point 31 94) ""
-                                             :di-action 
-                                             (om-dialog-item-act item
-                                               (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
-                                                 (las-faust-set-control-value ptr number valeur)
-                                                 (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
-                                             :increment 1
-                                             :range '(0 100)
-                                             :value val
-                                             :direction :vertical
-                                             :tick-side :none))))
-               ((string= type "checkbox")
-                (progn
-                  (setf (paramText self) (om-make-dialog-item 'om-static-text
-                                                              (om-make-point 5 0) 
-                                                              (om-make-point (- (car checkboxSize) 5) 50)
-                                                              (format nil "~D" name)
-                                                              :font *om-default-font1*
-                                                              :bg-color color))
-                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
-                                                             (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
-                                                             (om-make-point 60 20)
-                                                             ""
-                                                             :font *om-default-font1*
-                                                             :fg-color *om-blue-color*
-                                                             :bg-color color))
-                  (setf (paramGraph self)
-                        (om-make-dialog-item 'om-check-box  
-                                             (om-make-point 20 5) 
-                                             (om-make-point 31 94) ""
-                                             :di-action 
-                                             (om-dialog-item-act item 
-                                               (if (= (las-faust-get-control-value ptr number) 1.0) 
-                                                   (las-faust-set-control-value ptr number 0.0) 
-                                                 (las-faust-set-control-value ptr number 1.0))
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
-                                             :font *om-default-font1*
-                                             :checked-p (if (= (las-faust-get-control-value ptr number) 1.0) t nil)))))
-               ((string= type "button")
-                (progn
-                  (setf (paramText self) (om-make-dialog-item 'om-static-text
-                                                              (om-make-point 5 0) 
-                                                              (om-make-point (- (car checkboxSize) 5) 50)
-                                                              ""
-                                                              :font *om-default-font1*
-                                                              :bg-color color))
-                  (setf (paramVal self) (om-make-dialog-item 'om-static-text 
-                                                             (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
-                                                             (om-make-point 60 20)
-                                                             ""
-                                                             :font *om-default-font1*
-                                                             :fg-color *om-blue-color*
-                                                             :bg-color color))
-                  (setf (paramGraph self)
-                        (om-make-dialog-item 'om-button  
-                                             (om-make-point 20 5) 
-                                             (om-make-point 80 30) 
-                                             (format nil "~D" name)
-                                             :di-action 
-                                             (om-dialog-item-act item
-                                               (if (= (las-faust-get-control-value ptr number) max) 
-                                                   (progn
-                                                     (las-faust-set-control-value ptr number 0.0)
-                                                     (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number))))
-                                                   (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
-                                                 )
-                                               (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
-                                             :font *om-default-font1*))))
-               (t (progn
-                    (setf (paramText self) (om-make-dialog-item 'om-static-text
-                                                                (om-make-point 5 0) 
-                                                                (om-make-point (- (car vsliderSize) 15) 50)
-                                                                (format nil "~D" name)
-                                                                :font *om-default-font1*
-                                                                :bg-color color))
-                    (setf (paramVal self) (om-make-dialog-item 'om-static-text 
-                                                               (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
-                                                               (om-make-point 60 20)
-                                                               (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
-                                                               :font *om-default-font1*
-                                                               :fg-color orange
-                                                               :bg-color color))
-                    (setf (paramGraph self)
-                          (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
-                                        :size (om-make-point 31 94)
-                                        :pict (om-load-and-store-picture "fader" 'di)
-                                        :nbpict 77
-                                        :pict-size (om-make-point 31 94)
-                                        :di-action (om-dialog-item-act item
-                                                     (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
-                                                       (las-faust-set-control-value ptr number valeur)
-                                                       (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
-                                        :font *om-default-font2*
+    (cond ((string= type "hslider")
+           (progn
+             (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                         (om-make-point 5 0) 
+                                                         (om-make-point (- (car hsliderSize) 5) 40)
+                                                         (format nil "~D" name)
+                                                         :font *om-default-font1*
+                                                         :bg-color color))
+             (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                        (om-make-point (- (round (car hsliderSize) 2) 30) (- (cadr hsliderSize) 31 20)) 
+                                                        (om-make-point 60 20)
+                                                        (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                        :font *om-default-font1*
+                                                        :fg-color orange
+                                                        :bg-color color))
+             (setf (paramGraph self) (om-make-dialog-item 'om-slider  
+                                                          (om-make-point 10 (- (cadr hsliderSize) 36)) 
+                                                          (om-make-point 94 31) ""
+                                                          :di-action 
+                                                          (om-dialog-item-act item
+                                                            (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                                              (las-faust-set-control-value ptr number valeur)
+                                                              (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                                          :increment 1
+                                                          :range '(0 100)
+                                                          :value val
+                                                          :direction :horizontal
+                                                          :tick-side :none))))
+          ((string= type "vslider")
+           (progn
+             (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                         (om-make-point 5 0) 
+                                                         (om-make-point (- (car vsliderSize) 15) 50)
+                                                         (format nil "~D" name)
+                                                         :font *om-default-font1*
+                                                         :bg-color color))
+             (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                        (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
+                                                        (om-make-point 60 20)
+                                                        (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                        :font *om-default-font1*
+                                                        :fg-color orange
+                                                        :bg-color color))
+             (setf (paramGraph self)
+                   (om-make-dialog-item 'om-slider  
+                                        (om-make-point 10 (- (cadr vsliderSize) 104)) 
+                                        (om-make-point 31 94) ""
+                                        :di-action 
+                                        (om-dialog-item-act item
+                                          (let ((valeur (+ (* (/ (om-slider-value item) 100.0) range) min)))
+                                            (las-faust-set-control-value ptr number valeur)
+                                            (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                        :increment 1
+                                        :range '(0 100)
                                         :value val
-                                        :min-val 0
-                                        :max-val 100)))))
+                                        :direction :vertical
+                                        :tick-side :none))))
+          ((string= type "checkbox")
+           (progn
+             (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                         (om-make-point 5 0) 
+                                                         (om-make-point (- (car checkboxSize) 5) 50)
+                                                         (format nil "~D" name)
+                                                         :font *om-default-font1*
+                                                         :bg-color color))
+             (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                        (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
+                                                        (om-make-point 60 20)
+                                                        ""
+                                                        :font *om-default-font1*
+                                                        :fg-color *om-blue-color*
+                                                        :bg-color color))
+             (setf (paramGraph self)
+                   (om-make-dialog-item 'om-check-box  
+                                        (om-make-point 20 5) 
+                                        (om-make-point 31 94) ""
+                                        :di-action 
+                                        (om-dialog-item-act item 
+                                          (if (= (las-faust-get-control-value ptr number) 1.0) 
+                                              (las-faust-set-control-value ptr number 0.0) 
+                                            (las-faust-set-control-value ptr number 1.0))
+                                          (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
+                                        :font *om-default-font1*
+                                        :checked-p (if (= (las-faust-get-control-value ptr number) 1.0) t nil)))))
+          ((string= type "button")
+           (progn
+             (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                         (om-make-point 5 0) 
+                                                         (om-make-point (- (car checkboxSize) 5) 50)
+                                                         ""
+                                                         :font *om-default-font1*
+                                                         :bg-color color))
+             (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                        (om-make-point 11 (- (cadr checkboxSize) 94 30)) 
+                                                        (om-make-point 60 20)
+                                                        ""
+                                                        :font *om-default-font1*
+                                                        :fg-color *om-blue-color*
+                                                        :bg-color color))
+             (setf (paramGraph self)
+                   (om-make-dialog-item 'om-button  
+                                        (om-make-point 20 5) 
+                                        (om-make-point 80 30) 
+                                        (format nil "~D" name)
+                                        :di-action 
+                                        (om-dialog-item-act item
+                                          (if (= (las-faust-get-control-value ptr number) max) 
+                                              (progn
+                                                (las-faust-set-control-value ptr number 0.0)
+                                                (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number))))
+                                            (las-faust-set-control-value ptr number (+ 0.000001 (las-faust-get-control-value ptr number)))
+                                            )
+                                          (om-set-dialog-item-text (paramVal self) (format nil "~D" (round (las-faust-get-control-value ptr number)))))
+                                        :font *om-default-font1*))))
+          (t (progn
+               (setf (paramText self) (om-make-dialog-item 'om-static-text
+                                                           (om-make-point 5 0) 
+                                                           (om-make-point (- (car vsliderSize) 15) 50)
+                                                           (format nil "~D" name)
+                                                           :font *om-default-font1*
+                                                           :bg-color color))
+               (setf (paramVal self) (om-make-dialog-item 'om-static-text 
+                                                          (om-make-point 11 (- (cadr vsliderSize) 94 30)) 
+                                                          (om-make-point 60 20)
+                                                          (if (<= range 100) (format nil "~$" curval) (format nil "~D" (round curval)))
+                                                          :font *om-default-font1*
+                                                          :fg-color orange
+                                                          :bg-color color))
+               (setf (paramGraph self)
+                     (om-make-view 'graphic-numbox :position (om-make-point 10 45) 
+                                   :size (om-make-point 31 94)
+                                   :pict (om-load-and-store-picture "fader" 'di)
+                                   :nbpict 77
+                                   :pict-size (om-make-point 31 94)
+                                   :di-action (om-dialog-item-act item
+                                                (let ((valeur (+ (* (/ (value item) 100.0) range) min)))
+                                                  (las-faust-set-control-value ptr number valeur)
+                                                  (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" valeur) (format nil "~D" (round valeur))))))
+                                   :font *om-default-font2*
+                                   :value val
+                                   :min-val 0
+                                   :max-val 100)))))
 
-   ;(setf (paramReset self) (om-make-view 'om-icon-button :position (om-make-point 15 150) :size (om-make-point 18 18)
-   ;                                      :icon1 "-" :icon2 "--pushed"
-   ;                                      :action #'(lambda (item) 
-   ;                                                  (let () 
-   ;                                                    (las-faust-set-control-value ptr number def) (set-value (paramGraph self) val)
-   ;                                                    (om-set-dialog-item-text (paramVal self) (if (<= range 100) (format nil "~$" def) 
-   ;                                                                                               (format nil "~D" (round def))))))))
-   (om-add-subviews self
-                    (paramText self)
-                    (paramVal self)
-                    (paramGraph self)
+    (om-add-subviews self
+                     (paramText self)
+                     (paramVal self)
+                     (paramGraph self)
                     ;(paramReset self)
-                    )))
+                     )))
 
 
 
