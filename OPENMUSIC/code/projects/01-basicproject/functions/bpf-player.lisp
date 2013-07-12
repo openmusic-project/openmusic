@@ -59,6 +59,13 @@
           (y-points bpf) (y-points self))
     bpf))
 
+
+;;;Peut être gérer ici pour rester en bpf-player après sauvegarde?
+(defmethod omng-save ((self bpf-control) &optional (values? nil))
+  `(let ((rep (make-instance ',(type-of self))))
+     rep))
+
+
 (defmethod copy-container ((self bpf-control) &optional (pere ()))
    "Builds a copy of a bpf control"
    (let ((bpf (eval (call-next-method))))

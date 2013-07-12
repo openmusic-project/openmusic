@@ -320,7 +320,7 @@
                                                 :owner (panel self)
                                                 :bg-color *om-dark-gray-color*
                                                 :position (om-make-point 0 (- y 50))
-                                                :size (om-make-point x 50)))
+                                                :size (om-make-point (+ 20 x) 50)))
      
           (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
                                                                   "SVG"
@@ -926,7 +926,7 @@
                                                 :owner (panel self)
                                                 :bg-color *om-dark-gray-color*
                                                 :position (om-make-point 0 (- y 50))
-                                                :size (om-make-point x 50)))
+                                                :size (om-make-point (+ 20 x) 50)))
      
           (om-add-subviews (bottom-bar self) (om-make-dialog-item 'om-button (om-make-point (- (round x 2) 30) 5) (om-make-point 60 24)
                                                                   "SVG"
