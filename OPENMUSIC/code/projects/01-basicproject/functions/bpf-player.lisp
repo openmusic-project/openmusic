@@ -9,7 +9,7 @@
 
 (defmethod make-one-instance ((self bpf-control) &rest slots-vals)
   (let ((bpf (call-next-method))
-        infos fullinf)
+        infos fullinf xlist ylist)
     (setf (c-action bpf) (nth 3 slots-vals))
     (setf (faust-control bpf) (nth 4 slots-vals))
     (if (and (faust-control bpf) 
@@ -29,13 +29,20 @@
                 (setf (paramnum bpf) (cadr fullinf))
                 (setf (faustfun bpf) (get-function-from-faust-control bpf))
                 (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 10)
-                    (setf (decimals bpf) 1))
-                (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
-                    (progn
-                      (setf (y-points bpf) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))))
-                      (setf (x-points bpf) (list 0 500 9500 10000)))))
-            (print "I cannot build a bpf-control with these parameters"))
-          bpf))))
+                    (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 3)
+                        (if (= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
+                            (setf (decimals bpf) 0)
+                          (setf (decimals bpf) 3))
+                      (setf (decimals bpf) 1)))
+                  (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
+                      (progn
+                        (setf xlist (interpolate (list 0 500 9500 10000) (list 0 500 9500 10000) 10))
+                        (setf ylist (interpolate (list 0 500 9500 10000) 
+                                                 (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))) 10))
+                        (setf (y-points bpf) ylist)
+                        (setf (x-points bpf) xlist))))
+                (print "I cannot build a bpf-control with these parameters"))
+            bpf))))
 
 (defmethod omng-copy ((self bpf-control))
   (let ((bpf (eval (call-next-method))))
@@ -101,7 +108,7 @@
 (defmethod default-edition-params ((self bpf-control)) 
   (pairlis '(player) '(:bpfplayer) (call-next-method)))
 
-
+(defmethod view-turn-pages-p ((self bpfcontrolpanel)) nil)
 ;;;=======================================================
 
 (defmethod get-editor-class ((self bpf-control)) 'bpfcontroleditor)
@@ -116,12 +123,12 @@
 (defmethod get-panel-class ((Self bpfcontroleditor)) 'bpfcontrolpanel)
 
 (defmethod get-x-range ((self bpfcontrolpanel))
-  (let ((range (give-bpf-range (object (editor self))))
-        x)
-    (setf x (list (nth 0 range) (nth 1 range)))
-    x))
+  (let* ((bpf (object (editor self)))
+         (range (give-bpf-range bpf))
+         (xrange (list (nth 0 range) (nth 1 range))))
+    xrange))
 
-(defmethod time2pixel ((self bpfcontrolpanel) time)
+(defmethod time-to-pixels ((self bpfcontrolpanel) time)
   (call-next-method self (* time (expt 10 (decimals (object (editor self)))))))
 
 (defmethod handle-key-event ((Self bpfcontrolpanel) Char)
