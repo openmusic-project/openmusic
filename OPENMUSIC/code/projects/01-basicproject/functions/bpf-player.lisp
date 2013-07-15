@@ -36,11 +36,18 @@
                       (setf (decimals bpf) 1)))
                   (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
                       (progn
-                        (setf xl1 (interpolate (list 0 500) (list 0 500) 10))
-                        (setf xl2 (interpolate (list 9500 10000) (list 9500 10000) 10))
+                        (if (/= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
+                            (progn
+                              (setf xl1 (interpolate (list 0 500) (list 0 500) 10))
+                              (setf xl2 (interpolate (list 9500 10000) (list 9500 10000) 10))
+                              (setf yl1 (interpolate (list 0 500) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf))) 10))
+                              (setf yl2 (interpolate (list 9500 10000) (list (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))) 10)))
+                          (progn
+                            (setf xl1 (list 0 999 1000))
+                            (setf xl2 (list 2999 3000 10000))
+                            (setf yl1 (list 0 0 1))
+                            (setf yl2 (list 1 0 0))))
                         (setf xlist (append xl1 xl2))
-                        (setf yl1 (interpolate (list 0 500) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf))) 10))
-                        (setf yl2 (interpolate (list 9500 10000) (list (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))) 10))
                         (setf ylist (append yl1 yl2))
                         (setf (y-points bpf) ylist)
                         (setf (x-points bpf) xlist))))
@@ -181,6 +188,8 @@
                    (progn
                      (om-set-dialog-item-text (paramval (display (nth found (params-ctrl console)))) (number-to-string (float val)))
                      (set-value (paramgraph (display (nth found (params-ctrl console)))) (* 100 (/ (- val minval) range)))))
+                  ((string= paramtype "button")
+                   nil)
                   (t 
                    (progn
                      (om-set-dialog-item-text (paramval (display (nth found (params-ctrl console)))) (number-to-string (float val)))
