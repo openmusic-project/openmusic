@@ -28,12 +28,12 @@
               (progn
                 (setf (paramnum bpf) (cadr fullinf))
                 (setf (faustfun bpf) (get-function-from-faust-control bpf))
-                (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 10)
+                (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 100)
                     (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 3)
                         (if (= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
                             (setf (decimals bpf) 0)
                           (setf (decimals bpf) 3))
-                      (setf (decimals bpf) 1)))
+                      (setf (decimals bpf) 2)))
                   (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
                       (progn
                         (if (/= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
