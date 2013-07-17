@@ -131,7 +131,6 @@
 (defmethod default-edition-params ((self bpf-control)) 
   (pairlis '(player) '(:bpfplayer) (call-next-method)))
 
-(defmethod view-turn-pages-p ((self bpfcontrolpanel)) nil)
 ;;;=======================================================
 
 (defmethod get-editor-class ((self bpf-control)) 'bpfcontroleditor)

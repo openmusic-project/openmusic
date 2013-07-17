@@ -5,6 +5,9 @@
 (in-package :om)
 
 (defvar paramnum 0) ;For graphic purpose
+(defvar *faust-effects-to-compile* nil)
+(defvar *faust-synths-to-compile* nil)
+
 
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
@@ -42,10 +45,25 @@
    (:icon 918)
    (:documentation "Faust Effect"))
 
+(defmethod initialize-instance ((self faust-effect-console) &rest l)
+  (let ((rep (call-next-method)))
+    (hcl::flag-special-free-action rep)
+    rep))
 
 (defmethod initialize-instance :after ((self faust-effect-console) &rest l)
   (declare (ignore l))
-  (build-faust-effect-console self))
+  (when (effect-txt self)
+    (build-faust-effect-console self))
+  self)
+
+(defmethod faust-cleanup (obj) (print (list "FAUST-CLEANUP OTHER" obj)))
+
+(defmethod faust-cleanup ((self faust-effect-console))
+  (print (list "FAUST-CLEANUP CONSOLE" self))
+  (las-faust-effect-cleanup (effect-ptr self)))
+
+;Add the faust cleanup to garbage functions
+(hcl::add-special-free-action 'faust-cleanup)
 
 (defmethod build-faust-effect-console ((self faust-effect-console))
   (let (name)
@@ -53,55 +71,59 @@
         (progn
           ;;Set name, or add a default name
           (setf name (set-effect-name self))
-          ;;Check if the name is already used. If yes, exit. If no, build effect.
-          (if (car (las-faust-search-effect-name-in-register name))
-              (print (format nil "An effect called ~A already exists. Please choose a new name." name))
-            ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
-            (if (effect-txt self)
-                (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
-                      effect-string
-                      effect-result)
-                  ;;Build string from textfile
-                  (loop for line in parlist do
-                        (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
-                  ;;Save as a dsp file
-                  (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-                  ;;Get result from the compilation with the faust-api.
-                  (setf effect-result (las-faust-make-effect 
-                                       (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
-                                       *om-outfiles-folder*))
-                  (setf (effect-ptr self) (nth 1 effect-result))
-                  ;;Save code as DSP and set some slots for SVG display
-                  (set-effect-dsp-and-svg self)
-                  ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
-                  (if (/= (car effect-result) 1)
-                      (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
-                    ;;Get tree from Json, init params, register effect, plug if a track is specified.
-                    (let (param-list)
-                      (setf param-list (finalize-effect-building self name))
-                      (if (> (nbparams self) 0)
-                          (setf (params-ctrl self)
-                                (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
-                                                                                                       :param-type (param-type (nth param param-list))
-                                                                                                       :label (label (nth param param-list))
-                                                                                                       :index param
-                                                                                                       :defval (string-to-number (init-val (nth param param-list)))
-                                                                                                       :minval (string-to-number (min-val (nth param param-list)))
-                                                                                                       :maxval (string-to-number (max-val (nth param param-list)))
-                                                                                                       :stepval (string-to-number (step-val (nth param param-list)))
-                                                                                                       :effect-ptr (effect-ptr self)
-                                                                                                       :tracknum (tracknum self)
-                                                                                                       ))) nil))))))))))
+          ;;Check if the name  is already used. If yes, exit. If no, build effect.
+          (let ((namesearch (las-faust-search-effect-name-in-register name)))
+            (if (car namesearch)
+                (progn
+                  (print (format nil "An effect called ~A already exists. It has been replaced by the new one." name))
+                  (if (car (gethash (cadr namesearch) *faust-effects-register*))
+                      (las-faust-effect-cleanup (gethash (cadr namesearch) *faust-effects-register*)))
+                  (if *general-mixer-window*
+                      (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*))))
+                  (las-faust-add-effect-to-register (effect-ptr self) (tracknum self) name))))
+          ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
+          (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
+                effect-string
+                effect-result)
+            ;;Build string from textfile
+            (loop for line in parlist do
+                  (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
+            ;;Save as a dsp file
+            (save-data (list (list effect-string)) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+            ;;Get result from the compilation with the faust-api.
+            (setf effect-result (las-faust-make-effect 
+                                 (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register)))) 
+                                 *om-outfiles-folder*))
+                  ;(setf effect-result (list 0 0 0 0))
+            (setf (effect-ptr self) (nth 1 effect-result))
+            ;;Save code as DSP and set some slots for SVG display
+            (set-effect-dsp-and-svg self)
+            ;;Check if faust-api returned a compilation error. If yes, exit, if no, build
+            (if (/= (car effect-result) 1)
+                (print (format nil "~%Votre effet n'a pas pu être créé. Faust a renvoyé l'erreur suivante : ~%~A" (nth 2 effect-result)))
+              ;;Get tree from Json, init params, register effect, plug if a track is specified.
+              (let ((param-list (finalize-effect-building self name)))
+                (when (and param-list (> (nbparams self) 0))
+                  (setf (params-ctrl self)
+                        (loop for param from 0 to (- (nbparams self) 1) collect (make-instance 'faust-effect-parameter-controller
+                                                                                               :param-type (param-type (nth param param-list))
+                                                                                               :label (label (nth param param-list))
+                                                                                               :index param
+                                                                                               :defval (string-to-number (init-val (nth param param-list)))
+                                                                                               :minval (string-to-number (min-val (nth param param-list)))
+                                                                                               :maxval (string-to-number (max-val (nth param param-list)))
+                                                                                               :stepval (string-to-number (step-val (nth param param-list)))
+                                                                                               :effect-ptr (effect-ptr self)
+                                                                                               :tracknum (tracknum self)
+                                                                                               ))))))))) self))
 
 
 (defmethod set-effect-name ((self faust-effect-console))
-  (let (name)
-    (if (effect-name self)
-        (setf name (effect-name self))
-      (progn
-        (setf name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register))))
-        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))))
-    name))
+  (or (effect-name self)
+      (let ((name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register)))))
+        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))
+        ;(setf (effect-name self) name)
+        name)))
 
 (defmethod set-effect-dsp-and-svg ((self faust-effect-console))
   (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
@@ -121,13 +143,14 @@
     param-list))
 
 
+
 (defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
 
 (defmethod Class-has-editor-p  ((self faust-effect-console)) t)
 
 (defmethod get-editor-class ((self faust-effect-console)) 'faustcontrollerEditor)
 
-(defmethod draw-mini-view  ((self t) (value faust-effect-console)) 
+(defmethod draw-mini-view ((self t) (value faust-effect-console)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
 (defmethod update-miniview ((self t) (value faust-effect-console)) 
@@ -136,7 +159,10 @@
 (defmethod draw-obj-in-rect ((self faust-effect-console) x x1 y y1 edparams view)
   (let ((w (w view))
         (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
-    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
+    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))
+    (om-with-focused-view view
+      (om-draw-string 5 15 (or (effect-name self) "! NO NAME !")))
+    ))
 
 (defmethod omNG-copy ((self faust-effect-console))
    "Cons a Lisp expression that return a copy of self when it is valuated."
@@ -147,22 +173,6 @@
   (let ((rep (make-instance (type-of self))))
     rep))
 
-
-;(defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
-;  "Cons a Lisp expression that return a copy of self when it is valuated."
-;  (let ((text (effect-txt self))
-;        (name (effect-name self))
-;;        (track (tracknum self))
-;        rep)
-;    (if (and (effect-ptr self) (not (las-faust-null-ptr-p (effect-ptr self))))
-;        (progn
-;          `(setf rep (make-instance ',(type-of self) 
-;                                    :effect-txt ,(omng-save text)
-;                                    :effect-name ',name
-;                                    :tracknum ',track)
-;          '(setf *faust-consoles-to-build* (append *faust-consoles-to-build* (list rep))))
-;      `(make-instance ',(type-of self))
-;      )))
 
 (defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
@@ -176,15 +186,51 @@
                    (effect-name rep) ',name
                    (tracknum rep) ',track)
              ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
-             (if (om-y-or-n-dialog "A Faust effect is trying to compile. Accept?" :default-button t)
-                 (om-run-process ,name #'(lambda () (build-faust-effect-console rep))))
+             ;(if (om-y-or-n-dialog "A Faust effect is trying to compile. Accept?" :default-button t)
+             ;    (om-run-process ,name #'(lambda () (build-faust-effect-console rep))))
+             (push rep *faust-effects-to-compile*)
              rep))
       (progn
         `(let ((rep (make-instance ',(type-of self))))
            rep)))))
 
-(defmethod get-obj-dur ((self faust-effect-console)) 0)
 
+(defun compile-faust-objects ()
+       (om-run-process "faust objects compiler" 
+                       #'(lambda ()
+                           (mapcar 
+                            #'(lambda (fx) 
+                                (cond ((typep fx 'faust-effect-console)
+                                       (build-faust-effect-console fx))
+                                      ((typep fx 'faust-synth-console)
+                                       (build-faust-synth-console fx))
+                                      (t nil)))
+                            (append *faust-effects-to-compile* *faust-synths-to-compile*))
+                           (setf *faust-effects-to-compile* nil
+                                 *faust-synths-to-compile* nil))))
+;(defun compile-faust-effects ()
+;  (print "COMPILE")
+;  (om-run-process "faust effects compiler" 
+;                  #'(lambda ()
+;                      (mapcar 
+;                       #'(lambda (fx) (build-faust-effect-console fx))
+;                       *faust-effects-to-compile*)
+;                      (setf *faust-effects-to-compile* nil))))
+
+;(defun compile-faust-effects ()
+;  (print "COMPILE")
+;  (om-without-interrupts 
+;  (mapcar 
+;   #'(lambda (fx) (build-faust-effect-console fx))
+ ;  *faust-effects-to-compile*)
+ ; (setf *faust-effects-to-compile* nil)))
+
+(defmethod load-patch :after ((self ompatch))
+  (compile-faust-objects)
+  ;(compile-faust-synths)
+  )
+
+(defmethod get-obj-dur ((self faust-effect-console)) 0)
 
 (defmethod object-remove-extra ((self faust-effect-console) box)
   (let* ((ptr (effect-ptr self)))
@@ -192,7 +238,6 @@
         (las-faust-effect-cleanup ptr))
     (if *general-mixer-window*
         (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*))))))
-
 
 ;================ CONTROLLER EDITOR ===================
 
@@ -783,12 +828,23 @@
                    (tracknum rep) ',track
                    (is-copy rep) ',copy-state)
              ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
-             (if (om-y-or-n-dialog "A Faust synth is trying to compile. Accept?" :default-button t)
-                 (om-run-process ,name #'(lambda () (build-faust-synth-console rep))))
+             ;(if (om-y-or-n-dialog "A Faust synth is trying to compile. Accept?" :default-button t)
+             ;    (om-run-process ,name #'(lambda () (build-faust-synth-console rep))))
+             (push rep *faust-synths-to-compile*)
              rep))
       (progn
         `(let ((rep (make-instance ',(type-of self))))
            rep)))))
+
+
+(defun compile-faust-synths ()
+  (om-run-process "faust synths compiler" 
+                  #'(lambda ()
+                      (mapcar 
+                       #'(lambda (fx) (build-faust-synth-console fx))
+                       *faust-synths-to-compile*)
+                      (setf *faust-synths-to-compile* nil))))
+
 
 (defmethod get-obj-dur ((self faust-synth-console)) (* 1000 (duration self)))
 

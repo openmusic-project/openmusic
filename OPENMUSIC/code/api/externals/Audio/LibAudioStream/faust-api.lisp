@@ -50,7 +50,8 @@
           las-faust-search-synth-name-in-register
           las-faust-search-synth-console-in-register
           las-faust-make-null-sound
-          
+          las-faust-pack-effect-register
+
           *faust-effects-register*
           *faust-synths-register*
           *faust-effects-by-track*
@@ -104,6 +105,7 @@
   (las::SetControlValue pointer number val))
 
 (defun las-faust-effect-cleanup (pointer)
+  (print (list "CLEAN" pointer))
   (if (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*))
       (let ((n (get-number-faust-effects-register))
             (track (- (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 1)))
@@ -312,6 +314,9 @@
           (setf res t)
         (incf i)))
     (list res (gethash i *faust-synths-console*))))
+
+(defun las-faust-pack-effect-register (n)
+  (pack-faust-effects-register n))
 ;===============================================================================================================================================================
 ;=========================================================================== TOOLS =============================================================================
 ;===============================================================================================================================================================
@@ -523,5 +528,5 @@
               (print (gethash j (gethash i *faust-synths-by-track*))))
         (print "----------------")))
 ;(faust-system-recap)
-;(progn (reseteffectslists *audio-player-visible*) (loop for i from 0 to 15 do (setf (gethash i *faust-effects-register*) (list nil 0 "faust-effect"))))
+;(progn (reseteffectslists *audio-player-visible*) (loop for i from 0 to 200 do (setf (gethash i *faust-effects-register*) (list nil 0 "faust-effect"))))
  
