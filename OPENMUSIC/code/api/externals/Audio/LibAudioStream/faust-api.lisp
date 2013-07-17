@@ -105,7 +105,6 @@
   (las::SetControlValue pointer number val))
 
 (defun las-faust-effect-cleanup (pointer)
-  (print (list "CLEAN" pointer))
   (if (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*))
       (let ((n (get-number-faust-effects-register))
             (track (- (nth 1 (gethash (find-effect-index-in-register pointer) *faust-effects-register*)) 1)))
