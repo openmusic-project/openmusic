@@ -8,7 +8,6 @@
 (defvar *faust-effects-to-compile* nil)
 (defvar *faust-synths-to-compile* nil)
 
-
 ;======================================================
 ;===      SINGLE FAUST PARAMETER CONTROLLER         ===
 ;=== a single parameter of the general faust effect ===
@@ -77,11 +76,12 @@
         (let ((namesearch (las-faust-search-effect-name-in-register name)))
           (if (car namesearch)
               (progn
-                (om-message-dialog (format nil "An effect called \"~A\" already exists. It has been replaced by the new one.~%~%NOTE : If this box already contains a Faust FX not called \"~A\", it won't be deleted, but you won't be able to access to its console anymore."  name name))
+                (om-message-dialog (format nil "An effect called \"~A\" already exists. It has been replaced by the new one.~%"  name))
                 (if (car (gethash (cadr namesearch) *faust-effects-register*))
                     (las-faust-effect-cleanup (car (gethash (cadr namesearch) *faust-effects-register*))))
                 (if *general-mixer-window*
-                    (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*)))))))
+                    (update-general-mixer-effects-lists (car (om-subviews *general-mixer-window*)))))
+            (om-message-dialog "WARNING : If this box already contains a Faust FX, it won't be deleted, but you won't be able to access to its console anymore.~%")))
         ;;Build string from textfile
         (loop for line in parlist do
               (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
@@ -117,7 +117,7 @@
 (defmethod set-effect-name ((self faust-effect-console))
   (or (effect-name self)
       (let ((name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register)))))
-        (om-message-dialog (format nil "WARNING : You didn't give a name to the effect. It's now called ~A.~%~%NOTE : If this box already contains a Faust FX, it won't be deleted, but you won't be able to access to its console anymore." name))
+        (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))
         (setf (effect-name self) name)
         name)))
 
@@ -185,9 +185,6 @@
              (setf (effect-txt rep) ,(omng-save text)
                    (effect-name rep) ',name
                    (tracknum rep) ',track)
-             ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
-             ;(if (om-y-or-n-dialog "A Faust effect is trying to compile. Accept?" :default-button t)
-             ;    (om-run-process ,name #'(lambda () (build-faust-effect-console rep))))
              (push rep *faust-effects-to-compile*)
              rep))
       (progn
@@ -689,11 +686,12 @@
             (let ((namesearch (las-faust-search-synth-name-in-register name)))
               (if (car namesearch)
                   (progn
-                    (om-message-dialog (format nil "An synth called \"~A\" already exists. It has been replaced by the new one.~%~%NOTE : If this box already contains a Faust Synth not called \"~A\", it won't be deleted, but you won't be able to access to its console anymore."  name name))
+                    (om-message-dialog (format nil "A Synth called \"~A\" already exists. It has been replaced by the new one.~%"  name))
                     (if (car (gethash (cadr namesearch) *faust-synths-register*))
                         (las-faust-synth-cleanup (car (gethash (cadr namesearch) *faust-synths-register*))))
                     (if *general-mixer-window*
-                        (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*)))))))
+                        (update-general-mixer-synths-lists (car (om-subviews *general-mixer-window*)))))
+                (om-message-dialog "WARNING : If this box already contains a Faust Synth, it won't be deleted, but you won't be able to access to its console anymore.~%")))
             ;;Build string from textfile
             (loop for line in parlist do
                   (setf synth-string (concatenate 'string synth-string (format nil "~%") line)))
@@ -737,7 +735,7 @@
 (defmethod set-synth-name ((self faust-synth-console))
   (or (synth-name self)
       (let ((name (format nil "Faust-Synth-~A" (+ 1 (las-get-number-faust-synths-register)))))
-        (om-message-dialog (format nil "WARNING : You didn't give a name to the synth. It's now called ~A.~%~%NOTE : If this box already contains a Faust Synth, it won't be deleted, but you won't be able to access to its console anymore." name))
+        (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))
         (setf (synth-name self) name)
         name)))
 
@@ -821,9 +819,6 @@
                    (synth-name rep) ',name
                    (tracknum rep) ',track
                    (is-copy rep) ',copy-state)
-             ;;;PROCESS SEPARE SINON CA MOULINE INDEFINIMENT. A VOIR
-             ;(if (om-y-or-n-dialog "A Faust synth is trying to compile. Accept?" :default-button t)
-             ;    (om-run-process ,name #'(lambda () (build-faust-synth-console rep))))
              (push rep *faust-synths-to-compile*)
              rep))
       (progn
