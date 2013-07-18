@@ -287,6 +287,8 @@
       )
     rep))
 
+;(quit-om-callback)
+;(defun om-stop-scheduler () nil)
 
 ;; (gen-lib-reference (find-library "OM-Spat"))
 ;;; avant de faire un package :

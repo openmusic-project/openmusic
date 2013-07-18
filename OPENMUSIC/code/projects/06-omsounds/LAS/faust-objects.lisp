@@ -86,10 +86,10 @@
         (loop for line in parlist do
               (setf effect-string (concatenate 'string effect-string (format nil "~%") line)))
         ;;Save as a dsp file
-        (save-data (list (list effect-string)) (format nil "effect~A.dsp" (print (+ 1 (las-get-number-faust-effects-register)))))
+        (save-data (list (list effect-string)) (format nil "OM-Faust_effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
         ;;Get result from the compilation with the faust-api.
         (setf effect-result (las-faust-make-effect 
-                             (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+                             (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "OM-Faust_effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
                              *om-outfiles-folder*))
         (setf (effect-ptr self) (nth 1 effect-result))
         ;;Save code as DSP and set some slots for SVG display
@@ -122,11 +122,14 @@
         name)))
 
 (defmethod set-effect-dsp-and-svg ((self faust-effect-console))
-  (setf (effect-dsp self) (format nil "effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
-  (setf (effect-svg self) (format nil "./effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register)))))
+  (setf (effect-dsp self) (format nil "OM-Faust_effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
+  (setf (effect-svg self) (format nil "./OM-Faust_effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register)))))
 
 (defun faust-show-svg (pathname dsp svg)
   (om-cmd-line (format nil "open ~A" svg) nil t pathname))
+
+(defun las-clean-faust-files ()
+  (om-cmd-line "rm -Rf OM-Faust_*" nil t *om-outfiles-folder*))
 
 (defmethod finalize-effect-building ((self faust-effect-console) name)
   (progn
@@ -695,10 +698,10 @@
             (loop for line in parlist do
                   (setf synth-string (concatenate 'string synth-string (format nil "~%") line)))
             ;;Save as a dsp file
-            (save-data (list (list synth-string)) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
+            (save-data (list (list synth-string)) (format nil "OM-Faust_synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
             ;;Get result from the compilation with the faust-api.
             (setf synth-result (las-faust-make-effect 
-                                (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register)))) 
+                                (concatenate 'string (directory-namestring *om-outfiles-folder*) (format nil "OM-Faust_synth~A.dsp" (+ 1 (las-get-number-faust-synths-register)))) 
                                 *om-outfiles-folder*))
             (setf (synth-ptr self) (nth 1 synth-result))
             ;;Set a null snd object for this synth
@@ -739,8 +742,8 @@
         name)))
 
 (defmethod set-synth-dsp-and-svg ((self faust-synth-console))
-  (setf (synth-dsp self) (format nil "synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
-  (setf (synth-svg self) (format nil "./synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register)))))
+  (setf (synth-dsp self) (format nil "OM-Faust_synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
+  (setf (synth-svg self) (format nil "./OM-Faust_synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register)))))
 
 (defmethod finalize-synth-building ((self faust-synth-console) name)
   (let (param-list)

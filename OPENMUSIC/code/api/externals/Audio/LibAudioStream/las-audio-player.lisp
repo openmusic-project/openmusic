@@ -82,7 +82,6 @@
 (defun las-close-full-system ()
   (destroy-global-audio-context))
 
-
 (defun las-play-all-players ()
   (play-full-audio-context))
 (defun las-pause-all-players ()
