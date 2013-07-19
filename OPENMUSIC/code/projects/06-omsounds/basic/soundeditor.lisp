@@ -458,7 +458,7 @@
   (let* ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
          (min (car (rangex (panel self))))
          (max (cadr (rangex (panel self)))))
-    (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
+    (cond ((equal (rangex (panel self)) (bounds-x (panel self)))
            (setf (rangex (panel self)) (list 0 newdur)))
           ((or (> min newdur) (> max newdur))
            (setf (rangex (panel self)) (list 0 newdur)))
@@ -467,7 +467,9 @@
     (strech-ruler-release (rulerx (panel self)) 0)
     (set-units-ruler (panel self) (rulerx (panel self)))
     (om-invalidate-view self)))
+
 ;;;///////////////////////////////////////////////
+
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (progn
