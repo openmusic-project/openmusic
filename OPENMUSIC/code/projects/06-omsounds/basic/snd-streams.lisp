@@ -65,7 +65,7 @@
          (buffer-size 512)
          (buffer (om-make-pointer (* 4 buffer-size 2) t))    
          (res buffer-size))
-    (las::ResetSound sndr)
+    ;(las::ResetSound sndr)
     (loop while (= res buffer-size) do
           ;(setf res (las::ReadSound sndr buffer buffer-size (las::GetChannelsSound sndr)))
           (setf res (las::ReadSound sndr buffer buffer-size 2))
@@ -165,7 +165,6 @@
   (las-start-audio-record file resolution format)
   (sleep (/ dur 1000.0))
   (las-stop-audio-record))
-
 
 ;;;=========================
 ;;; BOXES

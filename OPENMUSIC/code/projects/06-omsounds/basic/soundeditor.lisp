@@ -472,11 +472,9 @@
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-copy pointer from to)))
           (if result
               (om-sound-update-snd-slice-to-paste (object self) result)
@@ -487,11 +485,9 @@
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-cut pointer from to)))
           (if result
               (progn
@@ -507,8 +503,7 @@
   (if (not (selection-to-slice-? (panel self)))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
                (slice (om-sound-snd-slice-to-paste (object self)))
                (position (cursor-pos (panel self)))
                (result (las-slice-paste pointer position slice)))
@@ -529,11 +524,9 @@
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-delete pointer from to)))
           (if result
               (progn
@@ -572,10 +565,9 @@
           (sound-update-pict (object self) (nth 3 futureline))
           (setf (sndpict self) (get-sound-pict (object self))))
         (launch-editor-view-updater-light self)))
-        
   (update-menubar self))
-;====================================================================================================================
 
+;====================================================================================================================
 
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")
@@ -589,7 +581,6 @@
 (defmethod cursor-panes ((self soundeditor))
   (list (panel self)
         (preview self)))
-
 
 ;;;====================== 
 ;;; TITLE BAR / SOUND INFO
@@ -695,6 +686,13 @@
                      :interval interval)
                (first interval)
                (second interval)))))
+
+(defmethod get-selection-to-play ((self t)) 
+  (let ((interval (list (cursor-pos self) (cadr (bounds-x self)))))
+    (values  (list (object (om-view-container self))
+                   :interval interval)
+             (first interval)
+             (second interval))))
 
 (defmethod selection-to-slice-? ((self soundpanel))
   (and (cursor-interval self) 
