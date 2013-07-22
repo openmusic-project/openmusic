@@ -438,10 +438,10 @@
     (init-message-win)
     (change-message-win "Please Wait...")
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
     (om-sound-las-using-srate (object self))
     (setf (sndpict self) (get-sound-pict (object self)))
-    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
            (setf (rangex (panel self)) (list 0 newdur)))
           ((or (> min newdur) (> max newdur))
@@ -480,7 +480,7 @@
                (result (las-slice-copy pointer from to)))
           (if result
               (om-sound-update-snd-slice-to-paste (object self) result)
-            (om-message-dialog "WARNING : An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to copy! Please select a region to copy.")))
 
 (defmethod editor-slice-cut ((self soundeditor))
@@ -498,7 +498,7 @@
                 (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "WARNING : An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file.%~%Please use an external editor for further edit."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to cut! Please select a region to cut.")))
 
 (defmethod editor-slice-paste ((self soundeditor))
@@ -518,7 +518,7 @@
                       (om-sound-update-sndlasptr-current (object self) result)
                       (om-sound-update-las-infos (object self))
                       (launch-editor-view-updater self))
-                  (print "WARNING : An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.%~%Please use an external editor for further edit.")))
+                  (om-message-dialog (format nil "WARNING : An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit."))))
             (print "Nothing to paste! Please copy a sound region before."))))
     (print "You can't paste on a region!")))
 
@@ -537,7 +537,7 @@
                 (om-sound-update-sndlasptr-current (object self) result)
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "WARNING : An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file.%~%Please use an external editor for further edit."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to delete! Please select a region to delete.")))
 
 (defmethod editor-slice-undo ((self soundeditor))
