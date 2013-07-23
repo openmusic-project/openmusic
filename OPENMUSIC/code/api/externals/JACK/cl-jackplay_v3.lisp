@@ -64,7 +64,10 @@
 (defun jackplay-toggle-pause (&optional val)
   (if val
       (setf *pause-reading* val)
-      (setf *pause-reading* (not *pause-reading*))))
+      (setf *pause-reading* (not *pause-reading*)))
+  (if *pause-reading*
+      :pausing
+      :not-pausing))
 
 
 (defparameter *jack-debug* nil)
@@ -76,29 +79,28 @@
 
 (defun disk-to-ringbuffer-proc (sf-handle &optional (disk-io-frames 4096) (chans 2))
   (let ((disk-io-bytes (* disk-io-frames *sample-size*)))
-    (with-foreign-object (*frames* 'jack_default_audio_sample_t (* chans *sample-size* disk-io-frames))
+    (with-foreign-object (*frames* 'jack_default_audio_sample_t (* chans disk-io-bytes))
       (loop
-	 (setf *jack-get-me-some* nil)
-	 (when *stop-reading* (return))
-	 (do ()
-	     ((or (< (jack-ringbuffer-write-space (aref *jack-ringbuffers* 0)) disk-io-bytes)
-		  (< (jack-ringbuffer-write-space (aref *jack-ringbuffers* 1)) disk-io-bytes)))
+	 (unless *stop-reading*
+	   (do ()
+	       ((< (jack-ringbuffer-write-space (aref *jack-ringbuffers* 0)) disk-io-bytes))
 
-	   (let ((read-frames-cnt (sf::sf-readf-float sf-handle *frames* disk-io-frames)))
+	     (let ((read-frames-cnt (sf::sf-readf-float sf-handle *frames* disk-io-frames)))
 
-	     (when (< read-frames-cnt disk-io-frames) (sf::sf_seek sf-handle 0.d0 0))
+	       (when (< read-frames-cnt disk-io-frames) (sf::sf_seek sf-handle 0.d0 0))
 
-	     (dotimes (ch chans)
-	       (let ((rb (aref *jack-ringbuffers* ch)))
-		 (do ((i ch (+ i chans)))
-		     ((>= i (* read-frames-cnt chans)) t)
-		   (jack-ringbuffer-write rb
-					  (mem-aptr *frames* 'jack_default_audio_sample_t i)
-					  *sample-size*))))))
+	       (dotimes (ch chans)
+		 (let ((rb (aref *jack-ringbuffers* ch)))
+		   (do ((i ch (+ i chans)))
+		       ((>= i (* read-frames-cnt chans)) t)
+		     (jack-ringbuffer-write rb
+					    (mem-aptr *frames* 'jack_default_audio_sample_t i)
+					    *sample-size*))))))
+	   (setf *jack-get-me-some* nil))
 
-	 ;; wait for process-callback to poke me
-	 (mp:process-wait-local (format nil "cl-jack diskin ~:[reading~;pausing~]" *pause-reading*)
-				#'(lambda () *jack-get-me-some*))))))
+	   ;; wait for process-callback to poke me
+	   (mp:process-wait-local (format nil "cl-jack diskin ~:[reading~;pausing~]" *pause-reading*)
+				  #'(lambda () *jack-get-me-some*))))))
 
 
 (setf *jack-debug* t)
@@ -106,49 +108,70 @@
 
 (setf *jack-stats* t)
 
-(progn  
+(defvar *rbresetlock* (mp::make-lock :name "rb-reset-lock"))
+
+(jack-ringbuffer-reset (aref *jack-ringbuffers* 1))
+
+(mp:with-lock (*rbresetlock*)
+    (loop for rb across *jack-ringbuffers*
+       do (jack-ringbuffer-reset rb))
+    (sleep 0.2))
+
+
+(mp:with-lock (*rbresetlock*)
   (if (boundp '*jack-sndfile-handle*) (sf::sf_close *jack-sndfile-handle*))
   ;; (jack-open-sound (first somesounds))       
   (jack-open-sound (second somesounds))  
+  ;; (jack-open-sound (third somesounds))
   (and *producer*
        (mp:process-alive-p *producer*)
        (mp:process-kill *producer*))
-  (sleep 0.1)				;todo...
   (loop for rb across *jack-ringbuffers*
      do (jack-ringbuffer-reset rb))
+  
   (setf *producer* (mp:process-run-function "cl-jack-producer-thread" '()
 					    'disk-to-ringbuffer-proc
 					    *jack-sndfile-handle*
 					    4096
-					    *read-sound-channels*)))
+					    *read-sound-channels*))
+  ;; delay release of lock for new reader to get set up 
+  (sleep 0.1)
+  )
 
 (jackplay-toggle-pause)
 
 (setf *stop-reading* t)
-(progn
-  (sf::sf_seek *jack-sndfile-handle* 0.d0 0)
-  (setf *stop-reading* t)
-  (sleep 0.1)
-  (setf *stop-reading* nil))
+(setf *stop-reading* nil)
 
 ;; process-callback, "non-interleaving", strait copy from ringbuffers - 1 pr. port :
 
 
+
+(mp::process-lock *rbresetlock*)
+(mp::process-unlock *rbresetlock*)
+
+
+(mp::ps)
+
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
   (declare (ignore arg))
   ;;(funcall #'cl-jack-handle-midi-seq nframes) ;plug to handle midi-seq
-  (with-foreign-object (inbuf 'jack_default_audio_sample_t nframes)
-
-    (loop for outport in *OM-jack-audio-output-ports*
-       for rb across *jack-ringbuffers*
-       ;; repeat 1
-       do (let ((outbuf (jack-port-get-buffer outport nframes))
-		(read-count (jack-ringbuffer-read rb inbuf (* nframes *sample-size*))))
-
-	    (when (and (= read-count (* nframes *sample-size*))
-		       (mp:process-alive-p *producer*)
-		       (not *pause-reading*))
-	      (foreign-funcall "memcpy" :pointer outbuf :pointer inbuf size_t (* nframes 4))))))
+  (let ((to-read (* nframes *sample-size*)))
+    (with-foreign-object (inbuf 'jack_default_audio_sample_t nframes)
+		(loop for outport in *OM-jack-audio-output-ports*
+		   for rb across *jack-ringbuffers*
+		   do
+		     (let ((outbuf (jack-port-get-buffer outport nframes)))
+		       (unless (mp:with-lock (*rbresetlock* nil 0)
+				 (let ((read-count (jack-ringbuffer-read rb inbuf to-read)))
+	       
+				   (when (and (= read-count to-read)
+					      (mp:process-alive-p *producer*)
+					      (not (or *pause-reading* *stop-reading*)))
+				     (foreign-funcall "memcpy" :pointer outbuf :pointer inbuf size_t to-read)))
+				 t)
+			 ;; output zero if i can't grab lock
+			 (foreign-funcall "memset" :pointer outbuf jack_default_audio_sample_t 0.0 size_t to-read))))))
   (setf *jack-get-me-some* t)
   (when (mp:process-alive-p *producer*)
     (mp:process-poke *producer*))
@@ -161,11 +184,10 @@
   (loop for inport in *OM-jack-audio-input-ports*
      for outport in *OM-jack-audio-output-ports*
      do
-       (let ((in (jack-port-get-buffer inport nframes))
-	     (out (jack-port-get-buffer outport nframes)))
-	 (foreign-funcall "memcpy" :pointer out :pointer in
-			  size_t (* nframes (foreign-type-size 'size_t)))))
-  
+       (foreign-funcall "memset"
+			:pointer (jack-port-get-buffer outport nframes)
+			jack_default_audio_sample_t 0.0
+			size_t (* nframes (foreign-type-size 'size_t))))
   0)
 
 
