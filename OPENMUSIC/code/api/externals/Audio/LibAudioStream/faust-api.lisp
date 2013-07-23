@@ -13,6 +13,10 @@
 (defvar *faust-synths-console* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
+;For FadeIn/FadeOuts
+(defvar *faust-fade-effect-list* nil)
+(defvar *faust-vol-effect* nil)
+
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
 ;===============================================================================================================================================================
@@ -46,6 +50,7 @@
           las-faust-effect-already-plugged-?
           las-faust-synth-hidden-already-plugged-?
           las-faust-null-ptr-p
+          las-faust-transform-sound
           las-faust-search-effect-name-in-register
           las-faust-search-synth-name-in-register
           las-faust-search-synth-console-in-register
@@ -58,6 +63,8 @@
           *faust-synths-by-track*
           *faust-synths-by-track-hidden*
           *faust-synths-console*
+
+          *faust-fade-effect-list*
           ) :om-api)
 
 
@@ -66,7 +73,10 @@
     (init-faust-effects-register)
     (init-faust-synths-register)
     (ResetEffectsLists *audio-player-visible*)
-    (Plug-Empty-Effects-Lists-On-Hidden)))
+    (Plug-Empty-Effects-Lists-On-Hidden)
+    (setf *faust-fade-effect-list* (las::makeaudioeffectlist))
+    (setf *faust-vol-effect* (las::makevolaudioeffect 1.0))
+    (las::addaudioeffect *faust-fade-effect-list* *faust-vol-effect*)))
 
 (defun las-faust-unplug-all ()
   (ResetEffectsLists *audio-player-visible*))
@@ -88,6 +98,9 @@
 
 (defun las-faust-make-null-sound (duration)
   (las::makestereosound (las::makenullsound (* las-srate duration))))
+
+(defun las-faust-transform-sound (pointer effectlist fadein fadeout)
+  (las::maketransformsound pointer effectlist fadein fadeout))
 
 (defun las-faust-get-json (pointer)
   (las::getjsoneffect pointer))

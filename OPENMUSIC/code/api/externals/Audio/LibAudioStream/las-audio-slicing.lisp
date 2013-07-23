@@ -8,12 +8,20 @@
           las-slice-copy
           las-slice-paste
           las-slice-delete
+          las-slice-sample-cut
+          las-slice-seq
           ) :om-api)
 
 
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
 ;===============================================================================================================================================================
+(defun las-slice-sample-cut (pointer from to)
+  (las::makecutsound pointer (max 0 from) (min (las::getlengthsound pointer) to)))
+
+(defun las-slice-seq (pointer1 pointer2 crossfade)
+  (las::makeseqsound pointer1 pointer2 crossfade))
+
 (defun las-slice-cut (pointer from to)
   (let* ((sr-factor (/ las-srate 1000.0))
          (begin (round (* from sr-factor)))
