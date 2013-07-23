@@ -21,11 +21,12 @@
    (om-message-dialog (format nil (om-str :lib-error) "Audio"))))
 
 (defun audio-close ()
- (when *audio-player*
+ (when oa::*audio-player-visible*
    (ignore-errors (om-close-audio-player *audio-player*))
    ;(remove-assoc-player *general-player* 'libaudio)
    ;(setf *audio-player* nil)
    (las-close-full-system)
+   (las-clean-faust-files)
    ))
 
 (defun audio-reset ()

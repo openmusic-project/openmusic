@@ -438,10 +438,10 @@
     (init-message-win)
     (change-message-win "Please Wait...")
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
+    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
     (om-sound-las-using-srate (object self))
     (setf (sndpict self) (get-sound-pict (object self)))
-    (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
     (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
            (setf (rangex (panel self)) (list 0 newdur)))
           ((or (> min newdur) (> max newdur))
@@ -458,7 +458,7 @@
   (let* ((newdur (round (om-sound-n-samples-current (object self)) (/ las-srate 1000.0)))
          (min (car (rangex (panel self))))
          (max (cadr (rangex (panel self)))))
-    (cond ((equal (rangex (panel self)) (bounds-x (panel self))) 
+    (cond ((equal (rangex (panel self)) (bounds-x (panel self)))
            (setf (rangex (panel self)) (list 0 newdur)))
           ((or (> min newdur) (> max newdur))
            (setf (rangex (panel self)) (list 0 newdur)))
@@ -467,31 +467,29 @@
     (strech-ruler-release (rulerx (panel self)) 0)
     (set-units-ruler (panel self) (rulerx (panel self)))
     (om-invalidate-view self)))
+
 ;;;///////////////////////////////////////////////
+
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-copy pointer from to)))
           (if result
               (om-sound-update-snd-slice-to-paste (object self) result)
-            (print "An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested copy operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to copy! Please select a region to copy.")))
 
 (defmethod editor-slice-cut ((self soundeditor))
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-cut pointer from to)))
           (if result
               (progn
@@ -500,15 +498,14 @@
                 (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to cut! Please select a region to cut.")))
 
 (defmethod editor-slice-paste ((self soundeditor))
   (if (not (selection-to-slice-? (panel self)))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
                (slice (om-sound-snd-slice-to-paste (object self)))
                (position (cursor-pos (panel self)))
                (result (las-slice-paste pointer position slice)))
@@ -521,7 +518,7 @@
                       (om-sound-update-sndlasptr-current (object self) result)
                       (om-sound-update-las-infos (object self))
                       (launch-editor-view-updater self))
-                  (print "An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.")))
+                  (om-message-dialog (format nil "WARNING : An error has occured. Requested paste operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit."))))
             (print "Nothing to paste! Please copy a sound region before."))))
     (print "You can't paste on a region!")))
 
@@ -529,11 +526,9 @@
   (if (selection-to-slice-? (panel self))
       (progn
         (editor-stop self)
-        (let* ((datalist (get-selection-to-play (panel self)))
-               (pointer (om-sound-sndlasptr-current (object self)))
-               (interval (nth 2 datalist))
-               (from (car interval))
-               (to (cadr interval))
+        (let* ((pointer (om-sound-sndlasptr-current (object self)))
+               (from (car (cursor-interval (panel self))))
+               (to (cadr (cursor-interval (panel self))))
                (result (las-slice-delete pointer from to)))
           (if result
               (progn
@@ -542,7 +537,7 @@
                 (om-sound-update-sndlasptr-current (object self) result)
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
-            (print "An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file."))))
+            (om-message-dialog (format nil "WARNING : An error has occured. Requested delete operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
     (print "Nothing to delete! Please select a region to delete.")))
 
 (defmethod editor-slice-undo ((self soundeditor))
@@ -572,10 +567,9 @@
           (sound-update-pict (object self) (nth 3 futureline))
           (setf (sndpict self) (get-sound-pict (object self))))
         (launch-editor-view-updater-light self)))
-        
   (update-menubar self))
-;====================================================================================================================
 
+;====================================================================================================================
 
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")
@@ -589,7 +583,6 @@
 (defmethod cursor-panes ((self soundeditor))
   (list (panel self)
         (preview self)))
-
 
 ;;;====================== 
 ;;; TITLE BAR / SOUND INFO
@@ -695,6 +688,13 @@
                      :interval interval)
                (first interval)
                (second interval)))))
+
+(defmethod get-selection-to-play ((self t)) 
+  (let ((interval (list (cursor-pos self) (cadr (bounds-x self)))))
+    (values  (list (object (om-view-container self))
+                   :interval interval)
+             (first interval)
+             (second interval))))
 
 (defmethod selection-to-slice-? ((self soundpanel))
   (and (cursor-interval self) 

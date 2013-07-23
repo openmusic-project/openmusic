@@ -82,7 +82,6 @@
 (defun las-close-full-system ()
   (destroy-global-audio-context))
 
-
 (defun las-play-all-players ()
   (play-full-audio-context))
 (defun las-pause-all-players ()
@@ -131,7 +130,7 @@
 (defun las-switch-sound-las-player (sound kind)
   (cond ((= kind 1) (setf (assoc-player sound) *audio-player-visible*))
         ((= kind 0) (setf (assoc-player sound) *audio-player-hidden*))
-        (t (print "LAS couldn't set your sound associated player info properly (wrong argument)"))))
+        (t (print "WARNING : LAS couldn't set your sound associated player info properly (wrong argument)"))))
 
 (defun las-change-channel-pan-visible (channel pan)
   (change-channel-pan-visible (- channel 1) pan))
@@ -182,7 +181,7 @@
               (las::SetStopCallbackChannel *audio-player-hidden* i (cffi:callback channel-stop-callback-hidden) (gethash i *channel-numbers-hash-table*))
               (las::SetStopCallbackChannel *audio-player-visible* i (cffi:callback channel-stop-callback-visible) (gethash i *channel-numbers-hash-table*)))
         "Audio is ready")
-    (print "Audio context can't be started because there is no instanciated player")))
+    (print "WARNING : Audio context can't be started because there is no instanciated player")))
 
 ;/DESTROY AUDIO CONTEXT FUNCTION
 ;Close and delete both *audio-player-visible* and *audio-player-hidden*, init players infos
@@ -308,7 +307,6 @@
                        *audio-player-visible-tracks-info*)))
     (while (not (string-equal status "Idle"))
       (setf status (cadr (gethash i status-list)))
-      (print status)
       (setf freetrack i)
       (incf i)
       )
@@ -595,9 +593,9 @@
                (load-sound-on-one-channel player snd actual-track)
                (play-one-channel player actual-track)))
             ((string-equal "Paused" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
-             (print "A sound seems to be paused on this channel. Stop it first or please select a new track"))
+             (print "WARNING : A sound seems to be paused on this channel. Stop it first or please select a new track"))
             ((string-equal "Playing" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
-             (print "A sound seems to be playing on this channel. Stop it first or please select a new track"))))))
+             (print "WARNING : A sound seems to be playing on this channel. Stop it first or please select a new track"))))))
 
 ;/PAUSE FUNCTION FOR HIDDEN PLAYER
 ;This function is a basic pause function which works only if the sound is playing. It also check if the channel of the sound is well loaded with it to avoid issues.
