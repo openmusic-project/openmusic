@@ -55,6 +55,7 @@
           las-faust-search-synth-name-in-register
           las-faust-search-synth-console-in-register
           las-faust-make-null-sound
+          las-faust-make-null-sound-smp
           las-faust-pack-effect-register
 
           *faust-effects-register*
@@ -98,6 +99,9 @@
 
 (defun las-faust-make-null-sound (duration)
   (las::makestereosound (las::makenullsound (* las-srate duration))))
+
+(defun las-faust-make-null-sound-smp (smp)
+  (las::makestereosound (las::makenullsound smp)))
 
 (defun las-faust-transform-sound (pointer effectlist fadein fadeout)
   (las::maketransformsound pointer effectlist fadein fadeout))

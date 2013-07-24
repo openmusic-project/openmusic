@@ -366,8 +366,8 @@
                         (om-new-leafmenu  "Delete" #'(lambda () 
                                                        (editor-slice-delete self)) "d" (editor-slicing-available self)))
                        (list
-                        (om-new-leafmenu  "Linear Fading" #'(lambda () 
-                                                                 (make-fader-builder-window self)) "l" t))))
+                        (om-new-leafmenu  "Fading" #'(lambda () 
+                                                                 (make-fader-builder-window self)) "f" t))))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
 
@@ -509,8 +509,7 @@
                                            (om-make-point 65 12)
                                            ""
                                            :di-action (om-dialog-item-act item
-                                                        (setf typefade (om-get-selected-item-index item))
-                                                        (print typefade))
+                                                        (setf typefade (om-get-selected-item-index item)))
                                            :font *om-default-font1*
                                            :range '("IN" "OUT")
                                            :value "IN"))
@@ -531,15 +530,14 @@
                                                           (om-add-subviews panel start-time start-unit)))
                                            :font *om-default-font2*
                                            :fg-color *om-white-color*))
-    (setf start-time (om-make-dialog-item 'numBox
+    (setf start-time (om-make-dialog-item 'edit-numbox
                                           (om-make-point 150 70)
                                           (om-make-point 60 18) 
-                                          ;(if (> track 0) (format () " ~D" track) "no track")
                                           (format nil "~D" timestart)
                                           :min-val 0 :max-val (- (round (om-sound-n-samples-current sound) (/ las-srate 1000.0)) 10)
                                           :font *om-default-font1*
                                           :bg-color *om-white-color*
-                                          :fg-color *om-black-color* ;(if (> track 0) *om-black-color* *om-gray-color*)
+                                          :fg-color *om-black-color*
                                           :value timestart
                                           :afterfun #'(lambda (item)
                                                         (setf timestart (value item))
@@ -548,7 +546,7 @@
                                                               (set-value end-time (+ timestart 5))
                                                               (setf timeend (+ timestart 5)))))))
     (setf start-unit (om-make-dialog-item 'om-static-text 
-                                          (om-make-point 210 70) 
+                                          (om-make-point 220 70) 
                                           (om-make-point 295 20)
                                           (format nil "ms")
                                           :font *om-default-font2*
@@ -570,10 +568,9 @@
                                                         (om-add-subviews panel end-time end-unit)))
                                          :font *om-default-font2*
                                          :fg-color *om-white-color*))
-    (setf end-time (om-make-dialog-item 'numBox
+    (setf end-time (om-make-dialog-item 'edit-numbox
                                         (om-make-point 150 120)
                                         (om-make-point 60 18) 
-                                          ;(if (> track 0) (format () " ~D" track) "no track")
                                         (format nil "~D" timeend)
                                         :min-val 10 :max-val (round (om-sound-n-samples-current sound) (/ las-srate 1000.0))
                                         :font *om-default-font1*
@@ -587,7 +584,7 @@
                                                             (set-value start-time (- timeend 5))
                                                             (setf timestart (- timeend 5)))))))
     (setf end-unit (om-make-dialog-item 'om-static-text 
-                                        (om-make-point 210 120) 
+                                        (om-make-point 220 120) 
                                         (om-make-point 295 20)
                                         (format nil "ms")
                                         :font *om-default-font2*
@@ -614,29 +611,78 @@
     (om-modal-dialog win)))
 
 (defmethod editor-fade-in ((self soundeditor) start end)
-
   (let* ((sr-factor (/ las-srate 1000.0))
          (sample-start (round (* start sr-factor)))
          (sample-end (round (* end sr-factor)))
+         (fading-smp (- sample-end sample-start))
          (pointer (om-sound-sndlasptr-current (object self)))
-         (slice (las-slice-sample-cut pointer sample-start sample-end))
-         (slice-before (las-slice-sample-cut pointer 0 (- sample-start 1)))
-         (slice-after (las-slice-sample-cut pointer (+ sample-end 1) (las-get-length-sound pointer)))
-         (slice-fade (las-faust-transform-sound slice *faust-fade-effect-list* (round (- sample-end sample-start) 2) 0));(las-get-length-sound slice) 0))
-         (result (las-slice-seq (las-slice-seq slice-before slice-fade 0) slice-after 0)))
-    (print (list "INFOS" 0 (las-get-length-sound (om-sound-sndlasptr-current (object self))) sample-start sample-end))
-    (print (list "RESULT" 0 (las-get-length-sound result) "SOMME DE" (las-get-length-sound slice-before) (las-get-length-sound slice-fade) (las-get-length-sound slice-after)))
-    (print slice-fade)
+         (max-end (las-get-length-sound pointer))
+         (slice-before (las-slice-sample-cut pointer 0 sample-start))
+         (slice (las-slice-sample-cut pointer sample-start max-end))
+         (slice-after (las-slice-sample-cut pointer sample-end max-end))
+         blank-snd slice-fade-io slice-fade-in result)
+
+    (if (> (* fading-smp 2) (- max-end sample-start))
+        (progn
+          (setf blank-snd (las-faust-make-null-sound-smp (- (* fading-smp 2) (- max-end sample-start))))
+          (setf slice (las-slice-seq slice blank-snd 0))))
+
+    (setf slice-fade-io (las-faust-transform-sound slice *faust-fade-effect-list* fading-smp fading-smp))
+    (setf slice-fade-in (las-slice-sample-cut slice-fade-io 0 fading-smp))
+
+    (cond ((and (= sample-start 0) (= sample-end max-end))
+           (setf result slice-fade-in))
+          ((and (= sample-start 0) (/= sample-end max-end))
+           (setf result (las-slice-seq slice-fade-in slice-after 0)))
+          ((and (/= sample-start 0) (= sample-end max-end))
+           (setf result (las-slice-seq slice-before slice-fade-in 0)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-in 0) slice-after 0))))
+
     (if result
         (progn
           (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+          (update-menubar self)
           (om-sound-update-sndlasptr-current (object self) result)
           (om-sound-update-las-infos (object self))
           (launch-editor-view-updater self))
-      (om-message-dialog (format nil "WARNING : An error has occured. Requested fading operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))
-    ))
+      (om-message-dialog (format nil "WARNING : An error has occured. Requested fading operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
 
-(defmethod editor-fade-out ((self soundeditor) start end) nil)
+(defmethod editor-fade-out ((self soundeditor) start end) 
+  (let* ((sr-factor (/ las-srate 1000.0))
+         (sample-start (round (* start sr-factor)))
+         (sample-end (round (* end sr-factor)))
+         (fading-smp (- sample-end sample-start))
+         (pointer (om-sound-sndlasptr-current (object self)))
+         (max-end (las-get-length-sound pointer))
+         (slice-before (las-slice-sample-cut pointer 0 sample-start))
+         (slice (las-slice-sample-cut pointer 0 sample-end))
+         (slice-after (las-slice-sample-cut pointer sample-end max-end))
+         blank-snd slice-fade-io slice-fade-out result)
+
+    (if (> (* fading-smp 2) sample-end)
+        (progn
+          (setf blank-snd (las-faust-make-null-sound-smp (- (* fading-smp 2) sample-end)))
+          (setf slice (las-slice-seq blank-snd slice 0))))
+
+    (setf slice-fade-io (las-faust-transform-sound slice *faust-fade-effect-list* fading-smp fading-smp))
+    (setf slice-fade-out (las-slice-sample-cut slice-fade-io (- (las-get-length-sound slice-fade-io) fading-smp) (las-get-length-sound slice-fade-io)))
+
+    (cond ((and (= sample-start 0) (= sample-end max-end))
+           (setf result slice-fade-out))
+          ((and (= sample-start 0) (/= sample-end max-end))
+           (setf result (las-slice-seq slice-fade-out slice-after 0)))
+          ((and (/= sample-start 0) (= sample-end max-end))
+           (setf result (las-slice-seq slice-before slice-fade-in 0)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-out 0) slice-after 0))))
+
+    (if result
+        (progn
+          (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+          (update-menubar self)
+          (om-sound-update-sndlasptr-current (object self) result)
+          (om-sound-update-las-infos (object self))
+          (launch-editor-view-updater self))
+      (om-message-dialog (format nil "WARNING : An error has occured. Requested fading operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
 
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
