@@ -207,7 +207,8 @@
 (defun general-player-stop (caller)
   (mapcar #'(lambda (box)
               (setf (play-state box) nil)
-              (om-invalidate-view (car (frames box))))
+              (if (car (frames box))
+                  (om-invalidate-view (car (frames box)))))
           *play-boxes*)
   (setf *play-boxes* nil))
 

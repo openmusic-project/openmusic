@@ -249,7 +249,7 @@ Press 'space' to play/stop the sound file.
     snd))
 
 (defmethod object-remove-extra ((self sound) box)
-  (player-cleanup (player box)))
+  (player-cleanup (get-edit-param box 'player) self))
 
 (defmethod player-cleanup (player) nil)
   

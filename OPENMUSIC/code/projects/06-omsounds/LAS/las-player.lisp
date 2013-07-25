@@ -65,24 +65,24 @@
 
 ;;; TODO
 ;;; called when a box or editor attached to player is removed/closed
-(defmethod player-cleanup ((player (eql :libaudio)))
-  (let* ((snd (sound-to-play player))
-         (status-list (if (eq player oa::*audio-player-hidden*)
+(defmethod player-cleanup ((player (eql :libaudio)) snd)
+  (let* ((status-list (if (= (tracknum snd) 0)
                           oa::*audio-player-hidden-tracks-info*
                         oa::*audio-player-visible-tracks-info*))
          (chan (if (eq player oa::*audio-player-hidden*)
-                   (oa::tracknum-sys (sound-to-play player))
-                 (tracknum (sound-to-play player))))
+                   (oa::tracknum-sys snd)
+                 (tracknum snd)))
          (loadedsnd (car (gethash chan status-list)))
          (status (cadr (gethash chan status-list))))
     (if (eq snd loadedsnd)
         (let () 
-          (oa::om-smart-stop snd)
-          (setf (car (gethash chan status-list)) nil)))
-    ))
+           (if (= (tracknum snd) 0)
+               (las-stop snd)
+             (las-stop snd (tracknum snd)))
+          (setf (car (gethash chan status-list)) nil)))))
 
 
-;;; creates the player-specific control on the sound editor control panel
+;;; creates the player-specific controls on the sound editor control panel
 (defmethod make-player-specific-controls ((self (eql :libaudio)) control-view)
   (let* ((snd (object (editor control-view)))
          (track (tracknum snd)))
