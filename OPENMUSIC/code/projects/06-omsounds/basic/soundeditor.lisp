@@ -617,26 +617,20 @@
          (fading-smp (- sample-end sample-start))
          (pointer (om-sound-sndlasptr-current (object self)))
          (max-end (las-get-length-sound pointer))
-         (slice-before (las-slice-sample-cut pointer 0 sample-start))
-         (slice (las-slice-sample-cut pointer sample-start max-end))
-         (slice-after (las-slice-sample-cut pointer sample-end max-end))
-         blank-snd slice-fade-io slice-fade-in result)
-
-    (if (> (* fading-smp 2) (- max-end sample-start))
-        (progn
-          (setf blank-snd (las-faust-make-null-sound-smp (- (* fading-smp 2) (- max-end sample-start))))
-          (setf slice (las-slice-seq slice blank-snd 0))))
-
-    (setf slice-fade-io (las-faust-transform-sound slice *faust-fade-effect-list* fading-smp fading-smp))
-    (setf slice-fade-in (las-slice-sample-cut slice-fade-io 0 fading-smp))
+         (slice-before (las-slice-sample-cut pointer 0 (+ sample-start 44)))
+         (slice (las-slice-sample-cut pointer sample-start sample-end))
+         (slice-after (las-slice-sample-cut pointer (- sample-end 44) max-end))
+         (blank-snd (las-faust-make-null-sound-smp fading-smp))
+         (slice-fade-in (las-slice-seq blank-snd slice fading-smp))
+         result)
 
     (cond ((and (= sample-start 0) (= sample-end max-end))
            (setf result slice-fade-in))
           ((and (= sample-start 0) (/= sample-end max-end))
-           (setf result (las-slice-seq slice-fade-in slice-after 0)))
+           (setf result (las-slice-seq slice-fade-in slice-after 44)))
           ((and (/= sample-start 0) (= sample-end max-end))
-           (setf result (las-slice-seq slice-before slice-fade-in 0)))
-          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-in 0) slice-after 0))))
+           (setf result (las-slice-seq slice-before slice-fade-in 44)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-in 44) slice-after 44))))
 
     (if result
         (progn
@@ -654,26 +648,20 @@
          (fading-smp (- sample-end sample-start))
          (pointer (om-sound-sndlasptr-current (object self)))
          (max-end (las-get-length-sound pointer))
-         (slice-before (las-slice-sample-cut pointer 0 sample-start))
-         (slice (las-slice-sample-cut pointer 0 sample-end))
-         (slice-after (las-slice-sample-cut pointer sample-end max-end))
-         blank-snd slice-fade-io slice-fade-out result)
-
-    (if (> (* fading-smp 2) sample-end)
-        (progn
-          (setf blank-snd (las-faust-make-null-sound-smp (- (* fading-smp 2) sample-end)))
-          (setf slice (las-slice-seq blank-snd slice 0))))
-
-    (setf slice-fade-io (las-faust-transform-sound slice *faust-fade-effect-list* fading-smp fading-smp))
-    (setf slice-fade-out (las-slice-sample-cut slice-fade-io (- (las-get-length-sound slice-fade-io) fading-smp) (las-get-length-sound slice-fade-io)))
+         (slice-before (las-slice-sample-cut pointer 0 (+ sample-start 44)))
+         (slice (las-slice-sample-cut pointer sample-start sample-end))
+         (slice-after (las-slice-sample-cut pointer (- sample-end 44) max-end))
+         (blank-snd (las-faust-make-null-sound-smp fading-smp))
+         (slice-fade-out (las-slice-seq slice blank-snd fading-smp))
+         result)
 
     (cond ((and (= sample-start 0) (= sample-end max-end))
            (setf result slice-fade-out))
           ((and (= sample-start 0) (/= sample-end max-end))
-           (setf result (las-slice-seq slice-fade-out slice-after 0)))
+           (setf result (las-slice-seq slice-fade-out slice-after 44)))
           ((and (/= sample-start 0) (= sample-end max-end))
-           (setf result (las-slice-seq slice-before slice-fade-in 0)))
-          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-out 0) slice-after 0))))
+           (setf result (las-slice-seq slice-before slice-fade-out 44)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-out 44) slice-after 44))))
 
     (if result
         (progn

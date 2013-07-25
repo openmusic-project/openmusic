@@ -13,10 +13,6 @@
 (defvar *faust-synths-console* (make-hash-table))
 (defconstant *max-effects-number* (* 4 las-channels))
 
-;For FadeIn/FadeOuts
-(defvar *faust-fade-effect-list* nil)
-(defvar *faust-vol-effect* nil)
-
 ;===============================================================================================================================================================
 ;============================================================================ API ==============================================================================
 ;===============================================================================================================================================================
@@ -74,10 +70,7 @@
     (init-faust-effects-register)
     (init-faust-synths-register)
     (ResetEffectsLists *audio-player-visible*)
-    (Plug-Empty-Effects-Lists-On-Hidden)
-    (setf *faust-fade-effect-list* (las::makeaudioeffectlist))
-    (setf *faust-vol-effect* (las::makevolaudioeffect 1.0))
-    (las::addaudioeffect *faust-fade-effect-list* *faust-vol-effect*)))
+    (Plug-Empty-Effects-Lists-On-Hidden)))
 
 (defun las-faust-unplug-all ()
   (ResetEffectsLists *audio-player-visible*))
