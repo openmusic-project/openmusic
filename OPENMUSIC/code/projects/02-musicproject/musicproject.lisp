@@ -106,12 +106,12 @@
         "osc;osc-events"
         "players;microplayer"
         ;; #+linux "players;SCplayer"
-        
         "editor;scoreeditor;pagination"
         
         "editor;musicpreferences"
         "players;select-players"  
         "players;ms-players"  
+	#+linux "players;jack-player"        
         
         "music-package"  
         ))

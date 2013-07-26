@@ -60,26 +60,20 @@
 	  (inside object)
 	  (loffset object)))
 
-(defun jack-play-midi-event (obj at)
-  "plays object at time 'at.  Expects (get-obj-dur obj) to return a
-	duration (in ms.).  Uses frames to time events.  Uses jack
-	sequencer-module setup in externals/JACK/cl-jack-midi.lisp."
-  (let* ((start (cl-jack::framenow (/ at 1000.0)))
-	 (end (+ start (round
-			(* (cl-jack::jack-get-sample-rate cl-jack::*OMJackClient*)
-			   (floor (get-obj-dur obj) 1000.0))))) 
-	 (noteno (/ (midic obj) 100))
-	 (vel (vel obj))
-	 (chan (chan obj)))
-    (cl-jack::seqhash-note-on  cl-jack::*om-seq*  start noteno vel chan)
-    (cl-jack::seqhash-note-off cl-jack::*om-seq* end noteno 0 chan)))
+(defun jack-player-play-note (object interval)
+  (let ((start (/ interval 1000.0))
+	(dur (/ (get-obj-dur object) 1000.0)) 
+	(noteno (/ (midic object) 100))
+	(vel (vel object))
+	(chan (chan object)))
+    (cl-jack::jack-midi-play-event start dur noteno vel chan)))
 
 (defmethod player-play-object ((engine (eql :jack)) (object note) &key interval)
-  (jack-play-midi-event object interval))
-
+  (jack-player-play-note object interval))
 
 ;;; START (PLAY WHAT IS SCHEDULED)
 (defmethod player-start ((engine (eql :jack)) &optional play-list)
+  (setf cl-jack::*playing* t)
   ;;(when *jackplayer* (jack-midi-start-player *jackplayer*))
   (call-next-method))
 
@@ -95,7 +89,5 @@
 
 ;;; STOP (all)
 (defmethod player-stop ((engine (eql :jack)) &optional play-list)
-  ;; (when *jackplayer* (jack-midi-stop-player *jackplayer*)
-  ;;   (jack-midi-set-player *jackplayer* (jack-midi-new-seq) 1000)
-  ;;   )
+  (cl-jack::jack-midi-stop-all)
   (call-next-method))

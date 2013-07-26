@@ -32,8 +32,14 @@
 
 (defun framenow (&optional (sek 0))
   (round (+ (jack-last-frame-time *OMJackClient*)
-			    (jack-get-buffer-size *OMJackClient*)
-			    (* sek (jack-get-sample-rate *OMJackClient*)))))
+	    (jack-get-buffer-size *OMJackClient*)
+	    (* sek (jack-get-sample-rate *OMJackClient*)))))
+
+(defun ms->frame (ms)
+  (round (* ms (jack-get-sample-rate cl-jack::*OMJackClient*)) 1000))
+
+(defun sec->frame (sec)
+  (round (* sec (jack-get-sample-rate cl-jack::*OMJackClient*))))
 
 ;; (list (- (framenow 1) (framenow 0))
 ;;       (- (framenow 1.0) (framenow 0.0)))
@@ -51,19 +57,19 @@
 (defconstant noteontag #x90)
 (defconstant programchangetag #xC0)
 
-(defun make-midi-note-on-tag (&optional (channel 0))
+(defun make-midi-note-on-tag (&optional (channel 1))
   (dpb channel (byte 4 0) noteontag))
 
-(defun make-midi-note-off-tag (&optional (channel 0))
+(defun make-midi-note-off-tag (&optional (channel 1))
   (dpb channel (byte 4 0) noteofftag))
 
-(defun make-midi-programchange-tag (&optional (channel 0))
+(defun make-midi-programchange-tag (&optional (channel 1))
   (dpb channel (byte 4 0) programchangetag))
 
 ;; TODO: expand with support for channels, messages more of midi to
 ;; come...
 
-(defun seqhash-note-on (seq time noteno velocity &optional (channel 0))
+(defun seqhash-note-on (seq time noteno velocity &optional (channel 1))
   (multiple-value-bind (period offset)
       (frame->period-offset time)
     (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
@@ -71,7 +77,7 @@
 	    (sort (nconc (gethash period seq) (list noteon)) ;TODO - prio-q
 		  #'(lambda (a b) (< (car a) (car b))))))))
 
-(defun seqhash-note-off (seq time noteno velocity &optional (channel 0))
+(defun seqhash-note-off (seq time noteno velocity &optional (channel 1))
   (multiple-value-bind (period offset)
       (frame->period-offset time)
     (let ((noteoff (list offset (make-midi-note-off-tag channel) noteno velocity channel)))
@@ -79,15 +85,30 @@
 	    (sort (nconc (gethash period seq) (list noteoff))
 		  #'(lambda (a b) (< (car a) (car b))))))))
 
-(defun all-notes-off (&optional (channel 0))
-  (loop with frame = (framenow 0.1)	;give sort a chance...
-     for i from 0 to 127
-     do
-       (seqhash-note-off *om-seq*
-			 frame	
-			 i 0 channel)))
 
+;; used by player-methods to play objects w. jack-midi.
+(defun jack-midi-play-event (start dur noteno &optional (vel 80) (chan 1))
+  "times (start, dur) in sec.; noteno, vel, chan is standard midi"
+  (let* ((startframe (framenow start))
+	 (endframe (+ startframe (sec->frame dur))))
+    (seqhash-note-on  *om-seq* startframe noteno vel chan)
+    (seqhash-note-off *om-seq* endframe noteno 0 chan)))
 
+(defun all-notes-off ()
+  (mp:process-run-function "hush" nil
+   #'(lambda () (let ((sounding-notes '()))
+		  (maphash #'(lambda (key val)
+			       (declare (ignore key))
+			       (mapcar #'(lambda (ev) (push (cddr ev) sounding-notes)) val))
+			   *om-seq*)
+		  (clrhash *om-seq*)
+		  (mapcar #'(lambda (ev)
+			      (apply #'seqhash-note-off *om-seq* (framenow) ev))
+			  sounding-notes)
+		  t))))
+
+(defun jack-midi-stop-all ()
+  (all-notes-off))
 
 (defparameter *playing* t)		;nil=shut up
 ;; (setf *playing* nil)
@@ -107,6 +128,8 @@
 		       (mem-aref buffer :int8 1) (third note)  ;noteno
 		       (mem-aref buffer :int8 2) (fourth note)))))))))) ;vel
 
+;; callback function handles midi-events, plugged into jacks
+;; process-callback
 (defun cl-jack-handle-midi-seq (nframes)
   (let ((port-buf (jack-port-get-buffer *OM-midi-output-port* nframes)))
     (jack-midi-clear-buffer port-buf)
@@ -120,8 +143,8 @@
 
 ;; get up and running
 
-(setf *OMJackClient* (jack-client-open "OpenMusic" JackNullOption 0))
-
+(unless *OMJackClient*
+  (setf *OMJackClient* (jack-client-open "OpenMusic" JackNullOption 0)))
 
 ;; (loop for i from 0
 ;;      and port = (mem-aref (jack-get-ports *OMJackClient* "" "midi" 0) :string i)
@@ -130,38 +153,22 @@
 
 (unless *OM-midi-output-port*
   (setf *OM-midi-output-port*
-	(let ((port (jack-port-register
-		     *OMJackClient*
-		     "midiout"
-		     *jack-default-midi-type*
-		     (foreign-enum-value 'jackportflags :jackportisoutput)
-		     0)))
+	(let ((port (jack-port-register *OMJackClient*
+					"midiout"
+					*jack-default-midi-type*
+					(foreign-enum-value 'jackportflags :jackportisoutput)
+					0)))
 	  (if (zerop (pointer-address port)) ;0 if not allocated
 	      (error "*OM-midi-output-port* for Jack not allocated")
 	      port))))
 
 (jack-set-process-callback *OMJackClient* (callback cl-jack-process-callback) 0)
-;; (jack-activate *OMJackClient*)
-
 (jack-activate *OMJackClient*)
 
 ;;(jack-deactivate *OMJackClient*)
 
 #|
 
-
-
-(setq nframes (jack-get-buffer-size *OMJackClient*))
-(jack-get-sample-rate *OMJackClient*)
-(jack-client-close *OMJackClient*)
-(jack-port-get-buffer *OM-midi-output-port* nframes)
-(setf port-buf (jack-port-get-buffer *OM-midi-output-port* nframes))
-(jack-midi-clear-buffer port-buf)
-(setf buffer (jack-midi-event-reserve port-buf 0 3))
-
-(pointer-address *OM-midi-output-port*)
-(pointer-address port-buf)
-(pointer-address buffer)
 
 (setf midiports (jack-get-ports *OMJackClient*  "" "midi" 0))
 
@@ -171,10 +178,6 @@
      collect port)
 ("OpenMusic:midiout" "OpenMusic:midiout" "fluidsynth:midi")
 
-
-
-
-const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 
 (defcfun "jack_connect" :int
   (client :pointer)
@@ -201,15 +204,6 @@ const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 (seqhash-note-on *om-seq* (framenow) (setf *thisnote* (+ 40 (random 40))) 127 1)
 (seqhash-note-off *om-seq* (framenow) *thisnote* 127 1)
 
-(progn
-  (loop for i from 20 to 127 by 1
-     do
-       (seqhash-note-on *om-seq* (framenow 0) i 80 0))
-  )
-
-(all-notes-off 1)
-(maphash #'(lambda (key val) (print (list key val))) *om-seq*)
-
 (with-hash-table-iterator (get-note *om-seq*)
   (loop (multiple-value-bind (more? time notes) (get-note)
 	  (unless more? (return nil))
@@ -218,14 +212,6 @@ const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 	      (if (zerop (mod time 2))
 		  (remhash time *om-seq*))))))
 
-(maphash #'(lambda (key val) (remhash key *om-seq*)) *om-seq*)
-(clrhash *om-seq*)
-
-(seqhash-note-on *om-seq* (framenow 0.0) 70 127 0)
-
-
-
- 
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   ;;(clrhash *om-seq*)
   (loop with offset = 0
@@ -254,6 +240,13 @@ const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 
 (let ((rytme 1/32))
   (play-some-notes rytme (+ 6 rytme)))
+
+(all-notes-off)
+(progn
+  (clrhash *om-seq*)
+  (all-notes-off 0))
+
+(jack-midi-stop-all)
 
 (seqhash-note-on *om-seq* (framenow) 40 127 0)
 (seqhash-note-off *om-seq* (framenow) 40 127 0)
