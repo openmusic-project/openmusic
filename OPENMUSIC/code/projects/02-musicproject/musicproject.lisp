@@ -111,7 +111,7 @@
         "editor;musicpreferences"
         "players;select-players"  
         "players;ms-players"  
-	#+linux "players;jack-player"        
+	#+linux "players;jack-midi-player"        
         
         "music-package"  
         ))

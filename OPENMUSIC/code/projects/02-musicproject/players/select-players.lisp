@@ -1,6 +1,6 @@
 (in-package :om)
 
-(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack))
+(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jackmidi))
 (defparameter *enabled-players* '(:midishare :microplayer :libaudiostream :multiplayer))
 
 (defun enable-player (player)

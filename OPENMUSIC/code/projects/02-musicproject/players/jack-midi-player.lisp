@@ -20,20 +20,20 @@
 (in-package :om)
 
 ;;; JACK MIDI PLAYER                  
-(defmethod player-name ((player (eql :jack))) "Jack midi player")   ;;; A short name
-(defmethod player-desc ((player (eql :jack))) "(default)")   ;;; a description
-(defmethod player-special-action ((player (eql :jack))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
-(defmethod player-params ((player (eql :jack))) nil)   ;;; the default values for the player params
-(defmethod player-type ((player (eql :jack))) :midi)   ;;; communication protocol (:midi / :udp)
+(defmethod player-name ((player (eql :jackmidi))) "Jack midi player")   ;;; A short name
+(defmethod player-desc ((player (eql :jackmidi))) "(default)")   ;;; a description
+(defmethod player-special-action ((player (eql :jackmidi))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
+(defmethod player-params ((player (eql :jackmidi))) nil)   ;;; the default values for the player params
+(defmethod player-type ((player (eql :jackmidi))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
 ;; redefined from various places here
-(defmethod players-for-object ((self score-element)) '(:jack))
-(defmethod players-for-object ((self simple-score-element)) '(:jack))
+(defmethod players-for-object ((self score-element)) '(:jackmidi))
+(defmethod players-for-object ((self simple-score-element)) '(:jackmidi))
 
 
 ;; in select-players.lisp
-(enable-player :jack)
+(enable-player :jackmidi)
 ;;*enabled-players*
 ;;(enabled-players-for-object t)
 
@@ -43,20 +43,20 @@
 	  ))
 (print *enabled-players*)
 
-(defmethod prepare-to-play ((engine (eql :jack)) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) object at interval)
   (call-next-method))
 
-(defmethod player-play-object ((engine (eql :jack)) object &key interval)
+(defmethod player-play-object ((engine (eql :jackmidi)) object &key interval)
   (call-next-method))
 
-(defmethod player-play-object ((engine (eql :jack)) (object chord-seq) &key interval)
-  (mapcar #'(lambda (obj chord-onset) (player-play-object :jack obj :interval (+ (or interval 0) chord-onset)))
+(defmethod player-play-object ((engine (eql :jackmidi)) (object chord-seq) &key interval)
+  (mapcar #'(lambda (obj chord-onset) (player-play-object :jackmidi obj :interval (+ (or interval 0) chord-onset)))
 	  (inside object)
 	  (lonset object)))
 
-(defmethod player-play-object ((engine (eql :jack)) (object chord) &key interval)
+(defmethod player-play-object ((engine (eql :jackmidi)) (object chord) &key interval)
   (mapcar #'(lambda (obj note-offset)
-	      (player-play-object :jack obj :interval (+ (or interval 0) note-offset)))
+	      (player-play-object :jackmidi obj :interval (+ (or interval 0) note-offset)))
 	  (inside object)
 	  (loffset object)))
 
@@ -68,26 +68,26 @@
 	(chan (chan object)))
     (cl-jack::jack-midi-play-event start dur noteno vel chan)))
 
-(defmethod player-play-object ((engine (eql :jack)) (object note) &key interval)
+(defmethod player-play-object ((engine (eql :jackmidi)) (object note) &key interval)
   (jack-player-play-note object interval))
 
 ;;; START (PLAY WHAT IS SCHEDULED)
-(defmethod player-start ((engine (eql :jack)) &optional play-list)
+(defmethod player-start ((engine (eql :jackmidi)) &optional play-list)
   (setf cl-jack::*playing* t)
   ;;(when *jackplayer* (jack-midi-start-player *jackplayer*))
   (call-next-method))
 
 ;;; PAUSE (all)
-(defmethod player-pause ((engine (eql :jack)) &optional play-list)
+(defmethod player-pause ((engine (eql :jackmidi)) &optional play-list)
   ;;(when *jackplayer* (jack-midi-pause-player *jackplayer*))
   (call-next-method))
 
 ;;; CONTINUE (all)
-(defmethod player-continue ((engine (eql :jack)) &optional play-list)
+(defmethod player-continue ((engine (eql :jackmidi)) &optional play-list)
   ;;(when *jackplayer* (jack-midi-cont-player *jackplayer*))
   (call-next-method))
 
 ;;; STOP (all)
-(defmethod player-stop ((engine (eql :jack)) &optional play-list)
+(defmethod player-stop ((engine (eql :jackmidi)) &optional play-list)
   (cl-jack::jack-midi-stop-all)
   (call-next-method))
