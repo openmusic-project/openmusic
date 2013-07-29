@@ -1,13 +1,13 @@
 (in-package :om)
 
-(defclass! bpf-control (simple-container BPF) 
-   ((c-action :initform nil :accessor c-action :initarg :c-action)
+(defclass! faust-automation (simple-container BPF) 
+   ((c-action :initform nil :accessor c-action); :initarg :c-action)
     (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A Faust Effect/Synth, or a list of a Faust Effect/Synth and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")
     (paraminfos :initform nil :accessor paraminfos)
     (paramnum :initform nil :accessor paramnum)
     (faustfun :initform nil :accessor faustfun)))
 
-(defmethod make-one-instance ((self bpf-control) &rest slots-vals)
+(defmethod make-one-instance ((self faust-automation) &rest slots-vals)
   (let ((bpf (call-next-method))
         infos fullinf xl1 xl2 yl1 yl2 xlist ylist)
     (setf (c-action bpf) (nth 3 slots-vals))
@@ -51,10 +51,10 @@
                         (setf ylist (append yl1 yl2))
                         (setf (y-points bpf) ylist)
                         (setf (x-points bpf) xlist))))
-                (print "I cannot build a bpf-control with these parameters"))
+                (print "I cannot build a faust-automation with these parameters"))
             bpf))))
 
-(defmethod omng-copy ((self bpf-control))
+(defmethod omng-copy ((self faust-automation))
   (let ((bpf (eval (call-next-method))))
     (setf (c-action bpf) (c-action self)
           (faust-control bpf) (faust-control self)
@@ -68,12 +68,12 @@
 
 
 ;;;Peut être gérer ici pour rester en bpf-player après sauvegarde?
-(defmethod omng-save ((self bpf-control) &optional (values? nil))
+(defmethod omng-save ((self faust-automation) &optional (values? nil))
   `(let ((rep (make-instance ',(type-of self))))
      rep))
 
 
-(defmethod copy-container ((self bpf-control) &optional (pere ()))
+(defmethod copy-container ((self faust-automation) &optional (pere ()))
    "Builds a copy of a bpf control"
    (let ((bpf (eval (call-next-method))))
     (setf (c-action bpf) (c-action self)
@@ -86,17 +86,17 @@
           (y-points bpf) (y-points self))
     bpf))
 
-(defmethod print-object ((self bpf-control) stream)
+(defmethod print-object ((self faust-automation) stream)
   (call-next-method))
-;  (format stream "BPF-CONTROL: ~A ~D" (c-action self) (slot-value self 'offset)))
+;  (format stream "faust-automation: ~A ~D" (c-action self) (slot-value self 'offset)))
 
-(defmethod play-obj? ((self bpf-control)) t)
-(defmethod allowed-in-maq-p ((self bpf-control)) t)
-(defmethod get-obj-dur ((self bpf-control)) (last-elem (x-points self)))
+(defmethod play-obj? ((self faust-automation)) t)
+(defmethod allowed-in-maq-p ((self faust-automation)) t)
+(defmethod get-obj-dur ((self faust-automation)) (last-elem (x-points self)))
 ;(defclass bpf-player (omplayer) ())
 ;(defmethod class-from-player-type ((type (eql :bpfplayer))) 'bpf-player)
 
-(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf-control) at interval)
+(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object faust-automation) at interval)
   ;(player-unschedule-all self)
   (let ((faustfun (faustfun object)))
     (when (or (c-action object) (faust-control object))
@@ -128,12 +128,12 @@
 ;  (call-next-method)
 ;  (player-unschedule-all player))
 
-(defmethod default-edition-params ((self bpf-control)) 
+(defmethod default-edition-params ((self faust-automation)) 
   (pairlis '(player) '(:bpfplayer) (call-next-method)))
 
 ;;;=======================================================
 
-(defmethod get-editor-class ((self bpf-control)) 'bpfcontroleditor)
+(defmethod get-editor-class ((self faust-automation)) 'bpfcontroleditor)
 
 (defclass bpfcontroleditor (bpfeditor play-editor-mixin) ())
 ;;(defmethod get-score-player ((self bpfcontroleditor)) :bpfplayer)
