@@ -62,8 +62,6 @@
   (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
   
-(setf testi 0)
-
 (defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
   (cond ((equal (state player) :play) 
          ;;; prolonge la durée de vie du player
