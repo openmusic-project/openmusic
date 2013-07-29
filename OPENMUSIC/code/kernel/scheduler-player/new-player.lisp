@@ -62,6 +62,7 @@
   (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
   
+(setf testi 0)
 
 (defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
   (cond ((equal (state player) :play) 
@@ -81,7 +82,7 @@
                                    #'(lambda ()
                                        (loop
                                         (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
-                                              (funcall (cdr (pop (events player)))))
+                                                (funcall (cdr (pop (events player)))))
                                         (if (> (get-player-time player) (stop-time player)) (general-stop player))
                                         (sleep (scheduler-tick player))
                                         )))))

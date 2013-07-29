@@ -37,11 +37,10 @@
             (player-stop-object engine (nth i play-list)))
     (las-stop-all-players)))
 
+
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
-
-
 
 
 
@@ -60,7 +59,7 @@
   (las-stop object (tracknum object)))
 
 ;(defclass las-player (omplayer) 
-  ;((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
+;  ((sound-to-play :initform nil :initarg :sound-to-play :accessor sound-to-play))
 ;  ())
 
 ;;; TODO
@@ -106,12 +105,4 @@
                                               (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
                                               (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
                                               (if (> (value item) 0) (las-switch-sound-las-player snd 1) (las-switch-sound-las-player snd 0))
-                                              (report-modifications (editor control-view))))))
-     ;(om-make-dialog-item 'om-check-box (om-make-point 590 4)
-     ;                     (om-make-point 170 20) "Use Original Sound"
-     ;                     :font *om-default-font1*
-     ;                     :checked-p (if (or (= -1 (oa::current-is-original snd)) 
-     ;                                        (= 0 (oa::current-is-original snd))) nil t)
-     ;                     :di-action (om-dialog-item-act item (let ()
-     ;                                                           (oa::om-use-original-sound sndpanel))))
-     )))
+                                              (report-modifications (editor control-view)))))))))

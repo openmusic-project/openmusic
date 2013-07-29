@@ -517,7 +517,6 @@
 
 (defmethod om-sound-update-buffer-with-path ((self om-sound) path)
   (progn 
-    ;(fli:free-foreign-object (sndbuffer self))
     (setf (sndbuffer self) (multiple-value-bind (data size nch) 
                                (au::load-audio-data (convert-filename-encoding path) :float)
                              data))))

@@ -442,6 +442,7 @@
     (change-message-win "Please Wait...")
     (save-sound-in-file (om-sound-sndlasptr-current (object self)) *om-tmp-draw-filename*)
     (om-sound-update-buffer-with-path (object self) *om-tmp-draw-filename*)
+    
     (sound-update-pict (object self) (om-cons-snd-pict *om-tmp-draw-filename*))
     (om-sound-las-using-srate (object self))
     (setf (sndpict self) (get-sound-pict (object self)))
