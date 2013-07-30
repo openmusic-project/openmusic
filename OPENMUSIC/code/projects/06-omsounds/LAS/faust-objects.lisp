@@ -32,10 +32,10 @@
 ;=======================================
 
 (defclass* faust-fx (simple-score-element)
-   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt :documentation "Faust Code, written in a Textfile")
+   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt :documentation "a textfile written in Faust language")
     (effect-ptr :initform nil :accessor effect-ptr)
-    (effect-name :initform nil :initarg :effect-name :accessor effect-name :documentation "The name of the Faust Effect")
-    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the effect will be pluged (0 = no specific track)")
+    (effect-name :initform nil :initarg :effect-name :accessor effect-name :documentation "a name")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "a track on which the effect will be plugged (0 = no specific track)")
     (effect-dsp :initform nil :accessor effect-dsp)
     (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t)
@@ -158,10 +158,10 @@
 
 (defmethod draw-obj-in-rect ((self faust-fx) x x1 y y1 edparams view)
   (let ((w (w view))
-        (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
+        (pic (om-load-and-store-picture "faust-fx" 'internal)))
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))
     (om-with-focused-view view
-      (om-draw-string 5 15 (or (effect-name self) "! NO NAME !")))))
+      (om-draw-string 2 13 (or (effect-name self) "!NO NAME!")))))
 
 (defmethod omNG-copy ((self faust-fx))
    "Cons a Lisp expression that return a copy of self when it is valuated."
@@ -630,11 +630,11 @@
 ;=======================================
 
 (defclass* faust-synth (simple-score-element)
-   ((synth-txt :initform nil :initarg :synth-txt :accessor synth-txt :documentation "Faust Code, written in a Textfile")
+   ((synth-txt :initform nil :initarg :synth-txt :accessor synth-txt :documentation "a textfile written in Faust language")
     (synth-ptr :initform nil :accessor synth-ptr)
-    (synth-name :initform nil :initarg :synth-name :accessor synth-name :documentation "The name of the Faust synth")
-    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the synth will be pluged (0 = no specific track)")
-    (duration :initform 10 :initarg :duration :accessor duration :documentation "The duration (in sec) during the synth will play (default is 10 sec)")
+    (synth-name :initform nil :initarg :synth-name :accessor synth-name :documentation "a name")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "a track on which the synth will be plugged (0 = no specific track)")
+    (duration :initform 10 :initarg :duration :accessor duration :documentation "a duration in seconds (default = 10 sec)")
     (nullsnd :initform nil :accessor nullsnd)
     (synth-dsp :initform nil :accessor synth-dsp)
     (synth-svg :initform nil :accessor synth-svg)
@@ -779,8 +779,10 @@
 
 (defmethod draw-obj-in-rect ((self faust-synth) x x1 y y1 edparams view)
   (let ((w (w view))
-        (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
-    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
+        (pic (om-load-and-store-picture "faust-synth" 'internal)))
+    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))
+    (om-with-focused-view view
+      (om-draw-string 2 13 (or (synth-name self) "!NO NAME!")))))
 
 
 

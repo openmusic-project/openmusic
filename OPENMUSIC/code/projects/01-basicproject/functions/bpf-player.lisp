@@ -1,8 +1,12 @@
 (in-package :om)
 
+;===========================================================
+;FAUST AUTOMATION
+;===========================================================
+
 (defclass! faust-automation (simple-container BPF) 
    ((c-action :initform nil :accessor c-action); :initarg :c-action)
-    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "A Faust Effect/Synth, or a list of a Faust Effect/Synth and a name of a parameter (e.g : (<faust-synth-console> \"freq\"))")
+    (faust-control :initform nil :accessor faust-control :initarg :faust-control :documentation "a faust-fx/synth, or a list of a faust-fx/synth and a name of a parameter (e.g : (<faust-synth> \"freq\"))")
     (paraminfos :initform nil :accessor paraminfos)
     (paramnum :initform nil :accessor paramnum)
     (faustfun :initform nil :accessor faustfun)))
@@ -16,11 +20,11 @@
              (or
               (and
                (listp (faust-control bpf)) 
-               (or (typep (car (faust-control bpf)) 'faust-effect-console) (typep (car (faust-control bpf)) 'faust-synth-console)) 
+               (or (typep (car (faust-control bpf)) 'faust-fx) (typep (car (faust-control bpf)) 'faust-synth)) 
                (typep (cadr (faust-control bpf)) 'string))
               (and
                (not (listp (faust-control bpf)))
-               (or (typep (faust-control bpf) 'faust-effect-console) (typep (faust-control bpf) 'faust-synth-console)))))
+               (or (typep (faust-control bpf) 'faust-fx) (typep (faust-control bpf) 'faust-synth)))))
         (progn
           (setf fullinf (get-infos-from-faust-control (faust-control bpf)))
           (setf (paraminfos bpf) (car fullinf))
@@ -165,11 +169,11 @@
 (defun get-function-from-faust-control (bpf)
   (let* ((faust-control (faust-control bpf))
          (console (if (listp faust-control) (car faust-control) faust-control))
-         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
+         (ptr (if (typep console 'faust-fx) (effect-ptr console) (synth-ptr console)))
          (maxnum (las-faust-get-control-count ptr))
          (infos (paraminfos bpf))
          (found (paramnum bpf))
-         minval maxval range text-to-up display graph-to-up paramtype)
+         minval maxval range paramtype)
     (setf minval (nth 1 infos))
     (setf maxval (nth 2 infos))
     (if (= minval maxval) (setf minval 0
@@ -199,7 +203,7 @@
 (defun get-infos-from-faust-control (faust-control)
   (let* ((name (if (listp faust-control) (cadr faust-control)))
          (console (if (listp faust-control) (car faust-control) faust-control))
-         (ptr (if (typep console 'faust-effect-console) (effect-ptr console) (synth-ptr console)))
+         (ptr (if (typep console 'faust-fx) (effect-ptr console) (synth-ptr console)))
          maxnum
          found
          listing)
@@ -276,3 +280,86 @@
                                       :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
     (om-add-subviews panel text1 text2 paramlist ok cancel)
     (om-modal-dialog win)))
+
+
+;===========================================================
+;MIXER AUTOMATION
+;===========================================================
+
+(defclass! mixer-automation (simple-container BPF) 
+   ((track :initform nil :accessor track :initarg :track :documentation "a track number")
+    (parameter :initform "vol" :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\", default=\"vol\")")
+    (mixerfun :initform nil :accessor mixerfun)))
+
+(defmethod make-one-instance ((self faust-automation) &rest slots-vals)
+  (let ((bpf (call-next-method))
+        infos fullinf xl1 xl2 yl1 yl2 xlist ylist)
+    (setf (track bpf) (nth 4 slots-vals))
+    (setf (parameter bpf) (nth 5 slots-vals))
+    (if (track bpf)
+        (progn
+          (if (paraminfos bpf)
+              (progn
+                (setf (paramnum bpf) (cadr fullinf))
+                (setf (faustfun bpf) (get-function-from-faust-control bpf))
+                (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 100)
+                    (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 3)
+                        (if (= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
+                            (setf (decimals bpf) 0)
+                          (setf (decimals bpf) 3))
+                      (setf (decimals bpf) 2)))
+                (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
+                    (progn
+                      (if (/= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
+                          (progn
+                            (setf xl1 (interpolate (list 0 500) (list 0 500) 10))
+                            (setf xl2 (interpolate (list 9500 10000) (list 9500 10000) 10))
+                            (setf yl1 (interpolate (list 0 500) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf))) 10))
+                            (setf yl2 (interpolate (list 9500 10000) (list (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))) 10)))
+                        (progn
+                          (setf xl1 (list 0 999 1000))
+                          (setf xl2 (list 2999 3000 10000))
+                          (setf yl1 (list 0 0 1))
+                          (setf yl2 (list 1 0 0))))
+                      (setf xlist (append xl1 xl2))
+                      (setf ylist (append yl1 yl2))
+                      (setf (y-points bpf) ylist)
+                      (setf (x-points bpf) xlist))))
+            (print "I cannot build a mixer-automation with these parameters"))
+          bpf))))
+
+(defmethod print-object ((self mixer-automation) stream)
+  (call-next-method))
+
+(defmethod play-obj? ((self mixer-automation)) t)
+(defmethod allowed-in-maq-p ((self mixer-automation)) t)
+(defmethod get-obj-dur ((self mixer-automation)) (last-elem (x-points self)))
+
+
+(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
+  (let ((mixerfun (mixerfun object)))
+    (when (track object)
+      (if interval
+          (mapcar #'(lambda (point)
+                      (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
+                          (schedule-task player
+                                         #'(lambda () (funcall mixerfun (cadr point))) 
+                                         (+ at (car point)))))
+                  (point-pairs object))
+        (mapcar #'(lambda (point)
+                    (schedule-task player
+                                   #'(lambda () (funcall mixerfun (cadr point))) 
+                                   (+ at (car point))))
+                (point-pairs object))))))
+
+
+(defmethod default-edition-params ((self mixer-automation)) 
+  (pairlis '(player) '(:bpfplayer) (call-next-method)))
+
+(defun get-function-from-track (bpf)
+  (let* ((track (track bpf))
+         (parameter (parameter bpf))
+         (minval (if (string= parameter "vol") 0 -100)) 
+         (maxval 100)
+         (range (- maxval minval)))
+    ))
