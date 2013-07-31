@@ -288,45 +288,41 @@
 
 (defclass! mixer-automation (simple-container BPF) 
    ((track :initform nil :accessor track :initarg :track :documentation "a track number")
-    (parameter :initform "vol" :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\", default=\"vol\")")
+    (parameter :initform nil :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\")")
     (mixerfun :initform nil :accessor mixerfun)))
 
-(defmethod make-one-instance ((self faust-automation) &rest slots-vals)
+(defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
   (let ((bpf (call-next-method))
-        infos fullinf xl1 xl2 yl1 yl2 xlist ylist)
-    (setf (track bpf) (nth 4 slots-vals))
-    (setf (parameter bpf) (nth 5 slots-vals))
+        (pchar (char "p" 0))
+        (vchar (char "v" 0))
+        char1 res x y)
+    (setf (track bpf) (nth 3 slots-vals))
+    (setf (parameter bpf) (nth 4 slots-vals))
+    (setf (decimals bpf) 1)
+
     (if (track bpf)
         (progn
-          (if (paraminfos bpf)
-              (progn
-                (setf (paramnum bpf) (cadr fullinf))
-                (setf (faustfun bpf) (get-function-from-faust-control bpf))
-                (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 100)
-                    (if (<= (- (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf))) 3)
-                        (if (= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
-                            (setf (decimals bpf) 0)
-                          (setf (decimals bpf) 3))
-                      (setf (decimals bpf) 2)))
-                (if (and (equal '(0 100) (nth 1 slots-vals)) (equal '(0 100) (nth 0 slots-vals)))
-                    (progn
-                      (if (/= (nth 2 (paraminfos bpf)) (nth 1 (paraminfos bpf)))
-                          (progn
-                            (setf xl1 (interpolate (list 0 500) (list 0 500) 10))
-                            (setf xl2 (interpolate (list 9500 10000) (list 9500 10000) 10))
-                            (setf yl1 (interpolate (list 0 500) (list (nth 1 (paraminfos bpf)) (nth 3 (paraminfos bpf))) 10))
-                            (setf yl2 (interpolate (list 9500 10000) (list (nth 3 (paraminfos bpf)) (nth 2 (paraminfos bpf))) 10)))
-                        (progn
-                          (setf xl1 (list 0 999 1000))
-                          (setf xl2 (list 2999 3000 10000))
-                          (setf yl1 (list 0 0 1))
-                          (setf yl2 (list 1 0 0))))
-                      (setf xlist (append xl1 xl2))
-                      (setf ylist (append yl1 yl2))
-                      (setf (y-points bpf) ylist)
-                      (setf (x-points bpf) xlist))))
-            (print "I cannot build a mixer-automation with these parameters"))
-          bpf))))
+          (if (and (parameter bpf) (stringp (parameter bpf)))
+              (if (not (or (string= (string-downcase (parameter bpf)) "pan") 
+                           (string= (string-downcase (parameter bpf)) "vol")))
+                  (setf res (make-param-select-window (list "Panoramic" "Volume")))
+                (cond ((string= (string-downcase (parameter bpf)) "pan") (setf res 0))
+                      ((string= (string-downcase (parameter bpf)) "vol") (setf res 1))
+                      (t nil)))
+            (setf res (make-param-select-window (list "Panoramic" "Volume"))))
+    
+          (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
+                ((and res (= res 1)) (setf (parameter bpf) "vol")))))
+
+    (if (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
+        (progn
+          (setf (mixerfun bpf) (get-function-from-track bpf))
+          (setf x (interpolate (list 0 10000) (list 0 10000) 10))
+          (setf y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 10))
+          (setf (y-points bpf) y)
+          (setf (x-points bpf) x))
+      (print "I cannot build a mixer-automation with these parameters"))
+    bpf))
 
 (defmethod print-object ((self mixer-automation) stream)
   (call-next-method))
@@ -352,7 +348,6 @@
                                    (+ at (car point))))
                 (point-pairs object))))))
 
-
 (defmethod default-edition-params ((self mixer-automation)) 
   (pairlis '(player) '(:bpfplayer) (call-next-method)))
 
@@ -362,4 +357,20 @@
          (minval (if (string= parameter "vol") 0 -100)) 
          (maxval 100)
          (range (- maxval minval)))
-    ))
+    (if (string= parameter "pan")
+        #'(lambda (val)
+            (change-genmixer-channel-pan track (float val))
+            (if *general-mixer-window*
+                (progn
+                  (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                  (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
+            (send-vol-val-to-current-preset track val))
+      #'(lambda (val)
+          (change-genmixer-channel-vol track (float val))
+          (if *general-mixer-window*
+              (progn
+                  (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                  (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
+          (send-vol-val-to-current-preset track val)))))
+
+(defmethod get-editor-class ((self mixer-automation)) 'bpfcontroleditor)
