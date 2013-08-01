@@ -288,7 +288,7 @@
 
 (defclass! mixer-automation (simple-container BPF) 
    ((track :initform nil :accessor track :initarg :track :documentation "a track number")
-    (parameter :initform nil :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\")")
+    (parameter :initform nil :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\" or \"presets\")")
     (mixerfun :initform nil :accessor mixerfun)))
 
 (defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
@@ -300,25 +300,33 @@
     (setf (parameter bpf) (nth 4 slots-vals))
     (setf (decimals bpf) 1)
 
-    (if (track bpf)
+    (if (or (track bpf) (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
         (progn
           (if (and (parameter bpf) (stringp (parameter bpf)))
               (if (not (or (string= (string-downcase (parameter bpf)) "pan") 
-                           (string= (string-downcase (parameter bpf)) "vol")))
-                  (setf res (make-param-select-window (list "Panoramic" "Volume")))
+                           (string= (string-downcase (parameter bpf)) "vol")
+                           (string= (string-downcase (parameter bpf)) "presets")))
+                  (setf res (make-param-select-window (list "Panoramic" "Volume" "Presets")))
                 (cond ((string= (string-downcase (parameter bpf)) "pan") (setf res 0))
                       ((string= (string-downcase (parameter bpf)) "vol") (setf res 1))
+                      ((string= (string-downcase (parameter bpf)) "presets") (setf res 2))
                       (t nil)))
-            (setf res (make-param-select-window (list "Panoramic" "Volume"))))
+            (setf res (make-param-select-window (list "Panoramic" "Volume" "Presets"))))
     
           (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
-                ((and res (= res 1)) (setf (parameter bpf) "vol")))))
+                ((and res (= res 1)) (setf (parameter bpf) "vol"))
+                ((and res (= res 2)) (setf (parameter bpf) "presets"
+                                           (decimals bpf) 0)))))
 
-    (if (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
+    (if (or (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
+            (and (parameter bpf) (string= (parameter bpf) "presets")))
         (progn
           (setf (mixerfun bpf) (get-function-from-track bpf))
-          (setf x (interpolate (list 0 10000) (list 0 10000) 10))
-          (setf y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 10))
+          (if (string= (parameter bpf) "presets")
+              (setf x (list 0 3332 3333 6665 6666 9999 10000)
+                    y (list 0 0 1 1 2 2 0))
+            (setf x (interpolate (list 0 10000) (list 0 10000) 10)
+                  y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 10)))
           (setf (y-points bpf) y)
           (setf (x-points bpf) x))
       (print "I cannot build a mixer-automation with these parameters"))
@@ -355,22 +363,31 @@
   (let* ((track (track bpf))
          (parameter (parameter bpf))
          (minval (if (string= parameter "vol") 0 -100)) 
-         (maxval 100)
-         (range (- maxval minval)))
-    (if (string= parameter "pan")
-        #'(lambda (val)
-            (change-genmixer-channel-pan track (float val))
-            (if *general-mixer-window*
-                (progn
-                  (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
-                  (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
-            (send-vol-val-to-current-preset track val))
-      #'(lambda (val)
-          (change-genmixer-channel-vol track (float val))
-          (if *general-mixer-window*
-              (progn
-                  (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
-                  (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
-          (send-vol-val-to-current-preset track val)))))
+         (maxval 100))
+    (cond  ((string= parameter "pan")
+            #'(lambda (val)
+                (if (< val minval) (setf val minval))
+                (if (> val maxval) (setf val maxval))
+                (change-genmixer-channel-pan track (float val))
+                (if *general-mixer-window*
+                    (progn
+                      (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                      (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
+                (send-vol-val-to-current-preset track val)))
+           ((string= parameter "pan")
+            #'(lambda (val)
+                (if (< val minval) (setf val minval))
+                (if (> val maxval) (setf val maxval))
+                (change-genmixer-channel-vol track (float val))
+                (if *general-mixer-window*
+                    (progn
+                      (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                      (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
+                (send-vol-val-to-current-preset track val)))
+           ((string= parameter "pan")
+            #'(lambda (val)
+                ;;;BUILD PRESET SWITCHER
+                )
+            ))))
 
 (defmethod get-editor-class ((self mixer-automation)) 'bpfcontroleditor)
