@@ -151,13 +151,22 @@
   (call-next-method)
   (draw-automation-info self (currentbpf self)))
 
-(defmethod draw-automation-info ((self t) object) 
-  (om-with-focused-view self
-    (om-draw-string 20 (om-point-y (point2pixel self (om-make-point 0 (* 2 (expt 10 (decimals object)))) (get-system-etat self)))
-                    (format nil "~A" object))))
 
+(defmethod draw-automation-info ((self t) (object t)) nil)
 
-
+(defmethod draw-automation-info ((self t) (object faust-automation))
+  (let ((name (nth 0 (paraminfos object)))
+        (min (nth 1 (paraminfos object)))
+        (max (nth 2 (paraminfos object)))) (if (= min max) (setf max (1+ min)))
+    (om-with-focused-view self
+      (om-with-fg-color self (om-make-color 1 0 0)
+        (om-draw-string 80 (+ (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))) 9)
+                        (format nil "~A MIN" name))
+        (om-draw-line 0 (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))) 1000000 (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))))
+        (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self)))
+                        (format nil "~A MAX" name))
+        (om-draw-line 0 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self))) 1000000 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self))))
+        ))))
 
 ;;;TODO
 (defmethod om-set-scroll-position ((self bpfcontrolpanel) pos) nil)
@@ -418,7 +427,17 @@
                 (if (< val 0) (setf val 0))
                 (if (>= val npresets) (setf val (- npresets 1)))
                 (load-genmixer-preset val)
-                (update-genmixer-display)))
-           )))
+                (if *general-mixer-window*
+                    (update-genmixer-display)))))))
 
 (defmethod get-editor-class ((self mixer-automation)) 'bpfcontroleditor)
+
+(defmethod draw-automation-info ((self t) (object mixer-automation)) 
+  (let ((namelist (loop for i from 0 to (length *general-mixer-presets*) collect
+                        (car (nth i *general-mixer-presets*)))))
+    (om-with-focused-view self
+      (om-with-fg-color self (om-make-color 1 0 0)
+        (loop for i from 0 to (1- (length namelist)) do
+              (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
+                              (format nil "~A" (nth i namelist))))))))
+
