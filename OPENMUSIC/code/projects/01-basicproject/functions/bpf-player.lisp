@@ -14,8 +14,7 @@
 (defmethod make-one-instance ((self faust-automation) &rest slots-vals)
   (let ((bpf (call-next-method))
         infos fullinf xl1 xl2 yl1 yl2 xlist ylist)
-    (setf (c-action bpf) (nth 3 slots-vals))
-    (setf (faust-control bpf) (nth 4 slots-vals))
+    (setf (faust-control bpf) (nth 3 slots-vals))
     (if (and (faust-control bpf) 
              (or
               (and
@@ -55,8 +54,8 @@
                         (setf ylist (append yl1 yl2))
                         (setf (y-points bpf) ylist)
                         (setf (x-points bpf) xlist))))
-                (print "I cannot build a faust-automation with these parameters"))
-            bpf))))
+                (print "I cannot build a FAUST-AUTOMATION with these parameters"))
+          bpf))))
 
 (defmethod omng-copy ((self faust-automation))
   (let ((bpf (eval (call-next-method))))
@@ -332,6 +331,26 @@
       (print "I cannot build a mixer-automation with these parameters"))
     bpf))
 
+
+
+(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
+  ;(player-unschedule-all self)
+  (let ((mixerfun (mixerfun object)))
+    (when (or (track object) (and (parameter object) (string= (string-downcase (parameter object)) "presets")))
+      (if interval
+          (mapcar #'(lambda (point)
+                      (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
+                          (schedule-task player
+                                         #'(lambda () (funcall mixerfun (cadr point))) 
+                                         (+ at (car point)))))
+                  (point-pairs object))
+        (mapcar #'(lambda (point)
+                    (schedule-task player
+                                   #'(lambda () (funcall mixerfun (cadr point))) 
+                                   (+ at (car point))))
+                (point-pairs object))))))
+
+
 (defmethod print-object ((self mixer-automation) stream)
   (call-next-method))
 
@@ -363,7 +382,8 @@
   (let* ((track (track bpf))
          (parameter (parameter bpf))
          (minval (if (string= parameter "vol") 0 -100)) 
-         (maxval 100))
+         (maxval 100)
+         (npresets (length *general-mixer-presets*)))
     (cond  ((string= parameter "pan")
             #'(lambda (val)
                 (if (< val minval) (setf val minval))
@@ -374,7 +394,7 @@
                       (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
                       (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
                 (send-vol-val-to-current-preset track val)))
-           ((string= parameter "pan")
+           ((string= parameter "vol")
             #'(lambda (val)
                 (if (< val minval) (setf val minval))
                 (if (> val maxval) (setf val maxval))
@@ -384,10 +404,12 @@
                       (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
                       (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
                 (send-vol-val-to-current-preset track val)))
-           ((string= parameter "pan")
+           ((string= parameter "presets")
             #'(lambda (val)
-                ;;;BUILD PRESET SWITCHER
-                )
-            ))))
+                (if (< val 0) (setf val 0))
+                (if (>= val npresets) (setf val (- npresets 1)))
+                (load-genmixer-preset val)
+                (update-genmixer-display)))
+           )))
 
 (defmethod get-editor-class ((self mixer-automation)) 'bpfcontroleditor)
