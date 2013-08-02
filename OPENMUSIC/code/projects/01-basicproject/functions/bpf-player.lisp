@@ -132,7 +132,7 @@
 ;  (player-unschedule-all player))
 
 (defmethod default-edition-params ((self faust-automation)) 
-  (pairlis '(player) '(:bpfplayer) (call-next-method)))
+  (pairlis '(player) '(:bpfplayer)))
 
 ;;;=======================================================
 
@@ -385,7 +385,7 @@
                 (point-pairs object))))))
 
 (defmethod default-edition-params ((self mixer-automation)) 
-  (pairlis '(player) '(:bpfplayer) (call-next-method)))
+  (pairlis '(player) '(:bpfplayer)))
 
 (defun get-function-from-track (bpf)
   (let* ((track (track bpf))
