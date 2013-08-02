@@ -697,7 +697,8 @@
               (progn
                 (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
                 (update-menubar self)
-                (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
+                (om-sound-update-sndlasptr-current (object self) (car result))
+                (om-sound-update-snd-slice-to-paste (object self) (cadr result))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
             (om-message-dialog (format nil "WARNING : An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
@@ -710,7 +711,7 @@
         (let* ((pointer (om-sound-sndlasptr-current (object self)))
                (slice (om-sound-snd-slice-to-paste (object self)))
                (position (cursor-pos (panel self)))
-               (result (las-slice-paste pointer position slice)))
+               (result (las-slice-paste pointer position slice))) (print slice)
           (if slice
               (let ()
                 (if result
@@ -776,7 +777,7 @@
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")
           (del "Delete Selected Markers")
-          (("g") "Sow/Hide Grid")
+          (("g") "Show/Hide Grid")
           (("A") "Align Selected Markers to Grid")
           (esc "Reset cursor")
           (space "Play/Stop"))))

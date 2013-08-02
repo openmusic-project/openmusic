@@ -147,6 +147,18 @@
 
 (defmethod view-turn-pages-p ((self bpfcontrolpanel)) t)
 
+(defmethod om-draw-contents ((Self bpfcontrolpanel))
+  (call-next-method)
+  (draw-automation-info self (currentbpf self)))
+
+(defmethod draw-automation-info ((self t) object) 
+  (om-with-focused-view self
+    (om-draw-string 20 (om-point-y (point2pixel self (om-make-point 0 (* 2 (expt 10 (decimals object)))) (get-system-etat self)))
+                    (format nil "~A" object))))
+
+
+
+
 ;;;TODO
 (defmethod om-set-scroll-position ((self bpfcontrolpanel) pos) nil)
 
@@ -292,16 +304,13 @@
 
 (defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
   (let ((bpf (call-next-method))
-        (pchar (char "p" 0))
-        (vchar (char "v" 0))
         char1 res x y)
     (setf (track bpf) (nth 3 slots-vals))
     (setf (parameter bpf) (nth 4 slots-vals))
     (setf (decimals bpf) 1)
-
-    (if (or (track bpf) (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
+    (if (or (track bpf) (and (parameter bpf) (stringp (parameter bpf)))); (string= (string-downcase (parameter bpf)) "presets")))
         (progn
-          (if (and (parameter bpf) (stringp (parameter bpf)))
+          (if (parameter bpf)
               (if (not (or (string= (string-downcase (parameter bpf)) "pan") 
                            (string= (string-downcase (parameter bpf)) "vol")
                            (string= (string-downcase (parameter bpf)) "presets")))
@@ -310,7 +319,7 @@
                       ((string= (string-downcase (parameter bpf)) "vol") (setf res 1))
                       ((string= (string-downcase (parameter bpf)) "presets") (setf res 2))
                       (t nil)))
-            (setf res (make-param-select-window (list "Panoramic" "Volume" "Presets"))))
+            (setf res (make-param-select-window (list "Panoramic" "Volume"))))
     
           (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
                 ((and res (= res 1)) (setf (parameter bpf) "vol"))

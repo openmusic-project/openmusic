@@ -43,7 +43,7 @@
           (setf slice-after (las::MakeCutSound pointer end size))
           (setf result (las::MakeSeqSound slice-before slice-after 0))))
     (if (not (las::las-null-ptr-p result)) 
-        result
+        (list result slice)
       nil)))
 
 
