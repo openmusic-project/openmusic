@@ -44,6 +44,7 @@
           sdif-get-pos
           sdif-set-pos
           sdif-get-signature
+          sdif-calculate-padding
           
           ) :om-api)
 
@@ -126,8 +127,13 @@
      (cffi::foreign-free nbcharread)
      rep))
 
-
-
+(defun sdif-calculate-padding (nr nc size)
+  (let ((datasize (* nr nc size))
+        (align 8))
+    (cond ((zerop datasize) 0)
+          ((< datasize align) (- align datasize))
+          (t (cadr (multiple-value-list (floor datasize align))))
+      )))
 
 ;;;============================
 ;;; TESTS

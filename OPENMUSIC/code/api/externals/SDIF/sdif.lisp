@@ -101,6 +101,7 @@
 
 (cffi:defcfun  ("SdifDisableErrorOutput" SdifDisableErrorOutput) :void )
 
+(cffi:defcfun  ("SdifSizeofDataType" SdifSizeofDataType) :unsigned-int (SdifDataTypeET :unsigned-int))
 
 ;;;============================================
 ;;; SDIF FILE
@@ -129,6 +130,10 @@
 (cffi:defcfun  ("SdifFGetPos" SdifFGetPos) :int  (pointer :pointer) (pos :pointer))
 
 (cffi:defcfun  ("SdifFSetPos" SdifFSetPos) :int ( pointer :pointer) (pos :pointer))
+
+
+
+
 
 ;;;============================================
 ;;; READ SDIF
@@ -244,6 +249,7 @@
 
 (cffi:defcfun  ("SdifFWritePadding" SdifFWritePadding) :unsigned-int  (sdifF :pointer) (padding :unsigned-int))
 
+(cffi:defcfun  ("SdifPaddingCalculate" SdifPaddingCalculate) :unsigned-int  (sdifF :pointer) (nbbytes :unsigned-int))
 
 ;;;=================================
 ;;; ID TABLE

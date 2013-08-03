@@ -170,93 +170,120 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
    :icon 639
    (let ((data nil) 
          (mrk-partials (make-hash-table)) (trc-partials (make-hash-table))
-          mlist bmat emat pmat time
+          bmat emat pmat
           (ptrfile (sdif-open self)))
-     (if (null ptrfile) (om-beep-msg (string+ "NULL POINTER FOR SDIF-FILE: " (filepathname self)))
-       (progn 
+     (if (null ptrfile) 
+         (om-beep-msg (string+ "NULL POINTER FOR SDIF-FILE: " (filepathname self)))
+       (let (nextframe) 
          (sdif::SdifFReadGeneralHeader ptrfile)
          (sdif::SdifFReadAllASCIIChunks ptrfile)
-     (loop for item in (framesdesc self) do
-           (when (or (null stream) (member (nth 2 item) (list! stream) :test '=))
-             (when (equal "1MRK" (car item))
-                 (setf time (nth 1 item))
-                 (sdif-set-pos ptrfile (nth 3 item))
-                 (setf mlist (nth 4 item))
-                 (loop for mat in mlist do
-                         (cond ((equal "1BEG" (car mat)) (setf bmat mat))
-                               ((equal "1END" (car mat)) (setf emat mat))
-                               ((equal "1TRC" (car mat)) (setf pmat mat))
-                               (t nil)))
-                 (when bmat 
-                     ;;; a begin matrix :
-                     ;;; ajoute (onset (note1 note2 ...)) dans tmplist 
-                     ;;; avec des valeurs de amp (0) freq (0) et dur (1000) arbitraires pour l'instant
-                     (sdif-read-headers ptrfile (nth 3 item) (fifth bmat))
-                     (loop for i = 0 then (+ i 1) while (< i (second bmat)) do
-                             (sdif::SdifFReadOneRow ptrfile)
-                             (sethash mrk-partials (floor (sdif::SdifFCurrOneRowCol ptrfile 1)) (list time 0 0 time))
-                     ))
-                 (when pmat 
-                     ;;; a parameter matrix :
-                     ;;; cherche les notes dans tmplist et set pitch et velocity
-                     (sdif-read-headers ptrfile (nth 3 item) (fifth pmat))
-                     (loop for i = 0 then (+ i 1) while (< i (second pmat)) do
-                             (sdif::SdifFReadOneRow ptrfile)
-                             (let* ((ind (floor (sdif::SdifFCurrOneRowCol  ptrfile 1))) 
-                                    (freq (sdif::SdifFCurrOneRowCol ptrfile 2))
-                                    (amp (sdif::SdifFCurrOneRowCol ptrfile 3)) 
-                                    (par (gethash ind mrk-partials)))
-                               (when par
-                                 (setf (nth 1 par) freq)
-                                 (setf (nth 2 par) amp))
-                               ))
-                     )
-                 (when emat 
-                     ;;; a end matrix :
-                     ;;; find the notes, set duration and put int the final notes list 
-                     (sdif-read-headers ptrfile (nth 3 item) (fifth emat))
-                     (loop for i = 0 then (+ i 1) while (< i (second emat)) do
-                             (sdif::SdifFReadOneRow ptrfile)
-                             (let* ((ind (floor (sdif::SdifFCurrOneRowCol ptrfile 1)))
-                                   (par (gethash ind mrk-partials)))
-                               (when par
-                                 (setf (nth 3 par) time))
-                               )))
-                 (setf bmat nil)
-                 (setf emat nil)
-                 (setf pmat nil)
-                 )
-
-             
-             (when (or (equal "1TRC" (car item)) (equal "1HRM" (car item)))
-               (setf time (nth 1 item))
-               (sdif-set-pos ptrfile (nth 3 item))
-               (setf mlist (nth 4 item))
-               (loop for m in mlist do
-                     (when (or (equal "1TRC" (car m)) (equal "1HRM" (car m)))
-                       (sdif-read-headers ptrfile (nth 3 item) (fifth m))
-                       (loop for i = 0 then (+ i 1) while (< i (second m)) do
-                             (sdif::SdifFReadOneRow ptrfile)
-                             (let* ((ind (floor (sdif::SdifFCurrOneRowCol ptrfile 1)))
-                                    (freq (sdif::SdifFCurrOneRowCol ptrfile 2))
-                                    (amp (sdif::SdifFCurrOneRowCol ptrfile 3))
-                                    (phase (sdif::SdifFCurrOneRowCol ptrfile 4))
-                                    (par (gethash ind trc-partials)))
-                               (if par
-                                 (progn 
-                                   (setf (nth 0 par) (append (nth 0 par) (list time)))
-                                   (setf (nth 1 par) (append (nth 1 par) (list freq)))
-                                   (setf (nth 2 par) (append (nth 2 par) (list amp)))
-                                   (setf (nth 3 par) (append (nth 3 par) (list phase)))
-                                   )
-                                 (sethash trc-partials ind (list (list time) (list freq) (list amp) (list phase))))
-                               )
+         (setf nextFrame (firstframep self ptrfile))
+         (loop while nextframe do
+           ; for item in (framesdesc self) do
+               (multiple-value-bind (fsig time sid pos nbmat)
+                   (read-frame-header ptrfile)
+                 (if (and stream (not (find sid (list! stream) :test '=)))
+                     (sdif::SdifFSkipFrameData ptrfile)
+                   (cond 
+                    ((equal "1MRK" fsig)
+                     (loop for mn from 0 to (1- nbmat) do
+                           (multiple-value-bind (msig nrows ncols size pos)
+                               (read-matrix-header ptrfile) 
+                             ;(print (list msig nrows ncols size pos))
+                             ;(print (sdif-calculate-padding nrows ncols size))
+                             (cond ((equal "1BEG" msig) 
+                                    ;;; a begin matrix :
+                                    ;;; ajoute (onset (note1 note2 ...)) dans tmplist 
+                                    ;;; avec des valeurs de amp (0) freq (0) et dur (1000) arbitraires pour l'instant
+                                    (setf bmat 
+                                          (loop for i from 1 to nrows do
+                                                (sdif::SdifFReadOneRow ptrfile)
+                                                collect (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1)) time))
+                                          )
+                                    
+                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    
+                                    )
+                              
+                                   ((equal "1TRC" msig) 
+                                    ;;; a parameter matrix :
+                                    ;;; cherche les notes dans tmplist et set pitch et velocity
+                                    (setf pmat 
+                                          (loop for i from 1 to nrows do
+                                                (sdif::SdifFReadOneRow ptrfile)
+                                                collect 
+                                                (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1))
+                                                      (sdif::SdifFCurrOneRowCol ptrfile 2)
+                                                      (sdif::SdifFCurrOneRowCol ptrfile 3))))
+                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    )
+                              
+                                   ((equal "1END" msig)
+                                    ;;; a end matrix :
+                                    ;;; find the notes, set duration and put int the final notes list 
+                                    (setf emat 
+                                          (loop for i from 1 to nrows do
+                                                (sdif::SdifFReadOneRow ptrfile)
+                                                collect (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1)) time))
+                                          )
+                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    )
+                               
+                                   (t (sdif::SdifFSkipMatrixData ptrfile)))
                              ))
+                     
+                     (loop for b in bmat do
+                           (sethash mrk-partials (car b) (list (cadr b) 0 0 (cadr b))))
+                     (loop for p in pmat do 
+                       (let ((par (gethash (car p) mrk-partials)))
+                         (when par
+                           (setf (nth 1 par) (second p))
+                           (setf (nth 2 par) (third p)))))
+                     (loop for e in emat do
+                       (let* ((par (gethash (car e) mrk-partials)))
+                         (when par (setf (nth 3 par) (cadr e)))))
+                     
+                     (setf bmat nil emat nil pmat nil)
+                     
                      )
-               )
+                             
+             
+                    ((or (equal "1TRC" fsig) (equal "1HRM" fsig))
+                     
+                     (loop for mn from 0 to (1- nbmat) do
+                           (multiple-value-bind (msig nrows ncols size pos)
+                               (read-matrix-header ptrfile) 
+                             ;(print (list msig nrows ncols size pos (sdif-calculate-padding nrows ncols size)))
+                             (cond ((or (equal "1TRC" msig) (equal "1HRM" msig))
+                                    (loop for i from 1 to nrows do
+                                          (sdif::SdifFReadOneRow ptrfile)
+                                          (let* ((ind (floor (sdif::SdifFCurrOneRowCol ptrfile 1)))
+                                                 (freq (sdif::SdifFCurrOneRowCol ptrfile 2))
+                                                 (amp (sdif::SdifFCurrOneRowCol ptrfile 3))
+                                                 (phase (sdif::SdifFCurrOneRowCol ptrfile 4))
+                                                 (par (gethash ind trc-partials)))
+                                            (if par
+                                                (progn 
+                                                  (setf (nth 0 par) (append (nth 0 par) (list time)))
+                                                  (setf (nth 1 par) (append (nth 1 par) (list freq)))
+                                                  (setf (nth 2 par) (append (nth 2 par) (list amp)))
+                                                  (setf (nth 3 par) (append (nth 3 par) (list phase)))
+                                                  )
+                                              (sethash trc-partials ind (list (list time) (list freq) (list amp) (list phase))))
+                                            )
+                                          )
+                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    )
+                               
+                                   (t (sdif::sdiffskipmatrixdata ptrfile)))
+                             )))
 
+                    (t (sdif::SdifFSkipFrameData ptrfile)))
+                   ))
+               (setf nextFrame (nextframep self ptrfile)))
 
-             ))
+         (sdif-close self ptrfile)
+         ))
      
      (when (or (equal datatype 'mrk) (equal datatype 'all))
        (maphash #'(lambda (key val) (push val data)) mrk-partials))
@@ -264,11 +291,9 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
      (when (or (equal datatype 'trc) (equal datatype 'all))
        (maphash #'(lambda (key val) (push val data)) trc-partials))
 
-     (sdif-close self ptrfile)
-     
      (sort (reverse data) '< :key #'(lambda (dataitem) (if (consp (car dataitem)) (caar dataitem) (car dataitem))))
      
-     ))))
+     ))
 
 
 (defmethod! GetSDIFChords ((self sdiffile))
