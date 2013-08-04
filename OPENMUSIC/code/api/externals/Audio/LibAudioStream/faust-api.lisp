@@ -46,10 +46,12 @@
           las-faust-effect-already-plugged-?
           las-faust-synth-hidden-already-plugged-?
           las-faust-null-ptr-p
+          las-faust-transform-sound
           las-faust-search-effect-name-in-register
           las-faust-search-synth-name-in-register
           las-faust-search-synth-console-in-register
           las-faust-make-null-sound
+          las-faust-make-null-sound-smp
           las-faust-pack-effect-register
 
           *faust-effects-register*
@@ -58,6 +60,8 @@
           *faust-synths-by-track*
           *faust-synths-by-track-hidden*
           *faust-synths-console*
+
+          *faust-fade-effect-list*
           ) :om-api)
 
 
@@ -88,6 +92,12 @@
 
 (defun las-faust-make-null-sound (duration)
   (las::makestereosound (las::makenullsound (* las-srate duration))))
+
+(defun las-faust-make-null-sound-smp (smp)
+  (las::makestereosound (las::makenullsound smp)))
+
+(defun las-faust-transform-sound (pointer effectlist fadein fadeout)
+  (las::maketransformsound pointer effectlist fadein fadeout))
 
 (defun las-faust-get-json (pointer)
   (las::getjsoneffect pointer))

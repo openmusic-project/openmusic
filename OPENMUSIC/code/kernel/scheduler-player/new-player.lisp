@@ -62,7 +62,6 @@
   (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
   
-
 (defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
   (cond ((equal (state player) :play) 
          ;;; prolonge la durée de vie du player
@@ -81,7 +80,7 @@
                                    #'(lambda ()
                                        (loop
                                         (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
-                                              (funcall (cdr (pop (events player)))))
+                                                (funcall (cdr (pop (events player)))))
                                         (if (> (get-player-time player) (stop-time player)) (general-stop player))
                                         (sleep (scheduler-tick player))
                                         )))))
@@ -207,7 +206,8 @@
 (defun general-player-stop (caller)
   (mapcar #'(lambda (box)
               (setf (play-state box) nil)
-              (om-invalidate-view (car (frames box))))
+              (if (car (frames box))
+                  (om-invalidate-view (car (frames box)))))
           *play-boxes*)
   (setf *play-boxes* nil))
 

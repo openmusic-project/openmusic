@@ -41,9 +41,37 @@
 	'(:microplayer :libaudiostream :multiplayer
 	  ;;:midishare ; keep ms-player while developing jack-player
 	  ))
+
+(defparameter *jack-midi-seqs* (make-hash-table))
+
+
+#|
 (print *enabled-players*)
 
+;; 1) setup ref. queue for this object (chord-seq, voice, editor...)
+
+
+(setf a (make-hash-table))
+(setf obj (make-instance 'chord-seq))
+(setf (name obj) (gensym "chord-seq-"))
+(name obj)
+(setf (gethash (name obj) a) obj)
+(describe (gethash (name obj) a))
+(maphash #'(lambda (key val) (print (list key val)))
+	 *jack-midi-seqs*)
+
+|#
+
+(defun jack-init-queue-for-this-object (object at interval)
+  (let ((seq (gethash object *jack-midi-seqs*)))
+    (when (hash-table-p seq) (clrhash seq))
+    (setf (gethash object *jack-midi-seqs*) (cl-jack::make-om-seq))))
+
 (defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) object at interval)
+  ;;(print (list 'prepare-to-play engine player object at interval (clock-time) (ref-clock-time player)))
+  (describe player)
+  (print '(im being called))
+  (jack-init-queue-for-this-object object at interval)
   (call-next-method))
 
 (defmethod player-play-object ((engine (eql :jackmidi)) object &key interval)
@@ -79,11 +107,12 @@
 
 ;;; PAUSE (all)
 (defmethod player-pause ((engine (eql :jackmidi)) &optional play-list)
-  ;;(when *jackplayer* (jack-midi-pause-player *jackplayer*))
+  (print 'pause play-list)
   (call-next-method))
 
 ;;; CONTINUE (all)
 (defmethod player-continue ((engine (eql :jackmidi)) &optional play-list)
+  (print 'continue play-list)
   ;;(when *jackplayer* (jack-midi-cont-player *jackplayer*))
   (call-next-method))
 

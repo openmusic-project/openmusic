@@ -356,15 +356,18 @@
                                                      (editor-slice-undo self)) "z" (editor-undo-available self))
                         (om-new-leafmenu  "Redo" #'(lambda () 
                                                      (editor-slice-redo self)) "y" (editor-redo-available self)))
-                        (list
-                         (om-new-leafmenu  "Copy" #'(lambda () 
-                                                       (editor-slice-copy self)) "c" (editor-slicing-available self))
-                         (om-new-leafmenu  "Cut" #'(lambda () 
-                                                     (editor-slice-cut self)) "x" (editor-slicing-available self))
-                         (om-new-leafmenu  "Paste" #'(lambda () 
-                                                       (editor-slice-paste self)) "v" (editor-slicing-available self))
-                         (om-new-leafmenu  "Delete" #'(lambda () 
-                                                        (editor-slice-delete self)) "d" (editor-slicing-available self)))))
+                       (list
+                        (om-new-leafmenu  "Copy" #'(lambda () 
+                                                     (editor-slice-copy self)) "c" (editor-slicing-available self))
+                        (om-new-leafmenu  "Cut" #'(lambda () 
+                                                    (editor-slice-cut self)) "x" (editor-slicing-available self))
+                        (om-new-leafmenu  "Paste" #'(lambda () 
+                                                      (editor-slice-paste self)) "v" (editor-slicing-available self))
+                        (om-new-leafmenu  "Delete" #'(lambda () 
+                                                       (editor-slice-delete self)) "d" (editor-slicing-available self)))
+                       (list
+                        (om-new-leafmenu  "Fading" #'(lambda () 
+                                                                 (make-fader-builder-window self)) "f" t))))
         (make-om-menu 'windows :editor self)
         (make-om-menu 'help :editor self)))
 
@@ -469,6 +472,205 @@
     (om-invalidate-view self)))
 
 ;;;///////////////////////////////////////////////
+(defmethod make-fader-builder-window ((self soundeditor))
+  (let* ((win (om-make-window 'om-dialog
+                              :window-title "Linear Fader Builder" 
+                              :size (om-make-point 400 210) 
+                              :scrollbars nil
+                              :position (om-make-point 100 50)))
+         (sound (object self))
+         (cursor-position (cursor-pos (panel self)))
+         (cursor-interval (if (selection-to-slice-? (panel self))
+                              (cursor-interval (panel self))))
+         (timestart (max cursor-position 0))
+         (timeend (if (selection-to-slice-? (panel self))
+                      (min (cadr (cursor-interval (panel self)))
+                           (round (om-sound-n-samples-current sound) (/ las-srate 1000.0)))
+                    (+ cursor-position 100)))
+         (typefade 0)
+         panel fading-text fading-type start-text start-check start-time start-unit
+         end-text end-check end-time end-unit ok cancel)
+    (setf panel (om-make-view 'om-view
+                              :owner win
+                              :position (om-make-point 0 0) 
+                              :scrollbars nil
+                              :retain-scrollbars nil
+                              :bg-color *om-steel-blue-color*
+                              :field-size  (om-make-point 400 200)
+                              :size (om-make-point (w win) (h win))))
+    (setf fading-text (om-make-dialog-item 'om-static-text 
+                                           (om-make-point 105 5) 
+                                           (om-make-point 295 20)
+                                           (format nil "Fading type :")
+                                           :font *om-default-font2b* 
+                                           :fg-color *om-white-color*))
+    (setf fading-type (om-make-dialog-item 'om-pop-up-dialog-item 
+                                           (om-make-point 205 6) 
+                                           (om-make-point 65 12)
+                                           ""
+                                           :di-action (om-dialog-item-act item
+                                                        (setf typefade (om-get-selected-item-index item)))
+                                           :font *om-default-font1*
+                                           :range '("IN" "OUT")
+                                           :value "IN"))
+    (setf start-text (om-make-dialog-item 'om-static-text 
+                                          (om-make-point 35 50) 
+                                          (om-make-point 295 20)
+                                          (format nil "Start Time :")
+                                          :font *om-default-font2*
+                                          :fg-color *om-white-color*))
+    (setf start-check (om-make-dialog-item 'om-check-box
+                                           (om-make-point 130 49)
+                                           (om-make-point 300 20)
+                                           (format nil "Use cursor position (~D ms)" timestart)
+                                           :checked-p t
+                                           :di-action (om-dialog-item-act item 
+                                                        (if (om-checked-p item)
+                                                            (om-remove-subviews panel start-time start-unit)
+                                                          (om-add-subviews panel start-time start-unit)))
+                                           :font *om-default-font2*
+                                           :fg-color *om-white-color*))
+    (setf start-time (om-make-dialog-item 'edit-numbox
+                                          (om-make-point 150 70)
+                                          (om-make-point 60 18) 
+                                          (format nil "~D" timestart)
+                                          :min-val 0 :max-val (- (round (om-sound-n-samples-current sound) (/ las-srate 1000.0)) 10)
+                                          :font *om-default-font1*
+                                          :bg-color *om-white-color*
+                                          :fg-color *om-black-color*
+                                          :value timestart
+                                          :afterfun #'(lambda (item)
+                                                        (setf timestart (value item))
+                                                        (if (>= timestart timeend) 
+                                                            (progn
+                                                              (set-value end-time (+ timestart 5))
+                                                              (setf timeend (+ timestart 5)))))))
+    (setf start-unit (om-make-dialog-item 'om-static-text 
+                                          (om-make-point 220 70) 
+                                          (om-make-point 295 20)
+                                          (format nil "ms")
+                                          :font *om-default-font2*
+                                          :fg-color *om-white-color*))
+    (setf end-text (om-make-dialog-item 'om-static-text 
+                                        (om-make-point 35 (if cursor-interval 100 120))
+                                        (om-make-point 70 20)
+                                        (format nil "End Time :")
+                                        :font *om-default-font2*
+                                        :fg-color *om-white-color*))
+    (setf end-check (om-make-dialog-item 'om-check-box
+                                         (om-make-point 130 99)
+                                         (om-make-point 300 20)
+                                         (format nil "Use interval selection (~D ms)" timeend)
+                                         :checked-p t
+                                         :di-action (om-dialog-item-act item 
+                                                      (if (om-checked-p item)
+                                                          (om-remove-subviews panel end-time end-unit)
+                                                        (om-add-subviews panel end-time end-unit)))
+                                         :font *om-default-font2*
+                                         :fg-color *om-white-color*))
+    (setf end-time (om-make-dialog-item 'edit-numbox
+                                        (om-make-point 150 120)
+                                        (om-make-point 60 18) 
+                                        (format nil "~D" timeend)
+                                        :min-val 10 :max-val (round (om-sound-n-samples-current sound) (/ las-srate 1000.0))
+                                        :font *om-default-font1*
+                                        :bg-color *om-white-color*
+                                        :fg-color *om-black-color*
+                                        :value timeend
+                                        :afterfun #'(lambda (item)
+                                                      (setf timeend (value item))
+                                                      (if (>= timestart timeend)
+                                                          (progn
+                                                            (set-value start-time (- timeend 5))
+                                                            (setf timestart (- timeend 5)))))))
+    (setf end-unit (om-make-dialog-item 'om-static-text 
+                                        (om-make-point 220 120) 
+                                        (om-make-point 295 20)
+                                        (format nil "ms")
+                                        :font *om-default-font2*
+                                        :fg-color *om-white-color*))
+    (setf ok (om-make-dialog-item 'om-button 
+                                  (om-make-point 105 163) 
+                                  (om-make-point 70 24)  "OK"
+                                  :di-action (om-dialog-item-act item 
+                                               (if (= typefade 0)
+                                                   (editor-fade-in self timestart timeend)
+                                                 (editor-fade-out self timestart timeend))
+                                               (om-return-from-modal-dialog win nil))))
+    (setf cancel (om-make-dialog-item 'om-button 
+                                      (om-make-point 225 163) 
+                                      (om-make-point 70 24)  "Cancel"
+                                      :di-action (om-dialog-item-act item (om-return-from-modal-dialog win nil))))
+    (if cursor-interval 
+        (om-add-subviews panel fading-text fading-type 
+                         start-text start-check
+                         end-text end-check ok cancel)
+      (om-add-subviews panel fading-text fading-type 
+                       start-text start-check
+                       end-text end-time end-unit ok cancel))
+    (om-modal-dialog win)))
+
+(defmethod editor-fade-in ((self soundeditor) start end)
+  (let* ((sr-factor (/ las-srate 1000.0))
+         (sample-start (round (* start sr-factor)))
+         (sample-end (round (* end sr-factor)))
+         (fading-smp (- sample-end sample-start))
+         (pointer (om-sound-sndlasptr-current (object self)))
+         (max-end (las-get-length-sound pointer))
+         (slice-before (las-slice-sample-cut pointer 0 (+ sample-start 44)))
+         (slice (las-slice-sample-cut pointer sample-start sample-end))
+         (slice-after (las-slice-sample-cut pointer (- sample-end 44) max-end))
+         (blank-snd (las-faust-make-null-sound-smp fading-smp))
+         (slice-fade-in (las-slice-seq blank-snd slice fading-smp))
+         result)
+
+    (cond ((and (= sample-start 0) (= sample-end max-end))
+           (setf result slice-fade-in))
+          ((and (= sample-start 0) (/= sample-end max-end))
+           (setf result (las-slice-seq slice-fade-in slice-after 44)))
+          ((and (/= sample-start 0) (= sample-end max-end))
+           (setf result (las-slice-seq slice-before slice-fade-in 44)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-in 44) slice-after 44))))
+
+    (if result
+        (progn
+          (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+          (update-menubar self)
+          (om-sound-update-sndlasptr-current (object self) result)
+          (om-sound-update-las-infos (object self))
+          (launch-editor-view-updater self))
+      (om-message-dialog (format nil "WARNING : An error has occured. Requested fading operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
+
+(defmethod editor-fade-out ((self soundeditor) start end) 
+  (let* ((sr-factor (/ las-srate 1000.0))
+         (sample-start (round (* start sr-factor)))
+         (sample-end (round (* end sr-factor)))
+         (fading-smp (- sample-end sample-start))
+         (pointer (om-sound-sndlasptr-current (object self)))
+         (max-end (las-get-length-sound pointer))
+         (slice-before (las-slice-sample-cut pointer 0 (+ sample-start 44)))
+         (slice (las-slice-sample-cut pointer sample-start sample-end))
+         (slice-after (las-slice-sample-cut pointer (- sample-end 44) max-end))
+         (blank-snd (las-faust-make-null-sound-smp fading-smp))
+         (slice-fade-out (las-slice-seq slice blank-snd fading-smp))
+         result)
+
+    (cond ((and (= sample-start 0) (= sample-end max-end))
+           (setf result slice-fade-out))
+          ((and (= sample-start 0) (/= sample-end max-end))
+           (setf result (las-slice-seq slice-fade-out slice-after 44)))
+          ((and (/= sample-start 0) (= sample-end max-end))
+           (setf result (las-slice-seq slice-before slice-fade-out 44)))
+          (t (setf result (las-slice-seq (las-slice-seq slice-before slice-fade-out 44) slice-after 44))))
+
+    (if result
+        (progn
+          (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
+          (update-menubar self)
+          (om-sound-update-sndlasptr-current (object self) result)
+          (om-sound-update-las-infos (object self))
+          (launch-editor-view-updater self))
+      (om-message-dialog (format nil "WARNING : An error has occured. Requested fading operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
 
 (defmethod editor-slice-copy ((self soundeditor))
   (if (selection-to-slice-? (panel self))
@@ -495,7 +697,8 @@
               (progn
                 (save-las-datalist self (om-sound-las-slicing-past-stack (object self)) *las-slicing-history-size*)
                 (update-menubar self)
-                (om-sound-update-sndlasptr-current (object self) (las-slice-cut pointer from to))
+                (om-sound-update-sndlasptr-current (object self) (car result))
+                (om-sound-update-snd-slice-to-paste (object self) (cadr result))
                 (om-sound-update-las-infos (object self))
                 (launch-editor-view-updater self))
             (om-message-dialog (format nil "WARNING : An error has occured. Requested cut operation aborted. You might have reached the max number of edit for this file.~%~%Please use an external editor for further edit.")))))
@@ -508,7 +711,7 @@
         (let* ((pointer (om-sound-sndlasptr-current (object self)))
                (slice (om-sound-snd-slice-to-paste (object self)))
                (position (cursor-pos (panel self)))
-               (result (las-slice-paste pointer position slice)))
+               (result (las-slice-paste pointer position slice))) (print slice)
           (if slice
               (let ()
                 (if result
@@ -574,7 +777,7 @@
 (defmethod get-help-list ((self soundeditor))
   (list '((alt+clic "Add Marker")
           (del "Delete Selected Markers")
-          (("g") "Sow/Hide Grid")
+          (("g") "Show/Hide Grid")
           (("A") "Align Selected Markers to Grid")
           (esc "Reset cursor")
           (space "Play/Stop"))))

@@ -31,11 +31,11 @@
 ;=== a set of parameters controllers ===
 ;=======================================
 
-(defclass* faust-effect-console (simple-score-element)
-   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt :documentation "Faust Code, written in a Textfile")
+(defclass* faust-fx (simple-score-element)
+   ((effect-txt :initform nil :initarg :effect-txt :accessor effect-txt :documentation "a textfile written in Faust language")
     (effect-ptr :initform nil :accessor effect-ptr)
-    (effect-name :initform nil :initarg :effect-name :accessor effect-name :documentation "The name of the Faust Effect")
-    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the effect will be pluged (0 = no specific track)")
+    (effect-name :initform nil :initarg :effect-name :accessor effect-name :documentation "a name")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "a track on which the effect will be plugged (0 = no specific track)")
     (effect-dsp :initform nil :accessor effect-dsp)
     (effect-svg :initform nil :accessor effect-svg)
     (nbparams :initform 0 :accessor nbparams :type t)
@@ -44,19 +44,19 @@
    (:icon 918)
    (:documentation "Faust Effect"))
 
-(defmethod initialize-instance ((self faust-effect-console) &rest l)
+(defmethod initialize-instance ((self faust-fx) &rest l)
   (let ((rep (call-next-method)))
     (print (list "GC-REGISTERING_CONSOLE" rep))
     (hcl::flag-special-free-action rep)
     rep))
 
-(defmethod initialize-instance :after ((self faust-effect-console) &rest l)
+(defmethod initialize-instance :after ((self faust-fx) &rest l)
   (declare (ignore l))
   (when (effect-txt self)
-    (build-faust-effect-console self))
+    (build-faust-fx self))
   self)
 
-(defmethod faust-cleanup ((self faust-effect-console))
+(defmethod faust-cleanup ((self faust-fx))
   (print (list "GC-FAUST_FX_CLEANUP" self))
   (las-faust-effect-cleanup (effect-ptr self)))
 
@@ -65,7 +65,7 @@
 ;Add the faust cleanup to garbage functions
 (hcl::add-special-free-action 'faust-cleanup)
 
-(defmethod build-faust-effect-console ((self faust-effect-console))
+(defmethod build-faust-fx ((self faust-fx))
   ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
   (if (effect-txt self)
       (let ((parlist (list-of-lines (buffer-text (effect-txt self))))
@@ -114,14 +114,14 @@
                                                                                            )))))) self)))
 
 
-(defmethod set-effect-name ((self faust-effect-console))
+(defmethod set-effect-name ((self faust-fx))
   (or (effect-name self)
       (let ((name (format nil "Faust-FX-~A" (+ 1 (las-get-number-faust-effects-register)))))
         (print (format nil "WARNING : You didn't give a name to the effect. It's now called ~A." name))
         (setf (effect-name self) name)
         name)))
 
-(defmethod set-effect-dsp-and-svg ((self faust-effect-console))
+(defmethod set-effect-dsp-and-svg ((self faust-fx))
   (setf (effect-dsp self) (format nil "OM-Faust_effect~A.dsp" (+ 1 (las-get-number-faust-effects-register))))
   (setf (effect-svg self) (format nil "./OM-Faust_effect~A-svg/process.svg" (+ 1 (las-get-number-faust-effects-register)))))
 
@@ -131,7 +131,7 @@
 (defun las-clean-faust-files ()
   (om-cmd-line "rm -Rf OM-Faust_*" nil t *om-outfiles-folder*))
 
-(defmethod finalize-effect-building ((self faust-effect-console) name)
+(defmethod finalize-effect-building ((self faust-fx) name)
   (progn
     (print "Effet Faust créé avec succès")
     (setf (ui-tree self) (las-faust-parse (las-faust-get-json (effect-ptr self))))
@@ -144,37 +144,37 @@
     (setf (nbparams self) (length param-list))
     param-list))
 
-(defmethod allowed-in-maq-p ((self faust-effect-console))  nil)
+(defmethod allowed-in-maq-p ((self faust-fx))  nil)
 
-(defmethod Class-has-editor-p  ((self faust-effect-console)) t)
+(defmethod Class-has-editor-p  ((self faust-fx)) t)
 
-(defmethod get-editor-class ((self faust-effect-console)) 'faustcontrollerEditor)
+(defmethod get-editor-class ((self faust-fx)) 'faustcontrollerEditor)
 
-(defmethod draw-mini-view ((self t) (value faust-effect-console)) 
+(defmethod draw-mini-view ((self t) (value faust-fx)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
-(defmethod update-miniview ((self t) (value faust-effect-console)) 
+(defmethod update-miniview ((self t) (value faust-fx)) 
    (om-invalidate-view self t))
 
-(defmethod draw-obj-in-rect ((self faust-effect-console) x x1 y y1 edparams view)
+(defmethod draw-obj-in-rect ((self faust-fx) x x1 y y1 edparams view)
   (let ((w (w view))
-        (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
+        (pic (om-load-and-store-picture "faust-fx" 'internal)))
     (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))
     (om-with-focused-view view
-      (om-draw-string 5 15 (or (effect-name self) "! NO NAME !")))))
+      (om-draw-string 2 13 (or (effect-name self) "!NO NAME!")))))
 
-(defmethod omNG-copy ((self faust-effect-console))
+(defmethod omNG-copy ((self faust-fx))
    "Cons a Lisp expression that return a copy of self when it is valuated."
    `(let ((rep (make-instance ',(type-of self))))
       rep))
 
-(defmethod copy-container  ((self faust-effect-console) &optional (pere nil))
+(defmethod copy-container  ((self faust-fx) &optional (pere nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((rep (make-instance (type-of self))))
     rep))
 
 
-(defmethod omNG-save ((self faust-effect-console) &optional (values? nil))
+(defmethod omNG-save ((self faust-fx) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((text (effect-txt self))
         (name (effect-name self))
@@ -197,10 +197,10 @@
                        #'(lambda ()
                            (mapcar 
                             #'(lambda (fx) 
-                                (cond ((typep fx 'faust-effect-console)
-                                       (build-faust-effect-console fx))
-                                      ((typep fx 'faust-synth-console)
-                                       (build-faust-synth-console fx))
+                                (cond ((typep fx 'faust-fx)
+                                       (build-faust-fx fx))
+                                      ((typep fx 'faust-synth)
+                                       (build-faust-synth fx))
                                       (t nil)))
                             (append *faust-effects-to-compile* *faust-synths-to-compile*))
                            (setf *faust-effects-to-compile* nil
@@ -210,9 +210,9 @@
 (defmethod load-patch :after ((self ompatch))
   (compile-faust-objects))
 
-(defmethod get-obj-dur ((self faust-effect-console)) 0)
+(defmethod get-obj-dur ((self faust-fx)) 0)
 
-(defmethod object-remove-extra ((self faust-effect-console) box)
+(defmethod object-remove-extra ((self faust-fx) box)
   (let* ((ptr (effect-ptr self)))
     (if ptr
         (las-faust-effect-cleanup ptr))
@@ -236,7 +236,7 @@
     win))
 
 
-(defmethod get-win-ed-size ((self faust-effect-console)) 
+(defmethod get-win-ed-size ((self faust-fx)) 
   (if (ui-tree self)
      (om-make-point (min 500 (if (> (+ 75 (cadr (las-faust-get-group-size (ui-tree self)))) 500)
                                  (+ (car (las-faust-get-group-size (ui-tree self))) 14)
@@ -629,12 +629,12 @@
 ;=== a set of parameters controllers ===
 ;=======================================
 
-(defclass* faust-synth-console (simple-score-element)
-   ((synth-txt :initform nil :initarg :synth-txt :accessor synth-txt :documentation "Faust Code, written in a Textfile")
+(defclass* faust-synth (simple-score-element)
+   ((synth-txt :initform nil :initarg :synth-txt :accessor synth-txt :documentation "a textfile written in Faust language")
     (synth-ptr :initform nil :accessor synth-ptr)
-    (synth-name :initform nil :initarg :synth-name :accessor synth-name :documentation "The name of the Faust synth")
-    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "The track on which the synth will be pluged (0 = no specific track)")
-    (duration :initform 10 :initarg :duration :accessor duration :documentation "The duration (in sec) during the synth will play (default is 10 sec)")
+    (synth-name :initform nil :initarg :synth-name :accessor synth-name :documentation "a name")
+    (tracknum :initform 0 :initarg :tracknum :accessor tracknum :documentation "a track on which the synth will be plugged (0 = no specific track)")
+    (duration :initform 10 :initarg :duration :accessor duration :documentation "a duration in seconds (default = 10 sec)")
     (nullsnd :initform nil :accessor nullsnd)
     (synth-dsp :initform nil :accessor synth-dsp)
     (synth-svg :initform nil :accessor synth-svg)
@@ -645,34 +645,34 @@
    (:icon 917)
    (:documentation "Faust synth"))
 
-(defmethod faust-cleanup ((self faust-synth-console))
+(defmethod faust-cleanup ((self faust-synth))
   (print (list "GC-FAUST_SYNTH_CLEANUP" self))
   (las-faust-synth-cleanup (synth-ptr self)))
 
-(defmethod play-obj? ((self faust-synth-console)) t)
+(defmethod play-obj? ((self faust-synth)) t)
 
 ;/Redefinition of transport functions for this kind of box
-(defmethod player-play-object ((engine (eql :libaudio)) (object faust-synth-console) &key interval)
+(defmethod player-play-object ((engine (eql :libaudio)) (object faust-synth) &key interval)
   (las-synth-preview-play object))
-(defmethod player-stop-object ((engine (eql :libaudio)) (object faust-synth-console) &key interval)
+(defmethod player-stop-object ((engine (eql :libaudio)) (object faust-synth) &key interval)
   (las-synth-preview-stop object))
 
-(defmethod default-edition-params ((self faust-synth-console)) 
+(defmethod default-edition-params ((self faust-synth)) 
   (pairlis '(player) '(:libaudio) (call-next-method)))
 
-(defmethod initialize-instance ((self faust-synth-console) &rest l)
+(defmethod initialize-instance ((self faust-synth) &rest l)
   (let ((rep (call-next-method)))
     (print (list "GC-REGISTERING_CONSOLE" rep))
     (hcl::flag-special-free-action rep)
     rep))
 
-(defmethod initialize-instance :after ((self faust-synth-console) &rest l)
+(defmethod initialize-instance :after ((self faust-synth) &rest l)
   (declare (ignore l))
   (when (synth-txt self)
-    (build-faust-synth-console self))
+    (build-faust-synth self))
   self)
 
-(defmethod build-faust-synth-console ((self faust-synth-console))
+(defmethod build-faust-synth ((self faust-synth))
   ;Check whether it's a maquette copy. If no, build, if yes, don't do anything.
   (if (not (is-copy self))
       ;;Check if user plugged a Faust code to the box. If yes, build, if no, exit.
@@ -732,18 +732,18 @@
                                                                                                  )))))) self))))
 
 
-(defmethod set-synth-name ((self faust-synth-console))
+(defmethod set-synth-name ((self faust-synth))
   (or (synth-name self)
       (let ((name (format nil "Faust-Synth-~A" (+ 1 (las-get-number-faust-synths-register)))))
         (print (format nil "WARNING : You didn't give a name to the synth. It's now called ~A." name))
         (setf (synth-name self) name)
         name)))
 
-(defmethod set-synth-dsp-and-svg ((self faust-synth-console))
+(defmethod set-synth-dsp-and-svg ((self faust-synth))
   (setf (synth-dsp self) (format nil "OM-Faust_synth~A.dsp" (+ 1 (las-get-number-faust-synths-register))))
   (setf (synth-svg self) (format nil "./OM-Faust_synth~A-svg/process.svg" (+ 1 (las-get-number-faust-synths-register)))))
 
-(defmethod finalize-synth-building ((self faust-synth-console) name)
+(defmethod finalize-synth-building ((self faust-synth) name)
   (let (param-list)
     (print "Synthetiseur Faust créé avec succès")
     (setf (ui-tree self) (las-faust-parse (las-faust-get-json (synth-ptr self))))
@@ -765,31 +765,33 @@
     param-list))
 
 
-(defmethod allowed-in-maq-p ((self faust-synth-console))  t)
+(defmethod allowed-in-maq-p ((self faust-synth))  t)
 
-(defmethod Class-has-editor-p ((self faust-synth-console)) t)
+(defmethod Class-has-editor-p ((self faust-synth)) t)
 
-(defmethod get-editor-class ((self faust-synth-console)) 'faustSynthcontrollerEditor)
+(defmethod get-editor-class ((self faust-synth)) 'faustSynthcontrollerEditor)
 
-(defmethod draw-mini-view  ((self t) (value faust-synth-console)) 
+(defmethod draw-mini-view  ((self t) (value faust-synth)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
-(defmethod update-miniview ((self t) (value faust-synth-console)) 
+(defmethod update-miniview ((self t) (value faust-synth)) 
    (om-invalidate-view self t))
 
-(defmethod draw-obj-in-rect ((self faust-synth-console) x x1 y y1 edparams view)
+(defmethod draw-obj-in-rect ((self faust-synth) x x1 y y1 edparams view)
   (let ((w (w view))
-        (pic (om-load-and-store-picture "faustlogo-bg" 'internal)))
-    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))))
+        (pic (om-load-and-store-picture "faust-synth" 'internal)))
+    (om-draw-picture view pic (om-make-point 0 0) (om-make-point w (h view)))
+    (om-with-focused-view view
+      (om-draw-string 2 13 (or (synth-name self) "!NO NAME!")))))
 
 
 
-(defmethod omNG-copy ((self faust-synth-console))
+(defmethod omNG-copy ((self faust-synth))
   (call-next-method))
 
-(defmethod copy-container  ((self faust-synth-console) &optional (pere nil))
+(defmethod copy-container  ((self faust-synth) &optional (pere nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
-  (let ((rep (make-instance 'faust-synth-console)))
+  (let ((rep (make-instance 'faust-synth)))
     (setf (synth-txt rep) (synth-txt self)
           (synth-ptr rep) (synth-ptr self)
           (synth-name rep) (synth-name self)
@@ -806,7 +808,7 @@
     rep))
 
 
-(defmethod omNG-save ((self faust-synth-console) &optional (values? nil))
+(defmethod omNG-save ((self faust-synth) &optional (values? nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((text (synth-txt self))
         (name (synth-name self))
@@ -830,15 +832,15 @@
   (om-run-process "faust synths compiler" 
                   #'(lambda ()
                       (mapcar 
-                       #'(lambda (fx) (build-faust-synth-console fx))
+                       #'(lambda (fx) (build-faust-synth fx))
                        *faust-synths-to-compile*)
                       (setf *faust-synths-to-compile* nil))))
 
 
-(defmethod get-obj-dur ((self faust-synth-console)) (* 1000 (duration self)))
+(defmethod get-obj-dur ((self faust-synth)) (* 1000 (duration self)))
 
 
-(defmethod object-remove-extra ((self faust-synth-console) box)
+(defmethod object-remove-extra ((self faust-synth) box)
   (let* ((ptr (synth-ptr self)))
     (if ptr
         (las-faust-synth-cleanup ptr))
@@ -862,7 +864,7 @@
     win))
 
 
-(defmethod get-win-ed-size ((self faust-synth-console)) 
+(defmethod get-win-ed-size ((self faust-synth)) 
   (if (ui-tree self)
       (om-make-point (min 500 (if (> (+ 75 (cadr (las-faust-get-group-size (ui-tree self)))) 500)
                                   (+ (car (las-faust-get-group-size (ui-tree self))) 14)

@@ -107,7 +107,7 @@
 (defun las-stop (obj &optional track)
   (if (listp obj)
       (loop for object in obj do
-          (om-smart-stop object track))
+          (om-smart-stop object (tracknum obj)))
     (om-smart-stop obj track)))
 
 
@@ -479,7 +479,7 @@
                     (remove-faust-effect-from-list synth-ptr (gethash chan1 *effects-lists-hidden*))
                     (setf (gethash chan1 *faust-synths-by-track-hidden*) nil)))
               (om-smart-stop-hidden nullsnd)))))))
-;;;;WARNING : HAVE TO DELETE PLUGGED LISTS ON HIDDEN PLAYER
+;;;;WARNING : DELETE PLUGGED LISTS ON HIDDEN PLAYER
           
 ;/SMART PLAY STOP FUNCTION
 ;This function decides to play or stop a sound according to his current state.
@@ -567,9 +567,8 @@
             (progn
               (setf (tracknum-sys snd) chan)
               (load-sound-on-one-channel player snd chan)
-              (play-one-channel player chan)))))))
-
-
+              (play-one-channel player chan))
+            (om-message-dialog (format nil "Oops! It seems that you reached the system limit. Too many songs are playing at the same time.~%~%Note : You can play up to ~D songs with no track assignation at the same time." (- las-channels 1))))))))
 
 ;/PLAY FUNCTION FOR VISIBLE PLAYER
 ;This function works based on a little system that checks if the sound is already loaded :
