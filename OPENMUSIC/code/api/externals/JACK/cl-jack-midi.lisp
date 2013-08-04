@@ -74,7 +74,7 @@
       (frame->period-offset time)
     (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
       (setf (gethash period seq)
-	    (sort (nconc (gethash period seq) (list noteon)) ;TODO - prio-q
+	    (sort (nconc (gethash period seq) (list noteon))
 		  #'(lambda (a b) (< (car a) (car b))))))))
 
 (defun seqhash-note-off (seq time noteno velocity &optional (channel 1))
