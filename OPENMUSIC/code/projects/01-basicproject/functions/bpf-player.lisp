@@ -161,10 +161,10 @@
     (om-with-focused-view self
       (om-with-fg-color self (om-make-color 1 0 0)
         (om-draw-string 80 (+ (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))) 9)
-                        (format nil "~A MIN" name))
+                        (format nil "~A MIN = ~A" name (round min)))
         (om-draw-line 0 (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))) 1000000 (om-point-y (point2pixel self (om-make-point 0 (* min (expt 10 (decimals object)))) (get-system-etat self))))
         (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self)))
-                        (format nil "~A MAX" name))
+                        (format nil "~A MAX = ~A" name (round max)))
         (om-draw-line 0 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self))) 1000000 (om-point-y (point2pixel self (om-make-point 0 (* max (expt 10 (decimals object)))) (get-system-etat self))))
         ))))
 
@@ -410,8 +410,7 @@
                 (if *general-mixer-window*
                     (progn
                       (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
-                      (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
-                (send-vol-val-to-current-preset track val)))
+                      (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
            ((string= parameter "vol")
             #'(lambda (val)
                 (if (< val minval) (setf val minval))
@@ -420,8 +419,7 @@
                 (if *general-mixer-window*
                     (progn
                       (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
-                      (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))
-                (send-vol-val-to-current-preset track val)))
+                      (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
            ((string= parameter "presets")
             #'(lambda (val)
                 (if (< val 0) (setf val 0))
@@ -433,11 +431,13 @@
 (defmethod get-editor-class ((self mixer-automation)) 'bpfcontroleditor)
 
 (defmethod draw-automation-info ((self t) (object mixer-automation)) 
-  (let ((namelist (loop for i from 0 to (length *general-mixer-presets*) collect
+  (let ((namelist (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
                         (car (nth i *general-mixer-presets*)))))
     (om-with-focused-view self
       (om-with-fg-color self (om-make-color 1 0 0)
-        (loop for i from 0 to (1- (length namelist)) do
+        (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 0) (get-system-etat self)))
+                              (format nil "0 - Default Preset"))
+        (loop for i from 1 to (1- (length namelist)) do
               (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
-                              (format nil "~A" (nth i namelist))))))))
+                              (format nil "~A - ~A" i (nth i namelist))))))))
 
