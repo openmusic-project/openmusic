@@ -406,10 +406,10 @@
 
 (defmethod get-default-score-params ((self scale))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport 
-             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode palette-mode show-stems scale) 
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  *Outmidiport* *InMidiPort*
-                 1 nil 1000 0 (om-make-point 720 230) (om-make-point 100 100) 0 1 0 t nil)))
+                 1 nil 1000 0 (om-make-point 720 230) (om-make-point 100 100) 0 1 :normal t nil)))
 
 (defmethod default-edition-params ((self scale))
   (get-default-score-params self))

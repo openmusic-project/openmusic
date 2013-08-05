@@ -221,7 +221,7 @@
 
 ;================ CONTROLLER EDITOR ===================
 
-(omg-defclass faustcontrollerEditor (EditorView) 
+(defclass faustcontrollerEditor (EditorView) 
   ((params-panels :initform nil :accessor params-panels :type list)
    (tree :initform nil :accessor tree :type nil)
    (bottom-bar :initform nil :accessor bottom-bar :type t)))
@@ -245,8 +245,6 @@
 
 
 
-(defmethod editor-has-palette-p ((self faustcontrollerEditor)) nil)
-
 (defmethod get-panel-class ((self faustcontrollerEditor)) 'faustcontrollerPanel)
 
 (defmethod update-subviews ((self faustcontrollerEditor))
@@ -254,7 +252,7 @@
 
 
 ;=== MAIN PANEL ===
-(omg-defclass faustcontrollerPanel (om-scroller) ())
+(defclass faustcontrollerPanel (om-scroller) ())
 
 (defmethod get-object ((Self faustcontrollerPanel))
    (object (om-view-container self)))
@@ -850,7 +848,7 @@
 
 ;================ CONTROLLER EDITOR ===================
 
-(omg-defclass faustSynthcontrollerEditor (EditorView) 
+(defclass faustSynthcontrollerEditor (EditorView) 
   ((params-panels :initform nil :accessor params-panels :type list)
    (tree :initform nil :accessor tree :type nil)
    (bottom-bar :initform nil :accessor bottom-bar :type t)))
@@ -871,8 +869,6 @@
                                 (car (las-faust-get-group-size (ui-tree self))))) (min 500 (+ 75 (cadr (las-faust-get-group-size (ui-tree self))))))
     (om-make-point 75 75)))
 
-(defmethod editor-has-palette-p ((self faustSynthcontrollerEditor)) nil)
-
 (defmethod get-panel-class ((self faustSynthcontrollerEditor)) 'faustSynthcontrollerPanel)
 
 (defmethod update-subviews ((self faustSynthcontrollerEditor))
@@ -891,7 +887,7 @@
 
 ;======== Parameters controllers panels =====
 
-(omg-defclass faustSynthparamPanel () 
+(defclass faustSynthparamPanel () 
   ((paramctr :initform nil :initarg :paramctr :accessor paramctr)
    (paramText :initform nil :accessor paramText :type t)
    (paramVal :initform nil :accessor paramVal :type t)

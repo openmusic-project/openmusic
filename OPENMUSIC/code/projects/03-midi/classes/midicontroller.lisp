@@ -150,10 +150,8 @@ In this case, all internal events are sent simultaneously.
     win))
 
 
-(omg-defclass controllerEditor (EditorView) 
+(defclass controllerEditor (EditorView) 
   ((ch-panels :initform nil :accessor ch-panels :type list)))
-
-(defmethod editor-has-palette-p ((self controllerEditor)) nil)
 
 (defmethod get-panel-class ((Self controllerEditor)) 'controllerPanel)
 
@@ -165,7 +163,7 @@ In this case, all internal events are sent simultaneously.
 
 
 ;=== MAIN PANEL ===
-(omg-defclass controllerPanel (om-scroller) ()
+(defclass controllerPanel (om-scroller) ()
   ;;;(:default-initargs :scrollbars :h :retain-scrollbars t)
    )
 

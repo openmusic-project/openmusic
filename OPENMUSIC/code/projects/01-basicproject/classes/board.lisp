@@ -160,37 +160,27 @@
       (values d (mapcar #'first  d) (mapcar #'second d) (mapcar #'third d)))))
 
 ;=====================
-;(omg-defclass board-palette (general-palette)  () 
-;  (:default-initargs :source-name ))
 
 (defclass boardEditor (editorview) 
   ((last-mouse-pos :accessor last-mouse-pos :initform nil)
    (mode :initform 0 :accessor mode)))
 
-(defmethod editor-has-palette-p ((Self boardEditor))  'general-palette)
 
-(defmethod get-palette-pict ((self boardeditor))
-  (om-load-and-store-picture "board-palette" 'internal))
-
-
-(defmethod editor-palette-act ((self boardeditor) X)
-   (let ((editor self))
-     (case x
-       (0 (setf (data (object editor)) nil)
-        (om-invalidate-view editor t))
-       (2 (let ((new-color (om-choose-color-dialog :color (bcolor (object editor)))))
+(defmethod handle-key-event ((self boardeditor) char)
+  (case char 
+    (#\c (let ((new-color (om-choose-color-dialog :color (bcolor (object self)))))
             (when new-color
-              (setf (bcolor (object editor)) new-color))))
-       (1 (let ((new-color (om-choose-color-dialog :color (ecolor (object editor)))))
+              (setf (bcolor (object self)) new-color)
+              (om-invalidate-view self))))
+    (#\C (let ((new-color (om-choose-color-dialog :color (ecolor (object self)))))
             (when new-color
-              (setf (ecolor (object editor)) new-color)
-              (om-set-bg-color editor new-color)))))))
-
-
-;(defclass boardpanel (metaobj-panel) ())
-;(defmethod get-panel-class ((Self boardEditor)) 'boardpanel)
-;(defmethod set-panel-color ((Self boardpanel))
-;  (om-set-bg-color self (ecolor (object editor))))
+              (setf (ecolor (object self)) new-color)
+              (om-set-bg-color self new-color))))
+    (:om-key-delete 
+     (setf (data (object self)) nil)
+     (om-invalidate-view self))
+    (otherwise (call-next-method))))
+    
 
 (defmethod initialize-instance :after ((self boardEditor) &key)
    (setf (last-mouse-pos self) (om-make-point 0 0))

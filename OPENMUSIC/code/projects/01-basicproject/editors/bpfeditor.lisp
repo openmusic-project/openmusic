@@ -27,6 +27,14 @@
 ;EDITOR
 ;===========================================================
    
+(defclass bpfeditor (editorview object-editor) 
+   ((multibpf? :initform nil :accessor multibpf?)
+    (control :initform nil :accessor control)
+    (pict :initform nil :accessor pict)
+    (current-point :initform nil :accessor current-point)
+    (spline :initform nil :accessor spline)))
+
+
 
 ;=============Controls===========
 (omg-defclass control-bpf (3Dborder-view) 
@@ -124,7 +132,45 @@
 
 ;;;=== TITLE BAR ===
 
-(omg-defclass bpf-titlebar (editor-titlebar) ())
+(omg-defclass bpf-titlebar (editor-titlebar) 
+  ((mode-buttons :accessor mode-buttons :initform nil)))
+
+ 
+(defmethod init-titlebar ((self bpfeditor))
+  (call-next-method)
+  (setf (mode-buttons (title-bar self))
+        (append 
+         (loop for mode in '(:normal :pen :zoom :scroll :move)
+               for icon in '("mousecursor" "pencursor" "zoomcursor" "handcursor" "handbpfcursor")
+               for xx = 180 then (+ xx 21) 
+               collect 
+               (let ((m mode))
+                 (om-make-view 'om-icon-button :position (om-make-point xx 2) :size (om-make-point 22 22)
+                               :id mode
+                               :icon1 icon :icon2 (string+ icon "-pushed")
+                               :lock-push t
+                               :selected-p (and (panel self) ;;; before initialization...
+                                                (equal m (mode (panel self))))
+                               :action #'(lambda (item) (set-cursor-mode self m)))
+                 ))
+         (list (om-make-view 'om-icon-button :position (om-make-point 300 2) :size (om-make-point 22 22)
+                               :id :resize
+                               :icon1 "resize" :icon2 "resize-pushed"
+                               :lock-push nil
+                               :action #'(lambda (item) (init-coor-system (panel self)))))
+         ))
+  (apply 'om-add-subviews (cons (title-bar self) 
+                                (mode-buttons (title-bar self)))         
+         ))
+
+(defmethod set-cursor-mode ((self bpfeditor) &optional mode)
+  (setf (mode (panel self)) mode)
+  (update-cursor-mode-buttons (title-bar self)))
+
+(defmethod update-cursor-mode-buttons ((self bpf-titlebar))
+  (loop for button in (mode-buttons self) do
+    (setf (selected-p button) (equal (mode (om-view-container self)) (id button))))
+  (om-invalidate-view self))
 
 
 (defmethod om-draw-contents :before ((Self bpf-titlebar)) 
@@ -166,13 +212,6 @@
 ;BPF EDITOR Class definition and initialization
 ;------------------------------------
 
-(defclass bpfeditor (editorview object-editor) 
-   ((multibpf? :initform nil :accessor multibpf?)
-    (control :initform nil :accessor control)
-    (pict :initform nil :accessor pict)
-    (current-point :initform nil :accessor current-point)
-    (spline :initform nil :accessor spline)))
-
 (defmethod get-bg-pict ((self bpfeditor)) (pict self))
 (defmethod get-bg-pict ((self t)) nil)
 
@@ -186,7 +225,6 @@
    (setf (selection? (panel self)) t)
    (om-invalidate-view (panel self) t))
 
-(defmethod editor-has-palette-p ((Self Bpfeditor))  'general-palette)
 
 (defmethod mode ((Self Bpfeditor))
    (mode (panel self)))
@@ -278,29 +316,6 @@
     (setf (pict object) (get-edit-param editor 'picture))))
 
 
-;=== Palette ====
-
-; (defclass bpf-palette (general-palette)  () (:default-initargs :source-name "simple-bpf-pal"))
-
-(defmethod get-palette-pict ((self bpfeditor))
-  (om-load-and-store-picture "simple-bpf-pal" 'internal))
-   
-(defmethod editor-palette-act ((Self bpfeditor) x)  ;ne marche jamais
-  (let ((panel (panel self)))
-    (case x
-      (5 (init-coor-system panel))
-      (otherwise
-       (when x
-         (setf (mode panel) x)
-         (when (and (= x 8) (not (selected-p (currentbpf panel))))
-           (setf (selected-p (currentbpf panel)) t)
-           (om-with-focused-view panel
-            (om-with-fg-color nil (bpfcolor (currentbpf panel))
-                 (draw-bpf panel (currentbpf panel)  
-                           (first (rangex panel)) (second (rangex panel)) 
-                           (first (rangey panel)) (second (rangey panel))))))
-         (om-invalidate-view (view *palette-win*) t))))))
-
 ;------------------------------------
 ;Events
 ;------------------------------------
@@ -362,7 +377,7 @@
 
 ; om-view-drop
 (omg-defclass bpfpanel (om-view view-with-ruler-xy) 
-   ((mode :initform 0 :accessor mode)
+   ((mode :initform :normal :accessor mode)
     (selection? :initform nil :accessor selection?)
     (show-back-p :initform t :accessor show-back-p)
     (show-point-indices :initform nil :accessor show-point-indices)   
@@ -493,21 +508,21 @@
 ;Set cursor
 (defmethod om-view-cursor ((Self Bpfpanel))
    (declare (ignore where))
-   (cond ((= (mode self) 1) *om-pen-cursor*)
+   (cond ((equal (mode self) :pen) *om-pen-cursor*)
          ((om-command-key-p)
           (if (and (om-shift-key-p) (multibpf? (editor self)))
               *om-addbpf-cursor*
             *om-point-cursor*))
-         ((= (mode self) 2) *om-loupe-cursor*)
-         ((= (mode self) 3) *om-hand-cursor*)
-         ((= (mode self) 4) *om-hand-bpf-cursor*)
+         ((equal (mode self) :zoom) *om-loupe-cursor*)
+         ((equal (mode self) :scroll) *om-hand-cursor*)
+         ((equal (mode self) :move) *om-hand-bpf-cursor*)
          (t *om-arrow-cursor*)))
 
 (defmethod om-view-click-handler ((Self Bpfpanel) Where)
    (if (text-view (editor self))
        (exit-text-view (editor self))
      (cond 
-      ((= (mode self) 0)
+      ((equal (mode self) :normal)
        (if (om-add-key-p) 
            (if (om-shift-key-p)
                (if (multibpf? (editor self)) 
@@ -515,18 +530,18 @@
                  (om-beep))
              (add-point-to-bpf self where))
          (select-system self where)))
-      ((= (mode self) 1)
+      ((equal (mode self) :pen)
        (if (om-add-key-p)
            (select-system self where)
          (draw-points-in-bpf self where)))
                
-      ((= (mode self) 2) (zoom-system self where))
-      ((= (mode self) 3) (scroll-system self where))
-      ((= (mode self) 4) (scroll-bpf self where))
+      ((equal (mode self) :zoom) (zoom-system self where))
+      ((equal (mode self) :scroll) (scroll-system self where))
+      ((equal (mode self) :move) (scroll-bpf self where))
       (t nil))))
 
 (defmethod om-view-doubleclick-handler ((Self bpfpanel) Where)
-   (if (= (mode self) 0)
+   (if (equal (mode self) :normal)
        (let ((Position-Obj (point-in-bpf self (currentbpf self) where)))
          (when (consp Position-Obj)
            (apply 'special-move-point (cons self 

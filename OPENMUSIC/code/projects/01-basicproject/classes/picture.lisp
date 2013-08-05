@@ -275,7 +275,7 @@ Exports as a raw bitmap (TIF format)
   t)
 
 (omg-defclass pictEditor (editorview) 
-  ((mode :initform 0 :accessor mode)
+  ((mode :initform :normal :accessor mode)
    (selection :initform nil :accessor selection)
    (controlview :initform nil :accessor controlview)))
 
@@ -288,7 +288,8 @@ Exports as a raw bitmap (TIF format)
      (del "Delete Selected Object"))))
 
 (defmethod get-menubar ((self picteditor)) (list (om-make-menu "File"
-                                                               (list (om-new-leafmenu "Save Picture" #'(lambda () (save-pict self)) "s")))    
+                                                               (list (om-new-leafmenu "Save Picture" #'(lambda () (save-pict self)) "s")
+                                                                     (om-new-leafmenu "Close" #'(lambda () (om-close-window (window self))) "w")))    
                                                  (om-make-menu "Edit"
                                                                (list (list 
                                                                       (om-new-leafmenu "Load Picture" #'(lambda () (load-new-pict self)))
@@ -340,7 +341,7 @@ Exports as a raw bitmap (TIF format)
 
 
 (defmethod handle-key-event ((self pictpanel) key)
-  (cond ((and (= (mode (editor self)) 7) *draw-text*)
+  (cond ((and (equal (mode (editor self)) :text) *draw-text*)
          (cond ((equal key :om-key-delete)
                 (unless (= 0 (length (cadr *draw-text*))) 
                   (setf (cadr *draw-text*) (subseq (cadr *draw-text*) 0 (- (length (cadr *draw-text*)) 1))))
@@ -377,23 +378,23 @@ Exports as a raw bitmap (TIF format)
 (defvar *draw-pen* nil)
 
 (defmethod om-view-click-handler ((self pictpanel) pos)
-  (unless (= (mode (editor self)) 0) (setf (selection (editor self)) nil))
-  (unless (= (mode (editor self)) 6) (setf *draw-polyg* nil))
+  (unless (equal (mode (editor self)) :normal) (setf (selection (editor self)) nil))
+  (unless (equal (mode (editor self)) :polygon) (setf *draw-polyg* nil))
   (case (mode (editor self))
-    (0 (call-next-method)) ;(move-pict-object self pos))
-    (1 (add-pen-extra self pos))
-    (2 (add-line-extra self pos))
-    (3 (add-fleche-extra self pos))
-    (4 (add-rect-extra self pos))
-    (5 (add-cerc-extra self pos))
-    (6 (polygon-extra-clic self pos))
-    (7 (text-extra-clic self pos))
+    (:normal (call-next-method)) ;(move-pict-object self pos))
+    (:pen (add-pen-extra self pos))
+    (:line (add-line-extra self pos))
+    (:arrow (add-fleche-extra self pos))
+    (:rect (add-rect-extra self pos))
+    (:ellipse (add-cerc-extra self pos))
+    (:polygon (polygon-extra-clic self pos))
+    (:text (text-extra-clic self pos))
     (otherwise t))
   (om-invalidate-view self))
 
 (defmethod om-click-motion-handler ((self pictpanel) pos)
-  (unless (= (mode (editor self)) 0) (setf (selection (editor self)) nil))
-  (when (and (= (mode (editor self)) 1) *draw-pen*)
+  (unless (equal (mode (editor self)) :normal) (setf (selection (editor self)) nil))
+  (when (and (equal (mode (editor self)) :pen) *draw-pen*)
     (let ((pt (list (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self))))
           (lastpt (car (last *draw-pen*))))
           (unless (and (= (car lastpt) (car pt)) (= (cadr pt) (cadr lastpt)))
@@ -401,8 +402,8 @@ Exports as a raw bitmap (TIF format)
     (om-invalidate-view self)))
 
 (defmethod om-click-release-handler ((self pictpanel) pos)
-  (unless (= (mode (editor self)) 0) (setf (selection (editor self)) nil))
-  (when (and (= (mode (editor self)) 1) *draw-pen*)
+  (unless (equal (mode (editor self)) :normal) (setf (selection (editor self)) nil))
+  (when (and (equal (mode (editor self)) :pen) *draw-pen*)
     (let ((ctrl (controlview (editor self))))
       (pushr (list 'pen 
                   (copy-list *draw-pen*)
@@ -420,7 +421,7 @@ Exports as a raw bitmap (TIF format)
 
 (defmethod om-view-doubleclick-handler ((self pictpanel) pos)
   (setf (selection (editor self)) nil)
-  (when (= (mode (editor self)) 6) (finish-polygon self pos))
+  (when (equal (mode (editor self)) :polygon) (finish-polygon self pos))
   (setf *draw-polyg* nil)
   (om-invalidate-view self))
 
@@ -691,7 +692,7 @@ Exports as a raw bitmap (TIF format)
 
 (defmethod om-drag-selection-p ((self pictpanel) position) 
   (and (selection (editor self))
-       (= (mode (editor self)) 0)
+       (equal (mode (editor self)) :normal)
        (let* ((obj (nth (selection (editor self)) (extraobjs (object (editor self)))))
               (r  (make-figure-region obj (w self) (h self))))
           (om-point-in-region-p r position))))
@@ -782,68 +783,85 @@ Exports as a raw bitmap (TIF format)
     t)))
 
 ;=====================
-(omg-defclass pict-controls (3Dborder-view)  
-              ((currentcolor :initform *om-black-color* :accessor currentcolor)
-               (currentsize :initform 1 :accessor currentsize)
-               (currentline :initform 'line :accessor currentline)
-               (currentfill :initform nil :accessor currentfill)
-               (currentfont :initform *om-default-font1* :accessor currentfont)))
+(defclass pict-controls (3Dborder-view)  
+  ((graphic-controls :initform nil :accessor graphic-controls)
+   (edit-buttons :initform nil :accessor edit-buttons)
+   
+   (currentcolor :initform *om-black-color* :accessor currentcolor)            
+   (currentsize :initform 1 :accessor currentsize)
+   (currentline :initform 'line :accessor currentline)
+   (currentfill :initform nil :accessor currentfill)
+   (currentfont :initform *om-default-font1* :accessor currentfont)))
 
 (defmethod initialize-instance :after ((self pict-controls) &rest args)
-  (om-add-subviews self
-                   (om-make-view 'om-pick-color-view
-                                 :position (om-make-point 10 10)
-                                 :size (om-make-point 40 20)
-                                 :color (currentcolor self)
-                                 :bg-color (currentcolor self)
-                                 :after-fun (lambda (item) (setf (currentcolor self) (om-get-bg-color item))))
-                   (om-make-dialog-item 'om-static-text (om-make-point 80 10)
-                                        (om-make-point 60 20) "Size" :font *controls-font*)
-                   (om-make-dialog-item 'om-pop-up-dialog-item
-                                        (om-make-point 110 8)
-                                        (om-make-point 50 20)
-                                        "" 
-                                        :range (mapcar 'integer-to-string (arithm-ser 1 10 1))
-                                        :di-action (om-dialog-item-act item (setf (currentsize self) 
-                                                                                  (read-from-string (om-get-selected-item item)))))
-                   (om-make-dialog-item 'om-static-text (om-make-point 176 10)
-                                        (om-make-point 60 20) "Line" :font *controls-font*)
-                   (om-make-dialog-item 'om-pop-up-dialog-item
-                                        (om-make-point 210 8)
-                                        (om-make-point 80 20)
-                                        "" 
-                                        :range '("Normal" "Dashed")
-                                        :di-action (om-dialog-item-act item (setf (currentline self) 
-                                                                                  (if (= 0 (om-get-selected-item-index item)) 'line
-                                                                                    'dash))))
-                   (om-make-dialog-item 'om-check-box (om-make-point 310 8)
-                                        (om-make-point 60 20) "Fill"
-                                        :di-action (om-dialog-item-act item (setf (currentfill self) (om-checked-p item))))
+  (let ((graphics-begin 250))
+    
+    (setf (edit-buttons self)   
+         (loop for mode in '(:normal :pen :line :arrow :rect :ellipse :polygon :text)
+               for icon in '("mousecursor" "drawpen" "linebutton" "arrowbutton" "rectbutton" "ellipsebutton" "polygon" "text")
+               for xx = 6 then (+ xx 26) 
+               collect 
+               (let ((m mode))
+                 (om-make-view 'om-icon-button :position (om-make-point xx 6) :size (om-make-point 28 28)
+                               :id mode
+                               :icon1 icon :icon2 (string+ icon "-pushed")
+                               :lock-push t
+                               :selected-p (and (om-view-container self) (equal m (mode (om-view-container self))))
+                               :action #'(lambda (item) 
+                                           (setf (mode (om-view-container self)) m)
+                                           (loop for button in (edit-buttons self) do
+                                                 (setf (selected-p button) (equal m (id button))))
+                                           (om-invalidate-view self))))
+                 ))
+    
+    (setf (graphic-controls self)
+          (list 
+           (om-make-view 'om-pick-color-view
+                         :position (om-make-point (+ graphics-begin 10) 10)
+                         :size (om-make-point 40 20)
+                         :color (currentcolor self)
+                         :bg-color (currentcolor self)
+                         :after-fun (lambda (item) (setf (currentcolor self) (om-get-bg-color item))))
+           (om-make-dialog-item 'om-static-text (om-make-point (+ graphics-begin 70) 10)
+                                (om-make-point 60 20) "Size" :font *om-default-font1*)
+           (om-make-dialog-item 'om-pop-up-dialog-item
+                                (om-make-point (+ graphics-begin 100) 8)
+                                (om-make-point 50 20)
+                                ""
+                                :font *om-default-font1*
+                                :range (mapcar 'integer-to-string (arithm-ser 1 10 1))
+                                :di-action (om-dialog-item-act item (setf (currentsize self) 
+                                                                          (read-from-string (om-get-selected-item item)))))
+           (om-make-dialog-item 'om-static-text 
+                                (om-make-point (+ graphics-begin 166) 10)
+                                (om-make-point 60 20) "Line" :font *om-default-font1*)
+           (om-make-dialog-item 'om-pop-up-dialog-item
+                                (om-make-point (+ graphics-begin 200) 8)
+                                (om-make-point 80 20)
+                                "" 
+                                :font *om-default-font1*
+                                :range '("Normal" "Dashed")
+                                :di-action (om-dialog-item-act item (setf (currentline self) 
+                                                                          (if (= 0 (om-get-selected-item-index item)) 'line
+                                                                            'dash))))
+           (om-make-dialog-item 'om-check-box (om-make-point (+ graphics-begin 300) 8)
+                                (om-make-point 60 20) "Fill"
+                                :font *om-default-font1*
+                                :di-action (om-dialog-item-act item (setf (currentfill self) (om-checked-p item))))
                    
-                   (om-make-dialog-item 'om-button (om-make-point 380 8)
-                                        (om-make-point 40 20) "A"
-                                        :font (currentfont self)
-                                        :di-action (om-dialog-item-act item 
-                                                     (setf (currentfont self) (om-choose-font-dialog :font (currentfont self)))
+           (om-make-dialog-item 'om-button (om-make-point (+ graphics-begin 350) 8)
+                                (om-make-point 40 20) "A"
+                                :font (currentfont self)
+                                :di-action (om-dialog-item-act item 
+                                             (setf (currentfont self) (om-choose-font-dialog :font (currentfont self)))
                                                      ;(om-set-font item (currentfont self))
                                                      ;(om-set-view-position item (om-make-point 380 8))
-                                                     ))
-                   ))
-;=====================
-
-(defmethod editor-has-palette-p ((self pictEditor))  'general-palette)
-
-;(defclass pict-palette (general-palette)  () 
-;  (:default-initargs :source-name "pict-palette"))
-
-(defmethod get-palette-pict ((self pictEditor))
-  (om-load-and-store-picture "pict-palette" 'internal))
-
-(defmethod editor-palette-act ((self pictEditor) x) 
-  (setf (mode self) x)
-  (om-invalidate-view (view *palette-win*) t))
-
-;====================================================
-
+                                             ))
+           ))
+    
+    
+  
+    (apply 'om-add-subviews self (append (graphic-controls self) (edit-buttons self)))
+    ))
 
 

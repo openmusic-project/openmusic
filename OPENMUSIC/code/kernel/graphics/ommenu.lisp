@@ -73,11 +73,6 @@
 (defun show-globals-win () 
   (OpenObjectEditor *om-globalsfolder*))
 
-(defun show-palette-win (&optional win)
-  (window-open-palette (or win (om-front-window))))
-
-(defun show-resources-win () nil)
-
 (defun show-preferences-win () 
   (omG-make-preference-dialog))
 
