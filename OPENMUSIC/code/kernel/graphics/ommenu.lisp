@@ -559,25 +559,7 @@
     (apply 'om-new-menu (append (list "New...")
                                 (loop for item in *new-menu-items* collect (apply 'make-menu-item (cons (om-view-window self) item)))               
                                 (list (om-new-leafmenu "New Folder" #'(lambda() (omG-make-new-icon-window (om-view-window self) 'f))))
-				(list (make-instance 'capi:menu-component
-						     :title "Test-sub"
-						     :items '("test-A" "test-B")
-						     :callback #'(lambda (item)
-								   (capi:display-message "Hello ~a"
-											 item)))))))
-   (make-instance 'capi:menu
-		  :title "Nyher"
-		  :items (list (make-instance 'capi:menu-component
-					      :title "Test-sub"
-					      :items '("test-A" "test-B")
-					      :callback #'(lambda (item)
-							    (capi:display-message "Hello ~a"
-										  item)))))
-   (make-instance 'capi:menu-item :title "Test"
-                  :callback #'(lambda (item)
-                                (capi:display-message "Hello ~a"
-						      item)))
-   (list (om-new-leafmenu "Ny Mappe" #'(lambda() (omG-make-new-icon-window (om-view-window self) 'f))))
+				)))
    (list 
     (om-new-leafmenu "Import File" #'(lambda () (import-file self)))
     (om-new-leafmenu "Import Folder" #'(lambda () (import-folder self)))
