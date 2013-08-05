@@ -36,11 +36,7 @@
 ;;; LOAD LW OpenGL
 
 (load (make-pathname :directory (append (pathname-directory *load-pathname*) '("opengl-lw"))
-                     :name "host" :type "lisp"))
-
-(let ((hcl:*packages-for-warn-on-redefinition*
-       (remove "CAPI" hcl:*packages-for-warn-on-redefinition* :test 'string=)))
-  (load "OPENGL:compile"))
+                     :name "load" :type "lisp"))
 
 (compile&load  (current-pathname "opengl-api"))
 

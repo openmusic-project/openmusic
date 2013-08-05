@@ -171,7 +171,7 @@
             
       (when (get-analysis-menu-items analysis)
               (list (om-make-menu (or (get-name analysis) (string (type-of analysis)))
-                            (get-analysis-menu-items analysis))))
+                            (get-analysis-menu-items analysis editor))))
       ))
      
      (list (list (om-new-leafmenu "Delete Current Analysis"
@@ -190,7 +190,7 @@
            ))
      )))
 
-(defmethod get-analysis-menu-items ((self abstract-analysis)) nil)
+(defmethod get-analysis-menu-items ((self abstract-analysis) &optional editor) nil)
 
 
 ;;;====================

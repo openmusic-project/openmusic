@@ -69,7 +69,7 @@ Lock the box ('b') to keep the current file.
   (sdif-open (namestring self)))
 
 (defmethod sdif-open ((self string))
-  (let ((fileptr (sdif-open-file self :eReadWriteFile)))
+  (let ((fileptr (sdif-open-file self :eReadFile)))
     (when (and fileptr (not (sdif-null-ptr-p fileptr)))
       fileptr)))
 
@@ -244,6 +244,17 @@ Lock the box ('b') to keep the current file.
      (append rep (list (loop for i from 1 to nummatrix 
                              collect (description-matrix ptr))))))
 
+(defun read-frame-header (ptr)
+  (let ((pos (- (sdif-get-pos ptr) 4)))
+    (sdif::SdifFReadFrameHeader ptr)
+    (values (sdif::SdifSignatureToString (sdif::SdifFCurrFrameSignature ptr))
+            (sdif::SdifFCurrTime ptr)
+            (sdif::SdifFCurrId ptr)
+            pos
+            (sdif::SdifFCurrNbMatrix ptr))))
+
+;(sdif::SdifSizeofDataType 0)
+
 (defmethod description-matrix (ptr)
    (let (rep pos)
      (setf pos (sdif-get-pos ptr))
@@ -251,24 +262,34 @@ Lock the box ('b') to keep the current file.
      (setf rep (list  (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr)) 
                       (sdif::SdifFCurrNbRow ptr) 
                       (sdif::SdifFCurrNbCol ptr) 
-                      8 ;(SdifFCurrDataType thefile)
+                      (sdif::SdifSizeofDataType (sdif::SdifFCurrDataType ptr))
                       pos
                       ))   
      (sdif::SdifFSkipMatrixData ptr)
      rep))
 
+(defun read-matrix-header (ptr)
+  (let ((pos (- (sdif-get-pos ptr) 4)))
+    (sdif::SdifFReadMatrixHeader ptr)
+    (values (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr))
+            (sdif::SdifFCurrNbRow ptr) 
+            (sdif::SdifFCurrNbCol ptr) 
+            (sdif::SdifSizeofDataType (sdif::SdifFCurrDataType ptr))
+            pos)))
+
 (defmethod how-many-mat ((self sdifFile) i)
    (length (fifth (nth i (framesdesc self)))))
 
 (defun good-signature-p (sign)
-  (and (not (string-equal "" sign))
+  (and sign (stringp sign)
+       (not (string-equal "" sign))
        (string>= sign "0000")
-       (string<= sign "zzzz")))
+       (string<= sign "zzzz")
+       T))
        
 (defmethod firstframep ((self sdifFile) ptr)
-   (let ((signature (sdif::SdifFCurrSignature ptr)))
-     (good-signature-p (sdif::SdifSignatureToString signature))
-     ))
+  (good-signature-p (sdif::SdifSignatureToString (sdif::SdifFCurrSignature ptr))))
+
 
 (defmethod nextframep ((self sdifFile) ptr)
    (let ((signature (sdif-get-signature ptr)))
@@ -575,71 +596,101 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 
 (defmethod get-sdif-data ((self sdifFile) streamNum frameT matT colNum rmin rmax tmin tmax)
   (let ((error nil) (data nil) (onecol nil)
-        ptrfile
-        col row val r1 r2
+        val r1 r2
         (times nil))
-    (if (or (and rmin rmax (> rmin rmax)) (and tmin tmax (> tmin tmax))) 
-      (setf error t) 
-      (setf ptrfile (sdif-open self)))
-    (if (null ptrfile) (setf error t)
-        (progn
+    (if (or (and rmin rmax (> rmin rmax)) (and tmin tmax (> tmin tmax)))
+      
+        (setf error t)
+      
+      (let ((ptrfile (sdif-open self)))
+        (if (null ptrfile) 
+            (setf error t)
+          (let (nextframe)
           ;(om-print "extracting SDIF data...")
-          (sdif::SdifFReadGeneralHeader ptrfile)
-          (sdif::SdifFReadAllASCIIChunks ptrfile)
-    (loop for item in (framesdesc self)
-          while (not error) do
-          (if (and (or (not streamNum) (= streamNum (third item))) (string-equal frameT (string (first item))) 
-                   (or (not tmin) (>= (second item) tmin)))
-            (if (or (not tmax) (<= (second item) tmax))
-            (progn
-              (loop for mat in (fifth item) do
-                    (if (string-equal matT (first mat))
-                      (progn
-                        (sdif-read-headers ptrfile (fourth item) (fifth mat))
-                        (setf row (second mat))
-                        (setf col (third mat))
-                        (if (and (numberp colNum) (<= col colNum))
-                           (progn 
-                             (om-beep-msg (format nil "Error the matrix has ~D fields" col))
-                             (setf error t))
-                           (progn
-                            (if (and rmin (> row rmin)) (setf r1 rmin) (setf r1 0))
-                            (if (and rmax (> row rmax)) (setf r2 rmax) (setf r2 (- row 1)))
-                            (setf onecol nil)
-                             (loop for k from 0 to (- r1 1) do (sdif::SdifFReadOneRow ptrfile))
-                             (loop for k from r1 to r2 do
-                                     (sdif::SdifFReadOneRow ptrfile)
-                                     (cond
-                                      ((numberp colNum) (setf val (and (< colnum col) (sdif::SdifFCurrOneRowCol ptrfile (+ colNum 1)))))
-                                      ((consp colNum) (setf val (loop for n in colNum collect (and (< n col) (sdif::SdifFCurrOneRowCol ptrfile (+ n 1))))))
-                                      ((null colNum) (setf val (loop for n from 1 to col collect (sdif::SdifFCurrOneRowCol ptrfile n))))
-                                      )
-                                      (push val onecol)
-                                  )
-                            ; new
-                            (when onecol
-                              (push (reverse onecol) data)
-                              (push (second item) times)
-                              )
-                            )
-                         )
-                        ))
-                    ))
-            (setf error t))))
-    (sdif-close self ptrfile)))
-    (if (not data) (om-print (format nil "No data found with t1=~D t2=~D r1=~D r2=~D " tmin tmax rmin rmax)) 
+            (sdif::SdifFReadGeneralHeader ptrfile)
+            (sdif::SdifFReadAllASCIIChunks ptrfile)
+            (setf nextFrame (firstframep self ptrfile))
+            (loop ;for item in (framesdesc self)
+             while nextframe 
+             while (not error) do
+             (multiple-value-bind (sig time id pos nbmat)
+                 (read-frame-header ptrfile)
+               ;(print (list "frame" time))
+               (if (and (or (not streamNum) (= streamNum id)) (string-equal frameT (string sig)) 
+                        (or (not tmin) (>= time tmin)))
+                   (if (and tmax (> time tmax))
+                       (setf error t)
+                     (loop for matnum from 0 to (1- nbmat) do
+                           (multiple-value-bind (sig nrows ncols size pos)
+                               (read-matrix-header ptrfile) 
+                             (if (string-equal matT sig)
+                                 (progn
+                                   (if (and (numberp colNum) (<= ncols colNum))
+                                       (progn 
+                                         (om-beep-msg (format nil "Error the matrix has ~D fields" ncols))
+                                         (setf error t))
+                                     (progn
+                                       (if (and rmin (> nrows rmin)) (setf r1 rmin) (setf r1 0))
+                                       (if (and rmax (> nrows rmax)) (setf r2 rmax) (setf r2 (1- nrows)))
+                                       (setf onecol nil)
+                                       (loop for k from 0 to (- r1 1) do (sdif::SdifFSkipOneRow ptrfile))
+                                       (loop for k from r1 to r2 do
+                                             (sdif::SdifFReadOneRow ptrfile)
+                                             (cond
+                                              ((numberp colNum) (setf val (and (< colnum ncols) (sdif::SdifFCurrOneRowCol ptrfile (+ colNum 1)))))
+                                              ((consp colNum) (setf val (loop for n in colNum collect (and (< n ncols) (sdif::SdifFCurrOneRowCol ptrfile (+ n 1))))))
+                                              ((null colNum) (setf val (loop for n from 1 to ncols collect (sdif::SdifFCurrOneRowCol ptrfile n))))
+                                              )
+                                             (push val onecol)
+                                             )
+                                       (loop for k from (1+ r2) to (1- nrows) do (sdif::SdifFSkipOneRow ptrfile))
+                                       (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                       (when onecol
+                                         (push (reverse onecol) data)
+                                         (push time times)
+                                         )
+                                       )
+                                     )
+                                   )
+                               (sdif::SdifFSkipMatrixData ptrfile)
+                               )
+                             ))
+                     )
+                 (sdif::SdifFSkipFrameData ptrfile)
+                 )
+               (setf nextFrame (nextframep self ptrfile))
+               ))
+
+             (sdif-close self ptrfile)
+            ))))
+      
+      (if (not data) (om-print (format nil "No data found with t1=~D t2=~D r1=~D r2=~D " tmin tmax rmin rmax)) 
         ;(om-print "... done")
         )
     (values (reverse data) (reverse times))
     ))
 
 
+
+;;; seems to crash in recent versions
 (defun sdif-read-headers (ptrfile framepos matpos)
   (sdif-set-pos ptrfile framepos)
   (sdif-get-signature ptrfile)
   (sdif::SdifFReadFrameHeader ptrfile)
   (sdif-set-pos ptrfile matpos)
   (sdif::SdifFReadMatrixHeader ptrfile))
+
+;(defun sdif-read-headers (ptrfile framepos matnum)
+;  (sdif-set-pos ptrfile framepos)
+;  (sdif-get-signature ptrfile)
+;  (sdif::SdifFReadFrameHeader ptrfile)
+; (loop for k from 0 to (1- matnum) do
+;       (sdif::SdifFReadMatrixHeader ptrfile)
+;        (sdif::SdifFSkipMatrixData ptrfile))
+;  (sdif::SdifFReadMatrixHeader ptrfile))
+
+
+
           
 
 (defmethod! GetSDIFTimes ((self sdifFile) sID frameType matType tmin tmax)
@@ -694,60 +745,84 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 "
    (get-sdif-stream self sID tmin tmax frameType matType ))
 
+
+
 (defmethod get-sdif-stream ((self sdifFile) streamNum tmin tmax frameT matT)
-   (let ((error nil) (frameslist nil) (oneframe nil) (onemat nil)
-          ptrfile data rep)
-     (if  (or (null self) (and tmin tmax (> tmin tmax))) 
-         (setf error t) 
-       (setf ptrfile (sdif-open self)))
-     (if (null ptrfile) (setf error t)
-        (progn
-          (print "reading SDIF data...")
-          (sdif::SdifFReadGeneralHeader ptrfile)
-          (sdif::SdifFReadAllASCIIChunks ptrfile)
-           (loop for item in (framesdesc self)
-                 while (not error) do
-                   (if (and (= streamNum (third item)) (or (null frameT) (string-equal frameT (string (first item)))) 
-                               (or (not tmin) (>= (second item) tmin)))
-                       (if (or (not tmax) (<= (second item) tmax))
-                           (progn
-                              (setf oneframe (make-instance 'sdifframe 
-                                                         :streamID streamNum
-                                                         :signature (string (first item))
-                                                         :FTime (second item)))
-                              (loop for mat in (fifth item) do
-                                      (if (or (null matT) (string-equal matT (first mat)))
-                                          (progn
-                                             (sdif-read-headers ptrfile (fourth item) (fifth mat))
-                                             (setf data (mat-trans 
-                                                             (loop for i = 0 then (+ i 1) while (< i (second mat)) do
-                                                                     (sdif::sdiffreadonerow ptrfile)
-                                                                   collect (loop for j = 0 then (+ j 1) while (< j (third mat)) 
-                                                                                    collect (sdif::SdifFCurrOneRowCol ptrfile (+ j 1))))))
-                                             (let ((mtype (sdif::sdiftestmatrixtype ptrfile (sdif::SdifStringToSignature (first mat)))))
-                                               (setf onemat (make-instance 'sdifmatrix :signature (first mat)))
-                                               (setf onemat (cons-array onemat 
-                                                                        (list nil (second mat) (first mat))
-                                                                        (loop for control in data
-                                                                              for j = 0 then (+ j 1)
-                                                                              append (list (intern (if (sdif-null-ptr-p mtype)
-                                                                                                       (format nil "Field ~D" j)
-                                                                                                     (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1))
-                                                                                                     ))
-                                                                                           control
-                                                                                           ))
-                                                                        ))
-                                               (push onemat (LMatrix oneframe))
-                                               )
-                                             )
-                                        ))
-                              (push oneframe frameslist)
-                              )
-                         (setf error t))))
-           (sdif-close self ptrfile)))
-     (if (not frameslist) (print (format nil "No data found")))
-     (setf rep (make-instance 'sdifstream :id streamNum :LFrames (reverse frameslist)))
-     rep))
+  (let ((error nil) (frameslist nil) (oneframe nil) (onemat nil)
+        ptrfile data rep)
+    (if  (or (null self) (and tmin tmax (> tmin tmax))) 
+        (setf error t) 
+      (setf ptrfile (sdif-open self)))
+    (if (null ptrfile) (setf error t)
+      (let (nextframe)
+        (print "reading SDIF data...")
+        (sdif::SdifFReadGeneralHeader ptrfile)
+        (sdif::SdifFReadAllASCIIChunks ptrfile)
+        (setf nextFrame (firstframep self ptrfile))
+        (loop while nextframe 
+              ;for item in (framesdesc self)
+              while (not error) do
+              (multiple-value-bind (sig time id pos nbmat)
+                  (read-frame-header ptrfile) 
+                   ;(sdif-get-signature ptrfile)
+                (if (and (= streamNum id) (or (null frameT) (string-equal frameT (string sig))) 
+                         (or (not tmin) (>= time tmin)))
+                    (if (or (not tmax) (<= time tmax))
+                        (progn
+                          (setf oneframe (make-instance 'sdifframe 
+                                                        :streamID streamNum
+                                                        :signature (string sig)
+                                                        :FTime time))
+                              ;(sdif-set-pos ptrfile (fourth item))
+                              
+                              
+                          (loop ;for mat in (fifth item) for mn = 0 then (+ mn 1) do
+                                 for m from 0 to (1- nbmat) do
+                                 (multiple-value-bind (sig nrows ncols size pos)
+                                     (read-matrix-header ptrfile) 
+                                  ;(sdif::SdifFReadMatrixHeader ptrfile)
+                                       
+                                  (if  (or (null matT) (string-equal matT sig))
+                                      (progn
+                                             
+                                       ;(sdif-read-headers ptrfile (fourth item) mn) ; (first mat))
+                                          
+                                        (setf data (mat-trans 
+                                                    (loop for i = 0 then (+ i 1) while (< i nrows) do
+                                                          (sdif::sdiffreadonerow ptrfile)
+                                                          collect (loop for j = 0 then (+ j 1) while (< j ncols) 
+                                                                        collect (sdif::SdifFCurrOneRowCol ptrfile (+ j 1))))))
+
+                                        (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                       
+                                        (let ((mtype (sdif::sdiftestmatrixtype ptrfile (sdif::SdifStringToSignature sig))))
+                                          (setf onemat (make-instance 'sdifmatrix :signature sig))
+                                          (setf onemat (cons-array onemat 
+                                                                   (list nil nrows ncols)
+                                                                   (loop for control in data
+                                                                         for j = 0 then (+ j 1)
+                                                                         append (list (intern (if (sdif-null-ptr-p mtype)
+                                                                                                  (format nil "Field ~D" j)
+                                                                                                (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1))
+                                                                                                ))
+                                                                                      control
+                                                                                      ))
+                                                                   ))
+                                          (push onemat (LMatrix oneframe))
+                                          )
+                                        )
+                                  (sdif::SdifFSkipMatrixData ptrfile)
+                                  )))
+                          (push oneframe frameslist)
+                          )
+                      (setf error t))
+                  (sdif::SdifFSkipFrameData ptrfile)
+                  )
+                (setf nextFrame (nextframep self ptrfile))))
+        (sdif-close self ptrfile)))
+    (if (not frameslist) (print (format nil "No data found")))
+    (setf rep (make-instance 'sdifstream :id streamNum :LFrames (reverse frameslist)))
+    rep))
 
 
 ;;; TYPE INSPECT TOOLS

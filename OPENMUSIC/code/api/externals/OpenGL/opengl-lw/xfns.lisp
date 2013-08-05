@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/xfns.lisp,v 1.4.6.1 2007/10/23 22:17:07 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/xfns.lisp,v 1.6.2.1 2011/08/24 13:27:20 davef Exp $" -*-
 
-;; Copyright (c) 1987--2008 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
 
@@ -49,66 +49,101 @@
 (defconstant *GLX-NO-EXTENSION*	        3)	;; no glx extension on server */
 (defconstant *GLX-BAD-VISUAL*		4)	;; visual # not known by GLX */
 
+(fli:define-c-typedef (xid (:foreign-name "XID"))
+    (:unsigned :long))
+
+
+(fli:define-c-typedef (visual (:foreign-name "Visual"))
+  (:struct
+   (ext-data :pointer)
+   (visualid xid)
+   (class :int)
+   (red-mask (:unsigned :long))
+   (green-mask (:unsigned :long))
+   (blue-mask (:unsigned :long))
+   (bits-per-rgb :int)
+   (map-entries :int)))
+
+(fli:define-c-typedef (x-visual-info (:foreign-name "XVisualInfo"))
+  (:struct
+   (visual (:pointer visual))
+   (visualid xid)
+   (screen-number :int)
+   (depth :int)
+   (class :int)
+   (red-mask (:unsigned :long))
+   (green-mask (:unsigned :long))
+   (blue-mask (:unsigned :long))
+   (colormap-size :int)
+   (bits-per-rgb :int)))
+
+
+
+
+;;; because this file is used for xm-lib and gtk-lib, the actual type of
+;;; the pointer ae are going to get is different. So we use this
+;;; definitions to accept any pointer, 
+
+(fli:define-foreign-type x-display-pointer () :pointer)
+(fli:define-foreign-type x-visual-info-pointer () '(:pointer x-visual-info))
+(fli:define-foreign-type x-font-pointer () :pointer)
 
 (fli:define-c-typedef (glxcontext-id (:foreign-name "GLXContextID"))
-  x-lib:xid)
+  xid)
 
 (fli:define-c-typedef (glxpixmap (:foreign-name "GLXPixmap"))
-  x-lib:xid)
+  xid)
 
 (fli:define-c-typedef (glxdrawable (:foreign-name "GLXDrawable"))
-  x-lib:xid)
+  xid)
 
 (fli:define-c-typedef (glxcontext (:foreign-name "GLXContext"))
   (:pointer (:struct --glxcontext-rec)))
 
 
 (fli:define-foreign-function (glx-choose-visual "glXChooseVisual" :source)
-    ((dpy x-lib:display)
-     (screen-number (:wrapper :int
-                     :lisp-to-foreign (lambda (scr) 
-                                        (x-lib::check-valid-screen-number scr dpy)
-                                        scr)))
+    ((dpy x-display-pointer)
+     (screen-number :int)
      (attrib-list (gl-vector :signed-32)))
-  :result-type (:pointer x-lib:x-visual-info)
+  :result-type  x-visual-info-pointer
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-copy-context "glXCopyContext" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (src glxcontext)
      (dst glxcontext)
      (mask gluint))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-create-context "glXCreateContext" :source)
-    ((dpy x-lib:display)
-     (vis (:pointer x-lib:x-visual-info))
+    ((dpy x-display-pointer)
+     (vis x-visual-info-pointer)
      (share-list glxcontext)
-     (direct x-lib:bool))
+     (direct :boolean))
   :result-type (:wrapper glxcontext
                 :foreign-to-lisp (lambda (x) (if (fli:null-pointer-p x) nil x)))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-create-glxpixmap "glXCreateGLXPixmap" :source)
-    ((dpy x-lib:display)
-     (vis (:pointer x-lib:x-visual-info))
-     (pixmap x-lib:pixmap))
+    ((dpy x-display-pointer)
+     (vis x-visual-info-pointer)
+     (pixmap xid))
   :result-type glxpixmap
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-destroy-context "glXDestroyContext" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (ctx glxcontext))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-destroy-glxpixmap "glXDestroyGLXPixmap" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (pix glxpixmap))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-get-config "glXGetConfig" :source)
-    ((dpy x-lib:display)
-     (visual-info (:pointer x-lib:x-visual-info))
+    ((dpy x-display-pointer)
+     (visual-info x-visual-info-pointer)
      (attribute (:signed :int))
      (value (:reference-return (:signed :int))))
   :result-type (:signed :int)
@@ -123,39 +158,39 @@
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-is-direct "glXIsDirect" :source)
-    ((dpy x-lib:display) 
+    ((dpy x-display-pointer) 
      (ctx glxcontext))
-  :result-type x-lib:bool
+  :result-type :boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-make-current "glXMakeCurrent" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (drawable glxdrawable)
      (ctx glxcontext))
-  :result-type x-lib:bool
+  :result-type :boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-extension "glXQueryExtension" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (error-base (:pointer (:signed :int)))
      (event-base (:pointer (:signed :int))))
-  :result-type x-lib:bool
+  :result-type :boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-version "glXQueryVersion" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (major (:pointer (:signed :int)))
      (minor (:pointer (:signed :int))))
-  :result-type x-lib:bool
+  :result-type :boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-swap-buffers "glXSwapBuffers" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (drawable glxdrawable))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-use-xfont "glXUseXFont" :source) 
-    ((font x-lib:font)
+    ((font x-font-pointer)
      (first  (:signed :int))
      (count (:signed :int))
      (list-base (:signed :int)))
@@ -168,26 +203,20 @@
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-extensions-string "glXQueryExtensionsString" :source)
-    ((dpy x-lib:display) 
-     (screen (:wrapper :int
-              :lisp-to-foreign (lambda (scr) 
-                                 (x-lib::check-valid-screen-number scr dpy)
-                                 scr))))
+    ((dpy x-display-pointer) 
+     (screen :int))
   :result-type (:pointer (:const :char))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-get-client-string "glXGetClientString" :source)
-    ((dpy x-lib:display)
+    ((dpy x-display-pointer)
      (name (:signed :int)))
   :result-type (:pointer (:const :char))
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-server-string "glXQueryServerString" :source)
-    ((dpy x-lib:display)
-     (screen (:wrapper :int
-              :lisp-to-foreign (lambda (scr) 
-                                 (x-lib::check-valid-screen-number scr dpy)
-                                 scr)))
+    ((dpy x-display-pointer)
+     (screen :int)
      (name (:signed :int)))
   :result-type (:pointer (:const :char))
   :language :ansi-c)
@@ -215,3 +244,106 @@
   :result-type (:signed :int)
   :language :ansi-c)
 
+
+(fli:define-foreign-function (x-free "XFree" :source)
+    ((data :pointer))
+  :language :c)
+
+
+
+
+
+(fli:define-foreign-function (%x-get-visual-info "XGetVisualInfo" :source)
+    ((display x-display-pointer)
+     (vinfo-mask :long)
+     (vinfo-template x-visual-info-pointer)
+     (:ignore (:reference-return :int))) ;nitems-return
+  :result-type x-visual-info-pointer
+  :language :c)
+
+;;; Caller needs to x-free the result (if non-nil)
+
+(defun x-visual-info-from-visual (display visual)
+  (fli:with-coerced-pointer (visual-poi :type 'visual)
+      visual
+    (let ((id (fli:foreign-slot-value visual-poi 'visualid)))
+      (multiple-value-bind (x-info num)
+          (fli:with-dynamic-foreign-objects ((visual-info-template x-visual-info))
+            (setf (fli:foreign-slot-value visual-info-template 'visualid)
+                  id)
+            (%x-get-visual-info display 
+                                1  ;;;; VisualIDMask               
+                                visual-info-template))
+        (if (= num 1)
+            x-info
+          nil)))))
+              
+
+(defun call-glx-create-context (xdisplay visual share directp)
+  (when-let (xvi (x-visual-info-from-visual xdisplay visual))
+    (prog1 
+        (glx-create-context xdisplay xvi share  directp)
+      (x-free xvi))))
+
+
+
+(defun indexed-colormap-p (configuration)
+  (not (or (getf configuration :rgb) (getf configuration :rgba))))
+
+;;; Note: This is called inside the library lock.
+
+(defun call-glx-Choose-Visual (display screen-number configuration)
+  "Return a visual info structure which supports the 
+   requested configuration. Configuration is a plist with the following allowed
+   indicators: 
+      :double-buffer, :double-buffered, - synonyms, value T or NIL.
+      :buffer-size - color buffer size for indexed colormap visuals
+      :red-size, :green-size, :blue-size, :alpha-size - sizes of color buffer channels
+                                                        for RGB visuals.
+      :accum - accumulator buffer size (per channel), or NIL.
+      :accum-red-size, accum-green-size, accum-blue-size, accum-alpha-size -
+          sizes of accumulator buffer channels, which default to the :accum value.
+      :depth-buffer - value is a depth buffer size or NIL
+      :stencil-size - stencil buffer size or NIL.
+      :aux - aux buffer size or NIL."
+  (let ((params
+	 (append
+	  (when (or (getf configuration :double-buffer) (getf configuration :double-buffered))
+	    (list *GLX-DOUBLEBUFFER*))
+	  (if (indexed-colormap-p configuration)
+	      (list *GLX-BUFFER-SIZE* (getf configuration :buffer-size 1))
+	    (append (list *GLX-RGBA*
+			  *GLX-RED-SIZE* (getf configuration :red-size 1)
+			  *GLX-GREEN-SIZE* (getf configuration :green-size 1)
+			  *GLX-BLUE-SIZE* (getf configuration :blue-size 1))
+		    (when (getf configuration :alpha-size)
+		      (list *GLX-ALPHA-SIZE* (getf configuration :alpha-size)))
+                    (let ((accum (getf configuration :accum)))
+		      (when accum
+		        (list *GLX-ACCUM-RED-SIZE* (getf configuration :accum-red-size accum)
+			      *GLX-ACCUM-GREEN-SIZE* (getf configuration :accum-green-size accum)
+			      *GLX-ACCUM-BLUE-SIZE* (getf configuration :accum-blue-size accum)
+			      *GLX-ACCUM-ALPHA-SIZE* (getf configuration :accum-alpha-size accum))))))
+	  (let ((depth (getf configuration :depth-buffer)))
+	    (when depth
+	      (list *GLX-DEPTH-SIZE* depth)))
+	  (let ((stencil (getf configuration :stencil-size)))
+	    (when stencil
+	      (list *GLX-STENCIL-SIZE* stencil)))
+          (let ((aux (getf configuration :aux 0)))
+            (list *GLX-AUX-BUFFERS* aux))
+	  (list 0))))
+
+      (fli:with-dynamic-foreign-objects ()
+        (let* ((vparams #+:use-fli-gl-vector
+                        (fli:allocate-dynamic-foreign-object :type '(:signed :int) :initial-contents params)
+                        #-:use-fli-gl-vector
+                        (sys:in-static-area
+                          (make-array (length params) :element-type '(signed-byte 32)
+                                      :initial-contents params)))
+               (visual-info
+                (glx-Choose-Visual display screen-number vparams)))
+          (if (fli:null-pointer-p visual-info)
+              nil
+            visual-info))
+    )))

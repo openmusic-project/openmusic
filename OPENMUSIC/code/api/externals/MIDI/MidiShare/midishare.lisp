@@ -990,7 +990,7 @@
   (cffi:foreign-free location))
 
 (defun MidiNewSyncInfo ()
-  (cffi:foreign-alloc 'tsinc-info))
+  (cffi:foreign-alloc 'tsync-info))
 
 (defun MidiFreeSyncInfo (location)
   (cffi:foreign-free location))

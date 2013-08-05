@@ -205,7 +205,7 @@ put this code in this method."
 (defmethod OpenEditorframe ((self OMPatch))
    "Open the patch editor, this method open too all persistantes objects referenced into the patch."
    (declare (special *om-current-persistent*))
-   (load-patch self)
+   (load-patch self)  
    (or (editorframe self)
        (if (lisp-exp-p self)
          (edit-existing-lambda-expression self)
