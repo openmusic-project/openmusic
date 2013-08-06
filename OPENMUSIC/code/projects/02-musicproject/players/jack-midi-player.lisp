@@ -20,11 +20,11 @@
 (in-package :om)
 
 ;;; JACK MIDI PLAYER                  
-(defmethod player-name ((player (eql :jackmidi))) "Jack midi player")   ;;; A short name
-(defmethod player-desc ((player (eql :jackmidi))) "(default)")   ;;; a description
-(defmethod player-special-action ((player (eql :jackmidi))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
-(defmethod player-params ((player (eql :jackmidi))) nil)   ;;; the default values for the player params
-(defmethod player-type ((player (eql :jackmidi))) :midi)   ;;; communication protocol (:midi / :udp)
+(defmethod player-name ((player (eql :jackmidi))) "Jack midi player")   
+(defmethod player-desc ((player (eql :jackmidi))) "(default)")   
+(defmethod player-special-action ((player (eql :jackmidi))) nil)  
+(defmethod player-params ((player (eql :jackmidi))) nil)   
+(defmethod player-type ((player (eql :jackmidi))) :midi)   
 
 
 ;; redefined from various places here
@@ -37,10 +37,12 @@
 ;;*enabled-players*
 ;;(enabled-players-for-object t)
 
-(mapcar #'(lambda (pl) (disable-player pl))
-	'(:microplayer :libaudiostream :multiplayer
-	  ;;:midishare ; keep ms-player while developing jack-player
-	  ))
+(mapc #'(lambda (pl) (disable-player pl))
+      '(:microplayer :libaudiostream :multiplayer
+	;;:midishare ; keep ms-player while developing jack-player
+	))
+
+(enabled-players-for-object (make-instance 'voice))
 
 (defparameter *jack-midi-seqs* (make-hash-table))
 
@@ -68,23 +70,72 @@
     (setf (gethash object *jack-midi-seqs*) (cl-jack::make-om-seq))))
 
 (defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) object at interval)
-  ;;(print (list 'prepare-to-play engine player object at interval (clock-time) (ref-clock-time player)))
-  (describe player)
-  (print '(im being called))
+  (print (list 'prepare-to-play object))
   (jack-init-queue-for-this-object object at interval)
+  ;;(print (list 'prepare-to-play object))
   (call-next-method))
+
+(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object simple-container) at interval)
+  (jack-init-queue-for-this-object object at interval)
+  ;;(print (list 'prepare-to-play object))
+  (call-next-method)
+  )
 
 (defmethod player-play-object ((engine (eql :jackmidi)) object &key interval)
   (call-next-method))
 
+(defmethod player-play-object ((engine (eql :jackmidi)) (object simple-container) &key interval)
+  (mapc #'(lambda (obj)
+	    (player-play-object :jackmidi obj
+				:interval (or interval 0)))
+	(inside object)))
+
+
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object poly) &key interval)
+  ;;(break)
+  ;;(print (list 'player-play-object object (inside object)))
+  (mapc #'(lambda (sub)
+	      (player-play-object engine sub :interval interval))
+	  (inside object)))
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object voice) &key interval)
+  ;;(print (list 'player-play-object object (inside object)))
+  (mapc #'(lambda (sub)
+	      ;;(print (list 'offset->ms (offset->ms sub) sub))
+  	      (player-play-object engine sub :interval (+ (or interval 0) (offset object)
+							  (offset->ms sub)
+							  )))
+  	  (inside object))
+  ;;(call-next-method)
+  )
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object measure) &key interval)
+  (mapc #'(lambda (sub)
+  	      (player-play-object engine sub :interval (+ (or interval 0) (offset object)
+							  (offset->ms sub)
+							  )))
+  	  (inside object))
+  ;;(call-next-method)
+  )
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object group) &key interval)
+  (print (list 'player-play-object object (inside object)))
+  (mapc #'(lambda (sub)
+  	      (player-play-object engine sub :interval (+ (or interval 0) (offset object) (offset->ms sub))))
+  	  (inside object))
+  ;;(call-next-method)
+  )
+
 (defmethod player-play-object ((engine (eql :jackmidi)) (object chord-seq) &key interval)
-  (mapcar #'(lambda (obj chord-onset) (player-play-object :jackmidi obj :interval (+ (or interval 0) chord-onset)))
+  (mapc #'(lambda (chord chord-onset)
+	      (player-play-object engine chord :interval (+ (or interval 0) chord-onset)))
 	  (inside object)
 	  (lonset object)))
 
 (defmethod player-play-object ((engine (eql :jackmidi)) (object chord) &key interval)
-  (mapcar #'(lambda (obj note-offset)
-	      (player-play-object :jackmidi obj :interval (+ (or interval 0) note-offset)))
+  (mapc #'(lambda (obj note-offset)
+	      (player-play-object engine obj :interval (+ (or interval 0) note-offset)))
 	  (inside object)
 	  (loffset object)))
 
@@ -95,6 +146,12 @@
 	(vel (vel object))
 	(chan (chan object)))
     (cl-jack::jack-midi-play-event start dur noteno vel chan)))
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object rest) &key interval)
+  nil)
+
+(defmethod player-play-object ((engine (eql :jackmidi)) (object continuation-chord) &key interval)
+  nil)
 
 (defmethod player-play-object ((engine (eql :jackmidi)) (object note) &key interval)
   (jack-player-play-note object interval))
@@ -107,12 +164,13 @@
 
 ;;; PAUSE (all)
 (defmethod player-pause ((engine (eql :jackmidi)) &optional play-list)
-  (print 'pause play-list)
+  (print (list 'pause play-list))
   (call-next-method))
 
 ;;; CONTINUE (all)
 (defmethod player-continue ((engine (eql :jackmidi)) &optional play-list)
   (print 'continue play-list)
+  'update-queue-time-from-framenow
   ;;(when *jackplayer* (jack-midi-cont-player *jackplayer*))
   (call-next-method))
 
@@ -120,3 +178,5 @@
 (defmethod player-stop ((engine (eql :jackmidi)) &optional play-list)
   (cl-jack::jack-midi-stop-all)
   (call-next-method))
+
+;;(player-stop :jackmidi)
