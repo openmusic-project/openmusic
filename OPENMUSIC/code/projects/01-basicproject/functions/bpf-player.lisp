@@ -340,8 +340,10 @@
         (progn
           (setf (mixerfun bpf) (get-function-from-track bpf))
           (if (string= (parameter bpf) "presets")
-              (setf x (list 0 3332 3333 6665 6666 9999 10000)
-                    y (list 0 0 1 1 2 2 0))
+              (setf x (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
+                            (* 2000 i))
+                    y (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
+                            i))
             (setf x (interpolate (list 0 10000) (list 0 10000) 10)
                   y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 10)))
           (setf (y-points bpf) y)
@@ -352,7 +354,6 @@
 
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
-  ;(player-unschedule-all self)
   (let ((mixerfun (mixerfun object)))
     (when (or (track object) (and (parameter object) (string= (string-downcase (parameter object)) "presets")))
       (if interval
@@ -377,22 +378,6 @@
 (defmethod get-obj-dur ((self mixer-automation)) (last-elem (x-points self)))
 
 
-(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
-  (let ((mixerfun (mixerfun object)))
-    (when (track object)
-      (if interval
-          (mapcar #'(lambda (point)
-                      (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
-                          (schedule-task player
-                                         #'(lambda () (funcall mixerfun (cadr point))) 
-                                         (+ at (car point)))))
-                  (point-pairs object))
-        (mapcar #'(lambda (point)
-                    (schedule-task player
-                                   #'(lambda () (funcall mixerfun (cadr point))) 
-                                   (+ at (car point))))
-                (point-pairs object))))))
-
 (defmethod default-edition-params ((self mixer-automation)) 
   (pairlis '(player) '(:bpfplayer)))
 
@@ -409,7 +394,7 @@
                 (change-genmixer-channel-pan track (float val))
                 (if *general-mixer-window*
                     (progn
-                      (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                      (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
                       (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
            ((string= parameter "vol")
             #'(lambda (val)
@@ -418,7 +403,7 @@
                 (change-genmixer-channel-vol track (float val))
                 (if *general-mixer-window*
                     (progn
-                      (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string val))
+                      (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
                       (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
            ((string= parameter "presets")
             #'(lambda (val)
