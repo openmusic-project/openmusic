@@ -105,9 +105,9 @@
         while (< *index-packets* (length *microosc-packets*)) do
         (let ((event (copy-list (nth  *index-packets* *microosc-packets*))))
           (unless (zerop *index-packets*)
-            (setf (nth 1 event) (- (nth 1 event) (second (nth  (- *index-packets* 1) *microosc-packets*)))))
+            (setf (nth 1 event) (- (nth 1 event) (second (nth (- *index-packets* 1) *microosc-packets*)))))
           (setf *index-packets* (+ *index-packets* 1))
-          (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  (list event))))
+          (om-send-osc-bundle *microplayer-out-port* *microplayer-host* (print (list event)))))
   )
 
 ;================
@@ -170,28 +170,38 @@
 
 
 (defun playoscnote (chan pitch vel dur date)
-   (push (list "/play.µt/fifos" date  pitch vel  dur chan) *microosc-packets*))
+   (push (list "/play.µt/fifos" date pitch vel dur chan port) *microosc-packets*))
 
 
-(defmethod Play-player ((self (eql 'microplayer)))
+(defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval)
+  (player-stop :midishare)
+  (InitPlayingSeq 'microplayer (get-obj-dur object))
+  (PrepareToPlay 'microplayer object (real-duration object 0) :interval interval)
+  (FinalizePlayingSeq 'microplayer (get-obj-dur object)))
+
+
+(defmethod player-start ((self (eql :microplayer)) &optional play-list)
    (setf *index-packets* 0) 
    (send-200) 
-   (micro-start)) 
+   (micro-start))
 
-(defmethod Continue-Player ((self (eql 'microplayer)))
+(defmethod player-continue ((self (eql :microplayer)) &optional play-list)
     (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/continue"))))
 
-(defmethod Pause-Player ((self (eql 'microplayer)))
+(defmethod player-pause ((self (eql :microplayer)) &optional play-list)
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/pause"))))
 
-(defmethod Stop-Player ((self (eql 'microplayer)) &optional view)
+(defmethod player-stop  ((self (eql :microplayer)) &optional play-list)
    (declare (ignore view))
    (micro-reset))
 
-(defmethod Reset-Player ((self (eql 'microplayer)) &optional view)
-   (declare (ignore view))
-   (micro-reset))
-
+(defmethod player-loop ((self (eql :microplayer)))
+  (print "loop")
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
+  (setf *index-packets* 0)
+  (send-200)
+  )
 
 ;;;; ADD EXTERNAL PREF MODULE
 

@@ -51,12 +51,18 @@
     (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
     ))
 
+;;; SET LOOP (before play)
+;;; desyncronizes with the general scheduler...
+(defmethod player-set-loop ((engine (eql :midishare)) &optional start end)
+  (om-midi-set-loop-player *midiplayer* 0 (- end start))) 
+
+(defmethod player-record ((engine (eql :midishare)))
+  (midi-start-record))
+
+(defmethod player-record-stop ((engine (eql :midishare)))
+  (midi-stop-record))
 
 
-;;;; NOT USED FOR THE MOMENT
-
-(defun setPlayLoop (start end)
-  (om-midi-set-loop-player *midiplayer* start end))
 
 ;================================
 ;RECORD
@@ -75,7 +81,7 @@
       (om-midi-record-player *midirecorder* 1)
       (om-midi-start-player *midirecorder*) t)))
 
-(defun midi-stop-record (port)
+(defun midi-stop-record ()
    (when *recording-midi-p*
      (let (recording-seq rep)
        (om-print "Recording Off...")
@@ -85,7 +91,7 @@
        (setf recording-seq (om-midi-player-get-seq *midirecorder*))
        (when recording-seq
          (let ((newseq (delete-tempo-info recording-seq 1000)))
-           (setf rep (mievents2midilist newseq port))
+           (setf rep (mievents2midilist newseq))
            (om-midi-free-seq newseq))
          (setf *recording-midi-p* nil)
          (loop for note in rep 

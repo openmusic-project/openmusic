@@ -477,15 +477,34 @@
 (defmethod play-boxes-in-score ((self scorePanel))
   (let* ((boxes (score-action-boxes self))
          (port (if (score-page-mode self) (or (om-get-current-port) self) self)))
-    (start (loop for item in boxes do
-                 (loop for act in (score-action (car item)) do
-                         (cond ((string-equal (car act) "exec")
-                                (dfuncall (second act) 'play-score-box (car item)))
-                               ((string-equal (car act) "app")
-                                (dfuncall (second act) 'draw-action-score-box (car item) (get-ref-chord-from-pos self (third item)) (fourth item) self port))
-                               ((string-equal (car act) "disp")
-                                (dfuncall (second act) 'play-disp-score-box (car item) (get-ref-chord-from-pos self (third item)) (fourth item) self port)
-                                )))))))
+    ;(start 
+     (loop for item in boxes do
+           (loop for act in (score-action (car item)) do
+                 (cond ((string-equal (car act) "exec")
+                        ;(dfuncall (second act) 'play-score-box (car item))
+                        (schedule-task (player (editor self))
+                                       #'(lambda () (play-score-box (car item)))
+                                       (second act))
+                        )
+                       ((string-equal (car act) "app")
+                        ;(dfuncall  (second act) 'draw-action-score-box (car item) 
+                        ;          (get-ref-chord-from-pos self (third item)) (fourth item) self port)
+                        (schedule-task (player (editor self))
+                                       #'(lambda () (draw-action-score-box (car item)
+                                                                           (get-ref-chord-from-pos self (third item)) 
+                                                                           (fourth item) self port))
+                                       (second act))
+                        )
+                       ((string-equal (car act) "disp")
+                        ;(dfuncall (second act) 'play-disp-score-box (car item) (get-ref-chord-from-pos self (third item)) (fourth item) self port)
+                        (schedule-task (player (editor self))
+                                       #'(lambda () (play-disp-score-box (car item) 
+                                                                         (get-ref-chord-from-pos self (third item)) 
+                                                                         (fourth item) self port))
+                                       (second act))
+                        )
+                       )))
+           ))
                            
 ;cons a list of box and chord  and delta
 
