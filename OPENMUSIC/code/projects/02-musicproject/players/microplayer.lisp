@@ -10,14 +10,8 @@
 (defmethod player-type ((player (eql :microplayer))) :UDP)   ;;; communication protocol (:midi / :udp)
 (defmethod player-init ((player (eql :microplayer))) (restart-microplayer))  ;;; called when this player is selected / options changed etc.
 
-;(defmethod get-score-player ((self scorepanel)) 
-;  (if (equal (get-edit-param (editor self) 'player) :microplayer) 'microplayer 'midishare))
 
-#+(and cocoa om-osc-api) 
-;(add-assoc-player *general-player* 'microplayer)
-
-
-;=====================================================
+;===================================================
 ;MICROPLAYER PROCESS
 
 (defvar *microosc-packets* nil)
@@ -39,13 +33,15 @@
 
 (defvar *micro-listen-process* nil)
 
+;;; MARCHE PAS !!!
+;;; look like MicroPLayer does not send the message...
 (defun open-microplayer ()
   (unless *micro-listen-process*
-    (setf *micro-listen-process* (om-start-osc-server *microplayer-in-port* *microplayer-host*  #'send-more-notes))))
+    (setf *micro-listen-process* (om-start-osc-server *microplayer-in-port* *microplayer-host* #'send-more-notes))))
 
 (defun restart-microplayer ()
   (close-microplayer)
-  (open-microplayer))
+  (open-microplayer) )
     
 (defun close-microplayer ()
   (when *micro-listen-process*
@@ -77,7 +73,8 @@
         (om-message-dialog "MicroPlayer application not found. Please set the application path in OM preferences.") 
       (setf *micro-player-app* (om-run-application path))
       )))
-  (open-microplayer))
+  ;(open-microplayer)
+  )
 
 ; (launch-microplayer-app)
 
@@ -107,7 +104,7 @@
           (unless (zerop *index-packets*)
             (setf (nth 1 event) (- (nth 1 event) (second (nth (- *index-packets* 1) *microosc-packets*)))))
           (setf *index-packets* (+ *index-packets* 1))
-          (om-send-osc-bundle *microplayer-out-port* *microplayer-host* (print (list event)))))
+          (om-send-osc-bundle *microplayer-out-port* *microplayer-host* (list event))))
   )
 
 ;================
@@ -116,7 +113,8 @@
 (defun send-more-notes (msg)
   (let ((message (om-decode-msg-or-bundle msg)))
   (when (string-equal (string (car message)) "/play.mt/more")
-    (send-200))
+    (send-200)
+    (micro-start))
   nil))
  
 ;================
@@ -170,7 +168,7 @@
 
 
 (defun playoscnote (chan pitch vel dur date)
-   (push (list "/play.µt/fifos" date pitch vel dur chan port) *microosc-packets*))
+   (push (list "/play.µt/fifos" date pitch vel dur chan) *microosc-packets*))
 
 
 (defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval)
@@ -181,6 +179,7 @@
 
 
 (defmethod player-start ((self (eql :microplayer)) &optional play-list)
+   (open-microplayer)
    (setf *index-packets* 0) 
    (send-200) 
    (micro-start))
@@ -193,14 +192,14 @@
 
 (defmethod player-stop  ((self (eql :microplayer)) &optional play-list)
    (declare (ignore view))
+   (close-microplayer)
    (micro-reset))
 
 (defmethod player-loop ((self (eql :microplayer)))
-  (print "loop")
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
   (setf *index-packets* 0)
   (send-200)
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
   )
 
 ;;;; ADD EXTERNAL PREF MODULE

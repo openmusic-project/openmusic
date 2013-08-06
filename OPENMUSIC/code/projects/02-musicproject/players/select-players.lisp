@@ -55,7 +55,7 @@
                                  :bg-color (om-make-color 0.623 0.623 0.623)))
           
           (midi? (find :midi players-in-dialog :key 'player-type))
-          (udp? (find :udp players-in-dialog :key 'player-type))
+          (udp? NIL) ;;; (find :udp players-in-dialog :key 'player-type))
           
           (paneplayer (om-make-view 'om-view :bg-color *om-white-color*
                               :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 60)))))

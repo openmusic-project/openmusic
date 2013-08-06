@@ -147,12 +147,6 @@
 (defvar *preview-size* "size of the preview pane")
 (setf *preview-size* 40)
 
-;(defmethod draw-line-cursor ((self full-preview) &key newpixel (draw? t))
-;  (unless newpixel
-;    (setf newpixel (round (* (/ (cursor-pos *general-player*) (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-;  (when draw? 
-;    (om-update-movable-cursor self newpixel 0 4 (h self)))
-;   newpixel)
 
 (defmethod update-cursor ((self full-preview) time &optional y1 y2)
   (let ((y (or y1 0))

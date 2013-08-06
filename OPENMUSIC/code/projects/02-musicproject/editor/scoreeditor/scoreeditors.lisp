@@ -39,6 +39,8 @@
   (mode-buttons :accessor mode-buttons :initform nil)
   ))
 
+(defmethod editor ((self score-titlebar)) (om-view-container self))
+
 (defmethod get-titlebar-class ((self scoreeditor)) 'score-titlebar)
 
 (defmethod title-bar-infostring ((self scoreeditor))
@@ -148,12 +150,13 @@
           (selected-p (cadr (edit-buttons self))) (equal mode :interval))
     (om-invalidate-view self)))
 
-(defmethod update-play-buttons ((self score-titlebar))
-  (let ((state (state (player (om-view-container self)))))
+(defmethod update-play-buttons ((self om-view))
+  (let ((state (state (player (editor self)))))
     (setf (selected-p (first (play-buttons self))) (or (equal state :play) (equal state :pause))
           (selected-p (second (play-buttons self))) (equal state :pause)
-          (selected-p (third (play-buttons self))) (equal state :stop)
-          (selected-p (fourth (play-buttons self))) (equal state :record))
+          (selected-p (third (play-buttons self))) (equal state :stop))
+    (when (fourth (play-buttons self))
+      (setf (selected-p (fourth (play-buttons self))) (equal state :record)))
     (om-invalidate-view self)
     (setf (selected-p (third (play-buttons self))) nil)))
 
@@ -838,10 +841,7 @@
          )))
   
 
-(defmethod reset-cursor ((self scorePanel))
-  (setf (cursor-pos self) 0)
-  (setf (cursor-interval self) '(0 0))
-  (om-invalidate-view self))
+
 
 (defmethod set-color-to-mus-obj ((self scorePanel))
    (when (selection? self)
@@ -2123,7 +2123,7 @@
     (call-next-method)))
 
 
-(defmethod pixel-toms ((self chordseqPanel) pixel)
+(defmethod pixel-toms ((self scorepanel) pixel)
   (if (linear? self)
     (values (pixel2ms (- (om-point-h pixel) (get-key-space self) ) 
                       (/ (staff-size self) 4) (staff-zoom self)) 
