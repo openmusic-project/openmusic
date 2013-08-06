@@ -234,7 +234,7 @@
   (print (format nil "~A : record stop" engine))
   nil)
 
-(midi-start-record)
+;(midi-start-record)
 
 
 ;;;=================================

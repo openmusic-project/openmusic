@@ -115,9 +115,10 @@
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
-                                                        (if (> *general-mixer-current-preset* 0)
-                                                            (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) *general-mixer-values*)
-                                                          (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one")))
+                                                        (let ((vals *general-mixer-values*))
+                                                          (if (> *general-mixer-current-preset* 0)
+                                                              (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) vals)
+                                                            (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one"))))
                                            :font *om-default-font1*))
 
     (setf new-preset (om-make-dialog-item 'om-button
@@ -240,7 +241,8 @@
                                           (om-make-point 30 100) ""
                                           :di-action (om-dialog-item-act item
                                                        (change-genmixer-channel-vol (+ channel 1) (om-slider-value item))
-                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item))))
+                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item)))
+                                                       )
                                           :increment 1
                                           :range '(0 100)
                                           :value volval
@@ -384,7 +386,7 @@
 (defun change-genmixer-channel-vol (channel value)
   (las-change-channel-vol-visible channel (float (/ value 100)))
   (setf (cadr (nth (- channel 1) *general-mixer-values*)) value)
-)
+  )
 
 ;/CHANGE GENMIXER CHANNEL PAN
 ;This function changes a channel pan
@@ -523,14 +525,15 @@
 ;Save the current settings to a new preset.
 (defun save-current-settings ()
   (let ((name (om-get-user-string "Enter a name for this preset" 
-                                  :initial-string (format nil "Preset ~A" (length *general-mixer-presets*)))))
+                                  :initial-string (format nil "Preset ~A" (length *general-mixer-presets*))))
+        (vals *general-mixer-values*))
     (if name
         (setf *general-mixer-presets* 
               (append *general-mixer-presets*
                       (list 
                        (list 
                         name
-                        *general-mixer-values*)))))))
+                        vals)))))))
 
 ;/UPDATE GENMIXER PRESETS LISTS FUNCTION
 ;Refresh the available lists in preset choice list and delete list.
@@ -548,8 +551,9 @@
 ;/LOAD GENMIXER PRESET FUNCTION
 ;Loads a preset to the *general-mixer-values* variable, and apply these values.
 (defun load-genmixer-preset (index)
-  (setf *general-mixer-values* (cadr (nth index *general-mixer-presets*)))
-  (apply-mixer-values))
+  (let ((vals (cadr (nth index *general-mixer-presets*))))
+  (setf *general-mixer-values* vals)
+  (apply-mixer-values)))
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION
 ;Update the genmixer vol and pan display.
