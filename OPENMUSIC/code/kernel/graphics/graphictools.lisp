@@ -601,7 +601,8 @@ into the unaire-fun-view.#action#"))
 ;=====================================
 
 (defclass select-object () 
-  ((selected-p :initform nil :accessor selected-p :initarg :selected-p)))
+  ((id :initform nil :accessor id :initarg :id)
+   (selected-p :initform nil :accessor selected-p :initarg :selected-p)))
 
 (defmethod selected-p ((self t)) nil)
 (defmethod (setf selected-p) (val (self t)) nil)

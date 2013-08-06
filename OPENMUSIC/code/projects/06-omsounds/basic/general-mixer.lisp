@@ -8,18 +8,22 @@
 
 (defvar *general-mixer-window* nil)
 (defvar *general-mixer-values* nil)
-(defvar *general-mixer-current-preset* 1)
+(defvar *general-mixer-current-preset* 0)
 ;(setf *general-mixer-values* '((0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100)))
 ;(setf *general-mixer-presets* (init-genmixer-values))
 
-
 (defun  init-genmixer-values ()
-  (list (list "Default Preset"
-        (loop for i from 0 to (- las-channels 1) collect
+  (progn
+    (setf *general-mixer-values*
+          (loop for i from 0 to (- las-channels 1) collect
+                (list 0 100)))
+    (list (list "------------"
+                (loop for i from 0 to (- las-channels 1) collect
+                      (list 0 100))))))
+
+(defun get-default-values ()
+  (loop for i from 0 to (- las-channels 1) collect
         (list 0 100)))
-        (list "Current Preset"
-        (loop for i from 0 to (- las-channels 1) collect
-        (list 0 100)))))
 
 (defun get-presets-list ()
   (loop for i from 0 to (- (length *general-mixer-presets*) 1) collect
@@ -90,65 +94,67 @@
         delete-preset)
     (setf text (om-make-dialog-item 'om-static-text
                                     (om-make-point 10 13)
-                                    (om-make-point 130 20) "LOAD SETTINGS :"
+                                    (om-make-point 130 20) "PRESETS :"
                                     :font *om-default-font1*
                                     :fg-color *om-white-color*))
     
     (setf preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                           (om-make-point 125 12) 
+                                           (om-make-point 75 12) 
                                            (om-make-point 120 12)
                                            ""
                                            :di-action (om-dialog-item-act item
-                                                        (load-genmixer-preset (om-get-selected-item-index item))
+                                                        (setf *general-mixer-current-preset* (1+ (om-get-selected-item-index item)))
+                                                        (load-genmixer-preset (1+ (om-get-selected-item-index item)))
                                                         (update-genmixer-display))
                                            :font *om-default-font1*
-                                           :range thelist
+                                           :range (if (> (length thelist) 1) (remove (car thelist) thelist) thelist)
                                            :value (nth *general-mixer-current-preset* thelist)))
 
-    (setf text1 (om-make-dialog-item 'om-static-text
-                                     (om-make-point 275 13)
-                                     (om-make-point 130 20) "SAVE SETTINGS :"
-                                     :font *om-default-font1*
-                                     :fg-color *om-white-color*))
-
     (setf save-preset (om-make-dialog-item 'om-button
-                                           (om-make-point 375 10)
+                                           (om-make-point 260 10)
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
-                                                        (save-current-settings)
-                                                        (update-general-mixer-presets-lists)
-                                                        (setf *general-mixer-current-preset* (- (length (get-presets-list)) 1))
-                                                        (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list))))
+                                                        (let ((vals *general-mixer-values*))
+                                                          (if (> *general-mixer-current-preset* 0)
+                                                              (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) vals)
+                                                            (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one"))))
                                            :font *om-default-font1*))
 
-    (setf text2 (om-make-dialog-item 'om-static-text
-                                     (om-make-point 475 13)
-                                     (om-make-point 130 20) "DELETE SETTINGS :"
-                                     :font *om-default-font1*
-                                     :fg-color *om-white-color*))
+    (setf new-preset (om-make-dialog-item 'om-button
+                                          (om-make-point 335 10)
+                                          (om-make-point 75 12)
+                                          "NEW"
+                                          :di-action (om-dialog-item-act item 
+                                                       (save-current-settings)
+                                                       (update-general-mixer-presets-lists)
+                                                       (setf *general-mixer-current-preset* (1- (length (get-presets-list))))
+                                                       (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list))))
+                                          :font *om-default-font1*))
 
-    (setf delete-preset (om-make-dialog-item 'om-pop-up-dialog-item 
-                                             (om-make-point 595 12) 
-                                             (om-make-point 120 12)
-                                             ""
+    (setf delete-preset (om-make-dialog-item 'om-button
+                                             (om-make-point 410 10)
+                                             (om-make-point 75 12)
+                                             "DELETE"
                                              :di-action (om-dialog-item-act item
-                                                          (print (om-get-selected-item-index preset-list))
-                                                          (if (> (om-get-selected-item-index item) 1)
+                                                          (if (> *general-mixer-current-preset* 0)
                                                               (progn
-                                                                (setf *general-mixer-presets* (remove (nth (om-get-selected-item-index item) *general-mixer-presets*) *general-mixer-presets*))
-                                                                (update-general-mixer-presets-lists)
-                                                                (if (= (om-get-selected-item-index item) (om-get-selected-item-index preset-list))
-                                                                    (om-set-selected-item preset-list (nth 1 (get-presets-list)))))))
-                                             :font *om-default-font1*
-                                             :range (append (list "----------------") 
-                                                            (append (list "----------------") 
-                                                                    (remove "Current Preset" 
-                                                                            (remove "Default Preset" (get-presets-list) :test 'string=) 
-                                                                            :test 'string=)))
-                                             :value "----------------"))
+                                                                (setf *general-mixer-presets* (remove (nth (1+ (om-get-selected-item-index preset-list)) *general-mixer-presets*) *general-mixer-presets*))
+                                                                (update-general-mixer-presets-lists))
+                                                            (om-message-dialog "ERROR : You have to select a preset to be able to delete it. If there is no existing preset, build a new one")))
+                                             :font *om-default-font1*))
+    
+    (setf default-preset (om-make-dialog-item 'om-button
+                                             (om-make-point 575 10)
+                                             (om-make-point 100 12)
+                                             "RESET ALL"
+                                             :di-action (om-dialog-item-act item
+                                                          (setf *general-mixer-values* (get-default-values))
+                                                          (update-genmixer-display))
+                                             :font *om-default-font1*))
 
-    (om-add-subviews preset-view text preset-list text1 save-preset text2 delete-preset)
+    (if (= (length thelist) 1) (om-enable-dialog-item preset-list nil))
+    (om-add-subviews preset-view text preset-list save-preset new-preset delete-preset default-preset)
     preset-view))
 
 
@@ -164,8 +170,9 @@
                                   :size (om-make-point (- *channel-w* 5) 395)
                                   :bg-color *om-light-gray-color*))
          (pos 8)
-         (volval (cadr (nth channel *general-mixer-values*)))
-         (panval (car (nth channel *general-mixer-values*)))
+         (vals *general-mixer-values*)
+         (volval (cadr (nth channel vals)))
+         (panval (car (nth channel vals)))
          (effectlist (build-faust-effect-list channel))
          (synthlist (build-faust-synth-list channel))
          (effectlist1 effectlist) (effectlist2 effectlist) (effectlist3 effectlist) 
@@ -187,12 +194,12 @@
 
     (incf pos 10)
     (setf pan-text (om-make-dialog-item 'om-static-text
-                                        (om-make-point 14 pos) 
+                                        (om-make-point 14 (- pos 5)) 
                                         (om-make-point 40 16)
                                         "Pan"
                                         :font *om-default-font2*))
     (setf pan-val (om-make-dialog-item 'om-static-text
-                                       (om-make-point 45 pos) 
+                                       (om-make-point 45 (- pos 5)) 
                                        (om-make-point 30 16)
                                        (number-to-string panval)
                                        :font *om-default-font2*))
@@ -205,8 +212,7 @@
                                    :pict-size (om-make-point 24 24)
                                    :di-action (om-dialog-item-act item
                                                 (change-genmixer-channel-pan (+ channel 1) (value item))
-                                                (om-set-dialog-item-text pan-val (number-to-string (value item)))
-                                                (send-pan-val-to-current-preset channel (value item)))
+                                                (om-set-dialog-item-text pan-val (number-to-string (value item))))
                                    :font *om-default-font2*
                                    :value panval
                                    :min-val -100
@@ -236,8 +242,7 @@
                                           (om-make-point 30 100) ""
                                           :di-action (om-dialog-item-act item
                                                        (change-genmixer-channel-vol (+ channel 1) (om-slider-value item))
-                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item)))
-                                                       (send-vol-val-to-current-preset channel (om-slider-value item)))
+                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item))))
                                           :increment 1
                                           :range '(0 100)
                                           :value volval
@@ -379,16 +384,14 @@
 ;/CHANGE GENMIXER CHANNEL VOL FUNCTION
 ;This function changes a channel volume
 (defun change-genmixer-channel-vol (channel value)
-  (progn
-    (las-change-channel-vol-visible channel (float (/ value 100)))
-    (setf (cadr (nth (- channel 1) *general-mixer-values*)) value)))
+  (las-change-channel-vol-visible channel (float (/ value 100)))
+  (setf (cadr (nth (- channel 1) *general-mixer-values*)) value))
 
 ;/CHANGE GENMIXER CHANNEL PAN
 ;This function changes a channel pan
 (defun change-genmixer-channel-pan (channel value)
-  (progn
-    (las-change-channel-pan-visible channel (- 1.0 (float (/ (+ value 100) 200))))
-    (setf (car (nth (- channel 1) *general-mixer-values*)) value)))
+  (las-change-channel-pan-visible channel (- 1.0 (float (/ (+ value 100) 200))))
+  (setf (car (nth (- channel 1) *general-mixer-values*)) value))
 
 ;/APPLY MIXER VALUES FUNCTION
 ;Get the pan and vol values in *general-mixer-values* and apply these to the LAS player.
@@ -517,39 +520,39 @@
           (om-set-selected-item (nth 11 (om-subviews (nth i (om-subviews panel)))) (cadr (gethash 0 (gethash i *faust-synths-by-track*)))))))
 
 
-;/SEND PAN TO CURRENT PRESET FUNCTION
-;This function sends a pan val to the current preset (always saving data).
-(defun send-pan-val-to-current-preset (channel val)
-  (setf (nth channel (cadr (nth 1 *general-mixer-presets*))) (list val (cadr (nth channel (cadr (nth 1 *general-mixer-presets*)))))))
-
-;/SEND VOL TO CURRENT PRESET FUNCTION
-;This function sends a volume val to the current preset (always saving data).
-(defun send-vol-val-to-current-preset (channel val)
-  (setf (nth channel (cadr (nth 1 *general-mixer-presets*))) (list (car (nth channel (cadr (nth 1 *general-mixer-presets*)))) val)))
-
 ;/SAVE CURRENT SETTINGS FUNCTION
 ;Save the current settings to a new preset.
 (defun save-current-settings ()
-  (setf *general-mixer-presets* 
-        (append *general-mixer-presets*
-                (list 
-                 (list 
-                  (om-get-user-string "Enter a name for this preset" 
-                                      :initial-string (format nil "Preset ~A" (+ 1 (length *general-mixer-presets*)))) 
-                  (cadr (nth 1 *general-mixer-presets*)))))))
+  (let ((name (om-get-user-string "Enter a name for this preset" 
+                                  :initial-string (format nil "Preset ~A" (length *general-mixer-presets*))))
+        (vals *general-mixer-values*))
+    (if name
+        (setf *general-mixer-presets* 
+              (append *general-mixer-presets*
+                      (list 
+                       (list 
+                        name
+                        vals)))))))
 
 ;/UPDATE GENMIXER PRESETS LISTS FUNCTION
 ;Refresh the available lists in preset choice list and delete list.
 (defun update-general-mixer-presets-lists ()
   (let ((newlist (get-presets-list)))
     (om-set-item-list (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) newlist)
-    (om-set-item-list (nth 5 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (append (list "----------------") (remove "Default Preset" newlist :test 'string=)))))
+    (if (> (length newlist) 1)
+        (progn
+          (om-enable-dialog-item (cadr (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) t)
+          (om-set-item-list (cadr (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (remove (car newlist) newlist)))
+      (progn
+        (om-enable-dialog-item (cadr (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) nil)
+        (om-set-item-list (cadr (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) newlist)))))
 
 ;/LOAD GENMIXER PRESET FUNCTION
 ;Loads a preset to the *general-mixer-values* variable, and apply these values.
 (defun load-genmixer-preset (index)
-  (setf *general-mixer-values* (cadr (nth index *general-mixer-presets*)))
-  (apply-mixer-values))
+  (let ((vals (cadr (nth index *general-mixer-presets*))))
+    (setf *general-mixer-values* vals)
+    (apply-mixer-values)))
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION
 ;Update the genmixer vol and pan display.

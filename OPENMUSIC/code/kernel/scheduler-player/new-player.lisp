@@ -41,7 +41,7 @@
          (t 0)))
 
 (defmethod idle-p ((self omplayer)) 
-  (not (equal (state self) :play)))
+  (not (member (state self) '(:play :record))))
 
 (defmethod schedule-task ((player omplayer) task at)
   (push (cons at task) (events player))
@@ -69,44 +69,55 @@
         
         (t 
          (setf (stop-time player) end-t)
-           (when (callback-process player)
-             (om-kill-process (callback-process player)))
-           (when (scheduling-process player)
-             (om-kill-process (scheduling-process player)))
+         (when (callback-process player)
+           (om-kill-process (callback-process player)))
+         (when (scheduling-process player)
+           (om-kill-process (scheduling-process player)))
            
-           (om-with-priority 80000000
-             (setf (scheduling-process player)
-                   (om-run-process "player scheduling"
+         (om-with-priority 80000000
+           (setf (scheduling-process player)
+                 (om-run-process "player scheduling"
+                                 #'(lambda ()
+                                     (loop
+                                      (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
+                                            (funcall (cdr (pop (events player)))))
+                                      (if (> (get-player-time player) (stop-time player))
+                                          (if (loop-play player)
+                                              (progn 
+                                                (setf (start-time player) start-t
+                                                      (ref-clock-time player) (clock-time))
+                                                (mapcar #'player-loop (engines player)))
+                                            (general-stop player)))
+                                      (sleep (scheduler-tick player))
+                                      )))))
+           
+         (when (callback-fun player)
+           (om-with-priority 10
+             (setf (callback-process player)
+                   (om-run-process "editor player callback"
                                    #'(lambda ()
-                                       (loop
-                                        (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
-                                                (funcall (cdr (pop (events player)))))
-                                        (if (> (get-player-time player) (stop-time player)) (general-stop player))
-                                        (sleep (scheduler-tick player))
-                                        )))))
+                                       (loop 
+                                        (funcall (callback-fun player) 
+                                                 (caller player) 
+                                                 (get-player-time player))
+                                        (sleep (callback-tick player))
+                                        )))
+                   )))
            
-           (when (callback-fun player)
-             (om-with-priority 10
-               (setf (callback-process player)
-                     (om-run-process "editor player callback"
-                                     #'(lambda ()
-                                         (loop 
-                                          (funcall (callback-fun player) 
-                                                   (caller player) 
-                                                   (get-player-time player))
-                                          (sleep (callback-tick player))
-                                         )))
-                     )))
+
+         (when (loop-play player) 
+           (mapcar #'(lambda (pl) (player-set-loop pl start-t end-t)) 
+                   (engines player)))
+
+         (mapcar #'player-start (engines player) 
+                 (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
            
-           (mapcar #'player-start (engines player) 
-                   (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
-           
-           (setf (state player) :play
-                 (start-time player) start-t
-                 (ref-clock-time player) (clock-time))
+         (setf (state player) :play
+               (start-time player) start-t
+               (ref-clock-time player) (clock-time))
            
            ;(om-delayed-funcall stop-time #'player-stop player obj)
-           )
+         )
          ))
 
 (defmethod general-pause ((player omplayer))
@@ -142,6 +153,31 @@
     (om-kill-process (scheduling-process player))
     (setf (scheduling-process player) nil))
   )
+
+
+(defmethod general-record ((player omplayer))
+  (if (equal (state player) :stop)
+    (progn
+      (setf (state player) :record)
+      (mapcar #'player-record (engines player)))
+    (om-beep)))
+
+(defmethod general-stop-record ((player omplayer))
+  (setf (play-list player)
+        (mapcar #'(lambda (pl) (list pl (player-record-stop pl))) (engines player)))
+  (when (callback-process player)
+    (om-kill-process (callback-process player))
+    (setf (callback-process player) nil))
+  (setf (state player) :stop
+        (ref-clock-time player) (clock-time)
+        (start-time player) 0)
+  (when (scheduling-process player)
+    (om-kill-process (scheduling-process player))
+    (setf (scheduling-process player) nil))
+  (setf (engines player) nil)
+  )
+
+
 
 ;;;=====================
 ;;; ENGINES METHODS
@@ -183,7 +219,22 @@
 (defmethod player-stop ((engine t) &optional play-list)
   (print (format nil "~A : stop" engine)))
 
+;;; SET LOOP (called before play)
+(defmethod player-set-loop ((engine t) &optional start end)
+  (print (format nil "~A : set loop" engine)))
 
+(defmethod player-loop ((engine t))
+  (print (format nil "~A : loop" engine)))
+
+(defmethod player-record ((engine t))
+  (print (format nil "~A : record" engine)))
+
+;;; must return the recorded object
+(defmethod player-record-stop ((engine t))
+  (print (format nil "~A : record stop" engine))
+  nil)
+
+;(midi-start-record)
 
 
 ;;;=================================
@@ -329,6 +380,8 @@
   (general-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
+  (if (equal (state (player self)) :record)
+      (editor-stop-record self))
   (general-stop (player self)))
 
 (defmethod editor-play/stop ((self play-editor-mixin))
@@ -336,9 +389,13 @@
       (editor-play self)
     (editor-stop self)))
 
-;;; temp compatibility
-(defmethod recording? ((self play-editor-mixin))
-  (equal (state (player self)) :record))
+(defmethod editor-record ((self play-editor-mixin))
+  (setf (engines (player self)) (list (get-player-engine self)))
+  (general-record (player self)))
+
+(defmethod editor-stop-record ((self play-editor-mixin))
+  (general-stop-record (player self))
+  (cadr (car (play-list (player self)))))
 
 ;;; A REDEFINIR PAR LES SOUS-CLASSES
 (defmethod cursor-panes ((self play-editor-mixin)) nil)
@@ -432,8 +489,9 @@
       )))
 
 
-(defmethod get-x-range ((self om-scroller)) (list (max 0 (om-point-x (pixel2point self (om-scroll-position self))))
-                                                  (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
+(defmethod get-x-range ((self cursor-play-view-mixin)) 
+  (list (max 0 (om-point-x (pixel2point self (om-scroll-position self))))
+        (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
 
 (defmethod start-cursor ((self cursor-play-view-mixin))
   (let* ((dur (get-obj-dur (object (om-view-container self))))

@@ -42,7 +42,6 @@
      (setf (text-view container) nil)
      (om-remove-subviews container self)))
 
-;=============The palette===========
 
 (omg-defclass array-controls (3Dborder-view)  
    ((groupname :initform nil :accessor groupname)))
@@ -69,18 +68,18 @@
   (om-set-bg-color self *controls-color*))
 
 ;;; NE FAIT RIEN...
-(defmethod om-view-click-handler ((self array-controls) where)
-   (if (and (= (mode (panel (om-view-container self))) 6)
-              (>= (om-point-h where) 50) (<= (om-point-h where) 180))
-       (setf (text-view (editor (om-view-container self)))
-          (om-make-dialog-item 'comp-text-enter-view (om-make-point 150 12) (om-make-point 30 10)
-                                                    (format () "~D" (select-comp (om-view-container self)))
-                                                    :allow-returns t
-                                                    :object (om-view-container self)
-                                                    :container (om-view-container self)
-                                                    :di-selected-p t
-                                                    :font *om-default-font2*))
-       (call-next-method)))
+;(defmethod om-view-click-handler ((self array-controls) where)
+;   (if (and (= (mode (panel (om-view-container self))) 6)
+;              (>= (om-point-h where) 50) (<= (om-point-h where) 180))
+;       (setf (text-view (editor (om-view-container self)))
+;          (om-make-dialog-item 'comp-text-enter-view (om-make-point 150 12) (om-make-point 30 10)
+;                                                    (format () "~D" (select-comp (om-view-container self)))
+;                                                    :allow-returns t
+;                                                    :object (om-view-container self)
+;                                                    :container (om-view-container self)
+;                                                    :di-selected-p t
+;                                                    :font *om-default-font2*))
+;       (call-next-method)))
 
 ;=======================EDITOR====================
 ;=================================================
@@ -90,7 +89,7 @@
 
 (defparameter *array-ruler-width* 20)
 
-(omg-defclass arrayeditor (editorview object-editor) 
+(defclass arrayeditor (editorview object-editor) 
    ((select-comp :initform nil :accessor select-comp)
     (deltay :initform *size-h-min* :accessor deltay)
     (groups :initform nil :accessor groups)
@@ -103,7 +102,9 @@
 
 (defmethod get-control-h ((self arrayeditor)) 45)
 
-(omg-defclass array-titlebar (editor-titlebar) ())
+
+(defclass array-titlebar (editor-titlebar) 
+    ((mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)))
 
 (defmethod om-draw-contents ((Self array-titlebar))
   (call-next-method)
@@ -124,7 +125,6 @@
 
 (defmethod metaobj-scrollbars-params ((self arrayeditor))  '(:v nil))
 
-(defmethod editor-has-palette-p ((self arrayeditor))  'general-palette)
 
 (defmethod do-editor-null-event ((self arrayeditor))
    (when (and (om-view-contains-point-p (panel self) (om-mouse-position self)) (>= (om-point-h (om-mouse-position self)) *array-ruler-width*))
@@ -136,6 +136,46 @@
          (show-composant (panel self))
        ; ))
      ))
+
+
+
+(defmethod init-titlebar ((self arrayeditor))
+  (call-next-method)
+  (setf (mode-buttons (title-bar self))
+        (append 
+         (loop for mode in '(:normal :zoom)
+               for icon in '("mousecursor" "zoomcursor")
+               for xx = 180 then (+ xx 21) 
+               collect 
+               (let ((m mode))
+                 (om-make-view 'om-icon-button :position (om-make-point xx 2) :size (om-make-point 22 22)
+                               :id mode
+                               :icon1 icon :icon2 (string+ icon "-pushed")
+                               :lock-push t
+                               :selected-p (and (panel self) ;;; before initialization...
+                                                (equal m (mode (panel self))))
+                               :action #'(lambda (item) (set-cursor-mode self m)))
+                 ))
+         (list (om-make-view 'om-icon-button :position (om-make-point 240 2) :size (om-make-point 22 22)
+                               :id :resize
+                               :icon1 "resize" :icon2 "resize-pushed"
+                               :lock-push nil
+                               :action #'(lambda (item) 
+                                           (setf (rangex (panel self))
+                                                 (get-array-ranges (object self)) ))))
+         ))
+  (apply 'om-add-subviews (cons (title-bar self) 
+                                (mode-buttons (title-bar self)))         
+         ))
+
+(defmethod set-cursor-mode ((self arrayeditor) &optional mode)
+  (setf (mode (panel self)) mode)
+  (update-cursor-mode-buttons (title-bar self)))
+
+(defmethod update-cursor-mode-buttons ((self array-titlebar))
+  (loop for button in (mode-buttons self) do
+    (setf (selected-p button) (equal (mode (om-view-container self)) (id button))))
+  (om-invalidate-view self))
 
 
 
@@ -314,12 +354,6 @@
 
 
 
-;(defclass array-palette (general-palette)  ()
-;   (:default-initargs :source-name "Array-palette"))
-
-(defmethod get-palette-pict ((self arrayeditor))
-  (om-load-and-store-picture "Array-palette" 'internal))
-
 (defun modif-colors (arrayeditor)
   (let* ((panel (panel arrayeditor))
          (views (bpf-views panel))
@@ -334,22 +368,13 @@
                (set-edit-param (ref arrayeditor) 'color-list clist)))
       (om-beep-msg "Select the views to colorize."))))
 
-(defmethod editor-palette-act ((self arrayeditor) x)
-  (let* ((panel (panel self))
-         (views (bpf-views panel)))
-    (case x
-      (2 (setf (rangex panel)
-               (get-array-ranges (object (om-view-container panel))) ))
-      (otherwise
-       (when x
-         (setf (mode panel) x)
-         (om-invalidate-view (view *palette-win*) t))))))
+
 
 ;------------------------------------
 
 
 (omg-defclass arraypanel (om-scroller view-with-ruler-x) 
-  ((mode :initform 0 :accessor mode)
+  ((mode :initform :normal :accessor mode)
    (panel-list :initform nil :initarg :panel-list :accessor panel-list)
    (c-panel-list :initform nil :initarg :c-panel-list :accessor c-panel-list)   ;;; not used anymore...
    (selected-index :initform nil :accessor selected-index)
@@ -367,8 +392,8 @@
 (defmethod list-panel-class ((self arraypanel)) 'list-parameter-panel)
 
 
-(defmethod mode ((self arraypanel))
-   (if (= 8 (slot-value self 'mode)) 9 (slot-value self 'mode)))
+;(defmethod mode ((self arraypanel))
+;   (if (= 8 (slot-value self 'mode)) 9 (slot-value self 'mode)))
 
 (defmethod fill-bpf-with-color ((self arraypanel) color)
    (loop for index in (selected-index self) do
@@ -750,9 +775,9 @@
 (defmethod om-view-cursor ((Self list-parameter-panel))
    (declare (ignore where))
    (unless (om-command-key-p)
-     (case (mode self)
-       (1 *om-loupe-cursor*)
-       (otherwise *om-arrow-cursor*))))
+     (if (equal (mode self) :zoom)
+       *om-loupe-cursor*
+       *om-arrow-cursor*)))
 
 (defmethod om-view-click-handler ((self list-parameter-panel) where)
   (om-invalidate-view (om-view-container self))
@@ -937,8 +962,8 @@
 
 (defmethod om-view-click-handler ((Self Bpf-Parameter-Panel) Where)
    (cond 
-    ((= 0 (mode self)) (select-system self where))
-    ((= 1 (mode self)) (zoom-system self where))
+    ((equal (mode self) :normal) (select-system self where))
+    ((equal (mode self) :zoom) (zoom-system self where))
    ))
 
 (defmethod mode ((Self Bpf-Parameter-Panel))

@@ -49,37 +49,27 @@
   "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) 
   "/Library/Frameworks/SDIF.framework/SDIF"
-  #+linux
-  ;; "/usr/lib/libsdif.so"
-  (or (probe-file "/usr/local/lib/libsdif.so")
-      "libsdif.so"))
+  #+(or linux (and clisp unix (not macos)))
+  "/usr/lib/libsdif.so")
 
 ;;; !!! *sdif-pathname* is modified in OM
 
 (defun init-sdif-framework ()
-  (setf *sdif-framework*
-	#-linux (if (probe-file *sdif-pathname*)
-		    (progn 
-		      (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
-		      (fli:register-module "SDIF" 
-					   :real-name (namestring *sdif-pathname*)
-					   :connection-style :immediate)
-		      t))
-	#+linux (progn 
-		  (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
-		  (cffi:load-foreign-library *sdif-pathname*)
-		  ;; (fli:register-module "SDIF" 
-		  ;; 		       :real-name (namestring *sdif-pathname*)
-		  ;; 		       :connection-style :immediate)
-		  t)))
+  (setf *sdif-framework* (if (probe-file *sdif-pathname*)
+                             (progn 
+                               (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*))) 
+                               ;(cffi:load-foreign-library *sdif-pathname*)
+                               (fli:register-module "SDIF" 
+                                                    :real-name (namestring *sdif-pathname*)
+                                                    :connection-style :immediate)
+                               t))))
 
 ; (oa::om-start-sdif)
 ; (cffi:load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")
 ; (init-sdif-framework)
 ; (sdif::sdifprintversion)
 
-#-cffi-new (cffi:define-foreign-type sdif-name () ':pointer)
-#+cffi-new (cffi:defctype sdif-name :pointer)
+(cffi:define-foreign-type sdif-name () ':pointer)
 
 (defconstant eUnknownFileMode 0)
 (defconstant eWriteFile 1)
@@ -111,6 +101,7 @@
 
 (cffi:defcfun  ("SdifDisableErrorOutput" SdifDisableErrorOutput) :void )
 
+(cffi:defcfun  ("SdifSizeofDataType" SdifSizeofDataType) :unsigned-int (SdifDataTypeET :unsigned-int))
 
 ;;;============================================
 ;;; SDIF FILE
@@ -139,6 +130,10 @@
 (cffi:defcfun  ("SdifFGetPos" SdifFGetPos) :int  (pointer :pointer) (pos :pointer))
 
 (cffi:defcfun  ("SdifFSetPos" SdifFSetPos) :int ( pointer :pointer) (pos :pointer))
+
+
+
+
 
 ;;;============================================
 ;;; READ SDIF
@@ -254,6 +249,7 @@
 
 (cffi:defcfun  ("SdifFWritePadding" SdifFWritePadding) :unsigned-int  (sdifF :pointer) (padding :unsigned-int))
 
+(cffi:defcfun  ("SdifPaddingCalculate" SdifPaddingCalculate) :unsigned-int  (sdifF :pointer) (nbbytes :unsigned-int))
 
 ;;;=================================
 ;;; ID TABLE
@@ -408,3 +404,21 @@
 (cffi:defcfun ("SdifHashTableIteratorIsNext" SdifHashTableIteratorIsNext) :int (htiterator :pointer))
 
 (cffi:defcfun ("SdifHashTableIteratorGetNext" SdifHashTableIteratorGetNext) :pointer (htiterator :pointer))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

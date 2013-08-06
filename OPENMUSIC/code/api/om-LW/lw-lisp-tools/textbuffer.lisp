@@ -309,7 +309,8 @@
 (defun om-buffer-insert-file (ombuffer path &optional position)
   (let ((buffer (buffer ombuffer)))
     (let ((filebuf (editor::find-file-buffer path)))
-      (if position
+      (when filebuf 
+        (if position
           (editor::use-buffer buffer 
             (editor::with-point ((p (editor:buffers-start buffer)))
               (editor::character-offset p position)
@@ -319,7 +320,7 @@
                                      (editor::points-to-string (editor::buffers-start filebuf)
                                                                (editor::buffers-end filebuf)))
         )
-      (editor::kill-buffer-no-confirm filebuf))))
+      (editor::kill-buffer-no-confirm filebuf)))))
 
 ;;; ecrit le contenu du buffer dans un fichier 
 (defun om-buffer-write-file (ombuffer path &key (if-exists :supersede))

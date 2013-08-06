@@ -58,7 +58,6 @@
         "editor;scoreeditor;scoreeditors" 
         "editor;scoreeditor;edition"
         "editor;scoreeditor;scorepatch"       
-        ;;"editor;scoreeditor;scorepalette"    
         "editor;scoreeditor;inspectorpalette"    
         "editor;musminiboxes"           
         "editor;scoreeditor;scoretools"

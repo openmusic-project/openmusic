@@ -3,15 +3,10 @@
 ;;;============================================
 ;;;;loading pictures
 
-(defvar *aiff-palette* nil)
-(defvar *midi-palette* nil)
-(defvar *music-palette* nil)
+
 (defvar *insertmodes* nil)
  
 (defun init-music-pict ()
-   (setf *midi-palette* (om-load-and-store-picture "midi-palette" 'internal)) 
-   (setf *aiff-palette* (om-load-and-store-picture "aiff-palette" 'internal)) 
-   (setf *music-palette* (om-load-and-store-picture "musicpalette" 'internal)) 
    (setf *insertmodes* (om-load-and-store-picture "insertmodes" 'internal)))
 
 (om-add-init-func 'init-music-pict)

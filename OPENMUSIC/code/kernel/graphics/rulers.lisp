@@ -747,12 +747,12 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
      (draw&print-axis self :offx 0 :offy 0))))
 
 
-(defmethod play-from-palette ((self view-with-ruler-xy))  
-  (when (and (scroll-to-0 self) (not (= 0 (first (rangex self)))))
-    (setf (rangex self) (list 0 (- (second (rangex self)) (first (rangex self)))))
-    (update-view-of-ruler self)
-    (om-invalidate-view (rulerx self)))
-  (call-next-method)
-  )
+;(defmethod play-from-palette ((self view-with-ruler-xy))  
+;  (when (and (scroll-to-0 self) (not (= 0 (first (rangex self)))))
+;    (setf (rangex self) (list 0 (- (second (rangex self)) (first (rangex self)))))
+;    (update-view-of-ruler self)
+;    (om-invalidate-view (rulerx self)))
+;  (call-next-method)
+;  )
     
 

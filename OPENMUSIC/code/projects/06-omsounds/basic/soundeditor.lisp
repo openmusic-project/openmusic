@@ -220,7 +220,6 @@
 (defmethod get-control-h ((self soundEditor)) 36)
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
-(defmethod editor-has-palette-p ((self soundEditor)) nil)
 
 ;;; AJOUTER DANS LES CONTROLS
 ; (setf (cursor-mode view) :interval)

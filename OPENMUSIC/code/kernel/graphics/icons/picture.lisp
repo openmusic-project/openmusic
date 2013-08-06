@@ -298,8 +298,6 @@
 (defvar *ctrl-impulsion-pict* nil "Used in temporal objects with dur = 0")
 (defvar *boxedit-pict* "The picture used in the editor boxes")
 (defvar *graph-pres* "Presentation pict")
-(defvar *play-controls-pict* nil "Playing controls pict resource.")
-(defvar *maquette-pict* nil "Maquette palette pict.")
 (defvar *om-def-pict* nil "Default pict when picture not found")
 
 

@@ -212,10 +212,14 @@
 
 (defmethod om-draw-contents ((self 3DPanel))
   (when (show-axes (om-view-container self))
-    (draw-3D-axes)))
+    (opengl:gl-push-matrix) 
+    ;(opengl:gl-translatef 1.0 1.0 1.0)
+    (draw-3D-axes)
+    (opengl:gl-pop-matrix)))
 
 
-(defclass 3Dcontrols (3Dborder-view) ())
+(defclass 3Dcontrols (3Dborder-view) 
+  ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons)))
 
 (defmethod om-draw-contents ((self 3Dcontrols)) 
  (call-next-method)
@@ -315,31 +319,13 @@
                (lines-p :accessor lines-p :initarg :lines-p :initform t)
                (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
                (focus :accessor focus :initform nil)
-               (mode :accessor mode :initform 0)   ; pour la palette
+               (mode :accessor mode :initform :normal)
                ))
 
 (defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
 
-(defmethod editor-has-palette-p ((Self 3DEditor)) 'general-palette)
 
-;(defclass 3D-palette (bpf-palette) ())
 
-(defmethod get-palette-pict ((self 3Deditor)) 
-  (om-load-and-store-picture "simple-bpf-pal" 'internal))
-
-(defmethod editor-palette-act ((self 3Deditor) X)  
-  (when x
-    (if (= x 5) (mapcar #'(lambda (ed)
-                            (init-coor-system (panel ed)))
-                        (bpc-editors self))
-      (progn
-        (setf (mode self) x)
-        (mapcar #'(lambda (ed)
-                    (when ed
-                      (setf (mode (panel ed)) x)))
-                (bpc-editors self))
-        (om-invalidate-view (view *palette-win*) t)))
-    ))
 
 
 
@@ -558,11 +544,13 @@
                                                   :bg-color *om-light-gray-color*
                                                   :x-label 'y :y-label 'z
                                                   :object (nth 2 (tmpview-objs self))
-                                                  ))))
+                                                  )))
+  (add-edit-buttons (ctrlp self)))
 
 
 (defmethod remove-bpc-editors ((self 3Deditor))
-  (om-remove-subviews self (xyp self) (xzp self)(yzp self)))
+  (om-remove-subviews self (xyp self) (xzp self)(yzp self))
+  (remove-edit-buttons (ctrlp self)))
 
 (defun init-bpc-editors (ed)
   (update-editor-after-eval (xyp ed) (nth 0 (tmpview-objs ed)))
@@ -755,6 +743,54 @@
   (when (get-edit-param self 'bg-color)
     (om-set-bg-color (3Dp self) (get-edit-param self 'bg-color)))
   )
+
+
+(defmethod add-edit-buttons ((self 3Dcontrols))
+  (let ((ed (om-view-container self))
+        (x 24) (y 400))
+    (setf (mode-buttons self)
+          (append 
+           (loop for mode in '(:normal :pen :move :zoom :scroll)
+                 for icon in '("mousecursor" "pencursor" "handcursor" "zoomcursor" "handbpfcursor")
+                 for i = 0 then (+ i 1)
+                 collect 
+                 (let ((m mode) button)
+                   (when (= i 3) (setf x 24 y (+ y 30)))
+                   (setf button (om-make-view 'om-icon-button :position (om-make-point x y) :size (om-make-point 22 22)
+                                              :id mode
+                                              :icon1 icon :icon2 (string+ icon "-pushed")
+                                              :lock-push t
+                                              :selected-p (and (bpc-editors ed) ;;; before initialization...
+                                                               (equal m (mode (car (bpc-editors ed)))))
+                                              :action #'(lambda (item) (mapcar #'(lambda (ed)
+                                                                                   (when ed
+                                                                                     (setf (mode (panel ed)) m)))
+                                                                               (bpc-editors ed))
+                                                          (update-cursor-mode-buttons self)
+                                                          )))
+                   (setf x (+ x 22))
+                   button)
+                 )
+           (list (om-make-view 'om-icon-button :position (om-make-point x 430) :size (om-make-point 22 22)
+                               :id :resize
+                               :icon1 "resize" :icon2 "resize-pushed"
+                               :lock-push nil
+                               :action #'(lambda (item) 
+                                           (mapcar #'(lambda (bpc-ed)
+                                                       (init-coor-system (panel bpc-ed)))
+                                                   (bpc-editors ed)))))
+           ))
+    (apply 'om-add-subviews (cons self (mode-buttons self)))
+    ))
+
+(defmethod remove-edit-buttons ((self 3Dcontrols))
+  (apply 'om-remove-subviews (cons self (mode-buttons self))))
+
+(defmethod update-cursor-mode-buttons ((self 3Dcontrols))
+  (when (bpc-editors (om-view-container self))
+    (loop for button in (mode-buttons self) do
+          (setf (selected-p button) (equal (mode (car (bpc-editors (om-view-container self)))) (id button))))
+    (om-invalidate-view self)))
 
 
 (defmethod editor-change-precision ((self 3Deditor) newvalue)

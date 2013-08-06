@@ -117,7 +117,7 @@ In this case, all internal events are sent simultaneously.
     win))
 
 
-(omg-defclass audiocontrollerEditor (EditorView) 
+(defclass audiocontrollerEditor (EditorView) 
   ((ch-panels :initform nil :accessor ch-panels :type list)))
 
 (defmethod get-win-ed-size ((self audio-mix-console)) 
@@ -126,7 +126,6 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod audio-chan-w ((self audiocontrollerEditor)) 80)
 
-(defmethod editor-has-palette-p ((self audiocontrollerEditor)) nil)
 
 (defmethod get-panel-class ((Self audiocontrollerEditor)) 'audiocontrollerPanel)
 
@@ -138,7 +137,7 @@ In this case, all internal events are sent simultaneously.
 
 
 ;=== MAIN PANEL ===
-(omg-defclass audiocontrollerPanel (om-scroller) ()
+(defclass audiocontrollerPanel (om-scroller) ()
   ;;;(:default-initargs :scrollbars :h :retain-scrollbars t)
    )
 
@@ -151,7 +150,7 @@ In this case, all internal events are sent simultaneously.
 
 ;======== CHaNNeL ConTrOllEr PAneL =====
 
-(omg-defclass audiochannelPanel () 
+(defclass audiochannelPanel () 
   ((channelctr :initform nil :initarg :channelctr :accessor channelctr)
    (channelText :initform nil :accessor channelText :type t)
    ;(channelBox :initform nil :accessor channelBox :type t)

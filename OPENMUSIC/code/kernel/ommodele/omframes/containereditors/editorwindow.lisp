@@ -436,9 +436,8 @@
 
 (defmethod update-editor-controls ((self editorview)) nil)
 
-(defmethod (setf selected-p) (selected-p (self EditorView))
-   "Set the slot selected-p and show the palette if selected-p equal True"
-   (setf (slot-value self 'selected-p) selected-p))
+;(defmethod (setf selected-p) (selected-p (self EditorView))
+;   (setf (slot-value self 'selected-p) selected-p))
 
 
 ;;; play-editor-mixin method
