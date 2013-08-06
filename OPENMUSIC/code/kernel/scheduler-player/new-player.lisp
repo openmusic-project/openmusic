@@ -458,13 +458,14 @@
   (om-init-motion-functions self 'interval-select-action 'release-interval-select)
   (om-new-movable-object self (om-point-h where) 0 4 (h self) 'om-selection-rectangle))
 
-;(defmethod interval-select-action ((self cursor-play-view-mixin) pos)
-; (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-;    (when rect
-;      (om-update-movable-object self (first rect) (om-v-scroll-position self) 
-;                                (max 4 (third rect)) (om-point-v (om-interior-size self))))))
+(defmethod interval-select-action ((self cursor-play-view-mixin) pos)
+ (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
+    (when rect
+     (om-update-movable-object self (first rect) (om-v-scroll-position self) 
+                               (max 4 (third rect)) (om-point-v (om-interior-size self))))))
 
 (defmethod release-interval-select ((self cursor-play-view-mixin) pos)  
+
   (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
         (minpixel 2) position)
     (when rect
@@ -480,6 +481,7 @@
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
       (om-invalidate-view self))))
+
 
 (defmethod draw-interval-cursor ((self cursor-play-view-mixin))
   (let* ((cursor-pos-pix (time-to-pixels self (cursor-pos self)))

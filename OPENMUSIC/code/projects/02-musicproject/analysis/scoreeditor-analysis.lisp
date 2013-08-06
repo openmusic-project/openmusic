@@ -198,18 +198,17 @@
 
 
 (defmethod play-in-analysis ((self chordseqPanel))
-  (if (Idle-p *general-player*)
   (let ((current (car (list! (analysis (object (editor self)))))))
-    (if (and current (selected-segments current))
-        (let* ((segments (selected-segments current))
+    (when (and current (selected-segments current))
+        (let* ((segments (print (selected-segments current)))
                (interval (list (list-min (mapcar 'segment-begin segments)) 
                                (list-max (mapcar 'segment-end segments)))))
-          (setf (cursor-interval self) interval)
-          (play-selection-from-palette self)
-          (setf (cursor-interval self) '(0 0)))
-      (play-selection-from-palette self)))
-    (stop-from-palette self)))
-    
+          (setf (cursor-interval self) interval)))
+    (let ((cm (cursor-mode self)))
+      (setf (cursor-mode self) :interval)
+      (editor-play/stop (editor self))
+      (setf (cursor-mode self) cm))))
+          
 
 (defmethod change-current-analysis ((self chordseqPanel))
   (when (analysis (object (editor self)))

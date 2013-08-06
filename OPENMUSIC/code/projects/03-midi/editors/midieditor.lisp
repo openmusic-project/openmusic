@@ -72,7 +72,7 @@
                              :icon1 "stop" :icon2 "stop-pushed"
                              :action #'(lambda (item) (editor-stop (om-view-container self))))
                
-               (om-make-view 'om-icon-button :position (om-make-point -10 -10)
+               (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
                              :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
               
                (om-make-view 'om-icon-button :position (om-make-point 323 2) :size (om-make-point 22 22)
@@ -266,7 +266,7 @@
 
 
 ;;; BAR 
-(omg-defclass midi-titlebar (editor-titlebar) ())
+(defclass midi-titlebar (editor-titlebar) ())
 
 (defmethod get-titlebar-class ((self MidiEditor)) 'midi-titlebar)
 

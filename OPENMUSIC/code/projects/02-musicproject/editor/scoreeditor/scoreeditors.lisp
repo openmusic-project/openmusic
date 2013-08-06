@@ -1851,20 +1851,20 @@
 ;==================================
 
 ;VIEW
-(omg-defclass noteEditor (scoreEditor) ())
+(defclass noteEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self noteEditor)) 'notePanel)
 (defmethod get-score-class-ctrls ((self noteEditor)) 'omnote-controls-view)
 
 
 ;CONTROLS
-(omg-defclass omnote-controls-view (omcontrols-view) ())
+(defclass omnote-controls-view (omcontrols-view) ())
 
 (defmethod GET-slot-LIST ((self omnote-controls-view)) 
    '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port)))
 
 
 ;PANEL
-(omg-defclass notePanel (scorePanel) ())
+(defclass notePanel (scorePanel) ())
 
 (defmethod get-key-space ((self notePanel))
    (* (get-deltax (staff-sys self)) (staff-size self) 2))
@@ -1880,8 +1880,6 @@
           (("c") "Show Channel Color")
           (("s") "Set Editor Scale")
           (space "Play/Stop"))))
-
-(defmethod draw-measure-cursor ((self notepanel) voice) t)
 
 (defmethod panel-show-cursor-p ((self notepanel)) nil)
 
@@ -1907,11 +1905,11 @@
 ;==================================
 
 
-(omg-defclass chordEditor (scoreEditor) ())
+(defclass chordEditor (scoreEditor) ())
 (defmethod get-score-class-panel ((self chordEditor)) 'chordPanel)
 (defmethod get-score-class-ctrls ((self chordEditor)) 'omchord-controls-view)
 
-(omg-defclass omchord-controls-view (omcontrols-view) ())
+(defclass omchord-controls-view (omcontrols-view) ())
 
 (defmethod initialize-instance :after ((self omchord-controls-view) &rest l &key (mode 0))
   (declare (ignore l))
@@ -1925,7 +1923,7 @@
 ;=============================================
 ;=============================================
 
-(omg-defclass chordPanel (scorePanel) ())
+(defclass chordPanel (scorePanel) ())
 
 
 ;--------------ACTIONS
@@ -2833,28 +2831,33 @@
 (defmethod convert-interval ((self voicepanel))
    (rhythm-convert-interval self))  
 
-(defun rythm-draw-interval-cursor (self)
-  (let* ((interval (cursor-interval self))
-         (cursor-pos-pix (if (third interval)
-                             (car (rectangle (third interval)))
-                           (+ (get-key-space self) (ms2pixel (cursor-pos self) (/ (staff-size self) 4) (staff-zoom self))))))
-    
-    (om-with-focused-view self
-      (when (and (third interval) (fourth interval))
-        (draw-h-rectangle (list (car (rectangle (third interval))) (om-v-scroll-position self) 
-                                (third (rectangle (fourth interval))) 
-                                (+ (om-v-scroll-position self) (h self)))
-                          t))
-      (when (cursor-p self)
-        (om-with-fg-color self *om-gray-color*
-          (om-with-dashline 
-              (om-with-line-size 1.5 
-                (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
-                              cursor-pos-pix (+ (om-v-scroll-position self) (h self)))))))
-      )))
+;(defun rythm-draw-interval-cursor (self)
+;  (let* ((interval (print (cursor-interval self)))
+;         (cursor-pos-pix (if (third interval)
+;                             (car (rectangle (third interval)))
+;                           (+ (get-key-space self) (ms2pixel (cursor-pos self) (/ (staff-size self) 4) (staff-zoom self))))))
+;    
+;    (om-with-focused-view self
+;      (when interval (and (third interval) (fourth interval))
+;        (draw-h-rectangle (list (+ (get-key-space self) (ms2pixel (car interval) (/ (staff-size self) 4) (staff-zoom self))) ;(car (rectangle (third interval))) 
+;                                (om-v-scroll-position self) 
+;                                (+ (get-key-space self) (ms2pixel (cadr interval) (/ (staff-size self) 4) (staff-zoom self)))
+;                                ;(third (rectangle (fourth interval))) 
+;                                (+ (om-v-scroll-position self) (h self)))
+;                          t)) 
+;      (om-with-fg-color self *om-red2-color*
+;        (om-with-dashline 
+;            (om-with-line-size 2 
+;              (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
+;                             cursor-pos-pix (+ (om-v-scroll-position self) (h self)))))))
+;    ))
 
-(defmethod draw-interval-cursor ((self voicepanel))
-   (rythm-draw-interval-cursor self))
+
+
+(defmethod draw-interval-cursor ((self voicepanel)) 
+  (call-next-method)
+  ;(rythm-draw-interval-cursor self)
+  )
 
 (defmethod edit-preferences ((self voicepanel))
    (om-beep-msg "No mode page for this editor"))
@@ -2897,13 +2900,13 @@
 
 
 ;CONTROLS
-(omg-defclass poly-controls-view (multiseq-controls-view) ())
+(defclass poly-controls-view (multiseq-controls-view) ())
 
 (defmethod GET-slot-LIST ((self poly-controls-view)) 
    '(("midic" midic) ("channel" chan) ("dyn" dyn) ("port" port)))
 
 ;VIEW
-(omg-defclass polyEditor (multiseqEditor) ())
+(defclass polyEditor (multiseqEditor) ())
 
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
@@ -2913,7 +2916,7 @@
 
 ;PANEL
 
-(omg-defclass polypanel (multiseqPanel)  ())
+(defclass polypanel (multiseqPanel)  ())
         
 (defmethod adjoust-grille-chords ((self polypanel)) t)
 
@@ -3021,7 +3024,9 @@
                (and (group-p (reference note)) (group-p (parent (reference note)))))
      (call-next-method)))
 
-(defmethod draw-interval-cursor ((self polypanel)) (rythm-draw-interval-cursor self))
+(defmethod draw-interval-cursor ((self polypanel)) 
+  ;(rythm-draw-interval-cursor self)
+  (call-next-method))
 
 (defmethod convert-interval ((self polypanel)) (rhythm-convert-interval self))
 
@@ -4970,6 +4975,12 @@
     ))
 
 (defmethod get-ms-pos ((self voicepanel) (x-pos integer) zoom)
+  (rythmpanel-mspos self x-pos zoom))
+
+(defmethod get-ms-pos ((self polypanel) (x-pos integer) zoom)
+  (rythmpanel-mspos self x-pos zoom))
+
+(defun rythmpanel-mspos (self x-pos zoom)
   (when (timebpf self)
     (let* ((xmax (car (last (y-points (timebpf self)))))
            (xmin (car (y-points (timebpf self))))
@@ -5243,12 +5254,19 @@
 (defmethod time-to-pixels ((view voicepanel) time-ms)
   (get-x-pos view time-ms (staff-zoom view)))
 
+(defmethod time-to-pixels ((view polypanel) time-ms)
+  (get-x-pos view time-ms (staff-zoom view)))
+
 (defmethod pixels-to-time ((view scorepanel) pix)
   (pixel2ms (- pix (get-key-space view)) 
             (/ (staff-size view) 4) (staff-zoom view)))
 
 (defmethod pixels-to-time ((view voicepanel) pix)
   (get-ms-pos view pix (staff-zoom view)))
+
+(defmethod pixels-to-time ((view polypanel) pix)
+  (get-ms-pos view pix (staff-zoom view)))
+
 
 ;===================================
 ; PRINT

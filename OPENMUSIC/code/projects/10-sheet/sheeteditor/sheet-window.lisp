@@ -1,11 +1,14 @@
 (in-package :om)
 
-(defclass sheetEditor (editorview) 
+(defclass sheetEditor (editorview play-editor-mixin) 
   ((score-view :accessor score-view :initform nil :initarg :score-view)
    (patch-view :accessor patch-view :initform nil :initarg :patch-view)
    (patch-display-mode :accessor patch-display-mode :initform nil :initarg :patch-display-mode)
    (active-view :accessor active-view :initform nil)
    ))
+
+(defmethod cursor-panes ((self sheetEditor))
+  (list (panel (score-view self))))
 
 
 (defmethod initialize-instance :after ((self sheetEditor) &rest l)
@@ -127,9 +130,6 @@
 (defmethod editor-last-saved ((self sheetEditor))
   (update-last-saved (object self)))
 
-;(defmethod palette-ok ((self SheetEditor))
-;  (and *palette-win* (palette *palette-win*)
-;       (equal (editor-assoc (palette *palette-win*)) (score-view self))))
 
 ;;;===============================
 ;;; PATCH PART
@@ -154,27 +154,76 @@
   (:default-initargs :draw-with-buffer t))
 
 (defclass sheet-titlebar (editor-titlebar) 
-  ((currtime :accessor currtime :initarg :currtime :initform 0)))
+  ((currtime :accessor currtime :initarg :currtime :initform 0)
+   (play-buttons :accessor play-buttons :initarg :play-buttons :initform nil)
+   (mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)))
 
-(defclass sheet-palette (music-score-palette) ())
-;  (:default-initargs :source-name "musicpalette" :delta-inpix (om-make-point 175 0)))
+(defmethod init-titlebar ((self sheet-scoreeditor))
 
-(defmethod editor-has-palette-p ((self sheeteditor)) 'sheet-palette)
-(defmethod editor-has-palette-p ((self sheet-scoreeditor)) 'sheet-palette)
+  (setf (play-buttons (title-bar self))
+        (list (om-make-view 'om-icon-button :position (om-make-point 50 2) :size (om-make-point 22 22)
+                            :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-play (om-view-container self))))
+              
+               (om-make-view 'om-icon-button :position (om-make-point 71 2) :size (om-make-point 22 22)
+                             :icon1 "pause" :icon2 "pause-pushed"
+                             :lock-push t
+                             :action #'(lambda (item) (editor-pause (om-view-container self))))
+              
+               (om-make-view 'om-icon-button :position (om-make-point 92 2) :size (om-make-point 22 22)
+                             :icon1 "stop" :icon2 "stop-pushed"
+                             :action #'(lambda (item) (editor-stop (om-view-container self))))
+               
+               (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
+                             :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
+              
+               (om-make-view 'om-icon-button :position (om-make-point 123 2) :size (om-make-point 22 22)
+                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
+                             :lock-push t
+                             :selected-p (loop-play (om-view-container self))
+                             :action #'(lambda (item) 
+                                         (setf (loop-play (om-view-container self))
+                                               (not (loop-play (om-view-container self))))
+                                         (setf (selected-p item) (loop-play (om-view-container self)))
+                                         ))
+              
+               ))
+   
+   (setf (mode-buttons (title-bar self))
+         (list (om-make-view 'om-icon-button :position (om-make-point 220 2) :size (om-make-point 22 22)
+                             :icon1 "mousecursor" :icon2 "mousecursor-pushed"
+                             :lock-push t
+                             :selected-p (and (panel self) (equal :normal (cursor-mode (panel self))))
+                             :action #'(lambda (item) 
+                                         (setf (cursor-mode (panel self)) :normal)
+                                         (setf (selected-p item) t
+                                               (selected-p (cadr (mode-buttons (title-bar self)))) nil)
+                                         (om-invalidate-view self)))
+               (om-make-view 'om-icon-button :position  (om-make-point 241 2) :size (om-make-point 22 22)
+                             :icon1 "beamcursor" :icon2 "beamcursor-pushed"
+                             :lock-push t
+                             :selected-p (and (panel self) (equal :interval (cursor-mode (panel self))))
+                             :action #'(lambda (item) 
+                                         (setf (cursor-mode (panel self)) :interval)
+                                         (setf (selected-p item) t
+                                               (selected-p (car (mode-buttons (title-bar self)))) nil)
+                                         (om-invalidate-view (title-bar self))))
+               
+               
+               ))
 
-(defmethod get-palette-pict ((self sheeteditor))
-  (om-load-and-store-picture "musicpalette" 'internal))
 
-(defmethod palette-init ((self sheeteditor))
-  (palette-init (score-view self))
-  (init-play-palette self))
+   (apply 'om-add-subviews (cons (title-bar self)
+                                 (append (play-buttons (title-bar self))
+                                         (mode-buttons (title-bar self))
+                                         )))
+   )
+
+
 
 (defmethod get-editor-assoc ((self sheeteditor)) (score-view self))
 
-(defmethod buttons-list ((self sheet-scorepanel)) nil)
-
-;(defmethod editor-open-palette ((self sheeteditor))
-;  (editor-open-palette (score-view self)))
 
 (defmethod init-titlebar ((self sheet-scoreeditor)) 
   (om-set-font (title-bar self) *om-default-font1*))
@@ -251,25 +300,26 @@
                   (om-draw-line x y0 x (+ y0 h))
                   (om-draw-string x (+ y0 h -20) (number-to-string time)))
                 )))))))
-  (when (cursor-p self)
+  (when (equal (mode (editor self)) :interval)
     (draw-interval-cursor self)))
           
-(defmethod draw-interval-cursor ((self sheet-scorepanel))
-   (let* ((interval (cursor-interval self))
-          (pixel-interval (list (get-x-pos self (first interval) (staff-zoom self))
-                                (get-x-pos self (second interval) (staff-zoom self))))
-          (cursor-pos-pix (get-x-pos self (cursor-pos self) (staff-zoom self))))
-     (om-with-focused-view self
-       (unless (= (car pixel-interval) (cadr pixel-interval))
-         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
-                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
-       (when (cursor-p self)
-         (om-with-fg-color self *om-gray-color*
-           (om-with-dashline 
-               (om-with-line-size 1.5 
-                 (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
-                               cursor-pos-pix (+ (om-v-scroll-position self) (h self)))))))
-       )))
+(defmethod draw-interval-cursor ((self sheet-scorepanel)) (call-next-method))
+
+;   (let* ((interval (cursor-interval self))
+;          (pixel-interval (list (get-x-pos self (first interval) (staff-zoom self))
+;                                (get-x-pos self (second interval) (staff-zoom self))))
+;          (cursor-pos-pix (get-x-pos self (cursor-pos self) (staff-zoom self))))
+;     (om-with-focused-view self
+;       (unless (= (car pixel-interval) (cadr pixel-interval))
+;         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
+;                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
+;       (when (cursor-p self)
+;         (om-with-fg-color self *om-gray-color*
+ ;          (om-with-dashline 
+ ;              (om-with-line-size 1.5 
+ ;                (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
+ ;                              cursor-pos-pix (+ (om-v-scroll-position self) (h self)))))))
+;       ))
 
 
 (defmethod update-slot-edit ((self sheet-scorepanel)) t)
@@ -289,10 +339,7 @@
     
 (defmethod handle-key-event ((self sheeteditor) key)
   (cond ((equal key #\SPACE)
-         (when *palette*
-           (if (Idle-p *general-player*)
-               (palette-act  *palette* (if (selection-to-play-? (panel (score-view self))) 4 0))
-             (palette-act *palette* 1))))
+         (editor-play/stop self))
         (t (when (get-active-view self)
              (handle-key-event (get-active-view self) key)))))
 
@@ -1171,7 +1218,6 @@ else create a new Editor frame, and select its window."
                 (get-special-cursor-positions (reference self) (obj (reference self))))
         '< :key 'car))
                  
-
 (defmethod get-special-cursor-positions ((self t) obj) nil)
 
 (defmethod get-special-cursor-positions ((self sheet-track-obj) (obj bpf)) 
@@ -1186,28 +1232,25 @@ else create a new Editor frame, and select its window."
          (list (+ (start-t self) (offset b)) (make-instance 'grap-marker)) 
          (list (+ (start-t self) (offset b) (round (* (extend b) (strech-fact b)))) (make-instance 'grap-marker)))))
 
-(defmethod draw-measure-cursor ((self sheet-scorepanel) poly) 
-  (om-erase-movable-cursor self)
-  (om-new-movable-cursor self 0 (om-v-scroll-position self) 4 (h self) 'om-cursor-line)   
-  (draw-sheet-cursor self poly))
 
-(defmethod draw-sheet-cursor ((self sheet-scorepanel) voice) 
-  (unless (string-equal (get-player-etat *general-player*) "Pause")
-    (when (and (om-view-window self) (om-window-open-p (om-view-window self)))
-      (let* ((cur-evt (second (car *events-play-cursor*)))
-             (cur-time (first (car *events-play-cursor*)))
+(defmethod editor-play ((self sheeteditor))
+  (let ((interval (get-interval-to-play self))
+        (cursorevents (remove-duplicates (get-temporal-objects (graphic-obj (panel (score-view self)))) :test 'equal :key 'car)))
+    (setf *events-play-cursor* 
+          (if interval
+              (remove-if #'(lambda (x) (or (> (car x) (second interval)) (< (car x) (car interval)))) cursorevents)
+            cursorevents)))
+  (call-next-method))
+
+
+(defmethod update-cursor ((self sheet-scorepanel) time &optional y1 y2)
+  (let ((currevent (find time *events-play-cursor* :key 'car :test '>= :from-end t)))
+    (when currevent
+      (let* ((cur-evt (second currevent))
+             (cur-time (first currevent))
              (cur-pixel (get-x-pos self cur-time (staff-zoom self)))
              (y0 (om-v-scroll-position self)))
         (when (> cur-pixel (+ (om-h-scroll-position self) (w self)))
           (om-set-scroll-position self (om-make-point cur-pixel (om-v-scroll-position self))))
         (om-update-movable-cursor self cur-pixel (om-v-scroll-position self) 4 (h self))
-        (let ((next (second *events-play-cursor*)))
-          (if (or (Idle-p *general-player*) (not next))
-              (progn (om-erase-movable-cursor self) 
-                (palette-restore-stop))
-            (let ((primo (car (car *events-play-cursor*))))
-              (pop *events-play-cursor*)
-              (dfuncall (- (- (car next) primo ) (- (- (clock-time) *metric-strat-time*) primo))   
-                        'draw-sheet-cursor self voice ))))))))
-
-                    
+        ))))
