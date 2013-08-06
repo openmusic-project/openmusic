@@ -170,8 +170,9 @@
                                   :size (om-make-point (- *channel-w* 5) 395)
                                   :bg-color *om-light-gray-color*))
          (pos 8)
-         (volval (cadr (nth channel *general-mixer-values*)))
-         (panval (car (nth channel *general-mixer-values*)))
+         (vals *general-mixer-values*)
+         (volval (cadr (nth channel vals)))
+         (panval (car (nth channel vals)))
          (effectlist (build-faust-effect-list channel))
          (synthlist (build-faust-synth-list channel))
          (effectlist1 effectlist) (effectlist2 effectlist) (effectlist3 effectlist) 
@@ -241,8 +242,7 @@
                                           (om-make-point 30 100) ""
                                           :di-action (om-dialog-item-act item
                                                        (change-genmixer-channel-vol (+ channel 1) (om-slider-value item))
-                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item)))
-                                                       )
+                                                       (om-set-dialog-item-text vol-val (number-to-string (om-slider-value item))))
                                           :increment 1
                                           :range '(0 100)
                                           :value volval
@@ -385,8 +385,7 @@
 ;This function changes a channel volume
 (defun change-genmixer-channel-vol (channel value)
   (las-change-channel-vol-visible channel (float (/ value 100)))
-  (setf (cadr (nth (- channel 1) *general-mixer-values*)) value)
-  )
+  (setf (cadr (nth (- channel 1) *general-mixer-values*)) value))
 
 ;/CHANGE GENMIXER CHANNEL PAN
 ;This function changes a channel pan
@@ -552,8 +551,8 @@
 ;Loads a preset to the *general-mixer-values* variable, and apply these values.
 (defun load-genmixer-preset (index)
   (let ((vals (cadr (nth index *general-mixer-presets*))))
-  (setf *general-mixer-values* vals)
-  (apply-mixer-values)))
+    (setf *general-mixer-values* vals)
+    (apply-mixer-values)))
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION
 ;Update the genmixer vol and pan display.
