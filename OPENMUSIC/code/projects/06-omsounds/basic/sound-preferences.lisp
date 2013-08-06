@@ -49,7 +49,7 @@
     (setf *normalize-level* (get-pref modulepref :normalize-level))
     (when (get-pref modulepref :normalizer)
       (if (find (get-pref modulepref :normalizer) *loaded-normalizers* :test 'equal)
-        (setf *normalizer* (get-pref modulepref :normalizer))
+          (setf *normalizer* (get-pref modulepref :normalizer))
         (om-beep-msg (string+ "Normalize module " (string (get-pref modulepref :normalizer)) " not loaded. Default module (" (string *normalizer*) ") will be used."))
         ))
     (when new-res
