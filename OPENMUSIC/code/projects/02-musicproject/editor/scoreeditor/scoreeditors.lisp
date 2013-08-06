@@ -177,6 +177,10 @@
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
+(defmethod start-position ((self scorepanel)) 
+  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
+      0
+    (call-next-method)))
 
 ;===========
 ;OBJECT ORDER
