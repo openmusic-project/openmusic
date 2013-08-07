@@ -124,17 +124,7 @@
   )
           
 
-(defmethod editor-play ((self midieditor))
-  (call-next-method)
-  (update-play-buttons (control self)))
 
-(defmethod editor-pause ((self midieditor))
-  (call-next-method)
-  (update-play-buttons (control self)))
-
-(defmethod editor-stop ((self midieditor))
-  (call-next-method)
-  (update-play-buttons (control self)))
 
 
 ;=============The ruler y===========
@@ -256,6 +246,18 @@
 
 (defmethod cursor-panes ((self MidiEditor))
   (list (panel self) (preview self)))
+
+(defmethod editor-play ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-pause ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-stop ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
 
 
 (defmethod get-menubar ((self midiEditor)) 
