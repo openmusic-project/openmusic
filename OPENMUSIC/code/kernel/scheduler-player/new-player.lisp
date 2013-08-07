@@ -86,9 +86,11 @@
                                       (if (> (get-player-time player) (stop-time player))
                                           (if (loop-play player)
                                               (progn 
+                                                ;(print "loop")
                                                 (setf (start-time player) start-t
                                                       (ref-clock-time player) (clock-time))
-                                                (mapcar #'player-loop (engines player)))
+                                                (mapcar #'player-loop (engines player))
+                                                )
                                             (general-stop player)))
                                       (sleep (scheduler-tick player))
                                       )))))
