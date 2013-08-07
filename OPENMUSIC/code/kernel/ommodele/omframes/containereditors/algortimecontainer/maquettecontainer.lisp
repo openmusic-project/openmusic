@@ -1120,9 +1120,10 @@
       (list (cons-play-maquette-object (object self) boxestoplay)))
     ))
 
-(defmethod selection-to-play-? ((self MaquettePanel))
-   (or (cursor-p self) (get-actives self)))
-                   
+;(defmethod selection-to-play-? ((self MaquettePanel))
+;   (or (cursor-p self) (get-actives self)))
+       
+#|            
 (defmethod get-selection-to-play ((self MaquettePanel))
     (cond
     ((cursor-p  self)
@@ -1148,7 +1149,7 @@
                      :interval (list minim maxim))
                minim
                maxim)))))
-
+|#
 
 ;;;==========================
 

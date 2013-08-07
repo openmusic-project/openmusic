@@ -501,7 +501,7 @@
 ;This function makes the choice to call the right play function (hidden or visible)
 ;It also checks if there's a selection to play, or if it has to play the song straight ahead.
 (defun om-smart-play (sound &optional from to track)
-  (if (sndlasptr-current sound)
+  (if (om-sound-sndlasptr-current sound)
       (let ((newptr (if (> (number-of-channels sound) 1) (sndlasptr-current sound) (las::makestereosound (sndlasptr-current sound)))))
           (if (or from to)
               (let ((begin (if from (round (* from (/ las-srate 1000.0)))))

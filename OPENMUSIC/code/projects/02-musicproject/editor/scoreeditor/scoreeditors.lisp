@@ -180,10 +180,7 @@
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
-(defmethod start-position ((self scorepanel)) 
-  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
-      0
-    (call-next-method)))
+
 
 ;===========
 ;OBJECT ORDER
@@ -281,7 +278,7 @@
    (t  nil)))
 
 ;------------INITS
-(defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
+
 (defmethod get-score-class-ctrls ((self scoreEditor)) 'omcontrols-view)
 
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
@@ -685,6 +682,13 @@
    (:default-initargs :field-size (om-make-point 20000 10000)
     :scrollbars t))
 
+(defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
+
+(defmethod start-position ((self scorepanel)) 
+  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
+      0
+    (call-next-method)))
+
 (defmethod linear? ((self scorepanel)) (not (= (score-mode self) 2)))
 (defmethod in-patch-mode? ((self scorepanel)) (= (score-mode self) 1))
 (defmethod in-page-mode? ((self scorepanel)) (= (score-mode self) 2))
@@ -700,6 +704,11 @@
          (string-equal (obj-mode self) "chord-seq"))
          *c-voice*)
     (t *om-arrow-cursor*)))
+
+(defmethod start-position ((self scorepanel)) 
+  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
+      0
+    (call-next-method)))
 
 
 ;;; pour pas perdre les scrollbars quand on commence a mettre des objets dans le score-patch...
@@ -1491,7 +1500,7 @@
 
 ;------------ Redefinition of player
 
-(defmethod selection-to-play-? ((self scorePanel)) nil)
+;(defmethod selection-to-play-? ((self scorePanel)) nil)
 
 (defmethod get-obj-to-play ((self scorePanel))
    (list (object (editor self)) 
@@ -2311,8 +2320,8 @@
     (#\z (set-cursor-mode (editor self)))
     (otherwise (call-next-method)))))
 
-(defmethod selection-to-play-? ((self chordseqPanel)) 
-   (and (linear? self) (cursor-p self)))
+;(defmethod selection-to-play-? ((self chordseqPanel)) 
+;   (and (linear? self) (cursor-p self)))
 
 (defmethod convert-interval ((self chordseqPanel))
    (let* ((obj (car (get-obj-to-play self)))
@@ -2341,33 +2350,15 @@
        '(0 0))))
 
 
-;(defmethod draw-interval-cursor ((self chordseqPanel)) 
-;   (let* ((ls (/ (staff-size self) 4))
-;          (zoom (staff-zoom self))
- ;         (interval (cursor-interval self))
- ;         (pixel-interval (om+ (get-key-space self) (list (ms2pixel (car interval) ls zoom)
-;                                                          (ms2pixel (second interval) ls zoom))))
-;          (cursor-pos-pix (+ (get-key-space self) (ms2pixel (cursor-pos self) ls zoom))))
-;     (om-with-focused-view self
-;       (unless (= (car pixel-interval) (cadr pixel-interval))
-;         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
-;                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
-;       (when (cursor-p self)
-;         (om-with-fg-color self *om-gray-color*
- ;          (om-with-dashline 
-;               (om-with-line-size 1.5 
-;                 (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
-;                               cursor-pos-pix (+ (om-v-scroll-position self) (h self))))))))))
-   
-  
-(defmethod get-selection-to-play ((self chordseqPanel))
-  (let ((obj (car (get-obj-to-play self)))
-        (interval (get-play-interval self)))
-    (values  (list obj
-                   :interval interval
-                   :approx (get-edit-param (om-view-container self) 'approx)
-                   :port (get-edit-param (om-view-container self) 'outport))
-             (first interval) (second interval))))
+
+;(defmethod get-selection-to-play ((self chordseqPanel))
+;  (let ((obj (car (get-obj-to-play self)))
+;        (interval (get-play-interval self)))
+;    (values  (list obj
+;                   :interval interval
+;                   :approx (get-edit-param (om-view-container self) 'approx)
+;                   :port (get-edit-param (om-view-container self) 'outport))
+;             (first interval) (second interval))))
 
 
 (defun interchange-chords (oldchord newobject)
@@ -2854,11 +2845,6 @@
 
 
 
-(defmethod draw-interval-cursor ((self voicepanel)) 
-  (call-next-method)
-  ;(rythm-draw-interval-cursor self)
-  )
-
 (defmethod edit-preferences ((self voicepanel))
    (om-beep-msg "No mode page for this editor"))
 
@@ -3024,9 +3010,6 @@
                (and (group-p (reference note)) (group-p (parent (reference note)))))
      (call-next-method)))
 
-(defmethod draw-interval-cursor ((self polypanel)) 
-  ;(rythm-draw-interval-cursor self)
-  (call-next-method))
 
 (defmethod convert-interval ((self polypanel)) (rhythm-convert-interval self))
 
