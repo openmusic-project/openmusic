@@ -1073,6 +1073,7 @@ else create a new Editor frame, and select its window."
 ;;;===================
 
 (defmethod update-panel ((self sheet-scorepanel) &optional (updateref nil))
+  (setf (graphic-obj self) (make-instance 'grap-sheet :reference (object (sheet-editor self))))
   (loop for objframe in (get-sheet-objframes self) do
         (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
            (make-grap-obj objframe)
@@ -1209,7 +1210,6 @@ else create a new Editor frame, and select its window."
 
 (defmethod editor-play ((self sheeteditor))
   (update-panel (panel (score-view self)))
-  (om-inspect (graphic-obj (panel (score-view self))))
   (let ((interval (get-interval-to-play self))
         (cursorevents (remove-duplicates (get-temporal-objects (graphic-obj (panel (score-view self)))) :test 'equal :key 'car)))
     (setf *events-play-cursor* 
