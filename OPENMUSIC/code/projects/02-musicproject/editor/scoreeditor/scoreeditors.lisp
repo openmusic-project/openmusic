@@ -180,10 +180,7 @@
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
-(defmethod start-position ((self scorepanel)) 
-  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
-      0
-    (call-next-method)))
+
 
 ;===========
 ;OBJECT ORDER
@@ -700,6 +697,11 @@
          (string-equal (obj-mode self) "chord-seq"))
          *c-voice*)
     (t *om-arrow-cursor*)))
+
+(defmethod start-position ((self scorepanel)) 
+  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
+      0
+    (call-next-method)))
 
 
 ;;; pour pas perdre les scrollbars quand on commence a mettre des objets dans le score-patch...
