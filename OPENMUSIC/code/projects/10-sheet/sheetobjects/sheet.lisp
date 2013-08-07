@@ -348,21 +348,6 @@ See the dedicated chapter in the OM User Manual for more details.")
             (setf thetrack tr)))
     (setf (inside thetrack) (remove object (objs thetrack) :test 'equal))))
 
-
-;=====================================================================
-; PLAY
-;=====================================================================
-
-(defmethod* PrepareToPlay ((player t) (self sheet-track) at &key  approx port interval voice)        
-  (loop for item in (objs self) do
-        (PrepareToPlay player (obj item) (+ at (start-t item))
-                       :approx approx
-                       :port port
-                       :interval interval
-                       :voice voice)))
-
-
-
 ;=====================================================================
 ; SHEET BOX
 ;=====================================================================
@@ -415,8 +400,28 @@ See the dedicated chapter in the OM User Manual for more details.")
 (defmethod get-editor-class ((self OMSheet)) 'sheetEditor)
 
 
-;(defmethod cons-mini-obj ((self OMSheet) view sizefont size)
-;   (cons-multi-mini-obj self view sizefont size))
+;=====================================================================
+; PLAY
+;=====================================================================
+
+;(defmethod* PrepareToPlay ((player t) (self sheet-track) at &key  approx port interval voice)        
+;  (loop for item in (objs self) do
+;        (PrepareToPlay player (obj item) (+ at (start-t item))
+;                       :approx approx
+;                       :port port
+;                       :interval interval
+;                       :voice voice)))
+
+(defmethod player-schedule ((player omplayer) (obj omsheet) engine &key (at 0) interval)
+  (loop for tr in (inside obj) do
+        (loop for tr-obj in (objs tr) do
+              (player-schedule player (obj tr-obj)
+                      (car (players-for-object (obj tr-obj)))
+                      :at (+ at (start-t tr-obj))
+                      :interval interval)
+              )))
+                      
+
 
 
 

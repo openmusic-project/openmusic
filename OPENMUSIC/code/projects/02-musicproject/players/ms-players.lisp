@@ -25,7 +25,7 @@
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
   (player-stop :midishare)
   (InitPlayingSeq 'midishare (get-obj-dur object))
-  (PrepareToPlay 'midishare object (real-duration object 0) :interval interval)
+  (PrepareToPlay 'midishare object (+ at (real-duration object 0)) :interval interval)
   (FinalizePlayingSeq 'midishare (get-obj-dur object)))
 
 ;;; PLAY (NOW) 

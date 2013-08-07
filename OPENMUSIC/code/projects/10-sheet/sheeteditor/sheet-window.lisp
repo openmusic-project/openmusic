@@ -225,9 +225,6 @@
 (defmethod get-editor-assoc ((self sheeteditor)) (score-view self))
 
 
-(defmethod init-titlebar ((self sheet-scoreeditor)) 
-  (om-set-font (title-bar self) *om-default-font1*))
-
 (defmethod om-draw-contents ((self sheet-titlebar)) 
   (call-next-method)
   (om-with-focused-view self
@@ -254,7 +251,6 @@
 
 (defmethod initialize-instance :after ((self sheet-scorepanel) &rest initargs)
   (init-tracks self)
-  (setf (graphic-obj self) (make-instance 'grap-sheet :reference (object (sheet-editor self))))
   (update-panel self t))
 
 (defmethod init-music-patch ((self sheet-scorepanel)) nil)
@@ -300,26 +296,16 @@
                   (om-draw-line x y0 x (+ y0 h))
                   (om-draw-string x (+ y0 h -20) (number-to-string time)))
                 )))))))
-  (when (equal (mode (editor self)) :interval)
-    (draw-interval-cursor self)))
+  ;(when (equal (mode (editor self)) :interval)
+    (draw-interval-cursor self)
+  ;  )
+  )
           
-(defmethod draw-interval-cursor ((self sheet-scorepanel)) (call-next-method))
 
-;   (let* ((interval (cursor-interval self))
-;          (pixel-interval (list (get-x-pos self (first interval) (staff-zoom self))
-;                                (get-x-pos self (second interval) (staff-zoom self))))
-;          (cursor-pos-pix (get-x-pos self (cursor-pos self) (staff-zoom self))))
-;     (om-with-focused-view self
-;       (unless (= (car pixel-interval) (cadr pixel-interval))
-;         (draw-h-rectangle (list (car pixel-interval) (om-v-scroll-position self) 
-;                                 (second pixel-interval) (+ (om-v-scroll-position self) (h self))) t))
-;       (when (cursor-p self)
-;         (om-with-fg-color self *om-gray-color*
- ;          (om-with-dashline 
- ;              (om-with-line-size 1.5 
- ;                (om-draw-line cursor-pos-pix (om-v-scroll-position self) 
- ;                              cursor-pos-pix (+ (om-v-scroll-position self) (h self)))))))
-;       ))
+(defmethod time-to-pixels ((view sheet-scorepanel) time-ms)
+  (get-x-pos view time-ms (staff-zoom view)))
+
+
 
 
 (defmethod update-slot-edit ((self sheet-scorepanel)) t)
@@ -364,7 +350,7 @@
          (update-panel self)
          (report-modifications (sheet-editor self)))
         ((equal key :om-key-delete) (sheet-key-delete self))
-        ((equal key :om-key-esc) (off-selection self) (update-panel self))
+        ((equal key :om-key-esc) (off-selection self) (reset-cursor self) (update-panel self))
         ((equal key #\i) (sheet-key-init self))
         ((equal key #\a) (sheet-key-align self (get-edit-param (sheet-editor self) 'grille-step)))
         ;((equal key #\+) 
@@ -1157,48 +1143,36 @@ else create a new Editor frame, and select its window."
 (defclas grap-sheet (grap-poly) 
   ((page-list :initform nil)))
 
-(defclass grap-marker ()  ;; simple-graph-container
-  ())
-
-(defmethod selection-to-play-? ((self sheet-scorepanel))
-   (or (cursor-p self) (selection? self)))
+(defclass grap-marker () ())
 
 
-(defmethod get-play-interval ((self sheet-scorepanel))
-  (if (cursor-p self)
-      (call-next-method)
-    (cond ((track-p (car (selection? self)))
-           (list 0 
-                 (loop for track in (selection? self) maximize (get-obj-dur track))))
-          (t (list (loop for obj in (selection? self) minimize (start-t obj))
-                   (loop for obj in (selection? self) maximize (end-t obj)))))))
+(defun selection-interval (selection)
+  (cond ((track-p (car selection))
+         (list 0 
+               (loop for track in selection maximize (get-obj-dur track))))
+        (t (list (loop for obj in selection minimize (start-t obj))
+                 (loop for obj in selection maximize (end-t obj))))))
 
 
-(defmethod get-selection-to-play ((self sheet-scorepanel))
-  (let ((interval (get-play-interval self))
-        (playobj (if (selection? self)
-                     (cond ((track-p (car (selection? self)))
-                            (make-instance 'omsheet :voices (clone (selection? self))))
-                           (t (make-instance 'omsheet 
-                                             :voices (list (make-instance 'sheet-track 
-                                                                          :objs (clone (selection? self)))))))
-                   (car (get-obj-to-play self)))))
-    (values (list playobj
-                  :interval interval
-                  :approx (get-edit-param (om-view-container self) 'approx)
-                  :port (get-edit-param (om-view-container self) 'outport))
-            (first interval) (second interval))))
+(defmethod get-obj-to-play ((self sheeteditor))
+  (let* ((scorepanel (panel (score-view self)))
+         (selection (selection? scorepanel)))
+    (if selection
+        (cond ((track-p (car selection))
+               (make-instance 'omsheet :voices (clone selection)))
+              (t (make-instance 'omsheet 
+                                :voices (list (make-instance 'sheet-track 
+                                                             :objs (clone selection))))))
+      (call-next-method))))
 
 
+(defmethod play-selection-first ((self sheeteditor)) t)
 
-(defmethod get-selection-to-play ((self chordseqPanel))
-  (let ((obj (car (get-obj-to-play self)))
-        (interval (get-play-interval self)))
-    (values  (list obj
-                   :interval interval
-                   :approx (get-edit-param (om-view-container self) 'approx)
-                   :port (get-edit-param (om-view-container self) 'outport))
-             (first interval) (second interval))))
+(defmethod get-interval-to-play ((self sheeteditor))
+  (let ((scorepanel (panel (score-view self))))
+    (if (and (equal :normal (cursor-mode scorepanel)) (selection? scorepanel))
+        (selection-interval (selection? scorepanel))
+      (call-next-method))))
 
 
 (defmethod collect-temporal-objects ((self grap-sheet) father)
@@ -1234,6 +1208,8 @@ else create a new Editor frame, and select its window."
 
 
 (defmethod editor-play ((self sheeteditor))
+  (update-panel (panel (score-view self)))
+  (om-inspect (graphic-obj (panel (score-view self))))
   (let ((interval (get-interval-to-play self))
         (cursorevents (remove-duplicates (get-temporal-objects (graphic-obj (panel (score-view self)))) :test 'equal :key 'car)))
     (setf *events-play-cursor* 
@@ -1241,6 +1217,15 @@ else create a new Editor frame, and select its window."
               (remove-if #'(lambda (x) (or (> (car x) (second interval)) (< (car x) (car interval)))) cursorevents)
             cursorevents)))
   (call-next-method))
+
+
+;(defmethod schedule-editor-contents ((self sheeteditor))
+;  (player-schedule (player self) 
+;                   (get-obj-to-play self)
+;                   (get-player-engine self) 
+;                   :at 0 
+;                   :interval (get-interval-to-play self)))
+
 
 
 (defmethod update-cursor ((self sheet-scorepanel) time &optional y1 y2)
@@ -1254,3 +1239,4 @@ else create a new Editor frame, and select its window."
           (om-set-scroll-position self (om-make-point cur-pixel (om-v-scroll-position self))))
         (om-update-movable-cursor self cur-pixel (om-v-scroll-position self) 4 (h self))
         ))))
+

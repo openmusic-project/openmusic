@@ -58,10 +58,12 @@
 ;;; THIS METHOD WHEN THE PLAYER HAS TO PLAY SEVERAL THINGS OR PREPARE THEM IN ADVANCE
 ;;; SAYS ENGINE TO PREPARE FOR PLAYING <INTERVAL> (optional) IN <OBJ> WITH< ENGINE> AT TIME <at>
 (defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval)
+  ;(print (list obj engine at))
   (unless (find engine (engines player)) (push engine (engines player)))
   (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
   
+
 (defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
   (cond ((equal (state player) :play) 
          ;;; prolonge la durée de vie du player
@@ -196,6 +198,7 @@
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
                         #'(lambda () 
+                            ;(print (list object engine at interval))
                             (player-play-object engine object :interval interval))
                         at))
 
@@ -341,10 +344,14 @@
 (defmethod get-duration ((self play-editor-mixin)) 
   (get-obj-dur (get-obj-to-play self)))   ;;; = 0 if obj = NIL
 
+;; priorité sur le mode
+(defmethod play-selection-first ((self t)) nil)
+
 (defmethod get-interval-to-play ((self play-editor-mixin))
   (let ((selection-pane (car (cursor-panes self)))
         (object (get-obj-to-play self)))
-    (when (and selection-pane (equal (cursor-mode selection-pane) :interval) object)
+    (when (or (and (play-selection-first self) (cursor-interval selection-pane))
+              (and selection-pane (equal (cursor-mode selection-pane) :interval) object))
       (cond ((and (cursor-interval selection-pane) 
                   (not (= (car (cursor-interval selection-pane)) (cadr (cursor-interval selection-pane)))))
              (cursor-interval selection-pane))
@@ -356,7 +363,7 @@
 
 (defmethod schedule-editor-contents ((self play-editor-mixin))
   (player-schedule (player self) 
-                   (get-obj-to-play self) 
+                   (get-obj-to-play self)
                    (get-player-engine self) 
                    :at 0 
                    :interval (get-interval-to-play self)))
@@ -528,9 +535,6 @@
 
 (defmethod time-to-pixels ((self t) time)
   (om-point-x (point2pixel self (om-make-point time 0) (get-system-etat self))))
-
-
-
 
 ;;;===================
 

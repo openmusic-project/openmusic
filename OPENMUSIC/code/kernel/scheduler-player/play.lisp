@@ -178,12 +178,11 @@
 (defmethod get-obj-to-play ((self cursor-play-view-mixin))
    (list (object (om-view-container self))))
 
-(defmethod selection-to-play-? ((self cursor-play-view-mixin))
-  (and (cursor-p self) 
-       (cursor-interval self) 
-       (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))
-       ))
-
+;(defmethod selection-to-play-? ((self cursor-play-view-mixin))
+;  (and (cursor-p self) 
+;       (cursor-interval self) 
+;       (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))
+;       ))
 
 
 ;(defmethod convert-interval ((self cursor-play-view-mixin))
