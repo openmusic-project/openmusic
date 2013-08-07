@@ -278,7 +278,7 @@
    (t  nil)))
 
 ;------------INITS
-(defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
+
 (defmethod get-score-class-ctrls ((self scoreEditor)) 'omcontrols-view)
 
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
@@ -681,6 +681,13 @@
     (timebpf :accessor timebpf :initarg :timebpf :initform nil))
    (:default-initargs :field-size (om-make-point 20000 10000)
     :scrollbars t))
+
+(defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
+
+(defmethod start-position ((self scorepanel)) 
+  (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
+      0
+    (call-next-method)))
 
 (defmethod linear? ((self scorepanel)) (not (= (score-mode self) 2)))
 (defmethod in-patch-mode? ((self scorepanel)) (= (score-mode self) 1))

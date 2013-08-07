@@ -1160,10 +1160,10 @@ else create a new Editor frame, and select its window."
          (selection (selection? scorepanel)))
     (if selection
         (cond ((track-p (car selection))
-               (make-instance 'omsheet :voices (clone selection)))
+               (make-instance 'omsheet :voices selection))
               (t (make-instance 'omsheet 
                                 :voices (list (make-instance 'sheet-track 
-                                                             :objs (clone selection))))))
+                                                             :objs selection)))))
       (call-next-method))))
 
 

@@ -64,13 +64,13 @@
     (setf *multiplayer-in-port* (get-pref modulepref :multi-in))
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
     
-    (setf *general-mixer-presets* (get-pref modulepref :audio-presets))
-    (if (not *general-mixer-presets*)
-        (setf *general-mixer-presets* (init-genmixer-values)))
+    (when (get-pref modulepref :audio-presets)
+      (setf *general-mixer-presets* (print (get-pref modulepref :audio-presets))))
     t))
 
 
-;(get-pref (get-pref-by-icon 287) :audio-sr)
+
+; (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*)
 
 (defmethod save-pref-module ((iconID (eql :audio)) values)
   (list iconID `(list 
