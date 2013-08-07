@@ -201,40 +201,47 @@
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval)
-  (print (format nil "~A : play ~A - ~A" engine object interval)))
+  ;(print (format nil "~A : play ~A - ~A" engine object interval))
+  t)
 
 ;;; START (PLAY WHAT IS SCHEDULED)
 (defmethod player-start ((engine t) &optional play-list)
-  (print (format nil "~A : start" engine)))
+  ;(print (format nil "~A : start" engine))
+  t)
 
 ;;; PAUSE (all)
 (defmethod player-pause ((engine t) &optional play-list)
-  (print (format nil "~A : pause" engine)))
+  ;(print (format nil "~A : pause" engine))
+  t)
 
 ;;; CONTINUE (all)
 (defmethod player-continue ((engine t) &optional play-list)
-  (print (format nil "~A : continue" engine)))
+  ;(print (format nil "~A : continue" engine))
+  t)
 
 ;;; STOP (all)
 (defmethod player-stop ((engine t) &optional play-list)
-  (print (format nil "~A : stop" engine)))
+  ;(print (format nil "~A : stop" engine))
+  t)
 
 ;;; SET LOOP (called before play)
 (defmethod player-set-loop ((engine t) &optional start end)
-  (print (format nil "~A : set loop" engine)))
+  ;(print (format nil "~A : set loop" engine))
+  t)
 
 (defmethod player-loop ((engine t))
-  (print (format nil "~A : loop" engine)))
+  ;(print (format nil "~A : loop" engine))
+  t)
 
 (defmethod player-record ((engine t))
-  (print (format nil "~A : record" engine)))
+  ;(print (format nil "~A : record" engine))
+  t)
 
 ;;; must return the recorded object
 (defmethod player-record-stop ((engine t))
-  (print (format nil "~A : record stop" engine))
+  ;(print (format nil "~A : record stop" engine))
   nil)
 
-;(midi-start-record)
 
 
 ;;;=================================
@@ -454,10 +461,11 @@
 (defmethod interval-select-action ((self cursor-play-view-mixin) pos)
  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
     (when rect
-      (om-update-movable-object self (first rect) (om-v-scroll-position self) 
-                                (max 4 (third rect)) (om-point-v (om-interior-size self))))))
+     (om-update-movable-object self (first rect) (om-v-scroll-position self) 
+                               (max 4 (third rect)) (om-point-v (om-interior-size self))))))
 
 (defmethod release-interval-select ((self cursor-play-view-mixin) pos)  
+
   (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
         (minpixel 2) position)
     (when rect
@@ -473,6 +481,7 @@
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
       (om-invalidate-view self))))
+
 
 (defmethod draw-interval-cursor ((self cursor-play-view-mixin))
   (let* ((cursor-pos-pix (time-to-pixels self (cursor-pos self)))
@@ -507,6 +516,10 @@
     (om-erase-movable-cursor self)
     (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)))
 
+(defmethod reset-cursor ((self cursor-play-view-mixin))
+  (setf (cursor-pos self) 0)
+  (setf (cursor-interval self) '(0 0))
+  (om-invalidate-view self))
 
 ;;;===================
 ;;; TOOLS

@@ -34,45 +34,18 @@
                     :retain-scroll retain-scroll :wintype wintype
                     ))
 
-;Palette
-(omg-defclass midi-Palette (playing-palette)  () 
-   ;(:default-initargs :source-name "midi-palette")
-   )
 
-(defmethod palette-act ((self midi-palette) x)
-   (unless (call-next-method)
-     (let ((ed-view (panel (editor-assoc self))))
-       (case x
-         ;(9 (grille-on-off ed-view))
-         ;(10 (om-beep-msg "Not implemented yet"))
          
-         (7 (setf (cursor-p ed-view) nil)
-            (setf (mode (editor-assoc self)) x))
-         (8 (setf (cursor-p ed-view) t) 
-            (setf (mode (editor-assoc self)) x))
-         (9 (setf (cursor-p ed-view) nil) 
-            (setf (mode (editor-assoc self)) x))
-         (10 (init-coor-system ed-view))
-         (otherwise
-          (unless (= x 6)
-            (setf (mode (editor-assoc self)) x)))
-         )
-       (om-invalidate-view (view *palette-win*) t)
-       (om-invalidate-view ed-view)
-       (om-invalidate-view (preview (editor-assoc self))))))  
 
+
+    
 ;=============The control===========--
-(omg-defclass Midi-control (3dBorder-view)  ())
 
+(defclass midi-control (3dBorder-view)  
+  ((play-buttons :accessor play-buttons :initform nil)
+   (mode-buttons :accessor mode-buttons :initform nil)))
 
-(defmethod om-draw-contents :before ((self Midi-control))
-   ;(om-with-focused-view self
-   ;  (om-draw-line 0 24 (w self) 24)
-   ;  (om-draw-string 25 8 "Pitch :")
-   ;  (om-draw-string 25 20 "X-time:")
-   ;  (om-draw-string 120 10 "file:")
-   ;  (om-draw-string 160 10 (namestring (MidiFileName (object (om-view-container self))))))
-   )
+(defmethod editor ((self midi-control)) (om-view-container self))
 
 (defmethod initialize-instance :after ((self Midi-control) &rest l)
    (declare (ignore l))
@@ -82,8 +55,76 @@
                                          "  Separate MIDI tracks  "
                                          :di-action (om-dialog-item-act item 
                                                       (set-split-tracks (om-view-container self) (om-checked-p item)))))
-   )
+
+
+   (setf (play-buttons self)
+         (list (om-make-view 'om-icon-button :position (om-make-point 250 2) :size (om-make-point 22 22)
+                             :icon1 "play" :icon2 "play-pushed"
+                             :lock-push t
+                             :action #'(lambda (item) (editor-play (om-view-container self))))
+              
+               (om-make-view 'om-icon-button :position (om-make-point 271 2) :size (om-make-point 22 22)
+                             :icon1 "pause" :icon2 "pause-pushed"
+                             :lock-push t
+                             :action #'(lambda (item) (editor-pause (om-view-container self))))
+              
+               (om-make-view 'om-icon-button :position (om-make-point 292 2) :size (om-make-point 22 22)
+                             :icon1 "stop" :icon2 "stop-pushed"
+                             :action #'(lambda (item) (editor-stop (om-view-container self))))
+               
+               (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
+                             :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
+              
+               (om-make-view 'om-icon-button :position (om-make-point 323 2) :size (om-make-point 22 22)
+                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
+                             :lock-push t
+                             :selected-p (loop-play (om-view-container self))
+                             :action #'(lambda (item) 
+                                         (setf (loop-play (om-view-container self))
+                                               (not (loop-play (om-view-container self))))
+                                         (setf (selected-p item) (loop-play (om-view-container self)))
+                                         ))
+              
+               ))
+   
+   (setf (mode-buttons self)
+         (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
+                             :icon1 "beamcursor" :icon2 "beamcursor-pushed"
+                             :lock-push t
+                             :selected-p (and (editor self) 
+                                              (equal :interval (mode (editor self))))
+                             :action #'(lambda (item) 
+                                         (setf (mode (editor self)) :interval)
+                                         (setf (selected-p item) t
+                                               (selected-p (cadr (mode-buttons self))) nil)
+                                         (om-invalidate-view self)))
+               
+               (om-make-view 'om-icon-button :position (om-make-point 421 2) :size (om-make-point 22 22)
+                             :icon1 "handcursor" :icon2 "handcursor-pushed"
+                             :lock-push t
+                             :selected-p (and (editor self)
+                                              (equal :move (mode (editor self))))
+                             :action #'(lambda (item) 
+                                         (setf (mode (editor self)) :move)
+                                         (setf (selected-p item) t
+                                               (selected-p (car (mode-buttons self))) nil)
+                                         (om-invalidate-view self)))
+               ))
+
+
+   (apply 'om-add-subviews (cons self
+                                 (append (play-buttons self)
+                                         (mode-buttons self)
+                                         (list 
+                                          (om-make-view 'om-icon-button :position (om-make-point 463 2) :size (om-make-point 22 22)
+                                                        :id :resize
+                                                        :icon1 "resize" :icon2 "resize-pushed"
+                                                        :lock-push nil
+                                                        :action #'(lambda (item) (init-coor-system (panel (editor self)))))))))    
+  )
           
+
+
 
 
 ;=============The ruler y===========
@@ -110,22 +151,18 @@
         
 
 
-
-
-
-
 ;=========PREVIEW===========
 
-(defclass midi-preview (3Dborder-view om-view-cursor-play) ()
+(defclass midi-preview (3Dborder-view cursor-play-view-mixin) ()
   #+win32(:default-initargs :draw-with-buffer t)
   )
 
-(defmethod draw-line-cursor ((self midi-preview) &key newpixel (draw? t))
-  (unless newpixel
-    (setf newpixel (round (* (/ (cursor-pos *general-player*) (max 1 (cadr (bounds-x (panel (om-view-container self)))))) (w self)))))
-  (when draw? 
-    (om-update-movable-cursor self newpixel 0 4 (h self)))
-   newpixel)
+(defmethod update-cursor ((self midi-preview) time &optional y1 y2)
+  (let ((y (or y1 0))
+        (h (if y2 (- y2 y1) (h self)))
+        (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
+    (om-update-movable-cursor self pixel y 4 h)))
+
 
 (defmethod om-draw-contents ((self midi-preview))  
   (call-next-method)
@@ -200,11 +237,28 @@
 
 
 ;------------------------------------
-(omg-defclass MidiEditor (EditorView object-editor) 
+(defclass MidiEditor (EditorView object-editor play-editor-mixin) 
    ((control :initform nil :accessor control)
-    (mode :initform 7 :accessor mode)
+    (mode :initform :interval :accessor mode)
     (preview :initform nil :accessor preview)
     (split-tracks :initform nil :initarg :split-tracks :accessor split-tracks)))
+
+
+(defmethod cursor-panes ((self MidiEditor))
+  (list (panel self) (preview self)))
+
+(defmethod editor-play ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-pause ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-stop ((self midieditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
 
 (defmethod get-menubar ((self midiEditor)) 
   (list (om-make-menu "File" 
@@ -214,7 +268,7 @@
 
 
 ;;; BAR 
-(omg-defclass midi-titlebar (editor-titlebar) ())
+(defclass midi-titlebar (editor-titlebar) ())
 
 (defmethod get-titlebar-class ((self MidiEditor)) 'midi-titlebar)
 
@@ -237,14 +291,7 @@
                   )))
 
 
-(defmethod editor-has-palette-p ((self MidiEditor)) 'midi-palette)
 
-(defmethod get-palette-pict ((self midieditor)) 
-  (om-load-and-store-picture "midi-palette" 'internal))
-
-(defmethod palette-init ((self MidiEditor))
-  (call-next-method)
-  (init-play-palette self))
 
 (defmethod editor-null-event-handler :after ((self MidiEditor))
   (do-editor-null-event self))
@@ -361,18 +408,19 @@
 
 
 ;------------------------------------
-(defclass midiPanel (om-scroller view-with-ruler-xy cursor-play-view-mixin) 
-              ((bounds-x :initform '(0 1) :accessor bounds-x :initarg :bounds-x))
-              #+win32(:default-initargs :draw-with-buffer t)
-              )
+(defclass midipanel (om-scroller view-with-ruler-xy cursor-play-view-mixin) 
+  ((bounds-x :initform '(0 1) :accessor bounds-x :initarg :bounds-x))
+  (:default-initargs #+win32 :draw-with-buffer #+win32 t
+   :cursor-mode :interval)
+  )
 
 (defmethod set-units-ruler  ((self midiPanel) (ruler ruler)) nil)
 
 (defmethod om-view-cursor ((self midiPanel))
    (declare (ignore where))
    (cond
-    ((= 9 (mode (om-view-container self))) *om-hand-cursor*)
-    ((cursor-p self) *om-i-beam-cursor*) 
+    ((equal :move (mode (editor self))) *om-hand-cursor*)
+    ((equal :interval (mode (editor self))) *om-i-beam-cursor*) 
     (t *om-arrow-cursor*)
     ))
 
@@ -386,18 +434,15 @@
 
 (defvar *midi-panel-last-click* nil)
 (defmethod om-view-click-handler ((self midiPanel) where)
-  (if (cursor-p self)
-      (progn 
-        (if (equal (cursor-interval self) '(0 0))
-            (new-interval-cursor self where)
-          (setf (cursor-interval self) '(0 0)))
-        (om-invalidate-view self)
-        (om-invalidate-view (preview (editor self))))
-    (when (=  (mode (om-view-container self)) 9) 
+  (case (mode (editor self))
+    (:interval
+     (new-interval-cursor self where)
+     (om-invalidate-view self)
+     (om-invalidate-view (preview (editor self))))
+    (:move
       (om-init-motion-functions self 'scroll-system-motion nil)
-      (setf *midi-panel-last-click* where)
-      ;(setf (grille-p self) nil)
-      )))
+      (setf *midi-panel-last-click* where))
+    (othewise nil)))
 
 (defmethod release-interval-select ((self midiPanel) pos)  
   (call-next-method)
@@ -427,6 +472,7 @@
   (set-units-ruler self (rulerx self))
   (update-subviews (om-view-container self)))
 
+
 ;=====================DRAW
 
 
@@ -436,8 +482,7 @@
    (om-draw-view-outline self)
    (when (grille-p self)
      (draw-grille self))
-   (when  (cursor-p self)
-       (draw-interval-cursor self))
+   (draw-interval-cursor self)
    (let ((trh (round (h self) (max 1 (length (tracks (object (editor self))))))))
      (om-with-focused-view self
        (loop for item in (tracks (object (om-view-container self)))
@@ -476,17 +521,6 @@
     ))
          
 
-(defmethod draw-interval-cursor ((self midiPanel))
-  (call-next-method)
-  (let* ((sys-etat (get-system-etat self))
-         (cursor-pos-pix (om-point-h (point2pixel self (om-make-big-point (cursor-pos self) 0) sys-etat))))
-      (om-with-focused-view self
-        (om-with-fg-color self *om-red2-color*
-          (om-with-dashline 
-            (om-with-line-size 2 
-              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
-        )))
-            
 
 (defmethod get-obj-to-play ((self midiPanel))
    (list (object (om-view-container self)) 
@@ -507,11 +541,9 @@
    (case char
      (#\g (grille-on-off self))
      (#\h (show-help-window "Keyboard Commands for MIDI Editor" (get-help-list (editor self))))
-     (#\SPACE (when *palette-win*
-                (if (Idle-p *general-player*)
-                    (palette-act *palette* (if (selection-to-play-? self) 4 0))
-                  (palette-act  *palette* 1))))
-     (otherwise (call-next-method))))   
+     (:om-key-esc (reset-cursor self))
+     (#\SPACE (editor-play/stop (editor self)))
+     (otherwise (call-next-method))))
 
 ;; factoriser dans view-player-mixin (avec soundeditor, etc.)
 (defmethod get-selection-to-play ((self midiPanel))

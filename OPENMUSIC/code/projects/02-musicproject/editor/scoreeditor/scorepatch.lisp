@@ -333,6 +333,14 @@
 (defmethod pixel2point ((self scorepanel) pixel)
    (om-make-point (pixel-toms self pixel) (om-point-v pixel)))
 
+(defmethod pixel2point ((self voicepanel) pixel)
+   (om-make-point (pixels-to-time self (om-point-x pixel)) (om-point-v pixel)))
+
+(defmethod pixel2point ((self polypanel) pixel)
+   (om-make-point (pixels-to-time self (om-point-x pixel)) (om-point-v pixel)))
+
+
+
 (defmethod get-system-etat ((self scorepanel)) nil)
 
 (defmethod point2pixel ((self scorepanel) point sys-etat)
@@ -341,7 +349,7 @@
 (defmethod get-offset/posy-from-pixel ((container scorepanel) pointpixel)
   (let* ((posx (pixel-toms container pointpixel))
          (posy (om-point-v pointpixel)))
-    (om-make-big-point posx posy)))
+    (om-make-point posx posy)))
 
 
 (defmethod get-offset/posy-in-pixel (tempobj (container scorepanel))

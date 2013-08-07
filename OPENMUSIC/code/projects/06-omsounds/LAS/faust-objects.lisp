@@ -193,18 +193,24 @@
 
 
 (defun compile-faust-objects ()
-       (om-run-process "faust objects compiler" 
-                       #'(lambda ()
-                           (mapcar 
-                            #'(lambda (fx) 
-                                (cond ((typep fx 'faust-fx)
-                                       (build-faust-fx fx))
-                                      ((typep fx 'faust-synth)
-                                       (build-faust-synth fx))
-                                      (t nil)))
-                            (append *faust-effects-to-compile* *faust-synths-to-compile*))
-                           (setf *faust-effects-to-compile* nil
-                                 *faust-synths-to-compile* nil))))
+  (let ((smth-to-build? (if (or *faust-effects-to-compile* *faust-synths-to-compile*) t nil)))
+    (om-run-process "faust objects compiler" 
+                    #'(lambda ()
+                        (mapcar 
+                         #'(lambda (fx) 
+                             (cond ((typep fx 'faust-fx)
+                                    (build-faust-fx fx))
+                                   ((typep fx 'faust-synth)
+                                    (build-faust-synth fx))
+                                   (t nil)))
+                         (append *faust-effects-to-compile* *faust-synths-to-compile*))
+                        (setf *faust-effects-to-compile* nil
+                              *faust-synths-to-compile* nil)))
+    (if smth-to-build?
+        (if (om-y-or-n-dialog "Your Faust objects of this Patch have been compiled. Would you like to plug them as they were the last time you saved this Patch?")
+            (plug-faust-objects)))))
+
+(defun plug-faust-objects () (print "TODO : plug-faust-objects function"))
 
 
 (defmethod load-patch :after ((self ompatch))
