@@ -12,14 +12,10 @@
 ;(setf *general-mixer-values* '((0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100)))
 ;(setf *general-mixer-presets* (init-genmixer-values))
 
-(defun  init-genmixer-values ()
-  (progn
-    (setf *general-mixer-values*
-          (loop for i from 0 to (- las-channels 1) collect
-                (list 0 100)))
-    (list (list "------------"
-                (loop for i from 0 to (- las-channels 1) collect
-                      (list 0 100))))))
+(defun init-genmixer-values ()
+  (list (list "------------"
+              (loop for i from 0 to (- las-channels 1) collect
+                    (list 0 100)))))
 
 (defun get-default-values ()
   (loop for i from 0 to (- las-channels 1) collect
@@ -40,12 +36,17 @@
 ;/MAKE GENERAL MIXER WINDOW FUNCTION
 ;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
+
+  ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
   (if (not *general-mixer-presets*) (setf *general-mixer-presets* (init-genmixer-values)))
+
   (let ((newwindow (om-make-window 'omgenmixer-window 
                                    :window-title "OpenMusic General Mixer" 
                                    :size (om-make-point (+ 5 (* *channel-w* 10)) (+ 420 50)) 
                                    :scrollbars :h
-                                   :position (om-make-point 100 50) :close t :resizable nil)))
+                                   :position (om-make-point 100 50) :close t :resizable nil))
+        (vals (copy-tree (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)))))
+
     (setf (panel-view newwindow) (om-make-view 'omgenmixer-view
                                                :owner newwindow
                                                :position (om-make-point 0 0) 
@@ -55,7 +56,7 @@
                                                :field-size  (om-make-point (+ 5 (* *channel-w* las-channels)) 400)
                                                :size (om-make-point (w newwindow) (h newwindow))))
     (loop for i from 0 to (- las-channels 1) do
-          (genmixer-make-single-channel-view (panel-view newwindow) i))
+          (genmixer-make-single-channel-view (panel-view newwindow) i vals))
     (setf (presets-view newwindow) (om-make-view 'om-view
                                                  :owner (panel-view newwindow)
                                                  :position (om-make-point 5 405)
@@ -118,7 +119,8 @@
                                            :di-action (om-dialog-item-act item 
                                                         (if (> *general-mixer-current-preset* 0)
                                                             (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (copy-tree *general-mixer-values*))
-                                                          (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one")))
+                                                          (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one"))
+                                                        (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
                                            :font *om-default-font1*))
 
     (setf new-preset (om-make-dialog-item 'om-button
@@ -129,7 +131,8 @@
                                                        (save-current-settings)
                                                        (update-general-mixer-presets-lists)
                                                        (setf *general-mixer-current-preset* (1- (length (get-presets-list))))
-                                                       (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list))))
+                                                       (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list)))
+                                                       (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
                                           :font *om-default-font1*))
 
     (setf delete-preset (om-make-dialog-item 'om-button
@@ -141,7 +144,8 @@
                                                               (progn
                                                                 (setf *general-mixer-presets* (remove (nth (1+ (om-get-selected-item-index preset-list)) *general-mixer-presets*) *general-mixer-presets*))
                                                                 (update-general-mixer-presets-lists))
-                                                            (om-message-dialog "ERROR : You have to select a preset to be able to delete it. If there is no existing preset, build a new one")))
+                                                            (om-message-dialog "ERROR : You have to select a preset to be able to delete it. If there is no existing preset, build a new one"))
+                                                          (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
                                              :font *om-default-font1*))
     
     (setf default-preset (om-make-dialog-item 'om-button
@@ -161,7 +165,7 @@
 
 ;/GENMIXER MAKE SINGLE CHANNEL
 ;This function builds one channel view
-(defun genmixer-make-single-channel-view (panel channel)
+(defun genmixer-make-single-channel-view (panel channel vals)
   (let* ((main-view (om-make-view 'om-view 
                                   :owner panel
                                   :position (om-make-point (+ 5 (* channel *channel-w*)) 5) 
@@ -171,7 +175,6 @@
                                   :size (om-make-point (- *channel-w* 5) 395)
                                   :bg-color *om-light-gray-color*))
          (pos 8)
-         (vals (copy-tree *general-mixer-values*))
          (volval (cadr (nth channel vals)))
          (panval (car (nth channel vals)))
          (effectlist (build-faust-effect-list channel))

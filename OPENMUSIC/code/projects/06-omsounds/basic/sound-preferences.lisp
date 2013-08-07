@@ -65,12 +65,15 @@
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
     
     (when (get-pref modulepref :audio-presets)
-      (setf *general-mixer-presets* (print (get-pref modulepref :audio-presets))))
+      (setf *general-mixer-presets* (get-pref modulepref :audio-presets)))
+    (if (and *general-mixer-presets* (> (length *general-mixer-presets*) 1))
+        (progn 
+          (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
+          (setf *general-mixer-current-preset* 1))
+      (setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
+    (apply-mixer-values)
     t))
 
-
-
-; (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*)
 
 (defmethod save-pref-module ((iconID (eql :audio)) values)
   (list iconID `(list 
