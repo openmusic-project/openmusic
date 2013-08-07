@@ -25,16 +25,18 @@
 (defvar *loop* nil)
 
 ;;; IN MIDISHARE DEFAULT PLAYER, YOU MUST STOP BEFORE TO PLAY SOMETHING NEW
+;(defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
+;  (player-stop :midishare)
+;  (InitPlayingSeq 'midishare (get-obj-dur object))
+;  (PrepareToPlay 'midishare object (+ at (real-duration object 0)) :interval interval)
+;  (FinalizePlayingSeq 'midishare (get-obj-dur object))
+;  )
+
+
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
   (push (list object at interval) *list-to-play*)
   )
 
-(defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
-  (player-stop :midishare)
-  (InitPlayingSeq 'midishare (get-obj-dur object))
-  (PrepareToPlay 'midishare object (+ at (real-duration object 0)) :interval interval)
-  (FinalizePlayingSeq 'midishare (get-obj-dur object))
-  )
 
 ;;; PLAY (NOW) 
 ;;; NOT CALLED WITH MS PLAYER 
@@ -42,11 +44,11 @@
   (print (format nil "~A : play ~A - ~A" engine object interval)))
 
 ;;; START (PLAY WHAT IS SCHEDULED)
-(defmethod player-start ((engine (eql :midishare)) &optional play-list)
-  (when *midiplayer* (om-midi-start-player *midiplayer*)))
+;(defmethod player-start ((engine (eql :midishare)) &optional play-list)
+;  (when *midiplayer* (om-midi-start-player *midiplayer*)))
 
 (defmethod player-start ((engine (eql :midishare)) &optional play-list)
-  ; (om-midi-stop-player *midiplayer*)
+  ;(om-midi-stop-player *midiplayer*)
   ;(om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
   (let ((object (mapcar 'car *list-to-play*)))
     (InitPlayingSeq 'midishare (get-obj-dur object))
