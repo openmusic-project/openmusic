@@ -6,34 +6,33 @@
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil *InMidiPort* :libaudio
+                 nil *InMidiPort* :libaudiostream
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 t nil)))
 
-(defmethod select-player-for-value ((value sound) box player out)
-  (let ((rep (select-audio-player-dialog box player out)))
-    (player-special-action (car rep))
-    rep))
+;(defmethod select-player-for-value ((value sound) box player out)
+;  (let ((rep (select-audio-player-dialog box player out)))
+;    (player-special-action (car rep))
+;    rep))
 
-(defmethod audio-player-name ((self t)) "XXX")
-(defmethod audio-player-desc ((self t)) "xxx")
-(defmethod player-special-action ((self t)) nil)
+;(defmethod audio-player-name ((self t)) "XXX")
+;(defmethod audio-player-desc ((self t)) "xxx")
+;(defmethod player-special-action ((self t)) nil)
+
 
 (defmethod audio-record-start ((self t)) (om-beep-msg "This player has no audio recording feature"))
 (defmethod audio-record-stop ((self t)) (om-beep))
 
-;(defmethod get-score-player ((self soundeditor)) 
-;  (get-edit-param (editor self) 'player))
   
-(defparameter *audio-players* '(:libaudio :multiplayer))
 
-(defmethod audio-player-name ((self (eql :libaudio))) "LibAudioStream")
-(defmethod audio-player-desc ((self (eql :libaudio))) "internal OM Player")
+(defmethod player-name ((self (eql :libaudiostream))) "LibAudioStream")
+(defmethod player-desc ((self (eql :libaudiostream))) "internal OM Player")
 
-(defmethod audio-player-name ((self (eql :multiplayer))) "MultiPlayer")
-(defmethod audio-player-desc ((self (eql :multiplayer))) "external Max/OSC player")
+(defmethod player-name ((self (eql :multiplayer))) "MultiPlayer")
+(defmethod player-desc ((self (eql :multiplayer))) "external Max/OSC player")
 (defmethod player-special-action ((self (eql :multiplayer))) (launch-multiplayer-app))
 
 
+#|
 (defun select-audio-player-dialog (self &optional (player nil) (out nil))
   (let* ((pane-h (+ 20 (* (length *audio-players*) 25)))
          (dialog (om-make-window 'om-dialog
@@ -79,3 +78,5 @@
                                                          )
                                             :default-button t))
       (om-modal-dialog dialog)))
+
+|#

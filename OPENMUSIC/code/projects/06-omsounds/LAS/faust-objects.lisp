@@ -656,13 +656,13 @@
 (defmethod play-obj? ((self faust-synth)) t)
 
 ;/Redefinition of transport functions for this kind of box
-(defmethod player-play-object ((engine (eql :libaudio)) (object faust-synth) &key interval)
+(defmethod player-play-object ((engine (eql :libaudiostream)) (object faust-synth) &key interval)
   (las-synth-preview-play object))
-(defmethod player-stop-object ((engine (eql :libaudio)) (object faust-synth) &key interval)
+(defmethod player-stop-object ((engine (eql :libaudiostream)) (object faust-synth) &key interval)
   (las-synth-preview-stop object))
 
 (defmethod default-edition-params ((self faust-synth)) 
-  (pairlis '(player) '(:libaudio) (call-next-method)))
+  (pairlis '(player) '(:libaudiostream) (call-next-method)))
 
 (defmethod initialize-instance ((self faust-synth) &rest l)
   (let ((rep (call-next-method)))
@@ -930,7 +930,7 @@
 (defmethod metaobj-scrollbars-params ((self faustSynthcontrollerEditor))  '(:h nil))
 
 (defmethod initialize-instance :after ((self faustSynthcontrollerEditor) &rest l)
-  (set-edit-param self 'player :libaudio)
+  (set-edit-param self 'player :libaudiostream)
   (declare (ignore l))
   (let ((x (if (ui-tree (object self))
                (max 75 (car (las-faust-get-group-size (ui-tree (object self)))))

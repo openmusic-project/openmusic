@@ -9,29 +9,29 @@
 ;;; METHODES A REDEFINIR QUAND ON UTILISE OMPLAYER
 
 ;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
-(defmethod prepare-to-play ((engine (eql :libaudio)) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval)
   (call-next-method))
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
-(defmethod player-start ((engine (eql :libaudio)) &optional play-list)
+(defmethod player-start ((engine (eql :libaudiostream)) &optional play-list)
   (call-next-method))
 
 ;;; PAUSE
-(defmethod player-pause ((engine (eql :libaudio)) &optional play-list)
+(defmethod player-pause ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-pause-object engine (nth i play-list)))
     (las-pause-all-players)))
 
 ;;; CONTINUE
-(defmethod player-continue ((engine (eql :libaudio)) &optional play-list)
+(defmethod player-continue ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-continue-object engine (nth i play-list)))
     (las-cont-all-players)))
 
 ;;; STOP
-(defmethod player-stop ((engine (eql :libaudio)) &optional play-list)
+(defmethod player-stop ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
             (player-stop-object engine (nth i play-list)))
@@ -39,23 +39,25 @@
 
 
 ;;; PLAY (NOW)
-(defmethod player-play-object ((engine (eql :libaudio)) (object sound) &key interval)
+(defmethod player-play-object ((engine (eql :libaudiostream)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
+(defmethod player-loop ((self (eql :libaudiostream)) &optional play-list)
+  (print (list "LOOP AUDIO" play-list)))
 
 
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT
-(defmethod player-pause-object ((engine (eql :libaudio)) (object sound) &key interval)
+(defmethod player-pause-object ((engine (eql :libaudiostream)) (object sound) &key interval)
   (las-pause object (tracknum object)))
 
 ;;; RESTART ONLY ONE OBJECT
-(defmethod player-continue-object ((engine (eql :libaudio)) (object sound) &key interval)
+(defmethod player-continue-object ((engine (eql :libaudiostream)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 ;;; STOP ONLY ONE OBJECT
-(defmethod player-stop-object ((engine (eql :libaudio)) (object sound) &key interval)
+(defmethod player-stop-object ((engine (eql :libaudiostream)) (object sound) &key interval)
   (las-stop object (tracknum object)))
 
 ;(defclass las-player (omplayer) 
@@ -64,7 +66,7 @@
 
 ;;; TODO
 ;;; called when a box or editor attached to player is removed/closed
-(defmethod player-cleanup ((player (eql :libaudio)) snd)
+(defmethod player-cleanup ((player (eql :libaudiostream)) snd)
   (let* ((status-list (if (= (tracknum snd) 0)
                           oa::*audio-player-hidden-tracks-info*
                         oa::*audio-player-visible-tracks-info*))
@@ -82,7 +84,7 @@
 
 
 ;;; creates the player-specific controls on the sound editor control panel
-(defmethod make-player-specific-controls ((self (eql :libaudio)) control-view)
+(defmethod make-player-specific-controls ((self (eql :libaudiostream)) control-view)
   (let* ((snd (object (editor control-view)))
          (track (tracknum snd)))
     (list 

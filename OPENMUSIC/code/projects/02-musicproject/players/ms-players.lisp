@@ -34,8 +34,7 @@
 
 
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
-  (push (list object at interval) *list-to-play*)
-  )
+  (push (list object at interval) *list-to-play*))
 
 
 ;;; PLAY (NOW) 
@@ -48,8 +47,9 @@
 ;  (when *midiplayer* (om-midi-start-player *midiplayer*)))
 
 (defmethod player-start ((engine (eql :midishare)) &optional play-list)
-  ;(om-midi-stop-player *midiplayer*)
-  ;(om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
+  ;(print *list-to-play*)
+  (om-midi-stop-player *midiplayer*)
+  (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
   (let ((object (mapcar 'car *list-to-play*)))
     (InitPlayingSeq 'midishare (get-obj-dur object))
     (loop for item in *list-to-play* do

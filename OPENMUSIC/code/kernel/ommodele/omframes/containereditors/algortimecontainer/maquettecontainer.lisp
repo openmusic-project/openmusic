@@ -132,8 +132,11 @@
   )
 
 
+(defvar *maquette-play* nil)
 
 (defmethod editor-play ((self MaquetteEditor))
+  (setf *maquette-play* T)
+  (cons-copy-maquette-object self objs)
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
@@ -142,6 +145,7 @@
   (update-play-buttons (title-bar self)))
 
 (defmethod editor-stop ((self MaquetteEditor))
+  (setf *maquette-play* NIL)
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
@@ -1138,30 +1142,36 @@
 
 ;;; play maquette : construit le maquette-obj (en copiant les objs contenus)
 (defmethod cons-play-maquette-object ((self OMMaquette) objs)
-  (cons-copy-maquette-object self objs))
+  (if *maquette-play*
+      (or (value self)
+          (cons-copy-maquette-object self objs))
+    (cons-copy-maquette-object self objs)))
 
 
 ;;;==========================
 
+;;; applies to all the boxes
 (defmethod select-maquette-player ((self ommaquette))
   (if (boxes self)
-      (let ((params (select-player-dialog (car (boxes self)) 
-                                          (get-edit-param (car (boxes self)) 'player)
-                                          (get-edit-param (car (boxes self)) 'outport))))
-        (when params 
-          (maq-changeparams self (list 'player 'outport) params))
-        )
+      (let ((player (select-player (car (boxes self)))))
+        (when player 
+          (maq-changeparams self (list 'player 'outport) 
+                            (list (get-edit-param (car (boxes self)) 'player)
+                                  (get-edit-param (car (boxes self)) 'outport)))
+          ))
     (om-beep-msg "This maquette has no playable contents.")))
 
 (defmethod reference-object ((self temporalbox)) (car (value self)))
 
 (defmethod select-maquette-player ((self temporalbox))
-  (let ((params (print (select-player self))))
-;                                      (get-edit-param self 'player)
-;                                      (get-edit-param self 'outport))))
-;    (when params 
- ;     (maq-changeparams self (list 'player 'outport) params))
-    ))
+  (let ((previousplayer (get-edit-param self 'player))
+        (newplayer (select-player self)))
+    (when (and newplayer (not (equal previousplayer newplayer)))
+      (player-special-action newplayer)
+      (player-init newplayer)
+      )))
+
+
 
 
 
@@ -1176,7 +1186,7 @@
         for param in (param-list (value (object self))) do
         (let ((objstart (offset->ms object))
               (pl (cdr (assoc 'player param))))
-          ;(print (list object objstart))
+          ;(print (list object pl objstart (get-interval-to-play self)))
           (player-schedule (player self) 
                            object
                            pl 
@@ -1184,19 +1194,19 @@
                            :interval (get-interval-to-play self)))
         ))
 
-
+(defmethod boxestoplay ((self maquettepanel))
+  (if (and (get-actives self) (not (equal :interval (cursor-mode self))))
+      (mapcar 'object (get-actives self))
+    (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
+  
 
 (defmethod get-obj-to-play ((self MaquettePanel))
   (if (and (eval-func (object self)) (value (object self)))
     (if *microplay* 
       (list (value (object self)))
       (list (value (object self)) :approx 8))
-    (let ((boxestoplay 
-           (if (and (get-actives self) (not (equal :interval (cursor-mode self))))
-               (mapcar 'object (get-actives self))
-             (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b))))
-      (list (cons-play-maquette-object (object self) boxestoplay)))
-    ))
+    (list (cons-play-maquette-object (object self) (boxestoplay self))))
+  )
 
 (defmethod get-interval-to-play ((self maquetteeditor))
   (if (equal (cursor-mode (panel self)) :interval)

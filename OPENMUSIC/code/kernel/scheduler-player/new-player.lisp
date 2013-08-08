@@ -89,7 +89,8 @@
                                                 ;(print "loop")
                                                 (setf (start-time player) start-t
                                                       (ref-clock-time player) (clock-time))
-                                                (mapcar #'player-loop (engines player))
+                                                (mapcar #'player-loop (engines player) 
+                                                        (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
                                                 )
                                             (general-stop player)))
                                       (sleep (scheduler-tick player))
@@ -200,7 +201,7 @@
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
                         #'(lambda () 
-                            ;(print (list object engine at interval))
+                            (print (list object engine at interval))
                             (player-play-object engine object :interval interval))
                         at))
 
@@ -234,7 +235,7 @@
   ;(print (format nil "~A : set loop" engine))
   t)
 
-(defmethod player-loop ((engine t))
+(defmethod player-loop ((engine t) &optional play-list)
   ;(print (format nil "~A : loop" engine))
   t)
 
@@ -334,7 +335,8 @@
   (apply #'om-remove-subviews (or view self) (player-specific-controls self))
   (setf (player-specific-controls self)
         (make-player-specific-controls player self))
-  (apply #'om-add-subviews (or view self) (player-specific-controls self)))
+  (apply #'om-add-subviews (or view self) (player-specific-controls self))
+  )
   
 
 

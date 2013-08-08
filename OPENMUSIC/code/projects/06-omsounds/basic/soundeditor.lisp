@@ -30,85 +30,97 @@
 (defclass sound-control-view (3dBorder-view) 
   ((editor :initform nil :accessor editor :initarg :editor)    ;;; a reference to the main editor
    ;;; a list of controls
-   (player-control :initform nil :accessor player-control)
+   (play-buttons :initform nil :accessor play-buttons)
+   (mode-buttons :initform nil :accessor mode-buttons)
    (vol-control :initform nil :accessor vol-control)
    (pan-control :initform nil :accessor pan-control)))
 
+(defmethod editor ((self sound-control-view)) (om-view-container self))
 
 (defmethod initialize-instance :after ((self sound-control-view) &rest args)
-  ;;; editor self MUST BE SET BEFORE
-  (om-add-subviews self
-                   (om-make-view 'om-icon-button :position (om-make-point 10 5) :size (om-make-point 20 20)
-                                         :icon1 "simple_play" :icon2 "simple_play_pushed"
-                                         :action #'(lambda (item) (editor-play (editor self))))
+  
+    (setf (mode-buttons self)
+          (list (om-make-view 'om-icon-button :position (om-make-point 20 7) :size (om-make-point 22 22)
+                              :icon1 "mousecursor" :icon2 "mousecursor-pushed"
+                              :lock-push t
+                              :selected-p (and (panel (editor self)) (equal :normal (cursor-mode (panel (editor self)))))
+                              :action #'(lambda (item) 
+                                          (setf (cursor-mode (panel (editor self))) :normal)
+                                          (setf (selected-p item) t
+                                                (selected-p (cadr (mode-buttons self))) nil)
+                                          (om-invalidate-view self)))
+                (om-make-view 'om-icon-button :position  (om-make-point 41 7) :size (om-make-point 22 22)
+                              :icon1 "beamcursor" :icon2 "beamcursor-pushed"
+                              :lock-push t
+                              :selected-p (and (panel (editor self)) (equal :interval (cursor-mode (panel (editor self)))))
+                              :action #'(lambda (item) 
+                                          (setf (cursor-mode (panel (editor self))) :interval)
+                                          (setf (selected-p item) t
+                                                (selected-p (car (mode-buttons self))) nil)
+                                          (om-invalidate-view self)))
+                (om-make-view 'om-icon-button :position (om-make-point 62 7) :size (om-make-point 22 22)
+                              :id :resize
+                              :icon1 "resize" :icon2 "resize-pushed"
+                              :lock-push nil
+                              :action #'(lambda (item) 
+                                          (init-coor-system (panel (editor self)))
+                                          (om-invalidate-view (rulerx (panel (editor self))) t)))
+                                         
+                ))
 
-                     (om-make-view 'om-icon-button :position (om-make-point 35 5) :size (om-make-point 20 20)
-                                         :icon1 "simple_pause" :icon2 "simple_pause_pushed"
-                                         :action #'(lambda (item) (editor-pause (editor self))))
+    (setf (play-buttons self)
+        (list (om-make-view 'om-icon-button :position (om-make-point 200 7) :size (om-make-point 22 22)
+                            :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-play (editor self))))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 221 7) :size (om-make-point 22 22)
+                            :icon1 "pause" :icon2 "pause-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-pause (editor self))))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 242 7) :size (om-make-point 22 22)
+                            :icon1 "stop" :icon2 "stop-pushed"
+                            :action #'(lambda (item) (editor-stop (editor self))))
+              
+              ;; dummy rec button
+              (om-make-view 'om-icon-button :position (om-make-point -10 7) :size (om-make-point 1 1)
+                            :icon1 "rec" :icon2 "rec-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-record (editor self))))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 263 7) :size (om-make-point 22 22)
+                            :icon1 "loopbutton" :icon2 "loopbutton-pushed"
+                            :lock-push t
+                            :selected-p (loop-play (editor self))
+                            :action #'(lambda (item) 
+                                        (setf (loop-play (editor self))
+                                              (not (loop-play (editor self))))
+                                        (setf (selected-p item) (loop-play (editor self)))
+                                        )
+                            )
+              
+              (om-make-view 'om-icon-button :position (om-make-point 324 7) :size (om-make-point 22 22)
+                            :icon1 "player" :icon2 "player-pushed"
+                            :action #'(lambda (item) 
+                                        (let* ((previousplayer (get-edit-param (editor self) 'player))
+                                               (newplayer (select-player (editor self))))
+                                          (when (and newplayer (not (equal previousplayer newplayer)))
+                                            (player-special-action newplayer)
+                                            (player-init newplayer)
+                                            (update-player-controls (editor self) newplayer self)))))))
 
-                     (om-make-view 'om-icon-button :position (om-make-point 60 5) :size (om-make-point 20 20)
-                                         :icon1 "simple_stop" :icon2 "simple_stop_pushed"
-                                         :action #'(lambda (item) (editor-stop (editor self))))
+    (apply 'om-add-subviews self
+           (append (play-buttons self)
+                   (mode-buttons self)))     
+    )
+  
 
-                     ;(om-make-view 'om-icon-button :position (om-make-point 85 8) :size (om-make-point 17 17)
-                     ;                    :icon1 "simple_loop" :icon2 "simple_loop_pushed"
-                     ;                    :action #'(lambda (item) (if (loop-play (editor self)) 
-                     ;                                                 (setf (loop-play (editor self)) nil) 
-                     ;                                               (setf (loop-play (editor self)) t))))
-
-                     ;(om-make-view 'om-icon-button :position (om-make-point 110 5) :size (om-make-point 20 20)
-                     ;                    :icon1 "simple_rec" :icon2 "simple_rec_pushed"
-                     ;                    :action #'(lambda (item) (print "Rec function")))
-                     
-                      (om-make-dialog-item 'om-static-text (om-make-point 250 8) (om-make-point 50 20)
-                                          "Player" :font *om-default-font1*)
-
-                     (setf (player-control self)
-                           (om-make-dialog-item 'om-pop-up-dialog-item 
-                                                (om-make-point 300 5) 
-                                                (om-make-point 100 20) ""
-                                                :font *om-default-font1*
-                                                :range (mapcar 'audio-player-name *audio-players*)
-                                                :value (audio-player-name (get-edit-param (om-view-container self) 'player))
-                                                :di-action  (om-dialog-item-act item 
-                                                              (change-player (editor self)
-                                                                             (nth (om-get-selected-item-index item) *audio-players*)))))
-
-                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 80) 8) (om-make-point 40 20)
-                     ;                     "Vol" :font *om-default-font1* :bg-color *controls-color*)
-
-                     ;(om-make-dialog-item 'om-static-text (om-make-point (incf x0 85) 8) (om-make-point 40 20)
-                     ;                     "Pan" :font *om-default-font1* :bg-color *controls-color*)
-
-                          ; (setf (vol-control self)  (om-make-dialog-item 'numBox
-     ;                     (om-make-point (incf x0 70) 8)
-     ;                     (om-make-point 40 18) (format () " ~D" (vol (object (om-view-container self))))
-     ;                     :min-val 0
-     ;                     :max-val 100
-     ;                     :bg-color *om-white-color*
-     ;                     :font *om-default-font1*
-     ;                     :value (vol (object (om-view-container self)))
-     ;                     :afterfun #'(lambda (item)
-     ;                                   (setf (vol (object (om-view-container self))) (value item))
-     ;                                   (report-modifications (om-view-container self)))
-     ;                     )
-     ; (setf (pan-control sefl) (om-make-dialog-item 'numBox
-     ;                     (om-make-point (incf x0 90) 8)
-     ;                     (om-make-point 40 18) (format () " ~D" (pan (object (om-view-container self))))
-     ;                     :min-val -100
-     ;                     :max-val 100
-     ;                     :bg-color *om-white-color*
-     ;                     :font *om-default-font1*
-     ;                     :value (pan (object (om-view-container self)))
-     ;                     :afterfun #'(lambda (item)
-     ;                                   (setf (pan (object (om-view-container self))) (value item))
-     ;                                   (report-modifications (om-view-container self)))
-     ;                     )
-                     ))
-            
+      
+    
 (defmethod update-controls ((self sound-control-view))
   (let ((player (get-edit-param (editor self) 'player)))
-    (om-set-selected-item (player-control self) (audio-player-name player))
+    ;(om-set-selected-item (player-control self) (audio-player-name player))
     (update-player-controls (editor self) player self)
     ;(set-value (vol-control self) (vol (object (editor self))))
     ;(set-value (pan-control self) (pan (object (editor self))))
@@ -215,13 +227,27 @@
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
 
-;;; AJOUTER DANS LES CONTROLS
-; (setf (cursor-mode view) :interval)
-; (setf (cursor-mode view) :normal)
-; (init-coor-system view)
-
 (defmethod editor-null-event-handler :after ((self soundEditor))  ;chercher *mouse-window-event* par tout et enlever 
    (do-editor-null-event self))
+
+(defmethod editor-play ((self soundEditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-pause ((self soundEditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-stop ((self soundEditor))
+  (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod get-interval-to-play ((self soundEditor))
+  (let ((panel (panel self)))
+    (if (and (equal :normal (cursor-mode panel)) (cursor-interval panel))
+        (cursor-interval panel)
+      (call-next-method))))
+
 
 
 (defmethod initialize-instance :after ((self soundEditor) &rest args)
@@ -290,7 +316,7 @@
       (om-invalidate-view (car (frames (ref self))))
       (update-editor-after-eval self (value (ref self))))))
 
-(defmethod do-editor-null-event ((self soundEditor)) 
+(defmethod do-editor-null-event ((self soundEditor))
    (when (om-view-contains-point-p (panel self) (om-mouse-position self))
      (om-with-focused-view (panel self) ;;(control self) 
        (let* ((pixel (om-mouse-position (panel self)))
@@ -378,6 +404,9 @@
   (let (res)
     (setf res (om-sound-sndlasptr-current (object self)))
     (if res t nil)))
+
+
+
 ;================================================AUDIO SLICING=======================================================
 ;;;///////////////////TOOLS//////////////////////
 (defvar *editor-view-updater* nil)
@@ -910,7 +939,7 @@
 
 (defmethod om-view-cursor ((self soundPanel))
    (if (equal (cursor-mode self) :interval)
-       *om-i-beam-cursor*;)
+       *om-i-beam-cursor*
      *om-arrow-cursor*))
 
 (defmethod handle-key-event ((self soundPanel) char)
@@ -1269,10 +1298,10 @@
 ;;; DRAG SOUND
 
 (defmethod om-drag-selection-p ((self soundpanel) position) 
-  (and (equal (cursor-mode self) :normal) ; (not (cursor-p self)) 
+  (and (equal (cursor-mode self) :normal)
        (not (om-shift-key-p))
        (or (and (selection? self) (click-in-sound-marker-p self position))
-           (and
+           (and (cursor-interval self)
             (<= (om-point-h (pixel2point self position)) (cadr (cursor-interval self)))
             (>= (om-point-h (pixel2point self position)) (car (cursor-interval self)))))))
 

@@ -53,7 +53,7 @@ Press 'space' to play/stop the sound file.
 "))
 
 
-(defmethod players-for-object ((self sound)) '(:libaudio :multiplayer :jack))
+(defmethod players-for-object ((self sound)) '(:libaudiostream :multiplayer :jack))
 
 (defmethod initialize-instance :after ((self sound) &rest args)
   (setf (Qvalue self) 1000)
