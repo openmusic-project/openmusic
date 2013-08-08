@@ -436,24 +436,27 @@
   (when (om-view-container self)
     (if (om-control-key-p)
         *om-contex-cursor*
-      (case (mode (om-view-container self))
-        (9
-         *om-loupe-cursor*)
-        (10 *om-cross-cursor*)
+      (case (cursor-mode (om-view-container self))
+        (:zoom *om-loupe-cursor*)
+        (:move *om-cross-cursor*)
         (otherwise *om-arrow-cursor*)))))
   
 
+(defmethod om-drag-start ((self tempobjframe))
+  (when (equal (cursor-mode (om-view-container self)) :normal)
+    (call-next-method)))
+
 (defmethod do-click-inbox ((self tempobjframe) where)
    (call-next-method)
-   (if (= (mode (om-view-container self)) 10) (scroll-miniview self)))
+   (if (equal (cursor-mode (om-view-container self)) :move) (scroll-miniview self)))
 
 ;;; dbleclick
 (defmethod click-in-temp-box ((self tempobjframe) where)
-   (cond ((= (mode (om-view-container self)) 10) (scroll-miniview self))
+   (cond ((equal (cursor-mode (om-view-container self)) :move) (scroll-miniview self))
          (t (toggle-icon-active-mode self))))
 
 (defmethod doubleclick-in-temp-box ((self tempobjframe) where)
-   (cond ((= (mode (om-view-container self)) 10) (scroll-miniview self))
+   (cond ((equal (cursor-mode (om-view-container self)) :move) (scroll-miniview self))
          ;;;((om-command-key-p) (om-set-help t))
          (t (OpenObjectEditor (object self)))
          ))

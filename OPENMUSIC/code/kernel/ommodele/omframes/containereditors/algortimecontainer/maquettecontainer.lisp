@@ -30,69 +30,124 @@
 
 (in-package :om)
 
-;====================================================
-;PALETTE FOR MAQUETTES
-;====================================================
-(omg-defclass maq-palette (playing-palette) 
-   ((pushed-b :initform 0 :accessor pushed-b))
-   ;(:default-initargs :source-name "maq-pal")
-   )
-
-;(omg-defclass maq-palette-view (playing-palette-view) ())
-;(defmethod palette-view-class ((self maq-palette)) 'maq-palette-view)
-
-;(defmethod push-button ((view maq-palette-view) i)
-;   (unless (or (= i 6) (= i 13)) (call-next-method)))
-
-(defmethod palette-act ((self maq-palette) x)
-   (unless (call-next-method)
-     (when (editor-assoc self)
-     (let ((scroller (panel (editor-assoc self))))
-       (case x
-         (11 (init-coor-system scroller) 
-          (om-invalidate-view (rulerx scroller) t)
-          (om-invalidate-view (rulery scroller) t)
-          (when (rulermetric (editor-assoc self)) 
-            (om-invalidate-view (rulermetric (editor-assoc self)) t))
-          )
-         (12 (om-eval-enqueue 
-              `(eval-maquette ,scroller) scroller))
-         (6 nil)
-         (otherwise
-          (when x
-            (setf (mode scroller) X)
-            (setf (pushed-b self) X)
-            (if (= x 8)
-              (setf (cursor-p (panel (editor-assoc self))) t)
-              (when (or (= x 7) (= x 9) (= x 10))
-                (setf (cursor-p (panel (editor-assoc self))) nil))
-              )
-            (om-invalidate-view (view *palette-win*) t)
-            )))))))
-
 
  
 ;================================================================
 ;THE MAQUETTE WINDOW
 ;================================================================
 
+(defclass maquette-titlebar (editor-titlebar) 
+  ((play-buttons :accessor play-buttons :initarg :play-buttons :initform nil)
+   (mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)))
 
 ;-------------------------------------------------
 ;EDITOR
 ;-------------------------------------------------
 
-(defclass MaquetteEditor (patchEditor play-editor-mixin) 
+(defclass MaquetteEditor (object-editor patchEditor play-editor-mixin) 
    ((rulermetric :initform nil :accessor rulermetric)
     (patchview :accessor patchview :initform nil :initarg :patchview)))
 
-(defmethod editor-has-palette-p ((self MaquetteEditor)) nil)
-(defmethod get-palette-pict ((self maquetteeditor)) 
-  (om-load-and-store-picture "maq-pal" 'internal))
+(defmethod get-control-h ((self MaquetteEditor)) (call-next-method))
 
-(defmethod palette-init ((self MaquetteEditor))
+(defmethod get-titlebar-class ((self MaquetteEditor)) 'maquette-titlebar)
+
+(defmethod init-titlebar ((self MaquetteEditor))
+  (setf (play-buttons (title-bar self))
+        (list (om-make-view 'om-icon-button :position (om-make-point 50 2) :size (om-make-point 22 22)
+                            :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-play self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 71 2) :size (om-make-point 22 22)
+                            :icon1 "pause" :icon2 "pause-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-pause self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 92 2) :size (om-make-point 22 22)
+                            :icon1 "stop" :icon2 "stop-pushed"
+                            :action #'(lambda (item) (editor-stop self)))
+               
+              (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
+                            :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
+              
+              (om-make-view 'om-icon-button :position (om-make-point 123 2) :size (om-make-point 22 22)
+                            :icon1 "loopbutton" :icon2 "loopbutton-pushed"
+                            :lock-push t
+                            :selected-p (loop-play self)
+                            :action #'(lambda (item) 
+                                        (setf (loop-play self)
+                                              (not (loop-play self)))
+                                        (setf (selected-p item) (loop-play self))
+                                        ))
+              
+              ))
+   
+  (setf (mode-buttons (title-bar self))
+        (loop for mode in '(:normal :interval :move :zoom)
+              for icon in '("mousecursor" "beamcursor" "handcursor" "zoomcursor")
+              for xx = 180 then (+ xx 21) 
+              collect 
+              (let ((m mode))
+                (om-make-view 'om-icon-button :position (om-make-point xx 2) :size (om-make-point 22 22)
+                              :id mode
+                              :icon1 icon :icon2 (string+ icon "-pushed")
+                              :lock-push t
+                              :selected-p (and (panel self) ;;; before initialization...
+                                               (equal m (cursor-mode (panel self))))
+                              :action #'(lambda (item) 
+                                          (setf (cursor-mode (panel self)) m)
+                                         
+                                          (loop for b in (mode-buttons (title-bar self)) do 
+                                                (setf (selected-p b) nil))
+                                          (setf (selected-p item) t)
+                                          (om-invalidate-view self)))
+                )))
+
+  (apply 'om-add-subviews (cons (title-bar self)
+                                (append (play-buttons (title-bar self))
+                                        (mode-buttons (title-bar self))
+                                        (list 
+                                         (om-make-view 'om-icon-button :position (om-make-point 270 2) :size (om-make-point 22 22)
+                                                       :id :resize
+                                                       :icon1 "resize" :icon2 "resize-pushed"
+                                                       :lock-push nil
+                                                       :action #'(lambda (item) 
+                                                                   (init-coor-system (panel self))
+                                                                   (om-invalidate-view (rulerx (panel self)) t)
+                                                                   (om-invalidate-view (rulery (panel self)) t)
+                                                                   (when (rulermetric self) 
+                                                                     (om-invalidate-view (rulermetric self) t))))
+                                         
+                                         (om-make-view 'om-icon-button :position (om-make-point 350 2) :size (om-make-point 22 22)
+                                                       :id :resize
+                                                       :icon1 "eval" :icon2 "eval-pushed"
+                                                       :lock-push nil
+                                                       :action #'(lambda (item) 
+                                                                   (om-eval-enqueue 
+                                                                    `(eval-maquette ,(panel self)) (panel self))
+                                                                    ))
+                                         )
+                                        )))
+  )
+
+
+(defvar *maquette-play* nil)
+
+(defmethod editor-play ((self MaquetteEditor))
+  (setf *maquette-play* T)
+  (cons-copy-maquette-object (object self) (boxestoplay (panel self)))
   (call-next-method)
-  (init-play-palette self))
+  (update-play-buttons (title-bar self)))
 
+(defmethod editor-pause ((self MaquetteEditor))
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
+
+(defmethod editor-stop ((self MaquetteEditor))
+  (setf *maquette-play* NIL)
+  (call-next-method)
+  (update-play-buttons (title-bar self)))
 
 
 (defmethod draw-maq-tempo ((self MaquetteEditor) tempo)
@@ -217,9 +272,9 @@
                                :owner self
                                :axe 'y
                                :assoc-view panel
-                               :position (om-make-point 0 0) 
+                               :position (om-make-point 0 (get-control-h self)) 
                                :bg-color *om-light-gray-color*
-                               :size (om-make-point y-ruler-w (- (h self) (+ x-ruler-h x-scroll-h)))
+                               :size (om-make-point y-ruler-w (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h)))
                                :y-step (car (yparam (params (object panel))))))
                          
          (rulerx (om-make-view (maq-x-ruler-class self) 
@@ -250,11 +305,11 @@
                                             :owner self
                                             :scrolldirection :v
                                             :referenceview panel
-                                            :position (om-make-point y-ruler-w 0)
-                                            :size (om-make-point y-scroll-w (- (h self) (+ x-ruler-h x-scroll-h))))))
+                                            :position (om-make-point y-ruler-w (get-control-h self))
+                                            :size (om-make-point y-scroll-w (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h))))))
 
-    (om-set-view-position panel (om-make-point 25 0))
-    (om-set-view-size panel (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ x-ruler-h x-scroll-h))))
+    (om-set-view-position panel (om-make-point 25 (get-control-h self)))
+    (om-set-view-size panel (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h))))
     (when (equal (maq-show-ruler (object self)) :on)
       (add-ruler-metric self))
     (when (maq-drop-patch-p self) 
@@ -285,7 +340,7 @@
                                   :maxsub (third params)
                                   :loop-mes-p (fourth params)
                                   :assoc-view panel
-                                  :position (om-make-point (+ y-ruler-w y-scroll-w) 0) 
+                                  :position (om-make-point (+ y-ruler-w y-scroll-w) (get-control-h self)) 
                                   :size (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) x-scroll-h)))
     (om-add-subviews editor (rulermetric editor))
     (maq-show-ruler themaq :on)
@@ -330,9 +385,10 @@
 
 
 (defmethod mode ((self MaquetteEditor))
-   (mode (panel self)))
+   (cursor-mode (panel self)))
 
 (defmethod update-subviews ((self MaquetteEditor))
+  (call-next-method)
   (let ((pane (panel self)))
     (om-with-delayed-redraw pane
       (om-set-view-size (rulerx pane) (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) x-ruler-h))
@@ -342,28 +398,29 @@
         (om-set-view-position (scrollerx pane) (om-make-point (+ y-ruler-w y-scroll-w) (- (h self) (+ x-ruler-h x-scroll-h)))))
       (if (not (rulermetric self))
           (progn
-            (om-set-view-position (rulery pane) (om-make-point 0 0))
-            (om-set-view-size (rulery pane) (om-make-point y-ruler-w (- (h self) (+ x-ruler-h x-scroll-h))))
+            (om-set-view-position (rulery pane) (om-make-point 0 (get-control-h self)))
+            (om-set-view-size (rulery pane) (om-make-point y-ruler-w (- (h self) (+ x-ruler-h x-scroll-h (get-control-h self)))))
             (when (scrollery pane)
-              (om-set-view-size (scrollery pane) (om-make-point y-scroll-w (- (h self) (+ x-ruler-h x-scroll-h))))
-              (om-set-view-position (scrollery pane) (om-make-point y-ruler-w 0)))
+              (om-set-view-size (scrollery pane) (om-make-point y-scroll-w (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h))))
+              (om-set-view-position (scrollery pane) (om-make-point y-ruler-w (get-control-h self))))
             
-            (om-set-view-position pane (om-make-point (+ y-ruler-w y-scroll-w) 0))
-            (om-set-view-size pane (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ x-ruler-h x-scroll-h))))
+            (om-set-view-position pane (om-make-point (+ y-ruler-w y-scroll-w) (get-control-h self)))
+            (om-set-view-size pane (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h))))
         
             )
        (progn
-         (om-set-view-position (rulery pane) (om-make-point 0 x-ruler-h))
-         (om-set-view-size (rulery pane) (om-make-point y-ruler-w  (- (h self) (+ x-ruler-h x-scroll-h x-ruler-h))))
+         (om-set-view-position (rulery pane) (om-make-point 0 (+ (get-control-h self) x-ruler-h)))
+         (om-set-view-size (rulery pane) (om-make-point y-ruler-w  (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h x-ruler-h))))
          
          (when (scrollery pane)
-           (om-set-view-size (scrollery pane) (om-make-point y-scroll-w (- (h self) (+ x-ruler-h x-scroll-h x-ruler-h))))
-           (om-set-view-position (scrollery pane) (om-make-point y-ruler-w x-ruler-h)))
+           (om-set-view-size (scrollery pane) (om-make-point y-scroll-w (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h x-ruler-h))))
+           (om-set-view-position (scrollery pane) (om-make-point y-ruler-w (+ (get-control-h self) x-ruler-h))))
          
-         (om-set-view-position pane (om-make-point (+ y-ruler-w y-scroll-w) x-ruler-h))
-         (om-set-view-size pane (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ x-ruler-h x-scroll-h x-ruler-h))))
+         (om-set-view-position pane (om-make-point (+ y-ruler-w y-scroll-w) (+ (get-control-h self) x-ruler-h)))
+         (om-set-view-size pane (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) (- (h self) (+ (get-control-h self) x-ruler-h x-scroll-h x-ruler-h))))
          
          (om-set-view-size (rulermetric self) (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) x-ruler-h))
+         (om-set-view-position (rulermetric self) (om-make-point (+ y-ruler-w y-scroll-w) (get-control-h self)))
          ))
     (when (patchview self) (om-set-view-position (patchview self) (om-make-point 0 (- (h self) 24))))
     (update-size+pos-frames pane)
@@ -376,8 +433,8 @@
 ;PANEL
 ;--------------------------
 
-(omg-defclass MaquettePanel (patchPanel view-with-ruler-xy cursor-play-view-mixin) 
-   ((mode :initform 7 :accessor mode)
+(defclass MaquettePanel (patchPanel view-with-ruler-xy cursor-play-view-mixin) 
+   (;(mode :initform 7 :accessor mode)
     (selected-mark-lines :initform nil :accessor selected-mark-lines)
     (scroll-scrap-ma :initform nil :allocation :class :accessor scroll-scrap-ma))
    (:documentation "This is the class for editors of Maquette meta objects.
@@ -435,10 +492,6 @@
    "Return a point with the scroll positions"
    (om-make-point 0 0))
 
-(defmethod play-from-palette ((self MaquettePanel))
-  (call-next-method)
-  (when (rulermetric (editor self))
-    (om-invalidate-view (rulermetric (editor self)))))
 
 (defmethod scroll-play-window ((self maquettepanel)) 
   (call-next-method)
@@ -452,16 +505,13 @@
   (mapc #'(lambda (elem) (init-size&position elem self)) subviews))
 
 (defmethod om-view-cursor ((self MaquettePanel))
-   (cond
-    ((om-control-key-p) 
+   (if (om-control-key-p) 
      *om-contex-cursor*)
-    (t (case (mode self)
-           (9 *om-loupe-cursor*)
-           (10 *om-hand-cursor*)
-           (otherwise  (if (cursor-p self) 
-                                     *om-i-beam-cursor*
-                                   *om-arrow-cursor*
-                                   ))))))
+   (case (cursor-mode self)
+     (:zoom *om-loupe-cursor*)
+     (:move *om-hand-cursor*)
+     (:interval *om-i-beam-cursor*)
+     (otherwise *om-arrow-cursor*)))
 
 (defmethod om-view-doubleclick-handler ((Self maquettepanel) Where) nil)
 
@@ -470,10 +520,10 @@
    (when (text-view (editor view))
      (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
    (cond
-    ((= (mode view) 9) (zoom-system view where))
-    ((= (mode view) 10) (scroll-system view where))
-    ((= (mode view) 8) (new-interval-cursor view where))
-    ((= (mode view) 7)
+    ((equal (cursor-mode view) :zoom) (zoom-system view where))
+    ((equal (cursor-mode view) :move) (scroll-system view where))
+    ((equal (cursor-mode view) :interval) (new-interval-cursor view where))
+    (t ; (equal (cursor-mode view) :normal)
      (cond
       ((and (show-con? view) (click-in-connection view where))
        (mapc #'(lambda (control) 
@@ -621,7 +671,7 @@
                                (print "Evaluation ABORTED")
                                (om-abort)))))
      (maquette-extra-eval (object (editor self))))
-   (print (value (object (editor self))))
+   (value (object (editor self)))
    (clear-ev-once self))
 
 (defun get-objects-to-value (list)
@@ -953,23 +1003,7 @@
     ))
 
 
-;;; computes the value...
-(defmethod get-obj-to-play ((self maquetteeditor)) (get-obj-to-play (panel self)))
 
-(defmethod cursor-panes ((self maquetteeditor)) (list (panel self)))
-
-(defmethod schedule-editor-contents ((self maquetteeditor))
-  (loop for object in (inside (value (object self)))
-        for param in (param-list (value (object self))) do
-        (let ((objstart (offset->ms object))
-              (pl (cdr (assoc 'player param))))
-          (print (list object objstart))
-          (player-schedule (player self) 
-                           object 
-                           pl 
-                           :at objstart
-                           :interval (get-interval-to-play self)))
-        ))
 
 ;(when *palette*
 ;  (if (Idle-p *general-player*)
@@ -980,13 +1014,12 @@
    (case char
      (#\SPACE
       (editor-play/stop (editor self)))
+     (:om-key-esc (reset-cursor self))
      (#\x (mute-boxes self))
-     (#\p (when (and (Idle-p *general-player*) (selection-to-play-? self) *palette*)
-            (palette-act *palette* 4)))
+     (#\p (editor-play (editor self)))
      (#\g (setf (grille-p self) (not (grille-p self)))
           (om-invalidate-view self))
-     (#\s (unless (or (Idle-p *general-player*) (not *palette*))
-            (palette-act *palette* 1)))
+     (#\s (editor-stop (editor self)))
      (#\z (lock-boxes self))
      (#\I (mapc 'reinit-contents (get-actives self)) 
           (reinit-connections self))
@@ -1109,24 +1142,104 @@
 
 ;;; play maquette : construit le maquette-obj (en copiant les objs contenus)
 (defmethod cons-play-maquette-object ((self OMMaquette) objs)
-  (cons-copy-maquette-object self objs))
+  (if *maquette-play*
+      (or (value self)
+          (cons-copy-maquette-object self objs))
+    (cons-copy-maquette-object self objs)))
+
+
+;;;==========================
+
+;;; applies to all the boxes
+(defmethod select-maquette-player ((self ommaquette))
+  (if (boxes self)
+      (let ((player (select-player (car (boxes self)))))
+        (when player 
+          (maq-changeparams self (list 'player 'outport) 
+                            (list (get-edit-param (car (boxes self)) 'player)
+                                  (get-edit-param (car (boxes self)) 'outport)))
+          ))
+    (om-beep-msg "This maquette has no playable contents.")))
+
+(defmethod reference-object ((self temporalbox)) (car (value self)))
+
+(defmethod select-maquette-player ((self temporalbox))
+  (let ((previousplayer (get-edit-param self 'player))
+        (newplayer (select-player self)))
+    (when (and newplayer (not (equal previousplayer newplayer)))
+      (player-special-action newplayer)
+      (player-init newplayer)
+      )))
+
+
+
+
+
+;;; computes the value...
+(defmethod get-obj-to-play ((self maquetteeditor)) (get-obj-to-play (panel self)))
+
+(defmethod cursor-panes ((self maquetteeditor)) (list (panel self)))
+
+
+(defmethod schedule-editor-contents ((self maquetteeditor))
+  (loop for object in (inside (value (object self)))
+        for param in (param-list (value (object self))) do
+        (let ((objstart (offset->ms object))
+              (pl (cdr (assoc 'player param))))
+          ;(print (list object pl objstart (get-interval-to-play self)))
+          (player-schedule (player self) 
+                           object
+                           pl 
+                           :at objstart
+                           :interval (get-interval-to-play self)))
+        ))
+
+(defmethod boxestoplay ((self maquettepanel))
+  (if (and (get-actives self) (not (equal :interval (cursor-mode self))))
+      (mapcar 'object (get-actives self))
+    (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
+  
 
 (defmethod get-obj-to-play ((self MaquettePanel))
   (if (and (eval-func (object self)) (value (object self)))
     (if *microplay* 
       (list (value (object self)))
       (list (value (object self)) :approx 8))
-    (let ((boxestoplay (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
-      (list (cons-play-maquette-object (object self) boxestoplay)))
-    ))
+    (list (cons-play-maquette-object (object self) (boxestoplay self))))
+  )
 
-;(defmethod selection-to-play-? ((self MaquettePanel))
-;   (or (cursor-p self) (get-actives self)))
+(defmethod get-interval-to-play ((self maquetteeditor))
+  (if (equal (cursor-mode (panel self)) :interval)
+      (call-next-method)
+    (if (get-actives (panel self))
+        (list (loop for boxf in (get-actives (panel self)) minimize (offset (object boxf)))
+              (loop for boxf in (get-actives (panel self)) maximize (+ (offset (object boxf)) (round (* (extend (object boxf)) (strech-fact (object boxf)))))))
+      )))
        
 #|            
+
+(defun selection-interval (selection)
+  (cond ((track-p (car selection))
+         (list 0 
+               (loop for track in selection maximize (get-obj-dur track))))
+        (t (list (loop for obj in selection minimize (start-t obj))
+                 (loop for obj in selection maximize (end-t obj))))))
+
+
+(defmethod get-obj-to-play ((self sheeteditor))
+  (let* ((scorepanel (panel (score-view self)))
+         (selection (selection? scorepanel)))
+    (if selection
+        (cond ((track-p (car selection))
+               (make-instance 'omsheet :voices (clone selection)))
+              (t (make-instance 'omsheet 
+                                :voices (list (make-instance 'sheet-track 
+                                                             :objs (clone selection))))))
+      (call-next-method))))
+
 (defmethod get-selection-to-play ((self MaquettePanel))
     (cond
-    ((cursor-p  self)
+    ((cursor-p self)
      (let ((interval (cursor-interval self)))
        (values (list (if (and (eval-func (object self)) (value (object self)))
                        (list (value (object self)))
@@ -1151,25 +1264,8 @@
                maxim)))))
 |#
 
-;;;==========================
 
-(defmethod select-maquette-player ((self ommaquette))
-  (if (boxes self)
-      (let ((params (select-player-dialog (car (boxes self)) 
-                                          (get-edit-param (car (boxes self)) 'player)
-                                          (get-edit-param (car (boxes self)) 'outport))))
-        (when params 
-          (maq-changeparams self (list 'player 'outport) params))
-        )
-    (om-beep-msg "This maquette has no playable contents.")))
 
-(defmethod select-maquette-player ((self temporalbox))
-  (let ((params (select-player-dialog self 
-                                      (get-edit-param self 'player)
-                                      (get-edit-param self 'outport))))
-    (when params 
-      (maq-changeparams self (list 'player 'outport) params))
-    ))
 
 
 

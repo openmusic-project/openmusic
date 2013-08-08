@@ -556,7 +556,7 @@
 
 (defun om-fill-sound-info (sound)
   (when (and sound (filename sound) (probe-file (filename sound)))
-    (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
+    (print (format nil "[loading sound file : ~s]" (namestring (filename sound))))
     (multiple-value-bind (format nch sr ss size skip)
 	(om-sound-get-info (filename sound))
       (print (list format nch sr ss size skip))

@@ -19,6 +19,7 @@
           las-cont-all-players
 
           las-play
+          las-loop-play
           las-pause
           las-stop
           las-play/stop ;en cours
@@ -97,6 +98,9 @@
       (loop for object in obj do
           (om-smart-play object from to track))
     (om-smart-play obj from to track)))
+
+(defun las-loop-play (obj &optional track) 
+  (om-smart-loop-play obj track))
 
 (defun las-pause (obj &optional track)
   (if (listp obj)
@@ -517,6 +521,14 @@
           (if (and track (> track 0))
               (om-smart-play-visible sound (- track 1))
           (om-smart-play-hidden sound)))))
+
+
+(defun om-smart-loop-play (sound &optional track)
+  (if (and track (> track 0))
+      (om-smart-play-visible sound (- track 1))
+    (om-smart-play-hidden sound)
+    ))
+  
 
 
 ;/SMART PAUSE FUNCTION

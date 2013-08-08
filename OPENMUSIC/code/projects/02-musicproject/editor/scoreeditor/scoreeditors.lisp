@@ -39,7 +39,7 @@
   (mode-buttons :accessor mode-buttons :initform nil)
   ))
 
-(defmethod editor ((self score-titlebar)) (om-view-container self))
+(defmethod editor ((self editor-titlebar)) (om-view-container self))
 
 (defmethod get-titlebar-class ((self scoreeditor)) 'score-titlebar)
 

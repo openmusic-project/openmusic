@@ -614,7 +614,7 @@ into the unaire-fun-view.#action#"))
 (omg-defclass object-editor (om-view) 
   ((title-bar :initarg :title-bar :accessor title-bar :initform nil)))
 
-(defmethod get-control-h ((self object-editor)) 80)
+(defmethod get-control-h ((self object-editor)) *titlebars-h*)
 
 (defmethod editor-minimum-size ((self object-editor)) (om-make-point 200 100))
 

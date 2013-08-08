@@ -53,7 +53,14 @@ Press 'space' to play/stop the sound file.
 "))
 
 
-(defmethod players-for-object ((self sound)) '(:libaudio :multiplayer :jack))
+(defmethod get-default-score-params ((self sound))
+  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode show-stems scale) 
+           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
+                 nil *InMidiPort* :libaudiostream
+                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 t nil)))
+
+(defmethod players-for-object ((self sound)) '(:libaudiostream :multiplayer :jack))
 
 (defmethod initialize-instance :after ((self sound) &rest args)
   (setf (Qvalue self) 1000)
@@ -135,11 +142,11 @@ Press 'space' to play/stop the sound file.
 
 ;;; copy for play in maq
 (defmethod maq-copy-container ((self sound)  &optional (pere ())) 
-  (let ((copy (copy-sound-file self))
+  (let ((copy self) ;(copy-sound-file self))
         (slots  (class-instance-slots (find-class 'simple-container))))
     (setf (slot-value copy 'parent) pere)
     (loop for slot in slots
-          when (not (eq (slot-definition-name slot) 'parent))
+          when  (not (eq (slot-definition-name slot) 'parent))
           do (setf (slot-value  copy  (slot-definition-name slot))
                    (copy-container (slot-value self (slot-definition-name slot)) copy)))
     copy))

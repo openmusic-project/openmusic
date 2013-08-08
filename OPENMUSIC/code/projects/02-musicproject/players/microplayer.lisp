@@ -172,9 +172,9 @@
 
 
 (defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval)
-  (player-stop :midishare)
+  (player-stop :microplayer)
   (InitPlayingSeq 'microplayer (get-obj-dur object))
-  (PrepareToPlay 'microplayer object (real-duration object 0) :interval interval)
+  (PrepareToPlay 'microplayer object (+ at (real-duration object 0)) :interval interval)
   (FinalizePlayingSeq 'microplayer (get-obj-dur object)))
 
 
@@ -195,14 +195,20 @@
    (close-microplayer)
    (micro-reset))
 
-(defmethod player-loop ((self (eql :microplayer)))
+(defmethod player-loop ((self (eql :microplayer)) &optional play-list)
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
   (setf *index-packets* 0)
   (send-200)
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
   )
 
+
+
+
+
+;;;==================================
 ;;;; ADD EXTERNAL PREF MODULE
+;;;==================================
 
 (add-external-pref-module 'microplayer)
 
@@ -234,7 +240,7 @@
       (setf *microplayer-host* (nth 2 list-prefs))
       )
     (when (get-pref moduleprefs :microplay-path)
-      (setf *spat-renderer* (find-true-external (get-pref moduleprefs :microplay-path))))
+      (setf *micro-player-path* (find-true-external (get-pref moduleprefs :microplay-path))))
     ))
 
 (put-external-preferences 'microplayer (find-pref-module :externals))
@@ -322,12 +328,6 @@
       )
     (om-modal-dialog dialog)))
 
-
-
-
-
-;(and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-in))))
-     
 
 
 
