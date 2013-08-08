@@ -46,7 +46,6 @@
     "tools;utils-from-chroma"
     "synth;synthesis-event"
     "synth;synthesize"
-    ;"multi;sound-players"
     "multi;multiplayer"
     
     "LAS;faust-parser-api"
