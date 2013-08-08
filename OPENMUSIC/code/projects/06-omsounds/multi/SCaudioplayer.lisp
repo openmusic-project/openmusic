@@ -5,6 +5,12 @@
 
 ;;(launch-SCplayer-app)
 
+(let* ((curlist (players-for-object (make-instance 'sound)))
+       (newlist (pushnew :scaudioplayer curlist)))
+  (defmethod players-for-object ((self sound)) newlist))
+
+(pushnew :scaudioplayer *enabled-players*)
+
 (defmethod player-name ((self (eql :scaudioplayer))) "scaudioplayer")
 (defmethod player-desc ((self (eql :scaudioplayer))) "external supercollider player for om")
 (defmethod player-special-action ((self (eql :scaudioplayer))) (launch-scplayer-app))
@@ -45,5 +51,14 @@
 (defmethod player-continue ((engine (eql :scaudioplayer)) &optional play-list)
   (when *sc-file-player-file-to-play*
     (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/pause" 0))))
+
+(defmethod player-set-loop ((engine (eql :mplayer)) &optional start end)
+  (print (format nil "~A : set loop" engine)))
+
+(defmethod player-loop ((engine (eql :mplayer)) &optional play-list)
+  (print (format nil "~A : loop" engine)))
+
+
+
 
 

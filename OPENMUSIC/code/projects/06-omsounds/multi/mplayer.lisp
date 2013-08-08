@@ -1,6 +1,5 @@
 (in-package :om)
 
-
 ;==================
 ; APP
 ;==================
@@ -8,6 +7,15 @@
 (defmethod player-name ((engine (eql :mplayer))) "mplayer")
 (defmethod player-desc ((engine (eql :mplayer))) "external mplayer")
 (defmethod player-special-action ((engine (eql :mplayer))) (mplayer-launch-mplayer-app))
+
+
+;; enable mplayer-engine for class sound:
+
+(let* ((curlist (players-for-object (make-instance 'sound)))
+       (newlist (pushnew :mplayer curlist)))
+  (defmethod players-for-object ((self sound)) newlist))
+
+(pushnew :mplayer *enabled-players*)
 
 (defvar *mplayer-iostr* nil)
 (defvar *mplayer-pid* nil)
@@ -103,15 +111,12 @@
 
 (defvar *mplayer-file-to-play* nil)
 
-(defmethod initplayingseq ((player (eql :mplayer)) dur &key (port nil)) t)
-(defmethod finalizeplayingseq ((player (eql :mplayer)) dur &key (port nil)) t)
-
 ;; (au::wave-file-p "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
 ;; (au::sound-get-info-wave "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
 ;; (om-api::om-sound-get-info "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
 
 (defmethod prepare-to-play ((engine (eql :mplayer)) (player omplayer) object at interval)
-  (setf *mplayer-file-to-play* (namestring (om-sound-file-name self)))
+  (setf *mplayer-file-to-play* (namestring (om-sound-file-name object)))
   (mplayer-send-cmd (format nil "loadfile ~A" *mplayer-file-to-play*))
   (mplayer-send-cmd "pause")		;mplayer starts playing after loading...
   (mplayer-send-cmd (format nil "seek ~A 2" (if at at 0)))
@@ -129,15 +134,31 @@
 (defmethod player-stop ((engine (eql :mplayer)) &optional playlist)
   (declare (ignore view))
   (when *mplayer-file-to-play*
-    (mplayer-send-cmd "pause")
-    (mplayer-send-cmd "seek 0 2")))
+    (mplayer-send-cmd "stop")
+    ;;(mplayer-send-cmd "seek 0 2")
+    ))
 
 ;; use *mplayer-toggle-pause* here. AV:
 
+(defparameter *mplayer-paused* nil)
+
 (defmethod player-pause ((engine (eql :mplayer)) &optional playlist)
-  (when *mplayer-file-to-play* (mplayer-send-cmd "pause")))
+  (when (and *mplayer-file-to-play* (not *mplayer-paused*))
+    (mplayer-send-cmd "pause")
+    (setf *mplayer-paused* t)))
 
 (defmethod player-continue ((engine (eql :mplayer)) &optional playlist)
-  (when *mplayer-file-to-play* (mplayer-send-cmd "pause")))
+  (when (and *mplayer-file-to-play* *mplayer-paused*)
+    (mplayer-send-cmd "pause")
+    (setf *mplayer-paused* nil)))
+
+;; these dont work yet. AV.
+
+(defmethod player-set-loop ((engine (eql :mplayer)) &optional start end)
+  (print (format nil "~A : set loop" engine))
+  t)
+
+(defmethod player-loop ((engine (eql :mplayer)) &optional play-list)
+  (mplayer-send-cmd "loop 0"))
 
 
