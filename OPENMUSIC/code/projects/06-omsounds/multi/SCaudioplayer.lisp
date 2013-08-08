@@ -5,57 +5,45 @@
 
 ;;(launch-SCplayer-app)
 
+(defmethod player-name ((self (eql :scaudioplayer))) "scaudioplayer")
+(defmethod player-desc ((self (eql :scaudioplayer))) "external supercollider player for om")
+(defmethod player-special-action ((self (eql :scaudioplayer))) (launch-scplayer-app))
+(defmethod player-type ((player (eql :scaudioplayer))) :UDP)
 ;================
 ; PROTOCOL
 ;================
 
 (defvar *sc-file-player-file-to-play* nil)
 
-(defmethod InitPlayingSeq ((player (eql 'SCAudioPlayer)) dur &key (port nil)) t)
-    
-(defmethod FinalizePlayingSeq ((player (eql 'SCAudioPlayer)) dur &key (port nil)) t)
-
-(defmethod* PrepareToPlay ((player (Eql 'SCAudioPlayer)) (self sound) at &key  approx port (interval '(0 -1)) voice)
-  (declare (ignore approx))
-  (print (list 'PrepareToPlay (gensym "ptp")))			;; individual players?
-  (setf *sc-file-player-file-to-play* (namestring (om-sound-file-name self)))
-  (om-send-osc-message *SCplayer-lang-port*
-		       *SCplayer-host*
-		       (list "/scfileplayer/open" *sc-file-player-file-to-play* interval)))
+(defmethod prepare-to-play ((engine (eql 'scaudioplayer)) (player omplayer) object at interval)
+  (om-send-osc-message *scplayer-lang-port*
+		       *scplayer-host*
+		       (list "/scfileplayer/open"
+			     (setf *sc-file-player-file-to-play* (namestring (om-sound-file-name object)))))
+  (when interval
+    (let ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at)))
+      (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/start" (/ (car newinterval) 1000.0)))))
+  (call-next-method))
 
 
+(defmethod player-start ((engine (eql :scaudioplayer)) &optional play-list)
+  (call-next-method))
 
-(defmethod Play-player ((self (eql 'SCAudioPlayer)))
-  (print (list 'play-player self *sc-file-player-file-to-play*))
+(defmethod player-play-object ((engine (eql :scaudioplayer)) (object sound) &key interval)
   (when *sc-file-player-file-to-play*
-    (om-send-osc-message *SCplayer-lang-port* *SCplayer-host*  (list "/scfileplayer/play" 1))))
+    (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/play" 1))))
 
-(defmethod Stop-Player ((self (eql 'SCAudioPlayer)) &optional view)
-  (declare (ignore view))
-  (print (list 'stop-player))
+(defmethod player-stop ((engine (eql :scaudioplayer)) &optional play-list)
   (when *sc-file-player-file-to-play*
-    (om-send-osc-message *SCplayer-lang-port* *SCplayer-host*  (list "/scfileplayer/play" 0))))
+    (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/play" 0))
+    (setf *sc-file-player-file-to-play* nil)))
 
-(defmethod Pause-Player ((self (eql 'SCAudioPlayer)))
-  (print (list 'pause-player))
+(defmethod player-pause ((engine (eql :scaudioplayer)) &optional play-list)
   (when *sc-file-player-file-to-play*
-    (om-send-osc-message *SCplayer-lang-port* *SCplayer-host*  (list "/scfileplayer/pause" 1))))
+    (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/pause" 1))))
 
-(defmethod Continue-Player ((self (eql 'SCAudioPlayer)))
-  (print (list 'continue-player))
+(defmethod player-continue ((engine (eql :scaudioplayer)) &optional play-list)
   (when *sc-file-player-file-to-play*
-    (om-send-osc-message *SCplayer-lang-port* *SCplayer-host*  (list "/scfileplayer/pause" 0))))
+    (om-send-osc-message *scplayer-lang-port* *scplayer-host*  (list "/scfileplayer/pause" 0))))
 
-(defmethod Reset-Player ((self (eql 'SCAudioPlayer)) &optional view)
-  (declare (ignore view))
-  (print (list 'reset-player))
-  (om-send-osc-message *SCplayer-lang-port* *SCplayer-host*  (list "/scfileplayer/reset"))
-  (setf *sc-file-player-file-to-play* nil)
-  t)
 
-;; add SuperCollider general player to list:
-
-(setf *audio-players* (x-append :scaudioplayer *audio-players*))
-(defmethod audio-player-name ((self (eql :scaudioplayer))) "SCAudioPlayer")
-(defmethod audio-player-desc ((self (eql :scaudioplayer))) "external SuperCollider Player for OM")
-(defmethod player-special-action ((self (eql :scaudioplayer))) (launch-SCplayer-app))
