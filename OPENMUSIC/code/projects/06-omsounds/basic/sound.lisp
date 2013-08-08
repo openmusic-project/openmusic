@@ -53,6 +53,13 @@ Press 'space' to play/stop the sound file.
 "))
 
 
+(defmethod get-default-score-params ((self sound))
+  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode show-stems scale) 
+           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
+                 nil *InMidiPort* :libaudiostream
+                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 t nil)))
+
 (defmethod players-for-object ((self sound)) '(:libaudiostream :multiplayer :jack))
 
 (defmethod initialize-instance :after ((self sound) &rest args)

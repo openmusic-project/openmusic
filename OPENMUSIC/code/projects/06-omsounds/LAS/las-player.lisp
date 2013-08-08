@@ -5,6 +5,8 @@
 
 (in-package :om)
 
+(defmethod player-name ((self (eql :libaudiostream))) "LibAudioStream")
+(defmethod player-desc ((self (eql :libaudiostream))) "internal OM Player")
 
 ;;; METHODES A REDEFINIR QUAND ON UTILISE OMPLAYER
 

@@ -202,7 +202,13 @@
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
   )
 
+
+
+
+
+;;;==================================
 ;;;; ADD EXTERNAL PREF MODULE
+;;;==================================
 
 (add-external-pref-module 'microplayer)
 
@@ -234,7 +240,7 @@
       (setf *microplayer-host* (nth 2 list-prefs))
       )
     (when (get-pref moduleprefs :microplay-path)
-      (setf *spat-renderer* (find-true-external (get-pref moduleprefs :microplay-path))))
+      (setf *micro-player-path* (find-true-external (get-pref moduleprefs :microplay-path))))
     ))
 
 (put-external-preferences 'microplayer (find-pref-module :externals))
@@ -322,12 +328,6 @@
       )
     (om-modal-dialog dialog)))
 
-
-
-
-
-;(and (integerp number) (>= number 0) (not (= number (get-pref modulepref :micro-in))))
-     
 
 
 

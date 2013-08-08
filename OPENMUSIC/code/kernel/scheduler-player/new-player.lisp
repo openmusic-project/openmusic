@@ -201,7 +201,7 @@
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
                         #'(lambda () 
-                            (print (list object engine at interval))
+                            ;(print (list object engine at interval))
                             (player-play-object engine object :interval interval))
                         at))
 
