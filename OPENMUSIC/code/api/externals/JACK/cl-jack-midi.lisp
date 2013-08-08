@@ -85,7 +85,6 @@
 	    (sort (nconc (gethash period seq) (list noteoff))
 		  #'(lambda (a b) (< (car a) (car b))))))))
 
-
 ;; used by player-methods to play objects w. jack-midi.
 (defun jack-midi-play-event (start dur noteno &optional (vel 80) (chan 1))
   "times (start, dur) in sec.; noteno, vel, chan is standard midi"
@@ -99,10 +98,10 @@
    #'(lambda () (let ((sounding-notes '()))
 		  (maphash #'(lambda (key val)
 			       (declare (ignore key))
-			       (mapcar #'(lambda (ev) (push (cddr ev) sounding-notes)) val))
+			       (mapc #'(lambda (ev) (push (cddr ev) sounding-notes)) val))
 			   *om-seq*)
 		  (clrhash *om-seq*)
-		  (mapcar #'(lambda (ev)
+		  (mapc #'(lambda (ev)
 			      (apply #'seqhash-note-off *om-seq* (framenow) ev))
 			  sounding-notes)
 		  t))))
@@ -113,10 +112,14 @@
 (defparameter *playing* t)		;nil=shut up
 ;; (setf *playing* nil)
 
+(defun lookup-queue-at-frame (jack-period seq)
+  (let ((queue-time (or (gethash 'queuetime seq) 0)))
+    (gethash (+ jack-period queue-time) seq)))
+
 (defun play-from-seq (port-buf seq)
   (when *playing*
     (let ((this-period (jack-last-frame-time *OMJackClient*)))
-      (let ((notes-this-period (gethash this-period seq)))
+      (let ((notes-this-period (lookup-queue-at-frame this-period seq)))
 	(when notes-this-period
 	  (remhash this-period seq)
 	  (loop for note in notes-this-period
