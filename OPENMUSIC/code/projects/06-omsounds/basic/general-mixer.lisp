@@ -32,11 +32,12 @@
 (defclass omgenmixer-view (om-view) 
   ())
 
+(defmethod om-draw-contents ((self omgenmixer-view)) (print "draw"))
+
 
 ;/MAKE GENERAL MIXER WINDOW FUNCTION
 ;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
-
   ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
   (if (not *general-mixer-presets*) (setf *general-mixer-presets* (init-genmixer-values)))
 

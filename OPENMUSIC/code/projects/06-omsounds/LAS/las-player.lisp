@@ -22,21 +22,21 @@
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
+      (loop for i from 0 to (1- (length play-list)) do
             (player-pause-object engine (nth i play-list)))
     (las-pause-all-players)))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
+      (loop for i from 0 to (1- (length play-list)) do
             (player-continue-object engine (nth i play-list)))
     (las-cont-all-players)))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
+      (loop for i from 0 to (1- (length play-list)) do
             (player-stop-object engine (nth i play-list)))
     (las-stop-all-players)))
 
@@ -46,7 +46,10 @@
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 (defmethod player-loop ((self (eql :libaudiostream)) &optional play-list)
-  (print (list "LOOP AUDIO" play-list)))
+  (if play-list
+      (loop for i from 0 to (1- (length play-list)) do
+            (las-stop (nth i play-list))
+            (las-loop-play (nth i play-list)))))
 
 
 ;;; NOT IN OM PLAYER API
