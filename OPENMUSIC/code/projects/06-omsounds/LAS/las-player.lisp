@@ -10,7 +10,8 @@
 
 ;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
 (defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval)
-  (call-next-method))
+  (let ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at)))
+    (call-next-method engine player object at newinterval)))
 
 ;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
 (defmethod player-start ((engine (eql :libaudiostream)) &optional play-list)

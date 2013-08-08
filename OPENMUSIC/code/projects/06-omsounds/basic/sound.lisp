@@ -135,11 +135,11 @@ Press 'space' to play/stop the sound file.
 
 ;;; copy for play in maq
 (defmethod maq-copy-container ((self sound)  &optional (pere ())) 
-  (let ((copy (copy-sound-file self))
+  (let ((copy self) ;(copy-sound-file self))
         (slots  (class-instance-slots (find-class 'simple-container))))
     (setf (slot-value copy 'parent) pere)
     (loop for slot in slots
-          when (not (eq (slot-definition-name slot) 'parent))
+          when  (not (eq (slot-definition-name slot) 'parent))
           do (setf (slot-value  copy  (slot-definition-name slot))
                    (copy-container (slot-value self (slot-definition-name slot)) copy)))
     copy))

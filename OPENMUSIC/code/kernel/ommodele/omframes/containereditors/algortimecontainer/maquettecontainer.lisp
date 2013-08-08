@@ -136,7 +136,7 @@
 
 (defmethod editor-play ((self MaquetteEditor))
   (setf *maquette-play* T)
-  (cons-copy-maquette-object self objs)
+  (cons-copy-maquette-object (object self) (boxestoplay (panel self)))
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
