@@ -144,7 +144,10 @@ Press 'space' to play/stop the sound file.
   (and (om-sound-file-name self)
         (register-resource :sound (om-sound-file-name self))
         `(let ((thesound (load-sound ,(om-save-pathname-relative (om-sound-file-name self))
-                                     ,(tracknum self))))
+                                     ,(tracknum self)
+                                     ,(vol self)
+                                     ,(pan self)
+                                     )))
            (when thesound
              (setf (markers thesound) ',(markers self)))
            thesound)))
@@ -206,6 +209,8 @@ Press 'space' to play/stop the sound file.
   (let ((snd (om-load-if name 'load-sound-file)))
     (unless snd (setf snd (make-instance 'sound :filename name)))
     (when (and snd track) (setf (tracknum snd) track))
+    (when (and snd vol) (setf (vol snd) vol))
+    (when (and snd pan) (setf (pan snd) pan))
     snd))
 
 ;======================
