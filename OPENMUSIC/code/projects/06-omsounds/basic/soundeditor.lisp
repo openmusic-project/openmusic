@@ -43,6 +43,7 @@
 (omg-defclass Aiff-control (3dBorder-view) 
   ((dyn-ctrls-list :initform nil :accessor dyn-ctrl-list)))
 
+(defmethod audio-player-track-range ((player t)) '(1 16))
 
 (defmethod make-snd-ctrl-list ((self Aiff-control))
   (let ((x0 50))
@@ -50,8 +51,8 @@
      (om-make-dialog-item 'numBox
                           (om-make-point x0 8)
                           (om-make-point 28 18) (format () " ~D" (tracknum (object (om-view-container self))))
-                          :min-val 1
-                          :max-val 16
+                          :min-val (car (audio-player-track-range (get-edit-param (om-view-container self) 'player)))
+                          :max-val (cadr (audio-player-track-range (get-edit-param (om-view-container self) 'player)))
                           :font *om-default-font1*
                           :bg-color *om-white-color*
                           :value (tracknum (object (om-view-container self)))

@@ -32,7 +32,7 @@
 (defmethod audio-player-name ((self (eql :multiplayer))) "MultiPlayer")
 (defmethod audio-player-desc ((self (eql :multiplayer))) "external Max/OSC player")
 (defmethod player-special-action ((self (eql :multiplayer))) (launch-multiplayer-app))
-
+(defmethod audio-player-track-range ((player (eql :multiplayer))) '(0 0))
 
 (defun select-audio-player-dialog (self &optional (player nil) (out nil))
   (let* ((pane-h (+ 20 (* (length *audio-players*) 25)))

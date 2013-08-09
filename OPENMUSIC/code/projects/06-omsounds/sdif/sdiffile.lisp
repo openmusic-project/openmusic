@@ -69,7 +69,7 @@ Lock the box ('b') to keep the current file.
   (sdif-open (namestring self)))
 
 (defmethod sdif-open ((self string))
-  (let ((fileptr (sdif-open-file self :eReadFile)))
+  (let ((fileptr (sdif-open-file self :eReadWriteFile)))
     (when (and fileptr (not (sdif-null-ptr-p fileptr)))
       fileptr)))
 
