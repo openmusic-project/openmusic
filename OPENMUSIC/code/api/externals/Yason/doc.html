@@ -1,0 +1,664 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Strict//EN">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>YASON - A JSON encoder/decoder for Common Lisp</title><meta name="description" content="
+    YASON is a JSON encoding and decoding library for Common Lisp.  It
+    provides for functions to read JSON strings into Lisp data
+    structures and for serializing Lisp data structures as JSON
+    strings.
+  "></meta><style type="text/css">
+  body { background-color: #ffffff; max-width: 50em; margin-left: 2em; }
+  blockquote { margin-left: 2em; margin-right: 2em; }
+  pre { padding:5px; background-color:#e0e0e0 }
+  pre.none { padding:5px; background-color:#ffffff }
+  h3, h4, h5 { text-decoration: underline; }
+  a { text-decoration: none; padding: 1px 2px 1px 2px; }
+  a:visited { text-decoration: none; padding: 1px 2px 1px 2px; }
+  a:hover { text-decoration: none; padding: 1px 1px 1px 1px; border: 1px solid #000000; } 
+  a:focus { text-decoration: none; padding: 1px 2px 1px 2px; border: none; }
+  a.none { text-decoration: none; padding: 0; }
+  a.none:visited { text-decoration: none; padding: 0; } 
+  a.none:hover { text-decoration: none; border: none; padding: 0; } 
+  a.none:focus { text-decoration: none; border: none; padding: 0; } 
+  a.noborder { text-decoration: none; padding: 0; } 
+  a.noborder:visited { text-decoration: none; padding: 0; } 
+  a.noborder:hover { text-decoration: none; border: none; padding: 0; } 
+  a.noborder:focus { text-decoration: none; border: none; padding: 0; }  
+        </style></head><body>
+
+  <h1 xmlns="">YASON - A JSON encoder/decoder for Common Lisp</h1>
+
+  
+
+  <h3 xmlns="">Abstract</h3>
+<blockquote xmlns="">
+    YASON is a Common Lisp library for encoding and decoding data in
+    the <a xmlns="http://www.w3.org/1999/xhtml" href="http://json.org/">JSON</a> interchange format.  JSON
+    is used as a lightweight alternative to XML.  YASON has the sole
+    purpose of encoding and decoding data and does not impose any
+    object model on the Common Lisp application that uses it.
+  </blockquote>
+
+  <h3 xmlns="">Contents</h3>
+<ol xmlns="">
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#install">Download and Installation</a></li>
+<li><a href="#json-package">Using JSON as package name</a></li>
+<li><a href="#mapping">Mapping between JSON and CL datatypes</a></li>
+<li>
+<a href="#parsing">Parsing JSON data</a><ol><li><a href="#parser-dict">Parser dictionary</a></li></ol>
+</li>
+<li>
+<a href="#encoding">Encoding JSON data</a><ol>
+<li><a href="#dom-encoder">Encoding a JSON DOM</a></li>
+<li><a href="#stream-encoder">Encoding JSON in streaming mode</a></li>
+<li><a href="#app-encoders">Application specific encoders</a></li>
+</ol>
+</li>
+<li><a href="#index">Symbol index</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#ack">Acknowledgements</a></li>
+</ol>
+
+  <h3 xmlns=""><a class="none" name="intro">Introduction</a></h3>
+    <p>
+      <a href="http://json.org/">JSON</a> is an established
+      alternative to XML as a data interchange format for web
+      applications.  YASON implements reading and writing of JSON
+      formatted data in Common Lisp.  It does not attempt to provide a
+      mapping between CLOS objects and YASON, but can be used to
+      implement such mappings.
+    </p>
+    <p>
+      <a href="http://common-lisp.net/project/cl-json/">CL-JSON</a> is
+      another Common Lisp package that can be used to work with JSON
+      encoded data.  It takes a more integrated approach, providing
+      for library internal mappings between JSON objects and CLOS
+      objects.  YASON was created as a lightweight, documented
+      alternative with a minimalistic approach and extensibilty.
+    </p>
+  
+
+  <h3 xmlns=""><a class="none" name="install">Download and Installation</a></h3>
+    <p>
+      YASON has its permanent home at <a href="http://common-lisp.net/project/yason/">common-lisp.net</a>.
+      It can be obtained by downloading the <a href="https://github.com/downloads/hanshuebner/yason/yason.tar.gz">release
+      tarball</a>.  The current release is 0.6.2.
+    </p>
+    <p>
+      You may also check out the current development version from its
+      <a href="http://github.com/hanshuebner/yason/">git
+      repository</a>.  If you have suggestions regarding YASON, please
+      email me at <i>hans.huebner@gmail.com</i>.
+    </p>
+    <p>
+      YASON is written in ANSI Common Lisp.  It depends on UNIT-TEST,
+      TRIVIAL-GRAY-STREAMS and ALEXANDRIA open source libraries.  The
+      recommended way to install YASON and its dependencies is through
+      the excellent <a href="http://www.quicklisp.org/">Quicklisp</a>
+      library management system.
+    </p>
+    <p>
+      YASON lives in the <b>:yason</b> package and creates a package
+      nickname <b>:json</b>.  Applications will not normally
+      <b>:use</b> this package, but rather use qualified names to
+      access YASON's symbols.  For that reason, YASON's symbols do not
+      contain the string "JSON" themselves.  See below for usage
+      samples.
+    </p>
+  
+
+  <h3 xmlns=""><a class="none" name="json-package">Using JSON as package name</a></h3>
+    Versions of YASON preceding the v0.6.0 release provided a package
+    nickname "JSON" for the "YASON" package.  This made it impossible
+    to load both YASON and CL-JSON into the same image, because
+    CL-JSON uses the "JSON" package name as well.
+
+    <p>
+      As CL-JSON's use of "JSON" as package name has a much longer
+      history and loading of both CL-JSON and YASON into the same
+      image has become more common, the "JSON" nickname was removed
+      from the YASON package with the v0.6.0 release.  Users will need
+      to change their applications so that the "JSON" nickname is no
+      longer used to refer to the "YASON" package.  It is understood
+      that this is a disruptive change, but as there is no
+      all-encompassing workaround, this step was felt to be the right
+      one to make
+    </p>
+  
+
+  <h3 xmlns=""><a class="none" name="mapping">Mapping between JSON and CL datatypes</a></h3>
+    By default, YASON performs the following mappings between JSON and
+    CL datatypes:
+    <table border="1">
+      <thead>
+        <tr>
+          <th>JSON<br></br>datatype</th>
+          <th>CL<br></br>datatype</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>object</td>
+          <td>hash-table<br></br>:test #'equal</td>
+          <td>
+            Keys are strings by default (see
+            <code xmlns=""><a href="#*parse-object-key-fn*">*parse-object-key-fn*</a></code>).  Set
+            <code xmlns=""><a href="#*parse-object-as*">*parse-object-as*</a></code> to <b>:alist</b> in
+            order to have YASON parse objects as alists or to
+            <b>:plist</b> to parse them as plists.  When using plists,
+            you probably want to also set
+            <code xmlns=""><a href="#*parse-object-key-fn*">*parse-object-key-fn*</a></code> to a function
+            that interns the object's keys to symbols.
+          </td>
+        </tr>
+        <tr>
+          <td>array</td>
+          <td>list</td>
+          <td>
+            Can be changed to read to vectors (see
+            <code xmlns=""><a href="#*parse-json-arrays-as-vectors*">*parse-json-arrays-as-vectors*</a></code>).
+          </td>
+        </tr>
+        <tr>
+          <td>string</td>
+          <td>string</td>
+          <td>
+            JSON escape characters are recognized upon reading.  Upon
+            writing, known escape characters are used, but non-ASCII
+            Unicode characters are written as is.
+          </td>
+        </tr>
+        <tr>
+          <td>number</td>
+          <td>number</td>
+          <td>
+            Parsed with READ, printed with PRINC.  This is not a
+            faithful implementation of the specification.
+          </td>
+        </tr>
+        <tr>
+          <td>true</td>
+          <td>t</td>
+          <td>
+	    Can be changed to read as TRUE (see
+	    <code xmlns=""><a href="#*parse-json-booleans-as-symbols*">*parse-json-booleans-as-symbols*</a></code>).
+	  </td>
+        </tr>
+        <tr>
+          <td>false</td>
+          <td>nil</td>
+          <td>
+	    Can be changed to read as FALSE (see
+	    <code xmlns=""><a href="#*parse-json-booleans-as-symbols*">*parse-json-booleans-as-symbols*</a></code>).
+	  </td>
+        </tr>
+        <tr>
+          <td>null</td>
+          <td>nil</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  
+
+  <h3 xmlns=""><a class="none" name="parsing">Parsing JSON data</a></h3>
+    <p>
+      JSON data is always completely parsed into an equivalent
+      in-memory representation.  Upon reading, some translations are
+      performed by default to make it easier for the Common Lisp
+      program to work with the data; see <code xmlns=""><a href="#mapping">mapping</a></code>
+      for details.  If desired, the parser can be configured to
+      preserve the full semantics of the JSON data read.
+    </p>
+
+    For example
+
+    <pre>CL-USER&gt; (defvar *json-string* "[{\"foo\":1,\"bar\":[7,8,9]},2,3,4,[5,6,7],true,null]")
+*JSON-STRING*
+CL-USER&gt; (let* ((result (yason:parse *json-string*)))
+           (print result)
+           (alexandria:hash-table-plist (first result)))
+
+(#&lt;HASH-TABLE :TEST EQUAL :COUNT 2 {5A4420F1}&gt; 2 3 4 (5 6 7) T NIL) 
+("bar" (7 8 9) "foo" 1)
+CL-USER&gt; (defun maybe-convert-to-keyword (js-name)
+           (or (find-symbol (string-upcase js-name) :keyword)
+               js-name))
+MAYBE-CONVERT-TO-KEYWORD
+CL-USER&gt; :FOO ; intern the :FOO keyword
+:FOO
+CL-USER&gt; (let* ((yason:*parse-json-arrays-as-vectors* t)
+                (yason:*parse-json-booleans-as-symbols* t)
+                (yason:*parse-object-key-fn* #'maybe-convert-to-keyword)
+                (result (yason:parse *json-string*)))
+           (print result)
+           (alexandria:hash-table-plist (aref result 0)))
+
+#(#&lt;HASH-TABLE :TEST EQUAL :COUNT 2 {59B4EAD1}&gt; 2 3 4 #(5 6 7) YASON:TRUE NIL) 
+("bar" #(7 8 9) :FOO 1)</pre>
+
+    <p>
+      The second example modifies the parser's behaviour so that JSON
+      arrays are read as CL vectors, JSON booleans will be read as the
+      symbols TRUE and FALSE and JSON object keys will be looked up in
+      the <b>:keyword</b> package.  Interning strings coming from an
+      external source is not recommended practice.
+    </p>
+
+    <h4 xmlns=""><a name="parser-dict">Parser dictionary</a></h4>
+      <p xmlns="">[Function]<br><a class="none" name="parse"><b>parse</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">input &amp;key (object-key-fn
+        *parse-object-as-key-fn*) (object-as *parse-object-as*)
+        (json-arrays-as-vectors *parse-json-arrays-as-vectors*)
+        (json-booleans-as-symbols *parse-json-booleans-as-symbols*)
+        (json-nulls-as-keyword *parse-json-null-as-keyword*)</clix:lambda-list></i>
+          =&gt;
+          <i>object</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Parse <code><i>input</i></code>, which must be a string or
+          a stream, as JSON.  Returns the Lisp representation of the
+          JSON structure parsed.
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            The keyword arguments <code xmlns=""><i>object-key-fn</i></code>,
+            <code xmlns=""><i>object-as</i></code>,
+            <code xmlns=""><i>json-arrays-as-vectors</i></code>, 
+            <code xmlns=""><i>json-booleans-as-symbols</i></code>, and
+            <code xmlns=""><i>json-null-as-keyword</i></code> may be used
+            to specify different values for the parsing parameters
+            from the current bindings of the respective special
+            variables.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Special variable]<br><a class="none" name="*parse-json-arrays-as-vectors*"><b>*parse-json-arrays-as-vectors*</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If set to a true value, JSON arrays will be parsed as
+          vectors, not as lists. NIL is the default.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Special variable]<br><a class="none" name="*parse-object-as*"><b>*parse-object-as*</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Can be set to <b xmlns="http://www.w3.org/1999/xhtml">:hash-table</b> to parse objects as hash
+          tables, <b xmlns="http://www.w3.org/1999/xhtml">:alist</b> to parse them as alists or
+          <b xmlns="http://www.w3.org/1999/xhtml">:plist</b> to parse them as plists.  <b xmlns="http://www.w3.org/1999/xhtml">:hash-table</b>
+          is the default.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Special variable]<br><a class="none" name="*parse-json-booleans-as-symbols*"><b>*parse-json-booleans-as-symbols*</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If set to a true value, JSON booleans will be read as the
+          symbols TRUE and FALSE instead of T and NIL, respectively.
+          NIL is the default.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Special variable]<br><a class="none" name="*parse-json-null-as-keyword*"><b>*parse-json-null-as-keyword*</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If set to a true value, JSON null will be read as the
+          keyword :NULL, instead of NIL.
+          NIL is the default.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Special variable]<br><a class="none" name="*parse-object-key-fn*"><b>*parse-object-key-fn*</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Function to call to convert a key string in a JSON array to
+          a key in the CL hash produced. IDENTITY is the default.
+        </clix:description></blockquote></p>
+
+    
+  
+
+  <h3 xmlns=""><a class="none" name="encoding">Encoding JSON data</a></h3>
+    YASON provides two distinct modes to encode JSON data:
+    applications can either create an in-memory representation of the
+    data to be serialized, then have YASON convert it to JSON in one
+    go, or they can use a set of macros to serialze the JSON data
+    element-by-element, allowing fine-grained control over the layout
+    of the generated data.
+
+    <p>
+      Optionally, the JSON that is produced can be indented.
+      Indentation requires the use of a
+      <code xmlns=""><a href="#json-output-stream">JSON-OUTPUT-STREAM</a></code> as serialization target.
+      With the stream serializer, such a stream is automatically used.
+      If indentation is desired with the DOM serializer, such a stream
+      can be obtained by calling the
+      <code xmlns=""><a href="#make-json-output-stream">MAKE-JSON-OUTPUT-STREAM</a></code> function with the
+      target output string as argument.  Please be aware that indented
+      output not requires more space, but is also slower and should
+      not be enabled in performance critical applications.
+    </p>
+
+    <h4 xmlns=""><a name="dom-encoder">Encoding a JSON DOM</a></h4>
+      <p>
+        In this mode, an in-memory structure is encoded in JSON
+        format.  The structure must consist of objects that are
+        serializable using the <code xmlns=""><a href="#encode">ENCODE</a></code> function.
+        YASON defines a number of encoders for standard data types
+        (see <code xmlns=""><a href="#mapping">MAPPING</a></code>), but the application can
+        define additional methods (e.g. for encoding CLOS objects).
+      </p>
+      For example:
+      <pre>CL-USER&gt; (yason:encode 
+          (list (alexandria:plist-hash-table
+                 '("foo" 1 "bar" (7 8 9))
+                 :test #'equal)
+                2 3 4
+                '(5 6 7)
+                t nil)
+          *standard-output*)
+[{"foo":1,"bar":[7,8,9]},2,3,4,[5,6,7],true,null]
+(#&lt;HASH-TABLE :TEST EQUAL :COUNT 2 {59942D21}&gt; 2 3 4 (5 6 7) T NIL)</pre>
+
+      <h4 xmlns=""><a name="dom-encoder-dict">DOM encoder dictionary</a></h4>
+        <p xmlns="">[Generic function]<br><a class="none" name="encode"><b>encode</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object &amp;optional
+          stream</clix:lambda-list></i>
+          =&gt;
+          <i>object</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Encode <code><i>object</i></code> in JSON format and
+            write to <code><i>stream</i></code>.  May be specialized
+            by applications to perform specific rendering. Stream
+            defaults to *STANDARD-OUTPUT*.
+          </clix:description></blockquote></p>
+
+	<p xmlns="">[Function]<br><a class="none" name="encode-alist"><b>encode-alist</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object &amp;optional (stream
+	  *standard-output*)</clix:lambda-list></i>
+          =&gt;
+          <i>object</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encodes <code><i>object</i></code>, an alist, in JSON
+	    format and write to <code><i>stream</i></code>.
+	  </clix:description></blockquote></p>
+
+	<p xmlns="">[Function]<br><a class="none" name="encode-plist"><b>encode-plist</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object &amp;optional (stream
+	  *standard-output*)</clix:lambda-list></i>
+          =&gt;
+          <i>object</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encodes <code><i>object</i></code>, a plist, in JSON
+	    format and write to <code><i>stream</i></code>.
+	  </clix:description></blockquote></p>
+
+        <p xmlns="">[Function]<br><a class="none" name="make-json-output-stream"><b>make-json-output-stream</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">stream &amp;key (indent t)</clix:lambda-list></i>
+          =&gt;
+          <i>stream</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Creates a <code><a href="#json-output-stream">json-output-stream</a></code> instance
+            that wraps the supplied <code><i>stream</i></code> and
+            optionally performs indentation of the generated JSON
+            data.  The <code><i>indent</i></code> argument is
+            described in <code><a href="#with-output">WITH-OUTPUT</a></code>.  Note that
+            if the <code><i>indent</i></code> argument is NIL, the
+            original stream is returned in order to avoid the
+            performance penalty of the indentation algorithm.
+          </clix:description></blockquote></p>
+      
+    
+
+    <h4 xmlns=""><a name="stream-encoder">Encoding JSON in streaming mode</a></h4>
+      <p>
+        In this mode, the JSON structure is generated in a stream.
+        The application makes explicit calls to the encoding library
+        in order to generate the JSON structure.  It provides for more
+        control over the generated output, and can be used to generate
+        arbitary JSON without requiring that there exists a directly
+        matching Lisp data structure.  The streaming API uses the
+        <code xmlns=""><a href="#encode">encode</a></code> function, so it is possible to
+        intermix the two (see <code xmlns=""><a href="#app-encoders">app-encoders</a></code> for an
+        example).
+      </p>
+      For example:
+      <pre>CL-USER&gt; (yason:with-output (*standard-output*)
+           (yason:with-array ()
+             (dotimes (i 3)
+               (yason:encode-array-element i))))
+[0,1,2]
+NIL
+CL-USER&gt; (yason:with-output (*standard-output*)
+           (yason:with-object ()
+             (yason:encode-object-element "hello" "hu hu")
+             (yason:with-object-element ("harr")
+               (yason:with-array ()
+                 (dotimes (i 3)
+                   (yason:encode-array-element i))))))
+{"hello":"hu hu","harr":[0,1,2]}
+NIL</pre>
+
+      <h4 xmlns=""><a name="stream-encoder-dict">Streaming encoder dictionary</a></h4>
+        <p xmlns="">[Macro]<br><a class="none" name="with-output"><b>with-output</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">(stream &amp;key indent) &amp;body body</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Set up a JSON streaming encoder context on
+            <code><i>stream</i></code>, then evaluate
+            <code><i>body</i></code>.  <code><i>indent</i></code>
+            can be set to T to enable indentation with a default
+            indentation width or to an integer specifying the desired
+            indentation width.  By default, indentation is switched
+            off.
+          </clix:description></blockquote></p>
+
+        <p xmlns="">[Macro]<br><a class="none" name="with-output-to-string*"><b>with-output-to-string*</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">(&amp;key indent) &amp;body body</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Set up a JSON streaming encoder context, then evaluate
+            <code><i>body</i></code>.  Return a string with the
+            generated JSON output.  See
+            <code><a href="#with-output">WITH-OUTPUT</a></code> for the description of
+            the <code><i>indent</i></code> keyword argument.
+          </clix:description></blockquote></p>
+
+        <p xmlns="">
+      [Condition type]<br><a class="none" name="no-json-output-context"><b>no-json-output-context</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            This condition is signalled when one of the stream
+            encoding functions is used outside the dynamic context of
+            a <code><a href="#with-output">WITH-OUTPUT</a></code> or
+            <code><a href="#with-output-to-string*">WITH-OUTPUT-TO-STRING*</a></code> body.
+          </clix:description></blockquote></p>
+
+        <p xmlns="">[Macro]<br><a class="none" name="with-array"><b>with-array</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">() &amp;body body</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Open a JSON array, then run <code><i>body</i></code>.
+            Inside the body, <code><a href="#encode-array-element">ENCODE-ARRAY-ELEMENT</a></code>
+            must be called to encode elements to the opened array.
+            Must be called within an existing JSON encoder context
+            (see <code><a href="#with-output">WITH-OUTPUT</a></code> and
+            <code><a href="#with-output-to-string*">WITH-OUTPUT-TO-STRING*</a></code>).
+          </clix:description></blockquote></p>
+
+        <p xmlns="">[Function]<br><a class="none" name="encode-array-element"><b>encode-array-element</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object</clix:lambda-list></i>
+          =&gt;
+          <i>object</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Encode <code><i>object</i></code> as next array element to
+            the last JSON array opened
+            with <code><a href="#with-array">WITH-ARRAY</a></code> in the dynamic
+            context.  <code><i>object</i></code> is encoded using the
+            <code><a href="#encode">ENCODE</a></code> generic function, so it must be of
+            a type for which an <code><a href="#encode">ENCODE</a></code> method is
+            defined.
+          </clix:description></blockquote></p>
+
+	<p xmlns="">[Function]<br><a class="none" name="encode-array-elements"><b>encode-array-elements</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">&amp;rest objects</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encode <code><i>objects</i></code>, a series of JSON
+	    encodable objects, as the next array elements in a JSON
+	    array opened with
+	    <code><a href="#with-array">WITH-ARRAY</a></code>. ENCODE-ARRAY-ELEMENTS
+	    uses <code><a href="#encode-array-element">ENCODE-ARRAY-ELEMENT</a></code>, which must
+	    be applicable to each object in the list
+	    (i.e. <code><a href="#encode">ENCODE</a></code> must be defined for each
+	    object type). Additionally, this must be called within a
+	    valid stream context.
+	  </clix:description></blockquote></p>
+
+        <p xmlns="">[Macro]<br><a class="none" name="with-object"><b>with-object</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">() &amp;body body</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Open a JSON object, then run <code><i>body</i></code>.
+            Inside the body,
+            <code><a href="#encode-object-element">ENCODE-OBJECT-ELEMENT</a></code> or
+            <code><a href="#with-object-element">WITH-OBJECT-ELEMENT</a></code> must be called to
+            encode elements to the object.  Must be called within an
+            existing JSON encoder
+            <code><a href="#with-output">WITH-OUTPUT</a></code> and
+            <code><a href="#with-output-to-string*">WITH-OUTPUT-TO-STRING*</a></code>.
+          </clix:description></blockquote></p>
+
+        <p xmlns="">[Macro]<br><a class="none" name="with-object-element"><b>with-object-element</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">(key) &amp;body body</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Open a new encoding context to encode a JSON object
+            element.  <code><i>key</i></code> is the key of the
+            element.  The value will be whatever
+            <code><i>body</i></code> serializes to the current JSON
+            output context using one of the stream encoding functions.
+            This can be used to stream out nested object structures.
+          </clix:description></blockquote></p>
+
+        <p xmlns="">[Function]<br><a class="none" name="encode-object-element"><b>encode-object-element</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">key value</clix:lambda-list></i>
+          =&gt;
+          <i>value</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Encode <code><i>key</i></code> and
+            <code><i>value</i></code> as object element to the last
+            JSON object opened with <code><a href="#with-object">WITH-OBJECT</a></code>
+            in the dynamic context.  <code><i>key</i></code> and
+            <code><i>value</i></code> are encoded using the
+            <code><a href="#encode">ENCODE</a></code> generic function, so they both
+            must be of a type for which an <code><a href="#encode">ENCODE</a></code>
+            method is defined.
+          </clix:description></blockquote></p>
+
+	<p xmlns="">[Function]<br><a class="none" name="encode-object-elements"><b>encode-object-elements</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">&amp;rest elements</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encodes the parameters into JSON in the last object opened
+	    with <code><a href="#with-object">WITH-OBJECT</a></code> using
+	    <code><a href="#encode-object-element">ENCODE-OBJECT-ELEMENT</a></code>. The parameters
+	    should consist of alternating key/value pairs, and this
+	    must be called within a valid stream context.
+	  </clix:description></blockquote></p>
+
+	<p xmlns="">[Generic function]<br><a class="none" name="encode-slots"><b>encode-slots</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encodes all of the slots of <code><i>object</i></code>,
+	    presumably a CLOS object, to the current stream
+	    context. Must be defined for an object to use
+	    <code><a href="#encode-object">ENCODE-OBJECT</a></code> on that object.
+	  </clix:description></blockquote></p>
+
+	<p xmlns="">[Generic function]<br><a class="none" name="encode-object"><b>encode-object</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">object</clix:lambda-list></i>
+          =&gt;
+          <i>result*</i></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+	    Encodes <code><i>object</i></code>, presumably a CLOS
+	    object, by invoking <code><a href="#encode-slots">ENCODE-SLOTS</a></code>, to
+	    the current stream context.
+	  </clix:description></blockquote></p>
+
+        <p xmlns="">
+      [Standard class]<br><a class="none" name="json-output-stream"><b>json-output-stream</b></a><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+            Instances of this class are used to wrap an output stream
+            that is used as a serialization target in the stream
+            encoder and optionally in the DOM encoder if indentation
+            is desired.  The class name is not exported, use
+            <code><a href="#make-json-output-stream">make-json-output-stream</a></code> to create a
+            wrapper stream if required.
+          </clix:description></blockquote></p>
+      
+    
+
+    <h4 xmlns=""><a name="app-encoders">Application specific encoders</a></h4>
+      
+      Suppose your application uses structs to represent its data and
+      you want to encode these structs using JSON in order to send
+      them to a client application.  Suppose further that your structs
+      also include internal information that you do not want to send.
+      Here is some code that illustrates how one could implement a
+      serialization function:
+
+      <pre>CL-USER&gt; (defstruct user name age password)
+USER
+CL-USER&gt; (defmethod yason:encode ((user user) &amp;optional (stream *standard-output*))
+           (yason:with-output (stream)
+             (yason:with-object ()
+               (yason:encode-object-element "name" (user-name user))
+               (yason:encode-object-element "age" (user-age user)))))
+#&lt;STANDARD-METHOD YASON:ENCODE (USER) {5B40A591}&gt;
+CL-USER&gt; (yason:encode (list (make-user :name "horst" :age 27 :password "puppy")
+                            (make-user :name "uschi" :age 28 :password "kitten")))
+[{"name":"horst","age":27},{"name":"uschi","age":28}]
+(#S(USER :NAME "horst" :AGE 27 :PASSWORD "puppy")
+ #S(USER :NAME "uschi" :AGE 28 :PASSWORD "kitten"))</pre>
+
+      As you can see, the streaming API and the DOM encoder can be
+      used together.  <code xmlns=""><a href="#encode">ENCODE</a></code> invokes itself
+      recursively, so any application defined method will be called
+      while encoding in-memory objects as appropriate.
+
+    
+  
+
+  <h3 xmlns=""><a class="none" name="index">Symbol index</a></h3>
+    <ul xmlns="">
+<li><code><a href="#*parse-json-arrays-as-vectors*">*parse-json-arrays-as-vectors*</a></code></li>
+<li><code><a href="#*parse-json-booleans-as-symbols*">*parse-json-booleans-as-symbols*</a></code></li>
+<li><code><a href="#*parse-json-null-as-keyword*">*parse-json-null-as-keyword*</a></code></li>
+<li><code><a href="#*parse-object-as*">*parse-object-as*</a></code></li>
+<li><code><a href="#*parse-object-key-fn*">*parse-object-key-fn*</a></code></li>
+<li><code><a href="#encode">encode</a></code></li>
+<li><code><a href="#encode-alist">encode-alist</a></code></li>
+<li><code><a href="#encode-array-element">encode-array-element</a></code></li>
+<li><code><a href="#encode-array-elements">encode-array-elements</a></code></li>
+<li><code><a href="#encode-object">encode-object</a></code></li>
+<li><code><a href="#encode-object-element">encode-object-element</a></code></li>
+<li><code><a href="#encode-object-elements">encode-object-elements</a></code></li>
+<li><code><a href="#encode-plist">encode-plist</a></code></li>
+<li><code><a href="#encode-slots">encode-slots</a></code></li>
+<li><code><a href="#json-output-stream">json-output-stream</a></code></li>
+<li><code><a href="#make-json-output-stream">make-json-output-stream</a></code></li>
+<li><code><a href="#no-json-output-context">no-json-output-context</a></code></li>
+<li><code><a href="#parse">parse</a></code></li>
+<li><code><a href="#with-array">with-array</a></code></li>
+<li><code><a href="#with-object">with-object</a></code></li>
+<li><code><a href="#with-object-element">with-object-element</a></code></li>
+<li><code><a href="#with-output">with-output</a></code></li>
+<li><code><a href="#with-output-to-string*">with-output-to-string*</a></code></li>
+</ul>
+  
+
+  <h3 xmlns=""><a class="none" name="license">License</a></h3>
+    <pre class="none">Copyright (c) 2008-2012 Hans Huebner and contributors
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+  - Neither the name BKNR nor the names of its contributors may be
+    used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</pre>
+  
+
+  <h3 xmlns=""><a class="none" name="ack">Acknowledgements</a></h3>
+    Thanks go to Edi Weitz for being a great inspiration.  This
+    documentation as been generated with a hacked-up version of his <a href="http://weitz.de/documentation-template/">DOCUMENTATION-TEMPLATE</a>
+    software.  Thanks to David Lichteblau for coining YASON's name.
+  
+
+</body></html>

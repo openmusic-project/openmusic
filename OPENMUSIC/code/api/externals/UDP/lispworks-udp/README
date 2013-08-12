@@ -1,0 +1,780 @@
+API Reference of LispWorks-UDP 4
+
+______________________
+| COMM+:OPEN-UDP-STREAM						[Function]
+
+Summary
+
+  Attempts to connect to a remote UDP server and returns a stream object for
+  the connection.
+
+Signature
+
+  open-udp-stream hostname service
+                  &key direction element-type errorp read-timeout
+                       local-address local-port
+  => stream-object
+
+Arguments
+
+  hostname
+		An integer or string
+  service
+		A string or a fixnum
+  direction
+		One of :input, :output or :io
+  element-type
+		base-char or a subtype of integer.
+  errorp
+		A boolean.
+  read-timeout
+		A positive number, or nil.
+  local-address
+		nil, an integer or a string.
+  local-port
+		nil, a string or a fixnum.
+
+Values
+
+  stream-object
+		A socket stream.
+
+Description
+
+  This function is the UDP version of LispWorks' COMM:OPEN-TCP-STREAM. It will
+  do the following things: open a new UDP socket, bind it to local
+  address and port if needed, connect to this socket, and create a stream
+  object for it.
+
+See also
+
+  COMM:OPEN-TCP-STREAM
+
+______________________
+| COMM+:WITH-UDP-STREAM						[Macro]
+
+Signature
+
+  with-udp-stream (stream &rest options) &body body => result
+
+Arguments
+
+  stream
+		A symbol.
+  options
+		A list of arguments to be passed to open-udp-stream
+
+Description
+
+  WITH-UDP-STREAM use OPEN-UDP-STREAM to open a "connected" UDP socket stream.
+
+  WITH-UDP-STREAM evaluates the BODY as an implicit PROGN with STREAM bound
+  to the value returned by OPEN-UDP-STREAM.
+
+  When control leaves the BODY, either normally or abnormally (such as by use
+  of THROW), the STREAM and the socket are automatically closed.
+
+See also
+  COMM+:OPEN-UDP-STREAM
+
+____________________________
+| COMM+:CONNECT-TO-UDP-SERVER					[Function]
+
+Summary
+
+  Attempts to connect to remote UDP server and return the UDP socket.
+
+Signature
+
+  connect-to-udp-server (hostname service &key errorp read-timeout
+                                               local-address local-port)
+  => socket
+
+Arguments and Values
+
+  hostname
+		An integer or string
+  service
+		A string or a fixnum
+  errorp
+		A boolean.
+  read-timeout
+		A positive number, or nil.
+  local-address
+		nil, an integer or a string.
+  local-port
+		nil, a string or a fixnum.
+  socket
+		A INET-DATAGRAM instance
+
+Description
+
+  CONNECT-TO-UDP-SERVER is the lite-version of OPEN-UDP-STREAM, it just create
+  socket, connect to remote server, and return the socket fd as a integer.
+
+  Clients can use this socket to send/receive messages to/from only one
+  destination.
+
+See also
+
+  COMM+:OPEN-UDP-STREAM, COMM+:SEND-MESSAGE, COMM+:RECEIVE-MESSAGE
+
+________________________________
+| COMM+:WITH-CONNECTED-UDP-SOCKET				[Macro]
+
+Signature
+
+  with-connected-udp-socket (socket &rest options) &body body
+
+Arguments
+
+  socket
+		A symbol.
+  options
+		A list of arguments to be passed to connect-to-udp-socket
+
+Description
+
+  WITH-CONNECTED-UDP-SOCKET use CONNECT-TO-UDP-SOCKET to open a "connected"
+  UDP socket.
+
+  WITH-CONNECTED-UDP-SOCKET evaluates the BODY as an implicit PROGN with
+  SOCKET bound to the value returned by CONNECT-TO-UDP-SOCKET.
+
+  When control leaves the BODY, either normally or abnormally (such as by use
+  of THROW), the SOCKET are automatically closed.
+
+See also
+
+  COMM+:CONNECT-TO-UDP-SERVER
+
+______________________
+| COMM+:OPEN-UDP-SOCKET						[Function]
+
+Summary
+
+  Open a UDP socket and bind to local address and port if needed.
+
+Signature
+
+  open-udp-socket &key errorp local-address local-port read-timeout => socket
+
+Arguments and Values
+
+  errorp
+		A boolean.
+  read-timeout
+		A positive number, or nil.
+  local-address
+		nil, an integer or a string.
+  local-port
+		nil, a string or a fixnum.
+  socket
+		A INET-DATAGRAM instance
+
+Description
+
+  OPEN-UDP-SOCKET is used for clients to make a unconnected UDP and send
+  messages to any other UDP server, and for servers to listen on local
+  host/port.
+
+  If both LOCAL-HOST and LOCAL-PORT are NIL, OPEN-UDP-SOCKET will not call
+  bind() to this socket.
+
+  If LOCAL-PORT is specified, bind() will be called. For binding on "any"
+  address, the LOCAL-ADDRESS should be NIL (the default), for binding on a
+  free unused port, set LOCAL-PORT to 0 (zero).
+
+See also
+
+  COMM+:SEND-MESSAGE, COMM+:RECEIVE-MESSAGE
+
+______________________
+| COMM+:WITH-UDP-SOCKET						[Macro]
+
+Signature
+
+  with-udp-socket (socket &rest options) &body body
+
+Arguments
+
+  socket
+		A symbol.
+  options
+		A list of arguments to be passed to open-udp-socket
+
+Description
+
+  WITH-UDP-SOCKET use OPEN-UDP-SOCKET to open a "unconnected" UDP socket.
+
+  WITH-UDP-SOCKET evaluates the BODY as an implicit PROGN with SOCKET bound
+  to the value returned by OPEN-UDP-SOCKET.
+
+  When control leaves the BODY, either normally or abnormally (such as by use
+  of THROW), the SOCKET are automatically closed.
+
+See also
+
+  COMM+:OPEN-UDP-SOCKET
+
+___________________
+| COMM+:SEND-MESSAGE						[Function]
+
+Summary
+
+  Send UDP message to a socket, using send()/sendto()
+
+Signature
+
+  send-message socket buffer
+               &key length host service path path => bytes
+
+Arguments and Values
+
+  socket
+		A SOCKET-DATAGRAM instance
+  buffer
+		A sequence of (unsigned-byte 8).
+  length
+		A fixnum or NIL.
+  hostname
+		An integer or string, or NIL.
+  service
+		A string or a fixnum, or NIL.
+  path
+                A string or pathname for UNIX domain socket
+  bytes
+		A fixnum.
+
+Description
+
+  SEND-MESSAGE is the main function for DATAGRAM networking.
+
+  For unconnected sockets, the HOSTNAME and SERVICE arguments should be set,
+  and SEND-MESSAGE call sendto() on SOCKET to send the message.
+
+  For connected sockets, the HOSTNAME and SERVICE arguments should not be set,
+  and SEND-MESSAGE call send() on SOCKET to send the message.
+
+  BUFFER is a SEQUENCE of (unsigned-byte 8), the LENGTH arguments can be
+  used to limit the size of BUFFER to be sent. If LENGTH is NIL, it will be
+  set to the whole length of BUFFER.
+  
+See also
+
+  COMM+:OPEN-UDP-SOCKET, COMM+:CONNECT-TO-UDP-SOCKET, COMM+:RECEIVE-MESSAGE
+
+______________________
+| COMM+:RECEIVE-MESSAGE						[Function]
+
+Summary
+
+  Receive message from a socket.
+
+Signature
+
+  receive-message socket &key buffer length read-timeout max-buffer-size
+
+  => receive-buffer, receive-bytes, remote-address, remote-port
+
+  => receive-buffer, receive-bytes, peer-pathname
+
+Arguments and Values
+
+  socket
+		A SOCKET-DATAGRAM instance
+  buffer
+		A sequence of (unsigned-byte 8), or NIL.
+  length
+		A fixnum or NIL.
+  read-timeout
+		A integer or float number, or NIL.
+  max-buffer-size
+		A fixnum
+  receive-buffer
+		A sequence of (unsigned-byte 8).
+  receive-bytes
+		A fixnum.
+  remote-address
+		A integer indicate 32bit IPv4 address
+  remote-port
+		A fixnum.
+  peer-pathname
+                A string indicate a pathname.
+
+Description
+
+  RECEIVE-MESSAGE is the main function for DATAGRAM networking.
+
+  For any type of UDP socket, RECEIVE-MESSAGE use recvfrom() to get packets.
+
+  If the BUFFER argument is set, the receive messages will be put into this
+  sequence and also return as first value. LENGTH can be used to limit BUFFER
+  size.
+
+  REMOTE-ADDRESS is a 32bit integer IPv4 address.
+
+  Note: In version prior 4.0, REMOTE-ADDRESS is a string.
+
+See also
+
+  COMM+:OPEN-UDP-SOCKET, COMM+:CONNECT-TO-UDP-SOCKET, COMM+:SEND-MESSAGE
+
+________________________________
+| COMM+:SOCKET-RECEIVE-TIMEOUT				[Function]
+
+Signature
+
+  socket-receive-timeout socket => timeout
+  (setf socket-receive-timeout) timeout => timeout
+
+Arguments and Values
+
+  socket
+		A fixnum.
+  timeout
+		A single-float number.
+
+Description
+
+  The TIMEOUT argument is in seconds.
+
+  Note: On Win32, RCVTIMEO won't work until you have calld bind() on the socket,
+        this can be done by set LOCAL-PORT to 0 (zero) when creating a socket.
+
+_______________________
+| COMM+:START-UDP-SERVER						[Function]
+
+Summary
+
+  Start up a simple UDP server process.
+
+Signature
+
+  start-udp-server &key function announce address service process-name
+                        max-buffer-size
+			multicast mcast-loop mcast-ttl mcast-interface
+  => process
+
+Arguments and Values
+
+  function
+		A function of ftype (function (sequence) sequence)
+  announce
+		A boolean.
+  hostname
+		An integer or string
+  service
+		A string or a fixnum
+  process-name
+		A string.
+  max-buffer-size
+		A fixnum.
+  loop-time
+		A float number.
+
+  multicast     A boolean
+  mcast-loop    A boolean
+  mcast-ttl     A integer
+  mcast-interface
+                A string or integer as hostname/address
+
+  process
+		A process object of LispWorks MP.
+
+Description
+
+  START-UDP-SERVER is the UDP version of LispWorks' START-UP-SERVER.
+
+  START-UDP-SERVER call a FUNCTION to map input data to output, the default
+  map function is a echo server #'identity
+
+  There's two special variable can be used in user-defined UDP process function:
+  *client-address* and *client-port*, which be bound client information:
+
+  (defun default-udp-server-function (data)
+    (capi:display-message "client: ~A:~A" *client-address* *client-port*)
+    data)
+
+ START-UDP-SERVER start up one seprate thread (process) to serve, every time
+ just only one client can be handled.
+
+ LOOP-TIME is used for optimize. At present, UDP server loop works by calling
+ recvfrom() with a read timeout (= LOOP-TIME, in seconds, default to 1
+ second), set this argument to smaller can cause the server thread be killed
+ faster.
+
+ From LispWorks-UDP 3.3, the default SERVICE is set to 0 (zero). That is, a dry
+ call (START-UDP-SERVER) will cause the UDP server listening on a free unused
+ port.
+
+ Start from LispWorks-UDP 4.1, Multicast UDP server is supported: (non win32)
+
+ When MULTICAST is T, and the ADDRESS is in multicast range (i.e. 224.0.0.1),
+ A multicast server will be started, and the SO_REUSEADDR socket option will be
+ set automatically so that multiple server can started on same port.
+
+ MCAST-LOOP, MCAST-INTERFACE and MCAST-TTL can set the initial property of
+ the multicast socket. Functions with same name can be used to change or query
+ these properties.
+
+See also
+  COMM+:STOP-UDP-SERVER,
+  COMM+:MCAST-TTL, COMM+:MCAST-INTERFACE, COMM+:MCAST-LOOP
+
+______________________
+| COMM+:STOP-UDP-SERVER						[Function]
+
+Summary
+
+  Stop a UDP server thread.
+
+Signature
+
+  stop-udp-server process &key wait =>
+
+Arguments and Values
+
+  process
+		A process object.
+  wait
+		A boolean.
+
+Description
+
+  STOP-UDP-SERVER kills the server process and close server socket. If WAIT
+  is set to T, the function will wait until process is completely shutdown
+  then return. Sometimes it's useful to wait.
+
+See also
+
+  COMM+:START-UDP-SERVER
+
+______________________
+| COMM+:SYNC-MESSAGE						[Function]
+
+Summary
+
+  Send (then receive) UDP message with retransmit support.
+
+Signature
+
+  sync-message socket message &optional host service
+               &key (encode-function #'default-rtt-function)
+                    (decode-function #'default-rtt-function)
+
+Arguments and Values
+
+  socket
+		A socket fd.
+  message
+		Anything can fit the first arguemnt of encode-function.
+  host
+                Remote hostname or IP address as string or integer
+  service
+                Remote service name or port, as string or integer
+  encode-function
+		A encode function as type of (function (t) (values sequence integer))
+  decode-function
+		A encode function as type of (function (sequence) (values t integer))
+
+Description
+
+  SYNC-MESSAGE is a high-level UDP function. It can fit following requirement on UDP
+  networking:
+
+    * Resend UDP packets when sending or receiving packet get lost.
+    * Compare the "sequence number" of a receiving packet to match the sending one.
+    * Direct send custom message format, let encode/decode function to do the low-level job.
+
+  For sample usage, see RTT-TEST-* functions in test.lisp
+
+  This function is added from LispWorks-UDP 3.0
+
+See also
+
+  COMM+:SEND-MESSAGE, COMM+:RECEIVE-MESSAGE
+
+______________________
+| COMM+:OPEN-UNIX-STREAM						[Function]
+
+Summary
+
+  Attempts to connect to a local path (UNIX Domain Socket)
+
+Signature
+
+  open-unix-stream pathname
+                   &key direction element-type errorp read-timeout
+
+  => stream-object
+
+Arguments
+
+  pathname
+		A string or pathname object
+  direction
+		One of :input, :output or :io
+  element-type
+		base-char or a subtype of integer.
+  errorp
+		A boolean.
+  read-timeout
+		A positive number, or nil.
+
+Values
+
+  stream-object
+		A socket stream.
+
+Description
+
+  This function is the UNIX domain socket version of LispWorks' COMM:OPEN-TCP-STREAM.
+  It will do the following things: open a new stream domain socket, connect to a local path,
+  and create a SOCKET-STREAM object for it.
+
+See also
+
+  COMM:OPEN-TCP-STREAM
+
+____________________________
+| COMM+:CONNECT-TO-UNIX-PATH					[Function]
+
+Summary
+
+  Attempts to connect to local path (UNIX domain socket)
+
+Signature
+
+  connect-to-unix-path pathname &key errorp read-timeout
+  => socket
+
+Arguments and Values
+
+  pathname
+		An integer or string
+  errorp
+		A boolean.
+  read-timeout
+		A positive number, or nil.
+  socket
+		A UNIX-DATAGRAM instance
+
+Description
+
+  CONNECT-TO-UDP-SERVER is for datagram UNIX domain socket
+
+  Clients can use this socket to send/receive messages to/from only one
+  destination.
+
+See also
+
+  COMM+:OPEN-UNIX-STREAM, COMM+:SEND-MESSAGE, COMM+:RECEIVE-MESSAGE
+
+________________________________
+| COMM+:CLOSE-DATAGRAM						[Function]
+
+Signature
+
+  close-datagram socket
+
+Arguments
+
+  socket
+		A socket-datagram instance
+
+Description
+
+  Close a datagram socket.
+
+  For UNIX domain socket, CLOSE-DATAGRAM also delete the file with socket bind.
+
+See also
+
+  COMM+:OPEN-UDP-SOCKET, COMM+:OPEN-UNIX-SOCKET
+
+________________________________
+| COMM+:WAIT-FOR-INPUT						[Function]
+
+Signature
+
+  wait-for-input socket-or-sockets :key timeout ready-only => socket-or-sockets, timeout
+
+Arguments
+
+  socket-or-sockets
+		A socket-datagram instance or a list of socket-datagram instance
+  timeout
+		A integer as time in seconds
+  ready-only
+		A boolean
+
+Description
+
+  Wait for input from socket and return the status. WAIT-FOR-INPUT return two values.
+
+  WAIT-FOR-INPUT will wait for TIMEOUT seconds (or forever if TIMEOUT isn't set), when
+  any socket is available to read, the function will return.
+
+  When READY-ONLY is T, only the available sockets will be returned as a list in first
+  return value. When READ-ONLY is NIL, just the argument SOCKET-OR-SOCKETS will be
+  returned.
+
+  Note: Currently the WAIT-FOR-INPUT only support non-win32 platform, and multiprocessing
+  is needed. This function come from the USOCKET Project.
+
+See also
+
+  COMM+:OPEN-UDP-SOCKET
+
+________________________________
+| COMM+:SOCKET-REUSE-ADDRESS					[Generic Function]
+
+Signature
+
+  socket-reuse-address socket => result
+  (setf socket-reuse-address) value socket
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  value
+		A boolean or integer 0 or 1
+  result
+		A integer 0 or 1
+
+Description
+
+  Set or get the SO_REUSEADDR socket option of a socket.
+  This function is used by START-UDP-SERVER for multicast support.
+
+See also
+
+  COMM+:START-UDP-SERVER
+
+________________________________
+| COMM+:MCAST-JOIN					[Generic Function]
+
+Signature
+
+  mcast-join socket address &key interface errorp
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  address, interface
+		A string or integer as IPv4 hostname or address
+  errorp
+		A boolean
+
+Description
+
+  Join a multicast group.
+
+See also
+
+  COMM+:START-UDP-SERVER, COMM+:MCAST-LEAVE
+
+________________________________
+| COMM+:MCAST-LEAVE					[Generic Function]
+
+Signature
+
+  mcast-leave socket address &key errorp
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  address
+		A string or integer as IPv4 hostname or address
+  errorp
+		A boolean
+
+Description
+
+  Leave a multicast group. Usually this function is no need to call,
+  because CLOSE-SOCKET will do the leave job automatically.
+
+See also
+
+  COMM+:MCAST-JOIN, COMM+:CLOSE-SOCKET
+
+________________________________
+| COMM+:MCAST-INTERFACE					[Generic Function]
+
+Signature
+
+  mcast-interface socket => result
+  (setf mcast-interface) value socket
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  value
+		A string or integer as IPv4 hostname or address
+  result
+		A integer as IPv4 address
+
+Description
+
+  Set and get the IP_MULTICAST_IF socket option of a multicast socket,
+  this option can also be set when MCAST-JOIN being called as a keyword.
+
+See also
+
+  COMM+:MCAST-JOIN
+
+________________________________
+| COMM+:MCAST-LOOP					[Generic Function]
+
+Signature
+
+  mcast-loop socket => result
+  (setf mcast-loop) value socket
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  value
+		A boolean or integer 0 or 1
+  result
+		A integer 0 or 1
+
+Description
+
+  Set and get the IP_MULTICAST_LOOP socket option of a multicast socket,
+
+See also
+
+  COMM+:MCAST-JOIN
+
+________________________________
+| COMM+:MCAST-TTL					[Generic Function]
+
+Signature
+
+  mcast-ttl socket => result
+  (setf mcast-ttl) value socket
+
+Arguments
+
+  socket
+		A socket-datagram instance or socket-fd integer
+  value
+		A integer
+  result
+		A integer
+
+Description
+
+  Set and get the IP_MULTICAST_TTL socket option of a multicast socket,
+
+See also
+
+  COMM+:MCAST-JOIN
+

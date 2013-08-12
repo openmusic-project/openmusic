@@ -1,0 +1,70 @@
+API Changes between 1.x and 2.x:
+
+* [START-UDP-SERVER] Second argument of UDP-SERVER-LOOP changed
+
+  Now we bind UDP client's address and port to special variable:
+	*client-address*, *client-port*, and simply UDP-SERVER-LOOP's
+	second arguent to ftype: (function (sequence) sequence). So we
+	can just use #'identity to implement a UDP echo server:
+
+  (COMM:START-UDP-SERVER :FUNCTION #'IDENTITY ...)
+
+* [START-UDP-SERVER] New :ARGUMENTS keyword
+
+	Now START-UDP-SERVER has a new :ARGUMENTS keyword, you can pass values into
+	this keyword argument as LIST, and these values will be called with your
+	UDP message processing function.
+
+API Changes between 2.x and 3.x:
+
+* (3.0) [SYNC-MESSAGE] High-level UDP message send/recv function with
+	retransmit support.
+
+* (3.1) Require Multi-Processing function: MP:WITH-LOCK
+
+* (3.1) MAX-BUFFER-SIZE keyword in SEND-MESSAGE is obsolete.
+
+* (3.3) The SERVICE keyword in START-UDP-SERVER has changed its default
+	value to 0 (zero), which means a dry call (START-UDP-SERVER)
+	will listen on random free (unused) port.
+
+API Changes between 3.x and 4.x:
+
+* Change from COMM package to COMM+ package!!! (all external symbols of COMM is also exported to COMM+)
+
+* Add support for UNIX Domain socket (both stream and datagram, but no server support)
+  Related new functions: OPEN-UNIX-STREAM, OPEN-UNIX-SOCKET, CONNECT-TO-UNIX-PATH
+
+* New class (INET-DATAGRAM and UNIX-DATAGRAM), both subclass of SOCKET-DATAGRAM
+
+* new funcion CLOSE-DATAGRAM instead of CLOSE-SOCKET
+
+* [API Change] SEND-MESSAGE and RECEIVE-MESSAGE's optional arguments become keyword arguments
+
+* [API Change] RECEIVE-MESSAGE's 3rd return value (remote-address) is a 32bit integer now,
+  If you want to string-like IPv4 address, call COMM:IP-ADDRESS-STRING yourself.
+
+* [API Change] SET-SOCKET-RECEIVE-TIMEOUT and GET-SOCKET-RECEIVE-TIMEOUT change name to
+               SOCKET-RECEIVE-TIMEOUT and (SETF SOCKET-RECEIVE-TIMEOUT)
+
+* [4.1] SO_REUSEADDR support, new function SOCKET-REUSE-ADDRESS and (SETF SOCKET-REUSE-ADDRESS)
+
+* [4.1] UDP Multicast Support (only on non-win32 platform)
+
+  Add new keyword argumets to START-UDP-SERVER:
+
+  + MULTICAST (default NIL), set it to T will enable a multicast server.
+  + MCAST-LOOP (default T), IP_MULTICAST_LOOP, local loopback of multicast datagrams.
+  + MCAST-TTL (default 1), IP_MULTICAST_TTL, hop limit for outgoing multicast datagrams.
+  + MCAST-INTERFACE (default 0, equal to "0.0.0.0"), the interface for outgoing
+    multicast datagrams sent on this socket. (You should get the address of each
+    interface by other method, currently no API can list all interface addresses
+    of host OS)
+
+  New funtions:
+
+  + MCAST-JOIN
+  + MCAST-LEAVE
+  + MCAST-LOOP and (SETF MCAST-LOOP),
+  + MCAST-TTL and (SETF MCAST-TTL),
+  + MCAST-INTERFACE and (SETF MCAST-INTERFACE),
