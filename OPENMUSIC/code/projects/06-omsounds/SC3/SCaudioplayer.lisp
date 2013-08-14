@@ -25,9 +25,9 @@
 
 ;;(launch-SCplayer-app)
 
-(let* ((curlist (players-for-object (make-instance 'sound)))
-       (newlist (pushnew :scaudioplayer curlist)))
-  (defmethod players-for-object ((self sound)) newlist))
+;; (let* ((curlist (players-for-object (make-instance 'sound)))
+;;        (newlist (pushnew :scaudioplayer curlist)))
+;;   (defmethod players-for-object ((self sound)) newlist))
 
 (pushnew :scaudioplayer *enabled-players*)
 

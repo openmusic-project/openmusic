@@ -407,3 +407,21 @@
 (cffi:defcfun ("SdifHashTableIteratorIsNext" SdifHashTableIteratorIsNext) :int (htiterator :pointer))
 
 (cffi:defcfun ("SdifHashTableIteratorGetNext" SdifHashTableIteratorGetNext) :pointer (htiterator :pointer))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

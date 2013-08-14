@@ -12,9 +12,9 @@
 
 ;; enable mplayer-engine for class sound:
 
-(let* ((curlist (players-for-object (make-instance 'sound)))
-       (newlist (pushnew :mplayer curlist)))
-  (defmethod players-for-object ((self sound)) newlist))
+;; (let* ((curlist (players-for-object (make-instance 'sound))) ;sound-class isnt setup yet..
+;;        (newlist (pushnew :mplayer curlist)))
+;;   (defmethod players-for-object ((self sound)) newlist))
 
 (pushnew :mplayer *enabled-players*)
 
