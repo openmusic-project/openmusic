@@ -84,7 +84,10 @@
 (defvar *signs-font* "omsign")
 
 
-;----------------------
+(defvar *mouse-window-event* (om-make-point 0 0))
+;(setf *mouse-window-event* (om-make-point 0 0))
+
+;-----------------------
 ;UTILITIES
 ;-----------------------
 

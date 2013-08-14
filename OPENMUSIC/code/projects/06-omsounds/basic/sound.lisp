@@ -324,17 +324,17 @@ Press 'space' to play/stop the sound file.
   (when (probe-file (pathname sound))
     (sound-dur (pathname sound))))
 
-(defmethod! sound-dur ((sound sound))
-            (if (and sound (om-sound-n-samples-current sound) las-srate
-                     (> las-srate 0))
-                (float (/ (om-sound-n-samples-current sound) las-srate))
-              0))
+;; (defmethod! sound-dur ((sound sound))
+;;             (if (and sound (om-sound-n-samples-current sound) las-srate
+;;                      (> las-srate 0))
+;;                 (float (/ (om-sound-n-samples-current sound) las-srate))
+;;               0))
 
-;(defmethod! sound-dur ((sound sound))
-;   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
-;            (> (om-sound-sample-rate sound) 0))
-;       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
-;     0))
+(defmethod! sound-dur ((sound sound))
+  (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
+           (> (om-sound-sample-rate sound) 0))
+      (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
+      0))
 
 
 (defmethod! sound-dur-ms ((sound t))

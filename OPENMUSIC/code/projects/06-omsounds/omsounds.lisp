@@ -31,28 +31,29 @@
 
 (setf *snd-files* 
   '(
-    "basic;sound"   
+    "basic;sound"
     "basic;soundeditor"
-    "basic;audio-mix-console"
-    #+libaudiostream "basic;general-mixer"
-    "basic;automations"
-    #+libaudiostream "basic;sound-preferences"
-    
-    #+libaudiostream "LAS;sound-processing"
-    #+libaudiostream "LAS;las-player"
+    "basic;audiomix"
+    "basic;general-mixer"   
+    #-linux "basic;audioplayer"
+    "basic;snd-streams"
+    "basic;sound-preferences"
 
 
     "tools;sound-tools"
     "tools;control-tools"
     "tools;param-process"
     "tools;utils-from-chroma"
-
     "synth;synthesis-event"
     "synth;synthesize"
-
+    ;;"multi;sound-players"
     "multi;multiplayer"
     #+linux "mplayer;mplayer"
     #+linux "SC3;SCaudioplayer"
+    "LAS;faust-parser-api"
+    "LAS;las-player"
+    "LAS;faust-objects"
+    
  ))
 
 (eval-when (eval compile load)
@@ -76,22 +77,19 @@
 (defvar *synthpackage* (omNG-protect-object (omNG-make-new-package "Sound Synthesis")))
 (addPackage2Pack *synthpackage* *audiopackage*)
 
+(defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
+(addPackage2Pack *sndprocpackage* *audiopackage*)
+
 (AddClass2Pack '(sound audio-mix-console) *audiopackage*)
 (AddGenFun2Pack '(adsr param-process vibrato jitter) *soundtoolspackage*)
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
+(AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound record-sound) *sndprocpackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
 (addGenFun2Pack '(dB->lin lin->dB ms->sec sec->ms samples->sec sec->samples) *sndconvpackage*)
-
-(defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
-(addPackage2Pack *sndprocpackage* *audiopackage*)
-#+libaudiostream (AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound record-sound) *sndprocpackage*)
-
 
 (add-ref-section (gen-ref-entries *audiopackage*))
 
 (add-lib-alias "chroma-classes" "OMChroma")
-
-
 
 ;======================
 ;SDIF
