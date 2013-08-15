@@ -496,7 +496,7 @@
 (defun om-read-line (file)
   (read-line file nil 'eof))
 
-; enleve les mauvais caracteres à la fin
+; enleve les mauvais caracteres Ã  la fin
 (defun om-correct-line (line &optional stream) 
   (if (stringp line)
       (if (> (length line) 0)
@@ -620,6 +620,6 @@
 
 
 
-;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
+;;; marche pour un process crÃ©Ã© avec la fonction om-run-program ou om-run-application
 (defun om-select-program (id)
   (system::call-system (concatenate 'string *om-open-cmd* " " (namestring id))))

@@ -35,10 +35,7 @@
       (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
           (when (/= new-sr *audio-sr*)
             (setf *audio-sr* new-sr)
-            (when *audio-player*
-              (audio-close)
-              (setf *om-player-sample-rate* *audio-sr*)
-              (audio-open)))
+            (las-set-sample-rate *audio-sr*))
         (progn 
           (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
           (set-pref modulepref :audio-sr 44100)
@@ -67,10 +64,10 @@
     (when (get-pref modulepref :audio-presets)
       (setf *general-mixer-presets* (get-pref modulepref :audio-presets)))
     (if (and *general-mixer-presets* (> (length *general-mixer-presets*) 1))
-        (progn 
-          (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
-          (setf *general-mixer-current-preset* 1))
-      (setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
+	(progn 
+	  (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
+	  (setf *general-mixer-current-preset* 1))
+	(setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
     (apply-mixer-values)
     t))
 
@@ -143,100 +140,8 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 20)) (om-make-point 350 22) 
                                           "(Also used as default SR for sound synthesis)"
                                           :font *om-default-font1*))
-
-
-    (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf pos 50)) (om-make-point 200 30) "MultiPlayer"
-                                          :font *om-default-font3b*)
-                     
-                     ;(om-make-dialog-item 'om-check-box (om-make-point l2 (incf i 30)) (om-make-point 180 15) " Enable" 
-                     ;;                     :di-action (om-dialog-item-act item 
-                     ;                                  (set-pref modulepref :multi-enable (om-checked-p item)))
-                     ;                     :font *controls-font*
-                     ;                     :checked-p (get-pref modulepref :multi-enable))
-                     
-                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf pos 30)) (om-make-point 150 24) "UDP Ports:" :font *controls-font*);
-
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 110) pos) (om-make-point 150 20) "Out" :font *controls-font*)
-                     
-                     (om-make-dialog-item 'om-editable-text (om-make-point (+ l1 145) pos) (om-make-point 42 20)
-                                          (format nil "~D" (get-pref modulepref :multi-out)) 
-                                          :after-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :multi-in))))
-                                                                  (set-pref modulepref :multi-out number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :multi-out))))
-                                                                ))))
-                                          :di-action (om-dialog-item-act item
-                                                       (let ((text (om-dialog-item-text item))
-                                                             number)
-                                                         (unless (string= "" text)
-                                                           (setf number (read-from-string text))
-                                                           (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :multi-in))))
-                                                               (set-pref modulepref :multi-out number)
-                                                             (progn 
-                                                               (om-beep-msg "OSC Player port must be an integer")
-                                                               (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :multi-out))))
-                                                             ))))
-                                          :font *om-default-font2*)
-                     
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 220) pos) (om-make-point 150 24) "In" :font *controls-font*)
-                     
-                     (om-make-dialog-item 'om-editable-text (om-make-point (+ l1 250) pos) (om-make-point 42 13)
-                                          (format nil "~D" (get-pref modulepref :multi-in)) 
-                                          :after-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (read-from-string text))
-                                                              (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :multi-out))))
-                                                                  (set-pref modulepref :multi-in number)
-                                                                (progn 
-                                                                  (om-beep-msg "OSC Player port must be an integer")
-                                                                  (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :multi-in))))))))
-                                          :di-action (om-dialog-item-act item
-                                                       (let ((text (om-dialog-item-text item))
-                                                             number)
-                                                         (unless (string= "" text)
-                                                           (setf number (read-from-string text))
-                                                           (if (and (integerp number) (>= number 0) (not (= number (get-pref modulepref :multi-out))))
-                                                               (set-pref modulepref :multi-in number)
-                                                             (progn 
-                                                               (om-beep-msg "OSC Player port must be an integer")
-                                                               (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :multi-in))))))))
-                                          :font *om-default-font2*)
-
-                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf pos 40)) (om-make-point 180 24) "MultiPlayer App." :font *controls-font*)
-
-                     (setf multiapp (om-make-dialog-item 'om-static-text (om-make-point l1 (incf pos 20)) (om-make-point 280 50) 
-                                                         (if (get-pref modulepref :multip-path) 
-                                                             (namestring (get-pref modulepref :multip-path))
-                                                           "...")
-                                                         :font *om-default-font2*
-                                                         :fg-color (if (and (get-pref modulepref :multip-path)
-                                                                            (probe-file (get-pref modulepref :multip-path)))
-                                                                       *om-black-color* *om-red-color*)))
-                     
-                     
-                     (om-make-view 'om-icon-button 
-                                   :icon1 "folder" :icon2 "folder-pushed"
-                                   :position (om-make-point (+ l1 280) pos) :size (om-make-point 26 25) 
-                                   :action (om-dialog-item-act item
-                                             (let* ((path (om-choose-file-dialog :directory (om-default-application-path nil nil))))
-                                               (if path
-                                                   (if (probe-file path)
-                                                       (progn 
-                                                         (set-pref modulepref :multip-path path)
-                                                         (om-set-dialog-item-text multiapp (namestring path))
-                                                         (om-set-fg-color multiapp *om-black-color*)
-                                                         (om-invalidate-view thescroll))
-                                                     (om-beep-msg "Bad path for MultiPlayer app.")))))))
-                        
+    
+                      
     (om-add-subviews thescroll
                      (om-make-dialog-item 'om-static-text (om-make-point l2 (setf pos 20)) (om-make-point 280 30) 
                                           "Synthesis / Processing outputs"

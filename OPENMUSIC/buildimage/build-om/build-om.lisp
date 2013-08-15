@@ -1,4 +1,4 @@
-;;; OpenMusic build file
+;;; OpenMusic build file               
 ;;; load this file then evaluate the following form :
 ;;; (om::start-openmusic)
 
@@ -12,7 +12,7 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.060202)
+(defparameter *version* 6.070000)
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
@@ -41,9 +41,7 @@
 (defvar *this-file* *load-pathname*)
 (defvar *om-src-directory*  
   (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2)
-                 :device (pathname-device *load-pathname*)
-		 #+win32 :host #+win32 (pathname-host *load-pathname*)
-		 ))
+                 :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
 
 (defvar *compile-type* "xfasl")
 ;;; should be : "xfasl" on MacIntel, "nfasl" on MacPPC, "ofasl" on Win32, "ufasl" on 32bit linux ("64ufasl" on 64bit linux)
@@ -209,7 +207,7 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
-(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :yason :jack))
+(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :json :yason #+linux :jack))
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"

@@ -48,6 +48,17 @@
 	*jack-sndfile-handle*)
       (format *error-output* "~&jack-open-sound - no such file: ~s~%" path)))
 
+(defun jack-open-sound (path)
+  "sets the current sound read in, closes any previously open at the same handle for now"
+  (if (probe-file path)
+      (progn
+	(if (boundp '*jack-sndfile-handle*) (sf::sf_close *jack-sndfile-handle*))
+	(with-foreign-object (sfinfo '(:struct sf::SF_INFO))
+	  (setf *jack-sndfile-handle* (sf::sf_open (namestring path) sf::SFM_READ sfinfo)
+		*read-sound-channels* (cffi:foreign-slot-value sfinfo '(:struct sf::SF_INFO) 'sf::channels)))
+	*jack-sndfile-handle*)
+      (format *error-output* "~&jack-open-sound - no such file: ~s~%" path)))
+
 ;; using one jack ringbuffer pr. port/chan/track for buffered I/O:
 
 (defconstant *sample-size* (foreign-type-size 'jack_default_audio_sample_t))
@@ -209,6 +220,16 @@
 (sf::sf_close *jack-sndfile-handle*)
 (jack-client-close *OMJackClient*)
 
+*jack-sndfile-handle*
+
+180000.d0
+0.d0
+
+(coerce 180000 'double-float)
+
+180000.0D0
+
+(sf::sf_seek *jack-sndfile-handle* (coerce 180000 'double-float) 0)
 
 (sys:run-shell-command "jack_lsp")
 

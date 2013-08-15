@@ -52,12 +52,11 @@
     "editors;bpfeditor" 
     "editors;bpceditor" 
     "editors;splineseditor" 
-    "editors;arrayeditor"       ; !! open-intern-editor et show-controls à faire  
+    "editors;arrayeditor"       ; !! open-intern-editor et show-controls Ã  faire  
 
     ; advanced time array
     "classes;time-array" 
-    
-    "functions;bpf-player"
+    "classes;bpf-player"
 
     ;------- PACK
     "basic-pack"

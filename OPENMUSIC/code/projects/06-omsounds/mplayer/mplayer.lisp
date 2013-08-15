@@ -1,3 +1,23 @@
+;; ===========================================================================
+;; mplayer player engine for OM (audio).
+;;  
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU Lesser General Public License
+;; as published by the Free Software Foundation; either version 2.1 of
+;; the License, or (at your option) any later version.
+;;   
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; Lesser General Public License for more details.
+;;   
+;; You should have received a copy of the GNU Lesser General Public
+;; License along with this program; if not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+;; 02111-1307, USA.
+;; 
+;; Author: Anders Vinjar
+
 (in-package :om)
 
 ;==================
@@ -9,48 +29,44 @@
 ;;(defmethod player-special-action ((engine (eql :mplayer))) (mplayer-launch-mplayer-app))
 (defmethod player-type ((engine (eql :mplayer))) :external)
 
-
-;; enable mplayer-engine for class sound:
-
-(let* ((curlist (players-for-object (make-instance 'sound)))
-       (newlist (pushnew :mplayer curlist)))
-  (defmethod players-for-object ((self sound)) newlist))
-
-(pushnew :mplayer *enabled-players*)
-
 ;==================
-; APP
+; external app
 ;==================
 
 ;; TODO: set up case for non-jack-enabled mplayer and jack running.
+
+(defvar *mplayer-args*)
+(defvar *mplayer-path*)
+
 (defun init-mplayer-app ()
-  (setf *mplayer-args* "-ao jack,alsa -idle -slave -quiet")
-  (setf *mplayer-path* (or (probe-file "/usr/local/bin/mplayer")
-			   (probe-file "/usr/bin/mplayer"))))
+  
+  (setq *mplayer-args* "-ao jack,alsa -idle -slave -quiet")
+  (setq *mplayer-path* (or (probe-file "/usr/local/bin/mplayer")
+			   (probe-file "/usr/bin/mplayer")))
+
+  ;; enable mplayer-engine for sound class:
+
+  (let* ((curlist (players-for-object (make-instance 'sound)))
+	 (newlist (pushnew :mplayer curlist)))
+    (defmethod players-for-object ((self sound)) newlist))
+  (pushnew :mplayer *enabled-players*))
 
 ;;(init-mplayer-app)
 (om-add-init-func 'init-mplayer-app)
+
+;==================
+; control external mplayers
+;==================
 
 (defvar *mplayers* (make-hash-table))
 (defstruct mplayer-proc pid iostream error-stream paused)
 
 ;; launch one mplayer and return struct for bookkeeping
 
-
-(defun mplayer-send-cmd (obj cmd)
-  (let ((thisplayer (gethash obj *mplayers*)))
-    (unless thisplayer
-      (setf thisplayer
-	    (setf (gethash obj *mplayers*)
-		  (mplayer-launch-one-mplayer))))
-    ;; (format (mplayer-proc-iostream (gethash *mplayers* obj)) "pausing_keep_force ")
-    (format (mplayer-proc-iostream thisplayer) "~A~%" cmd)))
-
 (defun mplayer-send-cmd (obj cmd)
   (let ((thisplayer (or (gethash obj *mplayers*)
 			(setf (gethash obj *mplayers*)
 			      (mplayer-launch-one-mplayer)))))
-    ;; (format (mplayer-proc-iostream (gethash *mplayers* obj)) "pausing_keep_force ")
     (format (mplayer-proc-iostream thisplayer) "~A~%" cmd)))
 
 (defun mplayer-launch-one-mplayer ()
@@ -120,9 +136,9 @@
 
 (defmethod player-pause-object ((engine (eql :mplayer)) object &key interval)
   (print (list 'player-pause-object object interval))
-  (unless (mplayer-proc-paused object)
+  (unless (mplayer-proc-paused (gethash object *mplayers*))
     (mplayer-send-cmd object "pause")
-    (setf (mplayer-proc-paused object) t)))
+    (setf (mplayer-proc-paused (gethash object *mplayers*)) t)))
 
 (defmethod player-pause ((engine (eql :mplayer)) &optional playlist)
   (when playlist
@@ -131,9 +147,9 @@
 
 (defmethod player-continue-object ((engine (eql :mplayer)) object &key interval)
   (print (list 'player-continue-object object interval))
-  (when (mplayer-proc-paused object)
+  (when (mplayer-proc-paused (gethash object *mplayers*))
     (mplayer-send-cmd object "pause")	;mplayers pause-cmd is a toggle
-    (setf (mplayer-proc-paused object) nil)))
+    (setf (mplayer-proc-paused (gethash object *mplayers*)) nil)))
 
 (defmethod player-continue ((engine (eql :mplayer)) &optional playlist)
   (when playlist
@@ -147,9 +163,11 @@
   ;;(break)
   (print (list 'player-set-loop start end))
   (setf *mplayer-loop-points* (mapcar #'(lambda (ms) (/ ms 1000.0)) (list start end)))
-  (print (format nil "~A : set loop ~A" engine *mplayer-loop-points*)))
+  (print (format nil "~A : set loop ~A" engine *mplayer-loop-points*))
+  nil)
 
 (defmethod player-loop ((engine (eql :mplayer)) &optional play-list)
   (print (list 'player-loop play-list))
   (dolist (snd play-list)
-    (mplayer-send-cmd snd (format nil "seek ~A 2" (car *mplayer-loop-points*)))))
+    (mplayer-send-cmd snd (format nil "seek ~A 2" (car *mplayer-loop-points*))))
+  nil)

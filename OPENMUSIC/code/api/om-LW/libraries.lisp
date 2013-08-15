@@ -333,11 +333,11 @@
 
 (defun load-om-libs (&optional libs)
   
-  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-new-cffi"))
-  ;(load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
+  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux  "load-cffi" #+linux "load-new-cffi"))
+  (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
 
   (loop for lib in libs do
-        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml :yason))
+        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   (if (member :midi libs)
@@ -362,14 +362,21 @@
   (if (member :xml libs)
         (load (make-pathname :directory (append *externals-directory* (list "XML")) :name "load-xml"))
     )
-  (if (member :yason libs)
+  (if (member :json libs)
       (progn
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "package"))
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "parse")))
     )
-
   (if (member :jack libs)
-      (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load"))
+      (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load.lisp"))
     )
-    
   t)
+
+
+
+
+
+
+
+
+
