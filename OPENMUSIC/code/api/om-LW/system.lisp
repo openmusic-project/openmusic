@@ -206,11 +206,11 @@
 (defvar *om-cleanup-forms* nil)
 
 (defun om-add-exit-cleanup-func (func-name &optional last?)  
-(unless (member func-name *om-cleanup-forms* :test 'equal)
-  (if last?
-     (push func-name  *om-cleanup-forms*)
-     (setf  *om-cleanup-forms* (append  *om-cleanup-forms* (list func-name)))
-     )))
+  (unless (member func-name *om-cleanup-forms* :test 'equal)
+    (if last?
+	(push func-name  *om-cleanup-forms*)
+	(setf  *om-cleanup-forms* (append  *om-cleanup-forms* (list func-name)))
+	)))
 
 (defun om-exit-funcall ()
   (mapc #'(lambda (x) (funcall x)) (reverse *om-cleanup-forms*))
