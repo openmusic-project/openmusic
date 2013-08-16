@@ -25,7 +25,8 @@
 ;==================
 
 (defmethod player-name ((engine (eql :mplayer))) "mplayer")
-(defmethod player-desc ((engine (eql :mplayer))) "external mplayer")
+(defmethod player-desc ((engine (eql :mplayer)))
+  (format nil "external mplayer: ~A" (namestring *mplayer-path*)))
 ;;(defmethod player-special-action ((engine (eql :mplayer))) (mplayer-launch-mplayer-app))
 (defmethod player-type ((engine (eql :mplayer))) :external)
 
@@ -112,30 +113,26 @@
   t)
 
 (defmethod player-start ((engine (eql :mplayer)) &optional play-list)
-  (print (list 'player-start play-list))
+  ;;(print (list 'player-start play-list))
   t ;;(call-next-method)
   )
 
 (defmethod player-play-object ((engine (eql :mplayer)) object &key interval)
-  (print (list 'player-play-object object interval))
   (mplayer-send-cmd object (format nil "seek ~A 2" (if interval
 						       (/ (car interval) 1000.0)
 						       0))))
 
 (defmethod player-stop-object ((engine (eql :mplayer)) object &key interval)
-  (print (list 'player-stop-object object interval))
-  ;;(mplayer-send-cmd object "stop")
   (mplayer-send-cmd object "vol 0.0 1")
-  (mplayer-send-cmd object "stop; quit")
+  (mplayer-send-cmd object "stop")
+  (mplayer-send-cmd object "quit")
   (mplayer-kill-and-cleanup-one-mplayer object))
 
 (defmethod player-stop ((engine (eql :mplayer)) &optional playlist)
-  (print (list 'player-stop playlist))
   (when playlist
     (dolist (snd playlist) (player-stop-object engine snd))))
 
 (defmethod player-pause-object ((engine (eql :mplayer)) object &key interval)
-  (print (list 'player-pause-object object interval))
   (unless (mplayer-proc-paused (gethash object *mplayers*))
     (mplayer-send-cmd object "pause")
     (setf (mplayer-proc-paused (gethash object *mplayers*)) t)))
@@ -146,7 +143,6 @@
   nil)
 
 (defmethod player-continue-object ((engine (eql :mplayer)) object &key interval)
-  (print (list 'player-continue-object object interval))
   (when (mplayer-proc-paused (gethash object *mplayers*))
     (mplayer-send-cmd object "pause")	;mplayers pause-cmd is a toggle
     (setf (mplayer-proc-paused (gethash object *mplayers*)) nil)))
@@ -156,6 +152,7 @@
     (dolist (snd playlist) (player-continue-object engine snd)))
   nil)
 
+;;; why isnt this loaded at startup?
 
 (defvar *mplayer-loop-points* '())
 
@@ -171,3 +168,5 @@
   (dolist (snd play-list)
     (mplayer-send-cmd snd (format nil "seek ~A 2" (car *mplayer-loop-points*))))
   nil)
+
+
