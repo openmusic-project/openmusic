@@ -29,12 +29,25 @@
 ;;        (newlist (pushnew :scaudioplayer curlist)))
 ;;   (defmethod players-for-object ((self sound)) newlist))
 
-(pushnew :scaudioplayer *enabled-players*)
-
 (defmethod player-name ((self (eql :scaudioplayer))) "scaudioplayer")
-(defmethod player-desc ((self (eql :scaudioplayer))) "external supercollider player for om")
+(defmethod player-desc ((self (eql :scaudioplayer))) "external supercollider player")
 (defmethod player-special-action ((self (eql :scaudioplayer))) (launch-scplayer-app))
 (defmethod player-type ((player (eql :scaudioplayer))) :UDP)
+
+;; application-control and communication defined in
+;; 02-musicproject/players/SCplayer.lisp
+
+;;(launch-scplayer-app)
+
+(defun init-sc-player ()
+  (let* ((curlist (players-for-object (make-instance 'sound)))
+	 (newlist (pushnew :scaudioplayer curlist)))
+    (defmethod players-for-object ((self sound)) newlist))
+  (pushnew :scaudioplayer *enabled-players*))
+
+;;(init-sc-player)
+(om-add-init-func 'init-sc-player)
+
 ;================
 ; PROTOCOL
 ;================
