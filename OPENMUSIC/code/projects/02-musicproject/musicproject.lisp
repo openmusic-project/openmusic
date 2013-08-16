@@ -104,12 +104,12 @@
         "osc;receive"
         "osc;osc-events"
         "players;microplayer"
-        ;; #+linux "players;SCplayer"
+        "players;SCeventplayer"
         "editor;scoreeditor;pagination"
         
         "editor;musicpreferences"
         "players;select-players"  
-        "players;ms-players"  
+        #-linux "players;ms-players"  
 	#+linux "players;jack-midi-player"        
         
         "music-package"  
