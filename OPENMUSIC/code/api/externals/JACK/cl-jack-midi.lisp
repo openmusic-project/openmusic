@@ -86,12 +86,14 @@
 		  #'(lambda (a b) (< (car a) (car b))))))))
 
 ;; used by player-methods to play objects w. jack-midi.
-(defun jack-midi-play-event (start dur noteno &optional (vel 80) (chan 1))
+(defun jack-midi-play-event (seq start dur noteno &optional (vel 80) (chan 1))
   "times (start, dur) in sec.; noteno, vel, chan is standard midi"
   (let* ((startframe (framenow start))
 	 (endframe (+ startframe (sec->frame dur))))
-    (seqhash-note-on  *om-seq* startframe noteno vel chan)
-    (seqhash-note-off *om-seq* endframe noteno 0 chan)))
+    (seqhash-note-on seq startframe noteno vel chan)
+    (seqhash-note-off seq endframe noteno 0 chan)))
+
+
 
 (defun all-notes-off ()
   (mp:process-run-function "hush" nil
