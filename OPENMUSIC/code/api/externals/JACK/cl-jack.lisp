@@ -228,4 +228,4 @@
 
 ;; provide one default global client-name 
 
-(defparameter *OMJackClient* nil)
+(defparameter *CLJackClient* nil)

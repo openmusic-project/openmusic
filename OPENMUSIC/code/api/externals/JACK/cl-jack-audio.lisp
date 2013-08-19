@@ -19,42 +19,42 @@
 
 (in-package :cl-jack)
 
-(unless *OMJackClient*
-  (setq *OMJackClient* (jack-client-open "OpenMusic" JackNullOption 0)))
+(unless *CLJackClient*
+  (setq *CLJackClient* (jack-client-open "CL" JackNullOption 0)))
 
-;; (jack-client-close *OMJackClient*)
-;; (jack-get-client-name *OMJackClient*)
+;; (jack-client-close *CLJackClient*)
+;; (jack-get-client-name *CLJackClient*)
 
-(defparameter *OM-jack-audio-input-channels* 2)
-(defparameter *OM-jack-audio-output-channels* 2)
+(defparameter *CL-jack-audio-input-channels* 2)
+(defparameter *CL-jack-audio-output-channels* 2)
 
-(defparameter *OM-jack-audio-input-ports* nil)
-(defparameter *OM-jack-audio-output-ports* nil)
+(defparameter *CL-jack-audio-input-ports* nil)
+(defparameter *CL-jack-audio-output-ports* nil)
 
-(setf *OM-jack-audio-input-ports*
-      (loop for chan from 0 below *OM-jack-audio-output-channels*
+(setf *CL-jack-audio-input-ports*
+      (loop for chan from 0 below *CL-jack-audio-output-channels*
 	 collect
 	   (let ((port (jack-port-register
-			*OMJackClient*
+			*CLJackClient*
 			(format nil "in_~A" chan)
 			*jack-default-audio-type*
 			(foreign-enum-value 'jackportflags :jackportisinput)
 			0)))
 	     (if (zerop (pointer-address port)) ;0 if not allocated
-		 (error "*OM-jack-audio-input-ports* not allocated")
+		 (error "*CL-jack-audio-input-ports* not allocated")
 		 port))))
 
-(setf *OM-jack-audio-output-ports*
-      (loop for chan from 0 below *OM-jack-audio-output-channels*
+(setf *CL-jack-audio-output-ports*
+      (loop for chan from 0 below *CL-jack-audio-output-channels*
 	   collect
 	   (let ((port (jack-port-register
-			*OMJackClient*
+			*CLJackClient*
 			(format nil "out_~A" chan)
 			*jack-default-audio-type*
 			(foreign-enum-value 'jackportflags :jackportisoutput)
 			0)))
 	     (if (zerop (pointer-address port)) ;0 if not allocated
-		 (error "*OM-jack-audio-output-ports* not allocated")
+		 (error "*CL-jack-audio-output-ports* not allocated")
 		 port))))
 
 ;; provide default-callback which just copies in to out:
@@ -62,9 +62,9 @@
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
   (declare (ignore arg))
-  (cl-jack-handle-midi-seq nframes)
-  (loop for inport in *OM-jack-audio-input-ports*
-     for outport in *OM-jack-audio-output-ports*
+  (when (fboundp 'cl-jack-handle-event-seqs) (cl-jack-handle-event-seqs nframes))
+  (loop for inport in *CL-jack-audio-input-ports*
+     for outport in *CL-jack-audio-output-ports*
      do
        (let ((in (jack-port-get-buffer inport nframes))
 	     (out (jack-port-get-buffer outport nframes)))
@@ -73,6 +73,6 @@
   
   0)
 
-(jack-set-process-callback *OMJackClient* (callback cl-jack-process-callback) 0)
-(jack-activate *OMJackClient*)
-;;(jack-deactivate *OMJackClient*)
+(jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
+(jack-activate *CLJackClient*)
+;;(jack-deactivate *CLJackClient*)
