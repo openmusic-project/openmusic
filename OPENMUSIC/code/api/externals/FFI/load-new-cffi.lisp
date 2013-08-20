@@ -40,4 +40,5 @@
 
 (pushnew :cffi-new *features*)
 (provide :cffi-new)
+(provide :cffi)
 (asdf:load-system :cffi)
