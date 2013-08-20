@@ -1,23 +1,23 @@
-;;===========================================================================
-;;JACK API for Common Lisp/CFFI
-;;
-;;This program is free software; you can redistribute it and/or modify
-;;it under the terms of the GNU Lesser General Public License as published by
-;;the Free Software Foundation; either version 2.1 of the License, or
-;;(at your option) any later version.
-;;  
-;;This program is distributed in the hope that it will be useful,
-;;but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;GNU Lesser General Public License for more details.
-;;  
-;;You should have received a copy of the GNU Lesser General Public License
-;;along with this program; if not, write to the Free Software 
-;;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;
-;;Author: Anders Vinjar
+;;; ===========================================================================
+;;; CL setting up an external fluidsynth proc.
+;;; 
+;;; This program is free software; you can redistribute it and/or modify
+;;; it under the terms of the GNU Lesser General Public License as published by
+;;; the Free Software Foundation; either version 2.1 of the License, or
+;;; (at your option) any later version.
+;;;   
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU Lesser General Public License for more details.
+;;;   
+;;; You should have received a copy of the GNU Lesser General Public License
+;;; along with this program; if not, write to the Free Software 
+;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;; 
+;;; Author: Anders Vinjar
 
-(in-package :cl-jack)
+(in-package :cl-fluidsynth)
 
 ;;; setup external fluidsynth to connect midi from jack to
 ;;; TODO: wrap and load libfluidsynth.so to get this inside
@@ -26,10 +26,11 @@
 (defparameter *fluidsynth-pid* nil)
 (defparameter *fluidynth-io* nil)
 (defparameter *fluid-synth-cmd* nil)
+
 (defparameter *fluid-soundfont* "/usr/share/soundfonts/default.sf2")
 
-(setf *fluidsynth-cmd*
-      (format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*))
+(defvar *fluidsynth-cmd* (format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*))
+
 
 (defun fluidsynth-launch ()
   (unless *fluidsynth-pid*
@@ -42,6 +43,7 @@
 				  :input :stream
 				  :output :stream
 				  :error-output nil)
+      (declare (ignore err))
       (setf *fluidsynth-pid* pid)
       (setf *fluidynth-io* io)
       (format *standard-output* "started fluidsynth: pid: ~A" pid)
@@ -55,10 +57,12 @@
 			   #'(lambda ()
 			       (mp:process-wait "getting fluidsynth running first"
 						#'(lambda ()
-						    (and *OMJackClient* *OM-midi-output-port* *fluidsynth-pid*)))
+						    (and cl-jack::*ClJackClient*
+							 (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+							 *fluidsynth-pid*)))
 			       (sleep 1.0)
-			       (jack-connect *OMJackClient*
-					     (jack-port-name *OM-midi-output-port*)
+			       (cl-jack::jack-connect cl-jack::*ClJackClient*
+					     (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
 					     "fluidsynth:midi"))))
 
 (defun fluidsynth-quit ()
