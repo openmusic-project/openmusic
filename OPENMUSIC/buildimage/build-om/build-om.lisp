@@ -207,7 +207,7 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
-(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :json :yason #+linux :jack))
+(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"

@@ -370,6 +370,9 @@
   (if (member :jack libs)
       (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load.lisp"))
     )
+  (if (member :fluidsynth libs)
+      (load (make-pathname :directory (append *externals-directory* (list "FluidSynth")) :name "load-fluidsynth.lisp"))
+    )
   t)
 
 
