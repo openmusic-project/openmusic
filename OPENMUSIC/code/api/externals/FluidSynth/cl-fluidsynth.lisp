@@ -17,45 +17,102 @@
 ;;
 ;;Author: Anders Vinjar
 
-(require :cl-fluidsynth "load-fluidsynth.lisp")
 (in-package :cl-fluidsynth)
 
 (fluid_version_str)
 
+;; (om::om-shell "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
+
+(defvar *fluidsynth* nil)
+(defvar *fluidsynth-settings* nil)
+(defvar *fluidplayer* nil)
+(defvar *fluid-midi-player* nil)
+(defvar *fluidadriver* nil)
+
+(defvar *fluid-midi-driver-settings* nil)
+
+(unless *fluidsynth*
+  (progn
+    (setf *fluidsynth-settings* (new_fluid_settings))
+    (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+    (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth")
+    (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
+    (setf *fluidplayer* (new_fluid_player *fluidsynth*))
+    (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
+    (fluid_synth_sfload *fluidsynth* "/usr/share/soundfonts/FluidR3_GM.sf2" 1)))
+
+;; (fluid_settings_setint *fluidsynth-settings* "gain" 2)
+
+;;(fluid_player_get_status *fluidplayer*)
+
+(unless *fluid-midi-driver-settings*
+  (progn
+    (setf *fluid-midi-driver-settings* (new_fluid_settings))
+    (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
+    (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))
+
+(defcallback cl-fluid-handle-midi-event :int
+    ((data (:pointer :void))
+     (event (:pointer fluid_midi_event_t)))
+  (declare (ignore data))    
+  (fluid_synth_handle_midi_event *fluidsynth* event)
+  ;;(print (format nil "event type: ~X" (fluid_midi_event_get_type event)))
+  1)
+
+(unless *fluid-midi-player*
+  (setf *fluid-midi-player* (new_fluid_midi_driver
+			     *fluid-midi-driver-settings*
+			     (callback cl-fluid-handle-midi-event)
+			     (null-pointer))))
+
+(cl-jack::jack-connect cl-jack::*CLJackClient*
+		       (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+		       "OM_fluidsynth:midi")
+
+;;(delete_fluid_midi_driver *fluid-midi-player*)
+
+#|
+
+
+
+
+
+(cl-jack::jack-get-client-name cl-jack::*CLJACKCLIENT*)
+(cl-jack::jack-get-ports cl-jack::*CLJACKCLIENT* "" "" 0)
+
+(with-foreign-object (fluidports :pointer)
+  (setf fluidports (cl-jack::jack-get-ports cl-jack::*CLJACKCLIENT*  "fluid" "midi" 0))
+  (loop for i from 0
+     and port = (mem-aref fluidports :string i)
+     while port
+     collect port))
+
+(cl-jack::jack-get-ports cl-jack::*CLJACKCLIENT*  "fluid" "midi" 0)
+
+(cl-jack::jack-connect cl-jack::*CLJACKCLIENT* "OM_fluidsynth" )
+
+;; play midi-file from file:
+
+(fluid_player_add *fluidplayer* "/home/andersvi/prosjekter/GESTURES/vib-enkel/marimba-test.midi")
+(fluid_player_play *fluidplayer*)
+(fluid_player_stop *fluidplayer*)
+
 
 (progn
-  (setf settings (new_fluid_settings))
-  (fluid_settings_setint settings "audio.jack.autoconnect" 1)
-  (fluid_settings_setstr settings "audio.jack.id" "OM_fluidsynth")
-  (setf synth (new_fluid_synth settings))
-  (setf player (new_fluid_player synth))
-  (setf adriver (new_fluid_audio_driver settings synth))
-  (fluid_synth_sfload synth "/usr/share/soundfonts/FluidR3_GM.sf2" 1))
+  (delete_fluid_audio_driver *fluidadriver*)
+  (delete_fluid_player *fluidplayer*)
+  (delete_fluid_synth *fluidsynth*)
+  (delete_fluid_settings *fluidsynth-settings*))
 
-(fluid_player_get_status player)
-
-(fluid_player_add player "/home/andersvi/prosjekter/GESTURES/vib-enkel/marimba-test.midi")
-(fluid_player_play player)
-
-
-(progn
-  (delete_fluid_audio_driver adriver)
-  (delete_fluid_player player)
-  (delete_fluid_synth synth)
-  (delete_fluid_settings settings))
-
-(fluid_synth_noteon synth 0 63 127)
-(fluid_synth_noteoff synth 0 63)
+(fluid_synth_noteon *fluidsynth* 0 63 127)
+(fluid_synth_noteoff *fluidsynth* 0 63)
 
 (loop repeat 120
    for note = (+ 20 (random 70))
    do
-     (fluid_synth_noteon synth 0 note 100)
+     (fluid_synth_noteon *fluidsynth* 0 note 100)
      (sleep 1/16)
-     (fluid_synth_noteoff synth 0 note))
-
-
-
+     (fluid_synth_noteoff *fluidsynth* 0 note))
 
 ;; arpeggio example
 
@@ -98,7 +155,7 @@
   (declare (ignore time event seq data))
   (schedule-timer-event)
   (schedule-pattern notes duration)
-  0)
+  )
 
 (reverse '(60 64 67 72 76 79 84 79 76 72 67 64))
 (setf notes #(64 72 67 79 76 79 76 72 84 60 64 67))
@@ -109,12 +166,12 @@
 			     collect (+ 12 (random 100)))))
 
 (setf pattern_size (length notes))
-(setf settings (new_fluid_settings))
+(setf *fluidsynth-settings* (new_fluid_settings))
 
-(fluid_settings_setint settings "audio.jack.autoconnect" 1)
+(fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
 
 (setf synth (new_fluid_synth settings))
-(setf audiodriver (new_fluid_audio_driver settings synth))
+(setf audiodriver (new_fluid_audio_driver *fluidsynth-settings* synth))
 (setf sequencer (new_fluid_sequencer))
 (setf synth_destination (fluid_sequencer_register_fluidsynth sequencer synth))
 (setf client_destination (fluid_sequencer_register_client
@@ -132,4 +189,5 @@
   (delete_fluid_synth synth)
   (delete_fluid_sequencer sequencer)
   (delete_fluid_audio_driver audiodriver)
-  (delete_fluid_settings settings))
+  (delete_fluid_settings *fluidsynth-settings*))
+|#
