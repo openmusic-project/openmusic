@@ -28,6 +28,7 @@
 (defvar *fluidplayer* nil)
 (defvar *fluid-midi-player* nil)
 (defvar *fluidadriver* nil)
+(defvar *soundfont* "/usr/share/soundfonts/FluidR3_GM.sf2")
 
 (defvar *fluid-midi-driver-settings* nil)
 
@@ -39,7 +40,8 @@
     (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
     (setf *fluidplayer* (new_fluid_player *fluidsynth*))
     (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
-    (fluid_synth_sfload *fluidsynth* "/usr/share/soundfonts/FluidR3_GM.sf2" 1)))
+    (fluid_synth_sfload *fluidsynth* *soundfont* 1)
+    (fluid_synth_set_gain *fluidsynth* 0.5)))
 
 ;; (fluid_settings_setint *fluidsynth-settings* "gain" 2)
 
@@ -68,6 +70,8 @@
 (cl-jack::jack-connect cl-jack::*CLJackClient*
 		       (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
 		       "OM_fluidsynth:midi")
+
+
 
 ;;(delete_fluid_midi_driver *fluid-midi-player*)
 
