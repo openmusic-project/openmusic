@@ -20,10 +20,10 @@
              table)
     set))
 
-;;; CLASSES
 
-(defclass boxforlz (OMBoxCall)
-  ())
+;;; LZ DATA IS TOO BIG: NEVER SAVE/LOCK THE VALUE
+
+(defclass boxforlz (OMBoxCall) ())
 
 (defmethod get-boxcallclass-fun ((self (eql 'LZify))) 'boxforlz)
 
@@ -34,8 +34,6 @@
     `(om-load-boxcall ',(saveBox? self) ,(name self) ',(save-reference self) ',inputs ,(om-save-point (frame-position self)) 
                       ,(om-save-point (frame-size self)) nil nil ,(frame-name self) ,(numouts self))))
 
-
-
 (defun update-lz-boxes (oldbox newbox)
   (setf (value newbox) nil)
   (setf (frame-position newbox) (borne-position (frame-position oldbox)))
@@ -43,7 +41,7 @@
   (setf (frame-name newbox) (frame-name oldbox))
   (setf (allow-lock newbox) nil)
   (setf (inputs newbox) (eval (omNG-copy (inputs oldbox))))
-  (set-box-to-keyword (inputs newbox) newbox)
+  (set-box-to-inputs (inputs newbox) newbox)
   newbox)
 
 (defmethod omNG-copy ((self boxforlz))
@@ -52,6 +50,9 @@
                                         (name self))))
      (setf copy (update-lz-boxes ,self copy))
      copy))
+
+
+;;; CLASSES
 
 (defclass LZtree ()
   ((symb :initform 0 :accessor symb :initarg :symb)

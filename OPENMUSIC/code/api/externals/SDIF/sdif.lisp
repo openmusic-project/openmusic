@@ -266,6 +266,23 @@
 
 (cffi:defcfun ("SdifFStreamIDTable" SdifFStreamIDTable) :pointer (file :pointer))
 
+(cffi:defcfun ("SdifStreamIDTableGetNbData" SdifStreamIDTableGetNbData) :unsigned-int (SdifStreamIDTableT :pointer))
+
+(cffi:defcfun ("SdifStreamIDTableGetSID" SdifStreamIDTableGetSID) :pointer (SdifStreamIDTableT :pointer) (NumID :unsigned-int))
+
+(cffi:defcfun ("SdifStreamIDEntryGetSID" SdifStreamIDEntryGetSID) :unsigned-int (SdifStreamIDT :pointer))
+
+(cffi:defcfun ("SdifStreamIDEntryGetSource" SdifStreamIDEntryGetSourceSTR) :pointer (SdifStreamIDT :pointer))
+
+(defun SdifStreamIDEntryGetSource (sid)
+  (cffi::foreign-string-to-lisp (SdifStreamIDEntryGetSourceSTR sid)))
+
+(cffi:defcfun ("SdifStreamIDEntryGetTreeWay" SdifStreamIDEntryGetTreeWaySTR) :pointer (SdifStreamIDT :pointer))
+
+(defun SdifStreamIDEntryGetTreeWay (sid)
+  (cffi::foreign-string-to-lisp (SdifStreamIDEntryGetTreeWaySTR sid)))
+
+
 
 ;;;=================================
 ;;; NVT
