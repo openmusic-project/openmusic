@@ -50,7 +50,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
           (port rep) (fourth slots-vals)
           (chan rep) (fifth slots-vals)
           (ev-num rep) (name2evNum (ctrltype rep))
-          (ctr-num rep) (name2ctrNum (ctrltype rep))
+          (ctr-num rep) (name2ctrNum (ctrltype rep)))
     rep))
 
 (defmethod execption-save-p ((self midicontrol)) 'midicontrol)
