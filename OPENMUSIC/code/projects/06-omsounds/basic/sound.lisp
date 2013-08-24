@@ -376,9 +376,11 @@ Press 'space' to play/stop the sound file.
         (if (and (nth i inputs) (string-equal (name input) (name (nth i inputs))))
             (nth i inputs) input)))
 
+
+
 (defmethod get-frame-class ((self OMaiffFilebox)) 'boxsoundframe)
 
-(omg-defclass boxsoundframe (boxEditorFrame) ())
+(defclass boxsoundframe (boxEditorFrame) ())
 
 (defmethod om-get-menu-context ((self boxsoundframe))
   (append 
@@ -388,7 +390,7 @@ Press 'space' to play/stop the sound file.
 
 (defmethod object-specific-menu ((self sound))
   (list (om-new-leafmenu "Open with external editor..."
-                         #'(lambda () (om-cmd-line (string+ "open " (namestring (sound-path self))))))))
+                         #'(lambda () (om-cmd-line (format nil "open ~s" (namestring (sound-path self))))))))
 
 ;=======
 ; PICT

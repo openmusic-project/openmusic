@@ -13,7 +13,7 @@
 ;=== - ev-num the type of midi evnts : control change (principally), pitchbend,...
 ;=== - ctr-num the control number in case we are dealing with control changes 
 ;===   (also used to determine in pitchbend is used with low (7 bits) or high (14bits) definition)
-(defclass* MidiControl (sequence* bpf)
+(defclass! MidiControl (sequence* bpf-controller)
   ((ctrltype :initform "ChannelVolume" :accessor ctrltype :initarg :ctrltype :type t :documentation "type of event (string)")
    (ev-num :initform 4 :accessor ev-num :type t )
    (ctr-num :initform 7 :accessor ctr-num :type t)
@@ -31,12 +31,17 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 "
    ))
 
-
 (defmethod Ldates ((self MidiControl)) (x-points self))
 (defmethod Lvalues ((self MidiControl)) (y-points self))
 
 (defmethod midicontrol-p ((self MidiControl))  t)
 (defmethod midicontrol-p ((self t)) nil)
+
+(defmethod initialize-instance :after ((self midicontrol) &rest args)
+  (setf (player-fun self) #'(lambda (val) (midicontrol-play self val)))
+  self)
+ 
+
 
 (defmethod make-one-instance ((self midicontrol) &rest slots-vals)
   (let ((rep (apply 'simple-bpf-from-list (list (second slots-vals) (sixth slots-vals) (type-of self) 0))))
@@ -45,7 +50,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
           (port rep) (fourth slots-vals)
           (chan rep) (fifth slots-vals)
           (ev-num rep) (name2evNum (ctrltype rep))
-          (ctr-num rep) (name2ctrNum (ctrltype rep)))
+          (ctr-num rep) (name2ctrNum (ctrltype rep))
     rep))
 
 (defmethod execption-save-p ((self midicontrol)) 'midicontrol)
@@ -169,8 +174,9 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
    (loop for item in (Ldates self)
          maximize item))
 
-(defmethod real-duration ((self midicontrol) time)
-  (values (get-obj-dur self) (+ time (get-obj-dur self))))
+; next method
+;(defmethod real-duration ((self midicontrol) time)
+;  (values (get-obj-dur self) (+ time (get-obj-dur self))))
 
 (defmethod strech ((self MidiControl) (num integer) (denom integer) &optional parent )
   (call-next-method))
@@ -220,25 +226,29 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
     (setf (chan new-ctrl) (chan self))  
     (values new-ctrl (cadr rep) (caddr rep))))
 
+
+(defmethod get-fields ((self MidiControl) value)
+  (case (ev-num self)
+    (4 (if (lsb-controller (ctr-num self))
+           (values (list (- (ctr-num self) 32) (msb value))
+                   (list (ctr-num self) (lsb value)))
+         (values (list (ctr-num self) value) nil)))
+    (7 (if (= (ctr-num self) 14) 
+           (list (lsb (+ value 8192)) (msb (+ value 8192))))
+       (list 0 (+ value 64)))
+    (3 (list 0 value))
+    (otherwise value)))
+
+
 ;=== Creates a list of MidiEvents 
 (defmethod! get-midievents ((self MidiControl) &optional test)
   :icon 902
-  (let ((evtList nil) evtMSB evtLSB fields fieldslsb)
+  (let ((evtList nil) evtMSB evtLSB)
     (loop for date in (Ldates self)
         for value in (Lvalues self) do
-        (case (ev-num self)
-          (4 (if (lsb-controller (ctr-num self))
-             (progn (setf fields (list (- (ctr-num self) 32) (msb value)))
-                    (setf fieldslsb (list (ctr-num self) (lsb value))))
-             (progn (setf fields (list (ctr-num self) value))
-                    (setf fieldslsb nil))))
-          (7 (if (= (ctr-num self) 14) 
-               (setf fields (list (lsb (+ value 8192)) (msb (+ value 8192))))
-               (setf fields (list 0 (+ value 64)))))
-          (3 (setf fields (list 0 value)))
-          (otherwise (setf fields value))
-          )
-        
+        (multiple-value-bind (fields fieldslsb) 
+            (get-fields self value)
+          
         ;send events for each channel, port, ref...
         (loop for po in (if (port self) (list! (port self)) (list *outmidiport*)) do
               (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
@@ -269,8 +279,47 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                           (if (and evtLSB (or (not test) (funcall test evtLSB)))
                             (push evtLSB evtList))
                           )))
-        )
+        ))
     (reverse evtList)))
+
+
+
+(defun midicontrol-play (self val)
+  (multiple-value-bind (fields fieldslsb) 
+            (get-fields self val)
+    
+    (loop for po in (if (port self) (list! (port self)) (list *outmidiport*)) do
+          (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
+                (loop for re in (if (ref self) (list! (ref self)) (list (if (= (ev-num self) (om-midi-get-num-from-type "Tempo")) 0 1))) do
+                      (let ((event 
+                             (midievent-to-msevent
+                              (make-instance 'MidiEvent
+                                                  :ev-date 0
+                                                  :ev-type (ev-num self)
+                                                  :ev-chan ch
+                                                  :ev-ref re
+                                                  :ev-port po
+                                                  :ev-fields fields
+                                                  )))
+                            (event2 
+                             (if (and (= (ev-num self) (om-midi-get-num-from-type "CtrlChange")) 
+                                      fieldslsb 
+                                      (not (= 0 (second fieldslsb))))
+                                 (midievent-to-msevent 
+                                  (make-instance 'MidiEvent
+                                                :ev-date 0
+                                                :ev-type (ev-num self)
+                                                :ev-chan ch
+                                                :ev-ref re
+                                                :ev-port po
+                                                :ev-fields fieldslsb)))))
+
+                        (when event   
+                          (om-midi-send-evt event *midiplayer*))
+                        (when event2
+                          (om-midi-send-evt event2 *midiplayer*))
+                        ))))
+    ))
 
 
 
@@ -429,7 +478,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
 ;;;======================================
 ;;; Editor
 ;;;======================================
-(omg-defclass midi-bpfEditor (bpfeditor) ())
+(omg-defclass midi-bpfEditor (bpfcontroleditor) ())
 (omg-defclass control-midibpf (control-bpf) 
    ((midi-params :accessor midi-params :initarg :midi-params :initform nil)))
 
@@ -610,3 +659,12 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
    (let ((newparams (make-midi-param-panel (control self) val)))
      (setf (midi-params (control self)) newparams)
      (om-add-subviews (control self) newparams)))
+
+
+(defmethod players-for-object ((self midicontrol)) '(:midishare :bpfplayer))
+
+(defmethod editor-play/stop ((self midi-bpfEditor))
+  (set-edit-param self 'player :bpfplayer)
+  (call-next-method))
+
+

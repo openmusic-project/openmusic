@@ -161,7 +161,7 @@
 ;;; Bind this function to cl::*debugger-hook* in order to catch all unexpected errors...
 (defun om-debugger-hook (condition old-debugger-hook)
   (declare (ignore old-debugger-hook))
-  (let ((log (capi:prompt-for-confirmation (format nil "An  error occured : ~a~%~%Create Log file ?" condition)
+  (let ((log (capi:prompt-for-confirmation (format nil "An  error occured : ~a~%~%Display Log file ?" condition)
                                            :default-button  nil)))
     (when log
       (let* ((logpath (make-pathname :directory (append (butlast (pathname-directory (dbg::logs-directory))) (list "OpenMusic"))
@@ -171,9 +171,10 @@
               (dbg:log-bug-form (format nil "An error occured : ~a" condition)
                                 :message-stream t
                                 :log-file logpath)))
+        (om-lisp::om-open-new-text-file path)
         (unless *log-location*
           (setf *log-location* t)
-          (capi::display-message "A log file will be written in ~a" path))))
+          (capi::display-message "The log file has been written in ~a" path))))
     (abort)))
 
 
@@ -577,7 +578,7 @@
                                           :prefix ":: "
                                           #+win32 :current-directory #+win32 current-path)
         #-win32(sys:run-shell-command str :wait wait)
-        #+win32(sys:call-system str :wait wait  :current-directory current-path)
+        #+win32(sys:call-system str :wait wait :current-directory current-path)
         ))))
 
 ;(sys::change-directory  (om-make-pathname :directory om::*om-midi-settings-app-path*))

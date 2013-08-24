@@ -11,7 +11,7 @@
 (defmethod class-has-editor-p ((self sdiffile)) t)
 (defmethod get-editor-class ((self sdiffile)) 'sdifeditor)
 
-(defmethod OpenObjectEditor ((self sdifFilebox)) (call-next-method))
+;(defmethod OpenObjectEditor ((self sdifFilebox)) (call-next-method))
 
 (defmethod get-win-ed-size ((self sdiffile)) 
   (om-make-point 400 500))

@@ -1,8 +1,8 @@
 
 (in-package :om)
 
-(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack))
-(defparameter *enabled-players* '(:midishare :microplayer :libaudiostream :multiplayer))
+(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack :bpfplayer))
+(defparameter *enabled-players* '(:midishare :microplayer :libaudiostream :multiplayer :bpfplayer))
 
 (defun enable-player (player)
   (when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))

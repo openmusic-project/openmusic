@@ -53,8 +53,6 @@
         (("Quit OM"
           :accelerator "accelerator-q"
           :callback #'(lambda (interface) 
-                        ;(capi:prompt-for-confirmation "Quit OM ?" :cancel-button nil)
-                        ;(oa::om-exit-funcall)
                         (capi:destroy interface))
           :callback-type :interface)))))
    (windows-menu
