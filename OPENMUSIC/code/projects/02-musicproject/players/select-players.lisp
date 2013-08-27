@@ -17,6 +17,11 @@
 ;;; defined here and there for the different OM classes
 (defmethod players-for-object ((self t)) nil)
 
+(defmacro add-player-for-object (object player)
+  `(let* ((curlist (players-for-object (make-instance ',object)))
+	  (newlist (pushnew ,player curlist)))
+     (defmethod players-for-object ((self ,object)) newlist)))
+
 (defmethod enabled-players-for-object ((self t)) 
   ;;; intersection does not preserve the original order
   (loop for p in (players-for-object self)
