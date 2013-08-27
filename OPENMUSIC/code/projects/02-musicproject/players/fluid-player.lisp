@@ -33,24 +33,15 @@
 
 ;; setup fluidsynth as option for relevant classes
 
-(defmethod players-for-object :around ((self simple-score-element))
-  (let ((curlist (call-next-method)))
-    (pushnew :fluidsynth curlist)))
+(let* ((curlist (players-for-object (make-instance 'simple-score-element)))
+       (newlist (pushnew :fluidsynth curlist)))
+  (defmethod players-for-object ((self simple-score-element)) newlist))
 
-(defmethod players-for-object :around ((self score-element))
-  (let ((curlist (call-next-method)))
-    (pushnew :fluidsynth curlist)))
+(let* ((curlist (players-for-object (make-instance 'score-element)))
+       (newlist (pushnew :fluidsynth curlist)))
+  (defmethod players-for-object ((self score-element)) newlist))
 
-;; (let* ((curlist (players-for-object (make-instance 'simple-score-element)))
-;;        (newlist (pushnew :fluidsynth curlist)))
-;;   (defmethod players-for-object ((self simple-score-element)) newlist))
-
-;; (let* ((curlist (players-for-object (make-instance 'score-element)))
-;;        (newlist (pushnew :fluidsynth curlist)))
-;;   (defmethod players-for-object ((self score-element)) newlist))
-
-(defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval)
-  (call-next-method))
+;;
 
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval)
   (if (container-p object)

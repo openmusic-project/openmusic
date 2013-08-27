@@ -1,21 +1,21 @@
-;;===========================================================================
-;;JACK Player class for OM.
-;;
-;;This program is free software; you can redistribute it and/or modify
-;;it under the terms of the GNU Lesser General Public License as published by
-;;the Free Software Foundation; either version 2.1 of the License, or
-;;(at your option) any later version.
-;;  
-;;This program is distributed in the hope that it will be useful,
-;;but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;GNU Lesser General Public License for more details.
-;;  
-;;You should have received a copy of the GNU Lesser General Public License
-;;along with this program; if not, write to the Free Software 
-;;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;
-;;Author: Anders Vinjar
+;;; ===========================================================================
+;;; JACK Player class for OM.
+;;; 
+;;; This program is free software; you can redistribute it and/or modify
+;;; it under the terms of the GNU Lesser General Public License as published by
+;;; the Free Software Foundation; either version 2.1 of the License, or
+;;; (at your option) any later version.
+;;;   
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU Lesser General Public License for more details.
+;;;   
+;;; You should have received a copy of the GNU Lesser General Public License
+;;; along with this program; if not, write to the Free Software 
+;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;; 
+;;; Author: Anders Vinjar
 
 (in-package :om)
 
@@ -28,14 +28,23 @@
 
 (progn
   (pushnew :jackmidi *all-players*)
+  (pushnew :jackmidi *enabled-players*)
   (enable-player :jackmidi))
 
 #+linux (mapc #'(lambda (pl) (disable-player pl))
 	      '(:microplayer :libaudiostream :multiplayer :midishare))
 
-;; redefined from various places here
-(defmethod players-for-object ((self score-element)) '(:jackmidi))
-(defmethod players-for-object ((self simple-score-element)) '(:jackmidi))
+
+
+;; setup jackmidi as option for relevant classes
+
+(let* ((curlist (players-for-object (make-instance 'simple-score-element)))
+       (newlist (pushnew :jackmidi curlist)))
+  (defmethod players-for-object ((self simple-score-element)) newlist))
+
+(let* ((curlist (players-for-object (make-instance 'score-element)))
+       (newlist (pushnew :jackmidi curlist)))
+  (defmethod players-for-object ((self score-element)) newlist))
 
 ;; hook into global pool of seqs for running cl-jack-client
 
@@ -55,14 +64,15 @@
 		 (inside object)))
 	  ((rest-p object) nil)
 	  ((note-p object)
-	   ;; send off all events to jacks scheduler
+	   ;; send off events to jacks scheduler
 	   (unless (equal (tie object) 'end)
 	     (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
 		    (interval-at (if interval (- at (car interval)) at)))
 	       (when (or (not interval) note-in-interval?)
 		 (jack-player-play-note thisqueue object interval-at)))))
 	  (t (error "fixme: :jackmidi, dont know how to play ~A" object)))
-    t))
+    (call-next-method)))
+
 
 (defun jack-player-play-note (queue object offset)
   (let ((seq (gethash queue *jack-midi-seqs*))
@@ -75,10 +85,20 @@
     )) 
 
 (defun jack-kill-queue (obj)
+  ;;(print (list obj obj (gethash obj *jack-midi-seqs*)))
   (when (gethash obj *jack-midi-seqs*)
     (cl-jack::jack-all-notes-off-and-kill-seq (gethash obj *jack-midi-seqs*))))
 
-(defmethod player-stop ((self (eql :jackmidi)) &optional play-list)
+(defmethod player-stop ((engine (eql :jackmidi)) &optional play-list)
   (jack-kill-queue (first play-list))
   (call-next-method))
+
+(defmethod player-pause ((engine (eql :jackmidi)) &optional play-list)
+  (print (format nil "~A : pause" engine))
+  (call-next-method))
+
+(defmethod player-continue ((engine (eql :jackmidi)) &optional play-list)
+  (print (format nil "~A : continue" engine))
+  (call-next-method))
+
 

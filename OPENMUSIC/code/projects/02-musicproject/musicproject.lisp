@@ -104,7 +104,7 @@
         "osc;receive"
         "osc;osc-events"
         "players;microplayer"
-        "players;SCeventplayer"
+        ;; "players;SCeventplayer"
         "editor;scoreeditor;pagination"
         
         "editor;musicpreferences"
