@@ -46,6 +46,9 @@
        (newlist (pushnew :jackmidi curlist)))
   (defmethod players-for-object ((self score-element)) newlist))
 
+(add-player-for-object score-element :jackmidi)
+(add-player-for-object simple-score-element :jackmidi)
+
 ;; hook into global pool of seqs for running cl-jack-client
 
 (defparameter *jack-midi-seqs* cl-jack::*jack-seqs*) 

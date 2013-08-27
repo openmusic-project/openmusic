@@ -46,11 +46,9 @@
 			   (probe-file "/usr/bin/mplayer")))
 
   ;; enable mplayer-engine for sound class:
-
-  (let* ((curlist (players-for-object (make-instance 'sound)))
-	 (newlist (pushnew :mplayer curlist)))
-    (defmethod players-for-object ((self sound)) newlist))
-  (pushnew :mplayer *enabled-players*))
+  
+  (pushnew :mplayer *enabled-players*)
+  (add-player-for-object sound :mplayer))
 
 ;;(init-mplayer-app)
 (om-add-init-func 'init-mplayer-app)

@@ -31,15 +31,10 @@
   (pushnew :fluidsynth *all-players*)
   (enable-player :fluidsynth))
 
-;; setup fluidsynth as option for relevant classes
+;; setup fluidsynth as optional player for relevant classes
 
-(let* ((curlist (players-for-object (make-instance 'simple-score-element)))
-       (newlist (pushnew :fluidsynth curlist)))
-  (defmethod players-for-object ((self simple-score-element)) newlist))
-
-(let* ((curlist (players-for-object (make-instance 'score-element)))
-       (newlist (pushnew :fluidsynth curlist)))
-  (defmethod players-for-object ((self score-element)) newlist))
+(add-player-for-object simple-score-element :fluidsynth)
+(add-player-for-object score-element :fluidsynth)
 
 ;;
 
