@@ -6,7 +6,14 @@
 
 (in-package :cl-fluidsynth)
 
-;;;SWIG wrapper code starts here
+;;; LINK IN FLUIDSYNTH LIB:
+
+(define-foreign-library fluidsynth
+  (t (:default "libfluidsynth")))
+
+(use-foreign-library fluidsynth)
+
+;;; wrapper code for various ../include/fluidsynth/*.h
 
 (cl:defmacro defanonenum (cl:&body enums)
    "Converts anonymous enums to defconstants."

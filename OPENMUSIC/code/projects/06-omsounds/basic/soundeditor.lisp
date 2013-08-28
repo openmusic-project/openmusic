@@ -728,7 +728,8 @@
            (om-with-font *om-default-font4b*
               (let ((halftext (round (om-string-size "Recording" *om-default-font4b*) 2)))
                 (om-draw-string (- (round (w self) 2) halftext) (round (h self) 2) "Recording")))))
-    (if (om-sound-file-name (object (om-view-container self)))
+    (if (and (om-sound-file-name (object (om-view-container self)))
+             (om-sound-sample-rate (object (om-view-container self)))) ;;; TEMP : crashes if there is a name but no actual sound
         (let* ((thesound (object (om-view-container self)))
                (sr (if (om-sound-las-using-srate-? thesound) 
                  las-srate

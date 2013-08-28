@@ -369,8 +369,9 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
    (loop for item in (Ldate self)
          maximize item))
 
-(defmethod real-duration ((self EventMidi-seq) time)
-  (values (get-obj-dur self) (+ time (get-obj-dur self))))
+; next method
+;(defmethod real-duration ((self EventMidi-seq) time)
+;  (values (get-obj-dur self) (+ time (get-obj-dur self))))
 
 (defmethod strech ((self EventMidi-seq) (num integer) (denom integer) &optional parent))
   
@@ -723,8 +724,9 @@ Returns time (ms) of measure <num> in <self>
    (loop for item in (Ldate self)
          maximize item))
 
-(defmethod real-duration ((self EventMidi-seq-old) time)
-  (values (get-obj-dur self) (+ time (get-obj-dur self))))
+; next method
+;(defmethod real-duration ((self EventMidi-seq-old) time)
+;  (values (get-obj-dur self) (+ time (get-obj-dur self))))
 
 (defmethod strech ((self EventMidi-seq-old) (num integer) (denom integer) &optional parent ))
 

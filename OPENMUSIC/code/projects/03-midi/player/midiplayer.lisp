@@ -131,7 +131,7 @@
    (when *midiplayer*
      (let ((evtseq (objfromobjs self (make-instance 'eventmidi-seq)))) 
        (setf (Qtempo evtseq) (Qtempo self))
-       (PrepareToPlay player evtseq at 
+       (PrepareToPlay player evtseq at
                                 :approx approx 
                                 :port port
                                 :interval interval
@@ -139,48 +139,56 @@
 )))
 
 
+
+(defun midievent-to-msevent (self)
+  (let* ((param1 (first (ev-fields self)))
+         (param2 (second (ev-fields self)))
+         (ref (ev-ref self)) 
+         (type (ev-type self)) 
+         (event (om-midi-new-evt type)))
+    (if (or (not event) (ms::nullptrp event))
+        (om-beep-msg (format nil "MidiShare can not create a new event of type ~D" type))
+      (progn
+        (om-midi-evt-set event :chan (- (ev-chan self) 1))			
+        (om-midi-evt-set event :port (verify-port (ev-port self)))
+        (om-midi-evt-set event :ref ref)
+        (om-midi-evt-set event :date (ev-date self))
+        (cond
+         ((= (om-midi-evt-get event :type) (om-midi-get-num-from-type "PitchBend"))
+          (if (= 1 (length (ev-fields self))) 
+              (om-midi-evt-set event :bend param1)
+            (progn (om-midi-evt-set event :field (list 0 param1)) (om-midi-evt-set event :field (list 1 param2)))
+            ))
+         ((= type (om-midi-get-num-from-type "ProgChange"))
+          (om-midi-evt-set event :pgm param1))
+         ((= type (om-midi-get-num-from-type "ChanPress"))
+          (om-midi-evt-set event :param param1))
+         ((= type (om-midi-get-num-from-type "KeyPress"))
+          (om-midi-evt-set event :kpress param2)
+          (om-midi-evt-set event :pitch param1))
+         ((= type (om-midi-get-num-from-type "CtrlChange"))
+          (om-midi-evt-set event :ctrlchange (list param1 param2)))
+         ((= type (om-midi-get-num-from-type "Tempo"))
+          (om-midi-evt-set event :tempo (bpm2mstempo param1)))
+         ((= type (om-midi-get-num-from-type "SysEx"))
+          (om-midi-evt-set event :bytes param1))
+         (t (if (and (istextual type) (stringp (car (ev-fields self))))
+                (om-midi-evt-set event :text (car (ev-fields self)))
+              (om-midi-evt-set event :vals (ev-fields self))))
+         )
+        event
+        ))))
+
+
 (defmethod* PrepareToPlay ((player t) (self MidiEvent) at &key approx port interval voice)
    (declare (ignore approx))
    (when (and *midiplayer* (or (null interval) (point-in-interval at interval)))
      (setf port (verify-port port))   
-     (let ((param1 (first (ev-fields self)))
-           (param2 (second (ev-fields self)))
-           (really-at (if interval (- at (first interval)) at)) 
-           (ref (ev-ref self)) 
-           (type (ev-type self)) 
-           event)
-       (setf event (om-midi-new-evt type))
-       (if (or (not event) (ms::nullptrp event))
-           (om-beep-msg (format nil "MidiShare can not create a new event of type ~D" type))
-         (progn
-           (om-midi-evt-set event :chan (- (ev-chan self) 1))			
-           (om-midi-evt-set event :port (verify-port (ev-port self)))
-           (om-midi-evt-set event :ref ref)
-           (om-midi-evt-set event :date (+ really-at (ev-date self)))
-           (cond
-            ((= (om-midi-evt-get event :type) (om-midi-get-num-from-type "PitchBend"))
-                     (if (= 1 (length (ev-fields self))) 
-                       (om-midi-evt-set event :bend param1)
-                       (progn (om-midi-evt-set event :field (list 0 param1)) (om-midi-evt-set event :field (list 1 param2)))
-                       ))
-            ((= type (om-midi-get-num-from-type "ProgChange"))
-             (om-midi-evt-set event :pgm param1))
-            ((= type (om-midi-get-num-from-type "ChanPress"))
-             (om-midi-evt-set event :param param1))
-            ((= type (om-midi-get-num-from-type "KeyPress"))
-             (om-midi-evt-set event :kpress param2)
-             (om-midi-evt-set event :pitch param1))
-            ((= type (om-midi-get-num-from-type "CtrlChange"))
-             (om-midi-evt-set event :ctrlchange (list param1 param2)))
-            ((= type (om-midi-get-num-from-type "Tempo"))
-             (om-midi-evt-set event :tempo (bpm2mstempo param1)))
-            ((= type (om-midi-get-num-from-type "SysEx"))
-                     (om-midi-evt-set event :bytes param1))
-            (t (if (and (istextual type) (stringp (car (ev-fields self))))
-                   (om-midi-evt-set event :text (car (ev-fields self)))
-                 (om-midi-evt-set event :vals (ev-fields self))))
-            )
-           (om-midi-seq-add-evt *playing-midi-seq* event))))))
+     (let ((msevent (midievent-to-msevent self))
+           (really-at (if interval (- at (first interval)) at)))
+       (when event
+         (om-midi-evt-set event :date (+ really-at (ev-date self)))
+         (om-midi-seq-add-evt *playing-midi-seq* event)))))
 
 
 

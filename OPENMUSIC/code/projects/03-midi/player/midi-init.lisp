@@ -72,7 +72,7 @@ the recorder, this function is called by a def-load-pointers"
      ;(close-ms-players) ;;; remettre ?
      (om-midi-exit)
      (setf *midi-share?* nil))
-   (om-stop-scheduler))
+   )
 
 (defun open-ms-players ()
   (setq *midiplayer* (om-midi-open-player "OMPlayer"))

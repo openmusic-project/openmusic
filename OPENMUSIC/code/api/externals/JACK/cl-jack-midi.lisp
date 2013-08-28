@@ -27,16 +27,32 @@
 (defun make-jack-seqs () (make-hash-table)) 
 (defparameter *jack-seqs* (make-jack-seqs))
 
-;;; event-seq is a hash-table, keys are frame at jacks start-of-period
+;;; event-seq is a hash-table, keys are frameno at jacks' start-of-period (ie: jack-last-frame-time)
 (defun make-jack-seq () (make-hash-table))
-(setf (gethash '*jack-seq* *jack-seqs*) (make-jack-seq)) ;default sequencer
+
+;;; provide one default seq for simple debugging etc:
+ ;default sequencer
+(defvar *jack-seq*
+  (setf (gethash '*jack-seq* *jack-seqs*) (make-jack-seq)))
 
 ;;; TIME HANDLING - SEQUENCING
 
-(defun framenow (&optional (sek 0))
-  (round (+ (jack-last-frame-time *CLJackClient*)
-	    (jack-get-buffer-size *CLJackClient*)
-	    (* sek (jack-get-sample-rate *CLJackClient*)))))
+;; (let ((start (jack-last-frame-time *CLJackClient*)))
+;;   (print 'yo)
+;;   (- start (jack-last-frame-time *CLJackClient*)))
+
+(defun jack-period-now (&optional sek)
+  (+ (jack-last-frame-time *CLJackClient*)
+     (jack-get-buffer-size *CLJackClient*)
+     (round (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
+
+;;; too late to schedule things inside current period, this looks up
+;;; current frame with exactly one period latency:
+
+(defun jack-frame-now (&optional sek)
+  (round (+ (jack-frame-time *CLJackClient*)
+	    (jack-get-buffer-size *CLJackClient*) 
+	    (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
 
 (defun ms->frame (ms)
   (round (* ms (jack-get-sample-rate cl-jack::*CLJackClient*)) 1000))
@@ -44,15 +60,13 @@
 (defun sec->frame (sec)
   (round (* sec (jack-get-sample-rate cl-jack::*CLJackClient*))))
 
-;; (list (- (framenow 1) (framenow 0))
-;;       (- (framenow 1.0) (framenow 0.0)))
 
-
-(defun frame->period-offset (time)
+(defun frame->period-offset (frame)
   "returns 2 frame nos: start of period & offset within period"
-  (multiple-value-bind (n rem)
-      (floor time (jack-get-buffer-size *CLJackClient*))
-    (values (* n (jack-get-buffer-size *CLJackClient*)) rem)))
+  (let ((bufsiz (jack-get-buffer-size *CLJackClient*)))
+    (multiple-value-bind (n rem)
+	(floor frame bufsiz)
+      (values (* n bufsiz) rem))))
 
 ;;; MIDI EVENTS
 
@@ -69,29 +83,49 @@
 (defun make-midi-programchange-tag (&optional (channel 1))
   (dpb channel (byte 4 0) programchangetag))
 
-;; TODO: expand with support for channels, messages more of midi to
-;; come...
+;; TODO: expand with support for channels, messages, CC, sysex...
 
-(defun seqhash-midi-note-on (seq time noteno velocity &optional (channel 1))
+(defun jack-add-event-this-period (seq period event)
+  (setf (gethash period seq)
+	(sort (nconc (gethash period seq) (list event))
+	      #'(lambda (a b) (< (car a) (car b))))))
+
+(defun jack-add-event-this-frame (seq frame event)
+  (push event (gethash frame seq)))
+
+;; old version keying on period-boundaries.  This works, and is
+;; presumably more efficient, but warnings from the jack-devels say
+;; there is no guarantee what any future period-boundary might be.
+;;
+;;
+;; (defun seqhash-midi-note-on (seq frame noteno velocity &optional (channel 1))
+;;   "times (start, dur) in sec.; noteno, vel, chan is standard midi"
+;;   (multiple-value-bind (period offset)
+;;       (frame->period-offset frame)
+;;     (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
+;;       (jack-add-event-this-period seq period noteon))))
+
+;; (defun seqhash-midi-note-off (seq frame noteno velocity &optional (channel 1))
+;;   (multiple-value-bind (period offset)
+;;       (frame->period-offset frame)
+;;     (let ((noteoff (list offset (make-midi-note-off-tag channel) noteno velocity channel)))
+;;       (jack-add-event-this-period seq period noteoff))))
+
+;; version just hasing on frame-number
+
+(defun seqhash-midi-note-on (seq frame noteno velocity &optional (channel 1))
   "times (start, dur) in sec.; noteno, vel, chan is standard midi"
-  (multiple-value-bind (period offset)
-      (frame->period-offset time)
-    (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
-      (setf (gethash period seq)
-	    (sort (nconc (gethash period seq) (list noteon))
-		  #'(lambda (a b) (< (car a) (car b))))))))
+  (let ((noteon (list frame (make-midi-note-on-tag channel) noteno velocity channel)))
+    (jack-add-event-this-frame seq frame noteon)))
 
-(defun seqhash-midi-note-off (seq time noteno velocity &optional (channel 1))
-  (multiple-value-bind (period offset)
-      (frame->period-offset time)
-    (let ((noteoff (list offset (make-midi-note-off-tag channel) noteno velocity channel)))
-      (setf (gethash period seq)
-	    (sort (nconc (gethash period seq) (list noteoff))
-		  #'(lambda (a b) (< (car a) (car b))))))))
+(defun seqhash-midi-note-off (seq frame noteno velocity &optional (channel 1))
+  (let ((noteoff (list frame (make-midi-note-off-tag channel) noteno velocity channel)))
+    (jack-add-event-this-frame seq frame noteoff)))
 
 ;; interface to higher-level funcs:
+
 (defun jack-play-event (seq start dur noteno &optional (vel 80) (chan 1))
-  (let* ((startframe (framenow start))
+  (let* ((startframe (jack-frame-now start))
 	 (endframe (+ startframe (sec->frame dur))))
     (seqhash-midi-note-on seq startframe noteno vel chan)
     (seqhash-midi-note-off seq endframe noteno 0 chan)))
@@ -104,12 +138,13 @@
 	     seq)
     (clrhash seq)
     (mapc #'(lambda (ev)
-	      (apply #'seqhash-midi-note-off seq (framenow) ev))
+	      (apply #'seqhash-midi-note-off seq (jack-frame-now) ev))
 	  sounding-notes)))
 
 (defun jack-all-notes-off-and-kill-seq (seq)
   (jack-all-notes-off seq)
-  (sleep (float (/ (jack-get-buffer-size *CLJACKCLIENT*)
+  (sleep (float (/ 2
+		   (jack-get-buffer-size *CLJACKCLIENT*)
 		   (jack-get-sample-rate *CLJACKCLIENT*))))
   (remhash seq *jack-seqs*))
 
@@ -126,24 +161,45 @@
 (defparameter *playing* t)		;nil=shut up
 ;; (setf *playing* nil)
 
-(defun lookup-queue-at-frame (jack-period seq)
-  (let ((queue-time (or (gethash 'queuetime seq) 0)))
-    (gethash (+ jack-period queue-time) seq)))
+;; old version looking up period-boundary keys:
+;;
+;; (defun lookup-queue-at-frame (jack-period seq)
+;;   (let ((queue-time (or (gethash 'queuetime seq) 0)))
+;;     (gethash (+ jack-period queue-time) seq)))
+;;
+;;
+;; (defun play-from-seq (port-buf seq)
+;;   (when *playing*
+;;     (let ((this-period (jack-last-frame-time *CLJackClient*)))
+;;       (let ((notes-this-period (lookup-queue-at-frame this-period seq)))
+;; 	(when notes-this-period
+;; 	  (remhash this-period seq)
+;; 	  (loop for note in notes-this-period
+;; 	     for offset = (first note)
+;; 	     do 
+;; 	     (print (list 'found-note offset note))
+;; 	     (let ((buffer (jack-midi-event-reserve port-buf offset 3))) ;offset inside period
+;; 	       (unless (null-pointer-p buffer)
+;; 		 (setf (mem-aref buffer :int8 0) (second note) ;tag
+;; 		       (mem-aref buffer :int8 1) (third note)  ;noteno
+;; 		       (mem-aref buffer :int8 2) (fourth note))))))))))
+					;vel
 
 (defun play-from-seq (port-buf seq)
   (when *playing*
     (let ((this-period (jack-last-frame-time *CLJackClient*)))
-      (let ((notes-this-period (lookup-queue-at-frame this-period seq)))
-	(when notes-this-period
-	  (remhash this-period seq)
-	  (loop for note in notes-this-period
-	     for offset = (first note)
-	     do 
+      (loop for offset from 0 below (jack-get-buffer-size *CLJACKCLIENT*)
+	 for key from this-period
+	 for notes = (gethash key seq)
+	 when notes
+	 do 
+	   (remhash key seq)
+	   (dolist (note notes)
 	     (let ((buffer (jack-midi-event-reserve port-buf offset 3))) ;offset inside period
 	       (unless (null-pointer-p buffer)
 		 (setf (mem-aref buffer :int8 0) (second note) ;tag
 		       (mem-aref buffer :int8 1) (third note)  ;noteno
-		       (mem-aref buffer :int8 2) (fourth note)))))))))) ;vel
+		       (mem-aref buffer :int8 2) (fourth note)))))))))
 
 ;; callback function handles seq-events, plugged into jacks
 ;; process-callback
@@ -151,10 +207,13 @@
 (defun cl-jack-handle-event-seqs (nframes)
   (let ((port-buf (jack-port-get-buffer *jack-midi-output-port* nframes)))
     (jack-midi-clear-buffer port-buf)
-    (maphash #'(lambda (key val)
+    ;;(play-from-seq port-buf *jack-seq*)
+    (maphash #'(lambda (key seq)
 		 (declare (ignore key))
-		 (play-from-seq port-buf val))
+		 (play-from-seq port-buf seq))
 	     *jack-seqs*)))
+
+
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
   (declare (ignore arg))
@@ -222,8 +281,12 @@
 
 (jack-client-close *CLJackClient*)
 
-(seqhash-midi-note-on *jack-seq* (framenow) (setf *thisnote* (+ 40 (random 40))) 127 1)
-(seqhash-midi-note-off *jack-seq* (framenow) *thisnote* 127 1)
+(jack-frame-now)
+
+(clrhash *jack-seq*)
+
+(seqhash-midi-note-on *jack-seq* (jack-frame-now) (setf *thisnote* 60) 127 1)
+(seqhash-midi-note-off *jack-seq* (jack-frame-now) *thisnote* 127 1)
 
 (with-hash-table-iterator (get-note *jack-seq*)
   (loop (multiple-value-bind (more? time notes) (get-note)
@@ -238,19 +301,19 @@
   (loop with offset = 0
      for sek from 0 below dur by tempo
      do
-       (let* ((start (framenow sek))
+       (let* ((start (jack-frame-now sek))
 	      (end (+ start 10000))
 	      (channel (random 16)))
 	 (progn
 	   (seqhash-midi-note-on *jack-seq* start (setf *thisnote* (+ 20 (random 100))) 80 channel)
-	   (seqhash-midi-note-off *jack-seq* end *thisnote* 50 channel)))))
+	   (seqhash-midi-note-off  *jack-seq* end *thisnote* 0 channel)))))
 
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
   (loop with note = 0
      for sek from 0  by tempo
      do
-       (let* ((start (framenow sek))
-	      (end (framenow (+ sek tempo))))
+       (let* ((start (jack-frame-now sek))
+	      (end (jack-frame-now (+ sek tempo))))
 	 (when  (>= sek dur)
 	   (loop-finish)
 	   (seqhash-midi-note-off *jack-seq* end (+ 40 note) 50 0))
@@ -262,22 +325,19 @@
 (let ((rytme 1/32))
   (play-some-notes rytme (+ 6 rytme)))
 
-(all-notes-off)
-(progn
-  (clrhash *jack-seq*)
-  (all-notes-off 0))
+(jack-all-notes-off *jack-seq*)
 
 (jack-midi-stop-all)
 
-(seqhash-midi-note-on *jack-seq* (framenow) 40 127 0)
-(seqhash-midi-note-off *jack-seq* (framenow) 40 127 0)
+(seqhash-midi-note-on *jack-seq* (jack-frame-now) 60 127 0)
+(seqhash-midi-note-off *jack-seq* (jack-frame-now) 60 127 0)
 
 (dotimes (i 80)
   (let* ((note (mod (+ 40 i (random 80)) 120))
 	 (rytme (/ i 21))
 	 (dur (* rytme 1)))
-    (seqhash-midi-note-on *jack-seq* (framenow rytme) note  100 0)
-    (seqhash-midi-note-off *jack-seq* (framenow (+ rytme dur)) note 0 0)
+    (seqhash-midi-note-on *jack-seq* (jack-frame-now rytme) note  100 0)
+    (seqhash-midi-note-off *jack-seq* (jack-frame-now (+ rytme dur)) note 0 0)
     ))
 
 
@@ -288,24 +348,26 @@
 (hash-table-size *jack-seq*)
 (clrhash *jack-seq*)
 
-
+;; example of (non-callback-based) rt-scheduling
 
 (setf *jack-midi-playing* nil)
 (setf *jack-midi-playing* t)
+(setf *play-queue* t)
+(setf *play-queue* nil)
 
 (let ((note 40))
   (loop
      (when (not *jack-midi-playing*)
        (return))
-     (let* ((note (+ 20 (mod (+ (incf note) (random 20)) 100)))
-	    (rytme (/ 3 64))
-	    (dur (* rytme 4)))
-       (seqhash-midi-note-on *jack-seq* (framenow rytme) note 90 0)
-       (seqhash-midi-note-off *jack-seq* (framenow (+ rytme dur)) note 0 0)
+     (let ((rytme (/ 1 64)))
+       (when *play-queue*
+	 (let ((note (+ 40 (mod (+ (incf note) (* 12 (random 3))) 60)))
+	       (rytme (/ 1 64))
+	       (dur (* rytme 8)))
+	   (seqhash-midi-note-on *jack-seq* (jack-frame-now rytme) note 90 0)
+	   (seqhash-midi-note-off *jack-seq* (jack-frame-now (+ rytme dur)) note 0 0)))
        (sleep rytme))
      ))
-
-
 
 (cl-user::set-up-profiler :packages '(cl-jack))
 (cl-user::profile (loop repeat 300 do (play-some-notes (+ 1/30 (random 0.1)) 12)))

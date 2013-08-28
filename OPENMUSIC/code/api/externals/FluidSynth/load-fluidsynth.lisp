@@ -7,13 +7,6 @@
 (defpackage :cl-fluidsynth (:use :common-lisp :cffi))
 (in-package :cl-fluidsynth)
 
-;;; LINK IN FLUIDSYNTH LIB:
-
-(define-foreign-library fluidsynth
-  (t (:default "libfluidsynth")))
-
-(use-foreign-library fluidsynth)
-
 ;;; swig-generated FFI-wrappers for {include}/fluidsynth.h,
 ;;; {include}/fluidsynth/*.h:
 
@@ -27,6 +20,6 @@
 ;;   (om::compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
 (dolist (file cl-fluidsynth-files)
-  (compile?-and-load file))
+  (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
 (provide :cl-fluidsynth)

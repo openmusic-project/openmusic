@@ -189,7 +189,7 @@ If <outpath> is not specified, a pop-up dialog will open and allow to choose a d
            (sdif::SdifFWriteGeneralHeader thefile)
            (write-types-table thefile (list! (types self)))
            (write-nvt-tables thefile (cons (default-om-NVT) (list! (NVTs self))))
-           (write-sid-table thefile (cons (default-om-NVT) (list! (SIDs self))))
+           (write-sid-table thefile (list! (SIDs self)))
            (sdif::SdifFWriteAllASCIIChunks thefile)
            (loop for item in (LFrames self) do
                  (save-sdif item thefile))

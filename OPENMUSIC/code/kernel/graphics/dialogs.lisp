@@ -266,7 +266,7 @@ C. Agon, G. Assayag, J. Bresson")
 
 (setf *credits-2* 
 "Contributions:
-E. Amiot, M. Andreatta, O. Delerue, K. Haddad, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, F. Voisin, ...
+E. Amiot, M. Andreatta, D. Bouche, O. Delerue, K. Haddad, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, A. Vinjar, F. Voisin, ...
 
 External code from: 
 Grame (Midishare / LibAudioStream interfaces), H. Taube (MidiShare bindings), C. T. Binghe (UDP), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML)
@@ -277,12 +277,11 @@ External Libraries:
         use LibSndFile (c) Erik de Castro Lopo
   Sound Description Interchange Format SDIF (c) Ircam
 
-Musical Expertise:
-J. Baboni, A. Bancquart, G. Bloch, J. Fineberg, K. Haddad, J.-L. Hervé, M. Lanza, P. Leroux, F. Lévy, G. Lorieux, C. Malherbe, M. Malt, Y. Maresz, T. Murail, P. Nauert, O. Sandred, K. Sprotte, M. Stroppa, H. Tutschku, ...    
-
 ArtWork: A. Mohsen
 ")
 
+; Musical Expertise:
+;J. Baboni, A. Bancquart, G. Bloch, J. Fineberg, K. Haddad, J.-L. Hervé, M. Lanza, P. Leroux, F. Lévy, G. Lorieux, C. Malherbe, M. Malt, Y. Maresz, T. Murail, P. Nauert, O. Sandred, K. Sprotte, M. Stroppa, H. Tutschku, ...    
 
 
 

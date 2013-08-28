@@ -149,20 +149,12 @@
   (sleep 0.1)
   )
 
-(jackplay-toggle-pause)
+;; (jackplay-toggle-pause)
 
-(setf *stop-reading* t)
-(setf *stop-reading* nil)
+;; (setf *stop-reading* t)
+;; (setf *stop-reading* nil)
 
 ;; process-callback, "non-interleaving", strait copy from ringbuffers - 1 pr. port :
-
-
-
-(mp::process-lock *rbresetlock*)
-(mp::process-unlock *rbresetlock*)
-
-
-(mp::ps)
 
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
   (declare (ignore arg))
@@ -221,15 +213,6 @@
 (jack-client-close *OMJackClient*)
 
 *jack-sndfile-handle*
-
-180000.d0
-0.d0
-
-(coerce 180000 'double-float)
-
-180000.0D0
-
-(sf::sf_seek *jack-sndfile-handle* (coerce 180000 'double-float) 0)
 
 (sys:run-shell-command "jack_lsp")
 

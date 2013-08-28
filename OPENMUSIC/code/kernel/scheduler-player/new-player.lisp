@@ -59,6 +59,10 @@
 ;;; SAYS ENGINE TO PREPARE FOR PLAYING <INTERVAL> (optional) IN <OBJ> WITH< ENGINE> AT TIME <at>
 (defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval)
   ;(print (list obj engine at))
+  (let ((engines-available (enabled-players-for-object obj)))
+    (unless (find engine engines-available)
+      (print (format nil "Warning: player engine ~s not available for ~A (will be played on ~s)." engine obj (car engines-available)))
+      (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
   (push (list engine obj) (play-list player))
   (prepare-to-play engine player obj at interval))
@@ -368,7 +372,7 @@
 (defmethod schedule-editor-contents ((self play-editor-mixin))
   (player-schedule (player self) 
                    (get-obj-to-play self)
-                   (get-player-engine self) 
+                   (get-player-engine self)
                    :at 0 
                    :interval (get-interval-to-play self)))
 
@@ -388,7 +392,7 @@
                   )))
       (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
       (schedule-editor-contents self)
-      (general-play (player self) 
+      (general-play (player self)
                     :start-t (or (car interval) 0)
                     :end-t (or (cadr interval) (get-obj-dur obj))))
     ))
@@ -561,8 +565,10 @@
       (if (> dest dur)
           (setf pixel (time-to-pixels self (- dur durview))))
       (scroll-play-view self (- pixel (get-key-space self)))
-      (om-invalidate-view self))
-    (om-update-movable-cursor self pixel y 4 h)))
+      ;(om-invalidate-view self)
+      )
+    (om-update-movable-cursor self pixel y 4 h)
+    ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
   (om-set-scroll-position self (om-make-point at-pixel 0)))

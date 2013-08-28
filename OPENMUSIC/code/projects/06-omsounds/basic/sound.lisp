@@ -1,4 +1,4 @@
-;OpenMusic
+					;OpenMusic
 ;
 ;Copyright (C) 1997, 1998, 1999, 2000 by IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
@@ -378,7 +378,7 @@ Press 'space' to play/stop the sound file.
 
 (defmethod get-frame-class ((self OMaiffFilebox)) 'boxsoundframe)
 
-(omg-defclass boxsoundframe (boxEditorFrame) ())
+(defclass boxsoundframe (boxEditorFrame) ())
 
 (defmethod om-get-menu-context ((self boxsoundframe))
   (append 

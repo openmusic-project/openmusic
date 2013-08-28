@@ -19,7 +19,7 @@
 
 (in-package :cl-fluidsynth)
 
-(fluid_version_str)
+
 
 ;; (om::om-shell "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
 
@@ -32,26 +32,35 @@
 
 (defvar *fluid-midi-driver-settings* nil)
 
-(unless *fluidsynth*
-  (progn
-    (setf *fluidsynth-settings* (new_fluid_settings))
-    (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
-    (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth")
-    (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
-    (setf *fluidplayer* (new_fluid_player *fluidsynth*))
-    (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
-    (fluid_synth_sfload *fluidsynth* *soundfont* 1)
-    (fluid_synth_set_gain *fluidsynth* 0.5)))
+(fluid_version_str)
 
-;; (fluid_settings_setint *fluidsynth-settings* "gain" 2)
+(defun fluid-synth-setup ()
+  (unless *fluidsynth*
+    (progn
+      (setf *fluidsynth-settings* (new_fluid_settings))
+      (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+      (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth")
+      (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
+      (setf *fluidplayer* (new_fluid_player *fluidsynth*))
+      (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
+      (fluid_synth_sfload *fluidsynth* *soundfont* 1)
+      (fluid_synth_set_gain *fluidsynth* 0.5)
+      (fluid_player_get_status *fluidplayer*))))
+
 
 ;;(fluid_player_get_status *fluidplayer*)
 
-(unless *fluid-midi-driver-settings*
-  (progn
-    (setf *fluid-midi-driver-settings* (new_fluid_settings))
-    (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
-    (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))
+(defun fluid-midi-setup ()
+  (unless *fluid-midi-driver-settings*
+    (progn
+      (setf *fluid-midi-driver-settings* (new_fluid_settings))
+      (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
+      (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth"))))
+
+;; TODO: plug into suitable init-code
+(eval-when (:load-toplevel)
+  (fluid-synth-setup)
+  (fluid-midi-setup))
 
 (defcallback cl-fluid-handle-midi-event :int
     ((data (:pointer :void))
@@ -142,12 +151,13 @@
     (fluid_sequencer_send_at sequencer ev time_marker 1)
     (delete_fluid_event ev)))
 
+
 (defun schedule-pattern (notes duration)
   (let* ((now time_marker)
 	 (siz (length notes))
 	 (note-duration (floor duration siz)))
     (loop for i from 0 below siz
-	 for note = (nth i notes)
+	 for note = (elt notes i)
 	 do
 	 (schedule-noteon 0 note now)
 	 (schedule-noteoff 0 note (+ now note-duration)))
@@ -170,12 +180,12 @@
 			     collect (+ 12 (random 100)))))
 
 (setf pattern_size (length notes))
-(setf *fluidsynth-settings* (new_fluid_settings))
+(setf settings (new_fluid_settings))
 
-(fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+(fluid_settings_setint settings "audio.jack.autoconnect" 1)
 
 (setf synth (new_fluid_synth settings))
-(setf audiodriver (new_fluid_audio_driver *fluidsynth-settings* synth))
+(setf audiodriver (new_fluid_audio_driver settings synth))
 (setf sequencer (new_fluid_sequencer))
 (setf synth_destination (fluid_sequencer_register_fluidsynth sequencer synth))
 (setf client_destination (fluid_sequencer_register_client
@@ -183,7 +193,7 @@
 			  "arpeggio" (callback sequencer-callback) nil))
 (setf n (fluid_synth_sfload synth "/usr/share/soundfonts/FluidR3_GM.sf2" 1))
 (setf time_marker (fluid_sequencer_get_tick sequencer))
-(schedule-pattern )
+(schedule-pattern notes duration)
 (schedule-timer-event)
 (schedule-pattern)
 
@@ -193,5 +203,5 @@
   (delete_fluid_synth synth)
   (delete_fluid_sequencer sequencer)
   (delete_fluid_audio_driver audiodriver)
-  (delete_fluid_settings *fluidsynth-settings*))
+  (delete_fluid_settings settings))
 |#
