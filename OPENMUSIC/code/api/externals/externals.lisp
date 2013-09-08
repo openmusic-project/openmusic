@@ -205,11 +205,12 @@
 
 (defparameter *externals-directory* (pathname-directory *load-pathname*))
 
+(load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
+(load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-cffi"))
+  
+
 (defun load-external-libs (&optional libs)
   
-  (load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-cffi"))
-  (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
-
   (loop for lib in libs do
         (unless (member lib (list :midi :audio :opengl :sdif :osc :xml))
           (print (format nil "Library ~s can not be loaded" lib))))
@@ -226,12 +227,12 @@
   (if (member :sdif libs)
       (load (make-pathname :directory (append *externals-directory* '("SDIF")) :name "load-sdif"))
     )
-  (when (member :udp libs)
+  (when (find :udp libs)
       (load (make-pathname :directory (append *externals-directory* '("lispworks-udp")) :name "lispworks-udp.asd"))
       (asdf:operate 'asdf:load-op 'lispworks-udp)
       )
-  (if (member :osc libs)
-      (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "load-osc.lisp"))
+  (if (and (find :udp libs) (find :osc libs))
+      (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "om-osc.lisp"))
     (osc-prototypes))
   (if (member :xml libs)
         (load (make-pathname :directory (append *externals-directory* '("XML")) :name "load-xml")))

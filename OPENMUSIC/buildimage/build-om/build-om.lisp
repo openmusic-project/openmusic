@@ -11,8 +11,8 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.070000)
-(defparameter *beta-release* nil)
+(defparameter *version* 6.070001)
+(defparameter *beta-release* t)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
@@ -205,7 +205,10 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
-(oa::load-om-libs '(:midi :audio :xml :sdif :osc :opengl :json :yason))
+(load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "externals"))
+                     :name "externals" :type "lisp"))
+
+(oa::load-external-libs '(:midi :audio :xml :sdif :udp :osc :opengl :json :yason))
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"

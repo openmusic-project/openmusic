@@ -93,6 +93,7 @@
   (cat (map 'vector #'char-code address) 
        (string-padding address)))
 
+
 (defun encode-typetags (data)
   "creates a typetag string suitable for the given data.
   valid typetags according to the osc spec are ,i ,f ,s and ,b
@@ -120,40 +121,9 @@
           (symbol (write-to-vector #\s))  ;;; JBJMC201309
 	  (t (write-to-vector #\b)))))
     (cat lump
-         (pad (padding-length (length lump))))))     
-
-
-(defun encode-typetags (data)
-  "creates a typetag string suitable for the given data.
-  valid typetags according to the osc spec are ,i ,f ,s and ,b
-  non-std extensions include ,{h|t|d|S|c|r|m|T|F|N|I|[|]}
-                             see the spec for more details. ..
-
-  NOTE: currently handles the following tags 
-   i => #(105) => int32
-   f => #(102) => float
-   s => #(115) => string 
-   b => #(98)  => blob
-  and considers non int/float/string data to be a blob." 
-
-  (let ((lump (make-array 0 :adjustable t 
-			  :fill-pointer t)))
-    (macrolet ((write-to-vector (char)
-                 `(vector-push-extend
-                   (char-code ,char) lump)))
-      (write-to-vector #\,)
-      (dolist (x data) 
-        (typecase x
-          (integer (write-to-vector #\i))
-          (float (write-to-vector #\f))
-          (simple-string (write-to-vector #\s))
-          (symbol (write-to-vector #\s))
-	  (t (write-to-vector #\b)))))
-    (cat lump
          (pad (padding-length (length lump))))))
 
-
-		  
+     		  
 (defun encode-data (data)
   "encodes data in a format suitable for an OSC message"
   (let ((lump (make-array 0 :adjustable t :fill-pointer t)))
@@ -167,23 +137,6 @@
           (symbol (setf lump (cat lump (encode-string (force-string x)))))   ;;; JBJMC201309
 	  (t (enc encode-blob))))
       lump)))
-
-
-(defun encode-data (data)
-  "encodes data in a format suitable for an OSC message"
-  (let ((lump (make-array 0 :adjustable t :fill-pointer t)))
-    (macrolet ((enc (f)
-                 `(setf lump (cat lump (,f x)))))
-      (dolist (x data) 
-        (typecase x
-          (integer (enc encode-int32)) 
-          (float (enc encode-float32)) 
-          (simple-string (enc encode-string))
-          ;;; new
-          (symbol (setf lump (cat lump (encode-string (force-string x)))))
-	  (t (enc encode-blob))))
-      lump)))
-
                 
 ;;;;;; ;    ;;    ;     ; ;     ; ; ;         ;
 ;; 

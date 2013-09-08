@@ -183,9 +183,7 @@ Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)" :icon 181
  
 ;--------------OMIF-------------------------
 
-(defclass OMboxif (OMBoxcall) ()
-   (:documentation "This is the class for the method exception box OMIF.#enddoc#
-#seealso# (OMBoxcall) #seealso#"))
+(defclass OMboxif (OMBoxcall) ())
 
 (defmethod get-boxcallclass-fun ((self (eql 'omif))) 'OMBoxif)
 
