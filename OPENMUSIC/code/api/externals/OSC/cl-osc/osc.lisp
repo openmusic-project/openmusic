@@ -188,6 +188,7 @@
 	       (delete 0 address))
 	  'string))
 
+;;; 
 (defun decode-taged-data (data)
   "decodes data encoded with typetags...
   NOTE: currently handles the following tags 
@@ -211,6 +212,16 @@
 		 (push (decode-float32 (subseq acc 0 4)) 
 		       result)
 		 (setf acc (subseq acc 4)))
+                ;;; NEW
+                ((eq x (char-code #\d))
+		 (push (ieee-floats::decode-float64 (decode-uint64 (subseq acc 0 8)))
+		       result)
+		 (setf acc (subseq acc 8)))
+                ((eq x (char-code #\t))
+		 (push (decode-uint64 (subseq acc 0 8))
+		       result)
+		 (setf acc (subseq acc 8)))
+                ;;; ===
 		((eq x (char-code #\s))
 		 (let ((pointer (padded-length (position 0 acc))))
 		   (push (decode-string 
@@ -373,8 +384,6 @@
                        (expt 0.5 23))))
          (* sign (kludge-opaque-expt 2.0 expt) mant)))))
 
-
-
 (defun encode-float32 (f)
   "encode an ieee754 float as a 4 byte vector. currently sbcl/cmucl specifc"
   #+sbcl (encode-int32 (sb-kernel:single-float-bits f))
@@ -411,6 +420,18 @@
 	      (ash (elt s 1) 16)
 	      (ash (elt s 2) 8)
 	      (elt s 3))))
+    i))
+
+(defun decode-uint64 (s)
+  "4 byte -> 32 bit unsigned int"
+  (let ((i (+ (ash (elt s 0) 56)
+	      (ash (elt s 1) 48)
+	      (ash (elt s 2) 40)
+	      (ash (elt s 3) 32)
+	      (ash (elt s 4) 24)
+	      (ash (elt s 5) 16)
+	      (ash (elt s 6) 8)
+	      (elt s 7))))
     i))
 
 (defun encode-int32 (i)

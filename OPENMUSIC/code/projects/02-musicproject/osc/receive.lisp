@@ -63,7 +63,7 @@ This patch should handle and process the incoming messages.
 ;;; oSC features
 ;;;========================================
 
-(defun osc-start-receive (box)
+(defmethod osc-start-receive ((box ReceiveBox))
   (when (etat box) (osc-stop-receive box))
   (let ((port (omng-box-value (car (inputs box)))))
     (if (and port (numberp port))
