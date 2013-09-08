@@ -1,7 +1,6 @@
 ;;===========================================================================
 ;OM API 
 ;Multiplatform API for OpenMusic
-;Macintosh version (Digitool Macintosh Common Lisp - MCL)
 ;
 ;Copyright (C) 2004 IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
