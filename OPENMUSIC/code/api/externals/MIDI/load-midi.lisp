@@ -43,8 +43,16 @@
 #-cffi-new (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
 #+cffi-new (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-new-cffi"))
 #-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
-(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))
- 
+#-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))
+
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-types"))
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI" "midi-20070618")) :name "midi")) 
+
+#+linux (progn
+	  (defun load-cl-midi-api ()
+	    (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-api-cl")))
+	  (om-add-init-func 'load-cl-midi-api))
+
 (push :om-midi-api *features*)
 
 *features*
