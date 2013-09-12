@@ -51,7 +51,7 @@
 (defvar *fluidplayer-synth* cl-fluidsynth::*fluidsynth*)
 
 (defun play-note (note)
-  (let ((chan (chan note))
+  (let ((chan (1- (chan note)))		;chans = 1-16
 	(key (floor (midic note) 100))
 	(dur (/ (dur note) 1000))
 	(vel (vel note))
