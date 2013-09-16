@@ -76,9 +76,9 @@
 			     (callback cl-fluid-handle-midi-event)
 			     (null-pointer))))
 
-(cl-jack::jack-connect cl-jack::*CLJackClient*
-		       (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
-		       "OM_fluidsynth:midi")
+#+cl-jack (cl-jack::jack-connect cl-jack::*CLJackClient*
+				 (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+				 "OM_fluidsynth:midi")
 
 
 
@@ -106,10 +106,13 @@
 
 ;; play midi-file from file:
 
-(fluid_player_add *fluidplayer* "/home/andersvi/prosjekter/GESTURES/vib-enkel/marimba-test.midi")
-(fluid_player_play *fluidplayer*)
-(fluid_player_stop *fluidplayer*)
 
+
+(fluid_player_add *fluidplayer* "/home/andersvi/test.midi")
+(fluid_player_play *fluidplayer*)
+(fluid_player_get_status *fluidplayer*)
+(fluid_player_stop *fluidplayer*)
+(delete_fluid_player *fluidplayer*)
 
 (progn
   (delete_fluid_audio_driver *fluidadriver*)
@@ -124,7 +127,7 @@
    for note = (+ 20 (random 70))
    do
      (fluid_synth_noteon *fluidsynth* 0 note 100)
-     (sleep 1/16)
+     (sleep 1/64)
      (fluid_synth_noteoff *fluidsynth* 0 note))
 
 ;; arpeggio example

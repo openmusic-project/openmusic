@@ -50,20 +50,20 @@
       (list pid io))))
 
 
-(defun fluidsynth-start-and-connect ()
-  (unless *fluidsynth-pid*
-    (fluidsynth-launch))
-  (mp:process-run-function "waiting-to-start-fluidsynth" nil
-			   #'(lambda ()
-			       (mp:process-wait "getting fluidsynth running first"
-						#'(lambda ()
-						    (and cl-jack::*ClJackClient*
-							 (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
-							 *fluidsynth-pid*)))
-			       (sleep 1.0)
-			       (cl-jack::jack-connect cl-jack::*ClJackClient*
-					     (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
-					     "fluidsynth:midi"))))
+#+cl-jack (defun fluidsynth-start-and-connect ()
+	    (unless *fluidsynth-pid*
+	      (fluidsynth-launch))
+	    (mp:process-run-function "waiting-to-start-fluidsynth" nil
+				     #'(lambda ()
+					 (mp:process-wait "getting fluidsynth running first"
+							  #'(lambda ()
+							      (and cl-jack::*ClJackClient*
+								   (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+								   *fluidsynth-pid*)))
+					 (sleep 1.0)
+					 (cl-jack::jack-connect cl-jack::*ClJackClient*
+								(cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+								"fluidsynth:midi"))))
 
 (defun fluidsynth-quit ()
   (when (and (open-stream-p *fluidynth-io*) *fluidsynth-pid*)
