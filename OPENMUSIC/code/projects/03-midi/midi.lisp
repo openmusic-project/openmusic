@@ -37,6 +37,8 @@
         "classes;continuousctrl"       
         "tools;midiconversions"    
         "classes;midicontroller"       
+	#+linux "player;jack-midi-player"        
+	#+linux "player;fluid-player"
         "player;midiplayer"
         "tools;midi-preferences"
         "midipackages"  
@@ -48,11 +50,5 @@
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
         *midi-files*))
 
-   
 (push :midi-project *features*)
      
-
-     
- 
-     
-  

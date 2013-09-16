@@ -337,7 +337,7 @@
   (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
 
   (loop for lib in libs do
-        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml))
+        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   (if (member :midi libs)
@@ -368,7 +368,7 @@
         (load (make-pathname :directory (append *externals-directory* (list "Yason")) :name "parse")))
     )
   (if (member :jack libs)
-      (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load.lisp"))
+      (load (make-pathname :directory (append *externals-directory* (list "JACK")) :name "cl-jack-load"))
     )
   (if (member :fluidsynth libs)
       (load (make-pathname :directory (append *externals-directory* (list "FluidSynth")) :name "load-fluidsynth.lisp"))

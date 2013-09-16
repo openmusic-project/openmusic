@@ -110,8 +110,6 @@
         "editor;musicpreferences"
         "players;select-players"  
         #-linux "players;ms-players"  
-	#+linux "players;jack-midi-player"        
-	#+linux "players;fluid-player"        
         "music-package"  
         ))
 

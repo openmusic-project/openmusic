@@ -28,14 +28,13 @@
 ;;===========================================================================
 
 ;;; this file - midi-api-cl.lisp - is meant as a replacement off all
-;;; midishare-dependencies in midi-api.lisp.
-;;; Everything below named 'om-midi-*' is part of the main OM api.
+;;; midishare-dependencies in midi-api.lisp.  Everything below named
+;;; 'om-midi-*' seems to be part of the main OM api.
 
-(setf om::*midiplayer* t)
 
 (in-package :oa)
 
-;; a general event class, meant to hold all kinds of midi-messages:
+;; a general event class, modelled after some struct in ms:
 
 (defclass cl-midievent ()
   ((type :accessor event-type :initarg :type)
@@ -52,7 +51,6 @@
    (tempo :accessor event-tempo :initarg :event-tempo)
    (text :accessor event-text :initarg :event-text)
    (link :accessor event-link :initarg :event-link :initform nil)))
-
 
 (defmethod update-instance-for-different-class :before ((msg midi::message) (ev cl-midievent) &key)
   (setf (event-date ev) (midi::message-time msg)))
@@ -124,8 +122,8 @@
 
 ;=== Converts an event name symbol to MS event type format
 ;=== eg: KeyOn --> typeKeyOn
-;; (defun om-midi-symb2mtype (sym)
-;;   (eval (intern (concatenate 'string "TYPE" (STRING sym)) :midishare)))
+(defun om-midi-symb2mtype (sym)
+  (eval (intern (concatenate 'string "TYPE" (STRING sym)) :midishare)))
 
 (defun om-midi-new-event-safe (type)
   (make-instance 'cl-midievent :type type))
@@ -237,7 +235,7 @@
   (loop for this in events
        for next in (cdr events)
        collect (progn (setf (event-link this) next) this) into bag
-       finally (return (nconc bag next))))
+       finally (return (nconc bag (list next))))) 
 
 (defun tracks2seq (tracks)
   (mapcan #'events2seq (mapcar #'messages2events tracks)))
