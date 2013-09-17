@@ -52,11 +52,18 @@
    (text :accessor event-text :initarg :event-text)
    (link :accessor event-link :initarg :event-link :initform nil)))
 
+;;; metaclasses
+
 (defmethod update-instance-for-different-class :before ((msg midi::message) (ev cl-midievent) &key)
   (setf (event-date ev) (midi::message-time msg)))
 
 (defmethod update-instance-for-different-class :before ((msg midi::channel-message) (ev cl-midievent) &key)
   (setf (event-chan ev) (midi::message-channel msg)))
+
+(defmethod update-instance-for-different-class :before ((msg midi::text-message) (ev cl-midievent) &key)
+  (setf (event-text ev) (slot-value msg 'midi::text)))
+
+;;; classes
 
 (defmethod update-instance-for-different-class :before ((msg midi::tempo-message) (ev cl-midievent) &key)
   (setf (event-type ev) (om-midi-get-num-from-type "Tempo"))
@@ -69,7 +76,37 @@
 
 (defmethod update-instance-for-different-class :before ((msg midi::note-off-message) (ev cl-midievent) &key)
   (setf (event-type ev) (om-midi-get-num-from-type "keyOff"))
-  (setf (event-pitch ev) (midi::message-key msg)))
+  (setf (event-pitch ev) (midi::message-key msg))
+  (setf (event-velocity ev) (midi::message-velocity msg)))
+
+(defmethod update-instance-for-different-class :before ((msg midi::general-text-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "Textual")))
+
+(defmethod update-instance-for-different-class :before ((msg midi::time-signature-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "TimeSign"))
+  ;; (setf (event-fields ev)
+  ;; 	(let ((nn (midi::message-numerator msg))
+  ;; 	      (dd (midi::message-denominator msg))
+  ;; 	      (cc (slot-value msg 'midi::cc))
+  ;; 	      (bb (slot-value msg 'midi::bb)))
+  ;; 	  (list nn dd cc bb)))
+  )
+
+(defmethod update-instance-for-different-class :before ((msg midi::sequence/track-name-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "SeqName")))
+
+(defmethod update-instance-for-different-class :before ((msg midi::program-change-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "ProgChange"))
+  (setf (event-fields ev) (list (midi::message-program msg))))
+
+(defmethod update-instance-for-different-class :before ((msg midi::instrument-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "InstrName")))
+
+(defmethod update-instance-for-different-class :before ((msg midi::control-change-message) (ev cl-midievent) &key)
+  (setf (event-type ev) (om-midi-get-num-from-type "CtrlChange"))
+  (setf (event-fields ev) (list (slot-value msg 'midi::controller)
+				(slot-value msg 'midi::value))))
+
 
 (defun om-midi-evt-get (event slot)
   (case slot
@@ -192,53 +229,64 @@
 
 (defun om-midi-new-seq () (make-midi-seq))
 
-(defun om-midi-free-seq (seq)
-  (setf seq nil))
+(defun om-midi-free-seq (seq) (setf seq nil))
 
-(defun om-midi-seq-first-evt (seq)
-  (car (midi-seq-events seq)))
+(defun om-midi-seq-first-evt (seq) (car (midi-seq-events seq)))
 
-(defun om-midi-next-evt (evt)
-  (event-link evt))
+(defun om-midi-next-evt (evt) (event-link evt))
 
 ;; takes instances of the various midi:*message classes, returning
 ;; a 'cl-midievent:
 
 (defun make-note-list () (make-hash-table :test 'equal))
 
-(defun make-event-from-message (msg note-list)
-  (typecase msg
-    (midi::note-on-message (let ((key (midi::message-key msg))
-				 (channel (midi::message-channel msg)))
-			     ;;push data to table and return nil (for collectors...):
-			     (setf (gethash (list key channel) note-list) msg)
-			     nil))	
-    (midi::note-off-message (let ((key (midi::message-key msg))
-				  (channel (midi::message-channel msg))
-				  startevt)
-			      (when (setf startevt (gethash (list key channel) note-list))
-				(remhash (list key channel) note-list)
-				(let ((duration (- (midi::message-time msg) (midi::message-time startevt))))
-				  (change-class startevt 'cl-midievent)
-				  (setf (event-dur startevt) duration)
-				  startevt))))
+(defun event-is-on-off-or... (msg)
+  (cond ((or (typep msg 'midi::note-off-message)
+	     (and (typep msg 'midi::note-on-message) (zerop (midi::message-velocity msg))))
+	 'off)
+	((typep msg 'midi::note-on-message) 'on)
+	(t t)))
+
+(defun make-event-from-message (msg ref note-list)
+  (case (event-is-on-off-or... msg)
+    ('off (let* ((key (midi::message-key msg))
+		 (channel (midi::message-channel msg))
+		 (startevt (gethash (list key channel) note-list)))
+	    (when startevt
+	      (remhash (list key channel) note-list)
+	      (let ((duration (- (midi::message-time msg) (midi::message-time startevt))))
+		(change-class startevt 'cl-midievent)
+		(setf (event-dur startevt) duration)
+		(setf (event-ref startevt) ref)
+		startevt))))
+    ('on (let ((key (midi::message-key msg))
+	       (channel (midi::message-channel msg)))
+	   ;;push data to table and return nil (for collectors...):
+	   (setf (gethash (list key channel) note-list) msg)
+	   nil))
     (t (change-class msg 'cl-midievent))))
 
-(defun messages2events (trk)
+(defun messages2events (trk ref)
   (let ((note-list (make-note-list)))
     (loop for message in trk
-       for event = (make-event-from-message message note-list)
+       for event = (make-event-from-message message ref note-list)
        when event collect event)))
 
-;;; run through seq 'linking' events:
-(defun events2seq (events)		
+;;; run through whole seq 'linking' events:
+(defun linkevents (events)		
   (loop for this in events
        for next in (cdr events)
        collect (progn (setf (event-link this) next) this) into bag
-       finally (return (nconc bag (list next))))) 
+       finally (return (nconc bag (list next)))))
+
+;; (defun tracks2seq (tracks)
+;;   (mapcar #'linkevents (apply #'append (mapcar #'messages2events tracks))))
 
 (defun tracks2seq (tracks)
-  (mapcan #'events2seq (mapcar #'messages2events tracks)))
+  (linkevents
+   (loop for ref from 0
+      for track in tracks
+      append (messages2events track ref))))
 
 (defun om-midi-load-file (pathname sequence)
   (let ((f (midi::read-midi-file pathname))

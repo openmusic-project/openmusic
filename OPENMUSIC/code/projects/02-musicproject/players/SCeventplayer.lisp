@@ -99,6 +99,7 @@
     (progn
       (setf *sc-cmd-line* (format nil "~a ~a" sc-player-path sc-setup-file)))))
 
+
 (defun launch-scplayer-app ()
   (unless *sc-player-pid*
     (when (and (streamp *sc-player-io*) (open-stream-p *sc-player-io*)) (close *sc-player-io*))
@@ -116,28 +117,17 @@
 ;; (launch-scplayer-app)
 
 
-(defun enable-sceventplayer ()
-  (let* ((curlist (players-for-object (make-instance 'simple-score-element)))
-	 (newlist (pushnew :sceventplayer curlist)))
-    (defmethod players-for-object ((self simple-score-element)) newlist)
-    )
-  (enable-player :sceventplayer)
-  (pushnew :sceventplayer *enabled-players*))
 
 (defun sc-init-app ()
   (init-scplayer-app)
   (launch-scplayer-app)
   (sc-read-port-from-file)
-  (enable-sceventplayer))
+  (enable-sceventplayer)
+  (add-player-for-object simple-score-element :sceventplayer))
 
 (om-add-init-func 'sc-init-app)
 
-
-;; (sc-read-port-from-file)
-
 ;;(setf *om-udp-max-buf-size* 500)
-
-
 
 (defun stop-and-cleanup-scplayer-app ()
   (progn

@@ -10,5 +10,6 @@
 (dolist (file cl-jack-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
+(pushnew :cl-jack *features*)
 (provide :cl-jack)
 
