@@ -28,9 +28,13 @@
 ;;===========================================================================
 
 ;;; this file - midi-api-cl.lisp - is meant as a replacement off all
-;;; midishare-dependencies in midi-api.lisp.  Everything below named
+;;; midishare-dependencies in midi-api.lisp, while staying compatible
+;;; with all the various ms:: specialities.  Everything below named
 ;;; 'om-midi-*' seems to be part of the main OM api.
-
+;;;
+;;; TODO: get rid of ms:: thinking everywhere where live-streams arent
+;;; wanted - ie smf read/write, message-crunching..  Substitute
+;;; everything live/rt with ALSA-based api.
 
 (in-package :oa)
 
@@ -249,21 +253,21 @@
 
 (defun make-event-from-message (msg ref note-list)
   (case (event-is-on-off-or... msg)
-    ('off (let* ((key (midi::message-key msg))
-		 (channel (midi::message-channel msg))
-		 (startevt (gethash (list key channel) note-list)))
-	    (when startevt
-	      (remhash (list key channel) note-list)
-	      (let ((duration (- (midi::message-time msg) (midi::message-time startevt))))
-		(change-class startevt 'cl-midievent)
-		(setf (event-dur startevt) duration)
-		(setf (event-ref startevt) ref)
-		startevt))))
-    ('on (let ((key (midi::message-key msg))
-	       (channel (midi::message-channel msg)))
-	   ;;push data to table and return nil (for collectors...):
-	   (setf (gethash (list key channel) note-list) msg)
-	   nil))
+    (off (let* ((key (midi::message-key msg))
+		(channel (midi::message-channel msg))
+		(startevt (gethash (list key channel) note-list)))
+	   (when startevt
+	     (remhash (list key channel) note-list)
+	     (let ((duration (- (midi::message-time msg) (midi::message-time startevt))))
+	       (change-class startevt 'cl-midievent)
+	       (setf (event-dur startevt) duration)
+	       (setf (event-ref startevt) ref)
+	       startevt))))
+    (on (let ((key (midi::message-key msg))
+	      (channel (midi::message-channel msg)))
+	  ;;push data to table and return nil (for collectors...):
+	  (setf (gethash (list key channel) note-list) msg)
+	  nil))
     (t (change-class msg 'cl-midievent))))
 
 (defun messages2events (trk ref)
@@ -282,11 +286,18 @@
 ;; (defun tracks2seq (tracks)
 ;;   (mapcar #'linkevents (apply #'append (mapcar #'messages2events tracks))))
 
+(defun sort-events-< (a b)
+  (cond ((< (event-date a) (event-date b)) t)
+	((= (event-date a) (event-date b)) 
+	 (> (event-type a) (event-type b))) ;send meta-messages first 
+	(t nil)))
+
 (defun tracks2seq (tracks)
   (linkevents
-   (loop for ref from 0
-      for track in tracks
-      append (messages2events track ref))))
+   (sort (loop for ref from 0
+	    for track in tracks
+	    append (messages2events track ref))
+	 #'sort-events-<)))
 
 (defun om-midi-load-file (pathname sequence)
   (let ((f (midi::read-midi-file pathname))
@@ -311,8 +322,6 @@
 	     (om-midi-seq-add-evt newseq newevent))
 	   (setf event (om-midi-next-evt event))))
     newseq))
-
-
 
 ;;;
 ;;; OUTPUT - building useful midi-messages, writing SMF's:

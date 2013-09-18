@@ -11,15 +11,9 @@
 ;;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;GNU Lesser General Public License for more details.
 ;;  
-;;You should have received a copy of the GNU Lesser General Public License
-;;along with this program; if not, write to the Free Software 
-;;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;
 ;;Author: Anders Vinjar
 
 (in-package :cl-fluidsynth)
-
-
 
 ;; (om::om-shell "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
 
@@ -47,6 +41,19 @@
       (fluid_synth_set_gain *fluidsynth* 0.5)
       (fluid_player_get_status *fluidplayer*))))
 
+
+(defun fluid-synth-cleanup ()
+  (progn
+    (delete_fluid_audio_driver *fluidadriver*)
+    (delete_fluid_player *fluidplayer*)
+    (delete_fluid_synth *fluidsynth*)
+    (delete_fluid_settings *fluidsynth-settings*)
+    (setf *fluidsynth* nil)))
+
+(defun fluid-synth-restart ()
+  (progn
+    (fluid-synth-cleanup)
+    (fluid-synth-setup)))
 
 ;;(fluid_player_get_status *fluidplayer*)
 
@@ -106,13 +113,12 @@
 
 ;; play midi-file from file:
 
-
-
-(fluid_player_add *fluidplayer* "/home/andersvi/test.midi")
-(fluid_player_play *fluidplayer*)
-(fluid_player_get_status *fluidplayer*)
-(fluid_player_stop *fluidplayer*)
-(delete_fluid_player *fluidplayer*)
+(setf percplayer (new_fluid_player *fluidsynth*))
+(fluid_player_add percplayer "/home/andersvi/test.midi")
+(fluid_player_play percplayer)
+(fluid_player_get_status percplayer)
+(fluid_player_stop percplayer)
+(delete_fluid_player percplayer)
 
 (progn
   (delete_fluid_audio_driver *fluidadriver*)
