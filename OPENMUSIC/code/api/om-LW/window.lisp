@@ -173,7 +173,7 @@
 (defmethod om-resize-callback ((self om-abstract-window) x y w h)
   (unless (and (= w (vw self)) (= h (vh self)))
    (om-window-resized self (om-make-point w h)))
-  (call-next-method))
+  #-linux (call-next-method))
 
 (defmethod om-window-resized ((self om-abstract-window) size)
   (declare (ignore self size))
