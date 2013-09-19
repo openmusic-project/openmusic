@@ -38,125 +38,11 @@
 
 (in-package :oa)
 
-;; a general event class, modelled after some struct in ms:
-
-(defclass cl-midievent ()
-  ((type :accessor event-type :initarg :type)
-   (date :accessor event-date :initarg :event-date)
-   (ref :accessor event-ref :initarg :event-ref :initform 0)
-   (port :accessor event-port :initarg :event-port)
-   (chan :accessor event-chan :initarg :event-chan)
-   (fields :accessor event-fields :initarg :event-fields)
-   (dur :accessor event-dur :initarg :event-dur)
-   (pitch :accessor event-pitch :initarg :event-pitch)
-   (velocity :accessor event-velocity :initarg :event-velocity)
-   (keypress :accessor event-keypress :initarg :event-keypress)
-   (bend :accessor event-bend :initarg :event-bend)
-   (tempo :accessor event-tempo :initarg :event-tempo)
-   (text :accessor event-text :initarg :event-text)
-   (link :accessor event-link :initarg :event-link :initform nil)))
-
-;;; metaclasses
-
-(defmethod update-instance-for-different-class :before ((msg midi::message) (ev cl-midievent) &key)
-  (setf (event-date ev) (midi::message-time msg)))
-
-(defmethod update-instance-for-different-class :before ((msg midi::channel-message) (ev cl-midievent) &key)
-  (setf (event-chan ev) (midi::message-channel msg)))
-
-(defmethod update-instance-for-different-class :before ((msg midi::text-message) (ev cl-midievent) &key)
-  (setf (event-text ev) (slot-value msg 'midi::text)))
-
-;;; classes
-
-(defmethod update-instance-for-different-class :before ((msg midi::tempo-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "Tempo"))
-  (setf (event-tempo ev) (midi::message-tempo msg)))
-
-(defmethod update-instance-for-different-class :before ((msg midi::note-on-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "Note"))
-  (setf (event-pitch ev) (midi::message-key msg))
-  (setf (event-velocity ev) (midi::message-velocity msg)))
-
-(defmethod update-instance-for-different-class :before ((msg midi::note-off-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "keyOff"))
-  (setf (event-pitch ev) (midi::message-key msg))
-  (setf (event-velocity ev) (midi::message-velocity msg)))
-
-(defmethod update-instance-for-different-class :before ((msg midi::general-text-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "Textual")))
-
-(defmethod update-instance-for-different-class :before ((msg midi::time-signature-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "TimeSign"))
-  ;; (setf (event-fields ev)
-  ;; 	(let ((nn (midi::message-numerator msg))
-  ;; 	      (dd (midi::message-denominator msg))
-  ;; 	      (cc (slot-value msg 'midi::cc))
-  ;; 	      (bb (slot-value msg 'midi::bb)))
-  ;; 	  (list nn dd cc bb)))
-  )
-
-(defmethod update-instance-for-different-class :before ((msg midi::sequence/track-name-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "SeqName")))
-
-(defmethod update-instance-for-different-class :before ((msg midi::program-change-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "ProgChange"))
-  (setf (event-fields ev) (list (midi::message-program msg))))
-
-(defmethod update-instance-for-different-class :before ((msg midi::instrument-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "InstrName")))
-
-(defmethod update-instance-for-different-class :before ((msg midi::control-change-message) (ev cl-midievent) &key)
-  (setf (event-type ev) (om-midi-get-num-from-type "CtrlChange"))
-  (setf (event-fields ev) (list (slot-value msg 'midi::controller)
-				(slot-value msg 'midi::value))))
-
-
-(defun om-midi-evt-get (event slot)
-  (case slot
-    (:type (event-type event))
-    (:date (event-date event))
-    (:ref (event-ref event))
-    (:port (event-port event))
-    (:chan (event-chan event))
-    (:fields (event-fields event))
-    (:dur (event-dur event))
-    (:pitch (event-pitch event))
-    (:vel (event-velocity event))
-    (:kpress (event-keypress event))
-    (:bend (event-bend event))
-    (:tempo (event-tempo event))
-    (:text (event-text event))
-    (:link (event-link event))))
-
-(defun om-midi-evt-set (evt &key dur date port ref chan pgm param kpress bend tempo ctrlchange vals bytes field text)
-  (when dur (setf (event-dur evt) dur))
-  (when date (setf (event-date evt) date))
-  (when port (setf (event-port evt) port))
-  (when chan (setf (event-chan evt) chan))
-  (when ref (setf (event-ref evt) ref))
-  (when pgm (setf (event-pgm evt) pgm))
-  (when param (setf (event-param evt) param))
-  (when kpress (setf (event-keypress evt) kpress))
-  (when bend (setf (event-bend evt) bend))
-  (when tempo (setf (event-tempo evt) tempo))
-  (when text (setf (event-text evt) text))
-  (when ctrlchange
-    (setf (event-ctrl evt) (car ctrlchange))
-    (setf (event-val evt) (cadr ctrlchange)))
-  (when bytes (dolist (byte (if (consp bytes) bytes (list bytes)))
-                (setf (event-midiaddfield evt) byte)))
-  (when vals
-    (if (listp vals)
-        (loop for v in vals
-	   for i = 0 then (+ i 1)
-	   do (setf (event-fields evt) (list i v)))
-	(setf (event-fields evt) (list 0 vals))))
-  (when field (setf (event-fields evt) (list (car field) (cadr field)))))
-
 ;;;==============================
 ;;; MIDI UTILS
 ;;;==============================
+
+;; types (replacements for ms::..) defined in "./midi-types.lisp"
 
 (defun om-midi-get-num-from-type (typestr)
   (eval (read-from-string (concatenate 'string "ml::type" typestr))))
@@ -167,7 +53,7 @@
   (eval (intern (concatenate 'string "TYPE" (STRING sym)) :midishare)))
 
 (defun om-midi-new-event-safe (type)
-  (make-instance 'cl-midievent :type type))
+  (make-instance 'midimsg2evt :type type))
 
 (defun om-midi-new-evt (type &key port ref chan date vals pgm pitch kpress dur ctrlchange bend param tempo bytes)
   (let ((event (om-midi-new-event-safe type)))
@@ -212,7 +98,7 @@
               (slot-value event slot))))
     new))
 
-;;; a structure to manage instances of cl-midievent's
+;;; a structure to manage instances of midimsg2evt's
 
 (defstruct midi-seq (events))
 
@@ -235,40 +121,87 @@
 
 (defun om-midi-free-seq (seq) (setf seq nil))
 
-(defun om-midi-seq-first-evt (seq) (car (midi-seq-events seq)))
+(defun om-midi-seq-first-evt (seq)
+  (let ((events (midi-seq-events seq)))
+    (loop for event in events
+       until (event-link event)
+       finally (return event))))
 
 (defun om-midi-next-evt (evt) (event-link evt))
 
+(defun om-midi-evt-get (event slot)
+  (case slot
+    (:type (event-type event))
+    (:date (event-date event))
+    (:ref (event-ref event))
+    (:port (event-port event))
+    (:chan (event-chan event))
+    (:fields (event-fields event))
+    (:dur (event-dur event))
+    (:pitch (event-pitch event))
+    (:vel (event-velocity event))
+    (:kpress (event-keypress event))
+    (:bend (event-bend event))
+    (:tempo (event-tempo event))
+    (:text (event-text event))
+    (:link (event-link event))))
+
+(defun om-midi-evt-set (evt &key dur date port ref chan pgm param kpress bend tempo ctrlchange vals bytes field text)
+  (when dur (setf (event-dur evt) dur))
+  (when date (setf (event-date evt) date))
+  (when port (setf (event-port evt) port))
+  (when chan (setf (event-chan evt) chan))
+  (when ref (setf (event-ref evt) ref))
+  (when pgm (setf (event-pgm evt) pgm))
+  (when param (setf (event-param evt) param))
+  (when kpress (setf (event-keypress evt) kpress))
+  (when bend (setf (event-bend evt) bend))
+  (when tempo (setf (event-tempo evt) tempo))
+  (when text (setf (event-text evt) text))
+  (when ctrlchange
+    (setf (event-ctrl evt) (car ctrlchange))
+    (setf (event-val evt) (cadr ctrlchange)))
+  (when bytes (dolist (byte (if (consp bytes) bytes (list bytes)))
+                (setf (event-midiaddfield evt) byte)))
+  (when vals
+    (if (listp vals)
+        (loop for v in vals
+	   for i = 0 then (+ i 1)
+	   do (setf (event-fields evt) (list i v)))
+	(setf (event-fields evt) (list 0 vals))))
+  (when field (setf (event-fields evt) (list (car field) (cadr field)))))
+
+
 ;; takes instances of the various midi:*message classes, returning
-;; a 'cl-midievent:
+;; a 'midimsg2evt:
 
 (defun make-note-list () (make-hash-table :test 'equal))
 
 (defun event-is-on-off-or... (msg)
-  (cond ((or (typep msg 'midi::note-off-message)
-	     (and (typep msg 'midi::note-on-message) (zerop (midi::message-velocity msg))))
+  (cond ((or (typep msg 'midi:note-off-message)
+	     (and (typep msg 'midi:note-on-message) (zerop (midi:message-velocity msg))))
 	 'off)
-	((typep msg 'midi::note-on-message) 'on)
+	((typep msg 'midi:note-on-message) 'on)
 	(t t)))
 
 (defun make-event-from-message (msg ref note-list)
   (case (event-is-on-off-or... msg)
-    (off (let* ((key (midi::message-key msg))
-		(channel (midi::message-channel msg))
+    (off (let* ((key (midi:message-key msg))
+		(channel (midi:message-channel msg))
 		(startevt (gethash (list key channel) note-list)))
 	   (when startevt
 	     (remhash (list key channel) note-list)
-	     (let ((duration (- (midi::message-time msg) (midi::message-time startevt))))
-	       (change-class startevt 'cl-midievent)
+	     (let ((duration (- (midi:message-time msg) (midi:message-time startevt))))
+	       (change-class startevt 'midimsg2evt)
 	       (setf (event-dur startevt) duration)
 	       (setf (event-ref startevt) ref)
 	       startevt))))
-    (on (let ((key (midi::message-key msg))
-	      (channel (midi::message-channel msg)))
+    (on (let ((key (midi:message-key msg))
+	      (channel (midi:message-channel msg)))
 	  ;;push data to table and return nil (for collectors...):
 	  (setf (gethash (list key channel) note-list) msg)
 	  nil))
-    (t (change-class msg 'cl-midievent))))
+    (t (change-class msg 'midimsg2evt))))
 
 (defun messages2events (trk ref)
   (let ((note-list (make-note-list)))
@@ -293,6 +226,23 @@
 	(t nil)))
 
 (defun tracks2seq (tracks)
+  (if (> (length tracks) 1)
+      (append
+       ;;mf-format=1, ie. dont link events from tempo-track...
+       (messages2events (car tracks) 0)
+       (linkevents
+	(sort (loop for ref from 1
+		 for track in (cdr tracks)
+		 append (messages2events track ref))
+	      #'sort-events-<)))
+      ;; else mf-format=0, handle interspersed tempo-messages
+      (linkevents		
+       (sort (loop for ref from 0
+		for track in tracks
+		append (messages2events track ref))
+	     #'sort-events-<))))
+
+(defun tracks2seq (tracks)
   (linkevents
    (sort (loop for ref from 0
 	    for track in tracks
@@ -300,14 +250,14 @@
 	 #'sort-events-<)))
 
 (defun om-midi-load-file (pathname sequence)
-  (let ((f (midi::read-midi-file pathname))
+  (let ((f (midi:read-midi-file pathname))
 	err nbtracks clicks format timedef)
-    (setf nbtracks (length (midi::midifile-tracks f))
-	  clicks (midi::midifile-division f)
-	  format (midi::midifile-format f)
+    (setf nbtracks (length (midi:midifile-tracks f))
+	  clicks (midi:midifile-division f)
+	  format (midi:midifile-format f)
 	  timedef 0
 	  err 0
-	  (midi-seq-events sequence) (tracks2seq (midi::midifile-tracks f)))
+	  (midi-seq-events sequence) (tracks2seq (midi:midifile-tracks f)))
     (values err sequence nbtracks clicks format timedef)))
 
 (defun om-midi-copy-seq (seq &optional filtertest)
@@ -324,7 +274,7 @@
     newseq))
 
 ;;;
-;;; OUTPUT - building useful midi-messages, writing SMF's:
+;;; FILE OUTPUT: building useful midi-messages, writing SMF's:
 ;;;
 
 (defparameter +note-off-opcode+		#x80)
@@ -381,8 +331,8 @@
 
 (defun om-midi-save-seq-in-file (seq filename &key (fileformat 1) (timedef 0) (clicks 1000) (tracks 1))
   (declare (ignore timedef tracks))
-  (let ((mf (make-instance 'midi::midifile :format fileformat :division clicks)))
+  (let ((mf (make-instance 'midi:midifile :format fileformat :division clicks)))
     (setf (slot-value mf 'midi::tracks) (list (seq2tracks seq)))
     (om-create-directory filename)
-    (midi::write-midi-file mf filename)
+    (midi:write-midi-file mf filename)
     filename))

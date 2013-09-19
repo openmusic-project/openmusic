@@ -71,15 +71,46 @@
   (oa::midi-seq-events (fileseq self)))
 
 ;;; FIXME; get proper offset
-(defmethod offset->ms ((self oa::cl-midievent) &optional grandparent)
+(defmethod offset->ms ((self oa::midimsg2evt) &optional grandparent)
   (oa::event-date self))
 
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) (object midifile) at interval)
   (let ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object))))))
     (when (or (not interval) note-in-interval?)
-      (mapc #'(lambda (sub)
-		(prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
-	    (inside object)))))
+      (let ((events (inside object)))
+	(mapc #'(lambda (sub)
+		  (prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
+	      events)))))
+
+
+;; (defmethod offset->ms ((self miditrack) &optional grandparent)
+;;   0)
+
+;; (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) (object midifile) at interval)
+;;   (let ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object))))))
+;;     (when (or (not interval) note-in-interval?)
+;;       (mapc #'(lambda (track)
+;; 		(prepare-to-play engine player track (+ at (offset->ms track)) interval))
+;; 	    (slot-value object 'tracks)))))
+
+;; (defmethod inside ((self miditrack))
+;;   (slot-value self 'midinotes))
+
+;; (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) (object miditrack) at interval)
+;;   (let ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object))))))
+;;     (when (or (not interval) note-in-interval?)
+;;       (let ((events (inside object)))
+;; 	(mapc #'(lambda (sub)
+;; 		  (prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
+;; 	      events)))))
+
+(defun fluid-play-note (key date dur vel chan)
+  (declare (ignore date))
+  (mp:process-run-function "play fluid event" ()
+			   #'(lambda ()
+			       (cl-fluidsynth::fluid_synth_noteon *fluidplayer-synth* chan key vel)
+			       (when (plusp dur) (sleep dur))
+			       (cl-fluidsynth::fluid_synth_noteoff *fluidplayer-synth* chan key))))
 
 ;; play event using OMs own scheduler
 (defun play-cl-midinote (event)
@@ -87,11 +118,7 @@
 	(key (oa::event-pitch event))
 	(dur (/ (oa::event-dur event) 1000.0))
 	(vel (oa::event-velocity event)))
-    (mp:process-run-function "play fluid event" ()
-			     #'(lambda ()
-				 (cl-fluidsynth::fluid_synth_noteon *fluidplayer-synth* chan key vel)
-				 (when (plusp dur) (sleep dur))
-				 (cl-fluidsynth::fluid_synth_noteoff *fluidplayer-synth* chan key)))))
+    (fluid-play-note key nil dur vel chan)))
 
 (defun play-cl-midiprogramchange (event)
   (let ((chan (oa::event-chan event))	
@@ -108,14 +135,21 @@
 			     #'(lambda ()
 				 (cl-fluidsynth::fluid_synth_cc *fluidplayer-synth* chan ctrl val)))))
 
-(defmethod player-play-object ((engine (eql :fluidsynth)) (object oa::cl-midievent) &key interval)
+(defmethod player-play-object ((engine (eql :fluidsynth)) (object oa::midimsg2evt) &key interval)
   (when (or (not interval) (point-in-interval (offset->ms object) interval))
     (cond ((= (oa::event-type object) (oa::om-midi-get-num-from-type "Note")) (play-cl-midinote object))
 	  ((= (oa::event-type object) (oa::om-midi-get-num-from-type "ProgChange")) (play-cl-midiprogramchange object))
 	  ((= (oa::event-type object) (oa::om-midi-get-num-from-type "CtrlChange")) (play-cl-midicontrolchange object))
 	  (t nil))))
 
+;; list-representation of events: (pitch date dur vel channel)
 
+(defmethod player-play-object ((engine (eql :fluidsynth)) (object list) &key interval)
+  ;; expects list: '(pitch date dur vel channel)
+  (apply #'fluid-play-note object))
+
+(defmethod offset->ms ((self list) &optional grandparent)
+  )
 
 
 ;; 'edition-params is looked up by new-player, and seems to be

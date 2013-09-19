@@ -1,7 +1,7 @@
 ;OpenMusic
 ;
 ;Copyright (C) 1997, 1998, 1999, 2000 by IRCAM-Centre Georges Pompidou, Paris, France.
-; 
+;
 ;This program is free software; you can redistribute it and/or
 ;modify it under the terms of the GNU General Public License
 ;as published by the Free Software Foundation; either version 2
@@ -26,29 +26,29 @@
 
 (defvar *midi-files* nil)
 
-(setf *midi-files* 
+(setf *midi-files*
       '(
         "player;midi-init"
-        "tools;miditools"       
-        "classes;midifile"     
-        "editors;midieditor" 
-        "tools;midifunctions"   
-        "classes;midievents"       
-        "classes;continuousctrl"       
-        "tools;midiconversions"    
-        "classes;midicontroller"       
-	#+linux "player;jack-midi-player"        
+        "tools;miditools"
+        "classes;midifile"
+        "editors;midieditor"
+        "tools;midifunctions"
+        "classes;midievents"
+        #+linux "classes;midimsg2evt"
+	"classes;continuousctrl"
+        "tools;midiconversions"
+        "classes;midicontroller"
+	#+linux "player;jack-midi-player"
 	#+linux "player;fluid-player"
         "player;midiplayer"
         "tools;midi-preferences"
-        "midipackages"  
+        "midipackages"
         ))
 
 
 (eval-when (eval compile load)
-  (mapc #'(lambda (filename) 
-            (compile&load (namestring (make-local-path *load-pathname* filename)))) 
+  (mapc #'(lambda (filename)
+            (compile&load (namestring (make-local-path *load-pathname* filename))))
         *midi-files*))
 
 (push :midi-project *features*)
-     

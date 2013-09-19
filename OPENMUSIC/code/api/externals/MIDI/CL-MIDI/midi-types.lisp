@@ -1,7 +1,7 @@
 (defpackage :lispmidi (:nicknames :ml))
 (in-package :ml)
 
-;; typesetup as in old OM/midishare.lisp.  TODO: check vs. MIDI
+;; typesetup as in old OM/midishare.lisp.  TODO: integrate MIDI
 ;; standard (ie. CM's midi1.scm):
 
 (defparameter typeNote          0 "note with pitch, velocity and duration")
