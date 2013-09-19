@@ -220,8 +220,8 @@
        (let ((x (om-h-scroll-position self))
              (y (om-v-scroll-position self)))
          (om-invalidate-rectangle self x y (vw self) (vh self))
-         #+win32(setf (pinboard-pane-position (main-pinboard-object self)) 
-                      (values x y))
+         #+(or linux win32) (setf (pinboard-pane-position (main-pinboard-object self)) 
+				  (values x y))
          ))
      (om-view-scrolled self (car pos-list) (cadr pos-list)))
     #+(or win32 linux) (:step
