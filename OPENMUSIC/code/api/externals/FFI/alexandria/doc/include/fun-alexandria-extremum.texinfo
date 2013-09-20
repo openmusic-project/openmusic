@@ -1,0 +1,18 @@
+@anchor{Function extremum}
+@deffn {Function} {extremum} sequence predicate @&key key start end
+@findex extremum
+Returns the element of @code{sequence} that would appear first if the subsequence
+bounded by @code{start} and @code{end} was sorted using @code{predicate} and @code{key}.
+
+@code{extremum} determines the relationship between two elements of @code{sequence} by using
+the @code{predicate} function. @code{predicate} should return true if and only if the first
+argument is strictly less than the second one (in some appropriate sense). Two
+arguments @code{x} and @code{y} are considered to be equal if (FUNCALL @code{predicate} @code{x} Y)
+and (FUNCALL @code{predicate} @code{y} X) are both false.
+
+The arguments to the @code{predicate} function are computed from elements of @code{sequence}
+using the @code{key} function, if supplied. If @code{key} is not supplied or is @code{nil}, the
+sequence element itself is used.
+
+If @code{sequence} is empty, @code{nil} is returned.
+@end deffn

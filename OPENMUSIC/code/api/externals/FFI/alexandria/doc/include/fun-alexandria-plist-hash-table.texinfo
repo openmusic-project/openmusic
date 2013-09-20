@@ -1,0 +1,6 @@
+@anchor{Function plist-hash-table}
+@deffn {Function} {plist-hash-table} plist @&rest hash-table-initargs
+@findex plist-hash-table
+Returns a hash table containing the keys and values of the property list
+@code{plist}. Hash table is initialized using the @code{hash-table-initargs}.
+@end deffn

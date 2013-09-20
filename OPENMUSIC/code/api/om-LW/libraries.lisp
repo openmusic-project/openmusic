@@ -1,10 +1,10 @@
 ;=========================================================================
-; OM API 
+; OM API
 ; Multiplatform API for OpenMusic
 ; LispWorks Implementation
 ;
 ;  Copyright (C) 2007-2009 IRCAM-Centre Georges Pompidou, Paris, France.
-; 
+;
 ;    This file is part of the OpenMusic environment sources
 ;
 ;    OpenMusic is free software: you can redistribute it and/or modify
@@ -44,8 +44,12 @@
                  :name appname))
 
 (defun om-default-application-path (folders appname)
-  (make-pathname :directory (append (list :ABSOLUTE "Applications") folders 
-                                    (when appname (list (concatenate 'string appname ".app"))))))
+  #-linux  (make-pathname :directory (append (list :ABSOLUTE "Applications") folders 
+					     (when appname (list (concatenate 'string appname ".app")))))
+  #+linux (user-homedir-pathname)
+  )
+
+
 
 
 ;;;====================================
@@ -57,18 +61,18 @@
           om-write-ptr)
         :om-api)
 
-(defun om-make-pointer (size &optional (clear nil)) 
+(defun om-make-pointer (size &optional (clear nil))
   (if clear
       (fli:allocate-foreign-object :type :byte :nelems size :fill 0)
     (fli:allocate-foreign-object :type :byte :nelems size)))
 
-(defun om-free-pointer (ptr) 
+(defun om-free-pointer (ptr)
   (fli::free-foreign-object ptr))
 
-(defun om-write-ptr (ptr pos type value) 
+(defun om-write-ptr (ptr pos type value)
   (setf (fli:dereference ptr :type type :index pos) value))
 
-(defun om-read-ptr (ptr pos type) 
+(defun om-read-ptr (ptr pos type)
   (fli:dereference ptr :type type :index pos))
 
 ;;;========================
@@ -78,6 +82,9 @@
           om-lib-directory
           om-lib-pathname
           ) :om-api)
+
+(defvar *externals-directory* nil)
+(setf *externals-directory* (append (butlast *api-directory*) (list "externals")))
 
 (defvar *om-lib-directory* nil)
 
@@ -92,7 +99,7 @@
     #+cocoa
     (let ((frameworkpos (position "framework" (cdr (pathname-directory lib))
                                   :test 'string-equal :key #'(lambda (item) (cadr (multiple-value-list (string-until-char item ".")))))))
-     
+
           (make-pathname :directory (append (pathname-directory *om-lib-directory*) (if frameworkpos (subseq (pathname-directory lib) (1+ frameworkpos))))
                          :host (pathname-host *om-lib-directory*) :device (pathname-device *om-lib-directory*)
                          :name (pathname-name lib)
@@ -107,10 +114,10 @@
 ;(defun om-lib-directory () nil)
 
 ;;; dans le dossier de l'appli
-(defun om-lib-directory () 
+(defun om-lib-directory ()
   #+win32(make-pathname :directory (pathname-directory (LISP-IMAGE-NAME))
                  :host (pathname-host (LISP-IMAGE-NAME)) :device (pathname-device (LISP-IMAGE-NAME)))
-  
+
   #+macosx(make-pathname :directory (append (pathname-directory *om-root*) '("resources" "lib" "mac"))
                  :host (pathname-host *om-root*) :device (pathname-device *om-root*))
   #+linux(make-pathname :directory (append (pathname-directory *om-root*) '("resources" "lib" "linux"))
@@ -118,16 +125,3 @@
   )
 
 ;(om-api-add-init-func 'set-lib-dir)
-
-
-
-
-
-
-
-
-
-
-
-
-

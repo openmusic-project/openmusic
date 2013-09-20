@@ -163,9 +163,14 @@
          
          (om-with-delayed-update (panel *om-workSpace-win*)
          (mapc #'(lambda (elem)
-                   (add-icon-finder (make-icon-from-object elem (om-point-h (get-icon-pos elem)) 
-                                                           (om-point-v (get-icon-pos elem)) 1 (incf i)) 
-                                    (panel *om-workSpace-win*))) (elements *current-workSpace*))
+		   (add-icon-finder (make-icon-from-object elem
+		   					   (om-point-h (get-icon-pos elem)) 
+                                                           (om-point-v (get-icon-pos elem))
+		   					   1
+		   					   (incf i)) 
+                                    (panel *om-workSpace-win*))
+		   )
+	       (elements *current-workSpace*))
          )
          
          (om-invalidate-view (editor *om-workSpace-win*))
@@ -216,7 +221,7 @@
 ;Init the WorkSpace specified by pathname.
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
-   (setf *splash-screen* (show-kero-pict nil))
+   ;;(setf *splash-screen* (show-kero-pict nil))  ; FIXME
    (init-om-package)                    
    (load-om-libs)
    (workspace-from-name pathname)                   

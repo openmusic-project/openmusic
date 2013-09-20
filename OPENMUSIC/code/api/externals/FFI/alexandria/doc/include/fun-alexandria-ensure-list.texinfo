@@ -1,0 +1,5 @@
+@anchor{Function ensure-list}
+@deffn {Function} {ensure-list} list
+@findex ensure-list
+If @code{list} is a list, it is returned. Otherwise returns the list designated by @code{list}.
+@end deffn

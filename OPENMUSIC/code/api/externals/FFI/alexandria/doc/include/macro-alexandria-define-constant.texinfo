@@ -1,0 +1,13 @@
+@anchor{Macro define-constant}
+@deffn {Macro} {define-constant} name initial-value @&key test documentation
+@findex define-constant
+Ensures that the global variable named by @code{name} is a constant with a value
+that is equal under @code{test} to the result of evaluating @code{initial-value}. @code{test} is a
+/function designator/ that defaults to @code{eql}. If @code{documentation} is given, it
+becomes the documentation string of the constant.
+
+Signals an error if @code{name} is already a bound non-constant variable.
+
+Signals an error if @code{name} is already a constant variable whose value is not
+equal under @code{test} to result of evaluating @code{initial-value}.
+@end deffn

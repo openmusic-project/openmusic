@@ -1,0 +1,6 @@
+@anchor{Function ends-with-subseq}
+@deffn {Function} {ends-with-subseq} suffix sequence @&key test
+@findex ends-with-subseq
+Test whether @code{sequence} ends with @code{suffix}. In other words: return true if
+the last (length SUFFIX) elements of @code{sequence} are equal to @code{suffix}.
+@end deffn

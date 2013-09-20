@@ -1,0 +1,8 @@
+@anchor{Function starts-with-subseq}
+@deffn {Function} {starts-with-subseq} prefix sequence @&rest args @&key return-suffix @&allow-other-keys
+@findex starts-with-subseq
+Test whether the first elements of @code{sequence} are the same (as per TEST) as the elements of @code{prefix}.
+
+If @code{return-suffix} is @code{t} the functions returns, as a second value, a
+displaced array pointing to the sequence after @code{prefix}.
+@end deffn

@@ -1,0 +1,7 @@
+@anchor{Macro doplist}
+@deffn {Macro} {doplist} (key val plist &optional values) @&body body
+@findex doplist
+Iterates over elements of @code{plist}. @code{body} can be preceded by
+declarations, and is like a @code{tagbody}. @code{return} may be used to terminate
+the iteration early. If @code{return} is not used, returns @code{values}.
+@end deffn

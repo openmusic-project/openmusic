@@ -1,0 +1,169 @@
+<html lang="en">
+<head>
+<title>Built-In Foreign Types - CFFI-SYS Interface Specification</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI-SYS Interface Specification">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="prev" href="Introduction.html#Introduction" title="Introduction">
+<link rel="next" href="Operations-on-Foreign-Types.html#Operations-on-Foreign-Types" title="Operations on Foreign Types">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005-2006, James Bielman  <jamesjb at jamesjb.com>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Built-In-Foreign-Types"></a>
+<a name="Built_002dIn-Foreign-Types"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Operations-on-Foreign-Types.html#Operations-on-Foreign-Types">Operations on Foreign Types</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Introduction.html#Introduction">Introduction</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="index.html#Top">Top</a>
+<hr>
+</div>
+
+<h2 class="chapter">2 Built-In Foreign Types</h2>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:char</b><var><a name="index-g_t_003achar-1"></a></var><br>
+&mdash; Foreign Type: <b>:unsigned-char</b><var><a name="index-g_t_003aunsigned_002dchar-2"></a></var><br>
+&mdash; Foreign Type: <b>:short</b><var><a name="index-g_t_003ashort-3"></a></var><br>
+&mdash; Foreign Type: <b>:unsigned-short</b><var><a name="index-g_t_003aunsigned_002dshort-4"></a></var><br>
+&mdash; Foreign Type: <b>:int</b><var><a name="index-g_t_003aint-5"></a></var><br>
+&mdash; Foreign Type: <b>:unsigned-int</b><var><a name="index-g_t_003aunsigned_002dint-6"></a></var><br>
+&mdash; Foreign Type: <b>:long</b><var><a name="index-g_t_003along-7"></a></var><br>
+&mdash; Foreign Type: <b>:unsigned-long</b><var><a name="index-g_t_003aunsigned_002dlong-8"></a></var><br>
+&mdash; Foreign Type: <b>:long-long</b><var><a name="index-g_t_003along_002dlong-9"></a></var><br>
+&mdash; Foreign Type: <b>:unsigned-long-long</b><var><a name="index-g_t_003aunsigned_002dlong_002dlong-10"></a></var><br>
+<blockquote><p>These types correspond to the native C integer types according to the
+ABI of the system the Lisp implementation is compiled against. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:int8</b><var><a name="index-g_t_003aint8-11"></a></var><br>
+&mdash; Foreign Type: <b>:uint8</b><var><a name="index-g_t_003auint8-12"></a></var><br>
+&mdash; Foreign Type: <b>:int16</b><var><a name="index-g_t_003aint16-13"></a></var><br>
+&mdash; Foreign Type: <b>:uint16</b><var><a name="index-g_t_003auint16-14"></a></var><br>
+&mdash; Foreign Type: <b>:int32</b><var><a name="index-g_t_003aint32-15"></a></var><br>
+&mdash; Foreign Type: <b>:uint32</b><var><a name="index-g_t_003auint32-16"></a></var><br>
+&mdash; Foreign Type: <b>:int64</b><var><a name="index-g_t_003aint64-17"></a></var><br>
+&mdash; Foreign Type: <b>:uint64</b><var><a name="index-g_t_003auint64-18"></a></var><br>
+<blockquote><p>Foreign integer types of specific sizes, corresponding to the C types
+defined in <code>stdint.h</code>. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:size</b><var><a name="index-g_t_003asize-19"></a></var><br>
+&mdash; Foreign Type: <b>:ssize</b><var><a name="index-g_t_003assize-20"></a></var><br>
+&mdash; Foreign Type: <b>:ptrdiff</b><var><a name="index-g_t_003aptrdiff-21"></a></var><br>
+&mdash; Foreign Type: <b>:time</b><var><a name="index-g_t_003atime-22"></a></var><br>
+<blockquote><p>Foreign integer types corresponding to the standard C types (without
+the <code>_t</code> suffix). 
+</p></blockquote></div>
+
+   <p><em>Implementor's note: I'm sure there are more of these that could be useful, let's
+add any types that can't be defined portably to this list as
+necessary.</em>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:float</b><var><a name="index-g_t_003afloat-23"></a></var><br>
+&mdash; Foreign Type: <b>:double</b><var><a name="index-g_t_003adouble-24"></a></var><br>
+<blockquote><p>The <code>:float</code> type represents a C <code>float</code> and a Lisp
+<code>single-float</code>. <code>:double</code> represents a C <code>double</code> and a
+Lisp <code>double-float</code>. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:pointer</b><var><a name="index-g_t_003apointer-25"></a></var><br>
+<blockquote><p>A foreign pointer to an object of any type, corresponding to
+<code>void *</code>. 
+</p></blockquote></div>
+
+<div class="defun">
+&mdash; Foreign Type: <b>:void</b><var><a name="index-g_t_003avoid-26"></a></var><br>
+<blockquote><p>No type at all. Only valid as the return type of a function. 
+</p></blockquote></div>
+
+   </body></html>
+

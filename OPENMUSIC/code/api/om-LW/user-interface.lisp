@@ -61,7 +61,6 @@
  #+cocoa (capi::convert-to-screen))
 
 ;;; ASK USER FOR STRING
-;(om-get-user-string "dame" :initial-string "yo")
 (defun om-get-user-string (prompt &key (initial-string "") (window-title "Get string") owner 
                                   (size (om-make-point 365 100))
                                   (position (om-make-point 200 140)))

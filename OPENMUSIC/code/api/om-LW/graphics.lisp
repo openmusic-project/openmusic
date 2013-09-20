@@ -376,7 +376,7 @@
    (elements :initform nil :initarg :elements :accessor elements)))
 
 ;;;====================================
-;;; 2 MANIERES DE DEFINIR DES REGIONS... peut être à unifier...
+;;; 2 MANIERES DE DEFINIR DES REGIONS... peut Ãªtre Ã  unifier...
 
 ;;; ====================================
 ;;; ouvrir la region, ajouter des elements, et fermer (close retourne la region) :
@@ -537,6 +537,12 @@
 (defun om-color-b (color)
    (color::color-blue (c color)))
 
+(defun om-color-alpha (color)
+  (color::color-alpha (c color)))
+
+;; (defmethod print-object ((self omcolor) stream)
+;;   (format stream "color R:~D G:~D B:~D" (om-color-r self) (om-color-g self) (om-color-b self)))
+
 (defmethod print-object ((self omcolor) stream)
   (format stream "color R:~D G:~D B:~D" (om-color-r self) (om-color-g self) (om-color-b self)))
 
@@ -550,7 +556,8 @@
 
 (defvar *om-window-def-color* "The default background color for windows")
 (setf *om-window-def-color* 
-      #-cocoa  (make-instance 'omcolor :c (color::get-color-spec :gray90))
+      #+win32  (make-instance 'omcolor :c (color::get-color-spec :gray90))
+      #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent))
       #+cocoa (make-instance 'omcolor :c :transparent)
       )
 
@@ -586,12 +593,12 @@
   (gp::make-font-description 
    ;:name face   ; --> name is not portable for find-best-font process
    :family face
-   :size #-win32 size #+win32 (* size 2/3)
+   :size #+cocoa size #+win32 (* size 2/3) #+linux(* size 3/4)
    :slant (if (member :italic style) :italic :roman)
    :weight (if (member :bold style) :bold :normal)
    :pitch :variable
-   :underline nil  ; souligné
-   :strikeout nil ; barré
+   :underline nil  ; soulignÃ©
+   :strikeout nil ; barrÃ©
    ;:width nil 
    :charset :ansi 
    :devicep nil 
@@ -604,11 +611,11 @@
 
 ;;; simplified font creation for music fonts
 ;;; so special case for platforms
-(defun om-make-music-font (face size)
+(defun om-make-music-font (face size)	; mac=72dpi, windows+linux=96dpi (normally) AV
   (declare (ignore mode))
   (gp::make-font-description 
    :family face
-   :size #+win32 (* size 0.8) #-win32 size
+   :size #+(or linux win32) (* size 3/4) #-(or linux win32) size
    :pitch :variable
    :charset :ansi 
    :devicep nil 
@@ -621,7 +628,9 @@
 
 (defun om-font-size (font) 
    #+win32(* (gp::font-description-attribute-value font :size) 3/2)
-   #-win32(gp::font-description-attribute-value font :size))
+   #+linux (* (gp::font-description-attribute-value font :size) 4/3)
+   #-(or linux win32 ) (gp::font-description-attribute-value font :size)
+   )
    
 
 (defun om-font-family (font) 
@@ -673,17 +682,17 @@
 (defvar *om-score-font-face* nil)
 
 
-(setf *om-def-font-face* "Verdana")
+#-linux (setf *om-def-font-face* "Verdana")
+#+linux (setf *om-def-font-face* "Bitstream Vera Sans")
 ;;; #+win32(setf *om-def-font-face* "MS Shell Dlg")
  
 
-(setf *om-def-bold-font-face* "Verdana")
+#-linux(setf *om-def-bold-font-face* "Verdana")
+#+linux(setf *om-def-bold-font-face* "Bitstream Vera Sans")
 
 ;(setf *om-def-font-sizes* 
 ;      #+win32'(8 10 11 13 20) 
 ;      #-win32'(11 12 14 16 24))
-
-;(float (* 2/3 24))
 
 (setf *om-def-font-sizes* '(11 12 14 16 24))
 
@@ -698,12 +707,10 @@
 (setf *om-default-font3b* (om-make-font *om-def-bold-font-face* (nth 2 *om-def-font-sizes*) :style '(:bold)))
 (setf *om-default-font4b* (om-make-font *om-def-bold-font-face* (nth 3 *om-def-font-sizes*) :style '(:bold)))
 
-#+win32(setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
-#-win32(setf *om-controls-font* (om-make-font "LucidaGrande" 13))
+#+(or win32 linux) (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
+#-(or linux win32) (setf *om-controls-font* (om-make-font "LucidaGrande" 13))
 
 (setf *om-score-font-face* "Times New Roman")
-
-
 
 (defun om-make-font-object (font)
   (gp::find-best-font oa::*record-view* font))
@@ -722,7 +729,7 @@
   `(if (and (om-item-view-p ,view) (not (equal *curfocus* ,view)))
        (let ((*curstream* (om-get-view ,view)))
          (when *curstream*
-           ;;; ça doit plus marcher ! cf. draw item-view
+           ;;; Ã§a doit plus marcher ! cf. draw item-view
            ;(multiple-value-bind (x y) (capi::pinboard-pane-position ,view)
            ;  (set-graphics-port-coordinates *curstream* :left x :top y))
            (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position ,view)
@@ -787,9 +794,10 @@
 
 (defun om-draw-line (x1 y1 x2 y2  &key (erasable nil))  
   (gp:draw-line *curstream* (+ x1 *pox* 0.5) (+ y1 *poy* 0.5) (+ x2 *pox* 0.5) (+ y2 *poy* 0.5)
-                #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+		#-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
                 :shape-mode :best
 		))
+
 
 (defun om-erase-line (x1 y1 x2 y2) 
   (gp:draw-line *curstream* (+ x1 *pox*) (+ y1 *poy*) (+ x2 *pox*) (+ y2 *poy*)
@@ -815,14 +823,18 @@
   (gp::with-graphics-state (*curstream* :thickness pensize)
     (om-draw-rect x y (- w 1) (- h 1))))
 
+
 (defun om-fill-rect (x &optional y (w 0) (h 0)  &key (erasable nil))
   (let (top left wi he)
-  (if y
-      (setf left x top y wi w he h)
-    (setf left (rx x) top (ry x) wi (rw x) he (rh x)))
-  (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he :filled t
-                     #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
-                     )))
+    (if y
+	(setf left x top y wi w he h)
+	(setf left (rx x) top (ry x) wi (rw x) he (rh x)))
+    (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
+		       :filled t
+		       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+		       #+linux :compositing-mode #+linux :copy
+		       )
+    ))
 
 (defun om-erase-rect-content (x &optional y (w 0) (h 0))
   (let (top left wi he)
@@ -902,7 +914,7 @@
 (defvar *om-select-color* nil)
 ;(setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.3 0.45 0.5 1)))
 (setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.5 0.5 0.5 1)))
-#+win32(setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.87058825 0.87058825 0.87058825 1)))
+#+win32 (setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.87058825 0.87058825 0.87058825 1)))
 
 (defvar *om-text-select-color* nil)
 (setf *om-text-select-color* (om-make-color-alpha (/ (om-color-r *om-select-color*) 2)
@@ -914,7 +926,7 @@
 (defvar *om-select-color-alpha* nil)
 ;(setf *om-select-color-alpha* (make-instance 'omcolor :c (color::make-rgb 0.2 0.35 0.6 0.2)))
 (setf *om-select-color-alpha* (make-instance 'omcolor :c
-                                             #+cocoa (color::make-rgb 0.7 0.7 0.7 0.2)
+                                             #-win32 (color::make-rgb 0.7 0.7 0.7 0.2)
                                              #+win32  (color::make-rgb 0.2 0.35 0.6 0.2)))
 
 (defun om-draw-selection-rect (x y w h &key (mode :xor))
@@ -931,8 +943,9 @@
 ;;; hilites on a graphics
 (defun om-draw-hilite-icon (x y w h &optional color) 
   (let* ((c (if color (c color)))
-         (cc (if c (color::make-rgb (color::color-red c)  (color::color-green c) (color::color-blue c) 1)
-               (c *om-select-color-alpha*))))
+         (cc (if c
+		 (color::make-rgb (color::color-red c)  (color::color-green c) (color::color-blue c) 1)
+		 (c *om-select-color-alpha*))))
     (gp::with-graphics-state (*curstream* :foreground cc)
       (gp:draw-rectangle *curstream* (+ x *pox*) (+ y *poy*) (- w 1) (- h 1) :filled t))))
 
@@ -940,21 +953,22 @@
 ;; hilites rect
 (defun om-draw-hilite-rect (x y w h &optional color) 
   (let* ((c (if color (c color)))
-                (cc (if c (color::make-rgb (color::color-red c)  (color::color-green c) (color::color-blue c) 0.4)
-                     (c *om-select-color-alpha*))))
-           (gp::with-graphics-state (*curstream* :foreground cc)
-             (gp:draw-rectangle *curstream* (+ x *pox*) (+ y *poy*) (- w 1) (- h 1) :filled t))))
+	 (cc (if c
+		 (color::make-rgb (color::color-red c)  (color::color-green c) (color::color-blue c) 0.4)
+		 (c *om-select-color-alpha*))))
+    (gp::with-graphics-state (*curstream* :foreground cc)
+      (gp:draw-rectangle *curstream* (+ x *pox*) (+ y *poy*) (- w 1) (- h 1) :filled t))))
 
 ;;; NOT USED ANYMORE
 (defmacro om-with-pen ((view &key mode pattern (line :black-line) (size 1)) &body body)
   `(let () ,@body))
 
 (defmacro om-with-line-size (size &body body)
-  `(let ((siz #+cocoa ,size #-cocoa (max 1 (round ,size))))
+  `(let ((siz #-win32 ,size #+win32 (max 1 (round ,size))))
      (gp::with-graphics-state (*curstream* :thickness siz
                                            :shape-mode :plain
-                                           ;:scale-thickness t
-                                           :line-joint-style :miter   ; :bevel :round
+                                           :scale-thickness t
+					   :line-joint-style :miter   ; :bevel :round
                                            :line-end-style :round)    ; :butt :projecting 
     ,@body)))
 
@@ -972,11 +986,3 @@
          ((equal (intern (string ,style) :oa) 'dash)
           (gp::with-graphics-state (*curstream* :dashed t :dash '(2 2)) ,@body))
          (t (progn ,@body))))
-
-
-
-
-
-
-
-  

@@ -1,0 +1,6 @@
+@anchor{Macro maxf}
+@deffn {Macro} {maxf} place @&rest numbers env
+@findex maxf
+Modify-macro for @code{max}. Sets place designated by the first argument to the
+maximum of its original value and @code{numbers}.
+@end deffn

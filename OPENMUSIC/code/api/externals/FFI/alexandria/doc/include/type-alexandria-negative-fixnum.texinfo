@@ -1,0 +1,5 @@
+@anchor{Type negative-fixnum}
+@deftp {Type} {negative-fixnum}
+@tindex negative-fixnum
+Type specifier denoting the fixnum range from @code{most-negative-fixnum} to @code{-1}.
+@end deftp

@@ -619,15 +619,15 @@ current-atimes) list tmin beat-dur)
              (pulses (arithm-ser minimum-pulses (1- nb-pulse-max) 1)))
         (unless pulses (setf pulses (list (1- nb-pulse-max))))
         (if nil ;; GA 10/10/94 (< (length pulses) *min-pulses*)
-          (arithm-ser minimum-pulses (1- (max nb-pulse-max (* 2
-                                                              minimum-pulses))) 1)
-          pulses))))
+	    (arithm-ser minimum-pulses (1- (max nb-pulse-max (* 2 minimum-pulses))) 1)
+	    pulses))))
 
 (defun minimum-pulses (attack-times tmin tmax)
   (let ((deltas (* 3 (apply 'min (- tmax tmin) (x->dx (remove-duplicates attack-times)))))) ;truncate freaks if divisor=0
     (min *maximum-pulses*
 	 (max 1 ;;;;;(1- (length attack-times))
 	      (truncate  (- tmax tmin) deltas)))))
+
 
 ;;euclidean distance
 (defun sqr (n) (* n n))

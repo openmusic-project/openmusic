@@ -1,0 +1,8 @@
+@anchor{Function write-string-into-file}
+@deffn {Function} {write-string-into-file} string pathname @&key if-exists if-does-not-exist external-format
+@findex write-string-into-file
+Write @code{string} to @code{pathname}.
+
+The @code{external-format} parameter will be passed directly to @code{with-open-file}
+unless it's @code{nil}, which means the system default.
+@end deffn

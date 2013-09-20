@@ -1,0 +1,5 @@
+@anchor{Function write-byte-vector-into-file}
+@deffn {Function} {write-byte-vector-into-file} bytes pathname @&key if-exists if-does-not-exist
+@findex write-byte-vector-into-file
+Write @code{bytes} to @code{pathname}.
+@end deffn

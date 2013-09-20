@@ -1,0 +1,19 @@
+@anchor{Macro with-gensyms}
+@deffn {Macro} {with-gensyms} names @&body forms
+@findex with-gensyms
+Binds each variable named by a symbol in @code{names} to a unique symbol around
+@code{forms}. Each of @code{names} must either be either a symbol, or of the form:
+
+@lisp
+ (symbol string-designator)
+@end lisp
+
+Bare symbols appearing in @code{names} are equivalent to:
+
+@lisp
+ (symbol symbol)
+@end lisp
+
+The string-designator is used as the argument to @code{gensym} when constructing the
+unique symbol the named variable will be bound to.
+@end deffn

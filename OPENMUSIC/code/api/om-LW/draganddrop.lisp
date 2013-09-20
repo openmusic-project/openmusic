@@ -55,21 +55,30 @@
 
 (defmethod build-d&d-image ((dragged om-drag-view) pane)
   (let* ((size (om-view-size (om-drag-container-view (om-drag-reference-view dragged))))
-         (pp (gp:create-pixmap-port pane (om-point-x size) (om-point-y size) 
-                                    :background :transparent :clear t))
+         (pp (gp:create-pixmap-port pane
+				    ;; 50 50
+				    (om-point-x size) (om-point-y size) 
+				    :clear t
+				    :background :transparent 
+				    ;; :background (color:make-rgb 0.8 0.8 0.8 0.9)
+				    ))
+
          (posi (om-subtract-points 
                 (om-convert-coordinates (om-drag-view-cursor-pos dragged) dragged (om-drag-container-view dragged))
                 (om-scroll-position (om-drag-container-view dragged)))))
     (unwind-protect
-        (progn 
-          (om-with-focused-view pp
-            (gp::set-graphics-port-coordinates pp :left (om-h-scroll-position (om-drag-container-view dragged)) 
-                                               :top (om-v-scroll-position (om-drag-container-view dragged)))
-            (om-draw-contents-for-drag dragged))
-                
-          (values (gp:make-image-from-port pp) 
-                  (om-point-x posi) 
-                  (om-point-y posi)))
+	 (progn 
+	   (om-with-focused-view pp
+	     (gp::set-graphics-port-coordinates pp :left (om-h-scroll-position (om-drag-container-view dragged)) 
+						:top (om-v-scroll-position (om-drag-container-view dragged)))
+	     (om-draw-contents-for-drag dragged)
+	     ;; (cl-user::compositing-mode-simple-example-draw-ellipses pp) ;FIXME:AV
+	     )
+	   
+	   (values (gp:make-image-from-port pp) 
+	   	   (om-point-x posi) 
+	   	   (om-point-y posi))
+	   )
       (gp:destroy-pixmap-port pp)
       )))
 

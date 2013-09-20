@@ -115,7 +115,9 @@
                    :enabled-function enablef ;#'(lambda (menu) (eval `,newvar))
                    :callback-type :none
                    :selected-function selectf
-                   :callback action)
+                   :callback action
+                   ;; :callback #'(lambda () (print title))
+		   )
     ))
 
 

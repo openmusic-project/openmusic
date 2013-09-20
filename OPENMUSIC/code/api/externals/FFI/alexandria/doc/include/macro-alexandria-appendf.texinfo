@@ -1,0 +1,6 @@
+@anchor{Macro appendf}
+@deffn {Macro} {appendf} place @&rest lists env
+@findex appendf
+Modify-macro for @code{append}. Appends @code{lists} to the place designated by the first
+argument.
+@end deffn

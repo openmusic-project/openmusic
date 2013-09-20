@@ -206,13 +206,13 @@
 (defparameter *externals-directory* (pathname-directory *load-pathname*))
 
 (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
-(load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-cffi"))
+(load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux "load-cffi" #+linux "load-new-cffi"))
 (load (make-pathname :directory (append *externals-directory* '("ieee-floats")) :name "ieee-floats"))
 
 (defun load-external-libs (&optional libs)
   
   (loop for lib in libs do
-        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml))
+        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   (if (member :midi libs)
@@ -239,6 +239,9 @@
   (if (member :json libs)
       (progn
         (load (make-pathname :directory (append *externals-directory* '("Yason")) :name "package"))
-        (load (make-pathname :directory (append *externals-directory* '("Yason")) :name "parse")))
-    )
+        (load (make-pathname :directory (append *externals-directory* '("Yason")) :name "parse"))))
+  (when (find :jack libs)
+    (load (make-pathname :directory (append *externals-directory* '("JACK")) :name "cl-jack-load")))
+  (when (find :jack libs)
+    (load (make-pathname :directory (append *externals-directory* '("FluidSynth")) :name "load-fluidsynth")))
   t)

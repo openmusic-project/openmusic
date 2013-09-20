@@ -1,0 +1,7 @@
+@anchor{Macro ensure-gethash}
+@deffn {Macro} {ensure-gethash} key hash-table @&optional default
+@findex ensure-gethash
+Like @code{gethash}, but if @code{key} is not found in the @code{hash-table} saves the @code{default}
+under key before returning it. Secondary return value is true if key was
+already in the table.
+@end deffn

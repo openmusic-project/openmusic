@@ -34,12 +34,13 @@
     "basic;sound"   
     "basic;soundeditor"
     "basic;audio-mix-console"
-    "basic;general-mixer"
+    #+libaudiostream "basic;general-mixer"
     "basic;automations"
-    "basic;sound-preferences"
+    #+libaudiostream "basic;sound-preferences"
     
-    "LAS;sound-processing"
-    "LAS;las-player"
+    #+libaudiostream "LAS;sound-processing"
+    #+libaudiostream "LAS;las-player"
+
 
     "tools;sound-tools"
     "tools;control-tools"
@@ -50,7 +51,8 @@
     "synth;synthesize"
 
     "multi;multiplayer"
-   
+    #+linux "mplayer;mplayer"
+    #+linux "SC3;SCaudioplayer"
  ))
 
 (eval-when (eval compile load)
@@ -82,7 +84,7 @@
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
-(AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound record-sound) *sndprocpackage*)
+#+libaudiostream (AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound record-sound) *sndprocpackage*)
 
 
 (add-ref-section (gen-ref-entries *audiopackage*))

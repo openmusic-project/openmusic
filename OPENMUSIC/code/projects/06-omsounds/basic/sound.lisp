@@ -1,4 +1,4 @@
-;OpenMusic
+					;OpenMusic
 ;
 ;Copyright (C) 1997, 1998, 1999, 2000 by IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
@@ -376,8 +376,6 @@ Press 'space' to play/stop the sound file.
         (if (and (nth i inputs) (string-equal (name input) (name (nth i inputs))))
             (nth i inputs) input)))
 
-
-
 (defmethod get-frame-class ((self OMaiffFilebox)) 'boxsoundframe)
 
 (defclass boxsoundframe (boxEditorFrame) ())
@@ -390,7 +388,7 @@ Press 'space' to play/stop the sound file.
 
 (defmethod object-specific-menu ((self sound))
   (list (om-new-leafmenu "Open with external editor..."
-                         #'(lambda () (om-cmd-line (format nil "open ~s" (namestring (sound-path self))))))))
+                         #'(lambda () (om-cmd-line (string+ *om-open-cmd*  (namestring (sound-path self))))))))
 
 ;=======
 ; PICT

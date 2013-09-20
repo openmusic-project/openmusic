@@ -82,26 +82,26 @@
 
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
-   (let* ((thetext (initial-text-ttybox self))
-          (panel (om-view-container (om-view-container self)))
-          (container (editor panel)))
-     (when (text-view container)
-       (om-remove-subviews panel (text-view container))
-         (setf (text-view container) nil))
-     (setf (text-view container) 
-       (om-make-dialog-item (open-ttybox-class self)
-                             (om-add-points (om-subtract-points 
-                                                                  (om-view-position self)
-                                                                  #+cocoa (om-make-point 2 2) #-cocoa (om-make-point 0 0)) 
-                                                                  (om-view-position (om-view-container self)))
-                            (om-view-size self)
-                            thetext
-                            :allow-returns (text-enter-multiline-p self)
-                            :focus t
-                            :object self
-                            :container panel
-                            :font *om-default-font1*))
-     ))
+  (let* ((thetext (initial-text-ttybox self))
+	 (panel (om-view-container (om-view-container self)))
+	 (container (editor panel)))
+    (when (text-view container)
+      (om-remove-subviews panel (text-view container))
+      (setf (text-view container) nil))
+    (setf (text-view container) 
+	  (om-make-dialog-item (open-ttybox-class self)
+			       (om-add-points (om-subtract-points 
+					       (om-view-position self)
+					       #-win32 (om-make-point 2 2) #+win32 (om-make-point 0 0)) 
+					      (om-view-position (om-view-container self)))
+			       (om-view-size self)
+			       thetext
+			       :allow-returns (text-enter-multiline-p self)
+			       :focus t
+			       :object self
+			       :container panel
+			       :font *om-default-font1*))
+    ))
 
 
 (omg-defclass change-text-enter-view (edit-text-enter-view) ())
@@ -186,8 +186,9 @@
 
 (defmethod exit-from-dialog ((self new-fun-enter-view) str)
   (handler-bind ((error #'(lambda (c) ;(declare (ignore c)) 
-                            (setf (text-view (editor (om-view-container self))) nil)
-                            (om-remove-subviews (panel (editor (om-view-container self))) self)
+                            (when (om-view-container self)
+			      (setf (text-view (editor (om-view-container self))) nil)
+			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
                             (print c)
                             (om-abort))))
@@ -254,7 +255,7 @@
             (om-beep)
           (om-beep-msg  (string+ "function " str " does not exist!"))))
        ((OMGenfun-p (fdefinition funname))
-        (setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
+	(setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
                                             (mk-unique-name scroller (string funname))))
         (when args (add-args-to-box newbox args))
         )
@@ -345,8 +346,9 @@
 ;;;new : panel au lieu de editor
 (defmethod exit-from-dialog ((self new-slot-initform-view) newtext)
    (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
-                            (setf (text-view (editor (om-view-container self))) nil)
-                            (om-remove-subviews (panel (editor (om-view-container self))) self)
+                            (when (om-view-container self)
+			      (setf (text-view (editor (om-view-container self))) nil)
+			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
                             (om-abort))))
      (let ((*package* (find-package :om))
@@ -421,7 +423,6 @@
 
 
 (defmethod numbox-release ((view numbox) pos) 
-  ;(print "sdfgjksdfghjk")
   (item-action-after-drag view)
   (om-invalidate-view view))
 

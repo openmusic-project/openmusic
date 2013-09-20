@@ -602,13 +602,13 @@ Exports as a raw bitmap (TIF format)
     (when *draw-pen*
       (loop for (a b) on *draw-pen* by #'cdr do 
             (if (and a b) 
-              (draw-pict-extraobj self (list 'line (list (car a) (cadr a) (car b) (cadr b))
-                                             (list (currentcolor (controlview (editor self))) (currentsize (controlview (editor self))) 
-                                                   (currentline (controlview (editor self))) nil) nil))
-              (if a  (draw-pict-extraobj self (list 'line (list (car a) (cadr a) (car a) (cadr a))
-                                                     (list (currentcolor (controlview (editor self))) (currentsize (controlview (editor self))) 
-                                                           (currentline (controlview (editor self))) nil) nil)))
-              )))
+		(draw-pict-extraobj self (list 'line (list (car a) (cadr a) (car b) (cadr b))
+					       (list (currentcolor (controlview (editor self))) (currentsize (controlview (editor self))) 
+						     (currentline (controlview (editor self))) nil) nil))
+		(if a  (draw-pict-extraobj self (list 'line (list (car a) (cadr a) (car a) (cadr a))
+						      (list (currentcolor (controlview (editor self))) (currentsize (controlview (editor self))) 
+							    (currentline (controlview (editor self))) nil) nil)))
+		)))
     )))
 
 

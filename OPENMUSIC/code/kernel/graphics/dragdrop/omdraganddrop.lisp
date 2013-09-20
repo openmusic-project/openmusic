@@ -54,34 +54,36 @@
 ;(defvar *cur-drag* nil)
 
 (defmethod om-draw-contents-for-drag ((self om-view-drag))
-  ;;; actually draws what's in (dragged-list-objs *OM-drag&drop-handler*) 
-  (om-with-fg-color nil (om-make-color-alpha 0.5 0.5 0.5 0.3)
-    (mapcar #'(lambda (v) 
-                (let ((drag-obj (get-drag-object v)))
-                  (om-fill-rect (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj))
-                  ))
-            (dragged-list-objs *OM-drag&drop-handler*))))
+;;; actually draws what's in (dragged-list-objs *OM-drag&drop-handler*) 
+  ;; (om-with-fg-color nil (om-make-color-alpha 0.5 0.5 0.5 0.3) ;; TODO: ASK JEAN - #+LINUX
+  (om-with-fg-color nil (om-make-color-alpha 0.7 0.7 0.6 0.8) 
+    (mapcar #'(lambda (v)
+		(let ((drag-obj (get-drag-object v)))
+		  ;; (om-fill-rect (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj))
+		  (om-draw-rect-outline (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj) 3)
+		  ))
+	    (dragged-list-objs *OM-drag&drop-handler*))))
 
 (defmethod om-drag-reference-view ((self om-view-drag))
   (get-drag-object self))
 
 (defmethod om-drag-start ((view om-view-drag))
-   (let* ((theview (get-drag-object view))
-          (container (and theview (om-view-container theview))))
-     (when (and theview container)
-       (let* ((regionall (om-new-region))
-              (viewpos (om-view-position theview))
-              (x0 (om-point-h viewpos))
-              (y0 (om-point-v viewpos))
-              (i 2)
-              actives dragged-lisp-objects)
-     (setf (dragged-view *OM-drag&drop-handler*)  theview
-           (initial-mouse-pos *OM-drag&drop-handler*) (om-mouse-position theview)
-           (dragged-list-objs *OM-drag&drop-handler*) (get-actives container)
-           (container-view *OM-drag&drop-handler*) container
-           (true-dragged-view *OM-drag&drop-handler*) view
-           (drag-flavor *OM-drag&drop-handler*) :omvw))
-       t)))
+  (let* ((theview (get-drag-object view))
+	 (container (and theview (om-view-container theview))))
+    (when (and theview container)
+      (let* ((regionall (om-new-region))
+	     (viewpos (om-view-position theview))
+	     (x0 (om-point-h viewpos))
+	     (y0 (om-point-v viewpos))
+	     (i 2)
+	     actives dragged-lisp-objects)
+	(setf (dragged-view *OM-drag&drop-handler*)  theview
+	      (initial-mouse-pos *OM-drag&drop-handler*) (om-mouse-position theview)
+	      (dragged-list-objs *OM-drag&drop-handler*) (get-actives container)
+	      (container-view *OM-drag&drop-handler*) container
+	      (true-dragged-view *OM-drag&drop-handler*) view
+	      (drag-flavor *OM-drag&drop-handler*) :omvw))
+      t)))
 
 
 

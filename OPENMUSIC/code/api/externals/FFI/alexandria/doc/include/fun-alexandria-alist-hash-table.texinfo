@@ -1,0 +1,6 @@
+@anchor{Function alist-hash-table}
+@deffn {Function} {alist-hash-table} alist @&rest hash-table-initargs
+@findex alist-hash-table
+Returns a hash table containing the keys and values of the association list
+@code{alist}. Hash table is initialized using the @code{hash-table-initargs}.
+@end deffn

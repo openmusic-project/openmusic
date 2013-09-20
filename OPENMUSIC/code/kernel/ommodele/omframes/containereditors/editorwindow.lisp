@@ -48,6 +48,7 @@
     (obj :initform nil  :initarg :obj :accessor obj)))
 
 (defmethod omG-make-new-icon-window ((self EditorWindow) &optional type)
+  (format t "~A ~A ~A~%" 'omG-make-new-icon-window (editor self) type)
    "Called from New menu item type say if it create a patch a maquettte or a folder."
    (editor-make-new-icon-window (editor self) type))
 

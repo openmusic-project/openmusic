@@ -202,14 +202,14 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
       (unless (and err (zerop err)) (om-beep-msg (string+ "Error loading a MIDI file " (namestring name))) (om-abort))
       (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))
       (when recording-seq
-        (setf  (fileseq themidiFile) (convert-tempo-info recording-seq clicks))
-        (setf track-list (make-list nbtracks :initial-element nil))
+	(setf  (fileseq themidiFile) (convert-tempo-info recording-seq clicks))
+	(setf track-list (make-list nbtracks :initial-element nil))
         (setf rep (mievents2midilist (fileseq themidiFile)))
-        (loop for note in rep do
+	(loop for note in rep do
               (if (plusp (third note))
                   (push (list (first note) (second note) (third note) (fourth note) (fifth note)) (nth (sixth note) track-list))))
         (setf (MidiFileName themidiFile) name)
-        (setf (extent themidiFile) (loop for track in track-list 
+	(setf (extent themidiFile) (loop for track in track-list 
                                          if track maximize (+ (third (car track)) (second (car track)))))
         (setf (Qvalue themidiFile)  1000)
         (setf (tracks themidiFile) (loop for track in track-list 

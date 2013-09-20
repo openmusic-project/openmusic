@@ -1,0 +1,6 @@
+@anchor{Function (setf last-elt)}
+@deffn {Function} {(setf last-elt)}
+@findex (setf last-elt)
+Sets the last element of @code{sequence}. Signals a type-error if @code{sequence} is not a proper
+sequence, is an empty sequence, or if @code{object} cannot be stored in @code{sequence}.
+@end deffn

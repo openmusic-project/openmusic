@@ -141,7 +141,8 @@
               (if (system::directory-pathname-p file)
                   (clean-sources file)
                 (when (and (pathname-type file)
-                           (find (pathname-type file) '("xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~") :test 'string-equal))
+                           (or (find (pathname-type file) '("xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~") :test 'string-equal)
+			       (string= (pathname-type file) *compile-type*))) ; remove compiled files
                   (print (concatenate 'string "Deleting " (namestring file) " ..."))
                   (delete-file file)
                   )))
@@ -208,7 +209,7 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "externals"))
                      :name "externals" :type "lisp"))
 
-(oa::load-external-libs '(:midi :audio :xml :sdif :udp :osc :opengl :json :yason))
+(oa::load-external-libs '(:midi :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"

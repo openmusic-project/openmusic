@@ -109,7 +109,10 @@
 
 (defun draw-po (pane po)
    (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position po)
-    (let ((fff (if (gp::font-description-p (om-get-font po)) (gp::find-best-font pane (om-get-font po)) (om-get-font po))))
+    (let ((fff (or (if (gp::font-description-p (om-get-font po))
+		       (gp::find-best-font pane (om-get-font po))
+		       (om-get-font po))
+		   (gp::graphics-state-font (gp::port-graphics-state pane))))) ;; when po class is text-enter-view returns nil for fff... AV
       (gp::with-graphics-state (pane :font fff 
                                      :mask 
                                      ;#-win32
@@ -149,7 +152,8 @@
   (when (and (interface-visible-p self) (om-get-view self))
     ;(capi::with-atomic-redisplay ((om-get-view self))
       (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-      #+win32(mapcar 'om-invalidate-view (om-subviews self))
+      (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
+      #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
     ;  )
   ))
 
@@ -163,22 +167,34 @@
 
 (defmethod om-invalidate-corners ((self om-item-view) topleft bottomright)
   (when (item-container self)
-    (gp::invalidate-rectangle (item-container self) 
-                              (+ (item-x self) (om-point-h topleft)) 
-                              (+ (item-y self) (om-point-v topleft))
-                              (+ (item-x self) (- (om-point-h bottomright) (om-point-h topleft)))
-                              (+ (item-y self) (- (om-point-v bottomright) (om-point-v topleft))))))
+    (capi::apply-in-pane-process (om-get-view self)
+				 'gp::invalidate-rectangle
+				 (item-container self) 
+				 (+ (item-x self) (om-point-h topleft)) 
+				 (+ (item-y self) (om-point-v topleft))
+				 (+ (item-x self) (- (om-point-h bottomright) (om-point-h topleft)))
+				 (+ (item-y self) (- (om-point-v bottomright) (om-point-v topleft)))
+				 )))
 
 ;; deprecated
 (defmethod om-invalidate-corners ((self om-graphic-object) topleft bottomright)
+  ;;(print (list 'drawing-mode=quality? (gp::port-drawing-mode-quality-p self)))
   (when (interface-visible-p self)
-    (gp::invalidate-rectangle (om-get-view self) (om-point-h topleft) (om-point-v topleft) 
-                               (- (om-point-h bottomright) (om-point-h topleft)) 
-                               (- (om-point-v bottomright) (om-point-v topleft)))))
+    (capi::apply-in-pane-process (om-get-view self)
+				 'gp::invalidate-rectangle
+				 (om-get-view self)
+				 ;; (om-point-h topleft) (om-point-v topleft) 
+				 ;; (om-point-h bottomright) (om-point-v bottomright) 
+				 ;; (- (om-point-h bottomright) (om-point-h topleft)) 
+				 ;; (- (om-point-v bottomright) (om-point-v topleft))
+				 )))
 
 (defmethod om-invalidate-rectangle ((self om-graphic-object) x y w h)
   (when (interface-visible-p self)
-    (gp::invalidate-rectangle (om-get-view self) x y w h)))
+    (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self)
+				 ;;x y w h
+				 )
+    ))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
   (when (item-container self)
@@ -203,11 +219,11 @@
                           (om-draw-rect 0 0 (- (om-width self)  1) (- (om-height self) 1)))))
 
 (defmethod om-redraw-view ((self om-scroller))
- (let* ((x0  (om-h-scroll-position self))
+  (let* ((x0  (om-h-scroll-position self))
          (y0  (om-v-scroll-position self)))
     (capi::apply-in-pane-process self
-                   (lambda (pane) (capi:redraw-pinboard-layout (om-get-view pane) x0 y0 (om-width pane) (om-height pane) t))
-                   self)
+				 (lambda (pane) (capi:redraw-pinboard-layout (om-get-view pane) x0 y0 (om-width pane) (om-height pane) t))
+				 self)
     ))
 
 (defmethod om-highlight-view ((self om-graphic-object) t-or-nil)

@@ -1,0 +1,5 @@
+@anchor{Function proper-list-length}
+@deffn {Function} {proper-list-length} list
+@findex proper-list-length
+Returns length of @code{list}, signalling an error if it is not a proper list.
+@end deffn

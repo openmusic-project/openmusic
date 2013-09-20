@@ -1,0 +1,7 @@
+@anchor{Function make-gensym}
+@deffn {Function} {make-gensym} name
+@findex make-gensym
+If @code{name} is a non-negative integer, calls @code{gensym} using it. Otherwise @code{name}
+must be a string designator, in which case calls @code{gensym} using the designated
+string as the argument.
+@end deffn

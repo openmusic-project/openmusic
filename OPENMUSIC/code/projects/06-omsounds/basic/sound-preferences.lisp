@@ -35,8 +35,7 @@
       (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
           (when (/= new-sr *audio-sr*)
             (setf *audio-sr* new-sr)
-            #+libaudiostream (las-set-sample-rate *audio-sr*)
-            )
+            (las-set-sample-rate *audio-sr*))
         (progn 
           (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
           (set-pref modulepref :audio-sr 44100)
@@ -65,10 +64,10 @@
     (when (get-pref modulepref :audio-presets)
       (setf *general-mixer-presets* (get-pref modulepref :audio-presets)))
     (if (and *general-mixer-presets* (> (length *general-mixer-presets*) 1))
-        (progn 
-          (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
-          (setf *general-mixer-current-preset* 1))
-      (setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
+	(progn 
+	  (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
+	  (setf *general-mixer-current-preset* 1))
+	(setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
     (apply-mixer-values)
     t))
 

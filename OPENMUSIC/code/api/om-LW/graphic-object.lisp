@@ -90,60 +90,61 @@
    :create-callback 'om-create-callback
    :geometry-change-callback 'om-resize-callback
    :destroy-callback 'om-destroy-callback
-   :input-model '( (:post-menu om-context-menu-callback)
+   :input-model '(
+		  (:post-menu om-context-menu-callback)
                    
-                   ((:button-1 :motion :shift #+macosx :hyper #-macosx :control :meta)  om-clic-motion-callback '(t t t))
-                   ((:button-1 :motion :shift #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(t t nil))
-                   ((:button-1 :motion :shift :meta)  om-clic-motion-callback '(t  nil t))
-                   ((:button-1 :motion :meta #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(nil t t))
-                   ((:button-1 :motion :shift)  om-clic-motion-callback '(t nil nil))
-                   ((:button-1 :motion #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(nil t nil))
-                   ((:button-1 :motion :meta)  om-clic-motion-callback '(nil nil t))
-                   ((:button-1 :motion)  om-clic-motion-callback '(nil nil nil))
+		  ((:button-1 :motion :shift #+macosx :hyper #-macosx :control :meta)  om-clic-motion-callback '(t t t))
+		  ((:button-1 :motion :shift #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(t t nil))
+		  ((:button-1 :motion :shift :meta)  om-clic-motion-callback '(t  nil t))
+		  ((:button-1 :motion :meta #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(nil t t))
+		  ((:button-1 :motion :shift)  om-clic-motion-callback '(t nil nil))
+		  ((:button-1 :motion #+macosx :hyper #-macosx :control)  om-clic-motion-callback '(nil t nil))
+		  ((:button-1 :motion :meta)  om-clic-motion-callback '(nil nil t))
+		  ((:button-1 :motion)  om-clic-motion-callback '(nil nil nil))
                    
-                   ;;; TYPE = (SHIF CMD OPTION)
+;;; TYPE = (SHIF CMD OPTION)
 
-                   ((:button-1 :press :shift #+macosx :hyper #-macosx :control :meta) om-clic-callback '(t t t))
-                   ((:button-1 :press :shift #+macosx :hyper #-macosx :control) om-clic-callback '(t t nil))
-                   ((:button-1 :press :shift :meta) om-clic-callback '(t  nil t))
-                   ((:button-1 :press :meta #+macosx :hyper #-macosx :control) om-clic-callback '(nil t t))
-                   ((:button-1 :press :shift) om-clic-callback '(t nil nil))
-                   ((:button-1 :press #+macosx :hyper #-macosx :control) om-clic-callback '(nil t nil))
-                   ((:button-1 :press :meta) om-clic-callback '(nil nil t))
-                   ((:button-1 :press) om-clic-callback '(nil nil nil))
+		  ((:button-1 :press :shift #+macosx :hyper #-macosx :control :meta) om-clic-callback '(t t t))
+		  ((:button-1 :press :shift #+macosx :hyper #-macosx :control) om-clic-callback '(t t nil))
+		  ((:button-1 :press :shift :meta) om-clic-callback '(t  nil t))
+		  ((:button-1 :press :meta #+macosx :hyper #-macosx :control) om-clic-callback '(nil t t))
+		  ((:button-1 :press :shift) om-clic-callback '(t nil nil))
+		  ((:button-1 :press #+macosx :hyper #-macosx :control) om-clic-callback '(nil t nil))
+		  ((:button-1 :press :meta) om-clic-callback '(nil nil t))
+		  ((:button-1 :press) om-clic-callback '(nil nil nil))
                    
                    
                    
-                   ((:motion :shift #+macosx :hyper #-macosx :control) om-motion-callback '(t t nil))
-                   ((:motion :shift) om-motion-callback '(t nil nil))
-                   ((:motion #+macosx :hyper #-macosx :control) om-motion-callback '(nil t nil))
-                   (:motion om-motion-callback '(nil nil nil))
+		  ((:motion :shift #+macosx :hyper #-macosx :control) om-motion-callback '(t t nil))
+		  ((:motion :shift) om-motion-callback '(t nil nil))
+		  ((:motion #+macosx :hyper #-macosx :control) om-motion-callback '(nil t nil))
+		  (:motion om-motion-callback '(nil nil nil))
                    
-                   ((:button-1 :release :shift #+macosx :hyper #-macosx :control :meta)  om-clic-release-callback '(t t t))
-                   ((:button-1 :release :shift #+macosx :hyper #-macosx :control)  om-clic-release-callback '(t t nil))
-                   ((:button-1 :release :shift :meta)  om-clic-release-callback '(t  nil t))
-                   ((:button-1 :release :meta #+macosx :hyper #-macosx :control)  om-clic-release-callback '(nil t t))
-                   ((:button-1 :release :shift)  om-clic-release-callback '(t nil nil))
-                   ((:button-1 :release #+macosx :hyper #-macosx :control)  om-clic-release-callback '(nil t nil))
-                   ((:button-1 :release :meta)  om-clic-release-callback '(nil nil t))
-                   ((:button-1 :release)  om-clic-release-callback '(nil nil nil))
+		  ((:button-1 :release :shift #+macosx :hyper #-macosx :control :meta)  om-clic-release-callback '(t t t))
+		  ((:button-1 :release :shift #+macosx :hyper #-macosx :control)  om-clic-release-callback '(t t nil))
+		  ((:button-1 :release :shift :meta)  om-clic-release-callback '(t  nil t))
+		  ((:button-1 :release :meta #+macosx :hyper #-macosx :control)  om-clic-release-callback '(nil t t))
+		  ((:button-1 :release :shift)  om-clic-release-callback '(t nil nil))
+		  ((:button-1 :release #+macosx :hyper #-macosx :control)  om-clic-release-callback '(nil t nil))
+		  ((:button-1 :release :meta)  om-clic-release-callback '(nil nil t))
+		  ((:button-1 :release)  om-clic-release-callback '(nil nil nil))
                    
-                   ;; test
-                   ((:button-3 :release)  om-clic-release-callback '(nil nil nil))
+		  ;; test
+		  ((:button-3 :release)  om-clic-release-callback '(nil nil nil))
                    
-                   ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control :meta) om-double-clic-callback '(t t t))
-                   ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control) om-double-clic-callback '(t t nil))
-                   ((:button-1 :second-press :shift :meta) om-double-clic-callback '(t  nil t))
-                   ((:button-1 :second-press :meta #+macosx :hyper #-macosx :control) om-double-clic-callback '(nil t t))
-                   ((:button-1 :second-press :shift ) om-double-clic-callback '(t nil nil))
-                   ((:button-1 :second-press #+macosx :hyper #-macosx :control) om-double-clic-callback '(nil t nil))
-                   ((:button-1 :second-press :meta) om-double-clic-callback '(nil nil t))
-                   ((:button-1 :second-press) om-double-clic-callback '(nil nil nil))
-                   ;;; ((:button-3 :press) om-right-clic-callback)
+		  ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control :meta) om-double-clic-callback '(t t t))
+		  ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control) om-double-clic-callback '(t t nil))
+		  ((:button-1 :second-press :shift :meta) om-double-clic-callback '(t  nil t))
+		  ((:button-1 :second-press :meta #+macosx :hyper #-macosx :control) om-double-clic-callback '(nil t t))
+		  ((:button-1 :second-press :shift ) om-double-clic-callback '(t nil nil))
+		  ((:button-1 :second-press #+macosx :hyper #-macosx :control) om-double-clic-callback '(nil t nil))
+		  ((:button-1 :second-press :meta) om-double-clic-callback '(nil nil t))
+		  ((:button-1 :second-press) om-double-clic-callback '(nil nil nil))
+;;; ((:button-3 :press) om-right-clic-callback)
                    
-                   (:gesture-spec om-char-spec-callback)
-                 ;(:character  om-char-callback '(nil nil nil))
-                   )
+		  (:gesture-spec om-char-spec-callback)
+					;(:character  om-char-callback '(nil nil nil))
+		  )
    ))
  
 
@@ -183,7 +184,8 @@
 
 (defmethod internal-add-subview ((self om-graphic-object) (subview om-graphic-object))
   (setf (vcontainer subview) self)
-  (setf (vsubviews self) (append (vsubviews self) (list subview))))
+  (setf (vsubviews self) (append (vsubviews self) (list subview)))
+  )
 
 (defmethod om-remove-subviews ((self om-graphic-object) &rest subviews)
   "Removes subviews from graphic object"
@@ -199,7 +201,7 @@
 
 
 ;;; different pour om-window
-(defmethod om-get-view ((self om-graphic-object)) (or *default-printer-port* self))
+(defmethod om-get-view ((self om-graphic-object))  (or *default-printer-port* self))
 
 (defmethod om-subviews ((self om-graphic-object)) 
   (vsubviews self))
@@ -244,7 +246,7 @@
       (setf (simple-pane-background (om-get-view self)) col))
     #+cocoa
     (setf (simple-pane-background (om-get-view self)) col)))
-      
+
 (defmethod om-get-bg-color ((self om-graphic-object))
   (let ((c (simple-pane-background (om-get-view self))))
     (when c (make-instance 'omcolor :c c))))

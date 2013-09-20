@@ -1,0 +1,5 @@
+@anchor{Function subfactorial}
+@deffn {Function} {subfactorial} n
+@findex subfactorial
+Subfactorial of the non-negative integer @code{n}.
+@end deffn

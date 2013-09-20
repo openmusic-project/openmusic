@@ -1,0 +1,5 @@
+@anchor{Type negative-long-float}
+@deftp {Type} {negative-long-float}
+@tindex negative-long-float
+Type specifier denoting the long-float range from -inf to @code{0}.0d0.
+@end deftp

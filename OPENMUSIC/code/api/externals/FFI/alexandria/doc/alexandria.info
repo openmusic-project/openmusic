@@ -1,0 +1,1072 @@
+This is alexandria.info, produced by makeinfo version 4.13 from
+alexandria.texinfo.
+
+INFO-DIR-SECTION Software development
+START-INFO-DIR-ENTRY
+* alexandria:           Common Lisp utilities.
+END-INFO-DIR-ENTRY
+
+   Alexandria software and associated documentation are in the public
+domain:
+
+       Authors dedicate this work to public domain, for the benefit of
+     the   public at large and to the detriment of the authors' heirs
+     and   successors. Authors intends this dedication to be an overt
+     act of   relinquishment in perpetuity of all present and future
+     rights under   copyright law, whether vested or contingent, in the
+     work. Authors   understands that such relinquishment of all rights
+     includes the   relinquishment of all rights to enforce (by lawsuit
+     or otherwise)   those copyrights in the work.
+
+     Authors recognize that, once placed in the public domain, the work
+      may be freely reproduced, distributed, transmitted, used,
+     modified,   built upon, or otherwise exploited by anyone for any
+     purpose,   commercial or non-commercial, and in any way, including
+     by methods   that have not yet been invented or conceived.
+
+   In those legislations where public domain dedications are not
+recognized or possible, Alexandria is distributed under the following
+terms and conditions:
+
+       Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files   (the "Software"), to deal in the Software without
+     restriction,   including without limitation the rights to use,
+     copy, modify, merge,   publish, distribute, sublicense, and/or
+     sell copies of the Software,   and to permit persons to whom the
+     Software is furnished to do so,   subject to the following
+     conditions:
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY   CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT,   TORT OR OTHERWISE, ARISING
+     FROM, OUT OF OR IN CONNECTION WITH THE   SOFTWARE OR THE USE OR
+     OTHER DEALINGS IN THE SOFTWARE.
+
+
+File: alexandria.info,  Node: Top,  Next: Hash Tables,  Up: (dir)
+
+Alexandria
+**********
+
+Alexandria software and associated documentation are in the public
+domain:
+
+       Authors dedicate this work to public domain, for the benefit of
+     the   public at large and to the detriment of the authors' heirs
+     and   successors. Authors intends this dedication to be an overt
+     act of   relinquishment in perpetuity of all present and future
+     rights under   copyright law, whether vested or contingent, in the
+     work. Authors   understands that such relinquishment of all rights
+     includes the   relinquishment of all rights to enforce (by lawsuit
+     or otherwise)   those copyrights in the work.
+
+     Authors recognize that, once placed in the public domain, the work
+      may be freely reproduced, distributed, transmitted, used,
+     modified,   built upon, or otherwise exploited by anyone for any
+     purpose,   commercial or non-commercial, and in any way, including
+     by methods   that have not yet been invented or conceived.
+
+   In those legislations where public domain dedications are not
+recognized or possible, Alexandria is distributed under the following
+terms and conditions:
+
+       Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files   (the "Software"), to deal in the Software without
+     restriction,   including without limitation the rights to use,
+     copy, modify, merge,   publish, distribute, sublicense, and/or
+     sell copies of the Software,   and to permit persons to whom the
+     Software is furnished to do so,   subject to the following
+     conditions:
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY   CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT,   TORT OR OTHERWISE, ARISING
+     FROM, OUT OF OR IN CONNECTION WITH THE   SOFTWARE OR THE USE OR
+     OTHER DEALINGS IN THE SOFTWARE.
+
+* Menu:
+
+* Hash Tables::
+* Data and Control Flow::
+* Conses::
+* Sequences::
+* IO::
+* Macro Writing::
+* Symbols::
+* Arrays::
+* Types::
+* Numbers::
+
+
+File: alexandria.info,  Node: Hash Tables,  Next: Data and Control Flow,  Prev: Top,  Up: Top
+
+1 Hash Tables
+*************
+
+ -- Macro: ensure-gethash key hash-table &optional default
+     Like `gethash', but if `key' is not found in the `hash-table'
+     saves the `default' under key before returning it. Secondary
+     return value is true if key was already in the table.
+
+ -- Function: copy-hash-table table &key key test size rehash-size
+          rehash-threshold
+     Returns a copy of hash table `table', with the same keys and values
+     as the `table'. The copy has the same properties as the original,
+     unless overridden by the keyword arguments.
+
+     Before each of the original values is set into the new hash-table,
+     `key' is invoked on the value. As `key' defaults to `cl:identity',
+     a shallow copy is returned by default.
+
+ -- Function: maphash-keys function table
+     Like `maphash', but calls `function' with each key in the hash
+     table `table'.
+
+ -- Function: maphash-values function table
+     Like `maphash', but calls `function' with each value in the hash
+     table `table'.
+
+ -- Function: hash-table-keys table
+     Returns a list containing the keys of hash table `table'.
+
+ -- Function: hash-table-values table
+     Returns a list containing the values of hash table `table'.
+
+ -- Function: hash-table-alist table
+     Returns an association list containing the keys and values of hash
+     table `table'.
+
+ -- Function: hash-table-plist table
+     Returns a property list containing the keys and values of hash
+     table `table'.
+
+ -- Function: alist-hash-table alist &rest hash-table-initargs
+     Returns a hash table containing the keys and values of the
+     association list `alist'. Hash table is initialized using the
+     `hash-table-initargs'.
+
+ -- Function: plist-hash-table plist &rest hash-table-initargs
+     Returns a hash table containing the keys and values of the
+     property list `plist'. Hash table is initialized using the
+     `hash-table-initargs'.
+
+
+File: alexandria.info,  Node: Data and Control Flow,  Next: Conses,  Prev: Hash Tables,  Up: Top
+
+2 Data and Control Flow
+***********************
+
+ -- Macro: define-constant name initial-value &key test documentation
+     Ensures that the global variable named by `name' is a constant
+     with a value that is equal under `test' to the result of
+     evaluating `initial-value'. `test' is a /function designator/ that
+     defaults to `eql'. If `documentation' is given, it becomes the
+     documentation string of the constant.
+
+     Signals an error if `name' is already a bound non-constant
+     variable.
+
+     Signals an error if `name' is already a constant variable whose
+     value is not equal under `test' to result of evaluating
+     `initial-value'.
+
+ -- Macro: destructuring-case keyform &body clauses
+     `destructuring-case', `-ccase', and `-ecase' are a combination of
+     `case' and `destructuring-bind'.  `keyform' must evaluate to a
+     `cons'.
+
+     Clauses are of the form:
+
+            ((CASE-KEYS . DESTRUCTURING-LAMBDA-LIST) FORM*)
+
+     The clause whose `case-keys' matches `car' of `key', as if by
+     `case', `ccase', or `ecase', is selected, and FORMs are then
+     executed with `cdr' of `key' is destructured and bound by the
+     `destructuring-lambda-list'.
+
+     Example:
+
+           (defun dcase (x)
+             (destructuring-case x
+               ((:foo a b)
+                (format nil "foo: ~S, ~S" a b))
+               ((:bar &key a b)
+                (format nil "bar, ~S, ~S" a b))
+               (((:alt1 :alt2) a)
+                (format nil "alt: ~S" a))
+               ((t &rest rest)
+                (format nil "unknown: ~S" rest))))
+
+            (dcase (list :foo 1 2))        ; => "foo: 1, 2"
+            (dcase (list :bar :a 1 :b 2))  ; => "bar: 1, 2"
+            (dcase (list :alt1 1))         ; => "alt: 1"
+            (dcase (list :alt2 2))         ; => "alt: 2"
+            (dcase (list :quux 1 2 3))     ; => "unknown: 1, 2, 3"
+
+           (defun decase (x)
+             (destructuring-case x
+               ((:foo a b)
+                (format nil "foo: ~S, ~S" a b))
+               ((:bar &key a b)
+                (format nil "bar, ~S, ~S" a b))
+               (((:alt1 :alt2) a)
+                (format nil "alt: ~S" a))))
+
+            (decase (list :foo 1 2))        ; => "foo: 1, 2"
+            (decase (list :bar :a 1 :b 2))  ; => "bar: 1, 2"
+            (decase (list :alt1 1))         ; => "alt: 1"
+            (decase (list :alt2 2))         ; => "alt: 2"
+            (decase (list :quux 1 2 3))     ; =| error
+
+ -- Macro: ensure-functionf &rest places
+     Multiple-place modify macro for `ensure-function:' ensures that
+     each of `places' contains a function.
+
+ -- Macro: multiple-value-prog2 first-form second-form &body forms
+     Evaluates `first-form', then `second-form', and then `forms'.
+     Yields as its value all the value returned by `second-form'.
+
+ -- Macro: named-lambda name lambda-list &body body
+     Expands into a lambda-expression within whose `body' `name'
+     denotes the corresponding function.
+
+ -- Macro: nth-value-or nth-value &body forms
+     Evaluates `form' arguments one at a time, until the `nth-value'
+     returned by one of the forms is true. It then returns all the
+     values returned by evaluating that form. If none of the forms
+     return a true nth value, this form returns `nil'.
+
+ -- Macro: if-let bindings &body (then-form &optional else-form)
+     Creates new variable bindings, and conditionally executes either
+     `then-form' or `else-form'. `else-form' defaults to `nil'.
+
+     `bindings' must be either single binding of the form:
+
+           (variable initial-form)
+
+     or a list of bindings of the form:
+
+           ((variable-1 initial-form-1)
+            (variable-2 initial-form-2)
+            ...
+            (variable-n initial-form-n))
+
+     All initial-forms are executed sequentially in the specified
+     order. Then all the variables are bound to the corresponding
+     values.
+
+     If all variables were bound to true values, the `then-form' is
+     executed with the bindings in effect, otherwise the `else-form' is
+     executed with the bindings in effect.
+
+ -- Macro: when-let bindings &body forms
+     Creates new variable bindings, and conditionally executes `forms'.
+
+     `bindings' must be either single binding of the form:
+
+           (variable initial-form)
+
+     or a list of bindings of the form:
+
+           ((variable-1 initial-form-1)
+            (variable-2 initial-form-2)
+            ...
+            (variable-n initial-form-n))
+
+     All initial-forms are executed sequentially in the specified
+     order. Then all the variables are bound to the corresponding
+     values.
+
+     If all variables were bound to true values, then `forms' are
+     executed as an implicit `progn'.
+
+ -- Macro: when-let* bindings &body forms
+     Creates new variable bindings, and conditionally executes `forms'.
+
+     `bindings' must be either single binding of the form:
+
+           (variable initial-form)
+
+     or a list of bindings of the form:
+
+           ((variable-1 initial-form-1)
+            (variable-2 initial-form-2)
+            ...
+            (variable-n initial-form-n))
+
+     Each initial-form is executed in turn, and the variable bound to
+     the corresponding value. Initial-form expressions can refer to
+     variables previously bound by the `when-let*'.
+
+     Execution of `when-let*' stops immediately if any initial-form
+     evaluates to `nil'.  If all initial-forms evaluate to true, then
+     `forms' are executed as an implicit `progn'.
+
+ -- Macro: switch whole (object &key test key) &body clauses
+     Evaluates first matching clause, returning its values, or
+     evaluates and returns the values of `default' if no keys match.
+
+ -- Macro: cswitch whole (object &key test key) &body clauses
+     Like `switch', but signals a continuable error if no key matches.
+
+ -- Macro: eswitch whole (object &key test key) &body clauses
+     Like `switch', but signals an error if no key matches.
+
+ -- Macro: whichever &rest possibilities env
+     Evaluates exactly one of `possibilities', chosen at random.
+
+ -- Macro: xor &rest datums
+     Evaluates its arguments one at a time, from left to right. If more
+     then one argument evaluates to a true value no further `datums'
+     are evaluated, and `nil' is returned as both primary and secondary
+     value. If exactly one argument evaluates to true, its value is
+     returned as the primary value after all the arguments have been
+     evaluated, and `t' is returned as the secondary value. If no
+     arguments evaluate to true `nil' is retuned as primary, and `t' as
+     secondary value.
+
+ -- Function: disjoin predicate &rest more-predicates
+     Returns a function that applies each of `predicate' and
+     `more-predicate' functions in turn to its arguments, returning the
+     primary value of the first predicate that returns true, without
+     calling the remaining predicates.  If none of the predicates
+     returns true, `nil' is returned.
+
+ -- Function: conjoin predicate &rest more-predicates
+     Returns a function that applies each of `predicate' and
+     `more-predicate' functions in turn to its arguments, returning
+     `nil' if any of the predicates returns false, without calling the
+     remaining predicates. If none of the predicates returns false,
+     returns the primary value of the last predicate.
+
+ -- Function: compose function &rest more-functions
+     Returns a function composed of `function' and `more-functions'
+     that applies its arguments to to each in turn, starting from the
+     rightmost of `more-functions', and then calling the next one with
+     the primary value of the last.
+
+ -- Function: ensure-function function-designator
+     Returns the function designated by `function-designator:' if
+     `function-designator' is a function, it is returned, otherwise it
+     must be a function name and its `fdefinition' is returned.
+
+ -- Function: multiple-value-compose function &rest more-functions
+     Returns a function composed of `function' and `more-functions'
+     that applies its arguments to each in turn, starting from the
+     rightmost of `more-functions', and then calling the next one with
+     all the return values of the last.
+
+ -- Function: curry function &rest arguments
+     Returns a function that applies `arguments' and the arguments it
+     is called with to `function'.
+
+ -- Function: rcurry function &rest arguments
+     Returns a function that applies the arguments it is called with
+     and `arguments' to `function'.
+
+
+File: alexandria.info,  Node: Conses,  Next: Sequences,  Prev: Data and Control Flow,  Up: Top
+
+3 Conses
+********
+
+ -- Type: proper-list
+     Type designator for proper lists. Implemented as a `satisfies'
+     type, hence not recommended for performance intensive use. Main
+     usefullness as a type designator of the expected type in a
+     `type-error'.
+
+ -- Type: circular-list
+     Type designator for circular lists. Implemented as a `satisfies'
+     type, so not recommended for performance intensive use. Main
+     usefullness as the expected-type designator of a `type-error'.
+
+ -- Macro: appendf place &rest lists env
+     Modify-macro for `append'. Appends `lists' to the place designated
+     by the first argument.
+
+ -- Macro: nconcf place &rest lists env
+     Modify-macro for `nconc'. Concatenates `lists' to place designated
+     by the first argument.
+
+ -- Macro: remove-from-plistf place &rest keys env
+     Modify macro for `remove-from-plist'.
+
+ -- Macro: delete-from-plistf place &rest keys env
+     Modify macro for `delete-from-plist'.
+
+ -- Macro: reversef place env
+     Modify-macro for `reverse'. Copies and reverses the list stored in
+     the given place and saves back the result into the place.
+
+ -- Macro: nreversef place env
+     Modify-macro for `nreverse'. Reverses the list stored in the given
+     place by destructively modifying it and saves back the result into
+     the place.
+
+ -- Macro: unionf place list &rest args env
+     Modify-macro for `union'. Saves the union of `list' and the
+     contents of the place designated by the first argument to the
+     designated place.
+
+ -- Macro: nunionf place list &rest args env
+     Modify-macro for `nunion'. Saves the union of `list' and the
+     contents of the place designated by the first argument to the
+     designated place. May modify either argument.
+
+ -- Macro: doplist (key val plist &optional values) &body body
+     Iterates over elements of `plist'. `body' can be preceded by
+     declarations, and is like a `tagbody'. `return' may be used to
+     terminate the iteration early. If `return' is not used, returns
+     `values'.
+
+ -- Function: circular-list-p object
+     Returns true if `object' is a circular list, `nil' otherwise.
+
+ -- Function: circular-tree-p object
+     Returns true if `object' is a circular tree, `nil' otherwise.
+
+ -- Function: proper-list-p object
+     Returns true if `object' is a proper list.
+
+ -- Function: alist-plist alist
+     Returns a property list containing the same keys and values as the
+     association list `alist' in the same order.
+
+ -- Function: plist-alist plist
+     Returns an association list containing the same keys and values as
+     the property list `plist' in the same order.
+
+ -- Function: circular-list &rest elements
+     Creates a circular list of `elements'.
+
+ -- Function: make-circular-list length &key initial-element
+     Creates a circular list of `length' with the given
+     `initial-element'.
+
+ -- Function: ensure-car thing
+     If `thing' is a `cons', its `car' is returned. Otherwise `thing'
+     is returned.
+
+ -- Function: ensure-cons cons
+     If `cons' is a cons, it is returned. Otherwise returns a fresh
+     cons with `cons'   in the car, and `nil' in the cdr.
+
+ -- Function: ensure-list list
+     If `list' is a list, it is returned. Otherwise returns the list
+     designated by `list'.
+
+ -- Function: flatten tree
+     Traverses the tree in order, collecting non-null leaves into a
+     list.
+
+ -- Function: lastcar list
+     Returns the last element of `list'. Signals a type-error if `list'
+     is not a proper list.
+
+ -- Function: (setf lastcar)
+     Sets the last element of `list'. Signals a type-error if `list' is
+     not a proper list.
+
+ -- Function: proper-list-length list
+     Returns length of `list', signalling an error if it is not a
+     proper list.
+
+ -- Function: mappend function &rest lists
+     Applies `function' to respective element(s) of each `list',
+     appending all the all the result list to a single list. `function'
+     must return a list.
+
+ -- Function: map-product function list &rest more-lists
+     Returns a list containing the results of calling `function' with
+     one argument from `list', and one from each of `more-lists' for
+     each combination of arguments.  In other words, returns the
+     product of `list' and `more-lists' using `function'.
+
+     Example:
+
+           (map-product 'list '(1 2) '(3 4) '(5 6))
+            => ((1 3 5) (1 3 6) (1 4 5) (1 4 6)
+                (2 3 5) (2 3 6) (2 4 5) (2 4 6))
+
+ -- Function: remove-from-plist plist &rest keys
+     Returns a propery-list with same keys and values as `plist',
+     except that keys in the list designated by `keys' and values
+     corresponding to them are removed.  The returned property-list may
+     share structure with the `plist', but `plist' is not destructively
+     modified. Keys are compared using `eq'.
+
+ -- Function: delete-from-plist plist &rest keys
+     Just like `remove-from-plist', but this version may destructively
+     modify the provided plist.
+
+ -- Function: set-equal list1 list2 &key test key
+     Returns true if every element of `list1' matches some element of
+     `list2' and every element of `list2' matches some element of
+     `list1'. Otherwise returns false.
+
+ -- Function: setp object &key test key
+     Returns true if `object' is a list that denotes a set, `nil'
+     otherwise. A list denotes a set if each element of the list is
+     unique under `key' and `test'.
+
+
+File: alexandria.info,  Node: Sequences,  Next: IO,  Prev: Conses,  Up: Top
+
+4 Sequences
+***********
+
+ -- Type: proper-sequence
+     Type designator for proper sequences, that is proper lists and
+     sequences that are not lists.
+
+ -- Macro: deletef place item &rest remove-keywords env
+     Modify-macro for `delete'. Sets place designated by the first
+     argument to the result of calling `delete' with `item', place, and
+     the `remove-keywords'.
+
+ -- Macro: removef place item &rest remove-keywords env
+     Modify-macro for `remove'. Sets place designated by the first
+     argument to the result of calling `remove' with `item', place, and
+     the `remove-keywords'.
+
+ -- Function: rotate sequence &optional n
+     Returns a sequence of the same type as `sequence', with the
+     elements of `sequence' rotated by `n:' `n' elements are moved from
+     the end of the sequence to the front if `n' is positive, and `-n'
+     elements moved from the front to the end if `n' is negative.
+     `sequence' must be a proper sequence. `n' must be an integer,
+     defaulting to `1'.
+
+     If absolute value of `n' is greater then the length of the
+     sequence, the results are identical to calling `rotate' with
+
+            (* (signum n) (mod n (length sequence))).
+
+     Note: the original sequence may be destructively altered, and
+     result sequence may share structure with it.
+
+ -- Function: shuffle sequence &key start end
+     Returns a random permutation of `sequence' bounded by `start' and
+     `end'.  Original sequece may be destructively modified, and share
+     storage with the original one. Signals an error if `sequence' is
+     not a proper sequence.
+
+ -- Function: random-elt sequence &key start end
+     Returns a random element from `sequence' bounded by `start' and
+     `end'. Signals an error if the `sequence' is not a proper
+     non-empty sequence, or if `end' and `start' are not proper
+     bounding index designators for `sequence'.
+
+ -- Function: emptyp sequence
+     Returns true if `sequence' is an empty sequence. Signals an error
+     if `sequence' is not a sequence.
+
+ -- Function: sequence-of-length-p sequence length
+     Return true if `sequence' is a sequence of length `length'.
+     Signals an error if `sequence' is not a sequence. Returns `false'
+     for circular lists.
+
+ -- Function: length= &rest sequences
+     Takes any number of sequences or integers in any order. Returns
+     true iff the length of all the sequences and the integers are
+     equal. Hint: there's a compiler macro that expands into more
+     efficient code if the first argument is a literal integer.
+
+ -- Function: copy-sequence type sequence
+     Returns a fresh sequence of `type', which has the same elements as
+     `sequence'.
+
+ -- Function: first-elt sequence
+     Returns the first element of `sequence'. Signals a type-error if
+     `sequence' is not a sequence, or is an empty sequence.
+
+ -- Function: (setf first-elt)
+     Sets the first element of `sequence'. Signals a type-error if
+     `sequence' is not a sequence, is an empty sequence, or if `object'
+     cannot be stored in `sequence'.
+
+ -- Function: last-elt sequence
+     Returns the last element of `sequence'. Signals a type-error if
+     `sequence' is not a proper sequence, or is an empty sequence.
+
+ -- Function: (setf last-elt)
+     Sets the last element of `sequence'. Signals a type-error if
+     `sequence' is not a proper sequence, is an empty sequence, or if
+     `object' cannot be stored in `sequence'.
+
+ -- Function: starts-with object sequence &key test key
+     Returns true if `sequence' is a sequence whose first element is
+     `eql' to `object'.  Returns `nil' if the `sequence' is not a
+     sequence or is an empty sequence.
+
+ -- Function: starts-with-subseq prefix sequence &rest args &key
+          return-suffix &allow-other-keys
+     Test whether the first elements of `sequence' are the same (as per
+     TEST) as the elements of `prefix'.
+
+     If `return-suffix' is `t' the functions returns, as a second
+     value, a displaced array pointing to the sequence after `prefix'.
+
+ -- Function: ends-with object sequence &key test key
+     Returns true if `sequence' is a sequence whose last element is
+     `eql' to `object'.  Returns `nil' if the `sequence' is not a
+     sequence or is an empty sequence. Signals an error if `sequence'
+     is an improper list.
+
+ -- Function: ends-with-subseq suffix sequence &key test
+     Test whether `sequence' ends with `suffix'. In other words: return
+     true if the last (length SUFFIX) elements of `sequence' are equal
+     to `suffix'.
+
+ -- Function: map-combinations function sequence &key start end length
+          copy
+     Calls `function' with each combination of `length' constructable
+     from the elements of the subsequence of `sequence' delimited by
+     `start' and `end'. `start' defaults to `0', `end' to length of
+     `sequence', and `length' to the length of the delimited
+     subsequence. (So unless `length' is specified there is only a
+     single combination, which has the same elements as the delimited
+     subsequence.) If `copy' is true (the default) each combination is
+     freshly allocated. If `copy' is false all combinations are `eq' to
+     each other, in which case consequences are specified if a
+     combination is modified by `function'.
+
+ -- Function: map-derangements function sequence &key start end copy
+     Calls `function' with each derangement of the subsequence of
+     `sequence' denoted by the bounding index designators `start' and
+     `end'. Derangement is a permutation of the sequence where no
+     element remains in place. `sequence' is not modified, but
+     individual derangements are `eq' to each other. Consequences are
+     unspecified if calling `function' modifies either the derangement
+     or `sequence'.
+
+ -- Function: map-permutations function sequence &key start end length
+          copy
+     Calls function with each permutation of `length' constructable
+     from the subsequence of `sequence' delimited by `start' and `end'.
+     `start' defaults to `0', `end' to length of the sequence, and
+     `length' to the length of the delimited subsequence.
+
+
+File: alexandria.info,  Node: IO,  Next: Macro Writing,  Prev: Sequences,  Up: Top
+
+5 IO
+****
+
+ -- Function: read-file-into-string pathname &key buffer-size
+          external-format
+     Return the contents of the file denoted by `pathname' as a fresh
+     string.
+
+     The `external-format' parameter will be passed directly to
+     `with-open-file' unless it's `nil', which means the system default.
+
+ -- Function: read-file-into-byte-vector pathname
+     Read `pathname' into a freshly allocated (unsigned-byte 8) vector.
+
+
+File: alexandria.info,  Node: Macro Writing,  Next: Symbols,  Prev: IO,  Up: Top
+
+6 Macro Writing
+***************
+
+ -- Macro: once-only specs &body forms
+     Evaluates `forms' with symbols specified in `specs' rebound to
+     temporary variables, ensuring that each initform is evaluated only
+     once.
+
+     Each of `specs' must either be a symbol naming the variable to be
+     rebound, or of the form:
+
+            (symbol initform)
+
+     Bare symbols in `specs' are equivalent to
+
+            (symbol symbol)
+
+     Example:
+
+            (defmacro cons1 (x) (once-only (x) `(cons ,x ,x)))
+            (let ((y 0)) (cons1 (incf y))) => (1 . 1)
+
+ -- Macro: with-gensyms names &body forms
+     Binds each variable named by a symbol in `names' to a unique
+     symbol around `forms'. Each of `names' must either be either a
+     symbol, or of the form:
+
+           (symbol string-designator)
+
+     Bare symbols appearing in `names' are equivalent to:
+
+           (symbol symbol)
+
+     The string-designator is used as the argument to `gensym' when
+     constructing the unique symbol the named variable will be bound to.
+
+ -- Macro: with-unique-names names &body forms
+     Alias for `with-gensyms'.
+
+ -- Function: featurep feature-expression
+     Returns `t' if the argument matches the state of the `*features*'
+     list and `nil' if it does not. `feature-expression' can be any atom
+     or list acceptable to the reader macros `#+' and `#-'.
+
+ -- Function: parse-body body &key documentation whole
+     Parses `body' into (values remaining-forms declarations
+     doc-string).  Documentation strings are recognized only if
+     `documentation' is true.  Syntax errors in body are signalled and
+     `whole' is used in the signal arguments when given.
+
+ -- Function: parse-ordinary-lambda-list lambda-list &key normalize
+          allow-specializers normalize-optional normalize-keyword
+          normalize-auxilary
+     Parses an ordinary lambda-list, returning as multiple values:
+
+     `1'. Required parameters.
+
+     `2'. Optional parameter specifications, normalized into form:
+
+             (name init suppliedp)
+
+     `3'. Name of the rest parameter, or `nil'.
+
+     `4'. Keyword parameter specifications, normalized into form:
+
+             ((keyword-name name) init suppliedp)
+
+     `5'. Boolean indicating `&allow-other-keys' presence.
+
+     `6'. `&aux' parameter specifications, normalized into form
+
+             (name init).
+
+     `7'. Existence of `&key' in the lambda-list.
+
+     Signals a `program-error' is the lambda-list is malformed.
+
+
+File: alexandria.info,  Node: Symbols,  Next: Arrays,  Prev: Macro Writing,  Up: Top
+
+7 Symbols
+*********
+
+ -- Function: ensure-symbol name &optional package
+     Returns a symbol with name designated by `name', accessible in
+     package designated by `package'. If symbol is not already
+     accessible in `package', it is interned there. Returns a secondary
+     value reflecting the status of the symbol in the package, which
+     matches the secondary return value of `intern'.
+
+     Example:
+
+            (ensure-symbol :cons :cl) => cl:cons, :external
+
+ -- Function: format-symbol package control &rest arguments
+     Constructs a string by applying `arguments' to string designator
+     `control' as if by `format' within `with-standard-io-syntax', and
+     then creates a symbol named by that string.
+
+     If `package' is `nil', returns an uninterned symbol, if package is
+     `t', returns a symbol interned in the current package, and
+     otherwise returns a symbol interned in the package designated by
+     `package'.
+
+ -- Function: make-keyword name
+     Interns the string designated by `name' in the `keyword' package.
+
+ -- Function: make-gensym name
+     If `name' is a non-negative integer, calls `gensym' using it.
+     Otherwise `name' must be a string designator, in which case calls
+     `gensym' using the designated string as the argument.
+
+ -- Function: make-gensym-list length &optional x
+     Returns a list of `length' gensyms, each generated as if with a
+     call to `make-gensym', using the second (optional, defaulting to
+     "G") argument.
+
+ -- Function: symbolicate &rest things
+     Concatenate together the names of some strings and symbols,
+     producing a symbol in the current package.
+
+
+File: alexandria.info,  Node: Arrays,  Next: Types,  Prev: Symbols,  Up: Top
+
+8 Arrays
+********
+
+ -- Type: array-index
+     Type designator for an index into array of `length:' an integer
+     between `0' (inclusive) and `length' (exclusive). `length'
+     defaults to `array-dimension-limit'.
+
+ -- Type: array-length
+     Type designator for a dimension of an array of `length:' an
+     integer between `0' (inclusive) and `length' (inclusive). `length'
+     defaults to `array-dimension-limit'.
+
+ -- Function: copy-array array &key element-type fill-pointer adjustable
+     Returns an undisplaced copy of `array', with same fill-pointer and
+     adjustability (if any) as the original, unless overridden by the
+     keyword arguments.
+
+
+File: alexandria.info,  Node: Types,  Next: Numbers,  Prev: Arrays,  Up: Top
+
+9 Types
+*******
+
+ -- Type: string-designator
+     A string designator type. A string designator is either a string,
+     a symbol, or a character.
+
+ -- Macro: coercef place type-spec env
+     Modify-macro for `coerce'.
+
+ -- Function: of-type type
+     Returns a function of one argument, which returns true when its
+     argument is of `type'.
+
+ -- Function: type= type1 type2
+     Returns a primary value of `t' is `type1' and `type2' are the same
+     type, and a secondary value that is true is the type equality
+     could be reliably determined: primary value of `nil' and secondary
+     value of `t' indicates that the types are not equivalent.
+
+
+File: alexandria.info,  Node: Numbers,  Prev: Types,  Up: Top
+
+10 Numbers
+**********
+
+ -- Macro: maxf place &rest numbers env
+     Modify-macro for `max'. Sets place designated by the first
+     argument to the maximum of its original value and `numbers'.
+
+ -- Macro: minf place &rest numbers env
+     Modify-macro for `min'. Sets place designated by the first
+     argument to the minimum of its original value and `numbers'.
+
+ -- Function: binomial-coefficient n k
+     Binomial coefficient of `n' and `k', also expressed as `n' choose
+     `k'. This is the number of `k' element combinations given `n'
+     choises. `n' must be equal to or greater then `k'.
+
+ -- Function: count-permutations n &optional k
+     Number of `k' element permutations for a sequence of `n' objects.
+     `k' defaults to `n'
+
+ -- Function: clamp number min max
+     Clamps the `number' into [min, max] range. Returns `min' if
+     `number' is lesser then `min' and `max' if `number' is greater
+     then `max', otherwise returns `number'.
+
+ -- Function: lerp v a b
+     Returns the result of linear interpolation between A and `b',
+     using the interpolation coefficient `v'.
+
+ -- Function: factorial n
+     Factorial of non-negative integer `n'.
+
+ -- Function: subfactorial n
+     Subfactorial of the non-negative integer `n'.
+
+ -- Function: gaussian-random &optional min max
+     Returns two gaussian random double floats as the primary and
+     secondary value, optionally constrained by `min' and `max'.
+     Gaussian random numbers form a standard normal distribution around
+     `0'.0d0.
+
+     Sufficiently positive `min' or negative `max' will cause the
+     algorithm used to take a very long time. If `min' is positive it
+     should be close to zero, and similarly if `max' is negative it
+     should be close to zero.
+
+ -- Function: iota n &key start step
+     Return a list of n numbers, starting from `start' (with numeric
+     contagion from `step' applied), each consequtive number being the
+     sum of the previous one and `step'. `start' defaults to `0' and
+     `step' to `1'.
+
+     Examples:
+
+            (iota 4)                      => (0 1 2 3)
+            (iota 3 :start 1 :step 1.0)   => (1.0 2.0 3.0)
+            (iota 3 :start -1 :step -1/2) => (-1 -3/2 -2)
+
+ -- Function: map-iota function n &key start step
+     Calls `function' with `n' numbers, starting from `start' (with
+     numeric contagion from `step' applied), each consequtive number
+     being the sum of the previous one and `step'. `start' defaults to
+     `0' and `step' to `1'. Returns `n'.
+
+     Examples:
+
+            (map-iota #'print 3 :start 1 :step 1.0) => 3
+              ;;; 1.0
+              ;;; 2.0
+              ;;; 3.0
+
+ -- Function: mean sample
+     Returns the mean of `sample'. `sample' must be a sequence of
+     numbers.
+
+ -- Function: median sample
+     Returns median of `sample'. `sample' must be a sequence of real
+     numbers.
+
+ -- Function: variance sample &key biased
+     Variance of `sample'. Returns the biased variance if `biased' is
+     true (the default), and the unbiased estimator of variance if
+     `biased' is false. `sample' must be a sequence of numbers.
+
+ -- Function: standard-deviation sample &key biased
+     Standard deviation of `sample'. Returns the biased standard
+     deviation if `biased' is true (the default), and the square root
+     of the unbiased estimator for variance if `biased' is false (which
+     is not the same as the unbiased estimator for standard deviation).
+     `sample' must be a sequence of numbers.
+
+
+
+Tag Table:
+Node: Top2337
+Node: Hash Tables4699
+Ref: Macro ensure-gethash4825
+Ref: Function copy-hash-table5077
+Ref: Function maphash-keys5554
+Ref: Function maphash-values5685
+Ref: Function hash-table-keys5820
+Ref: Function hash-table-values5920
+Ref: Function hash-table-alist6024
+Ref: Function hash-table-plist6154
+Ref: Function alist-hash-table6280
+Ref: Function plist-hash-table6503
+Node: Data and Control Flow6723
+Ref: Macro define-constant6872
+Ref: Macro destructuring-case7489
+Ref: Macro ensure-functionf9307
+Ref: Macro multiple-value-prog29461
+Ref: Macro named-lambda9662
+Ref: Macro nth-value-or9821
+Ref: Macro if-let10126
+Ref: Macro when-let10931
+Ref: Macro when-let*11571
+Ref: Macro switch12341
+Ref: Macro cswitch12535
+Ref: Macro eswitch12669
+Ref: Macro whichever12792
+Ref: Macro xor12903
+Ref: Function disjoin13442
+Ref: Function conjoin13803
+Ref: Function compose14180
+Ref: Function ensure-function14478
+Ref: Function multiple-value-compose14730
+Ref: Function curry15044
+Ref: Function rcurry15195
+Node: Conses15347
+Ref: Type proper-list15464
+Ref: Type circular-list15707
+Ref: Macro appendf15936
+Ref: Macro nconcf16078
+Ref: Macro remove-from-plistf16219
+Ref: Macro delete-from-plistf16314
+Ref: Macro reversef16409
+Ref: Macro nreversef16575
+Ref: Macro unionf16767
+Ref: Macro nunionf16967
+Ref: Macro doplist17197
+Ref: Function circular-list-p17479
+Ref: Function circular-tree-p17584
+Ref: Function proper-list-p17689
+Ref: Function alist-plist17773
+Ref: Function plist-alist17927
+Ref: Function circular-list18082
+Ref: Function make-circular-list18170
+Ref: Function ensure-car18312
+Ref: Function ensure-cons18432
+Ref: Function ensure-list18590
+Ref: Function flatten18718
+Ref: Function lastcar18825
+Ref: Function (setf lastcar)18952
+Ref: Function proper-list-length19078
+Ref: Function mappend19201
+Ref: Function map-product19407
+Ref: Function remove-from-plist19892
+Ref: Function delete-from-plist20263
+Ref: Function set-equal20416
+Ref: Function setp20642
+Node: Sequences20853
+Ref: Type proper-sequence20957
+Ref: Macro deletef21087
+Ref: Macro removef21311
+Ref: Function rotate21535
+Ref: Function shuffle22247
+Ref: Function random-elt22534
+Ref: Function emptyp22828
+Ref: Function sequence-of-length-p22968
+Ref: Function length=23181
+Ref: Function copy-sequence23486
+Ref: Function first-elt23618
+Ref: Function (setf first-elt)23782
+Ref: Function last-elt23990
+Ref: Function (setf last-elt)24159
+Ref: Function starts-with24372
+Ref: Function starts-with-subseq24603
+Ref: Function ends-with24961
+Ref: Function ends-with-subseq25246
+Ref: Function map-combinations25465
+Ref: Function map-derangements26207
+Ref: Function map-permutations26703
+Node: IO27055
+Ref: Function read-file-into-string27152
+Ref: Function read-file-into-byte-vector27462
+Node: Macro Writing27585
+Ref: Macro once-only27702
+Ref: Macro with-gensyms28236
+Ref: Macro with-unique-names28710
+Ref: Function featurep28789
+Ref: Function parse-body29036
+Ref: Function parse-ordinary-lambda-list29345
+Node: Symbols30147
+Ref: Function ensure-symbol30256
+Ref: Function format-symbol30709
+Ref: Function make-keyword31183
+Ref: Function make-gensym31287
+Ref: Function make-gensym-list31516
+Ref: Function symbolicate31726
+Node: Arrays31879
+Ref: Type array-index31978
+Ref: Type array-length32176
+Ref: Function copy-array32379
+Node: Types32619
+Ref: Type string-designator32716
+Ref: Macro coercef32847
+Ref: Function of-type32919
+Ref: Function type=33044
+Node: Numbers33351
+Ref: Macro maxf33439
+Ref: Macro minf33610
+Ref: Function binomial-coefficient33781
+Ref: Function count-permutations34015
+Ref: Function clamp34159
+Ref: Function lerp34373
+Ref: Function factorial34512
+Ref: Function subfactorial34583
+Ref: Function gaussian-random34664
+Ref: Function iota35165
+Ref: Function map-iota35621
+Ref: Function mean36061
+Ref: Function median36168
+Ref: Function variance36280
+Ref: Function standard-deviation36524
+
+End Tag Table

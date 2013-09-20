@@ -95,7 +95,7 @@
 			owner subviews name font bg-color scrollbars retain-scrollbars field-size 
                         &allow-other-keys)
   `(let*  ((x (om-point-h ,position))
-           (y  (om-point-v ,position))
+           (y (om-point-v ,position))
            (w (om-point-h ,size))
            (h (om-point-v ,size))
            (fw (if ,field-size (om-point-h ,field-size) 0))
@@ -122,9 +122,9 @@
      
      (when (om-view-p view) 
        #+(or win32 linux) (unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
-       #+win32(setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
-       #+win32(setf (capi::pinboard-pane-size (main-pinboard-object view)) (values w h))
-       #+cocoa(setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
+       #+(or win32 linux) (setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
+       #+(or win32 linux) (setf (capi::pinboard-pane-size (main-pinboard-object view)) (values w h))
+       #+cocoa (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
        )
      (when (scroller-p view) 
        (setf (capi::simple-pane-scroll-callback view) 'scroll-update)
@@ -220,22 +220,22 @@
        (let ((x (om-h-scroll-position self))
              (y (om-v-scroll-position self)))
          (om-invalidate-rectangle self x y (vw self) (vh self))
-         #+win32(setf (pinboard-pane-position (main-pinboard-object self)) 
-                      (values x y))
+         #+(or linux win32) (setf (pinboard-pane-position (main-pinboard-object self)) 
+				  (values x y))
          ))
      (om-view-scrolled self (car pos-list) (cadr pos-list)))
-    #+win32(:step
-            (setf (pinboard-pane-position (main-pinboard-object self)) 
-                  (values (om-h-scroll-position self) (om-v-scroll-position self)))
-            (om-view-scrolled self (om-h-scroll-position self) (om-h-scroll-position self))
-            ;(om-invalidate-view self)
-            )
-    #+win32(otherwise ;; :drag
-            (setf (pinboard-pane-position (main-pinboard-object self)) 
-                  (values (om-h-scroll-position self) (om-v-scroll-position self)))
-            (om-view-scrolled self (car pos-list) (cadr pos-list))
-            ;(om-invalidate-view self)
-            )
+    #+(or win32 linux) (:step
+			(setf (pinboard-pane-position (main-pinboard-object self)) 
+			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
+			(om-view-scrolled self (om-h-scroll-position self) (om-h-scroll-position self))
+			;;(om-invalidate-view self)
+			)
+    #+(or win32 linux) (otherwise ;; :drag
+			(setf (pinboard-pane-position (main-pinboard-object self)) 
+			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
+			(om-view-scrolled self (car pos-list) (cadr pos-list))
+			;;(om-invalidate-view self)
+			)
     ))
 
 (defmethod om-view-scrolled ((self om-scroller) x y) nil)
@@ -313,7 +313,7 @@
 (defmethod update-for-subviews-changes ((self om-scroller) &optional (recursive nil)) 
   (if (initialized-p self)
       (capi::apply-in-pane-process self (lambda () 
-                                        (let ((v (capi::get-vertical-scroll-parameters self :max-range))
+					(let ((v (capi::get-vertical-scroll-parameters self :max-range))
                                               (h (capi::get-horizontal-scroll-parameters self :max-range))
                                               (x (capi::get-horizontal-scroll-parameters self :slug-position))
                                               (y (capi::get-vertical-scroll-parameters self :slug-position)))
@@ -335,14 +335,14 @@
 
 ;;;(om-subtract-points (om-view-size self) (om-make-point 30 30))
 
-#+win32
+#+(or win32 linux)
 (defmethod om-interior-size ((self om-scroller))
   (om-subtract-points 
    (om-view-size self)
    (om-make-point (if (and (capi::simple-pane-vertical-scroll self) 
                            (> (capi::get-vertical-scroll-parameters self :max-range) (vh self)))  17 0)
                   (if (and (capi::simple-pane-horizontal-scroll self)
-                           (> (capi::get-horizontal-scroll-parameters self :max-range) (vw self)))17 0))))
+                           (> (capi::get-horizontal-scroll-parameters self :max-range) (vw self))) 17 0))))
 
 ;;;======================
 ;;; TOOLS

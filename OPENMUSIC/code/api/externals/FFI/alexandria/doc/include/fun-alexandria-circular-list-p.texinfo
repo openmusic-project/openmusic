@@ -1,0 +1,5 @@
+@anchor{Function circular-list-p}
+@deffn {Function} {circular-list-p} object
+@findex circular-list-p
+Returns true if @code{object} is a circular list, @code{nil} otherwise.
+@end deffn

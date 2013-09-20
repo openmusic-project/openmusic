@@ -1,0 +1,28 @@
+@anchor{Macro if-let}
+@deffn {Macro} {if-let} bindings @&body (then-form &optional else-form)
+@findex if-let
+Creates new variable bindings, and conditionally executes either
+@code{then-form} or @code{else-form}. @code{else-form} defaults to @code{nil}.
+
+@code{bindings} must be either single binding of the form:
+
+@lisp
+ (variable initial-form)
+@end lisp
+
+or a list of bindings of the form:
+
+@lisp
+ ((variable-1 initial-form-1)
+  (variable-2 initial-form-2)
+  ...
+  (variable-n initial-form-n))
+@end lisp
+
+All initial-forms are executed sequentially in the specified order. Then all
+the variables are bound to the corresponding values.
+
+If all variables were bound to true values, the @code{then-form} is executed with the
+bindings in effect, otherwise the @code{else-form} is executed with the bindings in
+effect.
+@end deffn

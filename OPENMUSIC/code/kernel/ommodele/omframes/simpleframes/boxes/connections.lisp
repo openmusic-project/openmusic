@@ -84,18 +84,18 @@
 
 (defmethod release-drag-conections ((Self relationPanel) Where)
   (let (finalrect)
-  (setf (point-sel *cur-drag-connection*) 
-        (loop for item in (point-sel *cur-drag-connection*) 
-              collect (nth (position item *first-point*) (points *cur-drag-connection*))))
-       (unless (equal (points *cur-drag-connection*) *first-point*)
-         (setf (nth 2 (connected? (object (nth (index *cur-drag-connection*) (inputframes (thebox *cur-drag-connection*))))))
-               (points *cur-drag-connection*)))
-       (setf finalrect (get-rectangle-space *cur-drag-connection*))
-       (om-invalidate-corners self 
-                              (om-make-point (- (min (first *init-con-rect*) (first finalrect)) 4)
-                                             (- (min (third *init-con-rect*) (third finalrect)) 4))
-                              (om-make-point (+ 4 (max (second *init-con-rect*) (second finalrect)))
-                                             (+ 4 (max (fourth *init-con-rect*) (fourth finalrect)))))))
+    (setf (point-sel *cur-drag-connection*) 
+	  (loop for item in (point-sel *cur-drag-connection*) 
+	     collect (nth (position item *first-point*) (points *cur-drag-connection*))))
+    (unless (equal (points *cur-drag-connection*) *first-point*)
+      (setf (nth 2 (connected? (object (nth (index *cur-drag-connection*) (inputframes (thebox *cur-drag-connection*))))))
+	    (points *cur-drag-connection*)))
+    (setf finalrect (get-rectangle-space *cur-drag-connection*))
+    (om-invalidate-corners self 
+			   (om-make-point (- (min (first *init-con-rect*) (first finalrect)) 4)
+					  (- (min (third *init-con-rect*) (third finalrect)) 4))
+			   (om-make-point (+ 4 (max (second *init-con-rect*) (second finalrect)))
+					  (+ 4 (max (fourth *init-con-rect*) (fourth finalrect)))))))
 
 
 (defun invalidate-connection-region (connection pane)
@@ -110,10 +110,9 @@
          (first-mouse *con-first-click*)
          (new-mouse old-mouse))
     (setq new-mouse where)
-    
     (draw-connection *cur-drag-connection* NIL)
-    #+cocoa(invalidate-connection-region *cur-drag-connection* self)
-
+    #+cocoa (invalidate-connection-region *cur-drag-connection* self)
+    #+linux (invalidate-connection-region *cur-drag-connection* self)
     (loop for point in (point-sel *cur-drag-connection*) do
 
           (let ((pos (position point *first-point*))) 
@@ -218,51 +217,51 @@
          (color (if (zerop (ccolor self)) *om-black-color* (nth (-  (ccolor self) 1) *16-color-list*))))
     (om-with-focused-view (connection-container (thebox self)) 
       (om-with-fg-color nil color
-        (om-with-line-size (if sel? 2 1)
+	(om-with-line-size (if sel? 2 1)
           (if val
               (loop while thepoints do
-                    (om-draw-line (om-point-h prim) (om-point-v prim) 
+		   (om-draw-line (om-point-h prim) (om-point-v prim) 
                                  (om-point-h (car thepoints)) (om-point-v (car thepoints))
                                  :erasable (equal val 'redraw))
-                    (setf prim (pop thepoints))
-                    (when thepoints
-                      (if (member prim (point-sel self))
-                          (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
-                        (when sel?
-                          (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
-                        ))
-                    )
-            (loop while thepoints do
-                  (om-erase-line (om-point-h  prim) (om-point-v  prim) (om-point-h (car thepoints)) (om-point-v (car thepoints)))
-                  (setf prim (pop thepoints))
-                  (when thepoints
-                    (if (member prim (point-sel self))
-                        (om-erase-rect-content (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4)
-                      (when sel?
-                       (om-erase-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4))
-                      ))
-                  )))))))
+		   (setf prim (pop thepoints))
+		   (when thepoints
+		     (if (member prim (point-sel self))
+			 (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
+			 (when sel?
+			   (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
+			 ))
+		   )
+	      (loop while thepoints do
+		   (om-erase-line (om-point-h  prim) (om-point-v  prim) (om-point-h (car thepoints)) (om-point-v (car thepoints)))
+		   (setf prim (pop thepoints))
+		   (when thepoints
+		     (if (member prim (point-sel self))
+			 (om-erase-rect-content (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4)
+			 (when sel?
+			   (om-erase-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4))
+			 ))
+		   )))))))
 
 
 (defmethod redraw-connections ((self omboxframe))
   (when (connections self)
-       (let ((eraserect (list 10000 0 10000 0)))
-         (mapc #'(lambda (conection)
-                           (let ((initrect (get-rectangle-space conection)) finalrect)
-                             (setf eraserect (list (min (first eraserect) (first initrect))
-                                                                (max (second eraserect) (second initrect))
-                                                                (min (third eraserect) (third initrect))
-                                                                (max (fourth eraserect) (fourth initrect))))
-                             (change-position conection)
-                             (setf finalrect (get-rectangle-space conection))
-                             (setf eraserect (list (min (first eraserect) (first finalrect))
-                                                                (max (second eraserect) (second finalrect))
-                                      (min (third eraserect) (third finalrect))
-                                                                (max (fourth eraserect) (fourth finalrect)))))) (connections self))
-         (om-invalidate-corners (om-view-container self) 
-                                                   (om-make-point (- (first eraserect) 4) (- (third eraserect) 4))
-                                                    (om-make-point (+ 4 (second eraserect)) (+ 4 (fourth eraserect))))
-         )))
+    (let ((eraserect (list 10000 0 10000 0)))
+      (mapc #'(lambda (conection)
+		(let ((initrect (get-rectangle-space conection)) finalrect)
+		  (setf eraserect (list (min (first eraserect) (first initrect))
+					(max (second eraserect) (second initrect))
+					(min (third eraserect) (third initrect))
+					(max (fourth eraserect) (fourth initrect))))
+		  (change-position conection)
+		  (setf finalrect (get-rectangle-space conection))
+		  (setf eraserect (list (min (first eraserect) (first finalrect))
+					(max (second eraserect) (second finalrect))
+					(min (third eraserect) (third finalrect))
+					(max (fourth eraserect) (fourth finalrect)))))) (connections self))
+      (om-invalidate-corners (om-view-container self) 
+			     (om-make-point (- (first eraserect) 4) (- (third eraserect) 4))
+			     (om-make-point (+ 4 (second eraserect)) (+ 4 (fourth eraserect))))
+      )))
 
 (defmethod box-draw-connections ((self omboxframe) val)
   (mapc #'(lambda (conection)

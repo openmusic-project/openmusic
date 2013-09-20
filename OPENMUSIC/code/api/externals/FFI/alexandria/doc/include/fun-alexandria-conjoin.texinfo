@@ -1,0 +1,8 @@
+@anchor{Function conjoin}
+@deffn {Function} {conjoin} predicate @&rest more-predicates
+@findex conjoin
+Returns a function that applies each of @code{predicate} and @code{more-predicate}
+functions in turn to its arguments, returning @code{nil} if any of the predicates
+returns false, without calling the remaining predicates. If none of the
+predicates returns false, returns the primary value of the last predicate.
+@end deffn

@@ -1,0 +1,152 @@
+<html lang="en">
+<head>
+<title>Defining Foreign Types - CFFI User Manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="CFFI User Manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Foreign-Types.html#Foreign-Types" title="Foreign Types">
+<link rel="prev" href="Other-Types.html#Other-Types" title="Other Types">
+<link rel="next" href="Foreign-Type-Translators.html#Foreign-Type-Translators" title="Foreign Type Translators">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+Copyright (C) 2005 James Bielman <jamesjb at jamesjb.com>
+
+Copyright (C) 2005-2010 Lui's Oliveira
+  <loliveira at common-lisp.net>
+
+Copyright (C) 2005-2006 Dan Knapp <danka at accela.net>
+Copyright (C) 2005-2006 Emily Backes <lucca at accela.net>
+Copyright (C) 2006 Stephen Compall <s11 at member.fsf.org>
+
+     Permission is hereby granted, free of charge, to any person
+     obtaining a copy of this software and associated documentation
+     files (the ``Software''), to deal in the Software without
+     restriction, including without limitation the rights to use, copy,
+     modify, merge, publish, distribute, sublicense, and/or sell copies
+     of the Software, and to permit persons to whom the Software is
+     furnished to do so, subject to the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     DEALINGS IN THE SOFTWARE.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+body {font-family: century schoolbook, serif;
+      line-height: 1.3;
+      padding-left: 5em; padding-right: 1em;
+      padding-bottom: 1em; max-width: 60em;}
+table {border-collapse: collapse}
+span.roman { font-family: century schoolbook, serif; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 {font-family:  Helvetica, sans-serif}
+h4 { margin-top: 2.5em; }
+dfn {font-family: inherit; font-variant: italic; font-weight: bolder }
+kbd {font-family: monospace; text-decoration: underline}
+/*var {font-family: Helvetica, sans-serif; font-variant: slanted}*/
+var {font-variant: slanted;}
+td  {padding-right: 1em; padding-left: 1em}
+sub {font-size: smaller}
+.node {padding: 0; margin: 0}
+
+.lisp { font-family: monospace;
+        background-color: #F4F4F4; border: 1px solid #AAA;
+        padding-top: 0.5em; padding-bottom: 0.5em; }
+
+/* coloring */
+
+.lisp-bg { background-color: #F4F4F4 ; color: black; }
+.lisp-bg:hover { background-color: #F4F4F4 ; color: black; }
+
+.symbol { font-weight: bold; color: #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { font-weight: bold; color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { font-weight: bold; color: #FF5000; background-color: inherit; }
+.keyword { font-weight: bold; color: #770000; background-color: inherit; }
+.comment { font-weight: normal; color: #007777; background-color: inherit; }
+.string  { font-weight: bold; color: #777777; background-color: inherit; }
+.character   { font-weight: bold; color: #0055AA; background-color: inherit; }
+.syntaxerror { font-weight: bold; color: #FF0000; background-color: inherit; }
+span.paren1 { font-weight: bold; color: #777777; }
+span.paren1:hover { color: #777777; background-color: #BAFFFF; }
+span.paren2 { color: #777777; }
+span.paren2:hover { color: #777777; background-color: #FFCACA; }
+span.paren3 { color: #777777; }
+span.paren3:hover { color: #777777; background-color: #FFFFBA; }
+span.paren4 { color: #777777; }
+span.paren4:hover { color: #777777; background-color: #CACAFF; }
+span.paren5 { color: #777777; }
+span.paren5:hover { color: #777777; background-color: #CAFFCA; }
+span.paren6 { color: #777777; }
+span.paren6:hover { color: #777777; background-color: #FFBAFF; }
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Defining-Foreign-Types"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Foreign-Type-Translators.html#Foreign-Type-Translators">Foreign Type Translators</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Other-Types.html#Other-Types">Other Types</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Foreign-Types.html#Foreign-Types">Foreign Types</a>
+<hr>
+</div>
+
+<h3 class="section">6.3 Defining Foreign Types</h3>
+
+<p>You can define simple C-like <code>typedef</code>s through the
+<code>defctype</code> macro. Defining a typedef is as simple as giving
+<code>defctype</code> a new name and the name of the type to be wrapped.
+
+<pre class="lisp">  <span class="comment">;;; Define MY-INT as an alias for the built-in type :INT.
+  </span><span class="paren1">(<span class="lisp-bg"><i><span class="symbol">defctype</span></i> my-int <span class="keyword">:int</span></span>)</span>
+</pre>
+   <p>With this type definition, one can, for instance, declare arguments to
+foreign functions as having the type <code>my-int</code>, and they will be
+passed as integers.
+
+<h4 class="subheading">More complex types</h4>
+
+<p><acronym>CFFI</acronym> offers another way to define types through
+<code>define-foreign-type</code>, a thin wrapper macro around
+<code>defclass</code>. As an example, let's go through the steps needed to
+define a <code>(my-string &amp;key encoding)</code> type. First, we need to
+define our type class:
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">define-foreign-type</span></i> my-string-type <span class="paren2">(<span class="lisp-bg"></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="paren3">(<span class="lisp-bg">encoding <span class="keyword">:reader</span> string-type-encoding <span class="keyword">:initarg</span> <span class="keyword">:encoding</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg"><span class="keyword">:actual-type</span> <span class="keyword">:pointer</span></span>)</span></span>)</span>
+</pre>
+   <p>The <code>:actual-type</code> class option tells CFFI that this type will
+ultimately be passed to and received from foreign code as a
+<code>:pointer</code>. Now you need to tell CFFI how to parse a type
+specification such as <code>(my-string :encoding :utf8)</code> into an
+instance of <code>my-string-type</code>.  We do that with
+<code>define-parse-method</code>:
+
+<pre class="lisp">  <span class="paren1">(<span class="lisp-bg"><i><span class="symbol">define-parse-method</span></i> my-string <span class="paren2">(<span class="lisp-bg">&amp;key <span class="paren3">(<span class="lisp-bg">encoding <span class="keyword">:utf-8</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="lisp-bg">make-instance 'my-string-type <span class="keyword">:encoding</span> encoding</span>)</span></span>)</span>
+</pre>
+   <p>The next section describes how make this type actually translate
+between C and Lisp strings.
+
+   </body></html>
+

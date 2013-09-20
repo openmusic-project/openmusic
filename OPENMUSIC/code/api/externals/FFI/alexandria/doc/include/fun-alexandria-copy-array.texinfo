@@ -1,0 +1,7 @@
+@anchor{Function copy-array}
+@deffn {Function} {copy-array} array @&key element-type fill-pointer adjustable
+@findex copy-array
+Returns an undisplaced copy of @code{array}, with same fill-pointer and
+adjustability (if any) as the original, unless overridden by the keyword
+arguments.
+@end deffn

@@ -463,7 +463,7 @@
   (:default-initargs
    #+win32 :draw-with-buffer #+win32 t))
 
-;;; temp compatibilité
+;;; temp compatibilitÃ©
 (defmethod (setf cursor-p) (val (self soundpanel))
   (setf (cursor-mode self) (if val :interval :normal)))
 (defmethod cursor-p ((self soundpanel))

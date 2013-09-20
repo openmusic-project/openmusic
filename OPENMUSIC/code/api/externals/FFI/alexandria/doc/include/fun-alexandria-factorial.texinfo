@@ -1,0 +1,5 @@
+@anchor{Function factorial}
+@deffn {Function} {factorial} n
+@findex factorial
+Factorial of non-negative integer @code{n}.
+@end deffn

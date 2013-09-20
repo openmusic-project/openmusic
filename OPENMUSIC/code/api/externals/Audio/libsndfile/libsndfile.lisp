@@ -11,13 +11,16 @@
 ;;; MUST BE INSTALLED !
 ;;; or linked statically (in LibAudioStream / MacOS)
 
-#+win32
+#+(or win32 linux)
 (cffi:define-foreign-library libsndfile
   (:darwin "libsndfile.dylib")
-  (:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
-  (t (:default "libsndfile-1")))
+  #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
+  #+linux(:linux "libsndfile")
+  ;;(t (:default "libsndfile-1"))
+  (t (:default "libsndfile"))
+  )
 
-#+win32
+#+(or win32 linux)
 (cffi:use-foreign-library libsndfile)
 
 
@@ -287,6 +290,12 @@
      (ptr :pointer)
      (frames :long-long))
   :result-type :long-long)
+
+#+linux
+(cffi:defcfun (sf-readf-float "sf_readf_float") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
 
 (fli:define-foreign-function (sf-readf-int "sf_readf_int")
     ((sndfile :pointer)

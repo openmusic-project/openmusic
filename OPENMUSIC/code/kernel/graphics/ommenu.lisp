@@ -187,7 +187,7 @@
                                                (om-new-leafmenu "Align" #'(lambda () (omG-align-presentation win))))))))
                        ))
         ((equal menuid 'file)
-         (om-make-menu "File" (append 
+	 (om-make-menu "File" (append 
                                (make-new-menu editor)
                                (list
                                 (list 
@@ -548,11 +548,13 @@
 ;===============WS and FOLDERS
 (defmethod om-get-menu-context ((self metaobj-panel))
   (setf *new-obj-initial-pos* (om-mouse-position self))
+
   (list 
    (list 
     (apply 'om-new-menu (append (list "New...")
                                 (loop for item in *new-menu-items* collect (apply 'make-menu-item (cons (om-view-window self) item)))               
-                                (list (om-new-leafmenu "New Folder" #'(lambda() (omG-make-new-icon-window (om-view-window self) 'f)))))))
+                                (list (om-new-leafmenu "New Folder" #'(lambda() (omG-make-new-icon-window (om-view-window self) 'f))))
+				)))
    (list 
     (om-new-leafmenu "Import File" #'(lambda () (import-file self)))
     (om-new-leafmenu "Import Folder" #'(lambda () (import-folder self)))

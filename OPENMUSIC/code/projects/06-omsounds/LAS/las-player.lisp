@@ -8,41 +8,14 @@
 (defmethod player-name ((self (eql :libaudiostream))) "LibAudioStream")
 (defmethod player-desc ((self (eql :libaudiostream))) "internal OM Player")
 
-(defun las-open ()
- (if (las-load-library)
-     (las-init-full-system)
-   (om-message-dialog (format nil (om-str :lib-error) "LibAudioStream"))))
+;;; METHODES A REDEFINIR QUAND ON UTILISE OMPLAYER
 
-(defun las-close ()
-  (las-close-full-system))
-
-(om-add-init-func 'las-open)  
-(om-add-exit-cleanup-func 'las-close t)
-
-
-
+;;; par défaut (call-next-method) schedule player-play-object au moment voulu...
 (defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval)
-  (let* ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at))
-         (from (car newinterval))
-         (to (cadr newinterval))
-         newptr)
-    (if (om-sound-sndlasptr-current object)
-        (progn
-          (setf newptr (if (> (om-sound-n-channels object) 1) (om-sound-sndlasptr-current object) (las-make-stereo-sound (om-sound-sndlasptr-current object))))
-          (if (or from to)
-              (let ((begin (if from (round (* from (/ las-srate 1000.0)))))
-                    (end (if to (round (* to (/ las-srate 1000.0)))))
-                    (max (om-sound-n-samples-current object)))
-                (if (and begin (or (< begin 0) (not begin)))
-                    (setf begin 0))
-                (if (and end (or (> end max) (not end)))
-                    (setf end max))
-                (om-sound-set-sndlasptr-to-play object (las-slice-sample-cut newptr begin end)))
-            (om-sound-set-sndlasptr-to-play object newptr))
-          (om-sound-update-las-infos object)
-          (call-next-method engine player object at newinterval)))))
+  (let ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at)))
+    (call-next-method engine player object at newinterval)))
 
-
+;;; si prepare-to-play est personnalisé, il faudra aussi changer player-start...
 (defmethod player-start ((engine (eql :libaudiostream)) &optional play-list)
   (call-next-method))
 
@@ -75,8 +48,9 @@
 (defmethod player-loop ((self (eql :libaudiostream)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
-            (las-stop (nth i play-list) (tracknum (nth i play-list)))
-            (las-loop-play (nth i play-list) (tracknum (nth i play-list))))))
+            (las-stop (nth i play-list))
+            (las-loop-play (nth i play-list)))))
+
 
 ;;; NOT IN OM PLAYER API
 
@@ -140,4 +114,3 @@
                                               (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
                                               (if (> (value item) 0) (las-switch-sound-las-player snd 1) (las-switch-sound-las-player snd 0))
                                               (report-modifications (editor control-view)))))))))
-

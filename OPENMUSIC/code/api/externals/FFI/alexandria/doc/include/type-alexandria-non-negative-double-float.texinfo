@@ -1,0 +1,5 @@
+@anchor{Type non-negative-double-float}
+@deftp {Type} {non-negative-double-float}
+@tindex non-negative-double-float
+Type specifier denoting the double-float range from @code{0}.0d0 to +inf.
+@end deftp

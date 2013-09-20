@@ -87,7 +87,6 @@
 ;;; Recursive event dispatcher on subviews (om-view catches events but om-item-views do not)
 ;;; if function callback is non-NIL for one of the subviews, recursive dispatching is stopped.
 (defmethod apply-in-item-subview ((self om-view) function position)
-  ;(print (list self (item-subviews self)))
   (let ((clicked self)) 
     ;(when (equal function 'om-view-click-handler)
     ;  (print (list "clic in" self "at "))
@@ -207,8 +206,7 @@
 
 (defmethod internal-motion-callback ((self om-graphic-object) pos)
   (update-view-cursor self)
-  ;(print (list self pos *clicked-view*))
-  
+  ;; (print (list self pos *clicked-view*))
   #+cocoa(when (tooltip-key-down) (om-show-tooltip self))
   (unless (equal *last-containing-view* self)
     (when *last-containing-view*
@@ -219,7 +217,7 @@
       ;;#+win32(when *last-containing-view* (om-hide-tooltip *last-containing-view*))
       )
     (om-view-mouse-enter-handler self)
-    #+win32(when (tooltip-key-down) (om-show-tooltip self))
+    #+(or win32 linux) (when (tooltip-key-down) (om-show-tooltip self))
     ;(capi::call-HELP-CALLBACK (om-view-window self) (om-get-view self) :tooltip t)  
     (setf *last-containing-view* self))
   (when (om-view-window self)
@@ -313,7 +311,7 @@
     (0 '(nil nil nil))
     (1 '(t nil nil))  ; SHIFT
     (2 '(nil nil nil))  ; CTRL
-    (3 '(t nil nil))  ; CTRL + SHIFT
+    (3 '(t nil nil))  ; CTRL + SHIFT ;; ??? LINUX: TODO, check various key combinations here
     (4 '(nil nil t))  ; ALT
     (5 '(t nil t))  ; ALT + SHIFT
     (6 '(nil nil t))  ; ALT + CTRL

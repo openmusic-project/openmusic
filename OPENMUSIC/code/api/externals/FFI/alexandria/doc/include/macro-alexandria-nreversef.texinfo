@@ -1,0 +1,6 @@
+@anchor{Macro nreversef}
+@deffn {Macro} {nreversef} place env
+@findex nreversef
+Modify-macro for @code{nreverse}. Reverses the list stored in the given place by
+destructively modifying it and saves back the result into the place.
+@end deffn

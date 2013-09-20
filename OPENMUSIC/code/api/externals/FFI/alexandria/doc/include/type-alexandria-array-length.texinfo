@@ -1,0 +1,7 @@
+@anchor{Type array-length}
+@deftp {Type} {array-length}
+@tindex array-length
+Type designator for a dimension of an array of @code{length:} an integer between
+@code{0} (inclusive) and @code{length} (inclusive). @code{length} defaults to
+@code{array-dimension-limit}.
+@end deftp

@@ -1,0 +1,7 @@
+@anchor{Macro nunionf}
+@deffn {Macro} {nunionf} place list @&rest args env
+@findex nunionf
+Modify-macro for @code{nunion}. Saves the union of @code{list} and the contents of the
+place designated by the first argument to the designated place. May modify
+either argument.
+@end deffn

@@ -1,0 +1,6 @@
+@anchor{Type string-designator}
+@deftp {Type} {string-designator}
+@tindex string-designator
+A string designator type. A string designator is either a string, a symbol,
+or a character.
+@end deftp

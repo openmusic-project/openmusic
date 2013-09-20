@@ -11,7 +11,7 @@
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)
    ;;; CALLBACKS
-   (callback-tick :initform 0.1 :accessor callback-tick :initarg :callback-tick)
+   (callback-tick :initform 0.05 :accessor callback-tick :initarg :callback-tick)
    (caller :initform nil :accessor caller :initarg :caller)
    (callback-fun :initform nil :accessor callback-fun :initarg :callback-fun)
    (callback-process :initform nil :accessor callback-process)
@@ -101,7 +101,7 @@
                                       )))))
            
          (when (callback-fun player)
-           (om-with-priority 0
+           (om-with-priority 10
              (setf (callback-process player)
                    (om-run-process "editor player callback"
                                    #'(lambda ()
@@ -204,9 +204,10 @@
 ;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
-                 #'(lambda () 
-                     (player-play-object engine object :interval interval))
-                 at))
+                        #'(lambda () 
+                            ;(print (list object engine at interval))
+                            (player-play-object engine object :interval interval))
+                        at))
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval)
@@ -375,7 +376,7 @@
                    :at 0 
                    :interval (get-interval-to-play self)))
 
-(defmethod editor-play ((self play-editor-mixin))
+(defmethod editor-play ((self play-editor-mixin) )
   (setf (loop-play (player self)) (loop-play self))
   (if (equal (state (player self)) :pause)
       (general-continue (player self))
@@ -393,8 +394,7 @@
       (schedule-editor-contents self)
       (general-play (player self)
                     :start-t (or (car interval) 0)
-                    :end-t (or (cadr interval) (get-obj-dur obj))
-                    ))
+                    :end-t (or (cadr interval) (get-obj-dur obj))))
     ))
 
 

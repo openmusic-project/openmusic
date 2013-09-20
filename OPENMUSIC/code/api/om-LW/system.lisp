@@ -88,7 +88,8 @@
           om-cmd-line
           om-run-application
           om-run-program
-          om-find-process
+          *om-open-cmd*
+	  om-find-process
           ;om-select-process
           om-select-program
           om-run-process
@@ -206,11 +207,11 @@
 (defvar *om-cleanup-forms* nil)
 
 (defun om-add-exit-cleanup-func (func-name &optional last?)  
-(unless (member func-name *om-cleanup-forms* :test 'equal)
-  (if last?
-     (push func-name  *om-cleanup-forms*)
-     (setf  *om-cleanup-forms* (append  *om-cleanup-forms* (list func-name)))
-     )))
+  (unless (member func-name *om-cleanup-forms* :test 'equal)
+    (if last?
+	(push func-name  *om-cleanup-forms*)
+	(setf  *om-cleanup-forms* (append  *om-cleanup-forms* (list func-name)))
+	)))
 
 (defun om-exit-funcall ()
   (mapc #'(lambda (x) (funcall x)) (reverse *om-cleanup-forms*))
@@ -318,7 +319,7 @@
 (defvar *om-compiled-type* 
   #+win32 "ofasl"
   #+macosx (if (member :X86 *features*) "xfasl" "nfasl")
-  #+linux "ufasl")
+  #+linux (pathname-type (cl-user::compile-file-pathname "")))
 
 (defvar *om-root* nil)
 
@@ -332,6 +333,7 @@
                        :directory 
                                      #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
                                      #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
+                                     #+linux(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
                                      ))
     (setf *om-root* cl-user::*om-src-directory*)))
 
@@ -495,7 +497,7 @@
 (defun om-read-line (file)
   (read-line file nil 'eof))
 
-; enleve les mauvais caracteres à la fin
+; enleve les mauvais caracteres Ã  la fin
 (defun om-correct-line (line &optional stream) 
   (if (stringp line)
       (if (> (length line) 0)
@@ -534,7 +536,7 @@
      :directory 
      #+macosx(append (pathname-directory userhome) (list "Library" "Preferences"))
      #+win32(append (pathname-directory userhome) (list "Application Data"))
-     #+linux(pathname-directory userhome)
+     #+linux(append (pathname-directory userhome) (list ".local" "share"))
      )))
 
 (defun om-get-date ()
@@ -564,22 +566,23 @@
 ;;;; external apps 
 
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
-  #+macosx 
+  #+(or linux macosx) 
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
-  (if (and (equal :mac *om-os*) (pathnamep redirect-output))
-      ;(let ((tempfile "~/om-log.txt"))
+  (if (and (member *om-os* '(:mac :linux))
+	   (pathnamep redirect-output))
+      ;;(let ((tempfile "~/om-log.txt"))
       (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
                              :if-output-exists :append :if-error-output-exists :append)
-       ;(om-open-new-text-file (pathname tempfile)))
-    (progn
-      (if redirect-output
-          (sys:call-system-showing-output str :wait wait :output-stream *om-stream* 
-                                          :prefix ":: "
-                                          #+win32 :current-directory #+win32 current-path)
-        #-win32(sys:run-shell-command str :wait wait)
-        #+win32(sys:call-system str :wait wait :current-directory current-path)
-        ))))
+					;(om-open-new-text-file (pathname tempfile)))
+      (progn
+	(if redirect-output
+	    (sys:call-system-showing-output str :wait wait :output-stream *om-stream* 
+					    :prefix ":: "
+					    #+win32 :current-directory #+win32 current-path)
+	    #-win32(sys:run-shell-command str :wait wait)
+	    #+win32(sys:call-system str :wait wait  :current-directory current-path)
+	    ))))
 
 ;(sys::change-directory  (om-make-pathname :directory om::*om-midi-settings-app-path*))
 ;(hcl::get-working-directory)
@@ -609,13 +612,14 @@
                                        (funcall afterfun))))
         (namestring path)))
 
+
+(defvar *om-open-cmd* #+linux "xdg-open" #+(or win32 cocoa) "open")
+
 (defun om-run-application (path)
-  (system::call-system (format nil "open ~s" (namestring path)) :wait nil)
+  (system::call-system (format nil  "~A ~s" *om-open-cmd* (namestring path)) :wait nil)
   (namestring path))
 
 
-;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
+;;; marche pour un process crÃ©Ã© avec la fonction om-run-program ou om-run-application
 (defun om-select-program (id)
-  (system::call-system (concatenate 'string "open " (namestring id))))
-
-
+  (system::call-system (concatenate 'string *om-open-cmd* " " (namestring id))))

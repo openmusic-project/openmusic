@@ -1,0 +1,8 @@
+@anchor{Function read-file-into-string}
+@deffn {Function} {read-file-into-string} pathname @&key buffer-size external-format
+@findex read-file-into-string
+Return the contents of the file denoted by @code{pathname} as a fresh string.
+
+The @code{external-format} parameter will be passed directly to @code{with-open-file}
+unless it's @code{nil}, which means the system default.
+@end deffn

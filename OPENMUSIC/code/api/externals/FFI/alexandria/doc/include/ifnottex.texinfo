@@ -1,0 +1,15 @@
+@macro &allow-other-keys
+&allow-other-keys
+@end macro
+@macro &optional
+&optional
+@end macro
+@macro &rest
+&rest
+@end macro
+@macro &key
+&key
+@end macro
+@macro &body
+&body
+@end macro
