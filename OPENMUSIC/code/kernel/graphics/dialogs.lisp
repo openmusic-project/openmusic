@@ -965,19 +965,19 @@ ArtWork: A. Mohsen
                                           :resizable nil :maximize nil :minimize nil
                                           :bg-color *om-light-gray-color*))
       (om-with-delayed-update *help-window*
-      (loop for h in helplist for i = 0 then (+ i 1) do
-            (let ((v (om-make-view 'om-view :size (om-make-point panew (+ 4 (* 30 maxl))) 
-                                   :position (om-make-point (+ (* i (+ 4 panew)) 4) 4)
-                                   :bg-color (om-make-color 0.9 0.9 0.9))))
-              (om-add-subviews *help-window* v)
-              (om-with-delayed-update v
-              (loop for elt in h for j = 0 then (+ j 1) do 
-                    (om-add-subviews v (om-make-view 'help-item-view 
-                                                     :size (om-make-point (- panew 8) 26) 
-                                                     :position (om-make-point 4 (+ 4 (* j 30)))
-                                                     :pict  (car elt) :text (cadr elt)
-                                                     :bg-color (om-make-color 0.9 0.9 0.9)
-                                                     )))))
-      )))
-    (om-add-menu-to-win *help-window*)
+	(loop for h in helplist for i = 0 then (+ i 1) do
+	     (let ((v (om-make-view 'om-view :size (om-make-point panew (+ 4 (* 30 maxl))) 
+				    :position (om-make-point (+ (* i (+ 4 panew)) 4) 4)
+				    :bg-color (om-make-color 0.9 0.9 0.9))))
+	       (om-add-subviews *help-window* v)
+	       (om-with-delayed-update v
+		 (loop for elt in h for j = 0 then (+ j 1) do 
+		      (om-add-subviews v (om-make-view 'help-item-view 
+						       :size (om-make-point (- panew 8) 26) 
+						       :position (om-make-point 4 (+ 4 (* j 30)))
+						       :pict  (car elt) :text (cadr elt)
+						       :bg-color (om-make-color 0.9 0.9 0.9)
+						       )))))
+	     )))
+    #-linux (om-add-menu-to-win *help-window*)
     ))
