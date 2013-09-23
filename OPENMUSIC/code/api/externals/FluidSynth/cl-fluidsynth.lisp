@@ -64,30 +64,30 @@
       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth"))))
 
-;; TODO: plug into suitable init-code
-(eval-when (:load-toplevel)
+
+(defun cl-fluid-init-fluidsynth ()
+
   (fluid-synth-setup)
-  (fluid-midi-setup))
+  (fluid-midi-setup)
 
-(defcallback cl-fluid-handle-midi-event :int
-    ((data (:pointer :void))
-     (event (:pointer fluid_midi_event_t)))
-  (declare (ignore data))    
-  (fluid_synth_handle_midi_event *fluidsynth* event)
-  ;;(print (format nil "event type: ~X" (fluid_midi_event_get_type event)))
-  1)
+  (defcallback cl-fluid-handle-midi-event :int
+      ((data (:pointer :void))
+       (event (:pointer fluid_midi_event_t)))
+    (declare (ignore data))    
+    (fluid_synth_handle_midi_event *fluidsynth* event)
+    ;;(print (format nil "event type: ~X" (fluid_midi_event_get_type event)))
+    1)
 
-(unless *fluid-midi-player*
-  (setf *fluid-midi-player* (new_fluid_midi_driver
-			     *fluid-midi-driver-settings*
-			     (callback cl-fluid-handle-midi-event)
-			     (null-pointer))))
+  (unless *fluid-midi-player*
+    (setf *fluid-midi-player* (new_fluid_midi_driver
+			       *fluid-midi-driver-settings*
+			       (callback cl-fluid-handle-midi-event)
+			       (null-pointer))))
 
-#+cl-jack (cl-jack::jack-connect cl-jack::*CLJackClient*
-				 (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
-				 "OM_fluidsynth:midi")
-
-
+  #+cl-jack (cl-jack::jack-connect cl-jack::*CLJackClient*
+				   (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
+				   "OM_fluidsynth:midi")
+  )
 
 ;;(delete_fluid_midi_driver *fluid-midi-player*)
 

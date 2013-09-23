@@ -17,7 +17,6 @@
 ;;
 ;;Author: Anders Vinjar
 
-(defpackage :cl-jack (:use :common-lisp :cffi))
 (in-package :cl-jack)
 
 (define-foreign-library libjack

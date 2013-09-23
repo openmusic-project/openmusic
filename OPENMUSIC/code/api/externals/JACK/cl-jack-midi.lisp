@@ -70,6 +70,9 @@
 
 ;;; MIDI EVENTS
 
+;;; TODO: use message-classes defined in midi.lisp for everything raw
+;;; midi:
+
 (defconstant noteofftag #x80)
 (defconstant noteontag #x90)
 (defconstant programchangetag #xC0)
@@ -213,37 +216,38 @@
 		 (play-from-seq port-buf seq))
 	     *jack-seqs*)))
 
+(defun cl-jack-init-midi ()
+
+  (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
+    (declare (ignore arg))
+    (cl-jack-handle-event-seqs nframes)
+    0)
 
 
-(defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
-  (declare (ignore arg))
-  (cl-jack-handle-event-seqs nframes)
-  0)
+  ;; get up and running
 
+  (unless *CLJackClient*
+    (setf *CLJackClient* (jack-client-open "CLJack" JackNullOption 0)))
 
-;; get up and running
+  ;; (loop for i from 0
+  ;;      and port = (mem-aref (jack-get-ports *CLJackClient* "" "midi" 0) :string i)
+  ;;      while port
+  ;;      collect port)
 
-(unless *CLJackClient*
-  (setf *CLJackClient* (jack-client-open "CLJack" JackNullOption 0)))
+  (unless *jack-midi-output-port*
+    (setf *jack-midi-output-port*
+	  (let ((port (jack-port-register *CLJackClient*
+					  "midiout"
+					  *jack-default-midi-type*
+					  (foreign-enum-value 'jackportflags :jackportisoutput)
+					  0)))
+	    (if (zerop (pointer-address port)) ;0 if not allocated
+		(error "*jack-midi-output-port* for Jack not allocated")
+		port))))
 
-;; (loop for i from 0
-;;      and port = (mem-aref (jack-get-ports *CLJackClient* "" "midi" 0) :string i)
-;;      while port
-;;      collect port)
-
-(unless *jack-midi-output-port*
-  (setf *jack-midi-output-port*
-	(let ((port (jack-port-register *CLJackClient*
-					"midiout"
-					*jack-default-midi-type*
-					(foreign-enum-value 'jackportflags :jackportisoutput)
-					0)))
-	  (if (zerop (pointer-address port)) ;0 if not allocated
-	      (error "*jack-midi-output-port* for Jack not allocated")
-	      port))))
-
-(jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
-(jack-activate *CLJackClient*)
+  (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
+  (jack-activate *CLJackClient*)
+  )
 
 ;;(Jack-deactivate *CLJackClient*)
 

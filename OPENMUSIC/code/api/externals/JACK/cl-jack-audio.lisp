@@ -19,9 +19,6 @@
 
 (in-package :cl-jack)
 
-(unless *CLJackClient*
-  (setq *CLJackClient* (jack-client-open "CL" JackNullOption 0)))
-
 ;; (jack-client-close *CLJackClient*)
 ;; (jack-get-client-name *CLJackClient*)
 
@@ -31,48 +28,52 @@
 (defparameter *CL-jack-audio-input-ports* nil)
 (defparameter *CL-jack-audio-output-ports* nil)
 
-(setf *CL-jack-audio-input-ports*
-      (loop for chan from 0 below *CL-jack-audio-output-channels*
-	 collect
-	   (let ((port (jack-port-register
-			*CLJackClient*
-			(format nil "in_~A" chan)
-			*jack-default-audio-type*
-			(foreign-enum-value 'jackportflags :jackportisinput)
-			0)))
-	     (if (zerop (pointer-address port)) ;0 if not allocated
-		 (error "*CL-jack-audio-input-ports* not allocated")
-		 port))))
-
-(setf *CL-jack-audio-output-ports*
-      (loop for chan from 0 below *CL-jack-audio-output-channels*
+(defun cl-jack-init-audio ()
+  (unless *CLJackClient*
+    (setf *CLJackClient* (jack-client-open "CLJack" JackNullOption 0)))
+  (setf *CL-jack-audio-input-ports*
+	(loop for chan from 0 below *CL-jack-audio-output-channels*
 	   collect
-	   (let ((port (jack-port-register
-			*CLJackClient*
-			(format nil "out_~A" chan)
-			*jack-default-audio-type*
-			(foreign-enum-value 'jackportflags :jackportisoutput)
-			0)))
-	     (if (zerop (pointer-address port)) ;0 if not allocated
-		 (error "*CL-jack-audio-output-ports* not allocated")
-		 port))))
+	     (let ((port (jack-port-register
+			  *CLJackClient*
+			  (format nil "in_~A" chan)
+			  *jack-default-audio-type*
+			  (foreign-enum-value 'jackportflags :jackportisinput)
+			  0)))
+	       (if (zerop (pointer-address port)) ;0 if not allocated
+		   (error "*CL-jack-audio-input-ports* not allocated")
+		   port))))
 
-;; provide default-callback which just copies in to out:
+  (setf *CL-jack-audio-output-ports*
+	(loop for chan from 0 below *CL-jack-audio-output-channels*
+	   collect
+	     (let ((port (jack-port-register
+			  *CLJackClient*
+			  (format nil "out_~A" chan)
+			  *jack-default-audio-type*
+			  (foreign-enum-value 'jackportflags :jackportisoutput)
+			  0)))
+	       (if (zerop (pointer-address port)) ;0 if not allocated
+		   (error "*CL-jack-audio-output-ports* not allocated")
+		   port))))
+
+  ;; provide default-callback which just copies in to out:
 
 
-(defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
-  (declare (ignore arg))
-  (when (fboundp 'cl-jack-handle-event-seqs) (cl-jack-handle-event-seqs nframes))
-  (loop for inport in *CL-jack-audio-input-ports*
-     for outport in *CL-jack-audio-output-ports*
-     do
-       (let ((in (jack-port-get-buffer inport nframes))
-	     (out (jack-port-get-buffer outport nframes)))
-	 (foreign-funcall "memcpy" :pointer out :pointer in
-			  size_t (* nframes (foreign-type-size 'size_t)))))
+  (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
+    (declare (ignore arg))
+    (when (fboundp 'cl-jack-handle-event-seqs) (cl-jack-handle-event-seqs nframes))
+    (loop for inport in *CL-jack-audio-input-ports*
+       for outport in *CL-jack-audio-output-ports*
+       do
+	 (let ((in (jack-port-get-buffer inport nframes))
+	       (out (jack-port-get-buffer outport nframes)))
+	   (foreign-funcall "memcpy" :pointer out :pointer in
+			    size_t (* nframes (foreign-type-size 'size_t)))))
   
-  0)
+    0)
 
-(jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
-(jack-activate *CLJackClient*)
-;;(jack-deactivate *CLJackClient*)
+  (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
+  (jack-activate *CLJackClient*)
+  ;;(jack-deactivate *CLJackClient*)
+  )

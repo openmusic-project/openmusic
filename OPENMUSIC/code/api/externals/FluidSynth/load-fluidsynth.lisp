@@ -22,4 +22,6 @@
 (dolist (file cl-fluidsynth-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
+(oa::om-add-init-func 'cl-fluid-init-fluidsynth)
+
 (provide :cl-fluidsynth)

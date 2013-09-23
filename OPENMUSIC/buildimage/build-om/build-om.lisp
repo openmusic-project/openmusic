@@ -264,7 +264,7 @@
   (om::set-language *release-language*)
   (oa::om-init-funcall)
     
-  #+win32(define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
+  #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   
   ;(oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)))
   
