@@ -1,4 +1,3 @@
-
 (in-package "CL-USER")
 
 (load-all-patches)
@@ -32,7 +31,7 @@
         (("Preferences..."
           :callback 'om::show-preferences-win
           :callback-type :none)))
-       
+
        ;(:component
        ; ()
         ;; This is a special named component where the CAPI will
@@ -52,7 +51,7 @@
        (:component
         (("Quit OM"
           :accelerator "accelerator-q"
-          :callback #'(lambda (interface) 
+          :callback #'(lambda (interface)
                         (capi:destroy interface))
           :callback-type :interface)))))
    (windows-menu
@@ -62,7 +61,7 @@
           :callback 'om::show-workspace-win
           :accelerator "accelerator-shift-w"
           :callback-type :none)
-         ("Library"	
+         ("Library"
           :callback 'om::show-packages-win
           :accelerator "accelerator-shift-p"
           :callback-type :none
@@ -78,11 +77,11 @@
        ))
    )
   (:menu-bar application-menu windows-menu)
-  (:default-initargs 
+  (:default-initargs
    :title *app-name+version*
    :application-menu 'application-menu
 
-   :confirm-destroy-function 'quit-callback 
+   :confirm-destroy-function 'quit-callback
    ;:destroy-callback #'(lambda (interface) (oa::om-exit-funcall))
    ;:top-level-hook 'oa::interface-handle-error
    ;:window-styles '(:internal-borderles :never-iconic :textured-background) ;; :hides-on-deactivate-window) :toolbox
@@ -101,7 +100,7 @@
           :callback 'om::show-workspace-win
           :accelerator "accelerator-shift-w"
           :callback-type :none)
-         ("Library"	
+         ("Library"
           :callback 'om::show-packages-win
           :callback-type :none
           :enabled-slot nil)
@@ -124,7 +123,7 @@
      (if om::*current-workspace*
      (let ((filename (pathname (car args))))
        (om::show-workspace-win)
-       (cond ((or (string-equal "omp" (pathname-type filename)) 
+       (cond ((or (string-equal "omp" (pathname-type filename))
                   (string-equal "omm" (pathname-type filename))
                   (string-equal "she" (pathname-type filename)))
              (when (capi:prompt-for-confirmation (format nil "Import ~A to your workspace?" (pathname-name filename))
@@ -132,16 +131,16 @@
              (om::import-file-to-ws (om::panel om::*om-workspace-win*) filename (om::om-make-point 40 40))
              ))
              ((oa::directoryp filename)
-              (when (capi:prompt-for-confirmation (format nil "Import folder ~A to your workspace?" 
-                                                          (car (last (pathname-directory filename)))) 
+              (when (capi:prompt-for-confirmation (format nil "Import folder ~A to your workspace?"
+                                                          (car (last (pathname-directory filename))))
                                                  :cancel-button nil)
                 (om::make-new-folder (om::panel om::*om-workspace-win*) filename (om::om-make-point 40 40))
                 ))
              ((and (oa::directoryp (pathname (concatenate 'string (car args) "/")))
                    (probe-file (pathname (concatenate 'string (car args) "/"))))
               (setf filename (pathname (concatenate 'string (car args) "/")))
-              (when (capi:prompt-for-confirmation (format nil "Import folder ~A to your workspace?" 
-                                                          (car (last (pathname-directory filename)))) 
+              (when (capi:prompt-for-confirmation (format nil "Import folder ~A to your workspace?"
+                                                          (car (last (pathname-directory filename))))
                                                   :cancel-button nil)
                 (om::make-new-folder (om::panel om::*om-workspace-win*) filename (om::om-make-point 40 40))
                 ))
@@ -152,8 +151,8 @@
        (lispworks::quit)))))
 
 #+cocoa
-(defun default-interface () 
-  (capi:set-application-interface  
+(defun default-interface ()
+  (capi:set-application-interface
    (setf oa::*om-app* (make-instance 'om-application))))
 
 #+cocoa
@@ -215,18 +214,18 @@
   (oa::set-om-logical-path)
   (om::load-modif-patches)
   (clos::set-clos-initarg-checking nil)
-  #+win32(define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
+  #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   (om::set-language *release-language*)
   (oa::om-init-funcall)
-  (setf dspec::*active-finders* (append dspec::*active-finders* 
-                                        (list (make-pathname 
+  (setf dspec::*active-finders* (append dspec::*active-finders*
+                                        (list (make-pathname
                                                :directory (pathname-directory (om::omroot "resources;"))
                                                :name "dspec-database" :type oa::*om-compiled-type*))))
-  
+
   (setf *print-case* :downcase)
   #+cocoa(setf system::*stack-overflow-behaviour* nil)
 
-  (in-package :om) 
+  (in-package :om)
   (om::show-workspaces-dialog)
   (oa::om-select-window om::*om-workspace-win*)
   (setf om::*om-startup* nil)
@@ -245,23 +244,25 @@
 ; (version-to-hex 6.020005)
 ; #x0006000200000005
 
-(deliver 'init-om 
-         *app-name* 
-         0 
-         :interface :capi :keep-editor t :keep-debug-mode t
-         :keep-load-function t 
+(deliver 'init-om
+         *app-name*
+         0
+         :interface :capi
+	 :keep-editor t
+	 :keep-debug-mode t
+         :keep-load-function t
          #+win32 :editor-style #+win32 :pc
          #+win32 :keep-gc-cursor #+ win32 nil
-         #+win32 :versioninfo #+win32 (list :binary-version (read-from-string (version-to-hex *version*)) 
-                                            :version-string (version-to-string *version* t nil) 
+         #+win32 :versioninfo #+win32 (list :binary-version (read-from-string (version-to-hex *version*))
+                                            :version-string (version-to-string *version* t nil)
                                             :company-name "IRCAM" :product-name "OpenMusic" :file-description "")
          #+win32 :console #+win32 :input
-         :quit-when-no-windows #+win32 t #-win32 nil 
-         :packages-to-keep #+cocoa '(:objc)  #+win32 '(:comm)
+         :quit-when-no-windows #+win32 t #-win32 nil
+         #+(or cocoa win32) :packages-to-keep #+cocoa '(:objc)  #+win32 '(:comm)
          #+win32 :icon-file #+win32 "./win/OpenMusic.ico")
 
 
-;  :editor-commands-to-keep :all-groups 
+;  :editor-commands-to-keep :all-groups
 ;========================
 
 ;;; MAC :
@@ -271,5 +272,3 @@
 
 ;;; WIN :
 ; lispworks-5-1-0-x86-win32.exe -build deliver.lisp
-
-
