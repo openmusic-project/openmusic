@@ -20,8 +20,7 @@
 (in-package :cl-fluidsynth)
 
 ;;; setup external fluidsynth to connect midi from jack to
-;;; TODO: wrap and load libfluidsynth.so to get this inside
-;;;
+
 
 (defparameter *fluidsynth-pid* nil)
 (defparameter *fluidynth-io* nil)
