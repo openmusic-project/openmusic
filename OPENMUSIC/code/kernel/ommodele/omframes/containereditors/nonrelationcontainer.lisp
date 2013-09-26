@@ -556,7 +556,7 @@ with the objects respectly associeted."))
 
 
 (defmethod editor-close? ((self workSpaceEditor))
-  #+(or linux win32) (om-confirmed-quit)
+  #+win32 (om-confirmed-quit)
   #-win32 t
   )
 
