@@ -1,10 +1,10 @@
 ;=========================================================================
-; OM API 
+; OM API
 ; Multiplatform API for OpenMusic
 ; LispWorks Implementation
 ;
 ;  Copyright (C) 2007-2009 IRCAM-Centre Georges Pompidou, Paris, France.
-; 
+;
 ;    This file is part of the OpenMusic environment sources
 ;
 ;    OpenMusic is free software: you can redistribute it and/or modify
@@ -62,36 +62,36 @@
 (defmethod om-show-tooltip ((self om-graphic-object) &optional (remove nil) (short nil))
   (when (om-get-view self)
     (internal-show-tooltip self remove short)))
-                     
+
 
 (defmethod internal-show-tooltip ((self om-graphic-object) &optional (remove nil) (short nil))
-    (if (and 
-       (help-spec self) 
+  (if (and
+       (help-spec self)
        (not (string-equal (help-spec self) ""))
        t)
       (let ((text (reduce #'(lambda (val segment) (concatenate 'string val segment (string #\Newline)))
                           (oa::text-wrap-pix (help-spec self) *om-default-font1* 200)
                           :initial-value "")))
-        (if short 
+        (if short
             (setf text (string-downcase (read-from-string text)))
-          (setf text (subseq text 0 (- (length text) 1))))
-        (multiple-value-bind (x y) (capi::current-pointer-position :relative-to (om-get-view self))     
+	    (setf text (subseq text 0 (- (length text) 1))))
+        (multiple-value-bind (x y) (capi::current-pointer-position :relative-to (om-get-view self))
           (capi:display-tooltip (om-get-view self) :x x :y (- y 20) :text text)
           #+cocoa(sleep (if remove 0.05 0.1))
           ))
-    (capi:display-tooltip (om-get-view self))
-    ))
+      (capi:display-tooltip (om-get-view self))
+      ))
 
 
 ;; protect, e.g. om-tab-layout
 (defmethod om-hide-tooltip ((self t)) nil)
 
-(defmethod om-hide-tooltip ((self capi::output-pane)) 
+(defmethod om-hide-tooltip ((self capi::output-pane))
   (when (om-get-view self)
     (capi:display-tooltip (om-get-view self))))
 
-(defmethod om-show-tooltip ((self om-standard-dialog-item) &optional remove short) nil) 
-(defmethod om-hide-tooltip ((self om-standard-dialog-item)) nil) 
+(defmethod om-show-tooltip ((self om-standard-dialog-item) &optional remove short) nil)
+(defmethod om-hide-tooltip ((self om-standard-dialog-item)) nil)
 
 
 ;;; NOT USED...
@@ -112,6 +112,3 @@
 ;     (setf (capi:titled-object-message interface)
 ;           "Something else"))
 ;    (:help (do-detailed-help interface )))
-
-
-
