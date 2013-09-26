@@ -556,7 +556,7 @@ with the objects respectly associeted."))
 
 
 (defmethod editor-close? ((self workSpaceEditor))
-  #+win32(om-confirmed-quit)
+  #+(or linux win32) (om-confirmed-quit)
   #-win32 t
   )
 
@@ -569,7 +569,7 @@ with the objects respectly associeted."))
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
                          
-   (:documentation "The editorframe of the WorkSpace is an instance of this class.
+	      (:documentation "The editorframe of the WorkSpace is an instance of this class.
 Workspace Panels contain icons of patches, maquettes and folders
 (patch-icon-frame, maquette-icon-frame and folder-icon-frame instances).#enddoc#
 #seealso# (OmWorkspace patch-icon-frame maquette-icon-frame folder-icon-frame) #seealso#"))
@@ -666,7 +666,7 @@ Workspace Panels contain icons of patches, maquettes and folders
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
 
-   (:documentation "This is the class for folder'editors.
+	      (:documentation "This is the class for folder'editors.
 Elements in these editors are patch-icon-frame maquette-icon-frame or folder-icon-frame instances.#enddoc#
 #seealso# (OMFolder patch-icon-frame maquette-icon-frame folder-icon-frame) #seealso#"))
 
@@ -868,7 +868,7 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
 
-   (:documentation "This is the class for editor of Generic Functions meta objects.
+	      (:documentation "This is the class for editor of Generic Functions meta objects.
  Elements of these editors are icon-method instances.#enddoc#
 #seealso# (OMgenericFunction icon-method) #seealso#"))
 
