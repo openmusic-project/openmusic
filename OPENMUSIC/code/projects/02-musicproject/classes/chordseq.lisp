@@ -487,23 +487,29 @@ make-quanti
 
 ;=== Conversion Chord-seq -> voice : dans le cas ou le chord-seq ne commence pas 0
 (defmethod* objFromObjs ((self chord-seq) (type voice))
-  (let* ((quantypar *quantify-def-params*)
-         (durs (append (butlast (x->dx (lonset self)))
-                       (list (extent->ms (car (last (chords self)))))))
-         (durs (if (zerop (car (lonset self)))
-                 durs (cons (* (car (lonset self)) -1) durs)))
-         (newvoice (make-instance (type-of type)
-                     :tree (omquantify durs
-                                       (first quantypar)
-                                       (second quantypar)
-                                       (third quantypar)
-                                       (fifth quantypar)
-                                       (fourth quantypar) ;bug utiliser onset
-                                       (sixth quantypar))
-                     :tempo (first quantypar)
-                     :legato 0
-                     :chords  (chords self))))
-    newvoice))
+            (if (chords self)
+                (let* ((quantypar *quantify-def-params*)
+                       (durs (append (butlast (x->dx (lonset self)))
+                                     (list (extent->ms (car (last (chords self)))))))
+                       (durs (if (zerop (car (lonset self)))
+                                 durs (cons (* (car (lonset self)) -1) durs)))
+                       (newvoice (make-instance (type-of type)
+                                                :tree (omquantify  durs
+                                                                   (first quantypar)
+                                                                   (second quantypar)
+                                                                   (third quantypar)
+                                                                   (fifth quantypar)
+                                                                   (fourth quantypar) ;bug utiliser onset
+                                                                   (sixth quantypar))
+                                                :tempo (first quantypar)
+                                                :legato 0
+                                                :chords  (chords self))))
+                  newvoice)
+              (make-instance (type-of type)
+                             :tree '(0 nil)
+                             :tempo (first *quantify-def-params*)
+                             :legato 0
+                             :chords  nil)))
 
 ;;;;;Fix Merger poly->chrd-seq
 ;;;Ici in a desormais les 1/4 de tons et 
@@ -618,11 +624,13 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 
 
 (defmethod* merger ((chs1 chord-seq) (chs2 chord-seq))
-  (let* ((mf (sort (nconc (chord-seq->mf-info-MC chs1)  (chord-seq->mf-info-MC chs2))
-                     #'< :key #'second)))
+  (if (and (inside chs1) (inside chs2))
+      (let* ((mf (sort (nconc (chord-seq->mf-info-MC chs1)  (chord-seq->mf-info-MC chs2))
+                       #'< :key #'second)))
     ; quantify with delta = 1 ms
-    (mf-info-MC->chord-seq mf)
-    ))
+        (mf-info-MC->chord-seq mf)
+        )
+    (if (inside chs1) (clone chs1) (clone chs2))))
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))

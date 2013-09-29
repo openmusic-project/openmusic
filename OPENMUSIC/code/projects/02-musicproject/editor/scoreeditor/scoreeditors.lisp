@@ -853,12 +853,12 @@
 
 
 (defmethod set-color-to-mus-obj ((self scorePanel))
-   (when (selection? self)
-   (let ((color (om-choose-color-dialog)))
-     (when color
-       (loop for item in (selection? self) do
-             (set-mus-color item color))
-       (om-invalidate-view self t)))))
+  (when (selection? self)
+    (let ((color (om-choose-color-dialog)))
+      (when color
+        (loop for item in (selection? self) do
+              (set-mus-color item color))
+        (om-invalidate-view self t)))))
 
 (defmethod set-name-to-mus-obj ((self t)) nil)
 
@@ -2567,7 +2567,6 @@
                 (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                 (slots-mode self) size (linear? self) (staff-sys self) 
                 (grille-step-p self) (noteaschan? self)))
-
 
 
 (defmethod record2obj ((self multiseqPanel) list)

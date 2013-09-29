@@ -732,8 +732,8 @@
          (note-color (get-mus-color note))
          (altstr (string (alt-char self)))  
          tie)
-
-    (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
+    
+    (om-with-fg-color nil (if chnote (nth (1- (chan (reference self))) *16-color-list*) note-color)
       
       (om-draw-string realpos (+ y (y self)) str)
       
@@ -970,7 +970,8 @@
       (loop for item in (inside self)
             for i = 0 then (+ i 1)
             for system in staff do
-            (draw-object item view x (- posy (round (* (posy (car (staff-list system))) (/ size 4)))) zoom minx maxx miny maxy slot size linear? (nth i staff) grille-p chnote)
+            (draw-object item view x (- posy (round (* (posy (car (staff-list system))) (/ size 4)))) 
+                         zoom minx maxx miny maxy slot size linear? (nth i staff) grille-p chnote)
             (setf posy (+ posy (get-delta-system system size view i))))
       (collect-rectangles self)
       (draw-extras self view size staff)))
