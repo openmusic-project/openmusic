@@ -10,7 +10,9 @@
 
 (defun las-open ()
  (if (las-load-library)
-     (las-init-full-system)
+     (progn
+       (las-init-full-system)
+       (las-faust-init-system))
    (om-message-dialog (format nil (om-str :lib-error) "LibAudioStream"))))
 
 (defun las-close ()

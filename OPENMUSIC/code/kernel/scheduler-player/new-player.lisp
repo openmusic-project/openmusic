@@ -406,10 +406,7 @@
       (editor-stop-record self))
   (general-stop (player self)))
 
-(defmethod editor-play/stop ((self play-editor-mixin))
-  (if (idle-p (player self))
-      (editor-play self)
-    (editor-stop self)))
+
 
 (defmethod editor-record ((self play-editor-mixin))
   (setf (engines (player self)) (list (get-player-engine self)))

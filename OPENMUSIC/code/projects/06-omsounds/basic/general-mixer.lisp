@@ -32,7 +32,7 @@
 (defclass omgenmixer-view (om-view) 
   ())
 
-(defmethod om-draw-contents ((self omgenmixer-view)) (print "draw"))
+(defmethod om-draw-contents ((self omgenmixer-view)) nil)
 
 
 ;/MAKE GENERAL MIXER WINDOW FUNCTION
@@ -40,6 +40,9 @@
 (defun make-general-mixer-win ()
   ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
   (if (not *general-mixer-presets*) (setf *general-mixer-presets* (init-genmixer-values)))
+
+  (if (> *general-mixer-current-preset* (1- (length *general-mixer-presets*)))
+      (setf *general-mixer-current-preset* (1- (length *general-mixer-presets*))))
 
   (let ((newwindow (om-make-window 'omgenmixer-window 
                                    :window-title "OpenMusic General Mixer" 
@@ -118,7 +121,7 @@
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
-                                                        (if (> *general-mixer-current-preset* 0)
+                                                        (if (and (> *general-mixer-current-preset* 0) (> (length *general-mixer-presets*) 1))
                                                             (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (copy-tree *general-mixer-values*))
                                                           (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one"))
                                                         (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
