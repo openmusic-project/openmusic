@@ -72,9 +72,7 @@
          (res buffer-size))
     ;(las::ResetSound sndr)
     (loop while (= res buffer-size) do
-          ;(setf res (las::ReadSound sndr buffer buffer-size (las::GetChannelsSound sndr)))
-          (setf res (las::ReadSound sndr buffer buffer-size 2))
-          )
+          (setf res (las::ReadSound sndr buffer buffer-size (las::GetChannelsSound sndr))))
     (om-free-pointer buffer)
     )
   (probe-file filename))
