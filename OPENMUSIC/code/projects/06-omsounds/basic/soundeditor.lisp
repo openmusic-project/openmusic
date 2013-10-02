@@ -825,11 +825,11 @@
          (offset-y (round channels-h 2))
          (datalist (loop for pt from 0 to (* timestep xtime) collect
                                       (loop for chan from 0 to (- nch 1) collect 
-                                            (fli::dereference stream-buffer 
+                                            (* 0.9 (fli::dereference stream-buffer 
                                                               :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
-                                                              :type :float)))))
+                                                              :type :float))))))
     (loop for i from 0 to (- nch 1) do  
-                                (om-draw-line pixmin (+ (* i channels-h) offset-y) pixmax (+ (* i channels-h) offset-y)))
+                                (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
     (setf sampleprev (car datalist))
     (loop for sample in (cdr datalist)
                                   for i = 0 then (+ i 1) do 
@@ -838,8 +838,8 @@
                                         (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
                                         (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
                                         (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
-                                        (om-draw-line  pixtimeprev (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev))))
-                                                       pixtime (+ offset-y (* c channels-h) pixpoint)) 
+                                        (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
+                                                       pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
                                         ) (setf sampleprev sample))))
 
 
