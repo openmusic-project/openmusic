@@ -11,7 +11,7 @@
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)
    ;;; CALLBACKS
-   (callback-tick :initform 0.05 :accessor callback-tick :initarg :callback-tick)
+   (callback-tick :initform 0.1 :accessor callback-tick :initarg :callback-tick)
    (caller :initform nil :accessor caller :initarg :caller)
    (callback-fun :initform nil :accessor callback-fun :initarg :callback-fun)
    (callback-process :initform nil :accessor callback-process)
