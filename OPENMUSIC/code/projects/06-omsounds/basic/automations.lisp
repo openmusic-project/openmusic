@@ -11,6 +11,9 @@
             )
            (:icon 234))
 
+(defmethod players-for-object ((self mixer-automation)) '(:bpfplayer))
+
+
 (defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
   (let ((bpf (call-next-method))
         char1 res x y)
