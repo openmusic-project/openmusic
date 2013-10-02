@@ -93,13 +93,14 @@
 (defmethod draw-control-info ((self t) (object mixer-automation)) 
   (let ((namelist (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
                         (car (nth i *general-mixer-presets*)))))
-    (om-with-focused-view self
-      (om-with-fg-color self (om-make-color 1 0 0)
-        (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 0) (get-system-etat self)))
-                              (format nil "0 - Default Preset"))
-        (loop for i from 1 to (1- (length namelist)) do
-              (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
-                              (format nil "~A - ~A" i (nth i namelist))))))))
+    (if (not (track object))
+        (om-with-focused-view self
+          (om-with-fg-color self (om-make-color 1 0 0)
+            (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 0) (get-system-etat self)))
+                            (format nil "0 - Default Preset"))
+            (loop for i from 1 to (1- (length namelist)) do
+                  (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
+                                  (format nil "~A - ~A" i (nth i namelist)))))))))
 
 
 (defun make-param-select-window (listing)
