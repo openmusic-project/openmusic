@@ -86,7 +86,7 @@
   (let (finalrect)
     (setf (point-sel *cur-drag-connection*) 
 	  (loop for item in (point-sel *cur-drag-connection*) 
-	     collect (nth (position item *first-point*) (points *cur-drag-connection*))))
+                collect (nth (position item *first-point*) (points *cur-drag-connection*))))
     (unless (equal (points *cur-drag-connection*) *first-point*)
       (setf (nth 2 (connected? (object (nth (index *cur-drag-connection*) (inputframes (thebox *cur-drag-connection*))))))
 	    (points *cur-drag-connection*)))
@@ -114,7 +114,6 @@
     #+cocoa (invalidate-connection-region *cur-drag-connection* self)
     #+linux (invalidate-connection-region *cur-drag-connection* self)
     (loop for point in (point-sel *cur-drag-connection*) do
-
           (let ((pos (position point *first-point*))) 
             (setf (nth pos (points *cur-drag-connection*))
                   (scr-point-con *cur-drag-connection* self (nth pos *first-point*) 
@@ -356,5 +355,6 @@
    (let ((x (pixel2norme container 'x (om-point-h  delta)))
          (y (* -1 (pixel2norme container 'y (om-point-v  delta)))))
      (om-add-points point0 (om-make-point x y))))
+
 
    

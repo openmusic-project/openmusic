@@ -347,3 +347,5 @@
   (let ((newfont (om-make-music-font *heads-font* fontsize)))
     (om-record-pict newfont size
       (cons-maq-mini-obj self frame fontsize size))))
+
+

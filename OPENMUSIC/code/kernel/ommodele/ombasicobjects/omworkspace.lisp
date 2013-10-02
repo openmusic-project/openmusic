@@ -154,28 +154,27 @@
     (let ((i 0) (j 0))
       (setf *workSpace-win-size* (nth 2 (ensure-ws-params self)))
       (setf *workSpace-win-pos* (nth 1 (ensure-ws-params self)))
-            (setf *om-workSpace-win*
-                  (make-editor-window (get-editor-class self) *current-workSpace* (name self) nil 
-                                      :winsize *workSpace-win-size*             
-                                      :winpos *workSpace-win-pos*             
-                                      :close-p nil))
-            (setf (editorFrame self) (panel *om-workSpace-win*))
+      (setf *om-workSpace-win*
+            (make-editor-window (get-editor-class self) *current-workSpace* (name self) nil 
+                                :winsize *workSpace-win-size*             
+                                :winpos *workSpace-win-pos*             
+                                :close-p nil))
+      (setf (editorFrame self) (panel *om-workSpace-win*))
          
-         (om-with-delayed-update (panel *om-workSpace-win*)
-         (mapc #'(lambda (elem)
-		   (add-icon-finder (make-icon-from-object elem
-		   					   (om-point-h (get-icon-pos elem)) 
-                                                           (om-point-v (get-icon-pos elem))
-		   					   1
-		   					   (incf i)) 
-                                    (panel *om-workSpace-win*))
-		   )
-	       (elements *current-workSpace*))
-         )
+      (om-with-delayed-update (panel *om-workSpace-win*)
+        (mapc #'(lambda (elem)
+                  (add-icon-finder (make-icon-from-object elem
+                                                          (om-point-h (get-icon-pos elem)) 
+                                                          (om-point-v (get-icon-pos elem))
+                                                          1
+                                                          (incf i)) 
+                                   (panel *om-workSpace-win*))
+                  )
+              (elements *current-workSpace*)))
          
-         (om-invalidate-view (editor *om-workSpace-win*))
-         (set-field-size (panel *om-workSpace-win*))
-         *om-workSpace-win*)))
+      (om-invalidate-view (editor *om-workSpace-win*))
+      (set-field-size (panel *om-workSpace-win*))
+      *om-workSpace-win*)))
     
 (defmethod save-all-persistants ((self omworkspace))
    "This method is called by the WorkSpace at the end of the OM session."
@@ -221,7 +220,7 @@
 ;Init the WorkSpace specified by pathname.
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
-   ;;(setf *splash-screen* (show-kero-pict nil))  ; FIXME
+   #-linux (setf *splash-screen* (show-kero-pict nil))  ; FIXME
    (init-om-package)                    
    (load-om-libs)
    (workspace-from-name pathname)                   

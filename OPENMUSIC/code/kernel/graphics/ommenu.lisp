@@ -111,160 +111,161 @@
 (defun make-om-menu (menuid &key disable editor more-items)
   (let ((win (if editor (om-view-window editor) (om-front-window)))
         (add-items (mapcar #'(lambda (item) (om-new-leafmenu (car item) (cadr item))) more-items)))
-  (cond ((equal menuid 'windows)
-         (om-make-menu "Windows" (append 
-                                  (unless (om-standalone-p) 
-                                    (list (list (om-new-leafmenu "Preferences" 'show-preferences-win nil (if (member "Preferences" disable :test 'string-equal) nil t)))))
-                                  (list 
-                                   (list 
-                                    (om-new-leafmenu "Workspace" 'show-workspace-win "W" 
-                                                     (if (member "Workspace" disable :test 'string-equal) nil t))
-                                    (om-new-leafmenu "Library" 'show-packages-win "P" 
-                                                     (if (member "Library" disable :test 'string-equal) nil t))
+    (cond ((equal menuid 'windows)
+           (om-make-menu "Windows" (append 
+                                    (unless (om-standalone-p) 
+                                      (list (list (om-new-leafmenu "Preferences" 'show-preferences-win nil 
+                                                                   (if (member "Preferences" disable :test 'string-equal) nil t)))))
+                                    (list 
+                                     (list 
+                                      (om-new-leafmenu "Workspace" 'show-workspace-win "W" 
+                                                       (if (member "Workspace" disable :test 'string-equal) nil t))
+                                      (om-new-leafmenu "Library" 'show-packages-win "P" 
+                                                       (if (member "Library" disable :test 'string-equal) nil t))
                                     ;(om-new-leafmenu "Global Variables" 'show-globals-win nil 
                                     ;                 (if (member "Global Variables" disable :test 'string-equal) nil t))
                                     ;(om-new-leafmenu "Resources" 'show-resources-win nil 
                                     ;                 (if (member "Resources" disable :test 'string-equal) nil nil))
-                                    )
-                                   (list
+                                      )
+                                     (list
                                     ;(om-new-leafmenu "General Palette" #'(lambda () (show-palette-win (om-view-window editor))) nil 
                                     ;                 (if (and (not (member "General Palette" disable :test 'string-equal)) editor 
                                     ;                          (editor-has-palette-p editor)) t nil))
-                                    (om-new-leafmenu "General Mixer" 'show-genmixer-win)
-                                    (when (score-tools-palettes-p editor)
-                                      (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
-                                                       (if (member "Score Inspector" disable :test 'string-equal) nil
-                                                         #'(lambda () (show-score-inspector-enabled)))
-                                                       ))
-                                    (when (score-tools-palettes-p editor)
-                                      (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette editor))  nil 
-                                                       (if (member "Extra Edition Palette" disable :test 'string-equal) nil
+                                      (om-new-leafmenu "General Mixer" 'show-genmixer-win)
+                                      (when (score-tools-palettes-p editor)
+                                        (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
+                                                         (if (member "Score Inspector" disable :test 'string-equal) nil
+                                                           #'(lambda () (show-score-inspector-enabled)))
+                                                         ))
+                                      (when (score-tools-palettes-p editor)
+                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette editor))  nil 
+                                                         (if (member "Extra Edition Palette" disable :test 'string-equal) nil
                                                            #'(lambda () (show-extra-palette-enabled))))
+                                        )
                                       )
-                                    )
-                                   (list 
-                                    (om-new-leafmenu "Lisp Listener" 'show-listener-win "L" (if (member "Lisp Listener" disable :test 'string-equal) nil t))
-                                    (om-new-leafmenu "Lisp Editor" 'om-open-new-text-editor nil (if (member "Lisp Editor" disable :test 'string-equal) nil t))
-                                    )
-                                   #'(lambda (w) 
-                                       (mapcar #'(lambda (w) (om-new-leafmenu (om-window-title w)
-                                                                         #'(lambda () (om-select-window w))
-                                                                         nil 
-                                                                         #'(lambda () (not (equal win w)))))
-                                           (remove-if 
-                                            #'(lambda (www) (or (equal 'packageeditor (type-of (editor www)))
-                                                                (equal 'workspaceeditor (type-of (editor www)))))
-                                            (om-get-all-windows 'editorwindow))))
-                                   ()))))
-        ((equal menuid 'presentation)
-         (om-make-menu "Presentation" (list
-                                       (list :selection
-                                             (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0)
+                                     (list 
+                                      (om-new-leafmenu "Lisp Listener" 'show-listener-win "L" (if (member "Lisp Listener" disable :test 'string-equal) nil t))
+                                      (om-new-leafmenu "Lisp Editor" 'om-open-new-text-editor nil (if (member "Lisp Editor" disable :test 'string-equal) nil t))
+                                      )
+                                     #'(lambda (w) 
+                                         (mapcar #'(lambda (w) (om-new-leafmenu (om-window-title w)
+                                                                                #'(lambda () (om-select-window w))
+                                                                                nil 
+                                                                                #'(lambda () (not (equal win w)))))
+                                                 (remove-if 
+                                                  #'(lambda (www) (or (equal 'packageeditor (type-of (editor www)))
+                                                                      (equal 'workspaceeditor (type-of (editor www)))))
+                                                  (om-get-all-windows 'editorwindow))))
+                                     ()))))
+          ((equal menuid 'presentation)
+           (om-make-menu "Presentation" (list
+                                         (list :selection
+                                               (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0)
                                                                           ;(om-add-menu-to-win win)
-                                                                          ) 
-                                                              nil
-                                                              (if (member "Icons" disable :test 'string-equal) nil t)
-                                                              #'(lambda () (= (presentation (editor win)) 0)))
-                                             (om-new-leafmenu "List" #'(lambda () (omG-change-presentation win 1)
-                                                                         (om-add-menu-to-win win)) nil 
-                                                              (if (member "Name" disable :test 'string-equal) nil t)
-                                                              #'(lambda () (= (presentation (editor win)) 1)))
-                                             )
-                                       (when win
-                                         #'(lambda (win)
-                                             (list (if (list-presentation? win)
-                                                 (om-new-menu "Sort..."
-                                                              (om-new-leafmenu "By Name" #'(lambda () 
-                                                                                             (change-frame-presentation (panel (editor win)) 1)
+                                                                            ) 
+                                                                nil
+                                                                (if (member "Icons" disable :test 'string-equal) nil t)
+                                                                #'(lambda () (= (presentation (editor win)) 0)))
+                                               (om-new-leafmenu "List" #'(lambda () (omG-change-presentation win 1)
+                                                                           (om-add-menu-to-win win)) nil 
+                                                                (if (member "Name" disable :test 'string-equal) nil t)
+                                                                #'(lambda () (= (presentation (editor win)) 1)))
+                                               )
+                                         (when win
+                                           #'(lambda (win)
+                                               (list (if (list-presentation? win)
+                                                         (om-new-menu "Sort..."
+                                                                      (om-new-leafmenu "By Name" #'(lambda () 
+                                                                                                     (change-frame-presentation (panel (editor win)) 1)
                                                                                              ;(omG-change-presentation win 1)
-                                                                                             ))
+                                                                                                     ))
                                                               
-                                                              (om-new-leafmenu "By Type" #'(lambda () 
-                                                                                             (change-frame-presentation (panel (editor win)) 2)
+                                                                      (om-new-leafmenu "By Type" #'(lambda () 
+                                                                                                     (change-frame-presentation (panel (editor win)) 2)
                                                                                              ;(omG-change-presentation win 2)
-                                                                                             ))
-                                                              )
-                                               (om-new-leafmenu "Align" #'(lambda () (omG-align-presentation win))))))))
-                       ))
-        ((equal menuid 'file)
-	 (om-make-menu "File" (append 
-                               (make-new-menu editor)
-                               (list
-                                (list 
-                                 (om-new-leafmenu "Save" #'(lambda () 
-                                                             (window-save win)) "s" 
-                                                  (if (member "Save" disable :test 'string-equal) nil t))
-                                 (om-new-leafmenu "Last Saved" #'(lambda () (window-last-saved (editor win))) nil 
-                                                  (if (member "Last Saved" disable :test 'string-equal) nil t))
-                                 )
-                                (list 
-                                 (om-new-leafmenu "Close" #'(lambda () (om-close-window win)) "w" 
-                                                  (if (member "Close" disable :test 'string-equal) nil t))
-                                 )
-                                add-items
-                                (list 
+                                                                                                     ))
+                                                                      )
+                                                       (om-new-leafmenu "Align" #'(lambda () (omG-align-presentation win))))))))
+                         ))
+          ((equal menuid 'file)
+           (om-make-menu "File" (append 
+                                 (make-new-menu editor)
+                                 (list
+                                  (list 
+                                   (om-new-leafmenu "Save" #'(lambda () 
+                                                               (window-save win)) "s" 
+                                                    (if (member "Save" disable :test 'string-equal) nil t))
+                                   (om-new-leafmenu "Last Saved" #'(lambda () (window-last-saved (editor win))) nil 
+                                                    (if (member "Last Saved" disable :test 'string-equal) nil t))
+                                   )
+                                  (list 
+                                   (om-new-leafmenu "Close" #'(lambda () (om-close-window win)) "w" 
+                                                    (if (member "Close" disable :test 'string-equal) nil t))
+                                   )
+                                  add-items
+                                  (list 
                                  ;(om-new-leafmenu "Make Alias" #'(lambda () (alias-window win)) "m" 
                                  ;                 (if (member "Make Alias" disable :test 'string-equal) nil t))
-                                 (om-new-leafmenu "Get Info" #'(lambda() (get-info-window win)) "i" 
-                                                  (if (member "Get Info" disable :test 'string-equal) nil t))
-                                 )
-                                (list 
-                                 (om-new-leafmenu "Page Setup" #'(lambda () (om-page-setup)) nil 
-                                                  (if (member "Page Setup" disable :test 'string-equal) nil t))
-                                 (om-new-leafmenu "Print" #'(lambda () (om-print-window win)) "p" 
-                                                  (if (member "Print" disable :test 'string-equal) nil t))
-                                 )
-                                ))))
-        ((equal menuid 'minifile)
-         (om-make-menu "File" (append 
-                               (make-new-menu editor)
-                               (list 
-                                 (om-new-leafmenu "Close" #'(lambda () (om-close-window win)) "w" 
-                                                  (if (member "Close" disable :test 'string-equal) nil t))
-                                 )
-                                )))
-        ((equal menuid 'edit)
-         (om-make-menu "Edit" (remove nil 
-                                      (list
-                                       (om-new-leafmenu "Undo" #'(lambda() (undo win)) "z" 
-                                                        (if (member "Undo" disable :test 'string-equal) nil t))
-                                       (list 
-                                        (om-new-leafmenu "Cut" #'(lambda () (cut win)) "x" 
-                                                         (if (member "Cut" disable :test 'string-equal) nil t))
-                                        (om-new-leafmenu "Copy" #'(lambda () (copy win)) "c" 
-                                                         (if (member "Copy" disable :test 'string-equal) nil t))
-                                        (om-new-leafmenu "Paste" #'(lambda () (paste win)) "v" 
-                                                         (if (member "Paste" disable :test 'string-equal) nil t))
-                                        (om-new-leafmenu "Duplicate" #'(lambda () (duplicate-window win)) "d" 
-                                                         (if (member "Duplicate" disable :test 'string-equal) nil t))
-                                        (om-new-leafmenu "Clear" #'(lambda () (clear win)) nil 
-                                                         (if (member "Clear" disable :test 'string-equal) nil t))
-                                        )
-                                       (om-new-leafmenu "Select All" #'(lambda () (select-all win)) "a" 
-                                                        (if (member "Select All" disable :test 'string-equal) nil t))
-                                       (when (font-menu editor)
-                                         (om-make-menu "Font..." 
-                                                       (list
-                                                        (om-new-leafmenu "Bold" #'(lambda () (edit-bold editor)) "B")
-                                                        (om-new-leafmenu "Italics" #'(lambda () (edit-italics editor)) "I"))))
-                                       )))
-         )
-        ((equal menuid 'functions)
-         (om-package-fun2menu *om-package-tree* nil #'(lambda (f) (add-box-from-menu f nil))))
-        ((equal menuid 'classes)
-         (om-package-classes2menu *om-package-tree* nil #'(lambda (c) (add-box-from-menu c nil))))
-        ((equal menuid 'help)
-         (om-make-menu "Help" (remove nil (append 
-                                           (list
-                                            (om-new-leafmenu "Editor Command Keys..." #'(lambda() (when editor
-                                                                                                    (let ((obj (string-upcase (class-name (class-of (object editor))))))
-                                                                                                      (show-help-window (format nil "Commands for ~A Editor" obj) 
-                                                                                                                        (get-help-list editor))))) 
-                                                             "H" (and (not (find "Commands" disable :test 'string-equal))
-                                                                      (get-help-list editor) t)))
-                                           (help-items editor)))
-                       ))
-         )))
+                                   (om-new-leafmenu "Get Info" #'(lambda() (get-info-window win)) "i" 
+                                                    (if (member "Get Info" disable :test 'string-equal) nil t))
+                                   )
+                                  (list 
+                                   (om-new-leafmenu "Page Setup" #'(lambda () (om-page-setup)) nil 
+                                                    (if (member "Page Setup" disable :test 'string-equal) nil t))
+                                   (om-new-leafmenu "Print" #'(lambda () (om-print-window win)) "p" 
+                                                    (if (member "Print" disable :test 'string-equal) nil t))
+                                   )
+                                  ))))
+          ((equal menuid 'minifile)
+           (om-make-menu "File" (append 
+                                 (make-new-menu editor)
+                                 (list 
+                                  (om-new-leafmenu "Close" #'(lambda () (om-close-window win)) "w" 
+                                                   (if (member "Close" disable :test 'string-equal) nil t))
+                                  )
+                                 )))
+          ((equal menuid 'edit)
+           (om-make-menu "Edit" (remove nil 
+                                        (list
+                                         (om-new-leafmenu "Undo" #'(lambda() (undo win)) "z" 
+                                                          (if (member "Undo" disable :test 'string-equal) nil t))
+                                         (list 
+                                          (om-new-leafmenu "Cut" #'(lambda () (cut win)) "x" 
+                                                           (if (member "Cut" disable :test 'string-equal) nil t))
+                                          (om-new-leafmenu "Copy" #'(lambda () (copy win)) "c" 
+                                                           (if (member "Copy" disable :test 'string-equal) nil t))
+                                          (om-new-leafmenu "Paste" #'(lambda () (paste win)) "v" 
+                                                           (if (member "Paste" disable :test 'string-equal) nil t))
+                                          (om-new-leafmenu "Duplicate" #'(lambda () (duplicate-window win)) "d" 
+                                                           (if (member "Duplicate" disable :test 'string-equal) nil t))
+                                          (om-new-leafmenu "Clear" #'(lambda () (clear win)) nil 
+                                                           (if (member "Clear" disable :test 'string-equal) nil t))
+                                          )
+                                         (om-new-leafmenu "Select All" #'(lambda () (select-all win)) "a" 
+                                                          (if (member "Select All" disable :test 'string-equal) nil t))
+                                         (when (font-menu editor)
+                                           (om-make-menu "Font..." 
+                                                         (list
+                                                          (om-new-leafmenu "Bold" #'(lambda () (edit-bold editor)) "B")
+                                                          (om-new-leafmenu "Italics" #'(lambda () (edit-italics editor)) "I"))))
+                                         )))
+           )
+          ((equal menuid 'functions)
+           (om-package-fun2menu *om-package-tree* nil #'(lambda (f) (add-box-from-menu f nil))))
+          ((equal menuid 'classes)
+           (om-package-classes2menu *om-package-tree* nil #'(lambda (c) (add-box-from-menu c nil))))
+          ((equal menuid 'help)
+           (om-make-menu "Help" (remove nil (append 
+                                             (list
+                                              (om-new-leafmenu "Editor Command Keys..." #'(lambda() (when editor
+                                                                                                      (let ((obj (string-upcase (class-name (class-of (object editor))))))
+                                                                                                        (show-help-window (format nil "Commands for ~A Editor" obj) 
+                                                                                                                          (get-help-list editor))))) 
+                                                               "H" (and (not (find "Commands" disable :test 'string-equal))
+                                                                        (get-help-list editor) t)))
+                                             (help-items editor)))
+                         ))
+          )))
 
 (defmethod help-items ((self t)) nil)
 
