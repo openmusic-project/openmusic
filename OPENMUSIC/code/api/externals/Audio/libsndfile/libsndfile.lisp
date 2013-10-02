@@ -16,8 +16,8 @@
   (:darwin "libsndfile.dylib")
   #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
   #+linux(:linux "libsndfile")
-  ;;(t (:default "libsndfile-1"))
-  (t (:default "libsndfile"))
+  #+win32(t (:default "libsndfile-1"))
+  #+linux(t (:default "libsndfile"))
   )
 
 #+(or win32 linux)
