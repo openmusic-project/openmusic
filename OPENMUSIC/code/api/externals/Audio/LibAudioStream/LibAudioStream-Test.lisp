@@ -10,7 +10,7 @@
 ;;;=======================
 
 (defparameter soundfile1 "/Users/bresson/Dropbox/workspaces/om-acmmm/in-files/guitar-extract.aif")
-(defparameter soundfile2 "/Users/bresson/Dropbox/workspaces/om-acmmm/in-files/africa.aiff")
+(defparameter soundfile2 "/Users/bresson/WORKSPACES/aaaa/in-files/africa.aiff")
 (defparameter soundfile3 "/Users/bresson/Desktop/rap.wav")
 
 (defparameter soundfile1 "C:\\Users\\Jean Bresson\\Desktop\\ccc.aif")

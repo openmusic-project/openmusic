@@ -590,6 +590,7 @@
         (sound-get-info (filename sound))
       (if (and format size nch (> size 0) (> nch 0))
         (progn
+          (print (list nch sr ss size skip))
           (setf las-infos (las-get-sound-infos (om-path2cmdpath (filename sound))))
           (setf (audio-format sound) format
                 (number-of-samples sound) size
