@@ -8,7 +8,8 @@
            ((track :initform nil :accessor track :initarg :track :documentation "a track number")
             (parameter :initform nil :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\" or \"presets\")")
             ;(mixerfun :initform nil :accessor mixerfun)
-            ))
+            )
+           (:icon 234))
 
 (defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
   (let ((bpf (call-next-method))
