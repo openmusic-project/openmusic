@@ -83,8 +83,6 @@
           om-lib-pathname
           ) :om-api)
 
-(defvar *externals-directory* nil)
-(setf *externals-directory* (append (butlast *api-directory*) (list "externals")))
 
 (defvar *om-lib-directory* nil)
 

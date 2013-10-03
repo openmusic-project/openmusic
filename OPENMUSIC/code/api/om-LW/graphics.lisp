@@ -540,9 +540,6 @@
 (defun om-color-alpha (color)
   (color::color-alpha (c color)))
 
-;; (defmethod print-object ((self omcolor) stream)
-;;   (format stream "color R:~D G:~D B:~D" (om-color-r self) (om-color-g self) (om-color-b self)))
-
 (defmethod print-object ((self omcolor) stream)
   (format stream "color R:~D G:~D B:~D" (om-color-r self) (om-color-g self) (om-color-b self)))
 

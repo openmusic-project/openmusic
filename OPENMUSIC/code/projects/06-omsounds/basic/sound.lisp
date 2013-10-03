@@ -388,7 +388,7 @@ Press 'space' to play/stop the sound file.
 
 (defmethod object-specific-menu ((self sound))
   (list (om-new-leafmenu "Open with external editor..."
-                         #'(lambda () (om-cmd-line (string+ *om-open-cmd*  (namestring (sound-path self))))))))
+                         #'(lambda () (om-cmd-line (string+ *om-open-cmd* " "  (namestring (sound-path self))))))))
 
 ;=======
 ; PICT
