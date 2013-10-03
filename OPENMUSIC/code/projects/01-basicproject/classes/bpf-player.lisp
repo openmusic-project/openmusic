@@ -35,6 +35,8 @@
                                    (+ at (car point))))
                 (point-pairs object))))))
 
+(defmethod player-loop ((self (eql :bpfplayer)) &optional play-list) (print "TODO : LOOP ON AUTOMATION"))
+
 ;================================
 ; EDITOR
 ;================================
