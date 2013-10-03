@@ -376,7 +376,7 @@
                    :at 0 
                    :interval (get-interval-to-play self)))
 
-(defmethod editor-play ((self play-editor-mixin) )
+(defmethod editor-play ((self play-editor-mixin))
   (setf (loop-play (player self)) (loop-play self))
   (if (equal (state (player self)) :pause)
       (general-continue (player self))

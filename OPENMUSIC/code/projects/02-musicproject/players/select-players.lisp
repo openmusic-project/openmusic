@@ -22,7 +22,7 @@
 	  (newlist (pushnew ,player curlist)))
      (defmethod players-for-object ((self ,object)) newlist)))
 
-(defmethod enabled-players-for-object ((self t)) 
+(defmethod enabled-players-for-object ((self t))
   ;;; intersection does not preserve the original order
   (loop for p in (players-for-object self)
         when (find p *enabled-players*)

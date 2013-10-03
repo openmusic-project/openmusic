@@ -37,9 +37,9 @@
                 ((and res (= res 1)) (setf (parameter bpf) "vol"))
                 ((and res (= res 2)) (setf (parameter bpf) "presets"
                                            (decimals bpf) 0)))))
-
+    
     (if (or (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
-            (and (parameter bpf) (string= (parameter bpf) "presets")))
+            (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
         (progn
           (setf (player-fun bpf) (get-function-from-track bpf))
           (if (string= (parameter bpf) "presets")
@@ -69,29 +69,35 @@
          (npresets (length *general-mixer-presets*)))
     (cond  ((string= parameter "pan")
             #'(lambda (val)
-                (if (< val minval) (setf val minval))
-                (if (> val maxval) (setf val maxval))
-                (change-genmixer-channel-pan track (float val))
-                (if *general-mixer-window*
+                (if val
                     (progn
-                      (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
-                      (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
+                      (if (< val minval) (setf val minval))
+                      (if (> val maxval) (setf val maxval))
+                      (change-genmixer-channel-pan track (float val))
+                      (if *general-mixer-window*
+                          (progn
+                            (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
+                            (set-value (nth 4 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))))
            ((string= parameter "vol")
             #'(lambda (val)
-                (if (< val minval) (setf val minval))
-                (if (> val maxval) (setf val maxval))
-                (change-genmixer-channel-vol track (float val))
-                (if *general-mixer-window*
+                (if val
                     (progn
-                      (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
-                      (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))
+                      (if (< val minval) (setf val minval))
+                      (if (> val maxval) (setf val maxval))
+                      (change-genmixer-channel-vol track (float val))
+                      (if *general-mixer-window*
+                          (progn
+                            (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
+                            (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))))
            ((string= parameter "presets")
             #'(lambda (val)
-                (if (< val 0) (setf val 0))
-                (if (>= val npresets) (setf val (- npresets 1)))
-                (load-genmixer-preset val)
-                (if *general-mixer-window*
-                    (update-genmixer-display)))))))
+                (if val 
+                    (progn
+                      (if (< val 0) (setf val 0))
+                      (if (>= val npresets) (setf val (- npresets 1)))
+                      (load-genmixer-preset val)
+                      (if *general-mixer-window*
+                          (update-genmixer-display)))))))))
 
 (defmethod draw-control-info ((self t) (object mixer-automation)) 
   (let ((namelist (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
