@@ -409,7 +409,7 @@ Press 'space' to play/stop the sound file.
   
 (defmethod pic-to-draw ((self sound)) 
   (if (and (pict-spectre self) (pict-spectre? self))
-    (thepict (pict-spectre self))
+      (thepict (pict-spectre self))
     (sound-get-pict self)))
 
 (defmethod draw-mini-view ((self t) (val sound))

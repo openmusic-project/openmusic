@@ -596,8 +596,8 @@
 
 (defmethod change-sound-pict ((self soundPanel))
   (let* ((thesound (object (om-view-container self))))
-  (setf (pict-spectre? thesound) (not (pict-spectre? thesound)))
-  (om-invalidate-view self t)))
+    (setf (pict-spectre? thesound) (not (pict-spectre? thesound)))
+    (om-invalidate-view self t)))
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
