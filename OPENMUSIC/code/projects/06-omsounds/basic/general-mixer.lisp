@@ -47,7 +47,9 @@
                                    :size (om-make-point (+ 5 (* *channel-w* 10)) (+ (mixer-track-size) 45 15 16)) 
                                    :scrollbars :h
                                    :position (om-make-point 100 50) :close t :resizable nil))
-        (vals (copy-tree (or (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (cadr (car *general-mixer-presets*))))))
+        ;(vals (copy-tree (or (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (cadr (car *general-mixer-presets*)))))
+        (vals (copy-tree *general-mixer-values*))
+        )
 
     (setf (panel-view newwindow) (om-make-view 'omgenmixer-view
                                                :owner newwindow
