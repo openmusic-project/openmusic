@@ -801,10 +801,11 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                                    (list nil nrows ncols)
                                                                    (loop for control in data
                                                                          for j = 0 then (+ j 1)
-                                                                         append (list (intern (if (sdif-null-ptr-p mtype)
-                                                                                                  (format nil "Field ~D" j)
-                                                                                                (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1))
-                                                                                                ))
+                                                                         append (list (intern (or (and (not (sdif-null-ptr-p mtype))
+                                                                                                       (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1)))
+                                                                                                  (format nil "Field ~D" j))
+                                                                                                
+                                                                                                )
                                                                                       control
                                                                                       ))
                                                                    ))
