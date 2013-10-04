@@ -69,7 +69,7 @@
   
 
 (defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
-  (cond ((equal (state player) :play) 
+  (cond ((equal (state player) :play)
          ;;; prolonge la durée de vie du player
          (setf (stop-time player) (max (stop-time player) end-t)))
         

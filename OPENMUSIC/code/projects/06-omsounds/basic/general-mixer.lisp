@@ -337,6 +337,7 @@
 (defun load-genmixer-preset (index)
   (let ((vals (cadr (nth index *general-mixer-presets*))))
     (setf *general-mixer-values* (copy-tree vals))
+    (setf *general-mixer-current-preset* index)
     (apply-mixer-values)))
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION

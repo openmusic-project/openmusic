@@ -91,13 +91,15 @@
                             (om-set-slider-value (nth 8 (om-subviews (nth (1- track) (om-subviews (panel-view *general-mixer-window*))))) val)))))))
            ((string= parameter "presets")
             #'(lambda (val)
-                (if val 
+                (if val
                     (progn
                       (if (< val 0) (setf val 0))
                       (if (>= val npresets) (setf val (- npresets 1)))
-                      (load-genmixer-preset val)
-                      (if *general-mixer-window*
-                          (update-genmixer-display)))))))))
+                      (if (/= val *general-mixer-current-preset*)
+                          (progn
+                            (load-genmixer-preset val)
+                            (if *general-mixer-window*
+                                (update-genmixer-display)))))))))))
 
 (defmethod draw-control-info ((self t) (object mixer-automation)) 
   (let ((namelist (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
