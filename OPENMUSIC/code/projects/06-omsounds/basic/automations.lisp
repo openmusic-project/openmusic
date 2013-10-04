@@ -7,12 +7,15 @@
 (defclass! mixer-automation (BPF-controller) 
            ((track :initform nil :accessor track :initarg :track :documentation "a track number")
             (parameter :initform nil :accessor parameter :initarg :parameter :documentation "a parameter name (\"vol\" or \"pan\" or \"presets\")")
+            (interval2play :initform nil :accessor interval2play)
+            (assoc-player :initform nil :accessor assoc-player)
             ;(mixerfun :initform nil :accessor mixerfun)
             )
            (:icon 234))
 
 (defmethod players-for-object ((self mixer-automation)) '(:bpfplayer))
 
+(defmethod get-player-action ((self mixer-automation)) (call-next-method))
 
 (defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
   (let ((bpf (call-next-method))
