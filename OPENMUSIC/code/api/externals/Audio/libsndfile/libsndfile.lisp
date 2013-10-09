@@ -268,7 +268,7 @@
 
 (cffi:defcfun ("sf_seek" sf_seek) :double
   (sndfile :pointer)
-  (frames :double)
+  (frames :long-long)
   (whence :int))
 
 (cffi:defcfun ("sf_set_string" sf_set_string) :int
