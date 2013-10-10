@@ -39,15 +39,15 @@
 
 
 ;; using 'sndlasptr-slot from 'om-sound class to hold jack-sf struct:
-(defmethod jack-sf-ptr ((object sound))
+(defmethod jack-sf-struct ((object sound))
   (oa::sndlasptr object))
 
-(defmethod (setf jack-sf-ptr) (jack-sf (object sound))
+(defmethod (setf jack-sf-struct) (jack-sf (object sound))
   (setf (oa::sndlasptr object) jack-sf))
 
 (defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) object at interval)
   (let ((thissound (cl-jack::cl-jack-play-sound (om-sound-file-name object) (car interval))))
-    (setf (jack-sf-ptr object) thissound)))  
+    (setf (jack-sf-struct object) thissound)))  
 
 (defmethod player-start ((engine (eql :jackaudio)) &optional play-list)
   t)
@@ -87,18 +87,18 @@
 ;;; PAUSE ONLY ONE OBJECT
 (defmethod player-pause-object ((engine (eql :jackaudio)) (object sound) &key interval)
   (declare (ignore interval))
-  (cl-jack:jackplay-toggle-read (jack-sf-ptr object) nil))
+  (cl-jack:jackplay-toggle-read (jack-sf-struct object) nil))
 
 ;;; RESTART ONLY ONE OBJECT
 (defmethod player-continue-object ((engine (eql :jackaudio)) (object sound) &key interval)
   (declare (ignore interval))
-  (cl-jack:jackplay-toggle-read (jack-sf-ptr object) t))
+  (cl-jack:jackplay-toggle-read (jack-sf-struct object) t))
 
 
 ;;; STOP ONLY ONE OBJECT
 (defmethod player-stop-object ((engine (eql :jackaudio)) (object sound) &key interval)
   (declare (ignore interval))
-  (cl-jack:cl-jack-close-sound (jack-sf-ptr object)))
+  (cl-jack:cl-jack-close-sound (jack-sf-struct object)))
 
 ;;; called when a box or editor attached to player is removed/closed
 (defmethod player-cleanup ((player (eql :jackaudio)) snd)
@@ -110,10 +110,14 @@
   ;;(print (format nil "~A : set loop start: ~A end: ~A" engine start end))
   t)
 
+(defun jack-goto-start (jack-sf)
+  (cl-jack::cl-jack-seek
+   (cl-jack::jack-sf-sound-file-handle jack-sf)
+   (cl-jack::jack-sf-start jack-sf)))
+
 (defmethod player-loop ((engine (eql :jackaudio)) &optional play-list)
   (mapc #'(lambda (snd)
-	    (let ((jack-sf (jack-sf-ptr snd)))
-	      (cl-jack::cl-jack-seek (cl-jack::jack-sf-sound-file-handle jack-sf) (cl-jack::jack-sf-start jack-sf))))
+	    (jack-goto-start (jack-sf-struct snd)))
 	play-list))
 
 
