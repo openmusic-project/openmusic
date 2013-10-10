@@ -1,104 +1,120 @@
-;;;===========================================
-;;; IMPLEMENTATION OF AN AUDIO PLAYER FOR OM
-;;; USING THE JACK AUDIOSERVER
-;;;===========================================
+;;; ===========================================================================
+;;; JACK Player for Common Lisp/CFFI
+
+;;; This program is free software; you can redistribute it and/or modify
+;;; it under the terms of the GNU Lesser General Public License as published by
+;;; the Free Software Foundation; either version 2.1 of the License, or
+;;; (at your option) any later version.
+
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU Lesser General Public License for more details.
+
+;;; You should have received a copy of the GNU Lesser General Public License
+;;; along with this program; if not, write to the Free Software
+;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+;;; Author: Anders Vinjar
 
 (in-package :om)
 
+(require :cl-jack (make-pathname :directory (append om-api::*externals-directory* '("JACK")) :name "cl-jack-load"))
+
+;==================
+; PLAYER
+;==================
+
+(defmethod player-name ((engine (eql :jackaudio))) "jackplayer")
+(defmethod player-type ((engine (eql :jackaudio))) :JACK-client)
+(defmethod player-desc ((engine (eql :jackaudio))) "Audio player for JACK")
+
+(defun init-jackplayer ()
+  ;; enable jackplayer for sound class:
+  (pushnew :jackaudio *enabled-players*)
+  (add-player-for-object sound :jackaudio))
+
+;;(init-jackplayer)
+(om-add-init-func 'init-jackplayer)
+
+
+;; using 'sndlasptr-slot from 'om-sound class to hold jack-sf struct:
+(defmethod jack-sf-ptr ((object sound))
+  (oa::sndlasptr object))
+
+(defmethod (setf jack-sf-ptr) (jack-sf (object sound))
+  (setf (oa::sndlasptr object) jack-sf))
+
 (defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) object at interval)
-  (call-next-method))
+  (let ((thissound (cl-jack::cl-jack-play-sound (om-sound-file-name object) (car interval))))
+    (setf (jack-sf-ptr object) thissound)))  
 
 (defmethod player-start ((engine (eql :jackaudio)) &optional play-list)
-  (call-next-method))
+  t)
 
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
 	   (player-pause-object engine (nth i play-list)))
-      (jack-pause-all-players)))
+      (cl-jack:jackplay-toggle-read nil nil)))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
 	   (player-continue-object engine (nth i play-list)))
-      (jack-cont-all-players)))
+      (cl-jack:jackplay-toggle-read nil t)))
 
 ;;; STOP
+(defun jack-stop-all-players ()
+  (mapc #'cl-jack:cl-jack-close-sound cl-jack::*jack-sounds*))
+
 (defmethod player-stop ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (- (length play-list) 1) do
 	   (player-stop-object engine (nth i play-list)))
       (jack-stop-all-players)))
 
+
 ;;; PLAY (NOW)
-(defmethod player-play-object ((engine (eql :jackaudio)) (object sound) &key interval)
-  (jack-play object (car interval) (cadr interval) (tracknum object)))
+;; (defmethod player-play-object ((engine (eql :jackaudio)) (object sound) &key interval)
+;;   ;;(jack-play object (car interval) (cadr interval) (tracknum object))
+;;   (call-next-method))
 
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT
 (defmethod player-pause-object ((engine (eql :jackaudio)) (object sound) &key interval)
-  (jack-pause object (tracknum object)))
+  (declare (ignore interval))
+  (cl-jack:jackplay-toggle-read (jack-sf-ptr object) nil))
 
 ;;; RESTART ONLY ONE OBJECT
 (defmethod player-continue-object ((engine (eql :jackaudio)) (object sound) &key interval)
-  (jack-play object (car interval) (cadr interval) (tracknum object)))
+  (declare (ignore interval))
+  (cl-jack:jackplay-toggle-read (jack-sf-ptr object) t))
+
 
 ;;; STOP ONLY ONE OBJECT
 (defmethod player-stop-object ((engine (eql :jackaudio)) (object sound) &key interval)
-  (jack-stop object (tracknum object)))
+  (declare (ignore interval))
+  (cl-jack:cl-jack-close-sound (jack-sf-ptr object)))
 
-;;; TODO
 ;;; called when a box or editor attached to player is removed/closed
-(defmethod player-cleanup ((player (eql :jackaudio)))
-  (let* ((snd (sound-to-play player))
-         (status-list (if (eq player oa::*audio-player-hidden*)
-                          oa::*audio-player-hidden-tracks-info*
-			  oa::*audio-player-visible-tracks-info*))
-         (chan (if (eq player oa::*audio-player-hidden*)
-                   (oa::tracknum-sys (sound-to-play player))
-		   (tracknum (sound-to-play player))))
-         (loadedsnd (car (gethash chan status-list)))
-         (status (cadr (gethash chan status-list))))
-    (if (eq snd loadedsnd)
-        (let () 
-          (oa::om-smart-stop snd)
-          (setf (car (gethash chan status-list)) nil)))))
+(defmethod player-cleanup ((player (eql :jackaudio)) snd)
+  (player-stop-object player snd))
 
-;;; creates the player-specific control on the sound editor control panel
-(defmethod make-player-specific-controls ((self (eql :jackaudio)) control-view)
-  (let* ((snd (object (editor control-view)))
-         (track (tracknum snd)))
-    (list 
-     (om-make-dialog-item 'om-static-text (om-make-point 420 8)
-                          (om-make-point 40 20) "Track"
-                          :font *om-default-font1*)
-     (om-make-dialog-item 'numBox
-                          (om-make-point 480 8)
-                          (om-make-point 60 18) (if (> track 0) (format () " ~D" track) "no track")
-                          :min-val 0 :max-val 32
-                          :font *om-default-font1*
-                          :bg-color *om-white-color*
-                          :fg-color (if (> track 0) *om-black-color* *om-gray-color*)
-                          :value track
-                          :afterfun #'(lambda (item)
-                                        (if (/= (tracknum snd) (value item))
-                                            (progn
-                                              (general-stop (player (editor control-view)))
-                                              (setf (tracknum snd) (value item))
-                                              (om-set-fg-color item (if (> (value item) 0) *om-black-color* *om-gray-color*))
-                                              (om-set-dialog-item-text item (if (> (value item) 0) (format () " ~D" (value item)) "no track"))
-                                              (if (> (value item) 0)
-						  (jack-switch-sound-jack-player snd 1)
-						  (jack-switch-sound-jack-player snd 0))
-                                              (report-modifications (editor control-view))))))
-					;(om-make-dialog-item 'om-check-box (om-make-point 590 4)
-					;                     (om-make-point 170 20) "Use Original Sound"
-					;                     :font *om-default-font1*
-					;                     :checked-p (if (or (= -1 (oa::current-is-original snd)) 
-					;                                        (= 0 (oa::current-is-original snd))) nil t)
-					;                     :di-action (om-dialog-item-act item (let ()
-					;                                                           (oa::om-use-original-sound sndpanel))))
-     )))
+
+;;; SET LOOP (called before play)
+(defmethod player-set-loop ((engine (eql :jackaudio)) &optional start end)
+  ;;(print (format nil "~A : set loop start: ~A end: ~A" engine start end))
+  t)
+
+(defmethod player-loop ((engine (eql :jackaudio)) &optional play-list)
+  (mapc #'(lambda (snd)
+	    (let ((jack-sf (jack-sf-ptr snd)))
+	      (cl-jack::cl-jack-seek (cl-jack::jack-sf-sound-file-handle jack-sf) (cl-jack::jack-sf-start jack-sf))))
+	play-list))
+
+
+
