@@ -14,10 +14,8 @@
 (dolist (file cl-jack-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
-;; various callbacks are defined in the files above.  These all use
-;; the same name #'cl-jack-process-callback (ie. the last one loaded
-;; will be plugged in below).  The callback-function can aswell be
-;; changed on the fly.
+;; various callbacks are defined in the files above.  The
+;; callback-function can aswell be changed on the fly.
 
 (defun cl-jack-init-all ()
   (progn

@@ -64,7 +64,7 @@
   ;; provide default-callback which just copies in to out:
 
 
-  (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
+  (defcallback cl-jack-process-callback-silence :int ((nframes jack_nframes_t) (arg :pointer))
     (declare (ignore arg))
     (when (fboundp 'cl-jack-handle-event-seqs) (cl-jack-handle-event-seqs nframes))
     (loop for inport in *CL-jack-audio-input-ports*
