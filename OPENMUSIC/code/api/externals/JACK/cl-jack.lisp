@@ -17,6 +17,8 @@
 ;;
 ;;Author: Anders Vinjar
 
+;;(hqn-web::browse "file://localhost/usr/share/doc/jack-audio-connection-kit-devel-1.9.9.5/html/files.html")
+
 (in-package :cl-jack)
 
 (define-foreign-library libjack

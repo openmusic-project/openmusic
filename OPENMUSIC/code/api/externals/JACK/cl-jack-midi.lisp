@@ -218,10 +218,10 @@
 
 (defun cl-jack-init-midi ()
 
-  (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
-    (declare (ignore arg))
-    (cl-jack-handle-event-seqs nframes)
-    0)
+  ;; (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg :pointer))
+  ;;   (declare (ignore arg))
+  ;;   (cl-jack-handle-event-seqs nframes)
+  ;;   0)
 
 
   ;; get up and running
@@ -241,13 +241,11 @@
 					  *jack-default-midi-type*
 					  (foreign-enum-value 'jackportflags :jackportisoutput)
 					  0)))
-	    (if (zerop (pointer-address port)) ;0 if not allocated
-		(error "*jack-midi-output-port* for Jack not allocated")
-		port))))
+	    (when (zerop (pointer-address port)) ;0 if not allocated
+	      (setf port -1)
+	      (cerror "Set *jack-midi-output-port* to -1" "*jack-midi-output-port* for Jack not allocated - check jack-server"))
+	    port))))
 
-  (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
-  (jack-activate *CLJackClient*)
-  )
 
 ;;(Jack-deactivate *CLJackClient*)
 

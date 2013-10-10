@@ -40,9 +40,11 @@
 			  *jack-default-audio-type*
 			  (foreign-enum-value 'jackportflags :jackportisinput)
 			  0)))
-	       (if (zerop (pointer-address port)) ;0 if not allocated
-		   (error "*CL-jack-audio-input-ports* not allocated")
-		   port))))
+	       (when (zerop (pointer-address port)) ;0 if not allocated
+		 (setf port -1)
+		 (cerror (format nil "Set jack-input-port ~A to -1" chan)
+			 "*CL-jack-audio-input-ports* not allocated"))
+	       port)))
 
   (setf *CL-jack-audio-output-ports*
 	(loop for chan from 0 below *CL-jack-audio-output-channels*
@@ -53,9 +55,11 @@
 			  *jack-default-audio-type*
 			  (foreign-enum-value 'jackportflags :jackportisoutput)
 			  0)))
-	       (if (zerop (pointer-address port)) ;0 if not allocated
-		   (error "*CL-jack-audio-output-ports* not allocated")
-		   port))))
+	       (when (zerop (pointer-address port)) ;0 if not allocated
+		 (setf port -1)
+		 (cerror (format nil "Set jack-output-port ~A to -1" chan)
+			 "*CL-jack-audio-output-ports* not allocated"))
+	       port)))
 
   ;; provide default-callback which just copies in to out:
 
@@ -73,7 +77,5 @@
   
     0)
 
-  (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
-  (jack-activate *CLJackClient*)
   ;;(jack-deactivate *CLJackClient*)
   )
