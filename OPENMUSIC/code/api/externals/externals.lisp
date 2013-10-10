@@ -242,6 +242,6 @@
         (load (make-pathname :directory (append *externals-directory* '("Yason")) :name "parse"))))
   (when (find :jack libs)
     (load (make-pathname :directory (append *externals-directory* '("JACK")) :name "cl-jack-load")))
-  (when (find :jack libs)
+  (when (find :fluidsynth libs)
     (load (make-pathname :directory (append *externals-directory* '("FluidSynth")) :name "load-fluidsynth")))
   t)

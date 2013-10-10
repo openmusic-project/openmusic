@@ -28,19 +28,58 @@
 
 (fluid_version_str)
 
+(define-condition not-a-soundfont (error)
+  ((soundfont :initarg :soundfont-name :reader soundfont-name)
+   (synth :initarg :synth :reader fluidsynth-synth))
+  (:report (lambda (condition stream)
+	     (format stream "could not load soundfont ~S into running synth ~A."
+		     (soundfont-name condition)
+		     (fluidsynth-synth condition)))))
+
+(defun prompt-for-soundfont ()
+  (format t "Enter name of soundfont to load: ")
+  #+capi (list (namestring (oa::om-choose-file-dialog :prompt "Enter name of soundfont to load: "
+						      :types '("sf2" "*.sf2" "All" "*.*"))))
+  #-capi (multiple-value-list (eval (read))))
+
+(defun fluid-load-new-soundfont-aux (synth soundfont)
+  (let ((status (fluid_synth_sfload synth soundfont 1)))
+    (if (= status FLUID_FAILED)
+	(error 'not-a-soundfont :soundfont-name soundfont :synth synth)
+	status)))
+
+(defun fluid-load-new-soundfont (&optional (synth *fluidsynth*) (soundfont *soundfont*))
+  (restart-case
+      (fluid-load-new-soundfont-aux synth soundfont)
+    (prompt (new-soundfont)
+      :report "Provide soundfont-file to load."
+      :interactive prompt-for-soundfont
+      (setq soundfont new-soundfont))
+    (reload ()
+      :report "Retry loading soundfont"
+      (fluid-load-new-soundfont synth soundfont)
+      t)))
+
 (defun fluid-synth-setup ()
   (unless *fluidsynth*
     (progn
       (setf *fluidsynth-settings* (new_fluid_settings))
-      (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
-      (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth")
+      (fluid_settings_setstr *fluidsynth-settings* "audio.driver"
+			     #+cl-jack "jack"
+			     #+(and linux (not cl-jack)) "alsa"
+			     #+(and cocoa (not cl-jack)) "coreaudio")
+      #+cl-jack (progn
+		  (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+		  (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth"))
+      #+(and linux (not cl-jack)) (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default") ;plughw:0, hw:0,0...
       (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
       (setf *fluidplayer* (new_fluid_player *fluidsynth*))
       (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
-      (fluid_synth_sfload *fluidsynth* *soundfont* 1)
+      (fluid-load-new-soundfont *fluidsynth* *soundfont*)
       (fluid_synth_set_gain *fluidsynth* 0.5)
-      (fluid_player_get_status *fluidplayer*))))
-
+      (let ((running? (fluid_player_get_status *fluidplayer*)))
+	(or (and (= running? (cffi:foreign-enum-value 'fluid_player_status :FLUID_PLAYER_READY)) running?)
+	    (warn "fluid-synth-setup: could not start fluidplayer"))))))
 
 (defun fluid-synth-cleanup ()
   (progn
@@ -61,8 +100,8 @@
   (unless *fluid-midi-driver-settings*
     (progn
       (setf *fluid-midi-driver-settings* (new_fluid_settings))
-      (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
-      (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth"))))
+      #+cl-jack (progn (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
+		       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))))
 
 
 (defun cl-fluid-init-fluidsynth ()
