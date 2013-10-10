@@ -49,8 +49,6 @@
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval)
   (call-next-method))
 
-(defvar *fluidplayer-synth* cl-fluidsynth::*fluidsynth*)
-
 (defun play-note (note)
   (let ((chan (1- (chan note)))		;chans = 1-16
 	(key (floor (midic note) 100))
@@ -58,9 +56,9 @@
 	(vel (vel note)))
     (mp:process-run-function "play fluid note" ()
 			     #'(lambda ()
-				 (cl-fluidsynth::fluid_synth_noteon *fluidplayer-synth* chan key vel)
+				 (cl-fluidsynth::fluid_synth_noteon cl-fluidsynth::*fluidsynth* chan key vel)
 				 (when (plusp dur) (sleep dur))
-				 (cl-fluidsynth::fluid_synth_noteoff *fluidplayer-synth* chan key)))))
+				 (cl-fluidsynth::fluid_synth_noteoff cl-fluidsynth::*fluidsynth* chan key)))))
 
 (defmethod player-play-object ((engine (eql :fluidsynth)) (object note) &key interval)
   (play-note object))
@@ -108,9 +106,9 @@
   (declare (ignore date))
   (mp:process-run-function "play fluid event" ()
 			   #'(lambda ()
-			       (cl-fluidsynth::fluid_synth_noteon *fluidplayer-synth* chan key vel)
+			       (cl-fluidsynth::fluid_synth_noteon cl-fluidsynth::*fluidsynth* chan key vel)
 			       (when (plusp dur) (sleep dur))
-			       (cl-fluidsynth::fluid_synth_noteoff *fluidplayer-synth* chan key))))
+			       (cl-fluidsynth::fluid_synth_noteoff cl-fluidsynth::*fluidsynth* chan key))))
 
 ;; play event using OMs own scheduler
 (defun play-cl-midinote (event)
@@ -125,7 +123,7 @@
 	(pgm (car (oa::event-fields event))))
     (mp:process-run-function "play fluid program-change" ()
 			     #'(lambda ()
-				 (cl-fluidsynth::fluid_synth_program_change *fluidplayer-synth* chan pgm)))))
+				 (cl-fluidsynth::fluid_synth_program_change cl-fluidsynth::*fluidsynth* chan pgm)))))
 
 (defun play-cl-midicontrolchange (event)
   (let ((chan (oa::event-chan event))	
@@ -133,7 +131,7 @@
 	(val (cadr (oa::event-fields event))))
     (mp:process-run-function "play fluid cc" ()
 			     #'(lambda ()
-				 (cl-fluidsynth::fluid_synth_cc *fluidplayer-synth* chan ctrl val)))))
+				 (cl-fluidsynth::fluid_synth_cc cl-fluidsynth::*fluidsynth* chan ctrl val)))))
 
 (defmethod player-play-object ((engine (eql :fluidsynth)) (object oa::midimsg2evt) &key interval)
   (when (or (not interval) (point-in-interval (offset->ms object) interval))
@@ -147,6 +145,9 @@
 (defmethod player-play-object ((engine (eql :fluidsynth)) (object list) &key interval)
   ;; expects list: '(pitch date dur vel channel)
   (apply #'fluid-play-note object))
+
+(defmethod offset->ms ((self oa::midimsg2evt) &optional grandparent)
+  (oa::event-date self))
 
 (defmethod offset->ms ((self list) &optional grandparent)
   )
