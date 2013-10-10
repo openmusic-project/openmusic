@@ -38,13 +38,10 @@
 
 (defvar *mplayer-args*)
 (defvar *mplayer-path*)
+(defvar *mplayer-alsa-device* "default")
 
 (defun init-mplayer-app ()
   
-  (setq *mplayer-args* "-ao jack,alsa -idle -slave -quiet")
-  (setq *mplayer-path* (or (probe-file "/usr/local/bin/mplayer")
-			   (probe-file "/usr/bin/mplayer")))
-
   ;; enable mplayer-engine for sound class:
   
   (pushnew :mplayer *enabled-players*)
@@ -57,27 +54,32 @@
 ; control external mplayers
 ;==================
 
+(setq *mplayer-args* (format nil "-ao jack,pulse,alsa:device=~A -idle -slave -quiet" *mplayer-alsa-device*))
+(setq *mplayer-path* (or (probe-file "/usr/local/bin/mplayer") "mplayer"))
+
 (defvar *mplayers* (make-hash-table))
 (defstruct mplayer-proc pid iostream error-stream paused)
 
-;; launch one mplayer and return struct for bookkeeping
+;; send cmd to running mplayer-proc.  If its not running already
+;; launch a new one and return struct for bookkeeping
 
 (defun mplayer-send-cmd (obj cmd)
-  (let ((thisplayer (or (gethash obj *mplayers*)
-			(setf (gethash obj *mplayers*)
-			      (mplayer-launch-one-mplayer)))))
-    (format (mplayer-proc-iostream thisplayer) "~A~%" cmd)))
+  (flet ((mplayer-launch-one-mplayer ()
+	   (let* ((path *mplayer-path*)
+		  (exec (format nil "~A ~A" path *mplayer-args*)))
+	     (multiple-value-bind (iostr error-stream pid)
+		 (system::run-shell-command exec
+					    :wait nil
+					    :input :stream
+					    :output :stream
+					    :error-output :stream)
+	       (make-mplayer-proc :iostream iostr :pid pid :error-stream error-stream)))))
+    (let ((thisplayer (or (gethash obj *mplayers*)
+			  (setf (gethash obj *mplayers*)
+				(mplayer-launch-one-mplayer)))))
+      (format (mplayer-proc-iostream thisplayer) "~A~%" cmd)
+      thisplayer)))
 
-(defun mplayer-launch-one-mplayer ()
-  (let* ((path *mplayer-path*)
-	 (exec (format nil "~A ~A" path *mplayer-args*)))
-    (multiple-value-bind (iostr error-stream pid)
-	(system::run-shell-command exec
-				   :wait nil
-				   :input :stream
-				   :output :stream
-				   :error-output :stream)
-      (make-mplayer-proc :iostream iostr :pid pid :error-stream error-stream))))
 
 (defun mplayer-kill-and-cleanup-one-mplayer (obj)
   (let ((thisplayer (gethash obj *mplayers*))) 
@@ -106,8 +108,8 @@
 (defmethod prepare-to-play ((engine (eql :mplayer)) (player omplayer) object at interval)
   (mplayer-send-cmd object (format nil "loadfile ~A" (namestring (om-sound-file-name object))))
   (mplayer-send-cmd object (format nil "seek ~A 2" (if interval
-						(/ (car interval) 1000.0)
-						0)))
+						       (/ (car interval) 1000.0)
+						       0)))
   t)
 
 (defmethod player-start ((engine (eql :mplayer)) &optional play-list)
