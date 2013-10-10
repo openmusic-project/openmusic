@@ -39,7 +39,7 @@
     #+libaudiostream "basic;sound-preferences"
     
     #+libaudiostream "LAS;sound-processing"
-    #+libaudiostream "LAS;las-player"
+    #+(and libaudiostream (not linux)) "LAS;las-player"
 
 
     "tools;sound-tools"
