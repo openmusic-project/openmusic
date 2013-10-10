@@ -24,7 +24,7 @@
 (defmethod player-desc ((player (eql :jackmidi))) "(default)")   
 (defmethod player-special-action ((player (eql :jackmidi))) nil)  
 (defmethod player-params ((player (eql :jackmidi))) nil)   
-(defmethod player-type ((player (eql :jackmidi))) :midi)   
+(defmethod player-type ((player (eql :jackmidi))) :midi)
 
 (progn
   (pushnew :jackmidi *all-players*)
