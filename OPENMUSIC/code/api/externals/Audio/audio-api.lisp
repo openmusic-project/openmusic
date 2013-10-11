@@ -26,6 +26,7 @@
           om-sound-data-pos
           om-sound-format
           om-sound-sndbuffer
+          om-sound-tracknum-sys
           om-sound-snd-slice-to-paste
           om-sound-sndlasptr
           om-sound-sndlasptr-current
@@ -477,6 +478,10 @@
 (defmethod om-sound-sndbuffer ((self om-sound))
    (when (or (loaded self) (om-fill-sound-info self))
     (sndbuffer self)))
+
+(defmethod om-sound-tracknum-sys ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (tracknum-sys self)))
 
 (defmethod om-sound-sndlasptr ((self om-sound))
    (when (or (loaded self) (om-fill-sound-info self))
