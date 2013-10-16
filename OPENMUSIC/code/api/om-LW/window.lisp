@@ -163,7 +163,7 @@
 			     (capi::pinboard-pane-size (capi::pane-layout self))
 			   (om-make-point w h))
 			 (om-view-size self))
-  ;;(om-subtract-points (om-view-size self) (om-make-point 30 30))
+			 (om-subtract-points (om-view-size self) (om-make-point 0 30))
   #-(or linux win32) (om-view-size self)
   )
 
