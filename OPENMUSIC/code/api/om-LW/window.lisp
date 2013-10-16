@@ -122,10 +122,12 @@
 (defmethod om-view-size ((self om-abstract-window))
   (if (interface-visible-p self)
       (let ((point (capi::interface-geometry self)))
-        #+win32(om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
-        #-win32(om-make-point (third point) (fourth point))  
+        #+win32 (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
+        #+cocoa (om-make-point (third point) (fourth point))
+	#+linux (om-add-points (om-make-point (third point) (fourth point))
+			       (om-make-point 0 30))
         )
-    (om-make-point (vw self) (vh self))))
+      (om-make-point (vw self) (vh self))))
 
 
 (defmethod set-not-resizable ((self t) &optional width height)
