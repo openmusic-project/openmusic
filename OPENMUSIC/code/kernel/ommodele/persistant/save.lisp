@@ -50,8 +50,10 @@
     `(om-make-color ,(om-color-r color) ,(om-color-g color) ,(om-color-b color))))
 
 (defun om-save-font (font)
-    `(om-make-font ,(om-font-face font) ,(om-font-size font) :family ,(om-font-family font) :style ',(om-font-style font) :mode ',(om-font-mode font)))
-
+  (when font
+    `(om-make-font ,(om-font-face font) ,(om-font-size font) :family ,(om-font-family font) 
+                   :style ',(om-font-style font) :mode ',(om-font-mode font))
+    ))
 
 (defun om-save-pathname (pathname)  
   (when pathname 

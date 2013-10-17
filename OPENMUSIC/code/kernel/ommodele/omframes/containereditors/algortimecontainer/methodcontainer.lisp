@@ -55,7 +55,6 @@
 
 (defmethod editor-close? ((self methodeditor))
   (modify-genfun (panel self))
-  (print "a")
   (if *abort-definition*
       (let ((rep (om-y-or-n-dialog (format nil *abort-definition*))))
         rep)
@@ -69,8 +68,7 @@
        (setf (editorFrame (find-class (internp (get-init-method-class-name (name (object (panel self))))
                                                (symbol-package (method-name (object (panel self))))))) nil))
       ((ommethod-p (object (panel self)))
-       (print "b")
-       (setf (editorFrame (print (object (panel self)))) nil))))
+       (setf (editorFrame (object (panel self))) nil))))
    (setf *abort-definition* nil))
 
 
@@ -187,13 +185,16 @@ Elements of methodPanels are instaces of the boxframe class.#enddoc#
    "This method is called when you close the window."
    (handler-bind 
        ((error #'(lambda (c) (declare (ignore c))
+                   (print "Method Definition Error.")
                    (setf *abort-definition* "Method Definition Error. No modification will be made to the method.~%Close anyway ?")
+                   (abort c)
                    )))
+     (print (list "method compilation..."))
      (let* ((*package* (find-package :om))
-            (funname (if (or (equal (win-mod (editor self)) :abs)
-                             (equal (win-mod (editor self)) :new)) 
-                         (interne (name self)) 
-                       (method-name (object self))))
+            (funname (if  (or (equal (win-mod (editor self)) :abs)
+                              (equal (win-mod (editor self)) :new))
+                         (interne (name self))
+                       (interne (name (object self)))))
             (controls (get-subframes self))
             (out-box (sort (find-class-boxes controls 'outFrame) #'< :key #'(lambda (item) (indice (object item)))))
             (in-boxes (sort (find-class-boxes controls 'TypedInFrame) #'< :key #'(lambda (item) (indice (object item)))))
@@ -207,6 +208,7 @@ Elements of methodPanels are instaces of the boxframe class.#enddoc#
         (cond 
          ((equal (win-mod (editor self)) :abs)
           ;;; new generic function      
+          (print "first method definition...")
           (cond 
            ((not out-box) 
             (setf *abort-definition* "Generic Functions must have at least one output!~%Close anyway? (If Yes, the function will not be defined)"))
@@ -229,7 +231,7 @@ Elements of methodPanels are instaces of the boxframe class.#enddoc#
            ))
          ; new method for existing generic function
         ((equal (win-mod (editor self)) :new)
-         
+         (print "defining new method...")
          (let ((old-methods (copy-list (get-elements (fdefinition funname)))))
            (if (om-checked-p (second (quali-buttons (editor self)))) (setf thequaly (list :before)))
            (if (om-checked-p (third (quali-buttons (editor self)))) (setf thequaly (list :after)))
@@ -250,11 +252,13 @@ Elements of methodPanels are instaces of the boxframe class.#enddoc#
              )))
          
          (t   ; modify existing method
+          (print "modifying method definition...")
           (setf thequaly (qualifieurs (object self))) 
-          (setf themethod (make-new-om-function funname lambda-list (length out-box) 
-                                                initvals doc nil thequaly out-box nil))
-          (setf (create-info themethod) (list (car (create-info (object self))) (om-get-date)))
+          (setf themethod (handler-bind ((error #'(lambda (c) (setf *abort-definition* (print c)))))
+                            (make-new-om-function funname lambda-list (length out-box) 
+                                                  initvals doc nil thequaly out-box nil)))
           (unless *abort-definition*
+            (setf (create-info themethod) (list (car (create-info (object self))) (om-get-date)))
             (when (mypathname (object self))
               (om-delete-file (mypathname (object self))))
             (setf (EditorFrame themethod) self)

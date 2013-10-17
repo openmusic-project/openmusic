@@ -287,6 +287,7 @@ Evaluate or connect the output to get the current contents of the box.
 (defmethod omng-save ((self text-box) &optional (values? nil))
   `(om-make-dialog-item 'text-box (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self)) ,(om-dialog-item-text self)
                         :font ,(om-save-font (om-get-font self))))
+                       
 
 (defmethod rep-editor ((self text-box) num)
   (let ((rep (ignore-errors (read-from-string (om-dialog-item-text self)))))

@@ -260,8 +260,9 @@
 
 (defmethod om-get-font ((self om-graphic-object))
   (let ((font (capi::simple-pane-font self)))
-    (if (gp::font-description-p font) font
-      (gp::font-description font))))
+    (when font 
+      (if (gp::font-description-p font) font
+        (gp::font-description font)))))
 
 (defmethod om-set-font ((self om-graphic-object) font) 
   (setf (capi::simple-pane-font self) font))
