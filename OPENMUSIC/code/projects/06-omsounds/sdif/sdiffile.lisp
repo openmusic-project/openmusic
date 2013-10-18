@@ -792,23 +792,23 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                           (sdif::sdiffreadonerow ptrfile)
                                                           collect (loop for j = 0 then (+ j 1) while (< j ncols) 
                                                                         collect (sdif::SdifFCurrOneRowCol ptrfile (+ j 1))))))
-
+                                        
                                         (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
                                        
                                         (let ((mtype (sdif::sdiftestmatrixtype ptrfile (sdif::SdifStringToSignature sig))))
                                           (setf onemat (make-instance 'sdifmatrix :signature sig))
                                           (setf onemat (cons-array onemat 
-                                                                   (list nil nrows ncols)
+                                                                   (list nil nrows sig)
                                                                    (loop for control in data
                                                                          for j = 0 then (+ j 1)
                                                                          append (list (intern (or (and (not (sdif-null-ptr-p mtype))
                                                                                                        (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1)))
                                                                                                   (format nil "Field ~D" j))
-                                                                                                
-                                                                                                )
+                                                                                              )
                                                                                       control
                                                                                       ))
                                                                    ))
+                                          (set-data onemat)
                                           (push onemat (LMatrix oneframe))
                                           )
                                         )
