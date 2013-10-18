@@ -261,7 +261,7 @@
 
 (defun SdifStreamIDTablePutSID (table id name tree)
   (cffi:with-foreign-string (strname name)
-       (cffi:with-foreign-string  (strtree tree)
+       (cffi:with-foreign-string (strtree tree)
          (SdifStreamIDTablePutSIDSTR table id strname strtree))))
 
 (cffi:defcfun ("SdifFStreamIDTable" SdifFStreamIDTable) :pointer (file :pointer))

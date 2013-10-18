@@ -27,7 +27,7 @@
                    GetSdifStream
                    GetSdifData GetSDIFTimes GetSDIFChords 
                    numFrames FrameInfo MatrixInfo GetRow GetCol GetVal
-                   SDIFTypeDescription GetNVTList find-in-nvtlist find-in-nvt
+                   SDIFTypeDescription GetNVTList find-in-nvtlist find-in-nvt GetSIDTable
                    sdif->bpf sdif->markers sdif->chord-seq 
                    ) *sdif-inspectpack*)
 

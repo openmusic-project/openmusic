@@ -886,6 +886,7 @@ Frame type description is a list of lists containing the internal matrix signatu
           (sdif-close self ptrfile)))
     data))
 
+;;; NVT
 
 (defmethod! GetNVTList ((self string))
             :icon 639
@@ -969,5 +970,41 @@ Name/Value tables are formatted as SDIFNVT objects.
             :doc "Finds value corresponding to name <entry> in the name/value table <nvt>."
     (cadr (find entry (nv-pairs nvt) :test 'string-equal :key 'car)))
 
+
+;;; SID
+
+(defmethod! GetSIDTable ((self string))
+            :icon 639
+            :indoc '("SDIF file")
+            :initvals '(nil)
+            :doc "Returns the list of Stream ID descriptions in the SID table of <self>.
+
+Each entry is a list of (ID source treeway).
+See http://sdif.sourceforge.net/standard/sdif-standard.html#Stream%20IDs%20Table 
+"
+  (let ((data nil)
+        (ptrfile (sdif-open self)))
+    (unless (null ptrfile) 
+      (sdif::SdifFReadGeneralHeader ptrfile)
+      (sdif::SdifFReadAllASCIIChunks ptrfile)
+      (let* ((idtable (sdif::SdifFStreamIDTable ptrfile))
+             (nbitem (sdif::SdifStreamIDTableGetNbData idtable)))
+        (setf data 
+              (loop for i from 1 to nbitem collect
+                    (let ((sid (sdif::SdifStreamIDTableGetSID idtable i)))
+                      (make-instance 'sdifsid :id (sdif::SdifStreamIDEntryGetSID sid)
+                            :source (sdif::SdifStreamIDEntryGetSource sid)
+                            :treeway (sdif::SdifStreamIDEntryGetTreeWay sid)
+                            ))
+                    ))
+        )
+      (sdif-close self ptrfile))
+    data))
+
+(defmethod! GetSIDTable ((self sdiffile))
+   (GetSIDTable (filepathname self)))
+
+(defmethod! GetSIDTable ((self pathname))
+   (GetSIDTable (namestring self)))
 
 
