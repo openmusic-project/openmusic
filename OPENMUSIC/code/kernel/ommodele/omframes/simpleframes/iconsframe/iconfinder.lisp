@@ -200,9 +200,10 @@ this slot store a subview containing it subview if exists.#triangle#
 ;DELETE
 (defmethod delete-sub-icons ((self icon-finder) container)
   (let* ((controls (get-subframes container))
-         (pos (position self controls :test 'equal))
-         (final-list (subseq controls (+ pos 1)))
-         (continue t) (i 0))
+         (pos (position self controls :test 'equal)))
+    (when pos
+      (let ((final-list (subseq controls (+ pos 1)))
+            (continue t) (i 0))
     (loop while (and final-list continue) do
           (if (> (fil (car final-list)) (fil self))
               (progn
@@ -212,6 +213,7 @@ this slot store a subview containing it subview if exists.#triangle#
             (setf continue nil)))
     (mapc #'(lambda (icon)
               (change-icon-position icon (fil icon) (- (col icon) i))) final-list)))
+    ))
 
 (defmethod remove-triangle ((self icon-finder) container)
    (when (not (big-icon-p (editor container)))
