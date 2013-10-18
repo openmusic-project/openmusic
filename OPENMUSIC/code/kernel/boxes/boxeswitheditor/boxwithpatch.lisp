@@ -51,7 +51,7 @@ This class is the abstract class for these patches.  #enddoc#
 
 
 ;PANEL
-(omg-defclass boxpatchPanel (patchPanel) ()
+(defclass boxpatchPanel (patchPanel) ()
    (:documentation "This is the class for editors of patchforbox instances.  #enddoc#
 #seealso# (patchForBox box-with-patch looppanel) #seealso#"))
 

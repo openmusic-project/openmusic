@@ -139,7 +139,6 @@
   t)
 
 (defmethod om-view-click-handler :before ((self om-graphic-object) position) 
- ;(print (capi::pane-children self))
  (setf *clicked-view* self))
 
 ;;;=================
@@ -149,14 +148,13 @@
 
 (defmethod om-clic-motion-callback ((self om-graphic-object) x y type)
   (set-meta-keys (eval type))
-  
   ;(print (list self x y *clicked-view*))
   ;(print (list (om-shift-key-p) (om-shift-key-p) (om-command-key-p))) 
-  (if *clicked-view*
-      (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
+  (unless (equal *clicked-view* :abort) 
+    (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       ; ?!! verifier si tout va bien...
       ;(apply-in-item-subview *clicked-view* 'om-click-motion-handler (om-convert-coordinates (om-make-point x y) self *clicked-view*))
-  (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y))))
+      (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))))
 
 (defmethod om-clic-motion-callback ((self window-layout) x y type)
   (set-meta-keys (eval type))
@@ -173,9 +171,10 @@
 ;;;==============
 (defmethod om-clic-release-callback ((self om-graphic-object) x y type) 
   (set-meta-keys (eval type))
-  (if *clicked-view* 
-      (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
-  (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
+  (unless (equal *clicked-view* :abort) 
+    (if *clicked-view* 
+        (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
+    (apply-in-item-subview self 'om-click-release-handler (om-make-point x y))))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
 
@@ -186,6 +185,7 @@
 ;;; DOUBLE CLIC
 ;;;=================
 (defmethod om-double-clic-callback ((self om-graphic-object) x y type)
+  (setf *clicked-view* :abort)
   (om-with-error-handle 
     (apply-in-item-subview self 'om-view-doubleclick-handler (om-make-point x y))))                         
 

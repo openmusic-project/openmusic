@@ -63,6 +63,7 @@
 
 
 
+
 ;------------Patch target
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged TemporalBox) (target OMPatch)) t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMPatch) (target OMPatch)) t)
@@ -72,8 +73,7 @@
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMBasictype) (target OMPatch))  t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMClass) (target OMPatch))  t)
 
-
-(defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMBoxCall) (target OMPatch))  t)
+(defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMBoxCall) (target OMPatch)) t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMSlot) (target OMPatch))  t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMInstance) (target OMPatch))  t)
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMBoxClass) (target OMPatch))  t)
@@ -103,6 +103,10 @@
    (equal (type-of (reference dragged)) 'OMPatchAbs)
    (equal (type-of (reference dragged)) 'OMMaqAbs)))
 
+
+;;; AVOIDS SPATIO-TEMPORAL VORTEX
+(defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMBoxAbsPatch) (target OMPatch)) (not (maq-ancestor-p (reference dragged) target nil)))
+(defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged box-with-patch) (target OMPatch)) (not (maq-ancestor-p (patch dragged) target nil)))
 
 
 ;------------Maquette target
