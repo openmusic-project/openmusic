@@ -469,7 +469,7 @@
          ;                              :bg-color *controls-color*))
          (slotbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point 5 c1) 
-                                       (om-make-point 80 16)
+                                       (om-make-point 80 22)
                                        ""
                                        :range (loop for item in (GET-slot-LIST self) collect (car item)) 
                                        :value "midic"
@@ -488,7 +488,7 @@
                                         :bg-color *controls-color*))
          (sizebut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l1 c2) 
-                                       (om-make-point 56 16)
+                                       (om-make-point 56 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
@@ -506,7 +506,7 @@
          
          (staffbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c1) 
-                                       (om-make-point 80 18)
+                                       (om-make-point 80 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
@@ -523,7 +523,7 @@
          
          (tonebut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c2)
-                                       (om-make-point 80 20) ""
+                                       (om-make-point 80 22) ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newtone (cadr (nth (om-get-selected-item-index item) (GET-tone-LIST self)))))
                                                                  (change-editor-tone (panel (om-view-container self)) newtone)))
@@ -587,7 +587,7 @@
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
                                         (om-make-point 5 25)
-                                        (om-make-point 80 18) ""
+                                        (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (case (om-get-selected-item-index item) (0 0) (1 4))))
                                                        (change-editor-mode (panel (om-view-container self)) newtone)))
@@ -600,7 +600,7 @@
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
                                         (om-make-point 5 25)
-                                        (om-make-point 80 18) ""
+                                        (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (cadr (nth (om-get-selected-item-index item) '(("chord"  0) ("arpUp" 1) ("arpDown" 2) ("order" 3) ("offset" 4))))))
                                                        (change-editor-mode (panel (om-view-container self)) newtone)))
