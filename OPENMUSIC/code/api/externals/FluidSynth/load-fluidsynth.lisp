@@ -1,9 +1,5 @@
 ;; common lisp - fluidsynth connection kit, supports 'internal' fluidsynth,
 
-(require :cffi-new "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/api/externals/FFI/load-new-cffi.lisp")
-
-;; #-cffi-new (require :cffi (make-pathname :directory (append om-api::*externals-directory* '("FFI")) :name "load-new-cffi"))
-
 (defpackage :cl-fluidsynth (:use :common-lisp :cffi))
 (in-package :cl-fluidsynth)
 

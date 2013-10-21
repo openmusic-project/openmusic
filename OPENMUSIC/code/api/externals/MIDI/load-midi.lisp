@@ -40,8 +40,7 @@
                          "midi-api"
                          ))
 
-#-cffi-new (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
-#+cffi-new (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-new-cffi"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
 
 #-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
 #-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))

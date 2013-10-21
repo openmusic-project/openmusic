@@ -20,13 +20,6 @@
 ;;Author: Anders Vinjar
 ;;
 
-(require :cffi-new (make-pathname
-		    :directory (append (butlast (pathname-directory *load-pathname*)) (list "FFI"))
-		    :name "load-new-cffi" :type "lisp"))
-(require :libsndfile (make-pathname
-		      :directory (append (butlast (pathname-directory *load-pathname*)) (list "Audio" "libsndfile"))
-		      :name "libsndfile" :type "lisp"))
-
 ;; open some soundfile
 
 (defparameter *jack-sndfile-handle* nil)

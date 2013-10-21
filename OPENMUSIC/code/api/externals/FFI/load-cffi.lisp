@@ -38,7 +38,6 @@
 	("CFFI-0.11" . "cffi-libffi")
 	))
 
-(pushnew :cffi-new *features*)
-(provide :cffi-new)
+(pushnew :cffi *features*)
 (provide :cffi)
 (asdf:load-system :cffi)

@@ -3,7 +3,6 @@
   (:export "JACK-OPEN-SOUND" "PRINT-JACK-SF" "CL-JACK-PLAY-SOUND" "CL-JACK-CLOSE-SOUND" "JACKPLAY-TOGGLE-READ" "CL-JACK-SEEK"))
 (in-package :cl-jack)
 
-#-cffi-new (require :cffi (make-pathname :directory (append om-api::*externals-directory* '("FFI")) :name "load-new-cffi"))
 
 (defun compile?-and-load (file)
   (cl-user::compile-file-if-needed file)

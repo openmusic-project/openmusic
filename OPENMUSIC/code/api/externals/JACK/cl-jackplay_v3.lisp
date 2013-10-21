@@ -22,8 +22,6 @@
 
 ;;(require :cl-jack "cl-jack-load")
 
-(require :cffi-new "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/api/externals/FFI/load-new-cffi.lisp")
-(require :libsndfile "/home/andersvi/site/OM/OM_SVN/branches/linux_initial/OPENMUSIC/code/api/externals/Audio/libsndfile/libsndfile.lisp")
 (load "cl-jack-load.lisp")
 
 ;; open some soundfile
