@@ -68,9 +68,10 @@
 	  (setf *general-mixer-values* (copy-tree (cadr (cadr *general-mixer-presets*)))) 
 	  (setf *general-mixer-current-preset* 1))
 	(setf *general-mixer-values* (loop for i from 0 to (- las-channels 1) collect (list 0 100))))
-    (apply-mixer-values)
+    #+libaudiostream(apply-mixer-values)
     t))
 
+*features*
 
 (defmethod save-pref-module ((iconID (eql :audio)) values)
   (list iconID `(list 
