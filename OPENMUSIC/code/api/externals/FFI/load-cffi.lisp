@@ -33,9 +33,9 @@
       '("alexandria"			;dependencies for newer cffi
 	"babel"
 	"trivial-features"
-	("CFFI-0.11" . "cffi")
-	("CFFI-0.11" . "cffi-grovel")
-	("CFFI-0.11" . "cffi-libffi")
+	("CFFI" . "cffi")
+	("CFFI" . "cffi-grovel")
+	("CFFI" . "cffi-libffi")
 	))
 
 (pushnew :cffi *features*)
