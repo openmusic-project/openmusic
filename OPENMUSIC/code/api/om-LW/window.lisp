@@ -156,16 +156,30 @@
     
 
 
+#|
 (defmethod om-interior-size ((self om-abstract-window))
   ;;(print (capi::interface-geometry self))
-  #+(or linux win32) (if (capi::interface-visible-p (capi::pane-layout self))
-			 (multiple-value-bind (w h)
-			     (capi::pinboard-pane-size (capi::pane-layout self))
-			   (om-make-point w h))
-			 (om-view-size self))
-  (om-subtract-points (om-view-size self) (om-make-point 0 30))
-  #-(or linux win32) (om-view-size self)
+  #+win32
+  (if (capi::interface-visible-p (capi::pane-layout self))
+      (multiple-value-bind (w h)
+          (capi::pinboard-pane-size (capi::pane-layout self))
+        (om-make-point w h))
+    (om-view-size self))
+  #+linux(om-subtract-points (om-view-size self) (om-make-point 30 30))
+  #+macos(om-view-size self)
   )
+|#
+
+(defmethod om-interior-size ((self om-abstract-window))
+  (if (capi::interface-visible-p (capi::pane-layout self))
+      ;;; IF THE WINDOW IS VISIBLE
+      (multiple-value-bind (w h)
+          (capi::pinboard-pane-size (capi::pane-layout self))
+        (om-make-point w h))
+    ;;; ELSE
+      #+(or linux win32)(om-subtract-points (om-view-size self) (om-make-point 30 30))
+      #-(or linux win32)(om-view-size self)
+    ))
 
 
 
