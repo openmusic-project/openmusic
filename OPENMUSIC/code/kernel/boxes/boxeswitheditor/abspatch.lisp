@@ -88,7 +88,7 @@
 
 (defmethod internalize-patch ((self patchboxframe))
    "A blue patch becomes a red patch."
-   (when (equal (type-of (object self)) 'OMBoxPatch)
+   (when (subtypep (type-of (object self)) 'OMBoxPatch)
      (let* ((container (om-view-container self))
             (object (object self))
             (newpatch (patch2abs (reference object)))
