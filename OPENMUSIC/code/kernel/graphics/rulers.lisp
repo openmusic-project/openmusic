@@ -29,7 +29,7 @@
 
 (in-package :om)
 
-(omg-defclass ruler (om-view) 
+(defclass ruler (om-view) 
    ((axe :initform nil :initarg :axe :accessor axe)
     (zoom :initform 1 :initarg :zoom :accessor zoom)
     (minzoom :initform 0.1 :initarg :minzoom :accessor minzoom)
@@ -47,7 +47,8 @@ for exemple 0.01 implic that the centieme is the smallest sub division of the un
 #hide-ruler?# T if the ruler is not showed, the default value is NIL.#hide-ruler?#
 #ruler-selection?# If non NIL it slot contains a list (min max) representing a selcted interval.#ruler-selection?#
 #distrib# Generally it slot is 10 so decimal mode but you can use any subdivision#distrib#
-#assoc-view# This slot contains de view associated to this ruler.#assoc-view#"))
+#assoc-view# This slot contains de view associated to this ruler.#assoc-view#")
+   (:default-initargs #+win32 :draw-with-buffer #+win32 t))
 
 
 (defmethod om-view-cursor ((self ruler))

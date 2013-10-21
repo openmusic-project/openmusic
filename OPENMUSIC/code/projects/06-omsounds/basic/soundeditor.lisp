@@ -33,7 +33,8 @@
    (play-buttons :initform nil :accessor play-buttons)
    (mode-buttons :initform nil :accessor mode-buttons)
    (vol-control :initform nil :accessor vol-control)
-   (pan-control :initform nil :accessor pan-control)))
+   (pan-control :initform nil :accessor pan-control))
+  (:default-initargs #+win32 :draw-with-buffer #+win32 t))
 
 (defmethod editor ((self sound-control-view)) (om-view-container self))
 
