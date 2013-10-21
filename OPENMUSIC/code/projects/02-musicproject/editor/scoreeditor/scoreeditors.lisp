@@ -1000,7 +1000,7 @@
                        :call-next-method
                        )
                     ))
-                   ((cursor-p self)
+                   ((and (cursor-p self) (not (om-add-key-p)))
                     (om-with-focused-view self (control-actives self where)))
                    ;;; ANALYSIS / SEGMENTATION MODE
                    ;((analysis-mode? self)
