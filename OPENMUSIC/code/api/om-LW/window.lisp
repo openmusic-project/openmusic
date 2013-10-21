@@ -176,10 +176,11 @@
       (multiple-value-bind (w h)
           (capi::pinboard-pane-size (capi::pane-layout self))
         (om-make-point w h))
-    ;;; ELSE
-      #+(or linux win32)(om-subtract-points (om-view-size self) (om-make-point 30 30))
-      #-(or linux win32)(om-view-size self)
-    ))
+    ;;; ELSE (REMOVE THIS SOMEDAY...)
+    (progn
+    #+(or linux win32)(om-subtract-points (om-view-size self) (om-make-point 0 30))
+    #-(or linux win32)(om-view-size self)
+    )))
 
 
 
