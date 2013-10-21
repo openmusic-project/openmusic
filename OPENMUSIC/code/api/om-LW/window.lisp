@@ -124,9 +124,7 @@
       (let ((point (capi::interface-geometry self)))
         #+win32 (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
         #+cocoa (om-make-point (third point) (fourth point))
-	#+linux (om-add-points (om-make-point (third point) (fourth point))
-			       (om-make-point 0 30))
-        )
+	#+linux (om-make-point (third point) (fourth point)))
       (om-make-point (vw self) (vh self))))
 
 
@@ -165,7 +163,7 @@
 			     (capi::pinboard-pane-size (capi::pane-layout self))
 			   (om-make-point w h))
 			 (om-view-size self))
-			 (om-subtract-points (om-view-size self) (om-make-point 0 30))
+  (om-subtract-points (om-view-size self) (om-make-point 0 30))
   #-(or linux win32) (om-view-size self)
   )
 
