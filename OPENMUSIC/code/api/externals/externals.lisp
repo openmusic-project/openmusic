@@ -206,7 +206,8 @@
 (defparameter *externals-directory* (pathname-directory *load-pathname*))
 
 (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
-(load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux "load-cffi" #+linux "load-new-cffi"))
+;; (load (make-pathname :directory (append *externals-directory* '("FFI")) :name #-linux "load-cffi" #+linux "load-new-cffi"))
+(load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-new-cffi" ))
 (load (make-pathname :directory (append *externals-directory* '("ieee-floats")) :name "ieee-floats"))
 
 (defun load-external-libs (&optional libs)
