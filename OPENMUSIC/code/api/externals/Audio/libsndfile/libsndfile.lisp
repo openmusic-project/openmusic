@@ -266,14 +266,14 @@
 (cffi:defcfun ("sf_format_check" sf_format_check) :int
   (info :pointer))
 
-#-linux
-(fli:define-foreign-function (sf_seek "sf_seek")
-    ((sndfile :pointer)
-     (frames :long-long)
-     (whence :int))
-  :result-type :double)
+;#-linux
+;(fli:define-foreign-function (sf_seek "sf_seek")
+;    ((sndfile :pointer)
+;     (frames :long-long)
+;     (whence :int))
+;  :result-type :double)
 
-#+linux
+;#+linux
 (cffi:defcfun ("sf_seek" sf_seek) :double
   (sndfile :pointer)
   (frames :long-long)
@@ -293,14 +293,14 @@
 
 ;;;============
 
-#-linux
-(fli:define-foreign-function (sf-readf-float "sf_readf_float")
-    ((sndfile :pointer)
-     (ptr :pointer)
-     (frames :long-long))
-  :result-type :long-long)
+;#-linux
+;(fli:define-foreign-function (sf-readf-float "sf_readf_float")
+;    ((sndfile :pointer)
+;     (ptr :pointer)
+;     (frames :long-long))
+;  :result-type :long-long)
 
-#+linux
+;#+linux
 (cffi:defcfun (sf-readf-float "sf_readf_float") :long-long
   (sndfile :pointer)
   (ptr :pointer)
