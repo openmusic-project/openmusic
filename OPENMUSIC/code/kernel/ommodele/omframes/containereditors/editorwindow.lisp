@@ -147,6 +147,7 @@
 (defmethod make-editor-window ((class t) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil))
+   (declare (ignore retain-scroll))
    (let* ((sizewin (or (and (om-point-p winsize) winsize)
                        (get-win-ed-size object)))
           (poswin (or (and (om-point-p winpos) winpos)
