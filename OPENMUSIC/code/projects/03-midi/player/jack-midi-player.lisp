@@ -58,23 +58,32 @@
       (setf (gethash queue *jack-midi-seqs*) (cl-jack::make-jack-seq))))
 
 (defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) object at interval)
-  (let ((thisqueue (first (get-my-play-list engine (play-list player))))
+  (let (;;(thisqueue (first (get-my-play-list engine (play-list player))))
 	(newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at)))
-    (jack-possibly-init-queue-for-this-player thisqueue)
-    (cond ((container-p object)
-	   (mapc #'(lambda (sub)
-		     (prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
-		 (inside object)))
-	  ((rest-p object) nil)
-	  ((note-p object)
-	   ;; send off events to jacks scheduler
-	   (unless (equal (tie object) 'end)
-	     (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
-		    (interval-at (if interval (- at (car interval)) at)))
-	       (when (or (not interval) note-in-interval?)
-		 (jack-player-play-note thisqueue object interval-at)))))
-	  (t (error "fixme: :jackmidi, dont know how to play ~A" object)))
-    (call-next-method)))
+    (jack-possibly-init-queue-for-this-player object) 
+    (print (list 'object-at-start object))
+    (jack-send-to-jack object at interval object)
+
+    ;;(call-next-method)
+    ))
+
+(defun jack-send-to-jack (object at interval queue)
+  ;;(print (list object at interval queue))
+  (cond ((container-p object)
+	 (mapc #'(lambda (sub)
+		   (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+	       (inside object)))
+	((rest-p object) nil)
+	((note-p object)
+	 ;; send off events to jacks scheduler
+	 (unless (equal (tie object) 'end)
+	   (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
+		  (interval-at (if interval (- at (car interval)) at)))
+	     (when (or (not interval) note-in-interval?)
+	       (jack-player-play-note queue object interval-at)))))
+	(t (error "fixme: :jackmidi, dont know how to play ~A" object)))
+  )
+
 
 
 (defun jack-player-play-note (queue object offset)
@@ -88,13 +97,19 @@
     )) 
 
 (defun jack-kill-queue (obj)
-  ;;(print (list obj obj (gethash obj *jack-midi-seqs*)))
+  ;;(print (list obj (gethash obj *jack-midi-seqs*)))
   (when (gethash obj *jack-midi-seqs*)
     (cl-jack::jack-all-notes-off-and-kill-seq (gethash obj *jack-midi-seqs*))))
 
+(defmethod player-start ((engine (eql :jackmidi)) &optional play-list)
+  ;;(print (list 'hiho play-list))
+  t
+  )
+
 (defmethod player-stop ((engine (eql :jackmidi)) &optional play-list)
-  (jack-kill-queue (first play-list))
-  (call-next-method))
+  ;;(print (list 'object-at-end (first (first play-list))))
+  (mapc #'(lambda (item) (jack-kill-queue (if (listp item) (first item) item)))
+	play-list))
 
 (defmethod player-pause ((engine (eql :jackmidi)) &optional play-list)
   (print (format nil "~A : pause" engine))
@@ -103,5 +118,15 @@
 (defmethod player-continue ((engine (eql :jackmidi)) &optional play-list)
   (print (format nil "~A : continue" engine))
   (call-next-method))
+
+;; (defmethod player-set-loop ((engine (eql :jackmidi)) &optional start end)
+;;   (print (format nil " player-set-loop: ~A ~A" start end))
+;;   t)
+
+(defmethod player-loop ((engine (eql :jackmidi)) &optional play-list)
+  ;;(print (format nil "~A : loop, plls: ~A" engine play-list))
+  (loop for item in play-list
+       do (jack-send-to-jack (first item) 0 (second item) (first item)))
+  t)
 
 (setf *midiplayer* t)
