@@ -225,8 +225,8 @@
                            :external-max-width (unless (subtypep class 'om-static-text) (om-point-h size))
                            :visible-max-width nil
                            :visible-max-height nil
-			   :external-min-height (unless (subtypep class 'om-static-text) (om-point-v size))
-			   :external-max-height (unless (subtypep class 'om-static-text) (om-point-v size))
+			   ;;:external-min-height (unless (subtypep class 'om-static-text) (om-point-v size))
+			   ;;:external-max-height (unless (subtypep class 'om-static-text) (om-point-v size))
                            :width nil :height nil
                            :text text
                            :font font
