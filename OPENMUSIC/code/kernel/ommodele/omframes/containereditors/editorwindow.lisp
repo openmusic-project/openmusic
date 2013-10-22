@@ -56,6 +56,8 @@
 
 (defmethod editor-minimum-size ((self t)) (om-make-point 200 120))
 
+#+linux
+(defmethod editor-minimum-size ((self editorwindow)) (om-make-point 200 180))
 
 (defmethod do-undo ((self t)) nil)
 
