@@ -16,28 +16,6 @@
 
 ;;;==========================
 ;;; DEFAULT INTERFACE (MACOS)(defmethod osc-start-receive ((box ReceiveBox))
-  (when (etat box) (osc-stop-receive box))
-  (let ((port (omng-box-value (car (inputs box)))))
-    (if (and port (numberp port))
-        (let ((fun (omng-box-value (cadr (inputs box)))))
-          (setf (process box) 
-                (om-start-osc-server port "localhost"
-                                     #'(lambda (msg) 
-                                         (let* ((message (om-decode-msg-or-bundle msg)))
-                                           ;(print (format nil "OSC RECEIVE= ~A" message))
-                                           (let ((delivered (deliver-bundle message fun)))
-                                             ;(loop for mess in delivered do
-                                             (set-delivered-value box delivered)
-                                             ;
-                                             )
-                                           )
-                                         nil)
-                                     ))
-          (print (format nil "OSC-RECEIVE START on port ~D" port))
-          (setf (etat box) t))
-      (om-beep-msg (format nil "Error - bad port number for OSC-RECEIVE: ~A" port)))
-    (when  (car (frames box))
-      (om-invalidate-view (car (frames box)) t))))
 ;;;==========================
 
 #+cocoa
