@@ -54,10 +54,10 @@
 (defmethod om-minimum-size ((window editorwindow))
   (editor-minimum-size (editor window)))
 
-(defmethod editor-minimum-size ((self t)) (om-make-point 200 120))
-
-#+linux
-(defmethod editor-minimum-size ((self editorwindow)) (om-make-point 200 180))
+(defmethod editor-minimum-size ((self t))
+  #-linux (om-make-point 200 120)
+  #+linux (om-make-point 200 150)
+  )
 
 (defmethod do-undo ((self t)) nil)
 
