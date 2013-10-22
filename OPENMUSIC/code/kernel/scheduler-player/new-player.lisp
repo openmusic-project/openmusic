@@ -51,8 +51,6 @@
   (setf (events player) nil))
 
 (defun get-my-play-list (engine play-list)
-  (mapcar 'cadr (remove-if-not #'(lambda (x) (equal x engine)) play-list :key 'car)))
-(defun get-my-play-list (engine play-list)
   (mapcar 'cdr (remove-if-not #'(lambda (x) (equal x engine)) play-list :key 'car)))
 
 
@@ -207,7 +205,6 @@
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
   (schedule-task player 
                         #'(lambda () 
-                            ;(print (list object engine at interval))
                             (player-play-object engine object :interval interval))
                         at))
 
