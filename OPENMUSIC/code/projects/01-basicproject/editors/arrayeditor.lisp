@@ -49,13 +49,13 @@
 
 (defmethod initialize-instance :after  ((self array-controls) &key show-cont (grupo "All open"))
   (om-add-subviews self
-    (om-make-dialog-item 'om-check-box (om-make-point 25 0) (om-make-point 60 12) "Lines"
+    (om-make-dialog-item 'om-check-box (om-make-point 25 2) (om-make-point 120 22) "Lines"
                                               :font *controls-font*
                                               :checked-p t
                                               :di-action
                                               (om-dialog-item-act item
                                                 (change-lines (om-view-container self) (om-checked-p item))))
-    (om-make-dialog-item 'om-check-box (om-make-point 25 18) (om-make-point 120 22) "Grid"
+    (om-make-dialog-item 'om-check-box (om-make-point 25 20) (om-make-point 120 22) "Grid"
                                               :font *controls-font*
                                               :checked-p nil
                                               :di-action
@@ -252,10 +252,10 @@
                                           :font *controls-font*
                                           :checked-p (show-controls-p self)
                                           ))
-         (grouptext (om-make-dialog-item 'om-static-text (om-make-point 280 0) (om-make-point 110 20) "Display Config:"
+         (grouptext (om-make-dialog-item 'om-static-text (om-make-point 280 0) (om-make-point 110 22) "Display Config:"
                                          :font *controls-font*))
 
-         (groupitem (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 390 0) (om-make-point 100 20) ""
+         (groupitem (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 390 10) (om-make-point 100 22) ""
                                                                            :font *controls-font*
                                                                            :value grupo
                                                                            :range (let ((items (loop for item in (groups self)
@@ -270,7 +270,7 @@
                                                                                           (change-group self 
                                                                                                         (nth i (groups self)))))))
 
-         (groupbut+ (om-make-dialog-item 'om-button (om-make-point 290 16) (om-make-point 40 20) "+"
+         (groupbut+ (om-make-dialog-item 'om-button (om-make-point 290 18) (om-make-point 40 20) "+"
                                          :di-action (om-dialog-item-act item
                                                       (change-group self -1)
                                                       (om-set-item-list groupitem (let ((items (loop for item in (groups self)
@@ -278,7 +278,7 @@
                                                                                     (append (butlast items 2) '("-") (last items 2))))
                                                       (om-set-selected-item groupitem (car (nth (cur-group-ind self) (groups self)))))
                                          ))
-         (groupbut- (om-make-dialog-item 'om-button (om-make-point 325 16) (om-make-point 40 20) "-"
+         (groupbut- (om-make-dialog-item 'om-button (om-make-point 325 18) (om-make-point 40 20) "-"
                                          :di-action (om-dialog-item-act item
                                                       (change-group self -2)
                                                       (om-set-item-list groupitem (let ((items (loop for item in (groups self)
