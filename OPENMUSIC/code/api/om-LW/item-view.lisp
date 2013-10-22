@@ -49,9 +49,9 @@
 
 
 #+(or linux cocoa)
-(omg-defclass om-internal-view (om-transparent-view) ())
+(defclass om-internal-view (om-transparent-view) ())
 #-(or linux cocoa)
-(omg-defclass om-internal-view (om-item-view) ())
+(defclass om-internal-view (om-item-view) ())
 
 
 
