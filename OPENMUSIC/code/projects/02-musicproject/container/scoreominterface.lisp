@@ -64,7 +64,7 @@ Type of the return value :
     (change-qvalue ss1 frac-min)
     (change-qvalue ss2 frac-min)
 
-    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (extent ss1))))
+    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (get-obj-dur ss1))))
     (mki (type-of s1) 
              :empty t
              :offset 0
