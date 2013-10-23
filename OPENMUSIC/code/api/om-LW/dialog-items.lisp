@@ -679,7 +679,8 @@
 (defmethod om-checked-p ((self om-radio-button)) (button-selected self))
 
 (defmethod om-set-check-box  ((self om-radio-button) check?)
-  (setf (button-selected self) check?))
+  (capi:apply-in-pane-process self 
+                              #'(lambda () (setf (button-selected self) check?))))
 
 
 
