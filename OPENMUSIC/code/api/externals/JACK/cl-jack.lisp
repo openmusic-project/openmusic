@@ -39,6 +39,7 @@
 (defctype jack_port_t :pointer)
 (defctype jack_options_t :pointer)
 (defctype jack_time_t :unsigned-long)	;:unsigned-long = :uint64?
+(defctype jack_midi_data_t :unsigned-char)
 
 (defconstant *jack-default-audio-type* "32 bit float mono audio")
 (defconstant *jack-default-midi-type* "8 bit raw midi")
@@ -173,14 +174,14 @@
 (defun rb-data-buf (arr index)		;index is 0 or 1 from jack
   (foreign-slot-value
    (mem-aref arr 'jack_ringbuffer_data_t index)
-   'jack_ringbuffer_data_t
+   '(:struct jack_ringbuffer_data_t)
    'buf))
 
 ;;vec[0].len
 (defun rb-data-len (arr index)
   (foreign-slot-value			
    (mem-aref arr 'jack_ringbuffer_data_t index)
-   'jack_ringbuffer_data_t
+   '(:struct jack_ringbuffer_data_t)
    'len))
 
 ;;(rb-data-len vec 0) 
