@@ -58,17 +58,11 @@
       (setf (gethash queue *jack-midi-seqs*) (cl-jack::make-jack-seq))))
 
 (defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) object at interval)
-  (let (;;(thisqueue (first (get-my-play-list engine (play-list player))))
-	(newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at)))
-    (jack-possibly-init-queue-for-this-player object) 
-    (print (list 'object-at-start object))
-    (jack-send-to-jack object at interval object)
-
-    ;;(call-next-method)
-    ))
+  (jack-possibly-init-queue-for-this-player object) 
+  (print (list 'object-at-start object))
+  (jack-send-to-jack object at interval object))
 
 (defun jack-send-to-jack (object at interval queue)
-  ;;(print (list object at interval queue))
   (cond ((container-p object)
 	 (mapc #'(lambda (sub)
 		   (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
@@ -81,10 +75,7 @@
 		  (interval-at (if interval (- at (car interval)) at)))
 	     (when (or (not interval) note-in-interval?)
 	       (jack-player-play-note queue object interval-at)))))
-	(t (error "fixme: :jackmidi, dont know how to play ~A" object)))
-  )
-
-
+	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
 
 (defun jack-player-play-note (queue object offset)
   (let ((seq (gethash queue *jack-midi-seqs*))
@@ -93,21 +84,14 @@
 	(noteno (/ (midic object) 100))
 	(vel (vel object))
 	(chan (chan object)))
-    (cl-jack::jack-play-event seq start dur noteno vel chan) 
-    )) 
+    (cl-jack::jack-play-event seq start dur noteno vel chan)))
 
 (defun jack-kill-queue (obj)
   ;;(print (list obj (gethash obj *jack-midi-seqs*)))
   (when (gethash obj *jack-midi-seqs*)
     (cl-jack::jack-all-notes-off-and-kill-seq (gethash obj *jack-midi-seqs*))))
 
-(defmethod player-start ((engine (eql :jackmidi)) &optional play-list)
-  ;;(print (list 'hiho play-list))
-  t
-  )
-
 (defmethod player-stop ((engine (eql :jackmidi)) &optional play-list)
-  ;;(print (list 'object-at-end (first (first play-list))))
   (mapc #'(lambda (item) (jack-kill-queue (if (listp item) (first item) item)))
 	play-list))
 
