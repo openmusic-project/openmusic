@@ -95,9 +95,9 @@
 	  jack-sf)))))
 
 
-(defparameter *somesounds*
-  '("/home/andersvi/lyd/andersvi/Floratone-1m.wav"
-    "/home/andersvi/Musikk/Bruckner/Anton_Bruckner_Symphonie_Nr.7_E-Dur.ogg"))
+;; (defparameter *somesounds*
+;;   '("/home/andersvi/lyd/andersvi/Floratone-1m.wav"
+;;     "/home/andersvi/Musikk/Bruckner/Anton_Bruckner_Symphonie_Nr.7_E-Dur.ogg"))
 
 ;; (setf (jack-sf-playing? (first *jack-sounds*)) nil)
 ;; (setf (jack-sf-playing? (first *jack-sounds*)) t)
@@ -140,7 +140,7 @@
 		   (setf (jack-sf-playing? sound) val)
 		   (setf (jack-sf-playing? sound) (not (jack-sf-playing? sound))))
 	       sound)
-	(t (if (not (numberp val))	;toggle all sounds
+	(t (if val-provided-p	;toggle all sounds
 	       (setf *cl-jack-is-reading* val)
 	       (setf *cl-jack-is-reading* (not *cl-jack-is-reading*)))
 	   (if *cl-jack-is-reading*
