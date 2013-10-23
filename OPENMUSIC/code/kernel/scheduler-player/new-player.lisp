@@ -64,7 +64,7 @@
       (print (format nil "Warning: player engine ~s not available for ~A (will be played on ~s)." engine obj (car engines-available)))
       (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
-  (push (list engine obj interval) (play-list player))
+  (push (list engine obj interval player) (play-list player))
   (prepare-to-play engine player obj at interval))
   
 
@@ -210,6 +210,7 @@
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval)
+  (declare (ignore interval))
   ;(print (format nil "~A : play ~A - ~A" engine object interval))
   t)
 
@@ -271,6 +272,7 @@
 ;          *play-boxes*))
 
 (defun general-player-stop (caller)
+  (declare (ignore caller))
   (mapcar #'(lambda (box)
               (setf (play-state box) nil)
               (if (car (frames box))
@@ -517,12 +519,13 @@
         (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
 
 (defmethod start-cursor ((self cursor-play-view-mixin))
-  (let* ((dur (get-obj-dur (object (om-view-container self))))
+  (let* (;;(dur (get-obj-dur (object (om-view-container self))))
          (range (get-x-range (panel (om-view-container self))))
-         (xview (- (second range) (first range)))
+         ;;(xview (- (second range) (first range)))
          (start (start-position self))
          (at-pix (om-point-x (point2pixel self (om-make-point start 0) (get-system-etat self))))
-         (dest (+ start xview)))
+         ;;(dest (+ start xview))
+	 )
     (when (and (view-turn-pages-p self) (or (< start (car range))
                                                    (> start (cadr range))))
       (scroll-play-view self at-pix)
@@ -551,7 +554,8 @@
          (pixel (time-to-pixels self time))
          (dur (get-obj-dur (object (om-view-container self))))
          range
-         xview
+	 durview
+         ;xview
          dest
         ;(pixel (xpoint2pixel self time (get-system-etat self)))
          )
