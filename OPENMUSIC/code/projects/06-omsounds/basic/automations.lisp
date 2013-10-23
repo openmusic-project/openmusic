@@ -50,8 +50,8 @@
                             (* 2000 i))
                     y (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
                             i))
-            (setf x (interpolate (list 0 10000) (list 0 10000) 10)
-                  y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 10)))
+            (setf x (interpolate (list 0 10000) (list 0 10000) 50)
+                  y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 50)))
           (setf (y-points bpf) y)
           (setf (x-points bpf) x))
       (print "I cannot build a mixer-automation with these parameters"))

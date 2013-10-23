@@ -64,7 +64,7 @@
 (defmethod player-stop ((engine (eql :libaudiostream)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
-            (player-stop-object engine (nth i play-list)))
+            (player-stop-object engine (car (nth i play-list))))
     (las-stop-all-players)))
 
 
