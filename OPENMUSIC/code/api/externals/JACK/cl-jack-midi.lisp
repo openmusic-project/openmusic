@@ -30,16 +30,12 @@
 ;;; event-seq is a hash-table, keys are frameno at jacks' start-of-period (ie: jack-last-frame-time)
 (defun make-jack-seq () (make-hash-table))
 
-;;; provide one default seq for simple debugging etc:
+;;; provide one default seq for global queues, external schedulers etc:
  ;default sequencer
 (defvar *jack-seq*
   (setf (gethash '*jack-seq* *jack-seqs*) (make-jack-seq)))
 
 ;;; TIME HANDLING - SEQUENCING
-
-;; (let ((start (jack-last-frame-time *CLJackClient*)))
-;;   (print 'yo)
-;;   (- start (jack-last-frame-time *CLJackClient*)))
 
 (defun jack-period-now (&optional sek)
   (+ (jack-last-frame-time *CLJackClient*)
@@ -59,7 +55,6 @@
 
 (defun sec->frame (sec)
   (round (* sec (jack-get-sample-rate cl-jack::*CLJackClient*))))
-
 
 (defun frame->period-offset (frame)
   "returns 2 frame nos: start of period & offset within period"
@@ -121,7 +116,7 @@
 ;;     (let ((noteoff (list offset (make-midi-note-off-tag channel) noteno velocity channel)))
 ;;       (jack-add-event-this-period seq period noteoff))))
 
-;; version hashing on frame-number
+;;; version hashing on frame-number
 
 (defun seqhash-midi-note-on (seq frame noteno velocity &optional (channel 1))
   (let ((noteon (list frame (make-midi-note-on-tag channel) noteno velocity channel)))
@@ -131,13 +126,37 @@
   (let ((noteoff (list frame (make-midi-note-off-tag channel) noteno velocity channel)))
     (jack-add-event-this-frame seq frame noteoff)))
 
+;;; dont cut off new note-ons (same note+chan) coming along with 'old'
+;;; note-offs scheduled together with already sounding notes
+
+(defun seqhash-clear-note-offs (seq startframe endframe noteno &optional (channel 1))
+  (maphash #'(lambda (key val)
+	       (let ((event (car val)))
+		 (when (and (<= startframe key endframe)
+			    (eql (second event) (make-midi-note-off-tag channel))
+			    (eql (third event) noteno))
+		   (remhash key seq))))
+	   seq))
+
 ;; interface to higher-level funcs:
 
+(defun jack-start-dur-to-frames (start dur)
+  (let ((dur-frames (sec->frame dur))
+	(startframe (jack-frame-now start))
+	(endframe (+ startframe dur-frames -1)))
+    (values startframe endframe)))
+
 (defun jack-play-event (seq start dur noteno &optional (vel 80) (chan 1))
-  (let* ((startframe (jack-frame-now start))
-	 (endframe (+ startframe (sec->frame dur))))
-    (seqhash-midi-note-on seq startframe noteno vel chan)
-    (seqhash-midi-note-off seq endframe noteno 0 chan)))
+  (mp:process-run-function "play jack event" ()
+			   #'(lambda ()
+			       (let* ((startframe (jack-frame-now start))
+				      (endframe (+ startframe (sec->frame dur) -1)))
+				 (seqhash-clear-note-offs seq startframe endframe noteno chan)
+				 (seqhash-midi-note-on seq startframe noteno vel chan)
+				 (sleep (/ (jack-get-buffer-size *CLJackClient*)
+					   (jack-get-sample-rate *CLJackClient*)))
+				 (seqhash-midi-note-off seq endframe noteno 0 chan)))))
+
 
 (defun jack-all-notes-off (seq)
   (let ((sounding-notes '()))
@@ -290,8 +309,9 @@
 
 (clrhash *jack-seq*)
 
-(seqhash-midi-note-on *jack-seq* (jack-frame-now) (setf *thisnote* 60) 127 1)
-(seqhash-midi-note-off *jack-seq* (jack-frame-now) *thisnote* 127 1)
+(progn
+  (seqhash-midi-note-on *jack-seq* (jack-frame-now) (setf *thisnote* 60) 127 1)
+  (seqhash-midi-note-off *jack-seq* (jack-frame-now) *thisnote* 127 1))
 
 (with-hash-table-iterator (get-note *jack-seq*)
   (loop (multiple-value-bind (more? time notes) (get-note)
@@ -314,21 +334,36 @@
 	   (seqhash-midi-note-off  *jack-seq* end *thisnote* 0 channel)))))
 
 (defun play-some-notes (&optional (tempo 0.1) (dur 8))
-  (loop with note = 0
+  ;;(clrhash *jack-seq*)
+  (loop with offset = 0
+     for sek from 0 below dur by tempo
+     do
+       (let* ((start sek)
+	      (dur (+ 0.01 (expt (random 1.0) 2)))
+	      (channel (random 16)))
+	 (jack-play-event *jack-seq* start dur (+ 20 (random 100)) 80 channel))))
+
+(defun play-some-notes (&optional (tempo 0.1) (dur 8))
+  (loop with note = 60
      for sek from 0  by tempo
      do
        (let* ((start (jack-frame-now sek))
 	      (end (jack-frame-now (+ sek tempo))))
 	 (when  (>= sek dur)
 	   (loop-finish)
-	   (seqhash-midi-note-off *jack-seq* end (+ 40 note) 50 0))
+	   (seqhash-midi-note-off *jack-seq* end note 50 0))
 	 (progn
-	   (seqhash-midi-note-on *jack-seq* start (+ 40 (setf note (mod (incf note) 60))) 80 0)
-	   (seqhash-midi-note-off *jack-seq* end (+ 40 note) 50 0)
+	   (seqhash-midi-note-on *jack-seq* start note 80 0)
+	   (seqhash-midi-note-off *jack-seq* end note 50 0)
 	   ))))
 
-(let ((rytme 1/32))
-  (play-some-notes rytme (+ 6 rytme)))
+(let ((rytme 0.01))
+  (play-some-notes rytme (+ 10 rytme)))
+
+(loop repeat 3
+   do
+     (jack-play-event *jack-seq* 0 1/200 60 100)
+     (sleep 1/100))
 
 (jack-all-notes-off *jack-seq*)
 
