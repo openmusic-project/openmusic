@@ -43,8 +43,9 @@
 (defun make-general-mixer-win ()
   ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
   (unless *general-mixer-presets*
-    (setf *general-mixer-presets* (init-genmixer-values))
-    (setf *general-mixer-values* (car *general-mixer-presets*)))
+    (setf *general-mixer-presets* (init-genmixer-values)))
+  (unless *general-mixer-values*
+    (setf *general-mixer-values* (cadr (car *general-mixer-presets*))))
 
   (let ((newwindow (om-make-window 'omgenmixer-window 
                                    :window-title "OpenMusic General Mixer" 
