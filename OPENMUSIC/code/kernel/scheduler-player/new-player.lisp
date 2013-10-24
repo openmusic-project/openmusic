@@ -93,7 +93,9 @@
                                                 ;(print "loop")
                                                 (setf (start-time player) start-t
                                                       (ref-clock-time player) (clock-time))
-                                                (mapcar #'player-loop (engines player) 
+                                                ;;; ask every engine to reschedule their play-list
+                                                (mapcar #'(lambda (engine play-list) (player-loop engine player play-list))
+                                                        (engines player)
                                                         (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
                                                 )
                                             (general-stop player)))
@@ -239,7 +241,8 @@
   ;(print (format nil "~A : set loop" engine))
   t)
 
-(defmethod player-loop ((engine t) &optional play-list)
+;;; an engine must choose a strategy to reschedule it's contents on loops
+(defmethod player-loop ((engine t) player &optional play-list)
   ;(print (format nil "~A : loop" engine))
   t)
 

@@ -72,7 +72,8 @@
 (defmethod player-play-object ((engine (eql :libaudiostream)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
-(defmethod player-loop ((self (eql :libaudiostream)) &optional play-list)
+(defmethod player-loop ((self (eql :libaudiostream)) player &optional play-list)
+  (ignore player)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (las-stop (nth i play-list) (tracknum (nth i play-list)))
