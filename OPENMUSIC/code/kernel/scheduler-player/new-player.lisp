@@ -64,7 +64,7 @@
       (print (format nil "Warning: player engine ~s not available for ~A (will be played on ~s)." engine obj (car engines-available)))
       (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
-  (push (list engine obj interval player) (play-list player))
+  (push (list engine obj interval) (play-list player))
   (prepare-to-play engine player obj at interval))
   
 
