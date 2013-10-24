@@ -395,39 +395,40 @@
 (defmethod om-component-border ((self tonaloptions-view)) :line)
 
 (defmethod initialize-instance :after ((self tonaloptions-view) &rest initargs)
-  (let ((tonal-list (get-pref (object self) :tonal-options)))
+  (let ((tonal-list (get-pref (object self) :tonal-options))
+	(textdims (om-make-point 150 24)))
     (om-add-subviews self
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 5) (om-make-point 150 24) "General Tonality" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 5) textdims "General Tonality" 
                                           :checked-p (nth 0 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))
                                                          (setf (nth 0 list) (om-checked-p item))
                                                          (set-pref (object self) :tonal-options list))))
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 25) (om-make-point 150 24) "Modulations" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 25) textdims "Modulations" 
                                           :checked-p (nth 1 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))
                                                          (setf (nth 1 list) (om-checked-p item))
                                                          (set-pref (object self) :tonal-options list))))
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 45) (om-make-point 150 24) "Accidentals" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 45) textdims "Accidentals" 
                                           :checked-p (nth 2 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))
                                                          (setf (nth 2 list) (om-checked-p item))
                                                          (set-pref (object self) :tonal-options list))))
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 65) (om-make-point 150 24) "Degrees" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 65) textdims "Degrees" 
                                           :checked-p (nth 3 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))
                                                          (setf (nth 3 list) (om-checked-p item))
                                                          (set-pref (object self) :tonal-options list))))
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 85) (om-make-point 150 24) "Figuring" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 85) textdims "Figuring" 
                                           :checked-p (nth 4 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))
                                                          (setf (nth 4 list) (om-checked-p item))
                                                          (set-pref (object self) :tonal-options list))))
-                     (om-make-dialog-item 'om-check-box (om-make-point 10 105) (om-make-point 150 24) "Cadences" 
+                     (om-make-dialog-item 'om-check-box (om-make-point 10 105) textdims "Cadences" 
                                           :checked-p (nth 5 tonal-list)
                                           :di-action (om-dialog-item-act item 
                                                        (let ((list (get-pref (object self) :tonal-options)))

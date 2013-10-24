@@ -118,29 +118,36 @@
         (pos 0))
      
     (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 20)) (om-make-point 300 30) "LibAudioStream"
-                                          :font *om-default-font3b*)
+		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 20)) (om-make-point 300 30)
+					  #-linux "LibAudioStream" #+linux "JACK"
+					  :font *om-default-font3b*)
                          
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30) "Player Sample Rate (Hz)"
-                                          :font *controls-font*)
+		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30)
+					  (format nil "~A Sample Rate (Hz)" #-linux "Player" #+linux "Server")
+					  :font *controls-font*)
                          
-                     (om-make-dialog-item 'om-editable-text 
-                                          (om-make-point 295 (+ pos 6))
-                                          (om-make-point 60 13)
-                                          (format nil "~D" (get-pref modulepref :audio-sr)) 
-                                          :modify-action (om-dialog-item-act item
-                                                           (let ((text (om-dialog-item-text item))
-                                                                 number)
-                                                             (unless (string= "" text)
-                                                               (setf number (ignore-errors (read-from-string text)))
-                                                               (when (numberp number)
-                                                                 (set-pref modulepref :audio-sr number))
-                                                               )))
-                                          :font *om-default-font2*)
+		     (om-make-dialog-item 'om-editable-text 
+					  (om-make-point 295 (+ pos 6))
+					  (om-make-point 60 13)
+					  (format nil "~D" (get-pref modulepref :audio-sr)) 
+					  :modify-action (om-dialog-item-act item
+							   (let ((text (om-dialog-item-text item))
+								 number)
+							     (unless (string= "" text)
+							       (setf number (ignore-errors (read-from-string text)))
+							       (when (numberp number)
+								 (set-pref modulepref :audio-sr number))
+							       )))
+					  :font *om-default-font2*)
                          
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 20)) (om-make-point 350 22) 
-                                          "(Also used as default SR for sound synthesis)"
-                                          :font *om-default-font1*))
+		     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 20)) (om-make-point 350 22) 
+					  "(Also used as default SR for sound synthesis)"
+					  :font *om-default-font1*)
+		     #+linux (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 30))
+						  (om-make-point 350 22) 
+						  "OM will attempt to start a JACK-server if its not running already"
+						  :font *om-default-font1*)
+		     )
     
                       
     (om-add-subviews thescroll
@@ -157,9 +164,9 @@
                                                        (set-pref modulepref :audio-format
                                                                  (nth (om-get-selected-item-index item) '(aiff wav))))
                                           :font *controls-font* 
-                                          :range '("AIFF" "WAV") 
+                                          :range '("WAV" "AIFF") 
                                           :value (cond ((equal (get-pref modulepref :audio-format) 'wav) "WAV")
-                                                       (t "AIFF"))
+                                                       (t #-linux "AIFF" #+linux "WAV"))
                                           )
 
                          

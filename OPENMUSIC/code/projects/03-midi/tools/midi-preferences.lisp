@@ -285,130 +285,134 @@
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
          msapp
          (i 0))
-    (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 200 30) "MIDIShare"
-                                          :font *om-default-font3b*)
+    #-linux (om-add-subviews thescroll
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 200 30) "MIDIShare"
+						  :font *om-default-font3b*)
                       
-       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 35)) (om-make-point 150 24) "Default Ports:" :font *controls-font*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 35)) (om-make-point 150 24) "Default Ports:" :font *controls-font*)
 
-       (om-make-dialog-item 'om-static-text (om-make-point 130 i) (om-make-point 60 20) "Out" :font *controls-font*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 130 i) (om-make-point 60 20) "Out" :font *controls-font*)
        
-       (om-make-dialog-item 'om-editable-text (om-make-point 165 i) (om-make-point 37 13)
-                            (format nil "~D" (get-pref modulepref :midi-out))
-                                                 :after-action 
-                                                 (om-dialog-item-act item
-                                                   (let ((text (om-dialog-item-text item))
-                                                         number)
-                                                     (unless (string= "" text)
-                                                       (setf number (read-from-string text))
-                                                       (if (and (integerp number) (>= number 0) (<= number 255))
-                                                           (set-pref modulepref :midi-out number)
-                                                         (progn 
-                                                           (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                           (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-out))))
-                                                         ))))
-                                                 :di-action 
-                                                 (om-dialog-item-act item
-                                                   (let ((text (om-dialog-item-text item))
-                                                         number)
-                                                     (unless (string= "" text)
-                                                       (setf number (read-from-string text))
-                                                       (if (and (integerp number) (>= number 0) (<= number 255))
-                                                           (set-pref modulepref :midi-out number)
-                                                         (progn 
-                                                           (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                           (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-out))))
-                                                         ))))
-                                                 :font *om-default-font2*)
+			     (om-make-dialog-item 'om-editable-text (om-make-point 165 i) (om-make-point 37 13)
+						  (format nil "~D" (get-pref modulepref :midi-out))
+						  :after-action 
+						  (om-dialog-item-act item
+						    (let ((text (om-dialog-item-text item))
+							  number)
+						      (unless (string= "" text)
+							(setf number (read-from-string text))
+							(if (and (integerp number) (>= number 0) (<= number 255))
+							    (set-pref modulepref :midi-out number)
+							    (progn 
+							      (om-beep-msg "Midi port must be an integer between 0 and 255.")
+							      (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-out))))
+							    ))))
+						  :di-action 
+						  (om-dialog-item-act item
+						    (let ((text (om-dialog-item-text item))
+							  number)
+						      (unless (string= "" text)
+							(setf number (read-from-string text))
+							(if (and (integerp number) (>= number 0) (<= number 255))
+							    (set-pref modulepref :midi-out number)
+							    (progn 
+							      (om-beep-msg "Midi port must be an integer between 0 and 255.")
+							      (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-out))))
+							    ))))
+						  :font *om-default-font2*)
        
-       (om-make-dialog-item 'om-static-text (om-make-point 240 i) (om-make-point 150 20) "In" :font *controls-font*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 240 i) (om-make-point 150 20) "In" :font *controls-font*)
        
-       (om-make-dialog-item 'om-editable-text (om-make-point 270 i) (om-make-point 37 13)
-                            (format nil "~D" (get-pref modulepref :midi-in)) 
-                            :after-action (om-dialog-item-act item
-                                         (let ((text (om-dialog-item-text item))
-                                               number)
-                                           (unless (string= "" text)
-                                             (setf number (read-from-string text))
-                                             (if (and (integerp number) (>= number 0) (<= number 255))
-                                               (set-pref modulepref :midi-in number)
-                                               (progn 
-                                                 (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                 (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
-                            :di-action (om-dialog-item-act item
-                                         (let ((text (om-dialog-item-text item))
-                                               number)
-                                           (unless (string= "" text)
-                                             (setf number (read-from-string text))
-                                             (if (and (integerp number) (>= number 0) (<= number 255))
-                                               (set-pref modulepref :midi-in number)
-                                               (progn 
-                                                 (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                 (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
-                            :font *om-default-font2*)
+			     (om-make-dialog-item 'om-editable-text (om-make-point 270 i) (om-make-point 37 13)
+						  (format nil "~D" (get-pref modulepref :midi-in)) 
+						  :after-action (om-dialog-item-act item
+								  (let ((text (om-dialog-item-text item))
+									number)
+								    (unless (string= "" text)
+								      (setf number (read-from-string text))
+								      (if (and (integerp number) (>= number 0) (<= number 255))
+									  (set-pref modulepref :midi-in number)
+									  (progn 
+									    (om-beep-msg "Midi port must be an integer between 0 and 255.")
+									    (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
+						  :di-action (om-dialog-item-act item
+							       (let ((text (om-dialog-item-text item))
+								     number)
+								 (unless (string= "" text)
+								   (setf number (read-from-string text))
+								   (if (and (integerp number) (>= number 0) (<= number 255))
+								       (set-pref modulepref :midi-in number)
+								       (progn 
+									 (om-beep-msg "Midi port must be an integer between 0 and 255.")
+									 (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
+						  :font *om-default-font2*)
        
-       ;(om-make-dialog-item 'om-static-text (om-make-point 20 80) (om-make-point 180 24) "MidiShare SetUp App." :font *controls-font*)
+					;(om-make-dialog-item 'om-static-text (om-make-point 20 80) (om-make-point 180 24) "MidiShare SetUp App." :font *controls-font*)
        
-       ;(setf msapp (om-make-dialog-item 'om-static-text (om-make-point 20 100) (om-make-point 280 50) 
-       ;                                 (if (get-pref modulepref :midisetup-path) 
-       ;                                     (namestring (get-pref modulepref :midisetup-path))
-       ;                                   "NOT FOUND")
-       ;                                     :font *om-default-font2*
-       ;                                     :fg-color (if (get-pref modulepref :midisetup-path) *om-black-color* *om-red-color*)))
+					;(setf msapp (om-make-dialog-item 'om-static-text (om-make-point 20 100) (om-make-point 280 50) 
+					;                                 (if (get-pref modulepref :midisetup-path) 
+					;                                     (namestring (get-pref modulepref :midisetup-path))
+					;                                   "NOT FOUND")
+					;                                     :font *om-default-font2*
+					;                                     :fg-color (if (get-pref modulepref :midisetup-path) *om-black-color* *om-red-color*)))
 
-      ;(om-make-dialog-item 'om-button (om-make-point 320 100) (om-make-point 50 24) "..."
-      ;                                    :di-action (om-dialog-item-act item
-      ;                                                 (declare (ignore button))
-      ;                                                 (let* ((path (om-choose-file-dialog :directory (om-default-application-path nil nil))))
-      ;                                                  (if (and path (probe-file path))
-      ;                                                      (progn 
-      ;                                                        (set-pref modulepref :midisetup-path path)
-      ;                                                       (om-set-dialog-item-text msapp (namestring path))
-      ;                                                        (om-invalidate-view thescroll))
-      ;                                                      (om-beep-msg "Bad path for MisiShare setup app.")))))
+					;(om-make-dialog-item 'om-button (om-make-point 320 100) (om-make-point 50 24) "..."
+					;                                    :di-action (om-dialog-item-act item
+					;                                                 (declare (ignore button))
+					;                                                 (let* ((path (om-choose-file-dialog :directory (om-default-application-path nil nil))))
+					;                                                  (if (and path (probe-file path))
+					;                                                      (progn 
+					;                                                        (set-pref modulepref :midisetup-path path)
+					;                                                       (om-set-dialog-item-text msapp (namestring path))
+					;                                                        (om-invalidate-view thescroll))
+					;                                                      (om-beep-msg "Bad path for MisiShare setup app.")))))
       
-      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 45)) (om-make-point 100 24) "Set MIDI Ports:" :font *controls-font*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 45)) (om-make-point 100 24) "Set MIDI Ports:" :font *controls-font*)
 
-      (om-make-view 'button-icon
-                    :position (om-make-point 160 (- i 4)) 
-                    :size (om-make-point 32 32)
-                    :action #'(lambda (item) (declare (ignore item))
-                                (when *midi-share?*
-                                  #+(or powerpc win32) (launch-midishare-setup)
-                                  #-(or powerpc win32) (om-midishare-setup (find-pref-module :midi (local-prefs (om-view-window item)))))
+			     (om-make-view 'button-icon
+					   :position (om-make-point 160 (- i 4)) 
+					   :size (om-make-point 32 32)
+					   :action #'(lambda (item) (declare (ignore item))
+							     (when *midi-share?*
+							       #+(or powerpc win32) (launch-midishare-setup)
+							       #-(or powerpc win32) (om-midishare-setup (find-pref-module :midi (local-prefs (om-view-window item)))))
                                 
-                                )
-                    :iconid 135)
+							     )
+					   :iconid 135)
 
       
-      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 55)) (om-make-point 120 40) "In case of emergency:" :font *controls-fonti*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 55)) (om-make-point 120 40) "In case of emergency:" :font *controls-fonti*)
 
-      (om-make-dialog-item 'om-button
-                           (om-make-point 160  i) 
-                           (om-make-point 180 20)
-                     "Reset MIDIShare"
-                     :di-action #'(lambda (item) (declare (ignore item))
-                                    (when *midi-share?* (midiplay-reset))))
+			     (om-make-dialog-item 'om-button
+						  (om-make-point 160  i) 
+						  (om-make-point 180 20)
+						  "Reset MIDIShare"
+						  :di-action #'(lambda (item) (declare (ignore item))
+								       (when *midi-share?* (midiplay-reset))))
       
-      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 100 44) "Default MIDI export format:" :font *controls-font*)
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 100 44) "Default MIDI export format:" :font *controls-font*)
       
-      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 (+ i 5)) (om-make-point 180 24) ""
-                           :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
-                           :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
-                           :di-action (om-dialog-item-act item
-                                        (set-pref modulepref :midi-format (om-get-selected-item-index item)))
-                           )
-      ;(om-make-dialog-item 'om-button (om-make-point 250 148) (om-make-point 120 20) "MIDI Restart"
-      ;                                    :di-action (om-dialog-item-act item
-      ;                                                 (declare (ignore button))
-      ;                                                 (show-message-win "Setting MIDI drivers...")
-      ;                                                 (close-ms-players)
-      ;                                                 (sleep 1)
-      ;                                                 (open-ms-players)
-      ;                                                 (hide-message-win)
-      ;                                                 ))
+			     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 (+ i 5)) (om-make-point 180 24) ""
+						  :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
+						  :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
+						  :di-action (om-dialog-item-act item
+							       (set-pref modulepref :midi-format (om-get-selected-item-index item)))
+						  )
+					;(om-make-dialog-item 'om-button (om-make-point 250 148) (om-make-point 120 20) "MIDI Restart"
+					;                                    :di-action (om-dialog-item-act item
+					;                                                 (declare (ignore button))
+					;                                                 (show-message-win "Setting MIDI drivers...")
+					;                                                 (close-ms-players)
+					;                                                 (sleep 1)
+					;                                                 (open-ms-players)
+					;                                                 (hide-message-win)
+					;                                                 ))
       
-        ) 
+			     )
+    #+linux (om-add-subviews thescroll
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 20)) (om-make-point 200 30) "JACK"
+						  :font *om-default-font3b*))
+    
 
     thescroll))
 

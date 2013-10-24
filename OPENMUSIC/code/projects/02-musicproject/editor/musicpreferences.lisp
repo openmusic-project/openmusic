@@ -150,6 +150,7 @@
                                            (om-make-point 80 20)
                                            ""
                                            :range (loop for item in *all-satff-om* collect (string item))
+					   :font *om-default-font2*
                                            :value (string (get-pref modulepref :staff))
                                            :di-action (om-dialog-item-act item
                                                          (set-pref modulepref :staff 
@@ -204,7 +205,7 @@
       (om-add-subviews thescroll 
                        (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 190) 45) (om-make-point 120 20) "Tonal Display"
                                             :font *controls-font*)
-                       (om-make-view 'tonaloptions-view :position (om-make-point (+ l2 190) 70) :size (om-make-point 140 140) 
+                       (om-make-view 'tonaloptions-view :position (om-make-point (+ l2 190) 70) :size (om-make-point 150 140) 
                                      :object modulepref)
                        ))
 

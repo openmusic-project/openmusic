@@ -323,8 +323,8 @@
 
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 170) posy) (om-make-point 80 24) ""
                                           :range '("icons" "list")
-                                          :value (if (= 0 *default-folder-pres*) "icons" "list") 
-                                          :di-action (om-dialog-item-act item 
+                                          :value (if (= 0 *default-folder-pres*) "icons" "list")
+					  :di-action (om-dialog-item-act item 
                                                         (let ((choice (om-get-selected-item item)))
                                                           (set-pref modulepref :folder-pres
                                                               (if (string-equal choice "icons") 0 1)))))
@@ -755,80 +755,79 @@
                                               :font *om-default-font3b*))
               
         (loop for item in (remove-duplicates *external-prefs*) do
-              
-              (let* ((mod item)
-                     (textvar (om-make-dialog-item 'om-clickable-static-text (om-make-point xpos (+ pos 20)) (om-make-point 246 44) 
-                                                  (if (get-external-module-path item modulepref) 
-                                                      (namestring (get-external-module-path item modulepref))
-                                                    "NOT FOUND")
-                                                  :font *om-default-font1*
-                                                  :fg-color (if (and (get-external-module-path item modulepref)
-                                                                     (probe-file (get-external-module-path item modulepref)))
-                                                                *om-black-color* *om-red-color*)
-                                                  :bg-color *om-white-color*
-                                                  :di-action #'(lambda (ti)
-                                                                 (let* ((path (om-get-user-string (string+ "Choose a new path for " (get-external-name mod) ":")
-                                                                                                 :initial-string (or (and (get-external-module-path mod modulepref) 
-                                                                                                                        (namestring (get-external-module-path mod modulepref)))
-                                                                                                                    ""))
-                                                                                 ))
-                                                                     (when path 
-                                                                       (if (probe-file path)
-                                                                           (progn 
-                                                                             (set-external-module-path mod modulepref (pathname path))
-                                                                             (om-set-dialog-item-text ti path)
-                                                                             (om-set-fg-color ti *om-black-color*)
-                                                                             (om-invalidate-view thescroll)
-                                                                             )
-                                                                         (om-beep-msg (string+ "File " (namestring path) " does not exist")))))) 
-                                                  ))
-                     )
+	     (let* ((mod item)
+		    (textvar (om-make-dialog-item 'om-clickable-static-text (om-make-point xpos (+ pos 20)) (om-make-point 246 44) 
+						  (if (get-external-module-path item modulepref) 
+						      (namestring (get-external-module-path item modulepref))
+						      "NOT FOUND")
+						  :font *om-default-font1*
+						  :fg-color (if (and (get-external-module-path item modulepref)
+								     (probe-file (get-external-module-path item modulepref)))
+								*om-black-color* *om-red-color*)
+						  :bg-color *om-white-color*
+						  :di-action #'(lambda (ti)
+								 (let* ((path (om-get-user-string (string+ "Choose a new path for " (get-external-name mod) ":")
+												  :initial-string (or (and (get-external-module-path mod modulepref) 
+															   (namestring (get-external-module-path mod modulepref)))
+														      ""))
+									  ))
+								   (when path 
+								     (if (probe-file path)
+									 (progn 
+									   (set-external-module-path mod modulepref (pathname path))
+									   (om-set-dialog-item-text ti path)
+									   (om-set-fg-color ti *om-black-color*)
+									   (om-invalidate-view thescroll)
+									   )
+									 (om-beep-msg (string+ "File " (namestring path) " does not exist")))))) 
+						  ))
+		    )
                 
-                (om-add-subviews thescroll
-                                 (om-make-dialog-item 'om-static-text (om-make-point xpos pos) (om-make-point 180 24) 
-                                                      (get-external-name mod) :font *om-default-font2b*)
+	       (om-add-subviews thescroll
+				(om-make-dialog-item 'om-static-text (om-make-point xpos pos) (om-make-point 180 24) 
+						     (get-external-name mod) :font *om-default-font2b*)
                                  
-                                 textvar
+				textvar
 
-                                 (om-make-view 'om-icon-button 
-                                                      :icon1 "folder" :icon2 "folder-pushed"
-                                                      :position (om-make-point (+ xpos 250) (+ pos 20)) :size (om-make-point 26 25) 
-                                                      :action (om-dialog-item-act button
-                                                                   (declare (ignore button))
-                                                                   (let* ((path (om-choose-file-dialog 
-                                                                                 :directory (om-default-application-path nil nil))))
-                                                                     (when path 
-                                                                       (if (probe-file path)
-                                                                           (progn 
-                                                                             (set-external-module-path mod modulepref path)
-                                                                             (om-set-dialog-item-text textvar (namestring path))
-                                                                             (om-set-fg-color textvar *om-black-color*)
-                                                                             (om-invalidate-view thescroll)
-                                                                             )
-                                                                         (om-beep-msg (string+ "Bad path for " 
-                                                                                               (get-external-name mod))))))))
+				(om-make-view 'om-icon-button 
+					      :icon1 "folder" :icon2 "folder-pushed"
+					      :position (om-make-point (+ xpos 250) (+ pos 20)) :size (om-make-point 26 25) 
+					      :action (om-dialog-item-act button
+							(declare (ignore button))
+							(let* ((path (om-choose-file-dialog 
+								      :directory (om-default-application-path nil nil))))
+							  (when path 
+							    (if (probe-file path)
+								(progn 
+								  (set-external-module-path mod modulepref path)
+								  (om-set-dialog-item-text textvar (namestring path))
+								  (om-set-fg-color textvar *om-black-color*)
+								  (om-invalidate-view thescroll)
+								  )
+								(om-beep-msg (string+ "Bad path for " 
+										      (get-external-name mod))))))))
                                  
-                                 )
+				)
                 
-                (when (get-external-module-vals mod modulepref)
-                  (om-add-subviews thescroll (om-make-dialog-item 'om-button
-                                                (om-make-point (+ xpos 280) (+ pos 20)) 
-                                                (om-make-point 75 24) "Options"
-                                                :font *om-default-font1*
-                                                :di-action #'(lambda (button) 
-                                                            (declare (ignore button))
-                                                                (let ((rep (show-external-prefs-dialog mod (get-external-module-vals mod modulepref))))
-                                                                (when rep
-                                                                  (set-external-module-vals mod modulepref rep))))
-                                                ;;;:iconid (get-external-icon item))
+	       (when (get-external-module-vals mod modulepref)
+		 (om-add-subviews thescroll (om-make-dialog-item 'om-button
+								 (om-make-point (+ xpos 280) (+ pos 20)) 
+								 (om-make-point 75 24) "Options"
+								 :font *om-default-font1*
+								 :di-action #'(lambda (button) 
+										(declare (ignore button))
+										(let ((rep (show-external-prefs-dialog mod (get-external-module-vals mod modulepref))))
+										  (when rep
+										    (set-external-module-vals mod modulepref rep))))
+;;;:iconid (get-external-icon item))
                                  
-                                                )))
+								 )))
                 
-                (setf pos (+ pos 65))
-                (when (> pos (- (om-point-v (get-pref-scroll-size)) 100))
-                  (setf pos 44
-                        xpos (round (om-point-h (get-pref-scroll-size)) 2)))
-                ))
+	       (setf pos (+ pos 65))
+	       (when (> pos (- (om-point-v (get-pref-scroll-size)) 100))
+		 (setf pos 44
+		       xpos (round (om-point-h (get-pref-scroll-size)) 2)))
+	       ))
       thescroll))
 
 
