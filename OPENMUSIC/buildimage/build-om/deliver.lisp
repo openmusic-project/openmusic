@@ -200,6 +200,9 @@
 #+linux
 (setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name *app-name+version*))
 
+
+(setf *debugger-hook* 'oa::om-debugger-hook)
+
 ;;; INIT FUNCALL
 (defun init-om ()
   (setf om::*om-startup* t)
