@@ -171,19 +171,10 @@
 |#
 
 (defmethod om-interior-size ((self om-abstract-window))
-  (if t ;(capi::interface-visible-p (capi::pane-layout self))
-      ;;; IF THE WINDOW IS VISIBLE
-      (multiple-value-bind (w h)
+  (multiple-value-bind (w h)
           (capi::pinboard-pane-size (capi::pane-layout self))
-        (om-make-point w h))
-    ;;; ELSE (REMOVE THIS SOMEDAY...)
-    (progn
-      ;(print "XXXXXXXXXXXXXXXXXXX")
-    #+(or linux win32)(om-subtract-points (om-view-size self) (om-make-point 0 30))
-    #-(or linux win32)(om-view-size self)
-    )))
-
-
+        (om-make-point w h)))
+	
 
 (defmethod om-set-interior-size ((self om-abstract-window) size)
   (om-set-view-size self size))
@@ -362,6 +353,7 @@
      ;    (setf w (- (capi::screen-width (capi:convert-to-screen nil)) x)))
      ;(if (> (+ y h) (capi::screen-height (capi:convert-to-screen nil))) 
      ;    (setf h (- (capi::screen-height (capi:convert-to-screen nil)) y)))
+     ;(print (list "SIZE FOR MAKE INSTANCE IS" size))
      (setf thewin (make-instance ,class
                                  :title title :name winname
                                  :x x :y y 
@@ -479,7 +471,9 @@
 (defclass om-window (om-abstract-window) ())
 
 (defmethod correct-win-h ((win om-window))
-  #+win32(om-set-view-size win (om-add-points (om-view-size win) (om-make-point 0 20)))
+  ;(print (list "RESIZE!!" (om-view-size win) (om-add-points (om-view-size win) (om-make-point 0 00))))
+  ;#+win32
+  (om-set-view-size win (om-add-points (om-view-size win) (om-make-point 0 200)))
  t)
 
 
