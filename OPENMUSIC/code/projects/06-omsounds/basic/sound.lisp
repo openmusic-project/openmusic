@@ -60,7 +60,7 @@ Press 'space' to play/stop the sound file.
                  nil *InMidiPort* :libaudiostream
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 t nil)))
 
-(add-player-for-object 'sound '(:libaudiostream :multiplayer :jack))
+
 
 (defmethod initialize-instance :after ((self sound) &rest args)
   (setf (Qvalue self) 1000)

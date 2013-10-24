@@ -19,7 +19,7 @@
 
 (in-package :om)
 
-(require :cl-jack (make-pathname :directory (append om-api::*externals-directory* '("JACK")) :name "cl-jack-load"))
+;(require :cl-jack (make-pathname :directory (append om-api::*externals-directory* '("JACK")) :name "cl-jack-load"))
 
 ;==================
 ; PLAYER
