@@ -28,7 +28,9 @@
          (beta (if (> (length rest) 4) (read-from-string (subseq rest 4)))))
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
-                 (if (or (null show-beta) (zerop beta)) "" (format nil " beta ~d" beta))
+                 (if (or (null show-beta) (zerop beta)) ""
+		     #-linux (format nil " beta ~d" beta)
+		     #+linux (format nil "_beta_~d" beta))
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
