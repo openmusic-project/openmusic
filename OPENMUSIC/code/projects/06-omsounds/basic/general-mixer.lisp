@@ -36,11 +36,15 @@
 
 (defun mixer-track-size () 250)
 
+;(make-general-mixer-win)
+
 ;/MAKE GENERAL MIXER WINDOW FUNCTION
 ;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
   ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
-  (if (not *general-mixer-presets*) (setf *general-mixer-presets* (init-genmixer-values)))
+  (unless *general-mixer-presets*
+    (setf *general-mixer-presets* (init-genmixer-values))
+    (setf *general-mixer-values* (car *general-mixer-presets*)))
 
   (let ((newwindow (om-make-window 'omgenmixer-window 
                                    :window-title "OpenMusic General Mixer" 
