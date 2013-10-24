@@ -55,15 +55,17 @@
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
-	   (player-pause-object engine (nth i play-list)))
+      (mapc #'(lambda (item)
+		(player-pause-object engine (if (listp item) (first item) item)))
+	    play-list)
       (cl-jack:jackplay-toggle-read nil nil)))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
-	   (player-continue-object engine (nth i play-list)))
+      (mapc #'(lambda (item)
+		(player-continue-object engine (if (listp item) (first item) item)))
+	    play-list)
       (cl-jack:jackplay-toggle-read nil t)))
 
 ;;; STOP
@@ -72,8 +74,10 @@
 
 (defmethod player-stop ((engine (eql :jackaudio)) &optional play-list)
   (if play-list
-      (loop for i from 0 to (- (length play-list) 1) do
-	   (player-stop-object engine (nth i play-list)))
+      (mapc #'(lambda (item)
+		(when item
+		  (player-stop-object engine (if (listp item) (first item) item))))
+	    play-list)
       (jack-stop-all-players)))
 
 
@@ -104,7 +108,6 @@
 (defmethod player-cleanup ((player (eql :jackaudio)) snd)
   (player-stop-object player snd))
 
-
 ;;; SET LOOP (called before play)
 (defmethod player-set-loop ((engine (eql :jackaudio)) &optional start end)
   ;;(print (format nil "~A : set loop start: ~A end: ~A" engine start end))
@@ -115,10 +118,11 @@
    (cl-jack::jack-sf-sound-file-handle jack-sf)
    (cl-jack::jack-sf-start jack-sf)))
 
-(defmethod player-loop ((engine (eql :jackaudio)) &optional play-list)
-  (mapc #'(lambda (snd)
-	    (jack-goto-start (jack-sf-struct snd)))
-	play-list))
+(defmethod player-loop ((engine (eql :jackaudio)) player &optional play-list)
+  (if play-list
+      (mapc #'(lambda (item)
+		(jack-goto-start (jack-sf-struct (if (listp item) (first item) item))))
+	    play-list)))
 
 
 
