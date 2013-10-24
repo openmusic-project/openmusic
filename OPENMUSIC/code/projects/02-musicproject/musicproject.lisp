@@ -31,7 +31,8 @@
         "editor;omicron"
         "editor;scoreeditor;scales"
         "container;tonalite"
-              
+        "players;select-players"  
+
         ;-----------Preferences----------------------------
         "editor;general-editor-tools"
                 
@@ -105,10 +106,10 @@
         "osc;osc-events"
         "players;microplayer"
         ;; "players;SCeventplayer"
+
         "editor;scoreeditor;pagination"
-        
         "editor;musicpreferences"
-        "players;select-players"  
+
         #-linux "players;ms-players"  
         "music-package"  
         ))

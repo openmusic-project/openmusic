@@ -139,7 +139,7 @@
 
 (defmethod general-loop ((player omplayer))
        ;(print "general loop")
-  (setf (stop-time player) (cadr (play-interval player)))
+  ;(setf (stop-time player) (cadr (play-interval player)))
   (setf (start-time player) (or (car (play-interval player)) 0)
         (ref-clock-time player) (clock-time))
   ;;; ask every engine to reschedule their play-list
@@ -301,7 +301,8 @@
           boxlist)
   (when *play-boxes*
     (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (value box)))))
-    (general-play *general-player* :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))))
+    (general-play *general-player*) ;;; :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))
+    ))
 
 
 (defmethod stop-boxes ((boxlist list))
@@ -443,7 +444,8 @@
   (call-next-method))
 
 (defmethod update-player-interval (editor interval) nil)
-(defmethod update-player-interval ((editor play-editor-mixin) interval) 
+(defmethod update-player-interval ((editor play-editor-mixin) interval)
+  (unless (cadr interval) (setf (cadr interval) (get-obj-dur (object editor))))
   (setf (play-interval (player editor)) interval))
 
 

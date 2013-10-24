@@ -1,26 +1,28 @@
 (in-package :om)
 
-(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack :bpfplayer))
-(defparameter *enabled-players* '(:midishare :microplayer :libaudiostream :multiplayer :bpfplayer))
+;(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack :bpfplayer))
+(defparameter *enabled-players* nil)    ;; '(:midishare :microplayer :libaudiostream :multiplayer :bpfplayer))
 
 (defun enable-player (player)
-  (when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
-             (not (find player *enabled-players*)))
-    (push player *enabled-players*)))
+  ;(when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
+  ;           (not (find player *enabled-players*)))
+  (pushnew player *enabled-players*))
 
 (defun disable-player (player)
-  (when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
-             (find player *enabled-players*))
+  ;(when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
+  (when (find player *enabled-players*)
     (setf *enabled-players* (remove player *enabled-players*))))
 
 ;;; DEFAULT ASSIGNMENTS
 ;;; defined here and there for the different OM classes
 (defmethod players-for-object ((self t)) nil)
 
-(defmacro add-player-for-object (object player)
-  `(let* ((curlist (players-for-object (make-instance ',object)))
-	  (newlist (pushnew ,player curlist)))
-     (defmethod players-for-object ((self ,object)) newlist)))
+(defun add-player-for-object (type player)
+  (let* ((curlist (players-for-object (make-instance type)))
+              (newlist (if (listp player) 
+                           (remove-duplicates (append curlist player))
+                         (pushnew player curlist))))
+    (eval `(defmethod players-for-object ((self ,type)) ',newlist))))
 
 (defmethod enabled-players-for-object ((self t))
   ;;; intersection does not preserve the original order

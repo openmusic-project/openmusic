@@ -661,7 +661,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
      (om-add-subviews (control self) newparams)))
 
 
-(defmethod players-for-object ((self midicontrol)) '(:midishare :bpfplayer))
+(add-player-for-object 'midicontrol '(:midishare :bpfplayer))
 
 (defmethod editor-play/stop ((self midi-bpfEditor))
   (set-edit-param self 'player :bpfplayer)

@@ -9,6 +9,7 @@
 (defmethod player-type ((player (eql :midishare))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
+
 ;;; NEW MIDI PLAYER (NOT YET AVAILABLE)                 
 (defmethod player-name ((player (eql :midishare-rt))) "MidiShare RT")   ;;; A short name
 (defmethod player-desc ((player (eql :midishare-rt))) "experimental real-time MIDI player")   ;;; a description

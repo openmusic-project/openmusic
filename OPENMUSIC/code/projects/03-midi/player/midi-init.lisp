@@ -57,6 +57,7 @@ the recorder, this function is called by a def-load-pointers"
         ;;; set scheduler time to midi time
         ;(om-stop-scheduler)
         ;(defun clock-time () (om-midi-get-time))
+        (enable-player :midishare)
         )
     (om-message-dialog (format nil (om-str :lib-error) "MIDI")))
   ;(init-scheduler)  ;; on demarre quand même le scheduler
@@ -71,6 +72,7 @@ the recorder, this function is called by a def-load-pointers"
    (when *midi-share?*
      ;(close-ms-players) ;;; remettre ?
      (om-midi-exit)
+     (disable-player :midishare)
      (setf *midi-share?* nil))
    )
 

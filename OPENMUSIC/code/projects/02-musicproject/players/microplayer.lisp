@@ -61,7 +61,8 @@
 (defun init-microplayer-app ()
   (setf *micro-player-path* 
         (or (probe-file (om-default-application-path '("MicroPlayer") "bm-microton"))
-            (probe-file (om-external-app nil "MicroPlayer")))))
+            (probe-file (om-external-app nil "MicroPlayer"))))
+  (enable-player :microplayer))
 
 (om-add-init-func 'init-microplayer-app)
 

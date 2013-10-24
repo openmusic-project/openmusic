@@ -5,16 +5,23 @@
 
 (in-package :om)
 
+
+
 (defmethod player-name ((self (eql :libaudiostream))) "LibAudioStream")
 (defmethod player-desc ((self (eql :libaudiostream))) "internal OM Player")
 
+(add-player-for-object 'sound :libaudiostream)
+
 (defun las-open ()
  (if (las-load-library)
-     (las-init-full-system)
+     (progn 
+       (las-init-full-system)
+       (enable-player :libaudiostream))
    (om-message-dialog (format nil (om-str :lib-error) "LibAudioStream"))))
 
 (defun las-close ()
-  (las-close-full-system))
+  (las-close-full-system)
+  (disable-player :libaudiostream))
 
 (om-add-init-func 'las-open)  
 (om-add-exit-cleanup-func 'las-close t)
@@ -77,8 +84,8 @@
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (let ((thesound (car (nth i play-list))))
-            (las-stop (nth i play-list) (tracknum thesound))
-            (las-loop-play (nth i play-list) (tracknum thesound))))))
+              (las-stop thesound (tracknum thesound))
+              (las-loop-play thesound (tracknum thesound))))))
 
 ;;; NOT IN OM PLAYER API
 

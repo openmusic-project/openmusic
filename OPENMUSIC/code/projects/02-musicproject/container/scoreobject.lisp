@@ -47,8 +47,8 @@
 (defclass* sequence* (score-element) () (:icon 230))
 (defclass* metric-sequence (sequence* tonal-object) () (:icon 230))
 
-(defmethod players-for-object ((self score-element)) '(:midishare :midishare-rt :osc-scoreplayer :microplayer))
-(defmethod players-for-object ((self simple-score-element)) '(:midishare :midishare-rt :osc-scoreplayer :microplayer))
+(add-player-for-object 'score-element '(:midishare :midishare-rt :osc-scoreplayer :microplayer))
+(add-player-for-object 'simple-score-element '(:midishare :midishare-rt :osc-scoreplayer :microplayer))
 
 (defclass* note (simple-score-element tonal-object)
   ((midic :initform 6000 :accessor midic :initarg :midic :type number :documentation "pitch (midicents)")

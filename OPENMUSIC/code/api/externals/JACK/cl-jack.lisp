@@ -24,7 +24,10 @@
 (define-foreign-library libjack
   (t (:default #+linux "/usr/lib/libjack" #-linux "/usr/local/lib/libjack")))
 
-(use-foreign-library libjack) 
+(defparameter *jack* nil)
+ 
+(defun init-jack ()
+  (setf *jack* (use-foreign-library libjack)))
 
 ;;; MOST OF THE BELOW IS FFI-WRAPPERS FOR THE JACK-API
 

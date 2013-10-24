@@ -1,10 +1,12 @@
 (in-package :om)
 
+(enable-player :multiplayer)
 
 (defmethod player-name ((self (eql :multiplayer))) "MultiPlayer")
 (defmethod player-desc ((self (eql :multiplayer))) "external Max multi-channel player")
 (defmethod player-special-action ((self (eql :multiplayer))) (launch-multiplayer-app))
 (defmethod player-type ((player (eql :multiplayer))) :UDP)
+
 
 (defvar *multiplayer-out-port* nil)
 (setf *multiplayer-out-port* 7071)

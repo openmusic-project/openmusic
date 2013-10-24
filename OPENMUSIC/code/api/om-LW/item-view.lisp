@@ -179,10 +179,15 @@
 ;  (when (interface-visible-p self)
 ;   (gp::invalidate-rectangle (om-get-view self))))
 
+;;; GETS THE REAL VIEW WHERE WE CAN DRAW IN ETC.
 (defmethod om-get-view ((self om-item-view)) 
   (or 
    (capi::pinboard-object-pinboard self)
    (item-container self)))
+
+;;; GET THE VIEW WE SHOULD USE IN INTERACTIONS
+(defmethod om-get-real-view ((self om-item-view)) self)
+
  
 (defmethod om-set-bg-color ((self om-item-view) color)
   (let ((col (when color (c color))))
