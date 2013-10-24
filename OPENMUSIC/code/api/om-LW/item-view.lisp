@@ -48,11 +48,10 @@
 (defmethod om-item-view-p ((self om-item-view)) t)
 
 
-#+(or linux cocoa)
+#+cocoa
 (defclass om-internal-view (om-transparent-view) ())
-#-(or linux cocoa)
+#-cocoa
 (defclass om-internal-view (om-item-view) ())
-
 
 
 (defmethod capi::pane-has-focus-p ((self om-item-view)) nil)
