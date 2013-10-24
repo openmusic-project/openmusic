@@ -26,10 +26,12 @@
 (defmethod player-params ((player (eql :jackmidi))) nil)   
 (defmethod player-type ((player (eql :jackmidi))) :midi)
 
-(progn
-  (pushnew :jackmidi *all-players*)
-  (pushnew :jackmidi *enabled-players*)
+(defun init-jack-midi-player ()
+  ;; (pushnew :jackmidi *all-players*)
+  ;; (pushnew :jackmidi *enabled-players*)
   (enable-player :jackmidi))
+
+(om-add-init-func 'init-jack-midi-player)
 
 #+linux (mapc #'(lambda (pl) (disable-player pl))
 	      '(:microplayer :libaudiostream :multiplayer :midishare))
@@ -38,16 +40,16 @@
 
 ;; setup jackmidi as option for relevant classes
 
-(let* ((curlist (players-for-object (make-instance 'simple-score-element)))
-       (newlist (pushnew :jackmidi curlist)))
-  (defmethod players-for-object ((self simple-score-element)) newlist))
+;; (let* ((curlist (players-for-object (make-instance 'simple-score-element)))
+;;        (newlist (pushnew :jackmidi curlist)))
+;;   (defmethod players-for-object ((self simple-score-element)) newlist))
 
-(let* ((curlist (players-for-object (make-instance 'score-element)))
-       (newlist (pushnew :jackmidi curlist)))
-  (defmethod players-for-object ((self score-element)) newlist))
+;; (let* ((curlist (players-for-object (make-instance 'score-element)))
+;;        (newlist (pushnew :jackmidi curlist)))
+;;   (defmethod players-for-object ((self score-element)) newlist))
 
-(add-player-for-object score-element :jackmidi)
-(add-player-for-object simple-score-element :jackmidi)
+(add-player-for-object 'score-element :jackmidi)
+(add-player-for-object 'simple-score-element :jackmidi)
 
 ;; hook into global pool of seqs for running cl-jack-client
 
@@ -63,6 +65,17 @@
   (if (not *jack-use-om-scheduler*)
       (progn (jack-possibly-init-queue-for-this-player object)
 	     (jack-send-to-jack object at interval object))
+      (call-next-method)))
+
+;; these are used when using om's internal scheduler:
+
+(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object container) at interval)
+  (if *jack-use-om-scheduler*
+      (let ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object))))))
+	(when (or (not interval) note-in-interval?)
+	  (mapc #'(lambda (sub)
+		    (prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
+		(inside object))))
       (call-next-method)))
 
 (defun jack-send-to-jack (object at interval queue)
@@ -88,17 +101,6 @@
 	(vel (vel note))
 	(chan (chan note)))
     (cl-jack::jack-play-event seq start dur noteno vel chan)))
-
-;; these are used when using om's internal scheduler:
-
-(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object container) at interval)
-  (if *jack-use-om-scheduler*
-      (let ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object))))))
-	(when (or (not interval) note-in-interval?)
-	  (mapc #'(lambda (sub)
-		    (prepare-to-play engine player sub (+ at (offset->ms sub)) interval))
-		(inside object))))
-      (call-next-method)))
 
 (defmethod player-play-object ((engine (eql :jackmidi)) (object note) &key interval)
   (declare (ignore interval))
@@ -129,10 +131,10 @@
   (print (format nil "~A : continue" engine))
   (call-next-method))
 
-(defmethod player-loop ((engine (eql :jackmidi)) &optional play-list)
+(defmethod player-loop ((engine (eql :jackmidi)) player &optional play-list)
   (mapc #'(lambda (item)
 	    (if *jack-use-om-scheduler*
-		(prepare-to-play engine  (car (last item)) (first item) 0 (second item))
+		(prepare-to-play engine player (first item) 0 (second item))
 		(jack-send-to-jack (first item) 0 (second item) (first item))))
 	play-list))
 

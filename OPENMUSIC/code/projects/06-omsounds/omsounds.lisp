@@ -52,7 +52,6 @@
 
     "multi;multiplayer"
     #+linux "mplayer;mplayer"
-    #+linux "SC3;SCaudioplayer"
     #+linux "JACK;jack-audio-player"
  ))
 

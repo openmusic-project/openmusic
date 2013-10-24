@@ -10,7 +10,7 @@
 
 
 (defvar *app-name+version* "OM")
-(setf *app-name+version* (concatenate 'string "OM " *version-str*))
+(setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
 
 
@@ -196,11 +196,9 @@
                                         )))
 
 #+win32
-(setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2)
-                                     :name *app-name+version* :type "exe"))
-
-
-(setf *debugger-hook* 'oa::om-debugger-hook)
+(setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name *app-name+version* :type "exe"))
+#+linux
+(setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name *app-name+version*))
 
 ;;; INIT FUNCALL
 (defun init-om ()
@@ -272,3 +270,7 @@
 
 ;;; WIN :
 ; lispworks-5-1-0-x86-win32.exe -build deliver.lisp
+;
+
+;;; LINUX : 
+; lispworks-6-1-0-x86-linux -build deliver.lisp		 ; this file

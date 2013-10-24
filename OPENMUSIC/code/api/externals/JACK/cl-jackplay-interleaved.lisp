@@ -24,6 +24,9 @@
 
 (defparameter *jack-sndfile-handle* nil)
 
+(unless (find :libsndfile *features*)
+  (error "jackplay depends on libsndfile"))
+
 (defun jack-open-sound (path)
   "sets the current sound read in, closes any previously open at the same handle for now"
   (let (sf-handle sf-chans)

@@ -27,15 +27,14 @@
 (defmethod player-params ((player (eql :fluidsynth))) nil)   
 (defmethod player-type ((player (eql :fluidsynth))) :midi)   
 
-(progn
-  (pushnew :fluidsynth *all-players*)
-  (enable-player :fluidsynth))
+(defun init-fluid-player ()
+  ;; (pushnew :fluidsynth *all-players*)
+  (enable-player :fluidsynth)
+  ;; setup fluidsynth as optional player for relevant classes
+  (add-player-for-object 'simple-score-element :fluidsynth)
+  (add-player-for-object 'score-element :fluidsynth))
 
-;; setup fluidsynth as optional player for relevant classes
-
-(add-player-for-object simple-score-element :fluidsynth)
-(add-player-for-object score-element :fluidsynth)
-
+(om-add-init-func 'init-fluid-player)
 
 ;; container is already defined, so fine to specialize here:
 

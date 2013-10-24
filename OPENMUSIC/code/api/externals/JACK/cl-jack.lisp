@@ -5,29 +5,34 @@
 ;;it under the terms of the GNU Lesser General Public License as published by
 ;;the Free Software Foundation; either version 2.1 of the License, or
 ;;(at your option) any later version.
-;;  
+;;
 ;;This program is distributed in the hope that it will be useful,
 ;;but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;GNU Lesser General Public License for more details.
-;;  
+;;
 ;;You should have received a copy of the GNU Lesser General Public License
-;;along with this program; if not, write to the Free Software 
+;;along with this program; if not, write to the Free Software
 ;;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;
 ;;Author: Anders Vinjar
 
-;;(hqn-web::browse "file://localhost/usr/share/doc/jack-audio-connection-kit-devel-1.9.9.5/html/files.html")
+;;(hqn-web::browse "http://jackaudio.org/files/docs/html/files.html")
 
 (in-package :cl-jack)
 
 (define-foreign-library libjack
-  (t (:default #+linux "/usr/lib/libjack" #-linux "/usr/local/lib/libjack")))
+  (t (:default "libjack")))
 
 (defparameter *jack* nil)
  
 (defun init-jack ()
   (setf *jack* (use-foreign-library libjack)))
+
+(setf *jack-loaded*
+      (handler-case (progn (use-foreign-library libjack) t)
+	(error () (progn (print (format nil "could not load foreign-library libjack"))
+			 nil))))
 
 ;;; MOST OF THE BELOW IS FFI-WRAPPERS FOR THE JACK-API
 
@@ -37,7 +42,6 @@
 ;;(jack-get-version-string)
 
 (defctype size_t :unsigned-int)
-
 (defctype jack_nframes_t :uint32)
 (defctype jack_port_t :pointer)
 (defctype jack_options_t :pointer)
@@ -182,12 +186,12 @@
 
 ;;vec[0].len
 (defun rb-data-len (arr index)
-  (foreign-slot-value			
+  (foreign-slot-value
    (mem-aref arr 'jack_ringbuffer_data_t index)
    '(:struct jack_ringbuffer_data_t)
    'len))
 
-;;(rb-data-len vec 0) 
+;;(rb-data-len vec 0)
 (defun rb-data-len-p (arr index)	;len=0 := nothing to get
   (plusp (rb-data-len arr index)))
 
@@ -214,7 +218,7 @@
 (defcfun "jack_ringbuffer_write" size_t
   (rb (:pointer (:struct jack_ringbuffer_t)))
   (src (:pointer :char))
-  (cnt size_t))	       
+  (cnt size_t))
 
 (defcfun "jack_ringbuffer_get_read_vector" :void
   (rb (:pointer (:struct jack_ringbuffer_t)))
@@ -231,6 +235,6 @@
 ;;; end of wrappers for jack/ringbuffer.h
 
 
-;; provide one default global client-name 
+;; provide one default global client-name
 
 (defparameter *CLJackClient* nil)

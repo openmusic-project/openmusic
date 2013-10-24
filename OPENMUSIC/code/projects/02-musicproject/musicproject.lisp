@@ -104,8 +104,7 @@
         "osc;send"
         "osc;receive"
         "osc;osc-events"
-        "players;microplayer"
-        ;; "players;SCeventplayer"
+        #-linux "players;microplayer"
 
         "editor;scoreeditor;pagination"
         "editor;musicpreferences"

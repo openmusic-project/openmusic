@@ -50,7 +50,6 @@
   #+(or darwin macos macosx) 
   "/Library/Frameworks/SDIF.framework/SDIF"
   #+linux
-  ;; "/usr/lib/libsdif.so"
   (or (probe-file "/usr/local/lib/libsdif.so")
       "libsdif.so"))
 

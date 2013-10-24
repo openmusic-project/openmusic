@@ -29,13 +29,12 @@
 (defmethod player-type ((engine (eql :jackaudio))) :JACK-client)
 (defmethod player-desc ((engine (eql :jackaudio))) "Audio player for JACK")
 
-(defun init-jackplayer ()
+(defun init-jack-audio-player ()
   ;; enable jackplayer for sound class:
   (pushnew :jackaudio *enabled-players*)
-  (add-player-for-object sound :jackaudio))
+  (add-player-for-object 'sound :jackaudio))
 
-;;(init-jackplayer)
-(om-add-init-func 'init-jackplayer)
+(om-add-init-func 'init-jack-audio-player)
 
 
 ;; using 'sndlasptr-slot from 'om-sound class to hold jack-sf struct:

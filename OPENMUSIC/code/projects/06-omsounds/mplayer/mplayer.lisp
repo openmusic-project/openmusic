@@ -45,7 +45,7 @@
   ;; enable mplayer-engine for sound class:
   
   (pushnew :mplayer *enabled-players*)
-  (add-player-for-object sound :mplayer))
+  (add-player-for-object 'sound :mplayer))
 
 ;;(init-mplayer-app)
 (om-add-init-func 'init-mplayer-app)
@@ -58,7 +58,7 @@
 (setq *mplayer-path* (or (probe-file "/usr/local/bin/mplayer") "mplayer"))
 
 (defvar *mplayers* (make-hash-table))
-(defstruct mplayer-proc pid iostream error-stream paused)
+(defstruct mplayer-proc pid iostream error-stream paused loop-points)
 
 ;; send cmd to running mplayer-proc.  If its not running already
 ;; launch a new one and return struct for bookkeeping
@@ -123,6 +123,7 @@
 						       0))))
 
 (defmethod player-stop-object ((engine (eql :mplayer)) object &key interval)
+  (declare (ignore interval))
   (mplayer-send-cmd object "vol 0.0 1")
   (mplayer-send-cmd object "stop")
   (mplayer-send-cmd object "quit")
@@ -143,6 +144,7 @@
   nil)
 
 (defmethod player-continue-object ((engine (eql :mplayer)) object &key interval)
+  (declare (ignore interval))
   (when (mplayer-proc-paused (gethash object *mplayers*))
     (mplayer-send-cmd object "pause")	;mplayers pause-cmd is a toggle
     (setf (mplayer-proc-paused (gethash object *mplayers*)) nil)))
@@ -152,21 +154,44 @@
     (dolist (snd playlist) (player-continue-object engine snd)))
   nil)
 
-;;; why isnt this loaded at startup?
 
-(defvar *mplayer-loop-points* '())
+(defmethod player-pause-object ((engine (eql :mplayer)) object &key interval)
+  (unless (mplayer-proc-paused (gethash object *mplayers*))
+    (mplayer-send-cmd object "pause")
+    (setf (mplayer-proc-paused (gethash object *mplayers*)) t)))
+
+(defmethod player-pause ((engine (eql :mplayer)) &optional playlist)
+  (when playlist
+    (dolist (snd playlist) (player-pause-object engine snd)))
+  nil)
+
+;; (defvar *mplayer-loop-points* '())
+
+;; (defmethod player-set-loop-object ((engine (eql :mplayer)) &optional start end)
+;;   (setf (mplayer-proc-loop-points (gethash object *mplayers*)) (list start end)))
 
 (defmethod player-set-loop ((engine (eql :mplayer)) &optional start end)
-  ;;(break)
-  (print (list 'player-set-loop start end))
-  (setf *mplayer-loop-points* (mapcar #'(lambda (ms) (/ ms 1000.0)) (list start end)))
-  (print (format nil "~A : set loop ~A" engine *mplayer-loop-points*))
+  (print (list 'player-set-loop engine))
+  ;;(print (list 'player-set-loop start end))
+  ;;(setf (mplayer-proc-loop-points (gethash object *mplayers*)) (list start end))
   nil)
 
-(defmethod player-loop ((engine (eql :mplayer)) &optional play-list)
+;; (defmethod player-loop-object ((engine (eql :mplayer)) &optional play-list)
+;;   (print (list 'player-loop-object play-list))
+;;   (dolist (object play-list)
+;;     (mplayer-send-cmd object (format nil "seek ~A 2" (car (mplayer-proc-loop-points (gethash object *mplayers*))))))
+;;   nil)
+
+(defmethod player-loop ((engine (eql :mplayer)) player &optional play-list)
   (print (list 'player-loop play-list))
   (dolist (snd play-list)
-    (mplayer-send-cmd snd (format nil "seek ~A 2" (car *mplayer-loop-points*))))
-  nil)
+    (mplayer-send-cmd (if (listp snd) (first snd) snd) (format nil "seek ~A 2" (car *mplayer-loop-points*))))
+  nil) 
+
+;; (defmethod player-loop ((engine (eql :mplayer)) &optional play-list)
+;;   (print (list 'player-loop play-list))
+;;   (when playlist
+;;     (dolist (snd play-list) (player-loop-object engine snd)))
+;;   nil)
 
 
