@@ -171,13 +171,14 @@
 |#
 
 (defmethod om-interior-size ((self om-abstract-window))
-  (if (capi::interface-visible-p (capi::pane-layout self))
+  (if t ;(capi::interface-visible-p (capi::pane-layout self))
       ;;; IF THE WINDOW IS VISIBLE
       (multiple-value-bind (w h)
           (capi::pinboard-pane-size (capi::pane-layout self))
         (om-make-point w h))
     ;;; ELSE (REMOVE THIS SOMEDAY...)
     (progn
+      ;(print "XXXXXXXXXXXXXXXXXXX")
     #+(or linux win32)(om-subtract-points (om-view-size self) (om-make-point 0 30))
     #-(or linux win32)(om-view-size self)
     )))

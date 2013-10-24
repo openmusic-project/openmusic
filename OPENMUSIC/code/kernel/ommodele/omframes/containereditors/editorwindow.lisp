@@ -256,7 +256,7 @@
 ;EDITOR
 ;=============
 
-(omg-defclass EditorView (OMContainerFrame select-object) ; (OMSimpleFrame) 
+(defclass EditorView (OMContainerFrame select-object) ; (OMSimpleFrame) 
    ((mini-editor-p :initform nil :initarg :mini-editor-p :accessor mini-editor-p)
     (panel :initform nil :initarg :panel :accessor panel)
     (text-view :initform nil :accessor text-view)
