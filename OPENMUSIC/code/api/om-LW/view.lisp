@@ -77,6 +77,8 @@
 (defclass om-view-pinboard-object (capi::pinboard-object) ())
 
 (defmethod om-get-view ((self om-view-pinboard-object)) (capi::element-parent self))
+;;; GET THE VIEW WE SHOULD USE IN INTERACTIONS
+(defmethod om-get-real-view ((self om-view-pinboard-object)) (capi::element-parent self))
 
 (defmethod set-layout ((view om-view))
   (setf (capi:layout-description view)

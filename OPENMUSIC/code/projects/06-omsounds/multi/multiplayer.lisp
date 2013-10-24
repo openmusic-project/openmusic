@@ -7,7 +7,8 @@
 (defmethod player-special-action ((self (eql :multiplayer))) (launch-multiplayer-app))
 (defmethod player-type ((player (eql :multiplayer))) :UDP)
 
-
+(add-player-for-object 'sound :multiplayer)
+ 
 (defvar *multiplayer-out-port* nil)
 (setf *multiplayer-out-port* 7071)
 (defvar *multiplayer-in-port* nil)

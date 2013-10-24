@@ -164,7 +164,7 @@
 	(:drop
 	 (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
 	   (capi::current-pointer-position :relative-to self :pane-relative-p t)
-	   (let ((dropview (or (om-get-view (capi::pinboard-object-at-position self x y))
+	   (let ((dropview (or (om-get-real-view (capi::pinboard-object-at-position self x y))
                                self)))
 	     (setf *last-pinboard-under-mouse* nil)
 	     (if (or 

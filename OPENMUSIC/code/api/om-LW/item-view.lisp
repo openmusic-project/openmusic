@@ -187,6 +187,7 @@
 
 ;;; GET THE VIEW WE SHOULD USE IN INTERACTIONS
 (defmethod om-get-real-view ((self om-item-view)) self)
+(defmethod om-get-real-view ((self t)) (om-get-view self))
 
  
 (defmethod om-set-bg-color ((self om-item-view) color)
