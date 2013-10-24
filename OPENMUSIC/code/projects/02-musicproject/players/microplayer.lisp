@@ -195,7 +195,9 @@
    (close-microplayer)
    (micro-reset))
 
+
 (defmethod player-loop ((self (eql :microplayer)) player &optional play-list)
+  (declare (ignore player))
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
   (setf *index-packets* 0)
   (send-200)

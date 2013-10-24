@@ -73,11 +73,12 @@
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 (defmethod player-loop ((self (eql :libaudiostream)) player &optional play-list)
-  (ignore player)
+  (declare (ignore player))
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
-            (las-stop (nth i play-list) (tracknum (nth i play-list)))
-            (las-loop-play (nth i play-list) (tracknum (nth i play-list))))))
+            (let ((thesound (car (nth i play-list))))
+            (las-stop (nth i play-list) (tracknum thesound))
+            (las-loop-play (nth i play-list) (tracknum thesound))))))
 
 ;;; NOT IN OM PLAYER API
 

@@ -8,6 +8,7 @@
    (loop-play :accessor loop-play :initform nil)
    (start-time :accessor start-time :initform 0)
    (stop-time :accessor stop-time :initform 0)
+   (play-interval  :accessor play-interval :initform nil) ;;; check if this is necessary or if we can do everything with start-time and end-time....
    (player-offset :accessor player-offset :initform 0)
    (ref-clock-time :accessor ref-clock-time :initform 0)
    ;;; CALLBACKS
@@ -68,7 +69,9 @@
   (prepare-to-play engine player obj at interval))
   
 
-(defmethod general-play ((player omplayer) &key (start-t 0) (end-t 3600000))
+(defmethod general-play ((player omplayer)) ;;; &key (start-t 0) (end-t 3600000))
+  (let ((start-t (or (car (play-interval player)) 0))
+            (end-t (or (cadr (play-interval player )) 3600000)))
   (cond ((equal (state player) :play)
          ;;; prolonge la durée de vie du player
          (setf (stop-time player) (max (stop-time player) end-t)))
@@ -87,18 +90,8 @@
                                      (loop
                                       (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
                                             (funcall (cdr (pop (events player)))))
-                                      (if (> (get-player-time player) (stop-time player))
-                                          (if (loop-play player)
-                                              (progn 
-                                                ;(print "loop")
-                                                (setf (start-time player) start-t
-                                                      (ref-clock-time player) (clock-time))
-                                                ;;; ask every engine to reschedule their play-list
-                                                (mapcar #'(lambda (engine play-list) (player-loop engine player play-list))
-                                                        (engines player)
-                                                        (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
-                                                )
-                                            (general-stop player)))
+                                      (when (> (get-player-time player) (stop-time player))
+                                        (if (loop-play player) (general-loop player) (general-stop player)))
                                       (sleep (scheduler-tick player))
                                       )))))
            
@@ -108,9 +101,7 @@
                    (om-run-process "editor player callback"
                                    #'(lambda ()
                                        (loop 
-                                        (funcall (callback-fun player) 
-                                                 (caller player) 
-                                                 (get-player-time player))
+                                        (funcall (callback-fun player) (caller player) (get-player-time player))
                                         (sleep (callback-tick player))
                                         )))
                    )))
@@ -129,7 +120,7 @@
            
            ;(om-delayed-funcall stop-time #'player-stop player obj)
          )
-         ))
+         )))
 
 (defmethod general-pause ((player omplayer))
   (mapcar #'player-pause (engines player)
@@ -145,6 +136,18 @@
   (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
+
+(defmethod general-loop ((player omplayer))
+       ;(print "general loop")
+  (setf (stop-time player) (cadr (play-interval player)))
+  (setf (start-time player) (or (car (play-interval player)) 0)
+        (ref-clock-time player) (clock-time))
+  ;;; ask every engine to reschedule their play-list
+  (mapcar #'(lambda (engine play-list) (player-loop engine player play-list))
+          (engines player)
+          (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
+  )
+
 
 (defmethod general-stop ((player omplayer))
   (mapcar #'player-stop (engines player)
@@ -297,6 +300,7 @@
                 ))
           boxlist)
   (when *play-boxes*
+    (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (value box)))))
     (general-play *general-player* :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))))
 
 
@@ -396,9 +400,11 @@
                   )))
       (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
       (schedule-editor-contents self)
-      (general-play (player self)
-                    :start-t (or (car interval) 0)
-                    :end-t (or (cadr interval) (get-obj-dur obj))))
+      (setf (play-interval (player self)) (list  (or (car interval) 0) (or (cadr interval) (get-obj-dur obj))))
+      (general-play (player self) 
+                    ;:start-t (or (car interval) 0)
+                    ;:end-t (or (cadr interval) (get-obj-dur obj))
+                    ))
     ))
 
 
@@ -436,7 +442,9 @@
   (general-stop (player self))
   (call-next-method))
 
-
+(defmethod update-player-interval (editor interval) nil)
+(defmethod update-player-interval ((editor play-editor-mixin) interval) 
+  (setf (play-interval (player editor)) interval))
 
 
 ;;;===================================
@@ -469,6 +477,7 @@
 
 (defmethod view-turn-pages-p ((self cursor-play-view-mixin)) t)
 
+
 ;--------------------
 ; INTERVAL SELECTION
 ;--------------------
@@ -499,6 +508,7 @@
         (progn
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
+      (update-player-interval (om-view-container self) (or (cursor-interval self) (list (cursor-pos self) nil)))
       (om-invalidate-view self))))
 
 
