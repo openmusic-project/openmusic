@@ -133,10 +133,11 @@
 
 (defmethod player-loop ((engine (eql :jackmidi)) player &optional play-list)
   (mapc #'(lambda (item)
-	    (if *jack-use-om-scheduler*
-		(prepare-to-play engine player (first item) 0 (second item))
-		(jack-send-to-jack (first item) 0 (second item) (first item))))
-	play-list))
+	    (let ((interval (play-interval player)))
+              (if *jack-use-om-scheduler*
+                  (prepare-to-play engine player item 0 interval)
+		(jack-send-to-jack item 0 interval item)))
+	play-list)))
 
 #|
 
