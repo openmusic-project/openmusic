@@ -22,9 +22,9 @@
     ))
 
 
-(defmethod get-obj-dur ((self sound-data)) (round (las::GetLengthSound (ptr self)) 44.1))
+(defmethod get-obj-dur ((self sound-data)) (round (las::GetLengthSound (ptr self)) (/ las-srate 1000.0)))
 
-(defmethod extent->ms ((self sound-data)) (round (las::GetLengthSound (ptr self)) 44.1))
+(defmethod extent->ms ((self sound-data)) (round (las::GetLengthSound (ptr self)) (/ las-srate 1000.0)))
 
 
 (defmethod allowed-in-maq-p ((self sound-data)) t)
