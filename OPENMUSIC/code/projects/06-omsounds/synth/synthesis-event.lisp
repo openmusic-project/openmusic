@@ -85,7 +85,7 @@
            (setf (Lcontrols rep)
                  (list ,.(loop for con in (Lcontrols self)
                                collect (save-array-control self con nc))))
-           (setf (action-time rep) ,(action-time self))
+           (setf (action-time rep) ,(omng-save (action-time self)))
            (setf (data rep) ,(omng-save (data self)))
            rep))))
 

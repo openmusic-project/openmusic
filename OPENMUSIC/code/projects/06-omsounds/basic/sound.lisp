@@ -221,11 +221,20 @@ Press 'space' to play/stop the sound file.
 (defmethod* objfromobjs ((self pathname) (type sound))
    (load-sound-file self))
 
-(defun load-sound (name &optional track)
+;(defun load-sound (name &optional track)
+;  (let ((snd (om-load-if name 'load-sound-file)))
+;    (unless snd (setf snd (make-instance 'sound :filename name)))
+;    (when (and snd track) (setf (tracknum snd) track))
+;    snd))
+
+(defun load-sound (name &optional track vol pan)
   (let ((snd (om-load-if name 'load-sound-file)))
     (unless snd (setf snd (make-instance 'sound :filename name)))
     (when (and snd track) (setf (tracknum snd) track))
+    (when (and snd vol) (setf (vol snd) vol))
+    (when (and snd pan) (setf (pan snd) pan))
     snd))
+
 
 ;======================
 ; EDITOR
