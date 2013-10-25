@@ -1,61 +1,7 @@
 (in-package :om)
 
-(defparameter *enabled-players* nil)  
-
-(defun enable-player (player)
-  (pushnew player *enabled-players*))
-
-(defun disable-player (player)
-  (when (find player *enabled-players*)
-    (setf *enabled-players* (remove player *enabled-players*))))
-
-
-;(defun add-player-for-object (type player)
-;  (let* ((curlist (players-for-object (make-instance type)))
-;              (newlist (if (listp player) 
-;                           (remove-duplicates (append curlist player))
-;                         (pushnew player curlist))))
-;    (eval `(defmethod players-for-object ((self ,type)) ',newlist))))
-
-(defvar *player-assignations* nil)
-
-(defun add-player-for-object (type player)
-  (if (find type *player-assignations* :key 'car)
-    (let* ((pos (position type *player-assignations* :key 'car))
-                (players (cadr (nth pos *player-assignations*))))
-      (setf (cadr (nth pos *player-assignations*)) (remove-duplicates (append players (list! player)))))
-    (push (list type (list! player)) *player-assignations*)))
-
-;;; DEFAULT ASSIGNMENTS
-;;; defined here and there for the different OM classes
-(defmethod players-for-object ((self t)) 
-  (let ((cl-list (mapcar 'class-name (get-class-precedence-list (class-of self)) ))
-        (players nil))
-      (loop for cl in cl-list while (not players) do
-            (setf players (cadr (find cl *player-assignations* :key 'car))))
-      players))
-
-(defmethod enabled-players-for-object ((self t))
-  ;;; intersection does not preserve the original order
-  (loop for p in (players-for-object self)
-        when (find p *enabled-players*)
-        collect p))
-
-
-
-
- 
-;;; METHODS TO REDEFINE FOR EVERY PLAYER                   
-(defmethod player-name ((player t)) "XXX")   ;;; A short name
-(defmethod player-desc ((player t)) "undefined player")   ;;; a description
-(defmethod player-special-action ((player t)) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
-(defmethod player-params ((player t)) nil)   ;;; the default values for the player params
-(defmethod player-type ((player t)) nil)   ;;; communication protocol (:midi / :udp)
-
-
 ;;; FOR THE REFERENCE IF IT IS NOT AN EDITOR
 (defmethod update-controls-view ((self t)) nil)
-
 
 ;; called by 'reference' (e.g. Box or Editor) to change the player
 ;; reference maty have stored options for the other players as well
