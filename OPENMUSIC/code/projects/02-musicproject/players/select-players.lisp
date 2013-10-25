@@ -1,36 +1,50 @@
 (in-package :om)
 
-;(defparameter *all-players* '(:midishare :midishare-rt :osc-scoreplayer :microplayer :libaudiostream :multiplayer :jack :bpfplayer))
-(defparameter *enabled-players* nil)    ;; '(:midishare :microplayer :libaudiostream :multiplayer :bpfplayer))
+(defparameter *enabled-players* nil)  
 
 (defun enable-player (player)
-  ;(when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
-  ;           (not (find player *enabled-players*)))
   (pushnew player *enabled-players*))
 
 (defun disable-player (player)
-  ;(when (and (or (find player *all-players*) (om-beep-msg (format nil "player: ~A does not exist" player)))
   (when (find player *enabled-players*)
     (setf *enabled-players* (remove player *enabled-players*))))
 
-;;; DEFAULT ASSIGNMENTS
-;;; defined here and there for the different OM classes
-(defmethod players-for-object ((self t)) nil)
+
+;(defun add-player-for-object (type player)
+;  (let* ((curlist (players-for-object (make-instance type)))
+;              (newlist (if (listp player) 
+;                           (remove-duplicates (append curlist player))
+;                         (pushnew player curlist))))
+;    (eval `(defmethod players-for-object ((self ,type)) ',newlist))))
+
+(defvar *player-assignations* nil)
 
 (defun add-player-for-object (type player)
-  (let* ((curlist (players-for-object (make-instance type)))
-              (newlist (if (listp player) 
-                           (remove-duplicates (append curlist player))
-                         (pushnew player curlist))))
-    (eval `(defmethod players-for-object ((self ,type)) ',newlist))))
+  (if (find type *player-assignations* :key 'car)
+    (let* ((pos (position type *player-assignations* :key 'car))
+                (players (cadr (nth pos *player-assignations*))))
+      (setf (cadr (nth pos *player-assignations*)) (remove-duplicates (append players (list! player)))))
+    (push (list type (list! player)) *player-assignations*)))
+
+;;; DEFAULT ASSIGNMENTS
+;;; defined here and there for the different OM classes
+(defmethod players-for-object ((self t)) 
+  (let ((cl-list (mapcar 'class-name (get-class-precedence-list (class-of self)) ))
+        (players nil))
+      (loop for cl in cl-list while (not players) do
+            (setf players (cadr (find cl *player-assignations* :key 'car))))
+      players))
 
 (defmethod enabled-players-for-object ((self t))
   ;;; intersection does not preserve the original order
   (loop for p in (players-for-object self)
         when (find p *enabled-players*)
         collect p))
- 
 
+
+
+
+ 
 ;;; METHODS TO REDEFINE FOR EVERY PLAYER                   
 (defmethod player-name ((player t)) "XXX")   ;;; A short name
 (defmethod player-desc ((player t)) "undefined player")   ;;; a description
