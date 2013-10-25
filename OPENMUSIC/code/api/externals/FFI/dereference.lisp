@@ -1,5 +1,7 @@
 (in-package :oa)
 
+;;; VERY IMPORTANT OTHERWISE ALL SDIF-WRITE CRASH OM !!!
+
 ;; redefinitions using CFFI
 ;; previously cffi::%mem-set
 (defun om-write-ptr (ptr pos type value) 

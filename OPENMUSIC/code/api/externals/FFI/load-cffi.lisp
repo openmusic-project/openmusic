@@ -41,3 +41,8 @@
 (pushnew :cffi *features*)
 (provide :cffi)
 (asdf:load-system :cffi)
+
+(compile-file-if-needed (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference" :type "lisp")))
+(load (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference"))
+
+

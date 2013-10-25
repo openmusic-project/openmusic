@@ -69,8 +69,9 @@
 (defun om-free-pointer (ptr)
   (fli::free-foreign-object ptr))
 
+;;; !!! does not work very: crashes a lot on Mac, e.g. with SDIF files
 (defun om-write-ptr (ptr pos type value)
-  (setf (fli:dereference ptr :type type :index pos) value))
+  (setf (fli:dereference  ptr :type type :index pos) value))
 
 (defun om-read-ptr (ptr pos type)
   (fli:dereference ptr :type type :index pos))

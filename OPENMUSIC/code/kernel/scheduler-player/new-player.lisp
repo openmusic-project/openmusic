@@ -336,7 +336,6 @@
 
 (defmethod play-obj? ((self t)) (allowed-in-maq-p self))
 
-
 (defmethod play-boxes ((boxlist list))
   (mapcar #'(lambda (box)
               (when (play-obj? (value box))
