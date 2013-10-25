@@ -53,18 +53,36 @@
 
 (defmethod* Play ((self simple-container) &key (player t) (approx 2) interval port)
    (setf port (verify-port port))
-   (PlayAny player self :approx approx :port port :interval interval))
+   (when (play-obj? self)
+     (player-schedule *general-player*
+                      self 
+                      (car (players-for-object self)) :at (get-player-time *general-player*)))
+   (general-play *general-player*))
 
 (defmethod* Play ((self list) &key (player t) (approx 2) interval port)
    (when self
      (setf port (verify-port port))
-     (PlayAny player self :approx approx :port port :interval interval)))
+     (loop for objs in self do
+           (Play objs :player player :approx approx :port port :interval interval))))
 
 (defmethod* Stop ((setf t))
   :icon 229
-  (Stop-Player *general-player*))
+  (general-stop *general-player*))
 
-
+(defmethod play-boxes ((boxlist list))
+  (mapcar #'(lambda (box)
+              (when (play-obj? (value box))
+                (player-schedule *general-player*
+                                 (value box) 
+                                 (get-edit-param box 'player) :at (get-player-time *general-player*))
+                (setf (play-state box) t)
+                (push box *play-boxes*)
+                ))
+          boxlist)
+  (when *play-boxes*
+    (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (value box)))))
+    (general-play *general-player*) ;;; :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))
+    ))
 
 ;==================================================
 ;Prepare to play

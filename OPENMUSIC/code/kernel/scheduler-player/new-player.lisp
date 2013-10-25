@@ -442,7 +442,7 @@
       (setf (callback-fun (player self))
             #'(lambda (editor time)
                 (handler-bind ((error #'(lambda (e) 
-                                          (print e)
+                                          ;(print e)
                                           (om-kill-process (callback-process (player self)))
                                           (abort e))))
                   (play-editor-callback editor time)
