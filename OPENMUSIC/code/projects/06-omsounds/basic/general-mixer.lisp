@@ -22,7 +22,7 @@
 
 ;;; which players can the audio-mixer control ?
 ;;; the first in the list will be the default
-(add-player-for-object 'mixer #+(or macos win32) '(:libaudiostream) #+linux '(:jackaudio))
+(add-player-for-object 'mixer #+(or macosx win32) '(:libaudiostream) #+linux '(:jackaudio))
 
 (defparameter *audio-mixer* nil)
 (defparameter *audio-n-channels* nil)
@@ -38,7 +38,7 @@
                                            :mixer-presets (init-genmixer-values)
                                            :mixer-current-preset 0))
         (setf  
-         (mixer-player *audio-mixer*) (enabled-players-for-object  *audio-mixer*)
+         (mixer-player *audio-mixer*) (car (enabled-players-for-object *audio-mixer*))
          (mixer-values *audio-mixer*)  (copy-tree (cadr (nth (mixer-current-preset *audio-mixer*) 
                                                              (mixer-presets *audio-mixer*)))))
         

@@ -153,7 +153,7 @@
 
 ;;;===========================================
 
-(defmethod player-change-channel-vol ((player (eql :libaudiostream)) channel value) 
+(defmethod player-change-channel-vol ((player (eql :libaudiostream)) channel value)
   (las-change-channel-vol-visible channel value))
 
 (defmethod player-change-channel-pan ((player (eql :libaudiostream)) channel value) 
