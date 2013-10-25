@@ -33,9 +33,9 @@
 
 ; (init-mixer)
 
-(defun init-mixer ()
+(defun init-mixer (&optional vals)
         (setf *audio-mixer* (make-instance 'mixer 
-                                           :mixer-presets (init-genmixer-values)
+                                           :mixer-presets (or vals (init-genmixer-values))
                                            :mixer-current-preset 0))
         (setf  
          (mixer-player *audio-mixer*) (car (enabled-players-for-object *audio-mixer*))
@@ -57,6 +57,11 @@
 (defun save-presets-in-preferences (mixer prefmodule pref-key)
        (set-pref (find-pref-module prefmodule) pref-key (mixer-presets mixer)))
 
+(defun put-audio-mixer-values (prefvals)
+  (if (and prefvals (> (length prefvals) 1))
+      (init-mixer prefvals)
+    (init-mixer))
+  (apply-mixer-values))
 
 ;;;==================================
 ;;; WINDOW
