@@ -7,23 +7,60 @@
 (in-package :om)
 
 (defvar *general-mixer-window* nil)
-(defvar *general-mixer-values* nil)
-(defvar *general-mixer-current-preset* 0)
+;(defvar *general-mixer-values* nil)
+;(defvar *general-mixer-current-preset* 0)
 ;(setf *general-mixer-values* '((0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100)))
 ;(setf *general-mixer-presets* (init-genmixer-values))
 
-(defun init-genmixer-values ()
-  (list (list "------------"
-              (loop for i from 0 to (- las-channels 1) collect
-                    (list 0 100)))))
 
-(defun get-default-values ()
-  (loop for i from 0 to (- las-channels 1) collect
-        (list 0 100)))
+(defclass mixer () 
+  ((mixer-player :initform nil :initarg :mixer-player :accessor mixer-player)
+   (mixer-presets :initform nil :initarg :mixer-presets :accessor mixer-presets)
+   (mixer-current-preset :initform 0 :initarg :mixer-current-preset :accessor mixer-current-preset)
+   (mixer-values :initform nil :initarg :mixer-values :accessor mixer-values)
+   ))
+
+;;; which players can the audio-mixer control ?
+;;; the first in the list will be the default
+(add-player-for-object 'mixer #+(or macos win32) '(:libaudiostream) #+linux '(:jackaudio))
+
+(defparameter *audio-mixer* nil)
+(defparameter *audio-n-channels* nil)
+
+;;; TODO:  find something more "modular" to determine the number of chanels
+;; for now: takes the n-channels as defined in LAS...
+(setf *audio-n-channels* las-channels)
+
+; (init-mixer)
+
+(defun init-mixer ()
+        (setf *audio-mixer* (make-instance 'mixer 
+                                           :mixer-presets (init-genmixer-values)
+                                           :mixer-current-preset 0))
+        (setf  
+         (mixer-player *audio-mixer*) (enabled-players-for-object  *audio-mixer*)
+         (mixer-values *audio-mixer*)  (copy-tree (cadr (nth (mixer-current-preset *audio-mixer*) 
+                                                             (mixer-presets *audio-mixer*)))))
+        
+        *audio-mixer*
+        )
+
+(defun get-default-mix-values ()
+  (make-list  *audio-n-channels* :initial-element '(0 100)))
+
+(defun init-genmixer-values ()
+  (list (list "------------" (get-default-mix-values))))
 
 (defun get-presets-list ()
-  (loop for i from 0 to (- (length *general-mixer-presets*) 1) collect
-              (car (nth i *general-mixer-presets*))))
+  (mapcar 'car (mixer-presets *audio-mixer*)))
+
+(defun save-presets-in-preferences (mixer prefmodule pref-key)
+       (set-pref (find-pref-module prefmodule) pref-key (mixer-presets mixer)))
+
+
+;;;==================================
+;;; WINDOW
+;;;==================================
 
 (defclass omgenmixer-window (om-window)
   ((panel-view :initform nil :initarg :panel-view :accessor panel-view)
@@ -42,18 +79,15 @@
 ;This function builds a general mixer windows, with 32 channels
 (defun make-general-mixer-win ()
   ;;;HACK BECAUSE GET DEF VALS OF PREFERENCE CANT GET THIS SLOT.
-  (unless *general-mixer-presets*
-    (setf *general-mixer-presets* (init-genmixer-values)))
-  (unless *general-mixer-values*
-    (setf *general-mixer-values* (cadr (car *general-mixer-presets*))))
-
+  (unless *audio-mixer* (init-mixer))
+  
   (let ((newwindow (om-make-window 'omgenmixer-window 
                                    :window-title "OpenMusic General Mixer" 
                                    :size (om-make-point (+ 5 (* *channel-w* 10)) (+ (mixer-track-size) 45 15 16)) 
                                    :scrollbars :h
                                    :position (om-make-point 100 50) :close t :resizable nil))
         ;(vals (copy-tree (or (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (cadr (car *general-mixer-presets*)))))
-        (vals (copy-tree *general-mixer-values*))
+        (vals (copy-tree (mixer-values *audio-mixer*)))
         )
 
     (setf (panel-view newwindow) (om-make-view 'omgenmixer-view
@@ -62,9 +96,9 @@
                                                :scrollbars :h
                                                :retain-scrollbars t
                                                :bg-color *om-steel-blue-color*
-                                               :field-size  (om-make-point (+ 5 (* *channel-w* las-channels)) 400)
+                                               :field-size  (om-make-point (+ 5 (* *channel-w* *audio-n-channels*)) 400)
                                                :size (om-make-point (w newwindow) (h newwindow))))
-    (loop for i from 0 to (- las-channels 1) do
+    (loop for i from 0 to (- *audio-n-channels* 1) do
           (genmixer-make-single-channel-view (panel-view newwindow) i vals))
     (setf (presets-view newwindow) (om-make-view 'om-view
                                                  :owner (panel-view newwindow)
@@ -72,8 +106,8 @@
                                                  :scrollbars nil
                                                  :retain-scrollbars nil
                                                  :bg-color *om-dark-gray-color*
-                                                 :field-size (om-make-point (- (* *channel-w* las-channels) 5) 45) 
-                                                 :size (om-make-point (- (* *channel-w* las-channels) 5) 45)))
+                                                 :field-size (om-make-point (- (* *channel-w* *audio-n-channels*) 5) 45) 
+                                                 :size (om-make-point (- (* *channel-w* *audio-n-channels*) 5) 45)))
     (genmixer-make-preset-view (presets-view newwindow))
     newwindow))
 
@@ -93,8 +127,8 @@
                                    :position (om-make-point 0 0) 
                                    :scrollbars nil
                                    :retain-scrollbars nil
-                                   :field-size  (om-make-point (- (* *channel-w* las-channels) 5) 45)
-                                   :size (om-make-point (- (* *channel-w* las-channels) 5) 45)
+                                   :field-size  (om-make-point (- (* *channel-w* *audio-n-channels*) 5) 45)
+                                   :size (om-make-point (- (* *channel-w* *audio-n-channels*) 5) 45)
                                    :bg-color *om-dark-gray-color*))
         (thelist (get-presets-list))
         text
@@ -114,22 +148,22 @@
                                            (om-make-point 120 12)
                                            ""
                                            :di-action (om-dialog-item-act item
-                                                        (setf *general-mixer-current-preset* (1+ (om-get-selected-item-index item)))
+                                                        (setf (mixer-current-preset *audio-mixer*) (1+ (om-get-selected-item-index item)))
                                                         (load-genmixer-preset (1+ (om-get-selected-item-index item)))
                                                         (update-genmixer-display))
                                            :font *om-default-font1*
                                            :range (if (> (length thelist) 1) (remove (car thelist) thelist) thelist)
-                                           :value (nth *general-mixer-current-preset* thelist)))
+                                           :value (nth (mixer-current-preset *audio-mixer*) thelist)))
 
     (setf save-preset (om-make-dialog-item 'om-button
                                            (om-make-point 260 10)
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
-                                                        (if (> *general-mixer-current-preset* 0)
-                                                            (setf (cadr (nth *general-mixer-current-preset* *general-mixer-presets*)) (copy-tree *general-mixer-values*))
+                                                        (if (> (mixer-current-preset *audio-mixer*) 0)
+                                                            (setf (cadr (nth (mixer-current-preset *audio-mixer*) (mixer-presets *audio-mixer*))) (copy-tree (mixer-values *audio-mixer*)))
                                                           (om-message-dialog "ERROR : You have to select a preset to be able to save it. If there is no existing preset, build a new one"))
-                                                        (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
+                                                        (save-presets-in-preferences *audio-mixer* :audio :audio-presets))
                                            :font *om-default-font1*))
 
     (setf new-preset (om-make-dialog-item 'om-button
@@ -139,9 +173,9 @@
                                           :di-action (om-dialog-item-act item 
                                                        (save-current-settings)
                                                        (update-general-mixer-presets-lists)
-                                                       (setf *general-mixer-current-preset* (1- (length (get-presets-list))))
+                                                       (setf (mixer-current-preset *audio-mixer*) (1- (length (get-presets-list))))
                                                        (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list)))
-                                                       (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
+                                                       (save-presets-in-preferences *audio-mixer* :audio :audio-presets))
                                           :font *om-default-font1*))
 
     (setf delete-preset (om-make-dialog-item 'om-button
@@ -149,12 +183,14 @@
                                              (om-make-point 75 12)
                                              "DELETE"
                                              :di-action (om-dialog-item-act item
-                                                          (if (> *general-mixer-current-preset* 0)
+                                                          (if (> (mixer-current-preset *audio-mixer*) 0)
                                                               (progn
-                                                                (setf *general-mixer-presets* (remove (nth (1+ (om-get-selected-item-index preset-list)) *general-mixer-presets*) *general-mixer-presets*))
+                                                                (setf (mixer-presets *audio-mixer*) (remove 
+                                                                                                     (nth (1+ (om-get-selected-item-index preset-list)) (mixer-presets *audio-mixer*)) 
+                                                                                                     (mixer-presets *audio-mixer*)))
                                                                 (update-general-mixer-presets-lists))
                                                             (om-message-dialog "ERROR : You have to select a preset to be able to delete it. If there is no existing preset, build a new one"))
-                                                          (set-pref (find-pref-module :audio) :audio-presets *general-mixer-presets*))
+                                                          (save-presets-in-preferences *audio-mixer* :audio :audio-presets))
                                              :font *om-default-font1*))
     
     (setf default-preset (om-make-dialog-item 'om-button
@@ -162,7 +198,7 @@
                                              (om-make-point 100 12)
                                              "RESET ALL"
                                              :di-action (om-dialog-item-act item
-                                                          (setf *general-mixer-values* (get-default-values))
+                                                          (setf (mixer-values *audio-mixer*) (get-default-mix-values))
                                                           (update-genmixer-display)
                                                           (apply-mixer-values))
                                              :font *om-default-font1*))
@@ -282,32 +318,30 @@
 ;; REDEFINED IN FAUST LIBRARY
 (defun make-more-mixer-items (panel channel pos) nil)
 
-
-
-
+(defmethod player-change-channel-vol (player channel value) nil)
+(defmethod player-change-channel-pan (player channel value) nil)
 
 ;/CHANGE GENMIXER CHANNEL VOL FUNCTION
 ;This function changes a channel volume
 (defun change-genmixer-channel-vol (channel value)
-  (las-change-channel-vol-visible channel (float (/ value 100)))
-  (setf (cadr (nth (- channel 1) *general-mixer-values*)) value))
+  (player-change-channel-vol (mixer-player *audio-mixer*) channel (float (/ value 100)))
+  (setf (cadr (nth (- channel 1) (mixer-values *audio-mixer*))) value))
 
 ;/CHANGE GENMIXER CHANNEL PAN
 ;This function changes a channel pan
 (defun change-genmixer-channel-pan (channel value)
-  (las-change-channel-pan-visible channel (- 1.0 (float (/ (+ value 100) 200))))
-  (setf (car (nth (- channel 1) *general-mixer-values*)) value))
+  (player-change-channel-pan (mixer-player *audio-mixer*) channel (- 1.0 (float (/ (+ value 100) 200))))
+  (setf (car (nth (- channel 1) (mixer-values *audio-mixer*))) value))
 
 ;/APPLY MIXER VALUES FUNCTION
 ;Get the pan and vol values in *general-mixer-values* and apply these to the LAS player.
 (defun apply-mixer-values ()
   (let (pan vol)
-    (loop for i from 0 to (- las-channels 1) do
-          (setf pan (car (nth i *general-mixer-values*))
-                vol (cadr (nth i *general-mixer-values*)))
-          (las-change-channel-pan-visible (+ i 1) (- 1.0 (float (/ (+ pan 100) 200))))
-          (las-change-channel-vol-visible (+ i 1) (float (/ vol 100))))))
-
+    (loop for i from 0 to (- *audio-n-channels* 1) do
+          (setf pan (car (nth i (mixer-values *audio-mixer*)))
+                vol (cadr (nth i (mixer-values *audio-mixer*))))
+          (player-change-channel-pan (mixer-player *audio-mixer*)  (+ i 1) (- 1.0 (float (/ (+ pan 100) 200))))
+          (player-change-channel-vol (mixer-player *audio-mixer*)  (+ i 1) (float (/ vol 100))))))
 
 
 
@@ -315,14 +349,12 @@
 ;Save the current settings to a new preset.
 (defun save-current-settings ()
   (let ((name (om-get-user-string "Enter a name for this preset" 
-                                  :initial-string (format nil "Preset ~A" (length *general-mixer-presets*)))))
+                                  :initial-string (format nil "Preset ~A" (length (mixer-presets *audio-mixer*))))))
     (if name
-        (setf *general-mixer-presets* 
-              (append *general-mixer-presets*
-                      (list 
-                       (list 
-                        name
-                        (copy-tree *general-mixer-values*))))))))
+        (setf (mixer-presets *audio-mixer*)
+              (append (mixer-presets *audio-mixer*)
+                      (list (list name (copy-tree (mixer-values *audio-mixer*))))))
+      )))
 
 ;/UPDATE GENMIXER PRESETS LISTS FUNCTION
 ;Refresh the available lists in preset choice list and delete list.
@@ -340,9 +372,9 @@
 ;/LOAD GENMIXER PRESET FUNCTION
 ;Loads a preset to the *general-mixer-values* variable, and apply these values.
 (defun load-genmixer-preset (index)
-  (let ((vals (cadr (nth index *general-mixer-presets*))))
-    (setf *general-mixer-values* (copy-tree vals))
-    (setf *general-mixer-current-preset* index)
+  (let ((vals (cadr (nth index (mixer-presets *audio-mixer*)))))
+    (setf (mixer-values *audio-mixer*) (copy-tree vals))
+    (setf (mixer-current-preset *audio-mixer*) index)
     (apply-mixer-values)))
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION
@@ -350,9 +382,9 @@
 (defun update-genmixer-display ()
   (let (volval panval)
     (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
-        (loop for i from 0 to (- las-channels 1) do
-              (setf volval (cadr (nth i *general-mixer-values*))
-                    panval (car (nth i *general-mixer-values*)))
+        (loop for i from 0 to (- *audio-n-channels* 1) do
+              (setf volval (cadr (nth i (mixer-values *audio-mixer*)))
+                    panval (car (nth i (mixer-values *audio-mixer*))))
               (om-set-dialog-item-text (nth 3 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string panval))
               (set-value (nth 4 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) panval)
               (om-set-dialog-item-text (nth 7 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string volval))

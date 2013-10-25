@@ -150,3 +150,11 @@
                                               (if (> (value item) 0) (las-switch-sound-las-player snd 1) (las-switch-sound-las-player snd 0))
                                               (report-modifications (editor control-view)))))))))
 
+
+;;;===========================================
+
+(defmethod player-change-channel-vol ((player (eql :libaudiostream)) channel value) 
+  (las-change-channel-vol-visible channel value))
+
+(defmethod player-change-channel-pan ((player (eql :libaudiostream)) channel value) 
+  (las-change-channel-pan-visible channel value))
