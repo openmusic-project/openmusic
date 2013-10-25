@@ -13,7 +13,7 @@
             )
            (:icon 234))
 
-(add-player-for-object 'mixer-automation '(:bpfplayer))
+
 
 (defmethod get-player-action ((self mixer-automation)) (call-next-method))
 

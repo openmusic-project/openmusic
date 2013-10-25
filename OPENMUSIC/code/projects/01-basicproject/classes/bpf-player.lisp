@@ -11,6 +11,9 @@
 (defmethod allowed-in-maq-p ((self BPF-controller)) t)
 (defmethod get-obj-dur ((self BPF-controller)) (last-elem (x-points self)))
 
+(enable-player :bpfplayer)
+(add-player-for-object 'BPF-controller '(:bpfplayer))
+
 (defmethod default-edition-params ((self BPF-controller)) 
   (pairlis '(player) '(:bpfplayer)))
 
