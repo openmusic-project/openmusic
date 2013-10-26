@@ -41,7 +41,7 @@
         "player;midiplayer"
         "tools;midi-preferences"
         "midipackages"
-	#+cl-fluidsynth "player;fluid-player"
+	;; #+cl-fluidsynth "player;fluid-player"
 	#+(and linux cl-jack) "player;jack-midi-player"
         ))
 

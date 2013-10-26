@@ -1,29 +1,29 @@
 ;;; ===========================================================================
 ;;; JACK Player class for OM.
-;;; 
+;;;
 ;;; This program is free software; you can redistribute it and/or modify
 ;;; it under the terms of the GNU Lesser General Public License as published by
 ;;; the Free Software Foundation; either version 2.1 of the License, or
 ;;; (at your option) any later version.
-;;;   
+;;;
 ;;; This program is distributed in the hope that it will be useful,
 ;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;; GNU Lesser General Public License for more details.
-;;;   
+;;;
 ;;; You should have received a copy of the GNU Lesser General Public License
-;;; along with this program; if not, write to the Free Software 
+;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;; 
+;;;
 ;;; Author: Anders Vinjar
 
 (in-package :om)
 
-;;; JACK MIDI PLAYER                  
-(defmethod player-name ((player (eql :jackmidi))) "Jack midi player")   
-(defmethod player-desc ((player (eql :jackmidi))) "(default)")   
-(defmethod player-special-action ((player (eql :jackmidi))) nil)  
-(defmethod player-params ((player (eql :jackmidi))) nil)   
+;;; JACK MIDI PLAYER
+(defmethod player-name ((player (eql :jackmidi))) "Jack midi player")
+(defmethod player-desc ((player (eql :jackmidi))) "(default)")
+(defmethod player-special-action ((player (eql :jackmidi))) nil)
+(defmethod player-params ((player (eql :jackmidi))) nil)
 (defmethod player-type ((player (eql :jackmidi))) :midi)
 
 (defun init-jack-midi-player ()
@@ -53,7 +53,7 @@
 
 ;; hook into global pool of seqs for running cl-jack-client
 
-(defparameter *jack-midi-seqs* cl-jack::*jack-seqs*) 
+(defparameter *jack-midi-seqs* cl-jack::*jack-seqs*)
 
 (defparameter *jack-use-om-scheduler* nil)
 
@@ -96,7 +96,7 @@
 (defun jack-player-play-note (queue note offset)
   (let ((seq (gethash queue *jack-midi-seqs*))
 	(start (/ offset 1000.0))
-	(dur (/ (real-dur note) 1000.0)) 
+	(dur (/ (real-dur note) 1000.0))
 	(noteno (/ (midic note) 100))
 	(vel (vel note))
 	(chan (chan note)))
@@ -109,7 +109,7 @@
 (defun jack-player-play-note-now-in-global-seq (object)
   (let ((seq cl-jack::*jack-seq*)
 	(start 0)
-	(dur (/ (real-dur object) 1000.0)) 
+	(dur (/ (real-dur object) 1000.0))
 	(noteno (/ (midic object) 100))
 	(vel (vel object))
 	(chan (chan object)))

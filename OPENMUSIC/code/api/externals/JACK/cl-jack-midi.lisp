@@ -68,21 +68,28 @@
 ;;; TODO: use message-classes defined in midi.lisp for everything raw
 ;;; midi:
 
-(defconstant noteofftag #x80)
-(defconstant noteontag #x90)
-(defconstant programchangetag #xC0)
+(defparameter +note-off-opcode+		#x80)
+(defparameter +note-on-opcode+		#x90)
+(defparameter +key-pressure-opcode+	#xA0)
+(defparameter +control-change-opcode+	#xB0)
+(defparameter +program-change-opcode+	#xC0)
+(defparameter +channel-pressure-opcode+ #xD0)
+(defparameter +pitch-bend-opcode+	#xE0)
+(defparameter +tempo-opcode+		#xFF)
+
+(defconstant +program-change-opcode+ )
 
 (defun make-midi-note-on-tag (&optional (channel 1))
-  (logior oa::+note-on-opcode+ channel))
+  (logior +note-on-opcode+ channel))
 
 (defun make-midi-note-off-tag (&optional (channel 1))
-  (logior oa::+note-off-opcode+ channel))
+  (logior +note-off-opcode+ channel))
 
 (defun make-midi-program-change-tag (&optional (channel 1))
-  (logior oa::+program-change-opcode+ channel))
+  (logior +program-change-opcode+ channel))
 
 (defun make-midi-pitch-bend-tag (&optional (channel 1))
-  (logior oa::+pitch-bend-opcode+ channel))
+  (logior +pitch-bend-opcode+ channel))
 
 ;; TODO: expand with support for all midi-messages
 
@@ -102,14 +109,13 @@
 ;; more efficient, but warnings from the jack-devels say there is no
 ;; guarantee what any future period-boundary might be.
 ;;
-;;
 ;; (defun seqhash-midi-note-on (seq frame noteno velocity &optional (channel 1))
 ;;   "times (start, dur) in sec.; noteno, vel, chan is standard midi"
 ;;   (multiple-value-bind (period offset)
 ;;       (frame->period-offset frame)
 ;;     (let ((noteon (list offset (make-midi-note-on-tag channel) noteno velocity channel)))
 ;;       (jack-add-event-this-period seq period noteon))))
-
+;;
 ;; (defun seqhash-midi-note-off (seq frame noteno velocity &optional (channel 1))
 ;;   (multiple-value-bind (period offset)
 ;;       (frame->period-offset frame)
@@ -153,8 +159,8 @@
 				      (endframe (+ startframe (sec->frame dur) -1)))
 				 (seqhash-clear-note-offs seq startframe endframe noteno chan)
 				 (seqhash-midi-note-on seq startframe noteno vel chan)
-				 (sleep (/ (jack-get-buffer-size *CLJackClient*)
-					   (jack-get-sample-rate *CLJackClient*)))
+				 ;; (sleep (/ (jack-get-buffer-size *CLJackClient*)
+				 ;; 	   (jack-get-sample-rate *CLJackClient*)))
 				 (seqhash-midi-note-off seq endframe noteno 0 chan)))))
 
 
