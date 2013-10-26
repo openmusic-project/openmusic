@@ -3,7 +3,7 @@
 
 (in-package :om)
 
-(defparameter *def-score-player* :midishare)
+(defparameter *default-score-player* #-linux :midishare #+linux :jackmidi)
 
 (defmethod editor-compatible-params-p ((ed1 scoreeditor) (ed2 scoreeditor)) t)
 
@@ -14,20 +14,20 @@
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil *InMidiPort* *def-score-player*
+                 nil *InMidiPort* *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 :normal t nil)))
 
 (defmethod get-default-score-params ((self chord))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil *InMidiPort* *def-score-player*
+                 nil *InMidiPort* *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 0 :normal t nil)))
 
 (defmethod get-default-score-params ((self note))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil *InMidiPort* *def-score-player*
+           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil *InMidiPort* *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil)))
 
 
