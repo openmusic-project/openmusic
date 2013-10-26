@@ -38,11 +38,11 @@
 	"classes;continuousctrl"
         "tools;midiconversions"
         "classes;midicontroller"
-	#+(and linux cl-jack) "player;jack-midi-player"
-	#+cl-fluidsynth "player;fluid-player"
         "player;midiplayer"
         "tools;midi-preferences"
         "midipackages"
+	#+cl-fluidsynth "player;fluid-player"
+	#+(and linux cl-jack) "player;jack-midi-player"
         ))
 
 
