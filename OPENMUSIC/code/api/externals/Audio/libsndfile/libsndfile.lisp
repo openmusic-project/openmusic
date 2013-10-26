@@ -15,7 +15,6 @@
 (cffi:define-foreign-library libsndfile
   (:darwin "libsndfile.dylib")
   #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
-  #+linux(:linux "libsndfile")
   #+win32(t (:default "libsndfile-1"))
   #+linux(t (:default "libsndfile"))
   )
