@@ -134,7 +134,7 @@
 
 (print "Cleaning sources ...")
 (clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("code")))
-               :remove-extensions '("xfasl" "nfasl" "ofasl" "lisp~" "DS_STORE"))
+               :remove-extensions '("xfasl" "nfasl" "ofasl" "ufasl" "lisp~" "DS_STORE"))
 
 (loop for proj in (directory (make-pathname :directory (append (pathname-directory *target-dir*) '("code" "projects")))) do
       (unless (member (car (last (pathname-directory proj))) *projects-in-om-release* :test 'string-equal)
