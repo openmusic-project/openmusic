@@ -45,12 +45,8 @@
   
 (defmethod player-loop ((self (eql :bpfplayer)) player &optional play-list)
   (declare (ignore player))
-  (if play-list
-      (loop for i from 0 to (1- (length play-list)) do
-            (let* ((obj (nth i play-list))
-                   (inter (interval2play obj))
-                   (player (assoc-player obj)))
-              (prepare-to-play self player obj 0 inter)))))
+  (loop for obj in play-list do
+        (prepare-to-play self player obj 0 (play-interval player))))
   
 ;================================
 ; EDITOR
