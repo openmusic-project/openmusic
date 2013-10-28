@@ -86,7 +86,7 @@
   (list :audio-format 'aiff :sys-console t :audio-sr 44100 :audio-res 16
         :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :csound
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
-        :multip-path (when *multiplayer-path* (probe-file *multiplayer-path*))
+        :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
         :audio-presets (init-genmixer-values)))
 
 
