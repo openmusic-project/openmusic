@@ -186,9 +186,9 @@
      (setf port (verify-port port))   
      (let ((msevent (midievent-to-msevent self))
            (really-at (if interval (- at (first interval)) at)))
-       (when event
-         (om-midi-evt-set event :date (+ really-at (ev-date self)))
-         (om-midi-seq-add-evt *playing-midi-seq* event)))))
+       (when msevent
+         (om-midi-evt-set msevent :date (+ really-at (ev-date self)))
+         (om-midi-seq-add-evt *playing-midi-seq* msevent)))))
 
 
 

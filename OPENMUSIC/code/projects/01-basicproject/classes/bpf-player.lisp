@@ -24,11 +24,9 @@
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf) at interval)
   (let ((fun (get-player-action object))) 
-    (setf (assoc-player object) player)
     (when fun
       (if interval
           (progn
-            (setf (interval2play object) interval)
             (mapcar #'(lambda (point)
                         (if (and (>= (car point) (car interval)) (<= (car point) (cadr interval)))
                             (schedule-task player
@@ -36,7 +34,6 @@
                                            (+ at (car point)))))
                     (point-pairs object)))
         (progn
-          (setf (interval2play object) nil)
           (mapcar #'(lambda (point)
                       (schedule-task player
                                      #'(lambda () (funcall fun (cadr point))) 
