@@ -136,7 +136,7 @@
 	    (let ((interval (play-interval player)))
               (if *jack-use-om-scheduler*
                   (prepare-to-play engine player item 0 interval)
-		(jack-send-to-jack item 0 interval item))))
+		  (jack-send-to-jack item 0 interval item))))
 	play-list))
 
 #|
