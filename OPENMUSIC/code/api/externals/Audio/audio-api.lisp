@@ -564,7 +564,7 @@
 	    (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
 	    (multiple-value-bind (format nch sr ss size skip)
 		(sound-get-info (filename sound))
-	      (print (list format nch sr ss size skip))
+	      ;;(print (list format nch sr ss size skip))
 	      (if (and format size nch (> size 0) (> nch 0))
 		  (progn 
 		    (setf (audio-format sound) format
