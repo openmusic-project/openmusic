@@ -50,9 +50,9 @@
     "synth;synthesis-event"
     "synth;synthesize"
 
-    "multi;multiplayer"
-    #+linux "mplayer;mplayer"
+    #-linux "multi;multiplayer"
     #+linux "JACK;jack-audio-player"
+    #+linux "mplayer;mplayer"
  ))
 
 (eval-when (eval compile load)
