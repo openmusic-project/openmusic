@@ -572,7 +572,11 @@
 			  (number-of-channels sound) nch
 			  (sample-size sound) ss
 			  (sample-rate sound) sr
-			  (data-position sound) skip)
+			  (data-position sound) skip
+			  (sndbuffer sound) (multiple-value-bind (data size nch) 
+						(au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
+					      (let* ((sndbuffer data)) sndbuffer))
+			  (snd-slice-to-paste sound) nil)
 		    (setf (loaded sound) t)
 		    (unless (om-supported-audio-format format)
 		      (print (format nil "Warning : unsupported audio format ~A" format))
@@ -584,7 +588,7 @@
 
 #+linux 
 (defmethod number-of-samples-current ((self om-sound))
-	  (number-of-samples self))
+  (number-of-samples self))
 
 
 #-linux 
