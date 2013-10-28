@@ -1,5 +1,5 @@
 ;;;==================================================================================================================================================================
-;;;===================================================================GENERAL MIXER (LAS)============================================================================
+;;;===================================================================GENERAL AUDIO MIXER (LAS)============================================================================
 ;;;==================================================================================================================================================================
 ;;;This general mixer is a single windows which controls the *audio-player-visible* vol and pan, but also the effect and synth plug system.
 ;;;You can plug up to 5 effects by channel and only one synth.
@@ -46,7 +46,7 @@
         )
 
 (defun get-default-mix-values ()
-  (make-list  *audio-n-channels* :initial-element '(0 100)))
+  (make-list *audio-n-channels* :initial-element (list 0 100)))
 
 (defun init-genmixer-values ()
   (list (list "------------" (get-default-mix-values))))
@@ -87,7 +87,7 @@
   (unless *audio-mixer* (init-mixer))
   
   (let ((newwindow (om-make-window 'omgenmixer-window 
-                                   :window-title "OpenMusic General Mixer" 
+                                   :window-title "OpenMusic Audio Mixer" 
                                    :size (om-make-point (+ 5 (* *channel-w* 10)) (+ (mixer-track-size) 45 15 16)) 
                                    :scrollbars :h
                                    :position (om-make-point 100 50) :close t :resizable nil))

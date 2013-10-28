@@ -131,7 +131,7 @@
                                     ;(om-new-leafmenu "General Palette" #'(lambda () (show-palette-win (om-view-window editor))) nil 
                                     ;                 (if (and (not (member "General Palette" disable :test 'string-equal)) editor 
                                     ;                          (editor-has-palette-p editor)) t nil))
-                                      (om-new-leafmenu "General Mixer" 'show-genmixer-win)
+                                      (om-new-leafmenu "Audio Mixer" 'show-genmixer-win)
                                       (when (score-tools-palettes-p editor)
                                         (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
                                                          (if (member "Score Inspector" disable :test 'string-equal) nil
