@@ -33,7 +33,7 @@
 ;EDITOR
 ;---------------------------------------------------------------------
 
-(omg-defclass patchEditor (relationEditor)  ()
+(defclass patchEditor (relationEditor)  ()
    (:documentation "This is the class for windows containing a patchPanel, so windows for Patch's editors.#enddoc#
 #seealso# (patchPanel OMPatch) #seealso#"))
 
@@ -55,10 +55,10 @@
 ;PANEL
 ;---------------------------------------------------------------------
 
-(omg-defclass patchPanel (relationPanel) ()
+(defclass patchPanel (relationPanel) ()
 
-             #+(and win32 (not ml-maquette)) 
-              (:default-initargs :draw-pinboard-objects :local-buffer)
+  #+(and win32 (not ml-maquette)) 
+  (:default-initargs :draw-pinboard-objects :local-buffer)
 
    (:documentation "Patch editors are instance of this class.
 Elements of patchPanels are instace of the boxframe class.#enddoc#

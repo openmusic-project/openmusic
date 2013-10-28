@@ -111,8 +111,7 @@
          (new-mouse old-mouse))
     (setq new-mouse where)
     (draw-connection *cur-drag-connection* NIL)
-    #+cocoa (invalidate-connection-region *cur-drag-connection* self)
-    #+linux (invalidate-connection-region *cur-drag-connection* self)
+    (invalidate-connection-region *cur-drag-connection* self)
     (loop for point in (point-sel *cur-drag-connection*) do
           (let ((pos (position point *first-point*))) 
             (setf (nth pos (points *cur-drag-connection*))

@@ -101,7 +101,11 @@
              (ny (om-rect-top newrect))
              (nw (om-rect-w newrect))  
              (nh (om-rect-h newrect)))
-        (om-update-movable-object panel nx ny (max nw 2) (max nh 2)))
+        ;(om-with-focused-view panel
+        ;  (om-with-line-size 2
+            (om-update-movable-object panel nx ny (max nw 2) (max nh 2))
+        ; ))
+            )
       (let ((myview (om-find-view-containing-point panel (om-make-point rx ry))))
         (if (input? myview) 
             (om-show-tooltip myview t t) 
