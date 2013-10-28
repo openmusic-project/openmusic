@@ -240,7 +240,7 @@
                            :start (or (first range) 0)
                            :end (or (second range) 100)
                            :orientation direction
-                           :start-point :default
+                           :start-point (if (equal direction :vertical) :bottom :left)
                            :slug-start value
                            ; :popup-callback #'om-dialog-item-action
                            :internal-border 0
@@ -775,7 +775,7 @@
   ((increment :initarg :increment :initform 1 :accessor increment))
   (:default-initargs 
    :callback 'om-slider-item-action
-   :show-value-p t))
+   :show-value-p nil)) ;;; for windows / linux only - removed because there is a bug in print with reverse directions
  
 ;(round 22 3)
 
