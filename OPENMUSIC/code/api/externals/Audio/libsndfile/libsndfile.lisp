@@ -2,28 +2,41 @@
 
 (defpackage "libsndfile"
   (:nicknames "SF")
-  (:use common-lisp))
+  (:use common-lisp cffi))
 
 (in-package :sf)
 
-(push :libsndfile *features*)
+(pushnew :libsndfile *features*)
 
 ;;; MUST BE INSTALLED !
 ;;; or linked statically (in LibAudioStream / MacOS)
 
-#+(or win32 linux)
-(cffi:define-foreign-library libsndfile
+#+linux
+(progn
+  (defparameter *libsndfile* nil)
+
+  (defun init-libsndfile ()
+    (pushnew (oa:om-lib-directory) *foreign-library-directories*)
+    (define-foreign-library libsndfile
+      (t (:default "libsndfile")))
+    (setf *libsndfile*
+	  (handler-case (progn (use-foreign-library libsndfile) t)
+	    (error () (progn (print (format nil "could not load foreign-library libsndfile"))
+			     nil)))))
+  (oa:om-add-init-func 'init-libsndfile))
+
+#+win32
+(define-foreign-library libsndfile
   (:darwin "libsndfile.dylib")
   #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
   #+win32(t (:default "libsndfile-1"))
-  #+linux(t (:default "libsndfile"))
   )
 
-#+(or win32 linux)
-(cffi:use-foreign-library libsndfile)
+#+win32
+(use-foreign-library libsndfile)
 
 
-;(cffi::defctype :long-long :pointer)
+;(defctype :long-long :pointer)
 
 (defconstant SF_FORMAT_WAV #x010000)
 (defconstant SF_FORMAT_AIFF #x020000)
@@ -138,7 +151,7 @@
 
 (defconstant  SF_COUNT_MAX #x7FFFFFFFFFFFFFFF)
 
-(cffi:defcstruct SF_INFO
+(defcstruct SF_INFO
 	(frames :double)
 	(samplerate :int)
 	(channels :int)
@@ -146,7 +159,7 @@
 	(sections :int)
 	(seekable :int))
 
-(cffi:defcstruct SF_FORMAT_INFO
+(defcstruct SF_FORMAT_INFO
 	(format :int)
 	(name :string)
 	(extension :string))
@@ -158,12 +171,12 @@
 (defconstant SFD_WHITE 501)
 (defconstant SFD_TRIANGULAR_PDF 502)
 
-(cffi:defcstruct SF_DITHER_INFO
+(defcstruct SF_DITHER_INFO
 	(type :int)
 	(level :double)
 	(name :string))
 
-(cffi:defcstruct SF_EMBED_FILE_INFO
+(defcstruct SF_EMBED_FILE_INFO
 	(offset :double)
 	(length :double))
 
@@ -172,7 +185,7 @@
 (defconstant SF_LOOP_BACKWARD 0)
 (defconstant SF_LOOP_ALTERNATING 0)
 
-(cffi:defcstruct SF_INSTRUMENT
+(defcstruct SF_INSTRUMENT
 	(gain :int)
 	(basenote :char)
 	(detune :char)
@@ -183,13 +196,13 @@
 	(loop_count :int)
 	(loops :pointer))
 
-(cffi:defcstruct SF_INSTRUMENT_loops
+(defcstruct SF_INSTRUMENT_loops
 	(mode :int)
 	(start :unsigned-int)
 	(end :unsigned-int)
 	(count :unsigned-int))
 
-(cffi:defcstruct SF_LOOP_INFO
+(defcstruct SF_LOOP_INFO
 	(time_sig_num :short)
 	(time_sig_den :short)
 	(loop_mode :int)
@@ -198,7 +211,7 @@
 	(root_key :int)
 	(future :pointer))
 
-(cffi:defcstruct SF_BROADCAST_INFO
+(defcstruct SF_BROADCAST_INFO
 	(description :pointer)
 	(originator :pointer)
 	(originator_reference :pointer)
@@ -212,88 +225,88 @@
 	(coding_history_size :unsigned-int)
 	(coding_history :pointer))
 
-(cffi:defcstruct SF_VIRTUAL_IO
+(defcstruct SF_VIRTUAL_IO
 	(get_filelen :pointer)
 	(seek :pointer)
 	(read :pointer)
 	(write :pointer)
 	(tell :pointer))
 
-(cffi:defcfun ("sf_open" sf_open) :pointer
+(defcfun ("sf_open" sf_open) :pointer
   (path :string)
   (mode :int)
   (sfinfo :pointer))
 
-(cffi:defcfun ("sf_open_fd" sf_open_fd) :pointer
+(defcfun ("sf_open_fd" sf_open_fd) :pointer
   (fd :int)
   (mode :int)
   (sfinfo :pointer)
   (close_desc :int))
 
-(cffi:defcfun ("sf_open_virtual" sf_open_virtual) :pointer
+(defcfun ("sf_open_virtual" sf_open_virtual) :pointer
   (sfvirtual :pointer)
   (mode :int)
   (sfinfo :pointer)
   (user_data :pointer))
 
-(cffi:defcfun ("sf_close" sf_close) :int
+(defcfun ("sf_close" sf_close) :int
   (sndfile :pointer))
 
-(cffi:defcfun ("sf_error" sf_error) :int
+(defcfun ("sf_error" sf_error) :int
   (sndfile :pointer))
 
-(cffi:defcfun ("sf_strerror" sf_strerror) :string
+(defcfun ("sf_strerror" sf_strerror) :string
   (sndfile :pointer))
 
-(cffi:defcfun ("sf_error_number" sf_error_number) :string
+(defcfun ("sf_error_number" sf_error_number) :string
   (errnum :int))
 
-(cffi:defcfun ("sf_perror" sf_perror) :int
+(defcfun ("sf_perror" sf_perror) :int
   (sndfile :pointer))
 
-(cffi:defcfun ("sf_error_str" sf_error_str) :int
+(defcfun ("sf_error_str" sf_error_str) :int
   (sndfile :pointer)
   (str :string)
   (len :pointer))
 
-(cffi:defcfun ("sf_command" sf_command) :int
+(defcfun ("sf_command" sf_command) :int
   (sndfile :pointer)
   (command :int)
   (data :pointer)
   (datasize :int))
 
-(cffi:defcfun ("sf_format_check" sf_format_check) :int
+(defcfun ("sf_format_check" sf_format_check) :int
   (info :pointer))
 
-(cffi:defcfun ("sf_seek" sf_seek) :double
+(defcfun ("sf_seek" sf_seek) :double
   (sndfile :pointer)
   (frames :long-long)
   (whence :int))
 
-(cffi:defcfun ("sf_set_string" sf_set_string) :int
+(defcfun ("sf_set_string" sf_set_string) :int
   (sndfile :pointer)
   (str_type :int)
   (str :string))
 
-(cffi:defcfun ("sf_get_string" sf_get_string) :string
+(defcfun ("sf_get_string" sf_get_string) :string
   (sndfile :pointer)
   (str_type :int))
 
-(cffi:defcfun ("sf_write_sync" sf_write_sync) :void
+(defcfun ("sf_write_sync" sf_write_sync) :void
   (sndfile :pointer))
 
 ;;;============
-(cffi:defcfun (sf-readf-float "sf_readf_float") :long-long
+(defcfun (sf-readf-float "sf_readf_float") :long-long
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))
 
-(cffi:defcfun (sf-readf-int "sf_readf_int") :long-long
+(defcfun (sf-readf-int "sf_readf_int") :long-long
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))
 
-(cffi:defcfun (sf-readf-short "sf_readf_short") :long-long
+(defcfun (sf-readf-short "sf_readf_short") :long-long
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))

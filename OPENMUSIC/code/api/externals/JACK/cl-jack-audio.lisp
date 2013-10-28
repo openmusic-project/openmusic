@@ -63,7 +63,6 @@
 
   ;; provide default-callback which just copies in to out:
 
-
   (defcallback cl-jack-process-callback-silence :int ((nframes jack_nframes_t) (arg :pointer))
     (declare (ignore arg))
     (when (fboundp 'cl-jack-handle-event-seqs) (cl-jack-handle-event-seqs nframes))
@@ -79,3 +78,12 @@
 
   ;;(jack-deactivate *CLJackClient*)
   )
+
+(defun cl-jack-connect-audio-client-to-system-output ()
+  (loop for port in *CL-jack-audio-output-ports*
+     for system_out from 1
+     do (or (plusp (cl-jack::jack-connect *CLJackClient*
+					  (jack-port-name port)
+					  (format nil "system:playback_~A" system_out)))
+	    (warn "could not connect CLJack port ~A to output-port ~A" (jack-port-name port) system_out))))
+

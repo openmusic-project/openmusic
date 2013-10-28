@@ -26,8 +26,6 @@
 
 (defvar *fluid-midi-driver-settings* nil)
 
-(fluid_version_str)
-
 (define-condition not-a-soundfont (error)
   ((soundfont :initarg :soundfont-name :reader soundfont-name)
    (synth :initarg :synth :reader fluidsynth-synth))
@@ -104,7 +102,7 @@
 		       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))))
 
 
-(defun cl-fluid-init-fluidsynth ()
+(defun cl-fluid-setup-fluidsynth ()
 
   (fluid-synth-setup)
   (fluid-midi-setup)

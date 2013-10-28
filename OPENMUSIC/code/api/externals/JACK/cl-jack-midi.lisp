@@ -77,7 +77,6 @@
 (defparameter +pitch-bend-opcode+	#xE0)
 (defparameter +tempo-opcode+		#xFF)
 
-(defconstant +program-change-opcode+ )
 
 (defun make-midi-note-on-tag (&optional (channel 1))
   (logior +note-on-opcode+ channel))
@@ -257,22 +256,16 @@
   (unless *CLJackClient*
     (setf *CLJackClient* (jack-client-open "CLJack" JackNullOption 0)))
 
-  ;; (loop for i from 0
-  ;;      and port = (mem-aref (jack-get-ports *CLJackClient* "" "midi" 0) :string i)
-  ;;      while port
-  ;;      collect port)
-
-  (unless *jack-midi-output-port*
-    (setf *jack-midi-output-port*
-	  (let ((port (jack-port-register *CLJackClient*
-					  "midiout"
-					  *jack-default-midi-type*
-					  (foreign-enum-value 'jackportflags :jackportisoutput)
-					  0)))
-	    (when (zerop (pointer-address port)) ;0 if not allocated
-	      (setf port -1)
-	      (cerror "Set *jack-midi-output-port* to -1" "*jack-midi-output-port* for Jack not allocated - check jack-server"))
-	    port))))
+  (setf *jack-midi-output-port*
+	(let ((port (jack-port-register *CLJackClient*
+					"midiout"
+					*jack-default-midi-type*
+					(foreign-enum-value 'jackportflags :jackportisoutput)
+					0)))
+	  (when (zerop (pointer-address port)) ;0 if not allocated
+	    (setf port -1)
+	    (cerror "Set *jack-midi-output-port* to -1" "*jack-midi-output-port* for Jack not allocated - check jack-server"))
+	  port)))
 
 
 ;;(Jack-deactivate *CLJackClient*)
