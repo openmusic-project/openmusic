@@ -11,14 +11,13 @@
 (defparameter *fluidsynth-loaded* nil)
 
 (defun cl-fluid-init-fluidsynth-ffi ()
-  (pushnew (oa::om-lib-directory) *foreign-library-directories*)
+  (pushnew (oa::om-lib-directory) *foreign-library-directories* :test 'equal)
   (define-foreign-library fluidsynth
     (t (:default "libfluidsynth")))
   (setf *fluidsynth-loaded*
 	(handler-case (progn (use-foreign-library fluidsynth) t)
 	  (error () (progn (print (format nil "could not load foreign-library fluidsynth"))
 			   nil)))))
-
 
 ;;; wrapper code for various ../include/fluidsynth/*.h
 
