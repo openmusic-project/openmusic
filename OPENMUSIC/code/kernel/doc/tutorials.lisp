@@ -60,7 +60,7 @@
     rep))
 
 
-(defun find-resource-file (file-1 type tutorial-type tutorial-path)
+(defun find-resource-file (file type tutorial-type tutorial-path)
   (cond ((equal type :picture)
          (let* ((nnn (pathname-name file))
                 (ddd (make-pathname :directory (pathname-directory file)))
