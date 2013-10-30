@@ -1008,3 +1008,23 @@ See http://sdif.sourceforge.net/standard/sdif-standard.html#Stream%20IDs%20Table
    (GetSIDTable (namestring self)))
 
 
+(defun get-sid-triplets (SIDlist)
+ (loop for item in (list! SIDlist) collect
+       (x-append (id item) (source item) (treeway item))
+       )
+ )
+
+
+(defmethod! find-sid ((SIDTable list) id)
+           :icon 639
+           :indoc '("a list of SDIFSID objects" "A streamID (number) or list of StreamIDs")
+           :initvals '(nil nil)
+           :doc "Returns source, treeway for StreamIDs from a list of StreamIDtable <sdifsid> objects."
+  (let ((sid (find id SIDTable :key 'id :test '=)))
+    (when sid (list (source sid) (treeway sid)))))
+
+(defmethod! find-sid ((SIDTable list) (id list))
+   (loop for item in id collect         
+         (find-sid list item)))
+
+
