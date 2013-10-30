@@ -109,7 +109,7 @@
           (om-smart-play object from to track))
     (om-smart-play obj from to track)))
 
-(defun las-loop-play (obj &optional track) 
+(defun las-loop-play (obj &optional track)
   (om-smart-loop-play obj track))
 
 (defun las-pause (obj &optional track)
@@ -373,10 +373,8 @@
 ;/CHANGE CHANNEL VOL
 ;Tool that change the volume of a channel
 (defun change-channel-vol-visible (channel vol)
-  (let ((status-list *audio-player-visible-tracks-info*))
-    (las::SetVolChannel *audio-player-visible* channel vol)
-    (setf (nth 2 (gethash channel status-list)) vol)
-    ))
+  (las::SetVolChannel *audio-player-visible* channel vol)
+  (setf (nth 2 (gethash channel *audio-player-visible-tracks-info*)) vol))
 
 
 ; L = 1.0
@@ -392,29 +390,25 @@
 ;/CHANGE CHANNEL PAN
 ;Tool that change the pan of a channel
 (defun change-channel-pan-visible (channel pan)
-  (let* ((status-list *audio-player-visible-tracks-info*)
-         (snd (car (gethash channel status-list)))
+  (let* ((snd (car (gethash channel status-list)))
          (nchnls 1)
          (pan2 (pan2panpan pan)))
     (if snd
-        (setf nchnls (las::GetChannelsSound (sndlasptr-current snd))
-              ))
+        (setf nchnls (las::GetChannelsSound (sndlasptr-current snd))))
     (case nchnls 
       (1 (las::SetPanChannel *audio-player-visible* channel pan pan))
       (2 (las::SetPanChannel *audio-player-visible* channel (car pan2) (cadr pan2)))
       (otherwise nil))
-    (setf (nth 3 (gethash channel status-list)) (car pan2))
-    (setf (nth 4 (gethash channel status-list)) (cadr pan2))
-    ))
+    (setf (nth 3 (gethash channel *audio-player-visible-tracks-info*)) (car pan2))
+    (setf (nth 4 (gethash channel *audio-player-visible-tracks-info*)) (cadr pan2))))
 
 ;/EMPTY ONE CHANNEL FUNCTION
 ;Tool that load a single sample null sound to a track.
 (defun empty-one-channel (player channel)
-  (let ((nullsnd (las::MakeNullSound 1)))
-    (las::LoadChannel player nullsnd channel 1.0 0.5 0.5)
-    (if (eq player *audio-player-hidden*)
-        (setf (car (gethash channel *audio-player-hidden-tracks-info*)) nil)
-      (setf (car (gethash channel *audio-player-visible-tracks-info*)) nil))))
+  (las::LoadChannel player (las::MakeNullSound 1) channel 1.0 0.5 0.5)
+  (if (eq player *audio-player-hidden*)
+      (setf (car (gethash channel *audio-player-hidden-tracks-info*)) nil)
+    (setf (car (gethash channel *audio-player-visible-tracks-info*)) nil)))
 
 ;/LOAD SOUND ON ONE CHANNEL FUNCTION
 ;Tool that loads a sound (his sndlasptr-to-play) to a track, and update the appropriate status list.
@@ -522,32 +516,31 @@
 ;           -if not it assigns it to the first available track
 ;           -if yes but since it was idle its track was allocated to an other sound, it assigns it to the first available track
 (defun om-smart-play-hidden (snd)
-  (let* ((actual-track (tracknum-sys snd))
-         (player *audio-player-hidden*))
+  (let* ((actual-track (tracknum-sys snd)))
     (if (/= actual-track -1)
         (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
            (cond ((string-equal "Idle" (cadr (gethash actual-track *audio-player-hidden-tracks-info*)))
                   (let () 
-                    (load-sound-on-one-channel player snd actual-track)
-                    (play-one-channel player actual-track)))
+                    (load-sound-on-one-channel *audio-player-hidden* snd actual-track)
+                    (play-one-channel *audio-player-hidden* actual-track)))
                  ((string-equal "Paused" (cadr (gethash actual-track *audio-player-hidden-tracks-info*)))
-                  (cont-one-channel player actual-track))
+                  (cont-one-channel *audio-player-hidden* actual-track))
                  ((string-equal "Playing" (cadr (gethash actual-track *audio-player-hidden-tracks-info*))) nil))
           (if (string-equal "Idle" (cadr (gethash actual-track *audio-player-hidden-tracks-info*)))
               (let ()
-                (load-sound-on-one-channel player snd actual-track)
-                (play-one-channel player actual-track))
-            (let ((chan (get-free-channel player)))
+                (load-sound-on-one-channel *audio-player-hidden* snd actual-track)
+                (play-one-channel *audio-player-hidden* actual-track))
+            (let ((chan (get-free-channel *audio-player-hidden*)))
               (setf (tracknum-sys snd) chan)
-              (load-sound-on-one-channel player snd chan)
-              (play-one-channel player chan))
+              (load-sound-on-one-channel *audio-player-hidden* snd chan)
+              (play-one-channel *audio-player-hidden* chan))
             ))
-      (let* ((chan (get-free-channel player)))
+      (let* ((chan (get-free-channel *audio-player-hidden*)))
         (if (< chan las-channels)
             (progn
               (setf (tracknum-sys snd) chan)
-              (load-sound-on-one-channel player snd chan)
-              (play-one-channel player chan))
+              (load-sound-on-one-channel *audio-player-hidden* snd chan)
+              (play-one-channel *audio-player-hidden* chan))
             (om-message-dialog (format nil "Oops! It seems that you reached the system limit. Too many songs are playing at the same time.~%~%Note : You can play up to ~D songs with no track assignation at the same time." (- las-channels 1))))))))
 
 ;/PLAY FUNCTION FOR VISIBLE PLAYER
@@ -558,19 +551,18 @@
 ;                       -if the selected track is already filled but Idle, the system allows the replacement
 ;                       -if the selected track is already filled but Play or Paused, the system forbid the replacement and notice the user.
 (defun om-smart-play-visible (snd &optional (tracknum 0))
-  (let* ((actual-track tracknum)
-         (player *audio-player-visible*))
+  (let* ((actual-track tracknum))
     (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
         (cond ((string-equal "Idle" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
-               (load-sound-on-one-channel player snd actual-track)
-               (play-one-channel player actual-track))
+               (load-sound-on-one-channel *audio-player-visible* snd actual-track)
+               (play-one-channel *audio-player-visible* actual-track))
               ((string-equal "Paused" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
-               (cont-one-channel player actual-track))
+               (cont-one-channel *audio-player-visible* actual-track))
               ((string-equal "Playing" (cadr (gethash actual-track *audio-player-visible-tracks-info*))) nil))
       (cond ((string-equal "Idle" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
              (let ()
-               (load-sound-on-one-channel player snd actual-track)
-               (play-one-channel player actual-track)))
+               (load-sound-on-one-channel *audio-player-visible* snd actual-track)
+               (play-one-channel *audio-player-visible* actual-track)))
             ((string-equal "Paused" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
              (print "WARNING : A sound seems to be paused on this channel. Stop it first or please select a new track"))
             ((string-equal "Playing" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
@@ -579,36 +571,30 @@
 ;/PAUSE FUNCTION FOR HIDDEN PLAYER
 ;This function is a basic pause function which works only if the sound is playing. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-pause-hidden (snd)
-  (let ((actual-track (tracknum-sys snd))
-        (player *audio-player-hidden*)) 
+  (let ((actual-track (tracknum-sys snd))) 
     (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
         (if (string-equal "Playing" (cadr (gethash actual-track *audio-player-hidden-tracks-info*)))
-            (pause-one-channel player actual-track)))))
+            (pause-one-channel *audio-player-hidden* actual-track)))))
 
 ;/PAUSE FUNCTION FOR VISIBLE PLAYER
 ;This function is a basic pause function which works only if the sound is playing. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-pause-visible (snd &optional (tracknum 0))
-  (let ((actual-track tracknum)
-        (player *audio-player-visible*))
-    (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
-        (if (string-equal "Playing" (cadr (gethash actual-track *audio-player-visible-tracks-info*)))
-            (pause-one-channel player actual-track)))))
+  (if (eq snd (car (gethash tracknum *audio-player-visible-tracks-info*)))
+      (if (string-equal "Playing" (cadr (gethash tracknum *audio-player-visible-tracks-info*)))
+          (pause-one-channel *audio-player-visible* tracknum))))
 
 ;/STOP FUNCTION FOR HIDDEN PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-stop-hidden (snd &optional synth)
-  (let ((actual-track (tracknum-sys snd))
-        (player *audio-player-hidden*))
+  (let ((actual-track (tracknum-sys snd)))
     (if (eq snd (car (gethash actual-track *audio-player-hidden-tracks-info*)))
-        (stop-one-channel player actual-track))))
+        (stop-one-channel *audio-player-hidden* actual-track))))
 
 ;/STOP FUNCTION FOR VISIBLE PLAYER
 ;This function is a basic stop function. It also check if the channel of the sound is well loaded with it to avoid issues.
 (defun om-smart-stop-visible (snd &optional (tracknum 0))
-  (let ((actual-track tracknum)
-        (player *audio-player-visible*))
-    (if (eq snd (car (gethash actual-track *audio-player-visible-tracks-info*)))
-        (stop-one-channel player actual-track))))
+  (if (eq snd (car (gethash tracknum *audio-player-visible-tracks-info*)))
+      (stop-one-channel *audio-player-visible* tracknum)))
 
 ;/USE ORIGINAL SOUND
 ;This functions switch between the orginal stream and the modified stream
