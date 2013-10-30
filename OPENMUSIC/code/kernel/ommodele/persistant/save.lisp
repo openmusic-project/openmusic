@@ -115,7 +115,9 @@
     (let ((rel-resources (loop for rtype in res-list collect
                                (cons (car rtype)
                                      (loop for path in (cdr rtype) collect
-                                           (namestring (relative-pathname path (mypathname obj))))))))
+                                           ;(namestring (relative-pathname path (mypathname obj)))
+                                           (format nil "~s" (relative-pathname path (mypathname obj)))  ;;; DIRTY HACK - ALLOWS COMPATIBILITY BETWEEN MAC/WINDOWS
+                                           )))))
       (write-line "; External resources " ptr)
     (write-line (format nil "; ~S" (omng-save rel-resources)) ptr))
     ))

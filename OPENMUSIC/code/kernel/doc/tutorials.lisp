@@ -35,8 +35,11 @@
                (let ((fileres (get-resources item)))
                  (loop for restype in fileres append
                        (loop for path in (cdr restype) collect
-                             (let ((*relative-path-reference* item))
-                               (list (car restype) (restore-path path))
+                             (let ((*relative-path-reference* item)
+                                   (corrected-path (if (and (stringp path) (pathnamep (read-from-string path)))
+                                                       (read-from-string path)
+                                                     path)))
+                               (list (car restype) (restore-path corrected-path))
                                )))))
               (t nil)
               )))
@@ -50,13 +53,14 @@
               (setf rep (search-file-recursive name file type))
             (if (and (string-equal (pathname-name file) name)
                      (or (not type) (string-equal type (pathname-type file))))
-                (setf rep file))
+                (setf rep file)
+              )
             ))
     ;(print (list name dir type "=>" rep)) 
     rep))
 
 
-(defun find-resource-file (file type tutorial-type tutorial-path)
+(defun find-resource-file (file-1 type tutorial-type tutorial-path)
   (cond ((equal type :picture)
          (let* ((nnn (pathname-name file))
                 (ddd (make-pathname :directory (pathname-directory file)))
@@ -83,7 +87,6 @@
                  lib-subfolders :key #'(lambda (path) (car (last (pathname-directory path)))))))
 
 
-
 ;;; dir = the folder to import
 ;;; name = the name of the tutorial
 ;;; editor = the caller editor
@@ -93,9 +96,11 @@
     (setf resources (remove-duplicates resources :test #'(lambda (a b) (and (equal (car a) (car b))
                                                                             (string-equal (namestring (cadr a)) (namestring (cadr b)))))))
     ;(print resources)
+    
     ;;; import external resources
     (loop for item in resources do
           (let ((file (find-resource-file (cadr item) (car item) tutorial-type tutorial-path)))
+            ;(print (list (cadr item) (car item) tutorial-type tutorial-path))
             (if file
               (cond ((equal (car item) :picture)
                      (print (string+ "importing picture: " (pathname-name (cadr item))))
