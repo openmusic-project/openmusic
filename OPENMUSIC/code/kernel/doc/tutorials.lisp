@@ -62,21 +62,21 @@
 
 (defun find-resource-file (file type tutorial-type tutorial-path)
   (cond ((equal type :picture)
-         (let* ((nnn (pathname-name file))
-                (ddd (make-pathname :directory (pathname-directory file)))
+         (let* ((nnn (pathname-name file-1))
+                (ddd (make-pathname :directory (pathname-directory file-1)))
                 (pictfile (find nnn (om-directory ddd :files t :directories nil :type *om-pict-type*) 
                                 :key 'pathname-name :test 'string-equal)))
            (unless pictfile
              (setf pictfile (search-file-recursive nnn (om-make-pathname :directory (pathname-directory tutorial-path)) nil)))
            pictfile))
         
-         (t (if (probe-file file)   
-                file
-                (search-file-recursive (pathname-name file) (make-pathname :directory 
+         (t (if (probe-file file-1)   
+                file-1
+                (search-file-recursive (pathname-name file-1) (make-pathname :directory 
                                                                            (if (equal tutorial-type 'ws)
                                                                                (append (pathname-directory tutorial-path) '("in-files"))
                                                                              (pathname-directory tutorial-path)))
-                                       (pathname-type file))
+                                       (pathname-type file-1))
               ))
          ))
 
