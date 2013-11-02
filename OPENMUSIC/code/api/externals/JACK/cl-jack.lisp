@@ -26,10 +26,8 @@
 (defparameter *jack-loaded* nil)
  
 (defun cl-jack-init-jack ()
-  (pushnew (oa::om-lib-directory) *foreign-library-directories* :test 'equal)
   (define-foreign-library libjack
     (t (:default "libjack")))
-  ;;(setf *jack* (use-foreign-library libjack))
   (setf *jack-loaded*
 	(handler-case (progn (use-foreign-library libjack) t)
 	  (error () (progn (print (format nil "could not load foreign-library libjack"))

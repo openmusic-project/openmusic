@@ -16,7 +16,6 @@
   (defparameter *libsndfile* nil)
 
   (defun init-libsndfile ()
-    (pushnew (oa::om-lib-directory) *foreign-library-directories* :test 'equal)
     (define-foreign-library libsndfile
       (t (:default "libsndfile")))
     (setf *libsndfile*
