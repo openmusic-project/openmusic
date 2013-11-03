@@ -798,6 +798,12 @@
 (defmethod om-get-slider-orientation ((self om-slider))
   (capi::range-orientation self))
 
+(defmethod om-enable-dialog-item ((self om-slider) t-or-nil)
+  (setf (simple-pane-enabled self) t-or-nil))
+
+(defmethod om-dialog-item-enabled ((self om-slider))
+  (simple-pane-enabled self))
+
 ;--------om-pop-up-dialog-item
 
 (defclass om-pop-up-dialog-item (om-standard-dialog-item option-pane) 
@@ -837,7 +843,7 @@
 
 ;;; !!!!
 (defmethod om-get-selected-item ((self om-pop-up-dialog-item))
-  (nth (choice-selection self) (om-get-item-list self)))
+  (when (choice-selection self) (nth (choice-selection self) (om-get-item-list self))))
 
 (defmethod om-get-selected-item-index ((self om-pop-up-dialog-item))
   (choice-selection self))
