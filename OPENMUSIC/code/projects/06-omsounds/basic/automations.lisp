@@ -46,9 +46,9 @@
         (progn
           (setf (player-fun bpf) (get-function-from-track bpf))
           (if (string= (parameter bpf) "presets")
-              (setf x (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
+              (setf x (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
                             (* 2000 i))
-                    y (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
+                    y (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
                             i))
             (setf x (interpolate (list 0 10000) (list 0 10000) 50)
                   y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 50)))
@@ -57,7 +57,7 @@
       (print "I cannot build a mixer-automation with these parameters"))
     bpf))
 
-
+(interpolate (list 0 50) (list 0 1) 5)
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
   (when (or (track object) (and (parameter object) (string= (string-downcase (parameter object)) "presets")))
@@ -69,7 +69,7 @@
          (parameter (parameter bpf))
          (minval (if (string= parameter "vol") 0 -100)) 
          (maxval 100)
-         (npresets (length *general-mixer-presets*)))
+         (npresets (length (mixer-presets *audio-mixer*))))
     (cond  ((string= parameter "pan")
             #'(lambda (val)
                 (if val
@@ -98,15 +98,20 @@
                     (progn
                       (if (< val 0) (setf val 0))
                       (if (>= val npresets) (setf val (- npresets 1)))
-                      (if (/= val *general-mixer-current-preset*)
-                          (progn
+                      (if (/= val (mixer-current-preset *audio-mixer*))
+                      (progn
+                        (let ((vals (cadr (nth val (mixer-presets *audio-mixer*)))))
+                          (setf (mixer-values *audio-mixer*) (copy-tree vals))
+                          (setf (mixer-current-preset *audio-mixer*) val)
+                          (apply-mixer-values))
                             (load-genmixer-preset val)
-                            (if *general-mixer-window*
-                                (update-genmixer-display)))))))))))
+                        (if *general-mixer-window*
+                            (update-genmixer-display)))))))))))
+;(om* (mod val 1) (cadr (nth (ceiling val) (mixer-presets *audio-mixer*))))
 
 (defmethod draw-control-info ((self t) (object mixer-automation)) 
-  (let ((namelist (loop for i from 0 to (1- (length *general-mixer-presets*)) collect
-                        (car (nth i *general-mixer-presets*)))))
+  (let ((namelist (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                        (car (nth i (mixer-presets *audio-mixer*))))))
     (if (not (track object))
         (om-with-focused-view self
           (om-with-fg-color self (om-make-color 1 0 0)

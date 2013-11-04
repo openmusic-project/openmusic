@@ -17,8 +17,7 @@
   ((mixer-player :initform nil :initarg :mixer-player :accessor mixer-player)
    (mixer-presets :initform nil :initarg :mixer-presets :accessor mixer-presets)
    (mixer-current-preset :initform 0 :initarg :mixer-current-preset :accessor mixer-current-preset)
-   (mixer-values :initform nil :initarg :mixer-values :accessor mixer-values)
-   ))
+   (mixer-values :initform nil :initarg :mixer-values :accessor mixer-values)))
 
 ;;; which players can the audio-mixer control ?
 ;;; the first in the list will be the default
@@ -42,8 +41,7 @@
          (mixer-values *audio-mixer*)  (copy-tree (cadr (nth (mixer-current-preset *audio-mixer*) 
                                                              (mixer-presets *audio-mixer*)))))
         
-        *audio-mixer*
-        )
+        *audio-mixer*)
 
 (defun get-default-mix-values ()
   (make-list *audio-n-channels* :initial-element (list 0 100)))
@@ -381,6 +379,7 @@
     (setf (mixer-values *audio-mixer*) (copy-tree vals))
     (setf (mixer-current-preset *audio-mixer*) index)
     (apply-mixer-values)))
+
 
 ;/UPDATE GENMIXER DISPLAY FUNCTION
 ;Update the genmixer vol and pan display.
