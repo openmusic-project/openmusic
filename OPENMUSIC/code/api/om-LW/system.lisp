@@ -329,12 +329,19 @@
 (defun om-root-init ()
   (if (om-standalone-p)
     (setf *om-root* (make-pathname 
-                       :device (pathname-device (LISP-IMAGE-NAME)) :host (pathname-host (LISP-IMAGE-NAME))
-                       :directory 
-                                     #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
-                                     #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
-                                     #+linux(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
-                                     ))
+		     :device (pathname-device (LISP-IMAGE-NAME)) :host (pathname-host (LISP-IMAGE-NAME))
+		     :directory 
+		     #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
+		     #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
+		     #+linux (pathname-directory
+			      (or (and (find "--om-root" sys:*line-arguments-list* :test 'string=)
+				       (nth (1+ (position "--om-root" sys:*line-arguments-list* :test 'string=))
+					    sys:*line-arguments-list*))
+				  (make-pathname :directory (append (butlast (pathname-directory
+									      (truename (pathname-location (lisp-image-name)))))
+								    '("share" "openmusic")))
+				  ;;(truename (pathname-location (lisp-image-name)))
+				  ))))
     (setf *om-root* cl-user::*om-src-directory*)))
 
 (om-api-add-init-func 'om-root-init)
