@@ -1,0 +1,59 @@
+# Makefile for OpenMusic	-*-Makefile-*-
+# Copyright (C) 2013 anders anders DOT vinjar AT bek DOT no
+# 
+# This makefile is located at top-level in the distributed source-tree
+# for OM.  
+#
+# The only targets here are install and uninstall.  'make install'
+# will install the binary in $prefix and the various source-files and
+# needed resources under $prefix/share/$(APPNAME)
+#
+# For development-work, you want to get the sources via svn or
+# download from the ircam forge:
+# 
+#	http://forge.ircam.fr/p/OM6/downloads/
+#	
+
+SHELL		= /bin/sh
+PREFIX		= /usr
+
+# DESTDIR for local builds, ie. by rpmbuild etc.
+
+bindir		= $(DESTDIR)$(PREFIX)/bin
+datadir		= $(DESTDIR)$(PREFIX)/share
+
+INSTALL_PROGRAM	= install
+
+BUILDROOT	= $(shell pwd)
+APPNAME		= openmusic
+
+# these two lookup some info which might change once in a while:
+
+releaseappname  = $(dirname $(BUILDROOT))
+omroot		= $(datadir)/$(APPNAME)
+
+rsyncflags	= -v -rlt -z
+
+checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
+ifdef $(checkname)
+releaseappname	= $(checkname)
+else
+releaseappname	= $(notdir $(BUILDROOT))
+endif
+
+help:
+	@echo BUILDROOT:	$(BUILDROOT)
+	@echo releaseappname:	$(releaseappname)
+	@echo targets: install, uninstall, all (install), help
+
+all:	install
+
+install: $(BUILDROOT)/$(releaseappname)
+	mkdir -p $(omroot)
+	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude 'OM_6.7*' --exclude 'Makefile*'  . $(omroot)
+	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(APPNAME)
+
+
+uninstall:
+	rm -rfv $(omroot)
+	rm -f $(bindir)/$(APPNAME)
