@@ -220,7 +220,7 @@
 ;Init the WorkSpace specified by pathname.
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
-   #-linux (setf *splash-screen* (show-kero-pict nil))  ; FIXME
+   (setf *splash-screen* (show-kero-pict nil))
    (init-om-package)                    
    (load-om-libs)
    (workspace-from-name pathname)                   

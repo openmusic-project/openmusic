@@ -1,95 +1,98 @@
-# Makefile for OpenMusic	-*-Makefile-*-
-# Copyright (C) 2013 anders anders.vinjar@bek.no
+# Makefile for OpenMusic 	-*-Makefile-*-
+# Copyright (C) 2013 anders anders DOT vinjar AT bek DOT no
+#
+# this Makefile is included in OpenMusics svn-tree.  Use it to compile
+# sources/build image + set up a dist (tar.bz2)
+#
+# install/uninstall targets are intended to be handled by the Makefile
+# packed at top-level in the dist
+# 
 
 SHELL		= /bin/sh
 
-APPNAME		= openmusic
-
-PREFIX		= /usr/local
-BINDIR		= $(PREFIX)/bin
-DATADIR		= $(PREFIX)/share
-
-# should reflect *om-root* while -build with delivery.lisp:
-OMROOT		= $(DATADIR)/$(APPNAME)
-
-MAKE		= make
-COMPRESS	= gzip
-RSYNCFLAGS	= -v -rlt -z -C --include '*.so'
-EXCLUDE_FASL	= --include 'dspec-database.ufasl' --exclude '*.ufasl' 
-
-# APP = $(shell ls $(SVN_TRUNK_ROOT) | grep "OM_")
-DISTAPPNAME	= $(APPNAME)
-
-COMPRESS	= tar
-COMPRESSFILE	= $(DISTAPPNAME).tar.bz2
-COMPRESSFLAGS	= -cjf $(COMPRESSFILE)
+LISPFLAGS	= -build
+LISP		= $(HOME)/bin/lw $(LISPFLAGS)
 
 INSTALL_PROGRAM	= install
 
-
-SVN_TRUNK_ROOT	= ../../..
-
-SVNAPPNAME	= $(shell ls $(SVN_TRUNK_ROOT) | grep "OM_")
-ifdef $(SVNAPPNAME)
-SVNAPPNAME	= $(SVNAPPNAME)
-else
+DISTDIR		= /tmp/OM/BUILD
 SVNAPPNAME	= OM_6.7_beta_4
+
+path_to_omroot	= ../../..
+thisfile	= $(lastword $(MAKEFILE_LIST))
+thisdir		= $(dir $(thisfile))
+builddir	= $(shell cd $(dir $(thisfile)) && cd $(path_to_omroot) && pwd)
+BUILDROOT	= $(builddir)
+
+PREFIX		= /usr/local
+APPNAME		= openmusic
+
+bindir		= $(DESTDIR)$(PREFIX)/bin
+datadir		= $(DESTDIR)$(PREFIX)/share
+
+omroot		= $(datadir)/$(APPNAME)
+
+faslname	= ufasl
+rubbish		= *.$(faslname)
+
+compress	= gzip
+rsyncflags	= -v -rlt -z -C --include '*.so'
+exclude_fasl	= --include 'dspec-database.ufasl' --exclude '$(rubbish)'
+
+compress	= tar
+compressfile	= $(APPNAME).tar.bz2
+compressfile	= $(SVNAPPNAME).tar.bz2
+compressflags	= -cjf
+
+
+checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
+ifdef $(checkname)
+svnappname	= $(checkname)
+else
+svnappname	= $(SVNAPPNAME)
 endif
 
+release		= $(DISTDIR)/$(svnappname)
 
-# RELEASE		= $(HOME)/site/OM/BUILD/$(SVNAPPNAME)
-RELEASE		= /tmp/OM/BUILD/$(SVNAPPNAME)
+all:	compile
 
-LISP		= $(HOME)/bin/lw
-LISPFLAGS	= -build
 
-RUBBISH	= *.ufasl
+compile buildsvn: 
+	@echo building "$(svnappname)" in source tree: "$(BUILDROOT)"
+	$(LISP) $(BUILDROOT)/buildimage/build-om/deliver.lisp
 
-$(SVN_TRUNK_ROOT)/$(SVNAPPNAME):
-	@echo building $(RELEASE) for user $(USER)
-	@echo building "$(SVNAPPNAME)" in source tree: "$(SVN_TRUNK_ROOT)"
-	$(LISP) --omroot $(OMROOT) $(LISPFLAGS) $(SVN_TRUNK_ROOT)/buildimage/build-om/deliver.lisp
-
-buildsvn: $(SVN_TRUNK_ROOT)/$(SVNAPPNAME)
-
-buildimage:
-	@echo building "$(RELEASE)/$(DISTAPPNAME)"
-	$(RELEASE)/$(DISTAPPNAME)
-
-cleansvn:
-	find $(SVN_TRUNK_ROOT) -name $(RUBBISH) -delete
-	rm $(SVN_TRUNK_ROOT)/$(SVNAPPNAME)
-
-clean:  cleansvn
-
-buildsvn: $(SVN_TRUNK_ROOT)/$(SVNAPPNAME)
+clean:
+	find $(BUILDROOT) -name $(rubbish) -delete
+	rm $(BUILDROOT)/$(svnappname)
 
 dist:   
-	@echo -e "setting up dist dir: " $(RELEASE)
-	rm -rf $(RELEASE) && mkdir -p $(RELEASE)
-	@echo -e "syncing " $(SVN_TRUNK_ROOT) "into dist dir: " $(RELEASE)
-	rsync $(RSYNCFLAGS) $(EXCLUDE_FASL) $(SVN_TRUNK_ROOT) $(RELEASE)
-	@echo -e "removing non-dists from buildimage/build-om:"
-	find $(RELEASE)/buildimage/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
-	cp README.LINUX $(RELEASE)/
+	rm -rf $(release) && mkdir -p $(release)
+	rsync $(rsyncflags) $(exclude_fasl) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
+	find $(release)/buildimage/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
+	cp README.LINUX $(release)/
+	cp Makefile.dist $(release)/Makefile
 
-tar.bz2:	dist
-	@echo -e "tar and bzip2'ing:"
-	cd $(shell dirname $(RELEASE)) && $(COMPRESS) $(COMPRESSFLAGS) $(SVNAPPNAME) 
-	@echo -e "done!"
+tar-dist: dist
+	cd $(shell dirname $(release)) && $(compress) $(compressflags) $(compressfile) $(svnappname) 
 
 distclean:
-	rm -rf $(RELEASE)
+	rm -rf $(release)
 
-install: $(RELEASE)/$(SVNAPPNAME)
-	@echo -e install $(SVNAPPNAME) $(BINDIR)/$(APPNAME)
-	cd $(RELEASE) && $(INSTALL_PROGRAM) -m 0755 $(SVNAPPNAME) $(BINDIR)/$(APPNAME)
-	@echo -e installing source-files
-	cd $(RELEASE) && rsync $(RSYNCFLAGS) $(EXCLUDE_FASL) --exclude '*.finderinfo' --exclude 'OM_6.7*' . $(OMROOT)
+# install: $(release)/$(svnappname)
+# 	cd $(release) && $(INSTALL_PROGRAM) -m 0755 $(svnappname) $(BINDIR)/$(APPNAME)
+# 	cd $(release) && rsync $(rsyncflags) $(exclude_fasl) --exclude 'OM_6.7*' . $(omroot)
 
 
-uninstall:
-	@echo -e removing .lisp source-files from $(OMROOT)
-	rm -rfv $(OMROOT)
-	@echo -e removing binary $(BINDIR)/$(APPNAME)
-	rm -f $(BINDIR)/$(APPNAME)
+# uninstall:
+# 	rm -rfv $(omroot)
+# 	rm -f $(BINDIR)/$(APPNAME)
+
+help:
+	@echo bygger $(BUILDROOT)/$(svnappname)
+	@echo Makefile:		$(thisfile)
+	@echo THISDIR:		$(thisdir)
+	@echo BUILDROOT:	$(BUILDROOT)
+	@echo svnappname:	$(svnappname)
+	@echo SVNAPPNAME:	$(SVNAPPNAME)
+	@echo release:		$(release)
+
