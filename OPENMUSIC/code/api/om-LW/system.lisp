@@ -323,26 +323,23 @@
 
 (defvar *om-root* nil)
 
-
 ;------
 ;;; ajoute un butlast
 (defun om-root-init ()
   (if (om-standalone-p)
-    (setf *om-root* (make-pathname 
-		     :device (pathname-device (LISP-IMAGE-NAME)) :host (pathname-host (LISP-IMAGE-NAME))
-		     :directory 
-		     #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
-		     #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
-		     #+linux (pathname-directory
-			      (or (and (find "--om-root" sys:*line-arguments-list* :test 'string=)
-				       (format nil "~A/" (nth (1+ (position "--om-root" sys:*line-arguments-list* :test 'string=))
-							      sys:*line-arguments-list*)))
-				  (make-pathname :directory (append (butlast (pathname-directory
-									      (truename (pathname-location (lisp-image-name)))))
-								    '("share" "openmusic")))
-				  ;;(truename (pathname-location (lisp-image-name)))
-				  ))))
-    (setf *om-root* cl-user::*om-src-directory*)))
+      (setf *om-root* (make-pathname 
+		       :device (pathname-device (LISP-IMAGE-NAME)) :host (pathname-host (LISP-IMAGE-NAME))
+		       :directory 
+		       #+cocoa(butlast (pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
+		       #+win32(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
+		       #+linux (pathname-directory
+				(cond ((member (second (pathname-directory (lisp-image-name))) '("usr" "opt") :test #'string=)
+				       (make-pathname :directory (append (butlast (pathname-directory
+										   (truename (pathname-location (lisp-image-name)))))
+									 '("share" "openmusic"))))
+				      (t (truename (pathname-location (lisp-image-name)))))))
+	    cl-user::*om-src-directory* *om-root*)
+      (setf *om-root* cl-user::*om-src-directory*)))
 
 (om-api-add-init-func 'om-root-init)
 
@@ -354,13 +351,20 @@
                                     :host (pathname-host (PATHNAME-LOCATION (LISP-IMAGE-NAME)))
                                     :directory
                                     #+macosx(butlast (pathname-directory (truename  (PATHNAME-LOCATION (LISP-IMAGE-NAME)))) 3)
-                                    #-macosx(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))
-                                    )))
+                                    #-macosx(pathname-directory (truename (PATHNAME-LOCATION (LISP-IMAGE-NAME))))))
+	 (path-code  (make-pathname :device (pathname-device root-path)
+				    :directory (append (pathname-directory root-path) (list "CODE"))))
+	 (path-api  (make-pathname :device (pathname-device root-path)
+				   :directory (append (pathname-directory root-path) (list "CODE" "API" "OM-LW")))))
     ;(print (format nil "~A**;*.*" (namestring root-path)))
-    (if (om-standalone-p)
-        (setf (logical-pathname-translations "CL")
-              (list (list "**;*.*.*" (format () "~A**/*.*" (namestring root-path)))))
-      )))
+    (when (om-standalone-p)
+      (setf (logical-pathname-translations "CL")
+	    (list (list "**;*.*.*" (format () "~A**/*.*" (namestring root-path)))))
+      (setf (logical-pathname-translations "code")
+	    (list (list "**;*.*.*" (format () "~A**/*.*" (namestring path-code)))))
+      (setf (logical-pathname-translations "api")
+	    (list (list "**;*.*.*" (format () "~A**/*.*" (namestring path-api))))))))
+
 
 (om-api-add-init-func 'set-om-logical-path)
 
