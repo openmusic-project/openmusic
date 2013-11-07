@@ -26,6 +26,7 @@ INSTALL_PROGRAM	= install
 
 BUILDROOT	= $(shell pwd)
 APPNAME		= openmusic
+INSTALLRES	= $(BUILDROOT)/buildimage/build-om/linux
 
 # these two lookup some info which might change once in a while:
 
@@ -52,6 +53,10 @@ install: $(BUILDROOT)/$(releaseappname)
 	mkdir -p $(omroot)
 	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude 'OM_6.7*' --exclude 'Makefile*'  . $(omroot)
 	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(APPNAME)
+	mkdir -p $(datadir)/applications/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
+	mkdir -p $(datadir)/pixmaps/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 omlogo.png $(datadir)/pixmaps/
 
 
 uninstall:
