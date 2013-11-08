@@ -61,12 +61,15 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 #loaded?# T is the LIbrary is already loaded. #loaded?#"))
 |#
 
+;;; never called: why both release and version ???
 (defmethod lib-release (&optional lib) 
   (release (or lib *current-lib*)))
 
 (defmethod set-lib-release (version &optional lib) 
   (let ((thelib (or lib *current-lib*)))
-    (setf (release thelib) version)))
+    ;(setf (release thelib) version)
+    (setf (version thelib) version)
+    ))
 
 
 ;--------------------------------------------------
@@ -157,9 +160,14 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 ;----Builder
 
 (defun def-lib-doc-string (lib)
-  (format nil "Version: ~A~%Location: ~A" 
-          (or (version lib) "?") 
+  (format nil "Version: ~A.~%~% - Location: ~A"
+          (or (version lib) "?")
           (namestring (om-make-pathname :directory (om-make-pathname :directory (lib-pathname lib))))))
+
+(defun reset-lib-doc (&optional lib)
+  (let ((thelib (or lib *current-lib*)))
+    (when thelib 
+      (setf (doc thelib) (def-lib-doc-string thelib)))))
 
 (defun omNG-make-new-lib (name)
   "Make an instance of the class OMLib."
@@ -181,7 +189,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                                             :name (string-until-space libname) 
                                             :type "lisp")
                              :icon 21)))
-    (setf (doc lib) (def-lib-doc-string lib))
+    (reset-lib-doc lib)
     lib))
 
 
