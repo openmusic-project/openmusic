@@ -262,11 +262,11 @@ boxes attached to the flag, the car of each element say if the box is attached a
 
 
 ;------------Icon class
-(omg-defclass bandera (icon-box) ())
+(defclass bandera (icon-box) ())
 
-(defmethod om-drag-selection-p ((self bandera) mouse-position)
-   (declare (ignore mouse-position))
-   (not (or (om-control-key-p) (om-shift-key-p))))
+(defmethod om-drag-start ((self bandera))
+  (unless (or (om-control-key-p) (om-shift-key-p))
+    (call-next-method)))
 
 (defmethod om-view-cursor :around ((self bandera))
    *om-arrow-cursor*)
@@ -283,16 +283,13 @@ boxes attached to the flag, the car of each element say if the box is attached a
 
 (defmethod om-view-click-handler ((self bandera) where)
   (let ((frame (om-view-container self)))
-    (if (om-shift-key-p) 
-        (toggle-icon-active-mode frame)
-      (progn
-        (mapc #'(lambda (control) 
-                  (omG-unselect control)) (get-actives (om-view-container frame)))
-        (OMG-select frame)))
+    (mapc #'(lambda (control) 
+              (omG-unselect control)) (get-actives (om-view-container frame)))
+    (OMG-select frame)
     (when (and (show-con? (om-view-container frame)) (om-shift-key-p))
       (drag-out-line self where))
     t))
-
+  
 (defmethod om-get-menu-context ((self bandera))
   (list (om-new-leafmenu "Change Position" 
                          #'(lambda () (change-offset-dialog (om-view-container self))))
@@ -351,19 +348,22 @@ boxes attached to the flag, the car of each element say if the box is attached a
      (om-init-motion-functions self 'make-connection-marker-motion 'release-connection-marker-motion)
      (om-new-movable-object panel rx ry 4 4 'om-movable-line)))
 
+
+
 (defmethod make-connection-marker-motion ((self bandera) pos)
-  (let* (  (panel (panel (om-view-window self)))
-           (initpoint (om-convert-coordinates pos self panel ))
-           (rx (om-point-h initpoint))
-           (ry (om-point-v initpoint))
-           (rect  (om-init-point-movable-object panel)))
+  ;(print pos)
+  (let* ((panel (panel (om-view-window self)))
+         (initpoint (om-convert-coordinates pos self panel ))
+         (rx (om-point-h initpoint))
+         (ry (om-point-v initpoint))
+         (rect  (om-init-point-movable-object panel)))
     (when rect
       (let* ((newrect (om-pts-to-rect (om-make-point (first rect) (second rect)) (om-make-point rx ry)))
              (nx  (om-rect-left newrect))
              (ny (om-rect-top newrect))
              (nw (om-rect-w newrect))  
              (nh (om-rect-h newrect)))
-      (om-update-movable-object panel nx ny (max nw 2) (max nh 2)))
+        (om-update-movable-object panel nx ny (max nw 2) (max nh 2)))
       )))
 
 

@@ -34,12 +34,20 @@
 
 (defmethod player-init ((self omplayer)) t)
 
-(defmacro get-player-time (player)
-  `(cond ((equal (state ,player) :play)
-          (+ (player-offset ,player) (start-time ,player) (- (clock-time) (ref-clock-time ,player))))
-         ((equal (state ,player) :pause)
-          (+ (player-offset ,player) (start-time ,player)))
-         (t 0)))
+;(defmacro get-player-time (player)
+;  `(cond ((equal (state ,player) :play)
+;          (+ (player-offset ,player) (start-time ,player) (- (clock-time) (ref-clock-time ,player))))
+;         ((equal (state ,player) :pause)
+;          (+ (player-offset ,player) (start-time ,player)))
+;         (t 0)))
+
+(defun get-player-time (player)
+  (cond ((equal (state player) :play)
+         (+ (player-offset player) (start-time player) (- (clock-time) (ref-clock-time player))))
+        ((equal (state player) :pause)
+         (+ (player-offset player) (start-time player)))
+        (t 0)))
+
 
 (defmethod idle-p ((self omplayer)) 
   (not (member (state self) '(:play :record))))
