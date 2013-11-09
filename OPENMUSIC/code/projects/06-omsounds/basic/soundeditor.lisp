@@ -721,6 +721,33 @@
 ;===================
 ; (capi::draw-metafile-to-image self (oa::themetafile (pic-to-draw thesound)) :width 1000 :height 1000)
 
+(defparameter *zoom-steps* '((0 0) 
+                             (500 10000) 
+                             (900 5000)
+                             (1750 2500)
+                             (3000 1250)
+                             (5000 1000)
+                             (7500 500)
+                             (14000 333.333)
+                             (20000 250)
+                             (25000 200)
+                             (40000 100)
+                             (80000 50)
+                             (130000 33.3333)
+                             (190000 25)
+                             (250000 20)
+                             (300000 nil)))
+
+; (loop for n in (butlast (cdr *zoom-steps*)) collect (/ (car n) (cadr n)))
+ 
+;;; tester avec un rapport constant entre xview et sr (env. xview/50)
+(defun get-zoom-step (xview sr)
+  (let ((n (cadr (find xview *zoom-steps* :test '>= :key 'car :from-end t))))
+    (when n ;; IF N = NIL => TOO LONG (DRAW PICT) 
+      (if (zerop n) 1  ;; N = 0 => SAMPLE ACCURATE
+        (/ sr (float n))))))
+
+
 (defmethod om-draw-contents ((self soundPanel))
   (call-next-method)  
   (if (equal (state (player (editor self))) :recording)
@@ -751,42 +778,16 @@
                (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
                (xview (- xmax xmin))
                (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) 
-               (step-1smp 1)
-               (step-100us (/ sr 10000.0))
-               (step-200us (/ sr 5000.0))
-               (step-400us (/ sr 2500.0))
-               (step-800us (/ sr 1250.0))
-               (step-1ms (/ sr 1000.0))
-               (step-2ms (/ sr 500.0))
-               (step-3ms (/ sr 333.3333))
-               (step-4ms (/ sr 250.0))
-               (step-5ms (/ sr 200.0))
-               (step-10ms (/ sr 100.0))
-               (step-20ms (/ sr 50.0))
-               (step-30ms (/ sr 33.3333))
-               (step-40ms (/ sr 25.0))
-               (step-50ms (/ sr 20.0)))
+               (zoom-step (get-zoom-step xview sr))
+               )
+          (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
-                (if (< xview pict-threshold)
-                    (cond ((>= xview 300000) (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                          ((and (< xview 300000) (>= xview 250000)) (om-draw-waveform self step-50ms))
-                          ((and (< xview 250000) (>= xview 190000)) (om-draw-waveform self step-40ms))
-                          ((and (< xview 190000) (>= xview 130000)) (om-draw-waveform self step-30ms))
-                          ((and (< xview 130000) (>= xview 80000)) (om-draw-waveform self step-20ms))
-                          ((and (< xview 80000) (>= xview 40000)) (om-draw-waveform self step-10ms))
-                          ((and (< xview 40000) (>= xview 25000)) (om-draw-waveform self step-5ms))
-                          ((and (< xview 25000) (>= xview 20000)) (om-draw-waveform self step-4ms))
-                          ((and (< xview 20000) (>= xview 14000)) (om-draw-waveform self step-3ms))
-                          ((and (< xview 14000) (>= xview 7500)) (om-draw-waveform self step-2ms))
-                          ((and (< xview 7500) (>= xview 5000)) (om-draw-waveform self step-1ms))
-                          ((and (< xview 5000) (>= xview 3000)) (om-draw-waveform self step-800us))
-                          ((and (< xview 3000) (>= xview 1750)) (om-draw-waveform self step-400us))
-                          ((and (< xview 1750) (>= xview 900)) (om-draw-waveform self step-200us))
-                          ((and (< xview 900) (>= xview 500)) (om-draw-waveform self step-100us))
-                          ((< xview 500) (om-draw-waveform self step-1smp)))
-                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                (if (and zoom-step (not (pict-spectre? thesound)))
+                    (om-draw-waveform self zoom-step)
+                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15)))
+                  )
                 (om-with-fg-color self *om-blue-color*
                   (loop for item in (markers thesound) 
                         for k = 0 then (+ k 1) do
@@ -803,7 +804,8 @@
                   (om-with-focused-view self 
                     (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
                   )
-                )))) (om-with-focused-view self (om-draw-string 10 40 (format nil "You have to load a file."))))))
+                )))) 
+      (om-with-focused-view self (om-draw-string 10 40 (format nil "No file loaded.."))))))
 
 
 (defmethod om-draw-waveform ((self soundPanel) smpstep)
