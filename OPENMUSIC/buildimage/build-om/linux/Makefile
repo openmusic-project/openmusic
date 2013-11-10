@@ -39,18 +39,19 @@ compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
 exclude_fasl	= --include 'dspec-database.ufasl' --exclude '$(rubbish)'
 
-compress	= tar
-compressfile	= $(APPNAME).tar.bz2
-compressfile	= $(SVNAPPNAME).tar.bz2
-compressflags	= -cjf
-
 
 checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
-ifdef $(checkname)
-svnappname	= $(checkname)
+ifdef checkname
+	svnappname = $(checkname)
 else
-svnappname	= $(SVNAPPNAME)
+	svnappname = $(SVNAPPNAME)
 endif
+
+compress	= tar
+compressfile	= $(APPNAME).tar.bz2
+compressfile	= $(svnappname).tar.bz2
+compressflags	= -cjf
+
 
 release		= $(DISTDIR)/$(svnappname)
 
