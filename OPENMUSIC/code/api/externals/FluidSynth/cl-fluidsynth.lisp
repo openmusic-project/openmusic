@@ -22,7 +22,10 @@
 (defvar *fluidplayer* nil)
 (defvar *fluid-midi-player* nil)
 (defvar *fluidadriver* nil)
-(defvar *soundfont* "/usr/share/soundfonts/FluidR3_GM.sf2")
+(defvar *soundfont-dir* (pathname-directory (or (probe-file "/usr/share/soundfonts/")
+						(probe-file "/usr/share/sounds/sf2/"))))
+
+(defvar *soundfont* (namestring (make-pathname :directory *soundfont-dir* :name "FluidR3_GM.sf2")))
 
 (defvar *fluid-midi-driver-settings* nil)
 
