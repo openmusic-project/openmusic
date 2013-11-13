@@ -22,8 +22,8 @@
 ;;; Stop/play/pause for MidiShare player
 ;;;==============================
 
-(defvar *list-to-play* nil)
-(defvar *loop* nil)
+(defvar *ms-list-to-play* nil)
+(defvar *ms-loop* nil)
 
 ;;; IN MIDISHARE DEFAULT PLAYER, YOU MUST STOP BEFORE TO PLAY SOMETHING NEW
 ;(defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
@@ -35,7 +35,7 @@
 
 
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
-  (push (list object at interval) *list-to-play*))
+  (push (list object at interval) *ms-list-to-play*))
 
 
 ;;; PLAY (NOW) 
@@ -48,15 +48,15 @@
 ;  (when *midiplayer* (om-midi-start-player *midiplayer*)))
 
 (defmethod player-start ((engine (eql :midishare)) &optional play-list)
-  ;(print *list-to-play*)
+  ;(print *ms-list-to-play*)
   (om-midi-stop-player *midiplayer*)
   (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
-  (let ((object (mapcar 'car *list-to-play*)))
+  (let ((object (mapcar 'car *ms-list-to-play*)))
     (InitPlayingSeq 'midishare (get-obj-dur object))
-    (loop for item in *list-to-play* do
+    (loop for item in *ms-list-to-play* do
           (PrepareToPlay 'midishare (car item) (+ (cadr item) (real-duration (car item) 0)) :interval (caddr item)))
     (FinalizePlayingSeq 'midishare (get-obj-dur object))
-    (when *loop* (om-midi-set-loop-player *midiplayer* 0 *loop*))
+    (when *ms-loop* (om-midi-set-loop-player *midiplayer* 0 *loop*))
     (when *midiplayer* (om-midi-start-player *midiplayer*))))
 
 ;;; PAUSE (all)
@@ -71,13 +71,13 @@
 (defmethod player-stop ((engine (eql :midishare)) &optional play-list)
   (when *midiplayer* (om-midi-stop-player *midiplayer*)
     (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000))
-  (setf *list-to-play* nil *loop* nil))
+  (setf *ms-list-to-play* nil *ms-loop* nil))
 
 ;;; SET LOOP (before play)
 ;;; desyncronizes with the general scheduler...
 (defmethod player-set-loop ((engine (eql :midishare)) &optional start end)
   ;(om-midi-set-loop-player *midiplayer* 0 (- end start))
-  (setf *loop* (- end start))
+  (setf *ms-loop* (- end start))
   )
 
 (defmethod player-record ((engine (eql :midishare)))

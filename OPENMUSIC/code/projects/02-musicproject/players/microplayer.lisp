@@ -121,21 +121,14 @@
  
 ;================
 
-(defmethod InitPlayingSeq ((player (eql 'microplayer)) dur &key (port nil))
-  (setf *microosc-packets* nil)
-  (setf *MidiShare-start-time* 1))
-    
-(defmethod FinalizePlayingSeq ((player (eql 'microplayer)) dur &key (port nil))
-  (sort-micro-events)
-  t)
+
 
 
 (defmethod* PrepareToPlay ((player (Eql 'microplayer)) (self t) at &key  approx port interval voice)
-   (declare (ignore approx))
+   (declare (ignore approx port interval voice))
    (call-next-method))
 
 (defmethod* PrepareToPlay ((player (Eql 'microplayer)) (self measure) at &key approx port interval voice)
-   (setf port (verify-port port))
    (loop for sub in (inside self) do
          (let ((objstart (+ at (offset->ms sub))))
            (if interval
@@ -144,40 +137,43 @@
                (when newinterval
                  (PrepareToPlay player sub objstart 
                                 :approx approx 
-                                :port port
-                                :interval interval
-                                :voice voice)))
+                                :interval interval)))
              (PrepareToPlay player sub objstart 
                             :approx approx 
-                            :port port
-                            :voice voice)))))
+                            )))))
 
 
-(defmethod* PrepareToPlay ((player (Eql 'microplayer)) (self note) at &key  approx port interval voice)
+
+(defmethod* PrepareToPlay ((player (Eql 'microplayer)) (self note) at &key approx port interval voice)
    (when (not (memq (tie self) '(continue end)))
      (let ((chan (chan self))
-           (pitch (/ (approx-scale (get-current-scale approx) (midic self)) 100.0))
+           (pitch (/ (if approx 
+                         (approx-scale (get-current-scale approx) (midic self))
+                       (midic self))  ;;; IF NO APPROX: PLAY FULL PRECISION
+                     100.0))
            (vel (vel self))
            (dur (- (real-dur self) 2))
            (date (+  *MidiShare-start-time* at)))
        (if interval
          (let ((newinterval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))) 
            (when newinterval
-             (playoscnote chan pitch vel (- (second newinterval) (first newinterval) 1) 
+             (make-osc-note chan pitch vel (- (second newinterval) (first newinterval) 1) 
                        (- (+  *MidiShare-start-time* (first newinterval)) 
                           (first interval)))))
-         (playoscnote chan pitch vel dur date)))))
+         (make-osc-note chan pitch vel dur date)))))
 
 
-(defun playoscnote (chan pitch vel dur date)
+(defun make-osc-note (chan pitch vel dur date)
    (push (list "/play.µt/fifos" date pitch vel dur chan) *microosc-packets*))
 
 
 (defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval)
   (player-stop :microplayer)
-  (InitPlayingSeq 'microplayer (get-obj-dur object))
-  (PrepareToPlay 'microplayer object (+ at (real-duration object 0)) :interval interval)
-  (FinalizePlayingSeq 'microplayer (get-obj-dur object)))
+  (setf *microosc-packets* nil)
+  (setf *MidiShare-start-time* 1)
+  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
+    (PrepareToPlay 'microplayer object (+ at (real-duration object 0)) :interval interval :approx approx)
+  (sort-micro-events)))
 
 
 (defmethod player-start ((self (eql :microplayer)) &optional play-list)
