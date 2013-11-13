@@ -1,11 +1,13 @@
 (in-package :om)
 
-(enable-player :multiplayer)
+
 
 (defmethod player-name ((self (eql :multiplayer))) "MultiPlayer")
 (defmethod player-desc ((self (eql :multiplayer))) "external Max multi-channel player")
 (defmethod player-special-action ((self (eql :multiplayer))) (launch-multiplayer-app))
 (defmethod player-type ((player (eql :multiplayer))) :UDP)
+
+(enable-player :multiplayer)
 
 (add-player-for-object 'sound :multiplayer)
  
@@ -23,12 +25,11 @@
 (defvar *multiplayer-app* nil)
 (defvar *multiplayer-path* nil)
 
-(defun init-multiplayer-app ()
-  (setf *multiplayer-path* 
-        (probe-file (om-default-application-path '() "MultiPlayer"))))
+;(defun init-multiplayer-app ()
+;  (setf *multiplayer-path* 
+;        (probe-file (om-default-application-path '() "MultiPlayer"))))
 
-
-(om-add-init-func 'init-multiplayer-app)
+;(om-add-init-func 'init-multiplayer-app)
 
 (defun launch-multiplayer-app ()
   (unless (and *multiplayer-app* (om-find-process *multiplayer-app*))
@@ -136,7 +137,7 @@
 (defun def-multiplayer-options () '(7071 7072 "127.0.0.1"))
 
 (defmethod get-external-def-vals ((module (eql 'multiplayer))) 
-    (list :multiplayer-path (when *multiplayer-path* (probe-file *multiplayer-path*))
+    (list :multiplayer-path (probe-file (om-default-application-path '() "MultiPlayer"))
           :multiplayer-options (def-multiplayer-options)))
 
 (defmethod save-external-prefs ((module (eql 'multiplayer))) 
@@ -144,7 +145,7 @@
     :multiplayer-options (list ,*multiplayer-out-port* ,*multiplayer-in-port* ,*multiplayer-host*)))
 
 
-(defmethod put-external-preferences ((module (eql 'microplayer)) moduleprefs)
+(defmethod put-external-preferences ((module (eql 'multiplayer)) moduleprefs)
   (let ((list-prefs (get-pref moduleprefs :multiplayer-options)))
     (when list-prefs 
       (setf *multiplayer-out-port* (nth 0 list-prefs))
@@ -152,7 +153,9 @@
       (setf *multiplayer-host* (nth 2 list-prefs))
       )
     (when (get-pref moduleprefs :multiplayer-path)
-      (setf *multiplayer-path* (find-true-external (get-pref moduleprefs :multiplayer-path))))
+      ;(setf *multiplayer-path* (find-true-external (get-pref moduleprefs :multiplayer-path)))
+      (setf *multiplayer-path* (get-pref moduleprefs :multiplayer-path))
+      )
     ))
 
 (put-external-preferences 'multiplayer (find-pref-module :externals))

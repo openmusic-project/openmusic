@@ -10,6 +10,7 @@
 (defmethod player-type ((player (eql :microplayer))) :UDP)   ;;; communication protocol (:midi / :udp)
 (defmethod player-init ((player (eql :microplayer))) (restart-microplayer))  ;;; called when this player is selected / options changed etc.
 
+(enable-player :microplayer)
 
 ;===================================================
 ;MICROPLAYER PROCESS
@@ -58,13 +59,13 @@
 (defvar *micro-player-app* nil)
 (defvar *micro-player-path* nil)
 
-(defun init-microplayer-app ()
-  (setf *micro-player-path* 
-        (or (probe-file (om-default-application-path '("MicroPlayer") "bm-microton"))
-            (probe-file (om-external-app nil "MicroPlayer"))))
-  (enable-player :microplayer))
+;(defun init-microplayer-app ()
+;  (setf *micro-player-path* 
+;        (or (probe-file (om-default-application-path '("MicroPlayer") "bm-microton"))
+;            (probe-file (om-external-app nil "MicroPlayer"))))
+;  (enable-player :microplayer))
 
-(om-add-init-func 'init-microplayer-app)
+;(om-add-init-func 'init-microplayer-app)
 
 
 (defun launch-microplayer-app ()
@@ -227,7 +228,8 @@
 (defun def-microplay-options () '(3000 3010 "127.0.0.1"))
 
 (defmethod get-external-def-vals ((module (eql 'microplayer))) 
-    (list :microplay-path (when *micro-player-path* (probe-file *micro-player-path*))
+    (list :microplay-path (probe-file (om-default-application-path '("MicroPlayer") "bm-microton")) 
+          ;;;;(when *micro-player-path* (probe-file *micro-player-path*))
           :microplay-options (def-microplay-options)))
 
 (defmethod save-external-prefs ((module (eql 'microplayer))) 
@@ -236,6 +238,7 @@
 
 
 (defmethod put-external-preferences ((module (eql 'microplayer)) moduleprefs)
+  (print moduleprefs)
   (let ((list-prefs (get-pref moduleprefs :microplay-options)))
     (when list-prefs 
       (setf *microplayer-out-port* (nth 0 list-prefs))
@@ -243,7 +246,9 @@
       (setf *microplayer-host* (nth 2 list-prefs))
       )
     (when (get-pref moduleprefs :microplay-path)
-      (setf *micro-player-path* (find-true-external (get-pref moduleprefs :microplay-path))))
+      ;(setf *micro-player-path* (find-true-external (get-pref moduleprefs :microplay-path)))
+      (setf *micro-player-path* (get-pref moduleprefs :microplay-path))
+      )
     ))
 
 (put-external-preferences 'microplayer (find-pref-module :externals))

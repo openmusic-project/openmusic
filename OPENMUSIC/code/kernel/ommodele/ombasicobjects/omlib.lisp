@@ -61,9 +61,12 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 #loaded?# T is the LIbrary is already loaded. #loaded?#"))
 |#
 
-;;; never called: why both release and version ???
+;;; called in the lib deliver script 
+;;; why both release and version ???
 (defmethod lib-release (&optional lib) 
-  (release (or lib *current-lib*)))
+  ;(release (or lib *current-lib*))
+  (version (or lib *current-lib*))
+  )
 
 (defmethod set-lib-release (version &optional lib) 
   (let ((thelib (or lib *current-lib*)))
