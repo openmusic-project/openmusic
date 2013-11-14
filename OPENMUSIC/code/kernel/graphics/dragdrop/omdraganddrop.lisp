@@ -133,7 +133,7 @@
     (perform-duplicate-view D&DHandler))  
    (;;; D&D IN FOLDERS ETC.
     (and (icon-finder-p (true-target-view D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
-         (drop-allow-p D&DHandler (print (object (dragged-view  D&DHandler))) (object (true-target-view D&DHandler)))
+         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view D&DHandler)))
          (not (equal (true-target-view  D&DHandler) (dragged-view  D&DHandler))))
     (perform-change-view D&DHandler))
    
@@ -247,9 +247,9 @@
    (loop for item in (dragged-list-objs D&DHandler)
           while correctmove do
           (setf correctmove (drop-allow-p D&DHandler (object item) (object target-frame))))
-    (if correctmove
+   (if correctmove
       (progn 
-        ;; c'etait en comment
+        ;; removes the connections to other boxes. problem if we want to restore them (e.g. externalize)
         (make-delete-before (container-view D&DHandler) (dragged-list-objs D&DHandler) target-frame)
         (if (allow-drag-list (object target-frame))
           (setf some-item-used (perform-drop-list D&DHandler (dragged-list-objs D&DHandler) target-frame

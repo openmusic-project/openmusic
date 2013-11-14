@@ -105,6 +105,7 @@
        (loop for input in (inputs object)
              for in in (inputs newbox) do
              (setf (connected? in) (connected? input)))
+       (set-box-to-inputs (inputs newbox) newbox)
        (setf conec-to-me (get-conect-to-me object))
        (loop for item in conec-to-me do
              (change-conections  object item newbox))
@@ -126,7 +127,7 @@
 
 (defmethod externalize ((self patchboxframe) newpatch) 
    "A red patch becomes a blue patch."
-  (when (equal (type-of (object self)) 'OMBoxAbsPatch)
+  (when (subtypep (type-of (object self)) 'OMBoxAbsPatch)
     (let* ((container (om-view-container self))
            (object (object self))
            (newbox (omNG-make-new-boxcall newpatch
@@ -142,11 +143,12 @@
       (loop for input in (inputs object)
             for in in (inputs newbox) do
             (setf (connected? in) (connected? input)))
+      (set-box-to-inputs (inputs newbox) newbox)
       (setf conec-to-me (get-conect-to-me object))
       (loop for item in conec-to-me do
-            (change-conections  object item newbox))
+            (change-conections object item newbox))
       (setf frame (make-frame-from-callobj newbox))
-      (omg-remove-element  container self)
+      (omg-remove-element container self)
       (compile-patch newpatch)
       (omg-add-element  container frame)
       (update-graphic-connections frame (get-elements (object container)))

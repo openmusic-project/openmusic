@@ -157,7 +157,8 @@
          (newpatch (abs2patch patch (mk-unique-name target (name patch)) position))
          (new-frame (make-icon-from-object  newpatch (om-point-h position) (om-point-v position) 1 1)))
     (omg-add-element target new-frame)
-    (externalize dragged newpatch) t))
+    (externalize dragged newpatch) 
+    t))
 
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged maquetteframe) 

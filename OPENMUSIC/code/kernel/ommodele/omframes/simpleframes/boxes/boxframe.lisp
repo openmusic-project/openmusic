@@ -1277,7 +1277,7 @@
 
 ;-------------------
 
-(omg-defclass patchboxabsFrame (patchboxFrame) ()
+(defclass patchboxabsFrame (patchboxFrame) ()
    (:documentation "Simple frame for OMBoxAbspatch boxes (red patches). #enddoc#
 #seealso# (OMBoxAbspatch) #seealso#"))
 
