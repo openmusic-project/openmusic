@@ -339,7 +339,7 @@
     (setf (score-mode ed-view) score-mode)
     (setf (obj-mode ed-view) (nth obj-mode (object-order self)))
     (change-slot-edit ed-view (slots-mode ed-view))
-    (change-cursor-mode (panel self) (get-edit-param self 'cursor-mode))
+    (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     (init-draw self)
     (init-boxes-in-score ed-view)))
 

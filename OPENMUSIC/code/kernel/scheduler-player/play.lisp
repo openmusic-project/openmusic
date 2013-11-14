@@ -48,10 +48,12 @@
 <port> plays to a particular MIDI port.
 "
    (declare (ignore approx port))
+   (general-stop *general-player*)
    nil)
    
 
 (defmethod* Play ((self simple-container) &key (player t) (approx 2) interval port)
+   (call-next-method)
    (setf port (verify-port port))
    (when (play-obj? self)
      (player-schedule *general-player*
@@ -60,6 +62,7 @@
    (general-play *general-player*))
 
 (defmethod* Play ((self list) &key (player t) (approx 2) interval port)
+   (call-next-method)
    (when self
      (setf port (verify-port port))
      (loop for objs in self do

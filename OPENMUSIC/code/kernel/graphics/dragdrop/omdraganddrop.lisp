@@ -86,7 +86,7 @@
 
 
 
-
+(defmethod view-frame ((self t)) self)
 
 (defmethod om-drag-receive ((view om-view-drop) (dragged-view t) position &optional (effect nil))
   (unless (dragged-view *OM-drag&drop-handler*)
@@ -103,7 +103,7 @@
               (initial-mouse-pos *OM-drag&drop-handler*) (om-convert-coordinates (initial-mouse-pos *OM-drag&drop-handler*) 
                                                                                  (dragged-view *OM-drag&drop-handler*) 
                                                                                  (target-view  *OM-drag&drop-handler*))
-              (true-target-view *OM-drag&drop-handler*) view
+              (true-target-view *OM-drag&drop-handler*) (view-frame view)
               (drop-mouse-pos *OM-drag&drop-handler*) (om-mouse-position (target-view  *OM-drag&drop-handler*))  ; (get-pos-in-object view drop-pos))
                                                        )
         (setf rep (finalize-drag&drop *OM-drag&drop-handler*))
@@ -127,14 +127,13 @@
        (and (boxframe-p  (true-target-view  D&DHandler)) (boxframe-p (dragged-view  D&DHandler)))))
 ;---------------------------------------------------------------------------------
 (defmethod finalize-drag&drop ((D&DHandler omdrag-drop))
-  
+  ;(print (list (true-target-view D&DHandler) (icon-finder-p (true-target-view D&DHandler))))
   (cond 
    ((opt-key-p *OM-drag&drop-handler*)
-    (perform-duplicate-view D&DHandler))
-   
+    (perform-duplicate-view D&DHandler))  
    (;;; D&D IN FOLDERS ETC.
-    (and (icon-finder-p (true-target-view  D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
-         (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view  D&DHandler)))
+    (and (print (icon-finder-p (true-target-view D&DHandler))) (print (icon-finder-p (dragged-view  D&DHandler)))
+         (drop-allow-p D&DHandler (print (object (dragged-view  D&DHandler))) (object (true-target-view D&DHandler)))
          (not (equal (true-target-view  D&DHandler) (dragged-view  D&DHandler))))
     (perform-change-view D&DHandler))
    
@@ -163,6 +162,11 @@
        (perform-special-move-view D&DHandler)
        (make-move-after (om-view-container (target-view  D&DHandler)) (dragged-list-objs D&DHandler))
        ))
+    ;;; test for jeremie (allow drag on comments, boxes etc.)
+    ((eq (om-view-container (om-view-container (target-view D&DHandler))) (om-view-container (dragged-view D&DHandler)))
+     (make-move-before (om-view-container (dragged-view  D&DHandler)) (dragged-list-objs D&DHandler))
+     (perform-special-move-view D&DHandler)
+     (make-move-after (om-view-container (target-view  D&DHandler)) (dragged-list-objs D&DHandler)))
     (t (perform-change-view D&DHandler)))
   )
 

@@ -407,9 +407,13 @@ this slot store a subview containing it subview if exists.#triangle#
 ;ICONVIEW
 ;==============================================
 
-(omg-defclass icon-finder-icon (om-view-drag icon-view om-view-drop) ())
+(defclass icon-finder-icon (om-view-drag icon-view om-view-drop) ())
 
 (defmethod icon-finder ((self icon-finder-icon)) (om-view-container self))
+
+(defmethod view-frame ((self icon-finder-icon)) 
+  (icon-finder self))
+
 
 (defmethod get-position-icon ((self icon-finder-icon))
    (let* ((icon-finder (icon-finder self))
@@ -427,11 +431,11 @@ this slot store a subview containing it subview if exists.#triangle#
 
 
 ;===========NAMEVIEW===========
-(omg-defclass icon-finder-name-edit (om-editable-text)  
+(defclass icon-finder-name-edit (om-editable-text)  
   ((icon-finder :initform nil :initarg :icon-finder :accessor icon-finder)))
 
 
-(omg-defclass icon-finder-name (om-static-text-drag) ())
+(defclass icon-finder-name (om-static-text-drag) ())
 
 (defmethod receiver-view-p ((self icon-finder-icon)) t)
 (defmethod receiver-view-p ((self icon-finder-name)) t)
@@ -439,6 +443,10 @@ this slot store a subview containing it subview if exists.#triangle#
   
 (defmethod icon-finder ((self icon-finder-name))
    (om-view-container self))
+
+(defmethod view-frame ((self icon-finder-name)) 
+  (icon-finder self))
+
 
 (defmethod get-length-name ((self icon-finder-name))
   (get-name-size (om-dialog-item-text self) (om-get-font self)))
