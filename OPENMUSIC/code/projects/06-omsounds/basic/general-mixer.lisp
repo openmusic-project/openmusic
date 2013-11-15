@@ -17,6 +17,7 @@
   ((mixer-player :initform nil :initarg :mixer-player :accessor mixer-player)
    (mixer-presets :initform nil :initarg :mixer-presets :accessor mixer-presets)
    (mixer-current-preset :initform 0 :initarg :mixer-current-preset :accessor mixer-current-preset)
+   (mixer-current-preset-float :initform 0 :initarg :mixer-current-preset-float :accessor mixer-current-preset-float)
    (mixer-values :initform nil :initarg :mixer-values :accessor mixer-values)))
 
 ;;; which players can the audio-mixer control ?
@@ -35,7 +36,8 @@
 (defun init-mixer (&optional vals)
         (setf *audio-mixer* (make-instance 'mixer 
                                            :mixer-presets (or vals (init-genmixer-values))
-                                           :mixer-current-preset 0))
+                                           :mixer-current-preset 0
+                                           :mixer-current-preset-float 0))
         (setf  
          (mixer-player *audio-mixer*) (car (enabled-players-for-object *audio-mixer*))
          (mixer-values *audio-mixer*)  (copy-tree (cadr (nth (mixer-current-preset *audio-mixer*) 
@@ -152,6 +154,7 @@
                                            ""
                                            :di-action (om-dialog-item-act item
                                                         (setf (mixer-current-preset *audio-mixer*) (1+ (om-get-selected-item-index item)))
+                                                        (setf (mixer-current-preset-float *audio-mixer*) (1+ (om-get-selected-item-index item)))
                                                         (load-genmixer-preset (1+ (om-get-selected-item-index item)))
                                                         (update-genmixer-display))
                                            :font *om-default-font1*
@@ -177,6 +180,7 @@
                                                        (save-current-settings)
                                                        (update-general-mixer-presets-lists)
                                                        (setf (mixer-current-preset *audio-mixer*) (1- (length (get-presets-list))))
+                                                       (setf (mixer-current-preset-float *audio-mixer*) (1- (length (get-presets-list))))
                                                        (om-set-selected-item (nth 1 (om-subviews (car (om-subviews (presets-view *general-mixer-window*))))) (last-elem (get-presets-list)))
                                                        (save-presets-in-preferences *audio-mixer* :audio :audio-presets))
                                           :font *om-default-font1*))
@@ -378,6 +382,7 @@
   (let ((vals (cadr (nth index (mixer-presets *audio-mixer*)))))
     (setf (mixer-values *audio-mixer*) (copy-tree vals))
     (setf (mixer-current-preset *audio-mixer*) index)
+    (setf (mixer-current-preset-float *audio-mixer*) (1- (length (get-presets-list))))
     (apply-mixer-values)))
 
 

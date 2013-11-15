@@ -98,16 +98,19 @@
                     (progn
                       (if (< val 0) (setf val 0))
                       (if (>= val npresets) (setf val (- npresets 1)))
-                      (if (/= val (mixer-current-preset *audio-mixer*))
-                      (progn
-                        (let ((vals (cadr (nth val (mixer-presets *audio-mixer*)))))
-                          (setf (mixer-values *audio-mixer*) (copy-tree vals))
-                          (setf (mixer-current-preset *audio-mixer*) val)
-                          (apply-mixer-values))
-                            (load-genmixer-preset val)
-                        (if *general-mixer-window*
-                            (update-genmixer-display)))))))))))
-;(om* (mod val 1) (cadr (nth (ceiling val) (mixer-presets *audio-mixer*))))
+                      (if (/= val (mixer-current-preset-float *audio-mixer*))
+                          (progn
+                            (if (/= (mod val 1) 0)
+                                (let ((vals (om+ (om* (- 1 (mod val 1)) (cadr (nth (floor val) (mixer-presets *audio-mixer*))))
+                                                 (om* (mod val 1) (cadr (nth (ceiling val) (mixer-presets *audio-mixer*)))))))
+                                  (setf (mixer-values *audio-mixer*) (copy-tree vals))
+                                  (setf (mixer-current-preset *audio-mixer*) (round val))
+                                  (setf (mixer-current-preset-float *audio-mixer*) val)
+                                  (apply-mixer-values))
+                              (load-genmixer-preset (round val)))
+                            (if *general-mixer-window*
+                                (update-genmixer-display)))))))))))
+
 
 (defmethod draw-control-info ((self t) (object mixer-automation)) 
   (let ((namelist (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
