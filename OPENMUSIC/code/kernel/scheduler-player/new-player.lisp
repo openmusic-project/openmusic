@@ -96,7 +96,7 @@
                  (om-run-process "player scheduling"
                                  #'(lambda ()
                                      (loop
-                                      (loop while (and (events player)) (>= (get-player-time player) (car (car (events player))))) do
+                                      (loop while (and (events player) (>= (get-player-time player) (car (car (events player))))) do
                                             (funcall (cdr (pop (events player)))))
                                       (when (> (get-player-time player) (stop-time player))
                                         (if (loop-play player) (general-loop player) (general-stop player)))
@@ -128,7 +128,7 @@
            
            ;(om-delayed-funcall stop-time #'player-stop player obj)
          )
-         ))
+         )))
 
 (defmethod general-pause ((player omplayer))
   (mapcar #'player-pause (engines player)
