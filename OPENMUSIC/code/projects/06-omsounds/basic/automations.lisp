@@ -14,47 +14,49 @@
            (:icon 234))
 
 
-
 (defmethod get-player-action ((self mixer-automation)) (call-next-method))
 
-(defmethod make-one-instance ((self mixer-automation) &rest slots-vals) 
+(defmethod make-one-instance ((self mixer-automation) &rest slots-vals)
   (let ((bpf (call-next-method))
         char1 res x y)
-    (setf (track bpf) (nth 3 slots-vals))
-    (setf (parameter bpf) (nth 4 slots-vals))
-    (setf (decimals bpf) 1)
-    (if (or (track bpf) (and (parameter bpf) (stringp (parameter bpf)))); (string= (string-downcase (parameter bpf)) "presets")))
+    (if *audio-mixer*
         (progn
-          (if (parameter bpf)
-              (if (not (or (string= (string-downcase (parameter bpf)) "pan") 
-                           (string= (string-downcase (parameter bpf)) "vol")
-                           (string= (string-downcase (parameter bpf)) "presets")))
-                  (setf res (make-param-select-window (list "Panoramic" "Volume" "Presets")))
-                (cond ((string= (string-downcase (parameter bpf)) "pan") (setf res 0))
-                      ((string= (string-downcase (parameter bpf)) "vol") (setf res 1))
-                      ((string= (string-downcase (parameter bpf)) "presets") (setf res 2))
-                      (t nil)))
-            (setf res (make-param-select-window (list "Panoramic" "Volume"))))
+          (setf (track bpf) (nth 3 slots-vals))
+          (setf (parameter bpf) (nth 4 slots-vals))
+          (setf (decimals bpf) 1)
+          (if (or (track bpf) (and (parameter bpf) (stringp (parameter bpf)))); (string= (string-downcase (parameter bpf)) "presets")))
+              (progn
+                (if (parameter bpf)
+                    (if (not (or (string= (string-downcase (parameter bpf)) "pan") 
+                                 (string= (string-downcase (parameter bpf)) "vol")
+                                 (string= (string-downcase (parameter bpf)) "presets")))
+                        (setf res (make-param-select-window (list "Panoramic" "Volume" "Presets")))
+                      (cond ((string= (string-downcase (parameter bpf)) "pan") (setf res 0))
+                            ((string= (string-downcase (parameter bpf)) "vol") (setf res 1))
+                            ((string= (string-downcase (parameter bpf)) "presets") (setf res 2))
+                            (t nil)))
+                  (setf res (make-param-select-window (list "Panoramic" "Volume"))))
     
-          (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
-                ((and res (= res 1)) (setf (parameter bpf) "vol"))
-                ((and res (= res 2)) (setf (parameter bpf) "presets"
-                                           (decimals bpf) 0)))))
+                (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
+                      ((and res (= res 1)) (setf (parameter bpf) "vol"))
+                      ((and res (= res 2)) (setf (parameter bpf) "presets"
+                                                 (decimals bpf) 0)))))
     
-    (if (or (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
-            (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
-        (progn
-          (setf (player-fun bpf) (get-function-from-track bpf))
-          (if (string= (parameter bpf) "presets")
-              (setf x (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
-                            (* 2000 i))
-                    y (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
-                            i))
-            (setf x (interpolate (list 0 10000) (list 0 10000) 50)
-                  y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 50)))
-          (setf (y-points bpf) y)
-          (setf (x-points bpf) x))
-      (print "I cannot build a mixer-automation with these parameters"))
+          (if (or (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
+                  (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
+              (progn
+                (setf (player-fun bpf) (get-function-from-track bpf))
+                (if (string= (parameter bpf) "presets")
+                    (setf x (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                                  (* 2000 i))
+                          y (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                                  i))
+                  (setf x (interpolate (list 0 10000) (list 0 10000) 50)
+                        y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 50)))
+                (setf (y-points bpf) y)
+                (setf (x-points bpf) x))
+            (print "I cannot build a mixer-automation with these parameters")))
+      (print "Please instanciate the audio mixer first"))
     bpf))
 
 (interpolate (list 0 50) (list 0 1) 5)
@@ -101,28 +103,31 @@
                       (if (/= val (mixer-current-preset-float *audio-mixer*))
                           (progn
                             (if (/= (mod val 1) 0)
-                                (let ((vals (om+ (om* (- 1 (mod val 1)) (cadr (nth (floor val) (mixer-presets *audio-mixer*))))
-                                                 (om* (mod val 1) (cadr (nth (ceiling val) (mixer-presets *audio-mixer*)))))))
-                                  (setf (mixer-values *audio-mixer*) (copy-tree vals))
+                                (let ((vals (om+ (om* (- 1 (mod val 1)) (cadr (nth (max 0 (floor val)) (mixer-presets *audio-mixer*))))
+                                                 (om* (mod val 1) (cadr (nth (min (ceiling val) (1- npresets)) (mixer-presets *audio-mixer*)))))))
+                                  (if vals (setf (mixer-values *audio-mixer*) (copy-tree vals)))
                                   (setf (mixer-current-preset *audio-mixer*) (round val))
                                   (setf (mixer-current-preset-float *audio-mixer*) val)
                                   (apply-mixer-values))
                               (load-genmixer-preset (round val)))
-                            (if *general-mixer-window*
-                                (update-genmixer-display)))))))))))
+                            (when *general-mixer-window*
+                              (om-run-process "display mixer" (lambda () (update-genmixer-display)))
+                              ))))))))))
 
 
-(defmethod draw-control-info ((self t) (object mixer-automation)) 
-  (let ((namelist (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
-                        (car (nth i (mixer-presets *audio-mixer*))))))
-    (if (not (track object))
-        (om-with-focused-view self
-          (om-with-fg-color self (om-make-color 1 0 0)
-            (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 0) (get-system-etat self)))
-                            (format nil "0 - Default Preset"))
-            (loop for i from 1 to (1- (length namelist)) do
-                  (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
-                                  (format nil "~A - ~A" i (nth i namelist)))))))))
+
+(defmethod draw-control-info ((self t) (object mixer-automation))
+  (when *audio-mixer*
+    (let ((namelist (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                          (car (nth i (mixer-presets *audio-mixer*))))))
+      (if (not (track object))
+          (om-with-focused-view self
+            (om-with-fg-color self (om-make-color 1 0 0)
+              (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 0) (get-system-etat self)))
+                              (format nil "0 - Default Preset"))
+              (loop for i from 1 to (1- (length namelist)) do
+                    (om-draw-string 80 (om-point-y (point2pixel self (om-make-point 0 (* i (expt 10 (decimals object)))) (get-system-etat self)))
+                                    (format nil "~A - ~A" i (nth i namelist))))))))))
 
 
 (defun make-param-select-window (listing)

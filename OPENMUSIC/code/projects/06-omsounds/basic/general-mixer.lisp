@@ -12,6 +12,7 @@
 ;(setf *general-mixer-values* '((0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100) (0 100)))
 ;(setf *general-mixer-presets* (init-genmixer-values))
 
+(defvar *mixer-display-update-done* t)
 
 (defclass mixer () 
   ((mixer-player :initform nil :initarg :mixer-player :accessor mixer-player)
@@ -389,13 +390,16 @@
 ;/UPDATE GENMIXER DISPLAY FUNCTION
 ;Update the genmixer vol and pan display.
 (defun update-genmixer-display ()
-  (let (volval panval)
-    (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
-        (loop for i from 0 to (- *audio-n-channels* 1) do
-              (setf volval (cadr (nth i (mixer-values *audio-mixer*)))
-                    panval (car (nth i (mixer-values *audio-mixer*))))
-              (om-set-dialog-item-text (nth 3 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string panval))
-              (set-value (nth 4 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) panval)
-              (om-set-dialog-item-text (nth 7 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string volval))
-              (om-set-slider-value (nth 8 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) volval)))))
+  (when *mixer-display-update-done*
+    (setf *mixer-display-update-done* nil)
+    (let (volval panval)
+      (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
+          (loop for i from 0 to (- *audio-n-channels* 1) do
+                (setf volval (cadr (nth i (mixer-values *audio-mixer*)))
+                      panval (car (nth i (mixer-values *audio-mixer*))))
+                (om-set-dialog-item-text (nth 3 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string panval))
+                (set-value (nth 4 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) panval)
+                (om-set-dialog-item-text (nth 7 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string volval))
+                (om-set-slider-value (nth 8 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) volval)))
+      (setf *mixer-display-update-done* t))))
 
