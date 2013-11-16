@@ -115,7 +115,7 @@
 (defun jack-goto-start (jack-sf)
   (cl-jack::cl-jack-seek
    (cl-jack::jack-sf-sound-file-handle jack-sf)
-   (cl-jack::jack-sf-start jack-sf)))
+   (or (cl-jack::jack-sf-start jack-sf) 0)))
 
 (defmethod player-loop ((engine (eql :jackaudio)) player &optional play-list)
   (if play-list

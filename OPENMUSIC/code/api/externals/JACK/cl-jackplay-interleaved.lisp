@@ -197,8 +197,9 @@
 	       (when (zerop read-frames-cnt) ;at end: loop or quit
 		 (let ((looping (jack-sf-loop? jack-sf)))
 		   (if looping
-		       (cl-jack-seek sf-handle (if (consp looping) (ms->frame (car looping)) 0) 0)
-		       (cl-jack-close-sound jack-sf))))
+		       (cl-jack-seek sf-handle (or (and (consp looping) (ms->frame (car looping))) 0))
+		       t ;;(cl-jack-close-sound jack-sf)
+		       )))
 
 	       ;; book-keeping
 	       (jack-ringbuffer-write-advance ringbuffer (* read-frames-cnt *bytes-per-frame*))
