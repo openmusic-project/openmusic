@@ -75,15 +75,16 @@
 			    size_t (* nframes (foreign-type-size 'size_t)))))
   
     0)
-
   ;;(jack-deactivate *CLJackClient*)
   )
+
+
 
 (defun cl-jack-connect-audio-client-to-system-output ()
   (loop for port in *CL-jack-audio-output-ports*
      for system_out from 1
-     do (or (plusp (cl-jack::jack-connect *CLJackClient*
-					  (jack-port-name port)
-					  (format nil "system:playback_~A" system_out)))
+     do (or (not  (minusp (cl-jack::jack-connect *CLJackClient*
+						 (jack-port-name port)
+						 (format nil "system:playback_~A" system_out))))
 	    (warn "could not connect CLJack port ~A to output-port ~A" (jack-port-name port) system_out))))
 
