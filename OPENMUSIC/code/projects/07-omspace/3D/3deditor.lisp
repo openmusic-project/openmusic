@@ -747,7 +747,7 @@
 
 (defmethod add-edit-buttons ((self 3Dcontrols))
   (let ((ed (om-view-container self))
-        (x 24) (y 400))
+        (x 24) (y 450))
     (setf (mode-buttons self)
           (append 
            (loop for mode in '(:normal :pen :move :zoom :scroll)
@@ -771,7 +771,7 @@
                    (setf x (+ x 22))
                    button)
                  )
-           (list (om-make-view 'om-icon-button :position (om-make-point x 430) :size (om-make-point 22 22)
+           (list (om-make-view 'om-icon-button :position (om-make-point x 480) :size (om-make-point 22 22)
                                :id :resize
                                :icon1 "resize" :icon2 "resize-pushed"
                                :lock-push nil
