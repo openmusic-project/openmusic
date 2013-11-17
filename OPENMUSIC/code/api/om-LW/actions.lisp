@@ -160,8 +160,8 @@
   (set-meta-keys (eval type))
   ; click in window, pos in layout
   (unless (equal *clicked-view* :abort) 
-    (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
-  (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
+    (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
+    (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y))))
    
 (defmethod om-click-motion-handler (self pos) t)
 
