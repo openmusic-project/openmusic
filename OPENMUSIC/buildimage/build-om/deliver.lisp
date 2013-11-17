@@ -30,6 +30,7 @@
        (:component
         (("Preferences..."
           :callback 'om::show-preferences-win
+          :accelerator "accelerator-,"
           :callback-type :none)))
 
        ;(:component
