@@ -79,9 +79,10 @@
 	  (bytes
 	   (dolist (byte (if (consp bytes) bytes (list bytes)))
 	     (setf (event-midiaddfield event) byte)))
-          (t 
+          (pgm (setf (event-pgm event) pgm))
+	  (t 
            (when param (setf (event-param event) param))
-           (when pgm (setf (event-pgm event) pgm))
+           
            (when bend (setf (event-bend event) bend))
            (when dur (setf (event-dur event) dur))
            (when kpress (setf (event-kpress event) kpress))
@@ -119,7 +120,8 @@
 
 (defun om-midi-new-seq () (make-midi-seq))
 
-(defun om-midi-free-seq (seq) (setf seq nil))
+(defun om-midi-free-seq (seq)
+  (setf seq nil))
 
 (defun om-midi-seq-first-evt (seq)
   (let ((events (midi-seq-events seq)))
@@ -286,11 +288,63 @@
 (defparameter +pitch-bend-opcode+	#xE0)
 (defparameter +tempo-opcode+		#xFF)
 
+
+
+(defun midi-command-type (event)
+  (slot-value event 'midi::status-min))
+
+(defun midi-status-byte (event)
+  (slot-value event 'midi::status))
+
+;; these two read data-bytes from various message-types
+
+(defmethod midi-data-byte-1 ((event t)) 0)
+(defmethod midi-data-byte-2 ((event t)) 0)
+
+;; voice messages
+
+(defmethod midi-channel ((event t)) nil)
+(defmethod midi-channel ((event midi::channel-message))
+  ;; used where channel isn't set explicit in instance
+  (- (midi-status-byte event) (midi-command-type event)))
+
+;; note off
+
 (defun make-note-off-message (time key vel chan)
   (make-instance 'midi:note-off-message :key key :time time :velocity vel :status (logior +note-off-opcode+ chan)))
+(defmethod midi-data-byte-1 ((event midi::note-off-message))
+  (midi::message-key event))
+(defmethod midi-key ((event midi::note-off-message))
+  (midi::message-key event))
+(defmethod midi-data-byte-2 ((event midi::note-off-message))
+  (midi::message-velocity event))
+
+;; note on
 
 (defun make-note-on-message (time key vel chan)
   (make-instance 'midi:note-on-message :key key :time time :velocity vel :status (logior +note-on-opcode+ chan)))
+(defmethod midi-data-byte-1 ((event midi::note-on-message))
+  (midi::message-key event))
+(defmethod midi-key ((event midi::note-on-message))
+  (midi::message-key event))
+(defmethod midi-data-byte-2 ((event midi::note-on-message))
+  (midi::message-velocity event))
+
+;; program change
+
+(defun make-program-change-message (time prog chan)
+  (make-instance 'midi:program-change-message :time time :program prog :status (logior +program-change-opcode+ chan)))
+(defmethod midi-data-byte-1 ((event midi::program-change-message))
+  0)
+(defmethod midi-data-byte-2 ((event midi::program-change-message))
+  (midi::message-program event))
+
+;; pitch bend
+
+(defun make-pitch-bend-message (time value chan)
+  (make-instance 'midi:pitch-bend-message :time time :value value :status (logior +pitch-bend-opcode+ chan)))
+
+;; meta messages
 
 (defun make-tempo-message (time tempo)
   (make-instance 'midi:tempo-message :time time :tempo tempo :status +tempo-opcode+))
@@ -310,6 +364,9 @@
 
 (defun event2note-on (ev)
   (make-note-on-message (event-date ev) (first (event-fields ev)) (event-velocity ev) (event-chan ev)))
+
+(defun event2program-change-message (ev)
+  (make-program-change-message (event-date ev) (event-pgm ev) (event-chan ev)))
 
 (defun event2tempo (ev)
   (make-tempo-message (event-date ev) (second (event-fields ev))))
@@ -336,3 +393,6 @@
     (om-create-directory filename)
     (midi:write-midi-file mf filename)
     filename))
+
+
+

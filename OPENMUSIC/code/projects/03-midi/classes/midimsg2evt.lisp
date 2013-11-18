@@ -43,9 +43,15 @@
    (bend :accessor event-bend :initarg :event-bend)
    (tempo :accessor event-tempo :initarg :event-tempo)
    (text :accessor event-text :initarg :event-text)
+   (param :accessor event-param :initarg :event-param)
+   (pgm :accessor event-pgm :initarg :event-pgm)
+   (kpress :accessor event-kpress :initarg :event-kpress)
    (link :accessor event-link :initarg :event-link :initform nil)))
 
-;;; metaclasses
+
+;;; CONVERSION
+
+;;; metaclasses 
 
 (defmethod update-instance-for-different-class :before ((msg midi::message) (ev midimsg2evt) &key)
   (setf (event-date ev) (midi::message-time msg)))

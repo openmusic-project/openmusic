@@ -100,7 +100,7 @@
 	(noteno (/ (midic note) 100))
 	(vel (vel note))
 	(chan (chan note)))
-    (cl-jack::jack-play-event seq start dur noteno vel chan)))
+    (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
 (defmethod player-play-object ((engine (eql :jackmidi)) (object note) &key interval)
   (declare (ignore interval))
@@ -113,7 +113,12 @@
 	(noteno (/ (midic object) 100))
 	(vel (vel object))
 	(chan (chan object)))
-    (cl-jack::jack-play-event seq start dur noteno vel chan)))
+    (cl-jack::jack-play-note seq start dur noteno vel chan)))
+
+(defun jack-player-send-evt-now-in-global-seq (event)
+  (let ((seq cl-jack::*jack-seq*)
+	(start 0))
+    (cl-jack::jack-play-event seq start event)))
 
 (defun jack-kill-queue (obj)
   (when (gethash obj *jack-midi-seqs*)
@@ -147,7 +152,7 @@
 
 
 
-(cl-jack::jack-play-event cl-jack::*jack-seq* 0 1 60 100 1)
+(cl-jack::jack-play-note cl-jack::*jack-seq* 0 1 60 100 1)
 
 ;; version using OMs scheduler to play - TODO: separate queues pr. container
 
@@ -155,4 +160,14 @@
 (clrhash cl-jack::*jack-seq*)
 
 |#
+
 (setf *midiplayer* t)
+
+
+;; general function om-midi-send-evt expects instances of midimsg2evt:
+
+(defun om-midi-send-evt (event &optional (player *midiplayer*))
+  (declare (ignore player))
+  (case (oa::event-type event)
+    (5 (pprint (list event (oa::event-chan event)))
+       (cl-jack::seqhash-midi-program-change cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-pgm event) (oa::event-chan event)))))
