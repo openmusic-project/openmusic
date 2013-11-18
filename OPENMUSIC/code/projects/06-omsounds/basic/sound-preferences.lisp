@@ -79,7 +79,7 @@
               :normalizer ,*normalizer*
               :multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
               :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*))
-              :audio-presets ',*general-mixer-presets*
+              :audio-presets ',(mixer-presets *audio-mixer*)
               ) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :audio)))
