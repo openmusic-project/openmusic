@@ -56,7 +56,7 @@
     (loop for item in *ms-list-to-play* do
           (PrepareToPlay 'midishare (car item) (+ (cadr item) (real-duration (car item) 0)) :interval (caddr item)))
     (FinalizePlayingSeq 'midishare (get-obj-dur object))
-    (when *ms-loop* (om-midi-set-loop-player *midiplayer* 0 *loop*))
+    (when *ms-loop* (om-midi-set-loop-player *midiplayer* 0 *ms-loop*))
     (when *midiplayer* (om-midi-start-player *midiplayer*))))
 
 ;;; PAUSE (all)
