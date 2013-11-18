@@ -64,6 +64,10 @@
     (init-mixer))
   (apply-mixer-values))
 
+(defun get-audio-mixer-values ()
+  (unless *audio-mixer* (init-mixer))
+  (when *audio-mixer* (mixer-values *audio-mixer*)))
+
 ;;;==================================
 ;;; WINDOW
 ;;;==================================
