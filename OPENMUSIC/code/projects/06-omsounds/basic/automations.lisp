@@ -172,7 +172,7 @@
                             (if (/= (mod val 1) 0)
                                 (let ((vals (om+ (om* (- 1 (mod val 1)) (cadr (nth (max 0 (floor val)) (mixer-presets *audio-mixer*))))
                                                  (om* (mod val 1) (cadr (nth (min (ceiling val) (1- npresets)) (mixer-presets *audio-mixer*)))))))
-                                  (if vals (setf (mixer-values *audio-mixer*) (copy-tree vals)))
+                                  (if vals (setf (mixer-values *audio-mixer*) vals))
                                   (setf (mixer-current-preset *audio-mixer*) (round val))
                                   (setf (mixer-current-preset-float *audio-mixer*) val)
                                   (apply-mixer-values))
@@ -180,7 +180,6 @@
                             (when *general-mixer-window*
                               (om-run-process "display mixer" (lambda () (update-genmixer-display)))
                               ))))))))))
-
 
 
 (defmethod draw-control-info ((self t) (object mixer-automation))
