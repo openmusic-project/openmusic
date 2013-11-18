@@ -397,9 +397,8 @@
           (loop for i from 0 to (- *audio-n-channels* 1) do
                 (setf volval (cadr (nth i (mixer-values *audio-mixer*)))
                       panval (car (nth i (mixer-values *audio-mixer*))))
-                (om-set-dialog-item-text (nth 3 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string panval))
+                (om-set-dialog-item-text (nth 3 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round panval)))
                 (set-value (nth 4 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) panval)
-                (om-set-dialog-item-text (nth 7 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string volval))
+                (om-set-dialog-item-text (nth 7 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round volval)))
                 (om-set-slider-value (nth 8 (om-subviews (nth i (om-subviews (panel-view *general-mixer-window*))))) volval)))
       (setf *mixer-display-update-done* t))))
-

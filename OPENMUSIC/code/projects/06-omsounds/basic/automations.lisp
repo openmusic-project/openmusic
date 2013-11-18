@@ -40,17 +40,17 @@
                 (cond ((and res (= res 0)) (setf (parameter bpf) "pan"))
                       ((and res (= res 1)) (setf (parameter bpf) "vol"))
                       ((and res (= res 2)) (setf (parameter bpf) "presets"
-                                                 (decimals bpf) 0)))))
+                                                 (decimals bpf) (or (nth 2 slots-vals) 0))))))
     
           (if (or (and (parameter bpf) (track bpf) (numberp (track bpf)) (<= (track bpf) las-channels) (> (track bpf) 0))
                   (and (parameter bpf) (string= (string-downcase (parameter bpf)) "presets")))
               (progn
                 (setf (player-fun bpf) (get-function-from-track bpf))
                 (if (string= (parameter bpf) "presets")
-                    (setf x (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
-                                  (* 2000 i))
-                          y (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
-                                  i))
+                    (setf x (or (nth 0 slots-vals) (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                                  (* 2000 i)))
+                          y (or (nth 1 slots-vals) (loop for i from 0 to (1- (length (mixer-presets *audio-mixer*))) collect
+                                  i)))
                   (setf x (interpolate (list 0 10000) (list 0 10000) 50)
                         y (interpolate (list 0 10000) (if (string= (parameter bpf) "pan") (list -100 100) (list 0 100)) 50)))
                 (setf (y-points bpf) y)
@@ -64,6 +64,73 @@
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval)
   (when (or (track object) (and (parameter object) (string= (string-downcase (parameter object)) "presets")))
     (call-next-method)))
+
+
+(defmethod omng-save ((self mixer-automation) &optional (values? nil))
+  (let ((trk (track self))
+        (param (parameter self))
+        (assoc-play (assoc-player self))
+        (dec (decimals self))
+        (xp (x-points self))
+        (yp (y-points self)))
+    `(let ((rep (make-instance ',(type-of self))))
+       (setf (track rep) ',trk
+             (parameter rep) ',param
+             (assoc-player rep) ',assoc-play
+             (decimals rep) ',dec
+             (x-points rep) ',xp
+             (y-points rep) ',yp
+             (player-fun rep) ,(save-function self))
+       rep)))
+
+
+(defun save-function (bpf)
+  (let* ((track (track bpf))
+         (parameter (parameter bpf))
+         (minval (if (string= parameter "vol") 0 -100)) 
+         (maxval 100)
+         (npresets (length (mixer-presets *audio-mixer*))))
+    (cond  ((string= parameter "pan")
+            `#'(lambda (val)
+                (if val
+                    (progn
+                      (if (< val ',minval) (setf val ',minval))
+                      (if (> val ',maxval) (setf val ',maxval))
+                      (change-genmixer-channel-pan ',track (float val))
+                      (if *general-mixer-window*
+                          (progn
+                            (om-set-dialog-item-text (nth 3 (om-subviews (nth (1- ',track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
+                            (set-value (nth 4 (om-subviews (nth (1- ',track) (om-subviews (panel-view *general-mixer-window*))))) val)))))))
+           ((string= parameter "vol")
+            `#'(lambda (val)
+                (if val
+                    (progn
+                      (if (< val ',minval) (setf val ',minval))
+                      (if (> val ',maxval) (setf val ',maxval))
+                      (change-genmixer-channel-vol ',track (float val))
+                      (if *general-mixer-window*
+                          (progn
+                            (om-set-dialog-item-text (nth 7 (om-subviews (nth (1- ',track) (om-subviews (panel-view *general-mixer-window*))))) (number-to-string (round val)))
+                            (om-set-slider-value (nth 8 (om-subviews (nth (1- ',track) (om-subviews (panel-view *general-mixer-window*))))) val)))))))
+           ((string= parameter "presets")
+            `#'(lambda (val)
+                (if val
+                    (progn
+                      (if (< val 0) (setf val 0))
+                      (if (>= val ',npresets) (setf val (- ',npresets 1)))
+                      (if (/= val (mixer-current-preset-float *audio-mixer*))
+                          (progn
+                            (if (/= (mod val 1) 0)
+                                (let ((vals (om+ (om* (- 1 (mod val 1)) (cadr (nth (max 0 (floor val)) (mixer-presets *audio-mixer*))))
+                                                 (om* (mod val 1) (cadr (nth (min (ceiling val) (1- ',npresets)) (mixer-presets *audio-mixer*)))))))
+                                  (if vals (setf (mixer-values *audio-mixer*) (copy-tree vals)))
+                                  (setf (mixer-current-preset *audio-mixer*) (round val))
+                                  (setf (mixer-current-preset-float *audio-mixer*) val)
+                                  (apply-mixer-values))
+                              (load-genmixer-preset (round val)))
+                            (when *general-mixer-window*
+                              (om-run-process "display mixer" (lambda () (update-genmixer-display)))
+                              ))))))))))
 
 
 (defun get-function-from-track (bpf)
