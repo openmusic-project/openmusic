@@ -166,8 +166,10 @@
 
 ;; general function om-midi-send-evt expects instances of midimsg2evt:
 
+
+
 (defun om-midi-send-evt (event &optional (player *midiplayer*))
   (declare (ignore player))
   (case (oa::event-type event)
-    (5 (pprint (list event (oa::event-chan event)))
-       (cl-jack::seqhash-midi-program-change cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-pgm event) (oa::event-chan event)))))
+    (5 (cl-jack::seqhash-midi-program-change cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-pgm event) (oa::event-chan event)))
+    (7 (cl-jack::seqhash-midi-pitch-wheel-msg  cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-bend event) (oa::event-chan event)))))

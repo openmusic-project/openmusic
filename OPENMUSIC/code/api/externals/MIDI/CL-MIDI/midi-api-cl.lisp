@@ -301,14 +301,14 @@
 (defmethod midi-data-byte-1 ((event t)) 0)
 (defmethod midi-data-byte-2 ((event t)) 0)
 
-;; voice messages
+;; VOICE MESSAGES
 
 (defmethod midi-channel ((event t)) nil)
 (defmethod midi-channel ((event midi::channel-message))
   ;; used where channel isn't set explicit in instance
   (- (midi-status-byte event) (midi-command-type event)))
 
-;; note off
+;; NOTE OFF
 
 (defun make-note-off-message (time key vel chan)
   (make-instance 'midi:note-off-message :key key :time time :velocity vel :status (logior +note-off-opcode+ chan)))
@@ -319,7 +319,7 @@
 (defmethod midi-data-byte-2 ((event midi::note-off-message))
   (midi::message-velocity event))
 
-;; note on
+;; NOTE ON
 
 (defun make-note-on-message (time key vel chan)
   (make-instance 'midi:note-on-message :key key :time time :velocity vel :status (logior +note-on-opcode+ chan)))
@@ -330,7 +330,7 @@
 (defmethod midi-data-byte-2 ((event midi::note-on-message))
   (midi::message-velocity event))
 
-;; program change
+;; PROGRAM CHANGE
 
 (defun make-program-change-message (time prog chan)
   (make-instance 'midi:program-change-message :time time :program prog :status (logior +program-change-opcode+ chan)))
@@ -339,12 +339,20 @@
 (defmethod midi-data-byte-2 ((event midi::program-change-message))
   (midi::message-program event))
 
-;; pitch bend
+;; PITCH BEND
 
-(defun make-pitch-bend-message (time value chan)
-  (make-instance 'midi:pitch-bend-message :time time :value value :status (logior +pitch-bend-opcode+ chan)))
+;; range = 14 bits (-8192 -> 8190 in user-code)
+(defun make-pitch-bend-message (time bend chan)
+  (make-instance 'midi:pitch-bend-message :time time :value bend :status (logior +pitch-bend-opcode+ chan)))
 
-;; meta messages
+(defun 7-msb (14bitval) (logand (ash 14bitval -7) #x7f))
+(defun 7-lsb (14bitval) (logand 14bitval #x7f))
+(defmethod midi-data-byte-1 ((event midi::pitch-bend-message))
+  (7-lsb (midi::message-value event)))
+(defmethod midi-data-byte-2 ((event midi::pitch-bend-message))
+  (7-msb (midi::message-value event)))
+
+;; META MESSAGES
 
 (defun make-tempo-message (time tempo)
   (make-instance 'midi:tempo-message :time time :tempo tempo :status +tempo-opcode+))
@@ -393,6 +401,3 @@
     (om-create-directory filename)
     (midi:write-midi-file mf filename)
     filename))
-
-
-

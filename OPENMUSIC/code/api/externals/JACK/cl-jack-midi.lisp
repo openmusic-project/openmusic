@@ -65,13 +65,6 @@
 
 ;;; MIDI EVENTS
 
-
-;; plugged in interface from midi-api-cl.lisp:
-
-(defun oa::om-midi-send-evt (event player)
-  (declare (ignore player))
-  (jack-play-event *jack-seq* 0 event))
-
 ;; TODO: expand with support for all midi-messages
 
 (defun jack-add-event-this-period (seq period event)
@@ -104,6 +97,11 @@
 (defun seqhash-midi-program-change (seq frame program &optional (channel 1))
   (let ((event (oa::make-program-change-message frame program channel)))
     (seqhash-midi-event seq frame event)))
+
+(defun seqhash-midi-pitch-wheel-msg (seq frame bend &optional (channel 1))
+  (let ((mybend (+ bend 8192)))		;expects values between -8192->8191
+    (let ((event (oa::make-pitch-bend-message frame mybend channel)))
+      (seqhash-midi-event seq frame event))))
 
 ;; erase pending note-offs for interval - don't shut off later arriving notes
 (defun seqhash-clear-note-offs (seq startframe endframe noteno &optional (channel 1))
@@ -276,6 +274,41 @@
 (jack-frame-now)
 
 (clrhash *jack-seq*)
+
+(defun play-some-notes (&optional (tempo 0.4) (dur 2))
+  ;;(clrhash *jack-seq*)
+  (loop with offset = 0
+     for sek from 0 below dur by tempo
+     do
+       (let* ((start sek)
+	      (dur tempo))
+	 (jack-play-note *jack-seq* start dur 60 80 0))))
+
+
+(setf *spiller* nil)
+(setf bend 0)
+(seqhash-midi-pitch-wheel-msg  *jack-seq* (jack-frame-now) (incf bend 200) 0)
+(progn
+  (setf *spiller* t)
+  (setf rytme 0.12)
+  (setf bend 0)
+  (loop
+     (if (not (and *spiller* (< bend 16384)))
+	 (return nil)
+	 (progn (jack-play-note *jack-seq* 0 rytme 60 80 0)
+		(sleep rytme)))))
+
+
+
+(seqhash-midi-pitch-wheel-msg  *jack-seq* (jack-frame-now) 8192 0)
+(loop for bend from 0 to 16000 by 100
+     do
+     (seqhash-midi-pitch-wheel-msg  *jack-seq* (jack-frame-now) bend 0)
+     (sleep 0.2))
+
+
+(play-some-notes 0.4 2.0)
+
 
 (progn
   (seqhash-midi-note-on *jack-seq* (jack-frame-now) (setf *thisnote* 60) 127 1)
