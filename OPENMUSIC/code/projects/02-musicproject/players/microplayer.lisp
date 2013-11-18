@@ -234,7 +234,6 @@
 
 
 (defmethod put-external-preferences ((module (eql 'microplayer)) moduleprefs)
-  (print moduleprefs)
   (let ((list-prefs (get-pref moduleprefs :microplay-options)))
     (when list-prefs 
       (setf *microplayer-out-port* (nth 0 list-prefs))
