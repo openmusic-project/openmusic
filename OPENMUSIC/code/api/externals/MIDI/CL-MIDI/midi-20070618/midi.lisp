@@ -461,8 +461,8 @@ works only if the chars are coded in ASCII]"
 (define-midi-message control-change-message (voice-message)
   :status-min #xb0 :status-max #xbf
   :data-min #x00 :data-max #x78
-  :slots ((controller :initarg :controller)
-	  (value :initarg value))
+  :slots ((controller :initarg :controller :reader message-controller)
+	  (value :initarg :value :reader message-value))
   :filler (setf controller next-byte
 		value next-byte)
   :length 2

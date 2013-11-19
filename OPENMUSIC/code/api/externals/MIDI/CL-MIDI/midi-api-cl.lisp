@@ -339,6 +339,16 @@
 (defmethod midi-data-byte-2 ((event midi::program-change-message))
   (midi::message-program event))
 
+
+;; CONTROL CHANGE
+
+(defun make-control-change-message (time controller value chan)
+  (make-instance 'midi::control-change-message :time time :controller controller :value value :status (logior +control-change-opcode+ chan)))
+(defmethod midi-data-byte-1 ((event midi::control-change-message))
+  (midi::message-value event))
+(defmethod midi-data-byte-2 ((event midi::control-change-message))
+  (midi::message-controller event))
+
 ;; PITCH BEND
 
 ;; range = 14 bits (-8192 -> 8190 in user-code)

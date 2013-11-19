@@ -46,6 +46,8 @@
    (param :accessor event-param :initarg :event-param)
    (pgm :accessor event-pgm :initarg :event-pgm)
    (kpress :accessor event-kpress :initarg :event-kpress)
+   (ctrl :accessor event-ctrl :initarg :event-ctrl)
+   (val :accessor event-val :initarg :event-val)
    (link :accessor event-link :initarg :event-link :initform nil)))
 
 

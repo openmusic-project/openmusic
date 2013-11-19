@@ -93,6 +93,22 @@
 	       (jack-player-play-note queue object interval-at)))))
 	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
 
+(defun jack-send-to-jack (object at interval queue)
+  (cond ((container-p object)
+	 (mapc #'(lambda (sub)
+		   (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+	       (inside object)))
+	((rest-p object) nil)
+	((note-p object)
+	 ;; send off events to jacks scheduler
+	 (unless (equal (tie object) 'end)
+	   (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
+		  (interval-at (if interval (- at (car interval)) at)))
+	     (when (or (not interval) note-in-interval?)
+	       (jack-player-play-note queue object interval-at)))))
+	;;((midievent-p object) (om-midi-send-midi-evt object))
+	(t (print (format nil "fixme: :jackmidi, dont know how to play ~A" object)))))
+
 (defun jack-player-play-note (queue note offset)
   (let ((seq (gethash queue *jack-midi-seqs*))
 	(start (/ offset 1000.0))
@@ -166,10 +182,19 @@
 
 ;; general function om-midi-send-evt expects instances of midimsg2evt:
 
-
-
 (defun om-midi-send-evt (event &optional (player *midiplayer*))
   (declare (ignore player))
-  (case (oa::event-type event)
-    (5 (cl-jack::seqhash-midi-program-change cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-pgm event) (oa::event-chan event)))
-    (7 (cl-jack::seqhash-midi-pitch-wheel-msg  cl-jack::*jack-seq* (cl-jack::jack-frame-now) (oa::event-bend event) (oa::event-chan event)))))
+  (let ((time (cl-jack::jack-frame-now))
+	(seq cl-jack::*jack-seq*))
+    (case (oa::event-type event)
+      (5 (cl-jack::seqhash-midi-program-change seq time (oa::event-pgm event) (oa::event-chan event)))
+      (7 (cl-jack::seqhash-midi-pitch-wheel-msg seq time (oa::event-bend event) (oa::event-chan event)))
+      (4 (cl-jack::seqhash-midi-control-change seq time (oa::event-ctrl event) (oa::event-val event) (oa::event-chan event)))
+      (t nil))))
+
+;; todo::  setup to handle instances of MidiEvent
+
+(defun om-midi-send-midi-evt (event &optional (player *midiplayer*))
+  (print "play midievent not implemented yet"))
+
+

@@ -98,6 +98,10 @@
   (let ((event (oa::make-program-change-message frame program channel)))
     (seqhash-midi-event seq frame event)))
 
+(defun seqhash-midi-control-change (seq frame control value &optional (channel 1))
+  (let ((event (oa::make-control-change-message frame control value channel)))
+    (seqhash-midi-event seq frame event)))
+
 (defun seqhash-midi-pitch-wheel-msg (seq frame bend &optional (channel 1))
   (let ((mybend (+ bend 8192)))		;expects values between -8192->8191
     (let ((event (oa::make-pitch-bend-message frame mybend channel)))
