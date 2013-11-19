@@ -187,9 +187,9 @@
   (let ((time (cl-jack::jack-frame-now))
 	(seq cl-jack::*jack-seq*))
     (case (oa::event-type event)
-      (5 (cl-jack::seqhash-midi-program-change seq time (oa::event-pgm event) (oa::event-chan event)))
-      (7 (cl-jack::seqhash-midi-pitch-wheel-msg seq time (oa::event-bend event) (oa::event-chan event)))
-      (4 (cl-jack::seqhash-midi-control-change seq time (oa::event-ctrl event) (oa::event-val event) (oa::event-chan event)))
+      (5 (cl-jack::seqhash-midi-program-change seq time (oa::event-pgm event) (1+ (oa::event-chan event))))
+      (7 (cl-jack::seqhash-midi-pitch-wheel-msg seq time (oa::event-bend event) (1+ (oa::event-chan event))))
+      (4 (cl-jack::seqhash-midi-control-change seq time (oa::event-ctrl event) (oa::event-val event) (1+ (oa::event-chan event))))
       (t nil))))
 
 ;; todo::  setup to handle instances of MidiEvent
