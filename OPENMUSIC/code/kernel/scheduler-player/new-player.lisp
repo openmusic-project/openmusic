@@ -414,7 +414,7 @@
 (defmethod get-obj-to-play ((self play-editor-mixin)) nil)
 
 (defmethod get-duration ((self play-editor-mixin)) 
-  (get-obj-dur (get-obj-to-play self)))   ;;; = 0 if obj = NIL
+  (get-obj-dur (get-obj-to-play self)))  ;;; = 0 if obj = NIL
 
 ;; priorité sur le mode
 (defmethod play-selection-first ((self t)) nil)

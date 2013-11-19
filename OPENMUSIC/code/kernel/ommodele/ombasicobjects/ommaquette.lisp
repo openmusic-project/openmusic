@@ -271,7 +271,7 @@
                      ))
              ))
      (setf rep (make-instance 'maquette-obj 
-                 :extent maxdur 
+                 :extent (print maxdur)
                  :Qvalue 1000 
                  :inside (reverse tempobjs)))
      (setf (param-list rep) (reverse params))

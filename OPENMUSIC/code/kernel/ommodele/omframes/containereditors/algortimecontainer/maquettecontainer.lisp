@@ -1213,8 +1213,7 @@
       (call-next-method)
     (if (get-actives (panel self))
         (list (loop for boxf in (get-actives (panel self)) minimize (offset (object boxf)))
-              (loop for boxf in (get-actives (panel self)) maximize (+ (offset (object boxf)) (round (* (extend (object boxf)) (strech-fact (object boxf)))))))
-      )))
+              (loop for boxf in (get-actives (panel self)) maximize (+ (offset (object boxf)) (round (* (extend (object boxf)) (strech-fact (object boxf))))))))))
        
 #|            
 
