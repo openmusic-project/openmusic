@@ -50,6 +50,13 @@
    (val :accessor event-val :initarg :event-val)
    (link :accessor event-link :initarg :event-link :initform nil)))
 
+(defmethod print-object ((obj midimsg2evt) stream)
+  (print-unreadable-object (obj stream)
+    (format stream "midimsg ~{~A:~A ~}"
+	    (loop for slot in (clos:class-slots (find-class 'midimsg2evt))
+	       when (clos:slot-boundp obj (clos:slot-definition-name slot))
+	       append (list (clos:slot-definition-name slot) (slot-value obj (clos:slot-definition-name slot)))))))
+
 
 ;;; CONVERSION
 

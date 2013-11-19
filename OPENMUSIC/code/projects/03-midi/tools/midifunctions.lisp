@@ -292,7 +292,8 @@ The range of pitch wheel is between -8192 and 8190.
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "PitchWheel")
                                                                   :chan (- chans 1) :port aport 
                                                                   :bend vals)))
-           (when event (om-midi-send-evt event *midiplayer*))  t)))
+           (when event (om-midi-send-evt event *midiplayer*))
+	   t)))
 
 (defmethod* pitchwheel ((vals number) (chans list) &optional port)
    (loop for item in chans do
