@@ -174,7 +174,7 @@ Lock the box ('b') to keep the current file.
      (sdif::SdifFReadGeneralHeader ptrfile)
      (sdif::SdifFReadAllASCIIChunks ptrfile)
      ;(setf nextFrame (next-frame-is-ok self ptrfile)) 
-     (loop while (next-frame-is-ok self ptrfile) do
+     (loop while (next-frame-is-ok ptrfile) do
            (let ((fdesc (description-frame ptrfile)))
              (record-in-streams self fdesc)
              (push fdesc framelist) 
