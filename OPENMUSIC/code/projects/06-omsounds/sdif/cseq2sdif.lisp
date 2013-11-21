@@ -177,8 +177,8 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
        (let (nextframe) 
          (sdif::SdifFReadGeneralHeader ptrfile)
          (sdif::SdifFReadAllASCIIChunks ptrfile)
-         (setf nextFrame (firstframep self ptrfile))
-         (loop while nextframe do
+         ;(setf nextFrame (next-frame-is-ok ptrfile))
+         (loop while (next-frame-is-ok ptrfile) do
            ; for item in (framesdesc self) do
                (multiple-value-bind (fsig time sid pos nbmat)
                    (read-frame-header ptrfile)
@@ -280,9 +280,11 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
 
                     (t (sdif::SdifFSkipFrameData ptrfile)))
                    ))
-               (setf nextFrame (nextframep self ptrfile)))
+               (sdif-get-signature ptrfile)
+               ;(setf nextFrame (nextframep self ptrfile))
+               )
 
-         (sdif-close self ptrfile)
+         (sdif-close-file ptrfile)
          ))
      
      (when (or (equal datatype 'mrk) (equal datatype 'all))

@@ -73,6 +73,7 @@ Lock the box ('b') to keep the current file.
     (when (and fileptr (not (sdif-null-ptr-p fileptr)))
       fileptr)))
 
+;;; useless
 (defmethod sdif-close ((self t) ptr)
    (sdif-close-file ptr)
    t)
@@ -172,15 +173,17 @@ Lock the box ('b') to keep the current file.
          (streamlist nil))
      (sdif::SdifFReadGeneralHeader ptrfile)
      (sdif::SdifFReadAllASCIIChunks ptrfile)
-     (setf nextFrame (firstframep self ptrfile)) 
-     (loop while nextframe do
+     ;(setf nextFrame (next-frame-is-ok self ptrfile)) 
+     (loop while (next-frame-is-ok self ptrfile) do
            (let ((fdesc (description-frame ptrfile)))
              (record-in-streams self fdesc)
              (push fdesc framelist) 
-             (setf nextFrame (nextframep self ptrfile))))
+             ;(setf nextFrame (nextframep self ptrfile))
+             (sdif-get-signature ptrfile)
+             ))
      (setf (framesdesc self) (reverse framelist))
      (setf (loaded self) t)
-     (sdif-close self ptrfile) t))
+     (sdif-close-file ptrfile) t))
 
 
 (defun record-in-streams (self fdesc)
@@ -287,9 +290,12 @@ Lock the box ('b') to keep the current file.
        (string<= sign "zzzz")
        T))
        
-(defmethod firstframep ((self sdifFile) ptr)
+
+(defun next-frame-is-ok (ptr)
   (good-signature-p (sdif::SdifSignatureToString (sdif::SdifFCurrSignature ptr))))
 
+(defmethod firstframep ((self sdifFile) ptr)
+  (good-signature-p (sdif::SdifSignatureToString (sdif::SdifFCurrSignature ptr))))
 
 (defmethod nextframep ((self sdifFile) ptr)
    (let ((signature (sdif-get-signature ptr)))
@@ -339,7 +345,7 @@ Lock the box ('b') to keep the current file.
                  (sdif::SdifFReadOneRow ptrfile))
            (loop for k from 1 to (+ j 1) do
                  (setf rep (sdif::SdifFCurrOneRowCol ptrfile k)))
-           (sdif-close self ptrfile)
+           (sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "the point (~D, ~D) is out of range, the matrix dimension is (~D,~D)" i j row col))))))
 
@@ -356,7 +362,7 @@ Lock the box ('b') to keep the current file.
                            collect (progn
                                      (sdif::SdifFReadOneRow ptrfile)
                                      (sdif::SdifFCurrOneRowCol ptrfile (+ i 1)))))
-           (sdif-close self ptrfile)
+           (sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "Error the matrix dimension is (~D,~D)" row col))))))
 
@@ -374,7 +380,7 @@ Lock the box ('b') to keep the current file.
                  (sdif::SdifFReadOneRow ptrfile))
            (setf rep (loop for k from 1 to col collect
                            (sdif::SdifFCurrOneRowCol ptrfile k)))
-           (sdif-close self ptrfile)
+           (sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "Error the matrix dimension is (~D,~D)" row col))))))
 
@@ -406,7 +412,7 @@ Lock the box ('b') to keep the current file.
                 (sdif-to-text ptr (namestring targetname))
                 (setf rep targetname))
            (om-message-dialog "Could not convert SDIF file to text..."))
-         (when ptr (sdif-close self ptr)))
+         (when ptr (sdif-close-file ptr)))
      (om-message-dialog "SDIFFile box seems not to have attached SDIF file..."))
      rep))
 
@@ -591,10 +597,17 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 
 "
    :numouts 2
-   (get-sdif-data self sID frameType matType Cnum rmin rmax tmin tmax))
+   (when (filepathname self) 
+     (get-sdif-data (filepathname self) sID frameType matType Cnum rmin rmax tmin tmax)))
+
+(defmethod! getsdifdata ((self pathname) sID frameType matType Cnum rmin rmax tmin tmax)
+    (get-sdif-data self sID frameType matType Cnum rmin rmax tmin tmax))
+
+(defmethod! getsdifdata ((self string) sID frameType matType Cnum rmin rmax tmin tmax)
+    (get-sdif-data (pathname self) sID frameType matType Cnum rmin rmax tmin tmax))
 
 
-(defmethod get-sdif-data ((self sdifFile) streamNum frameT matT colNum rmin rmax tmin tmax)
+(defmethod get-sdif-data ((self pathname) streamNum frameT matT colNum rmin rmax tmin tmax)
   (let ((error nil) (data nil) (onecol nil)
         val r1 r2
         (times nil))
@@ -609,9 +622,9 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
           ;(om-print "extracting SDIF data...")
             (sdif::SdifFReadGeneralHeader ptrfile)
             (sdif::SdifFReadAllASCIIChunks ptrfile)
-            (setf nextFrame (firstframep self ptrfile))
+            ;(setf nextFrame (next-frame-is-ok ptrfile))
             (loop ;for item in (framesdesc self)
-             while nextframe 
+             while (next-frame-is-ok ptrfile) 
              while (not error) do
              (multiple-value-bind (sig time id pos nbmat)
                  (read-frame-header ptrfile)
@@ -658,10 +671,11 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                      )
                  (sdif::SdifFSkipFrameData ptrfile)
                  )
-               (setf nextFrame (nextframep self ptrfile))
+               ;(setf nextFrame (nextframep self ptrfile))
+               (sdif-get-signature ptrfile)
                ))
 
-             (sdif-close self ptrfile)
+             (sdif-close-file ptrfile)
             ))))
       
       (if (not data) (om-print (format nil "No data found with t1=~D t2=~D r1=~D r2=~D " tmin tmax rmin rmax)) 
@@ -743,11 +757,18 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 
 See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 "
-   (get-sdif-stream self sID tmin tmax frameType matType ))
+   (when (filepathname self)
+     (get-sdif-stream (filepathname self) sID tmin tmax frameType matType )))
 
 
+(defmethod! GetSDIFStream ((self pathname) sID tmin tmax &optional frameType matType)
+  (get-sdif-stream self sID tmin tmax frameType matType))
 
-(defmethod get-sdif-stream ((self sdifFile) streamNum tmin tmax frameT matT)
+(defmethod! GetSDIFStream ((self string) sID tmin tmax &optional frameType matType)
+  (get-sdif-stream (pathname self) sID tmin tmax frameType matType))
+
+            
+(defmethod get-sdif-stream ((self pathname) streamNum tmin tmax frameT matT)
   (let ((error nil) (frameslist nil) (oneframe nil) (onemat nil)
         ptrfile data rep)
     (if  (or (null self) (and tmin tmax (> tmin tmax))) 
@@ -758,8 +779,8 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
         (print "reading SDIF data...")
         (sdif::SdifFReadGeneralHeader ptrfile)
         (sdif::SdifFReadAllASCIIChunks ptrfile)
-        (setf nextFrame (firstframep self ptrfile))
-        (loop while nextframe 
+        ; (setf nextFrame (next-frame-is-ok ptrfile))
+        (loop while (next-frame-is-ok ptrfile) 
               ;for item in (framesdesc self)
               while (not error) do
               (multiple-value-bind (sig time id pos nbmat)
@@ -819,8 +840,10 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                       (setf error t))
                   (sdif::SdifFSkipFrameData ptrfile)
                   )
-                (setf nextFrame (nextframep self ptrfile))))
-        (sdif-close self ptrfile)))
+                ;(setf nextFrame (nextframep self ptrfile))
+                (sdif-get-signature ptrfile)
+                ))
+        (sdif-close-file ptrfile)))
     (if (not frameslist) (print (format nil "No data found")))
     (setf rep (make-instance 'sdifstream :id streamNum :LFrames (reverse frameslist)))
     rep))
@@ -883,7 +906,7 @@ Frame type description is a list of lists containing the internal matrix signatu
                 (if (equal type 'm)
                     (matrixinfo-from-signature ptrfile signature)
                   (frameinfo-from-signature ptrfile signature)))
-          (sdif-close self ptrfile)))
+          (sdif-close-file ptrfile)))
     data))
 
 ;;; NVT
@@ -935,7 +958,7 @@ Name/Value tables are formatted as SDIFNVT objects.
                        ))
             (sdif::SdifKillHashTableIterator nvtiter)
             )))
-    (sdif-close self ptrfile)
+    (sdif-close-file ptrfile)
     data))
 
 (defmethod! GetNVTList ((self sdiffile))
@@ -998,7 +1021,7 @@ See http://sdif.sourceforge.net/standard/sdif-standard.html#Stream%20IDs%20Table
                             ))
                     ))
         )
-      (sdif-close self ptrfile))
+      (sdif-close-file ptrfile))
     data))
 
 (defmethod! GetSIDTable ((self sdiffile))

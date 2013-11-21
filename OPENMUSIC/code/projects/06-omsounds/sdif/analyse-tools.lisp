@@ -53,7 +53,7 @@
                                                              (sdif::SdifFReadOneRow ptrfile)
                                                              (loop for c from 1 to col collect
                                                                    (sdif::SdifFCurrOneRowCol ptrfile c)))))
-                                (sdif-close self ptrfile)
+                                (sdif-close-file ptrfile)
                                 (loop for f from f-min to f-max by f-step do
                                       (setf val (find-amplitude f onemat))
                                       (push (list f val) newmat))
