@@ -24,6 +24,8 @@
 
 (defparameter *jack-sndfile-handle* nil)
 
+(defvar *dac-folding* t)				    ;fold in-chans around out-chans
+
 (unless (find :libsndfile *features*)
   (error "jackplay depends on libsndfile"))
 
@@ -65,8 +67,9 @@
   poker
   playing?
   start					;nil or position (millisec.)
-  loop?)				;nil or (start . end)
-
+  loop?					;nil or (start . end)
+  outbus				;bus to feed ch-0, succeeding channels thereafter
+  )
 
 ;;; global list of jack-sf objects, looked up in disk-threads and Jacks
 ;;; server-callback process
@@ -78,7 +81,7 @@
 (defun cl-jack-seek (sf frame)
   (sf::sf_seek sf frame 0))
 
-(defun cl-jack-play-sound (soundfile &optional start loop?)
+(defun cl-jack-play-sound (soundfile &optional start loop? (tracknum 0))
   (multiple-value-bind (mysf chans) (jack-open-sound soundfile)
     (when mysf
       (let ((jack-sf (make-jack-sf :path soundfile
@@ -87,7 +90,9 @@
 				   :ringbuffer (jack-ringbuffer-create (* *sample-size* *outchannels* (ash 1 15)))
 				   :playing? t
 				   :start (if start (ms->frame start))
-				   :loop? loop?)))
+				   :loop? loop?
+				   :outbus tracknum
+				   )))
 	(when (numberp start) (cl-jack-seek mysf (ms->frame start)))
 	(let ((thisproc (mp:process-run-function (format nil "cl-jack-producer ~S" (file-namestring soundfile))
 						 nil
@@ -122,7 +127,8 @@
 	   (foreign-free (jack-sf-ringbuffer snd))
 	   (sf::sf_close (jack-sf-sound-file-handle snd))
 	   (mp:process-kill (jack-sf-disk-proc snd)))
-	  (t (warn "didnt find sound: ~A in *jack-sounds*" snd)))))
+	  (t nil ;;(warn "didnt find sound: ~A in *jack-sounds*" snd)
+	     ))))
 
 ;; (cl-jack-close-sound (first *jack-sounds*))
 
@@ -176,7 +182,8 @@
 	(sf-handle (jack-sf-sound-file-handle jack-sf)))
     (with-foreign-object (framebuf '(:struct jack_ringbuffer_data_t))
       (loop
-	 (let ((sf-playing? (jack-sf-playing? jack-sf)))
+	 (let ((sf-playing? (jack-sf-playing? jack-sf))
+	       (bytes-per-frame (* *sample-size* (jack-sf-chans jack-sf))))
 	   (when sf-playing?
 	     (let ((read-frames-cnt 0))
 
@@ -184,13 +191,13 @@
 
 	       ;; fill 1st part of available ringbuffer
 	       (when (rb-data-len-p framebuf 0)
-		 (let ((buf-available (floor (rb-data-len framebuf 0) *bytes-per-frame*)))
+		 (let ((buf-available (floor (rb-data-len framebuf 0) bytes-per-frame)))
 		   (setf read-frames-cnt
 			 (sf::sf-readf-float sf-handle (rb-data-buf framebuf 0) buf-available)))
 
 		 ;; fill 2nd part of available ringbuffer if available
 		 (when (rb-data-len-p framebuf 1)
-		   (let ((buf-available (floor (rb-data-len framebuf 1) *bytes-per-frame*)))
+		   (let ((buf-available (floor (rb-data-len framebuf 1) bytes-per-frame)))
 		     (incf read-frames-cnt
 			   (sf::sf-readf-float sf-handle (rb-data-buf framebuf 1) buf-available)))))
 
@@ -202,7 +209,7 @@
 		       )))
 
 	       ;; book-keeping
-	       (jack-ringbuffer-write-advance ringbuffer (* read-frames-cnt *bytes-per-frame*))
+	       (jack-ringbuffer-write-advance ringbuffer (* read-frames-cnt bytes-per-frame))
 
 	       (setf (jack-sf-poker jack-sf) nil)))
 	     ;; wait for process-callback to poke me
@@ -210,37 +217,11 @@
 					    (and sf-playing? *cl-jack-is-reading*))
 				    #'(lambda () (and sf-playing? (jack-sf-poker jack-sf)))))))))
 
-(defun read-from-ringbuffer-to-outbufs (rb nframes out-channels)
-  (let ((buf (foreign-alloc 'jack_default_audio_sample_t :count (* nframes out-channels)))
+(defun read-from-ringbuffer-to-outbufs (rb nframes in-channels outbus)
+  (let ((buf (foreign-alloc 'jack_default_audio_sample_t :count (* nframes in-channels)))
 	read-count)
-    (setf read-count (jack-ringbuffer-read rb buf (* nframes *sample-size* out-channels)))
-    (list read-count buf)))
-
-
-(defun cl-jack-write-samples-from-all-ringbuffers (nframes)
-  ;;(declare (optimize (float 0) (speed 3)))
-
-  ;; allocate buffer to write to, one pr. out-chan/port:
-  (loop for port in *CL-jack-audio-output-ports*
-     for i from 0
-     do (setf (aref *outbufs-arr* i) (jack-port-get-buffer port nframes)))
-
-  (let ((ampscaling (/ 1.0 (max 1 (n-sounds-playing-now *jack-sounds*))))
-	(readbufs (mapcar #'(lambda (rb)
-			      (read-from-ringbuffer-to-outbufs rb nframes *outchannels*))
-			  (mapcar #'jack-sf-ringbuffer (cl-jack-sounds-playing-now *jack-sounds*)))))
-    (loop for outbuf across *outbufs-arr*
-       for ch from 0
-       do (loop for out from 0 below nframes
-	     for in from ch by *outchannels*
-	     do (setf (mem-aref outbuf 'jack_default_audio_sample_t out)
-		      (loop with scaling = ampscaling
-			 for (read-count buf) in readbufs
-			 sum (if (plusp read-count)
-				 (* (mem-aref buf 'jack_default_audio_sample_t in) scaling)
-				 0.0)))))
-    ;; free some buffers
-    (loop for (nil buf) in readbufs do (foreign-free buf))))
+    (setf read-count (jack-ringbuffer-read rb buf (* nframes *sample-size* in-channels)))
+    (list read-count buf in-channels outbus)))
 
 ;; "silence" process-callback:
 
@@ -251,17 +232,67 @@
 		     jack_default_audio_sample_t 0.0
 		     size_t (* nframes (foreign-type-size 'size_t)))))
 
+(defun cl-jack-write-silence-to-pointer (nframes pointer)
+  (foreign-funcall "memset"
+		   :pointer pointer
+		   jack_default_audio_sample_t 0.0
+		   size_t (* nframes (foreign-type-size 'size_t))))
+
+(defun jack-port-get-zero-buffer (port frames)
+  (let ((buf (jack-port-get-buffer port frames)))
+    (cl-jack-write-silence-to-pointer frames buf)
+    buf))
+
+(defun cl-jack-write-samples-from-all-ringbuffers (nframes)
+  (declare (optimize (speed 3) (safety 0) (float 0)))
+  (declare (type fixnum nframes))
+  (let ((sounds-playing (cl-jack-sounds-playing-now *jack-sounds*)))
+    (let ((ampscaling (/ 1.0 (max 1 (sqrt (n-sounds-playing-now *jack-sounds*)))))
+	  (n-outchans (length *CL-jack-audio-output-ports*))
+	  (outbufs (mapcar #'(lambda (port) (jack-port-get-zero-buffer port nframes))
+			   *CL-jack-audio-output-ports*))
+	  
+	  (inbufs (mapcar #'(lambda (rb chans outbus)
+			      (read-from-ringbuffer-to-outbufs rb nframes chans outbus))
+			  (mapcar #'jack-sf-ringbuffer sounds-playing)
+			  (mapcar #'jack-sf-chans sounds-playing)
+			  (mapcar #'jack-sf-outbus sounds-playing))))
+      (declare (type short-float ampscaling))
+      (loop for (read-count inbuf n-chans outbus) in inbufs ; pr. ringbuffer - ie. input-stream
+	 do
+	   (loop for ch from 0 below n-chans		    ; pr. output-port, not more then n-chans for input-sound
+	      for bus-idx = (if *dac-folding*
+				(mod (+ ch outbus) n-outchans)
+				(+ ch outbus))
+	      for outbuf = (nth (max 0 (min bus-idx n-outchans)) outbufs)
+	      do (if (and (not *dac-folding*) (or (< bus-idx 0) (>= bus-idx n-outchans)))
+		     nil
+		     (loop for out from 0 below nframes
+			for in from ch by n-chans	    ; deinterleave
+			do (setf (mem-aref outbuf 'jack_default_audio_sample_t out)
+				 (+ (mem-aref outbuf 'jack_default_audio_sample_t out)
+				    (if (plusp read-count)
+					(* (mem-aref inbuf 'jack_default_audio_sample_t in) ampscaling)
+					0.0)))))))
+      ;; free some buffers
+      (loop for (nil buf) in inbufs do (foreign-free buf)))))
+
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
+  (declare (optimize (speed 3) (safety 0) (float 0)))
   (declare (ignore arg))
-  (cl-jack-handle-event-seqs nframes)	;plug to handle midi-seq
+  (cl-jack-handle-event-seqs nframes)			    ;plug to handle midi-seq
   (progn
-    (cl-jack-write-silence nframes)	;fill with zero if nothing else comes in...
-    (if (plusp (n-sounds-playing-now *jack-sounds*)) (cl-jack-write-samples-from-all-ringbuffers nframes))
+    (cl-jack-write-silence nframes)			    ;fill with zero if nothing else comes in...
+    (when (plusp (n-sounds-playing-now *jack-sounds*))
+      (cl-jack-write-samples-from-all-ringbuffers nframes))
     ;; wake up disk-threads to push into ringbuffers
     (mapc #'(lambda (this-sound)
 	      (let ((readproc (jack-sf-disk-proc this-sound)))
 		(setf (jack-sf-poker this-sound) t)
-		(when (and (mp:process-alive-p readproc) (jack-sf-playing? this-sound) *cl-jack-is-reading*)
+		(when (and (mp:process-alive-p readproc)
+			   (mp:process-alive-p (jack-sf-disk-proc this-sound))
+			   (jack-sf-playing? this-sound)
+			   *cl-jack-is-reading*)
 		  (mp:process-poke readproc))))
 	  *jack-sounds*))
 
