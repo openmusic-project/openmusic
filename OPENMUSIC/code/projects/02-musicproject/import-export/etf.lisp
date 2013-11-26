@@ -1060,11 +1060,13 @@
  )
                        
 
-
 (in-package "CLENI")
 ;;; a faire bien...
 (defun translate-score (score filename)
-  (let ((template-file (om::omroot "resources/template.etf"))
+  (let ((template-file
+	 ;;(om::omroot "resources/template.etf")
+	 (om::omroot "code/projects/02-musicproject/import-export/template.etf")
+	  )
         ;;(full-pathname
         ;;(coerce (format nil "code:projects;musicproject;ETF;template.etf") ;(slot-value score 'temperament) removed
         ;;               'simple-string))
