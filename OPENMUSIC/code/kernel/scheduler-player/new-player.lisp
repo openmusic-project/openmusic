@@ -204,7 +204,7 @@
 ;;; REGISTERING PLAYER 
 ;;;=====================
 
-(defparameter *enabled-players* nil)  
+(defvar *enabled-players* nil)  
 
 (defun enable-player (player)
   (pushnew player *enabled-players*))
