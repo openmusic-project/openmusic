@@ -5,7 +5,7 @@
 ;--------------------------------------------------
 
 (defvar *LZ-lib-files* nil)
-(setf *LZ-lib-files* (list (om::om-relative-path '("sources") "LZ")
+(setf *LZ-lib-files* (list (om::om-relative-path '("sources") "lz")
                            (om::om-relative-path '("sources") "Kant")))
 
 ;--------------------------------------------------
