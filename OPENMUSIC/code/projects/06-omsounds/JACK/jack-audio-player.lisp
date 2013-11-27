@@ -45,11 +45,21 @@
   (setf (oa::sndlasptr object) jack-sf))
 
 (defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) (object sound) at interval)
-  (let ((thissound (cl-jack::cl-jack-play-sound (om-sound-file-name object) (car interval) nil (tracknum object))))
-    (setf (jack-sf-struct object) thissound)))  
+  (call-next-method)
+  )
+
+(defmethod player-play-object ((engine (eql :jackaudio)) (object sound) &key interval)
+  (let ((thissound (cl-jack::cl-jack-play-sound
+		    (om-sound-file-name object)
+		    (if interval
+			(- (car interval) (offset object))
+			0)
+		    nil
+		    (tracknum object))))
+    (setf (jack-sf-struct object) thissound)))
 
 (defmethod player-start ((engine (eql :jackaudio)) &optional play-list)
-  t)
+  (call-next-method))
 
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :jackaudio)) &optional play-list)
