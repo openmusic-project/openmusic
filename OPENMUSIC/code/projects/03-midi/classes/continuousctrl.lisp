@@ -42,7 +42,6 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
   self)
  
 
-
 (defmethod make-one-instance ((self midicontrol) &rest slots-vals)
   (let ((rep (apply 'simple-bpf-from-list (list (second slots-vals) (sixth slots-vals) (type-of self) 0))))
     (setf (ctrltype rep) (first slots-vals)
