@@ -28,14 +28,26 @@
 
 (setf *midi-files*
       '(
-
         "tools;miditools"
+        
         "classes;midievents"
         "classes;midi-sequence"
         "classes;measures-tempo"
         "classes;continuous-controllers"
+        "classes;midicontroller"
+        
+        
+        "classes;midifile"
+        "editors;midieditor"
 
-       "players;select-players"  
+        "tools;midiconversions"
+        
+        "tools;midi-send"
+
+                
+        "player;midi-init"
+        "player;midiplayer"
+        "players;select-players"  
         #-linux "players;ms-players"  
                
        ; osc and microplayer
@@ -43,20 +55,13 @@
         "osc;receive"
         "osc;osc-events"
         #-linux "players;microplayer"
-
-
-        "player;midi-init"
-        "classes;midifile"
-        "editors;midieditor"
-        "tools;midifunctions"
-
-        "tools;midiconversions"
-        "classes;midicontroller"
-        "player;midiplayer"
-        "tools;midi-preferences"
-        "midipackages"
 	;; #+cl-fluidsynth "player;fluid-player"
 	#+(and linux cl-jack) "player;jack-midi-player"
+
+        "tools;midi-preferences"
+
+        "midipackages"
+
         ))
 
 
