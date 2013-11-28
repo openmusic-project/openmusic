@@ -184,50 +184,6 @@ Returns the MIDIEvent or list after converting to string the data (ev-field) of 
     (reverse rep)))
 
 
-;;; compatibility : play a eventmidi
-
-(defmethod* PrepareToPlay ((player t) (self EventMidi) at &key approx port interval voice)
-   (declare (ignore approx))
-   (when (and *midiplayer* (or (null interval) (point-in-interval at interval)))
-     (setf port (or port *outmidiport*))
-     (let ((param1 (first (ev-field self)))
-           (param2 (second (ev-field self)))
-           (really-at (if interval (- at (first interval)) at)) 
-           (midichan (- (ev-chan self) 1))
-           (miditype (if (string-equal (ev-type self) "typeVolume")
-                         (om-midi-get-num-from-type "CtrlChange") (om-midi-get-num-from-type (subseq (ev-type self) 4))))
-           event)
-       (cond
-        ((string-equal (ev-type self) "typePitchWheel")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :bend param1)))
-        ((string-equal (ev-type self) "typePitchBend")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :bend (round (- (* (/ param1 127) 16382 ) 8192)))))
-        ((string-equal (ev-type self) "typeProgChange")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :pgm param1)))
-        ((string-equal (ev-type self) "typeChanPress")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :param param1)))
-        ((string-equal (ev-type self) "typeKeyPress")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :kpress param2 :pitch param1)))
-        ((string-equal (ev-type self) "typeCtrlChange")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :ctrlchange (list param1 param2))))
-        ((string-equal (ev-type self) "typeVolume")
-         (setf event (om-midi-new-evt miditype :date really-at :port port :chan midichan 
-                                           :ctrlchange (list 7 param1))))
-        ((string-equal (ev-type self) "typeSysEx")
-         (setf event (om-midi-make-new-evt miditype :date really-at :port port :chan midichan 
-                                           :bytes param1)))
-        (t (setf event (om-midi-make-new-evt miditype :date really-at :port port :chan midichan 
-                                             :vals (ev-field self))))
-        )
-       (when event
-         (om-midi-seq-add-evt *playing-midi-seq* event)))))
-
 ;;;==================================
 ;;; generic function get-midievents :
 ;;; converts anything to a list of midiEvent
