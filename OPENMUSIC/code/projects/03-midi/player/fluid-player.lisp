@@ -28,7 +28,6 @@
 (defmethod player-type ((player (eql :fluidsynth))) :midi)   
 
 (defun init-fluid-player ()
-  ;; (pushnew :fluidsynth *all-players*)
   (enable-player :fluidsynth)
   ;; setup fluidsynth as optional player for relevant classes
   (add-player-for-object 'simple-score-element :fluidsynth)
@@ -148,13 +147,12 @@
 (defmethod offset->ms ((self oa::midimsg2evt) &optional grandparent)
   (oa::event-date self))
 
-(defmethod offset->ms ((self list) &optional grandparent)
-  )
+;(defmethod offset->ms ((self list) &optional grandparent)
+;  )
 
 
 ;; 'edition-params is looked up by new-player, and seems to be
 ;; defaulted to :midishare somewhere:
 
-(defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) 
-  :fluidsynth)
+(defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) :fluidsynth)
 

@@ -43,7 +43,7 @@
        ;(setf converted-seq (fileseq self))
        (setf event (om-midi-seq-first-evt (fileseq self)))
        ;(setf event (midishare::firstEv (fileseq self)))
-       (setf port (verify-port port))
+       (setf port (or port *outmidiport*))
        (if interval
          (let ((newinterval (interval-intersec interval (list at (+ at (get-obj-dur self))))))
            (when newinterval
@@ -75,7 +75,7 @@
 (defmethod* PrepareToPlay ((player t) (self EventMidi-seq) at &key approx port interval voice)
    (declare (ignore approx))
    (when *midiplayer*
-     (setf port (verify-port port))
+     (setf port (or port *outmidiport*))
      (loop for date in (Ldate self)
            for type in (Ltype self)
            for param in (Lfields self)
@@ -95,7 +95,7 @@
                  (progn
                    (om-midi-evt-set event :chan (- chan 1))
                    (om-midi-evt-set event :date really-at)
-                   (om-midi-evt-set event :port (verify-port midiport))
+                   (om-midi-evt-set event :port (or midiport *outmidiport*))
                    (om-midi-evt-set event :ref ref)
                    (cond
                     ((= (om-midi-evt-get event :type) (om-midi-get-num-from-type "PitchBend"))
@@ -150,7 +150,7 @@
         (om-beep-msg (format nil "MidiShare can not create a new event of type ~D" type))
       (progn
         (om-midi-evt-set event :chan (- (ev-chan self) 1))			
-        (om-midi-evt-set event :port (verify-port (ev-port self)))
+        (om-midi-evt-set event :port (or (ev-port self) *outmidiport*))
         (om-midi-evt-set event :ref ref)
         (om-midi-evt-set event :date (ev-date self))
         (cond
@@ -183,7 +183,7 @@
 (defmethod* PrepareToPlay ((player t) (self MidiEvent) at &key approx port interval voice)
    (declare (ignore approx))
    (when (and *midiplayer* (or (null interval) (point-in-interval at interval)))
-     (setf port (verify-port port))   
+     (setf port (or port *outmidiport*))   
      (let ((msevent (midievent-to-msevent self))
            (really-at (if interval (- at (first interval)) at)))
        (when msevent
@@ -194,8 +194,8 @@
 
 ;=== Measure send a TimeSign Midi event as a bar marker (and time signature information) 
 (defmethod* PrepareToPlay ((player t) (self measure) at &key approx port interval voice)
-   ;(setf port (verify-port port))
-   (let ((MeasureEvent (om-midi-new-evt (om-midi-get-num-from-type "TimeSign")))
+  ;(setf port (verify-port port))
+  (let ((MeasureEvent (om-midi-new-evt (om-midi-get-num-from-type "TimeSign")))
          (num (first (first (tree self))))
          (den (round (log (second (first (tree self))) 2)))
          (div 8 )   ;;; (max-div self))

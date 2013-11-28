@@ -106,7 +106,7 @@ the recorder, this function is called by a def-load-pointers"
 ;;;
 ;;;(ms::MidiConnect *refnum* 0 -1)
 ;;;
-(defun send-note (pitch)
+(defun ms-send-note (pitch)
   (let ((event (ms::MidiNewEv ms::typeNote)))	; ask for a new note event
     (ms::chan event 0)			; set the midi channel to 0 (means channel 1)
     (ms::port event 0)			; set the destination port to 0

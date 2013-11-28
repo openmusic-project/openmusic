@@ -259,7 +259,7 @@
    :doc "Sends <bytes> out of the port number <port>. 
 "
    (when bytes
-     (setf port (verify-port port))
+     (unless port (setf port *outmidiport*))
      
      (if (list-subtypep bytes 'list)
        (if (integerp port)
@@ -286,7 +286,7 @@
 
 The range of pitch wheel is between -8192 and 8190.
 "
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "PitchWheel")
@@ -317,7 +317,7 @@ The range of pitch wheel is between -8192 and 8190.
 
 The range of pitch wheel is between 0 and 127.
 "
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (pitchwheel (round (* (/ vals 127) 16382 )) chans port))
 
 (defmethod* pitchbend ((vals number) (chans list) &optional port)
@@ -339,7 +339,7 @@ The range of pitch wheel is between 0 and 127.
    :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
 
 <progm> and <chans> can be single numbers or lists."
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ProgChange")
@@ -372,7 +372,7 @@ Sends a key pressure event with pressure <values> and <pitch> on channel <cahns>
 
 Arguments can be single numbers or lists.
 "
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "KeyPress")
@@ -424,7 +424,7 @@ Arguments can be single numbers or lists.
 
 Arguments can be can be single numbers or lists.
 "
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ChanPress")
@@ -453,7 +453,7 @@ Arguments can be can be single numbers or lists.
    :indoc '("control number"  "value" "MIDI channel (1-16)" "output port number")
    :initvals '(7 100 1 nil)
    :doc "Sends a control change event with control number <ctrlnum> and value <val> to channel <chans> (and port <port>)."
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "CtrlChange")
@@ -511,7 +511,7 @@ Arguments can be numbers or lists.
 
 The range of volume values is 0-127.
 "
-   (setf port (verify-port port))
+   (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "CtrlChange")
@@ -541,7 +541,7 @@ The range of volume values is 0-127.
    :initvals '((1 1 1 ) nil)
    :doc "Sends a system exclusive MIDI message on <port> with any number of data bytes, leading $F0 and tailing $F7"
    (when databytes
-     (setf port (verify-port port))
+     (unless port (setf port *outmidiport*))
      (if (list-subtypep databytes 'list)
        (if (integerp port)
          (loop for item in databytes do
@@ -561,7 +561,7 @@ The range of volume values is 0-127.
    :initvals '(0)
    :doc "Sends a MIDI Reset message on port <port>."
    (loop for chan from 0 to 15 do 
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Reset") :port (verify-port port) :chan chan)))
+         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Reset") :port (or port *outmidiport*) :chan chan)))
            (when event (om-midi-send-evt event *midiplayer*))))
    nil)
 

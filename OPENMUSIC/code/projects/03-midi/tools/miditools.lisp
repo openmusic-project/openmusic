@@ -1,7 +1,6 @@
 (in-package :om)
 
 
-
 ;================================
 ;Global Vars
 ;================================
@@ -15,8 +14,6 @@
 
 (defvar *play-chseq-w/offset* nil)
 
-
-
 ;==================================
 ;=== Time and tempo conversions ===
 ;==================================
@@ -25,7 +22,6 @@
 
 (defmacro convert-time-1 (time unit/sec)
   `(* ,time  (/ ,unit/sec 1000 )))
-
 
 
 (defun logical-time (abstract-time cur-tempo tempo-change-abst-time tempo-change-log-time unit/sec)
@@ -45,12 +41,12 @@
   (round (* date (/ 60 qtpo))))
 
 
-
 ;by JB
 ;=====================================================
 ;=== Converts midi events time info to miliseconds    ===
 ;=== (Keeping tempo events)                           ===
 ;=====================================================
+
 (defun convert-tempo-info (seq units/sec)
   (when *midiplayer*
     (let ((cur-tempo *midi-tempo*)
@@ -181,24 +177,6 @@
        (reverse rep))))
 
 
-;================================
-;PLAY
-;================================
-
-(defun verify-port (port) 
-   (or port *Outmidiport*))
-
-(defclass arp-chord ()
-  ((notes :initform nil :initarg :notes :accessor notes)))
-
-(defmethod extent ((self arp-chord))
-   (* (length (notes self)) 500))
-
-(defmethod get-obj-dur ((self arp-chord)) (extent self))
-
-
-;================================
-;================================
 
 
 

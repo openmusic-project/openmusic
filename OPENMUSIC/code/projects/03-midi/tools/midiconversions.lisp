@@ -265,7 +265,7 @@ Converts <self> (chord-seq) into a VOICE object acoording to <tmap> (a TEMPO-MAP
                                  :ev-type (om-midi-get-num-from-type "TimeSign") 
                                  :ev-date (if (parent self) (offset->ms self) 0)
                                  :ev-ref 0 
-                                 :ev-port (verify-port 0)
+                                 :ev-port 0
                                  :ev-chan 1
                                  :ev-fields (list (first (first (tree self)))
                                                            (round (log (second (first (tree self))) 2))
@@ -278,7 +278,7 @@ Converts <self> (chord-seq) into a VOICE object acoording to <tmap> (a TEMPO-MAP
                                  :ev-type (om-midi-get-num-from-type "Tempo") 
                                  :ev-date (if (parent self) (offset->ms self) 0)
                                  :ev-ref 0 
-                                 :ev-port (verify-port 0)
+                                 :ev-port 0
                                  :ev-chan 1
                                  :ev-fields (list (tempo-a-la-noire (car (tempo self)))))
                            evtList))
