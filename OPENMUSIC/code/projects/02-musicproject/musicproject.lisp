@@ -22,8 +22,6 @@
 
 (in-package :om)
 
-
-
 (defvar *MusicProj-files* nil)
 
 (setf *MusicProj-files* 
@@ -31,7 +29,6 @@
         "editor;omicron"
         "editor;scoreeditor;scales"
         "container;tonalite"
-        "players;select-players"  
 
         ;-----------Preferences----------------------------
         "editor;general-editor-tools"
@@ -100,16 +97,10 @@
         "functions;maquette2obj"    
         "functions;conversions"       
         
-       ; osc and microplayer
-        "osc;send"
-        "osc;receive"
-        "osc;osc-events"
-        #-linux "players;microplayer"
-
         "editor;scoreeditor;pagination"
         "editor;musicpreferences"
 
-        #-linux "players;ms-players"  
+
         "music-package"  
         ))
 

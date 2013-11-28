@@ -91,14 +91,7 @@
 (AddGenFun2Pack '(save-as-etf export-musicxml import-musicxml import-bach export-bach) *iopackage*)
 
 
-;-------------------
-; OSC (add to Basic Tools Menu)
-;-------------------
 
-(defvar *oscpackage* (omNG-protect-object (omNG-make-new-package "OSC")))
-(addPackage2Pack *oscpackage* *basic-package*)
-(AddClass2Pack '(OSCEvent) *oscpackage*)
-(AddGenFun2Pack  '(osc-send osc-receive) *oscpackage*)
 
 
 

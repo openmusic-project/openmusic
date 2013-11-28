@@ -28,6 +28,16 @@
 
 (setf *midi-files*
       '(
+       "players;select-players"  
+        #-linux "players;ms-players"  
+               
+       ; osc and microplayer
+        "osc;send"
+        "osc;receive"
+        "osc;osc-events"
+        #-linux "players;microplayer"
+
+
         "player;midi-init"
         "tools;miditools"
         "classes;midifile"

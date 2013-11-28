@@ -31,6 +31,15 @@
 (AddGenFun2Pack  '(gm-program gm-drumnote control-change ms-event) *gmidi-package*)
 
 
+;-------------------
+; OSC (add to Basic Tools Menu)
+;-------------------
+
+(defvar *oscpackage* (omNG-protect-object (omNG-make-new-package "OSC")))
+(addPackage2Pack *oscpackage* *basic-package*)
+(AddClass2Pack '(OSCEvent) *oscpackage*)
+(AddGenFun2Pack  '(osc-send osc-receive) *oscpackage*)
+(addPackage2Pack *oscpackage* *om-package-tree*)
 
 ; removed from ScoreOMInterface.lisp
 ;;;(omNG-add-element *package-music* *midipackage*)
@@ -46,6 +55,7 @@
 
 (add-ref-section (gen-ref-entries *scorepackage*))  ;; update
 (add-ref-section (gen-ref-entries *midipackage*))
+(add-ref-section (gen-ref-entries *oscpackage*))
 
 ;(add-ref-section 
 ; '("MIDI" (("Objects" (MidiFile MidiEvent EventMidi-seq MidiControl Tempo-map Midi-Mix-Console))
