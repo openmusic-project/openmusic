@@ -1202,7 +1202,7 @@
 
 (defmethod get-obj-to-play ((self MaquettePanel))
   (if (and (eval-func (object self)) (value (object self)))
-    (if *microplay* 
+    (if *ms-microplay* 
       (list (value (object self)))
       (list (value (object self)) :approx 8))
     (list (cons-play-maquette-object (object self) (boxestoplay self))))

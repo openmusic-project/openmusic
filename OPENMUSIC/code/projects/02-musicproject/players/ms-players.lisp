@@ -35,7 +35,8 @@
 
 
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
-  (push (list object at interval) *ms-list-to-play*))
+  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
+    (push (list object at interval approx) *ms-list-to-play*)))
 
 
 ;;; PLAY (NOW) 
@@ -54,7 +55,9 @@
   (let ((object (mapcar 'car *ms-list-to-play*)))
     (InitPlayingSeq 'midishare (get-obj-dur object))
     (loop for item in *ms-list-to-play* do
-          (PrepareToPlay 'midishare (car item) (+ (cadr item) (real-duration (car item) 0)) :interval (caddr item)))
+          (PrepareToPlay 'midishare (nth 0 item) 
+                         (+ (nth 1 item) (real-duration (nth 0 item) 0)) 
+                         :interval (nth 2 item) :approx (nth 3 item)))
     (FinalizePlayingSeq 'midishare (get-obj-dur object))
     (when *ms-loop* (om-midi-set-loop-player *midiplayer* 0 *ms-loop*))
     (when *midiplayer* (om-midi-start-player *midiplayer*))))

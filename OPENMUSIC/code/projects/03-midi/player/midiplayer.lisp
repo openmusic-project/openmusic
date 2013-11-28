@@ -330,21 +330,14 @@
                              :port port :interval interval :voice voice))))
 
 
-
-
 ;;;==============================
 ;;; MICROTONALITE
 ;;;==============================
 
-(defvar *microplay* nil)
-(setf *microplay* nil)
-
-
-(defun make-pitchwheel-event (date chan port val)
+(defun schedule-pitchwheel-event (date chan port val)
   (let ((event (om-midi-new-evt (om-midi-get-num-from-type "PitchWheel") :date date :chan chan :port port :bend val)))
     (when event (om-midi-seq-add-evt *playing-midi-seq* event)
       )))
-
 
 (defun send-pitchwheel-event (chan port val)
   (let ((event (om-midi-new-evt (om-midi-get-num-from-type "PitchWheel") :date 0 :chan chan :port port :bend val)))
@@ -353,33 +346,36 @@
       )))
 
 
+;;; variable set by the MIDI preferences
+(defvar *ms-microplay* nil)
 
-(defmethod* PrepareToPlay ((player t) (self chord-seq) at &key approx port interval voice)
-  (when *microplay*
-    (cond 
-     ((or (= approx 8) (= approx 4))
-      (make-pitchwheel-event at 0 port 0) 
-      (make-pitchwheel-event at 1 port 1024) 
-      (make-pitchwheel-event at 2 port 2048) 
-      (make-pitchwheel-event at 3 port 3072) 
-      (make-pitchwheel-event (+ at (get-obj-dur self)) 0 port 0) 
-      (make-pitchwheel-event (+ at (get-obj-dur self)) 1 port 0) 
-      (make-pitchwheel-event (+ at (get-obj-dur self)) 2 port 0) 
-      (make-pitchwheel-event (+ at (get-obj-dur self)) 3 port 0)) 
-     (t nil))
-    )
+(defun setup-microplay (at dur port)
+  ;;; make or send ... ?
+  (schedule-pitchwheel-event at 0 port 0) 
+  (schedule-pitchwheel-event at 1 port 1024) 
+  (schedule-pitchwheel-event at 2 port 2048) 
+  (schedule-pitchwheel-event at 3 port 3072) 
+  (schedule-pitchwheel-event (+ at dur) 0 port 0) 
+  (schedule-pitchwheel-event (+ at dur) 1 port 0) 
+  (schedule-pitchwheel-event (+ at dur) 2 port 0) 
+  (schedule-pitchwheel-event (+ at dur) 3 port 0))
+
+(defmethod* PrepareToPlay ((player (eql 'midishare)) (self chord-seq) at &key approx port interval voice)
+  (when (and *ms-microplay* approx (find approx '(4 8) :test '=))
+    (setup-microplay at (get-obj-dur self) port))
   (call-next-method))
 
+(defmethod* PrepareToPlay ((player (eql 'midishare)) (self voice) at &key approx port interval voice)
+  (when (and *ms-microplay* approx (find approx '(4 8) :test '=))
+    (setup-microplay at (get-obj-dur self) port))
+  (call-next-method))
 
-
-(defmethod Stop-Player :after ((self (eql 'midishare)) &optional view)
-   (declare (ignore view))
-   (when (and nil *midiplayer* *microplay*) 
+(defmethod player-stop :after ((engine (eql :midishare)) &optional play-list)
+  (when (and *midiplayer* *ms-microplay*)
      (send-pitchwheel-event 0 *outmidiport* 0) 
      (send-pitchwheel-event 1 *outmidiport* 0) 
      (send-pitchwheel-event 2 *outmidiport* 0) 
      (send-pitchwheel-event 3 *outmidiport* 0)))
-
 
 
 

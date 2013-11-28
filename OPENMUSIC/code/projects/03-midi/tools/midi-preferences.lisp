@@ -91,7 +91,7 @@
 
 ; (put-preferences 212)
 
-(omg-defclass mini-portview (om-item-view) 
+(defclass mini-portview (om-item-view) 
               ((i :accessor i :initform nil :initarg :i)))
 
 (defmethod om-draw-contents ((self mini-portview))
@@ -111,7 +111,7 @@
   (om-invalidate-view (om-view-container self))
   t)
 
-(omg-defclass ms-dialog (om-window) 
+(defclass ms-dialog (om-window) 
               ((currport :accessor currport :initform nil :initarg :currport)
                (selectedport :accessor selectedport :initform nil :initarg :selectedport)
                (inslotslistitem :accessor inslotslistitem :initform nil :initarg :inslotslistitem)
@@ -247,10 +247,6 @@
            
 ;;;==============================
 
-; (get-pref (get-pref-by-icon 212) :ms-drivers)
-; (put-preferences 212)
-
-
 (defmethod put-preferences ((iconID (eql :midi)))
   (let ((modulepref (find-pref-module iconID)))
        (when (and (find :om-midi-api *features*) *midi-share?*)
@@ -258,6 +254,7 @@
          (setf *Inmidiport* (strig2numport (get-pref modulepref :midi-in)))
          ;(setf *om-midi-settings-app-path* (get-pref modulepref :midisetup-path))
          (setf *def-midi-format* (get-pref modulepref :midi-format))
+         (setf *ms-microplay* (get-pref modulepref :auto-microtone-bend))
          (when (get-pref modulepref :ms-drivers) 
            (sleep 0.5)
            (om-without-interrupts (restore-midishare-connections (get-pref modulepref :ms-drivers)))))   
@@ -266,6 +263,7 @@
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
                                                    :ms-drivers nil
                                                    :midi-format 1
+                                                   :auto-microtone-bend nil
                                                    :midisetup-path (when *om-midi-settings-app-default-path* 
                                                                      (probe-file *om-midi-settings-app-default-path*))
                                                    ))
@@ -380,7 +378,25 @@
 							     )
 					   :iconid 135)
 
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 130 40) "Auto microtone bend:" :font *controls-font*)
+
+			     (om-make-dialog-item 'om-check-box
+						  (om-make-point 160  i) 
+						  (om-make-point 180 20)
+						  ""
+                                                  :checked-p (get-pref modulepref :auto-microtone-bend)
+						  :di-action #'(lambda (item) 
+                                                                 (set-pref modulepref :auto-microtone-bend (om-checked-p item))))
+
+			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 100 44) "Default MIDI export format:" :font *controls-font*)
       
+			     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 (+ i 5)) (om-make-point 140 24) ""
+						  :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
+						  :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
+						  :di-action (om-dialog-item-act item
+							       (set-pref modulepref :midi-format (om-get-selected-item-index item)))
+						  )
+                             
 			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 55)) (om-make-point 120 40) "In case of emergency:" :font *controls-fonti*)
 
 			     (om-make-dialog-item 'om-button
@@ -390,14 +406,7 @@
 						  :di-action #'(lambda (item) (declare (ignore item))
 								       (when *midi-share?* (midiplay-reset))))
       
-			     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 100 44) "Default MIDI export format:" :font *controls-font*)
-      
-			     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 (+ i 5)) (om-make-point 180 24) ""
-						  :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
-						  :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
-						  :di-action (om-dialog-item-act item
-							       (set-pref modulepref :midi-format (om-get-selected-item-index item)))
-						  )
+
 					;(om-make-dialog-item 'om-button (om-make-point 250 148) (om-make-point 120 20) "MIDI Restart"
 					;                                    :di-action (om-dialog-item-act item
 					;                                                 (declare (ignore button))
