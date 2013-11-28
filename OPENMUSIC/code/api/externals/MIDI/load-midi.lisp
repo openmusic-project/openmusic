@@ -49,5 +49,7 @@
 #+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI" "midi-20070618")) :name "midi")) 
 #+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-api-cl"))
 
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midimsg2evt"))
+
 (push :om-midi-api *features*)
 

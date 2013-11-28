@@ -1951,6 +1951,16 @@
     
 ;----------------------PLAY
 
+(defclass arp-chord ()
+  ((notes :initform nil :initarg :notes :accessor notes)))
+
+(defmethod extent ((self arp-chord))
+   (* (length (notes self)) 500))
+
+(defmethod get-obj-dur ((self arp-chord)) (extent self))
+
+
+
 (defmethod get-obj-to-play ((self chordPanel))
    (let* ((objtoplay (object (om-view-container self)))
           (notes (copy-list (inside objtoplay))))
@@ -1963,16 +1973,16 @@
            :approx (get-edit-param (om-view-container self) 'approx))))
 
 (defmethod record2obj ((self chordPanel) list)
-   (let ((chord (object (editor self))))
-     (setf (Lmidic chord) (loop for item in list
-                                          collect (* 100 (first item))))
-     (setf (Lvel chord) (loop for item in list
-                                      collect (fourth item)))
-     (setf (Ldur chord) (loop for item in list
-                                      collect (third item)))
-       (setf (Lchan chord) (loop for item in list
-                                           collect (fifth item)))
-     ))
+  (let ((chord (object (editor self))))
+    (setf (Lmidic chord) (loop for item in list
+                               collect (* 100 (first item))))
+    (setf (Lvel chord) (loop for item in list
+                             collect (fourth item)))
+    (setf (Ldur chord) (loop for item in list
+                             collect (third item)))
+    (setf (Lchan chord) (loop for item in list
+                              collect (fifth item)))
+    ))
      
 (defun record2chord (list)
    (make-instance 'chord

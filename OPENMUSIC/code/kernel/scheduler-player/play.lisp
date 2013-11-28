@@ -54,7 +54,7 @@
 
 (defmethod* Play ((self simple-container) &key (player t) (approx 2) interval port)
    (call-next-method)
-   (setf port (verify-port port))
+   (setf port (or port *outmidiport*))
    (when (play-obj? self)
      (player-schedule *general-player*
                       self 
@@ -64,7 +64,7 @@
 (defmethod* Play ((self list) &key (player t) (approx 2) interval port)
    (call-next-method)
    (when self
-     (setf port (verify-port port))
+     (setf port (or port *outmidiport*))
      (loop for objs in self do
            (Play objs :player player :approx approx :port port :interval interval))))
 
@@ -147,7 +147,8 @@
                               :voice track))))))
 
 (defmethod* PrepareToPlay ((player t) (list list) at &key  approx port interval voice)
-   (setf port (verify-port port))
+   (setf port (or port *outmidiport*))
+
    (loop for object in list
          do (PrepareToPlay player object at 
                            :approx approx 
@@ -194,7 +195,6 @@
 ;                                (t (cdr (assoc 'outport param))))
 ;                        :voice voice)))
 
-(defun verify-port (port) t)
 
 (defmethod get-obj-to-play ((self cursor-play-view-mixin))
    (list (object (om-view-container self))))

@@ -4,6 +4,7 @@
 ;;; MIDI prototypes
 ;;;========================
 
+#|
 (export '(
           *ms-setup-app*
           *om-midi-settings-app-path*
@@ -84,6 +85,7 @@
   (defun om-midi-connect (src dest))
   (defun om-midi-disconnect (src dest))
 )
+|#
 
 ;;;==============================
 ;;; AUDIO prototypes
@@ -149,8 +151,6 @@
     )
   )
 
-
-
 (cl:defpackage "Audio"
     (:nicknames "AU")
     (:use common-lisp))
@@ -158,24 +158,7 @@
 ;;;==============================
 ;;; OSC prototypes
 ;;;==============================
-
-;(export '(
-;          *om-udp-max-buf-size*
-;          om-make-send-connection
-;          om-make-receive-connection
-;          om-send-udp-packet
-;          om-receive-udp-packet
-;          om-close-udp-connection
-;          ) :om-api)
-;(defun udp-prototypes ()
-;  (defvar *om-udp-max-buf-size* nil)
-;  (defun om-make-send-connection (host port))
-;  (defun om-make-receive-connection (port))
-;  (defun om-send-udp-packet (connection data size))
-;  (defun om-receive-udp-packet (connection buffer size))
-;  (defun om-close-udp-connection (connection))
-;)
-
+#|
 (export '(om-start-osc-server
           om-stop-osc-server
           om-send-osc-bundle
@@ -187,11 +170,11 @@
   (defun om-start-osc-server (port host fun))
   (defun om-stop-osc-server (server))
 )
+|#
 
 ;;;==============================
 ;;; SDIF prototypes
 ;;;==============================
-;;; TEMP AUDIO API FOR OMSOUNDS
 
 (defun sdif-prototypes ()
   (defpackage "SDIF-PACKAGE"
@@ -217,7 +200,8 @@
   
   (if (member :midi libs)
       (load (make-pathname :directory (append *externals-directory* '("MIDI")) :name "load-midi"))
-    (midi-prototypes))
+    ;(midi-prototypes)
+    )
   (if (member :audio libs)
       (load (make-pathname :directory (append *externals-directory* '("Audio")) :name "load-audio"))
     (audio-prototypes))
@@ -233,7 +217,8 @@
       )
   (if (and (find :udp libs) (find :osc libs))
       (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "om-osc.lisp"))
-    (osc-prototypes))
+    ;(osc-prototypes)
+    )
   (if (member :xml libs)
         (load (make-pathname :directory (append *externals-directory* '("XML")) :name "load-xml")))
   (if (member :json libs)
