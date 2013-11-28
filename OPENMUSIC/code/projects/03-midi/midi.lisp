@@ -28,7 +28,7 @@
 
 (setf *midi-files*
       '(
-        "tools;miditools"
+        "tools;midi-tools"
         
         "classes;midievents"
         "classes;midi-sequence"
@@ -40,7 +40,7 @@
         "classes;midifile"
         "editors;midieditor"
 
-        "tools;midiconversions"
+        "tools;midi-conversions"
         
         "tools;midi-send"
 
