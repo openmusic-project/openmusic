@@ -28,6 +28,13 @@
 
 (setf *midi-files*
       '(
+
+        "tools;miditools"
+        "classes;midievents"
+        "classes;midi-sequence"
+        "classes;measures-tempo"
+        "classes;continuous-controllers"
+
        "players;select-players"  
         #-linux "players;ms-players"  
                
@@ -39,12 +46,10 @@
 
 
         "player;midi-init"
-        "tools;miditools"
         "classes;midifile"
         "editors;midieditor"
         "tools;midifunctions"
-        "classes;midievents"
-        "classes;continuousctrl"
+
         "tools;midiconversions"
         "classes;midicontroller"
         "player;midiplayer"

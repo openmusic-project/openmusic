@@ -15,12 +15,11 @@
 ;===   (also used to determine in pitchbend is used with low (7 bits) or high (14bits) definition)
 (defclass! MidiControl (sequence* bpf-controller)
   ((ctrltype :initform "ChannelVolume" :accessor ctrltype :initarg :ctrltype :type t :documentation "type of event (string)")
-   (ev-num :initform 4 :accessor ev-num :type t )
+   (ev-num :initform "CtrlChange" :accessor ev-num :type t) 
    (ctr-num :initform 7 :accessor ctr-num :type t)
    (ref :initform 0 :accessor ref :initarg :ref :type t :documentation "track number")
    (port :initform 0 :accessor port :initarg :port :type t :documentation "output port number")
-   (chan :initform 1 :accessor chan :initarg :chan :type t :documentation "MIDI channel (1-16)")
-   )
+   (chan :initform 1 :accessor chan :initarg :chan :type t :documentation "MIDI channel (1-16)"))
   (:icon 903)
   (:documentation "
 MIDICONTROL is a special BPF controlling the variation of a MIDI continuous controller. 
@@ -135,10 +134,17 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                       )
                    )) nil nil nil nil nil)))
 
+
+(defmethod allowed-in-maq-p ((self midicontrol))  t)
+
+(defmethod get-obj-dur ((self midicontrol))
+   (loop for item in (Ldates self)
+         maximize item))
+
 ;=== Converts control name to midishare event number
 (defun name2evNum (name)
   (let (num)
-    (if (numberp name) (setf num 4)        ; consider it's acontrol change controller
+    (if (numberp name) (setf num 4)        ; consider it's a control change controller
         (cond
          ((string-equal name "Tempo") (setf num (om-midi-get-num-from-type "Tempo")))
          ((string-equal name "KeyPress") (setf num (om-midi-get-num-from-type "KeyPress")))
@@ -167,11 +173,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
     num))
 
 
-(defmethod allowed-in-maq-p ((self midicontrol))  t)
 
-(defmethod get-obj-dur ((self midicontrol))
-   (loop for item in (Ldates self)
-         maximize item))
 
 ; next method
 ;(defmethod real-duration ((self midicontrol) time)
@@ -570,7 +572,8 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
                                                      (change-control-type (panel (om-view-container container)) 
                                                                           (cadr (nth (om-get-selected-item-index item) *ctrl-type-list*))))
                                       :range (mapcar 'car *ctrl-type-list*)
-                                      :value (car (find (if (numberp (ctrltype ctrlobject)) (ctrlNum2str (ctrltype ctrlobject))
+                                      :value (car (find (if (numberp (ctrltype ctrlobject)) 
+                                                            (ctrlNum2str (ctrltype ctrlobject))
                                                           (ctrltype ctrlobject))
                                                         *ctrl-type-list* :key 'cadr :test 'string-equal))
                                       )))
