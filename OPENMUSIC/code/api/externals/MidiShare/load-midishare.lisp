@@ -32,24 +32,9 @@
 
 (in-package :om-api)
 
-
-(defvar *midi-api-files* nil)
-(setf *midi-api-files* '(
-                         "MidiShare;midishare"
-                         "MidiShare;player"
-                         "midi-api"
-                         ))
-
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midishare-api"))
 
-#-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
-#-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))
-
-#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-types"))
-#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI" "midi-20070618")) :name "midi")) 
-#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-api-cl"))
-
-#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midimsg2evt"))
-
-(push :om-midi-api *features*)
+(pushnew :midishare *features*)
 
