@@ -23,62 +23,12 @@
 (in-package :om)
 
 
-(defparameter typeNote          0 "note with pitch, velocity and duration")
-(defparameter typeKeyOn         1 "key on with pitch and velocity")
-(defparameter typeKeyOff        2 "key off with pitch and velocity")
-(defparameter typeKeyPress      3 "key pressure with pitch and pressure value")
-(defparameter typeCtrlChange    4 "control change with control number and control value")
-(defparameter typeProgChange    5 "program change with program number")
-(defparameter typeChanPress     6 "channel pressure with pressure value")
-(defparameter typePitchWheel    7 "pitch bend with lsb and msb of the 14-bit value")
-(defparameter typePitchBend     7 "pitch bender with lsb and msb of the 14-bit value")
-(defparameter typeSongPos       8 "song position with lsb and msb of the 14-bit position")
-(defparameter typeSongSel       9 "song selection with a song number")
-(defparameter typeClock        10 "clock request (no argument)")
-(defparameter typeStart        11 "start request (no argument)")
-(defparameter typeContinue     12 "continue request (no argument)")
-(defparameter typeStop         13 "stop request (no argument)")
-(defparameter typeTune         14 "tune request (no argument)")
-(defparameter typeActiveSens   15 "active sensing code (no argument)")
-(defparameter typeReset        16 "reset request (no argument)")
-(defparameter typeSysEx        17 "system exclusive with any number of data bytes. Leading $F0 and tailing $F7 are automatically supplied by MidiShare and MUST NOT be included by the user")
-(defparameter typeStream       18 "special event with any number of unprocessed data/status bytes")
-(defparameter typePrivate      19 "private event for internal use with 4 32-bits arguments")
-(defparameter typeProcess     128 "interrupt level task with a function adress and 3 32-bits args")
-(defparameter typeDProcess    129 "foreground task with a function address and 3 32-bits arguments")
-(defparameter typeQFrame      130 "quarter frame message with a type from 0 to 7 and a value")
-(defparameter typeCtrl14b     131)
-(defparameter typeNonRegParam 132)
-(defparameter typeRegParam    133)
-(defparameter typeSeqNum	     134)
-(defparameter typeTextual     135)
-(defparameter typeCopyright   136)
-(defparameter typeSeqName     137)
-(defparameter typeInstrName   138)
-(defparameter typeLyric	     139)
-(defparameter typeMarker	     140)
-(defparameter typeCuePoint    141)
-(defparameter typeChanPrefix  142)
-(defparameter typeEndTrack    143)
-(defparameter typeTempo	     144)
-(defparameter typeSMPTEOffset 145)
-(defparameter typeTimeSign    146)
-(defparameter typeKeySign     147)
-(defparameter typeSpecific    148)
-(defparameter typePortPrefix  149)
-(defparameter typeRcvAlarm    150)
-(defparameter typeApplAlarm   151)
-(defparameter typeReserved    152)
-(defparameter typedead        255)
-
-
-
-
-
 ;====================
 ;==== MIDI EVENT ====
 ;====================
-(defclass* MidiEvent (simple-score-element)
+(defclass Midi-Score-Element (simple-score-element) ())
+
+(defclass! MidiEvent (simple-score-element)
    ((ev-type :initform 'KeyOn :accessor ev-type :initarg :ev-type :type t :documentation "the type of event")
     (ev-date :initform 0 :accessor ev-date :initarg :ev-date :documentation "the date of event (ms)")
     (ev-ref :initform 0 :accessor ev-ref :initarg :ev-ref :type integer :documentation "a track number")
@@ -113,7 +63,8 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
 
 
 (defmethod initialize-instance :after ((self midievent) &rest l &key (mode 0))
-  (if (not (numberp (ev-type self))) (setf (ev-type self) (om-midi-symb2mtype (ev-type self))))
+  (if (numberp (ev-type self)) 
+      (setf (ev-type self) (num2evType (ev-type self))))
   (setf (ev-fields self) (list! (ev-fields self)))
 )
 
@@ -124,7 +75,7 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
    (om-with-focused-view view
      (om-draw-rect 0 0 (w view) (h view)  )
      (om-draw-string 10 20 "MIDI Event")
-     (om-draw-string 10 30 (eventtype2str (ev-type self)))
+     (om-draw-string 10 30 (string (ev-type self)))
 ))
 
 (defmethod draw-mini-view  ((self t) (value MidiEvent)) 
@@ -132,7 +83,7 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
 
 ;=== Printing MIDI Event
 (defmethod print-object ((self MidiEvent) x) 
-  (format x "[MIDIEVENT ~D ~D / track ~D / port ~D / chan ~D / VALUE=~D]" (ev-date self) (eventtype2str (ev-type self)) (ev-ref self) (ev-port self) (ev-chan self) (ev-fields self)))
+  (format x "[MIDIEVENT ~D ~D / track ~D / port ~D / chan ~D / VALUE=~D]" (ev-date self) (string (ev-type self)) (ev-ref self) (ev-port self) (ev-chan self) (ev-fields self)))
 
 
 ;======================================

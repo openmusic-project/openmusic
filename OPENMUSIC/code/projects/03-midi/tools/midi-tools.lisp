@@ -54,6 +54,8 @@
                       ("Reserved" 'Reserved)
                       ("dead" 'dead)))
 
+(defun num2evType (n)
+  (cadr (nth n *midi-event-types*)))
 
 ;==================================
 ; SELECTION BOX IN OM

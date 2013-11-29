@@ -80,7 +80,7 @@
                   (let (rep ,.streamids)
                   ,.(remove nil (loop for item in streams collect 
                                       (when (nth 1 item)
-                                        (cond ((and (find :om-sdif-api *features*) (equal (nth 0 item) 'sdif))
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
                                                `(setf ,(nth 4 item) (sdif-open-file (om-path2cmdpath (eval ,(nth 1 item))) 
                                                                                     (cond ((equal ,(nth 2 item) :input) :eReadFile)
                                                                                           ((equal ,(nth 2 item) :output) :eWriteFile)
@@ -103,7 +103,7 @@
                          
                          ,.(remove nil (loop for item in streams collect 
                                              (when (nth 1 item)
-                                               (cond ((and (find :om-sdif-api *features*) (equal (nth 0 item) 'sdif))
+                                               (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
                                                       `(sdif-close-file ,(nth 4 item)))
                                                      ((equal (nth 0 item) 'text)
                                                       `(close ,(nth 4 item))))
@@ -115,7 +115,7 @@
                (let (rep ,.streamids)
                   ,.(remove nil (loop for item in streams collect 
                                       (when (nth 1 item)
-                                        (cond ((and (find :om-sdif-api *features*) (equal (nth 0 item) 'sdif))
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
                                                `(setf ,(nth 4 item) (sdif-open-file (om-path2cmdpath (eval ,(nth 1 item))) 
                                                                                     (cond ((equal ,(nth 2 item) :input) :eReadFile)
                                                                                           ((equal ,(nth 2 item) :output) :eWriteFile)
@@ -135,7 +135,7 @@
                   
                   ,.(remove nil (loop for item in streams collect 
                                       (when (nth 1 item)
-                                        (cond ((and (find :om-sdif-api *features*) (equal (nth 0 item) 'sdif))
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
                                                 `(sdif-close-file ,(nth 4 item)))
                                                 ((equal (nth 0 item) 'text)
                                                  `(close ,(nth 4 item)))))
@@ -158,7 +158,7 @@
          (setf rep ,@body)
          (close stream)))
 
-      ((and (find :om-sdif-api *features*) (equal (get-stream-type ,self) 'sdif))
+      ((and (find :sdif *features*) (equal (get-stream-type ,self) 'sdif))
        (let* ((dir (cond ((equal ,(direction self) :input) :eReadFile)
                          ((equal ,(direction self) :output) :eWriteFile)
                          (t :eReadWriteFile)))
@@ -473,7 +473,7 @@ See OM User Manual for more details."
                                   (om-make-point 100 50)
                                   (om-make-point 150 20)
                                   ""
-                                  :range (if (find :om-sdif-api *features*) (list "TEXT" "SDIF") (list "TEXT"))
+                                  :range (if (find :sdif *features*) (list "TEXT" "SDIF") (list "TEXT"))
                                   :value (string (filetype streambox)) 
                                   :di-action (om-dialog-item-act item 
                                                (setf (filetype streambox) (intern (om-get-selected-item item)))

@@ -1,143 +1,80 @@
-(in-package :om)
-
 ;===================================================
 ;=== CONVERSION BETWEEN MIDI AND MUSICAL OBJECTS ===
 ;===================================================
 
-;===========================================
-;Save objects in MidiFile (const tempo = 60)
-;===========================================
 
-(defvar *def-midi-format* 1)
+(in-package :om)
 
-(defmethod* save-as-midi ((object t) &optional filename &key  (approx 2) (format nil)) 
-    :initvals '(nil) 
-  :icon 900
-  :doc "Saves <object> as a MIDI file.
+;=========================================
+; GENERAL FUNCTION FOR MIDI CONVERSION -> get-midievents 
+;=========================================
 
-- <filename> defines the target pathname. If not specified, will be asked through a file choose dialog.
-- <approx> specifies the tone division (2, 4 or 8).
-- <format> alows to choose the MIDIFile format (0 or 1)
+;=== Calculates maximum division of a measure
+; bug quand on a des fractions etc...
+; om-round pour le cas des liasions 1.0
+(defmethod max-div ((self measure))
+  (denominator (* 4 (list-min (tree2ratio (list '? (om-round (list (tree self)))))))))
 
-For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Else All voices are saved at tempo 60."
-  (when *midiplayer*
-      (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog  :directory (def-save-directory) 
-                                                                                     :prompt (om-str :save-as) 
-                                                                                     :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
-      (when name 
-        (unless (stringp (pathname-type name))
-          (setf name (make-pathname :device (pathname-device name)
-                                    :directory (pathname-directory name)
-                                    :name (pathname-name name)
-                                    :type "midi")))
-        (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (when (save-midifile name object approx (or format *def-midi-format*))
-          (namestring name)
-          )))))
+(defmethod! get-midievents ((self Note) &optional test)
+   :icon 902
+   (when (not (memq (tie self) '(continue end)))
+       (let ((event (objfromobjs self (make-instance 'MidiEvent))))
+         (if (or (not test) (funcall test event)) (list event) nil))))
 
+(defmethod! get-midievents ((self Rest) &optional test) nil)
 
-(defmethod* save-as-midi ((object voice) &optional filename &key (approx 2) (format nil)) 
-            (when *midiplayer*
-              (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                                                            :prompt (om-str :save-as) 
-                                                                                            :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
-                (when name 
-                  (unless (stringp (pathname-type name))
-                    (setf name (make-pathname :device (pathname-device name)
-                                              :directory (pathname-directory name)
-                                              :name (pathname-name name)
-                                              :type "midi")))
-                  (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-                  (when (save-midifile-with-tempo name object approx (tempo-a-la-noire (car (tempo object))) (or format *def-midi-format*))
-                    (namestring name))))))
-
-
-(defun save-midifile (name obj approx &optional (format 1))
-  (MidiSaveAny obj approx)
-  (save-seq *playing-midi-seq* name format))
-
-(defmethod MidiSaveAny ((object t) approx)
-  (when *midiplayer*
-    (setf *MidiShare-start-time* 0)
-    (setf *playing-midi-seq* (om-midi-new-seq))
-    (PrepareToPlay t object 0 :approx approx :voice 1)
-    ))
-
-
-;==== Saves sequence with tempo 60
-;==== modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
-(defun save-seq (seq name &optional (format 1))
-  (let ((tempo-evnt (om-midi-new-evt  (om-midi-get-num-from-type "Tempo")
-                                     :date 0 :vals 1000000)))
-    (om-midi-seq-concat-evt seq tempo-evnt nil)
-    (om-midi-save-seq-in-file seq (om-path2cmdpath name) :fileformat format)
-    ))
-   
-
-;=======================================================
-;== Save voice/poly in midifile                       ==
-;== Considering tempo and time signature information ==
-;=======================================================
-
-(defun save-voice-seq (seq name &optional (format 1))
-  (om-midi-save-seq-in-file seq (om-path2cmdpath name) :fileformat format))
-
-(defun save-midifile-with-tempo (name obj approx tempo &optional (format 1))
-  (let (newSeq)
-    (MidiSaveAny obj approx)
-    (setf newSeq (insert-tempo-info *playing-midi-seq* tempo))
-    (save-voice-seq newSeq name format)))
-
-
-
-(defmethod* save-as-midi ((object poly) &optional filename &key (approx 2) (format nil))
-  (when *midiplayer*
-    (let* ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog
-                                                          :directory (def-save-directory) 
-                                                          :prompt (om-str :save-as) 
-                                                          :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi"))))
-           (tempo (poly-same-tempo object)))
-      (when name 
-        (unless (stringp (pathname-type name))
-          (setf name (make-pathname :device (pathname-device name)
-                                    :directory (pathname-directory name)
-                                    :name (pathname-name name)
-                                    :type "midi")))
-        (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (when (if tempo 
-          (save-midifile-with-tempo name object approx (tempo-a-la-noire (car tempo)) (or format *def-midi-format*))
-          (save-midifile name object approx (or format *def-midi-format*)))  
-        (namestring name))))))
-
-
-;=== Tests if all voices of a ply object have the same tempo
-;=== returns the tempo in case true and nil if not
-(defmethod poly-same-tempo ((self poly))
-  (let* ((alltempo (loop for voiceItem in (inside self) collect (tempo voiceItem)))
-         (currtempo (car (first alltempo))))
+(defmethod! get-midievents ((self score-element) &optional test)
+  :initvals '(nil nil) 
+  :indoc '("score element object" "lambda test function for midi events to extract") 
+  :icon 902
+  :doc "Extracts a list of midi events from a score element (chord, chord-seq, multi-seq, voice, poly)"
+  (let ((evtList nil) (subList nil) (reponse nil)) 
+    (loop for sub in (inside self) 
+          for i = 1 then (+ 1 i) do              
+          (setf sublist (get-midievents sub))
+          (if (or (multi-seq-p self) (poly-p self)) 
+            (loop for event in subList do
+                  (setf (ev-ref event) i))) 
+          (if sublist (push sublist evtList))
+          )
+    (setf evtList (flat (reverse evtList)))
+    (loop for event in evtList do 
+          (if (parent self) (setf (ev-date event) (+ (ev-date event) (offset->ms self)))))
     
-    (loop for item in alltempo 
-          while currtempo do
-          
-          (if (or (cadr item) ;; tempo changes in a voice
-                  (not (= (/ (cadr (car item)) (car (car item)))
-                          (/ (cadr currtempo) (car currtempo)))))
-                  (setf currtempo nil) (setf currtempo (car item))))
-    (list currtempo nil)))
+    (if (measure-p self) (push (make-instance 'MidiEvent   
+                                 :ev-type 'TimeSign 
+                                 :ev-date (if (parent self) (offset->ms self) 0)
+                                 :ev-ref 0 
+                                 :ev-port 0
+                                 :ev-chan 1
+                                 :ev-fields (list (first (first (tree self)))
+                                                           (round (log (second (first (tree self))) 2))
+                                                           24 
+                                                           8   ;;; (max-div self)
+                                                           ))
+                           evtList))
 
+    (if (voice-p self) (push (make-instance 'MidiEvent   
+                                 :ev-type 'Tempo
+                                 :ev-date (if (parent self) (offset->ms self) 0)
+                                 :ev-ref 0 
+                                 :ev-port 0
+                                 :ev-chan 1
+                                 :ev-fields (list (tempo-a-la-noire (car (tempo self)))))
+                           evtList))
+    
+    (loop for event in evtList do 
+          (if (or (not test) (funcall test event)) (push event reponse)))
+    
+    (reverse reponse)))
 
-
-
-
-
-
-;===========================
-;=== OBJECTS CONVERSIONS ===
-;===========================
+;=========================================
+;;; SCORE TO MIDI
+;=========================================
 
 (defmethod* objFromObjs ((self Note) (type MidiEvent))
   (let ((evt (make-instance 'MidiEvent   
-                           :ev-type (om-midi-get-num-from-type "Note")
+                           :ev-type  'Note
                            :ev-date (if (parent self) (offset->ms self) 0)
                            :ev-ref 1 
                            :ev-port (port self)
@@ -145,11 +82,15 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                            :ev-fields (list (round (/ (midic self) 100)) (vel self) (real-dur self)))))
     evt))
 
-
 (defmethod* objFromObjs ((self simple-container) (type eventmidi-seq))
   (let ((newseq (objFromObjs (get-midievents self) type)))
     (if (eventmidi-seq-p self) (setf (name newseq) (name self)))
     newseq))
+
+
+;=========================================
+;;; MIDI TO SCORE
+;=========================================
 
 (defmethod* objFromObjs ((self eventmidi-seq) (type chord-seq))
   (let ((newcs (make-instance (type-of type)))
@@ -175,12 +116,10 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
       :chord-seqs (reverse csList))
 ))
 
-     
 
-
-;=====================
-;==== VOICES/POLY ====
-;=====================
+;=========================================
+;;; USING TEMPO MAP
+;=========================================
 
 ;=== Coverts a chord-seq + tempo-map to voice
 (defmethod! cseq+tempo->voice ((self chord-seq) (tmap tempo-map) &optional (type 'voice))
@@ -217,7 +156,7 @@ Converts <self> (chord-seq) into a VOICE object acoording to <tmap> (a TEMPO-MAP
                      :chords (chords cseq)))                        
     newvoice))
 
-(defmethod* objFromObjs ((self Midi-score-element) (type voice))
+(defmethod* objFromObjs ((self midi-score-element) (type voice))
   (let ((tempoMap (get-tempoMap self))
         (midichords (objfromObjs self (make-instance 'chord-seq))))
     (cseq+tempo->voice midichords tempoMap (type-of type))))
@@ -232,67 +171,11 @@ Converts <self> (chord-seq) into a VOICE object acoording to <tmap> (a TEMPO-MAP
 
 
 
-;=========================================
-;=== MIDI CONVERSION -> get-midievents ===
-;=========================================
-
-;=== Calculates maximum division of a measure
-; bug quand on a des fractions etc...
-; om-round pour le cas des liasions 1.0
-(defmethod max-div ((self measure))
-  (denominator (* 4 (list-min (tree2ratio (list '? (om-round (list (tree self)))))))))
 
 
-(defmethod! get-midievents ((self score-element) &optional test)
-  :initvals '(nil nil) 
-  :indoc '("score element object" "lambda test function for midi events to extract") 
-  :icon 902
-  :doc "Extracts a list of midi events from a score element (chord, chord-seq, multi-seq, voice, poly)"
-  (let ((evtList nil) (subList nil) (reponse nil)) 
-    (loop for sub in (inside self) 
-          for i = 1 then (+ 1 i) do              
-          (setf sublist (get-midievents sub))
-          (if (or (multi-seq-p self)(poly-p self)) 
-            (loop for event in subList do
-                  (setf (ev-ref event) i))) 
-          (if sublist (push sublist evtList))
-          )
-    (setf evtList (flat (reverse evtList)))
-    (loop for event in evtList do 
-          (if (parent self) (setf (ev-date event) (+ (ev-date event) (offset->ms self)))))
-    
-    (if (measure-p self) (push (make-instance 'MidiEvent   
-                                 :ev-type (om-midi-get-num-from-type "TimeSign") 
-                                 :ev-date (if (parent self) (offset->ms self) 0)
-                                 :ev-ref 0 
-                                 :ev-port 0
-                                 :ev-chan 1
-                                 :ev-fields (list (first (first (tree self)))
-                                                           (round (log (second (first (tree self))) 2))
-                                                           24 
-                                                           8   ;;; (max-div self)
-                                                           ))
-                           evtList))
-
-    (if (voice-p self) (push (make-instance 'MidiEvent   
-                                 :ev-type (om-midi-get-num-from-type "Tempo") 
-                                 :ev-date (if (parent self) (offset->ms self) 0)
-                                 :ev-ref 0 
-                                 :ev-port 0
-                                 :ev-chan 1
-                                 :ev-fields (list (tempo-a-la-noire (car (tempo self)))))
-                           evtList))
-    
-    (loop for event in evtList do 
-          (if (or (not test) (funcall test event)) (push event reponse)))
-    
-    (reverse reponse)))
 
 
-(defmethod! get-midievents ((self Note) &optional test)
-   :icon 902
-   (when (not (memq (tie self) '(continue end)))
-       (let ((event (objfromobjs self (make-instance 'MidiEvent))))
-         (if (or (not test) (funcall test event)) (list event) nil))))
 
-(defmethod! get-midievents ((self Rest) &optional test))
+
+
+

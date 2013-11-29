@@ -1,92 +1,5 @@
 (in-package :oa)
 
-;;;========================
-;;; MIDI prototypes
-;;;========================
-
-#|
-(export '(
-          *ms-setup-app*
-          *om-midi-settings-app-path*
-          *om-midi-settings-app-default-path*
-          om-launch-ms-setup
-          om-midi-startup
-          om-midi-exit
-          om-midi-get-time
-          om-midi-open-player
-          om-midi-close-player
-          om-midi-get-num-from-type
-          om-midi-symb2mtype
-          om-midi-new-evt
-          om-midi-copy-evt
-          om-midi-send-evt
-          om-midi-new-seq
-          om-midi-seq-add-evt
-          om-midi-seq-concat-evt
-          om-midi-seq-first-evt
-          om-midi-next-evt
-          om-midi-get-evt-text
-          om-midi-evt-get
-          om-midi-evt-set
-          om-midi-copy-seq
-          om-midi-free-seq
-          om-midi-save-seq-in-file
-          om-midi-load-file
-          
-          om-midi-set-player 
-          om-midi-start-player
-          om-midi-pause-player 
-          om-midi-cont-player 
-          om-midi-stop-player 
-          om-midi-record-player 
-          om-midi-player-get-seq 
-          om-midi-set-loop-player 
-          om-midi-connect 
-          om-midi-disconnect 
-          ) :om-api)
-
-(defun midi-prototypes ()
-  (defvar *om-midi-settings-app-path* nil "the path of the midishare setup program")
-  (defun om-launch-ms-setup (&key before after) (declare (ignore before after)) nil)
-  (defun om-midi-startup () nil)
-  (defun om-midi-exit () nil)
-  (defmacro om-midi-get-time () nil)
-  (defun om-midi-open-player (name) (declare (ignore name)) nil)
-  (defun om-midi-close-player (player) (declare (ignore player)) nil)
-  (defun om-midi-get-num-from-type (typestr) (declare (ignore typestr)) nil)
-  (defun om-midi-symb2mtype (sym) (declare (ignore sym)) nil)
-  (defun om-midi-new-evt (type &key port ref chan date vals pgm pitch kpress dur ctrlchange bend param tempo bytes) 
-    (declare (ignore type port chan date vals pgm pitch kpress dur ctrlchange bend param tempo bytes)) nil)
-  (defun om-midi-copy-event (event) (declare (ignore event)) nil)
-  (defun om-midi-send-evt (event player) (declare (ignore event player)) nil)
-  (defun om-midi-new-seq () nil)
-  (defun om-midi-seq-add-evt (seq evt) (declare (ignore seq evt)) nil)
-  (defun om-midi-seq-concat-evt (seq evt &optional (end t)) (declare (ignore seq evt end)) nil)
-  (defun om-midi-free-seq (seq) (declare (ignore seq)) nil)
-  (defun om-midi-copy-seq (seq &optional filtertest) (declare (ignore seq filtertest)) nil)
-  (defun om-midi-seq-first-evt (seq) (declare (ignore seq)) nil)
-  (defun om-midi-next-evt (evt) (declare (ignore evt)) nil)
-  (defun om-midi-get-evt-text (evt) (declare (ignore evt)) nil)
-  (defun om-midi-evt-get (msevent slot) (declare (ignore msevent slot)) nil)
-  (defun om-midi-evt-set (msevent &key date dur port ref chan pgm param kpress bend tempo ctrlchange vals bytes field) 
-    (declare (ignore msevent date dur port chan pgm param kpress ctrlchange vals bytes field)) nil)
-  (defun om-midi-save-seq-in-file (seq filename &key (fileformat 1) (timedef 0) (clicks 1000) (tracks 1)) 
-    (declare (ignore seq filename fileformat timedef clicks tracks)) nil)
-  (defun om-midi-load-file (pathname sequence) (declare (ignore pathname sequence)) nil)
-  
-  (defun om-midi-set-player (player seq &optional (ticks 1000)))
-  (defun om-midi-start-player (player) )
-  (defun om-midi-pause-player (player) )
-  (defun om-midi-cont-player (player) )
-  (defun om-midi-stop-player (player) )
-  (defun om-midi-record-player (player track) )
-  (defun om-midi-player-get-seq (player) )
-  (defun om-midi-set-loop-player (player start end))
-  (defun om-midi-connect (src dest))
-  (defun om-midi-disconnect (src dest))
-)
-|#
-
 ;;;==============================
 ;;; AUDIO prototypes
 ;;;==============================
@@ -195,12 +108,14 @@
 (defun load-external-libs (&optional libs)
   
   (loop for lib in libs do
-        (unless (member lib (list :midi :audio :opengl :sdif :osc :xml :jack :fluidsynth))
+        (unless (member lib (list :midi :midishare :audio :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   (if (member :midi libs)
-      (load (make-pathname :directory (append *externals-directory* '("MIDI")) :name "load-midi"))
-    ;(midi-prototypes)
+      (load (make-pathname :directory (append *externals-directory* '("CL-MIDI")) :name "load-clmidi"))
+    )
+  (if (member :midishare libs)
+      (load (make-pathname :directory (append *externals-directory* '("MidiShare")) :name "load-midishare"))
     )
   (if (member :audio libs)
       (load (make-pathname :directory (append *externals-directory* '("Audio")) :name "load-audio"))

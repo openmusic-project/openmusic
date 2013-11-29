@@ -26,15 +26,10 @@
 ;Midi File Object
 ;=================================================
 
-(defclass Midi-Score-Element (simple-score-element) ())
-
-
 (defclass InternalMidiFile () 
   ((MidiFileName :initform nil :initarg :MidiFileName :accessor MidiFileName)
    (fileseq :initform nil :accessor fileseq)
-   (tracks :initform nil :initarg :tracks :accessor tracks)
-))
-
+   (tracks :initform nil :initarg :tracks :accessor tracks)))
 
 (defclass* MidiFile (midi-score-element InternalMidiFile) () 
   (:icon 904)
@@ -50,7 +45,6 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 ")
   )
 
-
 (defmethod get-type-of-ed-box ((self MidiFile))  'OMMidiFilebox)
 
 (defmethod real-dur ((self midifile)) (round (extent->ms self)))
@@ -61,10 +55,9 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 (defmethod copy-container ((self midifile) &optional (pere ()))
   (let ((copy (make-instance 'MidiFile))
         (slots  (class-instance-slots (find-class 'simple-container))))
-    (when (MidiFileName self)
-      
+    (when (MidiFileName self) 
       (setf (MidiFileName copy) (MidiFileName self))
-      (setf (fileseq copy) (copy-midiseq (fileseq self)))
+      (setf (fileseq copy) (clone (fileseq self)))
       (setf (tracks copy) (loop for track in (tracks self) 
                                 collect  (make-instance 'MidiTrack
                                            :midinotes  (midinotes track))))
@@ -161,67 +154,23 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 (omg-defclass boxmidiframe (boxEditorFrame) ())
 
 (defmethod om-get-menu-context ((object boxmidiframe))
-  ;(list+  
-  ; (list 
-  ;  (list (om-new-leafmenu (if (view-of-patch (object object)) "Free View of Patch" "Set View of Patch")
-  ;                         #'(lambda () (change-view-of-patch object)))
-  ;        )
-   ; ) 
   (boxframe-default-list object))
 
 (defmethod remove-extra ((self OMPatch) (box OMMidiFilebox))
    (when (and (value box) (fileseq (value box)))
       (om-midi-free-seq (fileseq (value box)))))
 
-    
-(defun copy-midiseq (seq)
-  (om-midi-copy-seq seq))
 
-(defun copy-midiseq-without-tempoevents (seq)
-   (om-midi-copy-seq seq '(:type 144)))
+;(defun copy-midiseq-without-tempoevents (seq)
+;   (om-midi-copy-seq seq '(:type 144)))
 
 ;ojo deberia ser standard
 ;notalist (midi ? vel ? ttime ?)
-
-
-
-;======================================================================================
-;=== Loading a midifile :                                                          
-;=== - dates of midievents are converted in ms                                  
-;=== (tempo = 60 --> 1 qter note = 1 s --> 1 mclck = 1ms if 1000 mck/qter note)     
-;=== - tracks containing list of midinotes (pitch date dur vel channel) are created
-;=== !!! tempo change events are still in the sequence
-;======================================================================================
-
-             
-(defun load-midi-file (name) 
-  (let ((themidiFile (make-instance 'MidiFile))
-        rep track-list err)
-    (multiple-value-bind (err recording-seq nbtracks clicks format timedef)
-        (om-midi-load-file (namestring name) (om-midi-new-seq))
-      (unless (and err (zerop err)) (om-beep-msg (string+ "Error loading a MIDI file " (namestring name))) (om-abort))
-      (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))
-      (when recording-seq
-	(setf  (fileseq themidiFile) (convert-tempo-info recording-seq clicks))
-	(setf track-list (make-list nbtracks :initial-element nil))
-        (setf rep (mievents2midilist (fileseq themidiFile)))
-	(loop for note in rep do
-              (if (plusp (third note))
-                  (push (list (first note) (second note) (third note) (fourth note) (fifth note)) (nth (sixth note) track-list))))
-        (setf (MidiFileName themidiFile) name)
-	(setf (extent themidiFile) (loop for track in track-list 
-                                         if track maximize (+ (third (car track)) (second (car track)))))
-        (setf (Qvalue themidiFile)  1000)
-        (setf (tracks themidiFile) (loop for track in track-list 
-                                         if track collect  (make-instance 'MidiTrack
-                                                                          :midinotes  (reverse track))))
-        themidifile))))
 
 (defmethod get-obj-from-file ((type (eql 'mid)) filename)
   (load-midi-file filename))
 (defmethod get-obj-from-file ((type (eql 'midi)) filename)
   (load-midi-file filename))
-
 
 (defmethod* get-midifile () 
             :initvals nil :indoc nil :icon 148
@@ -235,8 +184,6 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 
 (defun load-midi (name)
   (om-load-if name 'load-midi-file))
-
-
 
 
 ;=====================================
@@ -279,6 +226,7 @@ optional <tracknum> (a number in 0-15) allows to choose a single track."
 
 ;=== Creates MidiEvent list with all Midi events 
 ;=== optionnaly filtered with a test function
+#|
 (defmethod! get-midievents ((self midifile) &optional test)
   :initvals '(nil nil) 
   :indoc '("an OM object" "a test function")
@@ -308,8 +256,30 @@ If <test> returns T, then the MIDIEvent is collected.
              (setf msevent (om-midi-next-evt msevent))
              )
        (reverse rep))))
+|#
+
+(defmethod! get-midievents ((self midifile) &optional test)
+  :initvals '(nil nil) 
+  :indoc '("an OM object" "a test function")
+  :doc "
+Converts any OM object (<self>) to a list of MIDIEvents.
+
+The optional argument <test> is a function or lambda patch testing MIDIEvents one by one.
+If <test> returns T, then the MIDIEvent is collected.
+"
+  :icon 902
+   (remove nil
+           (loop for evt in (fileseq self) collect 
+                 (when (or (not test) (funcall test avt))  
+                     (let ((evt2 (clone evt)))
+                       (when (equal (ev-type evt2) 'Tempo)
+                         (setf (ev-fields evt2) (list (mstempo2bpm (car (ev-fields evt))))))
+                       evt2)))
+           ))
+                   
 
 ;=== Creates a string with Lyric events from Midi file
+#|
 (defmethod! get-mf-lyrics ((self midifile))
   :initvals '(nil) 
   :indoc '("a MIDI file or sequence") 
@@ -329,6 +299,24 @@ The second output returns the corresponding dates"
              (setf event (om-midi-next-evt event))
              ))
      (values (reverse rep) (reverse dates))))
+|#
+
+(defmethod! get-mf-lyrics ((self midifile))
+  :initvals '(nil) 
+  :indoc '("a MIDI file or sequence") 
+  :numouts 2
+  :doc "Extracts lyrics (event type 'Lyric') from <self>.
+
+The second output returns the corresponding dates"
+  :icon '(908)
+  (let ((rep
+         (mat-trans (loop for evt in (fileseq self)  
+               when (equal (ev-type evt) 'Lyric) 
+               collect (list (if (stringp (car (ev-fields evt))) (ev-fields evt) (list2string (ev-fields evt)))
+                             (ev-date evt)))
+                    )))
+    (values (car rep) (cadr rep))))
+
 
 (defmethod! get-midi-notes ((self midifile))
   :initvals '(nil) 

@@ -34,7 +34,7 @@
     (mapc #'(lambda (file) (load (make-pathname :directory *repmus-source-dir* :name file))) *Repmus-lib-files*)
   (mapc #'(lambda (file) (compile&load (make-pathname :directory *repmus-source-dir* :name file))) *Repmus-lib-files*))
 
-#+om-sdif-api
+#+sdif
 (if (om-standalone-p)
     (load (make-pathname :directory *repmus-source-dir* :name "as2om-sdif"))
   (compile&load (make-pathname :directory *repmus-source-dir* :name "as2om-sdif")))

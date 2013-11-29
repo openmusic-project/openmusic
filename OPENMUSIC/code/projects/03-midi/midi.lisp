@@ -34,33 +34,33 @@
         "classes;midi-sequence"
         "classes;measures-tempo"
         "classes;continuous-controllers"
-        "classes;midicontroller"
+;        "classes;midicontroller"
         
-        
-        "classes;midifile"
-        "editors;midieditor"
-
         "tools;midi-conversions"
-        
-        "tools;midi-send"
+     
+        "tools;midi-read-write"       
+        "classes;midifile"
 
+;        "editors;midieditor"
+
+;        "tools;midi-send"
                 
-        "player;midi-init"
-        "player;midiplayer"
-        "players;select-players"  
-        #-linux "players;ms-players"  
+;        "player;midi-init"
+;        "player;midiplayer"
+;        "players;select-players"  
+;        #-linux "players;ms-players"  
                
        ; osc and microplayer
         "osc;send"
         "osc;receive"
         "osc;osc-events"
-        #-linux "players;microplayer"
-	;; #+cl-fluidsynth "player;fluid-player"
-	#+(and linux cl-jack) "player;jack-midi-player"
+;        #-linux "players;microplayer"
+;	;; #+cl-fluidsynth "player;fluid-player"
+;	#+(and linux cl-jack) "player;jack-midi-player"
 
-        "tools;midi-preferences"
+;        "tools;midi-preferences"
 
-        "midipackages"
+;        "midipackages"
 
         ))
 
