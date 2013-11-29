@@ -98,14 +98,14 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
                 for chan = (or (pop chans) chan)
                 for ref = (or (pop refs) ref)
                 for port = (or (pop ports) port)
-                collect (make-instance 'MidiEvent
-                                       :ev-date date
-                                       :ev-type type
-                                       :ev-chan chan
-                                       :ev-ref ref
-                                       :ev-port port
-                                       :ev-fields field
-                                       )))
+                collect (make-midi-evt
+                         :date date
+                         :type type
+                         :chan chan
+                         :ref ref
+                         :port port
+                         :fields field
+                         )))
     ))
 
 (defmethod initialize-instance ((self EventMidi-seq) &rest initargs &key lparam)
@@ -114,12 +114,12 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   (set-evt-list self)
   self)
 
-(defmethod Ldate ((self EventMidi-seq)) (mapcar 'ev-date (evtlist self)))
-(defmethod Lfields ((self EventMidi-seq)) (mapcar 'ev-fields (evtlist self)))
-(defmethod Lchan ((self EventMidi-seq)) (mapcar 'ev-chan (evtlist self)))
-(defmethod Lport ((self EventMidi-seq)) (mapcar 'ev-port (evtlist self)))
-(defmethod Lref ((self EventMidi-seq)) (mapcar 'ev-ref (evtlist self)))
-(defmethod Ltype ((self EventMidi-seq)) (mapcar 'ev-type (evtlist self)))
+(defmethod Ldate ((self EventMidi-seq)) (mapcar 'midi-evt-date (evtlist self)))
+(defmethod Lfields ((self EventMidi-seq)) (mapcar 'midi-evt-fields (evtlist self)))
+(defmethod Lchan ((self EventMidi-seq)) (mapcar 'midi-evt-chan (evtlist self)))
+(defmethod Lport ((self EventMidi-seq)) (mapcar 'midi-evt-port (evtlist self)))
+(defmethod Lref ((self EventMidi-seq)) (mapcar 'midi-evt-ref (evtlist self)))
+(defmethod Ltype ((self EventMidi-seq)) (mapcar 'midi-evt-type (evtlist self)))
 
 
 (defmethod allowed-in-maq-p ((self EventMidi-seq))  t)
@@ -206,7 +206,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   :doc "Separates MIDI channels in <self> on diferents tacks."
   :icon 915
   (loop for evt in (evt-list self) do
-        (setf (ev-ref evt) (ev-chan evt)))
+        (setf (midi-evt-ref evt) (midi-evt-chan evt)))
   self)
 
 
@@ -232,7 +232,18 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
 
 (defmethod! get-midievents ((self EventMidi-seq) &optional test)
   :icon 902
-  (remove-if test (clone (evt-list self))))
+  (remove nil
+          (loop for e in (evt-list self) colelct
+                (let ((event (make-instance 'MidiEvent
+                                            :ev-date (midi-evt-date e)
+                                            :ev-type (midi-evt-type e)
+                                            :ev-chan (midi-evt-chan e)
+                                            :ev-ref (midi-evt-ref e)
+                                            :ev-port (midi-evt-port se)
+                                            :ev-fields (midi-evt-fields e)
+                                            )))
+                  (when (or (not test) (funcall test event))
+                    event)))))
 
 
 (defmethod! create-midiseq ((self t) &optional newname)

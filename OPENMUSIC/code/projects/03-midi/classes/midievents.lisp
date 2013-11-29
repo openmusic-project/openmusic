@@ -205,26 +205,26 @@ If <test> returns T, then the MIDIEvent is collected.
   nil)
 
 (defmethod! get-midievents ((self list) &optional test)
-  :icon 902
-  (let ((evtList nil) event)
-    (loop for listitem in self do
-          (if (midievent-p listitem)
-              (progn
-              (setf event (make-instance 'MidiEvent
-                                   :ev-date (ev-date listitem)
-                                   :ev-type (ev-type listitem)
-                                   :ev-chan (ev-chan listitem)     
-                                   :ev-ref (ev-ref listitem)
-                                   :ev-port (ev-port listitem)
-                                   :ev-fields (ev-fields listitem)
-                                   ))
-              (if (or (not test) (funcall test event))
-                (push event evtList)
-                ))
-            (let ((tmpList (get-midievents listItem)))
-              (if tmpList (push tmpList evtList)))
-            ))
-    (flat (reverse evtList))))
+   :icon 902
+   (let ((evtList nil) event)
+     (loop for listitem in self do
+           (if (midievent-p listitem)
+               (progn
+                 (setf event (make-instance 'MidiEvent
+                                            :ev-date (ev-date listitem)
+                                            :ev-type (ev-type listitem)
+                                            :ev-chan (ev-chan listitem)     
+                                            :ev-ref (ev-ref listitem)
+                                            :ev-port (ev-port listitem)
+                                            :ev-fields (ev-fields listitem)
+                                            ))
+                 (if (or (not test) (funcall test event))
+                     (push event evtList)
+                   ))
+             (let ((tmpList (get-midievents listItem)))
+               (if tmpList (push tmpList evtList)))
+             ))
+     (flat (reverse evtList))))
 
 
 
