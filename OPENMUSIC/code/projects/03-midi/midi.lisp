@@ -38,7 +38,7 @@
         
         "tools;midi-conversions"
      
-        ;"tools;midi-read-write"       
+        "tools;midi-read-write"       
         "classes;midifile"
 
 ;        "editors;midieditor"
