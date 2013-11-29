@@ -5,3 +5,4 @@ midifiles.
 College"/GSharp's standard-compliant low-level interface to
 midi-messages and SMF.
 
+midi-types and midimsg2evt are not required anymore
