@@ -65,7 +65,6 @@
 					   :connection-style :immediate)
 		      t))
 	#+linux (progn 
-		  (pushnew (oa::om-lib-directory) *foreign-library-directories* :test 'equal)
 		  (define-foreign-library libsdif
 		    (t (:default "libsdif")))
 		  (handler-case (progn (use-foreign-library libsdif) t)

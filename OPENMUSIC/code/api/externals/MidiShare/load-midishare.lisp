@@ -1,3 +1,4 @@
+
 ;;===========================================================================
 ;OM API 
 ;Multiplatform API for OpenMusic
@@ -26,12 +27,29 @@
 
 ;;===========================================================================
 ;DocFile
-;loads the SDIF API
+;loads the MIDI API - use Midishare (Grame) 
 ;;===========================================================================
 
 (in-package :om-api)
-                                        
-(compile&load (make-pathname :directory (append *externals-directory* (list "SDIF")) :name "sdif"))
-(compile&load (make-pathname :directory (append *externals-directory* (list "SDIF")) :name "sdif-api"))
 
-(pushnew :sdif *features*)
+
+(defvar *midi-api-files* nil)
+(setf *midi-api-files* '(
+                         "MidiShare;midishare"
+                         "MidiShare;player"
+                         "midi-api"
+                         ))
+
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
+
+#-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
+#-linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI")) :name "midi-api"))
+
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-types"))
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI" "midi-20070618")) :name "midi")) 
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midi-api-cl"))
+
+#+linux (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "CL-MIDI")) :name "midimsg2evt"))
+
+(push :om-midi-api *features*)
+
