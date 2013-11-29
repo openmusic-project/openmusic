@@ -118,7 +118,7 @@
        (setf recording-seq (om-midi-player-get-seq *midirecorder*))
        (when recording-seq
          (let ((newseq (delete-tempo-info recording-seq 1000)))
-           (setf rep (mievents2midilist newseq))
+           (setf rep (midievents2midilist newseq))
            (om-midi-free-seq newseq))
          (setf *recording-midi-p* nil)
          (loop for note in rep 

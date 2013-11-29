@@ -176,11 +176,6 @@
         import-obj
       (objfromobjs import-obj object))))
 
-(defmethod score-import ((format (eql 'midi)) object)
-  (let ((name (catch-cancel (om-choose-file-dialog :types '("MIDI files" "*.mid;*.midi" "All files" "*.*")))))
-    (when name ; (and name (stringp (pathname-type name)))
-      (objfromobjs (load-midi-file name) object)
-      )))
 
 (defmethod score-import ((format (eql 'xml)) object)
   (let ((name (catch-cancel (om-choose-file-dialog :types '("MusicXML file" "*.xml"))))

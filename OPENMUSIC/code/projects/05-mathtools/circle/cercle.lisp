@@ -389,7 +389,7 @@
 
 (defmethod provisoir-play ((self cerclePanel) )
   (setf *MidiShare-start-time* 1)
-  (om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
+  ;(om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
   (setf *microosc-packets* 
         (loop for item in (nth  (current-list self) (midifs-from-cercle (object (om-view-container self))))
               collect (list "/play.µt/fifos" 0  item 100  1000 1)))

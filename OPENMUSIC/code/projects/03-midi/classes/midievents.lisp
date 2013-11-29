@@ -82,8 +82,11 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
 ;=== Printing MIDI Event
-(defmethod print-object ((self MidiEvent) x) 
-  (format x "[MIDIEVENT ~D ~D / track ~D / port ~D / chan ~D / VALUE=~D]" (ev-date self) (string (ev-type self)) (ev-ref self) (ev-port self) (ev-chan self) (ev-fields self)))
+;(defmethod print-object ((self MidiEvent) x) (call-next-method))
+
+(defmethod evt-to-string ((self MidiEvent))
+  (format nil "MIDIEVENT:: @~D ~A chan ~D track ~D port ~D: ~D" 
+           (ev-date self) (ev-type self) (ev-chan self) (ev-ref self) (ev-port self) (ev-fields self)))
 
 
 ;======================================
@@ -136,9 +139,7 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
 "
   :icon 907 
   (or (not type)
-      (if (symbolp type)
-        (= (ev-type self) (om-midi-symb2mtype type))
-        (member (ev-type self) (list! type)))))
+      (find (ev-type self) (list! type))))
 
 
 (defmethod! midievent-filter ((self MidiEvent) type ref port channel)

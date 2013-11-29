@@ -31,18 +31,17 @@
 (in-package :midishare)
 
   
- (defvar *player-framework* nil)
+(defvar *player-framework* nil)
   
- (defun player-framework ()
+(defun player-framework ()
     (or *player-framework*
         (setq *player-framework*
               (if (probe-file cl-user::*libplayer*)
                   (progn (cffi:load-foreign-library cl-user::*libplayer*)
            t)))))
   
-  
- (defun close-player-framework ()
-    (setq *player-framework* nil))
+(defun close-player-framework ()
+  (setq *player-framework* nil))
   
  
 

@@ -158,7 +158,7 @@ works only if the chars are coded in ASCII]"
 (defun length-of-variables-length-quantity (quantity)
   (1+ (if (< quantity 128)
 	  0
-	  (length-of-variables-length-quantity (ash quantity -7)))))
+        (length-of-variables-length-quantity (ash quantity -7)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

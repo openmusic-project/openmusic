@@ -2,12 +2,89 @@
 
 
 ;======================
+; CONNECTION/UTILITIES FOR MIDI-EVT 
+;======================
+
+;;;For KeyOn/KeyOff/Note events
+(defun midi-evt-pitch (evt &optional (set-val nil val-supplied-p)) 
+  (if val-supplied-p
+      (setf (nth 0 (midi-evt-fields evt)) set-val)
+    (nth 0 (midi-evt-fields evt))))
+
+(defun midi-evt-vel (evt &optional (set-val nil val-supplied-p)) 
+  (if val-supplied-p
+      (setf (nth 1 (midi-evt-fields evt)) set-val)
+    (nth 1 (midi-evt-fields evt))))
+
+;;; For Note events
+(defun midi-evt-dur (evt &optional (set-val nil val-supplied-p)) 
+  (if val-supplied-p
+      (setf (nth 2 (midi-evt-fields evt)) set-val)
+    (nth 2 (midi-evt-fields evt))))
+
+;;; For Tempo events
+(defun midi-evt-tempo (evt &optional (set-val nil val-supplied-p))
+  (if val-supplied-p
+      (setf (nth 0 (midi-evt-fields evt)) set-val)
+    (nth 0 (midi-evt-fields evt))))
+  
+; Return a list of midi notes (pitch date dur vel chan track port) from a sequence of midievents
+
+(defun close-notes-on (list pitch chan date track port) 
+  (flet ((match (x) (and (equal (first x) pitch) (equal (fifth x) chan) 
+                         (not (plusp (third x))) 
+                         (equal (sixth x) track) (equal (seventh x) port))))
+    (let ((pos (position-if #'match list :from-end t)))
+      (if pos
+        (setf (nth 2 (nth pos list)) (- date (* -1 (nth 2 (nth pos list)))))
+        (om-print (format nil "Warning: this MIDI sequence has single KeyOff messages in track ~D / channel ~D: ~D (t=~Dms)." track chan pitch date))
+        ))))
+
+(defun midievents2midilist (seq)
+  (let ((rep nil))
+    (loop for event in seq do
+          (case (midi-evt-type event)
+            ('Note  (push (list (midi-evt-pitch event)
+                                (midi-evt-date event)
+                                (midi-evt-dur event) 
+                                (midi-evt-vel event)
+                                (midi-evt-chan event)
+                                (midi-evt-ref event)
+                                (midi-evt-port event))
+                          rep))
+            ('KeyOn (if  (= (midi-evt-vel event) 0) ;;; actually it's a KeyOff
+                         (close-notes-on rep
+                                         (midi-evt-pitch event) 
+                                         (midi-evt-chan event)
+                                         (midi-evt-date event)
+                                         (midi-evt-ref event)
+                                         (midi-evt-port event))
+                       (push (list (midi-evt-pitch event)  ;;; put a note on with duration open in the list
+                                   (midi-evt-date event)
+                                    (* -1 (midi-evt-date event))
+                                    (midi-evt-vel event) 
+                                    (midi-evt-chan event)
+                                    (midi-evt-ref event)
+                                    (midi-evt-port event)) 
+                             rep)))
+            ('KeyOff (close-notes-on rep
+                                      (midi-evt-pitch event) 
+                                      (midi-evt-chan event)
+                                      (midi-evt-date event)
+                                      (midi-evt-ref event)
+                                      (midi-evt-port event)))))
+    (when (find-if 'minusp rep :key 'third) 
+      (om-print (format nil "Warning: this MIDI sequence has unterminated notes!")))
+    (reverse rep)))
+
+
+;======================
 ; TYPES 
 ;======================
 
 ;;; ALL AVALIABLE MIDI EVENT TYPES 
 ;;; (print-name internal-name) 
-(defvar *midi-event-types* '(("Note" 'Note)  ;;; REMOVE THIS ONE ?
+(defvar *midi-event-types* '(("Note" 'Note)
                       ("KeyOn " 'KeyOn)
                       ("KeyOff" 'KeyOff)
                       ("KeyPress" 'KeyPress)
@@ -117,6 +194,89 @@
 ; streches dates of an object which Qtempo = qtpo
 (defun strechDate (date qtpo)
   (round (* date (/ 60 qtpo))))
+
+;=====================================================
+; DESTRUCTIVELY converts midi events time info to miliseconds   
+; (Keeping tempo events)                          
+;=====================================================
+(defun convert-tempo-info (seq units/sec)
+  (let ((cur-tempo *midi-tempo*)
+        (tempo-change-abst-time 0)
+        (tempo-change-log-time 0) 
+        date
+        (initdate (midi-evt-date (car seq))))
+    (loop for event in seq do
+          (let ()
+            (setf date (- (midi-evt-date event) initdate))
+            (when (equal (midi-evt-type event) 'Tempo)
+              (setf tempo-change-log-time (logical-time date cur-tempo tempo-change-abst-time 
+                                                        tempo-change-log-time units/sec))
+              (setf cur-tempo (midi-evt-tempo event))
+              (setf tempo-change-abst-time date))
+            (if (equal (midi-evt-type event) 'Note)
+                (progn  
+                  (midi-evt-dur event (logical-time (midi-evt-dur event)  
+                                                    cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec))
+                  (setf (midi-evt-date event) 
+                        (logical-time (midi-evt-date event)  
+                                      cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec)))
+              (progn 
+                (setf (midi-evt-date event) 
+                      (logical-time (midi-evt-date event)  
+                                    cur-tempo tempo-change-abst-time tempo-change-log-time units/sec))
+                ))
+            )
+          )
+    seq))
+
+;;;=====================================
+;;; Remove tempo events from a midi file 
+;;; and converts all dates to the same tempo
+;;; RETURNS A NEW SEQUENCE
+;;;=====================================
+(defun delete-tempo-info (seq units/sec)
+  (let ((cur-tempo *midi-tempo*)
+        (tempo-change-abst-time 0)
+        (tempo-change-log-time 0) date 
+        (initdate (midi-evt-date (car seq))))   
+    (remove nil
+            (loop for event in seq collect
+                  (let (newevent)
+                    (setf date (- (midi-evt-date event) initdate))
+                    (if (equal 'Tempo (midi-evt-type event))
+                        (setf 
+                         tempo-change-log-time (logical-time date cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec)
+                         cur-tempo (midi-evt-tempo event)
+                         tempo-change-abst-time date)
+                      (progn
+                        (setf newevent (copy-midi-evt event))
+                        (case (midi-evt-type event)
+                          ('Note  
+                           (midi-evt-dur newevent (logical-time (midi-evt-dur event) 
+                                                                cur-tempo tempo-change-abst-time tempo-change-log-time units/sec))
+                           (setf (midi-evt-date newevent) (logical-time (midi-evt-date event)
+                                                                 cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec)))
+                          (otherwise 
+                           (setf (midi-evt-date newevent) (logical-time (midi-evt-date event)  
+                                                                 cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec))))
+                        ))
+                    newevent)
+                  ))))
+
+
+;=== KEY FUNCTION : to upgrade when voice accept tempo map... 
+; Converts a sequence in tempo 60 into other tempo
+; Returns a new seq
+(defun insert-tempo-info (seq tempo) 
+  (let ((tempoFactor (/ (bpm2mstempo tempo) *midi-tempo*)))
+    (cons (make-midi-evt :type 'Tempo :date 0 :ref 0 :fields (list (bpm2mstempo tempo)))
+          (loop for event in seq collect
+                (let ((newevent (copy-midi-evt event)))
+                  (setf (midi-evt-date newevent) (round (/ (midi-evt-date event) tempoFactor)))
+                  (when (equal (midi-evt-date event) 'Note) 
+                    (midi-evt-dur newevent (round (/ (midi-evt-dur event) tempoFactor))))
+                  newevent))
+          )))
 
 ;==============================
 ; GENERAL MIDI 
@@ -373,7 +533,7 @@
 
 ;=== Converts a string to continuous control number 
 (defun str2ctrlNum (str)
-  (cadr (find str *midi-controllers* :key 'cdr :test 'string-equal)))
+  (cadr (find str *midi-controllers* :key 'car :test 'string-equal)))
 
 (defun ctrlNum2str (num)
   (or (car (find num *midi-controllers* :key 'cadr :test '=)) "Undefined")) 
@@ -415,14 +575,14 @@
 
 ;=== Tests if a ms event type is a textual type
 (defun isTextual (type)
-  (find typeNum '("Textual" 
-                  "Copyright" 
-                  "SeqName" 
-                  "InstrName" 
-                  "Lyric" 
-                  "Marker" 
-                  "CuePoint")
-        :test 'string-equal))
+  (find type '(Textual 
+               Copyright
+               SeqName
+               InstrName
+               Lyric
+               Marker
+               CuePoint)
+        :test 'equal))
 
 ;=== Converts an integer (ascii codes) list into a string
 (defun list2string (list)

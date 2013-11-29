@@ -32,7 +32,7 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
   (loop for tempoitem in (tempo-Evts self) do
         (setf event (make-instance 'MidiEvent
           :ev-date (first tempoitem)
-          :ev-type (om-midi-get-num-from-type "Tempo")
+          :ev-type 'Tempo
           :ev-ref 0
           :ev-fields (second tempoItem)))
         (if (or (not test) (funcall test event))
@@ -40,7 +40,7 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
   (loop for timesignitem in (timeSign-Evts self) do
         (setf event (make-instance 'MidiEvent
           :ev-date (first timesignitem)
-          :ev-type (om-midi-get-num-from-type "TimeSign")
+          :ev-type 'TimeSign
           :ev-ref 0
           :ev-fields (second timesignItem)))
         (if (or (not test) (funcall test event))
@@ -61,9 +61,9 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
     (setf tempoEvents (get-midievents self #'(lambda (x) (or (test-type x 'tempo) (test-type x 'timeSign)))))
     (loop for event in tempoEvents do
           (cond
-           ((= (ev-type event) (om-midi-get-num-from-type "Tempo"))
+           ((equal (ev-type event) 'Tempo)
             (push (list (ev-date event) (first (ev-fields event))) tempoList))
-           ((= (ev-type event) (om-midi-get-num-from-type "TimeSign"))
+           ((equal (ev-type event) 'TimeSign)
             (push (list (ev-date event) (ev-fields event)) timeSignList))
            (t nil)))
     

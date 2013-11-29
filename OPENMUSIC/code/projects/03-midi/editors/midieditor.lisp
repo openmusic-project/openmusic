@@ -23,6 +23,9 @@
 
 (in-package :om)
 
+(defmethod Class-has-editor-p ((self MidiFile)) t)
+(defmethod get-editor-class ((self MidiFile)) 'MidiEditor)
+
 ;===========================================================
 ;EDITOR
 ;===========================================================
@@ -34,11 +37,6 @@
                     :retain-scroll retain-scroll :wintype wintype
                     ))
 
-
-         
-
-
-    
 ;=============The control===========--
 
 (defclass midi-control (3dBorder-view)  

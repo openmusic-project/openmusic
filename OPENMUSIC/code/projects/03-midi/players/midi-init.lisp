@@ -49,18 +49,12 @@
   "Check if MidiShare is present, if this is the case open the player and
 the recorder, this function is called by a def-load-pointers"
   (setf *midiplayer* nil)
-  (if (setf *midi-share?* (om-midi-startup))
+  (if (setf *midi-share?* (midishare-startup))
       (om-without-interrupts  
-        ;;; open player
         (open-ms-players)
-        ;(add-assoc-player *general-player* 'midishare)
-        ;;; set scheduler time to midi time
-        ;(om-stop-scheduler)
-        ;(defun clock-time () (om-midi-get-time))
         (enable-player :midishare)
         )
     (om-message-dialog (format nil (om-str :lib-error) "MIDI")))
-  ;(init-scheduler)  ;; on demarre quand même le scheduler
   t)
 
 ; (midi-close)
@@ -71,19 +65,19 @@ the recorder, this function is called by a def-load-pointers"
    "If MidiShare is present, close the player and the recorder before quit the application"
    (when *midi-share?*
      ;(close-ms-players) ;;; remettre ?
-     (om-midi-exit)
+     (midishare-exit)
      (disable-player :midishare)
      (setf *midi-share?* nil))
    )
 
 (defun open-ms-players ()
-  (setq *midiplayer* (om-midi-open-player "OMPlayer"))
-  (setf *midirecorder* (om-midi-open-player "OMRecorder"))
+  (setq *midiplayer* (midishare-open-player "OMPlayer"))
+  (setf *midirecorder* (midishare-open-player "OMRecorder"))
   )
 
 (defun close-ms-players ()
-  (when *midiplayer* (om-midi-close-player *midiplayer*))
-  (when *midirecorder* (om-midi-close-player *midirecorder*))
+  (when *midiplayer* (midishare-close-player *midiplayer*))
+  (when *midirecorder* (midishare-close-player *midirecorder*))
   )
 
 (defun midiplay-reset ()

@@ -36,16 +36,21 @@
 ;;; wanted - ie smf read/write, message-crunching..  Substitute
 ;;; everything live/rt with ALSA-based api.
 
-(in-package :om-lisp)
+(in-package :om-midi)
 
 (pushnew :cl-midi *midi-systems*)
+
 
 (defmethod load-midi-file-function ((midisystem (eql :cl-midi))) 'cl-midi-load-file)
 
 
+(defmethod midi-message-time ((msg midi::message)) (midi::message-time msg))
+
+(defmethod midi-message-channel ((msg midi::channel-message)) (midi::message-channel msg))
+(defmethod midi-message-channel ((msg t)) -1)
 
 ;;; Accessors to define for the different types of MIDI messages
-(defmethod midi-message-type ((msg t)) nil)
+(defmethod midi-message-type ((msg t)) (intern (concatenate 'string "Unknown:" (string (type-of msg)))))
 (defmethod midi-message-fields ((msg t)) nil)
 
 ;;; Here:
@@ -58,8 +63,10 @@
 (defmethod midi-message-type ((msg midi::general-text-message)) 'Textual)
 (defmethod midi-message-type ((msg midi::sequence/track-name-message)) 'SeqName)
 (defmethod midi-message-type ((msg midi::instrument-message)) 'InstrName)
+(defmethod midi-message-type ((msg midi::lyric-message)) 'Lyric)
+(defmethod midi-message-type ((msg midi::copyright-message)) 'Copyright)
 ;;; Superclass for all text messages
-(defmethod midi-message-fields ((msg midi::text-message)) (map 'list #'char-code str) (slot-value msg 'midi::text))  ;; restore the list of ASCII.. ?
+(defmethod midi-message-fields ((msg midi::text-message)) (map 'list #'char-code (slot-value msg 'midi::text)))  ;; restore the list of ASCII.. ?
 
 (defmethod midi-message-type ((msg midi::program-change-message)) 'ProgChange)
 (defmethod midi-message-fields ((msg midi::program-change-message)) (list (midi::message-program msg)))
@@ -83,22 +90,21 @@
 ;; takes instances of the various midi:*message classes, returning a list of midi-evt
 (defun make-event-from-message (msg ref)
   (make-midi-evt :type (midi-message-type msg)
-                 :date (midi::message-time msg)
-                 :channel (midi::message-channel msg)
+                 :date (midi-message-time msg)
+                 :chan (midi-message-channel msg)
                  :ref ref
                  :fields (midi-message-fields msg)))
-    ))
 
 (defun tracks2seq (tracks)
   (sort (loop for track in tracks 
-              for ref from 0 the (+ ref 1) append
-              (loop for mes in track collect (make-event-from-message msg ref)))
+              for ref = 0 then (+ ref 1) append
+              (loop for msg in track collect (make-event-from-message msg ref)))
         #'midi-evt-<))
 
 ;;; THE FUNCTION CALLED BY OM
 (defun cl-midi-load-file (pathname)
   (let ((f (midi:read-midi-file pathname))) 
-    (values (tracks2seq (midi:midifile-tracks f)) 
+    (values (tracks2seq (midi:midifile-tracks f))
             (length (midi:midifile-tracks f)) 
             (midi:midifile-division f) 
             (midi:midifile-format f))))
@@ -190,10 +196,6 @@
 		append (messages2events track ref))
 	     #'sort-events-<))))
 |#
-
-
-
-
 
 
 ;;;

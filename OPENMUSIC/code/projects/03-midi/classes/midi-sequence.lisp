@@ -30,54 +30,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
 (defmethod eventmidi-seq-p ((self t)) nil)
 
 (defmethod empty-midiseq-p ((self EventMidi-seq))
-   (not (Ldate self))) 
-
-(defvar *load-version* *om-version*)
-
-#|
-(defmethod initialize-instance ((self EventMidi-seq) &rest initargs &key lparam)
-  (declare (ignore initargs)) 
-  (call-next-method)
-  (if (and (< *load-version* 4.8) (not (member :ml-maquette *features*)))
-    (progn
-      (change-class self 'eventmidi-seq-old)
-      (setf (lparam self) lparam))
-    (let* ((defdelay (if (>= (length (slot-value  self 'Ldate)) 2)
-                       (- (car (last (slot-value  self 'Ldate))) 
-                          (car (last (slot-value  self 'Ldate) 2)))
-                       1000))
-           (dates (list! (slot-value  self 'Ldate)))
-           (types (list! (slot-value  self 'Ltype)))
-           (fields (list! (slot-value  self 'Lfields)))
-           (chans (list! (slot-value  self 'LChan)))
-           (refs (list! (slot-value  self 'Lref)))
-           (ports (list! (slot-value  self 'Lport)))
-           (updateself 
-            (loop while (or dates types fields chans ports refs)
-                  
-                  for date = (or (pop dates) (+ date defdelay))
-                  for field = (or (pop fields) field)
-                  for type = (if (numberp (setf type (or (pop types) type))) (num2evType type) type)
-                  for chan = (or (pop chans) chan)
-                  for ref = (or (pop refs) ref)
-                  for port = (or (pop ports) port)
-                  
-                  collect date into da
-                  collect type into ty
-                  collect field into fi
-                  collect chan into ch
-                  collect port into po
-                  collect ref into re
-                  finally (return (list da ty fi ch po re)))          
-            ))
-      (setf (Ldate self) (first updateself))
-      (setf (Ltype self) (second updateself))
-      (setf (Lfields self) (third updateself))
-      (setf (Lchan self) (fourth updateself))
-      (setf (Lport self) (nth 4 updateself))
-      (setf (Lref self) (nth 5 updateself))
-      self)))
-|#
+   (null (evtlist self)))
 
 (defmethod set-evt-list ((self EventMidi-seq))
   (let ((defdelay (if (>= (length (list! (slot-value self 'Ldate))) 2)
@@ -182,22 +135,11 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   :initvals '(nil)
   :doc "Sorts the events in <self> in temporal order and returns a new EventMIDI-seq."
   :icon 915
-  (let ((seqlist (list (Ltype self) (Ldate self) (Lref self) (Lport self) (Lchan self) (Lfields self)))
-        (sorted-seq (make-instance 'eventmidi-seq))
-        tr-list)
-    (setf tr-list (mat-trans seqList))
-    (setf tr-list (sort tr-list '< :key 'second))
-    (setf tr-list (mat-trans tr-List))
-    (setf (Ltype sorted-seq) (first tr-list))
-    (setf (Ldate sorted-seq) (second tr-list))
-    (setf (Lref sorted-seq) (third tr-list))
-    (setf (Lport sorted-seq) (fourth tr-list))
-    (setf (Lchan sorted-seq) (fifth tr-list))
-    (setf (Lfields sorted-seq) (sixth tr-list))
+  (let ((sorted-seq (make-instance 'eventmidi-seq)))
     (setf (name sorted-seq) (name self))
-    (set-evt-list sorted-seq)
+    (setf (evtlist sorted-seq) (sort (mapcar #'copy-midi-evt (evtlist self)) 'midi-evt-<))
     sorted-seq
-))
+    ))
 
 
 (defmethod! separate-channels ((self eventmidi-seq))
@@ -205,41 +147,23 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   :initvals '(nil)
   :doc "Separates MIDI channels in <self> on diferents tacks."
   :icon 915
-  (loop for evt in (evt-list self) do
+  (loop for evt in (evtlist self) do
         (setf (midi-evt-ref evt) (midi-evt-chan evt)))
   self)
 
 
 ;=== Creates a list of MidiEvents 
-#|
-(defmethod! get-midievents ((self EventMidi-seq) &optional test)
-  :icon 902
-  (let ((evtList nil) evt)
-  (loop for i from 0 to (- (length (Ldate self)) 1) do
-        (setf event (make-instance 'MidiEvent
-          :ev-date (nth i (Ldate self))
-          :ev-type (nth i (Ltype self))
-          :ev-chan (nth i (Lchan self))
-          :ev-ref (nth i (Lref self))
-          :ev-port (nth i (Lport self))
-          :ev-fields (nth i (Lfields self))
-        ))
-        (if (or (not test) (funcall test event))
-          (push event evtList)
-        ))
-  (reverse evtList)))
-|#
 
 (defmethod! get-midievents ((self EventMidi-seq) &optional test)
   :icon 902
   (remove nil
-          (loop for e in (evt-list self) colelct
+          (loop for e in (evtlist self) collect
                 (let ((event (make-instance 'MidiEvent
                                             :ev-date (midi-evt-date e)
                                             :ev-type (midi-evt-type e)
                                             :ev-chan (midi-evt-chan e)
                                             :ev-ref (midi-evt-ref e)
-                                            :ev-port (midi-evt-port se)
+                                            :ev-port (midi-evt-port e)
                                             :ev-fields (midi-evt-fields e)
                                             )))
                   (when (or (not test) (funcall test event))
@@ -284,7 +208,8 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
     (setf (Lref reponse) (reverse refList))
     (setf (Lfields reponse) (reverse fieldsList))
     (set-evt-list reponse)
-    (temporal-sort reponse)))
+    (temporal-sort reponse)
+    ))
 
 (defmethod* objFromObjs ((self MidiEvent) (type eventmidi-seq))
   (let ((reponse (make-instance (type-of type))))
@@ -297,31 +222,10 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
     (set-evt-list reponse)
     reponse))
 
-;=== Returns a complete midi notes (pitch date dur vel chan track port) list
 
-(defun close-notes-on (list pitch chan date track) 
-  (flet ((match (x) (and (equal (first x) pitch) (equal (fifth x) chan) (not (plusp (third x))) (equal (sixth x) track))))
-    (let ((pos (position-if #'match list :from-end t)))
-      (if pos
-        (setf (nth 2 (nth pos list))  (- date (* -1 (nth 2 (nth pos list)))))
-        (om-print (format nil "Warning: this MIDI sequence has unterminated notes in track ~D / channel ~D: NoteOn ~D (t=~Dms)." track chan pitch date))
-        ))))
 
-(defmethod evm-seq2midilist ((self eventmidi-seq))
-  (let ((midiList nil))
-    (loop for date in (Ldate self)
-          for type in (Ltype self)
-          for param in (Lfields self)
-          for ref in (Lref self)
-          for port in (Lport self)
-          for chan in (Lchan self) do
-          (case type
-            (0  (push (list (first param) date (third param) (second param) chan ref port) midiList))
-            (1 (if (= (second param) 0)
-                 (close-notes-on midiList (first param) chan date ref)
-                 (push (list (first param) date (* -1 date) (second param) chan ref port) midiList)))
-            (2 (close-notes-on midiList (first param) chan date ref))))
-    (reverse midiList)))
+
+
 
 
 ;=== Ctreates tracks with a list of notes (pitch date dur vel chan track port)
@@ -347,6 +251,10 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
         (push (reverse trk) rep))
   rep))
 
+
+(defmethod evm-seq2midilist ((self eventmidi-seq))
+  (midievents2midilist (evtlist self)))
+ 
 ;=== Returns a list of tracks from th EventMidi-seq object
 ;=== A track is a list of notes (pitch date dur vel chan) 
 (defmethod! get-midi-notes ((self eventmidi-seq))
@@ -358,8 +266,6 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
          (setf tmpList (mat-trans track))
          (push (mat-trans (list (first tmpList) (second tmpList) (third tmpList) (fourth tmpList) (fifth tmpList))) rep))
     (reverse rep)))
-
-
 
 
 

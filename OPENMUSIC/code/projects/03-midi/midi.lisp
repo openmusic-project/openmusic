@@ -28,38 +28,44 @@
 
 (setf *midi-files*
       '(
+        ;;; TOOLS
         "tools;midi-tools"
+        "tools;midi-read-write"
         
+        ;;; OM OBJECTS
         "classes;midievents"
         "classes;midi-sequence"
         "classes;measures-tempo"
         "classes;continuous-controllers"
 ;        "classes;midicontroller"
-        
-        "tools;midi-conversions"
-     
-        "tools;midi-read-write"       
         "classes;midifile"
+        
+        ;;; 
+        "tools;midi-conversions"
+        ;        "tools;midi-send"
+     
+        ;;; EDITORS
+        "editors;midieditor"
+        "editors;controllereditor"
 
-;        "editors;midieditor"
-
-;        "tools;midi-send"
-                
+        ;;; RENDERING
+        
 ;        "player;midi-init"
 ;        "player;midiplayer"
 ;        "players;select-players"  
 ;        #-linux "players;ms-players"  
-               
+;	;; #+cl-fluidsynth "player;fluid-player"
+;	#+(and linux cl-jack) "player;jack-midi-player"
+
+        ;;; MISC (OSC)
        ; osc and microplayer
         "osc;send"
         "osc;receive"
         "osc;osc-events"
 ;        #-linux "players;microplayer"
-;	;; #+cl-fluidsynth "player;fluid-player"
-;	#+(and linux cl-jack) "player;jack-midi-player"
 
+        ;;; SYSTEM SETUP
 ;        "tools;midi-preferences"
-
 ;        "midipackages"
 
         ))
