@@ -32,9 +32,9 @@
 
 (in-package :om-api)
 
-(compile&load (make-pathname :directory (append *externals-directory* (list "MidiShare")) :name "midishare"))
-(compile&load (make-pathname :directory (append *externals-directory* (list "MidiShare")) :name "player"))
-(compile&load (make-pathname :directory (append *externals-directory* (list "MidiShare")) :name "midishare-api"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-api"))
 
 (pushnew :midishare *features*)
 
