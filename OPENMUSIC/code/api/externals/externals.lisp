@@ -111,12 +111,17 @@
         (unless (member lib (list :midi :midishare :audio :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
+  ;;; MINIMAL MIDI API IS ALWAYS LOADED
+  (load (make-pathname :directory (append *externals-directory* '("MIDI")) :name "midi-api"))
+  
+  ;;; CL-MIDI
   (if (member :midi libs)
-      (load (make-pathname :directory (append *externals-directory* '("CL-MIDI")) :name "load-clmidi"))
-    )
+      (load (make-pathname :directory (append *externals-directory* '("MIDI" "CL-MIDI")) :name "load-clmidi")))
+  
+  ;;; MIDISHARE
   (if (member :midishare libs)
-      (load (make-pathname :directory (append *externals-directory* '("MidiShare")) :name "load-midishare"))
-    )
+      (load (make-pathname :directory (append *externals-directory* '("MIDI" "MidiShare")) :name "load-midishare")))
+
   (if (member :audio libs)
       (load (make-pathname :directory (append *externals-directory* '("Audio")) :name "load-audio"))
     (audio-prototypes))
