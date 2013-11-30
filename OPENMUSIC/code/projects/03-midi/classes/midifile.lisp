@@ -29,7 +29,8 @@
 (defclass InternalMidiFile () 
   ((MidiFileName :initform nil :initarg :MidiFileName :accessor MidiFileName)
    (fileseq :initform nil :accessor fileseq)
-   (tracks :initform nil :initarg :tracks :accessor tracks)))
+   (tracks :initform nil :initarg :tracks :accessor tracks)
+   (controllers :initform nil :initarg :controllers :accessor controllers)))
 
 (defclass* MidiFile (midi-score-element InternalMidiFile) () 
   (:icon 904)
@@ -130,6 +131,8 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
     (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))
     (multiple-value-bind (seq nbtracks clicks format)
         (midi-load-file (namestring name))
+      (print (list "format" format))
+        
       (when (equal seq :error) (om-beep-msg (string+ "Error loading a MIDI file " (namestring name))) (om-abort))
       (setf (MidiFileName themidiFile) name)
       (when seq
@@ -147,7 +150,8 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
         (setf (tracks themidiFile) (loop for track in track-list 
                                          if track collect 
                                          (make-instance 'MidiTrack :midinotes (reverse track))))
-        themidifile))))
+        (setf (controllers themidiFile) (get-continuous-controllers themidifile))
+        themidifile)))) 
 
 
 (defmethod* get-midifile () 
@@ -335,19 +339,30 @@ Note values are lists of (pitch date dur vel chan).
 ; MINIVIEW
 ;======================================================
 
-(defun draw-track-mini (self track minx maxx miny maxy mode)
-  (declare (ignore mode))
-  (let* ((x-notes (give-notes-in-x-range track minx maxx))
-         (notes (sort (give-notes-iny-range x-notes miny maxy) '< :key 'second))
-         (ysize (round (h self) (- maxy miny))))
-    (drawmini-track-note self (list minx maxx miny maxy)  notes ysize)))
 
-(defun drawmini-track-note (self ranges notes ysize)
-  (declare (ignore ysize))
+
+(defun drawmini-track-notes (view ranges y1 y2 notes)
+    (declare (special *16-color-list*))
   (loop for note in notes do
-        (let* ((topleft (point-to-pixel-with-sizes ranges (om-make-big-point (second note) (first note)) (w self) (h self)))
-               (rigth (round  (* (third note) (/ (w self) (second ranges))))))
-          (om-fill-rect (om-point-h topleft) (om-point-v topleft) (max rigth 1) 2))))
+        (let* ((topleft (point-to-pixel-with-sizes ranges (om-make-point (second note) (first note)) (w view) (- y2 y1)))
+               (width (round  (* (third note) (/ (w view) (second ranges))))))
+          (om-with-fg-color nil (nth (mod (1- (nth 4 note)) 16) *16-color-list*)
+            (om-fill-rect (om-point-h topleft) (+ y1 (om-point-v topleft)) (max width 1) 2)))))
+
+(defun draw-track-mini (view track mint maxt y1 y2)
+  (let* ((minpitch 24) 
+         (maxpitch 96)
+         (x-notes (give-notes-in-x-range track mint maxt))
+         (notes (sort (give-notes-iny-range x-notes minpitch maxpitch) '< :key 'second)))
+        
+    (om-draw-line 0 y2 (w view) y2)
+    (drawmini-track-notes view (list mint maxt minpitch maxpitch) y1 y2 notes)))
+
+(defun draw-mini-midi (view dur val) 
+  (let ((trackh (round (h view) (length (tracks val)))))
+    (loop for track in (tracks val)
+          for i = 0 then (+ i 1) do
+          (draw-track-mini view track 0 dur (* i trackh) (* (1+ i) trackh)))))
 
 (defmethod draw-mini-view ((self miniview) (value MidiFile))
    (if (midifilename value)
@@ -357,29 +372,24 @@ Note values are lists of (pitch date dur vel chan).
        (om-draw-string 5 15 "No file attached"))
      ))
 
-(defun draw-mini-midi (self dur val) 
-   (declare (special *16-color-list*))
-   (loop for item in (tracks val)
-         for i = 0 then (+ i 1) do
-         (om-with-fg-color nil (nth (mod i 15) *16-color-list*)
-           (draw-track-mini self item 0 dur 24 96 t))))
 
-(defmethod draw-obj-in-rect ((self  midifile) x x1 y y1 edparams  view)
-  (let ((dur-to-draw (real-dur self)))
-    (loop for tr in (tracks self)
-          for i = 0 then (+ i 1) do
-          (om-with-fg-color nil (nth (mod i 15) *16-color-list*)
-            (let* ((x-notes tr) ;(give-notes-in-x-range item 0 dur-to-draw))
-                   (notes (sort (give-notes-iny-range x-notes 24 96) '< :key 'second)))
-              (loop for note in notes do
-                    (let* ((topleft (point-to-pixel-with-sizes '(0 dur-to-draw 24 96) (om-make-big-point (second note) (first note)) (- x1 x) (- y1 y)))
-                           (rigth (round  (* (third note) (/ (- x1 x) dur-to-draw)))))
-                      (when (> (+ rigth (om-point-h topleft)) (- x1 x))
-                        (setf rigth (- (- x1 x) (om-point-h topleft))))
-                      (om-fill-rect (+ x (om-point-h topleft)) (+ y (om-point-v topleft)) rigth 1))))))))
 
-(defmethod update-miniview ((self t) (type midifile)) 
-   (om-invalidate-view self t))
+;(defmethod draw-obj-in-rect ((self  midifile) x x1 y y1 edparams  view)
+;  (let ((dur-to-draw (real-dur self)))
+;    (loop for tr in (tracks self)
+;          for i = 0 then (+ i 1) do
+;          (om-with-fg-color nil (nth (mod i 15) *16-color-list*)
+;            (let* ((x-notes tr) ;(give-notes-in-x-range item 0 dur-to-draw))
+;                   (notes (sort (give-notes-iny-range x-notes 24 96) '< :key 'second)))
+;              (loop for note in notes do
+;                    (let* ((topleft (point-to-pixel-with-sizes '(0 dur-to-draw 24 96) (om-make-big-point (second note) (first note)) (- x1 x) (- y1 y)))
+;                           (rigth (round  (* (third note) (/ (- x1 x) dur-to-draw)))))
+;                      (when (> (+ rigth (om-point-h topleft)) (- x1 x))
+;                        (setf rigth (- (- x1 x) (om-point-h topleft))))
+;                      (om-fill-rect (+ x (om-point-h topleft)) (+ y (om-point-v topleft)) rigth 1))))))))
+
+;(defmethod update-miniview ((self t) (type midifile)) 
+;   (om-invalidate-view self t))
 
 ;======================================================
 ;USED IN MAQUETTES

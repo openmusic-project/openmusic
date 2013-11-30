@@ -26,8 +26,11 @@
 ;====================
 ;==== MIDI EVENT ====
 ;====================
+;;; THE INTERNAL ONE (SIMPLE AND FAST)
+
 (defclass Midi-Score-Element (simple-score-element) ())
 
+;;; THE OBJECT, INHERITING SCORE-ELEMENT
 (defclass! MidiEvent (simple-score-element)
    ((ev-type :initform 'KeyOn :accessor ev-type :initarg :ev-type :type t :documentation "the type of event")
     (ev-date :initform 0 :accessor ev-date :initarg :ev-date :documentation "the date of event (ms)")

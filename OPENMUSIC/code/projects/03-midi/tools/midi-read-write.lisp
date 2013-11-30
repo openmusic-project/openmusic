@@ -7,7 +7,7 @@
 
 (defparameter *default-midi-system* nil)
 
-;(setf *default-midi-system* :cl-midi)
+(setf *default-midi-system* :cl-midi)
 ;(setf *default-midi-system* :midishare)
 
 ;;; LOADS THE MIDIFILE USING THE DEFAULT MIDI SYSTEM

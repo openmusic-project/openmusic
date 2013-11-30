@@ -46,7 +46,7 @@
      
         ;;; EDITORS
         "editors;midieditor"
-        "editors;controllereditor"
+        ;"editors;controllereditor" ON MY COMPUTER @IRCAM
 
         ;;; RENDERING
         

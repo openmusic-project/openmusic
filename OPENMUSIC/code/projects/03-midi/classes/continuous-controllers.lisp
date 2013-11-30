@@ -443,7 +443,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
         (loop for event in evtList do
               (cond 
                ((equal eventtype 'Tempo)
-                (push (first (ev-fields event)) values))
+                (setf curr-val (first (ev-fields event))))
                
                ((equal eventtype 'PitchBend) 
                 (case control 
@@ -482,7 +482,36 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
 
 
 
-
-
-
-
+;;; INTERNAL: GET ALL CONTROLLERS FROM A SEQUENCE
+(defmethod get-continuous-controllers ((self t))
+  (let ((evtList (get-midievents self #'(lambda (x) (test-type x '(CtrlChange Tempo KeyPress ChanPress PitchBend)))))
+        (controllers nil))
+    (loop for ev in evtlist do
+          (let* ((ev-value (cond 
+                           ((equal (ev-type ev) 'Tempo)
+                            (car (ev-fields ev)))
+                           ((equal (ev-type ev) 'PitchBend) 
+                            (- (second (ev-fields ev)) 64))
+                           ((equal (ev-type ev) 'keypress) 
+                            (second (ev-fields ev)))
+                           ((equal (ev-type ev) 'ChanPress) 
+                            (second (ev-fields ev)))
+                           ((equal (ev-type ev) 'CtrlChange) 
+                            (second (ev-fields ev)))))
+                (ev-title (if (equal (ev-type ev) 'CtrlChange)
+                               (list (ev-type ev) (car (ev-fields ev)))
+                             (ev-type ev)))
+                (control-exists (find ev controllers :test #'(lambda (evt listitem)
+                                                               (and (equal ev-title (car listitem))
+                                                                    (= (ev-chan evt) (cadr listitem)))))))
+            (if control-exists 
+                (setf (caddr control-exists) ;;; add a time-value pair
+                      (append (caddr control-exists)   
+                              (list (list (ev-date ev) ev-value))))
+              (push (list ev-title (ev-chan ev) (list (ev-date ev) ev-value))
+                    controllers))
+            ))
+    
+    controllers))
+                                           
+        

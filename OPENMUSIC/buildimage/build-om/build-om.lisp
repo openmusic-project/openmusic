@@ -11,8 +11,8 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.070010)
-(defparameter *beta-release* nil)
+(defparameter *version* 6.070100)
+(defparameter *beta-release* t)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
@@ -216,7 +216,7 @@
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"
-    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP")
+    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP" "OM-MIDI")
     (:import-from "CL-USER")
     (:nicknames "OM"))
 
