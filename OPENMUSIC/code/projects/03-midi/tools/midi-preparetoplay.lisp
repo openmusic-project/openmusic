@@ -82,7 +82,7 @@
                                       :ref (if voice voice 0) 
                                       :chan 0 ;;; WHANT SI THE CHANNEL OF A TIME SIGN EVENT ??
                                       :date at
-                                      :fields (list num denum 24 div)
+                                      :fields (list num den 24 div)
                                       :port port)))
 
     (cons MeasureEvent
