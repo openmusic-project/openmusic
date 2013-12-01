@@ -522,12 +522,8 @@
 ;; "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"
 
 
-
-;(defmethod get-obj-to-play ((self cursor-play-view-mixin))
-;  (values (object (om-view-container self))
-;          (car (cursor-interval self))
-;          (cadr (cursor-interval self))
-;          ))
+(defmethod get-obj-to-play ((self cursor-play-view-mixin))
+   (list (object (om-view-container self))))
 
 (defmethod start-position ((self cursor-play-view-mixin)) 
   (or (cursor-pos self) 0))

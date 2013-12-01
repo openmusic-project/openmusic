@@ -42,6 +42,7 @@
         
         ;;; 
         "tools;midi-conversions"
+        "tools;midi-preparetoplay"
         ;        "tools;midi-send"
      
         ;;; EDITORS

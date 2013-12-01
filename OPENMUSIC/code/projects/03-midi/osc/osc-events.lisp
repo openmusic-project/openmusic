@@ -45,10 +45,9 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
 
-(defmethod* PrepareToPlay ((player t) (self OSCEvent) at &key approx port interval voice)
+(defmethod PrepareToPlay ((player t) (self OSCEvent) at &key approx port interval voice)
   (declare (ignore approx))
-  (call-next-method)
-  t)
+  (call-next-method))
 
 (defmethod DoPlay ((self OSCEvent) start end)
   (call-next-method)

@@ -404,14 +404,6 @@ See the dedicated chapter in the OM User Manual for more details.")
 ; PLAY
 ;=====================================================================
 
-;(defmethod* PrepareToPlay ((player t) (self sheet-track) at &key  approx port interval voice)        
-;  (loop for item in (objs self) do
-;        (PrepareToPlay player (obj item) (+ at (start-t item))
-;                       :approx approx
-;                       :port port
-;                       :interval interval
-;                       :voice voice)))
-
 (defmethod player-schedule ((player omplayer) (obj omsheet) engine &key (at 0) interval)
   (loop for tr in (inside obj) do
         (loop for tr-obj in (objs tr) do

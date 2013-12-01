@@ -126,6 +126,7 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 ; LOAD FROM FILE
 ;=================================================
 
+;;; MAKE A MIDIFILE INSTANCE FROM FILE
 (defun load-midifile (name) 
   (let ((themidiFile (make-instance 'MidiFile)))
     (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))

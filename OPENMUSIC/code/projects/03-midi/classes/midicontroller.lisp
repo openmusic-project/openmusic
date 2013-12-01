@@ -41,6 +41,7 @@
   (setf (miditrack self) tracks)
   self)
 
+;;; used in the maquette, to check if we need to instanciate a specific track for this object
 (defmethod obj-in-sep-track ((self settings-ctrl)) nil)
 
 (defclass* midi-mix-console (settings-ctrl) ()
@@ -739,10 +740,9 @@ In this case, all internal events are sent simultaneously.
   ) 
 
 ;;; !!! For QT Player, prpogram changes must be sent on the same channel !
-(defmethod* PrepareToPlay ((player t) (self settings-ctrl) at &key approx port interval voice)
+(defmethod PrepareToPlay ((player t) (self settings-ctrl) at &key approx port interval voice)
   (declare (ignore approx))
-  (when *midiplayer*
-    (let ((evtseq nil))
+  (let ((evtseq nil))
       (cond ((integerp (miditrack self)) 
              (setf evtseq (objfromobjs self (make-instance 'eventmidi-seq)))
              (setf (lref evtseq) (make-list (length (ltype evtseq)) :initial-element (miditrack self))))
@@ -763,7 +763,7 @@ In this case, all internal events are sent simultaneously.
                      :port port
                      :interval interval
                      :voice voice)
-      )))
+      ))
 
 
 ;======================

@@ -141,12 +141,7 @@
           ))))
 
 
-(defmethod* PrepareToPlay ((player t) (self ommaquette) at &key approx port interval voice)
-  (PrepareToPlay player (value self) at
-                 :approx approx
-                 :port port
-                 :interval interval
-                 :voice voice))
+
 
 
 ;====================

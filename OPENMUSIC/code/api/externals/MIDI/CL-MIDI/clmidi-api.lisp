@@ -42,6 +42,9 @@
 
 
 (defmethod load-midi-file-function ((midisystem (eql :cl-midi))) 'cl-midi-load-file)
+(defmethod save-midi-file-function ((midisystem (eql :cl-midi))) 'cl-midi-save-file)
+
+
 
 
 (defmethod midi-message-time ((msg midi::message)) (midi::message-time msg))
@@ -212,7 +215,6 @@
 (defparameter +tempo-opcode+		#xFF)
 
 
-
 (defun midi-command-type (event)
   (slot-value event 'midi::status-min))
 
@@ -291,46 +293,48 @@
   (make-instance 'midi:tempo-message :time time :tempo tempo :status +tempo-opcode+))
 
 (defun event2note-on-off (ev)
-  (let ((k (first (event-fields ev)))
-	(v (second (event-fields ev)))
-	(onset (event-date ev))
-	(dur (third (event-fields ev)))
-	(chan (event-chan ev)))
+  (let ((k (first (midi-evt-fields ev)))
+	(v (second (midi-evt-fields ev)))
+	(onset (midi-evt-date ev))
+	(dur (third (midi-evt-fields ev)))
+	(chan (midi-evt-chan ev)))
     (let ((on (make-note-on-message onset k v chan))
 	  (off (make-note-off-message (+ onset dur) k 0 chan)))
       (list on off))))
 
 (defun event2note-off (ev)
-  (make-note-off-message (event-date ev) (first (event-fields ev)) (event-velocity ev) (event-chan ev)))
+  (make-note-off-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (midi-evt-chan ev)))
 
 (defun event2note-on (ev)
-  (make-note-on-message (event-date ev) (first (event-fields ev)) (event-velocity ev) (event-chan ev)))
+  (make-note-on-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (midi-evt-chan ev)))
 
 (defun event2program-change-message (ev)
-  (make-program-change-message (event-date ev) (event-pgm ev) (event-chan ev)))
+  (make-program-change-message (midi-evt-date ev) (first (midi-evt-fields ev)) (midi-evt-chan ev)))
 
 (defun event2tempo (ev)
-  (make-tempo-message (event-date ev) (second (event-fields ev))))
+  (make-tempo-message (midi-evt-date ev) (second (midi-evt-fields ev))))
 
 (defun make-messages-from-event (ev)
-  (let ((type (event-type ev)))
+  (let ((type (midi-evt-type ev)))
     (cond 
-      ((= type (om-midi-get-num-from-type "Note")) (event2note-on-off ev)) ;returns cons
-      ((= type (om-midi-get-num-from-type "keyOn")) (event2note-on ev))
-      ((= type (om-midi-get-num-from-type "keyOff")) (event2note-off ev))
-      ((= type (om-midi-get-num-from-type "Tempo")) (event2tempo ev))
+      ((equal type 'Note) (event2note-on-off ev)) ;returns cons
+      ((equal type 'keyOn) (event2note-on ev))
+      ((equal type 'keyOff) (event2note-off ev))
+      ((equal type 'Tempo) (event2tempo ev))
       (t (error "(midi) message-type ~A isn't supported yet" type)))))
 
 (defun seq2tracks (seq)
-  (loop for ev in (midi-seq-events seq)
+  (loop for ev in seq
      for msg = (make-messages-from-event ev)
      if (listp msg) append msg
      else collect msg))
 
-(defun om-midi-save-seq-in-file (seq filename &key (fileformat 1) (timedef 0) (clicks 1000) (tracks 1))
+(defun cl-midi-save-file (seq filename fileformat clicks)
   (declare (ignore timedef tracks))
   (let ((mf (make-instance 'midi:midifile :format fileformat :division clicks)))
     (setf (slot-value mf 'midi::tracks) (list (seq2tracks seq)))
-    (om-create-directory filename)
+    #+lispworks(sys::ENSURE-DIRECTORIES-EXIST filename :verbose t)  ;;; !!! LW specific
     (midi:write-midi-file mf filename)
     filename))
+
+

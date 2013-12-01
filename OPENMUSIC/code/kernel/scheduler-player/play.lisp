@@ -30,13 +30,11 @@
 
 (in-package :om)
 
-
-
 ;==================================================
 ;Play box
 ;==================================================
 
-(defmethod* Play ((self t) &key (player t) (approx 2) interval port)
+(defmethod* Play ((self t) &key (player t))
    :initvals '(nil nil 2 nil nil) 
    :indoc '("object" "a player designator" "micro interval approx" "selection in object" "") 
    :icon 207
@@ -51,26 +49,30 @@
    (general-stop *general-player*)
    nil)
    
-
-(defmethod* Play ((self simple-container) &key (player t) (approx 2) interval port)
-   (call-next-method)
-   (setf port (or port *outmidiport*))
-   (when (play-obj? self)
-     (player-schedule *general-player*
-                      self 
-                      (car (players-for-object self)) :at (get-player-time *general-player*)))
-   (general-play *general-player*))
-
-(defmethod* Play ((self list) &key (player t) (approx 2) interval port)
-   (call-next-method)
-   (when self
-     (setf port (or port *outmidiport*))
-     (loop for objs in self do
-           (Play objs :player player :approx approx :port port :interval interval))))
-
 (defmethod* Stop ((setf t))
   :icon 229
   (general-stop *general-player*))
+
+
+(defmethod* Play ((self simple-container) &key (player t))
+   (call-next-method)
+   (when (play-obj? self)
+     (player-schedule  *general-player*
+                      self 
+                      (or player (car (players-for-object self))) 
+                      :at (get-player-time *general-player*)))
+   (general-play *general-player*))
+
+
+(defmethod* Play ((self list) &key (player t) (approx 2) interval port)
+   (call-next-method)
+   (loop for obj in self do
+         (Play obj :player player)))
+
+
+;==================================================
+;Play shortcur on OM patch boxes
+;==================================================
 
 (defmethod play-boxes ((boxlist list))
   (mapcar #'(lambda (box)
@@ -87,34 +89,47 @@
     (general-play *general-player*) ;;; :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))
     ))
 
+
+
 ;==================================================
-;Prepare to play
+;Prepare to play allows to recursively build low-level structures for the players
+;Can be specialized for objects
 ;==================================================
 
-(defmethod* PrepareToPlay ((player t) (self t) at &key  approx port interval voice)
-   :initvals '(nil 0 2 nil nil) 
-   :indoc '("object" "start time" "approx" "port" "selection") 
-   :icon 207
-   :doc "use to redifine Play for new classes, see the manual"
-   (declare (ignore approx seq port))
-   (if interval
-     (let ((newinterval (interval-intersec interval (list at (+ at (get-obj-dur self))))))
-       (when newinterval
-         (push (list self (- at (first interval)) (om- newinterval at))
-               (list-to-play *general-player*))))
-     (push (list self at interval) (list-to-play *general-player*))) t)
+(defmethod PrepareToPlay ((player t) (self t) at &key  approx port interval voice)
+  (declare (ignore approx seq port))
+  nil)
 
+(defmethod PrepareToPlay ((player t) (list list) at &key  approx port interval voice)
+    (loop for object in list
+         collect (PrepareToPlay player object at 
+                           :approx approx 
+                           :port port
+                           :interval interval
+                           :voice voice)))
+
+;=== general containers play all sub components
+(defmethod PrepareToPlay ((player t) (self container) at &key approx port interval voice)
+  (loop for sub in (inside self) collect
+        (let ((objstart (+ at (offset->ms sub))))
+          (let ((in-interval (and interval
+                                  (interval-intersec interval (list objstart (+ objstart (get-obj-dur sub)))))))
+            (PrepareToPlay player sub objstart 
+                           :approx approx 
+                           :port port
+                           :interval (if in-interval interval nil)
+                           :voice voice)))
+        ))
+
+;;; FOR THE MAQUETTE CONTENTS
+;;; check if we need to instanciate a specific track for this object
 (defmethod obj-in-sep-track ((self t)) nil)
 (defmethod obj-in-sep-track ((self simple-container)) t)
 
 (defmethod player-from-params (paramkey) nil)
-(defmethod player-from-params ((paramkey symbol)) (interne paramkey))
+(defmethod player-from-params ((paramkey symbol)) paramkey)
 
-;(defmethod player-from-params ((paramkey (eql :midishare))) 'midishare)
-;(defmethod player-from-params ((paramkey (eql :microplayer))) 'microplayer)
-;(defmethod player-from-params ((paramkey (eql :multiplayer))) 'multiplayer)
-
-(defmethod* PrepareToPlay ((player t) (self maquette-obj) at &key approx port interval voice)
+(defmethod PrepareToPlay ((player t) (self maquette-obj) at &key approx port interval voice)
    (declare (ignore approx port))
    (let ((i 0))
      (loop for object in (inside self)
@@ -146,101 +161,16 @@
                                       (t (cdr (assoc 'outport param))))
                               :voice track))))))
 
-(defmethod* PrepareToPlay ((player t) (list list) at &key  approx port interval voice)
-   (setf port (or port *outmidiport*))
 
-   (loop for object in list
-         do (PrepareToPlay player object at 
-                           :approx approx 
-                           :port port
-                           :interval interval
-                           :voice voice)))
-
-;=== general containers play all sub components
-
-(defmethod* PrepareToPlay ((player t) (self container) at &key approx port interval voice)
-   ;(setf port (verify-port port))
-   (loop for sub in (inside self) do
-         (let ((objstart (+ at (offset->ms sub))))
-          ;(print (list player sub))
-           (if interval
-             (let ((newinterval (interval-intersec interval 
-                                                   (list objstart (+ objstart (get-obj-dur sub))))))
-               (when newinterval
-                 (PrepareToPlay player sub objstart 
-                                :approx approx 
-                                :port port
-                                :interval interval
-                                :voice voice)))
-             (PrepareToPlay player sub objstart 
-                            :approx approx 
-                            :port port
-                            :voice voice)))))
+(defmethod PrepareToPlay ((player t) (self ommaquette) at &key approx port interval voice)
+  (PrepareToPlay player (value self) at
+                 :approx approx
+                 :port port
+                 :interval interval
+                 :voice voice))
 
 
-(defmethod* PrepareToPlay ((player t) (self t) at &key approx port interval voice) nil)
 
-;(defmethod* PrepareToPlay ((player t) (self listtoplay) at &key  approx port interval voice)
-;   (declare (ignore approx))
-;   (loop for object in (thelist self)
-;        for param in (params self)
-;         do 
-;         ;(print (list (cdr (assoc 'player param)) object))
-;         (PrepareToPlay (player-from-params (cdr (assoc 'player param)))
-;                        object at 
-;                        :approx (cdr (assoc 'approx param)) 
-;                        :interval interval
-;                        :port (case (cdr (assoc 'outport param))
-;                                (:default *outmidiport*)
-;                                (t (cdr (assoc 'outport param))))
-;                        :voice voice)))
-
-
-(defmethod get-obj-to-play ((self cursor-play-view-mixin))
-   (list (object (om-view-container self))))
-
-;(defmethod selection-to-play-? ((self cursor-play-view-mixin))
-;  (and (cursor-p self) 
-;       (cursor-interval self) 
-;       (not (= (car (cursor-interval self)) (cadr (cursor-interval self))))
-;       ))
-
-
-;(defmethod convert-interval ((self cursor-play-view-mixin))
-  ;;; attention ici on fait des copies de tous les sound files de la maquette...
-;   (let* ((obj (car (get-obj-to-play self)))
-;          (dur (get-obj-dur obj))
-;          (int (cursor-interval self))  
-;          x x1
-;          rep)
-;     
-;     (if (listp int)
-;       (setf x (max 0 (om-point-h (pixel2point self (om-make-point (car int) 0))))
-;             x1 (min dur (om-point-h (pixel2point self (om-make-point (second int) 0)))))
-;       (setf x (max 0 (om-point-h (pixel2point self (om-make-point int 0)))) 
-;             x1 (get-obj-dur obj)
-;             ));;
-;
-;     (setf (cursor-pos self) x)
-;     
-;       (setf rep (if (<= x x1)
-;                   (list x x1)
-;                   (list x1 x)))
-;       (if (< (car rep) dur)
-;         rep
-;         '(0 0))
-;       ))
-
-
-;(defmethod scroll-play-window ((self cursor-play-view-mixin)) 
-  ;(om-without-interrupts
-;   (setf (rangex self) (list (cursor-pos *general-player*) 
-;                             (+ (cursor-pos *general-player*) 
-;                                (- (second (rangex self)) (first (rangex self))))))
-;  (change-view-ranges self)
-;  (om-redraw-view self)
-;  (om-redraw-view (rulerx self))
-;  );)
 
 
 
