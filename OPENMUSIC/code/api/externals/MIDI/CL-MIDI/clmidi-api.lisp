@@ -312,7 +312,7 @@
   (make-program-change-message (midi-evt-date ev) (first (midi-evt-fields ev)) (midi-evt-chan ev)))
 
 (defun event2tempo (ev)
-  (make-tempo-message (midi-evt-date ev) (second (midi-evt-fields ev))))
+  (make-tempo-message (midi-evt-date ev) (first (midi-evt-fields ev))))
 
 (defun make-messages-from-event (ev)
   (let ((type (midi-evt-type ev)))
