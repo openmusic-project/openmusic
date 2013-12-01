@@ -26,7 +26,6 @@
 ;====================
 ;==== MIDI EVENT ====
 ;====================
-;;; THE INTERNAL ONE (SIMPLE AND FAST)
 
 (defclass Midi-Score-Element (simple-score-element) ())
 

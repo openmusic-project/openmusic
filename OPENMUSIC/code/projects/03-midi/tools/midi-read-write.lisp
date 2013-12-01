@@ -22,13 +22,31 @@
     ))
 
 
+(defvar *def-midi-format* 1)
+
+
+;= Saves sequence with tempo 60
+;= modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
+
+(defun save-midifile (name object approx tempo &optional (format nil))
+  (let ((seq (PrepareToPlay t object 0 :approx approx :voice 1)))
+    (if tempo 
+        (setf seq (insert-tempo-info seq tempo))
+      (push (make-midi-evt :type 'Tempo :date 0 :fields (list *midi-tempo*)) seq))
+    (save-events-in-file seq name (or format *def-midi-format*))))
+
+
+(defmethod MidiSaveAny ((object t) approx)
+  (when *midiplayer*
+    (setf *MidiShare-start-time* 0)
+    (setf *playing-midi-seq* (om-midi-new-seq))
+    
+    ))
 
 
 ;===========================================
 ;Save objects in MidiFile (const tempo = 60)
 ;===========================================
-
-(defvar *def-midi-format* 1)
 
 (defmethod* save-as-midi ((object t) &optional filename &key  (approx 2) (format nil)) 
     :initvals '(nil) 
@@ -71,43 +89,25 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                   (when (save-midifile-with-tempo name object approx (tempo-a-la-noire (car (tempo object))) (or format *def-midi-format*))
                     (namestring name))))))
 
-
-(defun save-midifile (name obj approx &optional (format 1))
-  (MidiSaveAny obj approx)
-  (save-seq *playing-midi-seq* name format))
-
-(defmethod MidiSaveAny ((object t) approx)
-  (when *midiplayer*
-    (setf *MidiShare-start-time* 0)
-    (setf *playing-midi-seq* (om-midi-new-seq))
-    (PrepareToPlay t object 0 :approx approx :voice 1)
-    ))
-
-
-;==== Saves sequence with tempo 60
-;==== modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
-(defun save-seq (seq name &optional (format 1))
-  (let ((tempo-evnt (om-midi-new-evt  (om-midi-get-num-from-type "Tempo")
-                                     :date 0 :vals 1000000)))
-    (om-midi-seq-concat-evt seq tempo-evnt nil)
-    (om-midi-save-seq-in-file seq (om-path2cmdpath name) :fileformat format)
-    ))
-   
-
 ;=======================================================
 ;== Save voice/poly in midifile                       ==
 ;== Considering tempo and time signature information ==
 ;=======================================================
 
-(defun save-voice-seq (seq name &optional (format 1))
-  (om-midi-save-seq-in-file seq (om-path2cmdpath name) :fileformat format))
-
-(defun save-midifile-with-tempo (name obj approx tempo &optional (format 1))
-  (let (newSeq)
-    (MidiSaveAny obj approx)
-    (setf newSeq (insert-tempo-info *playing-midi-seq* tempo))
-    (save-voice-seq newSeq name format)))
-
+;=== Tests if all voices of a ply object have the same tempo
+;=== returns the tempo in case true and nil if not
+(defmethod poly-same-tempo ((self poly))
+  (let* ((alltempo (loop for voiceItem in (inside self) collect (tempo voiceItem)))
+         (currtempo (car (first alltempo))))
+    
+    (loop for item in alltempo 
+          while currtempo do
+          
+          (if (or (cadr item) ;; tempo changes in a voice
+                  (not (= (/ (cadr (car item)) (car (car item)))
+                          (/ (cadr currtempo) (car currtempo)))))
+                  (setf currtempo nil) (setf currtempo (car item))))
+    (list currtempo nil)))
 
 
 (defmethod* save-as-midi ((object poly) &optional filename &key (approx 2) (format nil))
@@ -124,26 +124,13 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                                     :name (pathname-name name)
                                     :type "midi")))
         (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (when (if tempo 
-          (save-midifile-with-tempo name object approx (tempo-a-la-noire (car tempo)) (or format *def-midi-format*))
-          (save-midifile name object approx (or format *def-midi-format*)))  
-        (namestring name))))))
+        (when 
+            (save-midifile name object approx 
+                           (if tempo (tempo-a-la-noire (car tempo)) nil)
+                           (or format *def-midi-format*)))  
+        (namestring name)))))
 
 
-;=== Tests if all voices of a ply object have the same tempo
-;=== returns the tempo in case true and nil if not
-(defmethod poly-same-tempo ((self poly))
-  (let* ((alltempo (loop for voiceItem in (inside self) collect (tempo voiceItem)))
-         (currtempo (car (first alltempo))))
-    
-    (loop for item in alltempo 
-          while currtempo do
-          
-          (if (or (cadr item) ;; tempo changes in a voice
-                  (not (= (/ (cadr (car item)) (car (car item)))
-                          (/ (cadr currtempo) (car currtempo)))))
-                  (setf currtempo nil) (setf currtempo (car item))))
-    (list currtempo nil)))
 
 
 

@@ -116,13 +116,15 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
 (defmethod execption-save-p ((self eventmidi-seq)) 'eventmidi-seq)
 (defmethod save-exepcion ((self eventmidi-seq))
   `(when (find-class ',(type-of self) nil)
-     (make-instance ',(type-of self)
-       :Ldate ',(Ldate self)
-       :Ltype ',(Ltype self)
-       :Lchan ',(Lchan self)
-       :Lref ',(Lref self)
-       :Lport ',(Lport self)
-       :Lfields ',(Lfields self)
+     (let ((rep (make-instance ',(type-of self)
+                               :Ldate ',(Ldate self)
+                               :Ltype ',(Ltype self)
+                               :Lchan ',(Lchan self)
+                               :Lref ',(Lref self)
+                               :Lport ',(Lport self)
+                               :Lfields ',(Lfields self))))
+       (setf (name rep) ,(name self))
+       rep
        )))
 
 
