@@ -37,7 +37,7 @@
         "classes;midi-sequence"
         "classes;measures-tempo"
         "classes;continuous-controllers"
-;        "classes;midicontroller"
+        "classes;midi-console"
         "classes;midifile"
         
         ;;; 
