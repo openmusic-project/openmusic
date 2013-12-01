@@ -74,7 +74,7 @@
 (defvar *sdiflib* nil)
 
 (defun om-start-sdif ()
-  #+linux(pushnew (oa::om-lib-directory) *foreign-library-directories* :test 'equal)
+  #+linux (pushnew (oa::om-lib-directory) cffi:*foreign-library-directories* :test 'equal)
   (setf sdif::*sdif-pathname* (om-lib-pathname sdif::*sdif-pathname*))
   (sdif::init-sdif-framework)
   ;; (sdif-init "") ;; => LATER !!! :(

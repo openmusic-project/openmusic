@@ -65,8 +65,9 @@
 					   :connection-style :immediate)
 		      t))
 	#+linux (progn 
+		  (pushnew "/usr/local/lib/" cffi::*foreign-library-directories*)
 		  (define-foreign-library libsdif
-		    (t (:default "libsdif")))
+		    (t (:default "libsdif") ))
 		  (handler-case (progn (use-foreign-library libsdif) t)
 		    (error () (progn (print (format nil "could not load foreign-library libsdif"))
 				     nil))))))
