@@ -56,15 +56,15 @@
 
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self MidiEvent) at &key approx port interval voice)
-   (declare (ignore approx voice))
+   (declare (ignore approx))
    (when (or (null interval) (point-in-interval at interval))
      (make-midi-evt
       :date (+ (ev-date self) (if interval (- at (first interval)) at))
-      :type type
-      :chan chan
-      :ref ref
-      :port (or port *outmidiport*)
-      :fields field
+      :type (ev-type self)
+      :chan (ev-chan self)
+      :ref (or voice (ev-ref self))
+      :port (or port (ev-port self) *outmidiport*)
+      :fields (ev-fields self)
       )))
 
 

@@ -83,6 +83,9 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
 (defmethod draw-mini-view  ((self t) (value MidiEvent)) 
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
+(defmethod get-impulsion-pict ((self MidiEvent)) 
+  (get-icon-loaded 913))
+
 ;=== Printing MIDI Event
 ;(defmethod print-object ((self MidiEvent) x) (call-next-method))
 
@@ -160,9 +163,7 @@ If a test value is NIL, the test is not performed on this attribute.
                             (or (not port) (member (ev-port self) (list! port)))
                             (or (not channel) (member (ev-chan self) (list! channel)))))
 
-(defmethod! get-midievents ((self MidiEvent) &optional test)
-  :icon 902 
-  (if (or (not test) (funcall test self)) (list self) nil))
+
 
 
 ;=== converts to string the slot "fields" of a textual MidiEvent
@@ -206,6 +207,10 @@ The optional argument <test> is a function or lambda patch testing MIDIEvents on
 If <test> returns T, then the MIDIEvent is collected.
 "
   nil)
+
+(defmethod! get-midievents ((self MidiEvent) &optional test)
+  :icon 902 
+  (if (or (not test) (funcall test self)) (list self) nil))
 
 (defmethod! get-midievents ((self list) &optional test)
    :icon 902

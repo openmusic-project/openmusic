@@ -7,7 +7,8 @@
 ;================================
 ; MIDI - Send
 ;================================
-
+;;; THIS FUNCTION WILL PROBABLY NOT WORK
+;;; LOW-LEVEL API SHOULD HANDLE THIS TYPE OF EVENTS... OR NOT
 (defmethod* midi-o ((bytes list) &optional port)
    :icon 912
    :indoc '("data bytes" "output port number")
@@ -26,9 +27,14 @@
                (midi-o item item1)))
        
        (loop for aport in (list! port) do
-             (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Stream") :port aport :bytes bytes)))
-               (when event (om-midi-send-evt event *midiplayer*)) 
-               t)))))
+             (let ((event  (make-midi-evt :type 'Stream
+                                          :port aport
+                                          :fields bytes)
+                           (midi-send-evt event)
+                           )))
+             )
+       )))
+
 
 ;===================PITCHBEND & WHEEL
 
@@ -45,11 +51,11 @@ The range of pitch wheel is between -8192 and 8190.
    (unless port (setf port *outmidiport*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "PitchWheel")
-                                                                  :chan (- chans 1) :port aport 
-                                                                  :bend vals)))
-           (when event (om-midi-send-evt event *midiplayer*))
-	   t)))
+         (let ((event  (make-midi-evt :type 'PitchWheel
+                                      :chan chans :port aport
+                                      :fields vals)))
+           (midi-send-evt event)
+           )))
 
 (defmethod* pitchwheel ((vals number) (chans list) &optional port)
    (loop for item in chans do

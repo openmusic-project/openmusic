@@ -30,7 +30,7 @@
       '(
         ;;; TOOLS
         "tools;midi-tools"
-        "tools;midi-read-write"
+        "tools;midi-connection"
         
         ;;; OM OBJECTS
         "classes;midievents"
@@ -42,8 +42,9 @@
         
         ;;; 
         "tools;midi-conversions"
+        "tools;midi-save"
         "tools;midi-preparetoplay"
-        ;        "tools;midi-send"
+        "tools;midi-send"
      
         ;;; EDITORS
         "editors;midieditor"

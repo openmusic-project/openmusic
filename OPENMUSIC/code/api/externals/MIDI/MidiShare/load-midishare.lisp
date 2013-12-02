@@ -38,3 +38,10 @@
 
 (pushnew :midishare *features*)
 
+(pushnew :midishare om-midi::*midi-systems*)
+
+(defmethod om-midi::load-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-load-file)
+(defmethod om-midi::save-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-save-file)
+(defmethod om-midi::send-midi-event-function ((midisystem (eql :midishare))) 'om-midi::midishare-send-evt)
+
+(om-add-init-func 'om-midi::midishare-startup)

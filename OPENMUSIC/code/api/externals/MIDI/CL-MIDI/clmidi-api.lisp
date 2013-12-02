@@ -38,14 +38,6 @@
 
 (in-package :om-midi)
 
-(pushnew :cl-midi *midi-systems*)
-
-
-(defmethod load-midi-file-function ((midisystem (eql :cl-midi))) 'cl-midi-load-file)
-(defmethod save-midi-file-function ((midisystem (eql :cl-midi))) 'cl-midi-save-file)
-
-
-
 
 (defmethod midi-message-time ((msg midi::message)) (midi::message-time msg))
 
@@ -321,13 +313,14 @@
       ((equal type 'keyOn) (event2note-on ev))
       ((equal type 'keyOff) (event2note-off ev))
       ((equal type 'Tempo) (event2tempo ev))
-      (t (error "(midi) message-type ~A isn't supported yet" type)))))
+      (t (print (format nil "(cl-midi) message-type ~A isn't supported yet" type)) NIL))))
 
 (defun seq2tracks (seq)
-  (loop for ev in seq
-     for msg = (make-messages-from-event ev)
-     if (listp msg) append msg
-     else collect msg))
+  (remove nil
+          (loop for ev in seq
+                for msg = (make-messages-from-event ev)
+                if (listp msg) append msg
+                else collect msg)))
 
 (defun cl-midi-save-file (seq filename fileformat clicks)
   (declare (ignore timedef tracks))

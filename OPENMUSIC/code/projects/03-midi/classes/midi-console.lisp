@@ -1,11 +1,13 @@
+;==============================
+; THE MIDI CONSOLE IS A SET OF MIDI SETTINGS TO BE SENT SIMULTANEOUSLY TO THE PLAYER 
+; (A MIDI SETUP)
+;==============================
+
 (in-package :om)
 
-(defvar  *midirealtime* "si les modifs sont envoyees au player en temps reel")
-(setf *midirealtime* t)
-
 ;================================================
-;=== CHANNEL CONTROLLER                       ===
-;=== a single track of the general controller ===
+;=== CHANNEL CONTROLLER                     
+;=== a single track controller 
 ;================================================
 (defclass* Channel-Ctrl () 
   ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer)
@@ -22,7 +24,6 @@
 (defmethod channel-ctrl-p ((self channel-ctrl))  t)
 (defmethod channel-ctrl-p ((self t)) nil)
 
-
 ;====================================
 ;=== SETTINGS CONTROLLER          ===
 ;=== a set of channel controllers ===
@@ -35,7 +36,6 @@
   (:icon 918))
 
 ;;; miditrack useful for QT player
-
 (defmethod! set-track ((self settings-ctrl) tracks)
   :icon 917
   (setf (miditrack self) tracks)
@@ -43,6 +43,29 @@
 
 ;;; used in the maquette, to check if we need to instanciate a specific track for this object
 (defmethod obj-in-sep-track ((self settings-ctrl)) nil)
+
+(defmethod get-obj-dur ((self settings-ctrl)) 0)
+
+(defmethod allowed-in-maq-p ((self settings-ctrl))  t)
+
+;;; SOME SUBCLASSES MAY USE DIFFERENT CHANNEL CONTROLLERS
+(defmethod get-channel-ctrl-class ((self t)) 'channel-ctrl)
+
+(defmethod initialize-instance :after ((self settings-ctrl) &rest l)
+   (declare (ignore l))
+   (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
+   (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
+
+   (setf (channels-ctrl self) 
+         (loop for i from 1 to (nbtracks self) collect (make-instance (get-channel-ctrl-class self) 
+                                                         :midiport (midiport self)
+                                                         :midichannel i)))
+   )
+
+;===========================
+; THE 'REAL' OBJECT USED IN OM
+; (TODO: REMOVE SETTINGS-CTRL SUPERCLASS?)
+;===========================
 
 (defclass* midi-mix-console (settings-ctrl) ()
   (:icon 918)
@@ -55,39 +78,19 @@ Modifications are sent immediately when performed in the editor.
 The MIDI-MIX-CONSOLE object can also be 'played' as a musical object, from a patch window or in a maquette.
 In this case, all internal events are sent simultaneously.
 "
-))
+ ))
 
-(defmethod get-channel-ctrl-class ((self t)) 'channel-ctrl)
+(defmethod get-impulsion-pict ((self midi-mix-console)) 
+  (om-load-and-store-picture "audiotrack-bg" 'internal))
 
-(defmethod initialize-instance :after ((self settings-ctrl) &rest l)
-   (declare (ignore l))
-   (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
-   (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
-
-   (setf (channels-ctrl self) 
-         (loop for i from 1 to (nbtracks self) collect (make-instance (get-channel-ctrl-class self) 
-                                                         :midiport (midiport self)
-                                                         :midichannel i)))
-)
-
-(defmethod settings-ctrl-p ((self settings-ctrl))  t)
-(defmethod settings-ctrl-p ((self t)) nil)
-
-(defmethod allowed-in-maq-p ((self settings-ctrl))  t)
-
-(defmethod get-impulsion-pict ((self settings-ctrl)) *ctrl-impulsion-pict*)
-
-(defmethod Class-has-editor-p  ((self settings-ctrl)) t )
-(defmethod get-editor-class ((self settings-ctrl)) 'controllerEditor)
-
-(defmethod draw-mini-view  ((self t) (value settings-ctrl)) 
+(defmethod draw-mini-view  ((self t) (value midi-mix-console)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
-(defmethod update-miniview ((self t) (value settings-ctrl)) 
+(defmethod update-miniview ((self t) (value midi-mix-console)) 
    (om-invalidate-view self t))
 
 
-(defmethod draw-obj-in-rect ((self settings-ctrl) x x1 y y1 edparams view)
+(defmethod draw-obj-in-rect ((self midi-mix-console) x x1 y y1 edparams view)
   (let ((pw (round (w view) (nbtracks self)))
         (pic (om-load-and-store-picture "audiotrack-bg" 'internal)))
     (loop for i from 0 to (nbtracks self) do
@@ -96,7 +99,7 @@ In this case, all internal events are sent simultaneously.
                            ))))
 
 
-(defmethod omNG-copy ((self settings-ctrl))
+(defmethod omNG-copy ((self midi-mix-console))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   `(let ((rep (make-instance ',(type-of self)
                 :midiport ,(midiport self)
@@ -107,7 +110,7 @@ In this case, all internal events are sent simultaneously.
      rep
      ))
 
-(defmethod copy-container  ((self settings-ctrl) &optional (pere nil))
+(defmethod copy-container  ((self midi-mix-console) &optional (pere nil))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   (let ((rep (make-instance (type-of self)
                 :midiport (midiport self)
@@ -118,7 +121,7 @@ In this case, all internal events are sent simultaneously.
     rep
     ))
 
-(defmethod omNG-save ((self settings-ctrl) &optional (values? nil))
+(defmethod omNG-save ((self midi-mix-console) &optional (values? nil))
   "Cons a Lisp expression that retunr a copy of self when it is valuated."
   `(let ((rep (make-instance ',(type-of self) 
                 :midiport ,(midiport self) 
@@ -129,11 +132,161 @@ In this case, all internal events are sent simultaneously.
      rep
      ))
 
+;======================
+;=== GET MIDIEVENTS ===
+;======================
 
-(defmethod get-obj-dur ((self settings-ctrl)) 0)
+(defmethod! get-midievents ((self settings-ctrl) &optional test)
+  (let ((evt-list (loop for chan-ctrl in (channels-ctrl self) append 
+                        (get-midievents chan-ctrl test))))
+    (when (miditrack self)
+      (setf evt-list
+            (loop for tr in (list! (miditrack self)) append
+                  (loop for evt in evt-list collect
+                        (let ((new-ev (clone evt)))
+                          (setf (ev-ref new-ev) tr)
+                          new-ev))))
+       )
+    
+    (get-midievents evt-list test)))
+
+(defmethod! get-midievents ((self channel-ctrl) &optional test)
+   (list
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'ProgChange
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (program self))
+        
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'CtrlChange
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (list 7 (vol-ctrl self)))
+        
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'CtrlChange
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (list 10 (pan-ctrl self)))
+        
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'PitchBend
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (list 0 (pitch-ctrl self)))
+        
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'CtrlChange
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (list (control1-num self) (control1-val self)))
+        
+    (make-instance 'MidiEvent
+                   :ev-date 0
+                   :ev-ref 0
+                   :ev-type 'CtrlChange
+                   :ev-chan (midichannel self)
+                   :ev-port (midiport self)
+                   :ev-fields (list (control2-num self) (control2-val self)))
+    ))
 
 
-;=========== CONTROLLER EDITOR ===================
+;;;===============================
+;;; FOR PLAY OR SAVE AS MIDI
+;;;===============================
+
+;;; !!! For QT Player, prpogram changes must be sent on the same channel !
+(defmethod PrepareToPlay ((player (eql :midi)) (self settings-ctrl) at &key approx port interval voice)
+  (PrepareToPlay player (get-midievents self) at 
+                 :approx approx 
+                 :port port
+                 :interval interval
+                 :voice voice))
+
+;=================================
+;=== SENDING CONTROLLER SETTINGS :
+;=================================
+
+(defmethod channel-send-prog ((self channel-ctrl))
+  (let ((event (make-midi-evt :type 'ProgChange 
+                              :chan (midichannel self)
+                              :port (midiport self)
+                              :fields (program self))))
+    
+    (midi-send-evt event)
+    t))
+
+    
+(defmethod channel-send-vol ((self channel-ctrl))
+  (let ((event (make-midi-evt :type 'CtrlChange
+                                 :chan (- (midichannel self) 1) 
+                                 :port (midiport self)
+                                 :fields (list 7  (vol-ctrl self)))))
+    (midi-send-evt event)
+    t))
+
+(defmethod channel-send-pan ((self channel-ctrl))
+  (let ((event  (make-midi-evt :type 'CtrlChange
+                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :fields (list 10 (pan-ctrl self)))))
+    (midi-send-evt event)
+    t))
+    
+(defmethod channel-send-ct1 ((self channel-ctrl))
+  (let ((event  (make-midi-evt :type 'CtrlChange
+                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :fields (list (control1-num self) (control1-val self)))))
+    (midi-send-evt event)
+    t))
+    
+(defmethod channel-send-ct2 ((self channel-ctrl))
+  (let ((event  (make-midi-evt :type 'CtrlChange
+                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :fields (list (control2-num self) (control2-val self)))))    
+    (midi-send-evt event)
+    t))
+
+(defmethod channel-send-pitch ((self channel-ctrl))
+  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "PitchBend") 
+                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :fields (list 0  (pitch-ctrl self)))))
+    (midi-send-evt event)
+    t))
+
+(defmethod send-midi-settings ((self channel-ctrl))
+  (channel-send-prog self) 
+  (channel-send-vol self) 
+  (channel-send-pan self) 
+  (channel-send-ct1 self) 
+  (channel-send-ct2 self) 
+  (channel-send-pitch self))
+
+(defmethod send-midi-settings ((self settings-ctrl))
+  (loop for chan-ctrl in (channels-ctrl self) do
+        (send-midi-settings chan-ctrl)))
+
+
+;;================================================================
+; EDITOR
+;;================================================================
+
+(defvar  *midirealtime* "si les modifs sont envoyees au player en temps reel")
+(setf *midirealtime* nil)
+
+(defmethod class-has-editor-p  ((self settings-ctrl)) t )
+(defmethod get-editor-class ((self settings-ctrl)) 'ConsoleEditor)
+
 ;=== The Editor will be a scrollable editor with fixed size 
 ;(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (+ 6 (min (* *channel-w* 6) (* *channel-w* (nbtracks self)))) 560))
 (defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (min (* *channel-w* 10) (* *channel-w* (nbtracks self))) 560))
@@ -142,7 +295,7 @@ In this case, all internal events are sent simultaneously.
   (pairlis '(winsize winpos) 
            (list (get-win-ed-size self) (om-make-point 300 20))))
 
-(defmethod make-editor-window ((class (eql 'controllerEditor)) object name ref &key 
+(defmethod make-editor-window ((class (eql 'ConsoleEditor)) object name ref &key 
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
@@ -151,12 +304,12 @@ In this case, all internal events are sent simultaneously.
     win))
 
 
-(defclass controllerEditor (EditorView) 
+(defclass ConsoleEditor (EditorView) 
   ((ch-panels :initform nil :accessor ch-panels :type list)))
 
-(defmethod get-panel-class ((Self controllerEditor)) 'controllerPanel)
+(defmethod get-panel-class ((Self ConsoleEditor)) 'controllerPanel)
 
-(defmethod update-subviews ((Self controllereditor))
+(defmethod update-subviews ((Self ConsoleEditor))
    (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
    ;;;(om-update-scroll-bar-limits (panel self )) ;;; mettre dans om-set-field-size pour mac
    ;(om-invalidate-view self t)
@@ -225,9 +378,9 @@ In this case, all internal events are sent simultaneously.
 ;=== INITIALIZATIONS ===
 ;=======================
 
-(defmethod metaobj-scrollbars-params ((self controllerEditor))  '(:h t))
+(defmethod metaobj-scrollbars-params ((self ConsoleEditor))  '(:h t))
 
-(defmethod initialize-instance :after ((self controllerEditor) &rest l)
+(defmethod initialize-instance :after ((self ConsoleEditor) &rest l)
    (declare (ignore l))
    
    (setf (panel self) (om-make-view (get-panel-class self) 
@@ -257,7 +410,7 @@ In this case, all internal events are sent simultaneously.
 
 
 
-(defmethod update-editor-after-eval ((self controllereditor) val)
+(defmethod update-editor-after-eval ((self ConsoleEditor) val)
   (setf (object self) val)
   (om-set-view-size (window self) (get-win-ed-size (object self)))
   (om-set-view-size self (get-win-ed-size (object self)))
@@ -286,7 +439,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod do-initialize-channel ((self channelPanel))  
   (let* ((progList *midi-programs*)
-         (ctrlList *midi-ctrl-chge*) bar1 bar2 bar3 bar4
+         (ctrlList *midi-controllers*) bar1 bar2 bar3 bar4
          (pos 0)
          (bgcolor *om-light-gray-color*)
          ctrlchgText)
@@ -658,180 +811,8 @@ In this case, all internal events are sent simultaneously.
 )
   
  
-
-;=================================
-;=== SENDING CONTROLLER SETTINGS :
-;=================================
-;(defmethod handle-key-event ((self ControllerPanel) char)
-;  (case char
-;    (#\space 
-;     ;(play (object (view-container self)) :port (midiport (object (view-container self))))
-;     (send-midi-settings (object (om-view-container self)))
-;     (print "done"))
-;    (otherwise (om-beep))))
-
-
-(defmethod send-midi-settings ((self settings-ctrl))
-  (when *midi-share?*
-    (loop for chan-ctrl in (channels-ctrl self) do
-          (send-midi-settings chan-ctrl))))
-
-(defmethod channel-send-prog ((self channel-ctrl))
-  (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ProgChange") 
-                                :chan (- (midichannel self) 1) :port (midiport self)
-                                :vals (program self))))
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-    
-(defmethod channel-send-vol ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "CtrlChange") 
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :vals (list 7  (vol-ctrl self)))))
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-
-(defmethod channel-send-pan ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "CtrlChange") 
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :vals (list 10 (pan-ctrl self)))))
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-    
-(defmethod channel-send-ct1 ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "CtrlChange") 
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :vals (list (control1-num self) (control1-val self)))))
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-    
-(defmethod channel-send-ct2 ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "CtrlChange")
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :vals (list (control2-num self) (control2-val self)))))    
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-
-(defmethod channel-send-pitch ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "PitchBend") 
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :vals (list 0  (pitch-ctrl self)))))
-    (when event   
-      (om-midi-send-evt event *midiplayer*)
-      t)
-    ))
-
-(defmethod send-midi-settings ((self channel-ctrl))
-  (channel-send-prog self) 
-  (channel-send-vol self) 
-  (channel-send-pan self) 
-  (channel-send-ct1 self) 
-  (channel-send-ct2 self) 
-  (channel-send-pitch self) 
-  ) 
-
-;;; !!! For QT Player, prpogram changes must be sent on the same channel !
-(defmethod PrepareToPlay ((player t) (self settings-ctrl) at &key approx port interval voice)
-  (declare (ignore approx))
-  (let ((evtseq nil))
-      (cond ((integerp (miditrack self)) 
-             (setf evtseq (objfromobjs self (make-instance 'eventmidi-seq)))
-             (setf (lref evtseq) (make-list (length (ltype evtseq)) :initial-element (miditrack self))))
-            ((consp (miditrack self))
-             (let ((listev))
-               (loop for tr in (miditrack self) do
-                     (let ((1evtseq (objfromobjs self (make-instance 'eventmidi-seq))))
-                       (setf (lref 1evtseq) (make-list (length (ltype 1evtseq)) :initial-element tr))
-                       (setf listev (append listev (get-midievents 1evtseq)))
-                       ))
-               (setf evtseq (objfromobjs listev (make-instance 'eventmidi-seq)))))
-            (t 
-             (setf evtseq (objfromobjs self (make-instance 'eventmidi-seq)))
-             (objfromobjs self (make-instance 'eventmidi-seq))(setf (lref evtseq) (make-list (length (ltype evtseq)) :initial-element 0))))
-      
-      (PrepareToPlay player evtseq at 
-                     :approx approx 
-                     :port port
-                     :interval interval
-                     :voice voice)
-      ))
-
-
-;======================
-;=== GET MIDIEVENTS ===
-;======================
-
-(defmethod! get-midievents ((self settings-ctrl) &optional test)
-  (declare (ignore test))
-  (let ((evtList nil))
-  (loop for chan-ctrl in (channels-ctrl self) do 
-        (push (get-midievents chan-ctrl) evtList))
-  (flat (reverse evtList))))
-
-(defmethod! get-midievents ((self channel-ctrl) &optional test)
-  (declare (ignore test))
-  (let ((evtList nil) 
-        (progevt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "ProgChange")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (program self)))
-        
-        (volevt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (list 7 (vol-ctrl self))))
-        
-        (panevt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (list 10 (pan-ctrl self))))
-        
-        (pitchevt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "PitchBend")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (list 0 (pitch-ctrl self))))
-        
-        (ctr1evt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (list (control1-num self) (control1-val self))))
-        
-        (ctr2evt (make-instance 'MidiEvent
-                       :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
-                       :ev-chan (midichannel self)
-                       :ev-port (midiport self)
-                       :ev-fields (list (control2-num self) (control2-val self))))
-        )
-        
-    (setf evtlist (list progevt volevt panevt pitchevt ctr1evt ctr2evt))
-
-    evtList))
-
-
-
-
 ;;;;;====================
-;;; SIMPLE MIDI MIXER
+;;; SIMPLE MIDI MIXER ;; NOT USED ANYWHERE... ?
 ;;;;;====================
 
 (defclass* simple-midi-mix-console (midi-mix-console) ()
@@ -881,7 +862,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod get-win-ed-size ((self simple-midi-mix-console)) (om-make-point (+ 6 (min (* *channel-w* 6) (* 140 (nbtracks self)))) 340))
 
-(defmethod make-editor-window ((class (eql 'simplecontrollerEditor)) object name ref &key 
+(defmethod make-editor-window ((class (eql 'simpleConsoleEditor)) object name ref &key 
                                  winsize winpos (close-p t) (winshow t) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
@@ -889,17 +870,16 @@ In this case, all internal events are sent simultaneously.
                                                       )))
     win))
 
-(omg-defclass simplecontrollerEditor (controllerEditor) ())
+(omg-defclass simpleConsoleEditor (ConsoleEditor) ())
 (omg-defclass simplecontrollerPanel (controllerPanel) ())
 (omg-defclass simplechannelpanel (channelpanel om-item-view) ())
 
-(defmethod get-editor-class ((self simple-midi-mix-console)) 'simplecontrollerEditor)
-(defmethod get-panel-class ((Self simplecontrollerEditor)) 'simplecontrollerPanel)
+(defmethod get-editor-class ((self simple-midi-mix-console)) 'simpleConsoleEditor)
+(defmethod get-panel-class ((Self simpleConsoleEditor)) 'simplecontrollerPanel)
 (defmethod get-channelpanel-class ((self simplecontrollerPanel)) 'simplechannelpanel)
 
 
 (defmethod simple-controls-only ((self simplechannelpanel)) t)
-
 
 (defmethod reset-all-values ((self simplechannelPanel))
   (change-pan self 64)

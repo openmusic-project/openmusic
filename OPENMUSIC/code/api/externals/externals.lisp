@@ -119,7 +119,7 @@
       (load (make-pathname :directory (append *externals-directory* '("MIDI" "CL-MIDI")) :name "load-clmidi")))
   
   ;;; MIDISHARE
-  (if (member :midishare libs)
+  (when (member :midishare libs)
       (load (make-pathname :directory (append *externals-directory* '("MIDI" "MidiShare")) :name "load-midishare")))
 
   (if (member :audio libs)
