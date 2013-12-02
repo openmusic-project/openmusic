@@ -260,7 +260,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
             (get-fields self value)
           
         ;send events for each channel, port, ref...
-        (loop for po in (if (port self) (list! (port self)) (list *outmidiport*)) do
+        (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
               (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
                     (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-num self) 'Tempo) 0 1))) do
               
@@ -298,7 +298,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
   (multiple-value-bind (fields fieldslsb) 
             (get-fields self val)
     
-    (loop for po in (if (port self) (list! (port self)) (list *outmidiport*)) do
+    (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
           (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
                 (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-num self) 'Tempo) 0 1))) do
                       (let ((event 

@@ -10,7 +10,7 @@
   (declare (ignore approx voice))
    ;(setf converted-seq (delete-tempo-info (fileseq self) (clicks self)))
    ;(setf converted-seq (fileseq self))
-  (setf port (or port *outmidiport*))
+  (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (fileseq self) 
           when (and (not (equal (midi-evt-type event) 'Tempo))
@@ -27,7 +27,7 @@
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self EventMidi-seq) at &key approx port interval voice)
   (declare (ignore approx voice))
-  (setf port (or port *outmidiport*))
+  (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (evtlist self) 
           when (and (not (equal (midi-evt-type event) 'Tempo))
@@ -63,7 +63,7 @@
       :type (ev-type self)
       :chan (ev-chan self)
       :ref (or voice (ev-ref self))
-      :port (or port (ev-port self) *outmidiport*)
+      :port (or port (ev-port self) *def-midi-out*)
       :fields (ev-fields self)
       )))
 
@@ -156,13 +156,13 @@
 (defun note-events (port chan pitch vel dur date track)
    (list (make-midi-evt :type 'KeyOn
                         :date date 
-                        :port (or port *outmidiport*) 
+                        :port (or port *def-midi-out*) 
                         :chan chan 
                         :ref track
                         :fields (list pitch vel))
          (make-midi-evt :type 'KeyOff
                         :date (+ dur date) 
-                        :port (or port *outmidiport*) 
+                        :port (or port *def-midi-out*) 
                         :chan chan 
                         :ref track
                         :fields (list pitch 0))
@@ -194,7 +194,7 @@
 ;=== Send a Note event
 #|
 (defun playnote (port chan pitch vel dur date track)
-  (setf port (or port *outmidiport*))
+  (setf port (or port *def-midi-out*))
   (if (< dur 65000)
       (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Note") :port port :chan chan :date date :ref track :vals (list pitch vel dur))))
         (when event 
@@ -232,7 +232,7 @@
                         :fields val))
 
 ;;; variable set by the MIDI preferences
-(defvar *ms-microplay* nil)
+(defvar *midi-microplay* nil)
 
 (defun microplay-events (at dur port)
   ;;; make or send ... ?
@@ -246,14 +246,14 @@
         (make-pitchwheel-event (+ at dur) 3 port 0)))
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self chord-seq) at &key approx port interval voice)
-  (if (and *ms-microplay* approx (find approx '(4 8) :test '=))
+  (if (and *midi-microplay* approx (find approx '(4 8) :test '=))
     (append 
      (microplay-events at (get-obj-dur self) port)
      (call-next-method))
     (call-next-method)))
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self voice) at &key approx port interval voice)
-  (if (and *ms-microplay* approx (find approx '(4 8) :test '=))
+  (if (and *midi-microplay* approx (find approx '(4 8) :test '=))
     (append 
      (microplay-events at (get-obj-dur self) port)
      (call-next-method))

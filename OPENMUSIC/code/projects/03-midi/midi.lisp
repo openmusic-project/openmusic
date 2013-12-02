@@ -28,7 +28,7 @@
 
 (setf *midi-files*
       '(
-        ;;; TOOLS
+        ;;; BASIC/LOW LEVEL TOOLS
         "tools;midi-tools"
         "tools;midi-connection"
         
@@ -40,21 +40,25 @@
         "classes;midi-console"
         "classes;midifile"
         
-        ;;; 
+        ;;; UTILS AND FUNCTIONS
         "tools;midi-conversions"
         "tools;midi-save"
         "tools;midi-preparetoplay"
-        "tools;midi-send"
+        "tools;midi-send" ; => TODO !!
      
         ;;; EDITORS
         "editors;midieditor"
         "editors;controllereditor"
+        
+        ;;; PREFS AND SETTINGS
+        "players;select-players"
+        "tools;midi-preferences"
 
         ;;; RENDERING
         
 ;        "player;midi-init"
 ;        "player;midiplayer"
-;        "players;select-players"  
+     
 ;        #-linux "players;ms-players"  
 ;	;; #+cl-fluidsynth "player;fluid-player"
 ;	#+(and linux cl-jack) "player;jack-midi-player"
@@ -66,9 +70,8 @@
         "osc;osc-events"
 ;        #-linux "players;microplayer"
 
-        ;;; SYSTEM SETUP
-;        "tools;midi-preferences"
-;        "midipackages"
+        ;;; OM MENUS ETC.  
+        "midipackages"
 
         ))
 

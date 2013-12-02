@@ -21,7 +21,7 @@
 (defmethod* PrepareToPlay ((player t) (self EventMidi) at &key approx port interval voice)
    (declare (ignore approx))
    (when (and *midiplayer* (or (null interval) (point-in-interval at interval)))
-     (setf port (or port *outmidiport*))
+     (setf port (or port *def-midi-out*))
      (let ((param1 (first (ev-field self)))
            (param2 (second (ev-field self)))
            (really-at (if interval (- at (first interval)) at)) 
@@ -114,7 +114,7 @@
 (defmethod* PrepareToPlay ((player t) (self EventMidi-seq-old) at &key  approx port interval voice)
    (declare (ignore approx))
    (when *midiplayer*
-     (setf port (or port *outmidiport*))
+     (setf port (or port *def-midi-out*))
      (loop for date in (Ldate self)
            for type in (Ltype self)
            for param in (Lparam self)

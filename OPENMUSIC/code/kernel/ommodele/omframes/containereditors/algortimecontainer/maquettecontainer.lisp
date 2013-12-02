@@ -1202,9 +1202,11 @@
 
 (defmethod get-obj-to-play ((self MaquettePanel))
   (if (and (eval-func (object self)) (value (object self)))
-    (if *ms-microplay* 
-      (list (value (object self)))
-      (list (value (object self)) :approx 8))
+    ; ??? why (commented since OM 6.7.1)
+    ;(if *midi-microplay* 
+    ;  (list (value (object self)))
+    ;  (list (value (object self)) :approx 8))
+    (list (value (object self)))
     (list (cons-play-maquette-object (object self) (boxestoplay self))))
   )
 

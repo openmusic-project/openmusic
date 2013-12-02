@@ -40,11 +40,7 @@
 "tools/saveheader"   
 "graphics/graphictools" 
 "tools/traduction" 
-
-;--------------Scheduler----------------- 
-;"scheduler-player/scheduler"   
-;"scheduler-player/new-scheduler"
-                                    
+                                
 ;-----------Containers---------------------------- 
 "classes/container"   
 
@@ -139,6 +135,7 @@
 ;--------------------Player---------------------- 
 "scheduler-player/play"
 "scheduler-player/new-player"
+"scheduler-player/players"
 
 ;-----------Persistant&copy--------------------- 
 "ommodele/persistant/copy"  

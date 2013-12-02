@@ -22,13 +22,13 @@
 (AddClass2Pack '(MidiEvent EventMidi-seq MidiControl Tempo-map Midi-Mix-Console) *midipackage* :position (list (om-make-point 75 295) (om-make-point 75 115)))
 
 
-(AddGenFun2Pack  '(midi-o pitchwheel pitchbend pgmout ctrlchg volume sysex midi-reset) *midisend-package*)
+(AddGenFun2Pack  '(pitchwheel pitchbend pgmout ctrlchg volume sysex midi-reset) *midisend-package*)
 (AddGenFun2Pack  '(test-date test-channel test-type test-track test-port midievent-filter) *midifilter-package*)
 (AddGenFun2Pack  '(mesure-time cseq+tempo->voice) *scorepackage*)
 (AddGenFun2Pack '(mf-info save-as-midi) *midipackage*)
 (AddGenFun2Pack  '(get-midievents get-tempomap get-mf-lyrics get-midi-notes get-continuous-ctrl) *midixtract-package*)
 (AddGenFun2Pack  '(create-midiseq temporal-sort separate-channels me-textinfo save-as-midi) *midiprocess-package*)
-(AddGenFun2Pack  '(gm-program gm-drumnote control-change ms-event) *gmidi-package*)
+(AddGenFun2Pack  '(gm-program gm-drumnote control-change) *gmidi-package*)
 
 
 ;-------------------

@@ -35,6 +35,7 @@
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-api"))
+(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-setup"))
 
 (pushnew :midishare *features*)
 
@@ -43,5 +44,9 @@
 (defmethod om-midi::load-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-load-file)
 (defmethod om-midi::save-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-save-file)
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :midishare))) 'om-midi::midishare-send-evt)
+
+;(defmethod om-midi::midi-setup ((midisystem (eql :midishare)) settings) nil)
+;(defmethod om-midi::midi-connect ((midisystem (eql :midishare)) settings) (om-midi::om-midishare-setup))
+;(defmethod om-midi::midi-restart ((midisystem (eql :midishare)) settings) nil)  ;;;midiplay-reset
 
 (om-add-init-func 'om-midi::midishare-startup)

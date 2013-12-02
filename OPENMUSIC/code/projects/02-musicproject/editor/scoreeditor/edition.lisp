@@ -14,20 +14,20 @@
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil *InMidiPort* *default-score-player*
+                 nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 :normal t nil)))
 
 (defmethod get-default-score-params ((self chord))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil *InMidiPort* *default-score-player*
+                 nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 0 :normal t nil)))
 
 (defmethod get-default-score-params ((self note))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil *InMidiPort* *default-score-player*
+           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil)))
 
 
@@ -38,16 +38,10 @@
   (let ((rep params))
     (unless (assoc 'deltapict params)
       (setf rep (pairlis (list 'deltapict) (list (om-make-point 0 0)) rep)))
-    (unless (assoc 'outport params)
-      (setf rep (pairlis (list 'outport) (list *Outmidiport*) rep)))
-    (unless (assoc 'inport params)
-      (setf rep (pairlis (list 'inport) (list *InMidiPort*) rep)))
-    (unless (assoc 'player params)
-      (setf rep (pairlis (list 'player) (list :midishare) rep)))
+    ;(unless (assoc 'player params)
+    ;  (setf rep (pairlis (list 'player) (list :midishare) rep)))
     (unless (assoc 'zoom params)
       (setf rep (pairlis (list 'zoom) (list 1) rep)))
-    ;(unless (assoc 'palette-mode params)
-    ;  (setf rep (pairlis (list 'palette-mode) (list 0) rep)))
     (unless (assoc 'obj-mode params)
       (setf rep (pairlis (list 'obj-mode) (list 0) rep)))
     (unless (assoc 'cmnpref params)

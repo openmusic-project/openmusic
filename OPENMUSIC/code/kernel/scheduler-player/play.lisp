@@ -129,6 +129,8 @@
 (defmethod player-from-params (paramkey) nil)
 (defmethod player-from-params ((paramkey symbol)) paramkey)
 
+
+;;; WARNING: *def-midi-out* makes this dependent from the MIDI project
 (defmethod PrepareToPlay ((player t) (self maquette-obj) at &key approx port interval voice)
    (declare (ignore approx port))
    (let ((i 0))
@@ -149,7 +151,7 @@
                                     object objstart
                                     :approx (cdr (assoc 'approx param))
                                     :port (case (cdr (assoc 'outport param))
-                                            (:default *outmidiport*)
+                                            (:default *def-midi-out*)
                                             (t (cdr (assoc 'outport param))))
                                     :interval interval
                                     :voice track)))
@@ -157,7 +159,7 @@
                               object objstart
                               :approx (cdr (assoc 'approx param))
                               :port (case (cdr (assoc 'outport param))
-                                      (:default *outmidiport*)
+                                      (:default *def-midi-out*)
                                       (t (cdr (assoc 'outport param))))
                               :voice track))))))
 

@@ -7,12 +7,6 @@
 
 (in-package :om)
 
-(defparameter *default-midi-system* nil)
-
-(setf *default-midi-system* :cl-midi)
-;(setf *default-midi-system* :midishare)
-
-
 (defun ckeck-def-midi-system (function)
   (when (and *default-midi-system* (not (find *default-midi-system* om-midi::*midi-systems*)))
     (print (string+ "Warning: System " (string *default-midi-system*) "is not registered as a MID system.")))
@@ -33,6 +27,7 @@
     *default-midi-system*)
   )
     
+
     
 ;;; LOADS THE MIDIFILE USING THE DEFAULT MIDI SYSTEM
 ;;; Expected return values are 
@@ -44,9 +39,6 @@
       (funcall (om-midi::load-midi-file-function sys) pathname)
       (om-abort)
       )))
-
-(defvar *def-midi-format* 1)
-
 
 ;= Saves sequence with tempo 60
 ;= modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60

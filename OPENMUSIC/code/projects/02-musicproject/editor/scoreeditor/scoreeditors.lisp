@@ -575,11 +575,11 @@
                                           :font *om-default-font1*
                                           :bg-color color)
                      (om-make-dialog-item 'numbox (om-add-points pos (om-make-point 50 -1)) (om-make-point 40 18)
-                                          (format nil " ~D" (strig2numport (get-edit-param (om-view-container self) 'inport) nil))
+                                          (format nil " ~D" (get-edit-param (om-view-container self) 'inport))
                                           :di-action (om-dialog-item-act item
                                                                 (change-editor-inport (editor (om-view-container (om-view-container item))) (value item)))
                                           :font *om-default-font1*
-                                          :value (strig2numport (get-edit-param (om-view-container self) 'inport) nil)
+                                          :value (get-edit-param (om-view-container self) 'inport)
                                           :min-val 0
                                           :max-val 255))))
 
@@ -1489,11 +1489,11 @@
                      (om-make-dialog-item 'om-static-text pos (om-make-point 43 12) "InPort"
                                           :font *om-default-font1*)
                      (om-make-dialog-item 'numbox (om-add-points pos (om-make-point 50 -1)) (om-make-point 32 12)
-                                          (format nil "~D" (strig2numport (get-edit-param (om-view-container self) 'inport) nil))
+                                          (format nil "~D" (get-edit-param (om-view-container self) 'inport))
                                           :di-action (om-dialog-item-act item
                                                                 (change-editor-inport (editor (om-view-container (om-view-container item))) (value item)))
                                           :font *om-default-font1*
-                                          :value (strig2numport (get-edit-param (om-view-container self) 'inport) nil)
+                                          :value (get-edit-param (om-view-container self) 'inport)
                                           :min-val 0
                                           :max-val 255))))
 

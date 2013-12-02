@@ -27,10 +27,6 @@
 ; OpenMusic : ScoreObjects.lisp
 ;==========================================================================
 
-;;; from MIDI
-(defvar *outmidiport* 0      "default output number")
-(defvar *inmidiport* 0      "default input number")
-
 ;==========================================================================
 ;    Class definitions
 ;==========================================================================
@@ -55,7 +51,7 @@
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
    (chan :initform 1 :accessor chan :initarg :chan :type integer :documentation "MIDI channel (1-16)")
-   (port :initform *outmidiport* :accessor port)
+   (port :initform nil :accessor port)
    (tie :initform nil :accessor tie)
    (symb-info :initform nil :accessor symb-info))
   (:icon 137)

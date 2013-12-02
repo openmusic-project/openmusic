@@ -1,5 +1,6 @@
 (in-package :om)
 
+;;; THESE FUNCTIONS ARE CALLED BY THE PLAYER SELECTION INTERFACE FOR SPECIFIC _TYPES_ OF PLAYERS (E.G. :MIDI)
 
 (defmethod player-selection-settings-pane ((type (eql :midi)) paneports reference selected-player)
   (let ((midiport (get-edit-param reference 'outport))
@@ -25,14 +26,14 @@
                                                                                      (om-set-dialog-item-text midiporttext 
                                                                                                               (format nil " ~D" (value midiporttext))))
                                                                                   (2 (enable-numbox midiporttext nil)
-                                                                                     (set-value midiporttext *outmidiport*))))
+                                                                                     (set-value midiporttext *def-midi-out*))))
                                                                    :enable (equal :midi (player-type selected-player))
                                                                    :font *om-default-font1*))
                      
                      (setf midiporttext (om-make-dialog-item 'numbox (om-make-point 190 (+ y2 2)) (om-make-point 40 22) 
-                                                             (format nil " ~D" (if (equal :default midiport) *outmidiport* midiport)) 
+                                                             (format nil " ~D" (if (equal :default midiport) *def-midi-out* midiport)) 
                                                              :bg-color *om-white-color*
-                                                             :value (if (numberp midiport) midiport *outmidiport*)
+                                                             :value (if (numberp midiport) midiport *def-midi-out*)
                                                              :enable (and (equal :midi (player-type selected-player))
                                                                           (numberp midiport))
                                                              :font *om-default-font1*))
@@ -46,10 +47,7 @@
                                          (0 nil)
                                          (1 (value midiporttext))
                                          (2 :default)))))
-  
-
-
-
+ 
 
 #|
 
