@@ -27,7 +27,7 @@
 
 ;;===========================================================================
 ;DocFile
-;loads the MIDI API - use Midishare (Grame) 
+;loads the MIDI API - use Midishare (Grame)
 ;;===========================================================================
 
 (in-package :om-api)
