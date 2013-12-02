@@ -1,5 +1,94 @@
 (in-package :om)
 
+
+(defmethod player-selection-pane-setting ((type (eql :midi)) paneports reference selected-player)
+  (let ((midiport (get-edit-param reference 'outport))
+        midilabel midiportmenu midiporttext)
+    (om-add-subviews paneports
+                     (setf midilabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
+                                                          "MIDI port mode:"
+                                                          :enable (equal :midi (player-type selected-player)) 
+                                                          :font *om-default-font1b*))
+                     (setf midiportmenu (om-make-dialog-item 'om-pop-up-dialog-item 
+                                                             (om-make-point 20 (incf y2 30)) (om-make-point 150 20) 
+                                                             ""
+                                                             :range '("Use notes MIDI port" "Set global port" "Use default MIDI port")
+                                                             :value (cond ((null midiport) "Use notes MIDI port")
+                                                                          ((numberp midiport) "Set global port")
+                                                                          (t "Use default MIDI port"))
+                                                                   :di-action (om-dialog-item-act item
+                                                                                (case (om-get-selected-item-index item)
+                                                                                  (0 (enable-numbox midiporttext nil)
+                                                                                     (om-set-dialog-item-text midiporttext ""))
+                                                                                  (1 (enable-numbox midiporttext t)
+                                                                                     (om-set-dialog-item-text midiporttext 
+                                                                                                              (format nil " ~D" (value midiporttext))))
+                                                                                  (2 (enable-numbox midiporttext nil)
+                                                                                     (set-value midiporttext *outmidiport*))))
+                                                                   :enable (equal :midi (player-type selected-player))
+                                                                   :font *om-default-font1*))
+                     
+                     (setf midiporttext (om-make-dialog-item 'numbox (om-make-point 190 (+ y2 2)) (om-make-point 40 22) 
+                                                             (format nil " ~D" (if (equal :default midiport) *outmidiport* midiport)) 
+                                                             :bg-color *om-white-color*
+                                                             :value (if (numberp midiport) midiport *outmidiport*)
+                                                             :enable (and (equal :midi (player-type selected-player))
+                                                                          (numberp midiport))
+                                                             :font *om-default-font1*))
+                     )))
+
+
+
+;;; NOT USED
+(defmethod player-selection-pane-setting ((type (eql :udp)) paneports reference selected-player) NIL)
+
+#|
+(defmethod player-selection-pane-setting ((type (eql :udp)) paneports reference selected-player) 
+  (let (udplabel udpportmenu udpporttext udphosttext)
+    (let ((udpport (get-edit-param reference 'udp-outport)))
+      (incf y2 40)
+      (om-add-subviews paneports
+                       (setf udplabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
+                                                           "UDP port mode:"
+                                                           :enable (equal :udp (player-type selected-player)) 
+                                                           :font *om-default-font1b*))
+                       (setf udpportmenu (om-make-dialog-item 'om-pop-up-dialog-item 
+                                                              (om-make-point 20 (incf y2 30)) (om-make-point 150 20) 
+                                                              ""
+                                                              :range '("Set global port" "Use default UDP out port")
+                                                              :value (cond ((numberp udpport) "Set global port")
+                                                                           (t "Use default UDP out port"))
+                                                              :di-action (om-dialog-item-act item
+                                                                           (case (om-get-selected-item-index item)
+                                                                             (0 (enable-numbox udpporttext t)
+                                                                                (om-enable-dialog-item udphosttext t)
+                                                                                (om-set-dialog-item-text udpporttext 
+                                                                                                         (format nil " ~D" (value udpporttext))))
+                                                                             (1 (enable-numbox udpporttext nil)
+                                                                                (om-enable-dialog-item udphosttext nil)
+                                                                                (set-value udpporttext *microplayer-out-port*)
+                                                                                (om-set-dialog-item-text udphosttext *microplayer-host*)))
+                                                                           )
+                                                              :enable (equal :udp (player-type selected-player))
+                                                              :font *om-default-font1*))
+                       
+                       (setf udpporttext (om-make-dialog-item 'numbox (om-make-point 190 (+ y2 2)) (om-make-point 40 22) 
+                                                              (format nil " ~D" (if (equal :default udpport) *microplayer-out-port* udpport)) 
+                                                              :bg-color *om-white-color*
+                                                              :value (if (numberp udpport) udpport *microplayer-out-port*)
+                                                              :enable (and (equal :udp (player-type selected-player)) 
+                                                                           (numberp udpport))
+                                                              :font *om-default-font1*))
+                       (setf udphosttext (om-make-dialog-item 'om-editable-text (om-make-point 190 (incf y2 25)) (om-make-point 80 22) 
+                                                              *microplayer-host* 
+                                                              :bg-color *om-white-color*
+                                                              :enable (and (equal :udp (player-type selected-player)) 
+                                                                           (numberp udpport))
+                                                              :font *om-default-font1*))
+                       ))))
+|#
+
+
 ;;; FOR THE REFERENCE IF IT IS NOT AN EDITOR
 (defmethod update-controls-view ((self t)) nil)
 
@@ -20,16 +109,16 @@
                                  :font *om-default-font4*
                                  :bg-color (om-make-color 0.623 0.623 0.623)))
           
-          (midi? (find :midi players-in-dialog :key 'player-type))
-          (udp? NIL) ;;; (find :udp players-in-dialog :key 'player-type))
-          
+          ;(midi? (find :midi players-in-dialog :key 'player-type))
+          ;(udp? NIL) ;;; (find :udp players-in-dialog :key 'player-type))
+         (player-types (remove-duplicates players-in-dialog :key 'player-type))
+         
           (paneplayer (om-make-view 'om-view :bg-color *om-white-color*
                               :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 60)))))
           (paneports (om-make-view 'om-view :bg-color *om-white-color*
                               :position (om-make-point 350 40) :size (om-make-point 320 170)))
           (y 10) (y2 10)
-          (selected-player (get-edit-param reference 'player))
-          midilabel midiportmenu midiporttext udplabel udpportmenu udpporttext udphosttext)
+          (selected-player (get-edit-param reference 'player)))
 
       (om-add-subviews dialog
                        (om-make-dialog-item 'om-static-text (om-make-point 10 y) (om-make-point 300 20) 
@@ -37,84 +126,8 @@
                                               (string+ "No player available for " (name reference) "..."))
                                             :font *om-default-font1b*))
       
-      (when midi?
-        (let ((midiport (get-edit-param reference 'outport)))
-          (om-add-subviews paneports
-                           (setf midilabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
-                                                "MIDI port mode:"
-                                                :enable (equal :midi (player-type selected-player)) 
-                                                :font *om-default-font1b*))
-                           (setf midiportmenu (om-make-dialog-item 'om-pop-up-dialog-item 
-                                                                   (om-make-point 20 (incf y2 30)) (om-make-point 150 20) 
-                                                                   ""
-                                                                   :range '("Use notes MIDI port" "Set global port" "Use default MIDI port")
-                                                                   :value (cond ((null midiport) "Use notes MIDI port")
-                                                                                ((numberp midiport) "Set global port")
-                                                                                (t "Use default MIDI port"))
-                                                                   :di-action (om-dialog-item-act item
-                                                                                (case (om-get-selected-item-index item)
-                                                                                  (0 (enable-numbox midiporttext nil)
-                                                                                     (om-set-dialog-item-text midiporttext ""))
-                                                                                  (1 (enable-numbox midiporttext t)
-                                                                                     (om-set-dialog-item-text midiporttext 
-                                                                                                              (format nil " ~D" (value midiporttext))))
-                                                                                  (2 (enable-numbox midiporttext nil)
-                                                                                     (set-value midiporttext *outmidiport*))))
-                                                                   :enable (equal :midi (player-type selected-player))
-                                                                   :font *om-default-font1*))
-                       
-                           (setf midiporttext (om-make-dialog-item 'numbox (om-make-point 190 (+ y2 2)) (om-make-point 40 22) 
-                                                                   (format nil " ~D" (if (equal :default midiport) *outmidiport* midiport)) 
-                                                                   :bg-color *om-white-color*
-                                                                   :value (if (numberp midiport) midiport *outmidiport*)
-                                                                   :enable (and (equal :midi (player-type selected-player))
-                                                                                (numberp midiport))
-                                                                   :font *om-default-font1*))
-                           )))
+      (mapcar #'(lambda (p) (player-selection-pane-setting p paneports reference selected-player)) player-types)
       
-      (when udp?
-        (let ((udpport (get-edit-param reference 'udp-outport)))
-          (incf y2 40)
-          (om-add-subviews paneports
-                           (setf udplabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
-                                                "UDP port mode:"
-                                                :enable (equal :udp (player-type selected-player)) 
-                                                :font *om-default-font1b*))
-                           (setf udpportmenu (om-make-dialog-item 'om-pop-up-dialog-item 
-                                                                  (om-make-point 20 (incf y2 30)) (om-make-point 150 20) 
-                                                                  ""
-                                                                  :range '("Set global port" "Use default UDP out port")
-                                                                  :value (cond ((numberp udpport) "Set global port")
-                                                                               (t "Use default UDP out port"))
-                                                                  :di-action (om-dialog-item-act item
-                                                                               (case (om-get-selected-item-index item)
-                                                                                 (0 (enable-numbox udpporttext t)
-                                                                                    (om-enable-dialog-item udphosttext t)
-                                                                                    (om-set-dialog-item-text udpporttext 
-                                                                                                             (format nil " ~D" (value udpporttext))))
-                                                                                 (1 (enable-numbox udpporttext nil)
-                                                                                    (om-enable-dialog-item udphosttext nil)
-                                                                                    (set-value udpporttext *microplayer-out-port*)
-                                                                                    (om-set-dialog-item-text udphosttext *microplayer-host*)))
-                                                                               )
-                                                                  :enable (equal :udp (player-type selected-player))
-                                                                  :font *om-default-font1*))
-                       
-                           (setf udpporttext (om-make-dialog-item 'numbox (om-make-point 190 (+ y2 2)) (om-make-point 40 22) 
-                                                                   (format nil " ~D" (if (equal :default udpport) *microplayer-out-port* udpport)) 
-                                                                   :bg-color *om-white-color*
-                                                                   :value (if (numberp udpport) udpport *microplayer-out-port*)
-                                                                   :enable (and (equal :udp (player-type selected-player)) 
-                                                                                (numberp udpport))
-                                                                   :font *om-default-font1*))
-                           (setf udphosttext (om-make-dialog-item 'om-editable-text (om-make-point 190 (incf y2 25)) (om-make-point 80 22) 
-                                                                   *microplayer-host* 
-                                                                   :bg-color *om-white-color*
-                                                                   :enable (and (equal :udp (player-type selected-player)) 
-                                                                                (numberp udpport))
-                                                                   :font *om-default-font1*))
-                           )))
-
       (loop for pl in players-in-dialog do
             (om-add-subviews paneplayer
                              (om-make-dialog-item 'om-radio-button (om-make-point 10 y)
@@ -175,43 +188,5 @@
       (om-modal-dialog dialog)))
 
 
-
-#|
-(defmethod select-player-dialog ((self omboxeditcall) &optional (player nil) (midiout nil))
-  (select-player-for-value (value self) self player midiout))
-
-(defmethod select-player-dialog ((self editorview) &optional (player nil) (midiout nil))
-  (select-player-for-value (object self) self player midiout))
-
-(defmethod select-player-dialog ((self temporalbox) &optional (player nil) (midiout nil))
-  (select-player-for-value (car (value self)) self player midiout))
-
-(defmethod select-player-dialog ((self t) &optional (player nil) (midiout nil))
-  (om-beep))
-
-
-(defmethod select-player-for-value ((value t) box player params)
-  (let ((rep (select-player-dialog box player params)))
-    (player-special-action (car rep))
-    rep))
-
-(defmethod select-player-for-value ((value t) box player midiout)
-  (om-beep))
-
-(defmethod select-player-for-value ((value score-element) box player midiout)
-  (select-score-player box player midiout))
-
-(defmethod select-player-for-value ((value note) box player midiout)
-  (select-score-player box player midiout))
-
-(defmethod select-player-for-value ((value maquette-obj) box player midiout)
-  (select-score-player box player midiout))
-
-(defun select-score-player (self &optional (player nil) (midiout nil))
-  (let ((rep (select-score-player-dialog self player midiout)))
-    (when (equal :microplayer (car rep))
-      (launch-microplayer-app))
-    rep))
-|#
 
 
