@@ -1,9 +1,10 @@
 (in-package :om)
 
 
-(defmethod player-selection-pane-setting ((type (eql :midi)) paneports reference selected-player)
+(defmethod player-selection-settings-pane ((type (eql :midi)) paneports reference selected-player)
   (let ((midiport (get-edit-param reference 'outport))
         midilabel midiportmenu midiporttext)
+    (apply 'om-remove-subviews (cons paneports (om-subviews paneports)))
     (om-add-subviews paneports
                      (setf midilabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 
                                                           "MIDI port mode:"
@@ -38,13 +39,25 @@
                      )))
 
 
+(defmethod set-param-from-settings-pane ((type (eql :midi)) paneports reference) 
+  (let ((midiportmenu (nth 1 (om-subviews paneports)))
+        (midiporttext (nth 2 (om-subviews paneports))))
+    (set-edit-param reference 'outport (case (om-get-selected-item-index midiportmenu)
+                                         (0 nil)
+                                         (1 (value midiporttext))
+                                         (2 :default)))))
+  
 
-;;; NOT USED
-(defmethod player-selection-pane-setting ((type (eql :udp)) paneports reference selected-player) NIL)
+
+
 
 #|
-(defmethod player-selection-pane-setting ((type (eql :udp)) paneports reference selected-player) 
+
+;;; UDP = NOT USED
+
+(defmethod player-selection-settings-pane ((type (eql :udp)) paneports reference selected-player) 
   (let (udplabel udpportmenu udpporttext udphosttext)
+    (apply 'om-remove-subviews (cons paneports (om-subviews paneports)))
     (let ((udpport (get-edit-param reference 'udp-outport)))
       (incf y2 40)
       (om-add-subviews paneports
@@ -86,107 +99,15 @@
                                                                            (numberp udpport))
                                                               :font *om-default-font1*))
                        ))))
+
+
+(defmethod set-param-from-settings-pane ((type (eql :udp)) paneports reference) 
+  (let ((udpportmenu (nth 1 (om-subviews paneports)))
+        (udpporttext (nth 2 (om-subviews paneports))))
+    (set-edit-param reference 'udp-outport (case (om-get-selected-item-index udpportmenu)
+                                             (0 (value udpporttext))
+                                             (1 :default)))))
 |#
 
-
-;;; FOR THE REFERENCE IF IT IS NOT AN EDITOR
-(defmethod update-controls-view ((self t)) nil)
-
-;; called by 'reference' (e.g. Box or Editor) to change the player
-;; reference maty have stored options for the other players as well
-;; this functions manages all the edition-params settings in reference but not the possible extra actions to perform after these changes
-
-(defmethod reference-object ((self t)) (object self))
-
-(defun select-player (reference)
-  (let* ((players-in-dialog (enabled-players-for-object (reference-object reference)))
-         
-         (dialog (om-make-window 'om-dialog
-                                 :window-title (string+ "Player Settings for " (name reference))
-                                 :position :centered
-                                 :size (om-make-point 690 (+ 120 (* (length players-in-dialog) 60)))
-                                 :maximize nil :resizable nil
-                                 :font *om-default-font4*
-                                 :bg-color (om-make-color 0.623 0.623 0.623)))
-          
-          ;(midi? (find :midi players-in-dialog :key 'player-type))
-          ;(udp? NIL) ;;; (find :udp players-in-dialog :key 'player-type))
-         (player-types (remove-duplicates players-in-dialog :key 'player-type))
-         
-          (paneplayer (om-make-view 'om-view :bg-color *om-white-color*
-                              :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 60)))))
-          (paneports (om-make-view 'om-view :bg-color *om-white-color*
-                              :position (om-make-point 350 40) :size (om-make-point 320 170)))
-          (y 10) (y2 10)
-          (selected-player (get-edit-param reference 'player)))
-
-      (om-add-subviews dialog
-                       (om-make-dialog-item 'om-static-text (om-make-point 10 y) (om-make-point 300 20) 
-                                            (if players-in-dialog (string+ "Select a player mode for " (name reference) " :")
-                                              (string+ "No player available for " (name reference) "..."))
-                                            :font *om-default-font1b*))
-      
-      (mapcar #'(lambda (p) (player-selection-pane-setting p paneports reference selected-player)) player-types)
-      
-      (loop for pl in players-in-dialog do
-            (om-add-subviews paneplayer
-                             (om-make-dialog-item 'om-radio-button (om-make-point 10 y)
-                                                  (om-make-point 300 20) (player-name pl)
-                                                  :checked-p (equal pl selected-player)
-                                                  :di-action (let ((p pl))
-                                                               (om-dialog-item-act item
-                                                                 (declare (ignore item))
-                                                                 (setf selected-player p)
-                                                                 (let ((midiplay (equal :midi (player-type p))))
-                                                                   (when midi?
-                                                                     (om-enable-dialog-item midilabel midiplay)
-                                                                     (om-enable-dialog-item midiportmenu midiplay)
-                                                                     (enable-numbox midiporttext midiplay))
-                                                                   (when udp?
-                                                                     (om-enable-dialog-item udplabel (not midiplay))
-                                                                     (om-enable-dialog-item udpportmenu (not midiplay))
-                                                                     (enable-numbox udpporttext (not midiplay))
-                                                                     (om-enable-dialog-item udphosttext (not midiplay))
-                                                                     ))))
-                                                  :font *om-default-font2*)
-                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 160 20) 
-                                                  (string+ "type: " (if (player-type pl) (symbol-name (player-type pl)) "undefined"))
-                                                  :font *om-default-font1*)
-                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 35)) (om-make-point 300 20) 
-                                                  (player-desc pl)
-                                                  :font *om-default-font1*)
-                             )
-            (incf y 60))
-                             
-      (incf y 60)
-
-      (om-add-subviews dialog
-                       paneplayer paneports
-                       (om-make-dialog-item 'om-button (om-make-point 170 y) (om-make-point 80 24) "Cancel" 
-                                            :di-action (om-dialog-item-act item
-                                                         (declare (ignore item))
-                                                         (om-return-from-modal-dialog dialog nil)))
-                       (om-make-dialog-item 'om-button (om-make-point 260 y) (om-make-point 80 24) "OK" 
-                                            :di-action (om-dialog-item-act item
-                                                         (declare (ignore item))
-                                                         (set-edit-param reference 'player selected-player)
-                                                         (when midi?
-                                                           (set-edit-param reference 'outport (case (om-get-selected-item-index midiportmenu)
-                                                                                                (0 nil)
-                                                                                                (1 (value midiporttext))
-                                                                                                (2 :default)))
-                                                           )
-                                                         (when udp?
-                                                           (set-edit-param reference 'udp-outport (case (om-get-selected-item-index udpportmenu)
-                                                                                                    (0 (value udpporttext))
-                                                                                                    (1 :default)))
-                                                           )
-                                                           
-                                                         (om-return-from-modal-dialog dialog selected-player)
-                                                         )
-                                            :default-button t))
-      (om-modal-dialog dialog)))
-
-
-
+                                                  
 

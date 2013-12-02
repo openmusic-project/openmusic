@@ -92,8 +92,8 @@
 
 
 ;==================================================
-;Prepare to play allows to recursively build low-level structures for the players
-;Can be specialized for objects
+;PrepareTo Play allows to recursively build low-level structures for the players
+;Can be (shall be) specialized for objects and players
 ;==================================================
 
 (defmethod PrepareToPlay ((player t) (self t) at &key  approx port interval voice)
