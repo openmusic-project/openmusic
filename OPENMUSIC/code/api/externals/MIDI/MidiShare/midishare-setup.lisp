@@ -3,21 +3,21 @@
 (in-package :om-midi)
 
 ;;;==============================
-;;; MIDISHARE SETUP TOOL
+;;; MIDISHARE SETUP TOOLS
 ;;;==============================
 
-(defmethod midi-setup ((system (eql :midishare)) settings)
-  #+(or powerpc win32) (launch-midishare-setup-app)
-  #-(or powerpc win32) (om-midishare-setup settings))
 
-(defmethod midi-connect ((system (eql :midishare)) settings)
+(defmethod midishare-setup (settings)
+  (declare (ignore settings))
+  #+(or powerpc win32) (launch-midishare-setup-app)
+  #-(or powerpc win32) (make-midishare-setup-dialog))
+
+(defmethod midishare-connect-ports ((system (eql :midishare)) settings)
   (sleep 0.5)
   (oa::om-without-interrupts (restore-midishare-connections settings)))
 
-
-
 ;;;==================================================
-;;; Collects existing connections
+;;; COLLECTS DETECTED CONNECTIONS
 (defun get-midishare-connections ()
   (let ((connections nil)
         (portinfo nil))
@@ -51,7 +51,6 @@
                   (when slt (midishare-connect-slot (car slt) (car port-connect)))))
 
           )))
-
 
 ;;;==========================================================================================
 ;;; WINDOWS AND OSX PPC
@@ -159,106 +158,75 @@
   (update-slots-connection self))
 
 
-;(om-midishare-setup)
+;(make-midishare-setup-dialog)
 
-; (defvar *ms-setup-win* nil)
-
-(defun om-midishare-setup ()
-  ;(if *ms-setup-win* (oa::om-select-window *ms-setup-win*)
-    (let ((dd (oa::om-make-window 'ms-dialog 
-                              :window-title "MidiShare Setup"
-                              :bg-color oa::*om-light-gray-color*
-                              :size (oa::om-make-point 580 310)
-                              :resizable nil
-                              ;;;:prefmodule prefmodule
-                              ))
-          (b-posy 310)
-          (deltagrid 12)
-          ports inslots outslots)
+(defun make-midishare-setup-dialog ()
+  (let ((dd (oa::om-make-window 'ms-dialog 
+                                :window-title "MidiShare Setup"
+                                :bg-color oa::*om-light-gray-color*
+                                :size (oa::om-make-point 580 310)
+                                :resizable nil
+                                ;;;:prefmodule prefmodule
+                                ))
+        (b-posy 310)
+        (deltagrid 12)
+        ports inslots outslots)
       
     (setf inslots  (remove nil (loop for ref in (midishare-get-drivers) append (nth 1 (midishare-driver-info ref)))))
     (setf outslots (remove nil (loop for ref in (midishare-get-drivers) append (nth 2 (midishare-driver-info ref)))))
     
     (oa::om-with-delayed-update dd
-        (apply 'oa::om-add-subviews (cons dd 
-                                          (loop for i = 0 then (+ i 1) while (< i 256) collect
-                                                (oa::om-make-view 'mini-portview 
-                                                          :size (oa::om-make-point 10 10)
-                                                          :bg-color oa::*om-white-color*
-                                                          :position (oa::om-make-point (+ 195 (* deltagrid (mod i 16))) (+ 40 (* deltagrid (floor i 16))))
-                                                          :i i))))
-        )
+      (apply 'oa::om-add-subviews (cons dd 
+                                        (loop for i = 0 then (+ i 1) while (< i 256) collect
+                                              (oa::om-make-view 'mini-portview 
+                                                                :size (oa::om-make-point 10 10)
+                                                                :bg-color oa::*om-white-color*
+                                                                :position (oa::om-make-point (+ 195 (* deltagrid (mod i 16))) (+ 40 (* deltagrid (floor i 16))))
+                                                                :i i))))
+      )
     
     (oa::om-add-subviews dd 
                      
-                     (setf (inslotslistitem dd) (oa::om-make-dialog-item 'oa::om-multi-item-list (oa::om-make-point 20 40) (oa::om-make-point 160 190) ""
-                                                                     :range (mapcar 'cadr inslots)
-                                                                     :di-action (oa::om-dialog-item-act item
-                                                                                  (when (selectedport dd)
-                                                                                    (mapcar 
-                                                                                     #'(lambda (slot) (if (member (cadr slot) (oa::om-get-selected-item item))
-                                                                                                          (midishare-connect-slot (car slot) (selectedport dd))
-                                                                                                        (midishare-unconnect-slot (car slot) (selectedport dd))))
-                                                                                     inslots)
-                                                                                    (update-slots-connection dd)))))
+                         (setf (inslotslistitem dd) (oa::om-make-dialog-item 'oa::om-multi-item-list (oa::om-make-point 20 40) (oa::om-make-point 160 190) ""
+                                                                             :range (mapcar 'cadr inslots)
+                                                                             :di-action (oa::om-dialog-item-act item
+                                                                                          (when (selectedport dd)
+                                                                                            (mapcar 
+                                                                                             #'(lambda (slot) (if (member (cadr slot) (oa::om-get-selected-item item))
+                                                                                                                  (midishare-connect-slot (car slot) (selectedport dd))
+                                                                                                                (midishare-unconnect-slot (car slot) (selectedport dd))))
+                                                                                             inslots)
+                                                                                            (update-slots-connection dd)))))
                      
-                     (setf (outslotslistitem dd) (oa::om-make-dialog-item 'oa::om-multi-item-list (oa::om-make-point 400 40) (oa::om-make-point 160 190) ""
-                                                                     :range (mapcar 'cadr outslots)
-                                                                     :di-action (oa::om-dialog-item-act item
-                                                                                  (when (selectedport dd)
-                                                                                  (mapcar 
-                                                                                   #'(lambda (slot) (if (member (cadr slot) (oa::om-get-selected-item item))
-                                                                                                       (midishare-connect-slot (car slot) (selectedport dd))
-                                                                                                     (midishare-unconnect-slot (car slot) (selectedport dd))))
-                                                                                   outslots)
-                                                                                  (update-slots-connection dd)))))
+                         (setf (outslotslistitem dd) (oa::om-make-dialog-item 'oa::om-multi-item-list (oa::om-make-point 400 40) (oa::om-make-point 160 190) ""
+                                                                              :range (mapcar 'cadr outslots)
+                                                                              :di-action (oa::om-dialog-item-act item
+                                                                                           (when (selectedport dd)
+                                                                                             (mapcar 
+                                                                                              #'(lambda (slot) (if (member (cadr slot) (oa::om-get-selected-item item))
+                                                                                                                   (midishare-connect-slot (car slot) (selectedport dd))
+                                                                                                                 (midishare-unconnect-slot (car slot) (selectedport dd))))
+                                                                                              outslots)
+                                                                                             (update-slots-connection dd)))))
 
-                     (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 240 10) (oa::om-make-point 100 20) "MIDI Ports"
-                                          :font oa::*om-default-font2b*)
+                         (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 240 10) (oa::om-make-point 100 20) "MIDI Ports"
+                                                  :font oa::*om-default-font2b*)
 
-                     (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 20 10) (oa::om-make-point 100 20) "Input Devices"
-                                          :font oa::*om-default-font2b*)
+                         (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 20 10) (oa::om-make-point 100 20) "Input Devices"
+                                                  :font oa::*om-default-font2b*)
 
-                     (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 400 10) (oa::om-make-point 120 20) "Output Devices"
-                                          :font oa::*om-default-font2b*)
+                         (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 400 10) (oa::om-make-point 120 20) "Output Devices"
+                                                  :font oa::*om-default-font2b*)
 
-                     (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 240) (oa::om-make-point 80 20) "Cancel"
-                                              :di-action #'(lambda (item) (oa::om-return-from-modal-dialog dd nil)))
+                         (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 240) (oa::om-make-point 80 20) "Cancel"
+                                                  :di-action #'(lambda (item) (oa::om-return-from-modal-dialog dd nil)))
                      
-                     (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 265) (oa::om-make-point 80 20) "OK"
-                                              :di-action #'(lambda (item) (oa::om-return-from-modal-dialog dd (get-midishare-connections))))
-                     )
+                         (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 265) (oa::om-make-point 80 20) "OK"
+                                                  :di-action #'(lambda (item) (oa::om-return-from-modal-dialog dd (get-midishare-connections))))
+                         )
     
     (oa::om-modal-dialog dd)
-    ;(setf *ms-setup-win* dd)
     ))
-
-;(om-midishare-setup)
-
-;;==================================================
-;;; SET THE PREF MODULE VALUES AT CLOSING THE WINDOW
-
-#|
-;;; now redefined with a modal dialog
-(defmethod om-window-close-event ((self ms-dialog))
-  (when (and (prefmodule self) 
-             (om-y-or-n-dialog  
-              (format nil "Save MIDI setup in OM preferences ?") 
-              :default-button :yes))
-    ; SAVE MIDI IN PREFS
-    (let ((connections nil)
-          (portinfo nil))
-      (loop for p from 0 to 255 do
-            (setf portinfo (oa::midi-get-connections p))
-            (when (or (car portinfo) (cadr portinfo))
-              (push (list p (mapcar 'cadr (car portinfo)) (mapcar 'cadr (cadr portinfo))) connections)))
-      (set-pref (prefmodule self) :ms-drivers (reverse connections))
-      ))
-  (setf *ms-setup-win* nil)
-  (call-next-method))
-|#
-
-
 
 
 

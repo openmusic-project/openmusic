@@ -77,10 +77,10 @@
   (omG-make-preference-dialog))
 
 
-;;; redefined in the audio projectif loaded
+;;; redefined in the midi project if loaded
 (defun show-midi-mixer-win () nil)
 
-;;; redefined in the audio projectif loaded
+;;; redefined in the audio project if loaded
 (defun show-audio-mixer-win () nil)
 
 (defun show-listener-win () 

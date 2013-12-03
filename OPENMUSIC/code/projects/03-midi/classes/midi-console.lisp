@@ -223,7 +223,7 @@ In this case, all internal events are sent simultaneously.
   (let ((event (make-midi-evt :type 'ProgChange 
                               :chan (midichannel self)
                               :port (midiport self)
-                              :fields (program self))))
+                              :fields (list (program self)))))
     
     (midi-send-evt event)
     t))
@@ -231,7 +231,7 @@ In this case, all internal events are sent simultaneously.
     
 (defmethod channel-send-vol ((self channel-ctrl))
   (let ((event (make-midi-evt :type 'CtrlChange
-                                 :chan (- (midichannel self) 1) 
+                                 :chan (midichannel self) 
                                  :port (midiport self)
                                  :fields (list 7  (vol-ctrl self)))))
     (midi-send-evt event)
@@ -239,29 +239,29 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod channel-send-pan ((self channel-ctrl))
   (let ((event  (make-midi-evt :type 'CtrlChange
-                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :chan (midichannel self) :port (midiport self)
                                  :fields (list 10 (pan-ctrl self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct1 ((self channel-ctrl))
   (let ((event  (make-midi-evt :type 'CtrlChange
-                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :chan (midichannel self) :port (midiport self)
                                  :fields (list (control1-num self) (control1-val self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct2 ((self channel-ctrl))
   (let ((event  (make-midi-evt :type 'CtrlChange
-                                 :chan (- (midichannel self) 1) :port (midiport self)
+                                 :chan (midichannel self) :port (midiport self)
                                  :fields (list (control2-num self) (control2-val self)))))    
     (midi-send-evt event)
     t))
 
 (defmethod channel-send-pitch ((self channel-ctrl))
-  (let ((event (om-midi-new-evt  (om-midi-get-num-from-type "PitchBend") 
-                                 :chan (- (midichannel self) 1) :port (midiport self)
-                                 :fields (list 0  (pitch-ctrl self)))))
+  (let ((event (make-midi-evt :type 'PitchBend
+                              :chan (midichannel self) :port (midiport self)
+                              :fields (list 0  (pitch-ctrl self)))))
     (midi-send-evt event)
     t))
 

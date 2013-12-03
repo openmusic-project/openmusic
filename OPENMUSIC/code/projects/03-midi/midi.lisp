@@ -55,16 +55,14 @@
         "tools;midi-preferences"
 
         ;;; RENDERING
-        
-;        "player;midi-init"
-;        "player;midiplayer"
-     
-;        #-linux "players;ms-players"  
-;	;; #+cl-fluidsynth "player;fluid-player"
-;	#+(and linux cl-jack) "player;jack-midi-player"
+      
+        "players;midi-mixer"
+
+        #+midishare "players;midishare-player"  
+;	#+cl-fluidsynth "player;fluid-player"
+;	#+(and linux cl-jack) "players;jack-midi-player"
 
         ;;; MISC (OSC)
-       ; osc and microplayer
         "osc;send"
         "osc;receive"
         "osc;osc-events"

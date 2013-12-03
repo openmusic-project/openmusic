@@ -17,16 +17,6 @@
 ;(setf *default-midi-system* :midishare)
 
 ;;;==============================================
-;;; to be defined for the different midi systems:
-;;;==============================================
-;;; launches a setup process (GUI etc.)
-(defmethod om-midi::midi-setup (system settings) (om-beep))
-;;; connects ports
-(defmethod om-midi::midi-connect (system connections) nil)
-;;; restart system
-(defmethod om-midi::midi-restart (system) (om-beep))
-
-;;;==============================================
 
 (defmethod put-preferences ((iconID (eql :midi)))
   (let ((modulepref (find-pref-module iconID)))
@@ -34,8 +24,10 @@
     (setf *def-midi-out* (get-pref modulepref :midi-in))
     (setf *default-midi-system* (get-pref modulepref :midi-system))
     (setf *def-midi-format* (get-pref modulepref :midi-format))
-    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
-    (om-midi::midi-connect *default-midi-system* (get-pref modulepref :midi-setup))
+    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
+    (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+      (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+      )
     ))
 
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
@@ -66,8 +58,10 @@
                                            :font *om-default-font2b*)
 
                       (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 i) (om-make-point 140 24) ""
-                                           :range om-midi::*midi-systems*
-                                           :value (get-pref modulepref :midi-system)
+                                           :range (if *default-midi-system* ; (get-pref modulepref :midi-system)
+                                                      om-midi::*midi-systems*
+                                                    (cons "..." om-midi::*midi-systems*))
+                                           :value (or (and *default-midi-system* (get-pref modulepref :midi-system)) "---")
                                            :di-action (om-dialog-item-act item
                                                         (set-pref modulepref :midi-system (om-get-selected-item item)))
                                            )
@@ -157,22 +151,27 @@
      (om-add-subviews thescroll
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (setf i 50)) (om-make-point 200 30) "System-specific:"
                                            :font *om-default-font2b*)
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 300 30) 
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 250 30) 
                                            (string+ "These actions will be applied on the current MIDI system: " (string-upcase *default-midi-system*))
                                            :font *om-default-font1*)
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 55)) (om-make-point 160 24) "System/ports setup:" :font *controls-font*)
 
-                      (om-make-view 'button-icon
+                      (if (and *default-midi-system* (om-midi::midi-setup-function *default-midi-system*))
+                          (om-make-view 'button-icon
                                     :position (om-make-point 560 (- i 4)) 
                                     :size (om-make-point 32 32)
                                     :action #'(lambda (item) (declare (ignore item))
-                                                (let ((setup-values (om-midi::midi-setup *default-midi-system* (get-pref modulepref :midi-setup))))
-                                                                                                       ;;; (find-pref-module :midi (local-prefs (om-view-window item))))))
+                                                (let ((setup-values (funcall (om-midi::midi-setup-function *default-midi-system*) (get-pref modulepref :midi-setup))))
                                                   (when setup-values 
-                                                    (set-pref modulepref :midi-setup setup-values))
-                                                    ;(midi-connect *default-midi-system* pref-values)
+                                                    (set-pref modulepref :midi-setup setup-values)
+                                                    (when (om-midi::midi-connect-function *default-midi-system*)
+                                                      (funcall (om-midi::midi-connect-function *default-midi-system*) pref-values)
+                                                      ))
                                                   ))
                                     :iconid 135)
+                        (om-make-dialog-item 'om-static-text (om-make-point 560 i) (om-make-point 100 40) 
+                                           "SETUP UNAVAILABLE"
+                                           :font *om-default-font1* :fg-color *om-gray-color*))
                       
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 55)) (om-make-point 120 40) "In case of emergency:" :font *controls-fonti*)
                       
@@ -180,9 +179,10 @@
                                            (om-make-point 560  i) 
                                            (om-make-point 180 20)
                                            (string+ "Restart " (if *default-midi-system* (string-upcase *default-midi-system*) ""))
-                                           :enabled *default-midi-system*
+                                           :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
                                            :di-action #'(lambda (item) (declare (ignore item))
-                                                          (om-midi::midi-restart *default-midi-system*)))
+                                                          (when (om-midi::midi-restart-function *default-midi-system*)
+                                                            (funcall (om-midi::midi-restart-function *default-midi-system*)))))
                       
                       )
     thescroll))

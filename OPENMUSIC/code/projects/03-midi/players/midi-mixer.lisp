@@ -133,7 +133,7 @@
                                     (om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""
-                                    :di-action (om-dialog-item-act item
+                                    :di-action #'(lambda (item)
                                                  (let ((presetnum (om-get-selected-item-index item))) ;;; 0 is reserved for the current values
                                                    (setf (current-preset (object self)) presetnum)
                                                    (when (> (current-preset (object self)) 0)
@@ -153,7 +153,7 @@
                                                               (setf (cadr (nth (current-preset (object self)) (presets (object self)))) (get-current-values self))
                                                               (print (string+ "Preset " (car (nth (current-preset (object self)) (presets (object self)))) " saved !"))
                                                               (save-midi-presets-in-preferences (object self)))
-                                                          (om-message-dialog "ERROR : You have to select or create a preset to save it."))
+                                                          (om-message-dialog "Can't save: please select or create a preset !"))
                                                         )
                                            :font *om-default-font1*))
          

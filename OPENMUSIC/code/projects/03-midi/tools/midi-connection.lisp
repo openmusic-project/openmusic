@@ -17,17 +17,15 @@
       (let ((substitute (find-if function om-midi::*midi-systems*)))
         ;;; just for warning messages
         (cond ((null *default-midi-system*) 
-               (om-beep-msg "No default MIDI system defined"))
+               (print "No default MIDI system defined"))
               ((null (funcall function *default-midi-system*))
-               (om-beep-msg (string+ "MIDI system " (string *default-midi-system*) " has no " (string function)))))
+               (print (string+ "MIDI system " (string *default-midi-system*) " has no " (string function)))))
         (if substitute 
-            (and (print (string+ "MIDI system " (string substitute) "will be used instead"))
+            (and (print (string+ "MIDI system " (string substitute) " will be used instead"))
                  substitute)
-          NIL))
+          (om-beep)))
     *default-midi-system*)
   )
-    
-
     
 ;;; LOADS THE MIDIFILE USING THE DEFAULT MIDI SYSTEM
 ;;; Expected return values are 
