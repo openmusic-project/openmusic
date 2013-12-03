@@ -150,6 +150,7 @@ In this case, all internal events are sent simultaneously.
     
     (get-midievents evt-list test)))
 
+
 (defmethod! get-midievents ((self channel-ctrl) &optional test)
    (list
     (make-instance 'MidiEvent
@@ -281,15 +282,19 @@ In this case, all internal events are sent simultaneously.
 ; EDITOR
 ;;================================================================
 
-(defvar  *midirealtime* "si les modifs sont envoyees au player en temps reel")
-(setf *midirealtime* nil)
+(defclass ConsoleEditor (EditorView) 
+  ((ch-panels :initform nil :accessor ch-panels :type list)
+   (presets-view :initform nil :initarg :presets-view :accessor presets-view)
+   (delta-tracks :initform 0 :accessor delta-tracks :initarg :delta-tracks)
+   (send-rt :initform nil :accessor send-rt :initarg :send-rt)))
+
 
 (defmethod class-has-editor-p  ((self settings-ctrl)) t )
 (defmethod get-editor-class ((self settings-ctrl)) 'ConsoleEditor)
 
 ;=== The Editor will be a scrollable editor with fixed size 
 ;(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (+ 6 (min (* *channel-w* 6) (* *channel-w* (nbtracks self)))) 560))
-(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (min (* *channel-w* 10) (* *channel-w* (nbtracks self))) 560))
+(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (min (* *channel-w* 16) (* *channel-w* (nbtracks self))) 560))
 
 (defmethod get-default-score-params ((self settings-ctrl))
   (pairlis '(winsize winpos) 
@@ -304,22 +309,21 @@ In this case, all internal events are sent simultaneously.
     win))
 
 
-(defclass ConsoleEditor (EditorView) 
-  ((ch-panels :initform nil :accessor ch-panels :type list)))
+
 
 (defmethod get-panel-class ((Self ConsoleEditor)) 'controllerPanel)
 
 (defmethod update-subviews ((Self ConsoleEditor))
-   (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
-   ;;;(om-update-scroll-bar-limits (panel self )) ;;; mettre dans om-set-field-size pour mac
-   ;(om-invalidate-view self t)
-   )
+   (om-set-view-size (panel self) (om-make-point (w self) (h self))))
 
 
 ;=== MAIN PANEL ===
 (defclass controllerPanel (om-scroller) ()
   ;;;(:default-initargs :scrollbars :h :retain-scrollbars t)
    )
+
+(defmethod editor ((self controllerPanel)) 
+  (om-view-container self))
 
 (defmethod get-object ((Self controllerPanel))
    (object (om-view-container self)))
@@ -329,8 +333,8 @@ In this case, all internal events are sent simultaneously.
                                    
 
 ;======== CHaNNeL ConTrOllEr PAneL =====
-
-(omg-defclass channelPanel () 
+;;; superclass for channelpanelview and simplechanelpanel
+(defclass channelPanel () 
   ((channelctr :initform nil :initarg :channelctr :accessor channelctr)
    (channelText :initform nil :accessor channelText :type t)
    (channelBox :initform nil :accessor channelBox :type t)
@@ -354,6 +358,9 @@ In this case, all internal events are sent simultaneously.
 ))
 
 (defclass channelpanelview (channelpanel om-view) ())
+
+(defmethod editor ((self channelpanel)) 
+  (editor (om-view-container self))) 
 
 (defmethod update-subviews ((Self channelpanel))
    (om-set-view-size (panel self ) (om-make-point (w self) (h self)))
@@ -380,12 +387,16 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod metaobj-scrollbars-params ((self ConsoleEditor))  '(:h t))
 
+(defmethod make-preset-view ((self ConsoleEditor)) nil)
+
+
 (defmethod initialize-instance :after ((self ConsoleEditor) &rest l)
    (declare (ignore l))
    
    (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
+                                                     :bg-color (om-make-color 0.7 0.5 0.5)
                                                      :scrollbars (first (metaobj-scrollbars-params self))
                                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
                                                      :field-size  (om-make-point (* *channel-w* (nbtracks (object self))) 540)
@@ -393,17 +404,26 @@ In this case, all internal events are sent simultaneously.
                                                      :size (om-make-point (w self) (h self)))
       )
    
+   (setf (presets-view self) (make-preset-view self))
+   
+   
    (setf (ch-panels self) 
       (loop for chctrl in (channels-ctrl (object self))
              for i = 0 then (+ i 1) collect
                 (om-make-view (get-channelpanel-class (panel self))
                  :channelctr chctrl
                  :bg-color *om-light-gray-color*
-                 ; :owner (panel self)
-                 :position (om-make-point (* i *channel-w*) 0) 
-                 :size (om-make-point *channel-w* (h self)))))
+                 :position (om-make-point (+ (delta-tracks self) (* i *channel-w*)) (delta-tracks self)) 
+                 :size (om-make-point (- *channel-w* (* 2 (delta-tracks self))) 
+                                      (- (h self) 
+                                         (if (presets-view self) (+ (h (presets-view self)) (delta-tracks self)) 0)
+                                         (* 2 (delta-tracks self)))))))
+   
+   (apply 'om-add-subviews (cons (panel self) 
+                                 (ch-panels self)))
+   (when (presets-view self) (om-add-subviews self (presets-view self)))
 
-   (apply 'om-add-subviews (cons (panel self) (ch-panels self)))
+
 )
 
 
@@ -437,32 +457,36 @@ In this case, all internal events are sent simultaneously.
   (declare (ignore l))
   (do-initialize-channel self))
 
+(defmethod make-channel-title-items ((self channelpanel))
+  (setf (channelText self) (om-make-dialog-item 'om-static-text
+                                                        (om-make-point 8 5) 
+                                                        (om-make-point 76 20) "CHANNEL" 
+                                                        :font *om-default-font2b*))
+
+  (setf (channelBox self) (om-make-dialog-item 'numBox (om-make-point 26 25) (om-make-point 28 18) 
+                                                       (format nil " ~D" (midichannel (channelctr self)))
+                                                       :min-val 1
+                                                       :max-val 16
+                                                       :value (midichannel (channelctr self))
+                                                       :afterfun #'(lambda (item)
+                                                                     (change-channel self (value item)))
+                                                       :font *om-default-font2b*
+                                                       ))
+    
+  (om-set-bg-color (channelBox self) *om-white-color*)
+  (list  (channelText self) (channelBox self))
+  )
+
+
 (defmethod do-initialize-channel ((self channelPanel))  
   (let* ((progList *midi-programs*)
          (ctrlList *midi-controllers*) bar1 bar2 bar3 bar4
          (pos 0)
          (bgcolor *om-light-gray-color*)
-         ctrlchgText)
+         ctrlchgText
+         (title-items (make-channel-title-items self)))
     
-    (setf pos (+ pos 5))
-    (setf (channelText self) (om-make-dialog-item 'om-static-text
-                                                  (om-make-point 8 pos) 
-                                                  (om-make-point 76 20) "CHANNEL" 
-                                                  :font *om-default-font2b*))
-    (setf pos (+ pos 20))
-    (setf (channelBox self) (om-make-dialog-item 'numBox (om-make-point 26 pos) (om-make-point 28 18) 
-                                                 (format nil " ~D" (midichannel (channelctr self)))
-                                                 :min-val 1
-                                                 :max-val 16
-                                                 :value (midichannel (channelctr self))
-                                                 :afterfun #'(lambda (item)
-                                                               (change-channel self (value item)))
-                                                 :font *om-default-font2b*
-                                                 ))
-    
-    (om-set-bg-color (channelBox self) *om-white-color*)
-    
-    (setf pos (+ pos 30))
+    (setf pos (+ pos 55))
     (setf (programMenu self) 
           (om-make-dialog-item 'om-pop-up-dialog-item 
                                (om-make-point 2 pos) 
@@ -689,11 +713,14 @@ In this case, all internal events are sent simultaneously.
       
       )
     
-    (om-add-subviews self (channelText self) (channelBox self) 
+    (apply 'om-add-subviews self title-items)
+    
+    (om-add-subviews self  
                      (programMenu self) 
                      bar1 
                      (volumeSlider self) 
-                     (volumeText self) (volumeVal self)
+                     (volumeText self) 
+                     (volumeVal self)
                      (panSlider self) 
                      (panText self) 
                      (panVal self)
@@ -716,6 +743,35 @@ In this case, all internal events are sent simultaneously.
     ))
 
 
+(defmethod set-channel-values ((self channelPanel)
+                               &key program vol pan pitch ctr1 ctr1val ctr2 ctr2val)
+  (when program
+    (om-set-selected-item-index (programMenu self) program))
+  (when vol
+     (om-set-slider-value (volumeSlider self) vol)
+     (om-set-dialog-item-text (volumeVal self) (number-to-string vol)))
+  (when pan
+     (set-value (panSlider self) pan)
+     (om-set-dialog-item-text (panVal self) (number-to-string pan)))
+  (when pitch
+    (om-set-slider-value (pitchSlider self) pitch)
+    (om-set-dialog-item-text (pitchVal self) (number-to-string pitch)))
+  (when ctr1
+    (om-set-selected-item-index (ctrl1Menu self) ctr1))
+  (when ctr1val
+    (om-set-slider-value (ctrl1Slider self) ctr1val)
+    (om-set-dialog-item-text (ctrl1Val self) (number-to-string ctr1val))
+    )
+  (when ctr2
+    (om-set-selected-item-index (ctrl2Menu self) ctr2))
+  (when ctr2val
+    (om-set-slider-value (ctrl2Slider self) ctr2val)
+    (om-set-dialog-item-text (ctrl2Val self) (number-to-string ctr2val))
+    )
+  )
+
+
+
 
 ;==============================
 ;=== ACTIONS ON CHANNEL PANELS:
@@ -727,12 +783,14 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-program ((self channelPanel) value)
   (setf (program (channelctr self)) value)
-  (when *midirealtime* (channel-send-prog (channelctr self)))
+  (when (send-rt (editor self))
+    (channel-send-prog (channelctr self)))
   (report-modifications self))
 
 (defmethod change-volume ((self channelPanel) value)
   (setf (vol-ctrl (channelctr self)) value)
-  (when *midirealtime* (channel-send-vol (channelctr self)))
+  (when (send-rt (editor self)) 
+    (channel-send-vol (channelctr self)))
   (let ((new-str (integer-to-string value))
         (target (volumeVal self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -750,7 +808,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self channelPanel) value)
   (setf (pan-ctrl (channelctr self)) value)
-  (when *midirealtime* (channel-send-pan (channelctr self)))
+  (when (send-rt (editor self)) 
+    (channel-send-pan (channelctr self)))
   (let* ((target (panVal self))
          (new-str (pan2str value)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -760,7 +819,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-ctrl1-val ((self channelPanel) value)
   (setf (control1-val (channelctr self)) value)
-  (when *midirealtime* (channel-send-ct1 (channelctr self)))
+  (when (send-rt (editor self)) 
+    (channel-send-ct1 (channelctr self)))
   (let ((new-str (integer-to-string value))
         (target (ctrl1Val self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -774,7 +834,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-ctrl2-val ((self channelPanel) value)
   (setf (control2-val (channelctr self)) value)
-  (when *midirealtime* (channel-send-ct2 (channelctr self)))
+  (when (send-rt (editor self)) 
+    (channel-send-ct2 (channelctr self)))
   (let ((new-str (integer-to-string value))
         (target (ctrl2Val self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -788,7 +849,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pitchbend ((self channelPanel) value)
   (setf (pitch-ctrl (channelctr self)) value)
-  (when *midirealtime* (channel-send-pitch (channelctr self)))
+  (when (send-rt (editor self)) 
+    (channel-send-pitch (channelctr self)))
   (let ((new-str (integer-to-string (- value 64)))
         (target (pitchVal self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -812,7 +874,7 @@ In this case, all internal events are sent simultaneously.
   
  
 ;;;;;====================
-;;; SIMPLE MIDI MIXER ;; NOT USED ANYWHERE... ?
+;;; SIMPLE MIDI MIXER
 ;;;;;====================
 
 (defclass* simple-midi-mix-console (midi-mix-console) ()
@@ -870,9 +932,9 @@ In this case, all internal events are sent simultaneously.
                                                       )))
     win))
 
-(omg-defclass simpleConsoleEditor (ConsoleEditor) ())
-(omg-defclass simplecontrollerPanel (controllerPanel) ())
-(omg-defclass simplechannelpanel (channelpanel om-item-view) ())
+(defclass simpleConsoleEditor (ConsoleEditor) ())
+(defclass simplecontrollerPanel (controllerPanel) ())
+(defclass simplechannelpanel (channelpanel om-item-view) ())
 
 (defmethod get-editor-class ((self simple-midi-mix-console)) 'simpleConsoleEditor)
 (defmethod get-panel-class ((Self simpleConsoleEditor)) 'simplecontrollerPanel)
@@ -885,6 +947,4 @@ In this case, all internal events are sent simultaneously.
   (change-pan self 64)
   (set-value (panSlider self) 64)
   (change-volume self 100)
-  (om-set-slider-value (volumeSlider self) 100)
-)
-;;;===================
+  (om-set-slider-value (volumeSlider self) 100))

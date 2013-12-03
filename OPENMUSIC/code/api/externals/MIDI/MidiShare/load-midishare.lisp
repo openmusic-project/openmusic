@@ -35,7 +35,7 @@
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare"))
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "player"))
 (compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-api"))
-(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-setup"))
+;(compile&load (make-pathname :directory (append *externals-directory* (list "MIDI" "MidiShare")) :name "midishare-setup"))
 
 (pushnew :midishare *features*)
 

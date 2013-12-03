@@ -127,7 +127,7 @@
 
 ;/MAKE GENMIXER DIALOG
 ;This function checks if the general mixer window is already opened. If yes, it focus on it, else it builds a new one.
-(defun omG-make-genmixer-dialog ()
+(defun show-audio-mixer-win ()
   (if (and *general-mixer-window* (om-window-open-p *general-mixer-window*))
       (om-select-window *general-mixer-window*)
     (setf *general-mixer-window* (om-select-window (make-general-mixer-win)))))

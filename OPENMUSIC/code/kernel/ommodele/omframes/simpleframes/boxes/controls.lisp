@@ -385,7 +385,7 @@
 ;==============
 ;; Box for integers
 
-(omg-defclass numbox (ttybox)
+(defclass numbox (ttybox)
   ((value   :initform 0     :initarg :value   :accessor value)
    (enable   :initform t     :initarg :enable   :accessor enable)
    (min-val :initform 0     :initarg :min-val :accessor min-val)

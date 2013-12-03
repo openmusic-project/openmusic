@@ -76,8 +76,12 @@
 (defun show-preferences-win () 
   (omG-make-preference-dialog))
 
-(defun show-genmixer-win () 
-  (omG-make-genmixer-dialog))
+
+;;; redefined in the audio projectif loaded
+(defun show-midi-mixer-win () nil)
+
+;;; redefined in the audio projectif loaded
+(defun show-audio-mixer-win () nil)
 
 (defun show-listener-win () 
   (om-make-new-listener :initial-lambda #'(lambda () (in-package :om))))
@@ -131,7 +135,8 @@
                                     ;(om-new-leafmenu "General Palette" #'(lambda () (show-palette-win (om-view-window editor))) nil 
                                     ;                 (if (and (not (member "General Palette" disable :test 'string-equal)) editor 
                                     ;                          (editor-has-palette-p editor)) t nil))
-                                      (om-new-leafmenu "Audio Mixer" 'show-genmixer-win)
+                                      (om-new-leafmenu "MIDI Mixer" 'show-midi-mixer-win)
+                                      (om-new-leafmenu "Audio Mixer" 'show-audio-mixer-win)
                                       (when (score-tools-palettes-p editor)
                                         (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
                                                          (if (member "Score Inspector" disable :test 'string-equal) nil
