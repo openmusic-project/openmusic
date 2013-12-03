@@ -40,8 +40,8 @@
                   (progn (cffi:load-foreign-library cl-user::*libplayer*)
            t)))))
   
-(defun close-player-framework ()
-  (setq *player-framework* nil))
+;(defun close-player-framework ()
+;  (setq *player-framework* nil))
   
  
 

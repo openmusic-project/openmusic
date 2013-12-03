@@ -1,7 +1,16 @@
 (in-package :om)
 
-;;; :MIDI is a 'meta' player identifyier for preparetoplay, that will build a sequence of OM-MIDI-EVT
 
+(defun midi-seq-start-events (&optional port)
+  (list (make-midi-evt :type 'Start :port (or port *def-midi-out*) :date 0)
+        (make-midi-evt :type 'Tempo :port (or port *def-midi-out*) :date 0 :ref 0 :date 0 :fields (list *midi-tempo*))
+        ))
+
+(defmethod midi-seq-end-events (at &optional (port nil))
+  (list (make-midi-evt :type 'Stop :port (or port *def-midi-out*) :date (+ at 1))))
+
+
+;;; :MIDI is a 'meta' player identifier for preparetoplay, that will build a sequence of OM-MIDI-EVT
 ;;===================
 ;; MIDI CLASSES
 ;;===================
