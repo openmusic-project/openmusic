@@ -88,7 +88,7 @@
 ;;;==============================
 ;;; SDIF prototypes
 ;;;==============================
-
+ 
 (defun sdif-prototypes ()
   (defpackage "SDIF-PACKAGE"
     (:nicknames "SDIF")

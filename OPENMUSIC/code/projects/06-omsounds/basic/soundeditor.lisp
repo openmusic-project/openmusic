@@ -244,6 +244,10 @@
 
 (defmethod initialize-instance :after ((self soundEditor) &rest args)
   (declare (ignore args))
+  (when (om-sound-file-name (object self))
+    (om-sound-update-buffer-with-new (object self) (multiple-value-bind (data size nch) 
+                                                       (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name (object self))) :float) 
+                                                     (let ((sndbuffer data)) sndbuffer))))
 
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
@@ -256,13 +260,13 @@
                                    ))
 
   (setf (rulerx (panel self)) (om-make-view 'sound-ruler
-                                     :owner self
-                                     :axe 'x
-                                     :assoc-view (panel self)
-                                     :zoom 1000
-                                     :minzoom 1
-                                     :position (om-make-point 0 (- (h self) (get-control-h self) 25)) 
-                                     :size (om-make-point (w self) 25)))
+                                            :owner self
+                                            :axe 'x
+                                            :assoc-view (panel self)
+                                            :zoom 1000
+                                            :minzoom 1
+                                            :position (om-make-point 0 (- (h self) (get-control-h self) 25)) 
+                                            :size (om-make-point (w self) 25)))
   
   (setf (control self) (om-make-view 'sound-control-view 
                                      :owner self
@@ -286,7 +290,8 @@
 (defmethod close-editor-after ((self soundEditor))
   (call-next-method)
   ;;; do some cleanup
-  )
+  (when (sndbuffer (object self))
+    (fli::free-foreign-object (sndbuffer (object self)))))
 
 
 (defmethod update-editor-after-eval ((self soundEditor) val)

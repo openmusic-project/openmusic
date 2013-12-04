@@ -573,9 +573,7 @@
 			  (sample-size sound) ss
 			  (sample-rate sound) sr
 			  (data-position sound) skip
-			  (sndbuffer sound) (multiple-value-bind (data size nch) 
-						(au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
-					      (let ((sndbuffer data)) sndbuffer))
+			  (sndbuffer sound) nil
 			  (snd-slice-to-paste sound) nil)
 		    (setf (loaded sound) t)
 		    (unless (om-supported-audio-format format)
@@ -607,9 +605,7 @@
                 (sample-size sound) ss
                 (sample-rate sound) sr
                 (data-position sound) skip
-                (sndbuffer sound) (multiple-value-bind (data size nch) 
-                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float)
-                                    (let ((sndbuffer data)) sndbuffer))
+                (sndbuffer sound) nil
                 (sndlasptr sound) (car las-infos)
                 (sndlasptr-current sound) (sndlasptr sound)
                 (sndlasptr-current-save sound) (sndlasptr sound)
