@@ -141,7 +141,7 @@
 
 ;(Sdif-Init "")
 ;(Sdif-Kill)
-;(setf filepath (om::om-path2cmdpath (om::om-choose-file-dialog))) 
+;(setf filepath (namestring (capi::prompt-for-file nil))) 
 ;(setf filepath (namestring filepath))
 ;(setf sdiffile (Sdif-Open-file filepath :eReadFile))
 ;(sdif-close-file sdiffile)

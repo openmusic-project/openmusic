@@ -109,7 +109,6 @@
                       (cadr def)))
                 (cadr def)))))
 
-; (dspec:find-name-locations dspec:*dspec-classes* 'om::picture)
 
 
 (defun om-edit-definition (symbol)

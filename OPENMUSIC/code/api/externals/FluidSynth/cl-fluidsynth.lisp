@@ -15,7 +15,7 @@
 
 (in-package :cl-fluidsynth)
 
-;; (om::om-shell "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
+;; (oa::om-cmd-line "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
 
 (defvar *fluidsynth* nil)
 (defvar *fluidsynth-settings* nil)

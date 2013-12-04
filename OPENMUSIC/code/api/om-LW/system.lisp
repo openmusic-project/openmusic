@@ -597,7 +597,6 @@
 
 ;(sys::change-directory  (om-make-pathname :directory om::*om-midi-settings-app-path*))
 ;(hcl::get-working-directory)
-
 ; (sys:run-shell-command (format nil "~s" (namestring om::*om-midi-settings-app-path*)))
 ;(system::call-system (format nil "~s" (namestring om::*om-midi-settings-app-path*)) :wait t)
 

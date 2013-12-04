@@ -342,7 +342,6 @@
 
 (defmethod om-char-spec-callback ((self om-view) x y spec)
   ;(print self)
-  ;(print (mp::process-run-function "change mess" '(:priority 70000000)  'om::change-message-win (om::integer-to-string (random 1000))))
   (om-char-spec-callback (om-view-window self) x y spec)
   (capi::set-pane-focus self))
 

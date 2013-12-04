@@ -61,10 +61,10 @@
 (defvar *midishare-setup-app-default-path* "the default path of the midishare setup program")
 
 (defun init-midishare-setup ()
-  (setf *om-midi-settings-app-default-path*
+  (setf *midishare-setup-app-default-path*
         (oa::om-default-application-path '("MidiShare") "msDrivers"))
   (setf *om-midi-settings-app-path* 
-        (or (probe-file *om-midi-settings-app-default-path*)
+        (or (probe-file *midishare-setup-app-default-path*)
             (probe-file 
              #+cocoa(oa::om-external-app '("MidiShare") "msDrivers")
              #+win32(oa::om-make-pathname :directory (pathname (LISP-IMAGE-NAME)) :name "msDrivers" :type "exe")
@@ -74,18 +74,18 @@
   )
 
 (defun launch-midishare-setup-app ()
-  (if (and *ms-setup-app* (om-find-process *ms-setup-app*))
-    (oa::om-select-program *ms-setup-app*)
+  (if (and *midishare-setup-app* (om-find-process *midishare-setup-app*))
+    (oa::om-select-program *midishare-setup-app*)
     (progn
-      (unless *om-midi-settings-app-path* (init-midishare-setup))
-      (if (and *om-midi-settings-app-path* (probe-file *om-midi-settings-app-path*))
+      (unless *midishare-setup-app-path* (init-midishare-setup))
+      (if (and *midishare-setup-app-path* (probe-file *midishare-setup-app-path*))
         (progn 
           (close-ms-players)
-          (setf *ms-setup-app* (oa::om-run-program *om-midi-settings-app-path* 'om::open-ms-players))
+          (setf *midishare-setup-app* (oa::om-run-program *midishare-setup-app-path*))   ; 'om::open-ms-players))   ;; do somthing after ?
       ;(setf *ms-setup-app* (om-run-program *om-midi-settings-app-path*
       ;                                    #'(lambda () (om-message-dialog "Warning: The new MIDI drivers setup will be used for your next OM session only. OM must exit and restart to use them."))))
           (sleep 0.9)
-          (oa::om-select-program *ms-setup-app*))
+          (oa::om-select-program *midishare-setup-app*))
       (oa::om-message-dialog "MidiShare Setup Application msDrivers not found!")
     ))))
 
@@ -102,7 +102,7 @@
       (when (and (selectedport (oa::om-view-container self))
                  (= (i self) (selectedport (oa::om-view-container self))))
         (oa::om-with-fg-color self oa::*om-select-color*
-          (oa::om-fill-rect 0 0 (oa::om-width self) (om::om-height self))))
+          (oa::om-fill-rect 0 0 (oa::om-width self) (oa::om-height self))))
       (when (or (car ci) (cadr ci))
         (oa::om-with-fg-color self oa::*om-gray-color*
           (oa::om-draw-rect 0 0 (- (oa::om-width self) 1) (- (oa::om-height self) 1)))))))

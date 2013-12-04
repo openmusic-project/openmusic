@@ -283,6 +283,12 @@
   (om-invalidate-view (panel self)))
 
 
+(defmethod close-editor-after ((self soundEditor))
+  (call-next-method)
+  ;;; do some cleanup
+  )
+
+
 (defmethod update-editor-after-eval ((self soundEditor) val)
   (call-next-method)
   (update-controls (control self))

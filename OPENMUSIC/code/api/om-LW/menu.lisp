@@ -227,10 +227,8 @@
                                  #'(lambda () (setf (capi::interface-menu-bar-items window) menubar)
                                      ))))
 
-; om::make-editor-window
 
-   
-
+  
 ;;;;===================
 ;;;; POP UP / CONTEXT MENU
 ;;;;===================

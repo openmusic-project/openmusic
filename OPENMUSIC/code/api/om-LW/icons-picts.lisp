@@ -240,8 +240,6 @@
         ))))
   
 
-; (setf iii (gp::load-image *record-view* om::*graph-pres*))
-
 ; draw an icon pict with a special drawing if selected = t
 (defun om-draw-icon (pict view topleft size  &optional selected alpha)
   ;(print (list pict view))
@@ -464,7 +462,6 @@
                  )
 )
 
-;(defmethod om-view-cursor ((self om::icon-finder-name)) nil)
 
 #+win32(setf win32::*change-cursor-on-gc* nil)
 

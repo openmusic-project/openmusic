@@ -403,9 +403,6 @@
        )))
 
 
-;;; (om-subviews *om-workspace-win*)
-;;; (om-find-view-containing-point om::*om-workspace-win* (om-make-point 30 30))
-
 (defun find-pane-with-focus (layout)
   (capi:map-pane-descendant-children 
    layout

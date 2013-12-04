@@ -163,6 +163,7 @@
                                     :action #'(lambda (item) (declare (ignore item))
                                                 (let ((setup-values (funcall (om-midi::midi-setup-function *default-midi-system*) (get-pref modulepref :midi-setup))))
                                                   (when setup-values 
+                                                    ;; (init-midishare-players)
                                                     (set-pref modulepref :midi-setup setup-values)
                                                     (when (om-midi::midi-connect-function *default-midi-system*)
                                                       (funcall (om-midi::midi-connect-function *default-midi-system*) pref-values)
