@@ -49,7 +49,7 @@
           
           om-cons-snd-pict
           om-sound-get-pict
-          om-read-sound-data      
+          om-read-sound-data
           ) :om-api)
 
 ;;==================================
@@ -85,15 +85,15 @@
 
 (defun sndfile-get-info (path)
   "Returns a matrix of sound data"
-  (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)
-    (setf (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::format) 0) ; Initialize the slots
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
     (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-           (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::frames) :type :int))	  
-	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::format) :type :int))
+           (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames) :type :int))	  
+	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) :type :int))
            (format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string format :base 16))))
-           (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels))
-	   (skip (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::seekable))
-	   (sample-rate (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::samplerate))
+           (channels (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
+	   (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
+	   (sample-rate (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
            (ss 0))
                  (when (and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) (setf format 0))
                  (when (and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) (setf format 1))
@@ -111,12 +111,12 @@
 
 (defun load-audio-data (path &optional (datatype :float))
   "Returns a matrix of sound data"
-  (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)
-    (setf (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::format) 0) ; Initialize the slots
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
     (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-           (frames-to-read-ptr (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::frames))
+           (frames-to-read-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
 	   (frames-to-read (fli::dereference frames-to-read-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-	   (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels))
+	   (channels (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
 	   (buffer nil)
            (frames-read nil)
            (size -1))
@@ -575,7 +575,7 @@
 			  (data-position sound) skip
 			  (sndbuffer sound) (multiple-value-bind (data size nch) 
 						(au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
-					      (let* ((sndbuffer data)) sndbuffer))
+					      (let ((sndbuffer data)) sndbuffer))
 			  (snd-slice-to-paste sound) nil)
 		    (setf (loaded sound) t)
 		    (unless (om-supported-audio-format format)
@@ -608,8 +608,8 @@
                 (sample-rate sound) sr
                 (data-position sound) skip
                 (sndbuffer sound) (multiple-value-bind (data size nch) 
-                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float) 
-                                    (let* ((sndbuffer data)) sndbuffer))
+                                      (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name sound)) :float)
+                                    (let ((sndbuffer data)) sndbuffer))
                 (sndlasptr sound) (car las-infos)
                 (sndlasptr-current sound) (sndlasptr sound)
                 (sndlasptr-current-save sound) (sndlasptr sound)
@@ -735,21 +735,8 @@
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
     (om-sound-protect self 
       (om-cons-snd-pict (filename self))
-      )
-    ))
+      )))
 
-
-;(setf qqq (capi::prompt-for-file ""))
-;(setf ppp #P"C:/Documents and Settings/Jean Bresson/test.aiff")
-;(setf qqq #P"C:/Documents and Settings/Jean Bresson/Bureau/mlmaq-tests/Maquette Bolero et fichiers/Bolero extrait violons.AIFF")
-
-; 0, 2, 44100, 0, 53474, 1
-
-;(au::sndfile-get-info ppp)
-;(au::load-audio-data ppp)
-;(logior (ash 292780 32) 1143)
-
-;;; USE LIBSNDFILE
 
 (defun om-cons-snd-pict (sndpath)
   (let* ((pict nil)) 
@@ -757,20 +744,20 @@
         (ignore-errors
           (au::load-audio-data (convert-filename-encoding sndpath) :float))
       ;(print (list sndpath size nch))
-      (if (and (> size 0) (> nch 0)) 
+      (if (and (> size 0) (> nch 0))
           (let* ((pict-w (min #+win32 2000 #-win32 4000 size))  ; taille max de l'image en pixels
                  (pict-h 256)
                  (xstep (round size pict-w))
                  (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
-                 (offset-y (round channels-h 2))) ; draw from middle of each channels-h
-            (if data 
+                 (offset-y (round channels-h 2))); draw from middle of each channels-h
+            (if data
                 (let ((datalist (loop for pix from 0 to (- pict-w 1) collect
                                       (loop for chan from 0 to (- nch 1) collect 
                                             (fli::dereference data 
-                                                              :index (+ (min (* (1- size) nch) (* pix xstep nch)) chan)
-                                                              :type :float)
-                                            )))                      
-                      pixpoint)    
+                                                              :index (+ (min (* (1- size) nch) (1+ (* pix xstep nch))) chan) 
+                                                              ;;ICI LE 1+ EST JUSTE POUR EVITER UN CAS PARTICULIER. POUR ETRE PROPRE : DOWNSAMPLE OBLIGATOIRE : TODO
+                                                              :type :float))))
+                      pixpoint)
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (loop for i from 0 to (- nch 1) do  
@@ -783,25 +770,56 @@
                                         (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
                                 ;(print (list i val pixpoint))
                                         (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
-                                                       i (+ offset-y (* c channels-h) (- pixpoint))) 
+                                                       i (+ offset-y (* c channels-h) (- pixpoint)))
                                         ))
                             )))
                   (fli::free-foreign-object data) 
-                  pict
-                  )
+                  pict)
               (setf pict 
                     (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                       (loop for i from 0 to (- nch 1) do  
                             (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2)
+                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
                               (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))
-                      )
-                      
-
+                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
                       ))))
         nil
         ))))
+
+;; Dessin an lecture de bytes. Marche avec WAV int 16bit seulement pour l'instant
+(defmethod om-cons-raw-pict ((self om-sound))
+  (let* ((ss (sample-size self))
+         (in (open (filename self) :element-type `(signed-byte ,(if (/= ss 0) ss 16))))
+         (nsmp (number-of-samples self))
+         (nch (number-of-channels self))
+         (pict-w 4000)
+         (pict-h 256)
+         (smpstep (* (round nsmp pict-w) nch))
+         (channels-h (round pict-h nch))
+         (offset-y (round channels-h 2))
+         (init-pos (- (file-length in) (* nch nsmp)))
+         (indx 0)
+         pixpoint pict datalist)
+
+    (loop for i from 0 to (1- pict-w) do 
+          (file-position in (+ init-pos (* i smpstep)))
+          (loop for l from 0 to (1- nch) do
+                (push (/ (read-byte in nil 250) (expt 2 (1- ss)) 1.0) datalist)))
+    (setf datalist (reverse datalist))
+
+    (setf pict 
+          (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+            (loop for i from 0 to (- nch 1) do  
+                  (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+            (om-with-fg-color *curstream* *om-dark-gray-color*
+              (loop for i from 0 to (1- pict-w) do
+                    (loop for k from 0 to (1- nch) do
+                          (setf pixpoint (round (* offset-y (nth indx datalist)))) ; scaled 0-1 --> 0 -->256/2
+                          (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+                                         (+ offset-y (* k channels-h) pixpoint))
+                          (incf indx))))))
+    (close in)
+    pict))
 
 
 ;;; COCOA : read loop with LibAudioStream (plante sur windows)
@@ -815,12 +833,12 @@
          (numchannels (las::GetChannelsSound snd)))
     (unless (or (zerop numsamples) (zerop numchannels))
       (let* ((buffer-size (ceiling numsamples pict-w)) ; nb samples dans le buffer
-            (pict-w (round numsamples buffer-size)) ;nb exact de pixels
-            (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
-            (offset-y (round channels-h 2)) ; draw from middle of each channels
-            (sndr (las::MakeRendererSound snd))
-            (bytesread buffer-size)
-            (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+             (pict-w (round numsamples buffer-size)) ;nb exact de pixels
+             (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
+             (offset-y (round channels-h 2)) ; draw from middle of each channels
+             (sndr (las::MakeRendererSound snd))
+             (bytesread buffer-size)
+             (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
         (mp::with-interrupts-blocked 
           (setf pict 
                 (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
@@ -828,16 +846,16 @@
                         (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                   (las::ResetSound snd)
                   (om-with-fg-color *curstream* *om-dark-gray-color*
-                  (loop for i from 0 to (- pict-w 1) 
-                        while (= bytesread buffer-size) do 
-                        (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
-                        (loop for k from 0 to (- numchannels 1) do
-                              (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
-                              (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
-                             (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
-                                             (+ offset-y (* k channels-h) pixpoint))  
-                             )
-                  ))
+                    (loop for i from 0 to (- pict-w 1) 
+                          while (= bytesread buffer-size) do 
+                          (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
+                          (loop for k from 0 to (- numchannels 1) do
+                                (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
+                                (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
+                                (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+                                               (+ offset-y (* k channels-h) pixpoint))  
+                                )
+                          ))
                   ))
           )
         (om-free-pointer buffer)))
@@ -887,15 +905,3 @@
                                    ))))
                 (close in))))
       firstpict)))
-
-
-
-
-
-
-
-
-
-
-
-
