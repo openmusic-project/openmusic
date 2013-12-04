@@ -4,7 +4,8 @@
 
 (defmethod player-selection-settings-pane ((type (eql :midi)) paneports reference selected-player)
   (let ((midiport (get-edit-param reference 'outport))
-        midilabel midiportmenu midiporttext)
+        midilabel midiportmenu midiporttext
+        (y2 10))
     (apply 'om-remove-subviews (cons paneports (om-subviews paneports)))
     (om-add-subviews paneports
                      (setf midilabel (om-make-dialog-item 'om-static-text (om-make-point 10 y2) (om-make-point 300 20) 

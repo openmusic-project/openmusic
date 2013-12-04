@@ -5,13 +5,16 @@
 (defvar *midirecorder* nil    "refnum of the recorder")
 (defvar *midifilter* nil      "allow filter midievents in the recorder")
 
+; (defparameter *refnum* (ms::midiopen "Common Lisp"))
+; (ms::MidiClose *refnum*)
+
 (defun init-midishare-players ()
   "Check if MidiShare is present, if this is the case open the player and
 the recorder, this function is called by a def-load-pointers"
   (if (or om-midi::*midishare-loaded?* (om-midi::midishare-startup))
       (om-without-interrupts  
         (setq *midiplayer* (om-midi::midishare-open-player "OMPlayer"))
-        (setf *midirecorder* (om-midi::midishare-open-player "OMRecorder"))
+        ;(setf *midirecorder* (om-midi::midishare-open-player "OMRecorder"))
         (enable-player :midishare)
         )
     (om-message-dialog (format nil (om-str :lib-error) "MIDI")))
@@ -20,7 +23,7 @@ the recorder, this function is called by a def-load-pointers"
 (defun close-midishare-players ()
    "If MidiShare is present, close the player and the recorder before quit the application"
    ;(when om-midi::*midishare-loaded?*
-     ;(when *midiplayer* (om-midi::midishare-close-player *midiplayer*))  ;;; remettre ?
+     (when *midiplayer* (om-midi::midishare-close-player *midiplayer*))  ;;; remettre ?
      ;(when *midirecorder* (om-midi::midishare-close-player *midirecorder*)) ;;; remettre ?
      ;(om-midi::midishare-exit) ;;; do nothing     
      ;(setf *midi-share?* nil)
@@ -73,7 +76,6 @@ the recorder, this function is called by a def-load-pointers"
 ;  (FinalizePlayingSeq 'midishare (get-obj-dur object))
 ;  )
 
-
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
   (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
     (push (list object at interval approx) *ms-list-to-play*)))
@@ -90,11 +92,12 @@ the recorder, this function is called by a def-load-pointers"
 (defmethod player-start ((engine (eql :midishare)) &optional play-list)
   ;(print *ms-list-to-play*)
   (om-midi::midishare-stop-player *midiplayer*)
-  (om-midi::midishare-set-player *midiplayer*  
-                                 (append (midi-seq-start-events)
-                                         (loop for item in *ms-list-to-play* append
-                                               (flat (PrepareToPlay :midi (car item) (+ (nth 1 item) (real-duration (car item) 0)) 
-                                                              :interval (nth 2 item) :approx (nth 3 item))))
+  (om-midi::midishare-set-player *midiplayer* 
+                                (append (midi-seq-start-events)
+                                        (loop for item in *ms-list-to-play* append
+                                              (remove nil 
+                                                      (flat (PrepareToPlay :midi (car item) (+ (nth 1 item) (real-duration (car item) 0)) 
+                                                                           :interval (nth 2 item) :approx (nth 3 item)))))
                                          (midi-seq-end-events (get-obj-dur (mapcar 'car *ms-list-to-play*))))
                                  1000)
   (when *ms-loop* (om-midi::midishare-set-loop-player *midiplayer* 0 *ms-loop*))

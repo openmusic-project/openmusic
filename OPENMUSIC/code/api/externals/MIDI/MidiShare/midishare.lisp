@@ -701,7 +701,7 @@
 
 (defun MidiCountAppls ()
   "Give the number of MidiShare applications currently opened"
-  (midi-count-appls ))
+  (midi-count-appls))
 
 (defun MidiGetIndAppl (index)
   "Give the reference number of a MidiShare application from its index, a fixnum between 1 and (MidiCountAppls)"

@@ -125,7 +125,7 @@
                                                                (om-dialog-item-act item
                                                                  (declare (ignore item))
                                                                  (setf selected-player p)
-                                                                 (player-selection-pane-setting (player-type selected-player) 
+                                                                 (player-selection-settings-pane (player-type selected-player) 
                                                                                                 paneports reference 
                                                                                                 selected-player)
                                                                  ))
@@ -151,7 +151,7 @@
                                             :di-action (om-dialog-item-act item
                                                          (declare (ignore item))
                                                          (set-edit-param reference 'player selected-player)
-                                                         (set-param-from-settings-pane paneports reference)
+                                                         (set-param-from-settings-pane (player-type selected-player) paneports reference)
                                                          (om-return-from-modal-dialog dialog selected-player)
                                                          )
                                             :default-button t))
