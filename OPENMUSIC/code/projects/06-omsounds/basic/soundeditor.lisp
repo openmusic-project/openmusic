@@ -244,6 +244,8 @@
 
 (defmethod initialize-instance :after ((self soundEditor) &rest args)
   (declare (ignore args))
+
+  ;;; Allocate the sndbuffer (which is used to draw the waveform dynamically)
   (when (om-sound-file-name (object self))
     (om-sound-update-buffer-with-new (object self) (multiple-value-bind (data size nch) 
                                                        (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name (object self))) :float) 
@@ -289,9 +291,9 @@
 
 (defmethod close-editor-after ((self soundEditor))
   (call-next-method)
-  ;;; do some cleanup
-  (when (sndbuffer (object self))
-    (fli::free-foreign-object (sndbuffer (object self)))))
+  ;;; Free the sndbuffer (which is used to draw the waveform dynamically)
+  (when (om-sound-sndbuffer (object self))
+    (fli::free-foreign-object (om-sound-sndbuffer (object self)))))
 
 
 (defmethod update-editor-after-eval ((self soundEditor) val)
