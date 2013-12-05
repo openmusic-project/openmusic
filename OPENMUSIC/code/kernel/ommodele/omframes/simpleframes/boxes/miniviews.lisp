@@ -182,7 +182,7 @@
      (if (omclass-p (class-of (class-of self)))
        (let* ((thelist (name-values-list self))
               (length (length thelist))
-              (y 15))
+              (y (+ y 15)))
          (loop for item in thelist
                for i = 0 then (+ i 1)
                while (< y y1) do
