@@ -46,22 +46,13 @@ the recorder, this function is called by a def-load-pointers"
 
 ;;; DEFAULT MIDI PLAYER                  
 (defmethod player-name ((player (eql :midishare))) "MidiShare player")   ;;; A short name
-(defmethod player-desc ((player (eql :midishare))) "(default)")   ;;; a description
+(defmethod player-desc ((player (eql :midishare))) "Uses MidiShare interface and player")   ;;; a description
 (defmethod player-special-action ((player (eql :midishare))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player (eql :midishare))) nil)   ;;; the default values for the player params
 (defmethod player-type ((player (eql :midishare))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
-
-;;; NEW MIDI PLAYER (NOT YET AVAILABLE)                 
-(defmethod player-name ((player (eql :midishare-rt))) "MidiShare RT")   ;;; A short name
-(defmethod player-desc ((player (eql :midishare-rt))) "experimental real-time MIDI player")   ;;; a description
-(defmethod player-special-action ((player (eql :midishare-rt))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
-(defmethod player-params ((player (eql :midishare-rt))) nil)   ;;; the default values for the player params
-(defmethod player-type ((player (eql :midishare-rt))) :midi)   ;;; communication protocol (:midi / :udp)
-
-
-;;;==============================
+;;;=============================
 ;;; Stop/play/pause for MidiShare player
 ;;;==============================
 
@@ -94,9 +85,10 @@ the recorder, this function is called by a def-load-pointers"
   (om-midi::midishare-stop-player *midiplayer*)
   (om-midi::midishare-set-player *midiplayer* 
                                 (append (midi-seq-start-events)
-                                        (loop for item in *ms-list-to-play* append
+                                        (loop for item in *ms-list-to-play* 
+                                              append
                                               (remove nil 
-                                                      (flat (PrepareToPlay :midi (car item) (+ (nth 1 item) (real-duration (car item) 0)) 
+                                                      (flat (PrepareToPlay :midi (car item) (nth 1 item) ;(+ (nth 1 item) (real-duration (car item) 0)) 
                                                                            :interval (nth 2 item) :approx (nth 3 item)))))
                                          (midi-seq-end-events (get-obj-dur (mapcar 'car *ms-list-to-play*))))
                                  1000)

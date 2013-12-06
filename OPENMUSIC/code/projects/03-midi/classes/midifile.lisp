@@ -317,12 +317,12 @@ Note values are lists of (pitch date dur vel chan).
 
 (defclass boxmidiframe (boxEditorFrame) ())
 
-(defmethod om-get-menu-context ((object boxmidiframe))
-  (boxframe-default-list object))
+;(defmethod om-get-menu-context ((object boxmidiframe))
+;  (boxframe-default-list object))
 
-(defmethod remove-extra ((self OMPatch) (box OMMidiFilebox))
-   (when (and (value box) (fileseq (value box)))
-      (om-midi-free-seq (fileseq (value box)))))
+;(defmethod remove-extra ((self OMPatch) (box OMMidiFilebox)) 
+;   (when (and (value box) (fileseq (value box)))
+;      (om-midi-free-seq (fileseq (value box)))))
 
 
 ;(defun copy-midiseq-without-tempoevents (seq)

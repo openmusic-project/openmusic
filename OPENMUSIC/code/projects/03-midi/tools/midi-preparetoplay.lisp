@@ -30,7 +30,8 @@
             (setf (midi-evt-port newevent) port)
             (setf (midi-evt-date newevent) (if newinterval 
                                                (- (+ (midi-evt-date event) at) (first interval))
-                                             (+ (midi-evt-date event) at)))))
+                                             (+ (midi-evt-date event) at)))
+            newevent))
   ))
 
 
@@ -188,11 +189,13 @@
           (date at) ;;; (+ *MidiShare-start-time* at))
           (voice (or voice 0)))
       (let ((newinterval (and interval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))))
-        (when (or (null interval ) newinterval)
+        (when (or (null interval) newinterval)
           (note-events port chan pitch vel 
+                    ;;; dur
                     (if interval 
                         (- (second newinterval) (first newinterval) 1) 
                       dur)
+                    ;;; DATE
                     (if interval
                         (- (first newinterval)  (first interval))  ;;; (- (first newinterval)  (+ *MidiShare-start-time* (first newinterval)))
                       date)

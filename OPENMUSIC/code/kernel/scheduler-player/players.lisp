@@ -133,7 +133,7 @@
                              (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 160 20) 
                                                   (string+ "type: " (if (player-type pl) (symbol-name (player-type pl)) "undefined"))
                                                   :font *om-default-font1*)
-                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 35)) (om-make-point 300 20) 
+                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 35)) (om-make-point 280 60) 
                                                   (player-desc pl)
                                                   :font *om-default-font1*)
                              )

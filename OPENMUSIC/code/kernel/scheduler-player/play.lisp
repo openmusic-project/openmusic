@@ -112,14 +112,15 @@
 (defmethod PrepareToPlay ((player t) (self container) at &key approx port interval voice)
   (loop for sub in (inside self) collect
         (let ((objstart (+ at (offset->ms sub))))
-          (let ((in-interval (and interval
-                                  (interval-intersec interval (list objstart (+ objstart (get-obj-dur sub)))))))
-            (PrepareToPlay player sub objstart 
-                           :approx approx 
-                           :port port
-                           :interval (if in-interval interval nil)
-                           :voice voice)))
-        ))
+          (let ((in-interval (or (null interval)
+                                 (interval-intersec interval (list objstart (+ objstart (get-obj-dur sub)))))))
+            (when in-interval 
+              (PrepareToPlay player sub objstart 
+                             :approx approx 
+                             :port port
+                             :interval interval
+                             :voice voice)))
+          )))
 
 ;;; FOR THE MAQUETTE CONTENTS
 ;;; check if we need to instanciate a specific track for this object
@@ -136,32 +137,22 @@
    (let ((i 0))
      (loop for object in (inside self)
            for param in (param-list self) do
-           (let ((objstart (+ at (offset->ms object)))
-                 (track (or voice (if (obj-in-sep-track object) (setf i (+ i 1)) 0)))
-                 (pl (player-from-params (cdr (assoc 'player param)))))
-             
-             ;(print (list object pl (cdr (assoc 'player param))))
-             (if interval
-                 (let ((newinterval (interval-intersec interval 
-                                                       (list objstart 
-                                                             (+ objstart (get-obj-dur object))))))
-                   (when newinterval 
-                     ;(print (list object (get-obj-dur object) newinterval interval))
-                     (PrepareToPlay pl
-                                    object objstart
-                                    :approx (cdr (assoc 'approx param))
-                                    :port (case (cdr (assoc 'outport param))
-                                            (:default *def-midi-out*)
-                                            (t (cdr (assoc 'outport param))))
-                                    :interval interval
-                                    :voice track)))
+           (let* ((objstart (+ at (offset->ms object)))
+                  (track (or voice (if (obj-in-sep-track object) (setf i (+ i 1)) 0)))
+                  (pl (player-from-params (cdr (assoc 'player param))))
+                  (in-interval (or (null interval) 
+                                   (interval-intersec interval (list objstart (+ objstart (get-obj-dur object)))))))
+             (when in-interval 
+               ;(print (list object (get-obj-dur object) newinterval interval))
                (PrepareToPlay pl
                               object objstart
                               :approx (cdr (assoc 'approx param))
                               :port (case (cdr (assoc 'outport param))
                                       (:default *def-midi-out*)
                                       (t (cdr (assoc 'outport param))))
-                              :voice track))))))
+                              :interval interval
+                              :voice track)))
+               )))
 
 
 (defmethod PrepareToPlay ((player t) (self ommaquette) at &key approx port interval voice)
