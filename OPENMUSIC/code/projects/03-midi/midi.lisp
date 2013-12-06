@@ -59,6 +59,7 @@
         "players;midi-mixer"
 
         #+midishare "players;midishare-player"  
+        #+midishare "players;midishare-rt-player"  
 ;	#+cl-fluidsynth "player;fluid-player"
 ;	#+(and linux cl-jack) "players;jack-midi-player"
 
@@ -66,12 +67,13 @@
         "osc;send"
         "osc;receive"
         "osc;osc-events"
-;        #-linux "players;microplayer"
+        #+macosx "players;microplayer"
 
         ;;; OM MENUS ETC.  
         "midipackages"
 
         ))
+
 
 
 (eval-when (eval compile load)

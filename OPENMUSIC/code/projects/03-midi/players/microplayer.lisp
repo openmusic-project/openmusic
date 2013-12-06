@@ -159,7 +159,7 @@
 
 
 (defun make-osc-note (chan pitch vel dur date)
-   (push (list "/play.µt/fifos" date pitch vel dur chan) *microosc-packets*))
+   (list (list "/play.µt/fifos" date pitch vel dur chan)))
 
 (defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval)
   (player-stop :microplayer)

@@ -26,7 +26,6 @@
             )
     ))
 
-(objstart (+ at (offset->ms sub)))
 
 (defmethod player-loop ((self (eql :midishare-rt)) player &optional play-list)
   (declare (ignore player))
