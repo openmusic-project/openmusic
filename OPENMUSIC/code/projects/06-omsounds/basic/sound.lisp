@@ -409,8 +409,9 @@ Press 'space' to play/stop the sound file.
   (unless (equal (pict-sound self) :error)
     (or (pict-sound self)
         (progn
-          (om-sound-cons-pict-zoom self)
-          (setf (pict-sound self) (or (om-sound-get-pict self) :error))
+          (setf (pict-sound self) (or (om-sound-get-pict self) :error)) 
+          (if (not (eq (pict-sound self) :error)) 
+              (om-sound-cons-pict-zoom self))
           (unless (equal (pict-sound self) :error)
               (pict-sound self)
             )))))
