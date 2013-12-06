@@ -26,6 +26,7 @@
   ((sound-offset :accessor sound-offset)
    ;(soundpointer :initform nil :accessor soundpointer)
    (pict-sound :initform nil :accessor pict-sound)
+   (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
    (pict-spectre? :initform nil :accessor pict-spectre?)
    (time-started :initarg :time-started :initform nil :accessor time-started)
@@ -408,6 +409,7 @@ Press 'space' to play/stop the sound file.
   (unless (equal (pict-sound self) :error)
     (or (pict-sound self)
         (progn
+          (om-sound-cons-pict-zoom self)
           (setf (pict-sound self) (or (om-sound-get-pict self) :error))
           (unless (equal (pict-sound self) :error)
               (pict-sound self)

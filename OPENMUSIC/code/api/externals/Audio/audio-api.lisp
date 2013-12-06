@@ -48,6 +48,7 @@
           om-sound-las-using-srate-?
           
           om-cons-snd-pict
+          om-sound-cons-pict-zoom
           om-sound-get-pict
           om-read-sound-data
           ) :om-api)
@@ -730,18 +731,18 @@
   (when (and (not (equal :error (loaded self)))
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
     (om-sound-protect self 
-      (om-cons-max-snd-pict (filename self))
+      (om-cons-max-snd-pict (filename self) 4000)
       )))
 
 ;;;CONS SND PICT WITH MAX DETECTION
-(defun om-cons-max-snd-pict (sndpath)
+(defun om-cons-max-snd-pict (sndpath nbpix)
   (let* ((pict nil)) 
     (multiple-value-bind (data size nch) 
         (ignore-errors
           (au::load-audio-data (convert-filename-encoding sndpath) :float))
 
       (if (and (> size 0) (> nch 0))
-          (let* ((pict-w 4000) ; taille max de l'image en pixels
+          (let* ((pict-w nbpix) ; taille max de l'image en pixels
                  (pict-h 256)
                  (step (ceiling size pict-w))
                  (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
@@ -752,7 +753,6 @@
                       pixIndx
                       smpIndx
                       pixpoint)
-
                   (dotimes (n nch)
                     (setf smpIndx n
                           pixIndx 0)
@@ -774,18 +774,25 @@
                                 (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
                                                i (+ offset-y (* c channels-h) (- pixpoint)))))
                             )))
-                  (fli::free-foreign-object data) 
+                  (fli::free-foreign-object data)
                   pict)
               (setf pict 
                     (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                      (loop for i from 0 to (- nch 1) do  
-                            (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
-                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
+                      (dotimes (i nch)  
+                        (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                        (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                          (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                          (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
                       ))))
         nil
         ))))
+
+(defmethod om-sound-cons-pict-zoom ((self om-sound))
+  (mp:process-run-function "Building sound pictures" nil 
+                           #'(lambda ()
+                               (dotimes (i 3)
+                                 (objc:with-autorelease-pool nil
+                                   (setf (aref (om::pict-zoom self) i) (om-cons-max-snd-pict (filename self) (* 8000 (expt 2 (1+ i))))))))))
 
 (defun om-cons-snd-pict (sndpath)
   (let* ((pict nil)) 

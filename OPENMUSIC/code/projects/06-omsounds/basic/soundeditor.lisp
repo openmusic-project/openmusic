@@ -791,16 +791,26 @@
                (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
                (xview (- xmax xmin))
                (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) 
-               (zoom-step (get-zoom-step xview sr))
-               )
+               (zoom-step (get-zoom-step xview sr)))
+
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
-                (if (and zoom-step (not (pict-spectre? thesound)))
-                    (om-draw-waveform self zoom-step)
-                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15)))
-                  )
+               ; (if (and zoom-step (not (pict-spectre? thesound)))
+               ;     (om-draw-waveform self zoom-step)
+               ;   (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15)))
+               ;   )
+
+                (cond ((>= xview (* 3 (/ dur-ms 4))) 
+                       (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                      ((and (< xview (* 3 (/ dur-ms 4))) (>= xview (* 2 (/ dur-ms 4)))) 
+                       (om-draw-picture self (aref (pict-zoom thesound) 0) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                      ((and (< xview (* 2 (/ dur-ms 4))) (>= xview (/ dur-ms 4))) 
+                       (om-draw-picture self (aref (pict-zoom thesound) 1) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                      ((< xview (/ dur-ms 4))
+                       (om-draw-picture self (aref (pict-zoom thesound) 2) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15)))))
+
                 (om-with-fg-color self *om-blue-color*
                   (loop for item in (markers thesound) 
                         for k = 0 then (+ k 1) do
@@ -823,6 +833,7 @@
 
 (defmethod om-draw-waveform ((self soundPanel) smpstep)
   (let* ((thesound (object (om-view-container self)))
+         (maxsmp (om-sound-n-samples thesound))
          (sr (if (om-sound-las-using-srate-? thesound) 
                  las-srate
                (om-sound-sample-rate thesound)))
@@ -836,29 +847,30 @@
          (xmax (cadr (rangex self)))
          (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
          (xtime (- xmax xmin))
+         (nbpix (* xtime (round sr 1000)))
          (basicstep smpstep)
          (channels-h (round window-v-size nch))
          (offset-y (round channels-h 2))
          (datalist (loop for pt from 0 to (* timestep xtime) collect
-                                      (loop for chan from 0 to (- nch 1) collect 
-                                            (* 0.9 (fli::dereference stream-buffer 
-                                                              :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
-                                                              :type :float))))))
-    (loop for i from 0 to (- nch 1) do  
-                                (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
+                         (loop for chan from 0 to (- nch 1) collect 
+                               (* 0.9 (fli::dereference stream-buffer 
+                                                        :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
+                                                        :type :float))))))
+
+    (dotimes (i nch)  
+      (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))               
     (setf sampleprev (car datalist))
     (loop for sample in (cdr datalist)
-                                  for i = 0 then (+ i 1) do 
-                                  (loop for val in sample 
-                                        for c = 0 then (+ c 1) do
-                                        (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
-                                        (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
-                                        (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
-                                        (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
-                                                       pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
-                                        ) (setf sampleprev sample))))
-
-
+          for i = 0 then (+ i 1) do 
+          (loop for val in sample 
+                for c = 0 then (+ c 1) do
+                (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
+                (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
+                (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
+                (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
+                               pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
+                ) 
+          (setf sampleprev sample))))
 
 
 (defmethod draw-grille  ((self soundpanel)) 
