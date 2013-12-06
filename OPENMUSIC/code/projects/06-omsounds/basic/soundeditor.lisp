@@ -250,7 +250,7 @@
     (om-sound-update-buffer-with-new (object self) (multiple-value-bind (data size nch) 
                                                        (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name (object self))) :float) 
                                                      (let ((sndbuffer data)) sndbuffer))))
-
+(setf *testsound* (object self))
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
                                    :scrollbars :h

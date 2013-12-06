@@ -730,9 +730,62 @@
   (when (and (not (equal :error (loaded self)))
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
     (om-sound-protect self 
-      (om-cons-snd-pict (filename self))
+      (om-cons-max-snd-pict (filename self))
       )))
 
+;;;CONS SND PICT WITH MAX DETECTION
+(defun om-cons-max-snd-pict (sndpath)
+  (let* ((pict nil)) 
+    (multiple-value-bind (data size nch) 
+        (ignore-errors
+          (au::load-audio-data (convert-filename-encoding sndpath) :float))
+
+      (if (and (> size 0) (> nch 0))
+          (let* ((pict-w 4000) ; taille max de l'image en pixels
+                 (pict-h 256)
+                 (step (ceiling size pict-w))
+                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
+                 (offset-y (round channels-h 2))); draw from middle of each channels-h
+            (if data
+                (let ((tmpArray (make-array step :element-type 'single-float))
+                      (smpArray (make-array `(,nch ,pict-w) :element-type 'single-float))
+                      pixIndx
+                      smpIndx
+                      pixpoint)
+
+                  (dotimes (n nch)
+                    (setf smpIndx n
+                          pixIndx 0)
+                    (dotimes (i size)
+                      (setf (aref tmpArray (mod i step)) (fli:dereference data :index smpIndx :type :float))
+                      (incf smpIndx nch)
+                      (when (= (mod i step) 0)
+                        (setf (aref smpArray n pixIndx) (reduce #'max tmpArray))
+                        (incf pixIndx))))
+
+                  (setf pict 
+                        (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                          (dotimes (i nch)  
+                            (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                          (om-with-fg-color *curstream* *om-gray-color*
+                            (dotimes (c nch)
+                              (dotimes (i pict-w)
+                                (setf pixpoint (round (* offset-y (aref smpArray c i))))
+                                (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
+                                               i (+ offset-y (* c channels-h) (- pixpoint)))))
+                            )))
+                  (fli::free-foreign-object data) 
+                  pict)
+              (setf pict 
+                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                      (loop for i from 0 to (- nch 1) do  
+                            (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                            (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                              (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
+                      ))))
+        nil
+        ))))
 
 (defun om-cons-snd-pict (sndpath)
   (let* ((pict nil)) 
