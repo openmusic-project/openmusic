@@ -94,10 +94,10 @@
 ;=======================
 
 
-(omg-defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
+(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
 ;(omg-defclass DIEditorframe (boxEditorFrame) ())
 
-(omg-defclass di-miniview (general-miniview om-view) ())
+(defclass di-miniview (general-miniview om-view) ())
 
 (defmethod get-miniview-class ((self OMDIebox)) 'di-miniview)
 
@@ -689,6 +689,12 @@ Evaluating the 5th output will also call and get the result of the function with
          (om-set-view-position self (om-make-point (- (round (w container) 2) 12) 8))
          (om-set-view-size self (om-make-point 24 (- (h container) 16))))))
 
+(defmethod set-function ((self slider) fun box) 
+  (om-set-dialog-item-action-function self #'(lambda (x) 
+                                                    (when fun
+                                                      (funcall fun (om-slider-value x))
+                                                      ))))
+
 (defmethod set-dialog-item-params ((self slider) box args)
   (let* ((boxframe (om-view-container self))
         (newslider (om-make-dialog-item 'slider (if (equal (car args) :horizontal)
@@ -702,10 +708,7 @@ Evaluating the 5th output will also call and get the result of the function with
     (when boxframe
       (om-remove-subviews boxframe self)
       (om-add-subviews boxframe newslider)
-      (om-set-dialog-item-action-function newslider #'(lambda (x) 
-                                                     (let ((fun (fifth args)))
-                                                       (when fun
-                                                         (funcall fun (om-slider-value x))))))
+      (set-function newslider (fifth args) box)
       (update-di-size newslider boxframe)
       )
     newslider))
@@ -719,10 +722,7 @@ Evaluating the 5th output will also call and get the result of the function with
    (t  (om-dialog-item-action self))))
 
 (defmethod (setf value) :after ((value slider) (self omdiebox)) 
-  (om-set-dialog-item-action-function value #'(lambda (x) 
-                                                     (let ((fun (omNG-box-value (fifth (inputs self)))))
-                                                       (when fun
-                                                         (funcall fun (om-slider-value x)))))))
+  (set-function value (omNG-box-value (fifth (inputs self))) self))
 
 
 ;========

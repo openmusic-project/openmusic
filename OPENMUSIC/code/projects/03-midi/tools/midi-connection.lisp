@@ -43,13 +43,13 @@
  
 (defun save-midifile (name object approx tempo &optional (format nil))
   (let ((seq (sort (flat (PrepareToPlay :midi object 0 :approx approx :voice 1))
-                   'midi-evt-<))
+                   'om-midi::midi-evt-<))
         (sys (ckeck-def-midi-system 'om-midi::load-midi-file-function)))
     (if sys 
         (when seq
           (if tempo 
               (setf seq (insert-tempo-info seq tempo))
-            (push (make-midi-evt :type 'Tempo :date 0 :fields (list *midi-tempo*)) seq))
+            (push (om-midi::make-midi-evt :type 'Tempo :date 0 :fields (list *midi-tempo*)) seq))
           (funcall (om-midi::save-midi-file-function sys) seq name (or format *def-midi-format*) 1000))
       (om-abort)
       )))

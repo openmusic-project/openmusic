@@ -51,7 +51,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
                 for chan = (or (pop chans) chan)
                 for ref = (or (pop refs) ref)
                 for port = (or (pop ports) port)
-                collect (make-midi-evt
+                collect (om-midi::make-midi-evt
                          :date date
                          :type type
                          :chan chan
@@ -67,12 +67,12 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   (set-evt-list self)
   self)
 
-(defmethod Ldate ((self EventMidi-seq)) (mapcar 'midi-evt-date (evtlist self)))
-(defmethod Lfields ((self EventMidi-seq)) (mapcar 'midi-evt-fields (evtlist self)))
-(defmethod Lchan ((self EventMidi-seq)) (mapcar 'midi-evt-chan (evtlist self)))
-(defmethod Lport ((self EventMidi-seq)) (mapcar 'midi-evt-port (evtlist self)))
-(defmethod Lref ((self EventMidi-seq)) (mapcar 'midi-evt-ref (evtlist self)))
-(defmethod Ltype ((self EventMidi-seq)) (mapcar 'midi-evt-type (evtlist self)))
+(defmethod Ldate ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-date (evtlist self)))
+(defmethod Lfields ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-fields (evtlist self)))
+(defmethod Lchan ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-chan (evtlist self)))
+(defmethod Lport ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-port (evtlist self)))
+(defmethod Lref ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-ref (evtlist self)))
+(defmethod Ltype ((self EventMidi-seq)) (mapcar 'om-midi::midi-evt-type (evtlist self)))
 
 
 (defmethod allowed-in-maq-p ((self EventMidi-seq))  t)
@@ -139,7 +139,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   :icon 915
   (let ((sorted-seq (make-instance 'eventmidi-seq)))
     (setf (name sorted-seq) (name self))
-    (setf (evtlist sorted-seq) (sort (mapcar #'copy-midi-evt (evtlist self)) 'midi-evt-<))
+    (setf (evtlist sorted-seq) (sort (mapcar #'om-midi::copy-midi-evt (evtlist self)) 'om-midi::midi-evt-<))
     sorted-seq
     ))
 
@@ -150,7 +150,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   :doc "Separates MIDI channels in <self> on diferents tacks."
   :icon 915
   (loop for evt in (evtlist self) do
-        (setf (midi-evt-ref evt) (midi-evt-chan evt)))
+        (setf (om-midi::midi-evt-ref evt) (om-midi::midi-evt-chan evt)))
   self)
 
 
@@ -161,12 +161,12 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
   (remove nil
           (loop for e in (evtlist self) collect
                 (let ((event (make-instance 'MidiEvent
-                                            :ev-date (midi-evt-date e)
-                                            :ev-type (midi-evt-type e)
-                                            :ev-chan (midi-evt-chan e)
-                                            :ev-ref (midi-evt-ref e)
-                                            :ev-port (midi-evt-port e)
-                                            :ev-fields (midi-evt-fields e)
+                                            :ev-date (om-midi::midi-evt-date e)
+                                            :ev-type (om-midi::midi-evt-type e)
+                                            :ev-chan (om-midi::midi-evt-chan e)
+                                            :ev-ref (om-midi::midi-evt-ref e)
+                                            :ev-port (om-midi::midi-evt-port e)
+                                            :ev-fields (om-midi::midi-evt-fields e)
                                             )))
                   (when (or (not test) (funcall test event))
                     event)))))

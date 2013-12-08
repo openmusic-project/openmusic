@@ -216,7 +216,7 @@
 ;(oa::load-om-libs '(:osc))
 
 (defpackage "OpenMusic"
-    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP" "OM-MIDI")
+    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP")
     (:import-from "CL-USER")
     (:nicknames "OM"))
 

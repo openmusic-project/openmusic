@@ -2,12 +2,12 @@
 
 
 (defun midi-seq-start-events (&optional port)
-  (list (make-midi-evt :type 'Start :port (or port *def-midi-out*) :date 0)
-        (make-midi-evt :type 'Tempo :port (or port *def-midi-out*) :date 0 :ref 0 :date 0 :fields (list *midi-tempo*))
+  (list (om-midi::make-midi-evt :type 'Start :port (or port *def-midi-out*) :date 0)
+        (om-midi::make-midi-evt :type 'Tempo :port (or port *def-midi-out*) :date 0 :ref 0 :date 0 :fields (list *midi-tempo*))
         ))
 
 (defmethod midi-seq-end-events (at &optional (port nil))
-  (list (make-midi-evt :type 'Stop :port (or port *def-midi-out*) :date (+ at 1))))
+  (list (om-midi::make-midi-evt :type 'Stop :port (or port *def-midi-out*) :date (+ at 1))))
 
 
 ;;; :MIDI is a 'meta' player identifier for preparetoplay, that will build a sequence of OM-MIDI-EVT
@@ -22,15 +22,15 @@
   (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (fileseq self) 
-          when (and (not (equal (midi-evt-type event) 'Tempo))
-                    (or (null interval) (point-in-interval (+ (midi-evt-date event) at) newinterval))
-                    (not (equal (midi-evt-type event) 'EndTrack)))
+          when (and (not (equal (om-midi::midi-evt-type event) 'Tempo))
+                    (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
+                    (not (equal (om-midi::midi-evt-type event) 'EndTrack)))
           collect   
-          (let ((newevent (copy-midi-evt event)))
-            (setf (midi-evt-port newevent) port)
-            (setf (midi-evt-date newevent) (if newinterval 
-                                               (- (+ (midi-evt-date event) at) (first interval))
-                                             (+ (midi-evt-date event) at)))
+          (let ((newevent (om-midi::copy-midi-evt event)))
+            (setf (om-midi::midi-evt-port newevent) port)
+            (setf (om-midi::midi-evt-date newevent) (if newinterval 
+                                               (- (+ (om-midi::midi-evt-date event) at) (first interval))
+                                             (+ (om-midi::midi-evt-date event) at)))
             newevent))
   ))
 
@@ -40,17 +40,17 @@
   (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (evtlist self) 
-          when (and (not (equal (midi-evt-type event) 'Tempo))
-                    (or (null interval) (point-in-interval (+ (midi-evt-date event) at) newinterval))
-                    (not (equal (midi-evt-type event) 'EndTrack)))
+          when (and (not (equal (om-midi::midi-evt-type event) 'Tempo))
+                    (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
+                    (not (equal (om-midi::midi-evt-type event) 'EndTrack)))
           collect   
-        (let ((newevent (copy-midi-evt event))
+        (let ((newevent (om-midi::copy-midi-evt event))
                ;(really-at (if interval (- (+ at date) (first interval)) (+ at date))) 
               (really-at (if interval 
-                             (- (+ at (strechDate (midi-evt-date event) (Qtempo self))) (first interval)) 
-                           (+ at (strechDate (midi-evt-date event) (Qtempo self))))))
-          (setf (midi-evt-port newevent) port)
-          (setf (midi-evt-date newevent) really-at)))
+                             (- (+ at (strechDate (om-midi::midi-evt-date event) (Qtempo self))) (first interval)) 
+                           (+ at (strechDate (om-midi::midi-evt-date event) (Qtempo self))))))
+          (setf (om-midi::midi-evt-port newevent) port)
+          (setf (om-midi::midi-evt-date newevent) really-at)))
     ))
 
 
@@ -68,7 +68,7 @@
 (defmethod PrepareToPlay ((player (eql :midi)) (self MidiEvent) at &key approx port interval voice)
    (declare (ignore approx))
    (when (or (null interval) (point-in-interval at interval))
-     (make-midi-evt
+     (om-midi::make-midi-evt
       :date (+ (ev-date self) (if interval (- at (first interval)) at))
       :type (ev-type self)
       :chan (ev-chan self)
@@ -88,7 +88,7 @@
   (let* ((num (first (first (tree self))))
          (den (round (log (second (first (tree self))) 2)))
          (div 8 )   ;;; (max-div self))
-         (MeasureEvent (make-midi-evt :type 'TimeSign
+         (MeasureEvent (om-midi::make-midi-evt :type 'TimeSign
                                       :ref (if voice voice 0) 
                                       :chan 0 ;;; WHANT SI THE CHANNEL OF A TIME SIGN EVENT ??
                                       :date at
@@ -164,13 +164,22 @@
 
 
 (defun note-events (port chan pitch vel dur date track)
-   (list (make-midi-evt :type 'KeyOn
+   (list (om-midi::make-midi-evt :type 'Note
+                        :date date 
+                        :port (or port *def-midi-out*) 
+                        :chan chan 
+                        :ref track
+                        :fields (list pitch vel dur))
+         ))
+
+(defun note-events (port chan pitch vel dur date track)
+   (list (om-midi::make-midi-evt :type 'KeyOn
                         :date date 
                         :port (or port *def-midi-out*) 
                         :chan chan 
                         :ref track
                         :fields (list pitch vel))
-         (make-midi-evt :type 'KeyOff
+         (om-midi::make-midi-evt :type 'KeyOff
                         :date (+ dur date) 
                         :port (or port *def-midi-out*) 
                         :chan chan 
@@ -236,7 +245,7 @@
 
 ;;; use msb / LSB ?
 (defun make-pitchwheel-event (date chan port val)
-  (make-midi-evt :type 'PitchWheel
+  (om-midi::make-midi-evt :type 'PitchWheel
                         :date date
                         :port port 
                         :chan chan 

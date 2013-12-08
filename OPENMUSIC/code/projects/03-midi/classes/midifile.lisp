@@ -64,7 +64,7 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
         (slots  (class-instance-slots (find-class 'simple-container))))
     (when (MidiFileName self) 
       (setf (MidiFileName copy) (MidiFileName self))
-      (setf (fileseq copy) (mapcar 'copy-midi-evt (fileseq self)))
+      (setf (fileseq copy) (mapcar 'om-midi::copy-midi-evt (fileseq self)))
       (setf (tracks copy) (loop for track in (tracks self) 
                                 collect  (make-instance 'MidiTrack
                                            :midinotes  (midinotes track))))
@@ -231,14 +231,14 @@ If <test> returns T, then the MIDIEvent is collected.
    (remove nil
            (loop for e in (fileseq self) collect 
                  (let ((event (make-instance 'MidiEvent
-                                            :ev-date (midi-evt-date e)
-                                            :ev-type (midi-evt-type e)
-                                            :ev-chan (midi-evt-chan e)
-                                            :ev-ref (midi-evt-ref e)
-                                            :ev-port (midi-evt-port e)
-                                            :ev-fields (if (equal (midi-evt-type e) 'Tempo) 
-                                                           (list (mstempo2bpm (midi-evt-tempo e)))
-                                                         (midi-evt-fields e))
+                                            :ev-date (om-midi::midi-evt-date e)
+                                            :ev-type (om-midi::midi-evt-type e)
+                                            :ev-chan (om-midi::midi-evt-chan e)
+                                            :ev-ref (om-midi::midi-evt-ref e)
+                                            :ev-port (om-midi::midi-evt-port e)
+                                            :ev-fields (if (equal (om-midi::midi-evt-type e) 'Tempo) 
+                                                           (list (mstempo2bpm (om-midi::midi-evt-tempo e)))
+                                                         (om-midi::midi-evt-fields e))
                                             )))
                    (when (or (not test) (funcall test event))
                      event))
@@ -259,9 +259,9 @@ The second output returns the corresponding dates"
   :icon '(908)
   (let ((rep
          (mat-trans (loop for evt in (fileseq self)  
-                          when (equal (midi-evt-type evt) 'Lyric)
-                          collect (list (if (stringp (car (midi-evt-fields evt))) (midi-evt-fields evt) (list2string (midi-evt-fields evt)))
-                                        (midi-evt-date evt)))
+                          when (equal (om-midi::midi-evt-type evt) 'Lyric)
+                          collect (list (if (stringp (car (om-midi::midi-evt-fields evt))) (om-midi::midi-evt-fields evt) (list2string (om-midi::midi-evt-fields evt)))
+                                        (om-midi::midi-evt-date evt)))
                     )))
     (values (car rep) (cadr rep))))
 

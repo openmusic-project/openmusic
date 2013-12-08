@@ -27,7 +27,7 @@
                (midi-o item item1)))
        
        (loop for aport in (list! port) do
-             (let ((event  (make-midi-evt :type 'Stream
+             (let ((event  (om-midi::make-midi-evt :type 'Stream
                                           :port aport
                                           :fields bytes)))
                            (midi-send-evt event)
@@ -51,7 +51,7 @@ The range of pitch wheel is between -8192 and 8190.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event  (make-midi-evt :type 'PitchWheel
+         (let ((event  (om-midi::make-midi-evt :type 'PitchWheel
                                       :chan chans :port aport
                                       :fields vals)))
            (midi-send-evt event)
@@ -333,13 +333,18 @@ The range of volume values is 0-127.
    :icon 148
    :initvals '(0 1 60 100 1000 1)
    (when (< dur 65000)
-     (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Note") :port port :chan chan
-                                                              :date 0 :ref track
-                                                              :vals (list pitch vel dur)
+     (let ((event (om-midi::make-midi-evt :type 'Note :port port :chan chan
+                                          :date 0 :ref track
+                                          :fields (list pitch vel dur)
                                                               )))
-           (when event (om-midi-send-evt event *midiplayer*)))
+       (midi-send-evt event))
      ))
 
+(let ((event  (om-midi::make-midi-evt :type 'PitchWheel
+                                      :chan chans :port aport
+                                      :fields vals)))
+           
+           )
 
 ; (send-midi-note 0 1 60 100 1000 1)
 
