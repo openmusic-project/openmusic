@@ -411,10 +411,17 @@ Press 'space' to play/stop the sound file.
         (progn
           (setf (pict-sound self) (or (om-sound-get-pict self) :error)) 
           (if (not (eq (pict-sound self) :error)) 
-              (om-sound-cons-pict-zoom self))
+              #-linux (sound-cons-pict-zoom self))
           (unless (equal (pict-sound self) :error)
-              (pict-sound self)
-            )))))
+            (pict-sound self))))))
+
+#-linux
+(defmethod sound-cons-pict-zoom ((self om-sound))
+  (mp:process-run-function "Building sound pictures" nil 
+                           #'(lambda ()
+                               (dotimes (i 3)
+                                 (objc:with-autorelease-pool nil
+                                   (setf (aref (pict-zoom self) i) (om-cons-max-snd-pict (om-sound-file-name self) (* 8000 (expt 2 (1+ i))))))))))
 
 (defmethod sound-get-new-pict ((self sound) path) 
   (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))

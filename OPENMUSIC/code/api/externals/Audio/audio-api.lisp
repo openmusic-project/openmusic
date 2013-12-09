@@ -49,6 +49,7 @@
           
           om-cons-snd-pict
           om-sound-cons-pict-zoom
+          om-cons-max-snd-pict
           om-sound-get-pict
           om-read-sound-data
           ) :om-api)
@@ -731,8 +732,7 @@
   (when (and (not (equal :error (loaded self)))
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
     (om-sound-protect self 
-      (om-cons-max-snd-pict (filename self) 4000)
-      )))
+      (om-cons-max-snd-pict (filename self) 4000))))
 
 ;;;CONS SND PICT WITH MAX DETECTION
 (defun om-cons-max-snd-pict (sndpath nbpix)
@@ -762,18 +762,16 @@
                       (when (= (mod i step) 0)
                         (setf (aref smpArray n pixIndx) (reduce #'max tmpArray))
                         (incf pixIndx))))
-
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (dotimes (i nch)  
                             (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                           (om-with-fg-color *curstream* *om-gray-color*
                             (dotimes (c nch)
-                              (dotimes (i pict-w)
+                              (dotimes (i pixIndx)
                                 (setf pixpoint (round (* offset-y (aref smpArray c i))))
                                 (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
-                                               i (+ offset-y (* c channels-h) (- pixpoint)))))
-                            )))
+                                               i (+ offset-y (* c channels-h) (- pixpoint))))))))
                   (fli::free-foreign-object data)
                   pict)
               (setf pict 
@@ -786,13 +784,6 @@
                       ))))
         nil
         ))))
-
-(defmethod om-sound-cons-pict-zoom ((self om-sound))
-  (mp:process-run-function "Building sound pictures" nil 
-                           #'(lambda ()
-                               (dotimes (i 3)
-                                 (objc:with-autorelease-pool nil
-                                   (setf (aref (om::pict-zoom self) i) (om-cons-max-snd-pict (filename self) (* 8000 (expt 2 (1+ i))))))))))
 
 (defun om-cons-snd-pict (sndpath)
   (let* ((pict nil)) 
