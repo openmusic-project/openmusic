@@ -339,12 +339,6 @@ The range of volume values is 0-127.
        (midi-send-evt event))
      ))
 
-;(let ((event  (om-midi::make-midi-evt :type 'PitchWheel
-;                                      :chan chans :port aport
-;                                      :fields vals)))
-;           
-;           )
-
 ; (send-midi-note 0 1 60 100 1000 1)
 
 
