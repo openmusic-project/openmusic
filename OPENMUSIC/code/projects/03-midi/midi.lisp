@@ -60,8 +60,8 @@
 
         #+midishare "players;midishare-player"  
         #+midishare "players;midishare-rt-player"  
-;	#+cl-fluidsynth "player;fluid-player"
-;	#+(and linux cl-jack) "players;jack-midi-player"
+	;;#+cl-fluidsynth "players;fluid-player"
+	#+(and linux cl-jack) "players;jack-midi-player"
 
         ;;; MISC (OSC)
         "osc;send"

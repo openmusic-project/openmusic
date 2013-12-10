@@ -87,24 +87,24 @@
 ;;; using midi-classes:
 
 (defun seqhash-midi-note-on (seq frame noteno velocity &optional (channel 1))
-  (let ((event (oa::make-note-on-message frame noteno velocity channel)))
+  (let ((event (om-midi::make-note-on-message frame noteno velocity channel)))
     (seqhash-midi-event seq frame event)))
 
 (defun seqhash-midi-note-off (seq frame noteno velocity &optional (channel 1))
-  (let ((event (oa::make-note-off-message frame noteno velocity channel)))
+  (let ((event (om-midi::make-note-off-message frame noteno velocity channel)))
     (seqhash-midi-event seq frame event)))
 
 (defun seqhash-midi-program-change (seq frame program &optional (channel 1))
-  (let ((event (oa::make-program-change-message frame program channel)))
+  (let ((event (om-midi::make-program-change-message frame program channel)))
     (seqhash-midi-event seq frame event)))
 
 (defun seqhash-midi-control-change (seq frame control value &optional (channel 1))
-  (let ((event (oa::make-control-change-message frame control value channel)))
+  (let ((event (om-midi::make-control-change-message frame control value channel)))
     (seqhash-midi-event seq frame event)))
 
 (defun seqhash-midi-pitch-wheel-msg (seq frame bend &optional (channel 1))
   (let ((mybend (+ bend 8192)))		;expects values between -8192->8191
-    (let ((event (oa::make-pitch-bend-message frame mybend channel)))
+    (let ((event (om-midi::make-pitch-bend-message frame mybend channel)))
       (seqhash-midi-event seq frame event))))
 
 ;; erase pending note-offs for interval - don't shut off later arriving notes
@@ -113,8 +113,8 @@
 	       (let ((event (car val)))
 		 (when (and (<= startframe key endframe)
 			    (typep event 'midi::note-off-message)
-			    (eql (oa::midi-key event) noteno)
-			    (eql (oa::midi-channel event) channel))
+			    (eql (om-midi::midi-key event) noteno)
+			    (eql (om-midi::midi-channel event) channel))
 		   (remhash key seq))))
 	   seq))
 
@@ -144,7 +144,7 @@
   (let ((sounding-notes '()))
     (maphash #'(lambda (key val)
 		 (declare (ignore key))
-		 (mapc #'(lambda (ev) (push (list (oa::midi-key ev) (oa::midi-channel ev))
+		 (mapc #'(lambda (ev) (push (list (om-midi::midi-key ev) (om-midi::midi-channel ev))
 					    sounding-notes))
 		       val))
 	     seq)
@@ -196,9 +196,9 @@
 	   (dolist (midimsg events)
 	     (let ((buffer (jack-midi-event-reserve port-buf offset 3))) ;offset inside period
 	       (unless (null-pointer-p buffer)
-		 (setf (mem-aref buffer :int8 0) (oa::midi-status-byte midimsg) ;command
-		       (mem-aref buffer :int8 1) (oa::midi-data-byte-1 midimsg) ;data-byte 1
-		       (mem-aref buffer :int8 2) (oa::midi-data-byte-2 midimsg) ;data-byte 2
+		 (setf (mem-aref buffer :int8 0) (om-midi::midi-status-byte midimsg) ;command
+		       (mem-aref buffer :int8 1) (om-midi::midi-data-byte-1 midimsg) ;data-byte 1
+		       (mem-aref buffer :int8 2) (om-midi::midi-data-byte-2 midimsg) ;data-byte 2
 		       ))))
 	   (remhash key seq)))))
 
