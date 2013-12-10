@@ -410,11 +410,13 @@ Press 'space' to play/stop the sound file.
     (or (pict-sound self)
         (progn
           (setf (pict-sound self) (or (om-sound-get-pict self) :error)) 
-          (if (not (eq (pict-sound self) :error)) 
-              #-linux (sound-cons-pict-zoom self))
+        ;  (if (not (eq (pict-sound self) :error)) 
+        ;      #-linux (sound-cons-pict-zoom self))
           (unless (equal (pict-sound self) :error)
             (pict-sound self))))))
 
+
+;;IF NEEDED, BUILD 3 PICTURES WITH BETTER RESOLUTION
 #-linux
 (defmethod sound-cons-pict-zoom ((self om-sound))
   (mp:process-run-function "Building sound pictures" nil 

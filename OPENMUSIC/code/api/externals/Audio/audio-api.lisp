@@ -732,10 +732,10 @@
   (when (and (not (equal :error (loaded self)))
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
     (om-sound-protect self 
-      (om-cons-max-snd-pict (filename self) 4000))))
+      (om-cons-max-snd-pict (filename self) 5000))))
 
 ;;;CONS SND PICT WITH MAX DETECTION
-(defun om-cons-max-snd-pict (sndpath nbpix)
+(defun om-cons-max-snd-pict (sndpath nbpix) 
   (let* ((pict nil)) 
     (multiple-value-bind (data size nch) 
         (ignore-errors
@@ -770,7 +770,8 @@
                             (dotimes (c nch)
                               (dotimes (i pixIndx)
                                 (setf pixpoint (round (* offset-y (aref smpArray c i))))
-                                (gp::draw-line *curstream* i (+ offset-y (* c channels-h) pixpoint)
+                                (gp::draw-line *curstream*
+                                               i (+ offset-y (* c channels-h) pixpoint)
                                                i (+ offset-y (* c channels-h) (- pixpoint))))))))
                   (fli::free-foreign-object data)
                   pict)

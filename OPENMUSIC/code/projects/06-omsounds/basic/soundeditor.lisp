@@ -799,15 +799,7 @@
               (om-with-fg-color self *om-dark-gray-color*
 
                 (if (and zoom-step (not (pict-spectre? thesound)))
-                    (cond ((>= xview (* 3 (/ dur-ms 4))) 
-                           (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                          ((and (< xview (* 3 (/ dur-ms 4))) (>= xview (* 2 (/ dur-ms 4)))) 
-                           (om-draw-picture self (aref (pict-zoom thesound) 0) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                          ((and (< xview (* 2 (/ dur-ms 4))) (>= xview (/ dur-ms 4))) 
-                           (om-draw-picture self (aref (pict-zoom thesound) 1) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                          ((and (< xview (/ dur-ms 4)) (> xview 500))
-                           (om-draw-picture self (aref (pict-zoom thesound) 2) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                          ((and (< xview (/ dur-ms 4)) (<= xview 500)) (om-draw-waveform self zoom-step)))
+                    (om-draw-waveform self zoom-step)
                   (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
 
                 (om-with-fg-color self *om-blue-color*
@@ -824,15 +816,13 @@
                     (om-with-focused-view self
                       (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
                   (om-with-focused-view self 
-                    (om-draw-string (round (w self) 2) (round (h self) 2) "..."))
-                  )
-                )))) 
+                    (om-draw-string (round (w self) 2) (round (h self) 2) "...")))
+                ))))
       (om-with-focused-view self (om-draw-string 10 40 (format nil "No file loaded.."))))))
 
 
 (defmethod om-draw-waveform ((self soundPanel) smpstep)
   (let* ((thesound (object (om-view-container self)))
-         (maxsmp (om-sound-n-samples thesound))
          (sr (if (om-sound-las-using-srate-? thesound) 
                  las-srate
                (om-sound-sample-rate thesound)))
@@ -846,12 +836,11 @@
          (xmax (cadr (rangex self)))
          (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
          (xtime (- xmax xmin))
-         (nbpix (* xtime (round sr 1000)))
          (basicstep smpstep)
          (channels-h (round window-v-size nch))
          (offset-y (round channels-h 2))
          (datalist (loop for pt from 0 to (* timestep xtime) collect
-                         (loop for chan from 0 to (- nch 1) collect 
+                         (loop for chan from 0 to (- nch 1) collect
                                (* 0.9 (fli::dereference stream-buffer 
                                                         :index (+ (* xmin (round sr 1000) nch) (round (* pt basicstep nch)) chan)
                                                         :type :float))))))
@@ -867,8 +856,7 @@
                 (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
                 (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
                 (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
-                               pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
-                ) 
+                               pixtime (- (+ offset-y (* c channels-h) pixpoint) 10)))
           (setf sampleprev sample))))
 
 
