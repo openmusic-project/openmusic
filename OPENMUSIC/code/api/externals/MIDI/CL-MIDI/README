@@ -1,8 +1,0 @@
-These files together provide for a lisp-only api for midi-events and
-midifiles.
-
-'midi-20070618' is "Université Bordeaux I"/"Goldsmith
-College"/GSharp's standard-compliant low-level interface to
-midi-messages and SMF.
-
-midi-types and midimsg2evt are not required anymore
