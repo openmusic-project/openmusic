@@ -855,8 +855,9 @@
                 (setf pixpoint (round (* offset-y val))) ; scaled 0-1 --> 0 -->256/2
                 (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep)) (/ 1 timestep)) 0) system-etat)))
                 (setf pixtimeprev (om-point-h (point2pixel self (om-make-point (+ xmin (* i (/ 1 timestep))) 0) system-etat)))
-                (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
-                               pixtime (- (+ offset-y (* c channels-h) pixpoint) 10)))
+                (om-with-fg-color nil *om-gray-color*
+                  (om-draw-line  pixtimeprev (- (+ offset-y (* c channels-h) (round (* offset-y (nth c sampleprev)))) 10)
+                                 pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))))
           (setf sampleprev sample))))
 
 
