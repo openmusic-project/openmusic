@@ -341,18 +341,20 @@ Ex. (interlock '(0 1 2 3 ) '(a b) '(1 3))  =>  (0 a 1 2 b 3)"
 ;;;-----------------SUBS-POSN
 
 (defmethod* subs-posn ((lis1 list) posn val)
-   :initvals '((0 1 2 3)  (1 3) (a b))
-   :indoc '("a list" "a list of indices" "a list or value")
-   :icon 235
-   :doc "Substitutes the elements of <lis1> at position(s) <posn> (if they exist) with the corresponding elements in <val>.
+  :initvals '((0 1 2 3)  (1 3) (a b))
+  :indoc '("a list" "a list of indices" "a list or value")
+  :icon 235
+  :doc "Substitutes the elements of <lis1> at position(s) <posn> (if they exist) with the corresponding elements in <val>.
 
 Ex. (subs-posn '(0 1 2 3) 2 'a)  => (0 1 a 3)
 Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
 "
-   (let ((copy (copy-list lis1)))
-    (loop for item in (list! posn)
-          for i = 0 then (+ i 1) do
-          (setf (nth item copy) (if (listp val) (nth i val) val)))
+  (let ((copy (copy-list lis1)))
+    (if (listp posn)
+        (loop for item in posn
+              for i = 0 then (+ i 1) do
+              (setf (nth item copy) (if (listp val) (nth i val) val)))
+      (setf (nth posn copy) val))
     copy))
 
 
