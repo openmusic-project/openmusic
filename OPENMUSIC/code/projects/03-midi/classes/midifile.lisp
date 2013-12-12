@@ -360,7 +360,7 @@ Note values are lists of (pitch date dur vel chan).
     (drawmini-track-notes view (list mint maxt minpitch maxpitch) y1 y2 notes)))
 
 (defun draw-mini-midi (view dur val) 
-  (let ((trackh (round (h view) (length (tracks val)))))
+  (let ((trackh (if (tracks val) (round (h view) (length (tracks val))) (h view))))
     (loop for track in (tracks val)
           for i = 0 then (+ i 1) do
           (draw-track-mini view track 0 dur (* i trackh) (* (1+ i) trackh)))))
