@@ -247,7 +247,7 @@ It generates an abstract sound pointer (called 'sound-data' in OM) which can und
 
 (defmethod! sound-seq ((s1 sound) (s2 sound) &optional (crossfade 0))
   (sound-seq (get-sound-data s1) (get-sound-data s2) crossfade))
-
+ 
 
 ;;;---- FADE ----
 
@@ -261,7 +261,7 @@ SOUND-FADE is part of the audio processing tools based on the LibAudioStream lib
 It generates an abstract sound pointer (called 'sound-data' in OM) which can undergo further processing or be saved as a sound file using SAVE-SOUND function.
 "
   (make-instance 'sound-data 
-    :ptr (las::MakeFadeSound (ptr s) (round (* in (* *audio-sr* 0.001))) (round (* out (* *audio-sr* 0.001))))
+                 :ptr (las::MakeFadeSound (ptr s) (round (* in (* *audio-sr* 0.001))) (round (* out (* *audio-sr* 0.001))))
     :tracknum (tracknum s)))
 
 (defmethod! sound-fade ((s sound) in out)

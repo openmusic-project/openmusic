@@ -300,12 +300,57 @@
   (ptr :pointer)
   (frames :long-long))
 
+(defcfun (sf-read-float "sf_read_float") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-writef-float "sf_writef_float") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-write-float "sf_write_float") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
 (defcfun (sf-readf-int "sf_readf_int") :long-long
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))
 
+(defcfun (sf-read-int "sf_read_int") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-writef-int "sf_writef_int") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-write-int "sf_write_int") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
 (defcfun (sf-readf-short "sf_readf_short") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-read-short "sf_read_short") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-writef-short "sf_writef_short") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-write-short "sf_write_short") :long-long
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))
