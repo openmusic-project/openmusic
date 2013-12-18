@@ -128,7 +128,8 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 
 ;;; MAKE A MIDIFILE INSTANCE FROM FILE
 (defun load-midifile (name) 
-  (let ((themidiFile (make-instance 'MidiFile)))
+  (let ((themidiFile (make-instance 'MidiFile))
+	track-list)
     (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))
     (multiple-value-bind (seq nbtracks clicks format)
         (midi-load-file (namestring name))
@@ -139,12 +140,12 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
       (when seq
        	(setf (fileseq themidiFile) (convert-tempo-info seq clicks))
 	(setf track-list (make-list nbtracks :initial-element nil))
-
+	
+ 
         ;;; (pitch date dur vel chan ref port)
    	(loop for note in (midievents2midilist (fileseq themidiFile)) 
               when (plusp (third note))  ;;; dur > 0
               do (push (list (first note) (second note) (third note) (fourth note) (fifth note)) (nth (sixth note) track-list)))
-      
 	(setf (extent themidiFile) (loop for track in track-list 
                                          if track maximize (+ (third (car track)) (second (car track)))))
         (setf (Qvalue themidiFile)  1000)
