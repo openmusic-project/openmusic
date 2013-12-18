@@ -24,7 +24,10 @@
 (defvar *jack-midi-input-port* nil)
 
 ;;; global pool of seqs for this client, for separate control [start/stop/pause...]:
-(defun make-jack-seqs () (make-hash-table)) 
+(defun make-jack-seqs () (make-hash-table :size 1500
+					  :rehash-size 1.5
+					  :rehash-threshold 0.7
+					 )) 
 (defparameter *jack-seqs* (make-jack-seqs))
 
 ;;; event-seq is a hash-table, keys are frameno at jacks' start-of-period (ie: jack-last-frame-time)
@@ -129,6 +132,7 @@
 (defun jack-play-event (seq start event)
   (seqhash-midi-event seq (jack-frame-now start) event))
 
+#|
 (defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 1))
   (mp:process-run-function "JACK play MIDI-note" ()
 			   #'(lambda ()
@@ -139,6 +143,16 @@
 				 ;; (sleep (/ (jack-get-buffer-size *CLJackClient*)
 				 ;; 	   (jack-get-sample-rate *CLJackClient*)))
 				 (seqhash-midi-note-off seq endframe noteno 0 chan)))))
+|#
+
+(defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 1))
+  (let* ((startframe (jack-frame-now start))
+	 (endframe (+ startframe (sec->frame dur) -1)))
+    (seqhash-clear-note-offs seq startframe endframe noteno chan)
+    (seqhash-midi-note-on seq startframe noteno vel chan)
+    ;; (sleep (/ (jack-get-buffer-size *CLJackClient*)
+    ;; 	   (jack-get-sample-rate *CLJackClient*)))
+    (seqhash-midi-note-off seq endframe noteno 0 chan)))
 
 (defun jack-all-notes-off (seq)
   (let ((sounding-notes '()))

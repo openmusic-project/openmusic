@@ -74,11 +74,37 @@
 	(chan (chan note)))
     (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
+
+(defmacro jack-first-n (elms n siz) `(butlast ,elms (- ,siz ,n)))
+(defmacro jack-after-n (elms n) `(nthcdr ,n ,elms))
+
+;; this works for very long 'sequences', ie: chord-seqs or lists.  Need a better way to do hierarchic structures,
+;; ie. voice, poly, maquette?
+
+(defun jack-send-first-and-rest (elms split nelems at interval queue)
+  ;; send off first elements, to get on with playing:
+  (mapc #'(lambda (sub)
+	    (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+	(jack-first-n elms split nelems))
+  ;; send rest when time permits
+  (mp::process-run-function "sending rest of elems" nil
+			    #'(lambda ()
+				(mapc #'(lambda (sub)
+					  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+				      (jack-after-n elms split)))))
+
+(defun jack-send-whats-inside (object at interval queue)
+  (let* ((elms (inside object))
+	 (nelems (length elms))
+	 (split 200))
+    (if (> nelems split)
+	(jack-send-first-and-rest elms split nelems at interval queue)
+	(mapc #'(lambda (sub)
+		  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+	      (inside object)))))
+
 (defun jack-send-to-jack (object at interval queue)
-  (cond ((container-p object)
-	 (mapc #'(lambda (sub)
-		   (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
-	       (inside object)))
+  (cond ((container-p object) (jack-send-whats-inside object at interval queue))
 	((rest-p object) nil)
 	((note-p object)
 	 ;; send off events to jacks scheduler
@@ -87,7 +113,7 @@
 		  (interval-at (if interval (- at (car interval)) at)))
 	     (when (or (not interval) note-in-interval?)
 	       (jack-player-play-note queue object interval-at)))))
-	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
+	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))  
 
 (defmethod player-schedule :around ((player omplayer) obj (engine (eql :jackmidi)) &key (at 0) interval)
   (declare (ignore interval))
@@ -96,7 +122,7 @@
     (player-start engine (list obj)))
   (call-next-method))
 
-(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object container) at interval)
+(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object simple-container) at interval)
   (if (not *jack-use-om-scheduler*)
       (progn
 	(jack-possibly-init-queue-for-this-player object)
@@ -109,7 +135,6 @@
 	play-list))
 
 (defmethod player-loop ((engine (eql :jackmidi)) player &optional play-list)
-  (print (list 'player-loop play-list))
   (mapc #'(lambda (item)
 	    (let ((interval (play-interval player)))
               (if *jack-use-om-scheduler*
