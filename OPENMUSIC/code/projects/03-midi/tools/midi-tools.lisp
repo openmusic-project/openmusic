@@ -43,8 +43,8 @@
 (defun midievents2midilist (seq)
   (let ((rep nil))
     (loop for event in seq do
-          (case (om-midi::midi-evt-type event)
-            ('Note  (push (list (om-midi::midi-evt-pitch event)
+	  (case (om-midi::midi-evt-type event)
+            ('om-midi:Note  (push (list (om-midi::midi-evt-pitch event)
                                 (om-midi::midi-evt-date event)
                                 (om-midi::midi-evt-dur event) 
                                 (om-midi::midi-evt-vel event)
@@ -52,27 +52,28 @@
                                 (om-midi::midi-evt-ref event)
                                 (om-midi::midi-evt-port event))
                           rep))
-            ('KeyOn (if  (= (om-midi::midi-evt-vel event) 0) ;;; actually it's a KeyOff
+            ('om-midi:KeyOn (if  (= (om-midi::midi-evt-vel event) 0) ;;; actually it's a KeyOff
                          (close-notes-on rep
                                          (om-midi::midi-evt-pitch event) 
                                          (om-midi::midi-evt-chan event)
                                          (om-midi::midi-evt-date event)
                                          (om-midi::midi-evt-ref event)
                                          (om-midi::midi-evt-port event))
-                       (push (list (om-midi::midi-evt-pitch event)  ;;; put a note on with duration open in the list
-                                   (om-midi::midi-evt-date event)
-                                    (* -1 (om-midi::midi-evt-date event))
-                                    (om-midi::midi-evt-vel event) 
-                                    (om-midi::midi-evt-chan event)
-                                    (om-midi::midi-evt-ref event)
-                                    (om-midi::midi-evt-port event)) 
-                             rep)))
-            ('KeyOff (close-notes-on rep
+			 (push (list (om-midi::midi-evt-pitch event) ;;; put a note on with duration open in the list
+				     (om-midi::midi-evt-date event)
+				     (* -1 (om-midi::midi-evt-date event))
+				     (om-midi::midi-evt-vel event) 
+				     (om-midi::midi-evt-chan event)
+				     (om-midi::midi-evt-ref event)
+				     (om-midi::midi-evt-port event)) 
+			       rep)))
+            ('om-midi:KeyOff (close-notes-on rep
                                       (om-midi::midi-evt-pitch event) 
                                       (om-midi::midi-evt-chan event)
                                       (om-midi::midi-evt-date event)
                                       (om-midi::midi-evt-ref event)
-                                      (om-midi::midi-evt-port event)))))
+                                      (om-midi::midi-evt-port event)))
+	    ))
     (when (find-if 'minusp rep :key 'third) 
       (om-print (format nil "Warning: this MIDI sequence has unterminated notes!")))
     (reverse rep)))
