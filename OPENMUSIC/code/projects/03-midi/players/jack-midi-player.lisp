@@ -213,16 +213,32 @@
 
 ;; general function om-midi-send-evt expects instances of midimsg2evt:
 
+#|
 (defun om-midi-send-evt (event &optional (player *midiplayer*))
   (declare (ignore player))
   (let ((time (cl-jack::jack-frame-now))
 	(seq cl-jack::*jack-seq*))
-    (case (oa::event-type event)
+    (case (om-midi::midi-evt-type event)
       (5 (cl-jack::seqhash-midi-program-change seq time (oa::event-pgm event) (1+ (oa::event-chan event))))
       (7 (cl-jack::seqhash-midi-pitch-wheel-msg seq time (oa::event-bend event) (1+ (oa::event-chan event))))
       (4 (cl-jack::seqhash-midi-control-change seq time (oa::event-ctrl event) (oa::event-val event) (1+ (oa::event-chan event))))
-      (t nil))
+      (t (print (om-midi::midi-evt-type event))))
     (print event)))
+|#
+
+(defun jack-midi-send-evt (event &optional player)
+  (declare (ignore player))
+  (let ((time (cl-jack::jack-frame-now))
+	(seq cl-jack::*jack-seq*))
+    (case (om-midi::midi-evt-type event)
+      (ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (om-midi::midi-evt-chan event)))
+      (PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (om-midi::midi-evt-chan event)))
+      (CtrlChange (cl-jack::seqhash-midi-control-change seq time (car (om-midi::midi-evt-fields event)) (cadr (om-midi::midi-evt-fields event))
+					       (om-midi::midi-evt-chan event)))
+      (t (print (list 'event-type (om-midi::midi-evt-type event)))))
+    (print event)))
+
+;; (position "ProgChange" *midi-event-types* :test #'subseq :key #'car)
 
 ;; todo::  setup to handle instances of MidiEvent
 

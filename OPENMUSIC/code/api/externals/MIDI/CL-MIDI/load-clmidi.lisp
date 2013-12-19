@@ -9,3 +9,5 @@
 
 (defmethod om-midi::load-midi-file-function ((midisystem (eql :cl-midi))) 'om-midi::cl-midi-load-file)
 (defmethod om-midi::save-midi-file-function ((midisystem (eql :cl-midi))) 'om-midi::cl-midi-save-file)
+
+(defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)

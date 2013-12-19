@@ -132,19 +132,6 @@
 (defun jack-play-event (seq start event)
   (seqhash-midi-event seq (jack-frame-now start) event))
 
-#|
-(defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 1))
-  (mp:process-run-function "JACK play MIDI-note" ()
-			   #'(lambda ()
-			       (let* ((startframe (jack-frame-now start))
-				      (endframe (+ startframe (sec->frame dur) -1)))
-				 (seqhash-clear-note-offs seq startframe endframe noteno chan)
-				 (seqhash-midi-note-on seq startframe noteno vel chan)
-				 ;; (sleep (/ (jack-get-buffer-size *CLJackClient*)
-				 ;; 	   (jack-get-sample-rate *CLJackClient*)))
-				 (seqhash-midi-note-off seq endframe noteno 0 chan)))))
-|#
-
 (defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 1))
   (let* ((startframe (jack-frame-now start))
 	 (endframe (+ startframe (sec->frame dur) -1)))
