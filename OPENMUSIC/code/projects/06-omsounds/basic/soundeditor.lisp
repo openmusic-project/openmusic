@@ -798,9 +798,10 @@
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
 
-                (if (and zoom-step (not (pict-spectre? thesound)))
-                    (om-draw-waveform self zoom-step)
-                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+               ; (if (and zoom-step (not (pict-spectre? thesound)))
+               ;     (om-draw-waveform self zoom-step)
+                  (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15)))
+                  ;)
 
                 (om-with-fg-color self *om-blue-color*
                   (loop for item in (markers thesound) 
