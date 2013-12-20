@@ -238,6 +238,9 @@
     filename))
 
 
+(defun om-midi::cl-midi-send-evt (event &optional player)
+  (print 'not-yet-set))
+
 ;;; I think there's no need to handle this here.
 ;;; In principle OM supports KeyOn/KeyOff as well as Note (incl. duration) messages.
 ;;; We can suppose the 'Note' concept is not considered here

@@ -132,7 +132,7 @@
 (defun jack-play-event (seq start event)
   (seqhash-midi-event seq (jack-frame-now start) event))
 
-(defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 1))
+(defun jack-play-note (seq start dur noteno &optional (vel 80) (chan 0))
   (let* ((startframe (jack-frame-now start))
 	 (endframe (+ startframe (sec->frame dur) -1)))
     (seqhash-clear-note-offs seq startframe endframe noteno chan)
@@ -145,7 +145,7 @@
   (let ((sounding-notes '()))
     (maphash #'(lambda (key val)
 		 (declare (ignore key))
-		 (mapc #'(lambda (ev) (push (list (om-midi::midi-key ev) (om-midi::midi-channel ev))
+		 (mapc #'(lambda (ev) (push (list (om-midi::midi-key ev) (1- (om-midi::midi-channel ev)))
 					    sounding-notes))
 		       val))
 	     seq)
@@ -169,8 +169,8 @@
 ;;(jack-reset)
 
 (defun jack-reset-channels ()
-  (dotimes (ch 16)
-    (seqhash-midi-program-change *jack-seq* (jack-frame-now) ch ch)))
+  (loop for ch from 0 to 16
+     do (seqhash-midi-program-change *jack-seq* (jack-frame-now) ch ch)))
 
 ;;(jack-reset-channels)
 

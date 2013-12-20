@@ -71,7 +71,7 @@
 	(dur (/ (real-dur note) 1000.0))
 	(noteno (round (midic note) 100))
 	(vel (vel note))
-	(chan (chan note)))
+	(chan (1- (chan note))))
     (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
 
@@ -93,7 +93,7 @@
 					  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
 				      (jack-after-n elms split)))))
 
-(defun jack-send-whats-inside (object at interval queue)
+(defun jack-send-container (object at interval queue)
   (let* ((elms (inside object))
 	 (nelems (length elms))
 	 (split 200))
@@ -104,7 +104,7 @@
 	      (inside object)))))
 
 (defun jack-send-to-jack (object at interval queue)
-  (cond ((container-p object) (jack-send-whats-inside object at interval queue))
+  (cond ((container-p object) (jack-send-container object at interval queue))
 	((rest-p object) nil)
 	((note-p object)
 	 ;; send off events to jacks scheduler
@@ -161,7 +161,7 @@
 	(dur (/ (real-dur object) 1000.0))
 	(noteno (round (midic object) 100))
 	(vel (vel object))
-	(chan (chan object)))
+	(chan (1- (chan object))))
     (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
 (defun jack-player-send-evt-now-in-global-seq (event)
@@ -226,24 +226,22 @@
     (print event)))
 |#
 
+(defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)
+
+
 (defun jack-midi-send-evt (event &optional player)
   (declare (ignore player))
   (let ((time (cl-jack::jack-frame-now))
 	(seq cl-jack::*jack-seq*))
     (case (om-midi::midi-evt-type event)
-      (ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (om-midi::midi-evt-chan event)))
-      (PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (om-midi::midi-evt-chan event)))
-      (CtrlChange (cl-jack::seqhash-midi-control-change seq time (car (om-midi::midi-evt-fields event)) (cadr (om-midi::midi-evt-fields event))
-					       (om-midi::midi-evt-chan event)))
+      (ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
+      (PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
+      (CtrlChange (cl-jack::seqhash-midi-control-change seq time (cadr (om-midi::midi-evt-fields event)) (car (om-midi::midi-evt-fields event))
+							(1- (om-midi::midi-evt-chan event))))
       (t (print (list 'event-type (om-midi::midi-evt-type event)))))
     (print event)))
 
+(setf (symbol-function 'om-midi::cl-midi-send-evt) (symbol-function 'jack-midi-send-evt))
+
 ;; (position "ProgChange" *midi-event-types* :test #'subseq :key #'car)
-
-;; todo::  setup to handle instances of MidiEvent
-
-(defun om-midi-send-midi-evt (event &optional (player *midiplayer*))
-  (declare (ignore event player))
-  (print "play midievent not implemented yet"))
-
 

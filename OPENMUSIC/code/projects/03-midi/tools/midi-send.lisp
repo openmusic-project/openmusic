@@ -293,10 +293,10 @@ The range of volume values is 0-127.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "CtrlChange")
-                                                                  :chan (- chans 1) :port aport
-                                                                  :ctrlchange (list 7 vol))))
-             (when event (om-midi-send-evt event *midiplayer*)))))
+         (let ((event (om-midi::make-midi-evt :type 'CtrlChange
+					      :chan (- chans 1) :port aport
+					      :fields (list 7 vol))))
+             (when event (midi-send-evt event)))))
 
 (defmethod* volume ((volume number)  (chans list) &optional port)
   (loop for item in chans do
