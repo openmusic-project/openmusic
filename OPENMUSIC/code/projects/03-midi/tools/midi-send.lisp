@@ -94,20 +94,20 @@ The range of pitch wheel is between 0 and 127.
 ;===================PGCHANGE
 
 ;===== MODIFIED FUNCTION =====
-(defmethod* pgmout ((progm integer) (chans integer) &optional port) 
-   :icon 912
-   :indoc '("program number" "MIDI channel(s)" "output port number")
-   :initvals '(2 1 nil)
-   :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
+;; (defmethod* pgmout ((progm integer) (chans integer) &optional port) 
+;;    :icon 912
+;;    :indoc '("program number" "MIDI channel(s)" "output port number")
+;;    :initvals '(2 1 nil)
+;;    :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
 
-<progm> and <chans> can be single numbers or lists."
-   (unless port (setf port *def-midi-out*))
-   (setf port (list! port))
-   (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ProgChange")
-                                                                  :chan (- chans 1) :port aport
-                                                                  :pgm progm)))
-           (when event (om-midi-send-evt event *midiplayer*)))))
+;; <progm> and <chans> can be single numbers or lists."
+;;    (unless port (setf port *def-midi-out*))
+;;    (setf port (list! port))
+;;    (loop for aport in port do
+;;          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ProgChange")
+;;                                                                   :chan (- chans 1) :port aport
+;;                                                                   :pgm progm)))
+;;            (when event (om-midi-send-evt event *midiplayer*)))))
 
 (defmethod* pgmout ((progm integer) (chans integer) &optional port) 
   :icon 912
@@ -228,6 +228,19 @@ Arguments can be can be single numbers or lists.
 
 
 ;======================CTRL CHANGE 
+;; (defmethod* ctrlchg ((ctrlnum integer) (val integer) (chans integer) &optional port) 
+;;    :icon 912
+;;    :indoc '("control number"  "value" "MIDI channel (1-16)" "output port number")
+;;    :initvals '(7 100 1 nil)
+;;    :doc "Sends a control change event with control number <ctrlnum> and value <val> to channel <chans> (and port <port>)."
+;;    (unless port (setf port *def-midi-out*))
+;;    (setf port (list! port))
+;;    (loop for aport in port do
+;;          (let ((event (om-midi-new-evt (om-midi-get-num-from-type "CtrlChange")
+;;                                                                   :chan (- chans 1) :port aport
+;;                                                                   :ctrlchange (list ctrlnum val))))
+;;            (when event (om-midi-send-evt event *midiplayer*)))))
+
 (defmethod* ctrlchg ((ctrlnum integer) (val integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("control number"  "value" "MIDI channel (1-16)" "output port number")
@@ -236,10 +249,11 @@ Arguments can be can be single numbers or lists.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "CtrlChange")
-                                                                  :chan (- chans 1) :port aport
-                                                                  :ctrlchange (list ctrlnum val))))
-           (when event (om-midi-send-evt event *midiplayer*)))))
+         (let ((event (om-midi::make-midi-evt :type 'CtrlChange
+					      :chan chans
+					      :port aport
+					      :fields (list ctrlnum val))))
+           (when event (midi-send-evt event)))))
 
 (defmethod* ctrlchg ((ctrlnum integer) (val integer) (chans list) &optional port) 
   (loop for item in chans do
