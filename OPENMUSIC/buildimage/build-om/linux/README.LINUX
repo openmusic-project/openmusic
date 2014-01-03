@@ -18,12 +18,10 @@ the package - eg (on Fedora):
     yum install libsndfile.i686
     yum install	jack-audio-connection-kit.i686
 
-libsdif.so is provided inside $RELEASE/resources/lib/linux/libsdif.so
-
 libsdif.so is available at IRCAM or from sourceforge:
-http://sdif.sourceforge.net/.  If you need to compile from source,
-take care to compile a 32-bit version of the lib (CC flags: -m32 or
--march=i686 or some such).
+http://sdif.sourceforge.net/.  When compiling from source, take care
+to compile a 32-bit version of the lib (CC flags: -m32 or -march=i686
+or some such).
 
 FONTS:
 
