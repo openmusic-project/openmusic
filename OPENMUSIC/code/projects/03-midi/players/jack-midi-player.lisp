@@ -74,6 +74,11 @@
 	(chan (1- (chan note))))
     (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
+(defun jack-player-play-midievent (queue event offset)
+  ;;(print (list 'jack-player-play-event queue event offset))
+  (let ((seq (gethash queue *jack-midi-seqs*)))
+    (cl-jack::jack-play-event seq offset event)))
+
 
 (defmacro jack-first-n (elms n siz) `(butlast ,elms (- ,siz ,n)))
 (defmacro jack-after-n (elms n) `(nthcdr ,n ,elms))
@@ -113,7 +118,26 @@
 		  (interval-at (if interval (- at (car interval)) at)))
 	     (when (or (not interval) note-in-interval?)
 	       (jack-player-play-note queue object interval-at)))))
-	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))  
+	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
+
+
+(defun jack-send-events-to-jack (object at interval queue)
+  (cond ((container-p object) (jack-send-container object at interval queue))
+	((typep object 'midifile) nil)
+	((rest-p object) nil)
+	 ;; send off events to jacks scheduler
+	((note-p object)
+	 (unless (member (tie object) '(end continue))
+	   (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
+		  (interval-at (if interval (- at (car interval)) at)))
+	     (when (or (not interval) note-in-interval?)
+	       (jack-player-play-note queue object interval-at)))))
+	((midievent-p object)
+	 (let* ((event-in-interval? (point-in-interval at interval))
+		(interval-at (if interval (- at (car interval)) at)))
+	   (when (or (not interval) note-in-interval?)
+	     (jack-player-play-event queue object interval-at))))
+	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
 
 (defmethod player-schedule :around ((player omplayer) obj (engine (eql :jackmidi)) &key (at 0) interval)
   (declare (ignore interval))
