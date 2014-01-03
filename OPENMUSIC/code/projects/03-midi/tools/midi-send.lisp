@@ -53,7 +53,7 @@ The range of pitch wheel is between -8192 and 8190.
    (loop for aport in port do
          (let ((event  (om-midi::make-midi-evt :type 'PitchWheel
                                       :chan chans :port aport
-                                      :fields vals)))
+                                      :fields (list vals))))
            (midi-send-evt event)
            )))
 
@@ -308,7 +308,7 @@ The range of volume values is 0-127.
    (setf port (list! port))
    (loop for aport in port do
          (let ((event (om-midi::make-midi-evt :type 'CtrlChange
-					      :chan (- chans 1) :port aport
+					      :chan chans :port aport
 					      :fields (list 7 vol))))
              (when event (midi-send-evt event)))))
 
