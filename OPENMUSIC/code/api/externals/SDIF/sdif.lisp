@@ -65,13 +65,15 @@
 					   :connection-style :immediate)
 		      t))
 	#+linux (progn 
-		  (pushnew "/usr/local/lib/" cffi::*foreign-library-directories*)
 		  (define-foreign-library libsdif
+		    (:unix (:or "/usr/local/lib/libsdif.so" "libsdif.so" (om-lib-pathname sdif::*sdif-pathname*)))
 		    (t (:default "libsdif") ))
-		  (handler-case (progn (use-foreign-library libsdif) t)
+		  (handler-case (progn
+				  (let ((lib (use-foreign-library libsdif)))
+				    (print (format nil "Loaded SDIF lib: ~A" (foreign-library-pathname lib))))
+				  t)
 		    (error () (progn (print (format nil "could not load foreign-library libsdif"))
 				     nil))))))
-
 
 ; (oa::om-start-sdif)
 ; (load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")
