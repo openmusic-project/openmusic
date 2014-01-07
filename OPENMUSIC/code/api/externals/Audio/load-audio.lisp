@@ -6,6 +6,8 @@
 
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "LibAudioStream")) :name "LibAudioStream"))
 
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "LibSampleRate")) :name "LibSampleRate"))
+
 (compile&load (make-pathname :directory (pathname-directory *load-pathname*) :name "las-audio-player"))                                      
 
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "libsndfile")) :name "libsndfile"))

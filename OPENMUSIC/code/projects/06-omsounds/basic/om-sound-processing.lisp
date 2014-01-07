@@ -93,7 +93,6 @@
                                                                                             (logior sf::sf_format_wav resolution)))
 
       (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
-        (print (sf::sf_error sndfile-handle-out))
         (sf::sf-write-float sndfile-handle-out (buffer self) (* (nch self) (size self)))
         (sf::sf_close sndfile-handle-out)
         (fli:free-foreign-object (buffer self)))))

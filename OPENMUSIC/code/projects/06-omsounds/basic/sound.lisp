@@ -410,8 +410,8 @@ Press 'space' to play/stop the sound file.
     (or (pict-sound self)
         (progn
           (setf (pict-sound self) (or (om-sound-get-pict self) :error)) 
-        ;  (if (not (eq (pict-sound self) :error)) 
-        ;      #-linux (sound-cons-pict-zoom self))
+          (if (not (eq (pict-sound self) :error)) 
+              #-linux (sound-cons-pict-zoom self))
           (unless (equal (pict-sound self) :error)
             (pict-sound self))))))
 
@@ -423,7 +423,13 @@ Press 'space' to play/stop the sound file.
                            #'(lambda ()
                                (dotimes (i 3)
                                  (objc:with-autorelease-pool nil
-                                   (setf (aref (pict-zoom self) i) (om-cons-max-snd-pict (om-sound-file-name self) (* 8000 (expt 2 (1+ i))))))))))
+                                   (setf (aref (pict-zoom self) i) (om-cons-max-snd-pict (om-sound-file-name self) (* 8000 (expt 2 i)))))))))
+
+#+linux
+(defmethod sound-cons-pict-zoom ((self om-sound))
+  (dotimes (i 3)
+    (setf (aref (pict-zoom self) i) (pict-sound self))))
+
 
 (defmethod sound-get-new-pict ((self sound) path) 
   (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
