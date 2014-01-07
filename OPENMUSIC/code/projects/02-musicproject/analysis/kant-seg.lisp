@@ -79,13 +79,14 @@
                     (om-draw-string x1 (- (h view) 90) (format nil "Precision: ~A" (precision (segment-data segment))))))
     
     (om-with-fg-color view (if (updateflag (segment-data segment)) *om-black-color* *om-gray-color*)
-    (om-with-font *om-default-font1b*
-                  (om-draw-string x1 (- (h view) (if (oddp (position segment (analysis-segments self))) 60 40))
-                                  (segment-data-tostring self segment))))))
+      (om-with-font *om-default-font1b*
+		    (om-draw-string x1 (- (h view) (if (oddp (position segment (analysis-segments self))) 60 40))
+				    (segment-data-tostring self segment))))))
 
 (defmethod segment-data-tostring ((self KANT-seg) segment) 
-  (when (and (segment-data segment) (voice (segment-data segment)))
-    (format nil "~A" (tree (voice (segment-data segment))))))
+  (if (and (segment-data segment) (voice (segment-data segment)))
+      (format nil "~A" (tree (voice (segment-data segment))))
+      ""))
 
 (defmethod get-kant-voices ((self KANT-seg))
   (loop for seg in (analysis-segments self) collect
