@@ -64,14 +64,18 @@
 	   ;;(print (format nil "setup new seq for: ~A" queue))
 	   queue)))
 
-(defun jack-player-play-note (queue note offset)
+(defun jack-player-play-note (queue note offset &optional approx)
   ;;(print (list 'jack-player-play-note queue note offset))
-  (let ((seq (gethash queue *jack-midi-seqs*))
-	(start (/ offset 1000.0))
-	(dur (/ (real-dur note) 1000.0))
-	(noteno (round (midic note) 100))
-	(vel (vel note))
-	(chan (1- (chan note))))
+  (let* ((seq (gethash queue *jack-midi-seqs*))
+	 (start (/ offset 1000.0))
+	 (dur (/ (real-dur note) 1000.0))
+	 (tempered-midic (approx-m (midic note) (or approx 2)))
+	 (noteno (floor tempered-midic 100))
+	 (vel (vel note))
+	 (chan (1- (if (and approx *midi-microplay* (member approx '(4 8)))
+		       (+ (chan note) (micro-channel tempered-midic approx))
+		       (chan note)))))
+    ;; (print (list start chan (chan note) (midic note) tempered-midic noteno approx))
     (cl-jack::jack-play-note seq start dur noteno vel chan)))
 
 (defun jack-player-play-midievent (queue event offset)
@@ -86,30 +90,30 @@
 ;; this works for very long 'sequences', ie: chord-seqs or lists.  Need a better way to do hierarchic structures,
 ;; ie. voice, poly, maquette?
 
-(defun jack-send-first-and-rest (elms split nelems at interval queue)
+(defun jack-send-first-and-rest (elms split nelems at interval queue &optional approx)
   ;; send off first elements, to get on with playing:
   (mapc #'(lambda (sub)
-	    (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+	    (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue approx))
 	(jack-first-n elms split nelems))
   ;; send rest when time permits
   (mp::process-run-function "sending rest of elems" nil
 			    #'(lambda ()
 				(mapc #'(lambda (sub)
-					  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+					  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue approx))
 				      (jack-after-n elms split)))))
 
-(defun jack-send-container (object at interval queue)
+(defun jack-send-container (object at interval queue approx)
   (let* ((elms (inside object))
 	 (nelems (length elms))
 	 (split 200))
     (if (> nelems split)
-	(jack-send-first-and-rest elms split nelems at interval queue)
+	(jack-send-first-and-rest elms split nelems at interval queue approx)
 	(mapc #'(lambda (sub)
-		  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue))
+		  (jack-send-to-jack sub (+ at (offset->ms sub)) interval queue approx))
 	      (inside object)))))
 
-(defun jack-send-to-jack (object at interval queue)
-  (cond ((container-p object) (jack-send-container object at interval queue))
+(defun jack-send-to-jack (object at interval queue &optional approx)
+  (cond ((container-p object) (jack-send-container object at interval queue approx))
 	((rest-p object) nil)
 	((note-p object)
 	 ;; send off events to jacks scheduler
@@ -117,7 +121,7 @@
 	   (let* ((note-in-interval? (interval-intersec interval (list at (+ at (real-dur object)))))
 		  (interval-at (if interval (- at (car interval)) at)))
 	     (when (or (not interval) note-in-interval?)
-	       (jack-player-play-note queue object interval-at)))))
+	       (jack-player-play-note queue object interval-at approx)))))
 	(t (error "fixme: :jackmidi, dont know how to play ~A" object))))
 
 
@@ -146,12 +150,21 @@
     (player-start engine (list obj)))
   (call-next-method))
 
+
+(defun jack-setup-microplay-chans ()
+;;; make or send ... ?
+  (pitchwheel '(0 1024 2048 3072) '(1 2 3 4)))
+
 (defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object simple-container) at interval)
-  (if (not *jack-use-om-scheduler*)
-      (progn
-	(jack-possibly-init-queue-for-this-player object)
-	(jack-send-to-jack object at interval object))
-      (call-next-method)))
+  (let ((approx (if (caller player)
+		    (get-edit-param (caller player) 'approx)
+		    *global-midi-approx*)))
+    (if (not *jack-use-om-scheduler*)
+	(progn
+	  (jack-possibly-init-queue-for-this-player object)
+	  (when (and (/= approx 2) *midi-microplay*)  (jack-setup-microplay-chans))
+	  (jack-send-to-jack object at interval object approx))
+	(call-next-method))))
 
 (defmethod player-start ((engine (eql :jackmidi)) &optional play-list)
   (mapc #'(lambda (obj)
@@ -252,7 +265,6 @@
 
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)
 
-
 (defun jack-midi-send-evt (event &optional player)
   (declare (ignore player))
   (let ((time (cl-jack::jack-frame-now))
@@ -261,7 +273,7 @@
       (ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
       (PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time
 							(round (* (/ (+ 64 (cadr (om-midi::midi-evt-fields event))) 127) 16382 ))
-								 (1- (om-midi::midi-evt-chan event))))
+							(1- (om-midi::midi-evt-chan event))))
       (PitchWheel (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
       (CtrlChange (cl-jack::seqhash-midi-control-change seq time
 							(cadr (om-midi::midi-evt-fields event))
