@@ -803,11 +803,11 @@
                   (cond ((>= xview (round dur-ms 2)) 
                          (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
                         ((and (< xview (round dur-ms 2)) (>= xview (round dur-ms 4)))
-                         (om-draw-picture self (print (aref (pict-zoom thesound) 0)) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                         (om-draw-picture self (aref (pict-zoom thesound) 0) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
                         ((and (< xview (round dur-ms 4)) (>= xview (round dur-ms 8)))
-                         (om-draw-picture self (print (aref (pict-zoom thesound) 1)) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                         (om-draw-picture self (aref (pict-zoom thesound) 1) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
                         ((< xview (round dur-ms 8))
-                         (om-draw-picture self (print (aref (pict-zoom thesound) 2)) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))))
+                         (om-draw-picture self (aref (pict-zoom thesound) 2) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))))
 
                   (om-with-fg-color self *om-blue-color*
                     (loop for item in (markers thesound) 

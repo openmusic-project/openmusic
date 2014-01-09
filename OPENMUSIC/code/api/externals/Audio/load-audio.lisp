@@ -10,6 +10,8 @@
 
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "libsndfile")) :name "libsndfile"))
 
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "libsamplerate")) :name "libsamplerate"))
+
 (compile&load (make-pathname :directory  (pathname-directory *load-pathname*) :name "audio-api"))
 
 (push :om-audio-api *features*)

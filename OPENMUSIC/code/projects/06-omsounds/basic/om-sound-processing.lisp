@@ -17,6 +17,7 @@
 ;   - om-sound-mono-to-stereo
 ;   - om-sound-stereo-to-mono
 ;   - om-sound-stereo-pan
+;   - om-sound-resample
 ;======================================================
 
 
@@ -178,7 +179,7 @@
                                  :nch nch
                                  :sr (sr s1)))
               (progn
-                (print "ERROR : TRYING TO MIX 2 SOUNDS WITH DIFFERENT NUMBER OF CHANNELS OR DIFFERENT SAMPLE-RATE. OUTPUT IS THE INPUT 1.")
+                (print "Error : trying to mix 2 sounds with different number of channels or different sample rate. Output is the input 1.")
                 s1)))
 
 
@@ -263,7 +264,7 @@
                                  :nch nch
                                  :sr (sr s1)))
               (progn
-                (print "ERROR : TRYING TO SEQUENCE 2 SOUNDS WITH DIFFERENT NUMBER OF CHANNELS OR DIFFERENT SAMPLE-RATE. OUTPUT IS THE INPUT 1.")
+                (print "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
                 s1)))
 
 (defmethod! om-sound-seq ((s1 om-sound-data) (s2 sound) &optional (crossfade 0))
@@ -518,8 +519,6 @@
                        (Rgain (if (>= pan 0) 1 (+ 1 pan)))
                        (x 0.0))
 
-                  (declare (type single-float pan Lgain Rgain x))
-
                   (dotimes (i (size s))
                     (setf x (fli:dereference (buffer s) :index i))
                     (setf (fli:dereference final-buffer :index (* 2 i)) (* Lgain x)
@@ -533,7 +532,7 @@
                                  :nch 2
                                  :sr (sr s)))
               (progn
-                (print (format nil "ERROR : TRYING TO MONO-IZE A SOUND WITH ~A CHANNELS. NEEDS 1. OUTPUT IS THE ORIGINAL INPUT." (nch s)))
+                (print (format nil "Error : trying to stereo-ize a sound with ~A channels. Needs 1. Output is the original input." (nch s)))
                 s))
 
             )
@@ -571,7 +570,7 @@
                                  :nch 1
                                  :sr (sr s)))
               (progn
-                (print (format nil "ERROR : TRYING TO MONO-IZE A SOUND WITH ~A CHANNELS. NEEDS 2. OUTPUT IS THE ORIGINAL INPUT." (nch s)))
+                (print (format nil "Error : trying to mono-ize a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
                 s)))
 
 (defmethod! om-sound-stereo-to-mono ((s sound))
@@ -609,10 +608,71 @@
                           (fli:dereference (buffer s) :index (1+ (* 2 i))) (+ (* leftRgain xl) (* rightRgain xr))))
                   s)
               (progn
-                (print (format nil "ERROR : TRYING TO PAN A SOUND WITH ~A CHANNELS. NEEDS 2. OUTPUT IS THE ORIGINAL INPUT." (nch s)))
+                (print (format nil "Error : trying to pan a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
                 s)))
 
 (defmethod! om-sound-stereo-pan ((s sound) left right)
             (declare (type fixnum left right))
             (om-sound-stereo-pan (get-om-sound-data s) left right))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
+
+
+
+
+
+(defun lsr-load-library ()
+  (setf lsr::*libsamplerate-pathname* (oa:om-lib-pathname lsr::*libsamplerate-pathname*))
+  #+win32
+  (lsr::libsamplerate-framework))
+(om-add-init-func 'lsr-load-library)
+;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE//////////
+(defmethod! om-sound-resample ((s om-sound-data) sample-rate &optional (method 0))
+            :icon 114
+            :initvals '(nil 44100 0)
+            :menuins '((2 (("Best Quality" lsr::SRC_SINC_BEST_QUALITY)
+                           ("Medium Quality" lsr::SRC_SINC_MEDIUM_QUALITY)
+                           ("Fastest" lsr::SRC_SINC_FASTEST)
+                           ("Zero-Order Hold" lsr::SRC_ZERO_ORDER_HOLD)
+                           ("Linear" lsr::SRC_LINEAR))))
+            :indoc '("a sound" "a new sample rate in Hz" "a resampling method")
+            "Resamples a sound <s>."
+
+            (if (and (= (mod sample-rate 1) 0) (> (/ sample-rate (sr s) 1.0) (/ 1.0 256)) (< (/ sample-rate (sr s) 1.0) 256))
+                (let* ((buffer (buffer s))
+                       (size (size s))
+                       (nch (nch s))
+                       (sr (sr s))
+                       (ratio (coerce (/ sample-rate sr) 'double-float))
+                       (out-size (round (* ratio size)))
+                       (final-buffer (fli:allocate-foreign-object :type :float :nelems (* out-size nch) :fill 0))
+                       res)
+
+                  (cffi:with-foreign-object (lsrdata '(:struct lsr::src_data))
+                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_in) buffer)
+                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::input_frames) size)
+                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) final-buffer)
+                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
+                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
+
+                    (setf res (lsr::src-simple lsrdata method nch))
+
+                    (if (= res 0)
+                        (progn
+                          (fli:free-foreign-object (buffer s))
+                          (make-instance 'om-sound-data 
+                                         :buffer final-buffer
+                                         :size (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen)
+                                         :nch nch
+                                         :sr sample-rate))
+                      (progn
+                        (print (format nil "Libsamplerate failed to resample and returned this error : ~A. Output is the original input." (lsr::src-strerror res)))
+                        s))))
+              (progn
+                (print "The sample-rate you supplied is invalid. It must be an integer, and the output-sr/input-sr ratio must be inside [1/256, 256] range. Output is the original input.")
+                s)))
+
+
+(defmethod! om-sound-resample ((s sound) sample-rate &optional (method 0))
+            (declare (type fixnum method))
+            (om-sound-resample (get-om-sound-data s) sample-rate method))
+;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE/////////

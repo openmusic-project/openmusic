@@ -308,7 +308,7 @@
 ;;; INSTALL OM FONTS IN C:/WINDOWS/Fonts/
 ;;; LIBS in C:/WINDOWS/   : 
 ;;   mshare32.dll player32.dll msmmsystem.dll msmmsystem.ini midishare.ini
-;;   libaudiostream.dll libsndfile.dll
+;;   libaudiostream.dll libsndfile.dll libsamplerate.dll
 ;;   sdif.dll
 
 ;;; MAC :
