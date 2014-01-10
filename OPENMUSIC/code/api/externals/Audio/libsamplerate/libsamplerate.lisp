@@ -6,30 +6,11 @@
 
 (in-package :lsr)
 
-(push :libsamplerate *features*)
+(pushnew :libsamplerate *features*)
 
 ;;; MUST BE INSTALLED !
 ;;; or linked statically (in LibAudioStream / MacOS)
 
-(defvar *libsamplerate-pathname* 
-  #+win32
-  "/WINDOWS/system32/libsamplerate.dll"
-  #-win32
-  "/Library/Frameworks/LibAudioStream.framework/LibAudioStream")
-
-(defvar *libsamplerate* nil)
-
-#+win32
-(defun libsamplerate-framework ()
-  (or *libsamplerate*
-      (setq *libsamplerate*
-            (if (probe-file *libsamplerate-pathname*)
-                (progn 
-                  (print (concatenate 'string "Loading libsamplerate library: " (namestring *libsamplerate-pathname*))) 
-                  (fli:register-module "libsamplerate" 
-                                       :real-name (namestring *libsamplerate-pathname*)
-                                       :connection-style :immediate)
-                  t)))))
 
 #+linux
 (progn
@@ -43,6 +24,15 @@
 	    (error () (progn (print (format nil "could not load foreign-library libsamplerate"))
 			     nil)))))
   (oa:om-add-init-func 'init-libsamplerate))
+
+#+win32
+(define-foreign-library libsamplerate
+  (:darwin "libsamplerate.dylib")
+  #+win32(:unix (:or "libsamplerate.dll" "libsamplerate.so"))
+  #+win32(t (:default "libsamplerate")))
+
+#+win32
+(use-foreign-library libsamplerate)
 
 (defparameter SRC_SINC_BEST_QUALITY 0)
 (defparameter SRC_SINC_MEDIUM_QUALITY 1)

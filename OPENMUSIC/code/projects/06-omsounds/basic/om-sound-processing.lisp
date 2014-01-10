@@ -620,11 +620,6 @@
 
 
 
-(defun lsr-load-library ()
-  (setf lsr::*libsamplerate-pathname* (oa:om-lib-pathname lsr::*libsamplerate-pathname*))
-  #+win32
-  (lsr::libsamplerate-framework))
-(om-add-init-func 'lsr-load-library)
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE//////////
 (defmethod! om-sound-resample ((s om-sound-data) sample-rate &optional (method 0))
             :icon 114
