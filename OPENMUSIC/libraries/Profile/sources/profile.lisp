@@ -85,8 +85,8 @@ indiquer le modulo du champs harmonique utilise
          (posdifs (mapcar #'(lambda (p) (position (om::list-min (om::om-abs (om::om- modsca p)))
                                                   (om::om-abs (om::om- modsca p))))
                           pitmods)))
-    (mapcar #'(lambda (index octave) (makenote  index octave mod))
-            (posn-match modsca posdifs)
+    (mapcar #'(lambda (index octave) (makenote index octave mod))
+            (om::posn-match modsca posdifs)
             octa)))
 ;
 ;

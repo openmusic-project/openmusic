@@ -50,11 +50,13 @@
 
 ;;;alterations
 ;=====================SCALES================================
+
 (defun diese () (code-char 35))
 (defun bemol () (code-char 98))
 (defun beca () (code-char 110))
 (defun db-diese () (code-char 45))
 (defun db-bemol () (concatenate 'string (string (code-char 98)) (string (code-char 98))))
+(defun inv-bemol () (code-char 96))
 
 (defun t-1/16 () (code-char 107))
 (defun t-1/8 () (code-char 108))

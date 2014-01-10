@@ -343,6 +343,10 @@
     (init-draw self)
     (init-boxes-in-score ed-view)))
 
+
+
+
+
 (defmethod set-cursor-mode ((self scoreeditor) &optional mode)
   (change-cursor-mode (panel self) mode)
   (set-edit-param self 'cursor-mode (cursor-mode (panel self)))
@@ -4183,7 +4187,6 @@
         (update-panel self t))
 
 
-
 ;;; new : changer la duree avec les touche R/L
 (defmethod change-dur ((self chordseqpanel) dir)
   (loop for item in (selection? self) do
@@ -4386,6 +4389,9 @@
               ((om-command-key-p) (if (= dir 0) 700 -700))
               (t (let ((factor (approx-factor (get-current-scale (staff-tone self)))))
                    (if (= dir 0) factor (* -1 factor)))))))))
+
+
+
 
 ;ENTER
 (defmethod enter-a-note ((self scorePanel)) 

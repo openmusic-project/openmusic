@@ -378,9 +378,11 @@
 
 
 
+
+
 ;;;===============================================
 
-(omg-defclass scaleeditor (chordeditor) 
+(defclass scaleeditor (chordeditor) 
               ((ref-chord :initarg :ref-chord :accessor ref-chord 
                       :initform (make-instance 'chord))))
 
@@ -393,8 +395,8 @@
 (defmethod get-editor-class ((self scale)) 'scaleeditor)
 (defmethod get-help-list ((self scaleeditor)) nil)
 
-(omg-defclass scalepanel (chordpanel) ())
-(omg-defclass omscale-controls-view (omcontrols-view) ())
+(defclass scalepanel (chordpanel) ())
+(defclass omscale-controls-view (omcontrols-view) ())
 
 
 (defmethod get-score-class-panel ((self scaleeditor)) 'scalePanel)
@@ -521,11 +523,14 @@
       (om-popup-menu-context self))
      (report-modifications (om-view-container self))))
 
+
+
 ;;;===================================================
 ;;; NEW scales
 
 (defclass atone-scale (scale)
   ((midic-base :initform 0 :initarg :midic-base :accessor midic-base)))
+
 
 (defmethod approx-scale ((self atone-scale) midic &optional (ref-midic 0))
   (a-tone-approx-m midic (approx-factor self) (midic-base self)))
@@ -541,6 +546,7 @@
 (defmethod* a-tone-approx-m  ((midic list) approx-factor base)
            (loop for item in midic collect (a-tone-approx-m item approx-factor base)))
 
+
 (defmethod give-alteration  ((self atone-scale) midic)
   (let* ((length (length (lines-list self)))
          (distance (-  midic (midic-base self)))
@@ -552,7 +558,7 @@
 (defmethod scale-midi2pixel ((scale atone-scale) midi top linespace)
  (let* ((topmc (* top 100))
         (midiapp (approx-scale scale midi))
-        (octaves (floor (+  (- topmc midiapp) (- (midic-base scale) 6000 (+ (approx-factor scale) -1) )) 1200))
+        (octaves (floor (+  (- topmc midiapp) (- (midic-base scale) 6000 (+ (approx-factor scale) -1))) 1200))  ;;; why -1 ?
         (line (car (give-alteration scale midiapp))))
    (* (- (* 3.5 (+ 2 octaves)) (+ 4 (/ line 2 ))) linespace)))
 
@@ -566,13 +572,13 @@
 (defparameter *31-equal-scale*
     (make-instance 'atone-scale
       :alteration-list
-      (list  (code-char 96) nil (t-1/4) (t-1/2) 
-             (bemol) (code-char 96) nil (t-1/4) (t-1/2)
-             (bemol) (code-char 96) nil (t-1/4) 
-             (code-char 96) nil (t-1/4) (t-1/2)
-             (bemol) (code-char 96) nil (t-1/4) (t-1/2)
-             (bemol) (code-char 96) nil (t-1/4) (t-1/2)
-             (bemol) (code-char 96) nil (t-1/4))
+      (list  (inv-bemol) nil (t-1/4) (t-1/2) 
+             (bemol) (inv-bemol) nil (t-1/4) (t-1/2)
+             (bemol) (inv-bemol) nil (t-1/4) 
+             (inv-bemol) nil (t-1/4) (t-1/2)
+             (bemol) (inv-bemol) nil (t-1/4) (t-1/2)
+             (bemol) (inv-bemol) nil (t-1/4) (t-1/2)
+             (bemol) (inv-bemol) nil (t-1/4))
       :lines-list
       (list  0 0 0 0
              1 1 1 1 1
@@ -611,4 +617,11 @@
 ;(pushr (list 63 *19-equal-scale* "19 ET") *scales-list*)
 
 
-                  
+;(defparameter *5-equal-scale*
+;  (make-instance 'atone-scale
+;                 :alteration-list (list (bemol) nil (t-1/4) (diese) (t-3/4))
+;                 :lines-list '(0 0 0 0 0)   
+;                :approx-factor (/ 1200 5)
+;                :midic-base 6000))
+
+;(pushr (list 240 *5-equal-scale* "5 scale") *scales-list*)           

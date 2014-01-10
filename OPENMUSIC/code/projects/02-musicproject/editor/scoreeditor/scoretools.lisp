@@ -345,7 +345,6 @@
 (defun midi2pixel (midi top linespace scale)
   (scale-midi2pixel scale midi top linespace))
 
-
 (defun lines-from-do (x scale tone)
    (setf tone (round tone))
    (if (and (zerop x) 
