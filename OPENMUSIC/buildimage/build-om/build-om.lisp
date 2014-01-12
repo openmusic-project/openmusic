@@ -282,6 +282,8 @@
   (setf om::*om-startup* nil)
   )
 
+(defun cl-user::start-openmusic () (start-openmusic))
+
 (defun quit-om-callback () 
   (let ((rep (capi:prompt-for-confirmation "Quit OpenMusic ?" :cancel-button nil :default-button :ok)))
     (when rep
