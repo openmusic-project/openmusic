@@ -13,11 +13,11 @@
 (defmethod player-type ((player (eql :midishare-rt))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
-(defmethod prepare-to-play ((engine (eql :midishare-rt)) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine (eql :midishare-rt)) (player omplayer) object at interval params)
   (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
     (mapcar #'(lambda (evt) 
                 ;(print (list "play note at" (om-midi::midi-evt-date evt)))
-                (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval))
+                (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params))
             ;(remove-if #'(lambda (evt) (or (null evt) (and interval (or (< (om-midi::midi-evt-date evt) (car interval))
             ;                                                           (> (om-midi::midi-evt-date evt) (cadr interval))))))
             (remove nil 
@@ -37,7 +37,7 @@
 
 ;;; PLAY (NOW) 
 ;;; NOT CALLED WITH MS PLAYER 
-(defmethod player-play-object ((engine (eql :midishare-rt)) (object om-midi::midi-evt) &key interval)
+(defmethod player-play-object ((engine (eql :midishare-rt)) (object om-midi::midi-evt) &key interval params)
   ;(print (format nil "~A : play ~A - ~A" engine object interval))
   (om-midi::midishare-send-evt object)
   )

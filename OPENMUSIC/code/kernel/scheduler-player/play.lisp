@@ -70,25 +70,6 @@
          (Play obj :player player)))
 
 
-;==================================================
-;Play shortcur on OM patch boxes
-;==================================================
-
-(defmethod play-boxes ((boxlist list))
-  (mapcar #'(lambda (box)
-              (when (play-obj? (value box))
-                (player-schedule *general-player*
-                                 (value box) 
-                                 (get-edit-param box 'player) :at (get-player-time *general-player*))
-                (setf (play-state box) t)
-                (push box *play-boxes*)
-                ))
-          boxlist)
-  (when *play-boxes*
-    (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (value box)))))
-    (general-play *general-player*) ;;; :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))
-    ))
-
 
 
 ;==================================================

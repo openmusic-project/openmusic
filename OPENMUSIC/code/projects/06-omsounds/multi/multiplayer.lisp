@@ -48,7 +48,7 @@
 ;(defmethod InitPlayingSeq ((player (eql 'multiplayer)) dur &key (port nil)) t)
 ;(defmethod FinalizePlayingSeq ((player (eql 'multiplayer)) dur &key (port nil)) t)
 
-(defmethod prepare-to-play ((engine (eql :multiplayer)) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine (eql :multiplayer)) (player omplayer) object at interval params)
    
    (when *multiplayer-file-to-play* (player-stop :multiplayer (list *multiplayer-file-to-play*)))
    
@@ -95,7 +95,7 @@
 
 (defmethod player-start ((engine (eql :multiplayer)) &optional play-list) (call-next-method))
 
-(defmethod player-play-object ((engine (eql :multiplayer)) (object sound) &key interval)
+(defmethod player-play-object ((engine (eql :multiplayer)) (object sound) &key interval params)
   ;(print "multiplayer play")
   (when *multiplayer-file-to-play*
     (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 1))))

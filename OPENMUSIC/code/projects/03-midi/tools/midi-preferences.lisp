@@ -20,8 +20,8 @@
 
 (defmethod put-preferences ((iconID (eql :midi)))
   (let ((modulepref (find-pref-module iconID)))
-    (setf *def-midi-in* (get-pref modulepref :midi-out))
-    (setf *def-midi-out* (get-pref modulepref :midi-in))
+    (setf *def-midi-in* (get-pref modulepref :midi-in))
+    (setf *def-midi-out* (get-pref modulepref :midi-out))
     (setf *default-midi-system* (get-pref modulepref :midi-system))
     (setf *def-midi-format* (get-pref modulepref :midi-format))
     (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    

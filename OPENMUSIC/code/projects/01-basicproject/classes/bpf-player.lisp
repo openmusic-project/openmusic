@@ -22,7 +22,7 @@
 (defmethod get-player-action ((self t)) nil)
 (defmethod get-player-action ((self BPF-controller)) (player-fun self))
 
-(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf) at interval)
+(defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object bpf) at interval params)
   (let ((fun (get-player-action object))) 
     (when fun
       (if interval

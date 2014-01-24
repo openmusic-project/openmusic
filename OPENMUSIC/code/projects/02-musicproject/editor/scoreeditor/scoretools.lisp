@@ -2004,6 +2004,7 @@
   (loop for item in list
         collect (append item (list dur))))
 
+(defmethod get-temporal-objects ((self t)) nil)
 
 (defmethod get-temporal-objects ((self grap-container))
   (sort (collect-temporal-objects self (reference self)) '< :key 'car ))

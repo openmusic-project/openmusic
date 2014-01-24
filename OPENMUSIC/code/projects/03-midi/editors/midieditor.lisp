@@ -520,9 +520,9 @@
          
 
 
-(defmethod get-obj-to-play ((self midiPanel))
-   (list (object (om-view-container self)) 
-         :port (get-edit-param (editor self) 'outport)))
+;(defmethod get-obj-to-play ((self midiPanel))
+;   (list (object (om-view-container self)) 
+;         :port (get-edit-param (editor self) 'outport)))
 
 (defmethod editor ((self midiPanel))
    (om-view-container self))

@@ -404,7 +404,7 @@ See the dedicated chapter in the OM User Manual for more details.")
 ; PLAY
 ;=====================================================================
 
-(defmethod player-schedule ((player omplayer) (obj omsheet) engine &key (at 0) interval)
+(defmethod player-schedule ((player omplayer) (obj omsheet) engine &key (at 0) interval params)
   (loop for tr in (inside obj) do
         (loop for tr-obj in (objs tr) do
               (player-schedule player (obj tr-obj)

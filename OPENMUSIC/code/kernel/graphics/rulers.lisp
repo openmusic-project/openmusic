@@ -220,12 +220,12 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
      (setf (ruler-selection? self) nil)
      (om-invalidate-view self t)))
 
-(defmethod corrige-selection ((self ruler) editor)
-   (when (ruler-selection? self)
-     (setf (ruler-selection? self)
-           (list (max 0 (first (ruler-selection? self)))
-                 (min (get-obj-dur (car (get-obj-to-play editor)))
-                      (second (ruler-selection? self)))))))
+;(defmethod corrige-selection ((self ruler) editor)
+;   (when (ruler-selection? self)
+;    (setf (ruler-selection? self)
+;           (list (max 0 (first (ruler-selection? self)))
+;                 (min (get-obj-dur (car (get-obj-to-play editor)))
+;                      (second (ruler-selection? self)))))))
 
 (defmethod draw-selection ((self ruler))  ;on peut l'effacer je pense!
   (let* ((editor (assoc-view-singleton self))

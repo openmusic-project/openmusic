@@ -1506,11 +1506,14 @@
 
 ;(defmethod selection-to-play-? ((self scorePanel)) nil)
 
-(defmethod get-obj-to-play ((self scorePanel))
-   (list (object (editor self)) 
-         :port (get-edit-param (om-view-container self) 'outport)
-         :approx (get-edit-param (om-view-container self) 'approx)))
+;(defmethod get-obj-to-play ((self scorePanel))
+;   (list (object (editor self)) 
+;         :port (get-edit-param (om-view-container self) 'outport)
+;         :approx (get-edit-param (om-view-container self) 'approx)))
 
+(defmethod additional-player-params ((self scoreeditor))
+  (list :port (get-edit-param self 'outport) 
+        :approx (get-edit-param self 'approx)))
 
 (defmethod record2obj ((self scorePanel) list)
    (object (om-view-container self)))
@@ -1811,10 +1814,10 @@
 
 (defmethod panel-show-cursor-p ((self scorepanel)) t)
 
-(defun mixed-collect-cursor-objects (self)
+(defmethod mixed-collect-cursor-objects ((self t))
   (if (score-page-mode self)
       (remove-duplicates (sort (page-collect-temporal-objects self (graphic-obj self)) '< :key 'car ) :test 'equal :key 'car)
-      (remove-duplicates (get-temporal-objects (graphic-obj self)) :test 'equal :key 'car)))
+    (remove-duplicates (get-temporal-objects (graphic-obj self)) :test 'equal :key 'car)))
 
 
 
@@ -1928,6 +1931,8 @@
   (declare (ignore l))
   (add-chord-control self mode))
 
+(defmethod get-editor-callback ((self chordeditor)) nil)
+
 
 (defmethod GET-slot-LIST ((self omchord-controls-view))
    '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port) ("offsets" offset)))
@@ -1958,23 +1963,31 @@
 (defclass arp-chord ()
   ((notes :initform nil :initarg :notes :accessor notes)))
 
+(add-player-for-object 'arp-chord '(:midishare :midishare-rt :osc-scoreplayer :microplayer))
+
 (defmethod extent ((self arp-chord))
    (* (length (notes self)) 500))
 
 (defmethod get-obj-dur ((self arp-chord)) (extent self))
 
+(defmethod chord-obj-to-play ((self chord) mode)
+  (if (find mode '(1 2 3) :test '=)     
+     (let ((notes (copy-list (inside self))))
+       (case mode
+         (1 (make-instance 'arp-chord :notes (sort notes '< :key 'midic)))
+         (2 (make-instance 'arp-chord :notes (sort notes '> :key 'midic)))
+         (3 (make-instance 'arp-chord :notes notes)))
+     ;(list objtoplay 
+     ;      :port (get-edit-param self 'outport)
+     ;      :approx (get-edit-param self 'approx))
+       )
+    self))
 
+(defmethod play-obj-from-value ((value chord) (box omboxeditcall)) 
+  (chord-obj-to-play value (get-edit-param box 'mode)))
 
-(defmethod get-obj-to-play ((self chordPanel))
-   (let* ((objtoplay (object (om-view-container self)))
-          (notes (copy-list (inside objtoplay))))
-     (case (staff-mode self)
-       (1 (setf objtoplay (make-instance 'arp-chord :notes (sort notes '< :key 'midic))))
-       (2 (setf objtoplay (make-instance 'arp-chord :notes (sort notes '> :key 'midic))))
-       (3 (setf objtoplay (make-instance 'arp-chord :notes notes))))     
-     (list objtoplay 
-           :port (get-edit-param (om-view-container self) 'outport)
-           :approx (get-edit-param (om-view-container self) 'approx))))
+(defmethod get-obj-to-play ((self chordeditor))
+  (chord-obj-to-play (object self) (staff-mode (panel self))))
 
 (defmethod record2obj ((self chordPanel) list)
   (let ((chord (object (editor self))))
@@ -2022,7 +2035,7 @@
 
 
 ;CONTROLS
-(omg-defclass chordseq-controls-view (omcontrols-view) ())
+(defclass chordseq-controls-view (omcontrols-view) ())
 
 (defmethod initialize-instance :after ((self chordseq-controls-view) &rest l &key (mode 0))
   (declare (ignore l))
@@ -2031,7 +2044,7 @@
 
 
 ;VIEW
-(omg-defclass chordseqEditor (scoreEditor) ())
+(defclass chordseqEditor (scoreEditor) ())
 
 
 (defmethod editor-null-event-handler :after ((self chordseqEditor))
@@ -2337,31 +2350,31 @@
 ;(defmethod selection-to-play-? ((self chordseqPanel)) 
 ;   (and (linear? self) (cursor-p self)))
 
-(defmethod convert-interval ((self chordseqPanel))
-   (let* ((obj (car (get-obj-to-play self)))
-         (dur (get-obj-dur obj))
-         (int (cursor-interval self))  x x1 rep)
-     (if (listp int)
-       (setf x (max 0 
-                    ;;;(om-point-h (pixel-toms self (om-make-point (car int) 0)))
-                    (pixel-toms self (om-make-point (car int) 0))
-                    )
-             x1 (min dur 
-                     ;;;(om-point-h (pixel-toms self (om-make-point (second int) 0)))
-                     (pixel-toms self (om-make-point (second int) 0))
-                     ))
-       (setf x (max 0 
-                    ;;;(om-point-h (pixel-toms self (om-make-point int 0)))
-                    (pixel-toms self (om-make-point int 0))
-                    ) 
-             x1 (extent->ms obj)))
-     (setf (cursor-pos self) x)
-     (setf rep (if (<= x x1)
-                 (list x x1)
-                 (list x1 x)))
-     (if (< (car rep) dur)
-       rep
-       '(0 0))))
+;(defmethod convert-interval ((self chordseqPanel))
+;   (let* ((obj (car (get-obj-to-play self)))
+;         (dur (get-obj-dur obj))
+;         (int (cursor-interval self))  x x1 rep)
+;     (if (listp int)
+;       (setf x (max 0 
+;                    ;;;(om-point-h (pixel-toms self (om-make-point (car int) 0)))
+;                    (pixel-toms self (om-make-point (car int) 0))
+;                    )
+;             x1 (min dur 
+;                     ;;;(om-point-h (pixel-toms self (om-make-point (second int) 0)))
+;                     (pixel-toms self (om-make-point (second int) 0))
+;                     ))
+;       (setf x (max 0 
+;                    ;;;(om-point-h (pixel-toms self (om-make-point int 0)))
+;                    (pixel-toms self (om-make-point int 0))
+;                    ) 
+;             x1 (extent->ms obj)))
+;     (setf (cursor-pos self) x)
+;     (setf rep (if (<= x x1)
+;                 (list x x1)
+;                 (list x1 x)))
+;     (if (< (car rep) dur)
+;       rep
+;       '(0 0))))
 
 
 
@@ -2804,36 +2817,36 @@
      obj))
 
 
-(defun rhythm-convert-interval (self)
-   (let* ((obj (car (get-obj-to-play self)))
-          (dur (get-obj-dur obj))
-          (int (cursor-interval self))
-          (list (sort (collect-temporal-objects (graphic-obj self) (reference (graphic-obj self))) '< :key 'car ))
-          (list (remove-duplicates list :test 'equal :key 'car))
-          (fpoint (if (listp int) (car int) int))
-          (fig (pop list))
-          fig2 x x1)
-     (loop while (and fig (< (car (rectangle (second fig))) fpoint)) do
-           (setf fig (pop list)))
-     (if fig
-       (progn 
-         (setf fig2 fig)
-         (setf x (car fig))
-         (if (not (listp int))
-           (progn (setf x1 dur) (setf fig2 (car (last list))))
-           (progn
-             (loop while (and fig2 (< (car (rectangle (second fig2))) (second int))) do
-                   (setf fig2 (pop list)))
-             (if fig2 (setf x1 (car fig2))
-                 (progn (setf x1 dur) (setf fig2 (car (last list))))))))
-       (setf x 0 x1 0))
-     (list x  x1 (second fig) (second fig2))))
+;(defun rhythm-convert-interval (self)
+;   (let* ((obj (car (get-obj-to-play self)))
+;          (dur (get-obj-dur obj))
+;          (int (cursor-interval self))
+;          (list (sort (collect-temporal-objects (graphic-obj self) (reference (graphic-obj self))) '< :key 'car ))
+;          (list (remove-duplicates list :test 'equal :key 'car))
+;          (fpoint (if (listp int) (car int) int))
+;          (fig (pop list))
+;          fig2 x x1)
+;     (loop while (and fig (< (car (rectangle (second fig))) fpoint)) do
+;           (setf fig (pop list)))
+;     (if fig
+;       (progn 
+;         (setf fig2 fig)
+;         (setf x (car fig))
+;         (if (not (listp int))
+;           (progn (setf x1 dur) (setf fig2 (car (last list))))
+;           (progn
+;             (loop while (and fig2 (< (car (rectangle (second fig2))) (second int))) do
+;                   (setf fig2 (pop list)))
+;             (if fig2 (setf x1 (car fig2))
+;                 (progn (setf x1 dur) (setf fig2 (car (last list))))))))
+;       (setf x 0 x1 0))
+;     (list x  x1 (second fig) (second fig2))))
 
 
 (defmethod adjoust-grille-chords ((self voicepanel)) t)
 
-(defmethod convert-interval ((self voicepanel))
-   (rhythm-convert-interval self))  
+;(defmethod convert-interval ((self voicepanel))
+;   (rhythm-convert-interval self))  
 
 ;(defun rythm-draw-interval-cursor (self)
 ;  (let* ((interval (print (cursor-interval self)))
@@ -3024,7 +3037,7 @@
      (call-next-method)))
 
 
-(defmethod convert-interval ((self polypanel)) (rhythm-convert-interval self))
+;(defmethod convert-interval ((self polypanel)) (rhythm-convert-interval self))
 
 (defmethod edit-preferences ((self polypanel)) (om-beep-msg "No mode page for this editor"))
 

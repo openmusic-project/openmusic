@@ -28,7 +28,7 @@
 
 
 
-(defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval params)
   (let* ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at))
          (from (car newinterval))
          (to (cadr newinterval))
@@ -47,7 +47,7 @@
                 (om-sound-set-sndlasptr-to-play object (las-slice-sample-cut newptr begin end)))
             (om-sound-set-sndlasptr-to-play object newptr))
           (om-sound-update-las-infos object)
-          (call-next-method engine player object at newinterval)))))
+          (call-next-method engine player object at newinterval params)))))
 
 
 (defmethod player-start ((engine (eql :libaudiostream)) &optional play-list)
@@ -76,7 +76,7 @@
 
 
 ;;; PLAY (NOW)
-(defmethod player-play-object ((engine (eql :libaudiostream)) (object sound) &key interval)
+(defmethod player-play-object ((engine (eql :libaudiostream)) (object sound) &key interval params)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 (defmethod player-loop ((self (eql :libaudiostream)) player &optional play-list)

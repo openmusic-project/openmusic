@@ -67,13 +67,15 @@ the recorder, this function is called by a def-load-pointers"
 ;  (FinalizePlayingSeq 'midishare (get-obj-dur object))
 ;  )
 
-(defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval)
-  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
-    (push (list object at interval approx) *ms-list-to-play*)))
+(defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval params)
+  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx)))
+        (port (if (caller player) (get-edit-param (caller player) 'outport))))
+    (if (equal port :default) (setf port *def-midi-out*))
+    (push (list object at interval approx port) *ms-list-to-play*)))
 
 ;;; PLAY (NOW) 
 ;;; NOT CALLED WITH MS PLAYER 
-(defmethod player-play-object ((engine (eql :midishare)) object &key interval)
+(defmethod player-play-object ((engine (eql :midishare)) object &key interval params)
   (print (format nil "~A : play ~A - ~A" engine object interval)))
 
 ;;; START (PLAY WHAT IS SCHEDULED)
@@ -89,7 +91,8 @@ the recorder, this function is called by a def-load-pointers"
                                               append
                                               (remove nil 
                                                       (flat (PrepareToPlay :midi (car item) (nth 1 item) ;(+ (nth 1 item) (real-duration (car item) 0)) 
-                                                                           :interval (nth 2 item) :approx (nth 3 item)))))
+                                                                           :interval (nth 2 item) :approx (nth 3 item)
+                                                                           :port (nth 4 item)))))
                                          (midi-seq-end-events (get-obj-dur (mapcar 'car *ms-list-to-play*))))
                                  1000)
   (when *ms-loop* (om-midi::midishare-set-loop-player *midiplayer* 0 *ms-loop*))

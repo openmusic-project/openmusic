@@ -1174,25 +1174,22 @@
 
 
 
-
-;;; computes the value...
-(defmethod get-obj-to-play ((self maquetteeditor)) (get-obj-to-play (panel self)))
-
 (defmethod cursor-panes ((self maquetteeditor)) (list (panel self)))
 
 
-(defmethod schedule-editor-contents ((self maquetteeditor))
-  (loop for object in (inside (value (object self)))
-        for param in (param-list (value (object self))) do
-        (let ((objstart (offset->ms object))
-              (pl (cdr (assoc 'player param))))
-          ;(print (list object pl objstart (get-interval-to-play self)))
-          (player-schedule (player self) 
-                           object
-                           pl 
-                           :at objstart
-                           :interval (get-interval-to-play self)))
-        ))
+;(defmethod schedule-editor-contents ((self maquetteeditor))
+;  (loop for object in (inside (value (object self)))
+;        for param in (param-list (value (object self))) do
+;        (let ((objstart (offset->ms object))
+;              (pl (cdr (assoc 'player param))))
+;          ;(print (list object pl objstart (get-interval-to-play self)))
+;          (player-schedule (player self) 
+;                           object
+;                           pl 
+;                           :at objstart
+;                           :interval (get-interval-to-play self)))
+;        ))
+
 
 (defmethod boxestoplay ((self maquettepanel))
   (if (and (get-actives self) (not (equal :interval (cursor-mode self))))
@@ -1200,14 +1197,20 @@
     (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
   
 
-(defmethod get-obj-to-play ((self MaquettePanel))
+;;; computes the value...
+;(defmethod get-obj-to-play ((self maquetteeditor)) (get-obj-to-play (panel self)))
+
+(defmethod get-obj-to-play ((self maquetteeditor))
   (if (and (eval-func (object self)) (value (object self)))
     ; ??? why (commented since OM 6.7.1)
     ;(if *midi-microplay* 
     ;  (list (value (object self)))
     ;  (list (value (object self)) :approx 8))
-    (list (value (object self)))
-    (list (cons-play-maquette-object (object self) (boxestoplay self))))
+    ;(list (value (object self)))
+      (value (object self))
+    ;(list (cons-play-maquette-object (object self) (boxestoplay self)))
+    (cons-play-maquette-object (object self) (boxestoplay self))
+    )
   )
 
 (defmethod get-interval-to-play ((self maquetteeditor))

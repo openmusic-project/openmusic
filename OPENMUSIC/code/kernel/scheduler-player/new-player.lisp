@@ -66,7 +66,7 @@
 
 ;;; THIS METHOD WHEN THE PLAYER HAS TO PLAY SEVERAL THINGS OR PREPARE THEM IN ADVANCE
 ;;; SAYS ENGINE TO PREPARE FOR PLAYING <INTERVAL> (optional) IN <OBJ> WITH< ENGINE> AT TIME <at>
-(defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval)
+(defmethod player-schedule ((player omplayer) obj engine &key (at 0) interval params)
   ;(print (list obj engine at))
   (let ((engines-available (enabled-players-for-object obj)))
     (unless (find engine engines-available)
@@ -74,8 +74,18 @@
       (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
   (push (list engine obj) (play-list player))
-  (prepare-to-play engine player obj at interval))
+  (prepare-to-play engine player obj at interval params))
   
+
+(defmethod player-schedule ((player omplayer) (obj maquette-obj) engine &key (at 0) interval params)
+   (loop for object in (inside obj)
+           for param in (param-list obj) do
+           (player-schedule player (obj tr-obj)
+                            (cdr (assoc 'player param))
+                            :at (+ at (offset->ms object))
+                            :interval interval)
+           ))
+
 
 (defmethod general-play ((player omplayer)) ;;; &key (start-t 0) (end-t 3600000))
   (let ((start-t (or (car (play-interval player)) 0))
@@ -206,14 +216,14 @@
 
 ;;; SPECIFIES SOMETHING TO BE PLAYED ATHER A GIVEN DELAY (<at>) PAST THE CALL TO PLAYER-START
 ;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
-(defmethod prepare-to-play ((engine t) (player omplayer) object at interval)
+(defmethod prepare-to-play ((engine t) (player omplayer) object at interval params)
   (schedule-task player 
                         #'(lambda () 
-                            (player-play-object engine object :interval interval))
+                            (player-play-object engine object :interval interval :params params))
                         at))
 
 ;;; PLAY (NOW)
-(defmethod player-play-object ((engine t) object &key interval)
+(defmethod player-play-object ((engine t) object &key interval params)
   (declare (ignore interval))
   ;(print (format nil "~A : play ~A - ~A" engine object interval))
   t)
@@ -285,18 +295,22 @@
 
 (defmethod play-obj? ((self t)) (allowed-in-maq-p self))
 
+
+(defmethod get-obj-to-play ((self ombox)) (play-obj-from-value (value self) self))
+(defmethod play-obj-from-value (value box) value)
+
 (defmethod play-boxes ((boxlist list))
   (mapcar #'(lambda (box)
               (when (play-obj? (value box))
                 (player-schedule *general-player*
-                                 (value box) 
+                                 (get-obj-to-play box)
                                  (get-edit-param box 'player) :at (get-player-time *general-player*))
                 (setf (play-state box) t)
                 (push box *play-boxes*)
                 ))
           boxlist)
   (when *play-boxes*
-    (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (value box)))))
+    (setf (play-interval *general-player*) (list 0 (loop for box in boxlist maximize (get-obj-dur (get-obj-to-play box)))))
     (general-play *general-player*) ;;; :end-t (loop for box in boxlist maximize (get-obj-dur (value box))))
     ))
 
@@ -374,27 +388,34 @@
 
 ;;; THE USER PRESSES PLAY IN THE EDITOR
 
+(defmethod additional-player-params ((self t)) nil)
+
 (defmethod schedule-editor-contents ((self play-editor-mixin))
   (player-schedule (player self) 
                    (get-obj-to-play self)
                    (get-player-engine self)
                    :at 0 
-                   :interval (get-interval-to-play self)))
+                   :interval (get-interval-to-play self)
+                   :params (additional-player-params self)))
 
+(defmethod get-editor-callback ((self play-editor-mixin))
+  #'(lambda (editor time)
+      (handler-bind ((error #'(lambda (e) 
+                                          ;(print e)
+                                (om-kill-process (callback-process (player self)))
+                                (abort e))))
+        (play-editor-callback editor time)
+        )))
+  
 (defmethod editor-play ((self play-editor-mixin))
   (setf (loop-play (player self)) (loop-play self))
   (if (equal (state (player self)) :pause)
       (general-continue (player self))
     (let ((obj (get-obj-to-play self))
           (interval (get-interval-to-play self)))
-      (setf (callback-fun (player self))
-            #'(lambda (editor time)
-                (handler-bind ((error #'(lambda (e) 
-                                          ;(print e)
-                                          (om-kill-process (callback-process (player self)))
-                                          (abort e))))
-                  (play-editor-callback editor time)
-                  )))
+      (setf (callback-fun (player self)) 
+            (and *events-play-cursor*
+                 (get-editor-callback self)))
       (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
       (schedule-editor-contents self)
       (setf (play-interval (player self)) (list  (or (car interval) 0) (or (cadr interval) (get-obj-dur obj))))
@@ -463,8 +484,8 @@
 ;; "!!! CURSOR-P DOES NOT EXIST ANYMORE!!!"
 
 
-(defmethod get-obj-to-play ((self cursor-play-view-mixin))
-   (list (object (om-view-container self))))
+;(defmethod get-obj-to-play ((self cursor-play-view-mixin))
+;   (list (object (om-view-container self))))
 
 (defmethod start-position ((self cursor-play-view-mixin)) 
   (or (cursor-pos self) 0))
