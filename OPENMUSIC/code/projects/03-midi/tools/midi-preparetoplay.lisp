@@ -245,7 +245,7 @@
 
 ;;; use msb / LSB ?
 (defun make-pitchwheel-event (date chan port val)
-  (om-midi::make-midi-evt :type 'PitchWheel
+  (om-midi::make-midi-evt :type 'om-midi::PitchBend
                         :date date
                         :port port 
                         :chan chan 
@@ -255,7 +255,6 @@
 ;;; variable set by the MIDI preferences
 (defvar *midi-microplay* nil)
 
-(microplay-events 0 5 0)
 
 (defun microplay-events (at dur port)
   ;;; make or send ... ?
