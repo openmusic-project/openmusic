@@ -46,6 +46,9 @@
   (ms::MidiSendIm *ms-player* noteon)
   )
 
+(ms::stopplayer *ms-player*)
+(midishare::PausePlayer *ms-player*)
+
 ;;; DEVRAIT ARRETER LA NOTE.. ?
 (let ((ev2 (midishare::MidiNewEv ms::typeCtrlChange)))
     (midishare::chan ev2 0)
