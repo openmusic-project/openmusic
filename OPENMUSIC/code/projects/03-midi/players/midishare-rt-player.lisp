@@ -32,6 +32,14 @@
 (setq *ms-player* (ms::openplayer "MSPLAYER"))
 (midishare::MidiConnect *ms-player* 0 -1)
 
+(om-midi::make-midi-evt :type 'Start :port (or port *def-midi-out*) :date 0)
+
+(let ((ev1 (midishare::MidiNewEv ms::typeStart)))
+  (ms::MidiSendIm *ms-player* ev1))
+
+(let ((ev1 (midishare::MidiNewEv ms::typeStop)))
+  (ms::MidiSendIm *ms-player* ev1))
+
 ;;; CHANGE PROGRAM ON CANAL 0
 (let ((ev1 (midishare::MidiNewEv ms::typeProgChange)))
   (midishare::chan ev1 0)
@@ -46,6 +54,7 @@
   (ms::MidiSendIm *ms-player* noteon)
   )
 
+(ms::startplayer *ms-player*)
 (ms::stopplayer *ms-player*)
 (midishare::PausePlayer *ms-player*)
 
@@ -55,7 +64,6 @@
     (midishare::ctrl ev2 120)
     (midishare::val ev2 0)
     (ms::MidiSendIm *ms-player* ev2))
-
 
 
 (let ((evt (midishare::MidiNewEv ms::typeKeyOff)))

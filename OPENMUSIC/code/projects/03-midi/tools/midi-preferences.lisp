@@ -166,7 +166,7 @@
                                                     ;; (init-midishare-players)
                                                     (set-pref modulepref :midi-setup setup-values)
                                                     (when (om-midi::midi-connect-function *default-midi-system*)
-                                                      (funcall (om-midi::midi-connect-function *default-midi-system*) pref-values)
+                                                      (funcall (om-midi::midi-connect-function *default-midi-system*) setup-values)
                                                       ))
                                                   ))
                                     :iconid 135)

@@ -12,7 +12,8 @@
   #+(or powerpc win32) (launch-midishare-setup-app)
   #-(or powerpc win32) (make-midishare-setup-dialog))
 
-(defmethod midishare-connect-ports ((system (eql :midishare)) settings)
+; (system (eql :midishare))
+(defmethod midishare-connect-ports (settings)
   (sleep 0.5)
   (oa::om-without-interrupts (restore-midishare-connections settings)))
 
