@@ -170,7 +170,7 @@
 (defun make-event-from-message (msg ref)
   (make-midi-evt :type (midi-message-type msg)
                  :date (midi-message-time msg)
-                 :chan (midi-message-channel msg)
+                 :chan (1+ (midi-message-channel msg))
                  :ref ref
                  :fields (midi-message-fields msg)))
 

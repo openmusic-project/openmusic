@@ -22,9 +22,9 @@
   (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (fileseq self) 
-          when (and (not (equal (om-midi::midi-evt-type event) 'Tempo))
+          when (and (not (equal (om-midi::midi-evt-type event) 'om-midi::Tempo))
                     (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
-                    (not (equal (om-midi::midi-evt-type event) 'EndTrack)))
+                    (not (equal (om-midi::midi-evt-type event) 'om-midi::EndTrack)))
           collect   
           (let ((newevent (om-midi::copy-midi-evt event)))
             (setf (om-midi::midi-evt-port newevent) port)
@@ -40,9 +40,9 @@
   (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (evtlist self) 
-          when (and (not (equal (om-midi::midi-evt-type event) 'Tempo))
+          when (and (not (equal (om-midi::midi-evt-type event) 'om-midi::Tempo))
                     (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
-                    (not (equal (om-midi::midi-evt-type event) 'EndTrack)))
+                    (not (equal (om-midi::midi-evt-type event) 'om-midi::EndTrack)))
           collect   
         (let ((newevent (om-midi::copy-midi-evt event))
                ;(really-at (if interval (- (+ at date) (first interval)) (+ at date))) 
@@ -173,13 +173,13 @@
          ))
 
 (defun note-events (port chan pitch vel dur date track)
-   (list (om-midi::make-midi-evt :type 'KeyOn
+   (list (om-midi::make-midi-evt :type 'om-midi::KeyOn
                         :date date 
                         :port (or port *def-midi-out*) 
                         :chan chan 
                         :ref track
                         :fields (list pitch vel))
-         (om-midi::make-midi-evt :type 'KeyOff
+         (om-midi::make-midi-evt :type 'om-midi::KeyOff
                         :date (+ dur date) 
                         :port (or port *def-midi-out*) 
                         :chan chan 

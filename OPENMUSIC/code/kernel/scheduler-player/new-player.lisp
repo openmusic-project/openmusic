@@ -52,9 +52,12 @@
 (defmethod idle-p ((self omplayer)) 
   (not (member (state self) '(:play :record))))
 
-(defmethod schedule-task ((player omplayer) task at)
+(defmethod sort-events ((self omplayer))
+  (setf (events self) (sort (events self) '< :key 'car)))
+
+(defmethod schedule-task ((player omplayer) task at &optional (sort t))
   (push (cons at task) (events player))
-  (setf (events player) (sort (events player) '< :key 'car)))
+  (when sort (sort-events player)))
 
 (defmethod unschedule-all ((player omplayer))
   (setf (events player) nil))
@@ -218,9 +221,9 @@
 ;;; THE DEFAULT BEHAVIOUR IS TO SCHEDULE 'player-play' AT DELAY
 (defmethod prepare-to-play ((engine t) (player omplayer) object at interval params)
   (schedule-task player 
-                        #'(lambda () 
-                            (player-play-object engine object :interval interval :params params))
-                        at))
+                 #'(lambda () 
+                     (player-play-object engine object :interval interval :params params))
+                 at))
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine t) object &key interval params)
@@ -422,7 +425,8 @@
       (general-play (player self) 
                     ;:start-t (or (car interval) 0)
                     ;:end-t (or (cadr interval) (get-obj-dur obj))
-                    ))
+                    )
+      )
     ))
 
 

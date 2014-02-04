@@ -46,6 +46,12 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 ")
   )
 
+(add-player-for-object 'midifile :midishare-rt)
+
+(defmethod default-edition-params ((self midifile))
+  (pairlis '(outport player)
+           (list *def-midi-out* :midishare-rt)))
+
 (defmethod make-one-instance ((self midifile) &rest slots-vals)
    (get-midifile))
 

@@ -7,6 +7,7 @@
 
 (defmethod editor-compatible-params-p ((ed1 scoreeditor) (ed2 scoreeditor)) t)
 
+
 (defmethod default-edition-params ((self simple-container))
   (get-default-score-params self))
 

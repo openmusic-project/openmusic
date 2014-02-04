@@ -85,6 +85,7 @@ the recorder, this function is called by a def-load-pointers"
 (defmethod player-start ((engine (eql :midishare)) &optional play-list)
   ;(print *ms-list-to-play*)
   (om-midi::midishare-stop-player *midiplayer*)
+  ;(print "222")
   (om-midi::midishare-set-player *midiplayer* 
                                 (append (midi-seq-start-events)
                                         (loop for item in *ms-list-to-play* 
@@ -95,8 +96,10 @@ the recorder, this function is called by a def-load-pointers"
                                                                            :port (nth 4 item)))))
                                          (midi-seq-end-events (get-obj-dur (mapcar 'car *ms-list-to-play*))))
                                  1000)
+  ;(print "333")
   (when *ms-loop* (om-midi::midishare-set-loop-player *midiplayer* 0 *ms-loop*))
-  (when *midiplayer* (om-midi::midishare-start-player *midiplayer*)))
+  (when *midiplayer* (om-midi::midishare-start-player *midiplayer*))
+  )
 
 
 ;;; PAUSE (all)

@@ -200,6 +200,7 @@
 ; DESTRUCTIVELY converts midi events time info to miliseconds   
 ; (Keeping tempo events)                          
 ;=====================================================
+
 (defun convert-tempo-info (seq units/sec)
   (let ((cur-tempo *midi-tempo*)
         (tempo-change-abst-time 0)
