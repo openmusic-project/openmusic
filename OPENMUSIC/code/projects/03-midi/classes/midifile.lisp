@@ -139,8 +139,9 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
     (om-print (string+ "Loading MIDI file: " (namestring name) " ..."))
     (multiple-value-bind (seq nbtracks clicks format)
         (midi-load-file (namestring name))
-      (print (list "format" format))
-        
+      ;(print (list "format" format))
+      ;(print (list "clicks" clicks))
+      
       (when (equal seq :error) (om-beep-msg (string+ "Error loading a MIDI file " (namestring name))) (om-abort))
       (setf (MidiFileName themidiFile) name)
       (when seq
@@ -243,7 +244,7 @@ If <test> returns T, then the MIDIEvent is collected.
                                             :ev-chan (om-midi::midi-evt-chan e)
                                             :ev-ref (om-midi::midi-evt-ref e)
                                             :ev-port (om-midi::midi-evt-port e)
-                                            :ev-fields (if (equal (om-midi::midi-evt-type e) 'Tempo) 
+                                            :ev-fields (if (equal (om-midi::midi-evt-type e) 'om-midi::Tempo) 
                                                            (list (mstempo2bpm (om-midi::midi-evt-tempo e)))
                                                          (om-midi::midi-evt-fields e))
                                             )))

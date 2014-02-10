@@ -262,7 +262,7 @@ works only if the chars are coded in ASCII]"
 	:format format
 	:division division
 	:tracks (loop repeat nb-tracks
-		      do (when (= format 1) (setf *time* 0))
+		      do (setf *time* 0) ; (when (= format 1) (setf *time* 0))
 		      collect (read-track))))))
 
 (defun write-midi-file (midifile filename)

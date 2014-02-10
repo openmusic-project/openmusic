@@ -33,7 +33,7 @@
          (from (car newinterval))
          (to (cadr newinterval))
          newptr)
-    (if (om-sound-sndlasptr-current object)
+    (if (and (or (null interval) newinterval) (om-sound-sndlasptr-current object))
         (progn
           (setf newptr (if (> (om-sound-n-channels object) 1) (om-sound-sndlasptr-current object) (las-make-stereo-sound (om-sound-sndlasptr-current object))))
           (if (or from to)

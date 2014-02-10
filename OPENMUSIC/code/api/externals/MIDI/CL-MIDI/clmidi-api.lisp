@@ -196,16 +196,16 @@
 	(v (second (midi-evt-fields ev)))
 	(onset (midi-evt-date ev))
 	(dur (third (midi-evt-fields ev)))
-	(chan (midi-evt-chan ev)))
+	(chan (1- (midi-evt-chan ev))))
     (let ((on (make-note-on-message onset k v chan))
 	  (off (make-note-off-message (+ onset dur) k 0 chan)))
       (list on off))))
 
 (defun event2note-off (ev)
-  (make-note-off-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (midi-evt-chan ev)))
+  (make-note-off-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (1- (midi-evt-chan ev))))
 
 (defun event2note-on (ev)
-  (make-note-on-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (midi-evt-chan ev)))
+  (make-note-on-message (midi-evt-date ev) (first (midi-evt-fields ev)) (second (midi-evt-fields ev)) (1- (midi-evt-chan ev))))
 
 (defun event2program-change-message (ev)
   (make-program-change-message (midi-evt-date ev) (first (midi-evt-fields ev)) (midi-evt-chan ev)))

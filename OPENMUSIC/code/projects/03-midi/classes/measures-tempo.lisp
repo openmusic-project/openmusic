@@ -61,15 +61,16 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
     (setf tempoEvents (get-midievents self #'(lambda (x) (or (test-type x 'tempo) (test-type x 'timeSign)))))
     (loop for event in tempoEvents do
           (cond
-           ((equal (ev-type event) 'Tempo)
+           ((equal (ev-type event) 'om-midi::Tempo)
             (push (list (ev-date event) (first (ev-fields event))) tempoList))
-           ((equal (ev-type event) 'TimeSign)
+           ((equal (ev-type event) 'om-midi::TimeSign)
             (push (list (ev-date event) (ev-fields event)) timeSignList))
            (t nil)))
     
     (setf (tempo-Evts tempoMap) (reverse tempoList))
     (setf (timeSign-Evts tempoMap) (reverse timesignList))
     tempoMap))
+
 
 (defmethod* objFromObjs ((self simple-container) (type Tempo-Map))
   (get-tempoMap self))

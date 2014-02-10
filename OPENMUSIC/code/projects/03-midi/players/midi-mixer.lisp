@@ -197,7 +197,7 @@
          )
 
     (if (<= (length (presets (object self))) 1) (om-enable-dialog-item preset-list nil))
-    (om-add-subviews preset-view title preset-list save-preset new-preset delete-preset)
+    (om-add-subviews preset-view title preset-list save-preset new-preset delete-preset)    
 
     preset-view))
     

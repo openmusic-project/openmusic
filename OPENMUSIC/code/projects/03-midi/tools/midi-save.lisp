@@ -24,7 +24,7 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                                     :name (pathname-name name)
                                     :type "midi")))
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-      (when (save-midifile name object approx (or format *def-midi-format*))
+      (when (save-midifile name object approx nil (or format *def-midi-format*))
         (namestring name)
         ))))
 

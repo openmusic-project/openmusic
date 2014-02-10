@@ -98,7 +98,6 @@
 (defun sort-micro-events (list)
   (sort list '< :key 'microplay-note-date))
 
-
 ;================
 
 (defstruct microplay-note (date) (pitch) (vel) (dur) (chan))
@@ -180,9 +179,10 @@
   (setf *MidiShare-start-time* 1)
   (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
     (setf *microosc-packets* (sort-micro-events 
-                              (flat 
-                               (PrepareToPlay :microplayer object (+ at (real-duration object 0)) 
-                                              :interval interval :approx approx))))))
+                              (remove nil 
+                                      (flat 
+                                       (PrepareToPlay :microplayer object (+ at (real-duration object 0)) 
+                                                             :interval interval :approx approx)))))))
 
 (defmethod player-start ((self (eql :microplayer)) &optional play-list)
    (open-microplayer)

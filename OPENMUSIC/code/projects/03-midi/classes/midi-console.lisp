@@ -10,7 +10,7 @@
 ;=== a single track controller 
 ;================================================
 (defclass* Channel-Ctrl () 
-  ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer)
+  ((midiport :initform nil :initarg :midiport :accessor midiport :type integer)
    (midichannel :initform 1 :initarg :midichannel :accessor midichannel :type integer)
    (program :initform 0 :initarg :program :accessor program :type integer)
    (pan-ctrl :initform 64 :initarg :pan-ctrl  :accessor pan-ctrl :type integer)
@@ -29,7 +29,7 @@
 ;=== a set of channel controllers ===
 ;====================================
 (defclass* settings-ctrl (midi-score-element)
-   ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer :documentation "output port number")
+   ((midiport :initform nil :initarg :midiport :accessor midiport :type integer :documentation "output port number")
     (miditrack :initform 0 :accessor miditrack)
     (nbtracks :initform 1 :initarg :nbtracks :accessor nbtracks :type integer :documentation "number of tracks")
     (channels-ctrl :initform nil :accessor channels-ctrl :type t))
@@ -222,7 +222,7 @@ In this case, all internal events are sent simultaneously.
 (defmethod channel-send-prog ((self channel-ctrl))
   (let ((event (om-midi::make-midi-evt :type 'ProgChange 
                               :chan (midichannel self)
-                              :port (midiport self)
+                              :port (or (midiport self) *def-midi-out*)
                               :fields (list (program self)))))
     
     (midi-send-evt event)
@@ -232,35 +232,35 @@ In this case, all internal events are sent simultaneously.
 (defmethod channel-send-vol ((self channel-ctrl))
   (let ((event (om-midi::make-midi-evt :type 'CtrlChange
                                  :chan (midichannel self) 
-                                 :port (midiport self)
+                                 :port (or (midiport self) *def-midi-out*)
                                  :fields (list 7  (vol-ctrl self)))))
     (midi-send-evt event)
     t))
 
 (defmethod channel-send-pan ((self channel-ctrl))
   (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
-                                 :chan (midichannel self) :port (midiport self)
+                                 :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list 10 (pan-ctrl self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct1 ((self channel-ctrl))
   (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
-                                 :chan (midichannel self) :port (midiport self)
+                                 :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list (control1-num self) (control1-val self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct2 ((self channel-ctrl))
   (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
-                                 :chan (midichannel self) :port (midiport self)
+                                 :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list (control2-num self) (control2-val self)))))    
     (midi-send-evt event)
     t))
 
 (defmethod channel-send-pitch ((self channel-ctrl))
   (let ((event (om-midi::make-midi-evt :type 'PitchBend
-                              :chan (midichannel self) :port (midiport self)
+                              :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                               :fields (list 0  (pitch-ctrl self)))))
     (midi-send-evt event)
     t))

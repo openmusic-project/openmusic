@@ -171,7 +171,11 @@
 ;=== Time and tempo conversions ===
 ;==================================
 
-(defvar *midi-tempo* 1000000)   ; noire = 60 en microsecondes
+;;; OM midi tempo
+(defvar *midi-tempo* 1000000)   ; tempo = 60 => 1000000 microseconds / beat
+
+(defun convert-time (mstt miditempo beatdiv)
+  (round (* 1000 (/ mstt (* beatdiv miditempo)))))
 
 (defmacro convert-time (time unit/sec)
   `(* (/  *midi-tempo* 1000000) (/ ,time ,unit/sec) 1000))
@@ -201,6 +205,9 @@
 ; (Keeping tempo events)                          
 ;=====================================================
 
+(defun convert-time (mstt miditempo beatdiv)
+  (round (* miditempo (/ mstt beatdiv 1000.0))))
+
 (defun convert-tempo-info (seq units/sec)
   (let ((cur-tempo *midi-tempo*)
         (tempo-change-abst-time 0)
@@ -210,12 +217,12 @@
     (loop for event in seq do
           (let ()
             (setf date (- (om-midi::midi-evt-date event) initdate))
-            (when (equal (om-midi::midi-evt-type event) 'Tempo)
+            (when (equal (om-midi::midi-evt-type event) 'om-midi::Tempo)
               (setf tempo-change-log-time (logical-time date cur-tempo tempo-change-abst-time 
                                                         tempo-change-log-time units/sec))
               (setf cur-tempo (om-midi::midi-evt-tempo event))
               (setf tempo-change-abst-time date))
-            (if (equal (om-midi::midi-evt-type event) 'Note)
+            (if (equal (om-midi::midi-evt-type event) 'om-midi::Note)
                 (progn  
                   (om-midi::midi-evt-dur event (logical-time (om-midi::midi-evt-dur event)  
                                                     cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec))
@@ -224,8 +231,10 @@
                                       cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec)))
               (progn 
                 (setf (om-midi::midi-evt-date event) 
-                      (logical-time (om-midi::midi-evt-date event)  
-                                    cur-tempo tempo-change-abst-time tempo-change-log-time units/sec))
+                      ;(print (convert-time (om-midi::midi-evt-date event) (print cur-tempo) units/sec))
+                       (logical-time (om-midi::midi-evt-date event)  
+                                     cur-tempo tempo-change-abst-time tempo-change-log-time units/sec)
+                      )
                 ))
             )
           )
@@ -245,7 +254,7 @@
             (loop for event in seq collect
                   (let (newevent)
                     (setf date (- (om-midi::midi-evt-date event) initdate))
-                    (if (equal 'Tempo (om-midi::midi-evt-type event))
+                    (if (equal 'om-midi::Tempo (om-midi::midi-evt-type event))
                         (setf 
                          tempo-change-log-time (logical-time date cur-tempo tempo-change-abst-time tempo-change-log-time  units/sec)
                          cur-tempo (om-midi::midi-evt-tempo event)
@@ -253,7 +262,7 @@
                       (progn
                         (setf newevent (om-midi::copy-midi-evt event))
                         (case (om-midi::midi-evt-type event)
-                          ('Note  
+                          ('om-midi::Note  
                            (om-midi::midi-evt-dur newevent (logical-time (om-midi::midi-evt-dur event) 
                                                                 cur-tempo tempo-change-abst-time tempo-change-log-time units/sec))
                            (setf (om-midi::midi-evt-date newevent) (logical-time (om-midi::midi-evt-date event)
@@ -271,11 +280,11 @@
 ; Returns a new seq
 (defun insert-tempo-info (seq tempo) 
   (let ((tempoFactor (/ (bpm2mstempo tempo) *midi-tempo*)))
-    (cons (om-midi::make-midi-evt :type 'Tempo :date 0 :ref 0 :fields (list (bpm2mstempo tempo)))
+    (cons (om-midi::make-midi-evt :type 'om-midi::Tempo :date 0 :ref 0 :fields (list (bpm2mstempo tempo)))
           (loop for event in seq collect
                 (let ((newevent (om-midi::copy-midi-evt event)))
                   (setf (om-midi::midi-evt-date newevent) (round (/ (om-midi::midi-evt-date event) tempoFactor)))
-                  (when (equal (om-midi::midi-evt-date event) 'Note) 
+                  (when (equal (om-midi::midi-evt-type event) 'om-midi::Note) 
                     (om-midi::midi-evt-dur newevent (round (/ (om-midi::midi-evt-dur event) tempoFactor))))
                   newevent))
           )))

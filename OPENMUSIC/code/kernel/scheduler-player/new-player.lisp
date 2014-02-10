@@ -83,7 +83,7 @@
 (defmethod player-schedule ((player omplayer) (obj maquette-obj) engine &key (at 0) interval params)
    (loop for object in (inside obj)
            for param in (param-list obj) do
-           (player-schedule player (obj tr-obj)
+           (player-schedule player object
                             (cdr (assoc 'player param))
                             :at (+ at (offset->ms object))
                             :interval interval)
@@ -542,7 +542,8 @@
       (om-with-fg-color self *om-red2-color*
         (om-with-dashline 
             (om-with-line-size 2 
-              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self)))))
+              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self))
+              )))
       )))
 
 
@@ -563,7 +564,7 @@
       (scroll-play-view self at-pix)
       )
     (om-erase-movable-cursor self)
-    (om-new-movable-cursor self (start-position self) (start-position self) 4 (h self) 'om-cursor-line)))
+    (om-new-movable-cursor self (start-position self) 0 4 (h self) 'om-cursor-line)))
 
 (defmethod reset-cursor ((self cursor-play-view-mixin))
   (setf (cursor-pos self) 0)

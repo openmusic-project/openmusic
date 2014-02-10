@@ -35,12 +35,6 @@
     ))
 
 
-(schedule-task player 
-                 #'(lambda () 
-                     (player-play-object engine object :interval interval :params params))
-                 at)
-
-
 (defmethod player-stop ((engine (eql :midishare-rt)) &optional play-list)
   (om-midi::midishare-stop)
   (loop for ch in *key-ons* 

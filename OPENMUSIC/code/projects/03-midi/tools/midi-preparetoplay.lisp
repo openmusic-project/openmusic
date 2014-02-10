@@ -22,7 +22,8 @@
   (setf port (or port *def-midi-out*))
   (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
     (loop for event in (fileseq self) 
-          when (and (not (equal (om-midi::midi-evt-type event) 'om-midi::Tempo))
+          when (and newinterval
+                    (not (equal (om-midi::midi-evt-type event) 'om-midi::Tempo))
                     (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
                     (not (equal (om-midi::midi-evt-type event) 'om-midi::EndTrack)))
           collect   

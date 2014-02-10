@@ -6,12 +6,12 @@
 ;=== EVENTMIDI-SEQ ===
 ;=====================
 (defclass* EventMidi-seq (sequence* midi-score-element) 
-   ((Ltype :initform (list 'KeyOn) :accessor Ltype :initarg :Ltype :type t :documentation "list of event types")
-    (Ldate :initform (list 0) :accessor Ldate :initarg :Ldate :type t :documentation "list of dates (ms)")
-    (Lref :initform (list 0) :accessor Lref :initarg :Lref :type t  :documentation "list of track numbers")
-    (Lport :initform (list 0) :accessor Lport :initarg :Lport :type t :documentation "list of output port numbers")
-    (Lchan :initform (list 1) :accessor Lchan :initarg :Lchan :type t :documentation "list of MIDI channels (1-16)")
-    (Lfields :initform (list nil) :accessor Lfields :initarg :Lfields :type t :documentation "list of event data")
+   ((Ltype :initform nil :accessor Ltype :initarg :Ltype :type t :documentation "list of event types")
+    (Ldate :initform nil :accessor Ldate :initarg :Ldate :type t :documentation "list of dates (ms)")
+    (Lref :initform nil :accessor Lref :initarg :Lref :type t  :documentation "list of track numbers")
+    (Lport :initform nil :accessor Lport :initarg :Lport :type t :documentation "list of output port numbers")
+    (Lchan :initform nil :accessor Lchan :initarg :Lchan :type t :documentation "list of MIDI channels (1-16)")
+    (Lfields :initform nil :accessor Lfields :initarg :Lfields :type t :documentation "list of event data")
     (name :initform (string "Midi Events sequence") :accessor name :type string)
     (evtlist :initform nil :accessor evtlist)
     )

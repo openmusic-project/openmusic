@@ -136,7 +136,7 @@
 
 (defmethod editor-play ((self MaquetteEditor))
   (setf *maquette-play* T)
-  (cons-copy-maquette-object (object self) (boxestoplay (panel self)))
+  (cons-copy-maquette-object (object self) (boxestoplay self))
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
@@ -1191,9 +1191,9 @@
 ;        ))
 
 
-(defmethod boxestoplay ((self maquettepanel))
-  (if (and (get-actives self) (not (equal :interval (cursor-mode self))))
-      (mapcar 'object (get-actives self))
+(defmethod boxestoplay ((self maquetteeditor))
+  (if (and (get-actives (panel self)) (not (equal :interval (cursor-mode (panel self)))))
+      (mapcar 'object (get-actives (panel self)))
     (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
   
 
@@ -1209,9 +1209,8 @@
     ;(list (value (object self)))
       (value (object self))
     ;(list (cons-play-maquette-object (object self) (boxestoplay self)))
-    (cons-play-maquette-object (object self) (boxestoplay self))
-    )
-  )
+    (cons-play-maquette-object (object self) (boxestoplay self))    
+    ))
 
 (defmethod get-interval-to-play ((self maquetteeditor))
   (if (equal (cursor-mode (panel self)) :interval)
