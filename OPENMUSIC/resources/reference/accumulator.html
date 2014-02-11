@@ -105,7 +105,7 @@ The ACCUMULATOR box (or 'Accum') allows to collect results of the successive ite
 <br>
 &lt;data&gt; should be connected to the data to collect.<br>
 &lt;init&gt; determines the initial value of the accumulator.<br>
-&lt;fun&gt; is a function of 2 arguments detremining how the collected &lt;data&gt; is to be accumulated with teh current internal value (e.g. '+ '* 'list). This function can also be defined by a patch or function box of two arguments set in 'lambda' mode.<br>
+&lt;fun&gt; is a function of 2 arguments (accumulated &lt;value&gt;, collected &lt;data&gt;) determining how the collected &lt;data&gt; is to be accumulated with the current internal value (e.g. '+ '* 'list). This function can also be defined by a patch or function box of two arguments set in 'lambda' mode.<br>
 <br>
 As every accumulation boxes, the ACCUMULATOR has 3 outputs:<br>
 - When evaluated on its 1st output, the value connected to the first input (&lt;data&gt;) is collected and accumulated to the current value by the function defined in &lt;fun&gt;.<br>
