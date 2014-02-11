@@ -148,8 +148,8 @@
                        (final-buffer (fli:allocate-foreign-object :type :float :nelems final-size :fill 0))
                        (res 0.0))
 
-                  (declare (type fixnum size1 size2 final-size))
-                  (declare (type single-float res))
+                  ;(declare (type fixnum size1 size2 final-size))
+                  ;(declare (type single-float res))
                   
                   (cond ((= method 0) 
                          (dotimes (i final-size)
@@ -184,15 +184,15 @@
 
 
 (defmethod! om-sound-mix ((s1 sound) (s2 sound) &optional (method 0))
-            (declare (type fixnum method))
+            ;(declare (type fixnum method))
             (om-sound-mix (get-om-sound-data s1) (get-om-sound-data s2) method))
 
 (defmethod! om-sound-mix ((s1 om-sound-data) (s2 sound) &optional (method 0))
-            (declare (type fixnum method))
+            ;(declare (type fixnum method))
             (om-sound-mix s1 (get-om-sound-data s2) method))
 
 (defmethod! om-sound-mix ((s1 sound) (s2 om-sound-data) &optional (method 0))
-            (declare (type fixnum method))
+            ;(declare (type fixnum method))
             (om-sound-mix (get-om-sound-data s1) s2 method))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MIX///////////////
 
@@ -200,24 +200,24 @@
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SILENCE///////////
-(defmethod! om-sound-silence ((dur float) &optional (channels 1))
+(defmethod! om-sound-silence ((dur float) &optional (channels 1) (sample-rate *audio-sr*))
             :icon 105
-            :initvals '(1.0)
+            :initvals (list 1.0 1 *audio-sr*)
             :indoc '("duration (float or interger)" "number of channels")
             :doc "Generates a silence of duration = <dur>.
 <dur> is considered to be in seconds if a float number is given (e.g. 20.0) or in milliseconds if integer (e.g. 20)\."
             (make-instance 'om-sound-data 
-                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur *audio-sr* (if (< channels 1) 1 channels))) :fill 0)
-                           :size (round (* dur *audio-sr*))
+                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur sample-rate (if (< channels 1) 1 channels))) :fill 0)
+                           :size (round (* dur sample-rate))
                            :nch (if (< channels 1) 1 channels)
-                           :sr *audio-sr*))
+                           :sr sample-rate))
 
-(defmethod! om-sound-silence ((dur integer) &optional (channels 1))
+(defmethod! om-sound-silence ((dur integer) &optional (channels 1) (sample-rate *audio-sr*))
             (make-instance 'om-sound-data 
-                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur *audio-sr* 0.001 (if (< channels 1) 1 channels))) :fill 0)
-                           :size (round (* dur *audio-sr*))
+                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur sample-rate 0.001 (if (< channels 1) 1 channels))) :fill 0)
+                           :size (round (* dur 0.001 sample-rate))
                            :nch (if (< channels 1) 1 channels)
-                           :sr *audio-sr*))
+                           :sr sample-rate))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SILENCE///////////
 
 
@@ -242,8 +242,8 @@
                        (final-size (- (+ size1 size2) smp-cross-side))
                        (final-buffer (fli:allocate-foreign-object :type :float :nelems final-size :fill 0)))
 
-                  (declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
-                  (declare (type single-float factor1 factor2))
+                  ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
+                  ;(declare (type single-float factor1 factor2))
                   
                   (dotimes (i final-size)
                     (setf (fli:dereference final-buffer :index i)
@@ -268,15 +268,15 @@
                 s1)))
 
 (defmethod! om-sound-seq ((s1 om-sound-data) (s2 sound) &optional (crossfade 0))
-            (declare (type fixnum crossfade))
+            ;(declare (type fixnum crossfade))
             (om-sound-seq s1 (get-om-sound-data s2) crossfade))
 
 (defmethod! om-sound-seq ((s1 sound) (s2 om-sound-data) &optional (crossfade 0))
-            (declare (type fixnum crossfade))
+            ;(declare (type fixnum crossfade))
             (om-sound-seq (get-om-sound-data s1) s2 crossfade))
 
 (defmethod! om-sound-seq ((s1 sound) (s2 sound) &optional (crossfade 0))
-            (declare (type fixnum crossfade))
+            ;(declare (type fixnum crossfade))
             (om-sound-seq (get-om-sound-data s1) (get-om-sound-data s2) crossfade))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SEQ///////////////
 
@@ -302,8 +302,8 @@
                    (fade-out-frames-start (- size2 (round (* out sr 0.001 nch))))
                    (fade-out-factor (- (/ 1.0 fade-out-frames))))
 
-              (declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
-              (declare (type single-float fade-in-factor fade-out-factor))
+              ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
+              ;(declare (type single-float fade-in-factor fade-out-factor))
                   
               (dotimes (i size2)
                 (setf (fli:dereference (buffer s) :index i)
@@ -315,7 +315,7 @@
               s))
 
 (defmethod! om-sound-fade ((s sound) in out)
-            (declare (type fixnum in out))
+            ;(declare (type fixnum in out))
             (om-sound-fade (get-om-sound-data s) in out))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-FADE//////////////
 
@@ -334,7 +334,7 @@
                    (size2 (* nch size))
                    (final-buffer (fli:allocate-foreign-object :type :float :nelems (* n size2) :fill 0)))
               
-              (declare (type fixnum nch size size2))
+              ;(declare (type fixnum nch size size2))
 
               (dotimes (i (* n (nch s) (size s)))
                 (setf (fli:dereference final-buffer :index i) (fli:dereference (buffer s) :index (mod i size2))))
@@ -348,7 +348,7 @@
                              :sr (sr s))))
 
 (defmethod! om-sound-loop ((s sound) n)
-            (declare (type fixnum n))
+            ;(declare (type fixnum n))
             (om-sound-loop (get-om-sound-data s) n))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-LOOP//////////////
 
@@ -372,7 +372,7 @@
                    (lengthfinal (- end-smp beg-smp))
                    (final-buffer (fli:allocate-foreign-object :type :float :nelems lengthfinal :fill 0)))
 
-              (declare (type fixnum nch sr size2 beg-smp end-smp lengthfinal))
+              ;(declare (type fixnum nch sr size2 beg-smp end-smp lengthfinal))
 
               (dotimes (i lengthfinal)
                 (setf (fli:dereference final-buffer :index i) (fli:dereference (buffer s) :index (+ beg-smp i))))
@@ -386,7 +386,7 @@
                              :sr sr)))
 
 (defmethod! om-sound-cut ((s sound) beg end)
-            (declare (type fixnum beg end))
+            ;(declare (type fixnum beg end))
             (om-sound-cut (get-om-sound-data s) beg end))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-CUT///////////////
 
@@ -414,8 +414,8 @@
                    (fade-out-factor (/ (- 1 gain) fade-out-frames))
                    (fade-out-frame-start (- size2 fade-out-frames)))
 
-              (declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
-              (declare (type single-float fade-in-factor fade-out-factor))
+              ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
+              ;(declare (type single-float fade-in-factor fade-out-factor))
                   
               (dotimes (i size2)
                 (setf (fli:dereference (buffer s) :index i)
@@ -427,8 +427,8 @@
               s))
 
 (defmethod! om-sound-vol ((s sound) gain &optional (in 1) (out 1))
-            (declare (type single-float gain))
-            (declare (type fixnum in out))
+            ;(declare (type single-float gain))
+            ;(declare (type fixnum in out))
             (om-sound-vol (get-om-sound-data s) gain in out))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL//////////////
 
@@ -460,9 +460,9 @@
                    (rms 0.0)
                    (tampon-size (* 100 nch)))
 
-              (declare (type fixnum nch size size2 indx tampon-size))
-              (declare (type single-float peak peak-rms gain x rms))
-              (declare (type list tampon))
+              ;(declare (type fixnum nch size size2 indx tampon-size))
+              ;(declare (type single-float peak peak-rms gain x rms))
+              ;(declare (type list tampon))
 
               (cond ((= method 0)
                      (progn 
@@ -495,7 +495,7 @@
               s))
 
 (defmethod! om-sound-normalize ((s sound) &optional (method 0))
-            (declare (type fixnum method))
+            ;(declare (type fixnum method))
             (om-sound-normalize (get-om-sound-data s) method))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-NORMALIZE////////
 
@@ -538,7 +538,7 @@
             )
 
 (defmethod! om-sound-mono-to-stereo ((s sound) &optional (pan 0))
-            (declare (type fixnum pan))
+            ;(declare (type fixnum pan))
             (om-sound-mono-to-stereo (get-om-sound-data s) pan))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MONO-TO-STEREO///
 
@@ -556,7 +556,7 @@
                 (let* ((final-buffer (fli:allocate-foreign-object :type :float :nelems (size s) :fill 0))
                        (x 0.0))
 
-                  (declare (type single-float x))
+                  ;(declare (type single-float x))
 
                   (dotimes (i (size s))
                     (setf x (/ (+ (fli:dereference (buffer s) :index (* 2 i)) (fli:dereference (buffer s) :index (1+ (* 2 i)))) 2.0))
@@ -598,8 +598,8 @@
                        (rightLgain (- 0.5 (* (/ 1.0 200) right)))
                        (xl 0.0) (xr 0.0))
 
-                  (declare (type fixnum left right))
-                  (declare (type single-float leftRgain leftLgain rightRgain rightLgain))
+                  ;(declare (type fixnum left right))
+                  ;(declare (type single-float leftRgain leftLgain rightRgain rightLgain))
 
                   (dotimes (i (size s))
                     (setf xl (fli:dereference (buffer s) :index (* 2 i))
@@ -612,7 +612,7 @@
                 s)))
 
 (defmethod! om-sound-stereo-pan ((s sound) left right)
-            (declare (type fixnum left right))
+            ;(declare (type fixnum left right))
             (om-sound-stereo-pan (get-om-sound-data s) left right))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
 
@@ -668,6 +668,6 @@
 
 
 (defmethod! om-sound-resample ((s sound) sample-rate &optional (method 0))
-            (declare (type fixnum method))
+            ;(declare (type fixnum method))
             (om-sound-resample (get-om-sound-data s) sample-rate method))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE/////////
