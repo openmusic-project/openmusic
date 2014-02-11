@@ -399,8 +399,8 @@
 
 (defmethod schedule-editor-contents ((self play-editor-mixin))
   (player-schedule (player self) 
-                   (print (get-obj-to-play self))
-                   (print (get-player-engine self))
+                   (get-obj-to-play self)
+                   (get-player-engine self)
                    :at 0 
                    :interval (get-interval-to-play self)
                    :params (additional-player-params self)))
