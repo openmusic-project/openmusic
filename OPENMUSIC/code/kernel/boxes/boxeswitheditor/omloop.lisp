@@ -702,7 +702,7 @@ at each evaluation of the accumulator#closure#"))
 
 <data> should be connected to the data to collect.
 <init> determines the initial value of the accumulator.
-<fun> is a function of 2 arguments detremining how the collected <data> is to be accumulated with teh current internal value (e.g. '+ '* 'list). This function can also be defined by a patch or function box of two arguments set in 'lambda' mode.
+<fun> is a function of 2 arguments (accumulated value, new data) determining how the collected <data> is to be accumulated with the current internal value (e.g. '+ '* 'list). This function can also be defined by a patch or function box of two arguments set in 'lambda' mode.
 
 As every accumulation boxes, the ACCUMULATOR has 3 outputs:
 - When evaluated on its 1st output, the value connected to the first input (<data>) is collected and accumulated to the current value by the function defined in <fun>.
