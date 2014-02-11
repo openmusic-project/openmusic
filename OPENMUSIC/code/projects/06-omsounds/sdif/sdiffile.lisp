@@ -274,7 +274,7 @@ Lock the box ('b') to keep the current file.
 (defun read-matrix-header (ptr)
   (let ((pos (- (sdif-get-pos ptr) 4)))
     (sdif::SdifFReadMatrixHeader ptr)
-    (values (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr))
+    (values "XG7F" ; (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr))
             (sdif::SdifFCurrNbRow ptr) 
             (sdif::SdifFCurrNbCol ptr) 
             (sdif::SdifSizeofDataType (sdif::SdifFCurrDataType ptr))
