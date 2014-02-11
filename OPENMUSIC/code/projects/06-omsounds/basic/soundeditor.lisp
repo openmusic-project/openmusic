@@ -782,7 +782,7 @@
                (total-width (om-point-h (om-field-size self)))
                (thepicture (and dur 
                                 (if (and (pict-spectre thesound) (get-edit-param (editor self) :show-spectrum))
-                                    (thepict (pict-spectre self))
+                                    (thepict (pict-spectre thesound))
                                   (sound-get-pict thesound))))
                (window-h-size (om-point-h (om-view-size self)))
                (window-v-size (om-point-v (om-view-size self)))

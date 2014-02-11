@@ -398,6 +398,11 @@ Press 'space' to play/stop the sound file.
   (list (om-new-leafmenu "Open with external editor..."
                          #'(lambda () (om-cmd-line (string+ *om-open-cmd* " "  (namestring (sound-path self))))))))
 
+
+(defmethod update-if-editor ((self OMaiffFilebox))
+  (when (editorFrame self)
+    (om-close-window (om-view-window (editorFrame self)))))
+
 ;=======
 ; PICT
 ;=======
