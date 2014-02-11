@@ -48,7 +48,7 @@
            (dur (sound-dur-ms self))
            (boxw (w view))
            (boxh (h view))
-           (picture  (pic-to-draw self))
+           (picture (sound-get-pict self))
            (pictw (om-pict-width picture))
            (picth (om-pict-height picture))
            (begtime (start-t sheet-object))

@@ -19,7 +19,7 @@
    (control1-val :initform 0 :initarg :control1-val :accessor control1-val :type integer)
    (control2-val :initform 0 :initarg :control2-val :accessor control2-val :type integer)
    (vol-ctrl :initform 100 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
-   (pitch-ctrl :initform 64 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)))
+   (pitch-ctrl :initform 0 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)))
 
 (defmethod channel-ctrl-p ((self channel-ctrl))  t)
 (defmethod channel-ctrl-p ((self t)) nil)
@@ -79,6 +79,12 @@ The MIDI-MIX-CONSOLE object can also be 'played' as a musical object, from a pat
 In this case, all internal events are sent simultaneously.
 "
  ))
+
+(add-player-for-object 'midi-mix-console '(:midishare-rt :midishare))
+
+(defmethod default-edition-params ((self midi-mix-console))
+  (pairlis '(player)
+           '(:midishare-rt)))
 
 (defmethod get-impulsion-pict ((self midi-mix-console)) 
   (om-load-and-store-picture "audiotrack-bg" 'internal))
@@ -156,7 +162,7 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'ProgChange
+                   :ev-type :ProgChange
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (program self))
@@ -164,7 +170,7 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'CtrlChange
+                   :ev-type :CtrlChange
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (list 7 (vol-ctrl self)))
@@ -172,7 +178,7 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'CtrlChange
+                   :ev-type :CtrlChange
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (list 10 (pan-ctrl self)))
@@ -180,15 +186,15 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'PitchBend
+                   :ev-type :PitchBend
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
-                   :ev-fields (list 0 (pitch-ctrl self)))
+                   :ev-fields (list (pitch-ctrl self)))
         
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'CtrlChange
+                   :ev-type :CtrlChange
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (list (control1-num self) (control1-val self)))
@@ -196,7 +202,7 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type 'CtrlChange
+                   :ev-type :CtrlChange
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (list (control2-num self) (control2-val self)))
@@ -220,7 +226,7 @@ In this case, all internal events are sent simultaneously.
 ;=================================
 
 (defmethod channel-send-prog ((self channel-ctrl))
-  (let ((event (om-midi::make-midi-evt :type 'ProgChange 
+  (let ((event (om-midi::make-midi-evt :type :ProgChange 
                               :chan (midichannel self)
                               :port (or (midiport self) *def-midi-out*)
                               :fields (list (program self)))))
@@ -230,7 +236,7 @@ In this case, all internal events are sent simultaneously.
 
     
 (defmethod channel-send-vol ((self channel-ctrl))
-  (let ((event (om-midi::make-midi-evt :type 'CtrlChange
+  (let ((event (om-midi::make-midi-evt :type :CtrlChange
                                  :chan (midichannel self) 
                                  :port (or (midiport self) *def-midi-out*)
                                  :fields (list 7  (vol-ctrl self)))))
@@ -238,30 +244,30 @@ In this case, all internal events are sent simultaneously.
     t))
 
 (defmethod channel-send-pan ((self channel-ctrl))
-  (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
+  (let ((event  (om-midi::make-midi-evt :type :CtrlChange
                                  :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list 10 (pan-ctrl self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct1 ((self channel-ctrl))
-  (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
+  (let ((event  (om-midi::make-midi-evt :type :CtrlChange
                                  :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list (control1-num self) (control1-val self)))))
     (midi-send-evt event)
     t))
     
 (defmethod channel-send-ct2 ((self channel-ctrl))
-  (let ((event  (om-midi::make-midi-evt :type 'CtrlChange
+  (let ((event  (om-midi::make-midi-evt :type :CtrlChange
                                  :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
                                  :fields (list (control2-num self) (control2-val self)))))    
     (midi-send-evt event)
     t))
 
 (defmethod channel-send-pitch ((self channel-ctrl))
-  (let ((event (om-midi::make-midi-evt :type 'PitchBend
+  (let ((event (om-midi::make-midi-evt :type :PitchBend
                               :chan (midichannel self) :port (or (midiport self) *def-midi-out*)
-                              :fields (list 0  (pitch-ctrl self)))))
+                              :fields (pitch-ctrl self))))
     (midi-send-evt event)
     t))
 
@@ -578,16 +584,16 @@ In this case, all internal events are sent simultaneously.
       (setf pos (+ pos 4))
       
       (setf (pitchText self) (om-make-dialog-item 'om-static-text
-                                                  (om-make-point 16 pos) 
+                                                  (om-make-point 5 pos) 
                                                   (om-make-point 40 16)
                                                   "Pitch"
                                                   :font *om-default-font2*
                                                   ))
       
       (setf (pitchVal self) (om-make-dialog-item 'om-static-text 
-                                                 (om-make-point 50 pos) 
-                                                 (om-make-point 30 16)
-                                                 (format nil "~D" (- (pitch-ctrl (channelctr self)) 64) )
+                                                 (om-make-point 40 pos) 
+                                                 (om-make-point 40 16)
+                                                 (format nil "~D" (pitchwheel-to-mc (pitch-ctrl (channelctr self))))
                                                  :font *om-default-font2*
                                                  ))
       
@@ -599,7 +605,7 @@ In this case, all internal events are sent simultaneously.
                                                     :di-action (om-dialog-item-act item
                                                                  (change-pitchbend self (om-slider-value item)))
                                                     :increment 1
-                                                    :range '(0 127)
+                                                    :range '(-8192 8191)
                                                     :value (pitch-ctrl (channelctr self))
                                                     :direction :horizontal
                                                     :tick-side :none
@@ -752,10 +758,10 @@ In this case, all internal events are sent simultaneously.
      (om-set-dialog-item-text (volumeVal self) (number-to-string vol)))
   (when pan
      (set-value (panSlider self) pan)
-     (om-set-dialog-item-text (panVal self) (number-to-string pan)))
+     (om-set-dialog-item-text (panVal self) (pan2str pan)))
   (when pitch
     (om-set-slider-value (pitchSlider self) pitch)
-    (om-set-dialog-item-text (pitchVal self) (number-to-string pitch)))
+    (om-set-dialog-item-text (pitchVal self) (number-to-string (pitchwheel-to-mc pitch))))
   (when ctr1
     (om-set-selected-item-index (ctrl1Menu self) ctr1))
   (when ctr1val
@@ -801,7 +807,7 @@ In this case, all internal events are sent simultaneously.
 
 (defun pan2str (panvalue)
   (let* ((value (- panvalue 64))
-        (new-str (cond ((= value 0) (integer-to-string value))
+         (new-str (cond ((= value 0) (integer-to-string value))
                         ((< value 0) (format nil "L~D" (- value)))
                         ((> value 0) (format nil "R~D" value)))))
     new-str))
@@ -851,7 +857,7 @@ In this case, all internal events are sent simultaneously.
   (setf (pitch-ctrl (channelctr self)) value)
   (when (send-rt (editor self)) 
     (channel-send-pitch (channelctr self)))
-  (let ((new-str (integer-to-string (- value 64)))
+  (let ((new-str (integer-to-string (pitchwheel-to-mc value)))
         (target (pitchVal self)))
     (unless (string= new-str (om-dialog-item-text target))
       (om-set-dialog-item-text target new-str)
@@ -860,12 +866,14 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod reset-all-values ((self channelPanel))
+  (change-program self 0)
+  (om-set-selected-item-index (programMenu self) 0)
   (change-pan self 64)
   (set-value (panSlider self) 64)
   (change-volume self 100)
   (om-set-slider-value (volumeSlider self) 100)
-  (change-pitchbend self 64)
-  (om-set-slider-value (pitchSlider self) 64)
+  (change-pitchbend self 0)
+  (om-set-slider-value (pitchSlider self) 0)
   (change-ctrl1-val self 0)
   (om-set-slider-value (ctrl1Slider self) 0)
   (change-ctrl2-val self 0)
@@ -895,21 +903,21 @@ In this case, all internal events are sent simultaneously.
   (let ((evtList nil) 
         (progevt (make-instance 'MidiEvent
                        :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "ProgChange")
+                       :ev-type :ProgChange
                        :ev-chan (midichannel self)
                        :ev-port (midiport self)
                        :ev-fields (program self)))
         
         (volevt (make-instance 'MidiEvent
                        :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
+                       :ev-type :CtrlChange
                        :ev-chan (midichannel self)
                        :ev-port (midiport self)
                        :ev-fields (list 7 (vol-ctrl self))))
         
         (panevt (make-instance 'MidiEvent
                        :ev-date 0
-                       :ev-type (om-midi-get-num-from-type "CtrlChange")
+                       :ev-type :CtrlChange
                        :ev-chan (midichannel self)
                        :ev-port (midiport self)
                        :ev-fields (list 10 (pan-ctrl self))))

@@ -92,7 +92,7 @@
   (midi::message-key event))
 (defmethod midi-data-byte-2 ((event midi::note-off-message))
   (midi::message-velocity event))
-(defmethod midi-message-type ((msg midi::note-off-message)) 'KeyOff)
+(defmethod midi-message-type ((msg midi::note-off-message)) :KeyOff)
 (defmethod midi-message-fields ((msg midi::note-off-message))
   (list (midi::message-key msg) (midi::message-velocity msg)))
 
@@ -106,7 +106,7 @@
   (midi::message-key event))
 (defmethod midi-data-byte-2 ((event midi::note-on-message))
   (midi::message-velocity event))
-(defmethod midi-message-type ((msg midi::note-on-message)) 'KeyOn)
+(defmethod midi-message-type ((msg midi::note-on-message)) :KeyOn)
 (defmethod midi-message-fields ((msg midi::note-on-message))
   (list (midi::message-key msg) (midi::message-velocity msg)))
 
@@ -118,7 +118,7 @@
   0)
 (defmethod midi-data-byte-2 ((event midi::program-change-message))
   (midi::message-program event))
-(defmethod midi-message-type ((msg midi::program-change-message)) 'ProgChange)
+(defmethod midi-message-type ((msg midi::program-change-message)) :ProgChange)
 (defmethod midi-message-fields ((msg midi::program-change-message)) (list (midi::message-program msg)))
 
 ;; CONTROL CHANGE
@@ -129,7 +129,7 @@
   (midi::message-value event))
 (defmethod midi-data-byte-2 ((event midi::control-change-message))
   (midi::message-controller event))
-(defmethod midi-message-type ((msg midi::control-change-message)) 'CtrlChange)
+(defmethod midi-message-type ((msg midi::control-change-message)) :CtrlChange)
 (defmethod midi-message-fields ((msg midi::control-change-message)) (list (slot-value msg 'midi::controller)
                                                                           (slot-value msg 'midi::value)))
 
@@ -145,20 +145,20 @@
 (defmethod midi-data-byte-2 ((event midi::pitch-bend-message))
   (7-msb (midi::message-value event)))
 
-(defmethod midi-message-type ((msg midi::general-text-message)) 'Textual)
-(defmethod midi-message-type ((msg midi::sequence/track-name-message)) 'SeqName)
-(defmethod midi-message-type ((msg midi::instrument-message)) 'InstrName)
-(defmethod midi-message-type ((msg midi::lyric-message)) 'Lyric)
-(defmethod midi-message-type ((msg midi::copyright-message)) 'Copyright)
+(defmethod midi-message-type ((msg midi::general-text-message)) :Textual)
+(defmethod midi-message-type ((msg midi::sequence/track-name-message)) :SeqName)
+(defmethod midi-message-type ((msg midi::instrument-message)) :InstrName)
+(defmethod midi-message-type ((msg midi::lyric-message)) :Lyric)
+(defmethod midi-message-type ((msg midi::copyright-message)) :Copyright)
 ;;; Superclass for all text messages
 (defmethod midi-message-fields ((msg midi::text-message)) (map 'list #'char-code (slot-value msg 'midi::text)))  ;; restore the list of ASCII.. ?
 
 (defun make-tempo-message (time tempo)
   (make-instance 'midi:tempo-message :time time :tempo tempo :status +tempo-opcode+))
-(defmethod midi-message-type ((msg midi::tempo-message)) 'Tempo)
+(defmethod midi-message-type ((msg midi::tempo-message)) :Tempo)
 (defmethod midi-message-fields ((msg midi::tempo-message)) (list (midi::message-tempo msg)))
 
-(defmethod midi-message-type ((msg midi::time-signature-message)) 'TimeSign)
+(defmethod midi-message-type ((msg midi::time-signature-message)) :TimeSign)
 (defmethod midi-message-fields ((msg midi::time-signature-message)) 
   (list (midi::message-numerator msg)
         (midi::message-denominator msg)
@@ -216,10 +216,10 @@
 (defun make-messages-from-event (ev)
   (let ((type (midi-evt-type ev)))
     (cond 
-      ((equal type 'Note) (event2note-on-off ev)) ;returns cons
-      ((equal type 'keyOn) (event2note-on ev))
-      ((equal type 'keyOff) (event2note-off ev))
-      ((equal type 'Tempo) (event2tempo ev))
+      ((equal type :Note) (event2note-on-off ev)) ;returns cons
+      ((equal type :keyOn) (event2note-on ev))
+      ((equal type :keyOff) (event2note-off ev))
+      ((equal type :Tempo) (event2tempo ev))
       (t (print (format nil "(cl-midi) message-type ~A isn't supported yet" type)) NIL))))
 
 (defun seq2tracks (seq)

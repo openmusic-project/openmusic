@@ -244,7 +244,7 @@ If <test> returns T, then the MIDIEvent is collected.
                                             :ev-chan (om-midi::midi-evt-chan e)
                                             :ev-ref (om-midi::midi-evt-ref e)
                                             :ev-port (om-midi::midi-evt-port e)
-                                            :ev-fields (if (equal (om-midi::midi-evt-type e) 'om-midi::Tempo) 
+                                            :ev-fields (if (equal (om-midi::midi-evt-type e) :Tempo) 
                                                            (list (mstempo2bpm (om-midi::midi-evt-tempo e)))
                                                          (om-midi::midi-evt-fields e))
                                             )))
@@ -267,7 +267,7 @@ The second output returns the corresponding dates"
   :icon '(908)
   (let ((rep
          (mat-trans (loop for evt in (fileseq self)  
-                          when (equal (om-midi::midi-evt-type evt) 'Lyric)
+                          when (equal (om-midi::midi-evt-type evt) :Lyric)
                           collect (list (if (stringp (car (om-midi::midi-evt-fields evt))) (om-midi::midi-evt-fields evt) (list2string (om-midi::midi-evt-fields evt)))
                                         (om-midi::midi-evt-date evt)))
                     )))

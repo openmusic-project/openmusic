@@ -3,6 +3,12 @@
 ;================================
 ; A BPF with basic playback features
 ;================================
+(defmethod player-name ((self (eql :bpfplayer))) "BPF-Player")
+(defmethod player-desc ((self (eql :bpfplayer))) "Special player for BPFs and automations")
+(defmethod player-type ((player (eql :bpfplayer))) :internal)
+
+(enable-player :bpfplayer)
+
 
 (defclass! BPF-controller (simple-container BPF) 
   ((player-fun :initform nil :accessor player-fun)))
@@ -11,7 +17,7 @@
 (defmethod allowed-in-maq-p ((self BPF-controller)) t)
 (defmethod get-obj-dur ((self BPF-controller)) (last-elem (x-points self)))
 
-(enable-player :bpfplayer)
+
 (add-player-for-object 'BPF-controller '(:bpfplayer))
 
 (defmethod default-edition-params ((self BPF-controller)) 

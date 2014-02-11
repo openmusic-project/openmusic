@@ -5,12 +5,6 @@
 ;;;======================================
 (defclass midi-bpfEditor (bpfcontroleditor) ())
 
-(add-player-for-object 'midicontrol '(:midishare :bpfplayer))
-
-(defmethod editor-play/stop ((self midi-bpfEditor))
-  (set-edit-param self 'player :bpfplayer)
-  (call-next-method))
-
 
 (defclass control-midibpf (control-bpf) 
    ((midi-params :accessor midi-params :initarg :midi-params :initform nil)))
@@ -85,7 +79,7 @@
 (defun change-control-type (container val)
    (let ((obj (object (editor container))))
      (setf (ctrltype obj) val)
-     (setf (ev-num obj) (name2evNum (ctrltype obj)))
+     (setf (ev-type obj) (name2evtype (ctrltype obj)))
      (setf (ctr-num obj) (name2ctrNum (ctrltype obj)))
      (report-modifications (editor container)))
    t)
@@ -100,6 +94,7 @@
             (ctrlbutton (om-make-dialog-item 'om-pop-up-dialog-item
                                              (om-make-point 0 10)
                                              (om-make-point 140 10) ""
+                                      :font *om-default-font1*     
                                       :di-action (om-dialog-item-act item
                                                      (change-control-type (panel (om-view-container container)) 
                                                                           (cadr (nth (om-get-selected-item-index item) *ctrl-type-list*))))
@@ -118,7 +113,7 @@
                                                   (om-make-point 150 0)  
                                                   (om-make-point 40 18)
                                                   "Chan"
-                                                  :font *om-default-font2*
+                                                  :font *om-default-font1*
                                                   )
                              
                              (om-make-dialog-item 'numBox
@@ -126,7 +121,7 @@
                                                   (om-make-point 24 18) (format nil "~D" (chan ctrlobject))
                                                   :min-val 1
                                                   :max-val 16
-                                                  :font *om-default-font2*
+                                                  :font *om-default-font1*
                                                   :bg-color *om-white-color*
                                                   :value (or (chan ctrlobject) 1)
                                                   :afterfun #'(lambda (item)
@@ -138,14 +133,14 @@
                                                               (om-make-point 150 20) 
                                                               (om-make-point 40 18)
                                                               "Track"
-                                                              :font *om-default-font2*)
+                                                              :font *om-default-font1*)
                                        (om-make-dialog-item 'numBox
                                                             (om-make-point 190 22) 
                                                             (om-make-point 24 18)
                                                             (format nil "~D" (ref ctrlobject))
                                                             :min-val 0
                                                             :max-val 99
-                                                            :font *om-default-font2*
+                                                            :font *om-default-font1*
                                                             :bg-color *om-white-color*
                                                             :value (or (ref ctrlobject) 0)
                                                             :afterfun #'(lambda (item)
@@ -157,14 +152,14 @@
                                                                                  (om-make-point 220 0) 
                                                                                  (om-make-point 40 18)
                                                                                  "Port"
-                                                                                 :font *om-default-font2*)
+                                                                                 :font *om-default-font1*)
                                        (om-make-dialog-item 'numBox
                                                                                  (om-make-point 260 2) 
                                                                                  (om-make-point 24 18)
                                                                                  (format nil "~D" (port ctrlobject))
                                                                                  :min-val 0
                                                                                  :max-val 99
-                                                                                 :font *om-default-font2*
+                                                                                 :font *om-default-font1*
                                                                                  :bg-color *om-white-color*
                                                                                  :value (or (port ctrlobject) 0)
                                                                                  :afterfun #'(lambda (item)

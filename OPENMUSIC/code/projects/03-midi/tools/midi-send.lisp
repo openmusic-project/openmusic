@@ -27,7 +27,7 @@
                (midi-o item item1)))
        
        (loop for aport in (list! port) do
-             (let ((event  (om-midi::make-midi-evt :type 'Stream
+             (let ((event  (om-midi::make-midi-evt :type :Stream
                                           :port aport
                                           :fields bytes)))
                            (midi-send-evt event)
@@ -38,7 +38,7 @@
 
 ;===================PITCHBEND & WHEEL
 
-(defmethod* pitchwheel ((vals number) (chans number) &optional port)
+(defmethod* pitchwheel ((val number) (chans number) &optional port)
    :icon 912
    :indoc '("pitch wheel value(s)" "MIDI channel(s) (1-16)" "output port number")
    :initvals '(0 1 nil)
@@ -51,9 +51,9 @@ The range of pitch wheel is between -8192 and 8190.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event  (om-midi::make-midi-evt :type 'PitchWheel
+         (let ((event  (om-midi::make-midi-evt :type :PitchBend
                                       :chan chans :port aport
-                                      :fields (list vals))))
+                                      :fields val)))
            (midi-send-evt event)
            )))
 
@@ -66,6 +66,11 @@ The range of pitch wheel is between -8192 and 8190.
          for item1 in vals do
          (pitchwheel item1 item port)))
 
+;;; pb = (-8192 8190) 
+;;; total range = +/- 200 midicents
+(defun pitchwheel-to-mc (pw)
+  (round (* pw 200) 8192))
+
 ;------------------------
 
 ;==== MODIFIED FUNCTION
@@ -77,10 +82,10 @@ The range of pitch wheel is between -8192 and 8190.
 
 <values> and <chans> can be single numbers or lists. 
 
-The range of pitch wheel is between 0 and 127.
+The range of pitch bend is between 0 and 127.
 "
    (unless port (setf port *def-midi-out*))
-   (pitchwheel (round (* (/ vals 127) 16382 )) chans port))
+   (pitchwheel (pitchbend-to-pitchwheel vals) chans port))
 
 (defmethod* pitchbend ((vals number) (chans list) &optional port)
    (loop for item in chans do
@@ -90,6 +95,17 @@ The range of pitch wheel is between 0 and 127.
    (loop for item in chans 
          for item1 in vals do
          (pitchbend item1 item port)))
+
+;;; pb = (0-127) 
+;;; total range = +/- 200 midicents
+(defun pitchbend-to-mc (pb)
+  (- (round (* pb 400) 127) 200))
+  
+
+;;; 7 bits to 14 bits
+(defun pitchbend-to-pitchwheel (pb)
+  (- (round (* (/ pb 127) 16382)) 8192))
+
 
 ;===================PGCHANGE
 
@@ -103,11 +119,11 @@ The range of pitch wheel is between 0 and 127.
   (unless port (setf port *def-midi-out*))
   (setf port (list! port))
   (loop for aport in port do
-       (let ((event (om-midi::make-midi-evt :type 'ProgChange 
-					    :chan chans
-					    :port port
-					    :fields (list progm))))
-	 (when event (midi-send-evt event)))))
+        (let ((event (om-midi::make-midi-evt :type :ProgChange 
+                                             :chan chans
+                                             :port aport
+                                             :fields (list progm))))
+          (when event (midi-send-evt event)))))
 
 
 
@@ -127,7 +143,7 @@ The range of pitch wheel is between 0 and 127.
 
 
 ;===================POLY KEY PRESSURE
-(defmethod* polyKeypres ((values integer) (pitch integer) (chans integer) &optional port) 
+(defmethod* polyKeypres ((vals integer) (pitch integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("pressure value" "target pitch" "MIDI channel (1-16)" "output port number")
    :initvals '(100 6000 1 nil)
@@ -139,42 +155,44 @@ Arguments can be single numbers or lists.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "KeyPress")
-                                                                  :chan (- chans 1) :port aport
-                                                                  :kpress values :pitch (round pitch 100))))
-           (when event (om-midi-send-evt event *midiplayer*)))))
+         (let ((event (om-midi::make-midi-evt :type :KeyPress 
+					    :chan chans
+					    :port port
+					    :fields (list (round pitch 100) val))))
+	 (when event (midi-send-evt event)))
+         ))
 
-(defmethod* polyKeypres ((values list) (pitch list) (chans list) &optional port)
+(defmethod* polyKeypres ((vals list) (pitch list) (chans list) &optional port)
    (loop for item in pitch
-         for val in values
+         for val in vals
          for chan in chans do
          (polyKeypres val item chan port)))
 
-(defmethod* polyKeypres ((values integer) (pitch list) (chans integer) &optional port)
+(defmethod* polyKeypres ((vals integer) (pitch list) (chans integer) &optional port)
    (loop for item in pitch  do
-         (polyKeypres values item chans port)))
+         (polyKeypres vals item chans port)))
 
-(defmethod* polyKeypres ((values integer) (pitch list) (chans list) &optional port)
+(defmethod* polyKeypres ((vals integer) (pitch list) (chans list) &optional port)
    (loop for item in pitch
          for chan in chans do
-         (polyKeypres values item chan port)))
+         (polyKeypres vals item chan port)))
 
-(defmethod* polyKeypres ((values integer) (pitch list) (chans list) &optional port)
-   (loop for val in values do
+(defmethod* polyKeypres ((vals integer) (pitch list) (chans list) &optional port)
+   (loop for val in vals do
          (polyKeypres val pitch chans port)))
 
-(defmethod* polyKeypres ((values list) (pitch integer) (chans list) &optional port)
-   (loop for val in values
+(defmethod* polyKeypres ((vals list) (pitch integer) (chans list) &optional port)
+   (loop for val in vals
          for chan in chans do
          (polyKeypres val pitch chan port)))
 
-(defmethod* polyKeypres ((values list) (pitch integer) (chans integer) &optional port)
-   (loop  for val in values do
+(defmethod* polyKeypres ((vals list) (pitch integer) (chans integer) &optional port)
+   (loop  for val in vals do
           (polyKeypres val pitch chans port)))
 
-(defmethod* polyKeypres ((values list) (pitch list) (chans integer) &optional port)
+(defmethod* polyKeypres ((vals list) (pitch list) (chans integer) &optional port)
    (loop for item in pitch
-         for val in values do
+         for val in vals do
          (polyKeypres val item chans port)))
 
 
@@ -191,21 +209,23 @@ Arguments can be can be single numbers or lists.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "ChanPress")
-                                                                  :chan (- chans 1) :port aport
-                                                                  :param val)))
-               (when event (om-midi-send-evt event *midiplayer*)))))
+         (let ((event (om-midi::make-midi-evt :type :ChanPress 
+                                              :chan chans
+                                              :port port
+                                              :fields (list val))))
+           (when event (midi-send-evt event)))
+         ))
 
-(defmethod* aftertouch ((values number) (chans list) &optional port)
+(defmethod* aftertouch ((vals number) (chans list) &optional port)
   (loop for item in chans do
-        (aftertouch values item port)))
+        (aftertouch vals item port)))
 
-(defmethod* aftertouch ((values list) (chans list) &optional port)
+(defmethod* aftertouch ((vals list) (chans list) &optional port)
    (if (or (null port) (integerp port))
-     (loop for item in values
+     (loop for item in vals
            for val in chans do
            (aftertouch item val port))
-     (loop for item in values
+     (loop for item in vals
            for val in chans
            for item2 in port do
            (aftertouch item val item2))))
@@ -221,7 +241,7 @@ Arguments can be can be single numbers or lists.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi::make-midi-evt :type 'CtrlChange
+         (let ((event (om-midi::make-midi-evt :type :CtrlChange
 					      :chan chans
 					      :port aport
 					      :fields (list ctrlnum val))))
@@ -279,7 +299,7 @@ The range of volume values is 0-127.
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
    (loop for aport in port do
-         (let ((event (om-midi::make-midi-evt :type 'CtrlChange
+         (let ((event (om-midi::make-midi-evt :type :CtrlChange
 					      :chan chans :port aport
 					      :fields (list 7 vol))))
              (when event (midi-send-evt event)))))
@@ -315,8 +335,12 @@ The range of volume values is 0-127.
                for item1 in port do
                (sysex item item1)))
        (loop for aport in (list! port) do
-             (let ((event (om-midi-new-evt (om-midi-get-num-from-type "SysEx") :port aport :bytes databytes)))
-               (when event (om-midi-send-evt event *midiplayer*)))))))
+             (let ((event (om-midi::make-midi-evt :type :SysEx
+                                                  :port aport
+                                                  :fields databytes)))
+             (when event (midi-send-evt event)))
+             ))))
+
 
 
 ;======================RESET
@@ -325,9 +349,12 @@ The range of volume values is 0-127.
    :indoc '("ouput MIDI port")
    :initvals '(0)
    :doc "Sends a MIDI Reset message on port <port>."
-   (loop for chan from 0 to 15 do 
-         (let ((event (om-midi-new-evt (om-midi-get-num-from-type "Reset") :port (or port *def-midi-out*) :chan chan)))
-           (when event (om-midi-send-evt event *midiplayer*))))
+   (loop for chan from 1 to 16 do 
+         (let ((event (om-midi::make-midi-evt :type :Reset
+                                                  :port (or port *def-midi-out*)
+                                                  :chan chan
+                                                  :fields databytes)))
+             (when event (midi-send-evt event))))
    nil)
 
 
@@ -336,7 +363,7 @@ The range of volume values is 0-127.
    :icon 148
    :initvals '(0 1 60 100 1000 1)
    (when (< dur 65000)
-     (let ((event (om-midi::make-midi-evt :type 'Note :port port :chan chan
+     (let ((event (om-midi::make-midi-evt :type :Note :port port :chan chan
                                           :date 0 :ref track
                                           :fields (list pitch vel dur)
                                                               )))

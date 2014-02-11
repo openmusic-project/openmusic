@@ -27,7 +27,8 @@
                                                      '(("-----" nil)))))))
 
 (defun save-midi-presets-in-preferences (mixer)
-  (set-pref (find-pref-module :midi) :midi-presets (presets mixer)))
+  (set-pref (find-pref-module :midi) :midi-presets (presets mixer))
+  (save-preferences))
 
 (om-add-init-func 'init-midi-mixer)
 

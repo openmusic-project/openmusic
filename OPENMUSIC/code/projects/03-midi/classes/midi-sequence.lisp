@@ -26,6 +26,13 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
 "
     ))
 
+
+(add-player-for-object 'EventMidi-seq :midishare-rt)
+
+(defmethod default-edition-params ((self EventMidi-seq))
+  (pairlis '(player) (list :midishare-rt)))
+
+
 (defmethod eventmidi-seq-p ((self EventMidi-seq))  t)
 (defmethod eventmidi-seq-p ((self t)) nil)
 
@@ -47,7 +54,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
           (loop while (or dates types fields chans ports refs)
                 for date = (or (pop dates) (+ date defdelay))
                 for field = (or (pop fields) field)
-                for type = (if (numberp (setf type (or (pop types) type))) (num2evType type) type)
+                for type = (or (pop types) type) ;; (if (numberp (setf type (or (pop types) type))) (num2evType type) type)
                 for chan = (or (pop chans) chan)
                 for ref = (or (pop refs) ref)
                 for port = (or (pop ports) port)
@@ -62,7 +69,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
     ))
 
 (defmethod initialize-instance ((self EventMidi-seq) &rest initargs &key lparam)
-  (declare (ignore initargs)) 
+  ;(declare (ignore initargs)) 
   (call-next-method)
   (set-evt-list self)
   self)
@@ -112,6 +119,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
                        )
              )
            ))))
+
 
 (defmethod execption-save-p ((self eventmidi-seq)) 'eventmidi-seq)
 (defmethod save-exepcion ((self eventmidi-seq))

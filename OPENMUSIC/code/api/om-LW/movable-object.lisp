@@ -297,7 +297,7 @@
   (declare (ignore x y w h))
   (multiple-value-bind (x y w h) (pane-geometry object)
     #-cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*) :operation boole-orc1)
-    #+cocoa (gp::draw-rectangle self (1+ x) (+ y 1) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*))
+    #+cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*))
     (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled nil :foreground (c (om-make-color 0.5 0.5 0.5)) :thickness 1)
     ))
 
@@ -396,7 +396,7 @@
                                     (when movable-cursor
                                       (set-motion-object-size movable-cursor  (max 4 w) (max 4 h))
                                       (set-motion-object-position movable-cursor x y)
-                                      (capi::draw-pinboard-object self movable-cursor x y w 1000)
+                                      (capi::draw-pinboard-object self movable-cursor x y w h)
                                       )))))
 
 

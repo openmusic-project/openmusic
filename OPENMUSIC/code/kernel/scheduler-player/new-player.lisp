@@ -77,8 +77,7 @@
       (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
   (push (list engine obj) (play-list player))
-  (prepare-to-play engine player obj at interval params))
-  
+  (prepare-to-play engine player obj at interval params))  
 
 (defmethod player-schedule ((player omplayer) (obj maquette-obj) engine &key (at 0) interval params)
    (loop for object in (inside obj)
@@ -307,7 +306,8 @@
               (when (play-obj? (value box))
                 (player-schedule *general-player*
                                  (get-obj-to-play box)
-                                 (get-edit-param box 'player) :at (get-player-time *general-player*))
+                                 (get-edit-param box 'player) :at (get-player-time *general-player*)
+                                 :params (additional-player-params box))
                 (setf (play-state box) t)
                 (push box *play-boxes*)
                 ))
@@ -333,6 +333,10 @@
   (general-player-stop nil)
   (stop-boxes *play-boxes*))
 
+
+(defmethod additional-player-params ((self omboxeditcall))
+  (list :port (get-edit-param self 'outport)
+        :approx (get-edit-param self 'approx)))
 
 
 ;;;=================================
@@ -395,8 +399,8 @@
 
 (defmethod schedule-editor-contents ((self play-editor-mixin))
   (player-schedule (player self) 
-                   (get-obj-to-play self)
-                   (get-player-engine self)
+                   (print (get-obj-to-play self))
+                   (print (get-player-engine self))
                    :at 0 
                    :interval (get-interval-to-play self)
                    :params (additional-player-params self)))

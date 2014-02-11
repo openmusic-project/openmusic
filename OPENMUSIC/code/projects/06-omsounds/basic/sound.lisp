@@ -28,8 +28,6 @@
    (pict-sound :initform nil :accessor pict-sound)
    (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
-   (pict-spectre? :initform nil :accessor pict-spectre?)
-   (time-started :initarg :time-started :initform nil :accessor time-started)
    (selec  :initform nil :accessor selec)))
 
 (defclass* sound (simple-score-element internalsound) 
@@ -56,11 +54,10 @@ Press 'space' to play/stop the sound file.
 (defparameter *default-sound-player* #-linux :libaudiostream #+linux :jackaudio)
 
 (defmethod get-default-score-params ((self sound))
-  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
-             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode show-stems scale) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
-                 nil nil *default-sound-player*
-                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 t nil)))
+  (pairlis '(outport inport player
+             zoom grillestep mode winsize winpos show-spectrum) 
+           (list nil nil *default-sound-player* 
+                 1 nil 0 (om-make-point 370 280) (om-make-point 400 20) nil)))
 
 
 
@@ -435,16 +432,13 @@ Press 'space' to play/stop the sound file.
   (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
   (pict-sound self))
   
-(defmethod pic-to-draw ((self sound)) 
-  (if (and (pict-spectre self) (pict-spectre? self))
-      (thepict (pict-spectre self))
-    (sound-get-pict self)))
-
 (defmethod draw-mini-view ((self t) (val sound))
   (draw-obj-in-rect val 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
 (defmethod draw-obj-in-rect ((self sound) x x1 y y1 edparams view) 
-  (let ((picture (pic-to-draw self)))
+  (let ((picture (if (and (pict-spectre self) (get-edit-param edparams :show-spectrum))
+                     (thepict (pict-spectre self))
+                   (sound-get-pict self))))
     (om-with-focused-view view 
       (if picture
           (let ((dur (/ (om-sound-n-samples self) (om-sound-sample-rate self)))

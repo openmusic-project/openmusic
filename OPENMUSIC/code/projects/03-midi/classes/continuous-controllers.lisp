@@ -10,12 +10,11 @@
 ;===
 ;=== ctrltype is a string name for the controller
 ;=== with this name, we can determine :
-;=== - ev-num the type of midi evnts : control change (principally), pitchbend,...
+;=== - ev-type the type of midi evnts : control change (principally), pitchbend,...
 ;=== - ctr-num the control number in case we are dealing with control changes 
-;===   (also used to determine in pitchbend is used with low (7 bits) or high (14bits) definition)
-(defclass! MidiControl (sequence* bpf-controller)
-  ((ctrltype :initform "ChannelVolume" :accessor ctrltype :initarg :ctrltype :type t :documentation "type of event (string)")
-   (ev-num :initform 'CtrlChange :accessor ev-num :type t) 
+(defclass! MidiControl (sequence* bpf) ;-controller)
+  ((ctrltype :initform "ChannelVolume" :accessor ctrltype :initarg :ctrltype :type t :documentation "type of event")
+   (ev-type :initform :CtrlChange :accessor ev-type :type t) 
    (ctr-num :initform 7 :accessor ctr-num :type t)
    (ref :initform 0 :accessor ref :initarg :ref :type t :documentation "track number")
    (port :initform 0 :accessor port :initarg :port :type t :documentation "output port number")
@@ -30,6 +29,8 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 "
    ))
 
+(add-player-for-object 'midicontrol '(:midishare :midishare-rt))
+
 (defmethod default-point-list ((self MidiControl)) nil)
 (defmethod get-initval ((self MidiControl))
   (make-instance (class-of self) :point-list nil))
@@ -40,11 +41,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 (defmethod midicontrol-p ((self MidiControl))  t)
 (defmethod midicontrol-p ((self t)) nil)
 
-(defmethod initialize-instance :after ((self midicontrol) &rest args)
-  (if (numberp (ev-num self)) 
-      (setf (ev-num self) (num2evType (ev-num self))))
-  (setf (player-fun self) #'(lambda (val) (midicontrol-play self val)))
-  self)
+(defun (setf ev-num) (x y))
  
 
 (defmethod make-one-instance ((self midicontrol) &rest slots-vals)
@@ -53,7 +50,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
           (ref rep) (third slots-vals)
           (port rep) (fourth slots-vals)
           (chan rep) (fifth slots-vals)
-          (ev-num rep) (name2evNum (ctrltype rep))
+          (ev-type rep) (name2evtype (ctrltype rep))
           (ctr-num rep) (name2ctrNum (ctrltype rep)))
     rep))
 
@@ -67,7 +64,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
              (ref newctrl) ,(ref self)
              (port newctrl) ,(port self)
              (chan newctrl) ',(chan self)
-             (ev-num newctrl) ',(name2evNum (ctrltype self))
+             (ev-type newctrl) ',(name2evtype (ctrltype self))
              (ctr-num newctrl) ,(name2ctrNum (ctrltype self)))
        newctrl)))
 
@@ -80,7 +77,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                       ("-- KeyPress" "KeyPress")
                       ("-- ChanPress" "ChanPress")
                       ("-- PitchBend (-64 to 63)" "PitchBend")
-                      ("-- PitchBend Fine (-8192 to 8191)" "PitchWheel")
+                      ("-- PitchWheel (-8192 to 8191)" "PitchWheel")
                       ("00 Bank Select" "BankSelect")
                       ("01 Modulation Wheel" "ModulationWheel")
                       ("02 Breath Controller" "BreathController")
@@ -147,52 +144,6 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
    (loop for item in (Ldates self)
          maximize item))
 
-;=== Converts control name to midishare event TYPE
-(defun name2evNum (name)    
-    (cond
-     ((numberp name) 'CtrlChange) ; consider it's a control change controller
-     ((string-equal name "Tempo") 'Tempo)
-     ((string-equal name "KeyPress") 'KeyPress)
-     ((string-equal name "ChanPress") 'ChanPress)
-     ((string-equal name "Private") 'Private)
-     ((string-equal name "PitchBend") 'PitchBend)
-     ((string-equal name "PitchWheel") 'PitchWheel)
-     ;Ctrl Change
-     (t 'CtrlChange)))
-
-
-;=== determine control change number with the control name
-(defun name2ctrNum (name)
-  (let (num)
-    (if (numberp name) (setf num name)
-        (cond
-         ((string-equal name "Tempo") (setf num nil))
-         ((string-equal name "KeyPress") (setf num nil))
-         ((string-equal name "ChanPress") (setf num nil))
-         ((string-equal name "Private") (setf num nil))
-         ((string-equal name "PitchBend") (setf num 7))
-         ((string-equal name "PitchWheel") (setf num 14))     
-         ;Ctrl Changes :
-         (t (setf num (str2ctrlNum name)))))
-    num))
-
-
-
-
-; next method
-;(defmethod real-duration ((self midicontrol) time)
-;  (values (get-obj-dur self) (+ time (get-obj-dur self))))
-
-(defmethod strech ((self MidiControl) (num integer) (denom integer) &optional parent )
-  (call-next-method))
-
-(defmethod update-miniview ((self t) (value MidiControl))
-   (om-invalidate-view self t))
-
-(defmethod draw-mini-view  ((self t) (value MidiControl)) 
-  (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
-
-
 ;=== Creates a BPF beginning from 0 
 ;=== used to draw continuous controllers if first event occurs later than 0
 (defmethod* create-bpf-with-initpt ((self MidiControl))
@@ -204,17 +155,8 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                 (append (list 0 0) (Lvalues self)))))
     (simple-bpf-from-list dates vals)))
 
-(defmethod draw-obj-in-rect ((self MidiControl) x x1 y y1 edparams view)
-  (let ((tmpBPF (create-bpf-with-initpt self)))
-    (om-with-focused-view view
-      (om-with-font *om-default-font1*
-      (if (stringp (ctrltype self)) (om-draw-string 10 10 (string (ctrltype self))))
-      (om-draw-rect 0 0 (- (w view) 1) (- (h view) 1))
-    (draw-obj-in-rect tmpBPF x x1 y y1 (give-bpf-range tmpBPF) view))
-    )))
 
-
-;=== Conversion to BPF (!!: bpf is midicontrol superclass)
+;=== Conversion to BPF (!!: bpf is a midicontrol superclass)
 (defmethod* objFromObjs ((self MidiControl) (type bpf))
   (let ((dates (Ldates self)) (vals (Lvalues self)))
     (simple-bpf-from-list dates vals)))
@@ -229,24 +171,95 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
   (let* ((rep (multiple-value-list (call-next-method)))
          (new-ctrl (car rep)))
     (setf (ctrltype new-ctrl) (ctrltype self))
-    (setf (ev-num new-ctrl)(ev-num self))
-    (setf (ctr-num new-ctrl)(ctr-num self))
+    (setf (ev-type new-ctrl) (ev-type self))
+    (setf (ctr-num new-ctrl) (ctr-num self))
     (setf (ref new-ctrl) (ref self))
     (setf (port new-ctrl) (port self))
     (setf (chan new-ctrl) (chan self))  
     (values new-ctrl (cadr rep) (caddr rep))))
 
+;=== Converts control name to midishare event TYPE
+(defun name2evType (name)    
+    (cond
+     ((numberp name) :CtrlChange) ; consider it's a control change controller
+     ((string-equal name "Tempo") :Tempo)
+     ((string-equal name "KeyPress") :KeyPress)
+     ((string-equal name "ChanPress") :ChanPress)
+     ((string-equal name "Private") :Private)
+     ((string-equal name "PitchBend") :PitchBend)
+     ((string-equal name "PitchWheel") :PitchBend)
+     (t :CtrlChange)))
+
+
+;=== determine control change number with the control name
+(defun name2ctrNum (name)
+  (cond
+   ((find name '("Tempo" "KeyPress" "ChanPress" "Private") :test 'string-equal) nil)
+   ((string-equal name "PitchBend") 7)
+   ((string-equal name "PitchWheel") 14)  
+   (t (str2ctrlNum name))
+   ))
+
+
+;======================
+; BOX 
+;======================
+
+(defmethod update-miniview ((self t) (value MidiControl))
+   (om-invalidate-view self t))
+
+(defmethod draw-mini-view  ((self t) (value MidiControl)) 
+  (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
+
+(defmethod draw-obj-in-rect ((self MidiControl) x x1 y y1 edparams view)
+  (let ((tmpBPF (create-bpf-with-initpt self)))
+    (om-with-focused-view view
+      (om-with-font *om-default-font1*
+      (if (stringp (ctrltype self)) (om-draw-string 10 10 (string (ctrltype self))))
+      (om-draw-rect 0 0 (- (w view) 1) (- (h view) 1))
+    (draw-obj-in-rect tmpBPF x x1 y y1 (give-bpf-range tmpBPF) view))
+    )))
+
+
+
+;======================
+; TOOLS 
+;======================
+
+
+;======================
+; LSB/MSP UTILS 
+;======================
+
+;=== tests if a controller num corresponds 
+;=== to LSB value of another one
+(defun lsb-controller (ctrlNum)
+  (and (>= ctrlNum 32) (<= ctrlNum 63)))
+
+;=== Converts msb lsb to a value
+(defun Msb-Lsb2value (msb lsb)
+  (+ lsb (* 128 msb)))
+
+;=== gets MSB from a 14bits value
+(defun msb (value)
+  (floor (/ value 128)))
+
+;=== gets LSB from a 14bits value
+(defun lsb (value)
+  (- value (* (msb value) 128)))
+
 
 (defmethod get-fields ((self MidiControl) value)
-  (case (ev-num self)
-    ('CtrlChange (if (lsb-controller (ctr-num self))
+  (case (ev-type self)
+    (:CtrlChange (if (lsb-controller (ctr-num self))
            (values (list (- (ctr-num self) 32) (msb value))
                    (list (ctr-num self) (lsb value)))
          (values (list (ctr-num self) value) nil)))
-    ('PitchBend (if (= (ctr-num self) 14) 
-           (list (lsb (+ value 8192)) (msb (+ value 8192))))
-       (list 0 (+ value 64)))
-    ('KeyPress (list 0 value))
+    (:PitchBend (if (= (ctr-num self) 14) 
+                    value ; (list (lsb (+ value 8192)) (msb (+ value 8192))))
+                  (pitchbend-to-pitchwheel value) ; (list 0 (+ value 64))
+                  ))
+    (:KeyPress (list 0 value))
     (otherwise value)))
 
 
@@ -262,21 +275,21 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
         ;send events for each channel, port, ref...
         (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
               (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
-                    (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-num self) 'Tempo) 0 1))) do
+                    (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-type self) :Tempo) 0 1))) do
               
                           (setf evtMSB (make-instance 'MidiEvent
                                          :ev-date date
-                                         :ev-type (ev-num self)
+                                         :ev-type (ev-type self)
                                          :ev-chan ch
                                          :ev-ref re
                                          :ev-port po
                                          :ev-fields fields
                                          ))
                           
-                          (if (and (equal (ev-num self) 'CtrlChange) fieldslsb (not (= 0 (second fieldslsb)))) 
+                          (if (and (equal (ev-type self) :CtrlChange) fieldslsb (not (= 0 (second fieldslsb)))) 
                             (setf evtLSB (make-instance 'MidiEvent
                                            :ev-date date
-                                           :ev-type (ev-num self)
+                                           :ev-type (ev-type self)
                                            :ev-chan ch
                                            :ev-ref re
                                            :ev-port po
@@ -294,44 +307,6 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 
 
 
-(defun midicontrol-play (self val)
-  (multiple-value-bind (fields fieldslsb) 
-            (get-fields self val)
-    
-    (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
-          (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
-                (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-num self) 'Tempo) 0 1))) do
-                      (let ((event 
-                             (midievent-to-msevent
-                              (make-instance 'MidiEvent
-                                                  :ev-date 0
-                                                  :ev-type (ev-num self)
-                                                  :ev-chan ch
-                                                  :ev-ref re
-                                                  :ev-port po
-                                                  :ev-fields fields
-                                                  )))
-                            (event2 
-                             (if (and (equal (ev-num self) 'CtrlChange) 
-                                      fieldslsb 
-                                      (not (= 0 (second fieldslsb))))
-                                 (midievent-to-msevent 
-                                  (make-instance 'MidiEvent
-                                                :ev-date 0
-                                                :ev-type (ev-num self)
-                                                :ev-chan ch
-                                                :ev-ref re
-                                                :ev-port po
-                                                :ev-fields fieldslsb)))))
-
-                        (when event   
-                          (om-midi-send-evt event *midiplayer*))
-                        (when event2
-                          (om-midi-send-evt event2 *midiplayer*))
-                        ))))
-    ))
-
-
 
 ;=======================================
 ;==== Extract continuous controllers ===
@@ -343,40 +318,23 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
   :menuins '( (1 (("-- Tempo (bpm)" "Tempo")
                  ("-- KeyPress" "KeyPress")
                  ("-- ChanPress" "ChanPress")
-                 ("-- PitchBend (-64 63)" "PitchBend")
-                 ("-- PitchBend Fine (-8192 8191)" "PitchWheel")
-                 ("00 Bank Select" "BankSelect")
-                 ("01 Modulation Wheel" "ModulationWheel")
-                 ("02 Breath Controller" "BreathController")
-                 ("04 Foot Controller" "FootController")
-                 ("05 Portamento Time" "PortamentoTime")
-                 ("06 Data Entry MSB" "DataEntryMSB")
-                 ("07 Channel Volume" "ChannelVolume")
-                 ("08 Balance" "Balance")
-                 ("10 Pan" "Pan")
-                 ("11 Expression Controller" "ExpressionController")
-                 ("12 Effect Control 1" "EffectControl1")
-                 ("13 Effect Control 2" "EffectControl2")
-                 ("16 General Purpose Controller 1" "GeneralPurposeController1")
-                 ("17 General Purpose Controller 2" "GeneralPurposeController2")
-                 ("18 General Purpose Controller 3" "GeneralPurposeController3")
-                 ("19 General Purpose Controller 4" "GeneralPurposeController4")
-                 ("00/32 Bank Select Fine" "BankSelectFine")
-                 ("01/33 Modulation Wheel Fine" "ModulationWheelFine")
-                 ("02/34 Breath Controller Fine" "BreathControllerFine")
-                 ("04/36 Foot Controller Fine" "FootControllerFine")
-                 ("05/37 Portamento Time Fine" "PortamentoTimeFine")
-                 ("06/38 Data Entry MSB-LSB Fine" "DataEntryMSBLSB")
-                 ("07/39 Channel Volume Fine" "ChannelVolumeFine")
-                 ("08/40 Balance Fine" "BalanceFine")
-                 ("10/42 Pan Fine" "PanFine")
-                 ("11/43 Expression Controller Fine" "ExpressionControllerFine")
-                 ("12/44 Effect Control 1 Fine" "EffectControl1Fine")
-                 ("13/45 Effect Control 2 Fine" "EffectControl2Fine")
-                 ("16/48 General Purpose Controller 1 Fine" "GeneralPurposeController1Fine")
-                 ("17/49 General Purpose Controller 2 Fine" "GeneralPurposeController2Fine")
-                 ("18/50 General Purpose Controller 3 Fine" "GeneralPurposeController3Fine")
-                 ("19/51 General Purpose Controller 4 Fine" "GeneralPurposeController4Fine")
+                 ("-- PitchBend" "PitchBend")
+                 ("00/32 Bank Select" "BankSelectFine")
+                 ("01/33 Modulation Wheel" "ModulationWheelFine")
+                 ("02/34 Breath Controller" "BreathControllerFine")
+                 ("04/36 Foot Controller" "FootControllerFine")
+                 ("05/37 Portamento Time" "PortamentoTimeFine")
+                 ("06/38 Data Entry MSB-LSB" "DataEntryMSBLSB")
+                 ("07/39 Channel Volume" "ChannelVolumeFine")
+                 ("08/40 Balance" "BalanceFine")
+                 ("10/42 Pan" "PanFine")
+                 ("11/43 Expression Controller" "ExpressionControllerFine")
+                 ("12/44 Effect Control 1" "EffectControl1Fine")
+                 ("13/45 Effect Control 2" "EffectControl2Fine")
+                 ("16/48 General Purpose Controller 1" "GeneralPurposeController1Fine")
+                 ("17/49 General Purpose Controller 2" "GeneralPurposeController2Fine")
+                 ("18/50 General Purpose Controller 3" "GeneralPurposeController3Fine")
+                 ("19/51 General Purpose Controller 4" "GeneralPurposeController4Fine")
                  ("64 Damper Pedal on/off (Sustain)" "DamperPedal")
                  ("65 Portamento On/Off" "Portamento")
                  ("66 Sustenuto On/Off" "Sustenuto")
@@ -412,15 +370,15 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
         dates values eventtype control)
     
     (cond 
-     ((string-equal ctrlname "Tempo") (setf eventtype 'Tempo))
-     ((string-equal ctrlname "KeyPress") (setf eventtype 'KeyPress))
-     ((string-equal ctrlname "ChanPress") (setf eventtype 'ChanPress))
-     ((string-equal ctrlname "PitchBend") (setf eventtype 'PitchBend)
-      (setf control 7))
-     ((string-equal ctrlname "PitchWheel") (setf eventtype 'PitchBend)
-      (setf control 14))
-     ((string-equal ctrlname "Private") (setf eventtype 'Private))
-     (t (setf eventtype 'CtrlChange) (setf control (str2CtrlNum ctrlname))))
+     ((string-equal ctrlname "Tempo") (setf eventtype :Tempo))
+     ((string-equal ctrlname "KeyPress") (setf eventtype :KeyPress))
+     ((string-equal ctrlname "ChanPress") (setf eventtype :ChanPress))
+     ((string-equal ctrlname "PitchBend") (setf eventtype :PitchBend))
+     ; (setf control 7))
+     ;((string-equal ctrlname "PitchWheel") (setf eventtype :PitchBend)
+     ; (setf control 14))
+     ((string-equal ctrlname "Private") (setf eventtype :Private))
+     (t (setf eventtype :CtrlChange) (setf control (str2ctrlNum ctrlname))))
     
     ;(print (list eventtype control))
     
@@ -429,7 +387,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
                                                       (test-ref x ref)
                                                       (test-channel x channel) 
                                                       (and (equal (ev-type x) eventtype)
-                                                           (if (equal (ev-type x) 'CtrlChange)
+                                                           (if (equal (ev-type x) :CtrlChange)
                                                              (or (= control (first (ev-fields x)))
                                                                  (if (lsb-controller control)
                                                                    (= (- control 32) (first (ev-fields x)))
@@ -439,29 +397,31 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
                                                       ))))
     
     (when  evtList
-      (let ((last-date (- 1)) (curr-val 0))
+      (let ((last-date -1) 
+            (curr-val 0))
         (loop for event in evtList do
               (cond 
-               ((equal eventtype 'Tempo)
+               ((equal eventtype :Tempo)
                 (setf curr-val (first (ev-fields event))))
                
-               ((equal eventtype 'PitchBend) 
-                (case control 
-                  (14 (setf curr-val (- (msb-lsb2value (second (ev-fields event)) (first (ev-fields event))) 8192)))
-                  (7 (setf curr-val (- (second (ev-fields event)) 64)))
-                  ))
-               ((equal eventtype 'KeyPress) 
+               ((equal eventtype :PitchBend) 
+                (setf curr-val (- (msb-lsb2value (second (ev-fields event)) (first (ev-fields event))) 8192))
+                ;(case control 
+                ;  (14 (setf curr-val (- (msb-lsb2value (second (ev-fields event)) (first (ev-fields event))) 8192)))
+                ;  (7 (setf curr-val (- (second (ev-fields event)) 64))))
+                )
+               ((equal eventtype :KeyPress) 
                 (setf curr-val (second (ev-fields event))))
-               ((equal eventtype 'ChanPress)
+               ((equal eventtype :ChanPress)
                 (setf curr-val  (first (ev-fields event))))
-               ((equal eventtype 'Private)
+               ((equal eventtype :Private)
                 (setf curr-val  (first (ev-fields event))))
-               ((equal eventtype 'CtrlChange)
+               ((equal eventtype :CtrlChange)
                 (if (lsb-controller control)
                     (setf curr-val (if (= (first (ev-fields event)) control)
                                        (msb-lsb2value (msb curr-val) (second (ev-fields event)))
                                      (msb-lsb2value (second (ev-fields event)) (lsb curr-val))))
-                  (setf curr-val (second (ev-fields event)))) 
+                  (setf curr-val (second (ev-fields event))))
                 ))
 
               (if (= last-date (ev-date event))
@@ -473,7 +433,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
       
     (setf new-ctrl (apply 'simple-bpf-from-list (list (reverse dates) (reverse values) 'midicontrol 0)))
     (setf (ctrltype new-ctrl) ctrlname)
-    (setf (ev-num new-ctrl) eventtype)
+    (setf (ev-type new-ctrl) eventtype)
     (setf (ctr-num new-ctrl) control)
     (setf (ref new-ctrl) ref)
     (setf (port new-ctrl) port)
@@ -481,29 +441,29 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
     new-ctrl))
 
 
-
 ;;; INTERNAL: GET ALL CONTROLLERS FROM A SEQUENCE
 (defmethod get-continuous-controllers ((self t))
-  (let ((evtList (get-midievents self #'(lambda (x) (test-type x '(CtrlChange Tempo KeyPress ChanPress PitchBend)))))
+  (let ((evtList (get-midievents self #'(lambda (x) (test-type x '(:CtrlChange :Tempo :KeyPress :ChanPress :PitchBend)))))
         (controllers nil))
     (loop for ev in evtlist do
           (let* ((ev-value (cond 
-                           ((equal (ev-type ev) 'Tempo)
+                           ((equal (ev-type ev) :Tempo)
                             (car (ev-fields ev)))
-                           ((equal (ev-type ev) 'PitchBend) 
-                            (- (second (ev-fields ev)) 64))
-                           ((equal (ev-type ev) 'keypress) 
+                           ((equal (ev-type ev) :PitchBend) 
+                            (- (second (ev-fields ev)) 8192) ; 64)
+                            )
+                           ((equal (ev-type ev) :keypress) 
                             (second (ev-fields ev)))
-                           ((equal (ev-type ev) 'ChanPress) 
+                           ((equal (ev-type ev) :ChanPress) 
                             (second (ev-fields ev)))
-                           ((equal (ev-type ev) 'CtrlChange) 
+                           ((equal (ev-type ev) :CtrlChange) 
                             (second (ev-fields ev)))))
-                (ev-title (if (equal (ev-type ev) 'CtrlChange)
+                 (ev-title (if (equal (ev-type ev) :CtrlChange)
                                (list (ev-type ev) (car (ev-fields ev)))
                              (ev-type ev)))
-                (control-exists (find ev controllers :test #'(lambda (evt listitem)
-                                                               (and (equal ev-title (car listitem))
-                                                                    (= (ev-chan evt) (cadr listitem)))))))
+                 (control-exists (find ev controllers :test #'(lambda (evt listitem)
+                                                                (and (equal ev-title (car listitem))
+                                                                     (= (ev-chan evt) (cadr listitem)))))))
             (if control-exists 
                 (setf (caddr control-exists) ;;; add a time-value pair
                       (append (caddr control-exists)   
@@ -513,5 +473,7 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
             ))
     
     controllers))
-                                           
+
+
+                                        
         

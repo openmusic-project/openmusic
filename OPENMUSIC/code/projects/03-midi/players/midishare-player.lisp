@@ -113,7 +113,9 @@ the recorder, this function is called by a def-load-pointers"
 ;;; STOP (all)
 (defmethod player-stop ((engine (eql :midishare)) &optional play-list)
   (when *midiplayer* 
-    (om-midi::midishare-stop-player *midiplayer*))
+    (om-midi::midishare-stop-player *midiplayer*)
+    (let ((ports (remove-duplicates (mapcar 'fifth *ms-list-to-play*))))
+      (loop for p in ports do (microplay-reset p))))
   (setf *ms-list-to-play* nil *ms-loop* nil))
 
 
@@ -125,21 +127,6 @@ the recorder, this function is called by a def-load-pointers"
   (setf *ms-loop* (- end start))
   )
 
-
-;================================
-;MICROPLAY
-;================================
-
-(defun send-pitchwheel-event (chan port val)
- (midi-send-evt :type 'PitchWheel :date 0 :chan chan :port port :bend val))
-
-; still necessary ?
-;(defmethod player-stop :after ((engine (eql :midishare)) &optional play-list)
-;  (when (and *midiplayer* *midi-microplay*)
-;     (send-pitchwheel-event 0 *def-midi-out* 0) 
-;     (send-pitchwheel-event 1 *def-midi-out* 0) 
-;     (send-pitchwheel-event 2 *def-midi-out* 0) 
-;     (send-pitchwheel-event 3 *def-midi-out* 0)))
 
 
 ;================================

@@ -610,8 +610,8 @@
 
 (defmethod change-sound-pict ((self soundPanel))
   (let* ((thesound (object (om-view-container self))))
-    (setf (pict-spectre? thesound) (not (pict-spectre? thesound)))
-    (om-invalidate-view self t)))
+    (set-edit-param (editor self) :show-spectrum (not (get-edit-param (editor self) :show-spectrum)))
+    (om-invalidate-view self)))
 
 (defmethod om-view-click-handler ((self soundPanel) where)
   (if (om-add-key-p) (add-sound-marker self where)
@@ -780,7 +780,10 @@
                              (/ size sr)) 0))
                (dur-ms (round size (/ sr 1000.0)))
                (total-width (om-point-h (om-field-size self)))
-               (thepicture (and dur (pic-to-draw thesound)))
+               (thepicture (and dur 
+                                (if (and (pict-spectre thesound) (get-edit-param (editor self) :show-spectrum))
+                                    (thepict (pict-spectre self))
+                                  (sound-get-pict self))))
                (window-h-size (om-point-h (om-view-size self)))
                (window-v-size (om-point-v (om-view-size self)))
                (stream-buffer (om-sound-sndbuffer thesound))
@@ -798,7 +801,7 @@
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
 
-                (if (and zoom-step (< zoom-step 2) (not (pict-spectre? thesound)))
+                (if (and zoom-step (< zoom-step 2) (not (get-edit-param (editor self) :show-spectrum)))
                     (om-draw-waveform self zoom-step)
                   (cond ((>= xview (round dur-ms 2)) 
                          (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))

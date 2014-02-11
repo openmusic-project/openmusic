@@ -43,7 +43,7 @@
           (if (parent self) (setf (ev-date event) (+ (ev-date event) (offset->ms self)))))
     
     (if (measure-p self) (push (make-instance 'MidiEvent   
-                                 :ev-type 'TimeSign 
+                                 :ev-type :TimeSign 
                                  :ev-date (if (parent self) (offset->ms self) 0)
                                  :ev-ref 0 
                                  :ev-port 0
@@ -56,7 +56,7 @@
                            evtList))
 
     (if (voice-p self) (push (make-instance 'MidiEvent   
-                                 :ev-type 'Tempo
+                                 :ev-type :Tempo
                                  :ev-date (if (parent self) (offset->ms self) 0)
                                  :ev-ref 0 
                                  :ev-port 0
@@ -75,7 +75,7 @@
 
 (defmethod* objFromObjs ((self Note) (type MidiEvent))
   (let ((evt (make-instance 'MidiEvent   
-                           :ev-type  'Note
+                           :ev-type :Note
                            :ev-date (if (parent self) (offset->ms self) 0)
                            :ev-ref 1 
                            :ev-port (port self)

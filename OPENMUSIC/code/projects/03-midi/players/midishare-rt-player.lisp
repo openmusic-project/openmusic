@@ -15,14 +15,19 @@
 
     
 (defmethod prepare-to-play ((engine (eql :midishare-rt)) (player omplayer) object at interval params)
-  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx)))
-        (port (if (caller player) (get-edit-param (caller player) 'outport))))
+  (let ((approx (if (find :approx params)
+                    (nth (1+ (position :approx params)) params)
+                  (if (caller player) (get-edit-param (caller player) 'approx))))
+        (port (if (find :port params)
+                    (nth (1+ (position :port params)) params)
+                (if (caller player) (get-edit-param (caller player) 'outport)))))
+    ;(print params)
     (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
                 (schedule-task player 
                                #'(lambda () 
-                                   (player-play-object engine evt :interval interval :params params))
+                                   (player-play-object engine evt :interval interval))
                                (+ (or (car interval) 0) (om-midi::midi-evt-date evt))
                                nil)
                 )
@@ -41,7 +46,7 @@
         for c = 1 then (+ c 1) do
         (loop for note in ch do
               (om-midi::midishare-send-evt 
-               (om-midi:make-midi-evt :type 'om-midi::keyOff
+               (om-midi:make-midi-evt :type :keyOff
                                       :chan c :date 0 :ref 0 :port (car note)
                                       :fields (list (cadr note) 0))
                ))
@@ -60,13 +65,13 @@
   ;(print (format nil "~A : play ~A - ~A" engine object interval))
   ;(print object)
   (cond 
-   ((or (equal (om-midi::midi-evt-type object) 'om-midi::keyOff)
-        (and (equal (om-midi::midi-evt-type object) 'om-midi::keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))
+   ((or (equal (om-midi::midi-evt-type object) :keyOff)
+        (and (equal (om-midi::midi-evt-type object) :keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))
     (setf (nth (1- (om-midi::midi-evt-chan object)) *key-ons*) 
           (delete (list (om-midi::midi-evt-port object) (car (om-midi::midi-evt-fields object)))
                   (nth (1- (om-midi::midi-evt-chan object)) *key-ons*)
                   :test 'equal)))
-   ((equal (om-midi::midi-evt-type object) 'om-midi::keyOn)
+   ((equal (om-midi::midi-evt-type object) :keyOn)
     (pushnew (list (om-midi::midi-evt-port object) (car (om-midi::midi-evt-fields object))) (nth (1- (om-midi::midi-evt-chan object)) *key-ons*) :test 'equal))
    
    )
@@ -82,7 +87,7 @@
 (setq *ms-player* (ms::openplayer "MSPLAYER"))
 (midishare::MidiConnect *ms-player* 0 -1)
 
-(om-midi::make-midi-evt :type 'Start :port (or port *def-midi-out*) :date 0)
+(om-midi::make-midi-evt :type :Start :port (or port *def-midi-out*) :date 0)
 
 (let ((ev1 (midishare::MidiNewEv ms::typeStart)))
   (ms::MidiSendIm *ms-player* ev1))

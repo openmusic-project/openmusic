@@ -49,7 +49,7 @@
         (when seq
           (if (print tempo) 
               (setf seq (insert-tempo-info seq tempo))
-            (push (om-midi::make-midi-evt :type 'om-midi::Tempo :date 0 :fields (list *midi-tempo*)) seq))
+            (push (om-midi::make-midi-evt :type :Tempo :date 0 :fields (list *midi-tempo*)) seq))
           (funcall (om-midi::save-midi-file-function sys) seq name (or format *def-midi-format*) 1000))
       (om-abort)
       )))

@@ -270,12 +270,12 @@
   (let ((time (cl-jack::jack-frame-now))
 	(seq cl-jack::*jack-seq*))
     (case (om-midi::midi-evt-type event)
-      (ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
-      (PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time
+      (:ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
+      (:PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time
 							(round (* (/ (+ 64 (cadr (om-midi::midi-evt-fields event))) 127) 16382 ))
 							(1- (om-midi::midi-evt-chan event))))
-      (PitchWheel (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
-      (CtrlChange (cl-jack::seqhash-midi-control-change seq time
+      (:PitchWheel (cl-jack::seqhash-midi-pitch-wheel-msg seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
+      (:CtrlChange (cl-jack::seqhash-midi-control-change seq time
 							(cadr (om-midi::midi-evt-fields event))
 							(car (om-midi::midi-evt-fields event))
 							(1- (om-midi::midi-evt-chan event))))

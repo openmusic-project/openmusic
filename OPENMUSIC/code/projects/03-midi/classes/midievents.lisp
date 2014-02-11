@@ -31,7 +31,7 @@
 
 ;;; THE OBJECT, INHERITING SCORE-ELEMENT
 (defclass! MidiEvent (simple-score-element)
-   ((ev-type :initform 'KeyOn :accessor ev-type :initarg :ev-type :type t :documentation "the type of event")
+   ((ev-type :initform :KeyOn :accessor ev-type :initarg :ev-type :type t :documentation "the type of event")
     (ev-date :initform 0 :accessor ev-date :initarg :ev-date :documentation "the date of event (ms)")
     (ev-ref :initform 0 :accessor ev-ref :initarg :ev-ref :type integer :documentation "a track number")
     (ev-port :initform 0 :accessor ev-port :initarg :ev-port :type integer :documentation "output port")
@@ -59,14 +59,14 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
 
 (defmethod get-slot-in-out-names ((self MidiEvent))
   (values '("self" "ev-type" "ev-date" "ev-ref" "ev-port" "ev-chan" "ev-fields")
-          '(nil 'KeyOn 0 0 0 1 nil)
+          '(nil :KeyOn 0 0 0 1 nil)
           '("object" "midi event type" "date" "track" "port" "channel" "event content")
           (list nil (list (list 1 *midi-event-types*)) nil nil nil nil nil)))
 
 
 (defmethod initialize-instance :after ((self midievent) &rest l &key (mode 0))
-  (if (numberp (ev-type self)) 
-      (setf (ev-type self) (num2evType (ev-type self))))
+  ;(if (numberp (ev-type self)) 
+  ;    (setf (ev-type self) (num2evType (ev-type self))))
   (setf (ev-fields self) (list! (ev-fields self)))
 )
 
@@ -152,16 +152,16 @@ Lists of MIDIEvents can be extracted form other OM objects using GET-MIDIEVENTS.
   :indoc '("a MIDIEvent" "event type(s)" "track number(s)" "output port(s)" "MIDI channel(s)")
   :doc "Tests the attributes of <self>.
 
-Returns T if <self> matches <type> (see function MS-EVENT for a list of valid MIDI event types), <ref>, <port> and <channel>.
+Returns T if <self> matches <type>, <ref>, <port> and <channel>.
 
 If a test value is NIL, the test is not performed on this attribute.
 
 "
   :icon 907 
-  (and (or (not type) (member (ev-type self) (mapcar 'om-midi-symb2mtype (list! type))))
-                            (or (not ref) (member (ev-ref self) (list! ref)))
-                            (or (not port) (member (ev-port self) (list! port)))
-                            (or (not channel) (member (ev-chan self) (list! channel)))))
+  (and (or (not type) (member (ev-type self) (list! type)))
+       (or (not ref) (member (ev-ref self) (list! ref)))
+       (or (not port) (member (ev-port self) (list! port)))
+       (or (not channel) (member (ev-chan self) (list! channel)))))
 
 
 

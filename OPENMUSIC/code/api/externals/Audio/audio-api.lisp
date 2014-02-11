@@ -419,13 +419,13 @@
     (data-position :accessor data-position :initarg :data-position :initform nil)
     (loaded :accessor loaded :initform nil :initarg :loaded)
 
-    ;tracknum utilisé par le système, par forcément celui de l'utilisateur
+    ;tracknum utilise par le systeme, par forcement celui de l'utilisateur
     (tracknum-sys :accessor tracknum-sys :initform -1)
-    ;Savoir si ce son joue sur le player caché (pas de tracks) ou sur le visible (tracks system)
+    ;Savoir si ce son joue sur le player cache (pas de tracks) ou sur le visible (tracks system)
     (assoc-player :accessor assoc-player :initform nil)
-    ;buffer du son actuel (pas forcément d'origine, évolue)
+    ;buffer du son actuel (pas forcement d'origine, evolue)
     (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
-    ;pointeur LAS fixe (son d'origine au cas où)
+    ;pointeur LAS fixe (son d'origine au cas ou)
     (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
     ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
