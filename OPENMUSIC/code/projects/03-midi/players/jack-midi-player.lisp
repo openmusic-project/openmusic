@@ -155,7 +155,7 @@
 ;;; make or send ... ?
   (pitchwheel '(0 1024 2048 3072) '(1 2 3 4)))
 
-(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object simple-container) at interval)
+(defmethod prepare-to-play ((engine (eql :jackmidi)) (player omplayer) (object simple-container) at interval params)
   (let ((approx (if (caller player)
 		    (get-edit-param (caller player) 'approx)
 		    *global-midi-approx*)))

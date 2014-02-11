@@ -44,7 +44,7 @@
 (defmethod (setf jack-sf-struct) (jack-sf (object sound))
   (setf (oa::sndlasptr object) jack-sf))
 
-(defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) (object sound) at interval)
+(defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) (object sound) at interval params)
   (call-next-method)
   )
 
