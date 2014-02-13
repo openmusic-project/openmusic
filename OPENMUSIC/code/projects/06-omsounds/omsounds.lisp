@@ -39,7 +39,7 @@
     #+libaudiostream "basic;sound-preferences"
     #+libsndfile "basic;om-sound-processing"
     
-    #+libaudiostream "LAS;sound-processing"
+    ; #+libaudiostream "LAS;sound-processing"
     #+(and libaudiostream (not linux)) "LAS;las-player"
 
 
@@ -85,8 +85,8 @@
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
-#+libaudiostream (AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound record-sound) *sndprocpackage*)
-
+#+libaudiostream (AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound) *sndprocpackage*)
+; record-sound
 
 (add-ref-section (gen-ref-entries *audiopackage*))
 

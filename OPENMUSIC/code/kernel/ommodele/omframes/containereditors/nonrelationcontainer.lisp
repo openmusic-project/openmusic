@@ -478,9 +478,10 @@ with the objects respectly associeted."))
 )
 
 (defmethod make-selection-rectangle ((self nonrelationPanel) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
+  (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
     (when rect
-      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect))))))
+      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect)))
+      )))
 
 (defmethod release-selection-rectangle ((self nonrelationPanel) pos)   ;remove in score maquette and patch
   (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))

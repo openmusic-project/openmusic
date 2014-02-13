@@ -52,11 +52,14 @@
 (defun init-genmixer-values ()
   (list (list "------------" (get-default-mix-values))))
 
+
 (defun get-presets-list ()
   (mapcar 'car (mixer-presets *audio-mixer*)))
 
+
 (defun save-presets-in-preferences (mixer prefmodule pref-key)
-       (set-pref (find-pref-module prefmodule) pref-key (mixer-presets mixer)))
+       (set-pref (find-pref-module prefmodule) pref-key (mixer-presets mixer))
+       (save-preferences))
 
 (defun put-audio-mixer-values (prefvals)
   (if (and prefvals (> (length prefvals) 1))
@@ -162,12 +165,13 @@
                                            (om-make-point 120 12)
                                            ""
                                            :di-action (om-dialog-item-act item
-                                                        (setf (mixer-current-preset *audio-mixer*) (1+ (om-get-selected-item-index item)))
-                                                        (setf (mixer-current-preset-float *audio-mixer*) (1+ (om-get-selected-item-index item)))
-                                                        (load-genmixer-preset (1+ (om-get-selected-item-index item)))
-                                                        (update-genmixer-display))
+                                                        (let ((n (om-get-selected-item-index item))) ; (1+ (om-get-selected-item-index item))
+                                                        (setf (mixer-current-preset *audio-mixer*) n)
+                                                        (setf (mixer-current-preset-float *audio-mixer*) n)
+                                                        (load-genmixer-preset n)
+                                                        (update-genmixer-display)))
                                            :font *om-default-font1*
-                                           :range (if (> (length thelist) 1) (remove (car thelist) thelist) thelist)
+                                           :range thelist ; (if (> (length thelist) 1) (remove (car thelist) thelist) thelist)
                                            :value (nth (mixer-current-preset *audio-mixer*) thelist)))
 
     (setf save-preset (om-make-dialog-item 'om-button

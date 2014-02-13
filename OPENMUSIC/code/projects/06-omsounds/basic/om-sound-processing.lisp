@@ -1,7 +1,8 @@
 (in-package :om)
 
 ;======================================================
-;SND Process boxes relying on Libsndfile
+;SND Process boxes
+; THIS FILE USES LISPWORKS-SPECIFIC TOOLS FOR MEMORY ALLOCATION AND RELEASE
 ;======================================================
 ; D. Bouche 2013
 ;======================================================
@@ -28,6 +29,19 @@
    (nch :accessor nch :initform nil :initarg :nch :type fixnum)
    (sr :accessor sr :initform nil :initarg :sr :type fixnum)))
 
+
+(hcl::add-special-free-action 'om-audio-cleanup)
+
+(defmethod initialize-instance :before ((self om-sound-data) &rest args) 
+  (hcl::flag-special-free-action self))
+
+(defmethod om-audio-cleanup ((self t)) nil)
+
+(defmethod om-audio-cleanup ((self om-sound-data)) 
+  (when (buffer self)
+    (fli:free-foreign-object (buffer self))))
+
+
 (defmethod get-obj-dur ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
 
 (defmethod extent->ms ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
@@ -36,101 +50,59 @@
 
 (defmethod Class-has-editor-p ((self om-sound-data)) nil)
 
-(defmethod! get-om-sound-data ((self sound))
-            :icon 221
-            (and (om-sound-file-name self)
-                 (let ((infos (get-buffer-and-infos-from-path (om-path2cmdpath (om-sound-file-name self)))))
-                   (make-instance 'om-sound-data 
-                                  :buffer (nth 0 infos)
-                                  :tracknum 0
-                                  :size (nth 1 infos)
-                                  :nch (nth 2 infos)
-                                  :sr (nth 3 infos)))))
+(defmethod get-om-sound-data ((self string))
+   (multiple-value-bind (buffer size channels sr)
+       (au::sf-get-buffer-and-infos-from-path (namestring (om-sound-file-name self)))
+     (make-instance 'om-sound-data 
+                    :buffer buffer
+                    :tracknum 0
+                    :size size
+                    :nch channels
+                    :sr sr)))
 
-(defmethod! get-om-sound-data ((self string))
-            :icon 221
-            (let ((infos (get-buffer-and-infos-from-path (om-path2cmdpath self))))
-              (make-instance 'om-sound-data 
-                             :buffer (nth 0 infos)
-                             :tracknum 0
-                             :size (nth 1 infos)
-                             :nch (nth 2 infos)
-                             :sr (nth 3 infos))))
+(defmethod get-om-sound-data ((self pathname))
+  (get-om-sound-data (namestring self)))
 
-(defmethod! get-om-sound-data ((self pathname))
-            :icon 221
-            (get-om-sound-data (namestring self)))
-
-(defun get-buffer-and-infos-from-path (path)
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-    (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
-           (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
-           (size (fli::dereference size-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (channels-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
-           (nch (fli::dereference channels-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (sr-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
-           (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (buffer-size (* size nch))
-           (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0)))
-      (sf::sf-read-float sndfile-handle-in buffer buffer-size)
-      (sf::sf_close sndfile-handle-in)
-      (list buffer size nch sr))))
+(defmethod get-om-sound-data ((self sound))
+  (and (om-sound-file-name self)
+       (get-om-sound-data (om-sound-file-name self))))
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SAVE-SOUND///////////////
-(defmethod om-save-sound-in-file ((self om-sound-data) filename &optional (format nil))
-  (let ((format (or format *def-snd-format*))
-        (resolution (case *audio-res*
-                      (8 sf::sf_format_pcm_s8)
-                      (16 sf::sf_format_pcm_16)
-                      (24 sf::sf_format_pcm_24)
-                      (32 sf::sf_format_pcm_32)              
-                      (otherwise sf::sf_format_pcm_16))))
-    (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) (sr self))
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) (nch self))
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) (if (equal format 'aiff)
-                                                                                              (logior sf::sf_format_aiff resolution)
-                                                                                            (logior sf::sf_format_wav resolution)))
 
-      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
-        (sf::sf-write-float sndfile-handle-out (buffer self) (* (nch self) (size self)))
-        (sf::sf_close sndfile-handle-out)
-        (fli:free-foreign-object (buffer self)))))
-  (probe-file filename))
 
-(defmethod! om-save-sound ((self om-sound-data) filename &optional (format 'aiff))
+(defmethod! save-sound ((self om-sound-data) filename &optional (format :aiff))
             :icon 107
             :initvals '(nil nil 'aiff)
-            :indoc '("a om-sound-data buffer" "output file pathname" "audio format")
-            :menuins '((2 (("AIFF" 'aiff) ("WAV" 'wav) ("FLAC" 'flac) ("OGG Vorbis" 'ogg))))
-            :doc "Saves a 'om-sound-data' buffer as an audio file.
-
-'om-sound-data' buffers are generated with libsndfile."
-            (let ((format (or format *def-snd-format*))
+            :indoc '("a sound or om-sound-data buffer" "output file pathname" "audio format")
+            :menuins '((2 (("AIFF" :aiff) ("WAV" :wav) ("FLAC" :flac) ("OGG Vorbis" :ogg))))
+            :doc "Saves a <self> (om-sound-data buffer) as an audio file."
+            (if (null (buffer self))
+                (om-beep-msg "Error: null sound buffer")
+              (let ((format (or format *def-snd-format*))
                   (file (or filename (om-choose-new-file-dialog :directory (def-save-directory) 
                                                                 :prompt (om-str "Save as...")
-                                                                :types (cond ((equal format 'aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
-                                                                             ((equal format 'wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
+                                                                :types (cond ((equal format :aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
+                                                                             ((equal format :wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
                                                                              (t nil)))))) 
               (when file
                 (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                (om-save-sound-in-file self (om-path2cmdpath file) format))))
+                (au::sf-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
+                
+                ))))
 
-(defmethod! om-save-sound ((self sound) filename &optional (format 'aiff))
-            (om-save-sound (get-om-sound-data self) filename format))
+(defmethod! save-sound ((self sound) filename &optional (format 'aiff))
+  (save-sound (get-om-sound-data self) filename format))
 
 
 (defmethod* objfromobjs ((self om-sound-data) (type sound))
-            (let ((snd (om-save-sound self nil)))
-              (when snd (load-sound-file snd))))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SAVE-SOUND/////////////
-
+  (let ((snd (save-sound self nil)))
+    (when snd (load-sound-file snd))))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MIX///////////////
-(defmethod! om-sound-mix ((s1 om-sound-data) (s2 om-sound-data) &optional (method 0))
+(defmethod! sound-mix ((s1 om-sound-data) (s2 om-sound-data) &optional (method 0))
             :icon 101
             :initvals '(nil nil 0)
             :menuins '((2 (("Sum" 0)
@@ -139,9 +111,10 @@
             :indoc '("an om-sound-data" "an om-sound-data" "a mixing method")
             :doc "Generates a mix of <s1> and <s2>."
             
-            (if (and (= (nch s1) (nch s2)) (= (sr s1) (sr s2)))
-            
-                (let* ((nch (nch s1))
+            (cond ((or (null (buffer s1)) (null (buffer s2)))
+                   (om-beep-msg "Error : buffer(s) not initialized."))
+                  ((and (= (nch s1) (nch s2)) (= (sr s1) (sr s2)))
+                   (let* ((nch (nch s1))
                        (size1 (* nch (size s1)))
                        (size2 (* nch (size s2)))
                        (final-size (max size1 size2))
@@ -178,64 +151,69 @@
                                  :size (round final-size nch)
                                  :nch nch
                                  :sr (sr s1)))
-              (progn
-                (print "Error : trying to mix 2 sounds with different number of channels or different sample rate. Output is the input 1.")
-                s1)))
+                   )
+                  (t
+                   (om-beep-msg "Error : trying to mix 2 sounds with different number of channels or different sample rate. Output is the input 1.")
+                   s1)))
 
 
-(defmethod! om-sound-mix ((s1 sound) (s2 sound) &optional (method 0))
+(defmethod! sound-mix ((s1 sound) (s2 sound) &optional (method 0))
             ;(declare (type fixnum method))
-            (om-sound-mix (get-om-sound-data s1) (get-om-sound-data s2) method))
+            (sound-mix (get-om-sound-data s1) (get-om-sound-data s2) method))
 
-(defmethod! om-sound-mix ((s1 om-sound-data) (s2 sound) &optional (method 0))
+(defmethod! sound-mix ((s1 om-sound-data) (s2 sound) &optional (method 0))
             ;(declare (type fixnum method))
-            (om-sound-mix s1 (get-om-sound-data s2) method))
+            (sound-mix s1 (get-om-sound-data s2) method))
 
 (defmethod! om-sound-mix ((s1 sound) (s2 om-sound-data) &optional (method 0))
             ;(declare (type fixnum method))
-            (om-sound-mix (get-om-sound-data s1) s2 method))
+            (sound-mix (get-om-sound-data s1) s2 method))
+
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MIX///////////////
 
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SILENCE///////////
-(defmethod! om-sound-silence ((dur float) &optional (channels 1) (sample-rate *audio-sr*))
+(defmethod! sound-silence ((dur float) &optional (channels 1) (sample-rate *audio-sr*))
             :icon 105
             :initvals (list 1.0 1 *audio-sr*)
             :indoc '("duration (float or interger)" "number of channels")
             :doc "Generates a silence of duration = <dur>.
 <dur> is considered to be in seconds if a float number is given (e.g. 20.0) or in milliseconds if integer (e.g. 20)\."
-            (make-instance 'om-sound-data 
-                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur sample-rate (if (< channels 1) 1 channels))) :fill 0)
-                           :size (round (* dur sample-rate))
-                           :nch (if (< channels 1) 1 channels)
+            (let ((nsmpl (round (* dur sample-rate)))
+                  (ch (if (< channels 1) 1 channels)))
+              (make-instance 'om-sound-data 
+                           :buffer (fli:allocate-foreign-object :type :float :nelems (* nsmpl ch) :fill 0)
+                           :size nsmpl
+                           :nch ch
                            :sr sample-rate))
+            )
 
-(defmethod! om-sound-silence ((dur integer) &optional (channels 1) (sample-rate *audio-sr*))
-            (make-instance 'om-sound-data 
-                           :buffer (fli:allocate-foreign-object :type :float :nelems (round (* dur sample-rate 0.001 (if (< channels 1) 1 channels))) :fill 0)
-                           :size (round (* dur 0.001 sample-rate))
-                           :nch (if (< channels 1) 1 channels)
-                           :sr sample-rate))
+(defmethod! sound-silence ((dur integer) &optional (channels 1) (sample-rate *audio-sr*))
+   (sound-silence (* dur 0.001) channels sample-rate))
+
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SILENCE///////////
 
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SEQ///////////////
-(defmethod! om-sound-seq ((s1 om-sound-data) (s2 om-sound-data) &optional (crossfade 0))
+(defmethod! sound-seq ((s1 om-sound-data) (s2 om-sound-data) &optional (crossfade 0))
             :icon 100
             :initvals '(nil nil 0)
             :indoc '("a sound" "a sound" "cross-fading duration (ms)")
             "Concatenates <s1> and <s2>. 
-<crossfade> (duration in milliseconds) determines a fade-in/fade out overlapping between the sounds."
-            (if (and (= (nch s1) (nch s2)) (= (sr s1) (sr s2)))
-                (let* ((nch (nch s1))
+<crossfade> (duration in seconds/flots or milliseconds/int) determines a fade-in/fade out overlapping between the sounds."
+            (cond ((or (null (buffer s1)) (null (buffer s2)))
+                   (om-beep-msg "Error : buffer(s) not initialized."))
+                  ((and (= (nch s1) (nch s2)) (= (sr s1) (sr s2)))
+                   (let* ((nch (nch s1))
                        (sr (sr s1))
                        (size1 (* nch (size s1)))
                        (size2 (* nch (size s2)))
-                       (smp-cross (round (* nch crossfade sr 0.001)))
+                       (cf (if (integerp crossfade) (* crossfade 0.001) crossfade))
+                       (smp-cross (round (* nch cf sr)))
                        (smp-cross-side (* nch (ceiling smp-cross 2)))
                        (factor1 (- (/ 1.0 (max 1 smp-cross))))
                        (factor2 (/ 1.0 (max 1 smp-cross)))
@@ -263,43 +241,45 @@
                                  :size (round final-size nch)
                                  :nch nch
                                  :sr (sr s1)))
-              (progn
-                (print "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
-                s1)))
+                   )
+                  (t
+                   (om-beep-msg "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
+                   s1)))
 
-(defmethod! om-sound-seq ((s1 om-sound-data) (s2 sound) &optional (crossfade 0))
+(defmethod! sound-seq ((s1 om-sound-data) (s2 sound) &optional (crossfade 0))
             ;(declare (type fixnum crossfade))
-            (om-sound-seq s1 (get-om-sound-data s2) crossfade))
+            (sound-seq s1 (get-om-sound-data s2) crossfade))
 
-(defmethod! om-sound-seq ((s1 sound) (s2 om-sound-data) &optional (crossfade 0))
+(defmethod! sound-seq ((s1 sound) (s2 om-sound-data) &optional (crossfade 0))
             ;(declare (type fixnum crossfade))
-            (om-sound-seq (get-om-sound-data s1) s2 crossfade))
+            (sound-seq (get-om-sound-data s1) s2 crossfade))
 
-(defmethod! om-sound-seq ((s1 sound) (s2 sound) &optional (crossfade 0))
+(defmethod! sound-seq ((s1 sound) (s2 sound) &optional (crossfade 0))
             ;(declare (type fixnum crossfade))
-            (om-sound-seq (get-om-sound-data s1) (get-om-sound-data s2) crossfade))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SEQ///////////////
-
-
-
+            (sound-seq (get-om-sound-data s1) (get-om-sound-data s2) crossfade))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-FADE//////////////
-(defmethod! om-sound-fade ((s om-sound-data) in out)
+
+(defmethod! sound-fade ((s om-sound-data) (in float) (out float))
             :icon 102
             :initvals '(nil 100 100)
-            :indoc '("a om-sound-data" "fade in duration (ms)" "fade out duration (ms)")
-            "Generates a fade-in and/or fade-out effect on <s>."
+            :indoc '("a om-sound-data" "fade in duration" "fade out duration")
+            "Generates a fade-in and/or fade-out effect on <s>.
+
+             <in> and <out> can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
+            (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
 
             (let* ((nch (nch s))
                    (sr (sr s))
                    (size (size s))
                    (size2 (* size nch))
-                   (fade-in-frames (round (* in sr 0.001 nch)))
+                   (fade-in-frames (round (* in sr nch)))
                    (fade-in-factor (/ 1.0 fade-in-frames))
-                   (fade-out-frames (round (* out sr 0.001 nch)))
-                   (fade-out-frames-start (- size2 (round (* out sr 0.001 nch))))
+                   (fade-out-frames (round (* out sr nch)))
+                   (fade-out-frames-start (- size2 (round (* out sr nch))))
                    (fade-out-factor (- (/ 1.0 fade-out-frames))))
 
               ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
@@ -312,24 +292,24 @@
                             ((> i fade-out-frames-start) 
                              (* (1+ (* fade-out-factor (- i (- size2 fade-out-frames)))) (fli:dereference (buffer s) :index i)))
                             (t (fli:dereference (buffer s) :index i)))))              
-              s))
+              s)))
 
-(defmethod! om-sound-fade ((s sound) in out)
-            ;(declare (type fixnum in out))
-            (om-sound-fade (get-om-sound-data s) in out))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-FADE//////////////
+(defmethod! sound-fade ((s om-sound-data) (in integer) (out integer))
+    (sound-fade s (* in 0.001) (* out 0.001))) 
 
-
-
+(defmethod! sound-fade ((s sound) in out)
+    (sound-fade (get-om-sound-data s) in out))
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-LOOP//////////////
-(defmethod! om-sound-loop ((s om-sound-data) n)
+(defmethod! sound-loop ((s om-sound-data) n)
             :icon 103
             :initvals '(nil 3)
             :indoc '("a sound" "a number")
             "Generates a <n>-times repetition of <s>."
-            (let* ((nch (nch s))
+            (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
+              (let* ((nch (nch s))
                    (size (size s))
                    (size2 (* nch size))
                    (final-buffer (fli:allocate-foreign-object :type :float :nelems (* n size2) :fill 0)))
@@ -345,72 +325,77 @@
                              :buffer final-buffer
                              :size (* n size)
                              :nch nch
-                             :sr (sr s))))
+                             :sr (sr s)))))
 
-(defmethod! om-sound-loop ((s sound) n)
+(defmethod! sound-loop ((s sound) n)
             ;(declare (type fixnum n))
-            (om-sound-loop (get-om-sound-data s) n))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-LOOP//////////////
-
-
-
+            (sound-loop (get-om-sound-data s) n))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-CUT///////////////
-(defmethod! om-sound-cut ((s om-sound-data) beg end)
+(defmethod! sound-cut ((s om-sound-data) (beg float) (end float))
             :icon 104
             :initvals '(nil 0 1000)
-            :indoc '("a sound" "begin time (ms)" "end time (ms)")
-            "Cuts and returns an extract between <beg> and <end> in <s>."
-            (let* ((nch (nch s))
-                   (sr (sr s))
-                   (size2 (* (size s) nch))
-                   (beg-smp (round (* beg sr 0.001 nch)))
-                   (end-smp (* end sr 0.001 nch))
-                   (end-smp (round (if (> end-smp size2) size2 end-smp)))
-                   (lengthfinal (- end-smp beg-smp))
-                   (final-buffer (fli:allocate-foreign-object :type :float :nelems lengthfinal :fill 0)))
+            :indoc '("a sound" "begin time" "end time")
+            "Cuts and returns an extract between <beg> and <end> in <s>.
+
+            <beg> and <end> can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
+            (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
+
+              (let* ((nch (nch s))
+                     (sr (sr s))
+                     (size2 (* (size s) nch))
+                     (beg-smp (round (* beg sr 0.001 nch)))
+                     (end-smp (* end sr 0.001 nch))
+                     (end-smp (round (if (> end-smp size2) size2 end-smp)))
+                     (lengthfinal (- end-smp beg-smp))
+                     (final-buffer (fli:allocate-foreign-object :type :float :nelems lengthfinal :fill 0)))
 
               ;(declare (type fixnum nch sr size2 beg-smp end-smp lengthfinal))
 
-              (dotimes (i lengthfinal)
-                (setf (fli:dereference final-buffer :index i) (fli:dereference (buffer s) :index (+ beg-smp i))))
+                (dotimes (i lengthfinal)
+                  (setf (fli:dereference final-buffer :index i) (fli:dereference (buffer s) :index (+ beg-smp i))))
               
-              (fli:free-foreign-object (buffer s))
+                (fli:free-foreign-object (buffer s))
               
-              (make-instance 'om-sound-data 
-                             :buffer final-buffer
-                             :size (round lengthfinal nch)
-                             :nch nch
-                             :sr sr)))
+                (make-instance 'om-sound-data 
+                               :buffer final-buffer
+                               :size (round lengthfinal nch)
+                               :nch nch
+                               :sr sr))))
 
-(defmethod! om-sound-cut ((s sound) beg end)
+(defmethod! sound-cut ((s om-sound-data) (in integer) (out integer))
+    (sound-cut s (* beg 0.001) (* end 0.001))) 
+
+(defmethod! sound-cut ((s sound) beg end)
             ;(declare (type fixnum beg end))
-            (om-sound-cut (get-om-sound-data s) beg end))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-CUT///////////////
-
-
-
+            (sound-cut (get-om-sound-data s) beg end))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL///////////////
-(defmethod! om-sound-vol ((s om-sound-data) gain &optional (in 1) (out 1))
+(defmethod! sound-vol ((s om-sound-data) gain &optional (in 1) (out 1))
             :icon 106
             :initvals '(nil 1.0 1 1)
-            :indoc '("a sound" "a gain value" "fade in duration (ms)" "fade out duration (ms)")
+            :indoc '("a sound" "a gain value" "fade in duration" "fade out duration")
             "Adds gain effect (volume) on <s>. 
 
 <gain> is a multiplicative factor to the sound sample values.
-<in> and <out> determine fade-in / fade-out periods for the gain effect."
-            (let* ((nch (nch s))
+<in> and <out> determine fade-in / fade-out periods for the gain effect. They can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
+               (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
+
+                 (let* ((nch (nch s))
                    (sr (sr s))
                    (size (size s))
                    (size2 (* size nch))
-                   (fade-in-frames (round (* in sr 0.001 nch)))
+                   (in (if (integerp in) (* in 0.001) in))
+                   (out (if (integerp out) (* out 0.001) out))
+                   (fade-in-frames (round (* in sr nch)))
                    (fade-in-factor (/ (1- gain) fade-in-frames))
-                   (fade-out-frames (round (* out sr 0.001 nch)))
+                   (fade-out-frames (round (* out sr nch)))
                    (fade-out-factor (/ (- 1 gain) fade-out-frames))
                    (fade-out-frame-start (- size2 fade-out-frames)))
 
@@ -424,22 +409,17 @@
                                (t gain)) 
                          (fli:dereference (buffer s) :index i))))
 
-              s))
+              s)))
 
-(defmethod! om-sound-vol ((s sound) gain &optional (in 1) (out 1))
+(defmethod! sound-vol ((s sound) gain &optional (in 1) (out 1))
             ;(declare (type single-float gain))
             ;(declare (type fixnum in out))
-            (om-sound-vol (get-om-sound-data s) gain in out))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL//////////////
-
-
-
-
+   (sound-vol (get-om-sound-data s) gain in out))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-NORMALIZE/////////
-(defmethod! om-sound-normalize ((s om-sound-data) &optional (method 0))
+(defmethod! sound-normalize ((s om-sound-data) &optional (method 0))
             :icon 109
             :initvals '(nil 0)
             :menuins '((1 (("Peak" 0)
@@ -448,7 +428,10 @@
             "Normalizes a sound <s>.
 
 <method> is a normalization method. Choose between Peak detection or Peak RMS detection."
-            (let* ((nch (nch s))
+              (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
+
+                   (let* ((nch (nch s))
                    (size (size s))
                    (size2 (* size nch))
                    (peak 0.0)
@@ -492,19 +475,18 @@
                          (setf (fli:dereference (buffer s) :index i) (cond ((< x -1) -1.0)
                                                                            ((> x 1) 1.0)
                                                                            (t x)))))))
-              s))
+              s)))
 
-(defmethod! om-sound-normalize ((s sound) &optional (method 0))
+(defmethod! sound-normalize ((s sound) &optional (method 0))
             ;(declare (type fixnum method))
-            (om-sound-normalize (get-om-sound-data s) method))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-NORMALIZE////////
+            (sound-normalize (get-om-sound-data s) method))
 
 
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MONO-TO-STEREO///
-(defmethod! om-sound-mono-to-stereo ((s om-sound-data) &optional (pan 0))
+(defmethod! sound-mono-to-stereo ((s om-sound-data) &optional (pan 0))
             :icon 111
             :initvals '(nil 0)
             :indoc '("a sound" "a panoramic value between -100 and 100")
@@ -512,75 +494,78 @@
 
 <pan> is a panoramic value between -100 (Left channel) and 100 (Right channel)."
             
-            (if (= (nch s) 1)
-                (let* ((final-buffer (fli:allocate-foreign-object :type :float :nelems (* 2 (size s)) :fill 0))
-                       (pan (/ pan 100.0))
-                       (Lgain (if (<= pan 0) 1 (- 1 pan)))
-                       (Rgain (if (>= pan 0) 1 (+ 1 pan)))
-                       (x 0.0))
+             (cond ((null (buffer s))
+                    (om-beep-msg "Error: null sound buffer"))
 
-                  (dotimes (i (size s))
-                    (setf x (fli:dereference (buffer s) :index i))
-                    (setf (fli:dereference final-buffer :index (* 2 i)) (* Lgain x)
-                          (fli:dereference final-buffer :index (1+ (* 2 i))) (* Rgain x)))
+                   ((= (nch s) 1)
+                    (let* ((final-buffer (fli:allocate-foreign-object :type :float :nelems (* 2 (size s)) :fill 0))
+                           (pan (/ pan 100.0))
+                           (Lgain (if (<= pan 0) 1 (- 1 pan)))
+                           (Rgain (if (>= pan 0) 1 (+ 1 pan)))
+                           (x 0.0))
+
+                      (dotimes (i (size s))
+                        (setf x (fli:dereference (buffer s) :index i))
+                        (setf (fli:dereference final-buffer :index (* 2 i)) (* Lgain x)
+                              (fli:dereference final-buffer :index (1+ (* 2 i))) (* Rgain x)))
               
-                  (fli:free-foreign-object (buffer s))
+                      (fli:free-foreign-object (buffer s))
               
-                  (make-instance 'om-sound-data 
-                                 :buffer final-buffer
-                                 :size (size s)
-                                 :nch 2
-                                 :sr (sr s)))
-              (progn
-                (print (format nil "Error : trying to stereo-ize a sound with ~A channels. Needs 1. Output is the original input." (nch s)))
-                s))
+                      (make-instance 'om-sound-data 
+                                     :buffer final-buffer
+                                     :size (size s)
+                                     :nch 2
+                                     :sr (sr s))))
+                   (t
+                    (om-beep-msg (format nil "Error : trying to stereo-ize a sound with ~A channels. Needs 1. Output is the original input." (nch s)))
+                    s))
+             
+             )
 
-            )
-
-(defmethod! om-sound-mono-to-stereo ((s sound) &optional (pan 0))
+(defmethod! sound-mono-to-stereo ((s sound) &optional (pan 0))
             ;(declare (type fixnum pan))
-            (om-sound-mono-to-stereo (get-om-sound-data s) pan))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MONO-TO-STEREO///
-
+            (sound-mono-to-stereo (get-om-sound-data s) pan))
 
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-STEREO-TO-MONO///
-(defmethod! om-sound-stereo-to-mono ((s om-sound-data))
+(defmethod! sound-stereo-to-mono ((s om-sound-data))
             :icon 112
             :initvals '(nil)
             :indoc '("a sound")
             "Mono-ize a stereo sound."
-            (if (= (nch s) 2)
-                (let* ((final-buffer (fli:allocate-foreign-object :type :float :nelems (size s) :fill 0))
-                       (x 0.0))
+            (cond ((null (buffer s))
+                   (om-beep-msg "Error: null sound buffer"))
+                  ((= (nch s) 2)
+                   (let* ((final-buffer (fli:allocate-foreign-object :type :float :nelems (size s) :fill 0))
+                          (x 0.0))
 
                   ;(declare (type single-float x))
 
-                  (dotimes (i (size s))
-                    (setf x (/ (+ (fli:dereference (buffer s) :index (* 2 i)) (fli:dereference (buffer s) :index (1+ (* 2 i)))) 2.0))
-                    (setf (fli:dereference final-buffer :index i) x))
+                     (dotimes (i (size s))
+                       (setf x (/ (+ (fli:dereference (buffer s) :index (* 2 i)) (fli:dereference (buffer s) :index (1+ (* 2 i)))) 2.0))
+                       (setf (fli:dereference final-buffer :index i) x))
               
-                  (fli:free-foreign-object (buffer s))
+                     (fli:free-foreign-object (buffer s))
               
-                  (make-instance 'om-sound-data 
-                                 :buffer final-buffer
-                                 :size (size s)
-                                 :nch 1
-                                 :sr (sr s)))
-              (progn
-                (print (format nil "Error : trying to mono-ize a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
-                s)))
+                     (make-instance 'om-sound-data 
+                                    :buffer final-buffer
+                                    :size (size s)
+                                    :nch 1
+                                    :sr (sr s))))
+                  (t
+                   (om-beep-msg (format nil "Error : trying to mono-ize a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
+                   s)))
 
-(defmethod! om-sound-stereo-to-mono ((s sound))
-            (om-sound-stereo-to-mono (get-om-sound-data s)))
+(defmethod! sound-stereo-to-mono ((s sound))
+            (sound-stereo-to-mono (get-om-sound-data s)))
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-STEREO-TO-MONO///
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
-(defmethod! om-sound-stereo-pan ((s om-sound-data) left right)
+(defmethod! sound-stereo-pan ((s om-sound-data) left right)
             :icon 113
             :initvals '(nil -100 100)
             :indoc '("a sound" "a left channel pan value" "a right channel pan value")
@@ -589,39 +574,38 @@
 <left> is a panoramic value for the left channel between -100 (full left) and 100 (full right).
 <right> is a panoramic value for the right channel between -100 (full left) and 100 (full right)."
 
-            (if (= (nch s) 2)
-                (let* ((left (cond ((< left -100) 100) ((> left 100) -100) (t (- left))))
-                       (right (cond ((< right -100) -100) ((> right 100) 100) (t right)))
-                       (leftRgain (- 0.5 (* (/ 1.0 200) left)))
-                       (leftLgain (+ 0.5 (* (/ 1.0 200) left)))
-                       (rightRgain (+ 0.5 (* (/ 1.0 200) right)))
-                       (rightLgain (- 0.5 (* (/ 1.0 200) right)))
-                       (xl 0.0) (xr 0.0))
+            (cond ((null (buffer s))
+                   (om-beep-msg "Error: null sound buffer"))
+                  ((= (nch s) 2)
+                   (let* ((left (cond ((< left -100) 100) ((> left 100) -100) (t (- left))))
+                          (right (cond ((< right -100) -100) ((> right 100) 100) (t right)))
+                          (leftRgain (- 0.5 (* (/ 1.0 200) left)))
+                          (leftLgain (+ 0.5 (* (/ 1.0 200) left)))
+                          (rightRgain (+ 0.5 (* (/ 1.0 200) right)))
+                          (rightLgain (- 0.5 (* (/ 1.0 200) right)))
+                          (xl 0.0) (xr 0.0))
 
                   ;(declare (type fixnum left right))
                   ;(declare (type single-float leftRgain leftLgain rightRgain rightLgain))
 
-                  (dotimes (i (size s))
-                    (setf xl (fli:dereference (buffer s) :index (* 2 i))
-                          xr (fli:dereference (buffer s) :index (1+ (* 2 i))))
-                    (setf (fli:dereference (buffer s) :index (* 2 i)) (+ (* leftLgain xl) (* rightLgain xr))
-                          (fli:dereference (buffer s) :index (1+ (* 2 i))) (+ (* leftRgain xl) (* rightRgain xr))))
-                  s)
-              (progn
-                (print (format nil "Error : trying to pan a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
-                s)))
+                     (dotimes (i (size s))
+                       (setf xl (fli:dereference (buffer s) :index (* 2 i))
+                             xr (fli:dereference (buffer s) :index (1+ (* 2 i))))
+                       (setf (fli:dereference (buffer s) :index (* 2 i)) (+ (* leftLgain xl) (* rightLgain xr))
+                             (fli:dereference (buffer s) :index (1+ (* 2 i))) (+ (* leftRgain xl) (* rightRgain xr))))
+                     s))
+                  (t
+                   (om-beep-msg (format nil "Error : trying to pan a sound with ~A channels. Needs 2. Output is the original input." (nch s)))
+                   s)))
 
-(defmethod! om-sound-stereo-pan ((s sound) left right)
+(defmethod! sound-stereo-pan ((s sound) left right)
             ;(declare (type fixnum left right))
-            (om-sound-stereo-pan (get-om-sound-data s) left right))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
-
-
+            (sound-stereo-pan (get-om-sound-data s) left right))
 
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE//////////
-(defmethod! om-sound-resample ((s om-sound-data) sample-rate &optional (method 0))
+(defmethod! sound-resample ((s om-sound-data) sample-rate &optional (method 0))
             :icon 114
             :initvals '(nil 44100 0)
             :menuins '((2 (("Best Quality" lsr::SRC_SINC_BEST_QUALITY)
@@ -631,43 +615,45 @@
                            ("Linear" lsr::SRC_LINEAR))))
             :indoc '("a sound" "a new sample rate in Hz" "a resampling method")
             "Resamples a sound <s>."
+            (cond ((null (buffer s))
+                   (om-beep-msg "Error: null sound buffer"))
+                  ((and (= (mod sample-rate 1) 0) (> (/ sample-rate (sr s) 1.0) (/ 1.0 256)) (< (/ sample-rate (sr s) 1.0) 256))
+                   (let* ((buffer (buffer s))
+                          (size (size s))
+                          (nch (nch s))
+                          (sr (sr s))
+                          (ratio (coerce (/ sample-rate sr) 'double-float))
+                          (out-size (round (* ratio size)))
+                          (final-buffer (fli:allocate-foreign-object :type :float :nelems (* out-size nch) :fill 0))
+                          res)
 
-            (if (and (= (mod sample-rate 1) 0) (> (/ sample-rate (sr s) 1.0) (/ 1.0 256)) (< (/ sample-rate (sr s) 1.0) 256))
-                (let* ((buffer (buffer s))
-                       (size (size s))
-                       (nch (nch s))
-                       (sr (sr s))
-                       (ratio (coerce (/ sample-rate sr) 'double-float))
-                       (out-size (round (* ratio size)))
-                       (final-buffer (fli:allocate-foreign-object :type :float :nelems (* out-size nch) :fill 0))
-                       res)
+                     (cffi:with-foreign-object (lsrdata '(:struct lsr::src_data))
+                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_in) buffer)
+                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::input_frames) size)
+                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) final-buffer)
+                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
+                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
 
-                  (cffi:with-foreign-object (lsrdata '(:struct lsr::src_data))
-                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_in) buffer)
-                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::input_frames) size)
-                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) final-buffer)
-                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
-                    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
+                       (setf res (lsr::src-simple lsrdata method nch))
 
-                    (setf res (lsr::src-simple lsrdata method nch))
-
-                    (if (= res 0)
-                        (progn
-                          (fli:free-foreign-object (buffer s))
-                          (make-instance 'om-sound-data 
-                                         :buffer final-buffer
-                                         :size (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen)
-                                         :nch nch
-                                         :sr sample-rate))
-                      (progn
-                        (print (format nil "Libsamplerate failed to resample and returned this error : ~A. Output is the original input." (lsr::src-strerror res)))
-                        s))))
-              (progn
-                (print "The sample-rate you supplied is invalid. It must be an integer, and the output-sr/input-sr ratio must be inside [1/256, 256] range. Output is the original input.")
-                s)))
+                       (if (= res 0)
+                           (progn
+                             (fli:free-foreign-object (buffer s))
+                             (make-instance 'om-sound-data 
+                                            :buffer final-buffer
+                                            :size (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen)
+                                            :nch nch
+                                            :sr sample-rate))
+                         (progn
+                           (om-beep-msg (format nil "Libsamplerate failed to resample and returned this error : ~A. Output is the original input." (lsr::src-strerror res)))
+                           s)))))
+                  (t
+                   (om-beep-msg "The sample-rate you supplied is invalid. It must be an integer, and the output-sr/input-sr ratio must be inside [1/256, 256] range. Output is the original input.")
+                   s)))
 
 
-(defmethod! om-sound-resample ((s sound) sample-rate &optional (method 0))
+(defmethod! sound-resample ((s sound) sample-rate &optional (method 0))
             ;(declare (type fixnum method))
-            (om-sound-resample (get-om-sound-data s) sample-rate method))
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE/////////
+   (sound-resample (get-om-sound-data s) sample-rate method))
+
+

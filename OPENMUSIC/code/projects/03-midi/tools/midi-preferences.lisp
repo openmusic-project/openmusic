@@ -26,8 +26,8 @@
     (setf *def-midi-format* (get-pref modulepref :midi-format))
     (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
     (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
-      (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
-      )
+      (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup)))
+    (put-midi-mixer-values)
     ))
 
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
@@ -35,6 +35,7 @@
                                                    :midi-format 1
                                                    :auto-microtone-bend nil
                                                    :midi-setup nil
+                                                   :midi-presets (def-midi-presets)
                                                    ))
 
 

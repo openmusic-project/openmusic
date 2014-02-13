@@ -111,6 +111,9 @@
       (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
       (values format channels sample-rate ss frames skip))))
 
+
+
+
 (defun load-audio-data (path &optional (datatype :float))
   "Returns a matrix of sound data"
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
@@ -134,6 +137,59 @@
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure
         )
       (values buffer size channels))))
+
+
+
+(defun get-buffer-and-infos-from-path (path)
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
+           (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
+           (size (fli::dereference size-ptr :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
+           (nch (fli::dereference channels-ptr :type :int :index #+powerpc 1 #-powerpc 0))
+           (sr-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
+           (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0))
+           (buffer-size (* size nch))
+           (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0)))
+      (sf::sf-read-float sndfile-handle-in buffer buffer-size)
+      (sf::sf_close sndfile-handle-in)
+      (values buffer size nch sr))))
+
+(defun sf-get-infos-from-path (path)
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
+           (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
+           (size (fli::dereference size-ptr :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
+           (nch (fli::dereference channels-ptr :type :int :index #+powerpc 1 #-powerpc 0))
+           (sr-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
+           (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0)))
+      (sf::sf_close sndfile-handle-in)
+      (list size nch sr))))
+
+
+(defun sf-save-sound-in-file (buffer filename size nch sr res format)
+  (let ((format (if (equal format :aiff)
+                    (logior sf::sf_format_aiff resolution)
+                  (logior sf::sf_format_wav resolution)))    ;;; FLAC/OGG... ?
+        (resolution (case res
+                      (8 sf::sf_format_pcm_s8)
+                      (16 sf::sf_format_pcm_16)
+                      (24 sf::sf_format_pcm_24)
+                      (32 sf::sf_format_pcm_32)              
+                      (otherwise sf::sf_format_pcm_16))))
+        
+    (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) sr)
+      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) nch)
+      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) format)
+
+      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
+        (sf::sf-write-float sndfile-handle-out buffer (* nch size))
+        (sf::sf_close sndfile-handle-out)
+        (fli:free-foreign-object buffer))))
+  (probe-file filename))
+
 
 ;;==================================
 ;;; OM tools

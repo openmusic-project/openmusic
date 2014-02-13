@@ -24,7 +24,6 @@
 
 (defclass internalsound (om-sound)   
   ((sound-offset :accessor sound-offset)
-   ;(soundpointer :initform nil :accessor soundpointer)
    (pict-sound :initform nil :accessor pict-sound)
    (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
@@ -53,10 +52,11 @@ Press 'space' to play/stop the sound file.
 
 (defparameter *default-sound-player* #-linux :libaudiostream #+linux :jackaudio)
 
-(defmethod get-default-score-params ((self sound))
+
+(defmethod default-edition-params ((self sound))
   (pairlis '(outport inport player
              zoom grillestep mode winsize winpos show-spectrum) 
-           (list nil nil *default-sound-player* 
+           (list nil nil *default-sound-player*
                  1 nil 0 (om-make-point 370 280) (om-make-point 400 20) nil)))
 
 

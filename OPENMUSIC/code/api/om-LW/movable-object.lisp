@@ -118,7 +118,7 @@
 ;the four steps in the capi method specialized for the class of "movable-object". NOrmally this is called into the "mouse-motion-callback" method
 
 (defmethod draw-pinboard-object (pane (self movable-object) &key x y width height erase)
-  (ignore-errors 
+  ;(ignore-errors 
   (multiple-value-bind (ox oy ow oh) (pane-geometry self)
     (when (or erase (or (not (and x y width height)) (rectangle-intersection-p (list x y width height) (list ox oy ow oh))))
       (when (slot-value self 'restore-image) ;step 1 and 2 are naturally conditionned by the fact an image already exists
@@ -129,7 +129,9 @@
         (when (and (> ow 0) (> oh 0))
           (make-movable-object-image pane self ox oy ow oh) ;STEP 3om-create-motion-obj
           (draw-movable-object pane self x y width height) ;STEP 4
-          ))))))
+          ))))
+  ;)
+  )
 
 ;onely usefull in some very specific situations
 
@@ -161,12 +163,13 @@
           (flet ((draw (img a b c d)
                    (when (and a b c d 
                               (valid-image-p img)
-                              (< a (+ left w)) (>= c left) (< b (+ top h)) (>= d top))
+                              ;(< a (+ left w)) (>= c left) (< b (+ top h)) (>= d top)
+                              )
                      (draw-image pane img a b))))
            (destructuring-bind (x y w h) geometry
-                   (draw restore-image x y (+ x w) (+ y h)) ))))))
-
-
+             (draw restore-image x y (+ x w) (+ y h))
+             )
+           )))))
 
 
 
@@ -199,7 +202,7 @@
                  (let (ox oy ow oh) ;l'ancienne géométrie de l'objet
                    (setf ox (max left a) oy (max top c) ow (- (min right b) ox) oh (- (min bottom d) oy))
                    (values (when (and (> ow 0) (> oh 0))
-                             (make-image-from-port pane ox  oy ow oh))
+                             (make-image-from-port pane ox oy ow oh))
                            (list ox oy ow oh)))))
          (when (test x x4 y y4) 
            (multiple-value-bind (image geom) (make-image x x4 y y4)

@@ -14,23 +14,28 @@
 (defparameter *midi-mixer* nil)
 
 (defclass midi-mixer (midi-mix-console OMBasicObject) 
-  (
-   (presets :accessor presets :initarg :presets :initform nil)
-   (current-preset :accessor current-preset :initarg :current-preset :initform 0)
-   )
+  ((presets :accessor presets :initarg :presets :initform nil)
+   (current-preset :accessor current-preset :initarg :current-preset :initform 0))
   (:default-initargs :nbtracks 16))
 
-(defun init-midi-mixer ()
+(defun init-midi-mixer (&optional vals)
   (or *midi-mixer* 
-      (setf *midi-mixer* (make-instance 'midi-mixer 
-                                        :presets (or (get-pref (find-pref-module :midi) :midi-presets)
-                                                     '(("-----" nil)))))))
+      (setf *midi-mixer* (make-instance 'midi-mixer :presets (or vals (def-midi-presets))))))
+
+(defun def-midi-presets () '(("-----" nil)))
+
+(defun put-midi-mixer-values ()
+  (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
+    (init-midi-mixer vals)
+    (when *midi-mixer* 
+      (set-preset *midi-mixer* (cadr (car vals)))
+      (send-midi-settings *midi-mixer*))))
 
 (defun save-midi-presets-in-preferences (mixer)
   (set-pref (find-pref-module :midi) :midi-presets (presets mixer))
   (save-preferences))
 
-(om-add-init-func 'init-midi-mixer)
+;(om-add-init-func 'init-midi-mixer)
 
 ;;;==================================
 ;;; EDITOR
@@ -69,11 +74,12 @@
                                                  :font *om-default-font3b*))
    ))
 
-(defmethod set-preset ((self MIDIMixerEditor) preset)
+
+(defmethod set-preset ((self MIDI-Mixer) preset)
   "sets the vals in nth preset in the editor (and send them)"
-  (loop for chan in preset 
-        for ch-ctrl in (channels-ctrl (object self)) 
-        for ch-panel in (ch-panels self) 
+  (when preset
+    (loop for chan in preset 
+        for ch-ctrl in (channels-ctrl self)
         do
         
         (setf (program ch-ctrl) (nth 0 chan)
@@ -84,22 +90,26 @@
               (control1-val ch-ctrl) (nth 5 chan)
               (control2-num ch-ctrl) (nth 6 chan)
               (control2-val ch-ctrl) (nth 7 chan))
+        )
         
+  (send-midi-settings self)
+  ))
+
+(defmethod set-mixer-editor ((self MIDIMixerEditor) (ref MIDI-Mixer))
+  (loop for ch-ctrl in (channels-ctrl ref) 
+        for ch-panel in (ch-panels self) 
         do
         (set-channel-values ch-panel
-                            :program (nth 0 chan)
-                            :vol (nth 1 chan)
-                            :pan (nth 2 chan)
-                            :pitch (nth 3 chan)
-                            :ctr1 (nth 4 chan)
-                            :ctr1val (nth 5 chan)
-                            :ctr2 (nth 6 chan)
-                            :ctr2val (nth 7 chan))
+                            :program (program ch-ctrl)
+                            :vol (vol-ctrl ch-ctrl)
+                            :pan (pan-ctrl ch-ctrl)
+                            :pitch (pitch-ctrl ch-ctrl)
+                            :ctr1 (control1-num ch-ctrl)
+                            :ctr1val (control1-val ch-ctrl)
+                            :ctr2 (control2-num ch-ctrl)
+                            :ctr2val (control2-val ch-ctrl))
         )
-        
-
-        (send-midi-settings (object self))
-        )
+  )
 
 
 (defmethod get-current-values ((self MIDIMixerEditor))
@@ -138,7 +148,8 @@
                                                  (let ((presetnum (om-get-selected-item-index item))) ;;; 0 is reserved for the current values
                                                    (setf (current-preset (object self)) presetnum)
                                                    (when (> (current-preset (object self)) 0)
-                                                     (set-preset self (cadr (nth presetnum (presets (object self)))))
+                                                     (set-preset (object self) (cadr (nth presetnum (presets (object self)))))
+                                                     (set-mixer-editor self (object self))
                                                      )))
                                     :font *om-default-font1*
                                     :range (mapcar 'car (presets (object self)))

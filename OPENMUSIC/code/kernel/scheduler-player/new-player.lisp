@@ -421,7 +421,7 @@
     (let ((obj (get-obj-to-play self))
           (interval (get-interval-to-play self)))
       (setf (callback-fun (player self)) 
-            (and *events-play-cursor*
+            (and ; *events-play-cursor*
                  (get-editor-callback self)))
       (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
       (schedule-editor-contents self)

@@ -433,7 +433,8 @@
 (defmethod item-subviews ((self window-layout)) (call-next-method))
 
 (defmethod om-draw-contents-callback ((self window-layout) x y w h)
-  (om-draw-contents-callback (capi::top-level-interface self) x y w h))
+  (om-draw-contents-callback (capi::top-level-interface self) x y w h)
+  )
 
 
 ;(defmethod om-char-callback ((self window-layout) x y char type)
