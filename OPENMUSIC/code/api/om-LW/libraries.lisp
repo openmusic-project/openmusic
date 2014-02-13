@@ -58,13 +58,15 @@
 (export '(om-make-pointer
           om-free-pointer
           om-read-ptr
-          om-write-ptr)
+          om-write-ptr
+          om-cleanup-mixin
+          om-cleanup)
         :om-api)
 
-(defun om-make-pointer (size &optional (clear nil))
+(defun om-make-pointer (size &key (type :byte) (clear nil))
   (if clear
-      (fli:allocate-foreign-object :type :byte :nelems size :fill 0)
-    (fli:allocate-foreign-object :type :byte :nelems size)))
+      (fli:allocate-foreign-object :type type :nelems size :fill 0)
+    (fli:allocate-foreign-object :type type :nelems size)))
 
 (defun om-free-pointer (ptr)
   (fli::free-foreign-object ptr))
@@ -75,6 +77,25 @@
 
 (defun om-read-ptr (ptr pos type)
   (fli:dereference ptr :type type :index pos))
+
+
+;;;========================
+;;; CLEANUP/DEALLOC UTILS
+;;;========================
+
+(hcl::add-special-free-action 'om-cleanup)
+
+;;; to be subclassed by special-cleanup objects
+(defclass om-cleanup-mixin () ())
+
+(defmethod initialize-instance :before ((self om-cleanup-mixin) &rest args) 
+  (hcl::flag-special-free-action self))
+
+;;; to be redefined for specific om-cleanup-mixin subclasses
+(defmethod om-cleanup ((self t)) nil)
+
+
+
 
 ;;;========================
 ;;; EXTERNAL LIBRARIES

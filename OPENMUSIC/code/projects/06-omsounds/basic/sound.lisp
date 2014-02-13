@@ -401,7 +401,8 @@ Press 'space' to play/stop the sound file.
 
 (defmethod update-if-editor ((self OMaiffFilebox))
   (when (editorFrame self)
-    (om-close-window (om-view-window (editorFrame self)))))
+    (om-close-window (om-view-window (editorFrame self))))
+    (call-next-method))
 
 ;=======
 ; PICT

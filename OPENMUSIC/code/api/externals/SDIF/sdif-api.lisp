@@ -135,7 +135,6 @@
           (t (mod (cadr (multiple-value-list (floor datasize align))) align)))
     ))
 
-(floor 320 8)
 
 
 ;;;============================

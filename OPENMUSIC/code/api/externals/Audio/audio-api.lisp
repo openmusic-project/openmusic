@@ -140,7 +140,7 @@
 
 
 
-(defun get-buffer-and-infos-from-path (path)
+(defun sf-get-buffer-and-infos-from-path (path)
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
            (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
@@ -168,16 +168,20 @@
       (list size nch sr))))
 
 
-(defun sf-save-sound-in-file (buffer filename size nch sr res format)
-  (let ((format (if (equal format :aiff)
-                    (logior sf::sf_format_aiff resolution)
-                  (logior sf::sf_format_wav resolution)))    ;;; FLAC/OGG... ?
-        (resolution (case res
-                      (8 sf::sf_format_pcm_s8)
-                      (16 sf::sf_format_pcm_16)
-                      (24 sf::sf_format_pcm_24)
-                      (32 sf::sf_format_pcm_32)              
-                      (otherwise sf::sf_format_pcm_16))))
+(defun sf-save-sound-in-file (buffer filename size nch sr resolution format)
+  (let ((res (case res
+               (8 sf::sf_format_pcm_s8)
+               (16 sf::sf_format_pcm_16)
+               (24 sf::sf_format_pcm_24)
+               (32 sf::sf_format_pcm_32)              
+               (otherwise sf::sf_format_pcm_16)))
+        (format (logior (case format 
+                          (:aiff sf::sf_format_aiff)
+                          (:wav sf::sf_format_wav)
+                          (:ogg sf::sf_format_ogg)
+                          (:flac sf::sf_format_flac)
+                          (otherwise sf::sf_format_aiff))
+                        res)))
         
     (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
       (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) sr)
@@ -187,7 +191,7 @@
       (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
         (sf::sf-write-float sndfile-handle-out buffer (* nch size))
         (sf::sf_close sndfile-handle-out)
-        (fli:free-foreign-object buffer))))
+        )))
   (probe-file filename))
 
 
