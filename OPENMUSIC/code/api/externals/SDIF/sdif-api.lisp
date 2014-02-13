@@ -132,8 +132,11 @@
         (align 8))
     (cond ((zerop datasize) 0)
           ((< datasize align) (- align datasize))
-          (t (cadr (multiple-value-list (floor datasize align))))
-      )))
+          (t (mod (cadr (multiple-value-list (floor datasize align))) align)))
+    ))
+
+(floor 320 8)
+
 
 ;;;============================
 ;;; TESTS
