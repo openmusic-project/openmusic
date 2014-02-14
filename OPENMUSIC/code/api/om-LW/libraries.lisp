@@ -78,7 +78,7 @@
 (defun om-read-ptr (ptr pos type)
   (fli:dereference ptr :type type :index pos))
 
-
+ 
 ;;;========================
 ;;; CLEANUP/DEALLOC UTILS
 ;;;========================

@@ -7,60 +7,20 @@
 ; D. Bouche 2013
 ;======================================================
 ; List of available methods :
-;   - om-sound-silence
-;   - om-sound-mix         
-;   - om-sound-fade
-;   - om-sound-cut
-;   - om-sound-vol
-;   - om-sound-normalize
-;   - om-sound-mono-to-stereo
-;   - om-sound-stereo-to-mono
-;   - om-sound-stereo-pan
-;   - om-sound-resample
-;   - om-sound-seq
-;   - om-sound-loop
+;   - sound-silence
+;   - sound-mix         
+;   - sound-fade
+;   - sound-cut
+;   - sound-vol
+;   - sound-normalize
+;   - sound-mono-to-stereo
+;   - sound-stereo-to-mono
+;   - sound-stereo-pan
+;   - sound-resample
+;   - sound-seq
+;   - sound-loop
 ;   
 ;======================================================
-
-
-(defclass om-sound-data (simple-container om-cleanup-mixin)
-  ((buffer :accessor buffer :initform nil :initarg :buffer)
-   (tracknum :accessor tracknum :initform 0 :initarg :tracknum :type fixnum)
-   (size :accessor size :initform nil :initarg :size :type fixnum)
-   (nch :accessor nch :initform nil :initarg :nch :type fixnum)
-   (sr :accessor sr :initform nil :initarg :sr :type fixnum)))
-
-
-(defmethod om-cleanup ((self om-sound-data)) 
-  (when (buffer self)
-    (print (list "clean buffer" self))
-    (om-free-pointer (buffer self))))
-
-
-(defmethod get-obj-dur ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
-
-(defmethod extent->ms ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
-
-(defmethod allowed-in-maq-p ((self om-sound-data)) t)
-
-(defmethod Class-has-editor-p ((self om-sound-data)) nil)
-
-(defmethod get-om-sound-data ((self string))
-   (multiple-value-bind (buffer size channels sr)
-       (au::sf-get-buffer-and-infos-from-path self)
-     (make-instance 'om-sound-data 
-                    :buffer buffer
-                    :tracknum 0
-                    :size size
-                    :nch channels
-                    :sr sr)))
-
-(defmethod get-om-sound-data ((self pathname))
-  (get-om-sound-data (namestring self)))
-
-(defmethod get-om-sound-data ((self sound))
-  (and (om-sound-file-name self)
-       (get-om-sound-data (om-sound-file-name self))))
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SAVE-SOUND///////////////
@@ -84,7 +44,7 @@
                                                                              (t nil)))))) 
               (when file
                 (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                (au::sf-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
+                (om-audio::om-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
                 ;(fli:free-foreign-object buffer)
                 (probe-file (namestring file))
                 ))))
@@ -98,21 +58,19 @@
     (when snd (load-sound-file snd))))
 
 
-
-
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-RESAMPLE//////////
 
-;;; USE LIBSAMPLERATE
 
-(defmethod! sound-resample ((s om-sound-data) sample-rate &optional (method 0))
+
+(defmethod! sound-resample ((s om-sound-data) sample-rate &optional (resample-method 0))
             :icon 114
             :initvals '(nil 44100 0)
-            :menuins '((2 (("Best Quality" lsr::SRC_SINC_BEST_QUALITY)
-                           ("Medium Quality" lsr::SRC_SINC_MEDIUM_QUALITY)
-                           ("Fastest" lsr::SRC_SINC_FASTEST)
-                           ("Zero-Order Hold" lsr::SRC_ZERO_ORDER_HOLD)
-                           ("Linear" lsr::SRC_LINEAR))))
-            :indoc '("a sound" "a new sample rate in Hz" "a resampling method")
+            :menuins '((2 (("Best Quality" 0)
+                           ("Medium Quality" 1)
+                           ("Fastest" 2)
+                           ("Zero-Order Hold" 3)
+                           ("Linear" 4))))
+            :indoc '("a sound or sound-data buffer" "new sample rate in Hz" "resampling method")
             "Resamples a sound <s>."
             (cond ((null (buffer s))
                    (om-beep-msg "Error: null sound buffer"))
@@ -123,28 +81,25 @@
                           (sr (sr s))
                           (ratio (coerce (/ sample-rate sr) 'double-float))
                           (out-size (round (* ratio size)))
-                          (final-buffer (om-make-pointer (* out-size nch) :type :float :clear t))
-                          res)
+                          (final-buffer (om-make-pointer (* out-size nch) :type :float :clear t)))
+                     
+                     ;;; USE LIBSAMPLERATE
+                     ;;; (resample-method values correspond to libsamplerate options)
+                     (multiple-value-bind (success newsize-or-error)
+                         (om-audio::resample-audio-buffer buffer size nch final-buffer out-size ratio resample-method)
 
-                     (cffi:with-foreign-object (lsrdata '(:struct lsr::src_data))
-                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_in) buffer)
-                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::input_frames) size)
-                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) final-buffer)
-                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
-                       (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
 
-                       (setf res (lsr::src-simple lsrdata method nch))
 
-                       (if (= res 0)
+                       (if success
                            (progn
                              ;(fli:free-foreign-object (buffer s))
                              (make-instance 'om-sound-data 
                                             :buffer final-buffer
-                                            :size (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen)
+                                            :size newsize-or-error
                                             :nch nch
                                             :sr sample-rate))
                          (progn
-                           (om-beep-msg (format nil "Libsamplerate failed to resample and returned this error : ~A. Output is the original input." (lsr::src-strerror res)))
+                           (om-beep-msg (format nil "Resample failed to resample and returned this error : ~A. Output is the original input." newsize-or-error ))
                            s)))))
                   (t
                    (om-beep-msg "The sample-rate you supplied is invalid. It must be an integer, and the output-sr/input-sr ratio must be inside [1/256, 256] range. Output is the original input.")
@@ -612,7 +567,6 @@
             (sound-mix (get-om-sound-data s1) s2 method))
 
 
-
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SEQ///////////////
 (defmethod! sound-seq ((s1 om-sound-data) (s2 om-sound-data) &optional (crossfade 0))
             :icon 100
@@ -650,7 +604,9 @@
 
                   ;(fli:free-foreign-object (buffer s1))
                   ;(fli:free-foreign-object (buffer s2))
-
+                  
+                  ;(print (list size1 size2))
+                  
                   (make-instance 'om-sound-data 
                                  :buffer final-buffer
                                  :size (round final-size nch)

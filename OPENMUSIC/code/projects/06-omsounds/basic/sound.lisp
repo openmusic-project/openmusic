@@ -22,14 +22,135 @@
 
 (in-package :om)
 
-(defclass internalsound (om-sound)   
-  ((sound-offset :accessor sound-offset)
+
+;;==============================
+;; LOW LEVEL SUPERCLASS
+;;==============================
+
+
+(defclass internalsound ()   
+  ((filename :accessor filename :initarg :filename :initform nil)
+   
+   (audio-format :accessor audio-format :initarg :audio-format :initform nil)
+   (device :accessor device :initarg :device :initform nil)
+   (number-of-samples :accessor number-of-samples :initarg :number-of-samples :initform nil)
+   (sample-rate  :accessor sample-rate :initarg :sample-rate :initform nil)
+   (number-of-channels :accessor number-of-channels :initarg :number-of-channels :initform nil)
+   (sample-size :accessor sample-size :initarg :sample-size :initform nil)
+   (data-position :accessor data-position :initarg :data-position :initform nil)
+   (loaded :accessor loaded :initform nil :initarg :loaded)
+   
+   (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
+
    (pict-sound :initform nil :accessor pict-sound)
    (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
-   (selec  :initform nil :accessor selec)))
+   ))
 
-(defclass* sound (simple-score-element internalsound) 
+(defmethod om-sound-file-name ((self internalsound))
+   (filename self))
+
+(defmethod om-sound-sample-rate ((self internalsound))
+  (when (or (loaded self) (fill-sound-info self))
+    (sample-rate self)))
+
+(defmethod om-sound-sample-size ((self internalsound))
+  (when (or (loaded self) (fill-sound-info self))
+    (sample-size self)))
+
+(defmethod om-sound-n-samples ((self internalsound))
+  (if (or (loaded self) (fill-sound-info self))
+    (number-of-samples self)
+    0))
+
+(defmethod om-sound-n-channels ((self internalsound))
+  (when (or (loaded self) (fill-sound-info self))
+    (number-of-channels self)))
+
+(defmethod om-sound-data-pos ((self internalsound))
+  (when (or (loaded self) (fill-sound-info self))
+    (data-position self)))
+
+(defmethod om-sound-format ((self internalsound))
+  (when (or (loaded self) (fill-sound-info self))
+    (audio-format self)))
+
+
+(defmethod fill-sound-info ((self internalsound))
+  (when (and (filename self) (probe-file (filename self)))
+    (print (format nil "Loading sound file : ~s" (namestring (filename self))))
+    (multiple-value-bind (format nch sr ss size skip)
+        (om-audio::om-sound-get-info (namestring (filename self)))
+      (if (and format size nch (> size 0) (> nch 0))
+          (progn 
+            (setf (audio-format self) format
+                  (number-of-samples self) size
+                  (number-of-channels self) nch
+                  (sample-size self) ss
+                  (sample-rate self) sr
+                  (data-position self) skip
+                  (sndbuffer self) nil)
+            (setf (loaded self) t)
+            ;(unless (om-supported-audio-format format)
+            ;  (print (format nil "Warning : unsupported audio format ~A" format))
+            ;  (setf (loaded sound) :error))
+            )
+        (progn 
+          (print (format nil "Error whie loading file ~s" (filename self)))
+          (setf (loaded self) :error))))
+    (loaded self)))
+
+
+;;==============================
+;; SOUND BUFFER
+;;==============================
+
+
+(defclass om-sound-data (simple-container om-cleanup-mixin)
+  ((buffer :accessor buffer :initform nil :initarg :buffer)
+   (tracknum :accessor tracknum :initform 0 :initarg :tracknum :type fixnum)
+   (size :accessor size :initform nil :initarg :size :type fixnum)
+   (nch :accessor nch :initform nil :initarg :nch :type fixnum)
+   (sr :accessor sr :initform nil :initarg :sr :type fixnum)))
+
+
+(defmethod om-cleanup ((self om-sound-data)) 
+  (when (buffer self)
+    ;(print (list "clean buffer" self))
+    (om-free-pointer (buffer self))))
+
+
+(defmethod get-obj-dur ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
+
+(defmethod extent->ms ((self om-sound-data)) (round (size self) (/ (sr self) 1000.0)))
+
+(defmethod allowed-in-maq-p ((self om-sound-data)) t)
+
+(defmethod Class-has-editor-p ((self om-sound-data)) nil)
+
+(defmethod get-om-sound-data ((self string))
+   (multiple-value-bind (buffer format format channels sr ss size skip)
+       (om-audio::om-get-sound-buffer self)
+     (make-instance 'om-sound-data 
+                    :buffer buffer
+                    :tracknum 0
+                    :size size
+                    :nch channels
+                    :sr sr)))
+
+(defmethod get-om-sound-data ((self pathname))
+  (get-om-sound-data (namestring self)))
+
+
+(defmethod set-buffer-from-file ((self internalsound) filename)
+  (setf (sndbuffer self) (get-om-sound-data self)))
+
+
+;;==============================
+;; OM CLASS
+;;==============================
+
+(defclass! sound (simple-score-element internalsound) 
   ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
@@ -50,6 +171,12 @@ NOTE: These inputs can be connected and will be evaluated even if something is c
 Press 'space' to play/stop the sound file.
 "))
 
+
+(defmethod get-om-sound-data ((self sound))
+  (and (om-sound-file-name self)
+       (get-om-sound-data (om-sound-file-name self))))
+
+
 (defparameter *default-sound-player* #-linux :libaudiostream #+linux :jackaudio)
 
 
@@ -63,7 +190,6 @@ Press 'space' to play/stop the sound file.
 
 (defmethod initialize-instance :after ((self sound) &rest args)
   (setf (Qvalue self) 1000)
-  ;;;(setf (soundpointer self) (get-sound-data self))
   )
 
 (defmethod extent ((self sound))
@@ -176,7 +302,7 @@ Press 'space' to play/stop the sound file.
   ;;; (om-print (string+ "Loading sound file : " (om-namestring name)))
   (if (probe-file name)
       (progn 
-        (setf sound (om-make-sound 'sound name))
+        (setf sound (make-instance 'sound :filename name))
         (setf (extent sound) nil))
     ;;; (om-supported-audio-format (om-sound-format thesound)))
     (progn 
@@ -274,36 +400,17 @@ Press 'space' to play/stop the sound file.
 ; OM METHODS
 ;============
 
-;;; OPTIMISER AVEC L'OUVERTURE DU FICHIER !!!
-(defmethod* sound-points-old ((self sound) (num integer) &optional channel)
-  :initvals '(nil 1000 1)
-  :indoc '("sound file" "num of points")
-  :doc "load the sound points"
-  :icon 221
-   (let ((sizedata (om-sound-sample-size self))
-           (numdat (om-sound-n-samples  self))
-           (numchan (om-sound-n-channels  self))
-           (position 0)
-           (old-pos 0)
-           (rep nil))
-     (setf channel (if channel channel 1))
-     (setf position (+ (om-sound-data-pos self) (* (round sizedata 8) (- channel 1))))
-     (setf old-pos position)
-     (if (or (> channel numchan) (> num numdat)) 
-       (om-message-dialog "Bad input values")
-       (loop for i from 0 to numdat by (round numdat num) do
-                 (let (new-point)
-                   ;(cond
-                   ; ((= sizedata 8) (setf new-point (om-read-sound-data self position 1)))
-                   ; ((= sizedata 16) (setf new-point (round (om-read-sound-data self position 2) 256))))
-                   (setf new-point (round (om-read-sound-data self position (round sizedata 8)) (ash 1 (- sizedata 8))))
-                   (when (> new-point 128)
-                       (setf new-point (- new-point 256)))
-                   (push new-point rep)
-                   )  
-                 (setf position (+ old-pos (* numchan (* (/ sizedata 8) i))))
-                 ))
-     (reverse rep)))
+
+;;; reads a sample at position position in <self>
+(defmethod read-sound-sample ((self sound) position &optional (datatype :float))
+  (multiple-value-bind (buffer format format nch sr ss size skip)
+      (om-audio::om-get-sound-buffer (filename self))
+    (when buffer
+      (let ((snddata (loop for chan from 0 to (- nch 1) collect 
+                           (om-read-ptr buffer (+ position chan) datatype))))
+        (om-free-pointer buffer)
+        snddata
+        ))))
 
 
 (defmethod* sound-points ((self sound) (num integer) &optional channel)
@@ -316,33 +423,41 @@ Press 'space' to play/stop the sound file.
      (setf channel (if channel channel 1))
      (if (or (> channel numchan) (> num numdat)) 
          (om-message-dialog "Bad input values")
-       (loop for i from 0 to numdat by (round numdat num) collect
-             (nth (1- channel) (om-read-sound-data self i :float))))
-     ))
+       (multiple-value-bind (buffer format format nch sr ss size skip)
+           (om-audio::om-get-sound-buffer (filename self))
+         (when buffer
+           (let ((data (loop for i from 0 to numdat by (round numdat num) collect
+                             (om-read-ptr buffer (+ i (1- channel)) :float))))
+             (om-free-pointer buffer)
+             data
+             )))
+       )))
 
 (defmethod! sound-dur ((sound pathname))
   :icon 221
   :initvals '(nil)
   :indoc '("a sound object or file pathname")
   :doc "Returns the duration of <sound> in seconds."
-  (let ((thesound (om-make-sound 'sound sound)))
+  (let ((thesound (make-instance 'sound :filename sound)))
     (sound-dur thesound)))
 
 (defmethod! sound-dur ((sound string))
   (when (probe-file (pathname sound))
     (sound-dur (pathname sound))))
 
-(defmethod! sound-dur ((sound sound))
-            (if (and sound (om-sound-n-samples-current sound) las-srate
-                     (> las-srate 0))
-                (float (/ (om-sound-n-samples-current sound) las-srate))
-              0))
 
+;;; NON
 ;(defmethod! sound-dur ((sound sound))
-;   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
-;            (> (om-sound-sample-rate sound) 0))
-;       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
-;     0))
+; (if (and sound (om-sound-n-samples-current sound) las-srate
+;          (> las-srate 0))
+;     (float (/ (om-sound-n-samples-current sound) las-srate))
+;   0))
+
+(defmethod! sound-dur ((sound sound))
+   (if (and sound (om-sound-n-samples sound) (om-sound-sample-rate sound)
+            (> (om-sound-sample-rate sound) 0))
+       (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
+     0))
 
 
 (defmethod! sound-dur-ms ((sound t))
@@ -412,7 +527,7 @@ Press 'space' to play/stop the sound file.
   (unless (equal (pict-sound self) :error)
     (or (pict-sound self)
         (progn
-          (setf (pict-sound self) (or (om-sound-get-pict self) :error)) 
+          (setf (pict-sound self) (or (oa::om-sound-get-pict self) :error)) 
           (if (not (eq (pict-sound self) :error)) 
               #-linux (sound-cons-pict-zoom self))
           (unless (equal (pict-sound self) :error)
@@ -421,7 +536,7 @@ Press 'space' to play/stop the sound file.
 
 ;;IF NEEDED, BUILD 3 PICTURES WITH BETTER RESOLUTION
 #-linux
-(defmethod sound-cons-pict-zoom ((self om-sound))
+(defmethod sound-cons-pict-zoom ((self sound))
   (mp:process-run-function "Building sound pictures" nil 
                            #'(lambda ()
                                (dotimes (i 3)
@@ -429,7 +544,7 @@ Press 'space' to play/stop the sound file.
                                    (setf (aref (pict-zoom self) i) (om-cons-max-snd-pict (om-sound-file-name self) (* 8000 (expt 2 i)))))))))
 
 #+linux
-(defmethod sound-cons-pict-zoom ((self om-sound))
+(defmethod sound-cons-pict-zoom ((self sound))
   (dotimes (i 3)
     (setf (aref (pict-zoom self) i) (pict-sound self))))
 

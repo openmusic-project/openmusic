@@ -85,8 +85,15 @@
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
-#+libaudiostream (AddGenFun2Pack '(sound-silence sound-mix sound-seq sound-fade sound-loop sound-cut sound-vol save-sound) *sndprocpackage*)
+(AddGenFun2Pack '(sound-silence 
+                  sound-fade sound-normalize sound-vol sound-stereo-pan
+                  sound-resample sound-mono-to-stereo sound-stereo-to-mono
+                  sound-cut sound-loop
+                  sound-mix sound-seq     
+                  save-sound) 
+                *sndprocpackage*)
 ; record-sound
+
 
 (add-ref-section (gen-ref-entries *audiopackage*))
 

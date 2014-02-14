@@ -1,202 +1,62 @@
 ;;==================================
-;;; AUDIO API
-;;==================================
-
-(in-package :om-api)
-
-;;==================================
-;;; EXPORTED SYMBOLS (OM-API)
-;;==================================
-
-(export '(
-          formatAiff 
-          formatAifs 
-          formatWave
-          om-supported-audio-format
-          om-format-name
-     
-          om-sound
-          om-make-sound
-          
-          om-sound-file-name
-          om-sound-n-samples
-          om-sound-sample-rate
-          om-sound-sample-size
-          om-sound-n-channels
-          om-sound-data-pos
-          om-sound-format
-          om-sound-sndbuffer
-          om-sound-tracknum-sys
-          om-sound-snd-slice-to-paste
-          om-sound-sndlasptr
-          om-sound-sndlasptr-current
-          om-sound-n-samples-current
-          om-sound-sndlasptr-to-play
-          om-sound-set-sndlasptr-to-play
-          om-sound-n-samples-to-play
-          om-sound-las-slicing-past-stack
-          om-sound-las-slicing-future-stack
-
-          om-sound-update-sndlasptr-current
-          om-sound-update-snd-slice-to-paste
-          
-          om-sound-update-buffer-with-path
-          om-sound-update-buffer-with-new
-
-          om-sound-update-las-infos
-          om-sound-las-using-srate
-          om-sound-las-using-srate-?
-          
-          om-cons-snd-pict
-          om-sound-cons-pict-zoom
-          om-cons-max-snd-pict
-          om-sound-get-pict
-          om-read-sound-data
-          ) :om-api)
-
-;;==================================
 ;;; AUDIO TOOLS tools (AU)
 ;;==================================
 
-(cl:defpackage "Audio"
-  (:nicknames "AU")
-   (:use common-lisp))
-
-
-(in-package :au)
-
-;;==================================
-;;; LIBSNDFILE tools
-;;==================================
-
-;(defun sndfile-get-info (path)
-;  "Returns a matrix of sound data"
-;  (cffi:with-foreign-object (sfinfo 'sf::SF_INFO)
-;    (setf (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::format) 0) ; Initialize the slots
-;    (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-;           (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::frames) :type :int))	  
-;	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo 'sf::SF_INFO 'sf::format) :type :int))
-;           (channels (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::channels))
-;	   (skip (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::seekable))
-;	   (sample-rate (cffi:foreign-slot-value sfinfo 'sf::SF_INFO 'sf::samplerate)))
-;      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-;      (values format channels sample-rate 0 frames skip))))
 
 
 
-
-(defun sndfile-get-info (path)
-  "Returns a matrix of sound data"
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
-    (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-           (frames (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames) :type :int))	  
-	   (format (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) :type :int))
-           (format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string format :base 16))))
-           (channels (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
-	   (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
-	   (sample-rate (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
-           (ss 0))
-                 (when (and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) (setf format 0))
-                 (when (and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) (setf format 1))
-                 (when (and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) (setf format 2))
-                 (when (and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) (setf format 3))
-                 ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open
-                 (when (= 1 (cadddr (cddr format_list))) (setf ss 8))
-                 (when (= 2 (cadddr (cddr format_list))) (setf ss 16))
-                 (when (= 3 (cadddr (cddr format_list))) (setf ss 24))
-                 (when (= 4 (cadddr (cddr format_list))) (setf ss 32))
-                 (when (= 5 (cadddr (cddr format_list))) (setf ss 8))
-                 (when (= 6 (cadddr (cddr format_list))) (setf ss 32))
-      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-      (values format channels sample-rate ss frames skip))))
+(in-package :om-audio)
 
 
+(export '(
+          om-sound-get-info
+          om-get-sound-buffer
+          om-save-sound-in-file
+          
+          ) :om-audio)
 
-
-(defun load-audio-data (path &optional (datatype :float))
-  "Returns a matrix of sound data"
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
-    (let* ((sndfile-handle (sf::sf_open (namestring path) sf::SFM_READ sfinfo))
-           (frames-to-read-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
-	   (frames-to-read (fli::dereference frames-to-read-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-	   (channels (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
-	   (buffer nil)
-           (frames-read nil)
-           (size -1))
-      (setq size frames-to-read)
-      (setq buffer (ignore-errors (fli:allocate-foreign-object :type datatype :nelems (* size channels) :fill 0)))
-      (when buffer 
-        (setq frames-read
-              (case datatype
-                (:float (sf::sf-readf-float sndfile-handle buffer frames-to-read))
-                (:int (sf::sf-readf-int sndfile-handle buffer frames-to-read))
-                (:short (sf::sf-readf-short sndfile-handle buffer frames-to-read))
-                (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype)))))) 
-        (sf::sf_close sndfile-handle) ; should return 0 on successful closure
-        )
-      (values buffer size channels))))
-
-
-
-(defun sf-get-buffer-and-infos-from-path (path)
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-    (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
-           (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
-           (size (fli::dereference size-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (channels-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
-           (nch (fli::dereference channels-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (sr-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
-           (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (buffer-size (* size nch))
-           (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0)))
-      (sf::sf-read-float sndfile-handle-in buffer buffer-size)
-      (sf::sf_close sndfile-handle-in)
-      (values buffer size nch sr))))
-
-(defun sf-get-infos-from-path (path)
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-    (let* ((sndfile-handle-in (sf::sf_open path sf::SFM_READ sfinfo))
-           (size-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
-           (size (fli::dereference size-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (channels-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
-           (nch (fli::dereference channels-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (sr-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
-           (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0)))
-      (sf::sf_close sndfile-handle-in)
-      (list size nch sr))))
-
-
-(defun sf-save-sound-in-file (buffer filename size nch sr resolution format)
-  (let ((res (case res
-               (8 sf::sf_format_pcm_s8)
-               (16 sf::sf_format_pcm_16)
-               (24 sf::sf_format_pcm_24)
-               (32 sf::sf_format_pcm_32)              
-               (otherwise sf::sf_format_pcm_16)))
-        (format (logior (case format 
-                          (:aiff sf::sf_format_aiff)
-                          (:wav sf::sf_format_wav)
-                          (:ogg sf::sf_format_ogg)
-                          (:flac sf::sf_format_flac)
-                          (otherwise sf::sf_format_aiff))
-                        res)))
-        
-    (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) sr)
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) nch)
-      (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) format)
-
-      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
-        (sf::sf-write-float sndfile-handle-out buffer (* nch size))
-        (sf::sf_close sndfile-handle-out)
-        )))
-  (probe-file filename))
 
 
 ;;==================================
-;;; OM tools
+;;; FILE I/O
+;;==================================
+
+
+(defun convert-filename-encoding (path)
+  #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
+  #-cocoa (namestring path))
+
+
+;;; USE LIBSNDFILE
+;;; READ
+(defun om-sound-get-info (path)
+  ;; RETURNS format n-channels sample-rate sample-size size skip
+  (sf::sndfile-get-info (convert-filename-encoding path)))
+
+(defun om-get-sound-buffer (path)
+  ;; RETURNS buffer format n-channels sample-rate sample-size size skip
+  (sf::sndfile-get-sound-buffer (convert-filename-encoding path)))
+
+(defun om-save-sound-in-file (buffer filename size nch sr resolution format)
+  (sf::sndfile-save-sound-in-file filename size nch sr resolution format))
+
+;;; USE LIBSampleRATE
+(defun resample-audio-buffer (in-buffer in-size n-channels out-buffer out-size ratio method)
+  (cffi:with-foreign-object (lsrdata '(:struct lsr::src_data))
+    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_in) in-buffer)
+    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::input_frames) in-size)
+    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) out-buffer)
+    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
+    (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
+    
+    (let ((res (lsr::src-simple lsrdata method n-channels)))
+      (if (= res 0)
+          (values T (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen))
+        (values NIL (lsr::src-strerror res)))
+      )))
+
+;;==================================
+;;; OM inbuilt audio tools
 ;;==================================
 
 (defconstant formatAiff 0)
@@ -206,6 +66,18 @@
 (defconstant formatWAVfloat 1)
 (defconstant formatAIFFint 2)
 (defconstant formatAIFFfloat 3)
+
+
+(defvar *supported-audio-formats* nil)
+
+(setf *supported-audio-formats* (list formatWAVint formatWAVfloat formatAIFFint formatAIFFfloat))
+
+(defun format-name (format)
+  (case format
+    (formatWAVint "WAVE(int)")
+    (formatWAVfloat "WAVE(float)")
+    (formatAIFFint "AIFF(int)")
+    (formatAIFFfloat "AIFF(float)")))
 
 
 (defun read-short (s)
@@ -302,7 +174,7 @@
     (setf format (read-ostype in))
     (cond
      ((not (or (string-equal "AIFF" format) (string-equal "AIFC" format)))
-      (setf *snd-error* (print "Error: file is not an AIFF file"))
+      (print "Error: file is not an AIFF file")
       (setf (audio-format self) 'ERR)
       nil)
      (t
@@ -314,7 +186,7 @@
        ((or (and (string-equal "AIFF" format)
                  (not (member ss '(8 16 24 32))))
             (and (string-equal "AIFC" format) (not (integerp ss))))
-        (setf *snd-error* (print (format nil "Error: cannot read ~A sounds in ~D bits" format ss)))
+        (print (format nil "Error: cannot read ~A sounds in ~D bits" format ss))
         nil)
        (t 
         (setf sr (read-extended in))
@@ -415,79 +287,21 @@
 ;;;======================================
 ;;; OM API
 ;;;======================================
-
 (in-package :oa)
 
-(defvar *supported-audio-formats* nil)
-;(setf *supported-audio-formats* (list au::formatAiff au::formatAifc au::formatWave))
-(setf *supported-audio-formats* (list au::formatWAVint au::formatWAVfloat au::formatAIFFint au::formatAIFFfloat))
-
-(defun om-supported-audio-format (format)
-  (member format *supported-audio-formats*))
-
-;(defun om-format-name (format)
-;  (cond 
-;    ((equal format au::formatAiff) "AIFF")
-;    ((equal format au::formatWave) "WAVE")
-;    ((equal format au::formatAifc) "AIFC")))
-
-(defun om-format-name (format)
-  (cond 
-    ((equal format au::formatWAVint) "WAVE(int)")
-    ((equal format au::formatWAVfloat) "WAVE(float)")
-    ((equal format au::formatAIFFint) "AIFF(int)")
-    ((equal format au::formatAIFFfloat) "AIFF(float)")))
-
-
-;(defun default-sample-size (format)
-;  (cond 
-;    ((equal format au::formatAiff) 16)
-;    ((equal format au::formatWave) 16)
-;    ((equal format au::formatAifc) 32)))
-
-(defun default-sample-size (format)
-  (cond 
-    ((equal format au::formatWAVint) 16)
-    ((equal format au::formatWAVfloat) 32)
-    ((equal format au::formatAIFFint) 16)
-    ((equal format au::formatAIFFfloat) 32)))
-
-;;;===================
-;;; SOUND CLASS
-;;;===================
-;(defclass om-sound ()  
-;   ((filename :accessor filename :initarg :filename :initform nil)
-;    (audio-format :accessor audio-format :initarg :audio-format :initform nil)
-;    (device :accessor device :initarg :device :initform nil)
-;    (number-of-samples :accessor number-of-samples :initarg :number-of-samples :initform nil)
-;    (sample-rate  :accessor sample-rate :initarg :sample-rate :initform nil)
-;    (number-of-channels :accessor number-of-channels :initarg :number-of-channels :initform nil)
-;    (sample-size :accessor sample-size :initarg :sample-size :initform nil)
-;    (data-position :accessor data-position :initarg :data-position :initform nil)
-;    (loaded :accessor loaded :initform nil)
-;    )
-;   )
 
 (defclass om-sound ()  
-   ((filename :accessor filename :initarg :filename :initform nil)
-    (audio-format :accessor audio-format :initarg :audio-format :initform nil)
-    (device :accessor device :initarg :device :initform nil)
-    (number-of-samples :accessor number-of-samples :initarg :number-of-samples :initform nil)
-    (sample-rate  :accessor sample-rate :initarg :sample-rate :initform nil)
-    (number-of-channels :accessor number-of-channels :initarg :number-of-channels :initform nil)
-    (sample-size :accessor sample-size :initarg :sample-size :initform nil)
-    (data-position :accessor data-position :initarg :data-position :initform nil)
-    (loaded :accessor loaded :initform nil :initarg :loaded)
+   (
 
     ;tracknum utilise par le systeme, par forcement celui de l'utilisateur
     (tracknum-sys :accessor tracknum-sys :initform -1)
     ;Savoir si ce son joue sur le player cache (pas de tracks) ou sur le visible (tracks system)
     (assoc-player :accessor assoc-player :initform nil)
     ;buffer du son actuel (pas forcement d'origine, evolue)
-    (sndbuffer :accessor sndbuffer :initarg :sndbuffer :initform nil)
+    
     ;pointeur LAS fixe (son d'origine au cas ou)
     (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
-    ;;;pointeur LAS évolutif (son actuel suite à toutes les modifications)
+    ;;;pointeur LAS evolutif (son actuel suite à toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
     (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
     (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
@@ -505,37 +319,18 @@
     ;;;If sound has been saved in temp file and re-opened, srate is now the las srate
     (las-using-srate :accessor las-using-srate :initform 0)))
 
+
+;;; ???????
+
+#+linux 
+(defmethod number-of-samples-current ((self om-sound))
+  (number-of-samples self))
+
+
 (defmethod initialize-instance :after ((self om-sound) &rest initargs)
   (setf (assoc-player self) *audio-player-hidden*)
   self)
 
-(defmethod om-sound-file-name ((self om-sound))
-   (filename self))
-
-(defmethod om-sound-sample-rate ((self om-sound))
-  (when (or (loaded self) (om-fill-sound-info self))
-    (sample-rate self)))
-
-(defmethod om-sound-sample-size ((self om-sound))
-  (when (or (loaded self) (om-fill-sound-info self))
-    (sample-size self)))
-
-(defmethod om-sound-n-samples ((self om-sound))
-  (if (or (loaded self) (om-fill-sound-info self))
-    (number-of-samples self)
-    0))
-
-(defmethod om-sound-n-channels ((self om-sound))
-  (when (or (loaded self) (om-fill-sound-info self))
-    (number-of-channels self)))
-
-(defmethod om-sound-data-pos ((self om-sound))
-  (when (or (loaded self) (om-fill-sound-info self))
-    (data-position self)))
-
-(defmethod om-sound-format ((self om-sound))
-  (when (or (loaded self) (om-fill-sound-info self))
-    (audio-format self)))
 
 (defmethod om-sound-sndbuffer ((self om-sound))
    (when (or (loaded self) (om-fill-sound-info self))
@@ -582,14 +377,7 @@
   (setf (number-of-samples-current self) (las-get-length-sound (sndlasptr-current self)))
   (setf (number-of-samples-to-play self) (las-get-length-sound (sndlasptr-to-play self))))
 
-(defmethod om-sound-update-buffer-with-path ((self om-sound) path)
-  (progn 
-    (setf (sndbuffer self) (multiple-value-bind (data size nch) 
-                               (au::load-audio-data (convert-filename-encoding path) :float)
-                             data))))
 
-(defmethod om-sound-update-buffer-with-new ((self om-sound) buffer)
-  (setf (sndbuffer self) buffer))
 
 
 (defmethod om-sound-las-slicing-past-stack ((self om-sound))
@@ -607,170 +395,19 @@
   (setf (las-using-srate self) 1))
 
 
-
-
-(defun audio-file-type (pathname)
-  (or
-   (au::wave-file-p pathname)
-   (au::aiff-file-p pathname)))
-
-(defvar *snd-error* nil)
- 
-(defun om-make-sound (class filename)
-  (make-instance class :filename filename))
-
-
-#+linux 
-(defun om-fill-sound-info (sound)
-	  (when (and sound (filename sound) (probe-file (filename sound)))
-	    (print (format nil "Loading sound file : ~s" (namestring (filename sound))))
-	    (multiple-value-bind (format nch sr ss size skip)
-		(sound-get-info (filename sound))
-	      ;;(print (list format nch sr ss size skip))
-	      (if (and format size nch (> size 0) (> nch 0))
-		  (progn 
-		    (setf (audio-format sound) format
-			  (number-of-samples sound) size
-			  (number-of-channels sound) nch
-			  (sample-size sound) ss
-			  (sample-rate sound) sr
-			  (data-position sound) skip
-			  (sndbuffer sound) nil
-			  (snd-slice-to-paste sound) nil)
-		    (setf (loaded sound) t)
-		    (unless (om-supported-audio-format format)
-		      (print (format nil "Warning : unsupported audio format ~A" format))
-		      (setf (loaded sound) :error)))
-		  (progn 
-		    (print (format nil "Error whie loading file ~s" (filename sound)))
-		    (setf (loaded sound) :error))))
-	    (loaded sound)))
-
-#+linux 
-(defmethod number-of-samples-current ((self om-sound))
-  (number-of-samples self))
-
-
-#-linux 
-(defun om-fill-sound-info (sound)
-  (when (and sound (filename sound) (probe-file (filename sound)))
-    (print (format nil "[loading sound file : ~s]" (namestring (filename sound))))
-    (multiple-value-bind (format nch sr ss size skip)
-        (sound-get-info (filename sound))
-      (if (and format size nch (> size 0) (> nch 0))
-        (progn
-          ;; (print (list nch sr ss size skip))
-          (setf las-infos (las-get-sound-infos (om-path2cmdpath (filename sound))))
-          (setf (audio-format sound) format
-                (number-of-samples sound) size
-                (number-of-channels sound) nch
-                (sample-size sound) ss
-                (sample-rate sound) sr
-                (data-position sound) skip
-                (sndbuffer sound) nil
-                (sndlasptr sound) (car las-infos)
-                (sndlasptr-current sound) (sndlasptr sound)
-                (sndlasptr-current-save sound) (sndlasptr sound)
-                (number-of-samples-current sound) (cadr las-infos)
-                (sndlasptr-to-play sound) (sndlasptr sound)
-                (number-of-samples-to-play sound) (cadr las-infos)
-                (snd-slice-to-paste sound) nil)
-          (setf (loaded sound) t)
-          (unless (om-supported-audio-format format)
-            (print (format nil "Warning : unsupported audio format ~A" format))
-            (setf (loaded sound) :error)))
-        (progn 
-          (print (format nil "Error while loading file ~s" (filename sound)))
-          (setf (loaded sound) :error))))
-    (loaded sound)))
-
-
-
-(defun convert-filename-encoding (path)
-  #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
-  #-cocoa (namestring path))
-
-
-; (setf ppp (capi::prompt-for-file ""))
-; (mapcar 'code-char (length (convert-filename-encoding ppp)))
-; (external-format::decode-external-string (external-format::encode-lisp-string (namestring ppp) :latin-1) :utf-8)
- 
-;;; a refaire bien
-
-;(defmethod om-sound-get-info (path)
-;  (let ((filename path))
-;  (multiple-value-bind (format nch sr ss size skip)
-;      (sound-get-info filename)
-;    #+libsndfile
-;    (multiple-value-bind (format2 nch2 sr2 ss2 size2 skip2)
-;        (au::sndfile-get-info (convert-filename-encoding filename))
-;      (when (> nch2 0) (setf nch nch2))
-;      (when (> sr2 0) (setf sr sr2))
-;      (when (> size2 0) (setf size size2)))
-;    (unless (and (numberp ss) (plusp ss)) (setf ss (default-sample-size format)))
-;    (values format nch sr ss size skip)
-;    )))
-
-;(defun sound-get-info (filename) 
-;  (let ((format (audio-file-type filename)))
-;    (when (om-supported-audio-format format)
-;      (multiple-value-bind (nch sr ss size skip)
-;          (cond 
-;           ((equal format au::formatWave) (au::sound-get-info-wave filename))
-;           ((or (equal format au::formatAiff) (equal format au::formatAifc)) (au::sound-get-info-aiff filename))
-;           (t nil))
-;        #+libaudiostream (let ((tmpptr (las::MakeReadSound (convert-filename-encoding filename))))
-;                           (setf size (las::GetLengthSound tmpptr))
-;                           (setf nch (las::GetChannelsSound tmpptr))
-;                           )
-;        (values format nch sr ss size skip)
-;      ))))
-
-(defun sound-get-info (filename) 
-  (let ((format_save (audio-file-type filename)))
-    (when (om-supported-audio-format format_save)
-        (multiple-value-bind (format nch sr ss size skip)
-            (au::sndfile-get-info (convert-filename-encoding filename))
-            (values format nch sr ss size skip)))))
-
-;(defparameter soundfile1 "/Users/bresson/Desktop/ngyengb/beyi-ngyengb.aiff")
-
-;(defparameter soundfile1 "/Users/bresson/Desktop/aéo/testf.aif")
-;(defparameter soundfile2 "C:\\Users\\Jean Bresson\\Desktop\\audio-problematik\\farinelli.aif")
-;(defparameter soundfile3 "C:\\Users\\Jean Bresson\\Desktop\\accord.wav")
-;(defparameter soundfile4 "C:\\Users\\Jean Bresson\\Desktop\\audio-problematik\\bonilla\\dosigliss-2.wav")
-
-;; (au::sndfile-get-info soundfile1)
-;; (sound-get-info soundfile1)
-
-; 1, 2, 44100, 32, 249856, 44
-
-;;; !!! c'est pas du tout efficace. 
-;;; en refaire une avec le fichier deja ouvert.
-;(defmethod om-read-sound-data2 ((self om-sound) position nbytes)
-;   (let ((in (open (filename self) :element-type 'unsigned-byte))
-;         (data 0))
-;       (file-position in position)
-;       (setf data (cond 
-;                   ((equal (audio-format self) au::formatWave) (au::read-wav-sample in nbytes))
-;                   ((or (equal (audio-format self) au::formatAiff) (equal (audio-format self) au::formatAifc))
-;                    (au::read-aiff-sample in nbytes))
-;                   (t 0)))
-;       (close in)
-;       data))
-
-(defmethod om-read-sound-data ((self om-sound) position &optional (datatype :short))
-  (let ((filename (convert-filename-encoding (filename self))))
-  (multiple-value-bind (data size nch) 
-      (au::load-audio-data filename datatype)
-    (let ((snddata (loop for chan from 0 to (- nch 1) collect 
-                      (fli::dereference data 
-                                        :index (+ position chan)
-                                        :type datatype))))
-      (fli::free-foreign-object data)
-      snddata
-      ))))
+(defun las-fill-sound-info (sound)
+  (let ((las-infos (las-get-sound-infos (om-path2cmdpath (filename sound)))))
+    (setf (sndlasptr sound) (car las-infos)
+          (sndlasptr-current sound) (sndlasptr sound)
+          (sndlasptr-current-save sound) (sndlasptr sound)
+          (number-of-samples-current sound) (cadr las-infos)
+          (sndlasptr-to-play sound) (sndlasptr sound)
+          (number-of-samples-to-play sound) (cadr las-infos)
+          (snd-slice-to-paste sound) nil)
+    sound))
     
+
+
 
 ;;;===================================
 ;;; PICTURE A PARTIR DU SOUND FILE
@@ -788,6 +425,8 @@
            nil))))
 
 ;;; exported function
+(defmethod om-sound-get-pict ((self t)) nil)
+
 (defmethod om-sound-get-pict ((self om-sound))
   (when (and (not (equal :error (loaded self)))
              (or (loaded self) (ignore-errors (om-fill-sound-info self))))
@@ -797,10 +436,9 @@
 ;;;CONS SND PICT WITH MAX DETECTION
 (defun om-cons-max-snd-pict (sndpath nbpix) 
   (let* ((pict nil)) 
-    (multiple-value-bind (data size nch) 
-        (ignore-errors
-          (au::load-audio-data (convert-filename-encoding sndpath) :float))
-
+    (multiple-value-bind (data format format nch sr ss size skip)
+        (om-get-sound-buffer self)
+      
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w nbpix) ; taille max de l'image en pixels
                  (pict-h 256)
@@ -848,9 +486,8 @@
 
 (defun om-cons-snd-pict (sndpath)
   (let* ((pict nil)) 
-    (multiple-value-bind (data size nch) 
-        (ignore-errors
-          (au::load-audio-data (convert-filename-encoding sndpath) :float))
+    (multiple-value-bind (data format format nch sr ss size skip)
+        (om-get-sound-buffer self)    
       ;(print (list sndpath size nch))
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w (min #+win32 2000 #-win32 4000 size))  ; taille max de l'image en pixels

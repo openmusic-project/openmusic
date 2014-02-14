@@ -247,10 +247,8 @@
 
   ;;; Allocate the sndbuffer (which is used to draw the waveform dynamically)
   (when (om-sound-file-name (object self))
-    (om-sound-update-buffer-with-new (object self) (multiple-value-bind (data size nch) 
-                                                       (au::load-audio-data (oa::convert-filename-encoding (om-sound-file-name (object self))) :float) 
-                                                     (let ((sndbuffer data)) sndbuffer))))
-
+    (set-buffer-from-file (object self) (om-sound-file-name (object self))))
+ 
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
                                    :scrollbars :h
@@ -451,7 +449,7 @@
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1b*)
                    (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
-                                        (format nil "Format: ~D" (or (om-format-name (om-sound-format (object self))) "--"))
+                                        (format nil "Format: ~D" (or (om-audio::format-name (om-sound-format (object self))) "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*)
                    (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
@@ -772,12 +770,11 @@
     (if (and (om-sound-file-name (object (om-view-container self)))
              (om-sound-sample-rate (object (om-view-container self)))) ;;; TEMP : crashes if there is a name but no actual sound
         (let* ((thesound (object (om-view-container self)))
-               (sr (if (om-sound-las-using-srate-? thesound) 
-                       las-srate
-                     (om-sound-sample-rate thesound)))
-               (size (om-sound-n-samples-current thesound))
-               (dur (or (and (and sr size)
-                             (/ size sr)) 0))
+               (sr (om-sound-sample-rate thesound))
+               ; (sr (if (om-sound-las-using-srate-? thesound) las-srate (om-sound-sample-rate thesound)))
+               (size (om-sound-n-samples thesound))
+               ;(size (om-sound-n-samples-current thesound))
+               (dur (or (and sr size (/ size sr)) 0))
                (dur-ms (round size (/ sr 1000.0)))
                (total-width (om-point-h (om-field-size self)))
                (thepicture (and dur 
@@ -786,7 +783,6 @@
                                   (sound-get-pict thesound))))
                (window-h-size (om-point-h (om-view-size self)))
                (window-v-size (om-point-v (om-view-size self)))
-               (stream-buffer (om-sound-sndbuffer thesound))
                (system-etat (get-system-etat self))
                (xmin (car (rangex self)))
                (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
@@ -839,7 +835,7 @@
          (timestep (/ (/ sr 1000.0) smpstep))
          (nch (om-sound-n-channels thesound))
          (window-v-size (om-point-v (om-view-size self)))
-         (stream-buffer (om-sound-sndbuffer thesound))
+         (stream-buffer (sndbuffer thesound))
          (system-etat (get-system-etat self))
          (xmin (car (rangex self)))
          (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
