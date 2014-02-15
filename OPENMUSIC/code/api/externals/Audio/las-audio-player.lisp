@@ -608,3 +608,171 @@
     (let ()
       (setf (sndlasptr-current snd) (sndlasptr-current-save snd))
       (setf (current-is-original snd) 0))))
+
+
+
+
+;;;===================================
+
+;;;======================================
+;;; OM API
+;;;======================================
+(in-package :oa)
+
+
+(defclass om-sound ()  
+   (
+
+    ;tracknum utilise par le systeme, par forcement celui de l'utilisateur
+    (tracknum-sys :accessor tracknum-sys :initform -1)
+    ;Savoir si ce son joue sur le player cache (pas de tracks) ou sur le visible (tracks system)
+    (assoc-player :accessor assoc-player :initform nil)
+    ;buffer du son actuel (pas forcement d'origine, evolue)
+    
+    ;pointeur LAS fixe (son d'origine au cas ou)
+    (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
+    ;;;pointeur LAS evolutif (son actuel suite à toutes les modifications)
+    (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
+    (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
+    (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-current :accessor number-of-samples-current :initform nil)
+    ;;;pointeur LAS envoyé à la lecture (dérivé de current)
+    (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
+    ;;;Nombre de samples dans le pointeur courant
+    (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)
+    ;;;pointeur LAS servant de "presse papier"
+    (snd-slice-to-paste :accessor snd-slice-to-paste :initarg :snd-slice-to-paste :initform nil)
+    ;;;Undo/Redo pool
+    (las-slicing-past-stack :accessor las-slicing-past-stack :initform (make-hash-table))
+    (las-slicing-future-stack :accessor las-slicing-future-stack :initform (make-hash-table))
+    ;;;If sound has been saved in temp file and re-opened, srate is now the las srate
+    (las-using-srate :accessor las-using-srate :initform 0)))
+
+
+;;; ???????
+
+#+linux 
+(defmethod number-of-samples-current ((self om-sound))
+  (number-of-samples self))
+
+
+(defmethod initialize-instance :after ((self om-sound) &rest initargs)
+  (setf (assoc-player self) *audio-player-hidden*)
+  self)
+
+
+(defmethod om-sound-sndbuffer ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndbuffer self)))
+
+(defmethod om-sound-tracknum-sys ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (tracknum-sys self)))
+
+(defmethod om-sound-sndlasptr ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr self)))
+
+(defmethod om-sound-sndlasptr-current ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr-current self)))
+
+(defmethod om-sound-n-samples-current ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-current self)))
+
+(defmethod om-sound-sndlasptr-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (sndlasptr-to-play self)))
+
+(defmethod om-sound-set-sndlasptr-to-play ((self om-sound) ptr)
+    (setf (sndlasptr-to-play self) ptr))
+
+(defmethod om-sound-n-samples-to-play ((self om-sound))
+  (when (or (loaded self) (om-fill-sound-info self))
+    (number-of-samples-to-play self)))
+
+(defmethod om-sound-snd-slice-to-paste ((self om-sound))
+   (when (or (loaded self) (om-fill-sound-info self))
+    (snd-slice-to-paste self)))
+
+(defmethod om-sound-update-sndlasptr-current ((self om-sound) pointer)
+  (setf (sndlasptr-current self) pointer))
+
+(defmethod om-sound-update-snd-slice-to-paste ((self om-sound) pointer)
+  (setf (snd-slice-to-paste self) pointer))
+
+(defmethod om-sound-update-las-infos ((self om-sound))
+  (setf (number-of-samples-current self) (las-get-length-sound (sndlasptr-current self)))
+  (setf (number-of-samples-to-play self) (las-get-length-sound (sndlasptr-to-play self))))
+
+
+
+
+(defmethod om-sound-las-slicing-past-stack ((self om-sound))
+  (las-slicing-past-stack self))
+
+(defmethod om-sound-las-slicing-future-stack ((self om-sound))
+  (las-slicing-future-stack self))
+
+(defmethod om-sound-las-using-srate-? ((self om-sound))
+  (if (= 0 (las-using-srate self))
+      nil
+    t))
+
+(defmethod om-sound-las-using-srate ((self om-sound))
+  (setf (las-using-srate self) 1))
+
+
+(defun las-fill-sound-info (sound)
+  (let ((las-infos (las-get-sound-infos (om-path2cmdpath (filename sound)))))
+    (setf (sndlasptr sound) (car las-infos)
+          (sndlasptr-current sound) (sndlasptr sound)
+          (sndlasptr-current-save sound) (sndlasptr sound)
+          (number-of-samples-current sound) (cadr las-infos)
+          (sndlasptr-to-play sound) (sndlasptr sound)
+          (number-of-samples-to-play sound) (cadr las-infos)
+          (snd-slice-to-paste sound) nil)
+    sound))
+    
+
+;;; COCOA : read loop with LibAudioStream (plante sur windows)
+#+cocoa
+(defun las-cons-snd-pict (sndpath)
+  (let* ((snd (las::makereadsound (namestring sndpath)))
+         (pict nil)
+         (pict-w 5000) ; taille max de l'image en pixels
+         (pict-h 256)
+         (numsamples (las::GetLengthSound snd))
+         (numchannels (las::GetChannelsSound snd)))
+    (unless (or (zerop numsamples) (zerop numchannels))
+      (let* ((buffer-size (ceiling numsamples pict-w)) ; nb samples dans le buffer
+             (pict-w (round numsamples buffer-size)) ;nb exact de pixels
+             (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
+             (offset-y (round channels-h 2)) ; draw from middle of each channels
+             (sndr (las::MakeRendererSound snd))
+             (bytesread buffer-size)
+             (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+        (mp::with-interrupts-blocked 
+          (setf pict 
+                (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                  (loop for i from 0 to (- numchannels 1) do  
+                        (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                  (las::ResetSound snd)
+                  (om-with-fg-color *curstream* *om-dark-gray-color*
+                    (loop for i from 0 to (- pict-w 1) 
+                          while (= bytesread buffer-size) do 
+                          (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
+                          (loop for k from 0 to (- numchannels 1) do
+                                (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
+                                (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
+                                (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+                                               (+ offset-y (* k channels-h) pixpoint))  
+                                )
+                          ))
+                  ))
+          )
+        (om-free-pointer buffer)))
+    pict))
+

@@ -92,10 +92,11 @@
 	  om-find-process
           ;om-select-process
           om-select-program
+
           om-run-process
           om-kill-process
           om-with-priority
-          
+          om-with-new-gc
           om-without-interrupts
 
           om-error-handle-funcall
@@ -565,6 +566,12 @@
 (defmacro om-run-process (name func &rest args)
    `(mp:process-run-function ',name '(:priority ,(or *current-priority* 10))
                              (if (functionp ,func) ,func ',func) ,.args))
+
+(defmacro om-with-new-gc (&body body)
+  #+cocoa `(objc:with-autorelease-pool nil ,@body)
+  #-cocoa `(progn ,@body))
+
+
 
 (defun om-kill-process (process)
    (mp:process-kill process))

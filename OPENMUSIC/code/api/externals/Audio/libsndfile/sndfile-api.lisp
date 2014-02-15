@@ -2,6 +2,36 @@
 (in-package :sf)
 
 
+(defconstant formatAiff 0)
+(defconstant formatWave 1)
+(defconstant formatAifc 2)
+(defconstant formatWAVint 0)
+(defconstant formatWAVfloat 1)
+(defconstant formatAIFFint 2)
+(defconstant formatAIFFfloat 3)
+
+
+(defun decode-format (sndfile-format)
+ (let* ((format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string sndfile-format :base 16))))
+        (ff (cond ((and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 0)
+                  ((and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 1)
+                  ((and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 2)
+                  ((and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 3)
+                  (t 0)))
+        (ss (cond ((= 1 (cadddr (cddr format_list))) 8)
+                  ((= 2 (cadddr (cddr format_list))) 16)
+                  ((= 3 (cadddr (cddr format_list))) 24)
+                  ((= 4 (cadddr (cddr format_list))) 32)
+                  ((= 5 (cadddr (cddr format_list))) 8)
+                  ((= 6 (cadddr (cddr format_list))) 32)
+                  (t 0)))
+        (name "xxx"))
+   (values ff ss name)))
+  
+;(cadddr (cddr (map 'list #'digit-char-p (prin1-to-string (write-to-string SF_FORMAT_WAV :base 16)))))
+;(write-to-string 255 :base 16)
+;(logior (ash sf::sf_format_aiff 1) (ash b 8) c)
+
 ;;; READ
 (defun sndfile-get-info (path)
   "Returns info about the soudn file (not the actual data)."
@@ -16,24 +46,12 @@
            (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0))
            (format-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::format))
            (format (fli::dereference format-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string format :base 16))))     
-	   (ff (cond ((and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 0)
-                         ((and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 1)
-                         ((and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 2)
-                         ((and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 3)
-                         (t 0)))
-           (ss (cond ((= 1 (cadddr (cddr format_list))) 8)
-                     ((= 2 (cadddr (cddr format_list))) 16)
-                     ((= 3 (cadddr (cddr format_list))) 24)
-                     ((= 4 (cadddr (cddr format_list))) 32)
-                     ((= 5 (cadddr (cddr format_list))) 8)
-                     ((= 6 (cadddr (cddr format_list))) 32)
-                     (t 0)))
-           (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
-           )
-      ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open 
-      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-      (values ff channels sr ss size skip))))
+           (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable)))
+      (multiple-value-bind (ff ss nn)
+          (decode-format format)
+        ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open 
+        (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
+        (values ff channels sr ss size skip)))))
 
 
 (defun sndfile-get-sound-buffer (path)
@@ -50,19 +68,6 @@
            (sr (fli::dereference sr-ptr :type :int :index #+powerpc 1 #-powerpc 0))
            (format-ptr (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::format))
            (format (fli::dereference format-ptr :type :int :index #+powerpc 1 #-powerpc 0))
-           (format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string format :base 16))))     
-	   (ff (cond ((and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 0)
-                         ((and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 1)
-                         ((and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 2)
-                         ((and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 3)
-                         (t 0)))
-           (ss (cond ((= 1 (cadddr (cddr format_list))) 8)
-                     ((= 2 (cadddr (cddr format_list))) 16)
-                     ((= 3 (cadddr (cddr format_list))) 24)
-                     ((= 4 (cadddr (cddr format_list))) 32)
-                     ((= 5 (cadddr (cddr format_list))) 8)
-                     ((= 6 (cadddr (cddr format_list))) 32)
-                     (t 0)))
            (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
            (buffer-size (* size channels))
            (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0))
@@ -73,9 +78,10 @@
               (:int (sf::sf-readf-int sndfile-handle buffer buffer-size))
               (:short (sf::sf-readf-short sndfile-handle buffer buffer-size))
               (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype)))))))
-      
-      (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-      (values buffer format channels sr ss size skip)))))
+      (multiple-value-bind (ff ss nn)
+          (decode-format format)
+        (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
+        (values buffer format channels sr ss size skip))))))
 
 
 

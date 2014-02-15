@@ -83,7 +83,7 @@
 ;;; sound
 ;;; removed : convert-filename-encoding
 (defmethod om-read-sound ((self om-sound) &optional start end)
-  (om-sound-protect self
+  (ignore-errors
     (let ((s (if (and start end)
                  (las::MakeRegionSound (namestring (filename self)) (round (* start (sample-rate self))) (round (* end (sample-rate self))))
                 (las::MakeReadSound (namestring (filename self))))))

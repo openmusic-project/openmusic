@@ -469,9 +469,104 @@ Press 'space' to play/stop the sound file.
 
 
 
-;=======
-; BOX 
-;=======
+;;;===================================
+;;; PICTURE A PARTIR DU SOUND FILE
+;;;===================================
+
+(defmacro om-sound-protect (sound &body body)
+  `(if (equal (loaded ,sound) :error)
+       (progn 
+         (print (format nil "sound ~s is disabled because of previous errors" (namestring (filename ,sound))))
+         nil)
+     (or (ignore-errors ,@body)
+         (progn
+           (print (format nil "error in sound ~s" (namestring (filename ,sound))))
+           (setf (loaded ,sound) :error)
+           nil))))
+
+
+;;;CONS SND PICT WITH MAX DETECTION
+(defun create-snd-pict (sndpath nbpix) 
+  (let ((pict nil)) 
+    (multiple-value-bind (data format format nch sr ss size skip)
+        (om-audio::om-get-sound-buffer self)
+      (if (and (> size 0) (> nch 0))
+          (let* ((pict-w nbpix) ; taille max de l'image en pixels
+                 (pict-h 256)
+                 (step (ceiling size pict-w))
+                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
+                 (offset-y (round channels-h 2))); draw from middle of each channels-h
+            (if data
+                (let ((tmpArray (make-array step :element-type 'single-float))
+                      (smpArray (make-array (list nch pict-w) :element-type 'single-float))
+                      pixIndx
+                      smpIndx
+                      pixpoint)
+                  (dotimes (n nch)
+                    (setf smpIndx n
+                          pixIndx 0)
+                    (dotimes (i size)
+                      (setf (aref tmpArray (mod i step)) (om-read-ptr data :index smpIndx :type :float))
+                      (incf smpIndx nch)
+                      (when (= (mod i step) 0)
+                        (setf (aref smpArray n pixIndx) (reduce #'max tmpArray))
+                        (incf pixIndx))))
+                  (setf pict 
+                        (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                          (dotimes (i nch)  
+                            (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                          (om-with-fg-color *curstream* *om-gray-color*
+                            (dotimes (c nch)
+                              (dotimes (i pixIndx)
+                                (setf pixpoint (round (* offset-y (aref smpArray c i))))
+                                (om-draw-line
+                                 i (+ offset-y (* c channels-h) pixpoint)
+                                 i (+ offset-y (* c channels-h) (- pixpoint))))))))
+                  (om-free-pointer data)
+                  pict)
+              (setf pict 
+                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                      (dotimes (i nch)  
+                        (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                        (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                          (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
+                      ))))
+        nil
+        ))))
+
+
+(defmethod sound-get-pict ((self sound)) 
+  (unless (equal (pict-sound self) :error)
+    (or (pict-sound self)
+        (when (and (not (equal :error (loaded self)))
+                   (or (loaded self) (ignore-errors (om-fill-sound-info self))))
+          (setf (pict-sound self) 
+                (or (om-sound-protect self (create-snd-pict (filename self) 5000)) :error))
+          (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
+            #-linux (sound-cons-pict-zoom self)
+            (pict-sound self)))
+        )))
+        
+
+;;IF NEEDED, BUILD 3 PICTURES WITH BETTER RESOLUTION
+#-linux
+(defmethod sound-cons-pict-zoom ((self sound))
+  (om-run-process "Building sound pictures" 
+                  #'(lambda ()
+                      (dotimes (i 3)
+                        (om-with-new-gc
+                         (setf (aref (pict-zoom self) i) (create-snd-pict (om-sound-file-name self) (* 8000 (expt 2 i)))))))))
+
+#+linux
+(defmethod sound-cons-pict-zoom ((self sound))
+  (dotimes (i 3)
+    (setf (aref (pict-zoom self) i) (pict-sound self))))
+
+
+;;;================
+;;; SOUND BOX 
+;;;================
 (defmethod good-val-p? ((self sound)) t)
 
 (defmethod valid-sound-p ((self sound))
@@ -519,39 +614,10 @@ Press 'space' to play/stop the sound file.
     (om-close-window (om-view-window (editorFrame self))))
     (call-next-method))
 
-;=======
-; PICT
-;=======
 
-(defmethod sound-get-pict ((self sound)) 
-  (unless (equal (pict-sound self) :error)
-    (or (pict-sound self)
-        (progn
-          (setf (pict-sound self) (or (oa::om-sound-get-pict self) :error)) 
-          (if (not (eq (pict-sound self) :error)) 
-              #-linux (sound-cons-pict-zoom self))
-          (unless (equal (pict-sound self) :error)
-            (pict-sound self))))))
-
-
-;;IF NEEDED, BUILD 3 PICTURES WITH BETTER RESOLUTION
-#-linux
-(defmethod sound-cons-pict-zoom ((self sound))
-  (mp:process-run-function "Building sound pictures" nil 
-                           #'(lambda ()
-                               (dotimes (i 3)
-                                 (objc:with-autorelease-pool nil
-                                   (setf (aref (pict-zoom self) i) (om-cons-max-snd-pict (om-sound-file-name self) (* 8000 (expt 2 i)))))))))
-
-#+linux
-(defmethod sound-cons-pict-zoom ((self sound))
-  (dotimes (i 3)
-    (setf (aref (pict-zoom self) i) (pict-sound self))))
-
-
-(defmethod sound-get-new-pict ((self sound) path) 
-  (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
-  (pict-sound self))
+;(defmethod sound-get-new-pict ((self sound) path) 
+;  (setf (pict-sound self) (or (om-sound-get-new-pict self path) :error))
+;  (pict-sound self))
   
 (defmethod draw-mini-view ((self t) (val sound))
   (draw-obj-in-rect val 0 (w self) 0 (h self) (view-get-ed-params self) self))

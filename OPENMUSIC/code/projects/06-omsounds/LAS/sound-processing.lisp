@@ -32,8 +32,6 @@
 ;;(defmethod get-editor-class ((self sound-data)) 'soundEditor)
 (defmethod Class-has-editor-p ((self sound-data)) nil)
 
-(defmethod sound-get-pict ((self sound-data))
-   (om-cons-snd-pict (ptr self)))
 
 (defmethod! get-sound-data ((self sound))
   :icon 221
