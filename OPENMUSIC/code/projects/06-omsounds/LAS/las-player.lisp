@@ -144,7 +144,7 @@
     (filename :accessor filename :initform nil :initarg :filename)
     (ref :accessor ref :initform nil :initarg :ref)
     
-    (loaded :accessor loaded :initform nil)
+    (loaded :accessor loaded :initform nil :initarg :loaded)
 
     ;tracknum utilise par le systeme, par forcement celui de l'utilisateur
     (tracknum-sys :accessor tracknum-sys :initform -1)

@@ -46,7 +46,7 @@
    (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
 
-   (player-data :accessor player-data :initform nil)
+   (player-data :accessor player-data :initform nil :initarg :player-data)
    ))
 
 (defmethod om-sound-file-name ((self internalsound))

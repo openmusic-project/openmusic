@@ -19,8 +19,8 @@
                         for i = 1 then (+ i 1) collect 1)))
     (WITH-OPEN-FILE (out path :direction :output  
                        :if-does-not-exist :create :if-exists :supersede) 
-      (format out "roll (clefs ~{ ~D ~}) ~%" clefs)
-      (format out "score (midichannels ~{ ~D ~}) ~%" channels)
+      (format out "score (clefs ~{ ~D ~}) ~%" clefs)
+      (format out "(midichannels ~{ ~D ~}) ~%" channels)
       (loop for item in (voices self) do
             (trans-dany item out)))))
 
@@ -403,6 +403,7 @@ Exports <self> to bach format.
 "
   (let* ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
                                                        :prompt "New bach file"
+                                                       :types '("Text File" "*.txt")
                                                        ))))
     (when pathname
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
