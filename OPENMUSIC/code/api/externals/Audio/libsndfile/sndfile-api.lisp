@@ -25,7 +25,13 @@
                   ((= 5 (cadddr (cddr format_list))) 8)
                   ((= 6 (cadddr (cddr format_list))) 32)
                   (t 0)))
-        (name "xxx"))
+        (name (case ff
+                (0 "Wav(int)")
+                (1 "Wav(float)")
+                (2 "AIFF(int)")
+                (3 "AIFF(float)")
+                (otherwise "Unknown")
+                )))
    (values ff ss name)))
   
 ;(cadddr (cddr (map 'list #'digit-char-p (prin1-to-string (write-to-string SF_FORMAT_WAV :base 16)))))
@@ -51,7 +57,7 @@
           (decode-format format)
         ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open 
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-        (values ff channels sr ss size skip)))))
+        (values nn channels sr ss size skip)))))
 
 
 (defun sndfile-get-sound-buffer (path)
@@ -81,7 +87,7 @@
       (multiple-value-bind (ff ss nn)
           (decode-format format)
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-        (values buffer format channels sr ss size skip))))))
+        (values buffer nn channels sr ss size skip))))))
 
 
 

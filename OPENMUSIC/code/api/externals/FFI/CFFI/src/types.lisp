@@ -124,6 +124,7 @@
 
 (define-modify-macro incf-pointer (&optional (offset 1)) inc-pointer)
 
+
 (defun mem-ref (ptr type &optional (offset 0))
   "Return the value of TYPE at OFFSET bytes from PTR. If TYPE is aggregate,
 we don't return its 'value' but a pointer to it, which is PTR itself."

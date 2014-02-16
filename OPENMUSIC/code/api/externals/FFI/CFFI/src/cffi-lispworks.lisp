@@ -185,6 +185,7 @@ be stack allocated if supported by the implementation."
     (setf ptr (inc-pointer ptr offset)))
   (fli:dereference ptr :type (convert-foreign-type type)))
 
+
 ;; Lispworks 5.0 on 64-bit platforms doesn't have [u]int64 support in
 ;; FOREIGN-TYPED-AREF.  That was implemented in 5.1.
 #+(and lispworks-64bit lispworks5.0)

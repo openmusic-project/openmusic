@@ -14,6 +14,7 @@
           om-save-sound-in-file
           
           resample-audio-buffer
+
           ) :om-audio)
 
 
@@ -39,7 +40,7 @@
   (sf::sndfile-get-sound-buffer (convert-filename-encoding path)))
 
 (defun om-save-sound-in-file (buffer filename size nch sr resolution format)
-  (sf::sndfile-save-sound-in-file filename size nch sr resolution format))
+  (sf::sndfile-save-sound-in-file buffer filename size nch sr resolution format))
 
 ;;; USE LIBSampleRATE
 (defun resample-audio-buffer (in-buffer in-size n-channels out-buffer out-size ratio method)
@@ -56,14 +57,6 @@
         (values NIL (lsr::src-strerror res)))
       )))
 
-
-
-(defun format-name (format)
-  (case format
-    (formatWAVint "WAVE(int)")
-    (formatWAVfloat "WAVE(float)")
-    (formatAIFFint "AIFF(int)")
-    (formatAIFFfloat "AIFF(float)")))
 
 
 #|
@@ -170,7 +163,6 @@
     (cond
      ((not (or (string-equal "AIFF" format) (string-equal "AIFC" format)))
       (print "Error: file is not an AIFF file")
-      (setf (audio-format self) 'ERR)
       nil)
      (t
       (aiff-look-for-chunck in "COMM")

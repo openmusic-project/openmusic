@@ -29,7 +29,7 @@
          (new-sr (get-pref modulepref :audio-sr))
          (new-res (get-pref modulepref :audio-res)))
     (setf *sys-console* (get-pref modulepref :sys-console))
-    (when(get-pref modulepref :audio-format)
+    (when (get-pref modulepref :audio-format)
       (setf *def-snd-format* (get-pref modulepref :audio-format)))
     (when new-sr
       (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))

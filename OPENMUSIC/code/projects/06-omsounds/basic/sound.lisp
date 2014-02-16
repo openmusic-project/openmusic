@@ -96,7 +96,7 @@
             ;  (setf (loaded sound) :error))
             )
         (progn 
-          (print (format nil "Error whie loading file ~s" (filename self)))
+          (print (format nil "Error loading file ~s" (filename self)))
           (setf (loaded self) :error))))
     (loaded self)))
 
@@ -129,7 +129,7 @@
 (defmethod Class-has-editor-p ((self om-sound-data)) nil)
 
 (defmethod get-om-sound-data ((self string))
-   (multiple-value-bind (buffer format format channels sr ss size skip)
+   (multiple-value-bind (buffer format channels sr ss size skip)
        (om-audio::om-get-sound-buffer self)
      (make-instance 'om-sound-data 
                     :buffer buffer
@@ -403,7 +403,7 @@ Press 'space' to play/stop the sound file.
 
 ;;; reads a sample at position position in <self>
 (defmethod read-sound-sample ((self sound) position &optional (datatype :float))
-  (multiple-value-bind (buffer format format nch sr ss size skip)
+  (multiple-value-bind (buffer format nch sr ss size skip)
       (om-audio::om-get-sound-buffer (filename self))
     (when buffer
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
@@ -485,11 +485,13 @@ Press 'space' to play/stop the sound file.
            nil))))
 
 
+; (create-snd-pict "/Users/bresson/_SHARED-FILES/WORKSPACES/my-workspace/in-files/africa.aiff" 1000)
+
 ;;;CONS SND PICT WITH MAX DETECTION
 (defun create-snd-pict (sndpath nbpix) 
   (let ((pict nil)) 
-    (multiple-value-bind (data format format nch sr ss size skip)
-        (om-audio::om-get-sound-buffer self)
+    (multiple-value-bind (data format nch sr ss size skip)
+        (om-audio::om-get-sound-buffer sndpath)
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w nbpix) ; taille max de l'image en pixels
                  (pict-h 256)
@@ -506,7 +508,10 @@ Press 'space' to play/stop the sound file.
                     (setf smpIndx n
                           pixIndx 0)
                     (dotimes (i size)
-                      (setf (aref tmpArray (mod i step)) (om-read-ptr data :index smpIndx :type :float))
+                      (setf (aref tmpArray (mod i step)) 
+                            (fli:dereference data :type :float :index smpIndx)
+                            ;(om-read-ptr data smpIndx :float)  ;;; much slower...
+                            )
                       (incf smpIndx nch)
                       (when (= (mod i step) 0)
                         (setf (aref smpArray n pixIndx) (reduce #'max tmpArray))
@@ -515,9 +520,10 @@ Press 'space' to play/stop the sound file.
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (dotimes (i nch)  
                             (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
-                          (om-with-fg-color *curstream* *om-gray-color*
+                          (om-with-fg-color nil *om-gray-color*
                             (dotimes (c nch)
                               (dotimes (i pixIndx)
+                                ;(print (aref smpArray c i))
                                 (setf pixpoint (round (* offset-y (aref smpArray c i))))
                                 (om-draw-line
                                  i (+ offset-y (* c channels-h) pixpoint)
@@ -528,7 +534,7 @@ Press 'space' to play/stop the sound file.
                     (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                       (dotimes (i nch)  
                         (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                        (om-with-fg-color *curstream* (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                        (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
                           (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
                           (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
                       ))))
@@ -540,11 +546,12 @@ Press 'space' to play/stop the sound file.
   (unless (equal (pict-sound self) :error)
     (or (pict-sound self)
         (when (and (not (equal :error (loaded self)))
-                   (or (loaded self) (ignore-errors (om-fill-sound-info self))))
+                   (or (loaded self) (ignore-errors (fill-sound-info self))))
           (setf (pict-sound self) 
-                (or (om-sound-protect self (create-snd-pict (filename self) 5000)) :error))
+                (or ;(om-sound-protect self (create-snd-pict (filename self) 5000))
+                    (create-snd-pict (filename self) 5000)
+                    :error))
           (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
-            #-linux (sound-cons-pict-zoom self)
             (pict-sound self)))
         )))
         
