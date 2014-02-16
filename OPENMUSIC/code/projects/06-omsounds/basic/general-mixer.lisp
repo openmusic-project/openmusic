@@ -30,7 +30,6 @@
 
 ;;; TODO:  find something more "modular" to determine the number of chanels
 ;; for now: takes the n-channels as defined in LAS...
-#+libaudiostream (setf *audio-n-channels* las::las-channels)
 
 ; (init-mixer)
 

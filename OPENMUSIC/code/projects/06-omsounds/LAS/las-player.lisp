@@ -41,6 +41,9 @@
 (defconstant las-renderer #+macosx las::kCoreAudioRenderer #-macosx las::kPortAudioRenderer)
 (defconstant las-thread 1)
 
+;;; VARIABLE FROM OM AUDIO MIXER
+(setf *audio-n-channels* las-channels)
+
 ;Define callbacks when channels stop
 (cffi:defcallback channel-stop-callback-hidden :void ((chan :pointer))
   (let* ((status-list *audio-player-hidden-tracks-info*)
@@ -826,10 +829,10 @@
 ;;; called when a box or editor attached to player is removed/closed
 (defmethod player-cleanup ((player (eql :libaudiostream)) snd)
   (let* ((status-list (if (= (tracknum snd) 0)
-                          oa::*audio-player-hidden-tracks-info*
-                        oa::*audio-player-visible-tracks-info*))
-         (chan (if (eq player oa::*audio-player-hidden*)
-                   (oa::tracknum-sys (player-data snd))
+                          *audio-player-hidden-tracks-info*
+                        *audio-player-visible-tracks-info*))
+         (chan (if (eq player *audio-player-hidden*)
+                   (tracknum-sys (player-data snd))
                  (tracknum snd)))
          (loadedsnd (car (gethash chan status-list)))
          (status (cadr (gethash chan status-list))))
