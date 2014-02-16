@@ -26,11 +26,11 @@
 (add-player-for-object 'mixer #+(or macosx win32) '(:libaudiostream) #+linux '(:jackaudio))
 
 (defparameter *audio-mixer* nil)
-(defparameter *audio-n-channels* nil)
+(defparameter *audio-n-channels* 16)
 
 ;;; TODO:  find something more "modular" to determine the number of chanels
 ;; for now: takes the n-channels as defined in LAS...
-(setf *audio-n-channels* las-channels)
+#+libaudiostream (setf *audio-n-channels* las::las-channels)
 
 ; (init-mixer)
 
