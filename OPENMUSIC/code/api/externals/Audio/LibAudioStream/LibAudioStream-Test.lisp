@@ -230,3 +230,46 @@
 (CloseAudioPlayer player)
 
 
+
+#|
+;;; COCOA : read loop with LibAudioStream (plante sur windows)
+#+cocoa
+(defun las-cons-snd-pict (sndpath)
+  (let* ((snd (las::makereadsound (namestring sndpath)))
+         (pict nil)
+         (pict-w 5000) ; taille max de l'image en pixels
+         (pict-h 256)
+         (numsamples (las::GetLengthSound snd))
+         (numchannels (las::GetChannelsSound snd)))
+    (unless (or (zerop numsamples) (zerop numchannels))
+      (let* ((buffer-size (ceiling numsamples pict-w)) ; nb samples dans le buffer
+             (pict-w (round numsamples buffer-size)) ;nb exact de pixels
+             (channels-h (round 256 numchannels)) ; imag height = 256, channels-h = height of 1 channel
+             (offset-y (round channels-h 2)) ; draw from middle of each channels
+             (sndr (las::MakeRendererSound snd))
+             (bytesread buffer-size)
+             (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+        (mp::with-interrupts-blocked 
+          (setf pict 
+                (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                  (loop for i from 0 to (- numchannels 1) do  
+                        (gp::draw-line *curstream* 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                  (las::ResetSound snd)
+                  (om-with-fg-color *curstream* *om-dark-gray-color*
+                    (loop for i from 0 to (- pict-w 1) 
+                          while (= bytesread buffer-size) do 
+                          (setf bytesread (las::ReadSound snd buffer buffer-size numchannels))
+                          (loop for k from 0 to (- numchannels 1) do
+                                (setf pixpoint (om-read-ptr buffer (* 4 k) :float))
+                                (setf pixpoint (round (* offset-y pixpoint))) ; scaled 0-1 --> 0 -->256/2
+                                (gp::draw-line *curstream* i (+ offset-y (* k channels-h) (- pixpoint)) i  
+                                               (+ offset-y (* k channels-h) pixpoint))  
+                                )
+                          ))
+                  ))
+          )
+        (om-free-pointer buffer)))
+    pict))
+|#
+
+
