@@ -24,7 +24,7 @@
   (let* ((datatype 4)
          (numrow (numrows matrix)) 
          (rowsize (* datatype numrow))
-         (vals (om-make-pointer (* datatype numrow (numcols matrix)) t)))
+         (vals (om-make-pointer (* datatype numrow (numcols matrix)) :clear t)))
    (loop for i from 0 to (- (numcols matrix) 1) do
          (let ((sdifrow (first-n (get-array-col matrix i) numrow)))
             (loop for j from 0 to (- numrow 1)

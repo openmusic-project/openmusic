@@ -128,7 +128,7 @@
                                                             (logior las::SF_FORMAT_WAV res))))))
     (setf buffer-size 512)
     ;(setf buffer (om-make-pointer (* 4 buffer-size (las::GetChannelsSound sndr)) t))
-    (setf buffer (om-make-pointer (* 4 buffer-size 2) t))
+    (setf buffer (om-make-pointer (* 4 buffer-size 2)  :clear t))
     (setf res 512)
     (las::ResetSound sndr)
     (loop while (= res 512) do
@@ -248,7 +248,7 @@
              (offset-y (round channels-h 2)) ; draw from middle of each channels
              (sndr (las::MakeRendererSound snd))
              (bytesread buffer-size)
-             (buffer (om-make-pointer (* 4 buffer-size numchannels) t)))
+             (buffer (om-make-pointer (* 4 buffer-size numchannels) :clear t)))
         (mp::with-interrupts-blocked 
           (setf pict 
                 (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)

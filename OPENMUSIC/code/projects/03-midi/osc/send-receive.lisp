@@ -5,7 +5,7 @@
   :icon 130
   :doc "Waits for an UDP packet to arrive"
   (let ((connec (om-make-receive-connection port))
-        (buff (om-make-pointer size t)))
+        (buff (om-make-pointer size :clear t)))
     (om-receive-udp-packet connec buff size)
     (om-close-udp-connection connec)
     buff
