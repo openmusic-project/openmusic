@@ -485,7 +485,7 @@
 ;Tool that change the pan of a channel
 (defun change-channel-pan-visible (channel pan)
   (let* ((status-list *audio-player-visible-tracks-info*)
-         (snd (car (gethash channel status-list)))
+         (snd (player-data (car (gethash channel status-list))))
          (nchnls 1)
          (pan2 (pan2panpan pan)))
     (if snd
