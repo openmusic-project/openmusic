@@ -28,9 +28,10 @@
          (beta (if (> (length rest) 4) (read-from-string (subseq rest 4)))))
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
-                 (if (or (null show-beta) (zerop beta)) ""
+                 (if show-beta
 		     #-linux (format nil " beta ~d" beta)
-		     #+linux (format nil "_beta_~d" beta))
+		     #+linux (format nil "_beta_~d" beta)
+                     "")
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
@@ -153,7 +154,7 @@
 
 
 ; (clean-sources)
-; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("LIBRARIES" "OM-FORUM-LIBRARIES"))))
+; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 5) '("OM-LIBRARIES" "trunk" "OM-Faust"))))
 
 
 (defun count-lines (file)

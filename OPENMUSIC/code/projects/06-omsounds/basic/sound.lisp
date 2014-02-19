@@ -415,25 +415,32 @@ Press 'space' to play/stop the sound file.
         ))))
 
 
-(defmethod* sound-points ((self sound) (num integer) &optional channel)
+(defmethod* sound-points ((self sound) points &optional (channel 1))
   :initvals '(nil 1000 1)
   :indoc '("a sound object" "number of points" "channel number")
   :doc "Reurns <num> sampled points from the audio waveform of channel <channel> in <self>."
   :icon 221
-  (let ((numdat (om-sound-n-samples  self))
-        (numchan (om-sound-n-channels  self)))
-     (setf channel (if channel channel 1))
-     (if (or (> channel numchan) (> num numdat)) 
-         (om-message-dialog "Bad input values")
-       (multiple-value-bind (buffer format format nch sr ss size skip)
-           (om-audio::om-get-sound-buffer (filename self))
-         (when buffer
-           (let ((data (loop for i from 0 to numdat by (round numdat num) collect
-                             (om-read-ptr buffer (+ i (1- channel)) :float))))
-             (om-free-pointer buffer)
-             data
-             )))
-       )))
+  (let* ((numdat (om-sound-n-samples  self))
+         (numchan (om-sound-n-channels  self))
+         (ch (or channel (loop for c from 1 to numchan collect c)))
+         (positions (if (listp points) 
+                        (sort points '<) 
+                      (loop for p from 0 to numdat by (round numdat points) collect p))))
+    (if (or (> (list-max (list! ch)) numchan)
+            (>  (car (last positions)) numdat))
+        (om-message-dialog "Bad input values")
+      (multiple-value-bind (buffer format format nch sr ss size skip)
+          (om-audio::om-get-sound-buffer (filename self))
+        (when buffer
+          (let ((data (loop for pos in positions collect
+                            (if (listp ch)
+                                (loop for c in ch collect (om-read-ptr buffer (+ pos (1- c)) :float))
+                              (om-read-ptr buffer (+ pos (1- channel)) :float)))))
+            (om-free-pointer buffer)
+            data
+            )))
+      )))
+
 
 (defmethod! sound-dur ((sound pathname))
   :icon 221
