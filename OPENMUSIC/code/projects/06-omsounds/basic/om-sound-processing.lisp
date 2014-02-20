@@ -182,6 +182,19 @@
 
 
 
+;;; USE THIS AS DEFAULT NORMALIZER..
+(defmethod general-normalize ((norm (eql :om)) inpath outpath val &optional resolution)
+  (print "Warning: OM normlizer does not take into account the normalization value.")
+  (let ((normalized (sound-normalize (get-om-sound-data inpath))))
+    (om-audio::om-save-sound-in-file (buffer normalized) (namestring outpath) 
+                                     (size normalized) (nch normalized) (sr normalized) 
+                                     (or resolution *audio-res*) *def-snd-format*)
+    outpath))
+
+(defmethod get-def-normalize-value ((self (eql :om))) 0.0)
+(defmethod get-module-name ((self (eql :om))) "OM internal")
+
+
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SILENCE///////////
 (defmethod! sound-silence ((dur float) &optional (channels 1) (sample-rate *audio-sr*))
             :icon 105

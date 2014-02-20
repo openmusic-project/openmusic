@@ -16,8 +16,8 @@
 (defvar *normalize* t)
 (defvar *normalize-level* 0.0)
 
-(defvar *normalizer* :csound)
-(defvar *loaded-normalizers* '(:csound))
+(defvar *normalizer* :om)
+(defvar *loaded-normalizers* '(:om))
 
 ;;; redefined in general-mixer.lisp
 (defvar *general-mixer-presets* nil)
