@@ -798,13 +798,16 @@
                (zoom-step (get-zoom-step xview sr)))
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
+          
           (om-with-focused-view self
             (when (and thesound thepicture)
               (om-with-fg-color self *om-dark-gray-color*
-
-                (if (and zoom-step (< zoom-step 2) (not (get-edit-param (editor self) :show-spectrum)))
-                    (om-draw-waveform self zoom-step)
-                  (cond ((>= xview (round dur-ms 2)) 
+                   (cond ((or (get-edit-param (editor self) :show-spectrum)
+                             (>= xview (round dur-ms 2)))
+                         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+                        ((and zoom-step (< zoom-step 2))
+                         (om-draw-waveform self zoom-step))
+                        ((>= xview (round dur-ms 2)) 
                          (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
                         ((and (< xview (round dur-ms 2)) (>= xview (round dur-ms 4)))
                          (om-draw-picture self (aref (pict-zoom thesound) 0) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
@@ -812,13 +815,13 @@
                          (om-draw-picture self (aref (pict-zoom thesound) 1) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
                         ((< xview (round dur-ms 8))
                          (om-draw-picture self (aref (pict-zoom thesound) 2) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))))
-
-                  (om-with-fg-color self *om-blue-color*
-                    (loop for item in (markers thesound) 
-                          for k = 0 then (+ k 1) do
-                          (om-with-line-size (if (member k (selection? self)) 2 1)
-                            (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
-                            (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
+              )
+            (om-with-fg-color self *om-blue-color*
+              (loop for item in (markers thesound) 
+                    for k = 0 then (+ k 1) do
+                    (om-with-line-size (if (member k (selection? self)) 2 1)
+                      (om-draw-line (round (* total-width item) dur) 0 (round (* total-width item) dur) (h self))
+                      (om-fill-rect (- (round (* total-width item) dur) 2) 0 5 5)))))
                 (when (grille-p self)
                   (draw-grille self))
                 (draw-interval-cursor self)
@@ -828,7 +831,8 @@
                         (om-draw-string 30 30 (format nil "Error: file ~s is empty" (om-sound-file-name (object (editor self))))))
                     (om-with-focused-view self 
                       (om-draw-string (round (w self) 2) (round (h self) 2) "...")))
-                  ))))
+                  ))
+      
           (om-with-focused-view self (om-draw-string 10 40 (format nil "No file loaded.."))))))
 
 
