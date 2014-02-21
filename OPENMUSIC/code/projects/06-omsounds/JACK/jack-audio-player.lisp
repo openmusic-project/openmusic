@@ -37,12 +37,12 @@
 (om-add-init-func 'init-jack-audio-player)
 
 
-;; using 'sndlasptr-slot from 'om-sound class to hold jack-sf struct:
+;; was 'oa:sndlasptr slot; set to 'player-data slot of class 'internalsound:
 (defmethod jack-sf-struct ((object sound))
-  (oa::sndlasptr object))
+  (player-data object))
 
 (defmethod (setf jack-sf-struct) (jack-sf (object sound))
-  (setf (oa::sndlasptr object) jack-sf))
+  (setf (player-data object) jack-sf))
 
 (defmethod prepare-to-play ((engine (eql :jackaudio)) (player omplayer) (object sound) at interval params)
   (call-next-method)
