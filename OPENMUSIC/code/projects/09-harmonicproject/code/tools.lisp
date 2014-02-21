@@ -13,6 +13,11 @@
 (in-package :om)
 
 ;;;====== UTILS======
+
+(defun div (n p)
+  (/ (- n (mod n p)) p))
+
+
 (defun altere (midi alteration)
   (cond ((equal alteration 'becarre) midi)
         ((equal alteration 'diese) (+ midi 100))

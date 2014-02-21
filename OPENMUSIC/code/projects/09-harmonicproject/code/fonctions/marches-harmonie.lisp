@@ -11,10 +11,6 @@
 
 (in-package :om)
 
-
-(defun div (n p)
-  (/ (- n (mod n p)) p))
-
 (defun mktonalite (mode note alt)
   (let ((res 
          (make-instance 'tonalite)))

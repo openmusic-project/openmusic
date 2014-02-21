@@ -379,51 +379,53 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
            (simple-list-dur meslist i tempo)
            (+ (simple-list-dur meslist (mod i len) tempo) (* (floor i len) listduration)))))))
 
+
 (defmethod draw-one-ruler  ((self ruler-metric) (axe (eql 'x)) range offx offy)
-   "Draw a metric ruler in a maquette"
-   (declare (ignore offx offy))
-   (let* ((i (first range))
-          (j (second range))
-          (listmes (meslist self))
-          (tempo (tempo self))
-          (loop-p (loop-mes-p self))
-          (first-beat (get-beat-from-val self i))
-          (last-beat (get-beat-from-val self j))
-          (listduration (get-list-mes-dur self))
-          (system-etat (get-system-etat (assoc-view-singleton self)))
-          (mesdisplay 1)
-          (ppmes (if (> (car last-beat) (car first-beat))
-                   (div (w self) (- (car last-beat) (car first-beat)))
-                   (w self)))
-          (ppmes2 nil)
-          (stry 16))
-     (when (<= ppmes 10)
-       (setf ppmes2 ppmes)
-       (loop while (<= ppmes2 15) do 
-             (incf mesdisplay)
-             (setf ppmes2 (div (* mesdisplay (w self)) (- (car last-beat) (car first-beat))))
-             ))
-     (om-with-font *rulerx-font*
-                   (loop for i from (first first-beat) to (first last-beat) 
-                         when (equal 0 (mod i mesdisplay))
-                         do
-                         (let* ((themeasure (get-ieme-measure i listmes loop-p))
-                                (sizepul (* 1000 (size-pulsation tempo themeasure))) 
-                                (sec (* 1000 (get-val-from-meas self i listduration))))
+  "Draw a metric ruler in a maquette"
+  (declare (ignore offx offy))
+  (flet ((div (n p) (/ (- n (mod n p)) p)))
+    (let* ((i (first range))
+           (j (second range))
+           (listmes (meslist self))
+           (tempo (tempo self))
+           (loop-p (loop-mes-p self))
+           (first-beat (get-beat-from-val self i))
+           (last-beat (get-beat-from-val self j))
+           (listduration (get-list-mes-dur self))
+           (system-etat (get-system-etat (assoc-view-singleton self)))
+           (mesdisplay 1)
+           (ppmes (if (> (car last-beat) (car first-beat))
+                      (div (w self) (- (car last-beat) (car first-beat)))
+                    (w self)))
+           (ppmes2 nil)
+           (stry 16))
+      (when (<= ppmes 10)
+        (setf ppmes2 ppmes)
+        (loop while (<= ppmes2 15) do 
+              (incf mesdisplay)
+              (setf ppmes2 (div (* mesdisplay (w self)) (- (car last-beat) (car first-beat))))
+              ))
+      (om-with-font *rulerx-font*
+                    (loop for i from (first first-beat) to (first last-beat) 
+                          when (equal 0 (mod i mesdisplay))
+                          do
+                          (let* ((themeasure (get-ieme-measure i listmes loop-p))
+                                 (sizepul (* 1000 (size-pulsation tempo themeasure))) 
+                                 (sec (* 1000 (get-val-from-meas self i listduration))))
                            
-                           (loop for delta from 0 to (- (first themeasure) 1) do
-                                 (let ((pixel (point2pixel (assoc-view-singleton self) (om-make-big-point (round (+ (* delta sizepul) sec)) 0) system-etat)))
-                                   (if (= delta 0)
-                                       (progn (om-draw-line (om-point-h pixel) 0  (om-point-h pixel) (h self))
+                            (loop for delta from 0 to (- (first themeasure) 1) do
+                                  (let ((pixel (point2pixel (assoc-view-singleton self) (om-make-big-point (round (+ (* delta sizepul) sec)) 0) system-etat)))
+                                    (if (= delta 0)
+                                        (progn (om-draw-line (om-point-h pixel) 0  (om-point-h pixel) (h self))
                                          ;(om-draw-line  (1+ (om-point-h pixel)) 0  (1+ (om-point-h pixel)) (h self))
                                          ;(om-draw-string (+  (om-point-h pixel) 2) stry (format () "~D" i))
-                                         )
-                                     (when (> ppmes 20)
-                                       (om-draw-line  (om-point-h pixel) 0  (om-point-h pixel) (round (h self) 3)))
-                                     )))
+                                          )
+                                      (when (> ppmes 20)
+                                        (om-draw-line  (om-point-h pixel) 0  (om-point-h pixel) (round (h self) 3)))
+                                      )))
                            
-                           )))
-     ))
+                            )))
+      )))
 
 
 
