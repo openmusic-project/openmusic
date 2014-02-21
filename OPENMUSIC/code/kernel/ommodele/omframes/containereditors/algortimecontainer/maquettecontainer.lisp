@@ -990,9 +990,9 @@
                         (- (max (cadr ranges) (cadr (rangex self))) (car ranges))))
          
          (ratioypos (/ (-  (max (fourth ranges) (second (rangey self))) (second (rangey self)))
-                       (- (max (fourth ranges) (second (rangey self))) (min (third ranges) (first (rangey self))))))
+                       (max 1 (- (max (fourth ranges) (second (rangey self))) (min (third ranges) (first (rangey self)))))))
          (ratioysize (/ (- (second (rangey self)) (first (rangey self)))
-                       (- (max (fourth ranges) (second (rangey self))) (min (third ranges) (first (rangey self)))))))
+                       (max 1 (- (max (fourth ranges) (second (rangey self))) (min (third ranges) (first (rangey self))))))))
     
     (when (scrollerx self)
       (set-scroll-pos (scrollerx self) ratioxpos)

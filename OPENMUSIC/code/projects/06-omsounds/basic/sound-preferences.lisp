@@ -47,7 +47,7 @@
     (when (get-pref modulepref :normalizer)
       (if (find (get-pref modulepref :normalizer) *loaded-normalizers* :test 'equal)
           (setf *normalizer* (get-pref modulepref :normalizer))
-        (om-beep-msg (string+ "Normalize module " (string (get-pref modulepref :normalizer)) " not loaded. Default module (" (string *normalizer*) ") will be used."))
+        (print (string+ "Normalize module " (string (get-pref modulepref :normalizer)) " not loaded. Default module (" (string *normalizer*) ") will be used."))
         ))
     (when new-res
       (if (and (integerp new-res) (>= new-res 4) (<= new-res 4096))

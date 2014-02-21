@@ -373,59 +373,95 @@
 
 (defmethod move-frame-delta ((self tempobjframe) dir) 
   (if (om-option-key-p)
-     (move-miniview  self dir) 
+     (move-miniview self dir) 
      (let* ((params (params (object (editor (om-view-container self)))))
-            (snapmode (car (snap params)))
+            (snapmodex (car (snap params)))
+            (snapmodey (cadr (snap params)))
             (xsnap (car (xparam params)))
             (ysnap (car (yparam params)))
-            (metricpar (metricparam params))
-            pixmove pixnum val)
+            (metricpar (metricparam params)))
+       
+       (print (list (snap params) (xparam params) (yparam params)))
        
        (if (or (= dir 0) (= dir 1))
-           ;;; vertical move : check snap Y or pixel move
-           (progn 
-             (setf val (or ysnap 1))
-             (setf pixnum (norme2pixel (om-view-container self) 'y val))
+           ;;; VERTICAL MOVE
+           (if snapmodey 
+               ;;; SNAP Y
+               (let* ((py (posy (object self)))
+                      (roundedpy (* ysnap (funcall (if (= 0 dir) 'ceiling 'floor) py ysnap)))
+                      (factor (if (om-shift-key-p) 10 1))
+                      (newpy (+ roundedpy (* (if (= 0 dir) (- ysnap) ysnap) factor)))
+                      (pixnum (norme2pixel (om-view-container self) 'y (- newpy py))))
+                 (loop while (< (abs pixnum) 1) do
+                   (setf factor (* 10 factor)
+                         newpy (+ roundedpy (* (if (= 0 dir) (- ysnap) ysnap) factor))
+                         pixnum (norme2pixel (om-view-container self) 'y (- newpy offset))))
+                 (omGMoveObject self (om-make-point (om-point-x (om-view-position self))
+                                                    (+ (om-point-y (om-view-position self)) pixnum))))
+             ;;; PIXEL MOVE
+           (let* ((move 1)
+                  (pixnum (norme2pixel (om-view-container self) 'y move)))
              (loop while (< pixnum 1) do
-                   (setf val (* 10 val))
-                   (setf pixnum (norme2pixel (om-view-container self) 'y val)))
-             (when (om-shift-key-p)
-               (setf val (* 10 val))
-               (setf pixnum (norme2pixel (om-view-container self) 'y val))))
-         ;;; horizontal move
-         (if (equal snapmode 'metric)
-             (let ((mesure (car (second metricpar)))
-                   (tempo (first metricpar)))
-               (if (om-shift-key-p)
-                   (progn 
-                     (setf val (* 1000 (size-pulsation tempo mesure) (car mesure)))
-                     (setf pixnum (norme2pixel (om-view-container self) 'x val)))
-                 (progn
-                   (setf val (* 1000 (size-pulsation tempo mesure) (/ 4 (third metricpar))))
-                   (setf pixnum (norme2pixel (om-view-container self) 'x val))
-                   (loop while (< pixnum 1) do
-                         (setf val (* val 2))
-                         (setf pixnum (norme2pixel (om-view-container self) 'y val)))
-                   ))
-               )
-           (progn
-             (setf val (* (or xsnap 1)))
-             (setf pixnum (norme2pixel (om-view-container self) 'x val))
-             (loop while (< pixnum 1) do
-                   (setf val (* 10 val))
-                   (setf pixnum (norme2pixel (om-view-container self) 'x val)))
-             (when (om-shift-key-p)
-               (setf val (* 10 val))
-               (setf pixnum (norme2pixel (om-view-container self) 'x val))))
-           )
-         )
-       ;(setf pixnum (+ pixnum 1)) ; (if (om-shift-key-p) 10 1)))
-       (case dir
-         (0 (omGMoveObject self (om-add-points (om-view-position self) (om-make-point 0 (- pixnum)))))
-         (1 (omGMoveObject self (om-add-points (om-view-position self) (om-make-point 0 pixnum))))
-         (2 (omGMoveObject self (om-add-points (om-view-position self) (om-make-point pixnum 0))))
-         (3 (omGMoveObject self (om-add-points (om-view-position self) (om-make-point (- pixnum) 0))))))))
+                   (setf move (* 10 move))
+                   (setf pixnum (norme2pixel (om-view-container self) 'y move)))
+             (when (om-shift-key-p) 
+               (setf move (* 10 move))
+               (setf pixnum (norme2pixel (om-view-container self) 'y move)))
+             (omGMoveObject self (om-make-point (om-point-x (om-view-position self))
+                                                (+ (om-point-y (om-view-position self)) (if (= 0 dir) (- pixnum) pixnum))))
+             ))
 
+         ;;; HORIZONTAL MOVE
+         (cond 
+          ((equal snapmodex 'abs)
+           (let* ((offset (offset (object self)))
+                 (roundedoffset (* xsnap (funcall (if (= 3 dir) 'ceiling 'floor) offset xsnap)))
+                 (factor (if (om-shift-key-p) 10 1))
+                 (newoffset (+ roundedoffset (* (if (= 3 dir) (- xsnap) xsnap) factor)))
+                 (pixnum (norme2pixel (om-view-container self) 'x (- newoffset offset))))
+             (loop while (< (abs pixnum) 1) do
+                   (setf factor (* 10 factor)
+                         newoffset (+ roundedoffset (* (if (= 3 dir) (- xsnap) xsnap) factor))
+                         pixnum (norme2pixel (om-view-container self) 'x (- newoffset offset))))
+             (omGMoveObject self (om-make-point (+ (om-point-x (om-view-position self)) pixnum)
+                                                (om-point-y (om-view-position self))))
+             ))
+          
+          ((equal snapmodex 'metric)
+           (let* ((mesure (car (second metricpar)))
+                  (tempo (first metricpar))
+                  (offset (offset (object self)))
+                  (snap (if (om-shift-key-p)
+                               (* 1000 (size-pulsation tempo mesure) (car mesure))
+                           (* 1000 (size-pulsation tempo mesure) (/ 4 (third metricpar)))))
+                  (factor 1)
+                  (roundedoffset (* snap (funcall (if (= 3 dir) 'ceiling 'floor) offset snap)))
+                  (newoffset (+ roundedoffset (* (if (= 3 dir) (- snap) snap) factor)))
+                  (pixnum (norme2pixel (om-view-container self) 'x (- newoffset offset))))
+
+             (loop while (< (abs pixnum) 1) do
+                   (setf factor (* 2 factor)
+                         newoffset (+ roundedoffset (* (if (= 3 dir) (- snap) snap) factor))
+                         pixnum (norme2pixel (om-view-container self) 'x (- newoffset offset))))
+             (omGMoveObject self (om-make-point (+ (om-point-x (om-view-position self)) pixnum)
+                                             (om-point-y (om-view-position self))))
+             ))
+      
+          (t 
+           (let ((move 1))
+             (setf pixnum (norme2pixel (om-view-container self) 'x move))
+             (loop while (< pixnum 1) do
+                   (setf move (* 10 move))
+                   (setf pixnum (norme2pixel (om-view-container self) 'x move)))
+             (when (om-shift-key-p)
+               (setf move (* 10 move))
+               (setf pixnum (norme2pixel (om-view-container self) 'x move)))
+             (omGMoveObject self (om-add-points (om-view-position self) 
+                                                (om-make-point (if (= dir 2) pixnum (- pixnum)) 0)))
+             ))
+          ))
+       )
+     ))
 
 
 ;(ms2u 1500 '(4 60) 8)
@@ -538,10 +574,13 @@
           (setf newx2 (* (car xpar) (round newx2 (car xpar))))))
     (when (cadr (snap (params themaquette)))
       (setf posy (calcule-y-pos posy (car ypar))))
-     (om-subtract-points 
-     (point2pixel maqpanel (om-make-point (max 0 newx2) posy) (get-system-etat maqpanel))
-     pos)
-    ))
+    (let ((res (om-subtract-points 
+                (point2pixel maqpanel (om-make-point (max 0 newx2) posy) (get-system-etat maqpanel))
+                pos)))
+      (when (= 0 (om-point-y res))
+        (setf res (om-make-point (om-point-x res) 10)))
+      res
+    )))
 
 
 (defmethod allow-new-size ((self tempobjframe) new-pos)
