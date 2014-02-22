@@ -485,11 +485,11 @@
 ;Tool that change the pan of a channel
 (defun change-channel-pan-visible (channel pan)
   (let* ((status-list *audio-player-visible-tracks-info*)
-         (snd (player-data (car (gethash channel status-list))))
+         (snd (car (gethash channel status-list)))
          (nchnls 1)
          (pan2 (pan2panpan pan)))
     (if snd
-        (setf nchnls (las::GetChannelsSound (sndlasptr-current snd))))
+        (setf nchnls (las::GetChannelsSound (sndlasptr-current (player-data snd)))))
     (case nchnls 
       (1 (las::SetPanChannel *audio-player-visible* channel pan pan))
       (2 (las::SetPanChannel *audio-player-visible* channel (car pan2) (cadr pan2)))
