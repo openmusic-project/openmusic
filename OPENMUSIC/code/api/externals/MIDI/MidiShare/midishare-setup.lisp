@@ -14,8 +14,10 @@
 
 ; (system (eql :midishare))
 (defmethod midishare-connect-ports (settings)
-  (sleep 0.5)
-  (oa::om-without-interrupts (restore-midishare-connections settings)))
+   #-(or powerpc win32)
+   (progn
+     (sleep 0.5)
+     (oa::om-without-interrupts (restore-midishare-connections settings))))
 
 ;;;==================================================
 ;;; COLLECTS DETECTED CONNECTIONS
@@ -58,36 +60,35 @@
 ;;; ON OSX INTEL (10.5) close-player crashes
 
 (defvar *midishare-setup-app* NIL "the id of the midishare-setup application")
-(defvar *midishare-setup-app-path* "the current path of the midishare setup program")
-(defvar *midishare-setup-app-default-path* "the default path of the midishare setup program")
+(defvar *midishare-setup-app-path* NIL "the current path of the midishare setup program")
+(defvar *midishare-setup-app-default-path* NIL "the default path of the midishare setup program")
 
 (defun init-midishare-setup ()
   (setf *midishare-setup-app-default-path*
         (oa::om-default-application-path '("MidiShare") "msDrivers"))
-  (setf *om-midi-settings-app-path* 
+  (setf *midishare-setup-app-path* 
         (or (probe-file *midishare-setup-app-default-path*)
             (probe-file 
              #+cocoa(oa::om-external-app '("MidiShare") "msDrivers")
              #+win32(oa::om-make-pathname :directory (pathname (LISP-IMAGE-NAME)) :name "msDrivers" :type "exe")
 	     #+linux(oa::om-make-pathname :directory (pathname (LISP-IMAGE-NAME)) :name "msDrivers") ;; placeholder for now. AV
              )))
-  ;(print (string+ "MIDI Setup App: " (if *om-midi-settings-app-path* (namestring *om-midi-settings-app-path*) "NOT FOUND")))
   )
 
 (defun launch-midishare-setup-app ()
-  (if (and *midishare-setup-app* (om-find-process *midishare-setup-app*))
+  (if (and *midishare-setup-app* (oa::om-find-process *midishare-setup-app*))
     (oa::om-select-program *midishare-setup-app*)
     (progn
       (unless *midishare-setup-app-path* (init-midishare-setup))
       (if (and *midishare-setup-app-path* (probe-file *midishare-setup-app-path*))
         (progn 
-          (close-ms-players)
+          ;(close-ms-players)
           (setf *midishare-setup-app* (oa::om-run-program *midishare-setup-app-path*))   ; 'om::open-ms-players))   ;; do somthing after ?
       ;(setf *ms-setup-app* (om-run-program *om-midi-settings-app-path*
       ;                                    #'(lambda () (om-message-dialog "Warning: The new MIDI drivers setup will be used for your next OM session only. OM must exit and restart to use them."))))
           (sleep 0.9)
           (oa::om-select-program *midishare-setup-app*))
-      (oa::om-message-dialog "MidiShare Setup Application msDrivers not found!")
+      (progn (oa::om-message-dialog "MidiShare Setup Application msDrivers not found!") nil)
     ))))
 
 

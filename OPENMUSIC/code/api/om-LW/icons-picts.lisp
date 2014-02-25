@@ -370,7 +370,9 @@
 (defmacro om-record-pict (font size &body body)
   `(let ((metafile (capi:with-internal-metafile  
                        (port :pane nil :bounds (list 0 0 (om-point-h ,size) (om-point-v ,size)))
-                     (let ((*curstream* port))
+                     (let 
+                         ((*curstream* port)
+                          (*pox* 0) (*poy* 0))
                        (om-with-font ,font
                                      ,@body)))))
      (make-instance 'internal-picture

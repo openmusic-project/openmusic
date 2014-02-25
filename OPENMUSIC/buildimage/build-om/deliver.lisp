@@ -13,7 +13,6 @@
 (setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
 
-
 ;;;==========================
 ;;; DEFAULT INTERFACE (MACOS)(defmethod osc-start-receive ((box ReceiveBox))
 ;;;==========================
@@ -160,6 +159,17 @@
 (defun quit-callback (interface)
   (om::quit-om-callback))
 
+
+;;;==========================
+;;; DOC
+;;;==========================
+
+(setf oa::*om-resources-folder* 
+      (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))))
+(oa::init-sub-rsrc)
+(om::set-ref-dir)
+(clos::set-clos-initarg-checking nil)
+(om::gen-om-reference)
 
 ;;;==========================
 ;;; SOURCE DEFINITIONS

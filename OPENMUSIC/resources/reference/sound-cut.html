@@ -1,5 +1,5 @@
 <html>
-<head><title>SOUND-CUT - OM 6.6 Reference Documentation</title>
+<head><title>SOUND-CUT - OM 6.8 beta 1 Reference Documentation</title>
 <STYLE TYPE="text/css"><!--  
 
 BODY {background-color: #EEEEEE;
@@ -50,7 +50,7 @@ P,UL,LI, TD {
 <font size=-1>[GENERIC-FUNCTION]</font><br><br>
 </td><td width=130>
 <img src=./omlogo.gif width=100><br>
-<font size=-2 align=right><a href=index.html>OM 6.6<br> Function Reference</a></font>
+<font size=-2 align=right><a href=index.html>OM 6.8 beta 1<br> Function Reference</a></font>
 </td></tr>
 <tr><td colspan=2>
 <font color=882222><b>ARGUMENTS:</b></font><br>
@@ -58,27 +58,27 @@ P,UL,LI, TD {
 <tr>
 <td width=40>&nbsp;</td>
 <td>
-- <font color=333366><b>s</b></font>
+- <font color=333366><b>S</b></font>
 </td>
-<td>a sound or sound-data pointer</td>
+<td>a sound</td>
 <td>&nbsp;</td>
 </tr>
 <tr>
 <tr>
 <td width=40>&nbsp;</td>
 <td>
-- <font color=333366><b>beg</b></font>
+- <font color=333366><b>BEG</b></font>
 </td>
-<td>begin time (ms)</td>
+<td>begin time</td>
 <td>[default = 0]</td>
 </tr>
 <tr>
 <tr>
 <td width=40>&nbsp;</td>
 <td>
-- <font color=333366><b>end</b></font>
+- <font color=333366><b>END</b></font>
 </td>
-<td>end time (ms)</td>
+<td>end time</td>
 <td>[default = 1000]</td>
 </tr>
 <tr>
@@ -88,11 +88,9 @@ P,UL,LI, TD {
 <br><font color=882222><b>Description:</b></font><p>
 Cuts and returns an extract between &lt;beg&gt; and &lt;end&gt; in &lt;s&gt;.<br>
 <br>
-SOUND-CUT is part of the audio processing tools based on the LibAudioStream library (see http://libaudiostream.sourceforge.net/).<br>
-It generates an abstract sound pointer (called 'sound-data' in OM) which can undergo further processing or be saved as a sound file using SAVE-SOUND function.<br>
-<br>
+            &lt;beg&gt; and &lt;end&gt; can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300).<br>
 </p><br><br></td></tr>
 <td class=center colspan=2>
-<center><font size=-2>Auto doc generation by OpenMusic 6.6 © 2011 IRCAM</font></center>
+<center><font size=-2>Auto doc generation by OpenMusic 6.8 beta 1 © 2011 IRCAM</font></center>
 </td></tr></table>
 </body></html>

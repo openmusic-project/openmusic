@@ -380,8 +380,8 @@ Press 'space' to play/stop the sound file.
   (let ((rep (call-next-method)))
     (when rep
       (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 0))
-      (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args))))
-    rep))
+      (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args)))
+    rep)))
 
 ;;; default value at box evaluation
 (defmethod make-one-instance ((self sound) &rest slots-vals) 
@@ -557,7 +557,7 @@ Press 'space' to play/stop the sound file.
         (when (and (not (equal :error (loaded self)))
                    (or (loaded self) (ignore-errors (fill-sound-info self))))
           (setf (pict-sound self) 
-                (or ;(om-sound-protect self (create-snd-pict (filename self) 5000))
+                (or  ;(om-sound-protect self (create-snd-pict (filename self) 5000))
                     (create-snd-pict (filename self) 5000)
                     :error))
           (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
@@ -601,6 +601,7 @@ Press 'space' to play/stop the sound file.
                 (when ,(caddr (decode self)) (setf (markers snd) ,(caddr (decode self))))
                 snd)
      `(apply 'make-one-instance (list ,(value self) ,.(cdr (decode self))))))
+
 
 (defmethod numouts ((self OMaiffFilebox)) 3)
 

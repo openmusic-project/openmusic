@@ -50,11 +50,11 @@
 ;;; ==== SPECIAL ICON : id = number
 
 (defun icon-string-name (icon dir)
-  (let ((fileicon (find icon (om-directory dir :directories nil :files t)
+  (let ((fileicon (and dir (find icon (om-directory dir :directories nil :files t)
                         :test '= :key #'(lambda (file) (if (and (pathname-name file) (> (length (pathname-name file)) 0)
                                                                 (integerp (read-from-string (pathname-name file))))
                                                            (read-from-string (pathname-name file))
-                                                         -1)))))
+                                                         -1))))))
     (if fileicon (pathname-name fileicon)
       (format nil "~D" icon))))
 

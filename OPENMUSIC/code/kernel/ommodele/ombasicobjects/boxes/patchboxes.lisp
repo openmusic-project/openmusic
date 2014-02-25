@@ -681,7 +681,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
                  
 
-;called by omng-box-value, sometimes is usefull redefine the bulder for a class.
+;called by omng-box-value, sometimes is usefull redefine the builder for a class.
 (defmethod cons-new-object ((self t) args objs)
   (if objs
       (objFromObjs (first args) self)
