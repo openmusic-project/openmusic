@@ -81,7 +81,7 @@ distclean:
 
 # install: $(release)/$(svnappname)
 # 	cd $(release) && $(INSTALL_PROGRAM) -m 0755 $(svnappname) $(BINDIR)/$(APPNAME)
-# 	cd $(release) && rsync $(rsyncflags) $(exclude_fasl) --exclude 'OM_6.7*' . $(omroot)
+# 	cd $(release) && rsync $(rsyncflags) $(exclude_fasl) --exclude 'OM_6.8*' . $(omroot)
 
 
 # uninstall:
