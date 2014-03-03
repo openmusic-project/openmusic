@@ -13,6 +13,7 @@
 
 (defparameter *midi-microplay* nil)
 
+#+linux (setf *default-midi-system* :cl-midi)
 ;(setf *default-midi-system* :cl-midi)
 ;(setf *default-midi-system* :midishare)
 
