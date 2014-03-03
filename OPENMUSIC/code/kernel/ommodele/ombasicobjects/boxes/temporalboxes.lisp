@@ -320,7 +320,8 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
                  :colorframe (if (global-p self) *global-box-color* *obj-box-color*)
                  :sizey 20))
      (setf (value obj) (list instance))
-     
+     ; **
+     (setf (edition-params obj) (edition-params self))
      ; ***
      (setf (numouts obj) 1)
      

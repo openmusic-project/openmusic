@@ -4,8 +4,7 @@
 
 ;;; :ub :intel :src
 
-(defvar *release* nil)	
-
+(defvar *release* nil)
 (setf *release* :intel)
 
 

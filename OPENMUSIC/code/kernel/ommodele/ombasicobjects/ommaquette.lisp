@@ -443,7 +443,7 @@
                (if (boxtempobj-p item)
                    (progn (setf newtemp (clone item)) (incf i))
                  (progn
-                   (setf newtemp (omNG-make-tempobj item (om-make-point 0 0)  (string+ "tempobj" (format () "~D" (incf i)))))
+                   (setf newtemp (omNG-make-tempobj (clone item) (om-make-point 0 0)  (string+ "tempobj" (format () "~D" (incf i)))))
                    (setf (slot-value newtemp 'sizey) facty)
                    (setf (slot-value newtemp 'posy)  (* i facty))))
                (setf (slot-value newtemp 'offset) posi)
