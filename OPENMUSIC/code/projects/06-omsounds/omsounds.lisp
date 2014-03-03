@@ -36,7 +36,8 @@
     "basic;audio-mix-console"
     "basic;general-mixer"
     "basic;automations"
-    #+libaudiostream "basic;sound-preferences"
+    ;;#+libaudiostream "basic;sound-preferences"
+    "basic;sound-preferences"
     #+libsndfile "basic;om-sound-processing"
     
     #+(and libaudiostream (not linux)) "LAS;las-player"

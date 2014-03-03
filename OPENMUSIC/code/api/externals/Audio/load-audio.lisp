@@ -13,7 +13,7 @@
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "libsndfile")) :name "sndfile-api"))
 (compile&load (make-pathname :directory  (pathname-directory *load-pathname*) :name "audio-api"))
 
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "LibAudioStream")) :name "LibAudioStream"))
+#-linux (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "LibAudioStream")) :name "LibAudioStream"))
 
 (push :om-audio *features*)
 
