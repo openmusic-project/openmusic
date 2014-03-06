@@ -4,7 +4,7 @@
 ;Save objects in MidiFile (const tempo = 60)
 ;===========================================
 
-(defmethod* save-as-midi ((object t) &optional filename &key  (approx 2) (format nil)) 
+(defmethod* save-as-midi ((object t) &optional filename &key (approx 2) (format nil)) 
     :initvals '(nil) 
   :icon 900
   :doc "Saves <object> as a MIDI file.

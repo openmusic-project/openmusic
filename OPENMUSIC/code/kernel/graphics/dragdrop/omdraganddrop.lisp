@@ -96,13 +96,17 @@
     (when dragged-view
       (let* ((drop-pos position)
              (*receiving-in-drag* t) rep)
+        
         (setf (opt-key-p *OM-drag&drop-handler*) (equal effect :copy) ;  (om-option-key-p)
               (target-view *OM-drag&drop-handler*) (if (eq (get-drag-object view) (dragged-view *OM-drag&drop-handler*))
                                                         (om-view-container (get-drag-object view))
                                                      view)
+              
+              ;;; wrong in the case of drag from package windows' sub-panels...
               (initial-mouse-pos *OM-drag&drop-handler*) (om-convert-coordinates (initial-mouse-pos *OM-drag&drop-handler*) 
                                                                                  (dragged-view *OM-drag&drop-handler*) 
                                                                                  (target-view  *OM-drag&drop-handler*))
+             
               (true-target-view *OM-drag&drop-handler*) (view-frame view)
               (drop-mouse-pos *OM-drag&drop-handler*) (om-mouse-position (target-view  *OM-drag&drop-handler*))  ; (get-pos-in-object view drop-pos))
                                                        )
@@ -260,10 +264,10 @@
                                                   ))
           (mapc #'(lambda (dragged-frame)
                     (setf some-item-used (perform-drop D&DHandler dragged-frame target-frame
-                                                      (om-add-points (drop-mouse-pos D&DHandler)
-                                                                      (om-subtract-points 
-                                                                       (get-position dragged-frame)
-                                                                       (initial-mouse-pos D&DHandler)))
+                                                      (om-add-points  (drop-mouse-pos D&DHandler)
+                                                                       (om-subtract-points 
+                                                                              (get-position dragged-frame)
+                                                                              (initial-mouse-pos D&DHandler)))
                                                       )
                           ))
                 (dragged-list-objs D&DHandler))

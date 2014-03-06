@@ -68,8 +68,12 @@ the recorder, this function is called by a def-load-pointers"
 ;  )
 
 (defmethod prepare-to-play ((engine (eql :midishare)) (player omplayer) object at interval params)
-  (let ((approx (if (caller player) (get-edit-param (caller player) 'approx)))
-        (port (if (caller player) (get-edit-param (caller player) 'outport))))
+  (let ((approx (if (find :approx params)
+                    (nth (1+ (position :approx params)) params)
+                  (if (caller player) (get-edit-param (caller player) 'approx))))
+        (port (if (find :port params)
+                  (nth (1+ (position :port params)) params)
+                (if (caller player) (get-edit-param (caller player) 'outport)))))
     (if (equal port :default) (setf port *def-midi-out*))
     (push (list object at interval approx port) *ms-list-to-play*)))
 

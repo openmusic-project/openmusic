@@ -373,7 +373,7 @@
                 ))))
         view)))
 
-(defun om-convert-coordinates (point view1 view2)
+(defun om-convert-coordinates (point view1 view2)           
   (if (and view1 view2)
        (om-add-points point
                       (om-subtract-points (om-view-origin view2)
@@ -399,7 +399,6 @@
 	     (om-subtract-points container-origin position)
            container-origin))
        (om-make-point 0 0)
-       
        )))
 
 
