@@ -77,6 +77,7 @@
   #-linux (setf sdif::*sdif-pathname* (om-lib-pathname sdif::*sdif-pathname*))
   (sdif::init-sdif-framework)
   ;; (sdif-init "") ;; => LATER !!! :(
+  (setf *sdiflib* nil)
   sdif::*sdif-framework*)
   
 

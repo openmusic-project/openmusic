@@ -22,7 +22,9 @@
     (load (make-pathname :directory (append *externals-directory* '("MIDI" "CL-MIDI")) :name "load-clmidi")))
   (when (member :midishare libs)
     (load (make-pathname :directory (append *externals-directory* '("MIDI" "MidiShare")) :name "load-midishare")))
-  
+  (when (member :portmidi libs)
+    (load (make-pathname :directory (append *externals-directory* '("MIDI" "PortMIDI")) :name "load-portmidi")))
+
   (when (member :audio libs)
     (load (make-pathname :directory (append *externals-directory* '("Audio")) :name "load-audio")))
   

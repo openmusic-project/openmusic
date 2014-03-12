@@ -87,7 +87,7 @@ Lock the box ('b') to keep the current file.
 
 (defmethod get-frame-class ((self sdifFilebox)) 'boxsdifframe)
 
-(omg-defclass boxsdifframe (boxEditorFrame) ())
+(defclass boxsdifframe (boxEditorFrame) ())
 
 (defmethod om-get-menu-context ((object boxsdifframe))
   (list+ (boxframe-default-list object)

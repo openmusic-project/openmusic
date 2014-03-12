@@ -94,11 +94,13 @@
 (defvar *midishare* nil) ; t if loaded.
 
 (defun midishare-framework ()
+  (print (concatenate 'string "Loading MIDIShare library: " (namestring cl-user::*libmidishare*)))    
   (or *midishare*
      (setq *midishare*
            (if (probe-file cl-user::*libmidishare*)
-               (progn (cffi:load-foreign-library cl-user::*libmidishare*)
-                 t)))))
+               (cffi:load-foreign-library cl-user::*libmidishare*)
+             (print (format nil "Library MIDIShare not found!! [~A]" (namestring cl-user::*libmidishare*)))
+             ))))
 
 (defun nullptrp (x)
   (cffi:null-pointer-p x))

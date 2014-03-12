@@ -381,9 +381,7 @@
             (ysnap (car (yparam params)))
             (metricpar (metricparam params)))
        
-       (print (list (snap params) (xparam params) (yparam params)))
-       
-       (if (or (= dir 0) (= dir 1))
+      (if (or (= dir 0) (= dir 1))
            ;;; VERTICAL MOVE
            (if snapmodey 
                ;;; SNAP Y
