@@ -508,7 +508,7 @@
 ;/LOAD SOUND ON ONE CHANNEL FUNCTION
 ;Tool that loads a sound (his sndlasptr-to-play) to a track, and update the appropriate status list.
 (defun load-sound-on-one-channel (player snd tracknum &optional (vol 1.0) (panLeft 1.0) (panRight 0.0))
-  (let ((ptr (sndlasptr-to-play (om::player-data snd)))
+  (let ((ptr (sndlasptr-to-play (om::player-data snd))) 
         (status-list nil)
         (vol 1.0)
         (panL 1.0)

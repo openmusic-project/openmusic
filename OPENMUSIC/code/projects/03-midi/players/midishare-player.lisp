@@ -92,7 +92,7 @@ the recorder, this function is called by a def-load-pointers"
   ;(print "222")
   (om-midi::midishare-set-player *midiplayer* 
                                 (append (midi-seq-start-events)
-                                        (loop for item in *ms-list-to-play* 
+                                        (loop for item in *ms-list-to-play*
                                               append
                                               (remove nil 
                                                       (flat (PrepareToPlay :midi (car item) (nth 1 item) ;(+ (nth 1 item) (real-duration (car item) 0)) 
