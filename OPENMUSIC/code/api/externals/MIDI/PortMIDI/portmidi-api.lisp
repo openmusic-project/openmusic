@@ -110,7 +110,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (make-message status data1 data2)))
 
 ;; ex. Note-ON on channel 
-;; (make-message* 9 channel note velocity)
+;; (make-message* 9 0 60 100)
 ;; ex. Note-OFF on channel 
 ;; (make-message* 8 channel note velocity)
 
@@ -119,6 +119,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 ;;;========================================
 ;;; MESSAGES - OUR API
 ;;;========================================
+
+; (make-midi-bytes :pitchbend 
 
 (defun type-to-midi (type)
   (case type
@@ -132,10 +134,17 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (otherwise (print (format nil "PORTMIDI API: UNKNOW MESSAGE: ~S " type)) nil)
     ))
 
-(defun make-midi-bytes (type channel values)
+(defun 7-msb (14bitval) (logand (ash 14bitval -7) #x7f))
+(defun 7-lsb (14bitval) (logand 14bitval #x7f))
+
+(defun make-midi-bytes (type channel vals)
+  (print (list type channel vals))
+  (when (and (equal type :pitchbend)
+             (not (listp vals)))
+    (setf vals (+ vals 8192)))
   (let ((type-ref (type-to-midi type))
-        (v1 (if (listp values) (car values) values))
-        (v2 (or (and (listp values) (cadr values)) 0)))
+        (v1 (if (listp vals) (car vals) (7-lsb vals)))
+        (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
 ; (make-midi-bytes :keyon 1 '(62 100))
