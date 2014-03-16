@@ -80,11 +80,11 @@ In this case, all internal events are sent simultaneously.
 "
  ))
 
-(add-player-for-object 'midi-mix-console '(:midishare-rt :midishare))
+(add-player-for-object 'midi-mix-console '(:midi-player :midishare))
 
 (defmethod default-edition-params ((self midi-mix-console))
   (pairlis '(player)
-           '(:midishare-rt)))
+           '(:midi-player)))
 
 (defmethod get-impulsion-pict ((self midi-mix-console)) 
   (om-load-and-store-picture "audiotrack-bg" 'internal))
@@ -795,7 +795,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-volume ((self channelPanel) value)
   (setf (vol-ctrl (channelctr self)) value)
-  (when (send-rt (editor self)) 
+  (when (send-rt (editor self))
     (channel-send-vol (channelctr self)))
   (let ((new-str (integer-to-string value))
         (target (volumeVal self)))
@@ -814,7 +814,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self channelPanel) value)
   (setf (pan-ctrl (channelctr self)) value)
-  (when (send-rt (editor self)) 
+  (when (send-rt (editor self))
     (channel-send-pan (channelctr self)))
   (let* ((target (panVal self))
          (new-str (pan2str value)))
@@ -895,8 +895,7 @@ In this case, all internal events are sent simultaneously.
 (defmethod send-midi-settings ((self simple-channel-ctrl))
   (channel-send-prog self) 
   (channel-send-vol self) 
-  (channel-send-pan self) 
-  )
+  (channel-send-pan self))
 
 (defmethod! get-midievents ((self simple-channel-ctrl) &optional test)
   (declare (ignore test))

@@ -242,7 +242,20 @@
 ;;;;=====================================================================================
 ;;;; FROM Taube's CFFI bindings
 
-
+;;; accessors 
+(defun Event.message (e &optional (v nil vp))
+  (if vp
+      (progn 
+	(setf (cffi:foreign-slot-value e 'pm-event 'message) v)
+	v)
+    (cffi:foreign-slot-value e 'pm-event 'message)))
+    
+(defun Event.timestamp (e &optional (v nil vp))
+  (if vp
+      (progn 
+	(setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
+	v)
+    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
 
 
 
@@ -281,44 +294,6 @@
                                         filt-poly-aftertouch ))
 (defconstant filt-systemcommon (logior filt-mtc filt-song-position
                                           filt-song-select filt-tune))
-
-;;; utils
-;;;
-
-(defun Message (status data1 data2)
-  ;; portmidi messages are just unsigneds
-  (logior (logand (ash data2 16) #xFF0000)
-          (logand (ash data1 08) #xFF00)
-          (logand status #xFF)))
-
-(defun Message.status (m)
-  (logand m #xFF))
-
-(defun Message.data1 (m)
-  (logand (ash m -08) #xFF))
-
-(defun Message.data2 (m)
-  (logand (ash m -16) #xFF))
-
-;;; accessors 
-
-(defun Event.message (e &optional (v nil vp))
-  (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'message) v)
-	v)
-    (cffi:foreign-slot-value e 'pm-event 'message)))
-    
-(defun Event.timestamp (e &optional (v nil vp))
-  (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
-	v)
-    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
-
-
-
-
 
 
 

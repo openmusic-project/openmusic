@@ -27,10 +27,10 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
     ))
 
 
-(add-player-for-object 'EventMidi-seq :midishare-rt)
+(add-player-for-object 'EventMidi-seq :midi-player)
 
 (defmethod default-edition-params ((self EventMidi-seq))
-  (pairlis '(player) (list :midishare-rt)))
+  (pairlis '(player) (list :midi-player)))
 
 
 (defmethod eventmidi-seq-p ((self EventMidi-seq))  t)

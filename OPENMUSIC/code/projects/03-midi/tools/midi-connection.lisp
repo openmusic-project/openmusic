@@ -26,13 +26,35 @@
           (om-beep)))
     *default-midi-system*)
   )
+
+
+(defun ckeck-def-midi-file-system (function)
+  (when (and *default-midi-file-system* (not (find *default-midi-file-system* om-midi::*midi-file-systems*)))
+    (print (string+ "Warning: System " (string *default-midi-file-system*) "is not registered as a MID system.")))
+  
+  (if (or (null *default-midi-file-system*) 
+          (null (funcall function *default-midi-file-system*)))
+      ;;; TRY TO FIND ANOTHER ONE
+      (let ((substitute (find-if function om-midi::*midi-file-systems*)))
+        ;;; just for warning messages
+        (cond ((null *default-midi-file-system*) 
+               (print "No default MIDI system defined"))
+              ((null (funcall function *default-midi-file-system*))
+               (print (string+ "MIDI system " (string *default-midi-file-system*) " has no " (string function)))))
+        (if substitute 
+            (and (print (string+ "MIDI system " (string substitute) " will be used instead"))
+                 substitute)
+          (om-beep)))
+    *default-midi-file-system*)
+  )
+
     
 ;;; LOADS THE MIDIFILE USING THE DEFAULT MIDI SYSTEM
 ;;; Expected return values are 
 ;;; (evtseq nbtracks clicks format)
 ;;; evtseq is a sequence of midi-evt
 (defun midi-load-file (pathname)
-  (let ((sys (ckeck-def-midi-system 'om-midi::load-midi-file-function)))
+  (let ((sys (ckeck-def-midi-file-system 'om-midi::load-midi-file-function)))
     (if sys 
       (funcall (om-midi::load-midi-file-function sys) pathname)
       (om-abort)
@@ -44,7 +66,7 @@
 (defun save-midifile (name object approx tempo &optional (format nil))
   (let ((seq (sort (flat (PrepareToPlay :midi object 0 :approx approx :voice 1))
                    'om-midi::midi-evt-<))
-        (sys (ckeck-def-midi-system 'om-midi::save-midi-file-function)))
+        (sys (ckeck-def-midi-file-system 'om-midi::save-midi-file-function)))
     (if sys 
         (when seq
           (if (print tempo) 
@@ -55,14 +77,17 @@
       )))
 
 
-;;; JUST SEND A MIDI EVENT
-;;; !!! REQUIRES A PLAYER
+;;; JUST SEND A MIDI EVENT (for OM MIDI Player)
 
 (defun midi-send-evt (evt)
   (let ((sys (ckeck-def-midi-system 'om-midi::send-midi-event-function)))
     (when sys (funcall (om-midi::send-midi-event-function sys) evt))))
 
+(defun midi-stop ()
+  (let ((sys (ckeck-def-midi-system 'om-midi::midi-stop-function)))
+    (when sys (funcall (om-midi::midi-stop-function sys)))))
 
-
-
+(defun midi-start ()
+  (let ((sys (ckeck-def-midi-system 'om-midi::midi-start-function)))
+    (when sys (funcall (om-midi::midi-start-function sys)))))
 

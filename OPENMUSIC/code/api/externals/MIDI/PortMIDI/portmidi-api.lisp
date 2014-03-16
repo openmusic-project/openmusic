@@ -1,9 +1,9 @@
 
 
-(in-package :oa)
+(in-package :om-midi)
 
 (defun om-start-portmidi ()
-  #-linux (setf pm::*libportmidi-pathname* (om-lib-pathname pm::*libportmidi-pathname*))
+  #-linux (setf pm::*libportmidi-pathname* (oa::om-lib-pathname pm::*libportmidi-pathname*))
   (pm::load-portmidi-lib)
   (when pm::*libportmidi* (pm::pm-initialize))
   pm::*libportmidi*)
@@ -11,11 +11,6 @@
 (defun om-stop-portmidi ()
   (when pm::*libportmidi* (pm::pm-terminate)))
 
-;;; used, e.g. to refresh the list of devices
-(defun om-restart-portmidi ()
-  (when pm::*libportmidi* 
-    (pm::pm-terminate)
-    (pm::pm-initialize)))
 
 ;;;========================================
 ;;; From H. Taube's CFFI binding
@@ -71,6 +66,20 @@
 ;;; FROM CL-PORT-MIDI
 ;;;========================================
 
+#|
+(defun Message (status data1 data2)
+  ;; portmidi messages are just unsigneds
+  (logior (logand (ash data2 16) #xFF0000)
+          (logand (ash data1 08) #xFF00)
+          (logand status #xFF)))
+(defun Message.status (m)
+  (logand m #xFF))
+(defun Message.data1 (m)
+  (logand (ash m -08) #xFF))
+(defun Message.data2 (m)
+  (logand (ash m -16) #xFF))
+|#
+
 (defun make-message (status data1 data2)
   "=> an integer representing a MIDI message
 Combines the integers `status`, `data1` and `data2` to a MIDI message."
@@ -105,6 +114,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 ;; ex. Note-OFF on channel 
 ;; (make-message* 8 channel note velocity)
 
+
+
 ;;;========================================
 ;;; MESSAGES - OUR API
 ;;;========================================
@@ -125,9 +136,54 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
   (let ((type-ref (type-to-midi type))
         (v1 (if (listp values) (car values) values))
         (v2 (or (and (listp values) (cadr values)) 0)))
-    (when type-ref (apply 'make-message* (append (list type-ref channel) values)))))
+    (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
 ; (make-midi-bytes :keyon 1 '(62 100))
+
+(defun portmidi-send-evt (evt)
+  (if *midi-out-stream*
+    (pm::pm-write-short *midi-out-stream* 0
+                        (make-midi-bytes (midi-evt-type evt) 
+                                         (1- (midi-evt-chan evt)) 
+                                         (midi-evt-fields evt))
+     )
+    (progn
+      (portmidi-start)
+      (pm::pm-write-short *midi-out-stream* 0
+                        (make-midi-bytes (midi-evt-type evt) 
+                                         (1- (midi-evt-chan evt)) 
+                                         (midi-evt-fields evt))
+                        )
+      (portmidi-stop)
+      )))
+    
+(defvar *midi-out-stream* nil)
+
+(defun portmidi-start ()
+  (unless (pm-time-started) (pm-time-start))
+  (unless *midi-out-stream*
+    (setf *midi-out-stream* (pm::pm-open-output 0 1024 0))))
+
+(defun portmidi-stop ()
+  (pm::pm-close *midi-out-stream*)
+  (setf *midi-out-stream* nil)
+  (when (pm-time-started) (pm-time-stop))
+  t)
+
+;;; used, e.g. to refresh the list of devices
+(defun portmidi-restart ()
+  (when pm::*libportmidi*
+    (pm::pm-terminate)
+    )
+  (pm::pm-initialize)
+  (print "portmidi reinitialized.")
+  (print "devices detected")
+  (list-devices))
+  
+
+(defmethod portmidi-setup (settings)  (print "portmidi setup undefined!") nil)
+
+(defmethod portmidi-connect-ports (settings)  (print "portmidi connect undefined!") nil)
 
 
 
@@ -136,12 +192,11 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 (pm::pm-terminate)
 (pm::pm-initialize)
 
-(om-restart-portmidi)
+(portmidi-restart)
 
 (pm-time-started)
 (pm-time-start)
 
-(pm::pm-count-devices)
 (LIST-DEVICES)
 
 
@@ -158,8 +213,6 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 (pm:close-midi *midi-out*)
 
-
-(pm:get-default-input-device-id)
 (setf *midi-in* (pm:open-input 1 1024))
 
 (pm:read-midi *midi-in*)
