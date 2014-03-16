@@ -214,7 +214,7 @@
 
 
 (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
-;(oa::load-external-libs '(:portmidi))
+(oa::load-external-libs '(:portmidi))
 
 
 (defpackage "OpenMusic"
