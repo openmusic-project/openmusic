@@ -25,6 +25,7 @@
 (defun def-midi-presets () '(("-----" nil)))
 
 (defun put-midi-mixer-values ()
+  (print "restoring mixer preset")
   (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
     (init-midi-mixer vals)
     (when *midi-mixer* 
@@ -91,8 +92,7 @@
               (control2-num ch-ctrl) (nth 6 chan)
               (control2-val ch-ctrl) (nth 7 chan))
         )
-        
-  (send-midi-settings self)
+    (send-midi-settings self)
   ))
 
 (defmethod set-mixer-editor ((self MIDIMixerEditor) (ref MIDI-Mixer))

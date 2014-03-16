@@ -46,7 +46,7 @@ the recorder, this function is called by a def-load-pointers"
 
 ;;; DEFAULT MIDI PLAYER                  
 (defmethod player-name ((player (eql :midishare))) "MidiShare player")   ;;; A short name
-(defmethod player-desc ((player (eql :midishare))) "Uses MidiShare interface and player")   ;;; a description
+(defmethod player-desc ((player (eql :midishare))) "Uses MidiShare as MIDI I/O and player")   ;;; a description
 (defmethod player-special-action ((player (eql :midishare))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player (eql :midishare))) nil)   ;;; the default values for the player params
 (defmethod player-type ((player (eql :midishare))) :midi)   ;;; communication protocol (:midi / :udp)

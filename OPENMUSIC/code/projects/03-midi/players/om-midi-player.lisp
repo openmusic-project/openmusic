@@ -3,18 +3,18 @@
 ; (defparameter *refnum* (ms::midiopen "Common Lisp"))
 ; (ms::MidiClose *refnum*)
 
-(enable-player :midishare-rt)
+(enable-player :midi-player)
 
 ;;; NEW MIDI PLAYER (NOT YET AVAILABLE)                 
-(defmethod player-name ((player (eql :midishare-rt))) "MidiShare RT")   ;;; A short name
-(defmethod player-desc ((player (eql :midishare-rt))) "Uses the MidiShare interface and the OM scheduler")   ;;; a description
-(defmethod player-special-action ((player (eql :midishare-rt))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
-(defmethod player-params ((player (eql :midishare-rt))) nil)   ;;; the default values for the player params
-(defmethod player-type ((player (eql :midishare-rt))) :midi)   ;;; communication protocol (:midi / :udp)
+(defmethod player-name ((player (eql :midi-player))) "OM MIDI player")   ;;; A short name
+(defmethod player-desc ((player (eql :midi-player))) "Uses the default MIDI system to send MIDI events in real time")   ;;; a description
+(defmethod player-special-action ((player (eql :midi-player))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
+(defmethod player-params ((player (eql :midi-player))) nil)   ;;; the default values for the player params
+(defmethod player-type ((player (eql :midi-player))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
     
-(defmethod prepare-to-play ((engine (eql :midishare-rt)) (player omplayer) object at interval params)
+(defmethod prepare-to-play ((engine (eql :midi-player)) (player omplayer) object at interval params)
   (let ((approx (if (find :approx params)
                     (nth (1+ (position :approx params)) params)
                   (if (caller player) (get-edit-param (caller player) 'approx))))
@@ -39,21 +39,23 @@
     (sort-events player)
     ))
 
+(defmethod player-start ((engine (eql :midi-player)) &optional play-list)
+  (midi-start))
 
-(defmethod player-stop ((engine (eql :midishare-rt)) &optional play-list)
-  (om-midi::midishare-stop)
-  (loop for ch in *key-ons* 
+(defmethod player-stop ((engine (eql :midi-player)) &optional play-list)
+  (loop for ch in *key-ons*
         for c = 1 then (+ c 1) do
         (loop for note in ch do
-              (om-midi::midishare-send-evt 
+              (midi-send-evt 
                (om-midi:make-midi-evt :type :keyOff
                                       :chan c :date 0 :ref 0 :port (car note)
                                       :fields (list (cadr note) 0))
                ))
         )
+  (midi-stop)
   (setf *key-ons* (make-list 16)))
 
-(defmethod player-loop ((self (eql :midishare-rt)) player &optional play-list)
+(defmethod player-loop ((self (eql :midi-player)) player &optional play-list)
   (declare (ignore player))
   (loop for obj in play-list do
         (prepare-to-play  self player obj 0 (play-interval player) nil)))
@@ -61,7 +63,7 @@
 (defparameter *key-ons* (make-list 16))
 
 ;;; PLAY (NOW) 
-(defmethod player-play-object ((engine (eql :midishare-rt)) (object om-midi::midi-evt) &key interval params)
+(defmethod player-play-object ((engine (eql :midi-player)) (object om-midi::midi-evt) &key interval params)
   ;(print (format nil "~A : play ~A - ~A" engine object interval))
   ;(print object)
   (cond 
@@ -76,68 +78,11 @@
    
    )
   ;(print *key-ons*)
-  (om-midi::midishare-send-evt object)
+  (midi-send-evt object)
   )
 
 
 
-
-
-#|
-(setq *ms-player* (ms::openplayer "MSPLAYER"))
-(midishare::MidiConnect *ms-player* 0 -1)
-
-(om-midi::make-midi-evt :type :Start :port (or port *def-midi-out*) :date 0)
-
-(let ((ev1 (midishare::MidiNewEv ms::typeStart)))
-  (ms::MidiSendIm *ms-player* ev1))
-
-(let ((ev1 (midishare::MidiNewEv ms::typeStop)))
-  (ms::MidiSendIm *ms-player* ev1))
-
-;;; CHANGE PROGRAM ON CANAL 0
-(let ((ev1 (midishare::MidiNewEv ms::typeProgChange)))
-  (midishare::chan ev1 0)
-  (midishare::pgm ev1 5)
-  (ms::MidiSendIm *ms-player* ev1))
-
-;;; SEND NOTE ON (never terminates)
-(let ((noteon (midishare::MidiNewEv ms::typeKeyOn)))
-  (midishare::chan noteon 0)
-  (midishare::pitch noteon 60)
-  (midishare::vel noteon 100)
-  (ms::MidiSendIm *ms-player* noteon)
-  )
-
-(ms::startplayer *ms-player*)
-(ms::stopplayer *ms-player*)
-(midishare::PausePlayer *ms-player*)
-
-;;; DEVRAIT ARRETER LA NOTE.. ?
-(let ((ev2 (midishare::MidiNewEv ms::typeCtrlChange)))
-    (midishare::chan ev2 0)
-    (midishare::ctrl ev2 120)
-    (midishare::val ev2 0)
-    (ms::MidiSendIm *ms-player* ev2))
-
-
-(let ((evt (midishare::MidiNewEv ms::typeKeyOff)))
-    (midishare::chan evt 0)
-    (midishare::pitch evt 60)
-    (midishare::vel evt 100)
-  (ms::MidiSendIm *ms-player* evt)
-  )
-
-(let ((evt (midishare::MidiNewEv ms::typeCtrlChange)))
-    (midishare::chan evt 0)
-    (midishare::ctrl evt 125)
-  (ms::MidiSendIm 1 evt)
-  )
-
-
-(midishare::StopPlayer *ms-player*)
-
-|#
 
 
 
