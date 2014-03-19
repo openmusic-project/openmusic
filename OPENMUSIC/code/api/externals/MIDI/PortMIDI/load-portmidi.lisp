@@ -5,6 +5,7 @@
 
 (compile&load (make-pathname :directory (append oa::*externals-directory* (list "MIDI" "PortMidi")) :name "portmidi"))
 (compile&load (make-pathname :directory (append oa::*externals-directory* (list "MIDI" "PortMidi")) :name "portmidi-api"))
+(compile&load (make-pathname :directory (append oa::*externals-directory* (list "MIDI" "PortMidi")) :name "portmidi-setup"))
 
 (pushnew :portmidi *features*)
 

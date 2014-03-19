@@ -12,7 +12,7 @@
   #+(or powerpc win32) (launch-midishare-setup-app)
   #-(or powerpc win32) (make-midishare-setup-dialog))
 
-; (system (eql :midishare))
+
 (defmethod midishare-connect-ports (settings)
    #-(or powerpc win32)
    (progn

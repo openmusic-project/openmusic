@@ -59,7 +59,9 @@
 
 (defun list-devices ()
   (loop for i below (pm::pm-count-devices)
-     collect (print (describe-device i))))
+     collect (describe-device i)))
+
+; (list-devices)
 
 ;;;========================================
 ;;; MESSAGES
@@ -138,7 +140,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 (defun 7-lsb (14bitval) (logand 14bitval #x7f))
 
 (defun make-midi-bytes (type channel vals)
-  (print (list type channel vals))
+  ;(print (list type channel vals))
   (when (and (equal type :pitchbend)
              (not (listp vals)))
     (setf vals (+ vals 8192)))
@@ -147,35 +149,34 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
         (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
-; (make-midi-bytes :keyon 1 '(62 100))
 
 (defun portmidi-send-evt (evt)
-  (if *midi-out-stream*
-    (pm::pm-write-short *midi-out-stream* 0
-                        (make-midi-bytes (midi-evt-type evt) 
-                                         (1- (midi-evt-chan evt)) 
-                                         (midi-evt-fields evt))
-     )
-    (progn
-      (portmidi-start)
-      (pm::pm-write-short *midi-out-stream* 0
-                        (make-midi-bytes (midi-evt-type evt) 
-                                         (1- (midi-evt-chan evt)) 
-                                         (midi-evt-fields evt))
+  (let ((out (get-output-stream-from-port (midi-evt-port evt))))
+    (if out
+        (pm::pm-write-short out 0
+                            (make-midi-bytes (midi-evt-type evt) 
+                                             (1- (midi-evt-chan evt)) 
+                                             (midi-evt-fields evt))
                         )
-      (portmidi-stop)
-      )))
-    
-(defvar *midi-out-stream* nil)
+        (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt))))
+    ))
 
-(defun portmidi-start ()
+
+;(defvar *midi-out-stream* nil)
+; (portmidi-start)
+
+(defun portmidi-start (&optional (buffersize 1024))
   (unless (pm-time-started) (pm-time-start))
-  (unless *midi-out-stream*
-    (setf *midi-out-stream* (pm::pm-open-output 0 1024 0))))
+  ;(unless *midi-out-stream*
+  ;  (handler-bind ((error #'(lambda (err)
+  ;                            (print "PortMidi: Could not open MIDI device!!!")
+  ;                            (abort))))
+  ;    (setf *midi-out-stream* (pm::pm-open-output 0 buffersize 0))))
+  )
 
 (defun portmidi-stop ()
-  (pm::pm-close *midi-out-stream*)
-  (setf *midi-out-stream* nil)
+  ;(pm::pm-close *midi-out-stream*)
+  ;(setf *midi-out-stream* nil)
   (when (pm-time-started) (pm-time-stop))
   t)
 
@@ -185,63 +186,46 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (pm::pm-terminate)
     )
   (pm::pm-initialize)
-  (print "portmidi reinitialized.")
-  (print "devices detected")
-  (list-devices))
+  (print "PortMidi reinitialized.")
+  (let ((devices (list-devices)))
+    (if devices 
+        (print (format nil "~%PortMIDI - devices detected:~%~{~A~^~%~}" 
+                       (mapcar #'(lambda (device) (format nil "~s [~A]" (nth 4 device) 
+                                                         (cond ((and (nth 6 device) (nth 8 device)) "IN-OUT")
+                                                               ((nth 6 device) "INPUT")
+                                                               ((nth 8 device) "OUTPUT")
+                                                               (t "-"))))
+                               devices)))
+      (print "No MIDI devices detected"))
+    ))
   
-
-(defmethod portmidi-setup (settings)  (print "portmidi setup undefined!") nil)
-
-(defmethod portmidi-connect-ports (settings)  (print "portmidi connect undefined!") nil)
-
 
 
 #|
 
 (pm::pm-terminate)
 (pm::pm-initialize)
-
 (portmidi-restart)
-
 (pm-time-started)
 (pm-time-start)
-
 (LIST-DEVICES)
-
-
 (pm::pm-get-default-output-device-id)
 (pm::pm-get-default-input-device-id)
 
-
 (setf *midi-out* (pm::pm-open-output 2 1024 0))
 
-
 (pm::pm-write-short *midi-out* 0 (make-midi-bytes :keyoff 0 '(62 100)))
-
 (pm::pm-write-short *midi-out* 0 (pm::note-on 1 61))
-
 (pm:close-midi *midi-out*)
-
 (setf *midi-in* (pm:open-input 1 1024))
-
 (pm:read-midi *midi-in*)
-
 (pm:close-midi *midi-in*)
-
-
 (note-on 1 61 100)
 
-
 ;;;; AVEC CL-MIDI
-
 (setf midi::*midi-output* (pm::pm-open-output 2 1024 0))
 (midi::write-message )
-
 (setf mess (om-midi::make-note-on-message 0 61 100 1))
-
 (midi::key mess)
-
-
-
 
 |#
