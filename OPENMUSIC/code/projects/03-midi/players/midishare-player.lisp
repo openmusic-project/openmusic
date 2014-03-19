@@ -11,14 +11,18 @@
 (defun init-midishare-players ()
   "Check if MidiShare is present, if this is the case open the player and
 the recorder, this function is called by a def-load-pointers"
-  (if (or om-midi::*midishare-loaded?* (om-midi::midishare-startup))
+  (if (or om-midi::*midishare-loaded?* 
+          (and (print "MS player try to load MidiShare...") (om-midi::midishare-startup)))
       (om-without-interrupts  
         (setq *midiplayer* (om-midi::midishare-open-player "OMPlayer"))
         ;(setf *midirecorder* (om-midi::midishare-open-player "OMRecorder"))
         (enable-player :midishare)
-        )
-    (om-message-dialog (format nil (om-str :lib-error) "MIDI")))
-  t)
+        t)
+    (progn 
+      ;(om-message-dialog (format nil (om-str :lib-error) "MIDI"))
+      (print "MidiShare player could not start. Could not load MidiShare")
+      nil)
+    ))
 
 (defun close-midishare-players ()
    "If MidiShare is present, close the player and the recorder before quit the application"

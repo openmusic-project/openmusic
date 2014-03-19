@@ -39,9 +39,6 @@
 
 (pushnew :midishare *features*)
 
-(pushnew :midishare om-midi::*midi-systems*)
-(pushnew :midishare om-midi::*midi-file-systems*)
-
 (defmethod om-midi::load-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-load-file)
 (defmethod om-midi::save-midi-file-function ((midisystem (eql :midishare))) 'om-midi::midishare-save-file)
 

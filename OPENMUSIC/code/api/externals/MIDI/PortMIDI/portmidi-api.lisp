@@ -5,7 +5,10 @@
 (defun om-start-portmidi ()
   #-linux (setf pm::*libportmidi-pathname* (oa::om-lib-pathname pm::*libportmidi-pathname*))
   (pm::load-portmidi-lib)
-  (when pm::*libportmidi* (pm::pm-initialize))
+  (when pm::*libportmidi* 
+    ;;; REGISTER AS A MIDI I/O SYSTEM
+    (pushnew :portmidi om-midi::*midi-systems*)
+    (pm::pm-initialize))
   pm::*libportmidi*)
 
 (defun om-stop-portmidi ()

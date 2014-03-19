@@ -34,11 +34,12 @@
 (defvar *player-framework* nil)
   
 (defun player-framework ()
-    (or *player-framework*
-        (setq *player-framework*
-              (if (probe-file cl-user::*libplayer*)
-                  (progn (cffi:load-foreign-library cl-user::*libplayer*)
-           t)))))
+  (print (format nil "Loading MIDIShare Player library [~A]" (namestring cl-user::*libplayer*)))
+  (or *player-framework*
+      (setq *player-framework*
+            (if (probe-file cl-user::*libplayer*)
+                (progn (cffi:load-foreign-library cl-user::*libplayer*)
+                  t)))))
   
 ;(defun close-player-framework ()
 ;  (setq *player-framework* nil))
