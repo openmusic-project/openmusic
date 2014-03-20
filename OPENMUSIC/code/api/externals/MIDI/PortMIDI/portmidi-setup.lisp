@@ -47,11 +47,13 @@
 
 (defun get-input-stream-from-port (port)
    (when port
-     (nth 2 (find port *portmidi-in-ports-table* :key 'car :test '=))))
+      (let ((device (find port *portmidi-in-ports-table* :key 'car :test '=)))
+        (values (nth 2 device) (nth 1 device)))))
 
 (defun get-output-stream-from-port (port)
   (when port
-    (nth 2 (find port *portmidi-out-ports-table* :key 'car :test '=))))
+    (let ((device (find port *portmidi-out-ports-table* :key 'car :test '=)))
+      (vlaues (nth 2 device) (nth 1 device)))))
 
 
 (defmethod portmidi-setup (settings)

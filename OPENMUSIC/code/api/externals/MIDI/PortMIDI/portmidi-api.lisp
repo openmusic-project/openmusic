@@ -71,19 +71,16 @@
 ;;; FROM CL-PORT-MIDI
 ;;;========================================
 
-#|
-(defun Message (status data1 data2)
-  ;; portmidi messages are just unsigneds
-  (logior (logand (ash data2 16) #xFF0000)
-          (logand (ash data1 08) #xFF00)
-          (logand status #xFF)))
-(defun Message.status (m)
-  (logand m #xFF))
-(defun Message.data1 (m)
-  (logand (ash m -08) #xFF))
-(defun Message.data2 (m)
-  (logand (ash m -16) #xFF))
-|#
+
+(defun pm-channel (channel)
+  "=> the bitmask for 'channel"
+  (ash 1 channel))
+
+(defun pm-channels (&rest channels)
+  "=> a bitmask for multiple channels"
+  (apply #'+ (mapcar #'channel channels)))
+
+
 
 (defun make-message (status data1 data2)
   "=> an integer representing a MIDI message
@@ -119,6 +116,48 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 ;; ex. Note-OFF on channel 
 ;; (make-message* 8 channel note velocity)
 
+;; (message-status 14208)
+
+;;;========================================
+;;; START/STOP: NOT USEFUL AT THE END SINCE MIDI PORTS WILL STAY OPEN
+;;;========================================
+
+;(defvar *midi-out-stream* nil)
+; (portmidi-start)
+
+(defun portmidi-start (&optional (buffersize 1024))
+  (unless (pm-time-started) (pm-time-start))
+  ;(unless *midi-out-stream*
+  ;  (handler-bind ((error #'(lambda (err)
+  ;                            (print "PortMidi: Could not open MIDI device!!!")
+  ;                            (abort))))
+  ;    (setf *midi-out-stream* (pm::pm-open-output 0 buffersize 0))))
+  )
+
+(defun portmidi-stop ()
+  ;(pm::pm-close *midi-out-stream*)
+  ;(setf *midi-out-stream* nil)
+  (when (pm-time-started) (pm-time-stop))
+  t)
+
+;;; used, e.g. to refresh the list of devices
+(defun portmidi-restart ()
+  (when pm::*libportmidi*
+    (pm::pm-terminate)
+    )
+  (pm::pm-initialize)
+  (print "PortMidi reinitialized.")
+  (let ((devices (list-devices)))
+    (if devices 
+        (print (format nil "~%PortMIDI - devices detected:~%~{~A~^~%~}" 
+                       (mapcar #'(lambda (device) (format nil "~s [~A]" (nth 4 device) 
+                                                         (cond ((and (nth 6 device) (nth 8 device)) "IN-OUT")
+                                                               ((nth 6 device) "INPUT")
+                                                               ((nth 8 device) "OUTPUT")
+                                                               (t "-"))))
+                               devices)))
+      (print "No MIDI devices detected"))
+    ))
 
 
 ;;;========================================
@@ -165,43 +204,55 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     ))
 
 
-;(defvar *midi-out-stream* nil)
-; (portmidi-start)
+;;;========================================
+;;; MIDI IN
+;;;========================================
+;;;; FROM Taube's CFFI bindings
 
-(defun portmidi-start (&optional (buffersize 1024))
-  (unless (pm-time-started) (pm-time-start))
-  ;(unless *midi-out-stream*
-  ;  (handler-bind ((error #'(lambda (err)
-  ;                            (print "PortMidi: Could not open MIDI device!!!")
-  ;                            (abort))))
-  ;    (setf *midi-out-stream* (pm::pm-open-output 0 buffersize 0))))
-  )
+(defun portmidi-Read (stream *evbuf len) 
+  (let ((res (pm::pm-read stream *evbuf len)))
+    (if (< res 0)
+        (error (pm::pm-get-error-text res))
+        res)))
 
-(defun portmidi-stop ()
-  ;(pm::pm-close *midi-out-stream*)
-  ;(setf *midi-out-stream* nil)
-  (when (pm-time-started) (pm-time-stop))
-  t)
+;;; check if there is something in stream
+(defun portmidi-Poll (stream)
+  (let ((res (pm::pm-poll stream)))
+    (cond ((= res 0) nil)
+          ((= res 1) t)
+          (t (error (pm::pm-get-error-text res))))))
 
-;;; used, e.g. to refresh the list of devices
-(defun portmidi-restart ()
-  (when pm::*libportmidi*
-    (pm::pm-terminate)
-    )
-  (pm::pm-initialize)
-  (print "PortMidi reinitialized.")
-  (let ((devices (list-devices)))
-    (if devices 
-        (print (format nil "~%PortMIDI - devices detected:~%~{~A~^~%~}" 
-                       (mapcar #'(lambda (device) (format nil "~s [~A]" (nth 4 device) 
-                                                         (cond ((and (nth 6 device) (nth 8 device)) "IN-OUT")
-                                                               ((nth 6 device) "INPUT")
-                                                               ((nth 8 device) "OUTPUT")
-                                                               (t "-"))))
-                               devices)))
-      (print "No MIDI devices detected"))
+(defstruct midi-in-process (process) (buffer))
+ 
+
+(defun midi-in-loop (stream buff size &optional (fun #'identity))
+  (loop do
+        (if (portmidi-poll stream)
+            (let ((n (portmidi-read stream buff 1)))
+              (unless (= n 0)
+                (pm::pm-EventBufferMap fun buff n)))
+          (sleep  0.1))))
+
+
+; (get-input-stream-from-port 0)
+(defun start-midi-in (portnum function &optional (buffersize 32)) 
+  (multiple-value-bind (in name) (get-input-stream-from-port portnum)
+    (if (null in) (print (format nil "PortMIDI ERROR: port ~A is not connected" portnum))
+      (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
+             (midiprocess (make-midi-in-process :buffer midibuffer
+                                            :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
+                                                                              #'midi-in-loop
+                                                                              in midibuffer buffersize function))))
+        midiprocess))))
+
+(defun stop-midi-in (midiprocess &key wait)
+  (mp:process-kill (midi-in-process-process midiprocess))
+  (prog1 
+      (pm::pm-EventBufferFree (midi-in-process-buffer midiprocess))
+    (when wait
+      (mp:process-wait "Wait until MIDI IN process be killed"
+                       #'(lambda () (not (mp:process-alive-p (midi-in-process-process midiprocess))))))
     ))
-  
 
 
 #|
@@ -211,24 +262,68 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 (portmidi-restart)
 (pm-time-started)
 (pm-time-start)
-(LIST-DEVICES)
+
+(list-devices)
 (pm::pm-get-default-output-device-id)
 (pm::pm-get-default-input-device-id)
+
+;;; TEST OUT
 
 (setf *midi-out* (pm::pm-open-output 2 1024 0))
 
 (pm::pm-write-short *midi-out* 0 (make-midi-bytes :keyoff 0 '(62 100)))
-(pm::pm-write-short *midi-out* 0 (pm::note-on 1 61))
-(pm:close-midi *midi-out*)
-(setf *midi-in* (pm:open-input 1 1024))
-(pm:read-midi *midi-in*)
-(pm:close-midi *midi-in*)
-(note-on 1 61 100)
 
-;;;; AVEC CL-MIDI
-(setf midi::*midi-output* (pm::pm-open-output 2 1024 0))
-(midi::write-message )
-(setf mess (om-midi::make-note-on-message 0 61 100 1))
-(midi::key mess)
+(pm:pm-close *midi-out*)
+
+;;; TEST IN
+
+(defparameter indev (pm::pm-open-input 0 256))
+
+; ignore active sensing etc.
+(pm::pm-set-filter indev pm::filt-realtime)
+
+; check midi in
+(portmidi-Poll indev)
+
+(defparameter midi-buffer (pm::pm-EventBufferNew 32))
+(defparameter num (portmidi-Read indev midi-buffer 32))
+
+(pm::pm-EventBufferMap 
+ (lambda (a b) 
+   (print (list "time" b))
+   (print (list (message-status a) (message-data1 a) (message-data2 a)))
+   (print "====="))
+ midi-buffer num)
+
+(pm:EventBufferFree midi-buffer)
+
+(pm::pm-close indev)
+
+
+;;; recv testing
+
+(defparameter pitch 0)
+(loop while (/= pitch 60) do
+  (let ((n (pm:Read indev buff 1)))
+    (cond ((= n 1)
+           (pm:EventBufferMap
+                (lambda (a b) 
+                   b (pm a) (terpri)
+                   (setf pitch (pm:Message.data1 a)))
+                buff n)))))
+
+; fake
+; (defparameter *in* (pm::pm-open-input 0 *portmidi-def-buffer-size*))
+; (defun get-input-stream-from-port (n) (values *in* "Oxygen 25"))
+
+(defparameter *test-midi-in* 
+  (start-midi-in 0  
+                 (lambda (time message) 
+                   (print (list "time" time))
+                   (print (list (message-status message) (message-data1 message) (message-data2 message)))
+                   )))
+
+(stop-midi-in *test-midi-in* :wait t)
+
 
 |#

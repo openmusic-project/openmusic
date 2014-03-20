@@ -47,16 +47,33 @@
 
 ; (load-portmidi-lib)
 
+
+
+;;;================
+;;; CONSTANTS
+;;;================
+
+(defconstant true 1) 
+(defconstant false 0)
+(defconstant pmNoError 0)
+(defconstant pmHostError -10000)
+(defconstant pm-no-device -1)
+(defconstant pm-default-sysex-buffer-size 1024)
+
+(defvar *host-error-text* (make-string 256 :initial-element #\*))
+
 ;;;================
 ;;; TYPES
 ;;;================
 
-(cffi:defctype pm-message :long)
-(cffi:defctype pm-timestamp :long)
-(cffi:defctype pm-device-id :int)
 (cffi:defctype pm-error :int)
 (cffi:defctype pm-stream :void)
 (cffi:defctype pm-time-proc-ptr :pointer)
+
+
+;;; DEVICES
+
+(cffi:defctype pm-device-id :int)
 
 (cffi:defcstruct pm-device-info 
 		 (struct-version :int) 
@@ -66,7 +83,6 @@
 		 (output :int) 
 		 (opened :int))
 
-;;; accessors
 (defun pm-device-info-interf (ptr)
   (cffi:foreign-string-to-lisp 
    (cffi:foreign-slot-value ptr 'pm-device-info 'interf)))
@@ -85,22 +101,86 @@
   (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'opened) 0)))
 
 
+;;; MIDI EVENTS
+
+(cffi:defctype pm-message :long)
+(cffi:defctype pm-timestamp :long)
+
+#|
+(defun Message (status data1 data2)
+  ;; portmidi messages are just unsigneds
+  (logior (logand (ash data2 16) #xFF0000)
+          (logand (ash data1 08) #xFF00)
+          (logand status #xFF)))
+(defun Message.status (m)
+  (logand m #xFF))
+(defun Message.data1 (m)
+  (logand (ash m -08) #xFF))
+(defun Message.data2 (m)
+  (logand (ash m -16) #xFF))
+|#
 
 (cffi:defcstruct pm-event 
-		 (message pm-message) 
-		 (timestamp pm-timestamp))
+  (message pm-message) 
+  (timestamp pm-timestamp))
 
-;;;================
-;;; CONSTANTS
-;;;================
+;;; accessors 
+(defun Event.message (e &optional (v nil vp))
+  (if vp
+      (progn 
+	(setf (cffi:foreign-slot-value e 'pm-event 'message) v)
+	v)
+    (cffi:foreign-slot-value e 'pm-event 'message)))
+    
+(defun Event.timestamp (e &optional (v nil vp))
+  (if vp
+      (progn 
+	(setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
+	v)
+    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
 
-(defconstant true 1) 
-(defconstant false 0)
-(defconstant pmNoError 0)
-(defconstant pmHostError -10000)
-(defconstant pm-no-device -1)
 
-(defvar *host-error-text* (make-string 256 :initial-element #\*))
+
+
+;;; EVENT BUFFERS
+
+(defun pm-EventBufferNew (len)
+  (cffi:foreign-alloc 'pm-event :count len))
+
+(defun pm-EventBufferFree (buf)
+  (cffi:foreign-free buf))
+
+(defun pm-EventBufferElt (buf i)
+  ;; buf is POINTER to buf
+  (cffi:mem-aref buf 'pm-event i))
+
+(defun pm-EventBufferSet (buffer index timestamp message)
+  (setf (cffi:foreign-slot-value
+         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'timestamp)
+        timestamp)
+  (setf (cffi:foreign-slot-value
+         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'message)
+        message)
+  (values))
+
+(defun pm-EventBufferMap (fn buf end)
+  (loop for i below end
+     for e = (pm-EventBufferElt buf i)
+     do (funcall fn (Event.message e) (Event.timestamp e)))
+ (values))
+
+
+;;; EX. use buffers
+;(let ((buff (pm::pm-EventBufferNew 8)))
+;  (loop for i below 8 for x = (pm:EventBufferElt buff i) do
+;        (pm::Event.message x (pm:message #b1001000 (+ 60 i) (+ 100 i)))
+;        (pm::Event.timestamp x (* 1000 i)))
+;  (loop for i below 8 for x = (pm:EventBufferElt buff i) 
+;        ;; check buffer contents
+;        collect (list (pm:Event.timestamp x)
+;                      (pm:Message.data1 (pm:Event.message x))
+;                      (pm:Message.data2 (pm:Event.message x))))
+;  (pm:EventBufferFree buff))
 
 
 ;;;==========================
@@ -114,7 +194,6 @@
 (cffi:defcfun ("Pt_Stop" pt-stop) pt-error)
 (cffi:defcfun ("Pt_Started" pt-started) :int)
 (cffi:defcfun ("Pt_Time" pt-time) pt-timestamp)
-
 
 ;;;================
 ;;; FUNCTIONS
@@ -202,7 +281,7 @@
   ;; portmidi: timer must be running before opening
   ;(unless (Started) (Start))
   (cffi:with-foreign-object (p1 :pointer)
-    (let ((err (pm-open-input p1 device (cffi:null-pointer)
+    (let ((err (pm-open-input-PTR p1 device (cffi:null-pointer)
                               buffer-size 
                               (cffi:null-pointer) (cffi:null-pointer)
                               )))
@@ -211,7 +290,15 @@
             (error (pm-get-error-text err))))))
 
 
+;;; synchronizes stream with the clock.
+(cffi::defcfun ("Pm_Synchronize" pm-synchronize) pm-error (stream :pointer))
+
 (cffi:defcfun ("Pm_Close" pm-close) pm-error (stream :pointer)) 
+
+;; Terminates outgoing messages on stream.
+;; pm-close should be called immediately after
+(cffi:defcfun ("Pm_Abort" pm-abort) pm-error (stream :pointer)) 
+
 
 
 ;;; SEND
@@ -236,38 +323,19 @@
     (pm-write-sys-ex-PTR stream timetag ptr)))
 
 
-#|
-
-
-;;;;=====================================================================================
-;;;; FROM Taube's CFFI bindings
-
-;;; accessors 
-(defun Event.message (e &optional (v nil vp))
-  (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'message) v)
-	v)
-    (cffi:foreign-slot-value e 'pm-event 'message)))
-    
-(defun Event.timestamp (e &optional (v nil vp))
-  (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
-	v)
-    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
-
+;;; RECEIVE
 
 
 (cffi:defcfun ("Pm_Poll" pm-poll) pm-error (stream :pointer)) 
 (cffi:defcfun ("Pm_Read" pm-read) pm-error (stream :pointer) (buffer :pointer) (length :long)) 
-(cffi:defcfun ("Pm_Abort" pm-abort) pm-error (stream :pointer)) 
-;(cffi:defcfun ("Pm_SetChannelMask" pm-set-channel-mask) pm-error (stream :pointer) (mask :int)) 
-(cffi:defcfun ("Pm_SetFilter" pm-set-filter) pm-error (stream :pointer) (filters :long)) 
 
 
+;;; select MIDI channels
+(cffi:defcfun ("Pm_SetChannelMask" pm-set-channel-mask) pm-error (stream :pointer) (mask :int)) 
 
-(defconstant pm-default-sysex-buffer-size 1024)
+;;; filtering MIDI IN IN
+(cffi:defcfun ("Pm_SetFilter" pm-set-filter) pm-error (stream :pointer) (filters :long))
+
 (defconstant filt-active 1) 
 (defconstant filt-sysex 2) 
 (defconstant filt-clock 4) 
@@ -287,75 +355,8 @@
 (defconstant filt-tune 65536) 
 (defconstant filt-tick filt-f9)
 (defconstant filt-undefined (logior filt-f9 filt-fd))
-(defconstant filt-realtime (logior filt-active filt-sysex
-                                      filt-clock filt-play
-                                      filt-undefined filt-reset))
-(defconstant filt-aftertouch (logior filt-channel-aftertouch
-                                        filt-poly-aftertouch ))
-(defconstant filt-systemcommon (logior filt-mtc filt-song-position
-                                          filt-song-select filt-tune))
+(defconstant filt-realtime (logior filt-active filt-sysex filt-clock filt-play filt-undefined filt-reset))
+(defconstant filt-aftertouch (logior filt-channel-aftertouch filt-poly-aftertouch ))
+(defconstant filt-systemcommon (logior filt-mtc filt-song-position filt-song-select filt-tune))
 
 
-
-(defun SetFilter (a filts) 
-  (with-pm-error
-    (pm-set-filter a filts)))
-
-;(defun SetChannelMask (pms mask)
-;  (with-pm-error (pm-set-channel-mask pms mask)))
-
-(defun Abort (pms)
-  (with-pm-error (pm-abort pms)))
-
-(defun Close (pms)
-  (with-pm-error (pm-close pms)))
-
-(defun EventBufferFree (buf)
-  (cffi:foreign-free buf))
-
-(defun EventBufferNew (len)
-  (cffi:foreign-alloc 'pm-event :count len))
-
-(defun EventBufferElt (buf i)
-  ;; buf is POINTER to buf
-  (cffi:mem-aref buf 'pm-event i))
-
-(defun EventBufferSet (buffer index timestamp message)
-  (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'timestamp)
-        timestamp)
-  (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'message)
-        message)
-  (values))
-
-(defun EventBufferMap (fn buf end)
-  (loop for i below end
-     for e = (EventBufferElt buf i)
-     do (funcall fn (Event.message e) (Event.timestamp e)))
- (values))
-
-(defun Read (pms *evbuf len) 
-  (let ((res (pm-read pms *evbuf len)))
-    (if (< res 0)
-        (error (pm-get-error-text res))
-        res)))
-
-(defun Poll (pms)
-  (let ((res (pm-poll pms)))
-    (cond ((= res 0) nil)
-          ((= res 1) t)
-          (t (error (pm-get-error-text res))))))
-
-(defun Write (pms *evbuf len)
-  (with-pm-error (pm-write pms *evbuf len)))
-
-(defun WriteShort (pms when msg)
-  (with-pm-error (pm-write-short pms when msg)))
-
-
-
-
-
-
-|#
