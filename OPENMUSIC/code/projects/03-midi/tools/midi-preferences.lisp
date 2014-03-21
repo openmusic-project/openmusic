@@ -39,7 +39,7 @@
                                                    :midi-file-system #+linux :cl-midi #-linux :midishare
                                                    :midi-format 1
                                                    :auto-microtone-bend nil
-                                                   :midi-setup nil
+                                                   :midi-setup '(nil nil)  ;;; (in out)
                                                    :midi-presets (def-midi-presets)
                                                    ))
 
@@ -192,7 +192,11 @@
                                            :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
                                            :di-action #'(lambda (item) (declare (ignore item))
                                                           (when (om-midi::midi-restart-function *default-midi-system*)
-                                                            (funcall (om-midi::midi-restart-function *default-midi-system*)))))
+                                                            (funcall (om-midi::midi-restart-function *default-midi-system*)))
+                                                          ;;; TEST
+                                                          (when (om-midi::midi-connect-function *default-midi-system*)
+                                                            (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+                                                            )))
 
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 45)) (om-make-point 160 24) "Devices/ports setup:" :font *controls-font*)
 

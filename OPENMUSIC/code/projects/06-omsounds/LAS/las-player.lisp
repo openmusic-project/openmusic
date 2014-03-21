@@ -37,7 +37,7 @@
 (defparameter las-srate 44100)
 (defconstant las-buffsize 512)
 (defconstant las-streambuffsize 65536)
-(defconstant las-instreamduration (* las-srate 600))
+(defparameter las-instreamduration (* las-srate 600))
 (defconstant las-renderer #+macosx las::kCoreAudioRenderer #-macosx las::kPortAudioRenderer)
 (defconstant las-thread 1)
 

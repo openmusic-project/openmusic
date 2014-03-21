@@ -163,12 +163,6 @@
         message)
   (values))
 
-(defun pm-EventBufferMap (fn buf end)
-  (loop for i below end
-     for e = (pm-EventBufferElt buf i)
-     do (funcall fn (Event.message e) (Event.timestamp e)))
- (values))
-
 
 ;;; EX. use buffers
 ;(let ((buff (pm::pm-EventBufferNew 8)))

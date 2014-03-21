@@ -165,7 +165,7 @@
 ;=============================================
 ;PANEL
 ;=============================================
-(omg-defclass cerclePanel (om-view) 
+(defclass cerclePanel (om-view) 
    ((show-polygon :initform t :accessor show-polygon)
     (show-bkg :initform t :accessor show-bkg)
     (rot-mode :initform nil :accessor rot-mode)

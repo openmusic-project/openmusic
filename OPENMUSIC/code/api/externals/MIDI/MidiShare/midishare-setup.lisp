@@ -19,6 +19,9 @@
      (sleep 0.5)
      (oa::om-without-interrupts (restore-midishare-connections settings))))
 
+
+
+#|
 ;;;==================================================
 ;;; COLLECTS DETECTED CONNECTIONS
 (defun get-midishare-connections ()
@@ -54,6 +57,55 @@
                   (when slt (midishare-connect-slot (car slt) (car port-connect)))))
 
           )))
+|#
+
+
+;;; NOW IN AND OUT POORTS ARE DIFFERENT
+
+;;;==================================================
+;;; COLLECTS DETECTED CONNECTIONS
+(defun get-midishare-connections ()
+  (let ((inconnections nil)
+        (outconnections nil)
+        (portinfo nil))
+    (loop for p from 0 to 255 do
+          (setf portinfo (midishare-get-connections p))
+          (when (car portinfo)
+              (push (list p (mapcar 'cadr (car portinfo))) inconnections))
+          (when (cadr portinfo)
+            (push (list p (mapcar 'cadr (cadr portinfo))) outconnections)))
+    (list inconnections outconnections)))
+
+; (get-midishare-connections)
+
+;;;==================================================
+;;; RESTORE THE CONNECTIONS
+(defun restore-midishare-connections (connection-data) 
+  (let ((inslots (remove nil (loop for ref in (midishare-get-drivers) append (nth 1 (midishare-driver-info ref)))))
+        (outslots (remove nil (loop for ref in (midishare-get-drivers) append (nth 2 (midishare-driver-info ref))))))
+    
+    ;(print "RESTORING MIDI CONNECTIONS")
+    ;(print connection-data)
+    
+    ; déconnecte tout
+    (loop for p from 0 to 255 do
+          (loop for sss in (append inslots outslots) do
+                (midishare-unconnect-slot (car sss) p)))
+
+    (loop for in-port-connect in (car connection-data) do
+          (loop for inslot in (nth 1 in-port-connect) do
+                (let ((slt (find inslot inslots :key 'cadr :test 'string-equal)))
+                  (when slt (midishare-connect-slot (car slt) (car in-port-connect))))))
+
+    (loop for out-port-connect in (cadr connection-data) do
+          (loop for outslot in (nth 1 out-port-connect) do
+                (let ((slt (find outslot outslots :key 'cadr :test 'string-equal)))
+                  (when slt (midishare-connect-slot (car slt) (car out-port-connect)))))
+
+          )
+    ))
+
+
 
 ;;;==========================================================================================
 ;;; WINDOWS AND OSX PPC
