@@ -17,6 +17,9 @@
 (defmethod om-midi::midi-connect-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-connect-ports)
 (defmethod om-midi::midi-restart-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-restart)
 
+(defmethod om-midi::midi-in-start-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-in-start)
+(defmethod om-midi::midi-in-stop-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-in-stop)
+
 
 (om-add-init-func 'om-midi::om-start-portmidi)
 

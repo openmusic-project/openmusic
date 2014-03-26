@@ -259,19 +259,23 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                             (pm::pm-EventBufferFree buff)
                             (mp:process-kill mp::*current-process*)
                             )))
-                            
-  (loop do
-        (if (portmidi-poll stream)
-            (let ((n (portmidi-read stream buff size)))
-              (unless (= n 0)
-                (PMEventBufferMap fun buff n port)))
-          (sleep 0.001)))))
-
+    (let ((out? (get-output-stream-from-port port)))                       
+      (loop do
+            (if (portmidi-poll stream)
+                (let ((n (portmidi-read stream buff size)))
+                  (unless (= n 0)
+                    (PMEventBufferMap fun buff n port)
+                    (when out?
+                      (PMEventBufferMap 
+                       #'(lambda (message time) (portmidi-send-evt message))
+                       buff n port))
+                    )
+                  (sleep 0.001)))))))
 
 ; (get-input-stream-from-port 0)
-(defun start-midi-in (portnum function &optional (buffersize 32)) 
+(defun portmidi-in-start (portnum function &optional (buffersize 32)) 
   (multiple-value-bind (in name) (get-input-stream-from-port portnum)
-    (if (null in) (print (format nil "PortMIDI ERROR: port ~A is not connected" portnum))
+    (if (null in) (progn (print (format nil "PortMIDI ERROR: port ~A is not connected" portnum)) nil)
       (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
              (midiprocess (make-midi-in-process :buffer midibuffer
                                             :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
@@ -279,13 +283,15 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                                                                               in midibuffer buffersize function portnum))))
         midiprocess))))
 
-(defun stop-midi-in (midiprocess &key wait)
-  (mp:process-kill (midi-in-process-process midiprocess))
-  (prog1 
-      (pm::pm-EventBufferFree (midi-in-process-buffer midiprocess))
-    (when wait
+(defun portmidi-in-stop (midiprocess)
+  (when midiprocess 
+    (mp:process-kill (midi-in-process-process midiprocess))
+    (prog1 
+        (pm::pm-EventBufferFree (midi-in-process-buffer midiprocess))
+      ;; (when wait
       (mp:process-wait "Wait until MIDI IN process be killed"
                        #'(lambda () (not (mp:process-alive-p (midi-in-process-process midiprocess))))))
+    
     ))
 
 
@@ -351,15 +357,15 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 ; (defun get-input-stream-from-port (n) (values *in* "Oxygen 25"))
 
 (defparameter *test-midi-in*
-  (start-midi-in 0  
+  (portmidi-in-start 0  
                  (lambda (message time) 
                    ;(print (list "time" time))
                    (print message)
-                   (portmidi-send-evt message)
+                   ;(portmidi-send-evt message)
                    )
                  1))
 
-(stop-midi-in *test-midi-in* :wait t)
+(portmidi-in-stop *test-midi-in* :wait t)
 
 
 |#
