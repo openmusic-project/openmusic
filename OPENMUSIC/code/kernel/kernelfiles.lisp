@@ -124,6 +124,7 @@
 "boxes/boxeswitheditor/abspatch"
 "boxes/file-utils"
 "boxes/dialog-item-boxes"
+"boxes/receive-box"
 
 ;-----------Aux windows------------------------------ 
 "graphics/infowindow"

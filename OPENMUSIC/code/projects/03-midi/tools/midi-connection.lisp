@@ -91,3 +91,14 @@
   (let ((sys (ckeck-def-midi-system 'om-midi::midi-start-function)))
     (when sys (funcall (om-midi::midi-start-function sys)))))
 
+
+;;; START/STOP MIDI IN
+
+(defun midi-in-start (port fun bsize)
+  (let ((sys (ckeck-def-midi-system 'om-midi::midi-in-start-function)))
+    (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize))))
+
+
+(defun midi-in-stop (port fun)
+  (let ((sys (ckeck-def-midi-system 'om-midi::midi-in-stop-function)))
+    (when sys (funcall (om-midi::midi-in-stop-function sys) process))))

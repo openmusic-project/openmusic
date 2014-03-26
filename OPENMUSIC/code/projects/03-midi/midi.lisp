@@ -45,6 +45,7 @@
         "tools;midi-save"
         "tools;midi-preparetoplay"
         "tools;midi-send" ; => TODO !!
+        "tools;midi-in" ; => TODO !!
      
         ;;; EDITORS
         "editors;midieditor"

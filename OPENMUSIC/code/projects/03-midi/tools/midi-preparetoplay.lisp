@@ -260,12 +260,15 @@
 
 ; (om+ 8192 '(0 1024 2048 3072))
 
-(defun microplay-reset (port)
-  (midi-send-evt (make-pitchwheel-event 0 1 port 0))
-  (midi-send-evt (make-pitchwheel-event 0 2 port 0))
-  (midi-send-evt (make-pitchwheel-event 0 3 port 0))
-  (midi-send-evt (make-pitchwheel-event 0 4 port 0))
-  )
+(defun microplay-reset (port player)
+  (let ((send-fun (or (om-midi::send-midi-event-function player)
+                      'midi-send-evt))
+        (p (or port *def-midi-out*)))    
+  (funcall send-fun (make-pitchwheel-event 0 1 p 0))
+  (funcall send-fun (make-pitchwheel-event 0 2 p 0))
+  (funcall send-fun (make-pitchwheel-event 0 3 p 0))
+  (funcall send-fun (make-pitchwheel-event 0 4 p 0))
+  ))
 
 
 

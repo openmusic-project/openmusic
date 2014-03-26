@@ -11,7 +11,7 @@
 (defvar *gmidi-package* (omNG-protect-object (omNG-make-new-package "General MIDI")))
 (AddPackage2Pack *gmidi-package* *midipackage* :protect t)
 
-(defvar *midisend-package* (omNG-protect-object (omNG-make-new-package "MIDI Send")))
+(defvar *midisend-package* (omNG-protect-object (omNG-make-new-package "Send/Receive")))
 (AddPackage2Pack *midisend-package* *midipackage* :protect t)
 
 (defvar *midifilter-package* (omNG-protect-object (omNG-make-new-package "Filters")))
@@ -22,7 +22,7 @@
 (AddClass2Pack '(MidiEvent EventMidi-seq MidiControl Tempo-map Midi-Mix-Console) *midipackage* :position (list (om-make-point 75 295) (om-make-point 75 115)))
 
 
-(AddGenFun2Pack  '(pitchwheel pitchbend pgmout ctrlchg volume sysex midi-reset) *midisend-package*)
+(AddGenFun2Pack  '(pitchwheel pitchbend pgmout ctrlchg volume sysex midi-reset midi-in) *midisend-package*)
 (AddGenFun2Pack  '(test-date test-channel test-type test-track test-port midievent-filter) *midifilter-package*)
 (AddGenFun2Pack  '(mesure-time cseq+tempo->voice) *scorepackage*)
 (AddGenFun2Pack '(mf-info save-as-midi) *midipackage*)

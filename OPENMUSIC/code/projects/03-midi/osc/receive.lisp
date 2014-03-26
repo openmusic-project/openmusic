@@ -7,8 +7,8 @@
   :initvals '(3000 nil)
   :doc "A local OSC server.
  
-At evaluation, the OSC-RECEIVE box should turn on/off (highlighted or not).
-When the server is on, OSC-RECEIVE waits for OSC messages to come and calls <patch> with the decoded message as parameter.
+Right-click and select the appropriate option to turn on/off.
+When the server is on, OSC-RECEIVE waits for OSC messages on port <port> and calls <msg-processing> with the decoded message as parameter.
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to an OSC message. 
 This patch should handle and process the incoming messages.
@@ -17,47 +17,11 @@ This patch should handle and process the incoming messages.
 
   t)
 
-(defclass ReceiveBox (OMBoxCall) 
-  ((etat :initform nil :initarg :etat :accessor etat)
-   (process :initform nil :initarg :process :accessor process)))
 
 (defmethod get-boxcallclass-fun ((self (eql 'osc-receive))) 'ReceiveBox)
 
-(defmethod allow-lock-button ((self ReceiveBox))  nil)
-
-(defmethod set-delivered-value ((box ReceiveBox) msg)
-  (setf (value box) (list (reverse msg))))
-
-
-;(defmethod call-gen-code ((self ReceiveBox) numout)
-;   (declare (ignore numout))
-;   `(if ,(gen-code (first (inputs self)) 0) ,(gen-code (second (inputs self)) 0) ,(gen-code (third (inputs self)) 0)))
-
-;(defmethod gen-code-call ((self ReceiveBox))
-;   (call-gen-code self 0))
- 
-(defmethod omNG-box-value ((self ReceiveBox) &optional (numout 0))
-  (value self))
-
-
-(defclass ReceiveBoxFrame (boxframe) ())
-
-(defmethod get-frame-class ((self ReceiveBox)) 'ReceiveBoxFrame)
-
-(defmethod om-get-menu-context ((self ReceiveBoxFrame))
-  (append (list (list 
-                 (if (etat (object self)) 
-                     (om-new-leafmenu  "STOP RECEIVE" #'(lambda () (osc-stop-receive (object self))))
-                   (om-new-leafmenu  "START RECEIVE" #'(lambda () (osc-start-receive (object self)))))))
-          (call-next-method)))
-
-(defmethod draw-after-box ((self ReceiveBoxFrame)) 
-   (when (etat (object self))
-     (om-with-focused-view self
-       (om-draw-hilite-rect 0 0 (w self) (h self)))))
-
-(defmethod OpenEditorframe ((self ReceiveBox)) (om-beep))
- 
+(defmethod start-receive-fun ((self (eql 'osc-receive))) 'osc-start-receive)
+(defmethod stop-receive-fun ((self (eql 'osc-receive))) 'osc-stop-receive)
 
 ;;;========================================
 ;;; oSC features
@@ -75,7 +39,7 @@ This patch should handle and process the incoming messages.
                                            ;(print (format nil "OSC RECEIVE= ~A" message))
                                            (let ((delivered (deliver-bundle message fun)))
                                              ;(loop for mess in delivered do
-                                             (set-delivered-value box delivered)
+                                             (set-delivered-value box (reverse delivered))
                                              ;
                                              )
                                            )
@@ -119,25 +83,12 @@ This patch should handle and process the incoming messages.
 ;;-----------------------------------------------------------------------------
 ;;; ((string-equal (car item) "/lisp") (execute-message item))
 ;;; ((string-equal (car item) "/lisp-string") (execute-message-from-string item))
+;;;
+;;;(defun execute-message (message)
+;;;  (apply (if (symbolp (cadr message)) (cadr message) (read-from-string (cadr message))) (cddr message)))
+;;;
+;;;(defun execute-message-from-string (message)
+;;; (eval (read-from-string (cadr message))))
 
-
-
-(defmethod deliver-message (message (fun OMPatch))
-  (apply (intern (string (code fun)) :om) (list message)))
-
-(defmethod deliver-message (message (fun null)) message)
-
-(defmethod deliver-message (message (fun function)) 
-  (apply fun (list message)))
-
-(defmethod deliver-message (message (fun symbol))
-  (when (fboundp fun) (apply fun (list message))))
-
-(defun execute-message (message)
-  (apply (if (symbolp (cadr message)) (cadr message) (read-from-string (cadr message))) (cddr message)))
-
-(defun execute-message-from-string (message)
- (eval (read-from-string (cadr message)))
-)
 
 

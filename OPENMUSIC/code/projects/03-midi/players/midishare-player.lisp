@@ -123,7 +123,7 @@ the recorder, this function is called by a def-load-pointers"
   (when *midiplayer* 
     (om-midi::midishare-stop-player *midiplayer*)
     (let ((ports (remove-duplicates (mapcar 'fifth *ms-list-to-play*))))
-      (loop for p in ports do (microplay-reset p))))
+      (loop for p in ports do (microplay-reset p engine))))
   (setf *ms-list-to-play* nil *ms-loop* nil))
 
 
