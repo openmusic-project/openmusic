@@ -251,7 +251,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 (defstruct midi-in-process (process) (buffer))
  
-
+#|
 (defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil))
   (handler-bind ((error #'(lambda (err)
                             (print (format nil "PORTMIDI ERREOR: ~s" err))
@@ -271,11 +271,38 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                        buff n port))
                     )
                   (sleep 0.001)))))))
+|#
+
+
+(defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil))
+  (UNWIND-PROTECT 
+      
+      (let ((out? (get-output-stream-from-port port)))                       
+        (loop do
+              (if (portmidi-poll stream)
+                  (let ((n (portmidi-read stream buff size)))
+                    (unless (= n 0)
+                      (PMEventBufferMap fun buff n port)
+                      (when out?
+                        (PMEventBufferMap 
+                         #'(lambda (message time) (portmidi-send-evt message))
+                         buff n port))
+                      )
+                    (sleep 0.001)))))
+    
+    (PROGN
+      ;(print (format nil "ERROR IN MIDI LOOP"))
+      (pm::pm-EventBufferFree buff)
+      (mp:process-kill mp::*current-process*)
+      )
+    
+    ))
+
 
 ; (get-input-stream-from-port 0)
 (defun portmidi-in-start (portnum function &optional (buffersize 32)) 
   (multiple-value-bind (in name) (get-input-stream-from-port portnum)
-    (if (null in) (progn (print (format nil "PortMIDI ERROR: port ~A is not connected" portnum)) nil)
+    (if (null in) (progn (print (format nil "PortMidi ERROR: port ~A is not connected" portnum)) nil)
       (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
              (midiprocess (make-midi-in-process :buffer midibuffer
                                             :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil

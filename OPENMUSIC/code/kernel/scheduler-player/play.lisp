@@ -54,7 +54,7 @@
   (general-stop *general-player*))
 
 
-(defmethod* Play ((self simple-container) &key (player t))
+(defmethod* Play ((self simple-container) &key (player nil))
    (call-next-method)
    (when (play-obj? self)
      (player-schedule  *general-player*
