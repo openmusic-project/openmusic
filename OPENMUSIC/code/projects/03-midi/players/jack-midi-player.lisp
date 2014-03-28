@@ -31,7 +31,12 @@
   ;; (pushnew :jackmidi *enabled-players*)
   (enable-player :jackmidi)
   (add-player-for-object 'score-element :jackmidi)
-  (add-player-for-object 'simple-score-element :jackmidi))
+  (add-player-for-object 'simple-score-element :jackmidi)
+  (add-player-for-object 'eventmidi-seq :jackmidi)
+  (add-player-for-object 'midifile :jackmidi)
+  )
+
+(defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) :fluidsynth)
 
 
 (om-add-init-func 'init-jack-midi-player)
@@ -263,7 +268,9 @@
     (print event)))
 |#
 
+;; dont know if this first one is needed, leave until midi-system stabilises 
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)
+(defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-jack))) 'om::jack-midi-send-evt)
 
 (defun jack-midi-send-evt (event &optional player)
   (declare (ignore player))

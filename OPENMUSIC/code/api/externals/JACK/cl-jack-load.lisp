@@ -23,7 +23,9 @@
   (cl-jack-init-audio)
   (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
   (jack-activate *CLJackClient*)
-  (cl-jack-connect-audio-client-to-system-output))
+  (cl-jack-connect-audio-client-to-system-output)
+  (pushnew :cl-jack om-midi::*midi-systems*)
+  )
 
 ;;(cl-jack-init-everything)
 (oa::om-add-init-func 'cl-jack-init-everything)

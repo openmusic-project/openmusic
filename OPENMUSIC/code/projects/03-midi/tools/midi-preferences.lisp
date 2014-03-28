@@ -14,7 +14,7 @@
 
 (defparameter *midi-microplay* nil)
 
-#+linux (setf *default-midi-system* :cl-midi)
+;; #+linux (setf *default-midi-file-system* :cl-midi)
 ;(setf *default-midi-system* :cl-midi)
 ;(setf *default-midi-system* :midishare)
 
@@ -35,7 +35,7 @@
     ))
 
 (defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
-                                                   :midi-system #+linux :cl-midi #-linux :midishare
+                                                   :midi-system #+linux :cl-jack #-linux :midishare
                                                    :midi-file-system #+linux :cl-midi #-linux :midishare
                                                    :midi-format 1
                                                    :auto-microtone-bend nil
