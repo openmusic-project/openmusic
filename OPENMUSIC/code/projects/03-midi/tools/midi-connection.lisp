@@ -7,9 +7,9 @@
 
 (in-package :om)
 
-(defun ckeck-def-midi-system (function)
+(defun check-def-midi-system (function)
   (when (and *default-midi-system* (not (find *default-midi-system* om-midi::*midi-systems*)))
-    (print (string+ "Warning: System " (string *default-midi-system*) "is not registered as a MID system.")))
+    (print (string+ "Warning: System " (string *default-midi-system*) " is not registered as a MID system.")))
   
   (if (or (null *default-midi-system*) 
           (null (funcall function *default-midi-system*)))
@@ -28,9 +28,9 @@
   )
 
 
-(defun ckeck-def-midi-file-system (function)
+(defun check-def-midi-file-system (function)
   (when (and *default-midi-file-system* (not (find *default-midi-file-system* om-midi::*midi-file-systems*)))
-    (print (string+ "Warning: System " (string *default-midi-file-system*) "is not registered as a MID system.")))
+    (print (string+ "Warning: System " (string *default-midi-file-system*) " is not registered as a MID system.")))
   
   (if (or (null *default-midi-file-system*) 
           (null (funcall function *default-midi-file-system*)))
@@ -54,7 +54,7 @@
 ;;; (evtseq nbtracks clicks format)
 ;;; evtseq is a sequence of midi-evt
 (defun midi-load-file (pathname)
-  (let ((sys (ckeck-def-midi-file-system 'om-midi::load-midi-file-function)))
+  (let ((sys (check-def-midi-file-system 'om-midi::load-midi-file-function)))
     (if sys 
       (funcall (om-midi::load-midi-file-function sys) pathname)
       (om-abort)
@@ -66,7 +66,7 @@
 (defun save-midifile (name object approx tempo &optional (format nil))
   (let ((seq (sort (flat (PrepareToPlay :midi object 0 :approx approx :voice 1))
                    'om-midi::midi-evt-<))
-        (sys (ckeck-def-midi-file-system 'om-midi::save-midi-file-function)))
+        (sys (check-def-midi-file-system 'om-midi::save-midi-file-function)))
     (if sys 
         (when seq
           (if (print tempo) 
@@ -80,25 +80,25 @@
 ;;; JUST SEND A MIDI EVENT (for OM MIDI Player)
 
 (defun midi-send-evt (evt)
-  (let ((sys (ckeck-def-midi-system 'om-midi::send-midi-event-function)))
+  (let ((sys (check-def-midi-system 'om-midi::send-midi-event-function)))
     (when sys (funcall (om-midi::send-midi-event-function sys) evt))))
 
 (defun midi-stop ()
-  (let ((sys (ckeck-def-midi-system 'om-midi::midi-stop-function)))
+  (let ((sys (check-def-midi-system 'om-midi::midi-stop-function)))
     (when sys (funcall (om-midi::midi-stop-function sys)))))
 
 (defun midi-start ()
-  (let ((sys (ckeck-def-midi-system 'om-midi::midi-start-function)))
+  (let ((sys (check-def-midi-system 'om-midi::midi-start-function)))
     (when sys (funcall (om-midi::midi-start-function sys)))))
 
 
 ;;; START/STOP MIDI IN
 
 (defun midi-in-start (port fun bsize)
-  (let ((sys (ckeck-def-midi-system 'om-midi::midi-in-start-function)))
+  (let ((sys (check-def-midi-system 'om-midi::midi-in-start-function)))
     (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize))))
 
 
 (defun midi-in-stop (process)
-  (let ((sys (ckeck-def-midi-system 'om-midi::midi-in-stop-function)))
+  (let ((sys (check-def-midi-system 'om-midi::midi-in-stop-function)))
     (when sys (funcall (om-midi::midi-in-stop-function sys) process))))
