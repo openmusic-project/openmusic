@@ -11,8 +11,8 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.080100)
-(defparameter *beta-release* nil)
+(defparameter *version* 6.080101)
+(defparameter *beta-release* t)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
@@ -214,7 +214,7 @@
 
 
 (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
-(oa::load-external-libs '(:portmidi))
+#-linux (oa::load-external-libs '(:portmidi))
 
 
 (defpackage "OpenMusic"
