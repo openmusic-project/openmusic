@@ -122,7 +122,7 @@
 
 (defun show-portmidi-dialog (settings)
   (let ((dd (oa::om-make-window 'portmidi-ports-dialog 
-                                :window-title "PortMIDI Setup"
+                                :window-title "PortMidi Setup"
                                 :bg-color oa::*om-light-gray-color*
                                 :size (oa::om-make-point 800 310)
                                 :resizable nil

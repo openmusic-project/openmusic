@@ -5,7 +5,7 @@
 ;;; **********************************************************************
 
 ;;; **********************************************************************
-;;; Merging Rick Taube's CFFI-PORTMIDI and PortMedi's CL-PortMIDI code
+;;; Merging Rick Taube's CFFI-PORTMIDI and PortMidi's CL-PortMidi code
 ;;; Copyright (c) 2014 Jean Bresson
 ;;; **********************************************************************
 ;;; CL-PortMIDI from PortMedia
@@ -36,13 +36,13 @@
 (defvar *libportmidi* nil)
 
 (defun load-portmidi-lib ()
-  (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
+  (print (concatenate 'string "Loading PortMidi library: " (namestring *libportmidi-pathname*)))
   (if (probe-file *libportmidi-pathname*)
       (setf *libportmidi* (fli:register-module "PortMidi" 
                                                :real-name (namestring *libportmidi-pathname*)
                                                :connection-style :immediate)
             )
-    (print (format nil "Library PortMIDI not found!! [~A]" (namestring *libportmidi-pathname*)))
+    (print (format nil "Library PortMidi not found!! [~A]" (namestring *libportmidi-pathname*)))
     ))
 
 ; (load-portmidi-lib)

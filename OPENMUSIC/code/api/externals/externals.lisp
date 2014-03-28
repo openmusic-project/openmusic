@@ -13,7 +13,7 @@
 (defun load-external-libs (&optional libs)
   
   (loop for lib in libs do
-        (unless (member lib (list :midi :midishare :audio :opengl :sdif :osc :xml :jack :fluidsynth))
+        (unless (member lib (list :midi :midishare :portmidi :audio :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   ;;; MINIMAL MIDI API IS ALWAYS LOADED
