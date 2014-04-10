@@ -77,13 +77,13 @@
            (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
            (buffer-size (* size channels))
            (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0))
-           
-           (frames-read
-            (case datatype
-              (:float (sf::sf-readf-float sndfile-handle buffer buffer-size))
-              (:int (sf::sf-readf-int sndfile-handle buffer buffer-size))
-              (:short (sf::sf-readf-short sndfile-handle buffer buffer-size))
-              (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype)))))))
+           (frames-read 
+            (ignore-errors
+              (case datatype
+                (:float (sf::sf-readf-float sndfile-handle buffer buffer-size))
+                (:int (sf::sf-readf-int sndfile-handle buffer buffer-size))
+                (:short (sf::sf-readf-short sndfile-handle buffer buffer-size))
+              (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype))))))))
       (multiple-value-bind (ff ss nn)
           (decode-format format)
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
