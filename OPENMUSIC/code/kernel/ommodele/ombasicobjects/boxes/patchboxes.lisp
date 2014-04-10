@@ -632,7 +632,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 
  
- ;self is one instance
+; self is one instance
 (defmethod get-outs-name ((self t))
    (mapcar #'(lambda (name) 
                (string-downcase (string name))) (get-slot-in-out-names self)))
