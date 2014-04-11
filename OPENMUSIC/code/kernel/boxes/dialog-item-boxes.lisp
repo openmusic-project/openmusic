@@ -348,7 +348,8 @@ Evaluate or connect the output to get the current contents of the box.
 
 
 ;button
-(defclass! button (om-button d-i-box) () 
+(defclass! button (om-button d-i-box) 
+  ((clicked :accessor clicked :initform nil)) 
    (:icon 292)
    (:documentation 
 "The BUTTON box provides an interface to trigger evaluations in a patch.
@@ -356,7 +357,7 @@ Evaluate or connect the output to get the current contents of the box.
 Use 'm' to show/hide the box interface.
 
 Connect a text to the first input and evaluate the box ('v') to display it in the BUTTON.
-Pushing the button will automatically evaluate anything connected to the second input.
+Pushing the button will automatically evaluate anything connected to the second input, or funcall it if it is a function.
 
 "
 ))
@@ -366,40 +367,53 @@ Pushing the button will automatically evaluate anything connected to the second 
 (defmethod get-super-default-value ((type (eql 'button)))
   (om-make-dialog-item 'button (om-make-point 1 1 ) (om-make-point 50 20 ) "untitled"))
 
-(defmethod set-dialog-item-params ((self button) box args)
-  (om-set-dialog-item-text self (format nil "~D" (car args)))
-  (om-set-dialog-item-action-function self #'(lambda (x) 
-                                               (om-eval-enqueue 
-                                                `(progn
-                                                   (setf *cur-eval-panel* ,(get-patchpanel (editor (om-view-window self))))
-                                                   (format *om-stream* "OM => ~S~%" (omng-box-value (second (inputs ,box))))
-                                                   (clear-ev-once ,(get-patchpanel (editor (om-view-window self)))))
-                                                )))
-  self)
 
 
 (defmethod omng-save ((self button) &optional (values? nil))
   `(let ((rep (om-make-dialog-item 'button (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self) ) ,(om-dialog-item-text self))))
      rep))
 
-(defmethod rep-editor ((self button) num) nil)
+(defmethod rep-editor ((self button) num)
+  (nth num
+       (list (om-dialog-item-text self)
+             (di-data self))))
 
-(defmethod make-outputs-from-names (self (value button) module) t)
+
+(defmethod make-outputs-from-names (self (value button) module) (call-next-method))
 
 (defmethod get-slot-in-out-names ((self button))
    (values '("text" "action") 
-           '("click me" nil)
+           '("click me" t)
            '("button text" "a function or box in lambda mode")
            '(nil nil)))
 
+
+;;; by default button does not set a function but evaluates the patch
+(defmethod set-action ((self button) fun box) 
+  (om-set-dialog-item-action-function self #'(lambda (x) 
+                                               (when fun
+                                                 (let ((panel (get-patchpanel (editor (om-view-window self)))))
+                                                 (om-eval-enqueue 
+                                                  `(progn
+                                                     (setf *cur-eval-panel* ,panel)
+                                                     (setf (di-data ,self) (if (functionp ,fun) 
+                                                                               (funcall ,fun) ;;; call it
+                                                                             (omng-box-value (second (inputs ,box))) ;; reevaluate
+                                                                             ))
+                                                     ;(format *om-stream* "OM => ~S~%" (di-data ,self))
+                                                     (clear-ev-once ,panel))
+                                                )))))
+  )
+
+
+(defmethod set-dialog-item-params ((self button) box args)
+  (om-set-dialog-item-text self (format nil "~D" (car args)))
+  (set-action self (cadr args) box)
+  self)
+
+
 (defmethod (setf value) :after ((value button) (self omdiebox)) 
-  (om-set-dialog-item-action-function value #'(lambda (x) 
-                                               (om-eval-enqueue 
-                                                `(progn
-                                                   (setf *cur-eval-panel* ,(get-patchpanel (editor (om-view-window value))))
-                                                   (format *om-stream* "OM => ~S~%" (omng-box-value ,(second (inputs self))))
-                                                   (clear-ev-once ,(get-patchpanel (editor (om-view-window value)))))
-                                                ))))
+  (set-action value (omng-box-value (second (inputs self))) self))
 
 
 (defmethod update-di-size ((self button) container)

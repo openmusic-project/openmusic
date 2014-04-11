@@ -35,7 +35,7 @@
 ;==============
 ;used to show and edit values i. e. inputs default values, etc.
 
-(omg-defclass ttybox (om-static-text) ; (om-static-text-drag) 
+(defclass ttybox (om-static-text) ; (om-static-text-drag) 
    ((open-state :initform t  :initarg :open-state :accessor open-state)))
 
 (defmethod om-view-drag-hilite-p ((self om-static-text-drag)) t)
@@ -104,7 +104,7 @@
     ))
 
 
-(omg-defclass change-text-enter-view (edit-text-enter-view) ())
+(defclass change-text-enter-view (edit-text-enter-view) ())
 
 
 (defmethod om-dialog-item-action ((self change-text-enter-view))
@@ -142,7 +142,7 @@
 ;================
 ;a text box for an undefined function
 
-(omg-defclass undef-ttybox (ttybox om-static-text-drag) ())
+(defclass undef-ttybox (ttybox om-static-text-drag) ())
 
 ;select
 (defmethod (setf selected-p) (selected-p (self undef-ttybox))
@@ -159,7 +159,7 @@
 
 ;-----------EDITION
 
-(omg-defclass new-fun-enter-view (edit-text-enter-view) ())   
+(defclass new-fun-enter-view (edit-text-enter-view) ())   
 
 (defmethod open-ttybox-class ((self undef-ttybox)) 'new-fun-enter-view)
 (defmethod initial-text-ttybox ((self undef-ttybox)) "??")
@@ -296,7 +296,7 @@
 ;Initform for slots
 
 
-(omg-defclass initform-ttybox (ttybox om-static-text-drag OMAtomicFrame) ())
+(defclass initform-ttybox (ttybox om-static-text-drag OMAtomicFrame) ())
 
 ;------------Events
 ;;;(defmethod om-view-click-handler ((self initform-ttybox) where)
@@ -341,7 +341,7 @@
                                                            :container (panel container)
                                                            :font *om-default-font1*))))))
 
-(omg-defclass new-slot-initform-view (edit-text-enter-view) ())
+(defclass new-slot-initform-view (edit-text-enter-view) ())
 
 ;;;new : panel au lieu de editor
 (defmethod exit-from-dialog ((self new-slot-initform-view) newtext)
@@ -461,7 +461,7 @@
 
 ;;; NUMBOX STYLE POTENTIOMETRE ======================================================
 
-(omg-defclass graphic-numbox (om-item-view)
+(defclass graphic-numbox (om-item-view)
   ((pict :accessor pict :initarg :pict :initform nil)
    (pict-size :accessor pict-size :initarg :pict-size :initform (om-make-point 5 5))
    (nbpict :accessor nbpict :initarg :nbpict :initform 0)
@@ -539,9 +539,9 @@
 
 ;;; NUMBOX + EDIT ======================================================
 
-(omg-defclass edit-numbox (numbox)  
+(defclass edit-numbox (numbox)  
   ((edit :accessor edit :initarg :edit :initform nil)))
-(omg-defclass edit-numbox-edit (edit-text-enter-view)  ())
+(defclass edit-numbox-edit (edit-text-enter-view)  ())
 (defmethod open-ttybox-class ((self edit-numbox)) 'edit-numbox-edit)
 
 (defmethod om-view-doubleclick-handler ((self edit-numbox) where)
