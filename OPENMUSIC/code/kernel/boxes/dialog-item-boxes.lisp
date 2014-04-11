@@ -348,8 +348,7 @@ Evaluate or connect the output to get the current contents of the box.
 
 
 ;button
-(defclass! button (om-button d-i-box) 
-  ((clicked :accessor clicked :initform nil)) 
+(defclass! button (om-button d-i-box) () 
    (:icon 292)
    (:documentation 
 "The BUTTON box provides an interface to trigger evaluations in a patch.
