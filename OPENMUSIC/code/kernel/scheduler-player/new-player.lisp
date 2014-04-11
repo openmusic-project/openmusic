@@ -330,8 +330,8 @@
   )
 
 (defmethod stop-all-boxes ()
-  (general-player-stop nil)
-  (stop-boxes *play-boxes*))
+  (stop-boxes *play-boxes*)
+  (general-player-stop nil))
 
 
 (defmethod additional-player-params ((self omboxeditcall))
