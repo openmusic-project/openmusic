@@ -154,5 +154,5 @@
 ;; 'edition-params is looked up by new-player, and seems to be
 ;; defaulted to :midishare somewhere:
 
-(defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) :fluidsynth)
+;; (defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) :fluidsynth)
 
