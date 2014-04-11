@@ -36,8 +36,6 @@
   (add-player-for-object 'midifile :jackmidi)
   )
 
-(defmethod get-edit-param ((box ommidifilebox) (param (eql 'player))) :fluidsynth)
-
 
 (om-add-init-func 'init-jack-midi-player)
 
@@ -271,11 +269,15 @@
 ;; dont know if this first one is needed, leave until midi-system stabilises 
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-jack))) 'om::jack-midi-send-evt)
+(defmethod om-midi::midi-start-function ((midisystem (eql :cl-jack))) #'(lambda () t))
+(defmethod om-midi::midi-stop-function ((midisystem (eql :cl-jack))) #'(lambda () t))
+
 
 (defun jack-midi-send-evt (event &optional player)
   (declare (ignore player))
   (let ((time (cl-jack::jack-frame-now))
 	(seq cl-jack::*jack-seq*))
+
     (case (om-midi::midi-evt-type event)
       (:ProgChange (cl-jack::seqhash-midi-program-change seq time (car (om-midi::midi-evt-fields event)) (1- (om-midi::midi-evt-chan event))))
       (:PitchBend (cl-jack::seqhash-midi-pitch-wheel-msg seq time
@@ -286,10 +288,19 @@
 							(cadr (om-midi::midi-evt-fields event))
 							(car (om-midi::midi-evt-fields event))
 							(1- (om-midi::midi-evt-chan event))))
-      
-      (t (print (list 'event-type (om-midi::midi-evt-type event) (om-midi::midi-evt-fields event)))))
+      (:keyon (cl-jack::seqhash-midi-note-on seq time
+					     (car (om-midi::midi-evt-fields event))
+					     (cadr (om-midi::midi-evt-fields event))
+					     (1- (om-midi::midi-evt-chan event))))
+
+      (:keyoff (cl-jack::seqhash-midi-note-off seq time
+					       (car (om-midi::midi-evt-fields event))
+					       (cadr (om-midi::midi-evt-fields event))
+					       (1- (om-midi::midi-evt-chan event))))
+      (t (print (list 'jack-midi-send-event 'event-type (om-midi::midi-evt-type event) (om-midi::midi-evt-fields event)))))
     ;;(print event)
     ))
+
 
 (setf (symbol-function 'om-midi::cl-midi-send-evt) (symbol-function 'jack-midi-send-evt))
 
