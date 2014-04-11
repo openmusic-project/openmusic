@@ -130,18 +130,18 @@
 
 (defmethod Class-has-editor-p ((self om-sound-data)) nil)
 
-(defmethod get-om-sound-data ((self string))
+(defmethod get-om-sound-data ((self string) &optional (track 0))
    (multiple-value-bind (buffer format channels sr ss size skip)
        (om-audio::om-get-sound-buffer self)
      (make-instance 'om-sound-data 
                     :buffer buffer
-                    :tracknum 0
+                    :tracknum track
                     :size size
                     :nch channels
                     :sr sr)))
 
-(defmethod get-om-sound-data ((self pathname))
-  (get-om-sound-data (namestring self)))
+(defmethod get-om-sound-data ((self pathname) &optional (track 0))
+  (get-om-sound-data (namestring self) track))
 
 
 (defmethod set-buffer-from-file ((self internalsound) filename)
@@ -174,9 +174,9 @@ Press 'space' to play/stop the sound file.
 "))
 
 
-(defmethod get-om-sound-data ((self sound))
+(defmethod get-om-sound-data ((self sound) &optional (track 0))
   (and (om-sound-file-name self)
-       (get-om-sound-data (om-sound-file-name self))))
+       (get-om-sound-data (om-sound-file-name self) track)))
 
 
 (defparameter *default-sound-player* #-linux :libaudiostream #+linux :jackaudio)
