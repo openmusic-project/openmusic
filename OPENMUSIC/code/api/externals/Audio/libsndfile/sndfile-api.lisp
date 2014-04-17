@@ -83,7 +83,7 @@
                 (:float (sf::sf-readf-float sndfile-handle buffer buffer-size))
                 (:int (sf::sf-readf-int sndfile-handle buffer buffer-size))
                 (:short (sf::sf-readf-short sndfile-handle buffer buffer-size))
-              (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype))))))))
+                (othewise (print (concatenate 'string "Warning: unsupported datatype for reading audio data: " (string datatype))))))))
       (multiple-value-bind (ff ss nn)
           (decode-format format)
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.

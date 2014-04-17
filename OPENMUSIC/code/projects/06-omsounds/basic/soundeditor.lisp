@@ -249,8 +249,7 @@
   (when (om-sound-file-name (object self))
     ;; #-linux ? 
     (sound-cons-pict-zoom (object self))
-    (set-buffer-from-file (object self) (om-sound-file-name (object self)))
-    )
+    (set-buffer-from-file (object self) (om-sound-file-name (object self))))
  
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
