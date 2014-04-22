@@ -45,16 +45,15 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
 
-(defmethod PrepareToPlay ((player t) (self OSCEvent) at &key approx port interval voice)
-  (declare (ignore approx))
-  (call-next-method))
 
-(defmethod DoPlay ((self OSCEvent) start end)
-  (call-next-method)
-  (om-send-osc-bundle (port self) (host self) (bundle self)))
+;;;============================================
+;;; OSC PLAYER
 
-(defmethod DoStop ((self OSCEvent)) t)
+(add-player-for-object 'oscevent :osc-player)
 
-(defmethod DoPause ((self OSCEvent)) t)
+(defmethod default-edition-params ((self OSCEvent))
+  (pairlis '(player) '(:osc-player)))
 
-(defmethod DoContinue ((self OSCEvent)) t)
+
+
+

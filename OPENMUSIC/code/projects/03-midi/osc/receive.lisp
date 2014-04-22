@@ -1,7 +1,7 @@
 
 (in-package :om)
 
-(om::defmethod! osc-receive (port msg-processing)
+(defmethod! osc-receive (port msg-processing)
   :icon 611
   :indoc '("port number" "incoming message processing patch")
   :initvals '(3000 nil)

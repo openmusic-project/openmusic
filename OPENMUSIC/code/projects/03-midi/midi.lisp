@@ -65,9 +65,9 @@
 	#+(and linux cl-jack) "players;jack-midi-player"
 
         ;;; MISC (OSC)
-        "osc;send"
-        "osc;receive"
+        "osc;send-receive"
         "osc;osc-events"
+        "osc;osc-player"
         #+macosx "players;microplayer"
 
         ;;; OM MENUS ETC.  

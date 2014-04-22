@@ -499,7 +499,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
                                                                   :name (string-downcase inputval)
                                                                   :box-ref self
                                                                   :value inputval 
-                                                                  :def-value (when theslot (theinitform theslot))
+                                                                  :def-value (when theslot (valued-val (theinitform theslot)))
                                                                   :doc-string (if theslot (doc theslot) "") 
                                                                   )))
                                       controlinputs)))

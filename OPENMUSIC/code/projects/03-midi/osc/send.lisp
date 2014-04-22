@@ -4,9 +4,8 @@
 
 ;;-----------------------------------------------------------------------------
 ;; The OpenMusic send function. This is for the visual programming style.
-;; If you're an ascii-addict, check out send-osc-bundle.
 ;;-----------------------------------------------------------------------------
-(om::defmethod! osc-send (bundle host port)
+(defmethod! osc-send (bundle host port)
   :icon 611
   :initvals '(("/test" 0) "127.0.0.1" 3000)
   :indoc '("OSC message" "IP address" "port number")
