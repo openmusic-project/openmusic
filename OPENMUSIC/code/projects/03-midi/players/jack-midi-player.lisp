@@ -60,6 +60,7 @@
 
 (defparameter *jack-midi-seqs* cl-jack::*jack-seqs*)
 (defparameter *jack-use-om-scheduler* nil)
+;; (defparameter *jack-use-om-scheduler* t)
 
 (defun jack-possibly-init-queue-for-this-player (queue)
   (or (gethash queue *jack-midi-seqs*)
@@ -245,6 +246,7 @@
 (cl-jack::jack-play-note cl-jack::*jack-seq* 0 1 60 100 1)
 
 (clrhash cl-jack::*jack-seq*)
+(clrhash *jack-midi-seqs*)
 
 |#
 
@@ -270,8 +272,10 @@
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-midi))) 'om::jack-midi-send-evt)
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :cl-jack))) 'om::jack-midi-send-evt)
 (defmethod om-midi::midi-start-function ((midisystem (eql :cl-jack))) #'(lambda () t))
-(defmethod om-midi::midi-stop-function ((midisystem (eql :cl-jack))) #'(lambda () t))
-
+(defmethod om-midi::midi-stop-function ((midisystem (eql :cl-jack)))
+  #'(lambda ()
+      (let ((seq cl-jack::*jack-seq*))
+	(jack-kill-queue seq))))
 
 (defun jack-midi-send-evt (event &optional player)
   (declare (ignore player))
@@ -297,12 +301,12 @@
 					       (car (om-midi::midi-evt-fields event))
 					       (cadr (om-midi::midi-evt-fields event))
 					       (1- (om-midi::midi-evt-chan event))))
-      (t (print (list 'jack-midi-send-event 'event-type (om-midi::midi-evt-type event) (om-midi::midi-evt-fields event)))))
+      (t (print (list 'jack-midi-send-event 'not-defined 'event-type (om-midi::midi-evt-type event) (om-midi::midi-evt-fields event)))))
     ;;(print event)
     ))
 
 
 (setf (symbol-function 'om-midi::cl-midi-send-evt) (symbol-function 'jack-midi-send-evt))
 
-;; (position "ProgChange" *midi-event-types* :test #'subseq :key #'car)
+;; (position "ProgChange" *midi-event-types* :test #'string-equal :key #'car)
 
