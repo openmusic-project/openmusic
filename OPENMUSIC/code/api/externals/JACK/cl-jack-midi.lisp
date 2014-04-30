@@ -38,33 +38,7 @@
 (defvar *jack-seq*
   (setf (gethash '*jack-seq* *jack-seqs*) (make-jack-seq)))
 
-;;; TIME HANDLING - SEQUENCING
 
-(defun jack-period-now (&optional sek)
-  (+ (jack-last-frame-time *CLJackClient*)
-     (jack-get-buffer-size *CLJackClient*)
-     (round (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
-
-;;; too late to schedule things inside current period, this looks up
-;;; current frame with exactly one period latency:
-
-(defun jack-frame-now (&optional sek)
-  (round (+ (jack-frame-time *CLJackClient*)
-	    (jack-get-buffer-size *CLJackClient*) 
-	    (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
-
-(defun ms->frame (ms)
-  (round (* ms (jack-get-sample-rate cl-jack::*CLJackClient*)) 1000))
-
-(defun sec->frame (sec)
-  (round (* sec (jack-get-sample-rate cl-jack::*CLJackClient*))))
-
-(defun frame->period-offset (frame)
-  "returns 2 frame nos: start of period & offset within period"
-  (let ((bufsiz (jack-get-buffer-size *CLJackClient*)))
-    (multiple-value-bind (n rem)
-	(floor frame bufsiz)
-      (values (* n bufsiz) rem))))
 
 ;;; MIDI EVENTS
 
@@ -157,8 +131,8 @@
 (defun jack-all-notes-off-and-kill-seq (seq)
   (jack-all-notes-off seq)
   (sleep (float (/ 2
-		   (jack-get-buffer-size *CLJACKCLIENT*)
-		   (jack-get-sample-rate *CLJACKCLIENT*))))
+  		   (jack-get-buffer-size *CLJACKCLIENT*)
+  		   (jack-get-sample-rate *CLJACKCLIENT*))))
   (remhash seq *jack-seqs*))
 
 (defun jack-reset (&optional (seq *jack-seq*))
@@ -234,6 +208,8 @@
 	    (setf port -1)
 	    (cerror "Set *jack-midi-output-port* to -1" "*jack-midi-output-port* for Jack not allocated - check jack-server"))
 	  port)))
+
+(provice :cl-jack-midi)
 
 
 

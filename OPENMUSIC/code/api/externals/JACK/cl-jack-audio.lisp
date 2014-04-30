@@ -88,3 +88,4 @@
 						 (format nil "system:playback_~A" system_out))))
 	    (warn "could not connect CLJack port ~A to output-port ~A" (jack-port-name port) system_out))))
 
+(provide :cl-jack-audio)

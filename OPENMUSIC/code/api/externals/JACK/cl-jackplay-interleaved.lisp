@@ -280,7 +280,7 @@
 (defcallback cl-jack-process-callback :int ((nframes jack_nframes_t) (arg (:pointer :void)))
   (declare (optimize (speed 3) (safety 0) (float 0)))
   (declare (ignore arg))
-  (cl-jack-handle-event-seqs nframes)			    ;plug to handle midi-seq
+  #+cl-jack-midi (cl-jack-handle-event-seqs nframes)			    ;plug to handle midi-seq
   (progn
     (cl-jack-write-silence nframes)			    ;fill with zero if nothing else comes in...
     (when (plusp (n-sounds-playing-now *jack-sounds*))

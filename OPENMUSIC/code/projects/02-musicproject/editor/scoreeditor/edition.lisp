@@ -3,7 +3,7 @@
 
 (in-package :om)
 
-(defparameter *default-score-player* #-linux :midi-player #+linux :jackmidi)
+(defparameter *default-score-player* :midi-player)
 
 (defmethod editor-compatible-params-p ((ed1 scoreeditor) (ed2 scoreeditor)) t)
 

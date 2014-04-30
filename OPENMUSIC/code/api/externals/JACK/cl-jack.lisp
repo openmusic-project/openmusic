@@ -237,3 +237,32 @@
 ;; provide one default global client-name
 
 (defparameter *CLJackClient* nil)
+
+
+;;; TIME HANDLING USING JACK SCHEDULER
+
+(defun jack-period-now (&optional sek)
+  (+ (jack-last-frame-time *CLJackClient*)
+     (jack-get-buffer-size *CLJackClient*)
+     (round (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
+
+;;; too late to schedule things inside current period, this looks up
+;;; current frame with exactly one period latency:
+
+(defun jack-frame-now (&optional sek)
+  (round (+ (jack-frame-time *CLJackClient*)
+	    (jack-get-buffer-size *CLJackClient*) 
+	    (if sek (* sek (jack-get-sample-rate *CLJackClient*)) 0))))
+
+(defun ms->frame (ms)
+  (round (* ms (jack-get-sample-rate cl-jack::*CLJackClient*)) 1000))
+
+(defun sec->frame (sec)
+  (round (* sec (jack-get-sample-rate cl-jack::*CLJackClient*))))
+
+(defun frame->period-offset (frame)
+  "returns 2 frame nos: start of period & offset within period"
+  (let ((bufsiz (jack-get-buffer-size *CLJackClient*)))
+    (multiple-value-bind (n rem)
+	(floor frame bufsiz)
+      (values (* n bufsiz) rem))))

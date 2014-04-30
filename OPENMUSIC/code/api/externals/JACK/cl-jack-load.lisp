@@ -8,7 +8,10 @@
   (cl-user::compile-file-if-needed file)
   (load file))
 
-(defparameter cl-jack-files '("cl-jack" "cl-jack-midi" "cl-jack-audio" "cl-jackplay-interleaved"))
+(defparameter cl-jack-files '("cl-jack"
+			      ;;"cl-jack-midi"  ;; leave while checking :portmidi
+			      "cl-jack-audio"
+			      "cl-jackplay-interleaved"))
 
 (dolist (file cl-jack-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
@@ -19,12 +22,12 @@
 
 (defun cl-jack-init-everything ()
   (cl-jack-init-jack)
-  (cl-jack-init-midi)
+  #+cl-jack-midi (cl-jack-init-midi)
   (cl-jack-init-audio)
   (jack-set-process-callback *CLJackClient* (callback cl-jack-process-callback) 0)
   (jack-activate *CLJackClient*)
   (cl-jack-connect-audio-client-to-system-output)
-  (pushnew :cl-jack om-midi::*midi-systems*)
+  #+:cl-jack-midi (pushnew :cl-jack om-midi::*midi-systems*)
   )
 
 ;;(cl-jack-init-everything)
