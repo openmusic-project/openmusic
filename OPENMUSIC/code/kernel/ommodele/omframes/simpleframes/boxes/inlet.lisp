@@ -358,7 +358,7 @@
                  ))
               ((omclass-p ref)
                (let* ((theslot (find (symbol-name keyword) (get-all-slots-of-class (class-name ref)) :test 'string-equal :key 'name)))
-                 (setf (def-value self) (theinitform theslot))
+                 (setf (def-value self) (valued-val (theinitform theslot)))
                  (setf (doc-string self) (doc theslot))
                  ))
               ))

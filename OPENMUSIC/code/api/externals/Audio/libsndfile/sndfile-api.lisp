@@ -10,7 +10,6 @@
 (defconstant formatAIFFint 2)
 (defconstant formatAIFFfloat 3)
 
-
 (defun decode-format (sndfile-format)
  (let* ((format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string sndfile-format :base 16))))
         (ff (cond ((and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 0)
@@ -60,9 +59,8 @@
         (values nn channels sr ss size skip)))))
 
 
-(defun sndfile-get-sound-buffer (path)
-  "Returns a sound data buffer + info. The soudn buffer nmust be freed."
-  (let ((datatype :float))
+(defun sndfile-get-sound-buffer (path &optional (datatype :double))
+  "Returns a sound data buffer + info. The soudn buffer must be freed."
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
     (let* ((sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
@@ -76,10 +74,11 @@
            (format (fli::dereference format-ptr :type :int :index #+powerpc 1 #-powerpc 0))
            (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
            (buffer-size (* size channels))
-           (buffer (fli:allocate-foreign-object :type :float :nelems buffer-size :fill 0))
+           (buffer (fli:allocate-foreign-object :type datatype :nelems buffer-size :fill 0))
            (frames-read 
             (ignore-errors
               (case datatype
+                (:double (sf::sf-readf-double sndfile-handle buffer buffer-size))
                 (:float (sf::sf-readf-float sndfile-handle buffer buffer-size))
                 (:int (sf::sf-readf-int sndfile-handle buffer buffer-size))
                 (:short (sf::sf-readf-short sndfile-handle buffer buffer-size))
@@ -87,7 +86,7 @@
       (multiple-value-bind (ff ss nn)
           (decode-format format)
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
-        (values buffer nn channels sr ss size skip))))))
+        (values buffer nn channels sr ss size skip)))))
 
 
 

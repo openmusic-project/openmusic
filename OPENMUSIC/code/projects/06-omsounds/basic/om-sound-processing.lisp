@@ -81,7 +81,7 @@
                           (sr (sr s))
                           (ratio (coerce (/ sample-rate sr) 'double-float))
                           (out-size (round (* ratio size)))
-                          (final-buffer (om-make-pointer (* out-size nch) :type :float :clear t)))
+                          (final-buffer (om-make-pointer (* out-size nch) :type (smpl-type s) :clear t)))
                      
                      ;;; USE LIBSAMPLERATE
                      ;;; (resample-method values correspond to libsamplerate options)
@@ -135,7 +135,7 @@
                        (indx 0)
                        (rms 0.0)
                        (tampon-size (* 100 nch))
-                       (b2 (om-make-pointer size2 :type :float :clear t)))
+                       (b2 (om-make-pointer size2 :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch size size2 indx tampon-size))
               ;(declare (type single-float peak peak-rms gain x rms))
@@ -170,10 +170,10 @@
                                                                                ((> x 1) 1.0)
                                                                                (t x)))))))
                   (make-instance 'om-sound-data 
-                                            :buffer b2
-                                            :size size
-                                            :nch nch
-                                            :sr (sr s))
+                                 :buffer b2
+                                 :size size
+                                 :nch nch
+                                 :sr (sr s))
                   )))
 
 (defmethod! sound-normalize ((s sound) &optional (method 0))
@@ -205,10 +205,10 @@
             (let ((nsmpl (round (* dur sample-rate)))
                   (ch (if (< channels 1) 1 channels)))
               (make-instance 'om-sound-data 
-                           :buffer (om-make-pointer (* nsmpl ch) :type :float :clear t)
-                           :size nsmpl
-                           :nch ch
-                           :sr sample-rate))
+                             :buffer (om-make-pointer (* nsmpl ch) :type *default-internal-sample-size* :clear t)
+                             :size nsmpl
+                             :nch ch
+                             :sr sample-rate))
             )
 
 (defmethod! sound-silence ((dur integer) &optional (channels 1) (sample-rate *audio-sr*))
@@ -237,7 +237,7 @@
                    (fade-out-frames (round (* out sr nch)))
                    (fade-out-frames-start (- size2 (round (* out sr nch))))
                    (fade-out-factor (- (/ 1.0 fade-out-frames)))
-                   (b2 (om-make-pointer size2 :type :float :clear t)))
+                   (b2 (om-make-pointer size2 :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
               ;(declare (type single-float fade-in-factor fade-out-factor))
@@ -275,7 +275,7 @@
               (let* ((nch (nch s))
                    (size (size s))
                    (size2 (* nch size))
-                   (final-buffer (om-make-pointer (* n size2) :type :float :clear t)))
+                   (final-buffer (om-make-pointer (* n size2) :type (smpl-type s) :clear t)))
               
               ;(declare (type fixnum nch size size2))
 
@@ -361,7 +361,7 @@
                    (fade-out-frames (round (* out sr nch)))
                    (fade-out-factor (/ (- 1 gain) fade-out-frames))
                    (fade-out-frame-start (- size2 fade-out-frames))
-                   (final-buffer (om-make-pointer size2 :type :float :clear t)))
+                   (final-buffer (om-make-pointer size2 :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
               ;(declare (type single-float fade-in-factor fade-out-factor))
@@ -404,16 +404,17 @@
                     (om-beep-msg "Error: null sound buffer"))
 
                    ((= (nch s) 1)
-                    (let* ((final-buffer (om-make-pointer (* 2 (size s)) :type :float :clear t))
+                    (let* ((final-buffer (om-make-pointer (* 2 (size s)) :type (smpl-type s) :clear t))
                            (pan (/ pan 100.0))
                            (Lgain (if (<= pan 0) 1 (- 1 pan)))
                            (Rgain (if (>= pan 0) 1 (+ 1 pan)))
                            (x 0.0))
-
+                      ;(print (list (smpl-type s) (buffer s) final-buffer))
                       (dotimes (i (size s))
                         (setf x (fli:dereference (buffer s) :index i))
                         (setf (fli:dereference final-buffer :index (* 2 i)) (* Lgain x)
-                              (fli:dereference final-buffer :index (1+ (* 2 i))) (* Rgain x)))
+                              (fli:dereference final-buffer :index (1+ (* 2 i))) (* Rgain x))
+                        )
               
                       ;(fli:free-foreign-object (buffer s))
               
@@ -444,7 +445,7 @@
             (cond ((null (buffer s))
                    (om-beep-msg "Error: null sound buffer"))
                   ((= (nch s) 2)
-                   (let* ((final-buffer (om-make-pointer (size s) :type :float :clear t))    
+                   (let* ((final-buffer (om-make-pointer (size s) :type (smpl-type s) :clear t))    
                           (x 0.0))
 
                   ;(declare (type single-float x))
@@ -487,7 +488,8 @@
                           (leftLgain (+ 0.5 (* (/ 1.0 200) left)))
                           (rightRgain (+ 0.5 (* (/ 1.0 200) right)))
                           (rightLgain (- 0.5 (* (/ 1.0 200) right)))
-                          (xl 0.0) (xr 0.0))
+                          (xl 0.0) (xr 0.0)
+                          (b2 (om-make-pointer (* (nch s) (size s)) :type (smpl-type s) :clear t)))
 
                   ;(declare (type fixnum left right))
                   ;(declare (type single-float leftRgain leftLgain rightRgain rightLgain))
@@ -528,7 +530,7 @@
                        (size1 (* nch (size s1)))
                        (size2 (* nch (size s2)))
                        (final-size (max size1 size2))
-                       (final-buffer (om-make-pointer final-size :type :float :clear t))
+                       (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t))
                        (res 0.0))
 
                   ;(declare (type fixnum size1 size2 final-size))
@@ -600,7 +602,7 @@
                        (factor1 (- (/ 1.0 (max 1 smp-cross))))
                        (factor2 (/ 1.0 (max 1 smp-cross)))
                        (final-size (- (+ size1 size2) smp-cross-side))
-                       (final-buffer (om-make-pointer final-size :type :float :clear t)))
+                       (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
 
                   ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
                   ;(declare (type single-float factor1 factor2))

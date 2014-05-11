@@ -107,14 +107,21 @@
 ;; SOUND BUFFER
 ;;==============================
 
+(defparameter *default-internal-sample-size* :double)
 
 (defclass om-sound-data (simple-container om-cleanup-mixin)
   ((buffer :accessor buffer :initform nil :initarg :buffer)
+   (smpl-type :accessor smpl-type :initform nil :initarg :smpl-type)
    (tracknum :accessor tracknum :initform 0 :initarg :tracknum :type fixnum)
    (size :accessor size :initform nil :initarg :size :type fixnum)
    (nch :accessor nch :initform nil :initarg :nch :type fixnum)
    (sr :accessor sr :initform nil :initarg :sr :type fixnum)))
 
+(defmethod initialize-instance :after ((self om-sound-data) &rest args)
+  (unless (smpl-type self)
+    (when (buffer self) (setf (smpl-type self)
+                              (fli::pointer-element-type (buffer self))))
+    ))
 
 (defmethod om-cleanup ((self om-sound-data)) 
   (when (buffer self)
@@ -132,8 +139,9 @@
 
 (defmethod get-om-sound-data ((self string) &optional (track 0))
    (multiple-value-bind (buffer format channels sr ss size skip)
-       (om-audio::om-get-sound-buffer self)
+       (om-audio::om-get-sound-buffer self *default-internal-sample-size*)
      (make-instance 'om-sound-data 
+                    :type *default-internal-sample-size*
                     :buffer buffer
                     :tracknum track
                     :size size
@@ -404,12 +412,12 @@ Press 'space' to play/stop the sound file.
 
 
 ;;; reads a sample at position position in <self>
-(defmethod read-sound-sample ((self sound) position &optional (datatype :float))
+(defmethod read-sound-sample ((self sound) position &optional (type :float))
   (multiple-value-bind (buffer format nch sr ss size skip)
-      (om-audio::om-get-sound-buffer (filename self))
+      (om-audio::om-get-sound-buffer (filename self) type)
     (when buffer
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
-                           (om-read-ptr buffer (+ position chan) datatype))))
+                           (om-read-ptr buffer (+ position chan) type))))
         (om-free-pointer buffer)
         snddata
         ))))
@@ -430,7 +438,7 @@ Press 'space' to play/stop the sound file.
             (>  (car (last positions)) numdat))
         (om-message-dialog "Bad input values")
       (multiple-value-bind (buffer format format nch sr ss size skip)
-          (om-audio::om-get-sound-buffer (filename self))
+          (om-audio::om-get-sound-buffer (filename self) :float)
         (when buffer
           (let ((data (loop for pos in positions collect
                             (if (listp ch)
@@ -496,11 +504,13 @@ Press 'space' to play/stop the sound file.
 
 ; (create-snd-pict "/Users/bresson/_SHARED-FILES/WORKSPACES/my-workspace/in-files/africa.aiff" 1000)
 
+
+
 ;;;CONS SND PICT WITH MAX DETECTION
 (defun create-snd-pict (sndpath nbpix) 
   (let ((pict nil)) 
     (multiple-value-bind (data format nch sr ss size skip)
-        (om-audio::om-get-sound-buffer sndpath)
+        (om-audio::om-get-sound-buffer sndpath :float)
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w nbpix) ; taille max de l'image en pixels
                  (pict-h 256)
@@ -508,11 +518,11 @@ Press 'space' to play/stop the sound file.
                  (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
                  (offset-y (round channels-h 2))); draw from middle of each channels-h
             (if data
-                (let ((tmpArray (make-array step :element-type 'single-float))
-                      (smpArray (make-array (list nch pict-w) :element-type 'single-float))
-                      pixIndx
-                      smpIndx
-                      pixpoint)
+                (let* ((tmpArray (make-array step :element-type 'single-float))
+                       (smpArray (make-array (list nch pict-w) :element-type 'single-float))
+                       pixIndx
+                       smpIndx
+                       pixpoint)
                   (dotimes (n nch)
                     (setf smpIndx n
                           pixIndx 0)
@@ -671,7 +681,7 @@ Press 'space' to play/stop the sound file.
 
 ;;; pour les maquettes
 (defmethod draw-editor-mode ((self sound) view)
-  (draw-obj-in-rect self 0 (w view) 0 (h view) nil view)
+  (draw-obj-in-rect self 0 (w view) 0 (h view) (edition-params (object view)) view)
   ;(om-draw-picture view (sound-get-pict self) (om-make-point 0 0) (om-make-point (w view) (h view)))
   (draw-carre view nil))
 

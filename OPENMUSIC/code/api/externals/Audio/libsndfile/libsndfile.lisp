@@ -358,6 +358,32 @@
   (frames :long-long))
 
 
+;;; test double ?
+
+(defcfun (sf-readf-double "sf_readf_double") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-read-double "sf_read_double") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-writef-double "sf_writef_double") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+(defcfun (sf-write-double "sf_write_double") :long-long
+  (sndfile :pointer)
+  (ptr :pointer)
+  (frames :long-long))
+
+
+
+
+
 ;#-linux
 ;(fli:define-foreign-function (sf-readf-float "sf_readf_float")
 ;    ((sndfile :pointer)

@@ -12,7 +12,6 @@
           om-sound-get-info
           om-get-sound-buffer
           om-save-sound-in-file
-          
           resample-audio-buffer
 
           ) :om-audio)
@@ -28,16 +27,15 @@
   #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
   #-cocoa (namestring path))
 
-
 ;;; USE LIBSNDFILE
 ;;; READ
 (defun om-sound-get-info (path)
   ;; RETURNS format n-channels sample-rate sample-size size skip
   (sf::sndfile-get-info (convert-filename-encoding path)))
 
-(defun om-get-sound-buffer (path)
+(defun om-get-sound-buffer (path &optional (format :double))
   ;; RETURNS buffer format n-channels sample-rate sample-size size skip
-  (sf::sndfile-get-sound-buffer (convert-filename-encoding path)))
+  (sf::sndfile-get-sound-buffer (convert-filename-encoding path) format))
 
 (defun om-save-sound-in-file (buffer filename size nch sr resolution format)
   (sf::sndfile-save-sound-in-file buffer filename size nch sr resolution format))
