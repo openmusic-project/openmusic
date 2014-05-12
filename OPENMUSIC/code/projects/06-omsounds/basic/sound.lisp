@@ -543,7 +543,8 @@ Press 'space' to play/stop the sound file.
                             (dotimes (c nch)
                               (dotimes (i pixIndx)
                                 ;(print (aref smpArray c i))
-                                (setf pixpoint (round (* offset-y (aref smpArray c i))))
+                                (setf pixpoint (round (* offset-y (aref smpArray (min c (1- nch)) (min i (1- pict-w)))
+                                                         )))
                                 (om-draw-line
                                  i (+ offset-y (* c channels-h) pixpoint)
                                  i (+ offset-y (* c channels-h) (- pixpoint))))))))

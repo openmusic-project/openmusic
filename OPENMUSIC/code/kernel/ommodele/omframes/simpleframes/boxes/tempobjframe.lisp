@@ -625,8 +625,9 @@
      (update-after-mark container)
      ;; ***
      ;;(draw-mark-lines container)
-     ;(om-invalidate-view container)
+     
      (omng-MoveObject (object self) new-position)
+     ;(om-invalidate-view container)
      ))
     
 (defmethod MoveTempObject ((self tempobjframe) new-position)
