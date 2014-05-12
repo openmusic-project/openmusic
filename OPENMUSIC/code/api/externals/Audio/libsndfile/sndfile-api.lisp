@@ -111,8 +111,15 @@
       (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) nch)
       (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) format)
 
-      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
-        (sf::sf-write-float sndfile-handle-out buffer (* nch size))
+      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo))
+            (datatype (fli::pointer-element-type buffer)))
+        (case datatype
+          (:double (sf::sf-write-double sndfile-handle-out buffer (* nch size)))
+          (:float (sf::sf-write-float sndfile-handle-out buffer (* nch size)))
+          (:int (sf::sf-write-int sndfile-handle-out buffer (* nch size)))
+          (:short (sf::sf-write-short sndfile-handle-out buffer (* nch size)))
+          (otherwise (print (concatenate 'string "Warning: unsupported datatype for writing audio data: " (string datatype)))))
+        
         (sf::sf_close sndfile-handle-out)
         )))
   (probe-file filename))

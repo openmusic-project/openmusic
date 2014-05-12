@@ -314,7 +314,7 @@
                      (end-smp (* end sr nch))
                      (end-smp (round (if (> end-smp size2) size2 end-smp)))
                      (lengthfinal (- end-smp beg-smp))
-                     (final-buffer (om-make-pointer lengthfinal :type :float :clear t)))
+                     (final-buffer (om-make-pointer lengthfinal :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch sr size2 beg-smp end-smp lengthfinal))
 
@@ -404,16 +404,18 @@
                     (om-beep-msg "Error: null sound buffer"))
 
                    ((= (nch s) 1)
-                    (let* ((final-buffer (om-make-pointer (* 2 (size s)) :type (smpl-type s) :clear t))
+                    (let* ((datatype (smpl-type s))
+                           (final-buffer (om-make-pointer (* 2 (size s)) :type datatype :clear t))
                            (pan (/ pan 100.0))
                            (Lgain (if (<= pan 0) 1 (- 1 pan)))
                            (Rgain (if (>= pan 0) 1 (+ 1 pan)))
                            (x 0.0))
-                      ;(print (list (smpl-type s) (buffer s) final-buffer))
+                      
+                      ;(print (list datatype (buffer s) final-buffer))
                       (dotimes (i (size s))
-                        (setf x (fli:dereference (buffer s) :index i))
-                        (setf (fli:dereference final-buffer :index (* 2 i)) (* Lgain x)
-                              (fli:dereference final-buffer :index (1+ (* 2 i))) (* Rgain x))
+                        (setf x (fli:dereference (buffer s)  :type datatype :index i))
+                        (setf (fli:dereference final-buffer :type datatype :index (* 2 i)) (* Lgain x)
+                              (fli:dereference final-buffer :type datatype :index (1+ (* 2 i))) (* Rgain x))
                         )
               
                       ;(fli:free-foreign-object (buffer s))
