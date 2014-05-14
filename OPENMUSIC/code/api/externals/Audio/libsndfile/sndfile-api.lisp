@@ -59,7 +59,7 @@
         (values nn channels sr ss size skip)))))
 
 
-(defun sndfile-get-sound-buffer (path &optional (datatype :double))
+(defun sndfile-get-sound-buffer (path &optional (datatype :float))
   "Returns a sound data buffer + info. The soudn buffer must be freed."
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
@@ -91,7 +91,7 @@
 
 
 ;; WRITE 
-(defun sndfile-save-sound-in-file (buffer filename size nch sr resolution format)
+(defun sndfile-save-sound-in-file (buffer filename size nch sr resolution format &optional (datatype :float))
   (let* ((res (case resolution
                (8 sf::sf_format_pcm_s8)
                (16 sf::sf_format_pcm_16)
@@ -111,8 +111,8 @@
       (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) nch)
       (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) format)
 
-      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo))
-            (datatype (fli::pointer-element-type buffer)))
+      (let ((sndfile-handle-out (sf::sf_open filename sf::SFM_WRITE sfinfo)))
+            ;(datatype (fli::pointer-element-type buffer))  ;; not reliable all the time :(
         (case datatype
           (:double (sf::sf-write-double sndfile-handle-out buffer (* nch size)))
           (:float (sf::sf-write-float sndfile-handle-out buffer (* nch size)))

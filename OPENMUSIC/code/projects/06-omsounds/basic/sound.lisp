@@ -107,7 +107,7 @@
 ;; SOUND BUFFER
 ;;==============================
 
-(defparameter *default-internal-sample-size* :double)
+(defparameter *default-internal-sample-size* :float)
 
 (defclass om-sound-data (simple-container om-cleanup-mixin)
   ((buffer :accessor buffer :initform nil :initarg :buffer)

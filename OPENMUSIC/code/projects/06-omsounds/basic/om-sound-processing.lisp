@@ -367,7 +367,7 @@
               ;(declare (type single-float fade-in-factor fade-out-factor))
                   
               (dotimes (i size2)
-                (setf (fli:dereference (buffer s) :index i)
+                (setf (fli:dereference final-buffer :index i)
                       (* (cond ((< i fade-in-frames) (1+ (* fade-in-factor i)))
                                ((>= i fade-out-frame-start) (+ gain (* fade-out-factor (- i (- size2 fade-out-frames)))))
                                (t gain)) 
@@ -375,7 +375,7 @@
 
               (make-instance 'om-sound-data 
                                :buffer final-buffer
-                               :size (round lengthfinal nch)
+                               :size (round size2 nch)
                                :nch nch
                                :sr sr))))
 
