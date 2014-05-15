@@ -248,8 +248,9 @@
   ;;; Allocate the sndbuffer (which is used to draw the waveform dynamically)
   (when (om-sound-file-name (object self))
     ;; #-linux ? 
-    (sound-cons-pict-zoom (object self))
-    (set-buffer-from-file (object self) (om-sound-file-name (object self))))
+    ;(sound-cons-pict-zoom (object self))
+    ;(set-buffer-from-file (object self) (om-sound-file-name (object self)))
+    )
  
   (setf (panel self) (om-make-view (get-panel-class self) 
                                    :owner self
@@ -797,23 +798,24 @@
                (zoom-step (get-zoom-step xview sr)))
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
-          
+          (om-get-display-slice self) ;;;,TEST
           (om-with-focused-view self
             (when (and thesound thepicture)
-              (om-with-fg-color self *om-dark-gray-color*
-                   (cond ((or (get-edit-param (editor self) :show-spectrum)
-                             (>= xview (round dur-ms 2)))
-                         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                        ((and zoom-step (< zoom-step 2))
-                         (om-draw-waveform self zoom-step))
-                        ((>= xview (round dur-ms 2)) 
-                         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                        ((and (< xview (round dur-ms 2)) (>= xview (round dur-ms 4)))
-                         (om-draw-picture self (aref (pict-zoom thesound) 0) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                        ((and (< xview (round dur-ms 4)) (>= xview (round dur-ms 8)))
-                         (om-draw-picture self (aref (pict-zoom thesound) 1) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
-                        ((< xview (round dur-ms 8))
-                         (om-draw-picture self (aref (pict-zoom thesound) 2) (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))))
+              ;(om-with-fg-color self *om-dark-gray-color*
+              ;  (cond ((or (get-edit-param (editor self) :show-spectrum)
+              ;             (>= xview (round dur-ms 2)))
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;        ((and zoom-step (< zoom-step 2))
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;        ((>= xview (round dur-ms 2)) 
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;        ((and (< xview (round dur-ms 2)) (>= xview (round dur-ms 4)))
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;        ((and (< xview (round dur-ms 4)) (>= xview (round dur-ms 8)))
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))
+              ;        ((< xview (round dur-ms 8))
+              ;         (om-draw-picture self thepicture (om-make-point 0 0) (om-subtract-points (om-field-size self) (om-make-point 0 15))))))
+              (when (display-array thesound) (om-draw-waveform-bars self))
               )
             (om-with-fg-color self *om-blue-color*
               (loop for item in (markers thesound) 
@@ -877,6 +879,48 @@
                                        pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))))
                 (setf sampleprev sample))
           )))))
+
+(defmethod om-draw-waveform-bars ((self soundPanel))
+  (let* ((data (om-get-display-slice self))
+         (thesound (object (om-view-container self)))
+         (sr (om-sound-sample-rate thesound))
+         (window-v-size (om-point-v (om-view-size self)))
+         (system-etat (get-system-etat self))
+         (xmin (car (rangex self)))
+         (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+         (xmax (cadr (rangex self)))
+         (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+         (xtime (- xmax xmin))
+         (timestep (/ xtime (coerce (cadr (array-dimensions data)) 'single-float)))
+         (nch (om-sound-n-channels thesound))
+
+         (basicstep smpstep)
+         (channels-h (round window-v-size nch))
+         (offset-y (round channels-h 2)))
+    (dotimes (i nch)  
+      (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))               
+    (loop for i from 0 to (1- (cadr (array-dimensions data))) do
+          (dotimes (c nch)
+            (setf pixpoint (round (* offset-y (aref data c i)))) ; scaled 0-1 --> 0 -->256/2
+            (setf pixtime (om-point-h (point2pixel self (om-make-point (round (+ xmin (* i timestep))) 0) system-etat)))
+            (om-with-fg-color nil *om-gray-color*
+              (om-draw-line  pixtime (- (+ offset-y (* c channels-h) (- 0 pixpoint)) 10)
+                             pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))))
+          )
+    ))
+
+(defmethod om-get-display-slice ((self soundpanel))
+  (let* ((snd (object (om-view-container self)))
+         (system-etat (get-system-etat self))
+         (xmin (car (rangex self)))
+         (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
+         (xmax (cadr (rangex self)))
+         (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
+         (nbpix (- pixmax pixmin))
+         (xtime (- xmax xmin)))
+    (sound-get-display-array-slice snd nbpix xmin xmax)))
+
+
 
 
 (defmethod draw-grille  ((self soundpanel)) 

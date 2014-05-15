@@ -324,9 +324,36 @@ Press 'space' to play/stop the sound file.
   sound))
 
 (defmethod build-display-array ((self sound))
-  ;(om-run-process "DisplayArrayBuilder" #'(lambda (snd) (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd))))) self)
-  (setf (display-array self) (om-audio:om-get-sound-display-array (namestring (filename self))))
+  (om-run-process "DisplayArrayBuilder" #'(lambda (snd) (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd))))) self)
+  ;(setf (display-array self) (om-audio:om-get-sound-display-array (namestring (filename self))))
   )
+
+(defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
+  (when (display-array self)
+    (let* ((maxnbpix (cadr (array-dimensions (display-array self))))
+           (time (- end-time start-time))
+           (sr (/ (om-sound-sample-rate self) 1000.0))
+           (nb-available-maxs (round (* time sr) 128)) ;;ICI 128 CAR WINDOW DE 128 SUR LE GET-DISPLAY-ARRAY
+           (start (round (* start-time sr) 128))
+           (end (round (* end-time sr) 128))
+           (maxi 0.0)
+           result)
+      (cond ((= nbpix nb-available-maxs)
+             (setq result (display-array self)))
+            ((< nbpix nb-available-maxs)
+             (let* ((step (round nb-available-maxs nbpix)))
+               (setq result (make-array (list (om-sound-n-channels self) nbpix) :element-type 'single-float :initial-element 0.0))
+               (dotimes (c (om-sound-n-channels self))
+                 (dotimes (i nbpix)
+                   (dotimes (j step)
+                     (setq maxi (max maxi (aref (display-array self) c (+ start j (* i (1- step)))))))
+                   (setf (aref result c i) maxi)
+                   (setq maxi 0.0)))
+               result))
+            ((> nbpix nb-available-maxs)
+             (setq result (make-array (list (om-sound-n-channels self) nbpix) :element-type 'single-float :initial-element 0.0))))
+      result)))
+
 
 
 (defmethod* get-sound () 
@@ -568,6 +595,59 @@ Press 'space' to play/stop the sound file.
         nil
         ))))
 
+(defmethod create-pict-sound ((self sound) &optional (nbpix 512)) 
+  (let ((pict nil)) 
+    (multiple-value-bind (format nch sr ss size skip)
+        (om-audio:om-sound-get-info (namestring (filename self)))
+
+      (if (and (> size 0) (> nch 0))
+          (let* ((pict-w (cadr (array-dimensions (display-array self))));nbpix) ; taille max de l'image en pixels
+                 (pict-h 256)
+                 (step (ceiling size pict-w))
+                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
+                 (offset-y (round channels-h 2))); draw from middle of each channels-h
+            (if (display-array self)
+                (let* ((smpArray (make-array (list nch pict-w) :element-type 'single-float :initial-element 0.0))
+                       pixIndx
+                       smpIndx
+                       pixpoint (maxi 0.0))
+                 
+                ;  (dotimes (n nch)
+                ;    (dotimes (indx pict-w)
+                ;      (dotimes (i step)
+                ;         (setq maxi (max (aref (display-array self) n (min (+ indx i) (1- (cadr (array-dimensions (display-array self)))))) maxi))
+                ;        )
+                ;      (setf (aref smpArray n indx) maxi)
+                ;      (setq maxi 0.0)
+                ;      ))
+                  (setf *testsnd* self)
+                  (setf pict 
+                        (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                          (dotimes (i nch)  
+                            (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
+                          (om-with-fg-color nil *om-gray-color*
+                            (dotimes (c nch)
+                              (dotimes (i pict-w)
+                                (setf pixpoint (round (* offset-y (aref (display-array self) c i))))
+                               (om-draw-line
+                                 i (+ offset-y (* c channels-h) pixpoint)
+                                 i (+ offset-y (* c channels-h) (- pixpoint)))
+                                )))
+                          ))
+                  pict)
+              (setf pict 
+                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+                      (dotimes (i nch)  
+                        (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                        (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                          (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
+                      ))))
+        nil
+        ))))
+
+
+;(setf (pict-sound *testsnd*) (create-pict-sound *testsnd*))
 
 (defmethod sound-get-pict ((self sound))
   (unless (equal (pict-sound self) :error)
@@ -575,28 +655,10 @@ Press 'space' to play/stop the sound file.
         (when (and (not (equal :error (loaded self)))
                    (or (loaded self) (ignore-errors (fill-sound-info self))))
           (setf (pict-sound self) 
-                (or  ;(om-sound-protect self (create-snd-pict (filename self) 5000))
-                    (create-snd-pict (filename self) 5000)
-                    :error))
+                (or (om-sound-protect self (create-snd-pict (filename self) 512)) :error))
           (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
-            (pict-sound self)))
-        )))
+            (pict-sound self))))))
         
-
-;;IF NEEDED, BUILD 3 PICTURES WITH BETTER RESOLUTION
-#-linux
-(defmethod sound-cons-pict-zoom ((self sound))
-  (om-run-process "Building sound pictures" 
-                  #'(lambda ()
-                      (dotimes (i 3)
-                        (om-with-new-gc
-                         (setf (aref (pict-zoom self) i) (create-snd-pict (om-sound-file-name self) (* 8000 (expt 2 i)))))))))
-
-#+linux
-(defmethod sound-cons-pict-zoom ((self sound))
-  (dotimes (i 3)
-    (setf (aref (pict-zoom self) i) (pict-sound self))))
-
 
 ;;;================
 ;;; SOUND BOX 
@@ -657,7 +719,7 @@ Press 'space' to play/stop the sound file.
 (defmethod draw-mini-view ((self t) (val sound))
   (draw-obj-in-rect val 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
-(defmethod draw-obj-in-rect ((self sound) x x1 y y1 edparams view) 
+(defmethod draw-obj-in-rect ((self sound) x x1 y y1 edparams view)
   (let ((picture (if (and (pict-spectre self) (get-edit-param edparams :show-spectrum))
                      (thepict (pict-spectre self))
                    (sound-get-pict self))))
