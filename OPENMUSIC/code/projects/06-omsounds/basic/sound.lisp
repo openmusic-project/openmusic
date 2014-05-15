@@ -45,6 +45,7 @@
    (pict-sound :initform nil :accessor pict-sound)
    (pict-zoom :initform (make-array 3) :accessor pict-zoom)
    (pict-spectre :initform nil :accessor pict-spectre)
+   (display-array :initform nil :accessor display-array)
 
    (player-data :accessor player-data :initform nil :initarg :player-data)
    ))
@@ -164,7 +165,7 @@
   ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
-   (pan :accessor pan :initform 0))  
+   (pan :accessor pan :initform 0))
    (:icon 287)
    (:documentation "Sound file object.
 
@@ -313,6 +314,7 @@ Press 'space' to play/stop the sound file.
   (if (probe-file name)
       (progn 
         (setf sound (make-instance 'sound :filename name))
+        (build-display-array sound)
         (setf (extent sound) nil))
     ;;; (om-supported-audio-format (om-sound-format thesound)))
     (progn 
@@ -320,6 +322,12 @@ Press 'space' to play/stop the sound file.
       (om-message-dialog (format nil (om-str :file-not-found) (namestring name))))
     )
   sound))
+
+(defmethod build-display-array ((self sound))
+  ;(om-run-process "DisplayArrayBuilder" #'(lambda (snd) (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd))))) self)
+  (setf (display-array self) (om-audio:om-get-sound-display-array (namestring (filename self))))
+  )
+
 
 (defmethod* get-sound () 
    :initvals nil
@@ -505,7 +513,6 @@ Press 'space' to play/stop the sound file.
 ; (create-snd-pict "/Users/bresson/_SHARED-FILES/WORKSPACES/my-workspace/in-files/africa.aiff" 1000)
 
 
-
 ;;;CONS SND PICT WITH MAX DETECTION
 (defun create-snd-pict (sndpath nbpix) 
   (let ((pict nil)) 
@@ -562,7 +569,7 @@ Press 'space' to play/stop the sound file.
         ))))
 
 
-(defmethod sound-get-pict ((self sound)) 
+(defmethod sound-get-pict ((self sound))
   (unless (equal (pict-sound self) :error)
     (or (pict-sound self)
         (when (and (not (equal :error (loaded self)))

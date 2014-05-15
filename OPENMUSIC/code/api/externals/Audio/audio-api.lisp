@@ -11,6 +11,7 @@
 (export '(
           om-sound-get-info
           om-get-sound-buffer
+          om-get-sound-display-array
           om-save-sound-in-file
           resample-audio-buffer
 
@@ -36,6 +37,38 @@
 (defun om-get-sound-buffer (path &optional (format :double))
   ;; RETURNS buffer format n-channels sample-rate sample-size size skip
   (sf::sndfile-get-sound-buffer (convert-filename-encoding path) format))
+
+(defun om-get-sound-display-array (path &optional (window 128))
+  ;;;Ouverture d'un descripteur libsndfile
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    ;;;Initialisation du descripteur
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
+    (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
+           (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
+           (size (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames) :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           (sr (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) :type :int :index #+powerpc 1 #-powerpc 0))
+           (format (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) :type :int :index #+powerpc 1 #-powerpc 0))
+           (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable))
+           ;;;Variables liées au calcul de waveform
+           (buffer-size (* window channels))
+           (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
+           (MaxArray (make-array (list channels (1+ (ceiling size window))) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (frames-read 0)
+           maxi)
+      (loop for indx from 0 do
+            (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+            (dotimes (n channels)
+              (dotimes (i window)
+                (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels (1+ i))))) (or maxi 0))))
+              (setf (aref MaxArray n indx) maxi)
+              (setq maxi 0.0))
+            while (= frames-read window))       
+      (fli:free-foreign-object buffer)
+      (sf::sf_close sndfile-handle)
+      MaxArray)))
+
+
 
 (defun om-save-sound-in-file (buffer filename size nch sr resolution format)
   (sf::sndfile-save-sound-in-file buffer filename size nch sr resolution format))
