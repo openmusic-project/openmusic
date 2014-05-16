@@ -557,7 +557,7 @@ Press 'space' to play/stop the sound file.
                        (smpArray (make-array (list nch pict-w) :element-type 'single-float))
                        pixIndx
                        smpIndx
-                       pixpoint)
+                       pixpoint pixpointprev)
                   (dotimes (n nch)
                     (setf smpIndx n
                           pixIndx 0)
@@ -574,15 +574,20 @@ Press 'space' to play/stop the sound file.
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (dotimes (i nch)  
                             (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
-                          (om-with-fg-color nil *om-gray-color*
+                          (om-with-fg-color nil *om-steel-blue-color*
                             (dotimes (c nch)
-                              (dotimes (i pixIndx)
-                                ;(print (aref smpArray c i))
-                                (setf pixpoint (round (* offset-y (aref smpArray (min c (1- nch)) (min i (1- pict-w)))
-                                                         )))
-                                (om-draw-line
-                                 i (+ offset-y (* c channels-h) pixpoint)
-                                 i (+ offset-y (* c channels-h) (- pixpoint))))))))
+                              (setq pixpointprev (round (* offset-y (aref smpArray c 0))))
+                              (loop for i from 1 to (1- pixindx) do
+                                (setf pixpoint (round (* offset-y (* 0.9 (aref smpArray (min c (1- nch)) (min i (1- pict-w)))))))
+                                (om-fill-polygon `(,(om-make-point (1- i) (+ offset-y (* c channels-h) pixpointprev))
+                                                   ,(om-make-point i (+ offset-y (* c channels-h) pixpoint))
+                                                   ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint)))
+                                                   ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
+                                (setq pixpointprev pixpoint)
+                               ; (om-draw-line
+                               ;  i (+ offset-y (* c channels-h) pixpoint)
+                               ;  i (+ offset-y (* c channels-h) (- pixpoint)))
+                                )))))
                   (om-free-pointer data)
                   pict)
               (setf pict 
@@ -611,7 +616,7 @@ Press 'space' to play/stop the sound file.
                 (let* ((smpArray (make-array (list nch pict-w) :element-type 'single-float :initial-element 0.0))
                        pixIndx
                        smpIndx
-                       pixpoint (maxi 0.0))
+                       pixpoint pixpointprev (maxi 0.0))
                  
                 ;  (dotimes (n nch)
                 ;    (dotimes (indx pict-w)
@@ -626,13 +631,22 @@ Press 'space' to play/stop the sound file.
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (dotimes (i nch)  
                             (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
-                          (om-with-fg-color nil *om-gray-color*
+                          (om-with-fg-color nil *om-steel-blue-color*
                             (dotimes (c nch)
-                              (dotimes (i pict-w)
+                              (setq pixpointprev (round (* offset-y (aref (display-array self) c 0))))
+                              (loop for i from 1 to (1- pict-w) do
                                 (setf pixpoint (round (* offset-y (aref (display-array self) c i))))
-                               (om-draw-line
-                                 i (+ offset-y (* c channels-h) pixpoint)
-                                 i (+ offset-y (* c channels-h) (- pixpoint)))
+                                (om-fill-polygon `(,(om-make-point (1- i) pixpointprev)
+                                                   ,(om-make-point i pixpoint)
+                                                   ,(om-make-point i (- pixpoint))
+                                                   ,(om-make-point (1- i) (- pixpointprev))))
+                                (setq pixpoint pixpointprev)
+                              ; (om-draw-line
+                              ;   i (+ offset-y (* c channels-h) pixpoint)
+                              ;   i (+ offset-y (* c channels-h) (- pixpoint)))
+
+                               
+                               
                                 )))
                           ))
                   pict)

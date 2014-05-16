@@ -767,8 +767,7 @@
                (xmax (cadr (rangex self)))
                (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
                (xview (- xmax xmin))
-               (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) 
-               (zoom-step (get-zoom-step xview sr)))
+               (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) )
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
@@ -822,12 +821,11 @@
             
             (setf pixpoint (round (* offset-y (* 0.9 (aref data c i))))) ; scaled 0-1 --> 0 -->256/2
             (setf pixtime (om-point-h (point2pixel self (om-make-point (round (+ xmin (* i timestep))) 0) system-etat)))
-            (om-with-fg-color nil *om-gray-color*
-              (om-draw-line  pixtprev (- (+ offset-y (* c channels-h) pixprev) 10)
-                            pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
-              (om-draw-line  pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10)
-                             pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10))
-              )
+            (om-with-fg-color nil *om-steel-blue-color*
+              (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 10))
+                                 ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
+                                 ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10))
+                                 ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))))
             (setq pixprev pixpoint pixtprev pixtime)))))
 
 (defmethod om-get-display-slice ((self soundpanel))
