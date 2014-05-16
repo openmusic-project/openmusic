@@ -53,17 +53,17 @@
            ;;;Variables liées au calcul de waveform
            (buffer-size (* window channels))
            (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
-           (MaxArray (make-array (list channels (1+ (ceiling size window))) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (MaxArray (make-array (list channels (ceiling size window)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
            (frames-read 0)
-           maxi)
+           maxi b)
       (loop for indx from 0 do
             (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
             (dotimes (n channels)
               (dotimes (i window)
-                (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels (1+ i))))) (or maxi 0))))
+                (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
               (setf (aref MaxArray n indx) maxi)
               (setq maxi 0.0))
-            while (= frames-read window))       
+            while (= frames-read window))
       (fli:free-foreign-object buffer)
       (sf::sf_close sndfile-handle)
       MaxArray)))
