@@ -749,9 +749,7 @@
              (om-sound-sample-rate (object (om-view-container self)))) ;;; TEMP : crashes if there is a name but no actual sound
         (let* ((thesound (object (om-view-container self)))
                (sr (om-sound-sample-rate thesound))
-               ; (sr (if (om-sound-las-using-srate-? thesound) las-srate (om-sound-sample-rate thesound)))
                (size (om-sound-n-samples thesound))
-               ;(size (om-sound-n-samples-current thesound))
                (dur (or (and sr size (/ size sr)) 0))
                (dur-ms (round size (/ sr 1000.0)))
                (total-width (om-point-h (om-field-size self)))
@@ -759,19 +757,14 @@
                                 (if (and (pict-spectre thesound) (get-edit-param (editor self) :show-spectrum))
                                     (thepict (pict-spectre thesound))
                                   (sound-get-pict thesound))))
-               (window-h-size (om-point-h (om-view-size self)))
-               (window-v-size (om-point-v (om-view-size self)))
-               (system-etat (get-system-etat self))
                (xmin (car (rangex self)))
-               (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
                (xmax (cadr (rangex self)))
-               (pixmax (om-point-h (point2pixel self (om-make-point xmax 0) system-etat)))
                (xview (- xmax xmin))
                (pict-threshold (if (> size (* 5 sr)) (/ dur-ms 3.0) 15000)) )
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
-            (when (and thesound thepicture (display-array thesound))
+            (when (and thesound  (display-array thesound))
                (om-draw-waveform self))
             (om-with-fg-color self *om-blue-color*
               (loop for item in (markers thesound) 
@@ -810,6 +803,7 @@
          pixpoint
          pixtime
          pixprev pixtprev)
+
 
     (dotimes (i nch)  
       (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
