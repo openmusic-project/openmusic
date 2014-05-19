@@ -764,7 +764,7 @@
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
-            (when (and thesound  (display-array thesound))
+            (when (and thesound (display-array thesound))
                (om-draw-waveform self))
             (om-with-fg-color self *om-blue-color*
               (loop for item in (markers thesound) 
@@ -785,7 +785,6 @@
       
           (om-with-focused-view self (om-draw-string 10 40 (format nil "No file loaded.."))))))
 
-
 (defmethod om-draw-waveform ((self soundPanel))
   (let* ((data (om-get-display-slice self))
          (thesound (object (om-view-container self)))
@@ -803,24 +802,25 @@
          pixpoint
          pixtime
          pixprev pixtprev)
-
-
-    (dotimes (i nch)  
-      (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
-    
-    (dotimes (c nch)
-      (setq pixprev (round (* offset-y (* 0.9 (aref data c 0)))))
-      (setq pixtprev (om-point-h (point2pixel self (om-make-point (round xmin) 0) system-etat)))
-      (loop for i from 1 to (1- (cadr (array-dimensions data))) do
+    (when data
+      (om-with-fg-color nil *om-steel-blue-color*
+        (dotimes (i nch)  
+          (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
+        (dotimes (c nch)
+          (setq pixprev (round (* offset-y (* 0.9 (aref data c 0)))))
+          (setq pixtprev (om-point-h (point2pixel self (om-make-point (round xmin) 0) system-etat)))
+          (loop for i from 1 to (1- (cadr (array-dimensions data))) do
             
-            (setf pixpoint (round (* offset-y (* 0.9 (aref data c i))))) ; scaled 0-1 --> 0 -->256/2
-            (setf pixtime (om-point-h (point2pixel self (om-make-point (round (+ xmin (* i timestep))) 0) system-etat)))
-            (om-with-fg-color nil *om-steel-blue-color*
-              (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 10))
-                                 ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
-                                 ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10))
-                                 ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))))
-            (setq pixprev pixpoint pixtprev pixtime)))))
+                (setf pixpoint (round (* offset-y (* 0.9 (aref data c i))))) ; scaled 0-1 --> 0 -->256/2
+                (setf pixtime (om-point-h (point2pixel self (om-make-point (round (+ xmin (* i timestep))) 0) system-etat)))
+             ; (om-draw-line pixtprev (- (+ offset-y (* c channels-h) pixprev) 10) pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
+                (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 10))
+                                   ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
+                                   ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10))
+                                   ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10))))
+          (setq pixprev pixpoint pixtprev pixtime)))))))
+
+
 
 (defmethod om-get-display-slice ((self soundpanel))
   (let* ((snd (object (om-view-container self)))

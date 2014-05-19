@@ -28,7 +28,7 @@
 ;;==============================
 
 
-(defclass internalsound ()   
+(defclass internalsound ()
   ((filename :accessor filename :initarg :filename :initform nil)
    
    (audio-format :accessor audio-format :initarg :audio-format :initform nil)
@@ -323,22 +323,29 @@ Press 'space' to play/stop the sound file.
     sound))
 
 (defmethod build-display-array ((self sound))
-  (let ((ratio 256)) 
+  (let ((ratio 128)) 
 ;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
 ;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
     (setf (display-ratio self) ratio)
-    (om-run-process "DisplayArrayBuilder" #'(lambda (snd) (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))) self)
-    (om-run-process "SoundPictBuilder" #'(lambda (snd) (sound-get-best-pict snd)) self)))
+    (om-run-process "DisplayArrayBuilder" #'(lambda (snd) 
+                                              (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
+                                              (sound-get-best-pict snd)
+                                              (print "Sound picture loaded. Please refresh the sound box display by moving it")) self)))
 
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
-    (let* ((win (display-ratio self))
-           (maxnbpix (cadr (array-dimensions (display-array self))))
+    (let* ((maxtime (round (om-sound-n-samples self) (* (om-sound-sample-rate self) 0.001)))
+           (targettime (- end-time start-time))
+           (timeratio (/ targettime maxtime 1.0))
+           (win (display-ratio self)) 
+           (maxnbpix (round (* timeratio (cadr (array-dimensions (display-array self))))))
            (sr (/ (om-sound-sample-rate self) 1000.0)) 
            (start (floor (* start-time sr) win))
            (end (ceiling (* end-time sr) win))
            (maxi 0.0)
-           result) 
+           result)
+      ;(print (* timeratio maxnbpix))
+      ;(print (list (namestring (filename self)) nbpix "/" maxnbpix start-time end-time))
       (cond ((= nbpix maxnbpix)
              (setq result (display-array self)))
             ((< nbpix maxnbpix)
@@ -347,13 +354,14 @@ Press 'space' to play/stop the sound file.
                (dotimes (c (om-sound-n-channels self))
                  (dotimes (i nbpix)
                    (dotimes (j (round step))
-                     (setq maxi (max maxi (aref (display-array self) c (min (1- maxnbpix) (+ start j (round (* i step))))))))
+                     (setq maxi (max maxi (aref (display-array self) c (min (1- maxnbpix) (round (+ start j (* i step))))))))
                    (setf (aref result c i) maxi)
                    (setq maxi 0.0)))
                result))
             ((> nbpix maxnbpix)
              ;TODO
-             (setq result (make-array (list (om-sound-n-channels self) nbpix) :element-type 'single-float :initial-element 0.0))))
+             (setq result (om-audio:om-get-sound-display-array-slice (namestring (filename self)) nbpix start-time end-time))
+             ))
       result)))
 
 (defmethod sound-get-final-pict ((self sound))
@@ -539,58 +547,56 @@ Press 'space' to play/stop the sound file.
            (setf (loaded ,sound) :error)
            nil))))
 
-
 ; (create-snd-pict "/Users/bresson/_SHARED-FILES/WORKSPACES/my-workspace/in-files/africa.aiff" 1000)
 
-
 ;;;CONS SND PICT WITH MAX DETECTION
-(defun create-snd-pict-max (sndpath nbpix) 
+(defmethod create-snd-pict-max ((self sound) nbpix)
+  (let* ((pict nil)
+         (pict-h 256)
+         (nch (om-sound-n-channels self))
+         (channels-h (round pict-h nch))
+         (offset-y (round channels-h 2))
+         (data (sound-get-display-array-slice 
+                self 512 0 (round (/ (om-sound-n-samples self) (/ (om-sound-sample-rate self) 1000.0))))))
+    (if data
+        (setf pict 
+              (om-record-pict *om-default-font2* (om-make-point nbpix pict-h)
+                (dotimes (i nch)  
+                  (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y)))
+                (om-with-fg-color nil *om-steel-blue-color*
+                  (dotimes (c nch)
+                    (setq pixpointprev (round (* offset-y (aref data c 0))))
+                    (loop for i from 1 to (1- nbpix) do
+                          (setf pixpoint (round (* offset-y (* 0.9 (aref data c (min i (1- nbpix)))))))
+                          (om-fill-polygon `(,(om-make-point (1- i) (+ offset-y (* c channels-h) pixpointprev))
+                                             ,(om-make-point i (+ offset-y (* c channels-h) pixpoint))
+                                             ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint)))
+                                             ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
+                          (setq pixpointprev pixpoint))))))
+      (setf pict 
+            (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+              (dotimes (i nch)  
+                (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
+                  (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
+                  (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))))))))
+
+(defun create-fast-snd-pict (sndpath &optional (nbpix 128)) 
   (let ((pict nil)) 
     (multiple-value-bind (data format nch sr ss size skip)
         (om-audio::om-get-sound-buffer sndpath :float)
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w nbpix) ; taille max de l'image en pixels
-                 (pict-h 256)
+                 (pict-h 64)
                  (step (ceiling size pict-w))
                  (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
                  (offset-y (round channels-h 2))); draw from middle of each channels-h
-
             (if data
-                (let* ((tmpArray (make-array step :element-type 'single-float))
-                       (smpArray (make-array (list nch pict-w) :element-type 'single-float))
-                       pixIndx
-                       smpIndx
-                       pixpoint pixpointprev)
-                  (dotimes (n nch)
-                    (setf smpIndx n
-                          pixIndx 0)
-                    (dotimes (i size)
-                      (setf (aref tmpArray (mod i step)) 
-                            (fli:dereference data :type :float :index smpIndx)
-                            ;(om-read-ptr data smpIndx :float)  ;;; much slower...
-                            )
-                      (incf smpIndx nch)
-                      (when (= (mod i step) 0)
-                        (setf (aref smpArray n pixIndx) (reduce #'max tmpArray))
-                        (incf pixIndx))))
+                (let (pixpoint pixpointprev)
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                          (dotimes (i nch)  
-                            (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
                           (om-with-fg-color nil *om-steel-blue-color*
-                            (dotimes (c nch)
-                              (setq pixpointprev (round (* offset-y (aref smpArray c 0))))
-                              (loop for i from 1 to (1- pixindx) do
-                                (setf pixpoint (round (* offset-y (* 0.9 (aref smpArray (min c (1- nch)) (min i (1- pict-w)))))))
-                                (om-fill-polygon `(,(om-make-point (1- i) (+ offset-y (* c channels-h) pixpointprev))
-                                                   ,(om-make-point i (+ offset-y (* c channels-h) pixpoint))
-                                                   ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint)))
-                                                   ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
-                                (setq pixpointprev pixpoint)
-                               ; (om-draw-line
-                               ;  i (+ offset-y (* c channels-h) pixpoint)
-                               ;  i (+ offset-y (* c channels-h) (- pixpoint)))
-                                )))))
+                            (om-draw-string (- (round pict-w 2) 58) (+ (round pict-h 2) 5) (format nil "Loading ~A channels" nch)))))
                   (om-free-pointer data)
                   pict)
               (setf pict 
@@ -599,55 +605,12 @@ Press 'space' to play/stop the sound file.
                         (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
                         (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
                           (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
-                      ))))
-        nil
-        ))))
-
-
-(defun create-snd-pict-random (sndpath nbpix) 
-  (let ((pict nil)) 
-    (multiple-value-bind (data format nch sr ss size skip)
-        (om-audio::om-get-sound-buffer sndpath :float)
-      (if (and (> size 0) (> nch 0))
-          (let* ((pict-w nbpix) ; taille max de l'image en pixels
-                 (pict-h 256)
-                 (step (ceiling size pict-w))
-                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
-                 (offset-y (round channels-h 2))); draw from middle of each channels-h
-            (if data
-                (let* (pixpoint pixpointprev)
-                  (setf pict 
-                        (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                          (dotimes (i nch)  
-                            (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y)))
-                          (om-with-fg-color nil *om-steel-blue-color*
-                            (dotimes (c nch)
-                              (setq pixpointprev (round (* offset-y (fli:dereference data :index (+ c (random step)) :type :float))))
-                              (loop for i from 1 to (1- pict-w) do
-                                    (setf pixpoint (round (* offset-y (* 0.9 (fli:dereference data :index (+ c (* i step) (random step)) :type :float))))) 
-                                    (om-fill-polygon `(,(om-make-point (1- i) (+ offset-y (* c channels-h) pixpointprev))
-                                                       ,(om-make-point i (+ offset-y (* c channels-h) pixpoint))
-                                                       ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint)))
-                                                       ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
-                                    (setq pixpointprev pixpoint)
-                                    )))))
-                  (om-free-pointer data)
-                  pict)
-              (setf pict 
-                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                      (dotimes (i nch)  
-                        (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                        (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
-                          (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2))))
-                      )))) nil))))
+                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))))))) nil))))
 
 
 (defmethod sound-get-best-pict ((self sound))
   (setf (pict-sound self)
-        (or (om-sound-protect self (create-snd-pict-max (filename self) 512)) :error)
-        ))
+        (or (om-sound-protect self (create-snd-pict-max self 512)) :error)))
 
 (defmethod sound-get-pict ((self sound))
   (unless (equal (pict-sound self) :error)
@@ -655,8 +618,8 @@ Press 'space' to play/stop the sound file.
         (when (and (not (equal :error (loaded self)))
                    (or (loaded self) (ignore-errors (fill-sound-info self))))
           (setf (pict-sound self)
-                (or (om-sound-protect self (create-snd-pict-random (filename self) 512)) :error)
-                )
+                (or (om-sound-protect self (create-fast-snd-pict (filename self))) 
+                    :error))
           (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
             (pict-sound self))))))
         
