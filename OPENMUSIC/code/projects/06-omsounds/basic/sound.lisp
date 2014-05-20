@@ -359,13 +359,8 @@ Press 'space' to play/stop the sound file.
                    (setq maxi 0.0)))
                result))
             ((> nbpix maxnbpix)
-             ;TODO
-             (setq result (om-audio:om-get-sound-display-array-slice (namestring (filename self)) nbpix start-time end-time))
-             ))
+             (setq result (om-audio:om-get-sound-display-array-slice (namestring (filename self)) nbpix start-time end-time))))
       result)))
-
-(defmethod sound-get-final-pict ((self sound))
-  )
 
 (defmethod* get-sound () 
    :initvals nil
@@ -574,12 +569,12 @@ Press 'space' to play/stop the sound file.
                                              ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
                           (setq pixpointprev pixpoint))))))
       (setf pict 
-            (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
+            (om-record-pict *om-default-font2* (om-make-point nbpix pict-h)
               (dotimes (i nch)  
-                (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
+                (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y))
                 (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
-                  (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                  (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))))))))
+                  (om-draw-line 0 (+ (* i channels-h) offset-y 2) nbpix (+ (* i channels-h) offset-y 2))
+                  (om-draw-line 0 (+ (* i channels-h) offset-y -2) nbpix (+ (* i channels-h) offset-y -2)))))))))
 
 (defun create-fast-snd-pict (sndpath &optional (nbpix 128)) 
   (let ((pict nil)) 
@@ -588,11 +583,10 @@ Press 'space' to play/stop the sound file.
       (if (and (> size 0) (> nch 0))
           (let* ((pict-w nbpix) ; taille max de l'image en pixels
                  (pict-h 64)
-                 (step (ceiling size pict-w))
                  (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
                  (offset-y (round channels-h 2))); draw from middle of each channels-h
             (if data
-                (let (pixpoint pixpointprev)
+                (let ()
                   (setf pict 
                         (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
                           (om-with-fg-color nil *om-steel-blue-color*

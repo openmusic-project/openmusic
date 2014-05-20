@@ -77,36 +77,41 @@
     (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
     (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
            (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
-           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
            (sr (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) :type :int :index #+powerpc 1 #-powerpc 0))
-           ;;;Variables liées au calcul de waveform
            (sr-ratio (* sr 0.001))
            (start-smp (floor (* start-time sr-ratio)))
            (end-smp (ceiling (* end-time sr-ratio)))
-           (nsmp (- end-smp start-smp))
-           throw-buffer
-           (window (round nsmp nsmp-out))
+           (size (- end-smp start-smp))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           (window (ceiling size nsmp-out))
+           ;;;Variables liées au calcul de waveform
            (buffer-size (* window channels))
            (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
-           (MaxArray (make-array (list channels nsmp-out) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
-           (indxmax (1- nsmp-out))
+           (MaxArray (make-array (list channels (min nsmp-out size)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (indxmax (1- (min nsmp-out size)))
            (frames-read 0)
-           maxi (read-smp 0)) ;(print (/ nsmp nsmp-out 1.0))
-
+           maxi throw-buffer)
+      
       (when (> start-smp 0)
         (setq throw-buffer (fli::allocate-foreign-object :type :float :nelems (* start-smp channels)))
         (sf::sf-readf-float sndfile-handle throw-buffer start-smp)
         (fli:free-foreign-object throw-buffer))
+      
+      (if (> size nsmp-out)
+          (loop for indx from 0 do
+                (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+                (dotimes (n channels)
+                  (dotimes (i window)
+                    (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
+                  (setf (aref MaxArray n (min indx indxmax)) maxi)
+                  (setq maxi 0.0))
+                while (= frames-read window))
+        (loop for indx from 0 do
+              (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+              (dotimes (n channels)
+                (setf (aref MaxArray n (min indx indxmax)) (fli:dereference buffer :type :float :index n)))
+              while (= frames-read window)))
 
-      (loop for indx from 0 do
-            (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
-            (setq read-smp (+ read-smp frames-read))
-            (dotimes (n channels)
-              (dotimes (i window)
-                (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
-              (setf (aref MaxArray n (min indx indxmax)) (or maxi 0.0))
-              (setq maxi 0.0))
-            while (or (< read-smp nsmp) (= frames-read window)))
       (fli:free-foreign-object buffer)
       (sf::sf_close sndfile-handle)
       MaxArray)))
@@ -123,12 +128,10 @@
     (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::data_out) out-buffer)
     (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames) out-size)
     (setf (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::src_ratio) ratio)
-    
     (let ((res (lsr::src-simple lsrdata method n-channels)))
       (if (= res 0)
           (values T (cffi:foreign-slot-value lsrdata '(:struct lsr::src_data) 'lsr::output_frames_gen))
-        (values NIL (lsr::src-strerror res)))
-      )))
+        (values NIL (lsr::src-strerror res))))))
 
 
 
