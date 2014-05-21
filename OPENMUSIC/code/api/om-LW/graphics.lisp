@@ -594,8 +594,8 @@
    :slant (if (member :italic style) :italic :roman)
    :weight (if (member :bold style) :bold :normal)
    :pitch :variable
-   :underline nil  ; souligné
-   :strikeout nil ; barré
+   :underline nil  ; souligne
+   :strikeout nil ; barre
    ;:width nil 
    :charset :ansi 
    :devicep nil 

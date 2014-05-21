@@ -52,6 +52,9 @@
                 om-editable-text
                 ;om-get-text-edit-size
                 ;om-get-text-edit-pos
+                om-paste-command
+                om-cut-command
+                om-copy-command
                 
                 om-text-edit-view
                 om-scroll-text-edit-view
@@ -109,7 +112,7 @@
 
 (defmethod om-subviews ((self om-standard-dialog-item)) nil)
 
-(defmethod om-invalidate-view ((self om-standard-dialog-item) &optional (erase t))
+(defmethod om-invalidate-view ((self om-standard-dialog-item))
   (capi::redisplay self))
 
 (defmethod om-redraw-view ((self om-standard-dialog-item))

@@ -239,12 +239,12 @@
 
 ;;; AUX BPC editor (2D views)
 
-(omg-defclass internalbpceditor (bpceditor) 
-     ((x-label :accessor x-label :initarg :x-label :initform "")
-      (y-label :accessor y-label :initarg :y-label :initform "")))
+(defclass internalbpceditor (bpceditor) 
+  ((x-label :accessor x-label :initarg :x-label :initform "")
+   (y-label :accessor y-label :initarg :y-label :initform "")))
 
-(omg-defclass internalbpcpanel (bpcpanel) 
-              ((show-time :accessor show-time :initarg :show-time :initform nil)))
+(defclass internalbpcpanel (bpcpanel) 
+  ((show-time :accessor show-time :initarg :show-time :initform nil)))
 
 (defmethod get-panel-class ((self internalbpceditor)) 'internalbpcpanel)
 
@@ -304,23 +304,23 @@
 
 (defmethod get-editor-class ((self 3DC)) '3DEditor)
 
-(omg-defclass 3DEditor (EditorView)
-              ((xyp :accessor xyp :initform nil)
-               (xzp :accessor xzp :initform nil)
-               (yzp :accessor yzp :initform nil)
-               (3Dp :accessor 3Dp :initform nil)
-               (ctrlp :accessor ctrlp :initform nil)
-               (selected-component :accessor selected-component :initarg :selected-component :initform 0)
-               (sc-label :accessor sc-label :initarg :sc-label :initform nil)
-               (display-mode :accessor display-mode :initarg :display-mode :initform 0)
-               (multibpf? :accessor multibpf? :initarg :multibpf? :initform nil)
-               (show-back-p :accessor show-back-p :initarg :show-back-p :initform t)
-               (show-axes :accessor show-axes :initarg :show-axes :initform t)
-               (lines-p :accessor lines-p :initarg :lines-p :initform t)
-               (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
-               (focus :accessor focus :initform nil)
-               (mode :accessor mode :initform :normal)
-               ))
+(defclass 3DEditor (EditorView)
+  ((xyp :accessor xyp :initform nil)
+   (xzp :accessor xzp :initform nil)
+   (yzp :accessor yzp :initform nil)
+   (3Dp :accessor 3Dp :initform nil)
+   (ctrlp :accessor ctrlp :initform nil)
+   (selected-component :accessor selected-component :initarg :selected-component :initform 0)
+   (sc-label :accessor sc-label :initarg :sc-label :initform nil)
+   (display-mode :accessor display-mode :initarg :display-mode :initform 0)
+   (multibpf? :accessor multibpf? :initarg :multibpf? :initform nil)
+   (show-back-p :accessor show-back-p :initarg :show-back-p :initform t)
+   (show-axes :accessor show-axes :initarg :show-axes :initform t)
+   (lines-p :accessor lines-p :initarg :lines-p :initform t)
+   (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
+   (focus :accessor focus :initform nil)
+   (mode :accessor mode :initform :normal)
+   ))
 
 (defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
 
