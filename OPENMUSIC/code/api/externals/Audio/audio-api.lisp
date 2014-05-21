@@ -90,27 +90,29 @@
            (MaxArray (make-array (list channels (min nsmp-out size)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
            (indxmax (1- (min nsmp-out size)))
            (frames-read 0)
-           maxi throw-buffer)
-      
+           maxi throw-buffer (frames-count 0))
+
       (when (> start-smp 0)
         (setq throw-buffer (fli::allocate-foreign-object :type :float :nelems (* start-smp channels)))
         (sf::sf-readf-float sndfile-handle throw-buffer start-smp)
         (fli:free-foreign-object throw-buffer))
-      
+
       (if (> size nsmp-out)
           (loop for indx from 0 do
                 (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+                (setq frames-count (+ frames-count frames-read))
                 (dotimes (n channels)
                   (dotimes (i window)
                     (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
                   (setf (aref MaxArray n (min indx indxmax)) maxi)
                   (setq maxi 0.0))
-                while (= frames-read window))
+                while (and (< frames-count size) (= frames-read window)))
         (loop for indx from 0 do
               (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+              (setq frames-count (+ frames-count frames-read))
               (dotimes (n channels)
                 (setf (aref MaxArray n (min indx indxmax)) (fli:dereference buffer :type :float :index n)))
-              while (= frames-read window)))
+              while (and (< frames-count size) (= frames-read window))))
 
       (fli:free-foreign-object buffer)
       (sf::sf_close sndfile-handle)
