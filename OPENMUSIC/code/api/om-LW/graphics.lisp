@@ -885,7 +885,6 @@
                                              (+ item (if (zerop i) *pox* *poy*)))))
                    :closed t :filled t))
 
-
 ;;;=========================
 ;;; PATTERNS DE SURFACE
 ;;;=========================

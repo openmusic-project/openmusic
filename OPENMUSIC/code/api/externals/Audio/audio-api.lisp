@@ -58,7 +58,7 @@
            (indxmax (1- (ceiling size window)))
            (frames-read 0)
            maxi)
-      (loop for indx from 0 do
+      (loop for indx from 0 do ;(print (list indx "/" (ceiling size window)))
             (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
             (dotimes (n channels)
               (dotimes (i window)

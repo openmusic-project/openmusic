@@ -327,22 +327,21 @@ Press 'space' to play/stop the sound file.
 ;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
 ;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
     (setf (display-ratio self) ratio)
-    (om-run-process "DisplayArrayBuilder" #'(lambda (snd) 
-                                              (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
-                                              (sound-get-best-pict snd)
-                                              (print "Sound picture loaded. Please refresh the sound box display by moving it")) self)))
+    (om-run-process "DisplayArrayBuilder" #'(lambda (snd)
+                                                (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
+                                                (sound-get-best-pict snd)
+                                                (print (format nil "~A Loaded..." (filename self)))) self)))
 
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
-    (let* ((maxtime (round (om-sound-n-samples self) (* (om-sound-sample-rate self) 0.001)))
+    (let* ((sr (* (om-sound-sample-rate self) 0.001))
+           (maxtime (round (om-sound-n-samples self) sr))
            (targettime (- end-time start-time))
-           (timeratio (/ targettime maxtime 1.0))
+           (timeratio (float (/ targettime maxtime 1.0)))
            (win (display-ratio self)) 
            (maxnbpix (round (* timeratio (cadr (array-dimensions (display-array self))))))
-           (sr (/ (om-sound-sample-rate self) 1000.0))
            (start-smp (floor (* start-time sr)))
            (end-smp (ceiling (* end-time sr)))
-           (size (- end-smp start-smp))
            (start (floor (* start-time sr) win))
            (end (ceiling (* end-time sr) win))
            (stoppoint (+ start (1- maxnbpix)))
@@ -462,8 +461,7 @@ Press 'space' to play/stop the sound file.
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
                            (om-read-ptr buffer (+ position chan) type))))
         (om-free-pointer buffer)
-        snddata
-        ))))
+        snddata))))
 
 
 (defmethod* sound-points ((self sound) points &optional (channel 1))
@@ -548,60 +546,35 @@ Press 'space' to play/stop the sound file.
 
 ;;;CONS SND PICT WITH MAX DETECTION
 (defmethod create-snd-pict-max ((self sound) nbpix)
-  (let* ((pict nil)
-         (pict-h 256)
+  (let* ((pict-h 256)
          (nch (om-sound-n-channels self))
          (channels-h (round pict-h nch))
          (offset-y (round channels-h 2))
          (data (sound-get-display-array-slice 
-                self 512 0 (round (/ (om-sound-n-samples self) (/ (om-sound-sample-rate self) 1000.0))))))
+                self 512 0 (round (om-sound-n-samples self) (* (om-sound-sample-rate self) 0.001))))
+         pixpoint pixpointprev pict)
     (if data
-        (setf pict 
+        (setq pict 
               (om-record-pict *om-default-font2* (om-make-point nbpix pict-h)
                 (dotimes (i nch)  
                   (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y)))
                 (om-with-fg-color nil *om-steel-blue-color*
                   (dotimes (c nch)
-                    (setq pixpointprev (round (* offset-y (aref data c 0))))
+                    (setq pixpointprev (round (* offset-y (* 0.99 (aref data c 0)))))
                     (loop for i from 1 to (1- nbpix) do
-                          (setf pixpoint (round (* offset-y (* 0.9 (aref data c (min i (1- nbpix)))))))
+                          (setf pixpoint (round (* offset-y (* 0.99 (aref data c (min i (1- nbpix)))))))
                           (om-fill-polygon `(,(om-make-point (1- i) (+ offset-y (* c channels-h) pixpointprev))
-                                             ,(om-make-point i (+ offset-y (* c channels-h) pixpoint))
-                                             ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint)))
+                                             ,(om-make-point i (+ offset-y (* c channels-h) pixpoint)) 
+                                             ,(om-make-point i (+ offset-y (* c channels-h) (- pixpoint))) 
                                              ,(om-make-point (1- i) (+ offset-y (* c channels-h) (- pixpointprev)))))
                           (setq pixpointprev pixpoint))))))
-      (setf pict 
+      (setq pict 
             (om-record-pict *om-default-font2* (om-make-point nbpix pict-h)
               (dotimes (i nch)  
                 (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y))
                 (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
                   (om-draw-line 0 (+ (* i channels-h) offset-y 2) nbpix (+ (* i channels-h) offset-y 2))
                   (om-draw-line 0 (+ (* i channels-h) offset-y -2) nbpix (+ (* i channels-h) offset-y -2)))))))))
-
-(defun create-fast-snd-pict (sndpath &optional (nbpix 128)) 
-  (let ((pict nil)) 
-    (multiple-value-bind (data format nch sr ss size skip)
-        (om-audio::om-get-sound-buffer sndpath :float)
-      (if (and (> size 0) (> nch 0))
-          (let* ((pict-w nbpix) ; taille max de l'image en pixels
-                 (pict-h 64)
-                 (channels-h (round pict-h nch))   ; imag height = 256, channels-h = height of 1 channel
-                 (offset-y (round channels-h 2))); draw from middle of each channels-h
-            (if data
-                (let ()
-                  (setf pict 
-                        (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                          (om-with-fg-color nil *om-steel-blue-color*
-                            (om-draw-string (- (round pict-w 2) 58) (+ (round pict-h 2) 5) (format nil "Loading ~A channels" nch)))))
-                  (om-free-pointer data)
-                  pict)
-              (setf pict 
-                    (om-record-pict *om-default-font2* (om-make-point pict-w pict-h)
-                      (dotimes (i nch)  
-                        (om-draw-line 0 (+ (* i channels-h) offset-y) pict-w (+ (* i channels-h) offset-y))
-                        (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
-                          (om-draw-line 0 (+ (* i channels-h) offset-y 2) pict-w (+ (* i channels-h) offset-y 2))
-                          (om-draw-line 0 (+ (* i channels-h) offset-y -2) pict-w (+ (* i channels-h) offset-y -2)))))))) nil))))
 
 
 (defmethod sound-get-best-pict ((self sound))
@@ -613,9 +586,6 @@ Press 'space' to play/stop the sound file.
     (or (pict-sound self)
         (when (and (not (equal :error (loaded self)))
                    (or (loaded self) (ignore-errors (fill-sound-info self))))
-          (setf (pict-sound self)
-                (or (om-sound-protect self (create-fast-snd-pict (filename self))) 
-                    :error))
           (when (and (pict-sound self) (not (equal (pict-sound self) :error)))
             (pict-sound self))))))
         
@@ -694,14 +664,17 @@ Press 'space' to play/stop the sound file.
                 (loop for item in (markers self) do
                       (setf pos (+ x (round (* w item) dur)))
                       (om-draw-line pos y pos y1)))))
-        (let ((path (om-sound-file-name self)))
-          (when path
+        (if (om-sound-n-channels self) 
             (om-with-font *om-default-font1*
-                          (om-draw-string 5 14 (string+ (pathname-name path) (if (stringp (pathname-type path)) (string+ "." (pathname-type path)) "")
-                                                        ":"))
-                          (om-draw-string 5 28 (if (probe-file path) (om-str :file-error)
-                                                 (string+ (format nil (om-str :file-not-found) (pathname-name path)) "...")))))
-          ))
+                          (om-draw-string 5 14 "Loading")
+                          (om-draw-string 5 28 (format nil "~A channels" (om-sound-n-channels self))))
+          (let ((path (om-sound-file-name self)))
+            (when path
+              (om-with-font *om-default-font1*
+                            (om-draw-string 5 14 (string+ (pathname-name path) (if (stringp (pathname-type path)) (string+ "." (pathname-type path)) "")
+                                                          ":"))
+                            (om-draw-string 5 28 (if (probe-file path) (om-str :file-error)
+                                                   (string+ (format nil (om-str :file-not-found) (pathname-name path)) "..."))))))))
       ;(when (and (om-sound-n-samples self) (zerop (om-sound-n-samples self)))
       ;  (om-draw-string 15 15 (om-str "Error")))
       )))

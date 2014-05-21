@@ -765,7 +765,7 @@
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
             (when (and thesound (display-array thesound))
-               (om-draw-waveform self))
+              (om-draw-waveform self))
             (om-with-fg-color self *om-blue-color*
               (loop for item in (markers thesound) 
                     for k = 0 then (+ k 1) do
@@ -789,7 +789,7 @@
   (multiple-value-bind (data smplevel)
       (om-get-display-slice self)
     (let* ((thesound (object (om-view-container self)))
-           (window-v-size (om-point-v (om-view-size self)))
+           (window-v-size (* 0.99 (om-point-v (om-view-size self))))
            (system-etat (get-system-etat self))
            (xmin (car (rangex self)))
            (pixmin (om-point-h (point2pixel self (om-make-point xmin 0) system-etat)))
@@ -807,21 +807,30 @@
            pixprev pixtprev)
       (when data
         (om-with-fg-color nil *om-steel-blue-color*
-          (dotimes (i nch)  
-            (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10)))
+          ;(when smplevel    ;;;Use this "when" only when HQ display is used below
+          (om-with-fg-color nil (om-make-color-alpha 0.41 0.54 0.67 0.5)  
+            (dotimes (i nch)  
+              (om-draw-line pixmin (- (+ (* i channels-h) offset-y) 10) pixmax (- (+ (* i channels-h) offset-y) 10))));)
           (dotimes (c nch)
-            (setq pixprev (round (* offset-y (* 0.9 (aref data c 0)))))
+            (setq pixprev (round (* offset-y (* 0.99 (aref data c 0)))))
             (setq pixtprev (om-point-h (point2pixel self (om-make-point (round xmin) 0) system-etat)))
             (loop for i from 1 to (1- (cadr (array-dimensions data))) do
-                  (setf pixpoint (* offset-y (* 0.9 (aref data c i)))) ; scaled 0-1 --> 0 -->256/2
-                  (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i timestep)) 0) system-etat)))
-                  (if (not smplevel) ;(= nbpts nbpix)
-                      (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 10))
-                                         ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 10))
-                                         ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10))
-                                         ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10))))
-                    (om-draw-line pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10) pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))
-                  (setq pixprev pixpoint pixtprev pixtime))))))))
+                  (let ((val (aref data c i)))
+                    (setf pixtime (om-point-h (point2pixel self (om-make-point (+ xmin (* i timestep)) 0) system-etat)))
+                    (setf pixpoint (* offset-y (* 0.99 val))) ; scaled 0-1 --> 0 -->256/2
+                    (if (not smplevel) ;(= nbpts nbpix)
+                        (progn
+                          ;;;Use this for HQ display : requires a bit more computation to display middle lines with dynamic intensity
+                          ;(when (not smplevel)
+                          ;  (let ((colorval (- 1 (log (1+ (* (1- (exp 1)) (expt (abs val) 0.1)))))));(- 1 (expt (abs val) 0.2))));(expt (abs val) 0.2)))
+                          ;    (om-with-fg-color nil (om-make-color-alpha 0.41 0.54 0.67 colorval)
+                          ;      (om-draw-line pixtprev (- (+ (* c channels-h) offset-y) 10) pixtime (- (+ (* c channels-h) offset-y) 10)))))
+                          (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 5))
+                                             ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 5))
+                                             ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 5))
+                                             ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 5)))))
+                      (om-draw-line pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10) pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))
+                    (setq pixprev pixpoint pixtprev pixtime)))))))))
 
 
 
