@@ -1,2 +1,8 @@
 *.xfasl
+*.ofasl
+*.nfasl
+*.ufasl
 *.lisp~
+
+release-osx
+release-src
