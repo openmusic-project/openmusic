@@ -112,7 +112,7 @@
 
 (defmethod om-subviews ((self om-standard-dialog-item)) nil)
 
-(defmethod om-invalidate-view ((self om-standard-dialog-item))
+(defmethod om-invalidate-view ((self om-standard-dialog-item) &optional (erase t))
   (capi::redisplay self))
 
 (defmethod om-redraw-view ((self om-standard-dialog-item))
