@@ -1,2 +1,3 @@
 *.xfasl
 *.lisp~
+*.ufasl
