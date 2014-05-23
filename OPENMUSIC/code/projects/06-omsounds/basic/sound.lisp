@@ -46,6 +46,7 @@
    (pict-spectre :initform nil :accessor pict-spectre)
    (display-array :initform nil :accessor display-array)
    (display-ratio :initform nil :accessor display-ratio)
+   (display-builder :initform nil :accessor display-builder)
 
    (player-data :accessor player-data :initform nil :initarg :player-data)
    ))
@@ -124,7 +125,7 @@
                               (fli::pointer-element-type (buffer self))))
     ))
 
-(defmethod om-cleanup ((self om-sound-data)) 
+(defmethod om-cleanup ((self om-sound-data))
   (when (buffer self)
     ;(print (list "clean buffer" self))
     (om-free-pointer (buffer self))))
@@ -323,14 +324,27 @@ Press 'space' to play/stop the sound file.
     sound))
 
 (defmethod build-display-array ((self sound))
-  (let ((ratio 128)) 
+  (let* ((ratio 128)
+         (size (om-sound-n-samples self))
+         (channels (om-sound-n-channels self))
+         (array-width (ceiling size ratio)))
 ;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
 ;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
-    (setf (display-ratio self) ratio)
-    (om-run-process "DisplayArrayBuilder" #'(lambda (snd)
-                                                (setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
-                                                (sound-get-best-pict snd)
-                                                (print (format nil "~A Loaded..." (filename self)))) self)))
+    (setf (display-ratio self) ratio
+          (display-builder self) (om-run-process 
+                                  "DisplayArrayBuilder" 
+                                  #'(lambda (snd)
+                                      ;(setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
+                                      (setf (display-array snd) 
+                                            (make-array (list channels (ceiling size ratio))
+                                                        :element-type 'single-float :initial-element 0.0 :allocation :static))
+                                      (fli:with-dynamic-lisp-array-pointer 
+                                          (ptr (display-array snd) :type :float)
+                                        (om-audio:om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
+                                      (sound-get-best-pict snd)
+                                      (setf (display-builder self) nil)
+                                      (print (format nil "~A Loaded..." (filename self)))) self))))
+
 
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
@@ -338,13 +352,13 @@ Press 'space' to play/stop the sound file.
            (maxtime (round (om-sound-n-samples self) sr))
            (targettime (- end-time start-time))
            (timeratio (float (/ targettime maxtime 1.0)))
-           (win (display-ratio self)) 
+           (win (display-ratio self))
            (maxnbpix (round (* timeratio (cadr (array-dimensions (display-array self))))))
            (start-smp (floor (* start-time sr)))
            (end-smp (ceiling (* end-time sr)))
            (start (floor (* start-time sr) win))
            (end (ceiling (* end-time sr) win))
-           (stoppoint (+ start (1- maxnbpix)))
+           (stoppoint (1- (cadr (array-dimensions (display-array self)))));(+ start (1- maxnbpix)))
            (maxi 0.0)
            result)
       (cond ((= nbpix maxnbpix)
