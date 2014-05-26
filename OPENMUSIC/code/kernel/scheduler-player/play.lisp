@@ -91,17 +91,18 @@
 
 ;=== general containers play all sub components
 (defmethod PrepareToPlay ((player t) (self container) at &key approx port interval voice)
-  (loop for sub in (inside self) collect
-        (let ((objstart (+ at (offset->ms sub))))
-          (let ((in-interval (or (null interval)
-                                 (interval-intersec interval (list objstart (+ objstart (get-obj-dur sub)))))))
-            (when in-interval 
-              (PrepareToPlay player sub objstart 
-                             :approx approx 
-                             :port port
-                             :interval interval
-                             :voice voice)))
-          )))
+  (remove nil
+          (loop for sub in (inside self) collect
+                (let ((objstart (+ at (offset->ms sub))))
+                  (let ((in-interval (or (null interval)
+                                         (interval-intersec interval (list objstart (+ objstart (get-obj-dur sub)))))))
+                    (when in-interval 
+                      (PrepareToPlay player sub objstart 
+                                     :approx approx 
+                                     :port port
+                                     :interval interval
+                                     :voice voice)))
+                  ))))
 
 ;;; FOR THE MAQUETTE CONTENTS
 ;;; check if we need to instanciate a specific track for this object
