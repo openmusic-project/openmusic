@@ -19,7 +19,7 @@
    (:documentation "
 A sequence of MIDI events.
 
-EventMIDI-seq represents a lost of any types of MIDI events.
+EventMIDI-seq represents a list of any types of MIDI events.
 It is equivalent to a MIDI file contents and can be saved as such without any data loss.
 
 The structure is similar to that of a CHORD-SEQ: each parameters are specified by a separate list.
