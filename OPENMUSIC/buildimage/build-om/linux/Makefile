@@ -1,7 +1,7 @@
 # Makefile for OpenMusic 	-*-Makefile-*-
 # Copyright (C) 2013 anders anders DOT vinjar AT bek DOT no
 #
-# this Makefile is included in OpenMusics svn-tree.  Use it to compile
+# this Makefile is included in OpenMusics git-tree.  Use it to compile
 # sources/build image + set up a dist (tar.bz2)
 #
 # install/uninstall targets are intended to be handled by the Makefile
@@ -64,7 +64,7 @@ compile buildsvn:
 
 clean:
 	find $(BUILDROOT) -name $(rubbish) -delete
-	rm $(BUILDROOT)/$(svnappname)
+	rm $(BUILDROOT)/$(svnappname); fi
 
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
