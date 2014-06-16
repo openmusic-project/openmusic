@@ -762,7 +762,7 @@
 
 ;-----------
 
-(omg-defclass defval-drop (drop-area) 
+(defclass defval-drop (drop-area) 
   ((droppedval :accessor droppedval :initarg :droppedval :initform nil)
    (icn :accessor icn :initarg :icn :initform nil)
    (item :initform nil :initarg :item :accessor item)))
@@ -770,7 +770,7 @@
 (defmethod om-draw-contents ((self defval-drop))
   (call-next-method)
   (if (droppedval self)
-    (om-draw-icon (cadr (icn self)) self (om-make-point 40 5) (om-make-point 20 20))
+    (om-draw-picture self (cadr (icn self)) :pos (om-make-point 40 5) :size (om-make-point 20 20))
     (om-with-focused-view self
       (om-with-fg-color self *om-light-gray-color*
         (om-draw-string 5 15 "drop instance")

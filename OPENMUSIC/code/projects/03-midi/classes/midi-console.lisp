@@ -100,8 +100,8 @@ In this case, all internal events are sent simultaneously.
   (let ((pw (round (w view) (nbtracks self)))
         (pic (om-load-and-store-picture "audiotrack-bg" 'internal)))
     (loop for i from 0 to (nbtracks self) do
-          (om-draw-picture view pic (om-make-point (* i pw) 0)
-                           (om-make-point pw (h view))
+          (om-draw-picture view pic :pos (om-make-point (* i pw) 0)
+                           :size (om-make-point pw (h view))
                            ))))
 
 

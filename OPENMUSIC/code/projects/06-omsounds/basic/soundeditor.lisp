@@ -175,7 +175,7 @@
            (dur (cadr (bounds-x panel))))
       (unless (zerop dur)
         (om-with-focused-view self
-          (om-draw-picture self (sndpict (om-view-container self)) (om-make-point 0 0) (om-view-size self))
+          (om-draw-picture self (sndpict (om-view-container self)) :size (om-view-size self))
           (om-with-fg-color self *om-steel-blue-color*
             (om-draw-rect (round (* (w self) (/ (car (rangex panel)) 
                                                 dur)))

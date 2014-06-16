@@ -107,13 +107,13 @@
                posi)
           (if pic
               (om-draw-picture self pic 
-                               (om-make-point 0 0) (om-make-point (w self) (h self)))
+                               :size (om-make-point (w self) (h self)))
             (om-with-fg-color self (or (get-fonde-color (value box))
                                        *om-light-gray-color*)
               (om-fill-rect 0 0 (w self) (h self))))
           (when iconhdlr
             (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
-            (om-draw-icon iconhdlr self posi (om-make-point xi yi)))
+            (om-draw-picture self iconhdlr :pos posi :size (om-make-point xi yi)))
           ))
       (when (show-name box)
         (om-draw-string 4 (- (h self) 5) (name box)))
@@ -288,7 +288,7 @@
           (unless (maq-obj-p (value self))
             (if (draw-with-mini-pict (value self))
                 (if (minipict view)
-                  (om-draw-picture view (minipict view) (om-make-point 0 (- (h view) delta)) (om-make-point (w view) delta))
+                  (om-draw-picture view (minipict view) :pos (om-make-point 0 (- (h view) delta)) :size (om-make-point (w view) delta))
                   (om-draw-string 10 (- (h view) delta -20) "?"))
               (draw-obj-in-rect (value self) 0 (w view) (- (h view) delta) (h view) (view-get-ed-params view) view)
             ))

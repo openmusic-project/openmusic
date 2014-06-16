@@ -675,26 +675,6 @@ this slot store a subview containing it subview if exists.#triangle#
   (om-highlight-view (icon-finder view) nil))
 
 
-;(defmethod drag-leave-view ((view t))
-;  (om-redraw-view view)
-;  (om-redraw-view (iconview view))
-;  (when (nameView view) 
-;    (om-redraw-view (nameView view))
-;    )
-;  )
-
-;(defmethod drag-leave-view ((view commentview)) 
-   
-;(defmethod drag-enter-view ((view t))
-;  (unless (equal view (dragged-view *OM-drag&drop-handler*))
-;    (om-draw-icon-finder-hilited view)))
-
-;(defun om-draw-icon-finder-hilited (view)
-;  (om-with-focused-view view
-;    (om-draw-hilite-rect 0 0 (om-width view) (om-height view))))
-
-
-
 ;============================
 ;============================
 ;;; WS ICON FINDER CLASSES

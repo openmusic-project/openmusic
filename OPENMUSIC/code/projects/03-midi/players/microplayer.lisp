@@ -173,22 +173,39 @@
 (defun make-osc-note (chan pitch vel dur date)
    (list (make-microplay-note :date date :pitch pitch :vel vel :dur dur :chan chan)))
 
+
+;;; = tests to fix the microplayer + maquette
 (defmethod prepare-to-play ((engine (eql :microplayer)) (player omplayer) object at interval params)
-  (player-stop :microplayer)
-  (setf *microosc-packets* nil)
-  (setf *MidiShare-start-time* 1)
+  ;;;(player-stop :microplayer)
+  ;;;(setf *microosc-packets* nil)
+  ;;;(setf *MidiShare-start-time* 1)
   (let ((approx (if (caller player) (get-edit-param (caller player) 'approx))))
     (setf *microosc-packets* (sort-micro-events 
-                              (remove nil 
-                                      (flat 
-                                       (PrepareToPlay :microplayer object (+ at (real-duration object 0)) 
-                                                             :interval interval :approx approx)))))))
+                              (append *microosc-packets*  ;;;
+                                      (remove nil 
+                                              (flat 
+                                               (PrepareToPlay :microplayer object (+ at (real-duration object 0)) 
+                                                              :interval interval :approx approx)))
+                                      ) ;;;
+                                      ))))
 
 (defmethod player-start ((self (eql :microplayer)) &optional play-list)
-   (open-microplayer)
-   (setf *index-packets* 0) 
-   (send-200) 
-   (micro-start))
+  ;;;
+  ;(player-stop :microplayer)
+  (setf *MidiShare-start-time* 1)
+  ;;;
+  (open-microplayer)
+  (setf *index-packets* 0) 
+  (send-200) 
+  (micro-start))
+
+(defmethod player-stop  ((self (eql :microplayer)) &optional play-list)
+   (declare (ignore view))
+   ;;
+   (setf *microosc-packets* nil)
+   ;;
+   (close-microplayer)
+   (micro-reset))
 
 (defmethod player-continue ((self (eql :microplayer)) &optional play-list)
     (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/continue"))))
@@ -196,10 +213,7 @@
 (defmethod player-pause ((self (eql :microplayer)) &optional play-list)
   (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/pause"))))
 
-(defmethod player-stop  ((self (eql :microplayer)) &optional play-list)
-   (declare (ignore view))
-   (close-microplayer)
-   (micro-reset))
+
 
 
 (defmethod player-loop ((self (eql :microplayer)) player &optional play-list)

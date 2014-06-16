@@ -211,7 +211,7 @@ selected parameter is used to draw the icon in normal or selected mode"
            (iconhdlr (second iconparams)))
       (setf (iconID self) (first iconparams))
       (om-with-focused-view self
-        (om-draw-icon iconhdlr self (om-make-point 0 0) (om-view-size self) selected)
+        (om-draw-picture self iconhdlr :size (om-view-size self) :selected selected)
         ))))
 
 

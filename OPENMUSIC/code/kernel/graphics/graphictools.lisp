@@ -706,7 +706,7 @@ into the unaire-fun-view.#action#"))
        (when iconhdlr
          (om-with-focused-view self
            ;(print (list self iconhdlr))
-           (om-draw-picture self iconhdlr (om-make-point 0 0) (om-view-size self)))
+           (om-draw-picture self iconhdlr :size (om-view-size self)))
          ))
      (when (text self)
        (let* ((ff (or (font self) *om-default-font1*))
@@ -730,7 +730,7 @@ into the unaire-fun-view.#action#"))
 (defmethod om-draw-contents ((self picture-view))
    (call-next-method)
    (when (pict self)
-     (om-draw-picture self (pict self) (om-make-point 0 0) (om-make-point (w self) (h self)))))
+     (om-draw-picture self (pict self) :size (om-view-size self))))
 
 
 

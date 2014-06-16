@@ -480,11 +480,11 @@
 
 (defmethod om-draw-contents ((self graphic-numbox))
   (when (pict self)
-    (om-draw-picture-part self (pict self) 
-                          (om-make-point 0 (* (pict-part self) (om-point-v (pict-size self))))
-                          (pict-size self) 
-                          (om-make-point 0 0) 
-                          (om-view-size self))))
+    (om-draw-picture self (pict self) 
+                          :size (om-view-size self)
+                          :srctopleft (om-make-point 0 (* (pict-part self) (om-point-v (pict-size self))))
+                          :srcsize (pict-size self) 
+                          )))
 
 
 (defvar *gnumbox-last-click* nil)

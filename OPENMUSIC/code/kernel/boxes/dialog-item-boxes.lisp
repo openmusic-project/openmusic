@@ -180,10 +180,10 @@
              (iconhdlr (second (get&corrige-icon icon)))
              posi)
         (om-draw-picture self (om-load-and-store-picture "diboxpict" 'kernel) 
-                         (om-make-point 0 0) (om-make-point (w self) (h self)))
+                         :size (om-make-point (w self) (h self)))
         (when iconhdlr
           (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
-          (om-draw-icon iconhdlr self posi (om-make-point xi yi)))
+          (om-draw-picture self iconhdlr :pos posi :size (om-make-point xi yi)))
         (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 1)
         ))
     (when (show-name (object (om-view-container self)))

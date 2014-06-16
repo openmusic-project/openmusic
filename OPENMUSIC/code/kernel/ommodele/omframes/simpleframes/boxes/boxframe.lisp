@@ -860,9 +860,8 @@
                                                     *glass-pict-per* *glass-pict*)
                                     ;(om-make-point (- (x (iconview self)) 5) (y (iconview self))) 
                                     ;(om-make-point (+ (w (iconview self)) 5) (- (h self) 19))
-                                    (om-make-point 0 0) 
-                                    (om-subtract-points (om-view-size self) (om-make-point 0 11))
-                                   )
+                    :size (om-subtract-points (om-view-size self) (om-make-point 0 11))
+                    )
    ;(om-draw-view-outline (nameview self))
    ;(om-with-fg-color self *instboxframe-color*
      ;(om-fill-rect (x (nameview self)) 0 (w (nameview self)) (- (h self) 18))

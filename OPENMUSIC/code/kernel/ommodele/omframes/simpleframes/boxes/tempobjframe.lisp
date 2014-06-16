@@ -277,7 +277,7 @@
 (defmethod om-draw-contents ((self tempobjframe))
    (om-with-focused-view self
      (if (zerop (extend (object self)))
-         (om-draw-picture self (get-impulsion-pict (car (value (object self)))) (om-make-point 0 0) (om-make-point (w self) (h self)))
+         (om-draw-picture self (get-impulsion-pict (car (value (object self)))) :size (om-make-point (w self) (h self)))
        (if (showpict (object self))
            (progn
              (if *minipict-bg* 
@@ -287,7 +287,7 @@
              )
          (let* ((durinx (norme2pixel (om-view-container self) 'x (extend (object self)))))
            (cond ((has-picture-p self)
-                  (om-draw-picture self (thepict (pictu (object self))) (om-make-point 0 0) (om-make-point (w self) (h self)))
+                  (om-draw-picture self (thepict (pictu (object self))) :size (om-make-point (w self) (h self)))
                   (draw-carre self t))
                  ((and (pictu (object self)) (pict-pathname (pictu (object self))))
                   (draw-lost-picture (pictu (object self)) self)
@@ -307,24 +307,25 @@
      (when (mute (object self)) 
        (let ((iconparams (get&corrige-icon 341))
              (size (om-make-point 16 16)))       ;;(om-make-point (round (w self) 4) (round (h self) 4))))
-         (om-draw-icon (second iconparams) self (om-make-point 
-                                               (- (round (w self) 2) (round (om-point-h size) 2)) 
-                                               (- (round (h self) 2) (om-point-v size)))
-                                               size)
+         (om-draw-picture self (second iconparams) :pos (om-make-point 
+                                                  (- (round (w self) 2) (round (om-point-h size) 2)) 
+                                                  (- (round (h self) 2) (om-point-v size)))
+                        :size size)
                      ))
    (when (lock (object self)) 
      (let ((iconparams (get&corrige-icon 340))
            (size (om-make-point 16 16)))       ;;(om-make-point (round (w self) 4) (round (h self) 4))))
-       (om-draw-icon (second iconparams) self (om-make-point 
-                                               (- (round (w self) 2) (round (om-point-h size) 2)) 
-                                               (round (h self) 2))
-                                               size)
+       (om-draw-picture self (second iconparams)
+                        :pos (om-make-point 
+                         (- (round (w self) 2) (round (om-point-h size) 2)) 
+                         (round (h self) 2))
+                        :size size)
                      ))
    
    (when *maq-show-icons*
      (let ((iconparams (get&corrige-icon (icon (reference (object self)))))
            (size (om-make-point 10 10)))
-       (om-draw-icon (second iconparams) self (om-make-point (- (w self) 16) 2) size)))
+       (om-draw-picture self (second iconparams) :pos (om-make-point (- (w self) 16) 2) :size size)))
 
   (when (show-con? self)
     (call-next-method)))
@@ -335,7 +336,7 @@
       (draw-mini-piano-roll value self (mv-view-size value self))
     (if (minipict self)
         (let ((x0 (initx self)) (y0 (inity self)) (pictsize (om-get-picture-size (minipict self))))
-          (om-draw-picture self (minipict self) (om-make-point x0 y0) pictsize))
+          (om-draw-picture self (minipict self) :pos (om-make-point x0 y0) :size pictsize))
       (om-with-focused-view self
         (draw-mini-obj value self (mv-font-size value) (mv-view-size value self))))))
 

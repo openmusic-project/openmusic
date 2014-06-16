@@ -642,8 +642,8 @@ ArtWork: A. Mohsen
    (when (pict self)
      (let ((resize-params (resize-to-fit (om-get-picture-size (pict self)) (om-view-size self))))          
        (om-draw-picture self (pict self) 
-                        (second resize-params)
-                        (first resize-params)))))
+                        :pos (second resize-params)
+                        :size (first resize-params)))))
 
 
 ;(choose-resource-dialog :pict)
@@ -871,7 +871,7 @@ ArtWork: A. Mohsen
    (call-next-method)
    (om-with-focused-view self
    (if (and (picture self) (thepict (picture self)))
-       (om-draw-picture self (thepict (picture self)) (om-make-point 0 0) (om-make-point 48 48))
+       (om-draw-picture self (thepict (picture self)) :size (om-make-point 48 48))
      (progn (om-with-fg-color self *om-white-color* (om-fill-rect 0 0 48 48))
        (om-draw-line 0 0 48 48) (om-draw-line 48 0 0 48)))
    (om-draw-rect 0 0 48 48)   
@@ -925,8 +925,8 @@ ArtWork: A. Mohsen
            (loop for elt in (keytxt self) do
                  (when (stringp elt)
                      (progn
-                       (om-draw-picture self (pict self) (om-make-point i 0) 
-                                        (om-make-point (om-point-h (om-get-picture-size (pict self))) (om-point-v (om-view-size self))))
+                       (om-draw-picture self (pict self) :pos (om-make-point i 0) 
+                                        :size (om-make-point (om-point-h (om-get-picture-size (pict self))) (om-point-v (om-view-size self))))
                        (om-draw-string (+ i (round (- (/ (om-point-h (om-get-picture-size (pict self))) 2)
                                                       (/ (om-string-size elt *om-default-font4b*) 2))))
                                        19 elt)
@@ -937,8 +937,8 @@ ArtWork: A. Mohsen
                    ;  (setf i (+ i (om-string-size (string elt) *om-default-font4b*))))
                    )))))
     (when (pict self) 
-      (om-draw-picture self (pict self) (om-make-point 0 0) 
-                       (om-make-point (om-point-h (om-get-picture-size (pict self))) (om-point-v (om-view-size self)))))
+      (om-draw-picture self (pict self) 
+                       :size (om-make-point (om-point-h (om-get-picture-size (pict self))) (om-point-v (om-view-size self)))))
     ))
 
 

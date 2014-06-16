@@ -57,8 +57,6 @@
                 om-pict-height
                 om-get-picture-size
                 om-draw-picture
-                om-draw-icon 
-                om-draw-picture-part
                 om-record-pict
                 om-internal-picture-to-pict
                 om-record-picture-in-pict
@@ -190,10 +188,10 @@
                                (if typetest (funcall typetest (cadr (car item))) t))
                       item))))
                         
+
 ; kills a pixmap handler (created with om-load-icon or om-load-picture)
 ; A FAIRE !!!
 (defmethod om-kill-picture ((image t))  t)
-
 
 (defun find-pict-in-port (pict port)
   ;(print "=======================")
@@ -206,82 +204,52 @@
         (setf (images port) (append (images port) (list (list pict image))))
         image))))
 
-(defmethod om-draw-picture (view pict &optional
-                             (pos (om-make-point 0 0)) size
-                             &key (srctopleft (om-make-point 0 0)) (srcsize nil))
+(defmethod om-draw-picture (view pict &key
+                                 (pos (om-make-point 0 0)) size
+                                  (srctopleft (om-make-point 0 0)) (srcsize nil)
+                                 selected alpha)
+  ;(print (list view pict))
   ;(print (list view pict))
   (when pict
     (let* ((port (om-get-view view))
-           (image (find-pict-in-port pict port))
-           (srcw (if srcsize (om-point-h srcsize) (gp:image-width image)))
-           (srch (if srcsize (om-point-v srcsize) (gp:image-height image)))
-           (destw (if size (om-point-h size) (gp:image-width image)))
-           (desth (if size (om-point-v size) (gp:image-height image))))
-      ;(print image)
-      (gp::draw-image port image (+ (om-point-h pos) *pox*) (+ (om-point-v pos) *poy*)
-                      :to-width  destw :to-height desth
-                      :from-x (om-point-h srctopleft) :from-y (om-point-v srctopleft)
-                      :from-width srcw :from-height srch 
-                      )
-      ;(gp::free-image port image)
-      )))
-
-
-(defmethod om-draw-picture-part (view pict srctopleft srcsize desttopleft destsize)
-  (when pict 
-    (let* ((port (om-get-view view))
-           (image (find-pict-in-port pict port)))
-      (when (and image port)
-        (gp::draw-image port image (+ (om-point-h desttopleft) *pox*) (+ (om-point-v desttopleft) *poy*)
-                        :to-width  (om-point-h destsize)  :to-height (om-point-v destsize)
-                        :from-x (om-point-h srctopleft) :from-y (om-point-v srctopleft) 
-                        :from-width (om-point-h srcsize)  :from-height  (om-point-v srcsize))
-       ; (gp::free-image port image)
-        ))))
-  
-
-; draw an icon pict with a special drawing if selected = t
-(defun om-draw-icon (pict view topleft size  &optional selected alpha)
-  ;(print (list pict view))
-  (when pict
-    (let* ((port (om-get-view view))
            (image (and port (find-pict-in-port pict port)))
-          (a (or alpha 1.0)))
-      ;(om-inspect image)
-      (when image 
-        (if  size
-          (gp::draw-image port image (+ (om-point-h topleft) *pox*) (+ (om-point-v topleft) *poy*)
-                          :from-width (gp::image-width image) :from-height (gp:image-height image) 
-                          :to-width (om-point-h size) :to-height (om-point-v size)
-                          :global-alpha a)
-        
-        (gp::draw-image  image (om-point-h topleft) (om-point-v topleft) :global-alpha a)))
+           (a (or alpha 1.0)))
+      ;(print image)
+      (if (or size srcsize)
+          (let ((srcw (if srcsize (om-point-h srcsize) (gp:image-width image)))
+                (srch (if srcsize (om-point-v srcsize) (gp:image-height image)))
+                (destw (if size (om-point-h size) (gp:image-width image)))
+                (desth (if size (om-point-v size) (gp:image-height image))))
+            (gp::draw-image port image (+ (om-point-h pos) *pox*) (+ (om-point-v pos) *poy*)
+                            :to-width  destw :to-height desth
+                            :from-x (om-point-h srctopleft) :from-y (om-point-v srctopleft)
+                            :from-width srcw :from-height srch 
+                            :global-alpha a
+                      ))
+        (gp::draw-image port image (+ (om-point-h pos) *pox*) (+ (om-point-v pos) *poy*) :global-alpha a))
       ;(gp::free-image port image)
-      ;(capi::highlight-pinboard-object (oa::om-get-view self) self) 
+      
       (when (and port selected)
          #+(or cocoa gtk)
-         (gp:draw-rectangle port (+ (om-point-h topleft) *pox*) (+ (om-point-v topleft) *poy*) 
-                                   (om-point-h size) (om-point-v size) 
-                             :filled t :foreground (color::make-rgb (om-color-r *om-select-color*)
-                                                                    (om-color-g *om-select-color*)
-                                                                    (om-color-b *om-select-color*)
-                                                                    0.1))
+         (gp:draw-rectangle port (+ (om-point-h pos) *pox*) (+ (om-point-v pos) *poy*) 
+                            (if size (om-point-h size) (gp:image-width image)) 
+                            (if size (om-point-v size) (gp:image-height image)) 
+                            :filled t :foreground (color::make-rgb (om-color-r *om-select-color*)
+                                                                   (om-color-g *om-select-color*)
+                                                                   (om-color-b *om-select-color*)
+                                                                   0.1))
          ;; :operation 5
         ;;; créer un PIXMAP (depth=1) pour dessiner un masque transparent...
         #+win32
         (om-with-focused-view view
-          (om-draw-hilite-icon (om-point-h topleft) (om-point-v topleft) (om-point-h size) (om-point-v size))
-          )        
-        ;(when image 
-        ;         (if  size
-        ;             (gp::draw-image port image (om-point-h topleft) (om-point-v topleft)
-        ;                             :from-width (gp::image-width image) :from-height (gp:image-height image) 
-        ;                             :to-width (om-point-h size) :to-height (om-point-v size)
-        ;                             :global-alpha 0.8 :operation 5)  
-        ;           (gp::draw-image  image (om-point-h topleft) (om-point-v topleft) :global-alpha 0.8 :operation 5))
-        ;         )
+          (om-draw-hilite-icon (om-point-h pos) (om-point-v pos) 
+                               (if size (om-point-h size) (gp:image-width image)) 
+                               (if size (om-point-v size) (gp:image-height image)))
+        ; (gp::draw-image  image (om-point-h topleft) (om-point-v topleft) :global-alpha 0.8 :operation 5))
           )
-      )))
+        )       
+      )
+    ))
 
 
 (defmethod om-get-picture-size (picture)
@@ -321,8 +289,8 @@
 
 (defmethod om-get-view ((self t))  (or *default-printer-port* self))
 
-(defmethod om-draw-picture (view (pict internal-picture) &optional (topleft (om-make-point 0 0)) size
-                                 &key (srctopleft (om-make-point 0 0)) (srcsize nil))
+(defmethod om-draw-picture (view (pict internal-picture) &key (pos (om-make-point 0 0)) size
+                                  (srctopleft (om-make-point 0 0)) (srcsize nil))
   
   (when (themetafile pict)
     (let* ((port (om-get-view view))
@@ -337,13 +305,13 @@
           ;(setf dx (- (item-x view) (om-h-scroll-position port)) dy (- (item-y view) (om-v-scroll-position port)))                             
         (if (scroller-p view) (setf pw (om-point-h (om-field-size view)) ph (om-point-v (om-field-size view)))
           ))
-      (let* ((x (om-point-h topleft))
-             (y (om-point-v topleft))
+      (let* ((x (om-point-h pos))
+             (y (om-point-v pos))
              (w  (om-point-h size))
              (h (om-point-v size)))
         (gp::with-graphics-state (port :mask (list dx dy pw ph))
-          #+cocoa(draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)  ; (+ x dx) (+ y dy) w h)
-          #-cocoa(draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)
+          #+cocoa(capi::draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)  ; (+ x dx) (+ y dy) w h)
+          #-cocoa(capi::draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)
 	  )
       ;(capi::draw-metafile port (themetafile pict) 0 0 (om-point-h size)  (om-point-v size))
       ))))
@@ -351,12 +319,7 @@
 
 (defmethod om-internal-picture-to-pict  ((self internal-picture) view)
   (when (themetafile self)
-    (draw-metafile-to-image view (themetafile self))))
-
-(defmethod om-draw-picture-part (view (pict internal-picture) srctopleft srcsize desttopleft destsize)
-  (when (themetafile pict)
-    (let ((image (draw-metafile-to-image view (themetafile pict))))
-      (om-draw-picture-part view image srctopleft srcsize desttopleft destsize))))
+    (capi::draw-metafile-to-image view (themetafile self))))
 
 (defmethod om-get-picture-size ((picture internal-picture))
   (om-make-point (size-x picture) (size-y picture)))
@@ -366,6 +329,7 @@
 
 (defmethod om-pict-height ((picture internal-picture))
   (size-y picture))
+
 
 (defmacro om-record-pict (font size &body body)
   `(let ((metafile (capi:with-internal-metafile  
@@ -379,6 +343,25 @@
                     :themetafile metafile
                     :size-x (om-point-h ,size)
                     :size-y (om-point-v ,size))))
+
+#|
+(defmacro om-record-pict (font size &body body)
+  (let ((portname (gensym))
+        (imagename (gensym))
+        (metafilename (gensym)))
+    `(let* ((w (om-point-x ,size))
+            (h (om-point-y ,size))
+            (,metafilename (capi:with-internal-metafile  
+                               (,portname :pane nil :bounds (list 0 0 w h))
+                             (let ((*curstream* ,portname)) 
+                               (om-with-font ,font ,@body)))))
+       (,imagename (capi::draw-metafile-to-image *curstream* ,metafilename))
+       (capi::free-metafile ,metafilename)
+       ,imagename)))
+
+|#
+
+
 
 
 (defmethod om-record-picture-in-pict (pict &optional (pos (om-make-point 0 0)) size)
@@ -484,6 +467,8 @@
 ;;;;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ;;; SAVE / LOAD PICTURES
 ; (internalize-image *graph-pres*))
+
+;;; IMAGES ARE NOT ALWAYS FREED !!!!!
 
 (defvar *temp-pictwin* nil)
 (defvar *temp-pictlayout* nil)
