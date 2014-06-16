@@ -21,6 +21,7 @@
 ;; the fly.
 
 (defun cl-jack-init-everything ()
+  (print (format nil "Initializing cl-jack..."))
   (cl-jack-init-jack)
   #+cl-jack-midi (cl-jack-init-midi)
   (cl-jack-init-audio)
@@ -28,7 +29,7 @@
   (jack-activate *CLJackClient*)
   (cl-jack-connect-audio-client-to-system-output)
   #+:cl-jack-midi (pushnew :cl-jack om-midi::*midi-systems*)
-  )
+  (print (format nil "Init cl-jack: done")))
 
 ;;(cl-jack-init-everything)
 (oa::om-add-init-func 'cl-jack-init-everything)
