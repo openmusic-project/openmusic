@@ -183,7 +183,7 @@
                          
                          (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 20 265) (oa::om-make-point 130 20) "Refresh Devices"
                                                   :di-action #'(lambda (item) 
-                                                                 (portmidi-restart)
+                                                                 ;;;(portmidi-restart)
                                                                  (portmidi-connect-ports (settings dd))
                                                                  (set-portmidi-connection-view inv dd)
                                                                  (set-portmidi-connection-view outv dd)

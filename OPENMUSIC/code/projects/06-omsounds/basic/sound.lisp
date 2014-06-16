@@ -54,7 +54,7 @@
 
 (defmethod om-cleanup ((self internalsound))
   (when (pict-sound self)
-    (print "clean picture")
+    ;(print "clean picture")
     (om-kill-picture (pict-sound self))))
 
 (defmethod om-sound-file-name ((self internalsound))

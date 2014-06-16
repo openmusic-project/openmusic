@@ -226,8 +226,12 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                                 (midi-evt-fields evt))))
     (if (and out bytes)
         (pm::pm-write-short out 0 bytes)
-      (unless out (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt))))
+      (unless out 
+        (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt)))
+        nil
+        )
       )))
+
 
 
 ;;;========================================
