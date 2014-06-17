@@ -28,7 +28,7 @@
 ;;==============================
 
 
-(defclass internalsound ()
+(defclass internalsound (om-cleanup-mixin)
   ((filename :accessor filename :initarg :filename :initform nil)
    
    (audio-format :accessor audio-format :initarg :audio-format :initform nil)
@@ -50,6 +50,12 @@
 
    (player-data :accessor player-data :initform nil :initarg :player-data)
    ))
+
+
+(defmethod om-cleanup ((self internalsound))
+  (when (pict-sound self)
+    ;(print "clean picture")
+    (om-kill-picture (pict-sound self))))
 
 (defmethod om-sound-file-name ((self internalsound))
    (filename self))
@@ -223,6 +229,7 @@ Press 'space' to play/stop the sound file.
    (om-sound-file-name self))
 
 (defmethod sound-update-pict ((self sound) pict)
+  (when (pict-sound self) (om-kill-picture (pict-sound self)))
   (setf (pict-sound self) pict))
 
 (defmethod get-sound-pict ((self sound))
@@ -323,7 +330,9 @@ Press 'space' to play/stop the sound file.
         (om-message-dialog (format nil (om-str :file-not-found) (namestring name)))))
     sound))
 
-(defmethod build-display-array ((self sound))
+
+;;; not used for the moment
+(defmethod build-display-array-dynamic ((self sound))
   (let* ((ratio 128)
          (size (om-sound-n-samples self))
          (channels (om-sound-n-channels self))
@@ -344,6 +353,30 @@ Press 'space' to play/stop the sound file.
                                       (sound-get-best-pict snd)
                                       (setf (display-builder self) nil)
                                       (print (format nil "~A Loaded..." (filename self)))) self))))
+
+
+(defmethod build-display-array ((self sound))
+  (let* ((ratio 128)
+         (size (om-sound-n-samples self))
+         (channels (om-sound-n-channels self))
+         (array-width (ceiling size ratio)))
+;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
+;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
+    (setf (display-ratio self) ratio)
+    "DisplayArrayBuilder" 
+    (funcall 
+     #'(lambda (snd)
+         (setf (display-array snd) 
+               (make-array (list channels (ceiling size ratio))
+                           :element-type 'single-float :initial-element 0.0 :allocation :static))
+         (fli:with-dynamic-lisp-array-pointer 
+             (ptr (display-array snd) :type :float)
+          (om-audio:om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
+         (sound-get-best-pict snd)
+        ;(setf (display-builder self) nil)
+         (print (format nil "~A Loaded..." (filename self))))
+     self)))
+
 
 
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
@@ -588,10 +621,12 @@ Press 'space' to play/stop the sound file.
                 (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y))
                 (om-with-fg-color nil (om-make-color 0.8 0.2 0.2) ;;;ICI EN ROUGE
                   (om-draw-line 0 (+ (* i channels-h) offset-y 2) nbpix (+ (* i channels-h) offset-y 2))
-                  (om-draw-line 0 (+ (* i channels-h) offset-y -2) nbpix (+ (* i channels-h) offset-y -2)))))))))
+                  (om-draw-line 0 (+ (* i channels-h) offset-y -2) nbpix (+ (* i channels-h) offset-y -2)))))))
+    pict))
 
 
 (defmethod sound-get-best-pict ((self sound))
+  (when (pict-sound self) (om-kill-picture (pict-sound self)))
   (setf (pict-sound self)
         (or (om-sound-protect self (create-snd-pict-max self 512)) :error)))
 
@@ -672,7 +707,7 @@ Press 'space' to play/stop the sound file.
           (let ((dur (/ (om-sound-n-samples self) (om-sound-sample-rate self)))
                 (pos x) (w (- x1 x)) (h (h view)))
             (om-with-fg-color view *om-dark-gray-color*
-              (om-draw-picture view picture (om-make-point x y) (om-make-point (- x1 x) (- y1 y))))
+              (om-draw-picture view picture :pos (om-make-point x y) :size (om-make-point (- x1 x) (- y1 y))))
             (om-with-fg-color view *om-steel-blue-color*
               (om-with-line '(2 2)
                 (loop for item in (markers self) do
@@ -699,7 +734,6 @@ Press 'space' to play/stop the sound file.
 ;;; pour les maquettes
 (defmethod draw-editor-mode ((self sound) view)
   (draw-obj-in-rect self 0 (w view) 0 (h view) (edition-params (object view)) view)
-  ;(om-draw-picture view (sound-get-pict self) (om-make-point 0 0) (om-make-point (w view) (h view)))
   (draw-carre view nil))
 
 ;;; synth maquette

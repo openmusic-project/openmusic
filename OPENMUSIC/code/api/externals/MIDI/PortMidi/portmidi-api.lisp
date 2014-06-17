@@ -220,15 +220,18 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 
 (defun portmidi-send-evt (evt)
-  (let ((out (get-output-stream-from-port (midi-evt-port evt))))
-    (if out
-        (pm::pm-write-short out 0
-                            (make-midi-bytes (midi-evt-type evt) 
-                                             (1- (midi-evt-chan evt)) 
-                                             (midi-evt-fields evt))
-                        )
-        (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt))))
-    ))
+  (let ((out (get-output-stream-from-port (midi-evt-port evt)))
+        (bytes (make-midi-bytes (midi-evt-type evt) 
+                                (1- (midi-evt-chan evt)) 
+                                (midi-evt-fields evt))))
+    (if (and out bytes)
+        (pm::pm-write-short out 0 bytes)
+      (unless out 
+        (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt)))
+        nil
+        )
+      )))
+
 
 
 ;;;========================================

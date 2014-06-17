@@ -185,10 +185,11 @@
 (defmethod draw-mini-view ((self t) (value score-element))
   (score-draw-mini-view self value))
 
+;;; no minipict for score objects 
 (defmethod score-draw-mini-view ((self t) value)
-   (if (minipict self)
+   (if (minipict self) ;; => always NIL
      (let ((x0 (initx self)) (y0 (inity self)) (pictsize (om-get-picture-size (minipict self))))
-       (om-draw-picture self (minipict self) (om-make-point x0 y0) pictsize))
+       (om-draw-picture self (minipict self) :pos (om-make-point x0 y0) :size pictsize))
    (om-with-focused-view self
      (draw-mini-obj value self (mv-font-size value) (mv-view-size value self)))))
 
@@ -213,7 +214,7 @@
 (defmethod score-draw-obj-in-rect (self x x1 y y1 edparams  view)
   (let* ((size (om-make-point (- x1 x) (- y1 y)))
          (thepict (cons-mini-pict self view (mv-font-size view) size)))
-     (om-draw-picture view thepict (om-make-point x y) size)
+     (om-draw-picture view thepict :pos (om-make-point x y) :size size)
      (om-kill-picture thepict) t))
 
 ;exceptions por ahora

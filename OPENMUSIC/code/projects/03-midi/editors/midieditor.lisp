@@ -133,7 +133,7 @@
 (defmethod om-draw-contents :before ((self piano-roll-view))
   (let ((h (round (h self) (max 1 (nb-tracks self)))))
     (loop for i = 0 then (+ i 1) while (< i (nb-tracks self)) do
-          (om-draw-picture self (thepal self) (om-make-point 0 (* i h)) (om-make-point (w self) h)))))
+          (om-draw-picture self (thepal self) :pos (om-make-point 0 (* i h)) :size (om-make-point (w self) h)))))
 
 (defmethod om-view-click-handler ((self piano-roll-view) where)
    (om-with-focused-view (panel (om-view-container self))

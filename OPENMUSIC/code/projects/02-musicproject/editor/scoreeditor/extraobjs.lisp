@@ -1200,7 +1200,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (setf x (- (+ (first rect) (round (- (third rect) (first rect)))) (round (om-point-h size-pict) 2) ls))
           (setf y (+ y (* ls (deltay (reference self)))))
           (setf x (+ x (* ls (deltax (reference self)))))
-          (om-draw-picture (om-get-current-port) picture (om-make-point x y) size-pict))
+          (om-draw-picture (om-get-current-port) picture :pos (om-make-point x y) :size size-pict))
         (setf (rectangle self) (list x y (+ x (om-point-h size-pict)) (+ y (om-point-v size-pict)))))
       )))
 

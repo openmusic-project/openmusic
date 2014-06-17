@@ -84,9 +84,10 @@
                       (pict-x2 (soundms2pix (car (cadr segment)) pictw dur)))
                   (when (and (>= (+ begtime (car (car segment))) screen-t1)
                              (<= (+ begtime (car (cadr segment))) screen-t2))
-                  (om-draw-picture-part view picture 
-                                        (om-make-point pict-x1 0) (om-make-point (- pict-x2 pict-x1) picth)
-                                        (om-make-point x1 0) (om-make-point (- x2 x1) boxh))
+                  (om-draw-picture view picture 
+                                   :pos (om-make-point x1 0) :size (om-make-point (- x2 x1) boxh)
+                                   :srctopleft (om-make-point pict-x1 0) :srcsize (om-make-point (- pict-x2 pict-x1) picth)
+                                   )
                   ))
                 )
         

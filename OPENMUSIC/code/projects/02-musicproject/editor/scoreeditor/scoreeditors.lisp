@@ -1305,15 +1305,15 @@
       (om-with-fg-color self *om-gray-color* 
         (om-fill-rect x0 y0 (w self) (h self) ))
       (om-draw-picture  self (nth 0 picts) 
-                        (om-make-point (+ sepw 0)  (+ seph 0)) 
-                        (om-make-point fwpict fhpict ))
+                        :pos (om-make-point (+ sepw 0)  (+ seph 0)) 
+                        :size (om-make-point fwpict fhpict))
       (loop for i from 0 to (- v-pages 1)  do
             (loop for k from 0 to (- h-pages 1) do
                   (when (< (+ k (* h-pages i)) numpages)
                     (om-draw-picture  self (nth (incf pict-count) picts) 
-                                      (om-make-point (+ sepw (* k (+ sepw fwpict))) 
+                                      :pos (om-make-point (+ sepw (* k (+ sepw fwpict))) 
                                                      (+ seph (* i (+ seph fhpict)))) 
-                                      (om-make-point fwpict fhpict )))))
+                                      :size (om-make-point fwpict fhpict )))))
       (page-draw-selected-objects self (graphic-obj self))))))
 
 (defmethod page-draw-selected-objects ((self scorePanel) grap-obj)
@@ -5293,7 +5293,7 @@
 
 (defmethod om-print-view ((self scorePanel) pg-size pg-no hm )
   (let* ((picts (score-picts-list self)))
-    (om-draw-picture self (nth (- pg-no 1) picts) (om-make-point 0 0) pg-size)))
+    (om-draw-picture self (nth (- pg-no 1) picts) :size pg-size)))
 
 (defmethod om-print-view ((self scoreeditor) pg-size pg-no hm ) 
   (om-print-view (panel self) pg-size pg-no hm ))

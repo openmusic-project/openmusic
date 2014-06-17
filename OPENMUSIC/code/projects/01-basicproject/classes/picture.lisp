@@ -49,7 +49,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
 
 (defmethod draw-obj-in-rect ((self picture) x x1 y y1 edparams view)
    (if (thepict self)
-       (om-draw-picture view (thepict self) (om-make-point x y) (om-make-point (- x1 x) (- y1 y))))
+       (om-draw-picture view (thepict self) :pos (om-make-point x y) :size (om-make-point (- x1 x) (- y1 y))))
    (loop for o in (extraobjs self) do (draw-pict-extraobj view o)))
 
 
@@ -568,8 +568,7 @@ Exports as a raw bitmap (TIF format)
                 (extraobjs (object (editor self))))))
     (om-with-focused-view self
     (when pict
-      (om-draw-picture self pict (om-make-point 0 0) 
-                       (om-view-size self)))
+      (om-draw-picture self pict :size (om-view-size self)))
     (if (selection (editor self))
         (loop for o in (remove (car objs) (extraobjs (object (editor self)))) do (draw-pict-extraobj self o nil nil :bg t)))
     (loop for o in objs do (draw-pict-extraobj self o))

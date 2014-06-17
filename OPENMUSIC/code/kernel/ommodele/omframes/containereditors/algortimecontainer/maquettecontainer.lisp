@@ -205,8 +205,8 @@
   (let ((evalf (eval-func (object (om-view-container self)))))
     (om-with-focused-view self
       (if evalf
-        (om-draw-icon (cadr (get&corrige-icon (icon evalf))) self (om-make-point 2 2) (om-make-point 20 20) (selected self))
-        (om-draw-icon (cadr (get&corrige-icon 1000)) self (om-make-point 2 2) (om-make-point 20 20) (selected self)) 
+        (om-draw-picture self (cadr (get&corrige-icon (icon evalf))) :pos (om-make-point 2 2) :size (om-make-point 20 20) :selected (selected self))
+        (om-draw-picture self (cadr (get&corrige-icon 1000)) :pos (om-make-point 2 2) :size (om-make-point 20 20) :selected (selected self)) 
         ))))
 
 (defmethod om-view-click-handler ((self drop-patch-view) pos)
