@@ -106,5 +106,4 @@
 
 (defun set-om-debugger ()
   (when (member :om-deliver *features*)
-    (setq *debugger-hook*poly
- 'om-error-handler)))
+    (setq *debugger-hook* 'om-error-handler)))
