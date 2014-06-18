@@ -2,14 +2,14 @@ Welcome to OpenMusic for Linux.
 
 DEPENDENCIES:
 
-If you install OM through your package-system (ie. yum, apt) it should
-presumably take care of the necessary dependencies - libs, fonts.
+If you install OM through your package-system (ie. yum) it should take
+care of the necessary dependencies (libs).
 
 LIBS:
 
 OM for Linux depends on 32-bit versions of some libs.  
 
-    libsndfile.so, libjack.so, libfluidsynth.so, libsdif.so
+    libportmidi.so, libsndfile.so, libjack.so, libsamplerate.so, libsdif.so
 
 If you install them manually, take care to get the 32-bit versions of
 the package - eg (on Fedora):
