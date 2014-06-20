@@ -140,6 +140,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                      (("d") "show Documentation")
                      (("e") "Edit lisp code")
                      (("t") "show Tutorial patch")
+                     
+                     #+om-reactive(("x") "reactive box on/off")
                      ))
 
 (setf *patchhelp2* '((("c") "Change Connection Color")
@@ -264,6 +266,11 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
       (#\< (mapc #'(lambda (item) (delete-one-input item)) actives))
       (#\> (mapc #'(lambda (item) (add-all-inputs item)) actives))
+      
+      (#\x #+om-reactive(mapc #'(lambda (boxframe) 
+                                  (set-active (object boxframe) (not (active (object boxframe))))
+                                  (om-invalidate-view boxframe))
+                              actives))
       
       (otherwise (om-beep)))))
 

@@ -33,7 +33,7 @@
 ;---------------------------------------
 ;Boxes in a Patch
 ;---------------------------------------
-(defclass OMBoxcall (OMBox) 
+(defclass OMBoxcall (#-om-reactive OMBox #+om-reactive OMReactiveBox)
    ((allow-lock :initform nil  :accessor allow-lock)
     (doc :initform "no documentation" :accessor doc)
     (mycontainer :initform nil  :accessor mycontainer)
@@ -137,8 +137,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    "Reset the ev-once flag in 'self'. Used after one evaluation."
    (when (equal (allow-lock self) "&") 
      (setf (ev-once-p self) nil)
-     (setf (value self) nil)
-     ))
+     (setf (value self) nil))
+   )
 
 
 ;The graphics connections are in ...SimpleFrames;boxesconnections.lisp
@@ -150,6 +150,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
        (setf (nth 2 (connected? (nth numin (inputs target)))) lines))
      (setf (nth 3 (connected? (nth numin (inputs target))))
            (if (null col) 0 col))))
+
 
 (defmethod connect-ctrl ((self OMBoxcall) input numout)
   (setf (connected? input) (list self numout nil 0)))
@@ -323,7 +324,9 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                                (clear-after-error self)
                                (om-abort)))))
      (cond
-      ((equal (allow-lock self) "l") (special-lambda-value self (reference self)))
+      ((equal (allow-lock self) "l") 
+       (setf (value self)(list (special-lambda-value self (reference self))))
+       (car (value self)))
       ((equal (allow-lock self) "o") (fdefinition (reference self)))
       ((and (equal (allow-lock self) "x") (value self)) (nth numout (value self)))
       ((and (equal (allow-lock self) "&") (ev-once-p self)) (nth numout (value self)))
@@ -1205,7 +1208,9 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                                (clear-after-error self)
                                (om-abort)))))
      (cond
-      ((equal (allow-lock self) "l") (special-lambda-value self (reference self)))
+      ((equal (allow-lock self) "l") 
+       (setf (value self) (list (special-lambda-value self (reference self))))
+       (car (value self)))
       ((equal (allow-lock self) "o") (omNG-make-new-lispfun (reference self)))
       ((and (value self) (equal (allow-lock self) "x")) (nth 0 (value self)))
       ((and (equal (allow-lock self) "&") (ev-once-p self)) (nth 0 (value self)))
@@ -1227,6 +1232,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
              (setf (value self) rep))
            (when (equal (allow-lock self) "x")
              (setf (value self) rep))
+           ;;;; TEST
+           (when (and (equal (allow-lock self) nil) #+om-reactive(active self))
+             (setf (value self) rep))
+           ;;;;
            (nth 0 rep))))))
 
 ;-------------Edition

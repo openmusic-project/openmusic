@@ -392,17 +392,20 @@ Pushing the button will automatically evaluate anything connected to the second 
   (om-set-dialog-item-action-function self #'(lambda (x) 
                                                (when fun
                                                  (let ((panel (get-patchpanel (editor (om-view-window self)))))
-                                                 (om-eval-enqueue 
-                                                  `(progn
-                                                     (setf *cur-eval-panel* ,panel)
-                                                     (setf (di-data ,self) (if (functionp ,fun) 
-                                                                               (funcall ,fun) ;;; call it
-                                                                             (omng-box-value (second (inputs ,box))) ;; reevaluate
-                                                                             ))
-                                                     ;(format *om-stream* "OM => ~S~%" (di-data ,self))
-                                                     (clear-ev-once ,panel))
-                                                )))))
-  )
+                                                   (om-eval-enqueue 
+                                                    `(progn
+                                                       (setf (di-data ,self) 
+                                                             (if (functionp ,fun) 
+                                                                 (funcall ,fun) ;;; call it
+                                                               (omng-box-value (second (inputs ,box))) ;; reevaluate
+                                                               ))
+                                                       (setf *cur-eval-panel* ,panel)
+                                                       #+om-reactive(self-notify ,box nil)
+                                                       (clear-ev-once ,panel)
+                                                       (setf (di-data ,self) nil)
+                                                       )))))
+                                      ))
+
 
 
 (defmethod set-dialog-item-params ((self button) box args)
@@ -705,8 +708,9 @@ Evaluating the 5th output will also call and get the result of the function with
 (defmethod set-function ((self slider) fun box) 
   (om-set-dialog-item-action-function self #'(lambda (x) 
                                                     (when fun
-                                                      (funcall fun (om-slider-value x))
-                                                      ))))
+                                                      (funcall fun (om-slider-value x)))
+                                                    #+om-reactive (self-notify box)
+                                                    )))
 
 (defmethod set-dialog-item-params ((self slider) box args)
   (let* ((boxframe (om-view-container self))

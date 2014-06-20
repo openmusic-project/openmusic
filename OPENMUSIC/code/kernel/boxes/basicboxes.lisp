@@ -233,6 +233,8 @@ Ex. (omif (= 4 5) 'A)  ==>  NIL
            (setf (value self) rep))
          (when (equal (allow-lock self) "x")
            (setf (value self) rep))
+         (when (and (equal (allow-lock self) nil) #+om-reactive(active self))
+           (setf (value self) rep))
          (nth 0 rep)))))
 
 ;--------------CONDITIONAL-------------------------

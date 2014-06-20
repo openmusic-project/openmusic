@@ -616,7 +616,7 @@
     (setf pict-list (omng-save (ed-pictu-list self)))                                
     `(om-load-editor-box1 ,(name self) ',(save-reference self) ',inputs ,(om-save-point (frame-position self)) 
                       ,(om-save-point (frame-size self)) ,value ,(allow-lock self) ,(frame-name self) ,(save-edition-params self)
-                         ,(showpict self) ,(minieditor? self) ,pict-list ,(show-name self))))
+                      ,(showpict self) ,(minieditor? self) ,pict-list ,(show-name self))))
 
 ;Types
 (defmethod omNG-save ((self OMBoxTypeCall) &optional (values? nil))
