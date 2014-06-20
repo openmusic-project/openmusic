@@ -570,7 +570,6 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                    (setf (ev-once-p self) t))
                  (rep-editor (value self) numout)))))))))
 
-
 (defmethod do-add-one-input ((self OMBoxRelatedWClass)) nil)
 (defmethod do-delete-one-input ((self OMBoxRelatedWClass))  nil)
 (defmethod do-add-all-inputs ((self OMBoxRelatedWClass)) nil)

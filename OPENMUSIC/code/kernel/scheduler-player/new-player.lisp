@@ -123,6 +123,7 @@
                                        (loop 
                                         (funcall (callback-fun player) (caller player) (get-player-time player))
                                         (sleep (callback-tick player))
+                                        ;;; tester MP::PROCESS-WAI-WITH-TIMEOUT
                                         )))
                    )))
            
