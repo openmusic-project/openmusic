@@ -3,6 +3,7 @@
 *.nfasl
 *.ufasl
 *.lisp~
+*.lisp#
 
 release-osx
 release-src

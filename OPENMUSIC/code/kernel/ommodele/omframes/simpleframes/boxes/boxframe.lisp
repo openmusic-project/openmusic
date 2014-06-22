@@ -493,14 +493,15 @@
      (box-draw-connections self nil)
      (omG-select (redraw-frame self))))
 
+
 (defmethod eval-box ((self omboxframe))
   (omng-box-value (object self))
-  (let ((v (current-box-value (object self))))
+  (let ((v (current-box-value (object self) nil)))
     (if (consp v) 
         (if (> (length v) 1)
-            (format *om-stream* "OMR => [ ~{~S ~}]~%" v)
-          (format *om-stream* "OMR => ~S~%" (car v)))
-      (format *om-stream* "OMR => ~S~%" v)))
+            (format *om-stream* "OM => [ ~{~S ~}]~%" v)
+          (format *om-stream* "OM => ~S~%" (car v)))
+      (format *om-stream* "OM => ~S~%" v)))
   )
 
 

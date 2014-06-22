@@ -8,7 +8,7 @@
 (defmethod! om-send ((self t) &optional (target :om))
    (let ((boxes (find-receive-boxes target)))
      (mapcar #'(lambda (b)
-                 (setf (value b) self)
+                 (setf (value b) (list self))
                  (self-notify b nil))
              boxes)))
                  
@@ -18,6 +18,9 @@
 (defmethod get-boxcallclass-fun ((self (eql 'om-receive))) 'OMRecieveBox)
 (defmethod omNG-box-value ((self OMRecieveBox) &optional (numout 0)) (value self))
   
+(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
+  (if numout (nth numout (value self)) (value self)))
+
 (defun find-boxes (type)
   (loop for win in (remove-if-not 
                     #'(lambda (w) (equal 'patcheditor (type-of (editor w))))

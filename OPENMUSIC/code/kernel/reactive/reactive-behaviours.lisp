@@ -102,17 +102,6 @@
         (om-fill-rect 16 0 6 6)))
     ))
 
-(defmethod current-box-value ((self OMBoxCall) &optional (numout nil))
-  (if numout (nth numout (value self)) (value self)))
-
-(defmethod current-box-value ((self OMBoxEditCall) &optional (numout nil))
-  (if numout (rep-editor (value self) numout) (value self)))
-
-(defmethod current-box-value ((self OMBoxTypeCall) &optional numout)
-  ;(print (list numout (value self)))
-  (if (consp (value self))
-      (eval (omng-copy (value self)))
-    (value self)))
 
 (defmethod clear-ev-once :around ((self OMReactiveBox))
   (call-next-method)
@@ -123,11 +112,6 @@
   (om-invalidate-view (car (frames self))))
 
 
-(defmethod eval-box :around ((self omboxframe)) 
-  (call-next-method)
-  (signal-event (object self)))
-
-
 
 (defmethod omNG-box-value :around ((self OMReactiveBox) &optional (numout 0)) 
   (if (state-lock self)
@@ -136,7 +120,7 @@
      ;(print (list "EVAL BOX" (name self) numout))
      (box-color self *eval-color*)   
      (setf val (call-next-method))
-     (print val)
+     ;(print val)
      (setf (gen-flag self) t)
      (box-color self nil) ; *inactive-color*
      val)
@@ -144,19 +128,12 @@
  )
 
 
-#|
-(defmethod eval-box ((self omboxframe))
-  (omng-box-value (object self))
-  (let ((v (current-box-value (object self))))
-    (if (consp v) 
-        (if (> (length v) 1)
-            (format *om-stream* "OMR => [ ~{~S ~}]~%" v)
-          (format *om-stream* "OMR => ~S~%" (car v)))
-      (format *om-stream* "OMR => ~S~%" v)))
-  )
-|#
 
+;;; TRIGGER NOTIFICATIONS 
 
+(defmethod eval-box :around ((self omboxframe)) 
+  (call-next-method)
+  (signal-event (object self)))
 
 ;;; when an input is edited
 (defmethod exit-from-dialog ((self input-text-enter-view) newtext)
