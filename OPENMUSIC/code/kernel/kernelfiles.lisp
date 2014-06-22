@@ -43,6 +43,7 @@
                                 
 ;-----------Containers---------------------------- 
 "classes/container"   
+"classes/objects"   
 
 ;-----------Modele-------------------------------- 
 "ommodele/genfunmetaclass"                                     

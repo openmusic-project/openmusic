@@ -33,17 +33,6 @@
 ; OpenMusic : Container.Lisp
 ;==========================================================================
 
-(defclass named-object ()
-  ((name :initform nil :initarg :name :accessor name)))
-
-(defmethod set-name ((self named-object) newname)
-  (setf (name self) newname))
-
-(defmethod get-name ((self named-object))
-  (name self))
-
-(defmethod set-name ((self t) newname) nil)
-(defmethod get-name ((self t)) nil)
 
 
 

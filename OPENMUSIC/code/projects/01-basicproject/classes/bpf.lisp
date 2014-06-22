@@ -26,7 +26,7 @@
 (defclass object-with-pict () 
   ((pict :accessor pict :initform nil)))
  
-(defclass internalbpf (named-object object-with-pict select-object)
+(defclass internalbpf (named-object object-with-pict select-object object-in-box)
    ((point-list :initform nil :initarg :point-list :accessor point-list)
     (bpfcolor :initform *om-black-color* :accessor bpfcolor))
    (:documentation "This is an internal class for the break point functions, 

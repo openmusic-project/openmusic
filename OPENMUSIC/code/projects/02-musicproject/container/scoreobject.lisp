@@ -38,7 +38,7 @@
 (defmethod analysis ((self t)) nil)
 
 (defclass* simple-score-element (simple-container) () (:icon 140))
-(defclass* score-element (container analyse-object) () (:icon 138))
+(defclass* score-element (container analyse-object object-in-box) () (:icon 138))
 (defclass* superposition (score-element) () (:icon 231))
 (defclass* sequence* (score-element) () (:icon 230))
 (defclass* metric-sequence (sequence* tonal-object) () (:icon 230))
