@@ -162,8 +162,11 @@
 ;;; split note on channels in case of microtonal setup
 ;;; tone = 0, 1/8 = 1, 1/4 = 2, 1/8 = 3
 (defun micro-channel (midic &optional approx)
-  (/ (mod midic 100) (/ 200 (or approx 8))))
+  (let ((channel-mc-unit (/ 200 (or approx 8))))
+    ;;; by default channel 1 = 25 mc, channel 2 = 50 mc, channel 3 = 75mc
+    (round (mod midic 100) channel-mc-unit)))
 
+(round (mod 6452 100) (/ 200 8))
 
 (defun note-events (port chan pitch vel dur date track)
    (list (om-midi::make-midi-evt :type :Note
