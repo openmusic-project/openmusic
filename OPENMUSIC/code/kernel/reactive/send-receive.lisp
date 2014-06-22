@@ -14,9 +14,9 @@
                  
 (defmethod! om-receive (targetname) :initvals '(:om) t)
 
-(defclass OMRecieveBox (OMBoxCall) ())
-(defmethod get-boxcallclass-fun ((self (eql 'om-receive))) 'OMRecieveBox)
-(defmethod omNG-box-value ((self OMRecieveBox) &optional (numout 0)) (value self))
+(defclass OMReceiveBox (OMBoxCall) ())
+(defmethod get-boxcallclass-fun ((self (eql 'om-receive))) 'OMReceiveBox)
+(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0)) (value self))
   
 (defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
   (if numout (nth numout (value self)) (value self)))

@@ -66,7 +66,7 @@
 
 (defmethod! route (message &rest tests)
   :numouts 1
-  :icon '(611)
+  :icon 161
   (values-list (copy-list (cons message 
                                 (mapcar 
                                  #'(lambda (route-item) 
