@@ -41,9 +41,6 @@
 "graphics/graphictools" 
 "tools/traduction" 
                                 
-;-----------Containers---------------------------- 
-"classes/container"   
-"classes/objects"   
 
 ;-----------Modele-------------------------------- 
 "ommodele/genfunmetaclass"                                     
@@ -80,7 +77,11 @@
 "ommodele/ombasicobjects/boxes/classtreeboxes"  
 "ommodele/ombasicobjects/ompackage"   
 "ommodele/ombasicobjects/omlib" 
-                       
+
+;-----------Containers---------------------------- 
+"classes/container"   
+"classes/objects"
+
                        
 ;----------- Editor Frames------------------------------- 
 
