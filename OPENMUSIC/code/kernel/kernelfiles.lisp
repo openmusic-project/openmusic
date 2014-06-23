@@ -40,8 +40,10 @@
 "tools/saveheader"   
 "graphics/graphictools" 
 "tools/traduction" 
-                                
-
+                
+;-----------Containers---------------------------- 
+"classes/container"   
+                
 ;-----------Modele-------------------------------- 
 "ommodele/genfunmetaclass"                                     
 "ommodele/metaclasses"   
@@ -78,9 +80,6 @@
 "ommodele/ombasicobjects/ompackage"   
 "ommodele/ombasicobjects/omlib" 
 
-;-----------Containers---------------------------- 
-"classes/container"   
-"classes/objects"
 
                        
 ;----------- Editor Frames------------------------------- 
@@ -104,9 +103,7 @@
 "ommodele/omframes/containereditors/algortimecontainer/maquette-rulers"
 "ommodele/omframes/containereditors/algortimecontainer/maquettecontainer"
 "ommodele/omframes/containereditors/algortimecontainer/maquette-markers"
-
 "ommodele/omframes/edition-params"
-
 
 ;----------- Simple Frames------------------------------- 
 "ommodele/omframes/simpleframes/iconsframe/iconfinder"     
@@ -145,6 +142,9 @@
 "scheduler-player/play"
 "scheduler-player/new-player"
 "scheduler-player/players"
+
+;--------------------Objects---------------------- 
+"classes/objects"
 
 ;-----------Persistant&copy--------------------- 
 "ommodele/persistant/copy"  
