@@ -67,6 +67,7 @@
         ;;; MISC (OSC)
         "osc;send-receive"
         "osc;osc-events"
+        "osc;osc-route"
         "osc;osc-player"
         #+macosx "players;microplayer"
 
