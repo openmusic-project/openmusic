@@ -2107,12 +2107,13 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                 
           (if (= (mode self) 0)
               (put-boxes-inmaquette (reference self) (first args) (second args) (nth 3 args)))
-
+          
           (cons-maq-values (reference self) args)
-                          
-          (setf rep (cons-copy-maquette-object (reference self) (boxes (reference self))))
+  
+          (setf rep (list (cons-copy-maquette-object (reference self) (boxes (reference self)))))
+
           (when (= (mode self) 1)
-            (setf rep (append (list rep) 
+            (setf rep (append rep
                               (loop for out in (sort (find-class-boxes (boxes (reference self)) 'maq-OMout)  '< :key 'indice) 
                                     collect (if (connected? (car (inputs out)))
                                                 (let ((con-obj (car (connected? (car (inputs out)))))
@@ -2129,12 +2130,15 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
           (when (equal (allow-lock self) "&")
             (setf (ev-once-p self) t)
             (setf (value self) rep))
-          (when (equal (allow-lock self) "x")
+
+          (when t ;(equal (allow-lock self) "x")
             (setf (value self) rep))
+
           (if (= (mode self) 1)
               (nth num-out rep)
             rep)
           )))))
+
 
 ;--------Edition
 
