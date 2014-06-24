@@ -294,7 +294,6 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                     (sleep 0.001)))))
     
     (PROGN
-      (print (format nil "ERROR IN MIDI RECEIVE LOOP!"))
       (pm::pm-EventBufferFree buff)
       (mp:process-kill mp::*current-process*)
       )
