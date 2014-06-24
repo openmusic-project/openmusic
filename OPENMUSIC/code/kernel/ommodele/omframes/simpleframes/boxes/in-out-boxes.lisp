@@ -443,7 +443,6 @@
    (if *compiling-macro-boite* (defval self) (in-symbol self)))
 
 (defmethod omNG-box-value ((self OMIn) &optional (numout nil))
-   (declare (ignore numout))
    (if numout 
        (nth numout (current-box-value self))
      (current-box-value self)))

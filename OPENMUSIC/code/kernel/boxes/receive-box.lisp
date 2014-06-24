@@ -21,8 +21,18 @@
 ;(defmethod gen-code-call ((self ReceiveBox))
 ;   (call-gen-code self 0))
  
+;(defmethod omNG-box-value ((self ReceiveBox) &optional (numout 0))
+;  (value self))
+
 (defmethod omNG-box-value ((self ReceiveBox) &optional (numout 0))
-  (value self))
+  (let ((val (current-box-value self numout)))
+    ;(when (push-tag self) ;;; FOR MAXIMAL REACTIVITY (PUSH EVEN WHEN DEMAN_DIREVEN EVALUATED), REMOVE THIS TEST
+    ;  (print (list (name self) "PUSH"))
+    ;  (mapcar #'(lambda (box) (unless (or (state-lock box) (gen-flag box)) (omr-notify box)))
+    ;          (remove-if-not 'active (listeners self))))
+    val)
+  )
+
 
 
 (defclass ReceiveBoxFrame (boxframe) ())

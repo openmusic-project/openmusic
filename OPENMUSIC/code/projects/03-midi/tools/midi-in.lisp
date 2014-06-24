@@ -2,7 +2,7 @@
 (in-package :om)
 
 (om::defmethod! midi-in (port msg-processing-fun)
-  :icon 611
+  :icon 917
   :indoc '("port number" "incoming message processing patch")
   :initvals '(0 nil)
   :doc "A MIDI IN server.

@@ -91,15 +91,15 @@
           ;(om-draw-rect 0 4 (1- (w self)) (- (h self) 8))
         ;  )
         ))
-    (when (push-tag (object self))
-      (om-with-fg-color nil *om-black-color*        
-        (om-fill-rect 0 0 6 6)))
-    (when (gen-flag (object self))
-      (om-with-fg-color nil *om-red-color*        
-        (om-fill-rect 8 0 6 6)))
-    (when (state-lock (object self))
-      (om-with-fg-color nil *om-purple-color*        
-        (om-fill-rect 16 0 6 6)))
+    ;(when (push-tag (object self))
+    ;  (om-with-fg-color nil *om-black-color*        
+    ;    (om-fill-rect 0 0 6 6)))
+    ;(when (gen-flag (object self))
+    ;  (om-with-fg-color nil *om-red-color*        
+    ;    (om-fill-rect 8 0 6 6)))
+    ;(when (state-lock (object self))
+    ;  (om-with-fg-color nil *om-purple-color*        
+    ;    (om-fill-rect 16 0 6 6)))
     ))
 
 
@@ -118,11 +118,11 @@
       (current-box-value self numout)
    (let (val)
      ;(print (list "EVAL BOX" (name self) numout))
-     (box-color self *eval-color*)   
+     ;(box-color self *eval-color*)   
      (setf val (call-next-method))
      ;(print val)
      (setf (gen-flag self) t)
-     (box-color self nil) ; *inactive-color*
+     ;(box-color self nil) ; *inactive-color*
      val)
    )
  )
@@ -151,3 +151,7 @@
   (call-next-method)
   (self-notify (object (om-view-container (object self))))
   )
+
+
+(defmethod set-delivered-value :after ((box ReceiveBox) msg)
+  (self-notify box nil))

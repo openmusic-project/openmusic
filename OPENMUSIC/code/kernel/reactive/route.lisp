@@ -27,7 +27,7 @@
 ;;; NOTIFY ONLY THE ROUTED OUTPUT
 (defmethod OMR-Notify ((self RouteBox))
   ;(print (list "NOTIFIED BOX" (name self)))
-  (box-color self *notify-color*)
+  ;(box-color self *notify-color*)
   (unless (push-tag self)
     (setf (push-tag self) t)
     (let ((listeners (remove-if-not 'active (listeners self))))
@@ -52,7 +52,8 @@
         )
       (setf (state-lock self) nil)
       ))
-  (box-color self *inactive-color*))
+  ;(box-color self *inactive-color*)
+  )
 
 
 

@@ -58,80 +58,24 @@
     newbox))
   
 
-
-;;; PROBLEM HERE 
-;(defmethod omNG-save ((self OMReactiveBox) &optional (values? t)) 
-;  `(let ((box ,(call-next-method)))
-;     (when (fboundp 'set-active) (set-active box ,(active self)))
-;     box))
-
-
-
-;;; REactive subclasses for the different types of boxes
-;;; If the system is integrated, it will be easier just to add the Reactive superclass to OMBox
-;(defclass OMReactiveBoxCall (OMReactiveBox OMBoxCall) ())
-;(defclass OMReactiveBoxlispCall (OMReactiveBox OMBoxlispCall) ())
-;(defclass OMReactiveBoxEditCall (OMReactiveBox OMBoxEditCall) ())
-;(defclass OMReactiveDIEBox (OMReactiveBox OMDIEBox) ())
-;(defclass OMReactiveBoxTypeCall (OMReactiveBox OMBoxTypeCall) ())
-;(defclass OMReactiveBoxPatch (OMReactiveBox OMBoxPatch) ())
-;(defclass OMReactiveBoxAbsPatch (OMReactiveBox OMBoxAbsPatch) ())
-
-;;; It is not quite regular how the type of box is determined in creating OM boxes...
-;(defmethod get-boxlispclass-fun ((self t)) 'OMReactiveBoxlispCall)
-;(defmethod get-boxcallclass-fun ((self t)) 'OMReactiveBoxCall)
-;(defmethod get-type-of-ed-box ((self t))  'OMReactiveBoxEditCall)
-;(defmethod get-type-of-ed-box ((self d-i-box))  'OMReactiveDIEBox)
-;(setf *def-metaclass-box-patch* 'OMReactiveBoxPatch)
-;;; ReactiveBox type call will not have reactivebox frame but still present the reactive attributes internally
-;(setf *def-metaclass-box-type* 'OMReactiveBoxTypeCall)
-;(defmethod box-class ((self OMPatchAbs)) 'OMReactiveBoxAbsPatch)
+;;; PROBLEM HERE ?
+(defmethod omNG-save :around ((self OMReactiveBox) &optional (values? t)) 
+  `(let ((box ,(call-next-method)))
+     (when (fboundp 'set-active) (set-active box ,(active self)))
+     box))
 
 ;;; AUTRES 
 ;(defclass box-repeat-n-call (OMReactiveBox OMBoxcall) ())
 ;;; A FAIRE: OMLOOP, SEQUENCE, OMIF....
 
-;(defmethod omNG-copy ((self OMReactiveBox))
-;  `(let* ((copy ,(call-next-method)))
-;     (set-active copy ,(active self))
-;     copy))
-
-;(defmethod handle-key-event ((self patchPanel) (char (eql '#\k)))
-;  (mapcar #'(lambda (boxframe) 
-;              (list (name (object boxframe))
-;                           (listeners (object boxframe)))
-;              )
-;          (get-actives self)))
-
 
 #|
-(defclass ReactiveBoxFrame (boxframe) ())
-(defclass ReactiveBoxEditorFrame (ReactiveBoxFrame boxeditorframe) ())
-(defclass ReactiveDIEditorframe (ReactiveBoxFrame DIEditorframe) ())
-(defclass ReactiveBoxTypeframe (ReactiveBoxFrame BoxTypeframe) ())
-(defclass ReactivePatchBoxFrame (ReactiveBoxFrame patchboxframe) ())
-(defclass ReactiveAbsPatchBoxFrame (ReactiveBoxFrame patchboxabsFrame) ())
-
-(defmethod get-frame-class ((self OMReactiveBox)) 'ReactiveBoxFrame)
-(defmethod get-frame-class ((self OMReactiveBoxEditCall)) 'ReactiveBoxEditorFrame)
-(defmethod get-frame-class ((self OMReactiveDIEBox)) 'ReactiveDIEditorframe)
-(defmethod get-frame-class ((self OMReactiveBoxTypeCall)) 'ReactiveBoxTypeframe)
-(defmethod get-frame-class ((self OMReactiveBoxPatch)) 'ReactivePatchBoxFrame)
-(defmethod get-frame-class ((self OMReactiveBoxAbsPatch)) 'ReactiveAbsPatchBoxFrame)
-
-(defclass arrayBox (OMReactiveBox OMBoxEditCall ) ())
-(defclass OMaiffFilebox (OMReactiveBox OMBoxEditCall) ())
-(defclass OMboxif (OMReactiveBox OMBoxcall) ())
-
-(defclass reactiveArrayBoxframe (ReactiveBoxFrame boxeditorframe) ())
-(defclass reactiveSoundBoxframe (ReactiveBoxFrame boxeditorframe) ())
-(defclass reactiveIfBoxframe (ReactiveBoxFrame boxframe) ())
-
-(defmethod get-frame-class ((self arrayBox)) 'ReactiveBoxEditorFrame)
-(defmethod get-frame-class ((self OMaiffFilebox)) 'ReactiveBoxEditorFrame)
-(defmethod get-frame-class ((self OMboxif)) 'reactiveIfBoxframe)
-
-
+(defmethod handle-key-event ((self patchPanel) (char (eql '#\k)))
+  (mapcar #'(lambda (boxframe) 
+              (list (name (object boxframe))
+                           (listeners (object boxframe)))
+              )
+          (get-actives self)))
 
 (defmethod remove-lock-button ((self omboxframe))
    "Remove the button subview from self."
@@ -185,7 +129,7 @@
 ;;; DO NOT NOTIFY WHO JUST CALLED ME
 (defmethod OMR-Notify ((self OMReactiveBox))
   ;(print (list "NOTIFIED BOX" (name self)))
-  (box-color self *notify-color*)
+  ;(box-color self *notify-color*)
   (unless (push-tag self)
     (setf (push-tag self) t)
     (let ((listeners (remove-if-not 'active (listeners self))))
