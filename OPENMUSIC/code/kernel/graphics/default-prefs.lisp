@@ -41,12 +41,14 @@
 (defvar *eval-process* :on)
 ; (setf *eval-process* nil)
 
+(defvar *reactive-patches* nil)
 
 (defmethod get-def-vals ((iconID (eql :general)))
    (list :handle-errors t 
          :user-name "Guarigocha" 
          :eval-process :on
          :listener-on-top :no
+         :reactive nil
          :out-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
                                                      :host (pathname-host (mypathname *current-workspace*))
                                                     :directory (append (pathname-directory (mypathname *current-workspace*)) 
@@ -69,7 +71,9 @@
      (when (get-pref modulepref :eval-process) 
        (setf *eval-process* (get-pref modulepref :eval-process))
        (om-set-eval-process (equal *eval-process* :on)))
-     
+
+     (setf *reactive-patches* (get-pref modulepref :reactive))
+
      (when (get-pref modulepref :listener-on-top) 
        (setf om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes)))
      
@@ -93,6 +97,8 @@
    (list iconID `(list :handle-errors ,*msg-error-label-on* 
                        :user-name ,*composer-name* 
                        :eval-process ,*eval-process*
+                       :reactive ,*reactive-patches-enabled*
+                       
                        :listener-on-top ,(if om-lisp::*listener-on-top* :yes :no)
                        :out-files-dir ,(om-save-pathname *om-outfiles-folder*)
                        :tmp-files-dir ,(om-save-pathname *om-tmpfiles-folder*)
@@ -121,7 +127,7 @@
                      ;                      :font *om-default-font4b*)
                      
 
-                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 50)) (om-make-point 90 24) "User Name"
+                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 30)) (om-make-point 90 24) "User Name"
                                           :font *controls-font*) 
 
                      (om-make-dialog-item 'om-editable-text (om-make-point (+ l1 100) posy)
@@ -132,7 +138,7 @@
                                           :font *controls-font*
                                           )
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 60)) (om-make-point 180 15) " Handle Error Messages" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 40)) (om-make-point 180 15) " Handle Error Messages" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :handle-errors (om-checked-p item)))
                                           :font *controls-font*
@@ -141,7 +147,7 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Catch Lisp erros and display a simple message window)"
                                           :font *om-default-font1*)
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 40)) (om-make-point 200 15) " Enable Evaluation Process" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable Evaluation Process" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :eval-process (if (om-checked-p item) :on :off)))
                                           :font *controls-font*
@@ -150,13 +156,23 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
                                           :font *om-default-font1*)
 
-                                          (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 40)) (om-make-point 200 15) " Keep Listener in Front" 
+                                          (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Keep Listener in Front" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :listener-on-top (if (om-checked-p item) :yes :no)))
                                           :font *controls-font*
                                           :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Does not apply to the current Listener window)"
+                     
+                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
+                                          :font *om-default-font1*)
+
+                                          (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable reactivity" 
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :reactive (if (om-checked-p item) :yes :no)))
+                                          :font *controls-font*
+                                          :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(push x to set boxes active/unactive)"
                                           :font *om-default-font1*)
                      )
 

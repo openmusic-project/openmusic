@@ -49,7 +49,10 @@
 ;;; => SEE UPDATE-BOXES
 
 (defmethod set-active ((self t) react) (om-beep))
-(defmethod set-active ((self OMReactiveBox) react) (setf (active self) react))
+
+(defmethod set-active ((self OMReactiveBox) react) 
+  (when *reactive-patches*
+    (setf (active self) react)))
 
 ;;; called in box copy
 (defmethod update-boxes ((oldbox OMReactiveBox) (newbox OMReactiveBox))
