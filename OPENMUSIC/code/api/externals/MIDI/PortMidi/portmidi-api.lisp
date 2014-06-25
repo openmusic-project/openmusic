@@ -93,7 +93,7 @@
   (portmidi-close-all-midi-ports)
   (om-stop-portmidi)
   (pm::pm-initialize)
-  (print "PortMidi reinitialized.")
+  (print "PortMIDI reinitialized.")
   (let ((devices (list-devices)))
     (if devices 
         (print (format nil "PortMIDI - devices detected:~%~{~A~^~%~}" 
