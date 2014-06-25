@@ -204,6 +204,8 @@
 (cffi:defcfun ("Pm_Initialize" pm-initialize) pm-error)
 (cffi:defcfun ("Pm_Terminate" pm-terminate) pm-error)
 
+; (pm-initialize)
+; (pm-terminate)
 
 ;;; ERRORS
 

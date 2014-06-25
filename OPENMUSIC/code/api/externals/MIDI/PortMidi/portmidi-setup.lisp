@@ -28,20 +28,25 @@
     (loop for item in (car settings) do
           (loop for indevice in (cadr item) do 
                 (let ((stream (nth 2 (find indevice *portmidi-in-ports-table* :key 'cadr :test 'string-equal))))
-                  (unless stream 
-                    (let ((device-id (car (find-if #'(lambda (device) (and (string-equal (nth 4 device) indevice) (nth 6 device))) pm-devices))))
-                      (when device-id (setf stream (pm::pm-open-input device-id *portmidi-def-buffer-size*)))))
-                  (push (list (car item) indevice stream) *portmidi-in-ports-table*)
+                  (unless stream  ;;; no stream is open for this device : create stream and open it
+                    (let ((device-id (car (find-if #'(lambda (device) (and (string-equal (getf (cdr device) :name) indevice) (getf (cdr device) :input))) pm-devices))))
+                      (when device-id 
+                        (setf stream (pm::pm-open-input device-id *portmidi-def-buffer-size*))
+                        )))
+                  (print (format nil "PortMIDI :: OUTPUT port ~D => ~A" (car item) indevice))
+                  (push (list (car item) indevice stream) *portmidi-in-ports-table*) ;;; add this port/stream pair in the table
                   )))
 
     ;;; OUT
     (loop for item in (cadr settings) do
           (loop for outdevice in (cadr item) do 
                 (let ((stream (nth 2 (find outdevice *portmidi-out-ports-table* :key 'cadr :test 'string-equal))))
-                  (unless stream 
-                    (let ((device-id (car (find-if #'(lambda (device) (and (string-equal (nth 4 device) outdevice) (nth 8 device))) pm-devices))))
-                      (when device-id (setf stream (pm::pm-open-output device-id *portmidi-def-buffer-size* 0)))))
-                  (push (list (car item) outdevice stream) *portmidi-out-ports-table*)
+                  (unless stream ;;; no stream is open for this device : create stream and open it
+                    (let ((device-id (car (find-if #'(lambda (device) (and (string-equal (getf (cdr device) :name) outdevice) (getf (cdr device) :output))) pm-devices))))
+                      (when device-id 
+                        (setf stream (pm::pm-open-output device-id *portmidi-def-buffer-size* 0)))))
+                  (print (format nil "PortMIDI :: INPUT  port ~D => ~A" (car item) outdevice))
+                  (push (list (car item) outdevice stream) *portmidi-out-ports-table*)   ;;; add this port/stream pair in the table
                   ))
           )
     t))
@@ -106,11 +111,14 @@
                                                         (oa::om-make-dialog-item 'oa::om-pop-up-dialog-item (oa::om-make-point 100 0) (oa::om-make-point 220 20) ""
                                                                                  :range (cons "[disconnected]" devices)
                                                                                  :value (car (cadr portsetting)) ;; device for this port  
-                                                                                 :di-action (let ((p (position (car portsetting) (nth pos-in-settings (settings dialog)) :test '= :key 'car)))
+                                                                                 :di-action (let ((p (position (car portsetting) (nth pos-in-settings (settings dialog)) 
+                                                                                                               :test '= :key 'car))
+                                                                                                  (port (car portsetting)))
                                                                                               (oa::om-dialog-item-act list
-                                                                                                (print (list (car portsetting) "OUT=" (oa::om-get-selected-item list)))
+                                                                                                ;(print (format nil "PORTMIDI ~A :: PORT ~D = ~A" 
+                                                                                                ;               (direction self) port (oa::om-get-selected-item list)))
                                                                                                 (setf (nth p (nth pos-in-settings (settings dialog)))
-                                                                                                      (list (car portsetting)
+                                                                                                      (list port
                                                                                                             (if (= 0 (oa::om-get-selected-item-index list)) nil
                                                                                                               (list (oa::om-get-selected-item list)))))
                                                                                                 )))

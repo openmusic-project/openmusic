@@ -96,7 +96,7 @@
   (print "PortMidi reinitialized.")
   (let ((devices (list-devices)))
     (if devices 
-        (print (format nil "~%PortMIDI - devices detected:~%~{~A~^~%~}" 
+        (print (format nil "PortMIDI - devices detected:~%~{~A~^~%~}" 
                        (mapcar #'(lambda (device) (format nil "~s [~A]" (nth 4 device) 
                                                          (cond ((and (nth 6 device) (nth 8 device)) "IN-OUT")
                                                                ((nth 6 device) "INPUT")

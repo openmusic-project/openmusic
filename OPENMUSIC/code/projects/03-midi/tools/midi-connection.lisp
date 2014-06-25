@@ -84,11 +84,12 @@
     (when sys
       (let ((rep (funcall (om-midi::send-midi-event-function sys) evt)))
         (unless rep
-          (print "Try to reconnect MIDI devices...")
-          (funcall (om-midi::midi-connect-function sys)
-                   (get-pref (find-pref-module :midi) :midi-setup))
-          (funcall (om-midi::send-midi-event-function sys) evt))
-        ))))
+          (print "MIDI send failed. See MIDI preferences to connect MIDI devices.")
+          ;(funcall (om-midi::midi-connect-function sys)
+          ;         (get-pref (find-pref-module :midi) :midi-setup))
+          ;(funcall (om-midi::send-midi-event-function sys) evt)
+        )
+        rep))))
 
 (defun midi-stop ()
   (let ((sys (check-def-midi-system 'om-midi::midi-stop-function)))
