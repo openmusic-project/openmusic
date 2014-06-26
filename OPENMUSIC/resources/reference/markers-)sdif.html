@@ -1,0 +1,116 @@
+<html>
+<head><title>MARKERS-&gt;SDIF - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>MARKERS-&gt;SDIF</h2>
+<font size=-1>[GENERIC-FUNCTION]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>ARGUMENTS:</b></font><br>
+<table width=100% border=0>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>SELF</b></font>
+</td>
+<td>onset list (s)</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td>
+<i><b>&optional</b></i><br>
+</td>
+<td colspan=3>&nbsp;</td></tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>FTYPE</b></font>
+</td>
+<td>SDIF frame type</td>
+<td>[default = "1MRK"]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>TYPEDEFS</b></font>
+</td>
+<td>custom types declaration</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>OUTFILE</b></font>
+</td>
+<td>output file</td>
+<td>[default = "mybpf.sdif"]</td>
+</tr>
+<tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+Saves &lt;self&gt; (a list of onsets) as an SDIF file in &lt;outfile&gt;.<br>
+<br>
+&lt;ftype&gt; allows to determine the SDIF frame type to use (default = 1MRK, the standard SDIF type for time markers).<br>
+If this type is not standard, it must be declared and given as an SDIFType object in &lt;typedefs&gt;<br>
+<br>
+If &lt;outfile&gt; is just a filename (not a pathname) the file is written in the default OM 'out-files' folder.<br>
+<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

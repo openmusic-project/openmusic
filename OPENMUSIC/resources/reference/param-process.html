@@ -1,0 +1,139 @@
+<html>
+<head><title>PARAM-PROCESS - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>PARAM-PROCESS</h2>
+<font size=-1>[GENERIC-FUNCTION]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>ARGUMENTS:</b></font><br>
+<table width=100% border=0>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>INITVAL</b></font>
+</td>
+<td>initial value or BPF</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>PROCESS</b></font>
+</td>
+<td>processing function(s)</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>DURATION</b></font>
+</td>
+<td>process duration</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>KT</b></font>
+</td>
+<td>control period</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>OP</b></font>
+</td>
+<td>operator</td>
+<td>[default = (QUOTE OPENMUSIC::A)]</td>
+</tr>
+<tr>
+<tr>
+<td>
+<i><b>&optional</b></i><br>
+</td>
+<td colspan=3>&nbsp;</td></tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>DECIMALS</b></font>
+</td>
+<td>number of decimals (result)</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+Generates a modulated BPF starying from &lt;initval&gt; and &lt;process&gt;.<br>
+<br>
+- &lt;initval&gt; can be either a simple value or a BPF.<br>
+- &lt;process&gt; can be either one of VIBRATO or JITTER function, a BPF or a list of several of them.<br>
+<br>
+The resulting BPF is a modulation of &lt;initval&gt; following the curve or functions in &lt;process&gt; applied on a given &lt;duration&gt; and at a given control period &lt;kt&gt;.<br>
+<br>
+- &lt;op&gt; determines whether the effet is applied as a multiplication (Y = X * FACT) of the initial values, or as an addition. The addition actually corresponds to a proportinal modulation Y = X + (X * FACT).<br>
+<br>
+Notes:<br>
+- &lt;kt&gt; is not considered in JITTER effects where the period is determined by the jitter frequency(ies). If not specified, it is automatically set for VIBRATO effects at 1/4*f_vib.<br>
+- &lt;duration&gt; is not considered in BPF effects where it is determined by the BPF itself (time = x axis in seconds)<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

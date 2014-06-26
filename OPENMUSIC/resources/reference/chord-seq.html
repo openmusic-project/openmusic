@@ -1,0 +1,108 @@
+<html>
+<head><title>CHORD-SEQ - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>CHORD-SEQ</h2>
+<font size=-1>[CLASS]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>SLOTS:</b></font><br><br>
+<table width=100% border=0>
+<tr>
+<td width=160> - <font color=333366><b>SELF</font></b> :</td><td>object</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LMIDIC</font></b> :</td><td>pitches (mc): list or list of lists</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LONSET</font></b> :</td><td>onsets (ms): list</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LDUR</font></b> :</td><td>durations (ms): list or list of lists</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LVEL</font></b> :</td><td>velocities (0-127): list or list of lists</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LOFFSET</font></b> :</td><td>offsets (ms): list or list of lists</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LCHAN</font></b> :</td><td>MIDI channels (1-16): list or list of lists</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>LEGATO</font></b> :</td><td>relative chords duration (0-100)</td>
+</tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+<br>
+A sequence of chords.<br>
+<br>
+Time is expressed in absolute dates and durations. (For rhytmic structures see the VOICE object.)<br>
+<br>
+CHORD-SEQ is defined with:<br>
+<br>
+- &lt;lmidic&gt;: a list of list of pitches (midicents: 100 = 1 half-tone - 6000 = C3); e.g. '((6000 6500) (6100 6700 7100)). Each pitch list is considered as a chord in teh sequence. Single-note sequences can be specified with simple list of pitches, e.g. (6000 61000 6800) ; in this case each pitch will be considered as a single-note chord.<br>
+- &lt;lonsets&gt;: a list of onsets in milliseconds (one for each chord). If the list is shorter than the list of pitch, the last interval is repeated.<br>
+- &lt;ldur&gt;: a list or list of lists values (in milliseconds) expressing chords durations or note durations inside each chord.<br>
+- &lt;lvel&gt;: a list or list of lists of values (MIDI velocity from 0 to 127) expressing chords velocities or note durations inside each chord.<br>
+- &lt;loffset&gt;: a list or list of lists of values (milliseconds) expressing note offsets for the notes inside each chord.<br>
+- &lt;lchan&gt;: a list or list of lists of values (1-16) expressing MIDI channels for each chord or notes inside each chord.<br>
+- &lt;legato&gt;: a number between 0 and 100, indicating the duration of chords as a percentage of inter-onsets time intervals. If different from 0 (the default), the ldur and loffset inputs are ignored, and notes in the chords are formatted with regard to the legato value.<br>
+<br>
+All values (excepted onsets and legato) are returned (in the box outputs) as list of lists (one value for each note, missing values computed from previous notes or chords).<br>
+<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

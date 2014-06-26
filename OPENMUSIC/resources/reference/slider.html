@@ -1,0 +1,99 @@
+<html>
+<head><title>SLIDER - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>SLIDER</h2>
+<font size=-1>[CLASS]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>SLOTS:</b></font><br><br>
+<table width=100% border=0>
+<tr>
+<td width=160> - <font color=333366><b>DIRECTION</font></b> :</td><td>vertical or horizontal</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>RANGE</font></b> :</td><td>min and max values</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>INCREMENT</font></b> :</td><td>step</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>VALUE</font></b> :</td><td>slider value</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>ACTION</font></b> :</td><td>a patch in mode lambda</td>
+</tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+The SLIDER box provides an interface to select an value in a given range, and possibly trigger an evaluation with it.<br>
+<br>
+Use 'm' to show/hide the box interface.<br>
+<br>
+<br>
+- The 1st box input/output allows to set/get the direction of the slider (horizontal/vertical).<br>
+Note: the direction may also depend on the actual shape of the box.<br>
+<br>
+- The 2nd and 3rd box input/output allows to set/get the value range and increment of the slider.<br>
+<br>
+- The 4th box input allows to set the initial value of the slider. The output allows to get this value or the one corresponding to the current slider position.<br>
+<br>
+- Connect a lambda function or patch to the 5th input. This function must accept one single argument (supposed to be an integer value).<br>
+Any change of the slider value will automatically call this function or patch passing it the current slider value as argument.<br>
+Evaluating the 5th output will also call and get the result of the function with the current slider value.<br>
+<br>
+[Warning: Once initialized, SLIDER should be locked ('b') in order to prevent the contents and selection to be overwriten by the box input data.]<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

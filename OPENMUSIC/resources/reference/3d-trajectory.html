@@ -1,0 +1,111 @@
+<html>
+<head><title>3D-TRAJECTORY - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>3D-TRAJECTORY</h2>
+<font size=-1>[CLASS]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>SLOTS:</b></font><br><br>
+<table width=100% border=0>
+<tr>
+<td width=160> - <font color=333366><b>SELF</font></b> :</td><td>object</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>X-POINTS</font></b> :</td><td>X coordinates (list)</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>Y-POINTS</font></b> :</td><td>Y coordinates (list)</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>Z-POINTS</font></b> :</td><td>Z coordinates (list)</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>DECIMALS</font></b> :</td><td>precision (number)</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>TIMES</font></b> :</td><td>time for each point (list)</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>SAMPLE-PARAMS</font></b> :</td><td>optional computation of actual trajectory points</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>INTERPOL-MODE</font></b> :</td><td>optional autmatic time comptation mode</td>
+</tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+<br>
+3D-trajectory represents the trajectory of a point in 3D.<br>
+each point can be associated to a time-stamp.<br>
+<br>
+- &lt;xpoints&gt;, &lt;y-points&gt;, &lt;z-points&gt; are lsits of points x, y and z coordinates, respectively<br>
+- &lt;decimals&gt; is the precision of the poisition (number of decimals)<br>
+<br>
+- &lt;times&gt; is a list of times assigned to the successive points. <br>
+NIL is allowed, meaning that a given point has no specific time (interpolated from surrounding points)<br>
+A single atomic value is interpreted as a global duration of the trajectory<br>
+<br>
+- &lt;interpol-mode&gt; determines how missing times are computed :<br>
+     - same time between successive point pairs (may result in accelerations or slow-downs)<br>
+     - depending on distance : constant speed<br>
+<br>
+Optional params allow to compute precise trajectories from the object points. Set &lt;sample-params&gt; to <br>
+- NIL : only original points are part of the trajectory<br>
+- a float : specifies a sample rate for the trajectory; positions and times will be interpolated accordingly<br>
+- a list of floats : specifies sample rates fore each individual segment (last one is repeated if the list is too short)<br>
+<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

@@ -1,0 +1,125 @@
+<html>
+<head><title>SUBST-RHYTHM - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>SUBST-RHYTHM</h2>
+<font size=-1>[GENERIC-FUNCTION]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>ARGUMENTS:</b></font><br>
+<table width=100% border=0>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>TREE</b></font>
+</td>
+<td>a rhythm tree</td>
+<td>[default = (OPENMUSIC::? ((OPENMUSIC::|4//4| (1 (1 (1 2 1 1)) 1 1)) (OPENMUSIC::|4//4| (1 (1 (1 2 1 1)) -1 1))))]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>POS</b></font>
+</td>
+<td>list of positions</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>ELEM</b></font>
+</td>
+<td>list of new items</td>
+<td>[default = (1 2)]</td>
+</tr>
+<tr>
+<tr>
+<td>
+<i><b>&optional</b></i><br>
+</td>
+<td colspan=3>&nbsp;</td></tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>OPTION</b></font>
+</td>
+<td>option</td>
+<td>[default = REDUCE]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>OUTPUT</b></font>
+</td>
+<td>output</td>
+<td>[default = OPENMUSIC::OPTIMIZED]</td>
+</tr>
+<tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+<br>
+Substitutes elements in &lt;tree&gt;.<br>
+&lt;elem&gt; input is a list that can accept either atoms or lists  or both.<br>
+Atoms are pulses. Lists will be proportions<br>
+creating groups . For example a list (1 1 1) substituting 2 will yield (2 (1 1 1)).<br>
+&lt;pos&gt; if left nil will substitute from 0 position until the end of list &lt;elem&gt;. <br>
+If the positions are specified (a list) each nth elem of tree being pulses will be replaced<br>
+sequentially by elements from &lt;elem&gt;.<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

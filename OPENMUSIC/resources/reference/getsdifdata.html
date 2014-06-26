@@ -1,0 +1,162 @@
+<html>
+<head><title>GETSDIFDATA - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>GETSDIFDATA</h2>
+<font size=-1>[GENERIC-FUNCTION]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>ARGUMENTS:</b></font><br>
+<table width=100% border=0>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>SELF</b></font>
+</td>
+<td>sdif file</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>SID</b></font>
+</td>
+<td>stream number (int)</td>
+<td>[default = 0]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>FRAMETYPE</b></font>
+</td>
+<td>frame type (string)</td>
+<td>[default = ""]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>MATTYPE</b></font>
+</td>
+<td>matrix type (string)</td>
+<td>[default = ""]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>CNUM</b></font>
+</td>
+<td>field number (int or list)</td>
+<td>[default = 0]</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>RMIN</b></font>
+</td>
+<td>min row</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>RMAX</b></font>
+</td>
+<td>max row</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>TMIN</b></font>
+</td>
+<td>min time (s)</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>TMAX</b></font>
+</td>
+<td>max time (s)</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+Extracts and returns a data array (&lt;rmin&gt;-&lt;rmax&gt;, &lt;tmin&gt;-&lt;tmax&gt;) from the &lt;cnum&gt; field of the &lt;matType&gt; matrix from the Stream &lt;sid&gt; of &lt;frameType&gt; frames from &lt;self&gt;.<br>
+<br>
+&lt;cnum&gt; can be a single value or a list of values (for multiple dimentional descriptions)<br>
+Unspecified arguments mean all SDIF data (i.e. for instance any time, all rows, any types, etc.) will be considered and returned.<br>
+<br>
+Use SDIFINFO for information about the Frame and Matrix types contained in a &lt;self&gt;.<br>
+<br>
+Ex. (GETSDIFDATA &lt;SDIFFile&gt; 0 "1MRK" "1TRC" (0 1) nil nil 0.0 2.0)<br>
+means : Get all data from Stream number 1, frames of type 1MRK, matrices of type 1TRC, columns (i.e. fields) 0 and 1, all matrox rows, between 0.0s and 2.0s.<br>
+<br>
+The second oulet returns all corresponding frame TIMES.<br>
+<br>
+See http://sdif.sourceforge.net/ for more inforamtion about SDIF.<br>
+<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>

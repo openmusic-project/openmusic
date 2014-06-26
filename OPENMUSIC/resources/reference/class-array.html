@@ -1,0 +1,96 @@
+<html>
+<head><title>CLASS-ARRAY - OM 6.9 beta 0 Reference Documentation</title>
+<STYLE TYPE="text/css"><!--  
+
+BODY {background-color: #EEEEEE;
+	  font-family: Verdana;
+font-size: 12;
+color : #0000000;
+}
+
+A:link {text-decoration: underline; color : 333366;}
+A:visited {text-decoration: underline; color : 333366;}
+A:active {Verdana; text-decoration: underline; color:333366;}
+A:hover {Verdana; text-decoration: underline; color: 333366;}
+
+H1 {
+ color : #333333;
+ font-size: 18;
+ font-weight: bold
+ text-align: left;
+}
+	
+H2 {
+ color : #333333;
+ font-size: 16;
+ font-weight: bold;
+}
+
+H3 {
+ color : #444444;
+ font-size: 12;
+ font-weight: bold;
+}
+
+P,UL,LI, TD {	
+ font-size: 11;
+ text-indent: 0cm;
+ text-align: justify;
+}
+.right {text-align: right ;}
+.center {text-align: center ;}
+.top {text-align: top ;}
+   --></style>
+</head>
+<body bgcolor=BBBBBB>
+<br>
+<table align=center bgcolor=FFFFFF width=87%><tr>
+<td>
+<h2>CLASS-ARRAY</h2>
+<font size=-1>[CLASS]</font><br><br>
+</td><td width=130>
+<img src=./omlogo.gif width=100><br>
+<font size=-2 align=right><a href=index.html>OM 6.9 beta 0<br> Function Reference</a></font>
+</td></tr>
+<tr><td colspan=2>
+<font color=882222><b>SLOTS:</b></font><br><br>
+<table width=100% border=0>
+<tr>
+<td width=160> - <font color=333366><b>SELF</font></b> :</td><td>object</td>
+</tr>
+<tr>
+<td width=160> - <font color=333366><b>NUMCOLS</font></b> :</td><td>number of components</td>
+</tr>
+</table>
+</tr>
+<tr><td colspan=2>
+<br><font color=882222><b>Description:</b></font><p>
+CLASS-ARRAY is a special 2D matrix. <br>
+<br>
+Instances are created by specifying a number of columns or components (input 1 = &lt;numcols&gt;) and specifying values for the different lines represented by the possible other inputs (input 2 and higher).<br>
+<br>
+Initially, a CLASS-ARRAY box has no lines. There exist two complementary ways to add lines to the array :<br>
+<br>
+1) Using the "add keyword inputs" command ('k').<br>
+Each line appears as a standard "keyword" input. It should be given a name (click on the input, always begin with ':', e.g. :param1) and a value (connect something).<br>
+Lines can be removed with "remove keyword input" command ('K').<br>
+<br>
+2) [object oriented programming] Creating a subclass of class array with additional slots.<br>
+Make the slot lines visible using the "add optional inputs" commands (alt + '-&gt;' or '&gt;' keys).<br>
+Slots are represented with red inputs. The input name can be changed to make it correspond to one of the class additional slots. <br>
+Slot lines can be removed with "remove optional input" commands (alt + '&lt;-' or '&lt;' keys).<br>
+<br>
+Each line of a class array can be parameterized using one of the following options :<br>
+  - Connect a LIST : the values of the list are set to the different array components. If the number of components is higher than the length of the list, then the list is repeated circularly.<br>
+  - Connect a CONSTANT VALUE : this value is assigned to every array components.<br>
+  - Connect a BPF : the BPF is sampled according to the number of array components.<br>
+  - Connect a FUNCTION (function name or box in 'lambda' mode) : the function (should be of one single argument) is evaluated and applied to the successive array component indices.<br>
+<br>
+The matrix "components" can be accessed and modified using the functions get-comp and set-comp.<br>
+<br>
+<br>
+</p><br><br></td></tr>
+<td class=center colspan=2>
+<center><font size=-2>Auto doc generation by OpenMusic 6.9 beta 0 © 2011 IRCAM</font></center>
+</td></tr></table>
+</body></html>
