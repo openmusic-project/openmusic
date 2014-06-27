@@ -28,7 +28,7 @@ the recorder, this function is called by a def-load-pointers"
    "If MidiShare is present, close the player and the recorder before quit the application"
    ;(when om-midi::*midishare-loaded?*
      (when *midiplayer* (om-midi::midishare-close-player *midiplayer*))  ;;; remettre ?
-     ;(when *midirecorder* (om-midi::midishare-close-player *midirecorder*)) ;;; remettre ?
+     (when *midirecorder* (om-midi::midishare-close-player *midirecorder*)) ;;; remettre ?
      ;(om-midi::midishare-exit) ;;; do nothing     
      ;(setf *midi-share?* nil)
    ;  )
@@ -143,39 +143,39 @@ the recorder, this function is called by a def-load-pointers"
 ;================================
 
 (defmethod player-record ((engine (eql :midishare)))
-  (midi-start-record))
+  (midishare-start-record))
 
 (defmethod player-record-stop ((engine (eql :midishare)))
-  (midi-stop-record))
+  (midishare-stop-record))
 
+(defvar *ms-player-record* nil)
 
-(defun midi-start-record ()
-  (if *recording-midi-p*
-    (om-beep-msg "Recording is on")
-    (when *midirecorder*
-      (om-print "Recording...")
-      ; pour entendre ce qu'on enregistre
-      (om-midi-connect 0 0)
+(defun midishare-start-record ()
+  (if *ms-player-record*
+    (om-beep-msg "MIDI recording is on..")
+    (progn 
+      (unless *midirecorder*
+        (setf *midirecorder* (om-midi::midishare-open-player "OMRecorder")))
+      (when *midirecorder*
+        (om-print "MidiShare recording...")
+        ; pour entendre ce qu'on enregistre
+        (om-midi::midishare-connect 0 0)
+        (setf *ms-player-record* t)
+        (om-midi::midishare-set-player *midirecorder* (om-midi::midishare-new-seq) 1000)
+        (om-midi::midishare-record-player *midirecorder* 1)
+        (om-midi::midishare-start-player *midirecorder*)
+        t))))
 
-      (setf *recording-midi-p* t)
-      (om-midi-set-player *midirecorder* (om-midi-new-seq) 1000)
-      (om-midi-record-player *midirecorder* 1)
-      (om-midi-start-player *midirecorder*) t)))
-
-(defun midi-stop-record ()
-   (when *recording-midi-p*
-     (let (recording-seq rep)
-       (om-print "Recording Off...")
-       ; pour entendre ce qu'on enregistre
-       (om-midi-disconnect 0 0)
-       (om-midi-stop-player *midirecorder*)
-       (setf recording-seq (om-midi-player-get-seq *midirecorder*))
+(defun midishare-stop-record ()
+   (when *ms-player-record*
+     (om-print "Recording Off.")
+     (om-midi::midishare-disconnect 0 0)
+     (setf *ms-player-record* nil)
+     (om-midi::midishare-stop-player *midirecorder*)
+     (let ((recording-seq (om-midi::midishare-player-get-seq *midirecorder*)))
        (when recording-seq
-         (let ((newseq (delete-tempo-info recording-seq 1000)))
-           (setf rep (midievents2midilist newseq))
-           (om-midi-free-seq newseq))
-         (setf *recording-midi-p* nil)
-         (loop for note in rep 
-               when (not (minusp (third note))) collect note)))))
+         (let ((newseq (midievents2midilist (delete-tempo-info recording-seq 1000))))
+           (remove-if 'minusp newseq :key 'third))))))
+
 
 

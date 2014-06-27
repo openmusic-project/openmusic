@@ -262,8 +262,7 @@
   t)
 
 (defmethod player-record ((engine t))
-  ;(print (format nil "~A : record" engine))
-  t)
+  (om-beep-msg (format nil "Player ~A : can not record" engine)))
 
 ;;; must return the recorded object
 (defmethod player-record-stop ((engine t))

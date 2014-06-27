@@ -110,3 +110,5 @@
 (defun midi-in-stop (process)
   (let ((sys (check-def-midi-system 'om-midi::midi-in-stop-function)))
     (when sys (funcall (om-midi::midi-in-stop-function sys) process))))
+
+

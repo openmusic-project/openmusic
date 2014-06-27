@@ -83,8 +83,10 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
    (om-with-focused-view view
      (loop for tpair in (tempo-evts self)
            for i = 1 then (+ i 1) do
-           (om-draw-string 10 (* 12 i) (format nil "~D: ~D" (car tpair) (cadr tpair)))
-           )))
+           (if (listp tpair) 
+               (om-draw-string 10 (* 12 i) (format nil "~D: ~D" (car tpair) (cadr tpair)))
+             (om-draw-string 10 (* 12 i) (format nil "Ill-formed time-value: ~D" tpair))
+           ))))
 
 ;=== If a tempo-map can be extracted from an object,
 ;=== we are able to find time of begining of each measure

@@ -107,7 +107,7 @@
                                            :font *om-default-font1*)
 
 
-                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 150 24) "Default OUT port:" :font *controls-font*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 150 24) "Default ports:" :font *controls-font*)
 
                       (om-make-dialog-item 'om-static-text (om-make-point 540 i) (om-make-point 60 20) "Out" :font *controls-font*)
        
@@ -138,32 +138,36 @@
                                                      (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-out))))
                                                    ))))
                                            :font *om-default-font2*)
-       
-                      ;(om-make-dialog-item 'om-static-text (om-make-point 620 i) (om-make-point 150 20) "In" :font *controls-font*)
-                      ;
-                      ;(om-make-dialog-item 'om-editable-text (om-make-point 640 i) (om-make-point 30 13)
-                      ;                     (format nil "~D" (get-pref modulepref :midi-in)) 
-                      ;                     :after-action (om-dialog-item-act item
-                      ;                                     (let ((text (om-dialog-item-text item))
-                      ;                                           number)
-                      ;                                       (unless (string= "" text)
-                      ;                                         (setf number (read-from-string text))
-                      ;                                         (if (and (integerp number) (>= number 0) (<= number 255))
-                      ;                                             (set-pref modulepref :midi-in number)
-                      ;                                           (progn 
-                      ;                                             (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                      ;                                             (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
-                      ;                     :di-action (om-dialog-item-act item
-                      ;                                  (let ((text (om-dialog-item-text item))
-                      ;                                        number)
-                      ;                                    (unless (string= "" text)
-                      ;                                      (setf number (read-from-string text))
-                      ;                                      (if (and (integerp number) (>= number 0) (<= number 255))
-                      ;                                          (set-pref modulepref :midi-in number)
-                      ;                                        (progn 
-                      ;                                          (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                      ;                                          (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))))))
-                      ;                     :font *om-default-font2*)
+                      
+                      (om-make-dialog-item 'om-static-text (om-make-point 630 i) (om-make-point 60 20) "In" :font *controls-font*)
+
+                      (om-make-dialog-item 'om-editable-text (om-make-point 650 i) (om-make-point 30 13)
+                                           (format nil "~D" (get-pref modulepref :midi-in))
+                                           :after-action 
+                                           (om-dialog-item-act item
+                                             (let ((text (om-dialog-item-text item))
+                                                   number)
+                                               (unless (string= "" text)
+                                                 (setf number (read-from-string text))
+                                                 (if (and (integerp number) (>= number 0) (<= number 255))
+                                                     (set-pref modulepref :midi-in number)
+                                                   (progn 
+                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
+                                                     (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))
+                                                   ))))
+                                           :di-action 
+                                           (om-dialog-item-act item
+                                             (let ((text (om-dialog-item-text item))
+                                                   number)
+                                               (unless (string= "" text)
+                                                 (setf number (read-from-string text))
+                                                 (if (and (integerp number) (>= number 0) (<= number 255))
+                                                     (set-pref modulepref :midi-in number)
+                                                   (progn 
+                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
+                                                     (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :midi-in))))
+                                                   ))))
+                                           :font *om-default-font2*)
        
                       
 

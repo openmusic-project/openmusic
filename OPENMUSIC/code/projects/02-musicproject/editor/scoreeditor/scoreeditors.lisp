@@ -29,8 +29,7 @@
 ;======================================================
 (defclass scoreEditor (EditorView object-editor play-editor-mixin) 
   ((ctr-view :initform nil :accessor ctr-view)
-   (mode :initform nil :accessor mode)
-   ))
+   (mode :initform nil :accessor mode)))
 
 ;;; SPECIAL TITLEBAR
 (defclass score-titlebar (editor-titlebar) 
