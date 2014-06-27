@@ -550,6 +550,9 @@
 (defun divisions (divisions)
   (append *t *t *t *t (chr "<divisions>") (lister! (chr divisions)) (chr "</divisions>") *r))
 
+;(defun divisions (divisions)
+;	(append *t *t *t *t (chr "<divisions>") (lister! (chr 768)) (chr "</divisions>") *r))
+
 ;;;pour les 1/4 de tons
 
 (defun key (key)
