@@ -44,7 +44,7 @@
 ;--------------------
 
 (defmethod* concat ((s1 sequence*) (s2 sequence*))
-  :initvals (list (make-instance 'voice) (make-instance 'voice)) 
+  :initvals '(nil nil) 
   :indoc '("a musical sequence" "a musical sequence")
   :icon 230
   :doc "Concatenates two music sequences into a new one.
@@ -144,7 +144,7 @@ Type of the return value :
 ;--------------------
 
 (defmethod* get-chords ((self sequence*))
-   :initvals (list (make-instance 'voice) ) 
+   :initvals '(nil) 
    :indoc '("a music sequence (voice, chord-seq, poly, multi-seq)")
    :icon 262
    :doc "
@@ -171,7 +171,7 @@ Time (Onset) information is removed.
 
 
 (defmethod* mask ((obj1 sequence*) (obj2 sequence*) &optional (mode 1))
-   :initvals (list (make-instance 'voice) (make-instance 'voice) 1) :indoc '("a voice" "a voice" "1 or -1")
+   :initvals '(nil nil 1) :indoc '("a voice" "a voice" "1 or -1")
    :doc "
 Masks <obj1> by <obj2>, that is, plays the <obj1> when <obj2> is not playing. 
 
@@ -207,7 +207,7 @@ Optional argument <mode> = -1 inverts the mask.
   (om-merge obj1 obj2))
 
 (defmethod! merger ((self1 sequence*) (self2 sequence*)) 
-   :initvals (list (make-instance 'voice) (make-instance 'voice)) 
+   :initvals '(nil nil) 
    :indoc '("a music sequence" "a music sequence")
    :icon 253
    :doc "
@@ -275,7 +275,7 @@ MERGER can also merge two chords into a new one.
 
 
 (defmethod* select ((self voice) (start integer) (end integer))
-   :initvals (list (make-instance 'voice) 0 1) 
+   :initvals '(nil 0 1) 
    :indoc '("a music sequence" "an integer" "an integer")
    :icon 330
    :doc "

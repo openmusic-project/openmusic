@@ -586,7 +586,7 @@ make-quanti
 
 ;;; aligne les accords d'un chord-seq
 (defmethod! align-chords ((self chord-seq) (delta number))
-  :initvals (list (make-instance 'chord-seq) 100)
+  :initvals (list nil 100)
   :indoc '("a chord-seq" "an integer")
   :icon 230
   :doc "
