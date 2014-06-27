@@ -64,12 +64,12 @@
 ;= modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
  
 (defun save-midifile (name object approx tempo &optional (format nil))
-  (let ((seq (sort (flat (PrepareToPlay :midi object 0 :approx approx :voice 1))
+  (let ((seq (sort (remove nil (flat (PrepareToPlay :midi object 0 :approx approx :voice 1)))
                    'om-midi::midi-evt-<))
         (sys (check-def-midi-file-system 'om-midi::save-midi-file-function)))
     (if sys 
         (when seq
-          (if (print tempo) 
+          (if tempo
               (setf seq (insert-tempo-info seq tempo))
             (push (om-midi::make-midi-evt :type :Tempo :date 0 :fields (list *midi-tempo*)) seq))
           (funcall (om-midi::save-midi-file-function sys) seq name (or format *def-midi-format*) 1000))

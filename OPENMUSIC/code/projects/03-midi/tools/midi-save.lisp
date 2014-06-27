@@ -13,7 +13,7 @@
 - <approx> specifies the tone division (2, 4 or 8).
 - <format> alows to choose the MIDIFile format (0 or 1)
 
-For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Else All voices are saved at tempo 60."
+For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Otherwise all voices are saved at tempo 60."
   (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog  :directory (def-save-directory) 
                                                                                  :prompt (om-str :save-as) 
                                                                                  :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
