@@ -5,6 +5,8 @@
 *.lisp~
 *.lisp#
 
+*.app/
+
 release-osx
 release-src
 
