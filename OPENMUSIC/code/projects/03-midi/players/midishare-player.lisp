@@ -161,7 +161,7 @@ the recorder, this function is called by a def-load-pointers"
         ; pour entendre ce qu'on enregistre
         (om-midi::midishare-connect 0 0)
         (setf *ms-player-record* t)
-        (om-midi::midishare-set-player *midirecorder* (om-midi::midishare-new-seq) 1000)
+        (om-midi::midishare-set-player *midirecorder* nil 1000)
         (om-midi::midishare-record-player *midirecorder* 1)
         (om-midi::midishare-start-player *midirecorder*)
         t))))

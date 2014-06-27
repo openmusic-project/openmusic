@@ -1525,7 +1525,7 @@
         (lastobject (object self))
         (newobject nil))
     (when data
-      (setf newobject (record2obj (panel self) recordlist))
+      (setf newobject (record2obj (panel self) data))
       (when newobject
         (setf (object self) newobject)
         (change-val-of-reference self newobject lastobject)
