@@ -717,12 +717,13 @@
   (if (listp dur) (car dur) dur)) 
 
 
-(setf *note-types*
-      '((2 breve) (1 whole)
-        (1/2 half) (1/4 quarter)
-        (1/8 eighth) (1/16 16th)
-        (1/32 32nd) (1/62 64th)
-        (1/128 128th) (1/256 256th)))
+(defparameter *note-types*
+  '((2 breve) (1 whole)
+    (1/2 half) (1/4 quarter)
+    (1/8 eighth) (1/16 16th)
+    (1/32 32nd) (1/62 64th)
+    (1/128 128th) (1/256 256th)
+    (1/512 512th)(1/1024 1024th)))
 
 
 (defun durs-divisions (liste)
@@ -1252,7 +1253,10 @@
 
 
 ;;; j bresson 02/09/2010
-;;; replaced "start with "begin"
+;;; replaced "start" with "begin"
+;;;;K haddad 22/06/2014
+;;;Cette fonction donne des nil .... Elle n'est pas modifiee
+;;;Par contre dans le corps du code (voir plus loin) on enleve les nils
 (defun makebeam (self)
   (let* ((beamself (donne-figure self))
          (beamprev (donne-figure (prv-cont self)))
@@ -1278,7 +1282,7 @@
                     (> beamprev 0) (> beamnext 0) (nxt-is-samegrp? self))
              (beam "continue") (beam "end")))
           
-          (t ""))
+          (t ""))  ;;;; K.H => Le probleme du nil vient de la !
     ))
 
 (defun prv-cont (self)
@@ -1321,21 +1325,26 @@
    (t (denominator val))))
 
 (defun get-head-and-points (val)
- (let* ((haut (numerator val))
- (bas (denominator val))
- (bef (car (om::before&after-bin haut)))
- (points 0) (char 1))
- (cond
- ((= bef haut)
- (setf char (note-strict-lp (/ haut bas)))
- (setf points 0))
- ((= (* bef 1.5) haut)
- (setf char (note-strict-lp (/ bef bas)))
- (setf points 1))
- ((= (* bef 1.75) haut)
- (setf char (note-strict-lp (/ bef bas)))
- (setf points 2)))
-     (list (/ 1 char) points)))
+  (let* ((haut (numerator val))
+         (bas (denominator val))
+         (bef (car (om::before&after-bin haut)))
+         (points 0) (char 1))
+    (cond
+     ((= bef haut)
+      (setf char (note-strict-lp (/ haut bas)))
+      (setf points 0))
+     ((= (* bef 1.5) haut)
+      (setf char (note-strict-lp (/ bef bas)))
+      (setf points 1))
+     ((= (* bef 1.75) haut)
+      (setf char (note-strict-lp (/ bef bas)))
+      (setf points 2)))
+
+   ; (list (/ 1 char  ) points)
+    (if (> val 1) 
+        (list (/ char 1) points)
+      (list (/ 1 char) points))
+    ))
 
 
 
@@ -1344,12 +1353,15 @@
   (let* ((figure (if (listp fig) (car fig) fig))
          (hd-and-pts (get-head-and-points figure))
          (truefigure (car hd-and-pts))
+         ;(truefigure figure)
          (points (second hd-and-pts))
          (figchar (str (car (mycassq truefigure *note-types*))))
          (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
          (inside (om::inside self))
          (strg nil))
     
+    (print (list hd-and-pts truefigure figure figchar))
+
     (if (= (length inside) 1)
         (progn
           (setf strg (append strg (list (str (append *t *t *t (chr "<note>") *r)))))	
@@ -1369,7 +1381,7 @@
             (if (not (null toto))
                 (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic (car inside)))) *note-accidentals*))))))))))
           (setf strg (append strg (list (timemod self))))
-          (setf strg (append strg (list (makebeam self))))
+          (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r)))))
           )
@@ -1392,7 +1404,7 @@
             (if (not (null toto))
                 (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic frst))) *note-accidentals*))))))))))
           (setf strg (append strg (list (timemod self))))
-          (setf strg (append strg (list (makebeam self))))
+          (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r))))))
         (loop for note in (cdr inside) ;;;;les autres notes de l'accord
@@ -1415,7 +1427,7 @@
                      (if (not (null toto))
                          (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic note))) *note-accidentals*))))))))))
                    (setf strg (append strg (list (timemod self))))
-                   (setf strg (append strg (list (makebeam self))));;??
+                   (setf strg (append strg (remove nil (list (makebeam self)))));;??
                    (setf strg (append strg (list (groupnotation self))));;??
                    (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r))))))
               ))
@@ -1427,6 +1439,7 @@
   (let* ((figure (if (listp fig) (car fig) fig))
          (hd-and-pts (get-head-and-points figure))
          (truefigure (car hd-and-pts))
+         ;(truefigure figure)
          (points (second hd-and-pts))
          (figchar (str (car (mycassq truefigure *note-types*))))
          (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
@@ -1442,7 +1455,7 @@
               (setf strg (append strg (list (str (append *t *t *t (chr "<dot/>") *r))))))
           "")
     (setf strg (append strg (list (timemod self))))
-    (setf strg (append strg (list (makebeam self))))
+    (setf strg (append strg (remove nil (list (makebeam self)))))
     (setf strg (append strg (list (groupnotation self))))
     (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r)))))
     strg
