@@ -97,7 +97,7 @@
    (list iconID `(list :handle-errors ,*msg-error-label-on* 
                        :user-name ,*composer-name* 
                        :eval-process ,*eval-process*
-                       :reactive ,*reactive-patches-enabled*
+                       :reactive ,*reactive-patches*
                        
                        :listener-on-top ,(if om-lisp::*listener-on-top* :yes :no)
                        :out-files-dir ,(om-save-pathname *om-outfiles-folder*)
@@ -168,9 +168,9 @@
 
                                           (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable reactivity" 
                                           :di-action (om-dialog-item-act item 
-                                                       (set-pref modulepref :reactive (if (om-checked-p item) :yes :no)))
+                                                       (set-pref modulepref :reactive (om-checked-p item)))
                                           :font *controls-font*
-                                          :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
+                                          :checked-p (get-pref modulepref :reactive))
 
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(push x to set boxes active/unactive)"
                                           :font *om-default-font1*)
