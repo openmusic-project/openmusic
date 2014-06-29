@@ -548,8 +548,9 @@
 (defun pix-list-to-image (color-array)   
   (ensure-pict-win)
   (capi::hide-interface *temp-pictlayout* nil)
-  (let* ((img (gp::make-image *temp-pictlayout* (length (car color-array)) (length color-array) :alpha t))
-         (ia (gp::make-image-access *temp-pictlayout* img)))
+  (let* ((img1 (gp::make-image *temp-pictlayout* (length (car color-array)) (length color-array) :alpha t))
+         (ia (gp::make-image-access *temp-pictlayout* img1))
+         img2)
     (loop for line in color-array 
           for j = 0 then (+ j 1) do
           (loop for pix in line 
@@ -559,9 +560,10 @@
                                                                   (color::make-rgb (nth 0 pix) (nth 1 pix) (nth 2 pix) (nth 3 pix))
                                                                 (color::make-rgb pix pix pix 1))))))
     (gp::image-access-transfer-to-image ia)
+    (setf img2 (gp::externalize-image *temp-pictlayout* img1))
     (gp::free-image-access ia)
-      ;(capi:destroy win)
-    img))
+    (gp::free-image *temp-pictlayout* img1)
+    img2))
 
 ;;; !!! ARRAY EN BGRA
 (defun pix-array-to-image (array)   
@@ -592,12 +594,15 @@
                                    :displaced-to color-array)))
       (or (and *temp-pictwin* *temp-pictlayout*) (init-pictwin))
       (capi::hide-interface *temp-pictlayout* nil)
-      (let* ((img (gp::make-image *temp-pictlayout* w h :alpha t))
-             (ia (gp::make-image-access *temp-pictlayout* img)))
+      (let* ((img1 (gp::make-image *temp-pictlayout* w h :alpha t))
+             (ia (gp::make-image-access *temp-pictlayout* img1))
+             img2)
         (gp:image-access-pixels-from-bgra ia bgra-vector)
         (gp::image-access-transfer-to-image ia)
+        (setf img2 (gp::externalize-image *temp-pictlayout* img1))
         (gp::free-image-access ia)
-        img)
+        (gp::free-image *temp-pictlayout* img1)
+        img2)
       )))
 
 (defun om-create-picture (array)
