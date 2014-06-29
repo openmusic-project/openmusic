@@ -149,7 +149,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
 
 (defmethod! save-picture ((self picture) &optional (path nil) (with-graphics nil) (size nil))
    :initvals nil
-   :indoc '("a picture object" "a pathname" "bg pixels or pull-picture" "size")
+   :indoc '("a picture object" "a pathname" "bg pixels or full-picture" "size")
    :doc "Saves picture <self> in a file.
 Exports as a raw bitmap (TIF format)
 
@@ -657,15 +657,16 @@ Exports as a raw bitmap (TIF format)
                        (om-fill-rect (+ (* (nth 0 points) xfact) x0) (+ (* (nth 1 points) yfact) y0)
                                      (* (- (nth 2 points) (nth 0 points)) xfact) (* (- (nth 3 points) (nth 1 points)) yfact))
                        (om-draw-rect (+ (* (nth 0 points) xfact) x0) (+ (* (nth 1 points) yfact) y0)
-                                     (* (- (nth 2 points) (nth 0 points)) xfact) (* (- (nth 3 points) (nth 1 points)) yfact))))
+                                     (* (- (nth 2 points) (nth 0 points)) xfact) (* (- (nth 3 points) (nth 1 points)) yfact)
+                                     :pensize (cadr params))))
             ('cercle (if (cadddr params)
                        (om-fill-ellipse (+ (* (nth 0 points) xfact) x0) (+ (* (nth 1 points) yfact) y0)
                                         ;(* (- (nth 2 points) (nth 0 points)) xfact) (* (- (nth 3 points) (nth 1 points)) yfact)
-                                        (* (nth 2 points) xfact) (* (nth 3 points) yfact)
+                                        (max 1 (* (nth 2 points) xfact)) (max 1 (* (nth 3 points) yfact))
                                         )
                        (om-draw-ellipse (+  (* (nth 0 points) xfact) x0) (+ (* (nth 1 points) yfact) y0)
                                      ;(* (- (nth 2 points) (nth 0 points)) xfact) (* (- (nth 3 points) (nth 1 points)) yfact)
-                                     (* (nth 2 points) xfact) (* (nth 3 points) yfact)
+                                     (max 1 (* (nth 2 points) xfact)) (max 1 (* (nth 3 points) yfact))
                                      )))
             ('polyg (if (cadddr params)
                         (om-fill-polygon (mat-trans (list (om+  (om* (car (mat-trans points)) xfact) x0) 
