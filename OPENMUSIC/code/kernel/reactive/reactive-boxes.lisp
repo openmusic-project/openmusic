@@ -23,9 +23,7 @@
 
 (pushnew :om-reactive *features*)
 
-;;; Use this to set the delay in box evaluation/notification
-(defparameter *defcolortime* nil)
-(defparameter *inactive-color* (om-make-color 0.8 0.5 0.5))
+
 
 ;;; use this superclass instead of OMBox if needed
 (defclass OMReactiveBox (OMBox) 

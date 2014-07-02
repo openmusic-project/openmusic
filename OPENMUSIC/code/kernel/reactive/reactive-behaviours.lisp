@@ -3,6 +3,9 @@
 
 ;;; EXTENSION OF STANDARD OM BEHAVIOURS DUE TO REACTIVE BOXES
 
+;;; Use this to set the delay in box evaluation/notification
+(defparameter *defcolortime* 0.3)
+
 
 (in-package :om)
 
@@ -50,7 +53,9 @@
 
 ;;; NOTIFICATION TO CLIENTS
 ;;; When the box is evaluated
-(defparameter *defcolortime* 0.)
+
+
+(defparameter *inactive-color* (om-make-color 0.8 0.5 0.5))
 
 (defparameter *eval-color* (om-make-color 0.9 0.6 0.6))
 (defparameter *notify-color* (om-make-color 0.5 0.6 0.7))
@@ -118,11 +123,11 @@
       (current-box-value self numout)
    (let (val)
      ;(print (list "EVAL BOX" (name self) numout))
-     ;(box-color self *eval-color*)   
+     (box-color self *eval-color*)   
      (setf val (call-next-method))
      ;(print val)
      (setf (gen-flag self) t)
-     ;(box-color self nil) ; *inactive-color*
+     (box-color self nil) ; *inactive-color*
      val)
    )
  )
