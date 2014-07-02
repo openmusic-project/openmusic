@@ -118,7 +118,7 @@
 ;the four steps in the capi method specialized for the class of "movable-object". NOrmally this is called into the "mouse-motion-callback" method
 
 (defmethod draw-pinboard-object (pane (self movable-object) &key x y width height erase)
-  ;(ignore-errors 
+  (ignore-errors 
   (multiple-value-bind (ox oy ow oh) (pane-geometry self)
     (when (or erase (or (not (and x y width height)) (rectangle-intersection-p (list x y width height) (list ox oy ow oh))))
       (when (slot-value self 'restore-image) ;step 1 and 2 are naturally conditionned by the fact an image already exists
@@ -130,7 +130,7 @@
           (make-movable-object-image pane self ox oy ow oh) ;STEP 3om-create-motion-obj
           (draw-movable-object pane self x y width height) ;STEP 4
           ))))
-  ;)
+  )
   )
 
 ;onely usefull in some very specific situations
