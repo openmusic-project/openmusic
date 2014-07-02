@@ -4,7 +4,7 @@
 ;;; EXTENSION OF STANDARD OM BEHAVIOURS DUE TO REACTIVE BOXES
 
 ;;; Use this to set the delay in box evaluation/notification
-(defparameter *defcolortime* 0.3)
+(defparameter *defcolortime* nil)
 
 
 (in-package :om)
