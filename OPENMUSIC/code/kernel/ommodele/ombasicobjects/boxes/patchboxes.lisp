@@ -32,6 +32,7 @@
 
 ;---------------------------------------
 ;Boxes in a Patch
+; if reactive system is in, inherits from OMReactiveBox
 ;---------------------------------------
 (defclass OMBoxcall (#-om-reactive OMBox #+om-reactive OMReactiveBox)
    ((allow-lock :initform nil  :accessor allow-lock)
