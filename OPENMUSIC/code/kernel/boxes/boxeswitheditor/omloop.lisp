@@ -112,7 +112,7 @@
      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
               (let (,.acum-declaration (iter-count 0)) 
                 ,.acum-inits
-                ;(let* ,(reverse *let-list*) ,init) ;;; bug if a let variable depends on a loop iterator !!!!!
+                (let* ,(reverse *let-list*) ,init) ;;; bug if a let variable depends on a loop iterator !!!!!
                 (loop ,.loop-code
                       do ,(loop-check-code)
                       finally (return (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
