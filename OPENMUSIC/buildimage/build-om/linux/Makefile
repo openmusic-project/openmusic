@@ -64,7 +64,7 @@ compile buildsvn:
 
 clean:
 	find $(BUILDROOT) -name $(rubbish) -delete
-	rm $(BUILDROOT)/$(svnappname)
+	if [ -f $(BUILDROOT)/$(svnappname) ]; then rm $(BUILDROOT)/$(svnappname); fi;
 
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
