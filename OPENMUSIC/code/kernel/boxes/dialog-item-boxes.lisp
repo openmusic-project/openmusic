@@ -1,4 +1,5 @@
 
+
 (in-package :om)
 ;============================
 ;Dialog item boxes
@@ -290,8 +291,12 @@ Evaluate or connect the output to get the current contents of the box.
                        
 
 (defmethod rep-editor ((self text-box) num)
-  (let ((rep (ignore-errors (read-from-string (om-dialog-item-text self)))))
-    (or rep (om-dialog-item-text self))))
+  (let* ((rep nil)
+        (noerror (ignore-errors (setf rep (read-from-string (om-dialog-item-text self))) t)))
+    (if noerror rep (om-dialog-item-text self))))
+
+
+
 
 (defmethod update-di-size ((self text-box) container)
   (om-set-view-position self #+win32(om-make-point 8 8) #-win32(om-make-point 8 6))

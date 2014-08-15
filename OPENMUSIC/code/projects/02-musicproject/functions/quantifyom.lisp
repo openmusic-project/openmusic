@@ -249,8 +249,8 @@ box."
           (format *om-stream*
                   "Warning: with the given constraints, ~D notes are lost while quantizing ~%"
                   *unquantized-notes*))
-        (om-print "cannot quantize with the given constraints"))
-      (om-beep))
+        (om-beep-msg "cannot quantize with the given constraints"))
+      )
     (setq result (nreverse result))
     ;;(unless (zerop *unquantized-notes*)
     ;; (and result (setf (pw::extra-measure-stuff (car result))

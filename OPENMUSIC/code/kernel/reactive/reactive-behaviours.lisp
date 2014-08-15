@@ -62,26 +62,28 @@
 
 
 (defmethod box-color (box color &optional wait)
-  (setf (color box) color)
-  (when (car (frames box))
-    (om-redraw-view (car (frames box)))
-    (om-invalidate-view (car (frames box)))
-    (when (or wait *defcolortime*)
-      (sleep (or wait *defcolortime*)))))
+  (when *defcolortime*
+    (setf (color box) color)
+    (when (car (frames box))
+      (om-redraw-view (car (frames box)))
+      (om-invalidate-view (car (frames box)))
+      (when wait
+        (sleep (or wait *defcolortime*))))))
   
 
 
 
 (defmethod box-color ((box OMBoxTypeCall) color &optional wait)
-  (when (car (frames box))
-    (let ((prev-color (om-get-bg-color (iconview (car (frames box))))))
-      (om-set-bg-color (iconview (car (frames box))) color)
-      (when (or wait *defcolortime*)
-        (sleep (or wait *defcolortime*)))
-      (om-set-bg-color (iconview (car (frames box))) prev-color)
+    (when *defcolortime*
+      (when (car (frames box))
+        (let ((prev-color (om-get-bg-color (iconview (car (frames box))))))
+          (om-set-bg-color (iconview (car (frames box))) color)
+          (when wait
+            (sleep (or wait *defcolortime*)))
+          (om-set-bg-color (iconview (car (frames box))) prev-color)
     ;(om-redraw-view (iconview (car (frames box))))
-      (om-invalidate-view (iconview (car (frames box))))
-      )))
+          (om-invalidate-view (iconview (car (frames box))))
+          ))))
 
 
 (defmethod draw-before-box :after ((self omboxframe)) 

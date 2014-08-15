@@ -27,9 +27,9 @@
 
 (defvar *libportmidi-pathname* 
   #+win32
-  "/WINDOWS/system32/libportmidi.dll"
+  "/WINDOWS/system32/libPortMidi.dll"
   #+macosx
-  "/usr/lin/libportmidi.dylib"
+  "/usr/bin/libportmidi.dylib"
   #+linux
   "libportmidi.so")
 
