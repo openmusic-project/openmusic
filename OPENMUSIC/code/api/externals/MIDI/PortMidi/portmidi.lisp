@@ -90,12 +90,15 @@
 		 (opened :int))
 
 (defun pm-device-info-interf (ptr)
-  (cffi:foreign-string-to-lisp 
-   (cffi:foreign-slot-value ptr 'pm-device-info 'interf)))
+  (or (ignore-errors (cffi:foreign-string-to-lisp 
+                      (cffi:foreign-slot-value ptr 'pm-device-info 'interf)))
+      "Error reading interface name"))
 
 (defun pm-device-info-name (ptr)
-  (cffi:foreign-string-to-lisp
-   (cffi:foreign-slot-value ptr 'pm-device-info 'name)))
+  (or (ignore-errors
+        (cffi:foreign-string-to-lisp
+         (cffi:foreign-slot-value ptr 'pm-device-info 'name)))
+      "Error reading device name"))
 
 (defun pm-device-info-input (ptr)
   (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'input) 0)))
