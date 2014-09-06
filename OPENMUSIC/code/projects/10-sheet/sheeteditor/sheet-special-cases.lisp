@@ -71,9 +71,12 @@
                                                          (- (cadr pt) begpos)
                                                          ))))
               (time-points (remove-duplicates 
-                            (sort (copy-list (append bpfpointslist markerlist)) '< :key 'car)
+                            ;;(sort (copy-list (append bpfpointslist markerlist)) '< :key 'car)
+                            (list (list 0 0)
+                                  (list dur (get-x-pos sheetpanel dur 1)))
                             :test '= :key 'car)))
-
+          
+          ;;; temp modif because internal-metafile can not be drawn by segments
           ;(setf picture (om-internal-picture-to-pict picture view))
 
           (loop for segment on time-points ; by 'cddddr
@@ -82,10 +85,10 @@
                       (x2 (cadr (cadr segment)))
                       (pict-x1 (soundms2pix (car (car segment)) pictw dur))
                       (pict-x2 (soundms2pix (car (cadr segment)) pictw dur)))
-                  (when (and (>= (+ begtime (car (car segment))) screen-t1)
-                             (<= (+ begtime (car (cadr segment))) screen-t2))
+                  (when t ;(and (>= (+ begtime (car (car segment))) screen-t1)
+                          ;     (<= (+ begtime (car (cadr segment))) screen-t2))
                   (om-draw-picture view picture 
-                                   :pos (om-make-point x1 0) :size (om-make-point (- x2 x1) boxh)
+                                   ;:pos (om-make-point x1 0) :size (om-make-point (- x2 x1) boxh)
                                    :srctopleft (om-make-point pict-x1 0) :srcsize (om-make-point (- pict-x2 pict-x1) picth)
                                    )
                   ))
