@@ -125,7 +125,7 @@
       (current-box-value self numout)
    (let (val)
      ;(print (list "EVAL BOX" (name self) numout))
-     (box-color self *eval-color*)   
+     (box-color self *eval-color* *defcolortime*)   
      (setf val (call-next-method))
      ;(print val)
      (setf (gen-flag self) t)

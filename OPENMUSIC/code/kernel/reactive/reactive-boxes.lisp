@@ -130,14 +130,17 @@
 ;;; DO NOT NOTIFY WHO JUST CALLED ME
 (defmethod OMR-Notify ((self OMReactiveBox))
   ;(print (list "NOTIFIED BOX" (name self)))
-  ;(box-color self *notify-color*)
+  (when *defcolortime*
+    (box-color self *notify-color* *defcolortime*))
   (unless (push-tag self)
     (setf (push-tag self) t)
     (let ((listeners (remove-if-not 'active (listeners self))))
       (if (and (active self) listeners)
           (mapcar 'omr-notify listeners)
         (omNG-box-value self))))
-  (box-color self nil))
+  (when *defcolortime*
+    (box-color self nil))
+  )
 
 
 ;;;=====================================
