@@ -52,7 +52,7 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
         (ports (list! (slot-value self 'Lport))))
     (setf (evtlist self)
           (loop while (or dates types fields chans ports refs)
-                for date = (or (pop dates) (+ date defdelay))
+                for date = (or (pop dates) (+ (or date 0) defdelay))
                 for field = (or (pop fields) field)
                 for type = (or (pop types) type) ;; (if (numberp (setf type (or (pop types) type))) (num2evType type) type)
                 for chan = (or (pop chans) chan)

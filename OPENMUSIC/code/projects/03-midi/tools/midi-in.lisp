@@ -1,10 +1,10 @@
 
 (in-package :om)
 
-(om::defmethod! midi-in (port msg-processing-fun)
+(om::defmethod! midi-in (port msg-processing-fun thru-to)
   :icon 917
-  :indoc '("port number" "incoming message processing patch")
-  :initvals '(0 nil)
+  :indoc '("port number" "incoming message processing patch" "redirect input to output num")
+  :initvals '(0 nil nil)
   :doc "A MIDI IN server.
  
 Right-click and select the appropriate option to turn on/off.
@@ -26,8 +26,10 @@ This patch should handle and process the incoming messages.
 ;;;========================================
 
 (defmethod start-midi-in ((box ReceiveBox))
-  (when (etat box) (osc-stop-receive box))
-  (let ((port (omng-box-value (car (inputs box)))))
+  (when (etat box) (stop-midi-in box))
+  (let ((port (omng-box-value (car (inputs box))))
+        (redirect (and (caddr (inputs box)) (omng-box-value (caddr (inputs box)))))
+        )
     (if (and port (numberp port))
         (let ((fun (or (omng-box-value (cadr (inputs box)))
                        (fdefinition 'identity))))
@@ -37,7 +39,8 @@ This patch should handle and process the incoming messages.
                                    (let ((msg (deliver-message (msg-to-midievent message port) fun)))
                                      (when msg (set-delivered-value box msg))
                                      ))
-                               1)
+                               1
+                               redirect)
                 )
           (print (format nil "MIDI IN START on port ~D" port))
           (setf (etat box) t))
