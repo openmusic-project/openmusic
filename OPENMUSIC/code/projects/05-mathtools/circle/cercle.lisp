@@ -191,12 +191,13 @@
 (defmethod om-draw-contents ((self cerclePanel))
    (call-next-method)
    (om-with-focused-view self
+     (om-with-line-size 2 
      (draw-cercle  (object (om-view-container self)) self (round (w self) 2) 
                    (round (h self) 2) (round (min (w self) (h self)) 2.5)
                    3 4 (show-polygon self)  (current-list self) (not (show-bkg self)))
    (when (rot-mode self)
      (draw-first (object (om-view-container self)) (round (w self) 2) (round (h self) 2) 
-                 (round (min (w self) (h self)) 2.5) self))))
+                 (round (min (w self) (h self)) 2.5) self)))))
 
 (defmethod update-panel ((self cerclePanel) &optional (updateref nil))
    (update-panel (om-view-container self) updateref))
