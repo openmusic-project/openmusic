@@ -206,7 +206,7 @@
 
 (defmethod om-draw-picture (view pict &key
                                  (pos (om-make-point 0 0)) size
-                                  (srctopleft (om-make-point 0 0)) (srcsize nil)
+                                 (srctopleft (om-make-point 0 0)) (srcsize nil)
                                  selected alpha)
   ;(print (list view pict))
   ;(print (list view pict))
@@ -573,7 +573,8 @@
         (w (array-dimension array 1)))
     (when (= 2 (array-rank array))
       (setf color-array (make-array (list h w 4)
-                                    :element-type '(unsigned-byte 8)))
+                                    ;:element-type '(unsigned-byte 8)
+                                    ))
       (dotimes (i h)
         (dotimes (j w)
           (let ((pixel (aref array i j)))
@@ -590,7 +591,7 @@
       )
     
     (let ((bgra-vector (make-array (* h w 4)
-                                   :element-type '(unsigned-byte 8)
+                                   ;:element-type '(unsigned-byte 8)
                                    :displaced-to color-array)))
       (or (and *temp-pictwin* *temp-pictlayout*) (init-pictwin))
       (capi::hide-interface *temp-pictlayout* nil)
