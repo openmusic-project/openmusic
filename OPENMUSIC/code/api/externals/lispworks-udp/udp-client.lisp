@@ -4,6 +4,9 @@
 
 (in-package :comm+)
 
+;(comm:ip-address-string (comm:get-host-entry "129.102.65.34" :fields '(:address)))
+;(comm:ip-address-string (comm:get-host-entry "localhost" :fields '(:address)))
+
 (defun initialize-dynamic-sockaddr (hostname service protocol)
   #+(or lispworks4 lispworks5 lispworks6.0)
   (let ((server-addr (fli:allocate-dynamic-foreign-object

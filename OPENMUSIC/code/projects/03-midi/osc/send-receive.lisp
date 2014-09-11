@@ -22,10 +22,10 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
 
 
 
-(defmethod! osc-receive (port msg-processing)
+(defmethod! osc-receive (port msg-processing &optional host)
   :icon 611
-  :indoc '("port number" "incoming message processing patch")
-  :initvals '(3000 nil)
+  :indoc '("port number" "incoming message processing patch" "an IP address")
+  :initvals '(3000 nil "localhost")
   :doc "A local OSC server.
  
 Right-click and select the appropriate option to turn on/off.
@@ -33,6 +33,8 @@ When the server is on, OSC-RECEIVE waits for OSC messages on port <port> and cal
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to an OSC message. 
 This patch should handle and process the incoming messages.
+
+By default the server is only local. Set <host> to your current IP address to allow messages to be sent from the network.
 "
 
 
@@ -50,11 +52,12 @@ This patch should handle and process the incoming messages.
 
 (defmethod osc-start-receive ((box ReceiveBox))
   (when (etat box) (osc-stop-receive box))
-  (let ((port (omng-box-value (car (inputs box)))))
+  (let ((port (omng-box-value (car (inputs box))))
+        (host (omng-box-value (caddr (inputs box)))))
     (if (and port (numberp port))
         (let ((fun (omng-box-value (cadr (inputs box)))))
           (setf (process box) 
-                (om-start-osc-server port "localhost"
+                (om-start-osc-server port (or host "localhost")
                                      #'(lambda (msg) 
                                          (let* ((message (om-decode-msg-or-bundle msg)))
                                            ;(print (format nil "OSC RECEIVE= ~A" message))
