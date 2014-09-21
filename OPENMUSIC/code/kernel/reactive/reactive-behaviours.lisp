@@ -89,10 +89,12 @@
 (defmethod draw-before-box :after ((self omboxframe)) 
   (draw-active-state self))  ;;; reactive state)
 
+(defparameter *reactive-color* (om-make-color-alpha 0.6 0.4 0.4 0.2))
+
 (defmethod draw-active-state ((self OMBoxFrame))
   (om-with-focused-view self
     (when (or (active (object self)) (color (object self)))
-      (om-with-fg-color nil (or (color (object self)) (om-make-color 0.96 0.9 0.85))
+      (om-with-fg-color nil (or (color (object self)) *reactive-color*)
         ;(if (active (object self))
             (om-fill-rect 0 0 (1- (w self)) (- (h self) 4))
           ;(om-draw-rect 0 4 (1- (w self)) (- (h self) 8))
