@@ -192,13 +192,14 @@ As output it returns the contents of the text buffer as a list formatted accordi
     (remove nil (loop for line in (om-buffer-lines buffer) 
                       collect (data-from-line line)))))
     
+
 (defun data-from-line (line)
   (let ((linel (length line))
         (pos 0) rep v)
     (loop while (and pos (< pos linel))
           do
           (multiple-value-bind (val p) 
-              (read-from-string line nil nil :start pos)
+              (ignore-errors (read-from-string line nil nil :start pos))  ;;; in case of error => NIL 
             (setf pos (if val p nil))
             (when val (push val rep))
             ))
