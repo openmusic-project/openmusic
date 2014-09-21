@@ -63,8 +63,8 @@
       (values (nth 2 device) (nth 1 device)))))
 
 
-(defmethod portmidi-setup (settings)
-  (show-portmidi-dialog settings))
+(defmethod portmidi-setup (settings &optional action)
+  (show-portmidi-dialog settings action))
 
 (defclass portmidi-ports-dialog (oa::om-dialog) 
   ((portviews :accessor portviews :initform nil :initarg :portviews)
@@ -128,7 +128,7 @@
                )))))
 
 
-(defun show-portmidi-dialog (settings)
+(defun show-portmidi-dialog (settings &optional action)
   (let ((dd (oa::om-make-window 'portmidi-ports-dialog 
                                 :window-title "PortMIDI Setup"
                                 :bg-color oa::*om-light-gray-color*
@@ -192,6 +192,7 @@
                          (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 20 265) (oa::om-make-point 130 20) "Refresh Devices"
                                                   :di-action #'(lambda (item) 
                                                                  ;;;(portmidi-restart)
+                                                                 (when action (funcall action))
                                                                  (portmidi-connect-ports (settings dd))
                                                                  (set-portmidi-connection-view inv dd)
                                                                  (set-portmidi-connection-view outv dd)

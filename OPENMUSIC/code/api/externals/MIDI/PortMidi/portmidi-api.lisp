@@ -304,12 +304,12 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 ; (get-input-stream-from-port 0)
 (defun portmidi-in-start (portnum function &optional (buffersize 32) redirect-to-port) 
   (multiple-value-bind (in name) (get-input-stream-from-port portnum)
-    (if (null in) (progn (print (format nil "PortMidi ERROR: port ~A is not connected" portnum)) nil)
+    (if (null in) (progn (print (format nil "PortMidi ERROR: INPUT port ~A is not connected" portnum)) nil)
       (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
              (midiprocess (make-midi-in-process :buffer midibuffer
-                                            :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
-                                                                              #'midi-in-loop
-                                                                              in midibuffer buffersize function redirect-to-port))))
+                                                :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
+                                                                                  #'midi-in-loop
+                                                                                  in midibuffer buffersize function redirect-to-port))))
         midiprocess))))
 
 (defun portmidi-in-stop (midiprocess)

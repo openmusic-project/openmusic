@@ -27,6 +27,11 @@
     (setf *default-midi-system* (get-pref modulepref :midi-system))
        (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
        (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+         (when *running-midi-boxes*
+           (om-message-dialog 
+            (format nil "Warning: Restarting MIDI will stop all currently running MIDI receie loops.~%[currently: ~D running]" 
+                    (length *running-midi-boxes*)))
+           (mapcar 'stop-midi-in *running-midi-boxes*))
          (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup)))
        (put-midi-mixer-values)
        
@@ -56,6 +61,12 @@
                                   :retain-scrollbars t
                                   :bg-color *om-light-gray-color*
                                   ))
+         (init-action #'(lambda () 
+                          (when *running-midi-boxes*
+                            (om-message-dialog 
+                             (format nil "Warning: Restarting MIDI will stop all currently running MIDI receie loops.~%[currently: ~D running]" 
+                                     (length *running-midi-boxes*)))
+                            (mapcar 'stop-midi-in *running-midi-boxes*))))
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
          msapp
          (i 0))
@@ -196,7 +207,9 @@
                                            :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
                                            :di-action #'(lambda (item) (declare (ignore item))
                                                           (when (om-midi::midi-restart-function *default-midi-system*)
+                                                            (funcall init-action)
                                                             (funcall (om-midi::midi-restart-function *default-midi-system*)))
+                                                          
                                                           ;;; TEST
                                                           (when (om-midi::midi-connect-function *default-midi-system*)
                                                             (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
@@ -210,10 +223,11 @@
                                     :position (om-make-point 640 (- i 4)) 
                                     :size (om-make-point 32 32)
                                     :action #'(lambda (item) (declare (ignore item))
-                                                (let ((setup-values (funcall (om-midi::midi-setup-function *default-midi-system*) (get-pref modulepref :midi-setup))))
+                                                (let ((setup-values (funcall (om-midi::midi-setup-function *default-midi-system*) (get-pref modulepref :midi-setup) init-action)))
                                                   (when setup-values 
                                                     (set-pref modulepref :midi-setup setup-values)
                                                     (when (om-midi::midi-connect-function *default-midi-system*)
+                                                      (funcall init-action)
                                                       (funcall (om-midi::midi-connect-function *default-midi-system*) setup-values)
                                                       ))
                                                   ))

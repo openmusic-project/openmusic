@@ -7,7 +7,7 @@
 
 (in-package :om)
 
-(defun check-def-midi-system (function)
+(defun check-def-midi-system (function &optional (try-substitute t))
   (when (and *default-midi-system* (not (find *default-midi-system* om-midi::*midi-systems*)))
     (print (string+ "Warning: System " (string *default-midi-system*) " is not registered as a MID system.")))
   
@@ -20,7 +20,7 @@
                (print "No default MIDI system defined"))
               ((null (funcall function *default-midi-system*))
                (print (string+ "MIDI system " (string *default-midi-system*) " has no " (string function)))))
-        (if substitute 
+        (if (and try-substitute substitute)
             (and (print (string+ "MIDI system " (string substitute) " will be used instead"))
                  substitute)
           (om-beep)))
@@ -103,12 +103,12 @@
 ;;; START/STOP MIDI IN
 
 (defun midi-in-start (port fun bsize redirect)
-  (let ((sys (check-def-midi-system 'om-midi::midi-in-start-function)))
-    (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize redirect))))
+  (let ((sys (check-def-midi-system 'om-midi::midi-in-start-function nil)))
+    (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize redirect err-fun))))
 
 
 (defun midi-in-stop (process)
-  (let ((sys (check-def-midi-system 'om-midi::midi-in-stop-function)))
+  (let ((sys (check-def-midi-system 'om-midi::midi-in-stop-function nil)))
     (when sys (funcall (om-midi::midi-in-stop-function sys) process))))
 
 

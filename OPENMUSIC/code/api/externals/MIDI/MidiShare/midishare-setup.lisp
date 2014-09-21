@@ -7,7 +7,7 @@
 ;;;==============================
 
 
-(defmethod midishare-setup (settings)
+(defmethod midishare-setup (settings &optional action)
   (declare (ignore settings))
   #+(or powerpc win32) (launch-midishare-setup-app)
   #-(or powerpc win32) (make-midishare-setup-dialog))

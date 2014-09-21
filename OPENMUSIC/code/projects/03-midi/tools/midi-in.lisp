@@ -21,30 +21,41 @@ This patch should handle and process the incoming messages.
 (defmethod start-receive-fun ((self (eql 'midi-in))) 'start-midi-in)
 (defmethod stop-receive-fun ((self (eql 'midi-in))) 'stop-midi-in)
 
-;;;========================================
-;;; oSC features
-;;;========================================
+
+(defparameter *running-midi-boxes* nil)
 
 (defmethod start-midi-in ((box ReceiveBox))
-  (when (etat box) (stop-midi-in box))
+  
+  (when (and 
+         (etat box)
+         (check-def-midi-system 'om-midi::midi-in-stop-function nil)
+         )
+    (stop-midi-in box))
+  
   (let ((port (omng-box-value (car (inputs box))))
-        (redirect (and (caddr (inputs box)) (omng-box-value (caddr (inputs box)))))
-        )
-    (if (and port (numberp port))
-        (let ((fun (or (omng-box-value (cadr (inputs box)))
-                       (fdefinition 'identity))))
-          (setf (process box) 
-                (midi-in-start port
-                               #'(lambda (message time)
-                                   (let ((msg (deliver-message (msg-to-midievent message port) fun)))
-                                     (when msg (set-delivered-value box msg))
-                                     ))
-                               1
-                               redirect)
-                )
+        (redirect (and (caddr (inputs box)) (omng-box-value (caddr (inputs box))))))
+    (cond 
+     ((or (null port) (not (numberp port)))
+          (om-beep-msg (format nil "Error - bad port number for MIDI IN: ~A" port)))
+     
+     ((check-def-midi-system 'om-midi::midi-in-start-function nil)
+      (let ((fun (or (omng-box-value (cadr (inputs box)))
+                         (fdefinition 'identity))))
+        (setf (process box) 
+              (midi-in-start port
+                             #'(lambda (message time)
+                                 (let ((msg (deliver-message (msg-to-midievent message port) fun)))
+                                   (when msg (set-delivered-value box msg))
+                                   ))
+                             1
+                             redirect
+                             )
+              )
+        (push box *running-midi-boxes*)
+        (when (process box)
           (print (format nil "MIDI IN START on port ~D" port))
-          (setf (etat box) t))
-      (om-beep-msg (format nil "Error - bad port number for MIDI IN: ~A" port)))
+          (setf (etat box) t)))
+      ))
     (when  (car (frames box))
       (om-invalidate-view (car (frames box)) t))))
 
@@ -55,7 +66,9 @@ This patch should handle and process the incoming messages.
     (print (format nil "MIDI IN STOP on port ~D" (omng-box-value (car (inputs box))))))
   (setf (etat box) nil)
   (when (car (frames box))
-    (om-invalidate-view (car (frames box)) t)))
+    (om-invalidate-view (car (frames box)) t))
+  (setf *running-midi-boxes* (remove box *running-midi-boxes*))
+  )
 
 
 
