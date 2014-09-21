@@ -252,7 +252,7 @@ The extras are distributed successively in the internal objects in <self> (e.g. 
                            ((string-equal mode "last") (if (< i (- n 1)) (+ i 1) (- n 1)))
                            (t (if (and i (< i (- n 1))) (+ i 1))))
            do
-           (when i
+           (when (and i (nth i extralist))  ;;; you can put a NIL in the list to skip an object
              (set-extra-in-list (clone (nth i extralist)) obj)))
      (if newobj rep extralist)))
 
