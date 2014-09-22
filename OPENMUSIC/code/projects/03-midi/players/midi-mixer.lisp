@@ -29,8 +29,8 @@
   (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
     (init-midi-mixer vals)
     (when *midi-mixer* 
-      (set-preset *midi-mixer* (cadr (car vals)))
-      (send-midi-settings *midi-mixer*))))
+      (set-preset *midi-mixer* (cadr (car vals))))))
+
 
 (defun save-midi-presets-in-preferences (mixer)
   (set-pref (find-pref-module :midi) :midi-presets (presets mixer))
