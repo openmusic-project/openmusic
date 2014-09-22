@@ -162,7 +162,10 @@ Ex. (mat-tran '((1 2 3) (a b c) (4 5 6))  =>  ((1 a 4) (2 b 5) (3 c 6))"
   (let ((maxl (1- (loop for elt in matrix maximize (length elt))))
         result)
     (loop for i from 0 to maxl do
-         (push (remove nil (mapcar #'(lambda (list) (nth i list)) matrix)) result))
+          (push ;;; (remove nil    ; (why this remove NIL here ??)
+                       (mapcar #'(lambda (list) (nth i list)) matrix)
+                ;;;  )
+          result))
     (nreverse result)))
 
 ;----------------EXPAND LIST
