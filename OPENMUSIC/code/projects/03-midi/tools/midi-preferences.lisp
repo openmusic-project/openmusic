@@ -39,14 +39,18 @@
        (setf *def-midi-format* (get-pref modulepref :midi-format))
     ))
 
-(defmethod get-def-vals ((iconID (eql :midi))) (list :midi-out 0 :midi-in 0 
-                                                   :midi-system #+linux :cl-jack #-linux :midishare
-                                                   :midi-file-system #+linux :cl-midi #-linux :midishare
+
+
+
+(defmethod get-def-vals ((ID (eql :midi))) (list :midi-out 0 :midi-in 0 
+                                                   :midi-system #+linux :cl-jack #-linux (cond (midishare::*midishare* :midishare) (pm::*libportmidi* :portmidi) (t nil))
+                                                   :midi-file-system #+linux :cl-midi #-linux (cond (midishare::*midishare* :midishare) (t :cl-midi))
                                                    :midi-format 1
                                                    :auto-microtone-bend nil
                                                    :midi-setup '(nil nil)  ;;; (in out)
                                                    :midi-presets (def-midi-presets)
                                                    ))
+
 
 
 (defmethod make-new-pref-scroll ((num (eql :midi)) modulepref)

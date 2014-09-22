@@ -313,6 +313,7 @@
   
     ;;; new
     (user-init-funcs)
+    (put-all-preferences)
   
     (catch :load-prefs 
       (handler-bind 
