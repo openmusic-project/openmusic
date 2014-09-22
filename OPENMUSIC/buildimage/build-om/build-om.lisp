@@ -11,7 +11,7 @@
 
 ;;;=======================================
 (defparameter *app-name* "OM")
-(defparameter *version* 6.090000)
+(defparameter *version* 6.090001)
 (defparameter *beta-release* t)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
@@ -29,8 +29,7 @@
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if show-beta
-		     #-linux (format nil " beta ~d" beta)
-		     #+linux (format nil "_beta_~d" beta)
+		     (format nil "_beta_~d" beta)
                      "")
                  )))
 
