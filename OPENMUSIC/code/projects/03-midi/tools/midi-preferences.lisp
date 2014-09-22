@@ -25,19 +25,18 @@
     (setf *def-midi-in* (get-pref modulepref :midi-in))
     (setf *def-midi-out* (get-pref modulepref :midi-out))
     (setf *default-midi-system* (get-pref modulepref :midi-system))
-       (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
-       (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
-         (when *running-midi-boxes*
-           (om-message-dialog 
-            (format nil "Warning: Restarting MIDI will stop all currently running MIDI receie loops.~%[currently: ~D running]" 
-                    (length *running-midi-boxes*)))
-           (mapcar 'stop-midi-in *running-midi-boxes*))
-         (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup)))
-       (put-midi-mixer-values)
+    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
+    (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+      (when *running-midi-boxes*
+	(om-message-dialog 
+	 (format nil "Warning: Restarting MIDI will stop all currently running MIDI receive loops.~%[currently: ~D running]" 
+		 (length *running-midi-boxes*)))
+	(mapcar 'stop-midi-in *running-midi-boxes*))
+      (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup)))
+    (put-midi-mixer-values)
        
-       (setf *default-midi-file-system* (get-pref modulepref :midi-file-system))
-       (setf *def-midi-format* (get-pref modulepref :midi-format))
-    ))
+    (setf *default-midi-file-system* (get-pref modulepref :midi-file-system))
+    (setf *def-midi-format* (get-pref modulepref :midi-format))))
 
 
 
@@ -243,9 +242,6 @@
                                            :font *om-default-font1* :fg-color *om-gray-color*))
                       
                       ;(om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 55)) (om-make-point 120 40) "In case of emergency:" :font *controls-fonti*)
-                      
-                      
-                      
                       )
     thescroll))
 
