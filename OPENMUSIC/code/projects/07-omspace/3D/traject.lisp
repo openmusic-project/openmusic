@@ -82,13 +82,15 @@
 ;;;============================================================
 
 (defclass! 3D-trajectory (3DC)
-  ((times :initform nil :accessor times :initarg :times :documentation "time for each point (list)")
-   (sample-params :initform nil :accessor sample-params :initarg :sample-params 
-                  :documentation "optional computation of actual trajectory points")
-   (interpol-mode :initform 'points :accessor interpol-mode :initarg :interpol-mode 
-                  :documentation "optional autmatic time comptation mode")
+           ((times :initform nil :accessor times :initarg :times :documentation "time for each point (list)")
+            (sample-params :initform nil :accessor sample-params :initarg :sample-params 
+                           :documentation "optional computation of actual trajectory points")
+            (interpol-mode :initform 'points :accessor interpol-mode :initarg :interpol-mode 
+                           :documentation "optional autmatic time comptation mode")
+            (line-width :initform nil :accessor line-width  :initarg :line-width 
+                        :documentation "optional line width for the 3D-editor")
    ;(traject-points :initform nil :accessor traject-points)
-   )
+            )
   (:icon 502)
   (:documentation "
 3D-trajectory represents the trajectory of a point in 3D.
@@ -138,7 +140,6 @@ Optional params allow to compute precise trajectories from the object points. Se
 
 (defmethod! get-points-times ((self 3D-trajectory)) 
     (mapcar 'timedpoint-time (point-list self)))
-
 
 (defmethod (setf x-points) ((x-points t) (self 3D-trajectory))
    (let ((new-bpf (traject-from-list x-points (y-points self) (z-points self) (get-points-times self) 
@@ -372,4 +373,6 @@ Optional params allow to compute precise trajectories from the object points. Se
                                                    (or sample-params (sample-params self))
                                                    (or interpol-mode (interpol-mode self)))
                   :decimals (decimals self)))
+
+
 

@@ -26,6 +26,9 @@
 
 ;;; 3D PANEL (OpenGL...)
 
+(defparameter *OM-GL-DEFAULT-LINEWIDTH* 1.0)
+(defparameter *OM-GL-LINEWIDTH* 1.0)
+
 (defclass 3D-curve (om-3D-object) 
   ((selected-points :accessor selected-points :initform nil)
    (lines :accessor lines :initarg :lines :initform t)))
@@ -180,19 +183,26 @@
 
     (opengl:gl-end)))
     
-  
+
 (defmethod om-draw-contents ((self 3D-curve))
-  (let* ((vertexes (om-get-gl-points self)))   
+  (let* ((vertexes (om-get-gl-points self))
+         (size (- (length vertexes) 1))
+         (min_hue 0.5)
+         (max_hue 0.6))
     (opengl:gl-enable opengl:*GL-LIGHT0*)
+    ;(opengl:gl-line-width (line-width self))
+    (opengl:gl-line-width *OM-GL-LINEWIDTH*)
     (if (om-3Dobj-color self)
         (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
       (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
     (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
       (opengl:gl-begin opengl:*GL-LINE-STRIP*))
 
-    (loop for i from 0 to (- (length vertexes) 1) do
+    (loop for i from 0 to size do
           (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (opengl:gl-vertex4-dv (aref vertexes i))
+              (let ((rgb (hsv2rgb (+ min_hue (* (/ (- max_hue min_hue) size) i)) 1.0 1.0)))
+                (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
+                (opengl:gl-vertex4-dv (aref vertexes i)))
             (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
                                                                      (find i (selected-points self) :test '=)
                                                                    t))
@@ -206,8 +216,58 @@
              (loop for i from 0 to (- (length vertexes) 1) do                  
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ))
+    (opengl:gl-line-width *OM-GL-DEFAULT-LINEWIDTH*)
     ))
 
+
+;Jérémie Garcia
+;convert RGB values into HSV values (in float format (0.0 to 1.0))
+(defmethod rgb2hsv (r g b)
+  (let* (
+         ;be sure we have a correct range for input
+         (r (min r 1.0))
+         (r (max r 0.0))
+         (g (min g 1.0))
+         (g (max g 0.0))
+         (b (min b 1.0))
+         (b (max b 0.0))
+         (min_rgb (min r g b))
+         (max_rgb (max r g b))
+         )
+    (if (= min_rgb max_rgb)
+        (list 0.0 0.0 min_rgb)
+      (progn
+        (let* (
+               (tmp_d (if (= r min_rgb) (- g b) ( if (= b min_rgb) (- r g) (- b r))))
+               (tmp_h (if (= r min_rgb) 3 (if (= b min_rgb) 1 5)))
+               (h (/ (* 60 (- tmp_h (/ tmp_d (- max_rgb min_rgb)))) 360))
+               (v max_rgb)
+               (s (/ (- max_rgb min_rgb) max_rgb)))
+          (list h s v))))))
+
+;Jérémie Garcia
+;convert HSV values into RGB values (in float format (0.0 to 1.0))
+(defmethod hsv2rgb (h s v)
+    (let* (
+           (i (floor (* h 6)))
+           (f (- (* h 6) i))
+           (p (* v (- 1 s)))
+           (q (* v (- 1 (* f s))))
+           (tt (* v (- 1 (* (- 1 f) s)))))
+      (case (mod i 6) 
+        (0 (list v tt p))
+        (1 (list q v p))
+        (2 (list p v tt))
+        (3 (list p q v))
+        (4 (list tt p v))
+        (5 (list v p q)))))
+              
+;(rgb2hsv 0.1 0.3 0.6)
+;(hsv2rgb 0.3 0.1 0.5)
+;(hsv2rgb 0.6 0.8333333 0.6)
+
+;(capi::contain (om-make-view 'om-color-view))
+          
 (defclass 3DPanel (om-opengl-view) ())
 
 (defmethod om-draw-contents ((self 3DPanel))
@@ -712,7 +772,20 @@
                                         :min-val 0
                                         :max-val 10)
                    
+                   ;(om-make-dialog-item 'om-static-text (om-make-point 8 500) (om-make-point 70 20)
+                   ;                    "Line Width"
+                   ;                    :font *controls-font*
+                   ;                    :fg-color *om-black-color*)
+                   ;(om-make-dialog-item 'om-slider (om-make-point 8 520) (om-make-point 100 20) :range '(1 50) :show-value-p t
+                   ;                     "Slider"
+                   ;                     :di-action (om-dialog-item-act item
+                   ;                                  (setf *OM-GL-LINEWIDTH* (/ (om-slider-value item) 10.0 ))
+                   ;                                  (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                   ;                                  (om-invalidate-view (3Dp self))
+                                       
                    )
+
+
   (when (multibpf? self)
     (om-add-subviews (ctrlp self) 
                      (setf (sc-label self) (om-make-dialog-item 'om-static-text (om-make-point 8 140) (om-make-point 100 40)
@@ -878,7 +951,6 @@
    (t nil)))
 
 
-
 (defmethod add-new-curve ((self 3DEditor))
   (when (multibpf? self)
     (let* ((pos (selected-component self))
@@ -938,4 +1010,47 @@
                   '((tab "Change current curve")
                     (("n") "Change curve name")
                     )))))
-       
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; colored 3DC with speed or order ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Jérémie garcia
+(defclass 3D-timed-curve (3D-curve) 
+  ((times :accessor times :initform nil)))
+
+(defmethod om-draw-contents ((self 3D-timed-curve))
+  (let* ((vertexes (om-get-gl-points self)))
+    (opengl:gl-enable opengl:*GL-LIGHT0*)
+    (if (om-3Dobj-color self)
+        (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
+      (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
+
+    (loop for i from 0 to (- (length vertexes) 1) do
+          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
+              (opengl:gl-vertex4-dv (aref vertexes i))
+            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
+                                                                     (find i (selected-points self) :test '=)
+                                                                   t))
+            ))
+    (opengl:gl-end)
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (cond ((consp (selected-points self))
+             (loop for i in (selected-points self) do 
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ((selected-points self)
+             (loop for i from 0 to (- (length vertexes) 1) do                  
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ))
+    ))
+
+
+(defmethod 3Dobj-from-points (points drawmode color)
+  (let ((clist (when color (list (float (om-color-r color)) 
+                                 (float (om-color-g color)) 
+                                 (float (om-color-b color))))))
+  ;(if drawmode
+      (make-instance '3D-curve :points points :color clist :lines drawmode)
+      ;(make-instance 'om-3D-object-list 
+      ;             :objects (mapcar #'(lambda (p) (make-instance '3D-cube :center p :size 0.1 :color clist)) points))
+    ;)
+      ))
