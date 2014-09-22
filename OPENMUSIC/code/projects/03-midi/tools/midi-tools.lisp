@@ -540,13 +540,14 @@
   progName)
 
 
-(defmethod! GM-DrumNote (drumName)
+(defmethod! GM-DrumNote (drumName &optional (midicents t))
   :initvals '(nil)
   :indoc '("Drum name")
   :menuins (list (list 0 *midi-drum-notes*))
   :doc "Outputs General MIDI note number corresponding to <drumname>."
   :icon 916
-  drumName)
+  (if midicents (* drumName 100) drumName)
+  )
 
 
 (defmethod! control-change (ctrl)
