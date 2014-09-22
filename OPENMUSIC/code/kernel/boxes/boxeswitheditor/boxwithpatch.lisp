@@ -146,23 +146,6 @@ This class is the abstract class for these boxes.  #enddoc#
                          ,(omNG-save boxes) ',(mk-connection-list boxes) ,(numouts self) ,(frame-name self) ,pictlist)))
 
 
-(defmethod om-load-boxwithed1 ((class t) name reference inputs position size value lock boxes conec numouts 
-                                &optional fname pictlist)
-  (let ((newbox (omNG-make-new-boxcall (mk-object-refer class reference) (om-correct-point position) name)))
-    (setf (name (patch newbox)) fname)   ;;; new
-    (setf (frame-size newbox) size)
-     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
-     (setf (value newbox) (if (listp value) value (eval value)))
-     (setf (allow-lock newbox) lock)
-     (setf (frame-name newbox) fname)
-     (setf (boxes (patch newbox)) nil)
-     (mapc #'(lambda (box) (omNG-add-element (patch newbox) (eval box)))  boxes)
-     (setf (boxes (patch newbox)) (reverse (boxes (patch newbox))))     
-     (setf (connec (patch newbox)) conec)
-     (setf (numouts newbox) numouts)
-     (setf (pictu-list (patch newbox)) pictlist)
-     (push (patch newbox) *loaading-stack*)   
-     newbox))
 
 (defmethod om-load-boxwithed1 ((class t) name reference inputs position size value lock boxes conec numouts 
                                &optional fname pictlist)
@@ -170,6 +153,7 @@ This class is the abstract class for these boxes.  #enddoc#
     (setf (name (patch newbox)) (string-downcase (or fname name)))   ;;; new
     (setf (frame-size newbox) size)
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
+    (set-box-to-inputs (inputs newbox) newbox)
     (setf (value newbox) (if (listp value) value (eval value)))
     (setf (allow-lock newbox) lock)
     (setf (frame-name newbox) (string-downcase (or fname name)))

@@ -1038,6 +1038,7 @@ See OM User Manual and the OMLOOP refernce section for more details.
                                   (make-instance 'input-funbox
                                     :name (or (frame-name input) (name input))
                                     :value (eval (defval input))
+                                    :box-ref self
                                     :doc-string (docu input))) 
                               (get-patch-inputs (patch self))))
           conec-to-me)

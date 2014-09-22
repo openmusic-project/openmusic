@@ -108,6 +108,7 @@
     (setf (offset newbox) (om-point-h pos))
     (setf (posy newbox) (om-point-v pos))
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
+    (set-box-to-inputs (inputs newbox) newbox)
     (when fsize
       (setf (frame-size newbox) (om-correct-point fsize)))
     newbox))

@@ -150,6 +150,7 @@
      (setf (frame-name rep) fname)
      (setf (name rep) name)
      (setf (inputs rep) (mapcar #'(lambda (input) (eval input)) inputs))
+     (set-box-to-inputs (inputs newbox) newbox)
      rep))
 
 

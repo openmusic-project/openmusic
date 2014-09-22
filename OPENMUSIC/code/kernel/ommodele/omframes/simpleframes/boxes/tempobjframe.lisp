@@ -869,6 +869,7 @@
        (setf (allow-lock newbox) (allow-lock object))
        (setf (value newbox) (eval (omNG-copy (value object))))
        (setf (inputs newbox) (eval (omNG-copy (inputs object))))
+       (set-box-to-inputs (inputs newbox) newbox)
        (loop for input in (inputs object)
              for in in (inputs newbox) do
              (setf (connected? in) (connected? input)))

@@ -98,6 +98,7 @@ The different outputs correspond to each of the inputs. To get the result of the
      (setf (frame-size newbox) (om-correct-point size))
      (setf (numouts newbox) numouts)
      (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
+     (set-box-to-inputs (inputs newbox) newbox)
      (setf (value newbox) value)
      (setf (allow-lock newbox) lock)
      newbox))
@@ -336,7 +337,9 @@ This function is equaivalent to a logical OR."
      (mapc #'(lambda (oldin newin) 
                (setf (connected? newin) (connected? oldin))) 
            (inputs self) new-inputs)
-     (setf (inputs self) new-inputs)))
+     (setf (inputs self) new-inputs)
+     (set-box-to-inputs (inputs self) self)
+     (inputs self)))
 
  
 (defmethod omNG-box-value ((self OMBoxCallNextInit) &optional (numout 0))

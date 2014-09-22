@@ -140,6 +140,7 @@
       (setf (allow-lock newbox) (allow-lock object))
       (setf (value newbox) (eval (omNG-copy (value object))))
       (setf (inputs newbox) (eval (omNG-copy (inputs object))))
+      (set-box-to-inputs (inputs newbox) newbox)
       (loop for input in (inputs object)
             for in in (inputs newbox) do
             (setf (connected? in) (connected? input)))
@@ -259,6 +260,7 @@
     (setf (frame-size newbox) (om-correct-point size))
     (setf (frame-name newbox) fname)
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
+    (set-box-to-inputs (inputs newbox) newbox)
     (setf (value newbox) value)
     (setf (allow-lock newbox) lock)
     newbox))
@@ -294,6 +296,7 @@
       (setf (allow-lock newbox) (allow-lock object))
       (setf (value newbox) (eval (omNG-copy (value object))))
       (setf (inputs newbox) (eval (omNG-copy (inputs object))))
+      (set-box-to-inputs (inputs newbox) newbox)
       (loop for input in (inputs object)
             for in in (inputs newbox) do
             (setf (connected? in) (connected? input)))
@@ -331,6 +334,7 @@
       (setf (allow-lock newbox) (allow-lock object))
       (setf (value newbox) (eval (omNG-copy (value object))))
       (setf (inputs newbox) (eval (omNG-copy (inputs object))))
+      (set-box-to-inputs (inputs newbox) newbox)
       (loop for input in (inputs object)
             for in in (inputs newbox) do
             (setf (connected? in) (connected? input)))

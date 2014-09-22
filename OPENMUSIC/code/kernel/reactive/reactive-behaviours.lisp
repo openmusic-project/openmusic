@@ -18,7 +18,7 @@
     (if box
         (unless (find box (listeners self) :test 'equal)
           (push box (listeners self)))
-      (om-beep-msg (string+ "Error: Listener could not be added to box " (name self) ".")))))
+      (print (format nil "Warning -- Connecting box ~A: target input has no box reference." (name self))))))
 
 (defmethod remove-as-listener ((self t) &optional index) nil)
 

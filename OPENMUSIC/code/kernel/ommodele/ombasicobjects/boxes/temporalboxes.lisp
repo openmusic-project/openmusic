@@ -501,6 +501,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
                                   (make-instance 'input-funbox
                                     :name (get-frame-name input)
                                     :value (eval (defval input))
+                                    :box-ref self
                                     :doc-string (docu input))) 
                              (sort (find-class-boxes (boxes (reference self)) (get-input-class (reference self))) '< :key 'indice))))
      (mapc #'(lambda (oldin newin) 
