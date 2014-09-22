@@ -6,6 +6,7 @@
 *.lisp#
 
 *.app/
+*.html
 
 release-osx
 release-src
