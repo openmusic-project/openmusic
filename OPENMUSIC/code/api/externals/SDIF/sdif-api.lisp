@@ -128,12 +128,13 @@
      (cffi::foreign-free nbcharread)
      rep))
 
+;;; 22/09/14 changed floor by (- ceiling), for datasize > align.
 (defun sdif-calculate-padding (nr nc size)
   (let ((datasize (* nr nc size))
         (align 8))
     (cond ((zerop datasize) 0)
           ((< datasize align) (- align datasize))
-          (t (mod (cadr (multiple-value-list (floor datasize align))) align)))
+          (t (mod (- (cadr (multiple-value-list (ceiling datasize align)))) align)))
     ))
 
 

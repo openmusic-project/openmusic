@@ -622,7 +622,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
             (sdif::SdifFReadAllASCIIChunks ptrfile)
             ;(setf nextFrame (next-frame-is-ok ptrfile))
             (loop ;for item in (framesdesc self)
-             while (next-frame-is-ok ptrfile) 
+             while (next-frame-is-ok ptrfile)
              while (not error) do
              (multiple-value-bind (sig time id pos nbmat)
                  (read-frame-header ptrfile)
@@ -634,6 +634,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                      (loop for matnum from 0 to (1- nbmat) do
                            (multiple-value-bind (sig nrows ncols size pos)
                                (read-matrix-header ptrfile) 
+                             ;(print (list "cols" ncols "rows" nrows))
                              (if (string-equal matT sig)
                                  (progn
                                    (if (and (numberp colNum) (<= ncols colNum))
