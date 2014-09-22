@@ -73,6 +73,21 @@ P,UL,LI, TD {
 <td>&nbsp;</td>
 </tr>
 <tr>
+<tr>
+<td>
+<i><b>&optional</b></i><br>
+</td>
+<td colspan=3>&nbsp;</td></tr>
+<tr>
+<tr>
+<td width=40>&nbsp;</td>
+<td>
+- <font color=333366><b>HOST</b></font>
+</td>
+<td>an IP address</td>
+<td>[default = "localhost"]</td>
+</tr>
+<tr>
 </table>
 </tr>
 <tr><td colspan=2>
@@ -84,6 +99,8 @@ When the server is on, OSC-RECEIVE waits for OSC messages on port &lt;port&gt; a
 <br>
 &lt;msg-processing&gt; must be a patch in mode 'lambda' with 1 input corresponding to an OSC message. <br>
 This patch should handle and process the incoming messages.<br>
+<br>
+By default the server is only local. Set &lt;host&gt; to your current IP address to allow messages to be sent from the network.<br>
 <br>
 </p><br><br></td></tr>
 <td class=center colspan=2>
