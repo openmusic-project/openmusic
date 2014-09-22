@@ -224,7 +224,7 @@
 (defpackage "OpenMusic"
     (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP")
     (:import-from "CL-USER")
-    (:nicknames "OM"))
+    (:nicknames "OM" "OPENMUSIC"))
 
 
 (in-package :om)
