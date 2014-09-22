@@ -168,8 +168,6 @@
     ;;(setf *om-locked-draw* nil)
     )
 
-  
-
 
 (defmethod om-view-size ((self om-item-view))
   (om-make-point (vw self) (vh self)))

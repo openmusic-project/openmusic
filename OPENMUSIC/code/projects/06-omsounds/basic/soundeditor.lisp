@@ -449,21 +449,21 @@
                                         (om-make-point 
                                          (+ 10 (om-string-size (string+ (om-str :file) ": " name)
                                                                *om-default-font1b*))
-                                         18)
+                                         14)
                                         (string+ (om-str :file) ": " name)
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1b*)
-                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 400 4) (om-make-point 120 14)
                                         (format nil "Format: ~D" (or (om-sound-format (object self)) "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*)
-                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 600 4) (om-make-point 80 14)
                                         (format nil "SR: ~D" (if (om-sound-sample-rate (object self))
                                                                  (round (om-sound-sample-rate (object self)))
                                                                "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*)
-                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 18)
+                   (om-make-dialog-item 'om-static-text (om-make-point 700 4) (om-make-point 80 14)
                                         (format nil "SS: ~D" (or (om-sound-sample-size (object self)) "--"))
                                         :bg-color *editor-bar-color*
                                         :font *om-default-font1*))))
