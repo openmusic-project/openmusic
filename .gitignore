@@ -6,7 +6,3 @@
 *.lisp#
 
 *.app/
-
-release-osx
-release-src
-
