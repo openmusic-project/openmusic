@@ -37,7 +37,7 @@
 
 
 ;=============Controls===========
-(omg-defclass control-bpf (3Dborder-view) 
+(defclass control-bpf (3Dborder-view) 
               ((precisionitem :initform nil :accessor precisionitem)
                (lineitem :initform nil :accessor lineitem)))
 
@@ -114,7 +114,7 @@
      (call-next-method))))
 
 ;==================================================
-(omg-defclass bpf-text-enter-view (edit-text-enter-view) ())
+(defclass bpf-text-enter-view (edit-text-enter-view) ())
 
 
 (defmethod exit-from-dialog ((Self Bpf-Text-Enter-View) Newtext)
@@ -132,7 +132,7 @@
 
 ;;;=== TITLE BAR ===
 
-(omg-defclass bpf-titlebar (editor-titlebar) 
+(defclass bpf-titlebar (editor-titlebar) 
   ((mode-buttons :accessor mode-buttons :initform nil)))
 
  
@@ -917,10 +917,11 @@
     ))
 
 (defmethod init-coor-system ((Self Bpfpanel))
-  (let ((Ranges 
-         (space-bpf-ranges (if (pict (editor self)) 
-                               (bpf-picture-ranges (pict (editor self)))
-                             (give-editor-list-range (om-view-container self))))))
+  (let ((Ranges (space-bpf-ranges 
+                 (or (and (pict (editor self))
+                          (thepict (pict (editor self)))
+                          (ignore-errors (bpf-picture-ranges (pict (editor self)) self)))
+                     (give-editor-list-range (om-view-container self))))))
     (set-ranges self (list (first ranges) (second ranges)) 
                 (list (third ranges) (fourth ranges)))
     (redraw-rulers self)
@@ -940,14 +941,17 @@
         (round (- (third range) (abs (* (- (fourth range) (third range)) 0.05))))
         (round (+ (fourth range) (abs (* (- (fourth range) (third range)) 0.05))))))
 
-(defun bpf-picture-ranges (pict)
+(defun bpf-picture-ranges (pict panel)
   (when (draw-params pict)
-       (if (equal (car (draw-params pict)) 'c)
-           (let ((params (cdr (draw-params pict))))
-             (list (nth 0 params) (nth 2 params)
-                   (nth 1 params) (nth 3 params)))
-         (if (equal (car (draw-params pict)) 'p)
-             (list 0 (om-pict-width (thepict pict)) 0 (om-pict-height (thepict pict)))))))
+       (om* 
+        (if (equal (car (draw-params pict)) 'c)
+            (let ((params (cdr (draw-params pict))))
+              (list (nth 0 params) (nth 2 params)
+                    (nth 1 params) (nth 3 params)))
+          (if (equal (car (draw-params pict)) 'p)
+              (list 0 (om-pict-width (thepict pict)) 0 (om-pict-height (thepict pict)))))
+        (expt 10 (decimals object (editor panel)))
+        )))
 
 
 (defmethod get-real-selection-list ((self bpfpanel))
