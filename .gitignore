@@ -4,7 +4,6 @@
 *.ufasl
 *.lisp~
 *.lisp#
-
 *.html
 
 *.app/
