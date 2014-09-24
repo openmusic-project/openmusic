@@ -517,7 +517,11 @@ Extraction methods.
            (setf tree (mktree tree (second *quantify-def-params*)))
            (if (not (or (numberp (car tree))  (and (symbolp (car tree)) (string-equal (string (car tree)) "?"))))
              (setf tree (cons '? (list tree)))))
-         (setf tree (apply-tree-rulers tree))
+         (setf tree (resolve-? tree))
+         (setf tree (singleton tree))
+         (setf tree (list-first-layer tree))
+         (setf tree (add-ties-to-tree tree))
+         ;(setf tree (normalize-tree-voice  tree))
          (setf (slot-value self 'tree)   tree)))
      :PropagateExtent PropagateExtent)
     (unless InternalCall
