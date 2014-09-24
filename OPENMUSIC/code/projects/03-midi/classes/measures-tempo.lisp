@@ -58,7 +58,7 @@ A TEMPO-MAP represents the tempo events and measure changes (also used as bar ma
   (let ((tempoEvents nil)
         (tempoMap (make-instance 'tempo-Map))
         (tempoList nil) (timeSignList nil))
-    (setf tempoEvents (get-midievents self #'(lambda (x) (or (test-type x 'tempo) (test-type x 'timeSign)))))
+    (setf tempoEvents (get-midievents self #'(lambda (x) (or (test-type x :tempo) (test-type x :timeSign)))))
     (loop for event in tempoEvents do
           (cond
            ((equal (ev-type event) :Tempo)
