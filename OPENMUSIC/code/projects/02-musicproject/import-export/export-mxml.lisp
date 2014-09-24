@@ -430,56 +430,59 @@
 
 (defvar *no-sharp-read-table*)
 
-(setf *kascii-note-c-scale*
+(defparameter *kascii-note-c-scale*
   (mapc #'(lambda (x) (setf (car x) (string-upcase (string (car x)))))
-    '((c . :n) (c . :q) (c . :s) (c . :qs)
-      (d . :n) (d . :q) (d . :s) (d . :qs)
-      (e . :n) (e . :q)
-      (f . :n) (f . :q) (f . :s) (f . :qs)
-      (g . :n) (g . :q) (g . :s) (g . :qs)
-      (a . :n) (a . :q) (a . :s) (a . :qs)
-      (b . :n) (b . :q)  )))
+    '((c . :n) (c . :h) (c . :q) (c . :hq) (c . :s) (c . :hs) (c . :qs) (c . :hqs)
+      (d . :n) (d . :h) (d . :q) (d . :hq) (d . :s) (d . :hs) (d . :qs) (d . :hqs)
+      (e . :n) (e . :q) (e . :q) (e . :hq)
+      (f . :n) (f . :q) (f . :s) (f . :qs) (f . :s) (f . :hs) (f . :qs) (f . :hqs)
+      (g . :n) (g . :q) (g . :s) (g . :qs) (g . :s) (g . :hs) (g . :qs) (g . :hqs)
+      (a . :n) (a . :q) (a . :s) (a . :qs) (a . :s) (a . :hs) (a . :qs) (a . :hqs)
+      (b . :n) (b . :q) (b . :q) (b . :hq) )))
 
 
-(setf *kascii-note-alterations*
+(defparameter *kascii-note-alterations*
    '((:s 1 +100) (:f -1 -100)
      (:q 0.5 +50) (:qs 1.5 +150) (:-q -0.5 -50) (:f-q -1.5 -150)
+     (:h 0.25 +25) (:hq 0.75 +75) (:hs 1.25 +125) (:hqs 1.75 +175) (:-h -0.25 -25) (:-hq -0.75 -75)(:-hs -1.25 -125)(:-hqs -1.75 -175)
      (:n 0 0)))
 
-(setf *kascii-note-scales* (list *kascii-note-C-scale*))
+(defparameter *kascii-note-scales* (list *kascii-note-C-scale*))
 
 (setf *note-accidentals*
-      '((0.5 quarter-sharp) (1 sharp)
-        (1.5 three-quarters-sharp)))
+      '((0.25 eight)
+        (0.5 quarter-sharp) 
+        (0.75 three-eighth)
+        (1 sharp)
+        (1.25 five-eighth)
+        (1.5 three-quarters-sharp)
+        (1.75 seven-eighth)
+        ))
 
-(mycassq 1 *note-accidentals*)
+; (mycassq 1 *note-accidentals*)
+; (mc->xmlnotes 6125 8)
+; (cons-xml-note (make-instance 'om::note))
 
-
-(defun mc->xmlnotes (midic)
+(defun mc->xmlnotes (midic &optional (approx 2))
   "Converts <midic> to a string representing a symbolic ascii note."
   (let* ((kascii-note-scale (car *kascii-note-scales*))
-        (dmidic (/ 1200 (length kascii-note-scale))) 
-        note)
-    (let* ((values (multiple-value-list (round midic dmidic)))
+         (dmidic (/ 1200 (length kascii-note-scale))) 
+         note)
+    (let* ((values (multiple-value-list (round (om::approx-m midic approx) dmidic)))
            (midic/50 (car values))
            (cents (cadr values))
            (values2 (multiple-value-list (floor (* midic/50 dmidic) 1200)))
            (oct+2 (- (car values2) 1))
            (midic<1200 (cadr values2)))
 
-      
       (setq note (nth (/ midic<1200 dmidic) kascii-note-scale))
       (list   midic
               (coerce (car note) 'character) 
               (car (mycassq (cdr note) *kascii-note-alterations*))
               oct+2))))
 
-;(mc->xmlnotes 7250)
-;;(cons-xml-note (make-instance 'om::note))
-
-
-(defun hauteur (midicent)
-  (let* ((source (mc->xmlnotes midicent)) 
+(defun hauteur (midicent &optional (approx 2))
+  (let* ((source (mc->xmlnotes midicent approx))
          (mc (first source)) (s (second source)) 
          (a (third source)) 
          (o (fourth source)))
@@ -865,7 +868,7 @@
        do (setf rep (append rep
 			    (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
 				   (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
-				   (exp (cons-xml-expr obj (* symb-beat-val factor) t t)))
+				   (exp (cons-xml-expr obj (* symb-beat-val factor) key approx)))
 			      exp))))
     
     (setf rep (append rep (list (str (append
@@ -925,7 +928,7 @@
                                             (dur-obj (numerator (/ (/ (om::extent obj) (om::qvalue obj)) 
                                                                    (/ (om::extent self) (om::qvalue self))))))
                                        (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                       (cons-xml-expr obj (* dur-obj unite))
+                                       (cons-xml-expr obj (* dur-obj unite) key approx)
                                        )))))
      
      
@@ -1359,13 +1362,11 @@
          (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
          (inside (om::inside self))
          (strg nil))
-    
-    (print (list hd-and-pts truefigure figure figchar))
 
     (if (= (length inside) 1)
         (progn
           (setf strg (append strg (list (str (append *t *t *t (chr "<note>") *r)))))	
-          (setf strg (append strg (list (cons-xml-note (car inside)))))
+          (setf strg (append strg (list (cons-xml-note (car inside) approx))))
           (setf strg (append strg (list (str (duree durtot)))))
           (setf strg (append strg (list (tied self))))
         
@@ -1377,9 +1378,12 @@
                     (setf strg (append strg (list (str (append *t *t *t (chr "<dot/>") *r))))))
             "")
 
-          (let ((toto (mycassq (third (mc->xmlnotes (om::midic (car inside)))) *note-accidentals*)))
-            (if (not (null toto))
-                (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic (car inside)))) *note-accidentals*))))))))))
+          (let ((toto (mycassq (third (mc->xmlnotes (om::midic (car inside)) approx)) *note-accidentals*)))
+            (unless (null toto)
+              (setf strg (append strg 
+                                 (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic (car inside)) approx)) *note-accidentals*))))))))
+              ))
+
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
@@ -1389,7 +1393,7 @@
       (progn
         (let ((frst (car inside))) ;;;premiere note de l'accord
           (setf strg (append strg (list (str (append *t *t *t (chr "<note>") *r)))))
-          (setf strg (append strg (list (cons-xml-note frst))))
+          (setf strg (append strg (list (cons-xml-note frst approx))))
           (setf strg (append strg (list (str (duree durtot)))))
           (setf strg (append strg (list (tied self))))
           
@@ -1411,10 +1415,9 @@
               do (progn 
                    (setf strg (append strg (list (str (append *t *t *t (chr "<note>") *r)))))
                    (setf strg (append strg (list (str (append *t *t *t (chr "  <chord/>") *r)))))
-                   (setf strg (append strg (list (cons-xml-note note))))
+                   (setf strg (append strg (list (cons-xml-note note approx))))
                    (setf strg (append strg (list (str (duree durtot)))))
                    (setf strg (append strg (list (tied self))))
-                   
                    (setf strg (append strg (list (str (type-dur figchar)))))
 
                    (if (not (= 0 points))
@@ -1462,8 +1465,8 @@
     ))
 
 
-(defmethod cons-xml-note ((self om::note))
-  (str (hauteur (om::midic self))))
+(defmethod cons-xml-note ((self om::note) &optional (approx 2))
+  (str (hauteur (om::midic self) approx)))
 
 
 
