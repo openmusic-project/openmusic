@@ -159,11 +159,11 @@
   (om-add-subviews (ctrlp self)
 
 
-                   (om-make-dialog-item 'om-static-text (om-make-point 8 350) (om-make-point 70 40)
+                   (om-make-dialog-item 'om-static-text (om-make-point 8 380) (om-make-point 70 40)
                                         "Sample Rate"
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
-                   (om-make-dialog-item 'om-editable-text (om-make-point 70 355) (om-make-point 40 20) 
+                   (om-make-dialog-item 'om-editable-text (om-make-point 70 385) (om-make-point 40 20) 
                                         (format nil " ~a" (sample-params (object self)))
                                         :-action nil
                                         :font *controls-font*
@@ -174,7 +174,7 @@
                                                                (setf (sample-params (object self)) val))))
                                         )
                    
-                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 390) (om-make-point 100 20) ""
+                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 420) (om-make-point 100 20) ""
                                         :range '("points (constant time)" "distance (constant speed)")
                                         :value (if (equal (interpol-mode (object self)) 'dist) 
                                                    "distance (constant speed)" "points (constant time)")

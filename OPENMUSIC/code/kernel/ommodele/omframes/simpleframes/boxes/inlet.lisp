@@ -396,7 +396,7 @@
 ;==============================
 ;Subclass this class to edit static-text
 
-(omg-defclass click-and-edit-text (om-static-text) 
+(defclass click-and-edit-text (om-static-text) 
    ((mini-editor :initform nil :accessor mini-editor)))
 
 ;------------Events

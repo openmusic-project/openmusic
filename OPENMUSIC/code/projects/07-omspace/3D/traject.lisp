@@ -87,8 +87,6 @@
                            :documentation "optional computation of actual trajectory points")
             (interpol-mode :initform 'points :accessor interpol-mode :initarg :interpol-mode 
                            :documentation "optional autmatic time comptation mode")
-            (line-width :initform nil :accessor line-width  :initarg :line-width 
-                        :documentation "optional line width for the 3D-editor")
    ;(traject-points :initform nil :accessor traject-points)
             )
   (:icon 502)

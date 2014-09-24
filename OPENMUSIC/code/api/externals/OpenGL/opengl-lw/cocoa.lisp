@@ -125,6 +125,33 @@
     ':int))
   
 
+;(defun choose-cocoa-pixel-format (view configuration)
+;  "Returns the NSOpenGLPixelFormat for rep which supports the 
+;   requested configuration. Returns NIL if it fails.
+;   Configuration is a plist with the following allowed
+;   indicators: 
+;      :double-buffer, :double-buffered, - synonyms, value T or NIL."
+;  (fli:with-dynamic-foreign-objects ()
+;    (let* ((attributes-list
+;            (nconc (and (or (getf configuration :double-buffer)
+;                            (getf configuration :double-buffered))
+;                        (list ns-open-gl-pfa-double-buffer))
+;                   (let ((depth-buffer (getf configuration :depth-buffer)))
+;                     (and depth-buffer
+;                          (list ns-open-gl-pfa-depth-size depth-buffer)))
+;                   (list 0)))
+;           (attributes (fli:allocate-dynamic-foreign-object
+;                        :type (ns-open-gl-pixel-format-attribute-type)
+;                        :initial-contents attributes-list)))
+;      (let ((format (objc:invoke (objc:invoke "NSOpenGLPixelFormat" "alloc")
+;                                 "initWithAttributes:"
+;                                 attributes)))
+;        (if (objc:null-objc-pointer-p format)
+;            nil
+;          format)))))
+
+
+;modification to support antialiasing with OSX
 (defun choose-cocoa-pixel-format (view configuration)
   "Returns the NSOpenGLPixelFormat for rep which supports the 
    requested configuration. Returns NIL if it fails.
@@ -138,8 +165,10 @@
                         (list ns-open-gl-pfa-double-buffer))
                    (let ((depth-buffer (getf configuration :depth-buffer)))
                      (and depth-buffer
-                          (list ns-open-gl-pfa-depth-size depth-buffer)))
-                   (list 0)))
+                          (list ns-open-gl-pfa-depth-size depth-buffer
+                                ns-open-gl-pfa-sample-buffers 1
+                                ns-open-gl-pfa-samples 4)))
+                          (list 0)))
            (attributes (fli:allocate-dynamic-foreign-object
                         :type (ns-open-gl-pixel-format-attribute-type)
                         :initial-contents attributes-list)))
@@ -149,6 +178,7 @@
         (if (objc:null-objc-pointer-p format)
             nil
           format)))))
+
 
 (defun pixel-format-attribute-value (pixel-format
                                      attribute

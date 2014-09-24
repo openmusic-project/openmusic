@@ -26,26 +26,20 @@
 
 ;;; 3D PANEL (OpenGL...)
 
+
 (defparameter *OM-GL-DEFAULT-LINEWIDTH* 1.0)
-(defparameter *OM-GL-LINEWIDTH* 1.0)
+(defparameter *OM-GL-DEFAULT-COLOR* (list 0.0 0.0 0.0 1.0))
 
-(defclass 3D-curve (om-3D-object) 
-  ((selected-points :accessor selected-points :initform nil)
-   (lines :accessor lines :initarg :lines :initform t)))
+;editors default parameters
+(defparameter *OM-DEFAULT-ROOM-SIZE* 2)
+(defparameter *OM-DEFAULT-SHOW-ROOM* 1)
+(defparameter *OM-DEFAULT-SHOW-AXES* 1)
 
-(defun draw-3D-axes ()
-  (opengl:gl-begin opengl:*GL-LINES*)
-  (opengl:gl-color3-f 0.8 0.3 0.3)
-  (opengl:gl-vertex3-f -1.0 0.0 0.0) 
-  (opengl:gl-vertex3-f 1.0 0.0 0.0) 
-  (opengl:gl-color3-f 0.3 0.6 0.3)
-  (opengl:gl-vertex3-f 0.0 -1.0 0.0) 
-  (opengl:gl-vertex3-f 0.0 1.0 0.0) 
-  (opengl:gl-color3-f 0.3 0.3 0.6)
-  (opengl:gl-vertex3-f 0.0 0.0 -1.0) 
-  (opengl:gl-vertex3-f 0.0 0.0 1.0) 
-  (opengl:gl-end))
 
+(defmethod restore-om-gl-colors-and-attributes ()
+  (opengl:gl-color4-f (nth 0 *OM-GL-DEFAULT-COLOR*) (nth 1 *OM-GL-DEFAULT-COLOR*) (nth 2 *OM-GL-DEFAULT-COLOR*) (nth 3 *OM-GL-DEFAULT-COLOR*))
+  (opengl:gl-line-width *OM-GL-DEFAULT-LINEWIDTH*)
+  )
 
 (defclass 3D-cube (om-3D-object) 
   ((center :accessor center :initarg :center :initform nil)
@@ -122,6 +116,133 @@
     ))
 
 
+(defclass 3D-curve (om-3D-object) 
+  ((selected-points :accessor selected-points :initform nil)
+   (lines :accessor lines :initarg :lines :initform t)
+   (line-width :accessor line-width :initarg :line-width :initform *OM-GL-DEFAULT-LINEWIDTH*)))
+  
+(defclass 3D-timed-curve (3D-curve) 
+  ((times :accessor times :initarg :times :initform nil)
+   (color-mode :accessor color-mode :initarg :color-mode :initform 0)))
+
+  
+
+(defmethod om-draw-contents ((self 3D-curve))
+  (let* ((vertexes (om-get-gl-points self))
+         (size (- (length vertexes) 1)))
+    (opengl:gl-enable opengl:*gl-light0*)
+    (opengl:gl-line-width (float (line-width self)))
+    (if (om-3Dobj-color self)
+        (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
+      (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
+    (loop for i from 0 to size do
+          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
+              (opengl:gl-vertex4-dv (aref vertexes i))
+            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
+                                                                     (find i (selected-points self) :test '=)
+                                                                   t))))
+    (opengl:gl-end)
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (cond ((consp (selected-points self))
+             (loop for i in (selected-points self) do 
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ((selected-points self)
+             (loop for i from 0 to (- (length vertexes) 1) do                  
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ))
+    (restore-om-gl-colors-and-attributes)
+    ))
+
+
+(defmethod om-draw-contents ((self 3D-timed-curve))
+  "Draw a 3D timed curve witgh stroke with and colors"
+  (let* ((vertexes (om-get-gl-points self))
+         (size (- (length vertexes) 1))
+         (vertex-colors (get-vertex-colors self)))
+    (opengl:gl-enable opengl:*GL-LIGHT0*)    
+    (opengl:gl-line-width (float (line-width self)))
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
+
+    (loop for i from 0 to size do
+          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
+              (let ((rgb (nth i vertex-colors )))
+                (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
+                (opengl:gl-vertex4-dv (aref vertexes i)))
+            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
+                                                                     (find i (selected-points self) :test '=)
+                                                                   t))
+            ))
+    (opengl:gl-end)
+    (restore-om-gl-colors-and-attributes)
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (cond ((consp (selected-points self))
+             (loop for i in (selected-points self) do 
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ((selected-points self)
+             (loop for i from 0 to (- (length vertexes) 1) do                  
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ))
+    (restore-om-gl-colors-and-attributes)
+    ))
+
+;jgarcia
+(defmethod! get-vertex-colors ((self 3d-timed-curve))
+            "create a vector of colors for a 3D-timed-curve depending on the mode selected"
+            (let ((size (length (oa::points self))))
+              (case (color-mode self)
+                (1 (loop for i from 0 to (1- size)
+                         collect (hsv2rgb (+ min_hue (* (/ (- max_hue min_hue) size) i)) 1.0 1.0)))
+                (2 nil)
+                (otherwise (make-list size :initial-element (oa::color self))))))
+
+;jgarcia
+(defun rgb2hsv (r g b)
+  "convert RGB values into HSV values (in float format (0.0 to 1.0))"
+  (let* (
+         ;be sure we have a correct range for input
+         (r (min r 1.0))
+         (r (max r 0.0))
+         (g (min g 1.0))
+         (g (max g 0.0))
+         (b (min b 1.0))
+         (b (max b 0.0))
+         (min_rgb (min r g b))
+         (max_rgb (max r g b))
+         )
+    (if (= min_rgb max_rgb)
+        (list 0.0 0.0 min_rgb)
+      (progn
+        (let* (
+               (tmp_d (if (= r min_rgb) (- g b) ( if (= b min_rgb) (- r g) (- b r))))
+               (tmp_h (if (= r min_rgb) 3 (if (= b min_rgb) 1 5)))
+               (h (/ (* 60 (- tmp_h (/ tmp_d (- max_rgb min_rgb)))) 360))
+               (v max_rgb)
+               (s (/ (- max_rgb min_rgb) max_rgb)))
+          (list h s v))))))
+
+
+;jgarcia
+(defun hsv2rgb (h s v)
+  "convert HSV values into RGB values (in float format (0.0 to 1.0))"
+    (let* (
+           (i (floor (* h 6)))
+           (f (- (* h 6) i))
+           (p (* v (- 1 s)))
+           (q (* v (- 1 (* f s))))
+           (tt (* v (- 1 (* (- 1 f) s)))))
+      (case (mod i 6) 
+        (0 (list v tt p))
+        (1 (list q v p))
+        (2 (list p v tt))
+        (3 (list p q v))
+        (4 (list tt p v))
+        (5 (list v p q)))))
+
+
+
 (defun draw-point-cube (point size faces)
   (let* ((hs (/ size 2))
          (x (car point))
@@ -182,108 +303,50 @@
     (opengl:gl-vertex3-f (car (nth 3 cube-points)) (cadr (nth 3 cube-points)) (caddr (nth 3 cube-points)))
 
     (opengl:gl-end)))
-    
 
-(defmethod om-draw-contents ((self 3D-curve))
-  (let* ((vertexes (om-get-gl-points self))
-         (size (- (length vertexes) 1))
-         (min_hue 0.5)
-         (max_hue 0.6))
-    (opengl:gl-enable opengl:*GL-LIGHT0*)
-    ;(opengl:gl-line-width (line-width self))
-    (opengl:gl-line-width *OM-GL-LINEWIDTH*)
-    (if (om-3Dobj-color self)
-        (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
-      (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
-
-    (loop for i from 0 to size do
-          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (let ((rgb (hsv2rgb (+ min_hue (* (/ (- max_hue min_hue) size) i)) 1.0 1.0)))
-                (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
-                (opengl:gl-vertex4-dv (aref vertexes i)))
-            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
-                                                                     (find i (selected-points self) :test '=)
-                                                                   t))
-            ))
-    (opengl:gl-end)
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (cond ((consp (selected-points self))
-             (loop for i in (selected-points self) do 
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ((selected-points self)
-             (loop for i from 0 to (- (length vertexes) 1) do                  
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ))
-    (opengl:gl-line-width *OM-GL-DEFAULT-LINEWIDTH*)
-    ))
-
-
-;Jérémie Garcia
-;convert RGB values into HSV values (in float format (0.0 to 1.0))
-(defmethod rgb2hsv (r g b)
-  (let* (
-         ;be sure we have a correct range for input
-         (r (min r 1.0))
-         (r (max r 0.0))
-         (g (min g 1.0))
-         (g (max g 0.0))
-         (b (min b 1.0))
-         (b (max b 0.0))
-         (min_rgb (min r g b))
-         (max_rgb (max r g b))
-         )
-    (if (= min_rgb max_rgb)
-        (list 0.0 0.0 min_rgb)
-      (progn
-        (let* (
-               (tmp_d (if (= r min_rgb) (- g b) ( if (= b min_rgb) (- r g) (- b r))))
-               (tmp_h (if (= r min_rgb) 3 (if (= b min_rgb) 1 5)))
-               (h (/ (* 60 (- tmp_h (/ tmp_d (- max_rgb min_rgb)))) 360))
-               (v max_rgb)
-               (s (/ (- max_rgb min_rgb) max_rgb)))
-          (list h s v))))))
-
-;Jérémie Garcia
-;convert HSV values into RGB values (in float format (0.0 to 1.0))
-(defmethod hsv2rgb (h s v)
-    (let* (
-           (i (floor (* h 6)))
-           (f (- (* h 6) i))
-           (p (* v (- 1 s)))
-           (q (* v (- 1 (* f s))))
-           (tt (* v (- 1 (* (- 1 f) s)))))
-      (case (mod i 6) 
-        (0 (list v tt p))
-        (1 (list q v p))
-        (2 (list p v tt))
-        (3 (list p q v))
-        (4 (list tt p v))
-        (5 (list v p q)))))
-              
-;(rgb2hsv 0.1 0.3 0.6)
-;(hsv2rgb 0.3 0.1 0.5)
-;(hsv2rgb 0.6 0.8333333 0.6)
-
-;(capi::contain (om-make-view 'om-color-view))
-          
-(defclass 3DPanel (om-opengl-view) ())
+(defclass 3DPanel (om-opengl-view) 
+  ()
+  (:default-initargs :drawing-mode :quality)
+ )
 
 (defmethod om-draw-contents ((self 3DPanel))
-  (when (show-axes (om-view-container self))
+  (when (param-value-to-boolean (param-show-room (om-view-container self)))
     (opengl:gl-push-matrix) 
-    ;(opengl:gl-translatef 1.0 1.0 1.0)
-    (draw-3D-axes)
+    (draw-3D-room (om-view-container self))
+    (opengl:gl-pop-matrix))
+  (when (param-value-to-boolean (param-show-axes (om-view-container self)))
+    (opengl:gl-push-matrix) 
+    (draw-3D-axes (om-view-container self))
     (opengl:gl-pop-matrix)))
 
+(defmethod draw-3D-axes ((self 3DEditor))
+  (let ((l (/ (float (param-room-size self)) 2.0)))
+    (opengl:gl-begin opengl:*GL-LINES*)
+    (opengl:gl-color3-f 0.8 0.3 0.3)
+    (opengl:gl-vertex3-f (- l) 0.0 0.0) 
+    (opengl:gl-vertex3-f l 0.0 0.0)
+    (opengl:gl-color3-f 0.3 0.6 0.3)
+    (opengl:gl-vertex3-f 0.0 (- l) 0.0) 
+    (opengl:gl-vertex3-f 0.0 l 0.0) 
+    (opengl:gl-color3-f 0.3 0.3 0.6)
+    (opengl:gl-vertex3-f 0.0 0.0 (- l)) 
+    (opengl:gl-vertex3-f 0.0 0.0 l) 
+    (opengl:gl-end)))
+
+;jgarcia
+(defmethod draw-3D-room ((self 3DEditor))
+  "Draw the room"
+  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
+  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
+  (restore-om-gl-colors-and-attributes))
 
 (defclass 3Dcontrols (3Dborder-view) 
-  ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons)))
+  ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons))
+  (:default-initargs :drawing-mode :quality))
 
 (defmethod om-draw-contents ((self 3Dcontrols)) 
  (call-next-method)
- (when (show-axes (om-view-container self))
+ (when (param-show-axes (om-view-container self))
    (om-with-focused-view self
      (om-with-fg-color self (om-make-color 0.8 0.3 0.3)
        (om-draw-line 45 80 95 80)
@@ -294,7 +357,6 @@
      (om-with-fg-color self (om-make-color 0.3 0.3 0.6)
        (om-draw-line 45 100 95 100)
        (om-draw-string 35 104 "Z")))))
-
 
 
 ;;; AUX BPC editor (2D views)
@@ -359,8 +421,8 @@
 (defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
 
 (defmethod default-edition-params ((self 3DC)) 
-  (pairlis '(winsize winpos mode) 
-           (list (om-make-point 800 800) (om-make-point 600 200) 0)))
+  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
 
 (defmethod get-editor-class ((self 3DC)) '3DEditor)
 
@@ -375,18 +437,45 @@
    (display-mode :accessor display-mode :initarg :display-mode :initform 0)
    (multibpf? :accessor multibpf? :initarg :multibpf? :initform nil)
    (show-back-p :accessor show-back-p :initarg :show-back-p :initform t)
-   (show-axes :accessor show-axes :initarg :show-axes :initform t)
+   ;(show-axes :accessor show-axes :initarg :show-axes :initform t)
    (lines-p :accessor lines-p :initarg :lines-p :initform t)
    (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
    (focus :accessor focus :initform nil)
    (mode :accessor mode :initform :normal)
-   ))
+ ))
+
+;parameters stored with the editor
+(defmethod param-room-size ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'room-size set-val)
+    (get-edit-param self 'room-size)))
+
+(defmethod param-show-room ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val-supplied-p 
+      (set-edit-param self 'show-room set-val)
+    (get-edit-param self 'show-room)))
+
+(defmethod param-show-axes ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'show-axes set-val)
+    (get-edit-param self 'show-axes)))
+
+(defmethod param-line-width ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'line-width set-val)
+    (get-edit-param self 'line-width)))
+
+;util to store boolean parameters as values
+(defun param-value-to-boolean (val)
+  (equal 1 val))
+
+;util to convert boolean as values for storage
+(defun boolean-to-param-value (boolean)
+  (if boolean 
+      1
+    0))
 
 (defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
-
-
-
-
 
 
 (defmethod get-current-object ((self 3Deditor))
@@ -403,24 +492,23 @@
 (defmethod bpc-editors ((self 3Deditor))
   (list (xyp self) (xzp self) (yzp self)))
 
-(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
-  ;(let ((xmi (apply #'min (x-points self))) (xma (apply #'max (x-points self)))
-  ;      (ymi (apply #'min (y-points self))) (yma (apply #'max (y-points self)))
-  ;      (zmi (apply #'min (z-points self))) (zma (apply #'max (z-points self))))
-  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
+;original
+;(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
+;  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+;                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+;                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
 
-(defmethod 3Dobj-from-points (points drawmode color)
+;trywithou transformation
+(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
+  (mat-trans (list (x-points self) (y-points self) (z-points self))))
+  
+(defmethod 3Dobj-from-points (points drawmode color line-width &optional (times nil))
   (let ((clist (when color (list (float (om-color-r color)) 
                                  (float (om-color-g color)) 
                                  (float (om-color-b color))))))
-  ;(if drawmode
-      (make-instance '3D-curve :points points :color clist :lines drawmode)
-      ;(make-instance 'om-3D-object-list 
-      ;             :objects (mapcar #'(lambda (p) (make-instance '3D-cube :center p :size 0.1 :color clist)) points))
-    ;)
-      ))
+    (if times
+        (make-instance '3D-timed-curve :points points :color clist :lines drawmode :line-width line-width :times times)
+      (make-instance '3D-curve :points points :color clist :lines drawmode :line-width line-width))))
 
 
 (defmethod all-points ((self 3DC) axe)
@@ -458,20 +546,22 @@
     (loop for range in (list (list xmi xma) (list ymi yma) (list zmi zma)) do
           (when (>= (- (cadr range) (car range)) maxrange)
             (setf maxrange (- (cadr range) (car range)))))
-    (let ((newobj (gen-3D-obj obj xmi xma ymi yma zmi zma maxrange (lines-p self))))
-      ;(when (editor-3Dobj self)
-      ;  (setf (selected-points newobj) (selected-points (editor-3Dobj self))))
-      newobj)
-    ))
+    (let ((newobj (gen-3D-obj obj xmi xma ymi yma zmi zma maxrange (lines-p self) (param-line-width self))))
+      newobj)))
 
-(defmethod gen-3D-obj ((obj 3DC) xmi xma ymi yma zmi zma maxrange mode)
+(defmethod gen-3D-obj ((obj 3DC) xmi xma ymi yma zmi zma maxrange mode line-width)
   (let ((glpoints (scaled-3D-points obj xmi xma ymi yma zmi zma maxrange)))
-    (3Dobj-from-points glpoints mode (bpfcolor obj))))
+    (3Dobj-from-points glpoints mode (bpfcolor obj) line-width)))
 
-(defmethod gen-3D-obj ((obj 3DC-lib) xmi xma ymi yma zmi zma maxrange mode)
+(defmethod gen-3D-obj ((obj 3D-trajectory) xmi xma ymi yma zmi zma maxrange mode line-width)
+  (let ((glpoints (scaled-3D-points obj xmi xma ymi yma zmi zma maxrange)))
+    (3Dobj-from-points glpoints mode (bpfcolor obj) line-width (times obj))))
+
+
+(defmethod gen-3D-obj ((obj 3DC-lib) xmi xma ymi yma zmi zma maxrange mode line-width)
   (make-instance 'om-3D-object-list 
                  :objects (mapcar #'(lambda (o) 
-                                      (3Dobj-from-points (scaled-3D-points o xmi xma ymi yma zmi zma maxrange) mode (bpfcolor o)))
+                                      (3Dobj-from-points (scaled-3D-points o xmi xma ymi yma zmi zma maxrange) mode (bpfcolor o) line-width))
                                   (bpf-list obj))))
 
 ;;; DISPLAY-MODE = 1 : BPC EDITS
@@ -681,15 +771,34 @@
   (om-invalidate-view (3Dp self)))
 
 
+;anchor-init
 (defmethod initialize-instance :after ((self 3DEditor) &rest l)
   (declare (ignore l))
+
   (om-set-bg-color self *om-light-gray-color*)
   (unless (bpf-p (object self))
     (setf (multibpf? self) t))
+  
+  ;compatibilité versions précédentes.. 
+  ;à enlever si get-parameter retourne valeur par defaut au lieu de nil
+  (unless (param-room-size self)
+    (param-room-size self *OM-DEFAULT-ROOM-SIZE*))
+
+  (unless (param-show-room self)
+    (param-show-room self *OM-DEFAULT-SHOW-ROOM*))
+
+  (unless (param-show-axes self)
+    (param-show-axes self *OM-DEFAULT-SHOW-AXES*))
+
+  (unless (param-line-width self)
+    (param-line-width self *OM-GL-DEFAULT-LINEWIDTH*))
+
+ 
   (init-tmp-objs self)
   (om-add-subviews self
                    (setf (ctrlp self) (om-make-view '3Dcontrols
                                                      :owner self
+                                                     :title "3D Controls"
                                                      :bg-color *om-light-gray-color*
                                                      :c++ *om-gray-color*
                                                      :c+ *om-light-gray-color*
@@ -702,24 +811,66 @@
                                                   :g-object (gl-3DC-from-obj self)
                                                   ))
                    )
+  (when (get-edit-param self 'bg-color)
+    (om-set-bg-color (3Dp self) (get-edit-param self 'bg-color)))
+  
   (om-add-subviews (ctrlp self)
                    (om-make-dialog-item 'om-button (om-make-point 5 20) (om-make-point 100 20)
                                         "Init View"
                                         :di-action (om-dialog-item-act item
                                                      (om-init-3D-view (3Dp self))))
                    
-                   (om-make-dialog-item 'om-check-box (om-make-point 8 50) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 50) (om-make-point 100 20)
                                         " Axes"
                                         :font *controls-font*
-                                        :checked-p (show-axes self)
+                                        :checked-p (param-value-to-boolean (param-show-axes self))
                                         :fg-color *om-black-color*
                                         :di-action (om-dialog-item-act item 
-                                                     (setf (show-axes self) (om-checked-p item))
+                                                     (param-show-axes self (boolean-to-param-value (om-checked-p item)))
                                                      (om-invalidate-view (3Dp self))
                                                      (om-invalidate-view (ctrlp self))
                                                      ))
-
-                   (om-make-dialog-item 'om-check-box (om-make-point 8 110) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 110) (om-make-point 100 20)
+                                        " Room"
+                                        :font *controls-font*
+                                        :checked-p (param-value-to-boolean (param-show-room self))
+                                        :fg-color *om-black-color*
+                                        :di-action (om-dialog-item-act item
+                                                     (param-show-room self (boolean-to-param-value (om-checked-p item)))
+                                                     (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                                                     (om-invalidate-view (3Dp self))
+                                                     )
+                                        )
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 140) (om-make-point 70 40)
+                                        "Room Size"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'edit-numbox (om-make-point 80 140) (om-make-point 30 20) (format nil " ~D" (param-room-size self))
+                                        :font *controls-font*
+                                        :bg-color *om-white-color*
+                                        :value (param-room-size self)
+                                        :min-val 0.
+                                        :di-action #'(lambda (item)
+                                                       (param-room-size self (value item))
+                                                       (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                                                       (om-invalidate-view (3Dp self))
+                                                       )
+                                        )
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 170) (om-make-point 70 30)
+                                        "Back color"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-view 'om-color-view 
+                                 :position (om-make-point 80 170) 
+                                 :size (om-make-point 30 22) 
+                                 :color (om-get-bg-color (3Dp self))
+                                 :after-fun #'(lambda (item) 
+                                                (set-edit-param (ref self) 'bg-color (color item))
+                                                (om-set-bg-color (3Dp self) (color item))
+                                                (om-invalidate-view (3Dp self)))
+                                 )
+                   ;lines optionS
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 210) (om-make-point 100 20)
                                         " Lines"
                                         :font *controls-font*
                                         :checked-p (lines-p self)
@@ -736,8 +887,39 @@
                                                      (om-invalidate-view (3Dp self))
                                                      )
                                         )
-                                                     
-                   (om-make-dialog-item 'om-check-box (om-make-point 8 270) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
+                                        "Line width"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
+                                        :font *controls-font*
+                                        :bg-color *om-white-color*
+                                        :value (param-line-width self)
+                                        :min-val 0.1
+                                        :max-val 6.0
+                                        :di-action #'(lambda (item)
+                                                       (param-line-width  self (value item))
+                                                       (update-3D-view self)
+                                                       (om-invalidate-view (3Dp self)))
+                                        )   
+
+                   ;todo:Colormode selector with dynamic views !
+                   ;color choosers for curve
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
+                                        "Curve color"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-view 'om-color-view 
+                                 :position (om-make-point 80 270) 
+                                 :size (om-make-point 30 22) 
+                                 :color (bpfcolor (get-current-object self))
+                                 :after-fun #'(lambda (item) 
+                                                (setf (bpfcolor (get-current-object self)) (color item))
+                                                (update-3D-view self)
+                                                (om-invalidate-view (3Dp self)))
+                                 )
+                                                                 
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 310) (om-make-point 100 20)
                                         " 2D Editors"
                                         :font *controls-font*
                                         :checked-p (= (display-mode self) 1)
@@ -755,11 +937,11 @@
                                                      (update-subviews self)
                                                      ))
 
-                   (om-make-dialog-item 'om-static-text (om-make-point 8 300) (om-make-point 70 40)
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 340) (om-make-point 70 40)
                                         "Precision (decimals)"
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
-                   (om-make-dialog-item 'numbox (om-make-point 80 310) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
+                   (om-make-dialog-item 'numbox (om-make-point 80 340) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
                                         :di-action nil
                                         :font *controls-font*
                                         :bg-color *om-white-color*
@@ -771,21 +953,9 @@
                                                       )
                                         :min-val 0
                                         :max-val 10)
-                   
-                   ;(om-make-dialog-item 'om-static-text (om-make-point 8 500) (om-make-point 70 20)
-                   ;                    "Line Width"
-                   ;                    :font *controls-font*
-                   ;                    :fg-color *om-black-color*)
-                   ;(om-make-dialog-item 'om-slider (om-make-point 8 520) (om-make-point 100 20) :range '(1 50) :show-value-p t
-                   ;                     "Slider"
-                   ;                     :di-action (om-dialog-item-act item
-                   ;                                  (setf *OM-GL-LINEWIDTH* (/ (om-slider-value item) 10.0 ))
-                   ;                                  (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
-                   ;                                  (om-invalidate-view (3Dp self))
-                                       
                    )
-
-
+                   
+                   
   (when (multibpf? self)
     (om-add-subviews (ctrlp self) 
                      (setf (sc-label self) (om-make-dialog-item 'om-static-text (om-make-point 8 140) (om-make-point 100 40)
@@ -813,8 +983,6 @@
   (when (= (display-mode self) 1)
     (add-bpc-editors self))
   (om-init-3D-view (3Dp self))
-  (when (get-edit-param self 'bg-color)
-    (om-set-bg-color (3Dp self) (get-edit-param self 'bg-color)))
   )
 
 
@@ -1010,47 +1178,3 @@
                   '((tab "Change current curve")
                     (("n") "Change curve name")
                     )))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;; colored 3DC with speed or order ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;Jérémie garcia
-(defclass 3D-timed-curve (3D-curve) 
-  ((times :accessor times :initform nil)))
-
-(defmethod om-draw-contents ((self 3D-timed-curve))
-  (let* ((vertexes (om-get-gl-points self)))
-    (opengl:gl-enable opengl:*GL-LIGHT0*)
-    (if (om-3Dobj-color self)
-        (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
-      (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
-
-    (loop for i from 0 to (- (length vertexes) 1) do
-          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (opengl:gl-vertex4-dv (aref vertexes i))
-            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
-                                                                     (find i (selected-points self) :test '=)
-                                                                   t))
-            ))
-    (opengl:gl-end)
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (cond ((consp (selected-points self))
-             (loop for i in (selected-points self) do 
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ((selected-points self)
-             (loop for i from 0 to (- (length vertexes) 1) do                  
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ))
-    ))
-
-
-(defmethod 3Dobj-from-points (points drawmode color)
-  (let ((clist (when color (list (float (om-color-r color)) 
-                                 (float (om-color-g color)) 
-                                 (float (om-color-b color))))))
-  ;(if drawmode
-      (make-instance '3D-curve :points points :color clist :lines drawmode)
-      ;(make-instance 'om-3D-object-list 
-      ;             :objects (mapcar #'(lambda (p) (make-instance '3D-cube :center p :size 0.1 :color clist)) points))
-    ;)
-      ))
