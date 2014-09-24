@@ -4,6 +4,8 @@
 *.ufasl
 *.lisp~
 *.lisp#
-*.html
 
 *.app/
+
+# don't track auto-generated html's:
+/OPENMUSIC/resources/**/*.html
