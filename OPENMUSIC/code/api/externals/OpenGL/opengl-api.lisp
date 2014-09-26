@@ -818,12 +818,41 @@
 
 
 (defmethod om-init-3D-view ((self om-opengl-view))
-  ;(init-camera (camera self))
-  ;(setf (aspect (projection (camera self)))
-  ;      (coerce (/ (om-width self) (om-height self)) 'double-float))
+  (om-adapt-camera-to-object self)
   (initialize-viewer self)
   (opengl-redisplay-canvas self))
+  
+(defmethod om-adapt-camera-to-object ((self om-opengl-view))
+  (let* ((dist-y (compute-max-extent (om-get-gl-object self)))
+         (far-z (max 20.0d0 (* 5.0d0 dist-y))))
+    (setf (xyz-y (eye (camera self))) dist-y )
+    (setf (far (projection (camera self))) far-z)))
 
+(defun compute-max-extent (gl-object)
+  (let* ((points (om-3Dobj-points gl-object))
+         (xpts nil) (ypts nil) (zpts nil)
+          (xmi 0) (xma 0) (ymi 0) (yma 0) (zmi 0) (zma 0)
+          (maxextent 0))
+    (loop for point in points do
+          (push (nth 0 point) xpts)
+          (push (nth 1 point) ypts)
+          (push (nth 2 point) zpts))
+    (setq xpts (reverse xpts))
+    (setq ypts (reverse ypts))
+    (setq zpts (reverse zpts))  
+    (when xpts 
+      (setf xmi (reduce 'min xpts))
+      (setf xma (reduce 'max xpts)))
+    (when ypts 
+      (setf ymi (reduce 'min ypts))
+      (setf yma (reduce 'max ypts)))
+    (when zpts 
+      (setf zmi (reduce 'min zpts))
+      (setf zma (reduce 'max zpts)))
+    (setf maxextent (reduce 'max (list (abs xmi) (abs xma) (abs ymi) (abs yma) (abs zmi) (abs zma))))
+    (max 5.0d0 (* 4.0d0 maxextent))))
+
+  
 ;;; ------------------------------------------------------------
 
 (defclass om-3D-object (gl-object)
@@ -847,7 +876,8 @@
 (defmethod initialize-instance :after ((self om-3D-object) &key points &allow-other-keys)
   (setf (glvertexes self) (points2vertex points)))
 
-(defmethod draw ((self om-3D-object)) 
+(defmethod draw ((self om-3D-object))
+  (opengl:gl-shade-model opengl:*gl-smooth*)
   (om-draw-contents self))
 
 (defmethod om-draw-contents ((self om-3D-object)) nil)
