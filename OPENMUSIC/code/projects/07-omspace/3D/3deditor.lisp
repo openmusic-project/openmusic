@@ -304,7 +304,6 @@
 
     (opengl:gl-end)))
 
-<<<<<<< HEAD
 ;;; 3DC editor 
 
 (defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
@@ -388,10 +387,7 @@
 (defclass 3DPanel (om-opengl-view) 
   ()
   )
-=======
-(defclass 3DPanel (om-opengl-view) ()
-  (:default-initargs :drawing-mode :quality))
->>>>>>> FETCH_HEAD
+
 
 (defmethod om-draw-contents ((self 3DPanel))
   (when (param-value-to-boolean (param-show-room (om-view-container self)))
@@ -403,7 +399,6 @@
     (draw-3D-axes (om-view-container self))
     (opengl:gl-pop-matrix)))
 
-<<<<<<< HEAD
 (defmethod draw-3D-axes ((self 3DEditor))
   (let ((l (/ (float (param-room-size self)) 2.0)))
     (opengl:gl-begin opengl:*GL-LINES*)
@@ -428,8 +423,7 @@
   (opengl:gl-line-width 1.0)
   (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
   (restore-om-gl-colors-and-attributes))
-=======
->>>>>>> FETCH_HEAD
+
 
 (defclass 3Dcontrols (3Dborder-view) 
   ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons))
@@ -511,9 +505,6 @@
                    (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
                    (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
 
-
-<<<<<<< HEAD
-=======
 ;;; 3DC editor 
 
 (defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
@@ -615,12 +606,12 @@
   (list (xyp self) (xzp self) (yzp self)))
 
 ;original
-;(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
-;  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-;                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-;                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
+(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
+  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
 
->>>>>>> FETCH_HEAD
+
 ;trywithou transformation
 (defmethod format-3D-points  ((self 3DC))
   (mat-trans (list (x-points self) (y-points self) (z-points self))))
