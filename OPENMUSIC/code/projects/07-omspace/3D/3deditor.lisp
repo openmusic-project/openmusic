@@ -304,10 +304,8 @@
 
     (opengl:gl-end)))
 
-(defclass 3DPanel (om-opengl-view) 
-  ()
-  (:default-initargs :drawing-mode :quality)
- )
+(defclass 3DPanel (om-opengl-view) ()
+  (:default-initargs :drawing-mode :quality))
 
 (defmethod om-draw-contents ((self 3DPanel))
   (when (param-value-to-boolean (param-show-room (om-view-container self)))
@@ -319,26 +317,6 @@
     (draw-3D-axes (om-view-container self))
     (opengl:gl-pop-matrix)))
 
-(defmethod draw-3D-axes ((self 3DEditor))
-  (let ((l (/ (float (param-room-size self)) 2.0)))
-    (opengl:gl-begin opengl:*GL-LINES*)
-    (opengl:gl-color3-f 0.8 0.3 0.3)
-    (opengl:gl-vertex3-f (- l) 0.0 0.0) 
-    (opengl:gl-vertex3-f l 0.0 0.0)
-    (opengl:gl-color3-f 0.3 0.6 0.3)
-    (opengl:gl-vertex3-f 0.0 (- l) 0.0) 
-    (opengl:gl-vertex3-f 0.0 l 0.0) 
-    (opengl:gl-color3-f 0.3 0.3 0.6)
-    (opengl:gl-vertex3-f 0.0 0.0 (- l)) 
-    (opengl:gl-vertex3-f 0.0 0.0 l) 
-    (opengl:gl-end)))
-
-;jgarcia
-(defmethod draw-3D-room ((self 3DEditor))
-  "Draw the room"
-  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
-  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
-  (restore-om-gl-colors-and-attributes))
 
 (defclass 3Dcontrols (3Dborder-view) 
   ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons))
@@ -443,6 +421,30 @@
    (focus :accessor focus :initform nil)
    (mode :accessor mode :initform :normal)
  ))
+
+
+(defmethod draw-3D-axes ((self 3DEditor))
+  (let ((l (/ (float (param-room-size self)) 2.0)))
+    (opengl:gl-begin opengl:*GL-LINES*)
+    (opengl:gl-color3-f 0.8 0.3 0.3)
+    (opengl:gl-vertex3-f (- l) 0.0 0.0) 
+    (opengl:gl-vertex3-f l 0.0 0.0)
+    (opengl:gl-color3-f 0.3 0.6 0.3)
+    (opengl:gl-vertex3-f 0.0 (- l) 0.0) 
+    (opengl:gl-vertex3-f 0.0 l 0.0) 
+    (opengl:gl-color3-f 0.3 0.3 0.6)
+    (opengl:gl-vertex3-f 0.0 0.0 (- l)) 
+    (opengl:gl-vertex3-f 0.0 0.0 l) 
+    (opengl:gl-end)))
+
+;jgarcia
+(defmethod draw-3D-room ((self 3DEditor))
+  "Draw the room"
+  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
+  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
+  (restore-om-gl-colors-and-attributes))
+
+
 
 ;parameters stored with the editor
 (defmethod param-room-size ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
