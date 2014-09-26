@@ -304,6 +304,7 @@
 
     (opengl:gl-end)))
 
+<<<<<<< HEAD
 ;;; 3DC editor 
 
 (defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
@@ -387,6 +388,10 @@
 (defclass 3DPanel (om-opengl-view) 
   ()
   )
+=======
+(defclass 3DPanel (om-opengl-view) ()
+  (:default-initargs :drawing-mode :quality))
+>>>>>>> FETCH_HEAD
 
 (defmethod om-draw-contents ((self 3DPanel))
   (when (param-value-to-boolean (param-show-room (om-view-container self)))
@@ -398,6 +403,7 @@
     (draw-3D-axes (om-view-container self))
     (opengl:gl-pop-matrix)))
 
+<<<<<<< HEAD
 (defmethod draw-3D-axes ((self 3DEditor))
   (let ((l (/ (float (param-room-size self)) 2.0)))
     (opengl:gl-begin opengl:*GL-LINES*)
@@ -422,6 +428,8 @@
   (opengl:gl-line-width 1.0)
   (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
   (restore-om-gl-colors-and-attributes))
+=======
+>>>>>>> FETCH_HEAD
 
 (defclass 3Dcontrols (3Dborder-view) 
   ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons))
@@ -504,6 +512,115 @@
                    (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
 
 
+<<<<<<< HEAD
+=======
+;;; 3DC editor 
+
+(defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
+
+(defmethod default-edition-params ((self 3DC)) 
+  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
+
+(defmethod get-editor-class ((self 3DC)) '3DEditor)
+
+(defclass 3DEditor (EditorView)
+  ((xyp :accessor xyp :initform nil)
+   (xzp :accessor xzp :initform nil)
+   (yzp :accessor yzp :initform nil)
+   (3Dp :accessor 3Dp :initform nil)
+   (ctrlp :accessor ctrlp :initform nil)
+   (selected-component :accessor selected-component :initarg :selected-component :initform 0)
+   (sc-label :accessor sc-label :initarg :sc-label :initform nil)
+   (display-mode :accessor display-mode :initarg :display-mode :initform 0)
+   (multibpf? :accessor multibpf? :initarg :multibpf? :initform nil)
+   (show-back-p :accessor show-back-p :initarg :show-back-p :initform t)
+   ;(show-axes :accessor show-axes :initarg :show-axes :initform t)
+   (lines-p :accessor lines-p :initarg :lines-p :initform t)
+   (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
+   (focus :accessor focus :initform nil)
+   (mode :accessor mode :initform :normal)
+ ))
+
+
+(defmethod draw-3D-axes ((self 3DEditor))
+  (let ((l (/ (float (param-room-size self)) 2.0)))
+    (opengl:gl-begin opengl:*GL-LINES*)
+    (opengl:gl-color3-f 0.8 0.3 0.3)
+    (opengl:gl-vertex3-f (- l) 0.0 0.0) 
+    (opengl:gl-vertex3-f l 0.0 0.0)
+    (opengl:gl-color3-f 0.3 0.6 0.3)
+    (opengl:gl-vertex3-f 0.0 (- l) 0.0) 
+    (opengl:gl-vertex3-f 0.0 l 0.0) 
+    (opengl:gl-color3-f 0.3 0.3 0.6)
+    (opengl:gl-vertex3-f 0.0 0.0 (- l)) 
+    (opengl:gl-vertex3-f 0.0 0.0 l) 
+    (opengl:gl-end)))
+
+;jgarcia
+(defmethod draw-3D-room ((self 3DEditor))
+  "Draw the room"
+  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
+  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
+  (restore-om-gl-colors-and-attributes))
+
+
+
+;parameters stored with the editor
+(defmethod param-room-size ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'room-size set-val)
+    (get-edit-param self 'room-size)))
+
+(defmethod param-show-room ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val-supplied-p 
+      (set-edit-param self 'show-room set-val)
+    (get-edit-param self 'show-room)))
+
+(defmethod param-show-axes ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'show-axes set-val)
+    (get-edit-param self 'show-axes)))
+
+(defmethod param-line-width ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
+  (if set-val 
+      (set-edit-param self 'line-width set-val)
+    (get-edit-param self 'line-width)))
+
+;util to store boolean parameters as values
+(defun param-value-to-boolean (val)
+  (equal 1 val))
+
+;util to convert boolean as values for storage
+(defun boolean-to-param-value (boolean)
+  (if boolean 
+      1
+    0))
+
+(defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
+
+
+(defmethod get-current-object ((self 3Deditor))
+  (if (multibpf? self) 
+      (nth (selected-component self) (bpf-list (object self)))
+    (object self)))
+
+(defmethod editor-3Dobj ((self 3Deditor))
+  (when (3Dp self) 
+    (if (and (multibpf? self) (show-back-p self))
+        (nth (selected-component self) (om-get-3D-objects (om-get-gl-object (3Dp self))))
+      (om-get-gl-object (3Dp self)))))
+
+(defmethod bpc-editors ((self 3Deditor))
+  (list (xyp self) (xzp self) (yzp self)))
+
+;original
+;(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
+;  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+;                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+;                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
+
+>>>>>>> FETCH_HEAD
 ;trywithou transformation
 (defmethod format-3D-points  ((self 3DC))
   (mat-trans (list (x-points self) (y-points self) (z-points self))))

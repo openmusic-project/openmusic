@@ -172,7 +172,7 @@
                                           :font *controls-font*
                                           :checked-p (get-pref modulepref :reactive))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(push x to set boxes active/unactive)"
+                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(push 'r' to set boxes active/unactive)"
                                           :font *om-default-font1*)
                      )
 
