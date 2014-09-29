@@ -23,7 +23,9 @@
 (in-package :om)
 
 ;;; EDITOR
-(defclass traject-editor (3DEditor) ())
+(defclass traject-editor (3DEditor) 
+  ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons))
+  )
 
 (defmethod get-editor-class ((self 3D-trajectory)) 'traject-editor)
 
@@ -157,13 +159,16 @@
   (declare (ignore l))
 
   (om-add-subviews (ctrlp self)
-
-
-                   (om-make-dialog-item 'om-static-text (om-make-point 8 380) (om-make-point 70 40)
+                   
+                   (om-make-dialog-item 'om-static-text (om-make-point 8 510) (om-make-point 100 40)
+                                        "______________"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'om-static-text (om-make-point 8 530) (om-make-point 70 40)
                                         "Sample Rate"
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
-                   (om-make-dialog-item 'om-editable-text (om-make-point 70 385) (om-make-point 40 20) 
+                   (om-make-dialog-item 'om-editable-text (om-make-point 70 535) (om-make-point 40 20) 
                                         (format nil " ~a" (sample-params (object self)))
                                         :-action nil
                                         :font *controls-font*
@@ -174,7 +179,7 @@
                                                                (setf (sample-params (object self)) val))))
                                         )
                    
-                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 420) (om-make-point 100 20) ""
+                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 580) (om-make-point 100 20) ""
                                         :range '("points (constant time)" "distance (constant speed)")
                                         :value (if (equal (interpol-mode (object self)) 'dist) 
                                                    "distance (constant speed)" "points (constant time)")
@@ -187,11 +192,11 @@
 (defmethod add-curve-edit-buttons ((self traject-editor))
   (setf (curve-buttons (ctrlp self))
         (list 
-         (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
+         (om-make-dialog-item 'om-static-text (om-make-point 5 230) (om-make-point 70 20)
                               "Line width"
                               :font *controls-font*
                               :fg-color *om-black-color*)
-         (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
+         (om-make-dialog-item 'edit-numbox (om-make-point 80 230) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
                               :font *controls-font*
                               :bg-color *om-white-color*
                               :value (param-line-width self)
@@ -201,22 +206,63 @@
                                              (param-line-width  self (value item))
                                              (update-3D-view self)
                                              (om-invalidate-view (3Dp self)))
-                              )   
-         (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
-                              "Curve color"
+                              )
+         (om-make-dialog-item 'om-static-text (om-make-point 5 260) (om-make-point 70 20)
+                              "Color Mode"
                               :font *controls-font*
                               :fg-color *om-black-color*)
-         (om-make-view 'om-color-view 
-                       :position (om-make-point 80 270) 
-                       :size (om-make-point 30 22) 
-                       :color (bpfcolor (get-current-object self))
-                       :after-fun #'(lambda (item) 
-                                      (setf (bpfcolor (get-current-object self)) (color item))
-                                      (update-3D-view self)
-                                      (om-invalidate-view (3Dp self)))
-                       )
+         (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 290) (om-make-point 100 20) ""
+                              :range '("Simple" "Distance" "Vitesse")
+                              :value (case (color-mode (editor-3Dobj self))
+                                       ((equal 0) "Simple")
+                                       ((equal 1) "Distance")
+                                       ((equal 2) "Vitesse"))
+                              :di-action (om-dialog-item-act item
+                                           (setf (color-mode (editor-3Dobj self)) (om-get-selected-item-index item))
+                                           (update-color-mode-buttons self))
+                              )
          ))
   (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
+
+(defmethod update-color-mode-buttons ((self traject-editor))
+  (when (color-mode-buttons self)
+    (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons (ctrlp self)))))
+  (let ((mode (color-mode (editor-3Dobj self)))
+        (_x 5)
+        (_y 320))
+    (print mode)
+    (setf (color-mode-buttons self)
+          (case mode
+            ((equal 0)
+             (list 
+             (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
+                                  "Curve color"
+                                  :font *controls-font*
+                                  :fg-color *om-black-color*)
+             (om-make-view 'om-color-view 
+                           :position (om-make-point (+ _x 75) _y) 
+                           :size (om-make-point 30 22) 
+                           :color (bpfcolor (get-current-object self))
+                           :after-fun #'(lambda (item) 
+                                          (setf (bpfcolor (get-current-object self)) (color item))
+                                          (update-3D-view self)
+                                          (om-invalidate-view (3Dp self)))
+                           )))
+            ((equal 1) 
+             (list
+             (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
+                                  "Distance"
+                                  :font *controls-font*
+                                  :fg-color *om-black-color*)))
+            ((equal 2) 
+             (list
+             (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
+                                  "Speed"
+                                  :font *controls-font*
+                                  :fg-color *om-black-color*)))
+            )))
+    (apply 'om-add-subviews (cons (ctrlp self) (color-mode-buttons self))
+    ))
 
 
 (defmethod get-help-list ((self  3DEditor))
@@ -233,5 +279,3 @@
                   '((tab "Change current curve")
                     (("n") "Change curve name")
                     )))))
-
- 

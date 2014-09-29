@@ -803,7 +803,7 @@
 
 (defmethod remove-bpc-editors ((self 3Deditor))
   (om-remove-subviews self (xyp self) (xzp self)(yzp self))
-  (remove-edit-buttons (ctrlp self)))
+  (remove-edit-buttons self))
 
 (defun init-bpc-editors (ed)
   (update-editor-after-eval (xyp ed) (nth 0 (tmpview-objs ed)))
@@ -973,7 +973,7 @@
                                                 (om-invalidate-view (3Dp self)))
                                  )
                    ;lines optionS
-                   (om-make-dialog-item 'om-check-box (om-make-point 5 210) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 200) (om-make-point 100 20)
                                         " Lines"
                                         :font *controls-font*
                                         :checked-p (lines-p self)
@@ -985,7 +985,7 @@
                                                        (remove-curve-edit-buttons self))
                                                      (print (display-mode self))
                                                      (when (= (display-mode self) 1)
-                                                       (mapcar #'*(lambda (ed)
+                                                       (mapcar #'(lambda (ed)
                                                                     (setf (lines-p (panel ed)) (om-checked-p item))
                                                                     (om-invalidate-view (panel ed) t)) (bpc-editors self)))
                                                      (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
@@ -994,7 +994,7 @@
                                         )
                    
                                                                  
-                   (om-make-dialog-item 'om-check-box (om-make-point 5 350) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 360) (om-make-point 100 20)
                                         " 2D Editors"
                                         :font *controls-font*
                                         :checked-p (= (display-mode self) 1)
@@ -1047,11 +1047,11 @@
 (defmethod add-curve-edit-buttons ((self 3DEditor))
   (setf (curve-buttons (ctrlp self))
         (list 
-         (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
+         (om-make-dialog-item 'om-static-text (om-make-point 5 230) (om-make-point 70 20)
                               "Line width"
                               :font *controls-font*
                               :fg-color *om-black-color*)
-         (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
+         (om-make-dialog-item 'edit-numbox (om-make-point 80 230) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
                               :font *controls-font*
                               :bg-color *om-white-color*
                               :value (param-line-width self)
@@ -1062,12 +1062,12 @@
                                              (update-3D-view self)
                                              (om-invalidate-view (3Dp self)))
                               )   
-         (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
+         (om-make-dialog-item 'om-static-text (om-make-point 5 260) (om-make-point 70 40)
                               "Curve color"
                               :font *controls-font*
                               :fg-color *om-black-color*)
          (om-make-view 'om-color-view 
-                       :position (om-make-point 80 270) 
+                       :position (om-make-point 80 260) 
                        :size (om-make-point 30 22) 
                        :color (bpfcolor (get-current-object self))
                        :after-fun #'(lambda (item) 
@@ -1083,7 +1083,7 @@
 
 (defmethod add-edit-buttons ((self 3DEditor))
   (let ((ed (om-view-container (ctrlp self)))
-        (x 24) (y 450))
+        (x 24) (y 400))
     (setf (mode-buttons (ctrlp self))
           (append 
            (loop for mode in '(:normal :pen :move :zoom :scroll)
@@ -1107,7 +1107,7 @@
                    (setf x (+ x 22))
                    button)
                  )
-           (list (om-make-view 'om-icon-button :position (om-make-point x 480) :size (om-make-point 22 22)
+           (list (om-make-view 'om-icon-button :position (om-make-point x 430) :size (om-make-point 22 22)
                                :id :resize
                                :icon1 "resize" :icon2 "resize-pushed"
                                :lock-push nil
@@ -1115,11 +1115,11 @@
                                            (mapcar #'(lambda (bpc-ed)
                                                        (init-coor-system (panel bpc-ed)))
                                                    (bpc-editors ed))))
-                 (om-make-dialog-item 'om-static-text (om-make-point 5 390) (om-make-point 70 40)
+                 (om-make-dialog-item 'om-static-text (om-make-point 5 460) (om-make-point 70 40)
                                         "Precision (decimals)"
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
-                 (om-make-dialog-item 'numbox (om-make-point 80 390) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
+                 (om-make-dialog-item 'numbox (om-make-point 80 460) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
                                       :di-action nil
                                       :font *controls-font*
                                       :bg-color *om-white-color*
@@ -1136,7 +1136,7 @@
     ))
 
 (defmethod remove-edit-buttons ((self 3DEditor))
-  (apply 'om-remove-subviews (cons self (mode-buttons (ctrlp self)))))
+  (apply 'om-remove-subviews (cons (ctrlp self) (mode-buttons (ctrlp self)))))
 
 (defmethod update-cursor-mode-buttons ((self 3Dcontrols))
   (when (bpc-editors (om-view-container self))
