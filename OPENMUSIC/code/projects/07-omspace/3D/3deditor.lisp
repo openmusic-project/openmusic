@@ -426,8 +426,7 @@
 
 
 (defclass 3Dcontrols (3Dborder-view) 
-  ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons)
-   (curve-buttons :accessor curve-buttons :initform nil :initarg :mode-button))
+  ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons))
   (:default-initargs :drawing-mode :quality))
 
 (defmethod om-draw-contents ((self 3Dcontrols)) 
@@ -798,7 +797,7 @@
                                                   :x-label 'y :y-label 'z
                                                   :object (nth 2 (tmpview-objs self))
                                                   )))
-  (add-edit-buttons self))
+  (add-edit-buttons (ctrlp self)))
 
 
 (defmethod remove-bpc-editors ((self 3Deditor))
@@ -980,21 +979,49 @@
                                         :fg-color *om-black-color*
                                         :di-action (om-dialog-item-act item
                                                      (setf (lines-p self) (om-checked-p item))
-                                                     (if (lines-p self)
-                                                         (add-curve-edit-buttons self)
-                                                       (remove-curve-edit-buttons self))
-                                                     (print (display-mode self))
                                                      (when (= (display-mode self) 1)
-                                                       (mapcar #'*(lambda (ed)
-                                                                    (setf (lines-p (panel ed)) (om-checked-p item))
-                                                                    (om-invalidate-view (panel ed) t)) (bpc-editors self)))
+                                                       (mapcar #'(lambda (ed)
+                                                                   (setf (lines-p (panel ed))
+                                                                         (om-checked-p item))
+                                                                   (om-invalidate-view (panel ed) t)
+                                                                   ) (bpc-editors self)))
                                                      (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
                                                      (om-invalidate-view (3Dp self))
                                                      )
                                         )
-                   
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
+                                        "Line width"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
+                                        :font *controls-font*
+                                        :bg-color *om-white-color*
+                                        :value (param-line-width self)
+                                        :min-val 0.1
+                                        :max-val 6.0
+                                        :di-action #'(lambda (item)
+                                                       (param-line-width  self (value item))
+                                                       (update-3D-view self)
+                                                       (om-invalidate-view (3Dp self)))
+                                        )   
+
+                   ;todo:Colormode selector with dynamic views !
+                   ;color choosers for curve
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
+                                        "Curve color"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-view 'om-color-view 
+                                 :position (om-make-point 80 270) 
+                                 :size (om-make-point 30 22) 
+                                 :color (bpfcolor (get-current-object self))
+                                 :after-fun #'(lambda (item) 
+                                                (setf (bpfcolor (get-current-object self)) (color item))
+                                                (update-3D-view self)
+                                                (om-invalidate-view (3Dp self)))
+                                 )
                                                                  
-                   (om-make-dialog-item 'om-check-box (om-make-point 5 350) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 310) (om-make-point 100 20)
                                         " 2D Editors"
                                         :font *controls-font*
                                         :checked-p (= (display-mode self) 1)
@@ -1011,7 +1038,26 @@
                                                          (setf (focus self) nil)))
                                                      (update-subviews self)
                                                      ))
+
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 340) (om-make-point 70 40)
+                                        "Precision (decimals)"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'numbox (om-make-point 80 340) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
+                                        :di-action nil
+                                        :font *controls-font*
+                                        :bg-color *om-white-color*
+                                        :value (decimals (object self))
+                                        :afterfun #'(lambda (item)
+                                                      (editor-change-precision self (value item))
+                                                      (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                                                      (om-invalidate-view (3Dp self))
+                                                      )
+                                        :min-val 0
+                                        :max-val 10)
                    )
+                   
+                   
   (when (multibpf? self)
     (om-add-subviews (ctrlp self) 
                      (setf (sc-label self) (om-make-dialog-item 'om-static-text (om-make-point 8 140) (om-make-point 100 40)
@@ -1019,72 +1065,33 @@
                                                                 :font *controls-font*
                                                                 :fg-color *om-black-color*))
                      (om-make-view 'om-icon-button :position (om-make-point 10 180) :size (om-make-point 18 18)
-                                   :icon1 "+" :icon2 "+-pushed"
-                                   :action #'(lambda (item) (add-new-curve self))
-                                   )
+                                                                :icon1 "+" :icon2 "+-pushed"
+                                                                :action #'(lambda (item) (add-new-curve self))
+                                                                )
                      (om-make-view 'om-icon-button :position (om-make-point 30 180) :size (om-make-point 18 18)
-                                   :icon1 "-" :icon2 "--pushed"
-                                   :action #'(lambda (item) (remove-current-curve self))
-                                   )
+                                                                :icon1 "-" :icon2 "--pushed"
+                                                                :action #'(lambda (item) (remove-current-curve self))
+                                                                )
                      (om-make-dialog-item 'om-check-box (om-make-point 8 200) (om-make-point 100 40)
-                                          " Show all"
-                                          :font *controls-font*
-                                          :checked-p (show-back-p self)
-                                          :fg-color *om-black-color*
-                                          :di-action (om-dialog-item-act item 
-                                                       (setf (show-back-p self) (om-checked-p item))
-                                                       (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
-                                                       (om-invalidate-view (3Dp self)))))
+                                        " Show all"
+                                        :font *controls-font*
+                                        :checked-p (show-back-p self)
+                                        :fg-color *om-black-color*
+                                        :di-action (om-dialog-item-act item 
+                                                     (setf (show-back-p self) (om-checked-p item))
+                                                          (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                                                          (om-invalidate-view (3Dp self)))))
     (set-sc-label self))
   (when (= (display-mode self) 1)
     (add-bpc-editors self))
-  (when (lines-p self)
-    (add-curve-edit-buttons self))
   (om-init-3D-view (3Dp self))
   )
 
 
-(defmethod add-curve-edit-buttons ((self 3DEditor))
-  (setf (curve-buttons (ctrlp self))
-        (list 
-         (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
-                              "Line width"
-                              :font *controls-font*
-                              :fg-color *om-black-color*)
-         (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
-                              :font *controls-font*
-                              :bg-color *om-white-color*
-                              :value (param-line-width self)
-                              :min-val 1.0
-                              :max-val 6.0
-                              :di-action #'(lambda (item)
-                                             (param-line-width  self (value item))
-                                             (update-3D-view self)
-                                             (om-invalidate-view (3Dp self)))
-                              )   
-         (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
-                              "Curve color"
-                              :font *controls-font*
-                              :fg-color *om-black-color*)
-         (om-make-view 'om-color-view 
-                       :position (om-make-point 80 270) 
-                       :size (om-make-point 30 22) 
-                       :color (bpfcolor (get-current-object self))
-                       :after-fun #'(lambda (item) 
-                                      (setf (bpfcolor (get-current-object self)) (color item))
-                                      (update-3D-view self)
-                                      (om-invalidate-view (3Dp self)))
-                       )
-         ))
-  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
-
-(defmethod remove-curve-edit-buttons ((self 3DEditor))
-  (apply 'om-remove-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
-
-(defmethod add-edit-buttons ((self 3DEditor))
-  (let ((ed (om-view-container (ctrlp self)))
+(defmethod add-edit-buttons ((self 3Dcontrols))
+  (let ((ed (om-view-container self))
         (x 24) (y 450))
-    (setf (mode-buttons (ctrlp self))
+    (setf (mode-buttons self)
           (append 
            (loop for mode in '(:normal :pen :move :zoom :scroll)
                  for icon in '("mousecursor" "pencursor" "handcursor" "zoomcursor" "handbpfcursor")
@@ -1114,29 +1121,13 @@
                                :action #'(lambda (item) 
                                            (mapcar #'(lambda (bpc-ed)
                                                        (init-coor-system (panel bpc-ed)))
-                                                   (bpc-editors ed))))
-                 (om-make-dialog-item 'om-static-text (om-make-point 5 390) (om-make-point 70 40)
-                                        "Precision (decimals)"
-                                        :font *controls-font*
-                                        :fg-color *om-black-color*)
-                 (om-make-dialog-item 'numbox (om-make-point 80 390) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
-                                      :di-action nil
-                                      :font *controls-font*
-                                      :bg-color *om-white-color*
-                                      :value (decimals (object self))
-                                      :afterfun #'(lambda (item)
-                                                    (editor-change-precision self (value item))
-                                                    (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
-                                                    (om-invalidate-view (3Dp self))
-                                                    )
-                                      :min-val 0
-                                      :max-val 10)
-                 )))
-    (apply 'om-add-subviews (cons (ctrlp self) (mode-buttons (ctrlp self))))
+                                                   (bpc-editors ed)))))
+           ))
+    (apply 'om-add-subviews (cons self (mode-buttons self)))
     ))
 
-(defmethod remove-edit-buttons ((self 3DEditor))
-  (apply 'om-remove-subviews (cons self (mode-buttons (ctrlp self)))))
+(defmethod remove-edit-buttons ((self 3Dcontrols))
+  (apply 'om-remove-subviews (cons self (mode-buttons self))))
 
 (defmethod update-cursor-mode-buttons ((self 3Dcontrols))
   (when (bpc-editors (om-view-container self))
