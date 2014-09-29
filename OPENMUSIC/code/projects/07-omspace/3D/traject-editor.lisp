@@ -184,6 +184,39 @@
                    
                    ))
 
+(defmethod add-curve-edit-buttons ((self traject-editor))
+  (setf (curve-buttons (ctrlp self))
+        (list 
+         (om-make-dialog-item 'om-static-text (om-make-point 5 240) (om-make-point 70 20)
+                              "Line width"
+                              :font *controls-font*
+                              :fg-color *om-black-color*)
+         (om-make-dialog-item 'edit-numbox (om-make-point 80 240) (om-make-point 30 20) (format nil " ~D" (param-line-width self))
+                              :font *controls-font*
+                              :bg-color *om-white-color*
+                              :value (param-line-width self)
+                              :min-val 1.0
+                              :max-val 6.0
+                              :di-action #'(lambda (item)
+                                             (param-line-width  self (value item))
+                                             (update-3D-view self)
+                                             (om-invalidate-view (3Dp self)))
+                              )   
+         (om-make-dialog-item 'om-static-text (om-make-point 5 270) (om-make-point 70 40)
+                              "Curve color"
+                              :font *controls-font*
+                              :fg-color *om-black-color*)
+         (om-make-view 'om-color-view 
+                       :position (om-make-point 80 270) 
+                       :size (om-make-point 30 22) 
+                       :color (bpfcolor (get-current-object self))
+                       :after-fun #'(lambda (item) 
+                                      (setf (bpfcolor (get-current-object self)) (color item))
+                                      (update-3D-view self)
+                                      (om-invalidate-view (3Dp self)))
+                       )
+         ))
+  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
 
 
 (defmethod get-help-list ((self  3DEditor))
