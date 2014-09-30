@@ -593,11 +593,11 @@ Outputs
   :indoc '("a BPF" "x1" "x2")
   :initvals '(nil nil nil)
   :doc "Extracts a segment (between <x1> and <x2>) from <self>."
+  self)
+
+(defmethod bpf-extract ((self bpf) (x1 number) (x2 number)) 
   (let ((xpts (x-points self)))
-    (cond ((and (null x1) (null x2))
-	   (om-print "Warning - BPF-EXTRACT: x1 and x2 missing - returning self")
-	   self)
-	  ((> x1 (last-elem xpts))
+    (cond ((> x1 (last-elem xpts))
 	   (om-print "Warning - BPF-EXTRACT: x1 larger than x-range in self - returning self") self)
 	  ((< x2 (car xpts))
 	   (om-print "Warning - BPF-EXTRACT: x2 less than x-range in self - returning self") self)
