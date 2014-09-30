@@ -450,13 +450,13 @@
 (defparameter *kascii-note-scales* (list *kascii-note-C-scale*))
 
 (setf *note-accidentals*
-      '((0.25 eight)
+      '((0.25 natural-up)
         (0.5 quarter-sharp) 
-        (0.75 three-eighth)
+        (0.75 sharp-down)
         (1 sharp)
-        (1.25 five-eighth)
+        (1.25 sharp-up)
         (1.5 three-quarters-sharp)
-        (1.75 seven-eighth)
+        (1.75 sharp-three)
         ))
 
 ; (mycassq 1 *note-accidentals*)
