@@ -741,7 +741,7 @@
     (let ((last (lastxy canvas)))
       (when last
         (opengl:rendering-on (canvas)
-	  (polar-rotate-icosahedron canvas (- x (car last)) (- y (cdr last))))
+	  (polar-rotate-icosahedron canvas (- x (car last)) (- (cdr last) y)))
         (opengl-redisplay-canvas canvas))
       (setf (lastxy canvas) (cons x y))))
 
@@ -761,7 +761,7 @@
       (when last
         (let ((eye (eye (camera canvas))))
           (setf (xyz-y eye)
-                (max (+ (xyz-y eye) (/ (- (cdr last) y) 20)) 1.5d0)))
+                (min (+ (xyz-y eye) (/ (- (cdr last) y) 20)) -1.5d0)))
         (opengl-redisplay-canvas canvas))
       (setf (lastxy canvas) (cons x y))))
 
@@ -825,7 +825,7 @@
 (defmethod om-adapt-camera-to-object ((self om-opengl-view))
   (let* ((dist-y (compute-max-extent (om-get-gl-object self)))
          (far-z (max 20.0d0 (* 5.0d0 dist-y))))
-    (setf (xyz-y (eye (camera self))) dist-y )
+    (setf (xyz-y (eye (camera self))) (* dist-y -1.0 ))
     (setf (far (projection (camera self))) far-z)))
 
 (defun compute-max-extent (gl-object)

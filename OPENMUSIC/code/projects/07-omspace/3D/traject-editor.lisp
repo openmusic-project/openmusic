@@ -22,10 +22,115 @@
 
 (in-package :om)
 
+
+;;; 3D timed Curve
+
+(defclass 3D-timed-curve (3D-curve) 
+  ((times :accessor times :initarg :times :initform nil)
+   (color-mode :accessor color-mode :initarg :color-mode :initform 0)))
+
+(defmethod om-draw-contents ((self 3D-timed-curve))
+  "Draw a 3D timed curve witgh stroke with and colors"
+  (let* ((vertexes (om-get-gl-points self))
+         (size (- (length vertexes) 1))
+         (vertex-colors (get-vertex-colors self)))
+    (opengl:gl-enable opengl:*GL-LIGHT0*)    
+    (opengl:gl-line-width (float (line-width self)))
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
+
+    (loop for i from 0 to size do
+          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
+              (let ((rgb (nth i vertex-colors )))
+                (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
+                (opengl:gl-vertex4-dv (aref vertexes i)))
+            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
+                                                                     (find i (selected-points self) :test '=)
+                                                                   t))
+            ))
+    (opengl:gl-end)
+    (restore-om-gl-colors-and-attributes)
+    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
+      (cond ((consp (selected-points self))
+             (loop for i in (selected-points self) do 
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ((selected-points self)
+             (loop for i from 0 to (- (length vertexes) 1) do                  
+                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
+            ))
+    (restore-om-gl-colors-and-attributes)
+    ))
+
+;jgarcia
+(defmethod! get-vertex-colors ((self 3d-timed-curve))
+            "create a vector of colors for a 3D-timed-curve depending on the mode selected"
+            (let ((size (length (oa::points self))))
+              (case (color-mode self)
+                (1 (loop for i from 0 to (1- size)
+                         collect (hsv2rgb (+ min_hue (* (/ (- max_hue min_hue) size) i)) 1.0 1.0)))
+                (2 nil)
+                (otherwise (make-list size :initial-element (oa::color self))))))
+
+;jgarcia
+(defun rgb2hsv (r g b)
+  "convert RGB values into HSV values (in float format (0.0 to 1.0))"
+  (let* (
+         ;be sure we have a correct range for input
+         (r (min r 1.0))
+         (r (max r 0.0))
+         (g (min g 1.0))
+         (g (max g 0.0))
+         (b (min b 1.0))
+         (b (max b 0.0))
+         (min_rgb (min r g b))
+         (max_rgb (max r g b))
+         )
+    (if (= min_rgb max_rgb)
+        (list 0.0 0.0 min_rgb)
+      (progn
+        (let* (
+               (tmp_d (if (= r min_rgb) (- g b) ( if (= b min_rgb) (- r g) (- b r))))
+               (tmp_h (if (= r min_rgb) 3 (if (= b min_rgb) 1 5)))
+               (h (/ (* 60 (- tmp_h (/ tmp_d (- max_rgb min_rgb)))) 360))
+               (v max_rgb)
+               (s (/ (- max_rgb min_rgb) max_rgb)))
+          (list h s v))))))
+
+
+;jgarcia
+(defun hsv2rgb (h s v)
+  "convert HSV values into RGB values (in float format (0.0 to 1.0))"
+    (let* (
+           (i (floor (* h 6)))
+           (f (- (* h 6) i))
+           (p (* v (- 1 s)))
+           (q (* v (- 1 (* f s))))
+           (tt (* v (- 1 (* (- 1 f) s)))))
+      (case (mod i 6) 
+        (0 (list v tt p))
+        (1 (list q v p))
+        (2 (list p v tt))
+        (3 (list p q v))
+        (4 (list tt p v))
+        (5 (list v p q)))))
+
+(defmethod gen-3D-obj ((obj 3D-trajectory) mode line-width)
+  (let ((glpoints (format-3d-points obj)))
+    (3D-timed-obj-from-points glpoints mode (bpfcolor obj) line-width (times obj))))
+
+(defun 3D-timed-obj-from-points (points drawmode color line-width times)
+  (let ((clist (when color (list (float (om-color-r color)) 
+                                 (float (om-color-g color)) 
+                                 (float (om-color-b color))))))
+    (make-instance '3D-timed-curve :points points :color clist :lines drawmode :line-width line-width :times times)))
+
+
+
 ;;; EDITOR
 (defclass traject-editor (3DEditor) 
-  ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons))
+  ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons :initform nil))
   )
+
 
 (defmethod get-editor-class ((self 3D-trajectory)) 'traject-editor)
 
@@ -216,7 +321,7 @@
                               :value (case (color-mode (editor-3Dobj self))
                                        ((equal 0) "Simple")
                                        ((equal 1) "Distance")
-                                       ((equal 2) "Vitesse"))
+                                       ((equal 2) "Speed"))
                               :di-action (om-dialog-item-act item
                                            (setf (color-mode (editor-3Dobj self)) (om-get-selected-item-index item))
                                            (update-color-mode-buttons self))
@@ -226,7 +331,7 @@
 
 (defmethod update-color-mode-buttons ((self traject-editor))
   (when (color-mode-buttons self)
-    (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons (ctrlp self)))))
+    (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons self))))
   (let ((mode (color-mode (editor-3Dobj self)))
         (_x 5)
         (_y 320))
