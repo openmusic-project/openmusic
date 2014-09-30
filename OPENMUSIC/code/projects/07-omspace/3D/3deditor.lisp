@@ -884,17 +884,16 @@
                                                      (if (lines-p self)
                                                          (add-curve-edit-buttons self)
                                                        (remove-curve-edit-buttons self))
-                                                     (print (display-mode self))
                                                      (when (= (display-mode self) 1)
                                                        (mapcar #'(lambda (ed)
-                                                                    (setf (lines-p (panel ed)) (om-checked-p item))
-                                                                    (om-invalidate-view (panel ed) t)) (bpc-editors self)))
+                                                                   (setf (lines-p (panel ed)) (om-checked-p item))
+                                                                   (om-invalidate-view (panel ed) t)) (bpc-editors self)))
                                                      (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
                                                      (om-invalidate-view (3Dp self))
                                                      )
                                         )
                    
-                                                                 
+                   
                    (om-make-dialog-item 'om-check-box (om-make-point 5 360) (om-make-point 100 20)
                                         " 2D Editors"
                                         :font *controls-font*
