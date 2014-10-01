@@ -588,8 +588,6 @@ Outputs
                                          (type-of bpf1) (max (decimals bpf1) (decimals bpf2)))
                    )))
 
-
-
 (defmethod! bpf-extract ((self bpf) x1 x2) 
   :icon 233
   :indoc '("a BPF" "x1" "x2")
@@ -612,6 +610,29 @@ Outputs
              (unless x2-pos (list (x-transfer self x2))))
      (type-of self) (decimals self))))
 
+#|
+(defmethod bpf-extract ((self bpf) (x1 number) (x2 number)) 
+  (let ((xpts (x-points self)))
+    (cond ((> x1 (last-elem xpts))
+	   (om-print "Warning - BPF-EXTRACT: x1 larger than x-range in self - returning self") self)
+	  ((< x2 (car xpts))
+	   (om-print "Warning - BPF-EXTRACT: x2 less than x-range in self - returning self") self)
+	  (t (let ((x1-pos (if x1 (position x1 xpts :test '=) 0))
+		   (x2-pos (if x2 (position x2 xpts :test '=) (1- (length xpts)))))
+	       (simple-bpf-from-list 
+		(om- (append (unless x1-pos (list x1))
+			     (subseq xpts 
+				     (or x1-pos (position x1 xpts :test '<))
+				     (1+ (or x2-pos (position x2 xpts :test '> :from-end t))))
+			     (unless x2-pos (list x2)))
+		     (or x1 (car xpts)))
+		(append (unless x1-pos (list (x-transfer self x1)))
+			(subseq (y-points self) 
+				(or x1-pos (position x1 xpts :test '<))
+				(1+ (or x2-pos (position x2 xpts :test '> :from-end t))))
+			(unless x2-pos (list (x-transfer self x2))))
+		(type-of self) (decimals self)))))))
+|#
 
 ;(position 4.5 '(1 2 3 4 5 6) :test '> :from-end t)
 ;(subseq '(1 2 3 4 5 6) 0 3)
