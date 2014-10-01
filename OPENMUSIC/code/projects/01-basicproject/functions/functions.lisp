@@ -602,13 +602,13 @@ Outputs
      (om- (append (unless x1-pos (list x1))
              (subseq xpts 
                      (or x1-pos (position x1 xpts :test '<))
-                     (1+ (or x2-pos (position x2 xpts :test '> :from-end t))))
+                     (1+ (or x2-pos (position x2 xpts :test '> :from-end t) -1)))
              (unless x2-pos (list x2)))
           (or x1 (car xpts)))
      (append (unless x1-pos (list (x-transfer self x1)))
              (subseq (y-points self) 
                      (or x1-pos (position x1 xpts :test '<))
-                     (1+ (or x2-pos (position x2 xpts :test '> :from-end t))))
+                     (1+ (or x2-pos (position x2 xpts :test '> :from-end t) -1)))
              (unless x2-pos (list (x-transfer self x2))))
      (type-of self) (decimals self))))
 
