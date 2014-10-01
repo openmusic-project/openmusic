@@ -207,10 +207,10 @@
   (let* ((obj (if (and (multibpf? self) (not (show-back-p self)))
                   (get-current-object self)
                 (object self))))
-    (let ((newobj (gen-3D-obj obj (lines-p self) (param-line-width self) (param-color-mode self) (param-color-min self) (param-color-max self))))
+    (let ((newobj (gen-3D-timed-obj obj (lines-p self) (param-line-width self) (param-color-mode self) (param-color-min self) (param-color-max self))))
       newobj)))
 
-(defmethod gen-3D-obj ((obj 3D-trajectory) mode line-width color-mode color-min color-max)
+(defmethod gen-3D-timed-obj ((obj 3D-trajectory) mode line-width color-mode color-min color-max)
   (let ((glpoints (format-3d-points obj)))
     (3D-timed-obj-from-points glpoints mode (bpfcolor obj) line-width (times obj) color-mode color-min color-max)))
 
