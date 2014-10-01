@@ -39,16 +39,14 @@
 
 (defmethod om-draw-contents ((self 3D-timed-curve))
   "Draw a 3D timed curve witgh stroke with and colors"
- 
-  (when (= 1 (color-mode self))
+  (when (equal 1 (color-mode self))
     (print "rescale")
     
     )
-
   
   (let* ((vertices (om-get-gl-points self))
          (size (- (length vertices) 1))
-         (vertex-colors (get-vertices-colors self)))
+         (vertices-colors (get-vertices-colors self)))
     (opengl:gl-enable opengl:*GL-LIGHT0*)    
     (opengl:gl-line-width (float (line-width self)))
     (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
@@ -56,7 +54,7 @@
 
     (loop for i from 0 to size do
           (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (let ((rgb (nth i vertex-colors )))
+              (let ((rgb (nth i vertices-colors )))
                 (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
                 (opengl:gl-vertex4-dv (aref vertices i)))
             (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
@@ -70,7 +68,7 @@
              (loop for i in (selected-points self) do 
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ((selected-points self)
-             (loop for i from 0 to (- (length vertexes) 1) do                  
+             (loop for i from 0 to (- (length verticess) 1) do                  
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ))
     (restore-om-gl-colors-and-attributes)
@@ -81,46 +79,53 @@
 (defmethod get-vertices-colors ((self 3d-timed-curve))
             "create a vector of colors for a 3D-timed-curve depending on the mode selected"
             (let* ((points (om-3dobj-points self))
-                  (size (length points))
-                  (min_h (nth 0 (color-min self)))
-                  (min_s (nth 1 (color-min self)))
-                  (min_v (nth 2 (color-min self)))
-                  (max_h (nth 0 (color-max self)))
-                  (max_s (nth 1 (color-max self)))
-                  (max_v (nth 2 (color-max self))))
+                   (size (length points))
+                   (min_h (max 0 (nth 0 (color-min self))))
+                   (min_s (max 0(nth 1 (color-min self))))
+                   (min_v (max 0 (nth 2 (color-min self))))
+                   (max_h (min 1.0 (nth 0 (color-max self))))
+                   (max_s (min 1.0 (nth 1 (color-max self))))
+                   (max_v (min 1.0 (nth 2 (color-max self))))
+                   (range_h (- max_h min_h))
+                   (range_s (- max_s min_s))
+                   (range_v (- max_v min_v)))
               (case (color-mode self)
-#|                
-(1
+                (1
                  (loop for i from 0 to (1- size)
                        collect (hsv2rgb (list (+ min_h (* (/ (- max_h min_h) size) i)) (+ min_s (* (/ (- max_s min_s) size) i)) (+ min_v (* (/ (- max_v min_v) size) i))))
                        )
                  )
                 (2
                  (let ((speeds nil)
-                       (min_speed nil)
-                       (max_speed nil)
-                       (range_speed nil)
                        (times (times self)))
                    (setf speeds (loop for i from 0 to (1- (1- size)) collect
-                                      (let ((dist (3d-points-distance (nth i points) (nth (1+ i) points)))
+                                      (let ((dist (3d-points-distance (nth i points) (nth (1+ i) points)))                                           
                                             (time (- (nth (1+ i) times) (nth i times))))
-                                        (/ dist time))
-                                      ))
-                   (setf min_speed (reduce 'min speeds))
-                   (setf max_speed (reduce 'max speeds))
-                   (setf range_speed (- max_speed min_speed))
-                   (setf speeds (om/ (om- speeds min_speed) range_speed))
+                                        (if (= time 0) -1 (/ dist time)))))
+                   (setf speeds (append (last speeds) speeds))
+                   (setf speeds (filter-and-normalize-speeds-list speeds))
                    (loop for speed in speeds
-                         collect (hsv2rgb (list (+ min_h (* (/ (- max_h min_h) size) speed)) (+ min_s (* (/ (- max_s min_s) size) speed)) (+ min_v (* (/ (- max_v min_v) size) speed))))
+                         collect (hsv2rgb (list (+ min_h (* range_h speed)) (+ min_s (* range_s speed)) (+ min_v (* range_v speed))))
                          )
                    )
                  )
-|#
+                (otherwise 
+                 (default-color-vertices self)))))
 
-                (otherwise default-color-vertices self))))
+
+(defun filter-and-normalize-speeds-list (speeds)
+  (let ((max_speed (reduce 'max speeds))
+        (min_speed nil)
+        (range_speed nil))
+     ;removing -1 and replacing by max speed
+    (loop for speed in speeds 
+          collect (if (= speed -1) max_speed speed))
+    (setf min_speed (reduce 'min speeds))
+    (setf range_speed (- max_speed min_speed))
+    (setf speeds (om/ (om- speeds min_speed) range_speed))))
 
 (defun default-color-vertices (3D-timed-curve)
-  (make-list size :initial-element (oa::color 3D-timed-curve)))
+  (make-list (length (om-3dobj-points 3D-timed-curve)) :initial-element (oa::color 3D-timed-curve)))
 
 (defun 3D-points-distance (p1 p2)
   (let ((x1 (nth 0 p1))
@@ -294,10 +299,17 @@
                                        ((equal 1) "Path")
                                        ((equal 2) "Speed"))
                               :di-action (om-dialog-item-act item
-                                           (param-color-mode self (om-get-selected-item-index item))
-                                           (update-color-mode-buttons self)
-                                           (update-3D-view self)
-                                           (om-invalidate-view (3Dp self)))
+                                           (let ((test nil))
+                                             (when (= 2 (om-get-selected-item-index item))
+                                               (when (member nil (times (object self)))
+                                                 (setf test t)
+                                                 (om-message-dialog "Not valid curve (Missing times)"))
+                                               )
+                                             (unless test
+                                               (param-color-mode self (om-get-selected-item-index item))
+                                               (update-color-mode-buttons self)
+                                               (update-3D-view self)
+                                               (om-invalidate-view (3Dp self)))))
                               )
          ))
   (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))

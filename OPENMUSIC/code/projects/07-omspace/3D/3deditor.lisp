@@ -64,7 +64,7 @@
                   
 
 (defmethod om-draw-contents ((self 3D-cube))
-  (let* ((vertexes (om-get-points self)))
+  (let* ((vertices (om-get-points self)))
     (if (om-3Dobj-color self)
         (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0))
 
@@ -72,45 +72,45 @@
         (opengl:gl-begin opengl:*GL-QUADS*)
       (opengl:gl-begin opengl:*GL-LINE-LOOP*))
     (opengl:gl-normal3-i 0 1 0) 
-    (opengl:gl-vertex4-dv (aref vertexes 0))
-    (opengl:gl-vertex4-dv (aref vertexes 1))
-    (opengl:gl-vertex4-dv (aref vertexes 2))
-    (opengl:gl-vertex4-dv (aref vertexes 3))
+    (opengl:gl-vertex4-dv (aref vertices 0))
+    (opengl:gl-vertex4-dv (aref vertices 1))
+    (opengl:gl-vertex4-dv (aref vertices 2))
+    (opengl:gl-vertex4-dv (aref vertices 3))
     (opengl:gl-end)
     
     (if (faces self)
         (opengl:gl-begin opengl:*GL-QUADS*)
       (opengl:gl-begin opengl:*GL-LINE-LOOP*))
     
-    (opengl:gl-vertex4-dv (aref vertexes 7))
-    (opengl:gl-vertex4-dv (aref vertexes 6))
-    (opengl:gl-vertex4-dv (aref vertexes 5))
-    (opengl:gl-vertex4-dv (aref vertexes 4))
+    (opengl:gl-vertex4-dv (aref vertices 7))
+    (opengl:gl-vertex4-dv (aref vertices 6))
+    (opengl:gl-vertex4-dv (aref vertices 5))
+    (opengl:gl-vertex4-dv (aref vertices 4))
 
   (opengl:gl-end)
     
     (if (faces self)
         (opengl:gl-begin opengl:*GL-QUADS*)
       (opengl:gl-begin opengl:*GL-LINES*))
-    (opengl:gl-vertex4-dv (aref vertexes 3))
-    (opengl:gl-vertex4-dv (aref vertexes 7))
-    (opengl:gl-vertex4-dv (aref vertexes 4))
-    (opengl:gl-vertex4-dv (aref vertexes 0))
+    (opengl:gl-vertex4-dv (aref vertices 3))
+    (opengl:gl-vertex4-dv (aref vertices 7))
+    (opengl:gl-vertex4-dv (aref vertices 4))
+    (opengl:gl-vertex4-dv (aref vertices 0))
 
-    (opengl:gl-vertex4-dv (aref vertexes 5))
-    (opengl:gl-vertex4-dv (aref vertexes 1))
-    (opengl:gl-vertex4-dv (aref vertexes 0))
-    (opengl:gl-vertex4-dv (aref vertexes 4))
+    (opengl:gl-vertex4-dv (aref vertices 5))
+    (opengl:gl-vertex4-dv (aref vertices 1))
+    (opengl:gl-vertex4-dv (aref vertices 0))
+    (opengl:gl-vertex4-dv (aref vertices 4))
     
-    (opengl:gl-vertex4-dv (aref vertexes 6))
-    (opengl:gl-vertex4-dv (aref vertexes 2))
-    (opengl:gl-vertex4-dv (aref vertexes 1))
-    (opengl:gl-vertex4-dv (aref vertexes 5))
+    (opengl:gl-vertex4-dv (aref vertices 6))
+    (opengl:gl-vertex4-dv (aref vertices 2))
+    (opengl:gl-vertex4-dv (aref vertices 1))
+    (opengl:gl-vertex4-dv (aref vertices 5))
 
-    (opengl:gl-vertex4-dv (aref vertexes 2))
-    (opengl:gl-vertex4-dv (aref vertexes 6))
-    (opengl:gl-vertex4-dv (aref vertexes 7))
-    (opengl:gl-vertex4-dv (aref vertexes 3))
+    (opengl:gl-vertex4-dv (aref vertices 2))
+    (opengl:gl-vertex4-dv (aref vertices 6))
+    (opengl:gl-vertex4-dv (aref vertices 7))
+    (opengl:gl-vertex4-dv (aref vertices 3))
 
     (opengl:gl-end)
     ))
@@ -123,8 +123,8 @@
    
 
 (defmethod om-draw-contents ((self 3D-curve))
-  (let* ((vertexes (om-get-gl-points self))
-         (size (- (length vertexes) 1)))
+  (let* ((vertices (om-get-gl-points self))
+         (size (- (length vertices) 1)))
     (opengl:gl-enable opengl:*gl-light0*)
     (opengl:gl-line-width (float (line-width self)))
     (if (om-3Dobj-color self)
@@ -134,7 +134,7 @@
       (opengl:gl-begin opengl:*GL-LINE-STRIP*))
     (loop for i from 0 to size do
           (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (opengl:gl-vertex4-dv (aref vertexes i))
+              (opengl:gl-vertex4-dv (aref vertices i))
             (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
                                                                      (find i (selected-points self) :test '=)
                                                                    t))))
@@ -144,7 +144,7 @@
              (loop for i in (selected-points self) do 
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ((selected-points self)
-             (loop for i from 0 to (- (length vertexes) 1) do                  
+             (loop for i from 0 to (- (length vertices) 1) do                  
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ))
     (restore-om-gl-colors-and-attributes)
