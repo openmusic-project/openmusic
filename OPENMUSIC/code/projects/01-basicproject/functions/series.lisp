@@ -268,16 +268,16 @@ Primes known to the system are the 1230 primes ranging from 1 to 9973."
 ;---------------
 ; INHARMONIC SERIES
 
-(om::defmethod! inharm-ser ((begin number)
+(defmethod* inharm-ser ((begin number)
                             (dist number)
                             (npart number)) 
-         :icon 209
-         :indoc '("begin" "distortion" "number of elements (partials)")
-         :initvals (list 1 1 1)
-         :doc "Generates a list of <npart> partials from <begin> when partial n = <begin> * n^<dist>"
-         (let ((L ()))
-           (dotimes (n npart (reverse L))
-             (push (* begin (expt (1+ n) dist)) L))))
+            :icon 209
+            :indoc '("begin" "distortion" "number of elements (partials)")
+            :initvals (list 1 1 1)
+            :doc "Generates a list of <npart> partials from <begin> when partial n = <begin> * n^<dist>"
+            (let ((L ()))
+              (dotimes (n npart (reverse L))
+                (push (* begin (expt (1+ n) dist)) L))))
 
 
   
