@@ -782,7 +782,7 @@
   (om-set-bg-color self *om-light-gray-color*)
   (unless (bpf-p (object self))
     (setf (multibpf? self) t))
-  
+ 
   ;compatibilité versions précédentes.. 
   ;à enlever si get-parameter retourne valeur par defaut au lieu de nil
   (unless (param-room-size self)
@@ -892,9 +892,23 @@
                                                      (om-invalidate-view (3Dp self))
                                                      )
                                         )
-                   
-                   
-                   (om-make-dialog-item 'om-check-box (om-make-point 5 360) (om-make-point 100 20)
+                   (om-make-dialog-item 'om-static-text (om-make-point 5 360) (om-make-point 70 40)
+                                        "Precision (decimals)"
+                                        :font *controls-font*
+                                        :fg-color *om-black-color*)
+                   (om-make-dialog-item 'numbox (om-make-point 80 370) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
+                                      :di-action nil
+                                      :font *controls-font*
+                                      :bg-color *om-white-color*
+                                      :value (decimals (object self))
+                                      :afterfun #'(lambda (item)
+                                                    (editor-change-precision self (value item))
+                                                    (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                                                    (om-invalidate-view (3Dp self))
+                                                    )
+                                      :min-val 0
+                                      :max-val 10)
+                   (om-make-dialog-item 'om-check-box (om-make-point 5 400) (om-make-point 100 20)
                                         " 2D Editors"
                                         :font *controls-font*
                                         :checked-p (= (display-mode self) 1)
@@ -909,24 +923,24 @@
                                                        (progn 
                                                          (remove-bpc-editors self)
                                                          (setf (focus self) nil)))
-                                                     (update-subviews self)
-                                                     ))
+                                                     (update-subviews self))
+                                        )
                    )
   (when (multibpf? self)
     (om-add-subviews (ctrlp self) 
-                     (setf (sc-label self) (om-make-dialog-item 'om-static-text (om-make-point 8 140) (om-make-point 100 40)
-                                                                "Selected Curve:"
+                     (setf (sc-label self) (om-make-dialog-item 'om-static-text (om-make-point 5 500) (om-make-point 100 40)
+                                                                "Selected curve:"
                                                                 :font *controls-font*
                                                                 :fg-color *om-black-color*))
-                     (om-make-view 'om-icon-button :position (om-make-point 10 180) :size (om-make-point 18 18)
+                     (om-make-view 'om-icon-button :position (om-make-point 10 540) :size (om-make-point 18 18)
                                    :icon1 "+" :icon2 "+-pushed"
                                    :action #'(lambda (item) (add-new-curve self))
                                    )
-                     (om-make-view 'om-icon-button :position (om-make-point 30 180) :size (om-make-point 18 18)
+                     (om-make-view 'om-icon-button :position (om-make-point 30 540) :size (om-make-point 18 18)
                                    :icon1 "-" :icon2 "--pushed"
                                    :action #'(lambda (item) (remove-current-curve self))
                                    )
-                     (om-make-dialog-item 'om-check-box (om-make-point 8 200) (om-make-point 100 40)
+                     (om-make-dialog-item 'om-check-box (om-make-point 8 560) (om-make-point 100 40)
                                           " Show all"
                                           :font *controls-font*
                                           :checked-p (show-back-p self)
@@ -983,7 +997,7 @@
 
 (defmethod add-edit-buttons ((self 3DEditor))
   (let ((ed (om-view-container (ctrlp self)))
-        (x 24) (y 400))
+        (x 24) (y 440))
     (setf (mode-buttons (ctrlp self))
           (append 
            (loop for mode in '(:normal :pen :move :zoom :scroll)
@@ -1002,36 +1016,20 @@
                                                                                    (when ed
                                                                                      (setf (mode (panel ed)) m)))
                                                                                (bpc-editors ed))
-                                                          (update-cursor-mode-buttons self)
+                                                          (update-cursor-mode-buttons (ctrlp self))
                                                           )))
                    (setf x (+ x 22))
                    button)
                  )
-           (list (om-make-view 'om-icon-button :position (om-make-point x 430) :size (om-make-point 22 22)
-                               :id :resize
-                               :icon1 "resize" :icon2 "resize-pushed"
-                               :lock-push nil
-                               :action #'(lambda (item) 
-                                           (mapcar #'(lambda (bpc-ed)
-                                                       (init-coor-system (panel bpc-ed)))
-                                                   (bpc-editors ed))))
-                 (om-make-dialog-item 'om-static-text (om-make-point 5 460) (om-make-point 70 40)
-                                        "Precision (decimals)"
-                                        :font *controls-font*
-                                        :fg-color *om-black-color*)
-                 (om-make-dialog-item 'numbox (om-make-point 80 460) (om-make-point 30 20) (format nil " ~D" (decimals (object self)))
-                                      :di-action nil
-                                      :font *controls-font*
-                                      :bg-color *om-white-color*
-                                      :value (decimals (object self))
-                                      :afterfun #'(lambda (item)
-                                                    (editor-change-precision self (value item))
-                                                    (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
-                                                    (om-invalidate-view (3Dp self))
-                                                    )
-                                      :min-val 0
-                                      :max-val 10)
-                 )))
+           (list (om-make-view 'om-icon-button :position (om-make-point x 470) :size (om-make-point 22 22)
+                         :id :resize
+                         :icon1 "resize" :icon2 "resize-pushed"
+                         :lock-push nil
+                         :action #'(lambda (item) 
+                                     (mapcar #'(lambda (bpc-ed)
+                                                 (init-coor-system (panel bpc-ed)))
+                                             (bpc-editors ed)))))
+           ))
     (apply 'om-add-subviews (cons (ctrlp self) (mode-buttons (ctrlp self))))
     ))
 
@@ -1143,8 +1141,8 @@
       (when (= (display-mode self) 1)
         (init-tmp-objs self)
         (init-bpc-editors self))
-      (update-3D-view self)
       (set-sc-label self)
+      (update-3D-view self)
       (om-invalidate-view (3Dp self)))))
     
 (defmethod remove-current-curve ((self 3DEditor))
@@ -1159,8 +1157,8 @@
       (when (= (display-mode self) 1)
         (init-tmp-objs self)
         (init-bpc-editors self))
-      (update-3D-view self)
       (set-sc-label self)
+      (update-3D-view self)
       (om-invalidate-view (3Dp self)))
     (om-beep)))
 

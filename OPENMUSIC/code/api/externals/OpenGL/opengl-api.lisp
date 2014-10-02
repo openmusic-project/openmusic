@@ -683,7 +683,7 @@
    (lastxy :initform nil :initarg :lastxy :accessor lastxy)
    (camera :initform (make-camera :color '(0.15 0.15 0.15 1.0)) :initarg :camera :accessor camera))
   (:default-initargs 
-   :configuration (list :rgba t :depth nil :double-buffered t)
+   :configuration (list :rgba t :depth t :double-buffered t :depth-buffer 32) ;depth buffer allows to have depth in 3D drawing
    :use-display-list t
    :display-callback 'opengl-redisplay-canvas
    :resize-callback 'opengl-resize-canvas
@@ -901,6 +901,9 @@
 
 (defmethod om-get-3D-objects ((self om-3D-object-list))
   (objects self))
+
+(defmethod om-3Dobj-points ((self om-3D-object-list))
+  (apply 'append (mapcar 'om-3Dobj-points (objects self))))
 
 (defmethod draw ((self om-3D-object-list)) 
   (mapcar 'draw (objects self)))

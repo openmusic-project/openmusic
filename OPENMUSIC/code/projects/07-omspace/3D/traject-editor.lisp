@@ -33,17 +33,12 @@
 (defclass 3D-timed-curve (3D-curve) 
   ((times :accessor times :initarg :times :initform nil)
    (color-mode :accessor color-mode :initarg :color-mode)
-   (color-min :accessor color-min :initarg :color-min)
-   (color-max :accessor color-max :initarg :color-max))
+   (color-min :accessor color-min :initarg :color-min :initform *OM-TRAJ-COLOR-MIN*)
+   (color-max :accessor color-max :initarg :color-max :initform *OM-TRAJ-COLOR-MAX*))
 )
 
 (defmethod om-draw-contents ((self 3D-timed-curve))
   "Draw a 3D timed curve witgh stroke with and colors"
-  (when (equal 1 (color-mode self))
-    (print "rescale")
-    
-    )
-  
   (let* ((vertices (om-get-gl-points self))
          (size (- (length vertices) 1))
          (vertices-colors (get-vertices-colors self)))
@@ -81,7 +76,7 @@
             (let* ((points (om-3dobj-points self))
                    (size (length points))
                    (min_h (max 0 (nth 0 (color-min self))))
-                   (min_s (max 0(nth 1 (color-min self))))
+                   (min_s (max 0 (nth 1 (color-min self))))
                    (min_v (max 0 (nth 2 (color-min self))))
                    (max_h (min 1.0 (nth 0 (color-max self))))
                    (max_s (min 1.0 (nth 1 (color-max self))))
@@ -92,7 +87,7 @@
               (case (color-mode self)
                 (1
                  (loop for i from 0 to (1- size)
-                       collect (hsv2rgb (list (+ min_h (* (/ (- max_h min_h) size) i)) (+ min_s (* (/ (- max_s min_s) size) i)) (+ min_v (* (/ (- max_v min_v) size) i))))
+                       collect (hsv2rgb (list (+ min_h (* (/ range_h size) i)) (+ min_s (* (/ range_s size) i)) (+ min_v (* (/ range_v size) i))))
                        )
                  )
                 (2
@@ -166,9 +161,9 @@
 (defun hsv2rgb (col)
   "convert HSV values into RGB values (list in float format (0.0 to 1.0))"
   (let* (
-         (h (nth 0 col))
-         (s (nth 1 col))
-         (v (nth 2 col))
+         (h (min 1.0 (nth 0 col)))
+         (s (min 1.0 (nth 1 col)))
+         (v (min 1.0 (nth 2 col)))
          (i (floor (* h 6)))
          (f (- (* h 6) i))
          (p (* v (- 1 s)))
@@ -185,7 +180,8 @@
 
 ;;; EDITOR
 (defclass traject-editor (3DEditor) 
-  ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons :initform nil))
+  ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons :initform nil)
+   (interpol-show-p :accessor interpol-show-p :initarg :interpol-show-p :initform nil))
   )
 
 ;parameters stored with the editor
@@ -229,9 +225,14 @@
 (defmethod initialize-instance :after ((self traject-editor) &rest l)
   (declare (ignore l))
   
+  ;pour compatibilité
   (unless (param-color-mode self)
     (param-color-mode self *OM-TRAJ-COLOR-MODE*))
-
+  
+  (when (= 2 (param-color-mode self))
+    (when (member nil (times (object self)))
+      (param-color-mode self *OM-TRAJ-COLOR-MODE*)))
+  
   (unless (param-color-min self)
     (param-color-min self *OM-TRAJ-COLOR-MIN*))
 
@@ -240,15 +241,22 @@
   
   (om-add-subviews (ctrlp self)
                    
-                   (om-make-dialog-item 'om-static-text (om-make-point 8 510) (om-make-point 100 40)
-                                        "______________"
-                                        :font *controls-font*
-                                        :fg-color *om-black-color*)
-                   (om-make-dialog-item 'om-static-text (om-make-point 8 530) (om-make-point 70 40)
+                 ; (om-make-dialog-item 'om-check-box (om-make-point 5 510) (om-make-point 100 60)
+                 ;                       "Show interpolated curve"
+                 ;                       :font *controls-font*
+                 ;                       :checked-p (interpol-show-p self)
+                 ;                       :fg-color *om-black-color*
+                 ;                       :di-action (om-dialog-item-act item
+                 ;                                    (setf (interpol-show-p self) (om-checked-p item))
+                 ;                                    (om-set-gl-object (3Dp self) (gl-3DC-from-obj self))
+                 ;                                    (om-invalidate-view (3Dp self))
+                 ;                                    )
+                 ;                       )
+                   (om-make-dialog-item 'om-static-text (om-make-point 8 550) (om-make-point 70 40)
                                         "Sample Rate"
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
-                   (om-make-dialog-item 'om-editable-text (om-make-point 70 535) (om-make-point 40 20) 
+                   (om-make-dialog-item 'om-editable-text (om-make-point 70 555) (om-make-point 40 20) 
                                         (format nil " ~a" (sample-params (object self)))
                                         :-action nil
                                         :font *controls-font*
@@ -259,7 +267,7 @@
                                                                (setf (sample-params (object self)) val))))
                                         )
                    
-                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 580) (om-make-point 100 20) ""
+                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 600) (om-make-point 100 20) ""
                                         :range '("points (constant time)" "distance (constant speed)")
                                         :value (if (equal (interpol-mode (object self)) 'dist) 
                                                    "distance (constant speed)" "points (constant time)")
@@ -303,7 +311,10 @@
                                              (when (= 2 (om-get-selected-item-index item))
                                                (when (member nil (times (object self)))
                                                  (setf test t)
-                                                 (om-message-dialog "Not valid curve (Missing times)"))
+                                                 (om-set-selected-item-index item (param-color-mode self))
+                                                 (om-message-dialog "Not valid curve (Missing times)")
+                                                 (update-3D-view self)
+                                                 (om-invalidate-view (3Dp self)))
                                                )
                                              (unless test
                                                (param-color-mode self (om-get-selected-item-index item))
@@ -312,64 +323,71 @@
                                                (om-invalidate-view (3Dp self)))))
                               )
          ))
-  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
+  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self))))
+  )
+
+(defmethod remove-curve-edit-buttons ((self traject-editor))
+  (apply 'om-remove-subviews (cons (ctrlp self) (curve-buttons (ctrlp self))))
+  
+  (when (color-mode-buttons self)
+    (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons self)))))
 
 (defmethod update-color-mode-buttons ((self traject-editor))
   (when (color-mode-buttons self)
     (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons self))))
-
-  (let ((mode (param-color-mode self))
-        (_x 5)
-        (_y 320))
-    (setf (color-mode-buttons self)
-          (case mode
-            ((= 0)
-             (list 
-              (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
-                                   "Curve color"
-                                   :font *controls-font*
-                                   :fg-color *om-black-color*)
-              (om-make-view 'om-color-view 
-                            :position (om-make-point (+ _x 75) _y) 
-                            :size (om-make-point 30 22) 
-                            :color (bpfcolor (get-current-object self))
-                            :after-fun #'(lambda (item) 
-                                           (setf (bpfcolor (get-current-object self)) (color item))
-                                           (update-3D-view self)
-                                           (om-invalidate-view (3Dp self)))
-                            )))
-            (otherwise  
-             (list
-              (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
-                                   "Min"
-                                   :font *controls-font*
-                                   :fg-color *om-black-color*)
-              (om-make-view 'om-color-view 
-                            :position (om-make-point (+ _x 25) _y) 
-                            :size (om-make-point 25 22) 
-                            :color (let ((rgb (hsv2rgb (param-color-min self))))
-                                     (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
-                            :after-fun #'(lambda (item) 
-                                           (param-color-min self (rgb2hsv (list (om-color-r (color item)) (om-color-g (color item)) (om-color-b (color item)))))
-                                           (update-3D-view self)
-                                           (om-invalidate-view (3Dp self)))
-                            )
-              (om-make-dialog-item 'om-static-text (om-make-point (+ _x 55) _y) (om-make-point 70 40)
-                                   "Max"
-                                   :font *controls-font*
-                                   :fg-color *om-black-color*)
-              (om-make-view 'om-color-view 
-                            :position (om-make-point (+ _x 85) _y) 
-                            :size (om-make-point 25 22) 
-                            :color (let ((rgb (hsv2rgb (param-color-max self))))
-                                     (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
-                            :after-fun #'(lambda (item) 
-                                           (param-color-max self (rgb2hsv (list (om-color-r (color item)) (om-color-g (color item)) (om-color-b (color item)))))
-                                           (update-3D-view self)
-                                           (om-invalidate-view (3Dp self)))
-                            )))
-            )))
-  (apply 'om-add-subviews (cons (ctrlp self) (color-mode-buttons self)))
+  
+    (let ((mode (param-color-mode self))
+          (_x 5)
+          (_y 320))
+      (setf (color-mode-buttons self)
+            (case mode
+              ((= 0)
+               (list 
+                (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
+                                     "Curve color"
+                                     :font *controls-font*
+                                     :fg-color *om-black-color*)
+                (om-make-view 'om-color-view 
+                              :position (om-make-point (+ _x 75) _y) 
+                              :size (om-make-point 30 22) 
+                              :color (bpfcolor (get-current-object self))
+                              :after-fun #'(lambda (item) 
+                                             (setf (bpfcolor (get-current-object self)) (color item))
+                                             (update-3D-view self)
+                                             (om-invalidate-view (3Dp self)))
+                              )))
+              (otherwise  
+               (list
+                (om-make-dialog-item 'om-static-text (om-make-point _x _y) (om-make-point 70 40)
+                                     "Min"
+                                     :font *controls-font*
+                                     :fg-color *om-black-color*)
+                (om-make-view 'om-color-view 
+                              :position (om-make-point (+ _x 25) _y) 
+                              :size (om-make-point 25 22) 
+                              :color (let ((rgb (hsv2rgb (param-color-min self))))
+                                       (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
+                              :after-fun #'(lambda (item) 
+                                             (param-color-min self (rgb2hsv (list (om-color-r (color item)) (om-color-g (color item)) (om-color-b (color item)))))
+                                             (update-3D-view self)
+                                             (om-invalidate-view (3Dp self)))
+                              )
+                (om-make-dialog-item 'om-static-text (om-make-point (+ _x 55) _y) (om-make-point 70 40)
+                                     "Max"
+                                     :font *controls-font*
+                                     :fg-color *om-black-color*)
+                (om-make-view 'om-color-view 
+                              :position (om-make-point (+ _x 85) _y) 
+                              :size (om-make-point 25 22) 
+                              :color (let ((rgb (hsv2rgb (param-color-max self))))
+                                       (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
+                              :after-fun #'(lambda (item) 
+                                             (param-color-max self (rgb2hsv (list (om-color-r (color item)) (om-color-g (color item)) (om-color-b (color item)))))
+                                             (update-3D-view self)
+                                             (om-invalidate-view (3Dp self)))
+                              )))
+              )))
+    (apply 'om-add-subviews (cons (ctrlp self) (color-mode-buttons self)))
   )
 
 
