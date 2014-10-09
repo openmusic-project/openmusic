@@ -438,3 +438,6 @@
   (capi::tab-layout-visible-child self))
 
 (export '(om-tab-layout om-make-tab-layout om-current-view) :om-api)
+
+
+

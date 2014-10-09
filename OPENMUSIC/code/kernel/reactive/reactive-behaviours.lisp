@@ -164,3 +164,14 @@
 
 (defmethod set-delivered-value :after ((box ReceiveBox) msg)
   (self-notify box nil))
+
+(defmethod set-active ((self ReceiveBox) react) 
+  (call-next-method)
+  (if react ;; => SET REACTIVITY ON
+      (when (and (not (etat self))  ;;; not running
+                 (start-receive-fun (reference self)))
+        (funcall (start-receive-fun (reference self)) self))
+    (when (and (etat self) ;; running
+               (stop-receive-fun (reference self)))
+      (funcall (stop-receive-fun (reference self)) self))))
+

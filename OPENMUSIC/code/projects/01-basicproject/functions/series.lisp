@@ -265,6 +265,7 @@ Primes known to the system are the 1230 primes ranging from 1 to 9973."
   :icon 192
   (prime-facts number))
 
+
 ;---------------
 ; INHARMONIC SERIES
 

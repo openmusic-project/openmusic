@@ -53,7 +53,7 @@ By default the server is only local. Set <host> to your current IP address to al
 (defmethod osc-start-receive ((box ReceiveBox))
   (when (etat box) (osc-stop-receive box))
   (let ((port (omng-box-value (car (inputs box))))
-        (host (omng-box-value (caddr (inputs box)))))
+        (host (and (caddr (inputs box)) (omng-box-value (caddr (inputs box))))))
     (if (and port (numberp port))
         (let ((fun (omng-box-value (cadr (inputs box)))))
           (setf (process box) 
