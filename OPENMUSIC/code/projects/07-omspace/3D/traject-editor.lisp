@@ -278,8 +278,8 @@
                    )
   (update-color-mode-buttons self))
 
-(defmethod add-curve-edit-buttons ((self traject-editor))
-  (setf (curve-buttons (ctrlp self))
+(defmethod add-curve-edit-buttons ((self traject-editor) panel)
+  (setf (curve-buttons panel)
         (list 
          (om-make-dialog-item 'om-static-text (om-make-point 5 230) (om-make-point 70 20)
                               "Line width"
@@ -323,14 +323,14 @@
                                                (om-invalidate-view (3Dp self)))))
                               )
          ))
-  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self))))
+  (apply 'om-add-subviews (cons panel (curve-buttons panel)))
   )
 
-(defmethod remove-curve-edit-buttons ((self traject-editor))
-  (apply 'om-remove-subviews (cons (ctrlp self) (curve-buttons (ctrlp self))))
+(defmethod remove-curve-edit-buttons ((self traject-editor) panel)
+  (apply 'om-remove-subviews (cons panel (curve-buttons panel)))
   
   (when (color-mode-buttons self)
-    (apply 'om-remove-subviews (cons (ctrlp self) (color-mode-buttons self)))))
+    (apply 'om-remove-subviews (cons panel (color-mode-buttons self)))))
 
 (defmethod update-color-mode-buttons ((self traject-editor))
   (when (color-mode-buttons self)

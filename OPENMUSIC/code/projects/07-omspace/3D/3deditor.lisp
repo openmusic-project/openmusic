@@ -600,6 +600,10 @@
     (om-set-gl-object (3Dp self) 3D-obj)
     ))
 
+(defmethod update-3D-controls ((self 3Deditor))
+  (add-curve-edit-buttons self (ctrlp self))
+  (om-invalidate-view (ctrlp self)))
+
 (defmethod update-editor-contents ((self 3DEditor))
   (setf (object (xyp self)) (nth 0 (tmpview-objs self)))
   (setf (currentbpf (panel (xyp self))) (if (multibpf? (xyp self)) 
@@ -882,8 +886,8 @@
                                         :di-action (om-dialog-item-act item
                                                      (setf (lines-p self) (om-checked-p item))
                                                      (if (lines-p self)
-                                                         (add-curve-edit-buttons self)
-                                                       (remove-curve-edit-buttons self))
+                                                         (add-curve-edit-buttons self (ctrlp self))
+                                                       (remove-curve-edit-buttons self (ctrlp self)))
                                                      (when (= (display-mode self) 1)
                                                        (mapcar #'(lambda (ed)
                                                                    (setf (lines-p (panel ed)) (om-checked-p item))
@@ -953,13 +957,16 @@
   (when (= (display-mode self) 1)
     (add-bpc-editors self))
   (when (lines-p self)
-    (add-curve-edit-buttons self))
+    (add-curve-edit-buttons self (ctrlp self)))
   (om-init-3D-view (3Dp self))
   )
 
+(defmethod remove-curve-edit-buttons ((self 3DEditor) panel)
+  (apply 'om-remove-subviews (cons panel (curve-buttons panel))))
 
-(defmethod add-curve-edit-buttons ((self 3DEditor))
-  (setf (curve-buttons (ctrlp self))
+(defmethod add-curve-edit-buttons ((self 3DEditor) panel)
+  (when (curve-buttons panel) (remove-curve-edit-buttons self panel))
+  (setf (curve-buttons panel)
         (list 
          (om-make-dialog-item 'om-static-text (om-make-point 5 230) (om-make-point 70 20)
                               "Line width"
@@ -990,10 +997,9 @@
                                       (om-invalidate-view (3Dp self)))
                        )
          ))
-  (apply 'om-add-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
+  (apply 'om-add-subviews (cons panel (curve-buttons panel))))
 
-(defmethod remove-curve-edit-buttons ((self 3DEditor))
-  (apply 'om-remove-subviews (cons (ctrlp self) (curve-buttons (ctrlp self)))))
+
 
 (defmethod add-edit-buttons ((self 3DEditor))
   (let ((ed (om-view-container (ctrlp self)))
@@ -1122,7 +1128,7 @@
         (init-bpc-editors self))
       (update-3D-view self)
       (set-sc-label self)
-      (om-invalidate-view (3Dp self))))
+      (update-3D-controls self)))
    ((focus self)
     (handle-key-event (focus self) char))
    (t nil)))
