@@ -764,8 +764,10 @@
 
           (when (> xview pict-threshold) (setf zoom-step nil)) ;;; will draw-picture
           (om-with-focused-view self
-            (when (and thesound (display-array thesound))
-              (om-draw-waveform self))
+            (cond ((and thepicture (pict-spectre thesound) (get-edit-param (editor self) :show-spectrum))
+                   (om-draw-picture self thepicture :size (om-view-size self)))
+                  ((and thesound (display-array thesound))
+                   (om-draw-waveform self)))
             (om-with-fg-color self *om-blue-color*
               (loop for item in (markers thesound) 
                     for k = 0 then (+ k 1) do
