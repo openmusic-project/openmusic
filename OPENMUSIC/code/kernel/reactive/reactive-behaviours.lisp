@@ -1,13 +1,9 @@
 
-
-
 ;;; EXTENSION OF STANDARD OM BEHAVIOURS DUE TO REACTIVE BOXES
+(in-package :om)
 
 ;;; Use this to set the delay in box evaluation/notification
 (defparameter *defcolortime* nil)
-
-
-(in-package :om)
 
 
 ;;; CONNECTION/ REGISTRATION OF CLIENTS
