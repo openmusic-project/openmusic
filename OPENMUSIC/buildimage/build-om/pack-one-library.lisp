@@ -18,14 +18,15 @@
 ;;; LIB DEFINITION
 ;;;===========================
 
-(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 5) :name "lib-name" :type "lisp.tmp")))
+(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 4) :name "lib-name" :type "lisp.tmp")))
 (defparameter *lib-name* nil)
+
 (if (probe-file *lib-name-path*)
   (load *lib-name-path*)
-  (quit)
+  (progn (print "Quitting") (quit))
 )
 
-(defparameter *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 5) 
+(defparameter *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 4) 
                                                               '("OM-LIBRARIES-RELEASE"))))
 (om::om-create-directory *release-dir*)
 
