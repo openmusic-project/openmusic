@@ -824,8 +824,8 @@ Inverts <tree> : every note becomes a rest and every rest becomes a note.
 (defun tree-to-ratios (list)
   (loop for mesure in (cadr list) collect
         (let* ((signature (car mesure))
-               (values (cadr mesure))
-               (ratios (mesure-ratios values)))
+               (vals (cadr mesure))
+               (ratios (mesure-ratios vals)))
           (om/
            (om* ratios (car signature))
            (cadr signature)))))

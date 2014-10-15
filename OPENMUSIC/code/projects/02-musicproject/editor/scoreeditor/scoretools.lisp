@@ -1384,22 +1384,23 @@
     (setf beams-num (if (listp beams) (car beams) beams))
     (setf delta-y (if (< beams-num 1) (list (round  linespace -2) 0) (list 0 0))) 
     (setf obj (make-instance 'grap-rest
-                :reference self
-                :durtot durtot
-                :headchar (first symb-info)
-                :points (second symb-info)
-                :beams-num  beams-num
-                :propre-group (if (listp beams) (second beams))
-                :main-point (list 0 (round (+ (car delta-y) ypos)))
-                :parent pere
-                :rectangle (list 0 0 sizex (apply '+ delta-y))
-                :selected (member self sel :test 'equal)))
+                             :reference self
+                             :durtot durtot
+                             :headchar (first symb-info)
+                             :points (second symb-info)
+                             :beams-num  beams-num
+                             :propre-group (if (listp beams) (second beams))
+                             :main-point (list 0 (round (+ (car delta-y) ypos)))
+                             :parent pere
+                             :rectangle (list 0 0 sizex (apply '+ delta-y))
+                             :selected (member self sel :test 'equal)))
     (when (listp  onlyhead)
       (setf (bigrest obj) (car onlyhead))
       (setf (headchar obj) (rest-4)))
     (when (gnotes self)
-        (setf (grap-grace-notes obj)
-              (make-graces-from-list (gnotes self) top staffsys linespace scale sel pere obj)))
+      (setf (grap-grace-notes obj)
+            (make-graces-from-list (gnotes self) top staffsys linespace scale sel pere obj))
+      (set-graces-dir-after (grap-grace-notes obj) obj staffsys linespace))   ;calculer le dir pour le graces en fait mettre l'opose pour obj
     (make-graphic-extras obj)
     (if (gnotes self)
         (list (grap-grace-notes obj) obj)
@@ -1524,8 +1525,10 @@
                     :reference self
                     :parent pere
                     :durtot durtot
-                    :stem (not (or (listp onlyhead) (equal onlyhead (head-4)) (equal onlyhead (head-8)) 
-                                   (equal onlyhead (head-2)) (equal onlyhead (head-1))))
+                    :stem ;(and 
+                           (not (or (listp onlyhead) (equal onlyhead (head-4)) (equal onlyhead (head-8)) 
+                                    (equal onlyhead (head-2)) (equal onlyhead (head-1))))
+                           ;(round (* 3 linespace))) ;;;; JB: stem must be a size for draw-object....??
                     :selected (member self sel :test 'equal)))
          (maxw 0) )
     (when (listp  onlyhead)
@@ -1552,22 +1555,30 @@
                   (setf (nth 0 (main-point notegrap)) (round (* linespace pos)))
                   (setf maxw (max maxw notew))
                   notegrap)))
+    
     ;=======  grace-notes
     (unless (graces? pere)
       (when (gnotes self)
         (setf (grap-grace-notes new-chr)
               (make-graces-from-list (gnotes self) top staffsys linespace scale sel pere new-chr))))
-    ;======== grace notes
+    
     (setf (beams-num new-chr) beams-num)
     (setf (propre-group new-chr) (if (listp beams) (second beams)))
     (when (and (stem new-chr) (not (group-p (parent self))))
       (setf (stemdir new-chr) (chord-direction new-chr (midicenter staffsys)))
       (setf (stemhigh new-chr) (round (* 3 linespace))))
+    
+    ;======== grace notes
+    (when  (grap-grace-notes new-chr) 
+      (set-graces-dir-after (grap-grace-notes new-chr) new-chr staffsys linespace))
+    
     (setf (rectangle new-chr)  (list 0 0  maxw 0))
     (make-graphic-extras new-chr)
     (if (gnotes self)
         (list (grap-grace-notes new-chr) new-chr)
       new-chr)))
+
+
 
 (defmethod chord-direction ((self grap-ryth-chord) staff-center)
    (let* ((thenotes (Lmidic (reference self)))
@@ -1701,7 +1712,12 @@
        (setf (chiflevel new-group) (calcule-chiff-level new-group)))
      (when (figure-? new-group)
        (setf direstart (calcule-dir-et-start new-group (midicenter staffsys)))
-       (set-dir-and-high new-group (car direstart) linespace))
+       (set-dir-and-high new-group (car direstart) linespace)
+       ;;; grace notes
+       (loop for item in (get-chord&rest-not-graces new-group) do
+             (when  (grap-grace-notes item)
+               (set-graces-dir-after (grap-grace-notes item) item staffsys linespace)))
+       )
      (make-graphic-extras new-group)
      new-group))
 

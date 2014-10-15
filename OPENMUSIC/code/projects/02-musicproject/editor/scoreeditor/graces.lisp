@@ -95,10 +95,6 @@
 
 ;=================================
 
-;=====SPACING 
-(defun ryhtm2pixels (ms)
-  (max 0.25 (expt  *factor-spacing* (log (/  ms  1000) 2))))
-
 ; ----------------a borrar
 (defmethod grap-offset->ms ((self t) father)
    (offset->ms (reference self) father))
