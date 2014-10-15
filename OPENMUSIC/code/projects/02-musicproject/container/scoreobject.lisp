@@ -1390,9 +1390,8 @@ Returns the list of all measure in <self>.
                  sum
                  (* 1000 (/ 60.0 tempo) (/ (offset current) (QValue father)))))))
 
+;;; !!! redefinition of the method from container.lisp ...
 (defmethod offset->ms ((self simple-container) &optional grandparent)
-  "Converts the offset of <self> to milliseconds. The offset is defined w/regard to the parent container.
-If optional <grandparent> is given, the offset will be considered w/regard to the given grandparent."
   (let ((limit (if (null grandparent) (parent self) grandparent)))
     (round (loop for current = self then (parent current)
                  for father = (and current (parent current))
