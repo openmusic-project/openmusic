@@ -286,6 +286,8 @@
 ;              (om-invalidate-view (car (frames box))))
 ;          *play-boxes*))
 
+(defmethod (setf play-state) (val box) nil)
+
 (defun general-player-stop (caller)
   (declare (ignore caller))
   (mapcar #'(lambda (box)
