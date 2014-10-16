@@ -2760,8 +2760,8 @@
         
 ;ACTIONS
 
-(defmethod set-unset-grille ((self voicepanel)) (om-beep))
-(defmethod edit-step-grille ((self voicepanel)) t)
+;(defmethod set-unset-grille ((self voicepanel)) (om-beep))
+;(defmethod edit-step-grille ((self voicepanel)) t)
 (defmethod translate-chords-p ((self voicepanel)) nil)
 
 
@@ -2947,8 +2947,8 @@
      (setf (staff-sys self) (get-staff-system staff))
      obj))
 
-(defmethod set-unset-grille ((self polypanel)) (om-beep))
-(defmethod edit-step-grille ((self polypanel)) t)
+;(defmethod set-unset-grille ((self polypanel)) (om-beep))
+;(defmethod edit-step-grille ((self polypanel)) t)
 
 (defmethod draw-line-cursor ((self polypanel) &key newpixel (draw? t)) 0)
 
@@ -2998,10 +2998,10 @@
                      (when (graphic-obj self)
                        (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
            
-                         (draw-object (graphic-obj self) self deltax deltay 
+                         (draw-object  (graphic-obj self) self deltax deltay 
                                       (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self) ) 
                                       (slots-mode self) (staff-size self) (linear? self) (staff-sys self) 
-                                      nil (noteaschan? self))
+                                      (grille-step-p self) (noteaschan? self))
                          (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                          (draw-edit-cursor self deltay)
                          )
