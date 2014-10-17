@@ -260,6 +260,25 @@ Press 'space' to play/stop the sound file.
     snd))
 
 
+(defmethod copy-container ((self sound) &optional (pere ()))
+  (let ((snd (if (om-sound-file-name self) 
+                 (let ((copy (load-sound-file (om-sound-file-name self)))
+                       (slots  (class-instance-slots (find-class 'simple-container))))
+                   (setf (slot-value copy 'parent) pere)
+                   (loop for slot in slots
+                       when (not (eq (slot-definition-name slot) 'parent))
+                       do (setf (slot-value  copy  (slot-definition-name slot))
+                            (copy-container (slot-value self  (slot-definition-name slot)) copy)))
+                   copy)
+               (make-instance 'sound))))
+    (setf (tracknum snd) (tracknum self))
+    (setf (markers snd) (markers self))
+    (setf (pan snd) (pan self))
+    (setf (vol snd) (vol self))
+    (setf (pict-spectre snd) (pict-spectre self))
+    (when (< *om-version* 6.08) (setf (pict-spectre? snd) (pict-spectre? self))) 
+    snd))
+
 
 ;;; copie : meme ptrs (pour le maquette play)
 (defun copy-sound-file (sound)
@@ -307,10 +326,14 @@ Press 'space' to play/stop the sound file.
   (and (om-sound-file-name self)
         (register-resource :sound (om-sound-file-name self))
         `(let ((thesound (load-sound ,(om-save-pathname-relative (om-sound-file-name self))
-                                     ,(tracknum self))))
+                                     ,(tracknum self)
+                                     ,(vol self)
+                                     ,(pan self)
+                                     )))
            (when thesound
              (setf (markers thesound) ',(markers self)))
            thesound)))
+
 
 ;;;========
 ;;; LOAD
@@ -479,6 +502,9 @@ Press 'space' to play/stop the sound file.
       (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 0))
       (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args)))
     rep)))
+
+
+
 
 ;;; default value at box evaluation
 (defmethod make-one-instance ((self sound) &rest slots-vals) 

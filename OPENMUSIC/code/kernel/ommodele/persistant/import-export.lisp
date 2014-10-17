@@ -443,6 +443,7 @@
 ;;; drag and drop finder
 ;;;===============================
 
+
 (defmethod get-obj-from-file ((type t) filename)
   (print (format nil "Unknown type: ~A" type))
   nil)
