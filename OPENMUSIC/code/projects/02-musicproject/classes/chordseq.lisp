@@ -549,8 +549,8 @@ make-quanti
                         ))
     )
 
-(defmethod mf-info->chord-seq ((self list))
-  (let* ((chords (make-quanti-chords self *global-deltachords*))
+(defmethod mf-info->chord-seq ((self list)  &optional deltachord)
+  (let* ((chords (make-quanti-chords self (or deltachord *global-deltachords*)))
          (lonset (mapcar 'offset chords))
          (last-note (first (inside (first (last chords))))))
     (setf lonset (append lonset (list (+ (extent->ms last-note) (first (last lonset)))))) 
@@ -560,8 +560,8 @@ make-quanti
       ;:legato 100
       )))
 
-(defmethod mf-info-MC->chord-seq ((self list))
-  (let* ((chords (make-quanti-chords-MC self *global-deltachords*))
+(defmethod mf-info-MC->chord-seq ((self list) &optional deltachord)
+  (let* ((chords (make-quanti-chords-MC self (or deltachord *global-deltachords*)))
          (lonset (mapcar 'offset chords))
          (last-note (first (inside (first (last chords))))))
     (setf lonset (append lonset (list (+ (extent->ms last-note) (first (last lonset)))))) 
@@ -627,10 +627,11 @@ Transforms <self> so that notes falling in a small time interval are grouped int
   (if (and (inside chs1) (inside chs2))
       (let* ((mf (sort (nconc (chord-seq->mf-info-MC chs1)  (chord-seq->mf-info-MC chs2))
                        #'< :key #'second)))
-    ; quantify with delta = 1 ms
-        (mf-info-MC->chord-seq mf)
-        )
-    (if (inside chs1) (clone chs1) (clone chs2))))
+        (mf-info-MC->chord-seq mf 0))
+    ;; one is empty...
+    (if (inside chs1) 
+        (clone chs1) 
+      (clone chs2))))
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
