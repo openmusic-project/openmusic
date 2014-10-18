@@ -145,32 +145,33 @@
                  (chpos (second (car tempo)))
                  (cur-mes (nth mespos mesures))
                  (figlist (cons-gfig-tempo-list cur-mes)) 
-                 (thechord (nth chpos figlist))
                  )
-            (if rep
-                (setf rep (min rep
-                           (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
-                                   (second (rectangle thechord))) (/ size -2))))
-              (setf rep (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
-                                   (second (rectangle thechord))) (/ size -2))))
-            (setf thelist (cdr thelist))
-            (when thelist 
-              (setf dynamic? (third (second (car thelist)))))))
-    (when thelist
-      (let* ((tempo (car thelist))
-             (mespos (caar tempo))
-             (chpos (second (car tempo)))
-             (cur-mes (nth mespos mesures))
-             (figlist (cons-gfig-tempo-list cur-mes))
-             (thechord (nth chpos figlist))
-             )
-        (if rep
-            (setf rep (min rep
-                           (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
-                                   (second (rectangle thechord))) (/ size -2))))
-          (setf rep (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
-                            (second (rectangle thechord))) (/ size -2))))))
-    rep))
+            (when (and chpos figlist)
+              (let ((thechord (nth chpos figlist)))
+                    (if rep
+                        (setf rep (min rep
+                                       (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
+                                               (second (rectangle thechord))) (/ size -2))))
+                      (setf rep (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
+                                        (second (rectangle thechord))) (/ size -2))))
+                    (setf thelist (cdr thelist))
+                    (when thelist 
+                      (setf dynamic? (third (second (car thelist)))))))))
+          (when thelist
+            (let* ((tempo (car thelist))
+                   (mespos (caar tempo))
+                   (chpos (second (car tempo)))
+                   (cur-mes (nth mespos mesures))
+                   (figlist (cons-gfig-tempo-list cur-mes))
+                   (thechord (nth chpos figlist))
+                   )
+              (if rep
+                  (setf rep (min rep
+                                 (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
+                                         (second (rectangle thechord))) (/ size -2))))
+                (setf rep (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
+                                  (second (rectangle thechord))) (/ size -2))))))
+          rep))
 
 (defun draw-dynamic-line (x1 y x2)
   (om-with-dashline (om-draw-line x1 y x2 y)))
@@ -332,14 +333,14 @@
 
 (defun set-tempo-list (self pos tempo)
   ;(print (list self pos tempo (qtempo self)))
-  (setf (qtempo self) ;(print 
-                       (if (atom (qtempo self))
-                           (if (zeroplist pos)
-                               (list (list '(0) tempo))
-                             (list (list '(0) (qtempo self)) (list pos tempo)))
-                         ;(sort (remove-duplicates (append (qtempo self) (list (list pos tempo))) :test 'equal :key 'caar) '< :key 'caar)
-                         (append (qtempo self) (list (list pos tempo)))
-                         )))
+  (setf (qtempo self) 
+        (if (atom (qtempo self))
+            (if (zeroplist pos)
+                (list (list '(0) tempo))
+              (list (list '(0) (qtempo self)) (list pos tempo)))
+           ;(sort (remove-duplicates (append (qtempo self) (list (list pos tempo))) :test 'equal :key 'caar) '< :key 'caar)
+          (append (qtempo self) (list (list pos tempo)))
+          )))
 
 
 
