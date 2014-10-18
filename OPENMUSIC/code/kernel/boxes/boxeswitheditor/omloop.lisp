@@ -163,9 +163,6 @@
                       )))))
      (setf *let-list* oldletlist)))
 
-(defvar *ev-once-boxes* nil)
-
-(defun reset-let-list 
 
 ;----------------
 ;EDITOR
