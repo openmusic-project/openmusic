@@ -88,6 +88,7 @@
                (setf iter-count nil)
              (setf iter-count 0)))))))
 
+#|
 (defmethod compile-patch ((self patchForLoop))
    "Code generates by Loop patches is generate by this method."
    (let* ((boxes (boxes self))
@@ -110,22 +111,66 @@
      (setf init (gen-code init-box 0))
      (setf body (gen-code do-box 0))
      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
-              (let (,.acum-declaration (iter-count 0)) 
+              (let (,.acum-declaration (iter-count 0))
                 ,.acum-inits
                 (let* ,(reverse *let-list*) ,init) ;;; bug if a let variable depends on a loop iterator !!!!!
                 (loop ,.loop-code
                       do ,(loop-check-code)
-                      finally (return (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
-                                                      collect  (gen-code final-box i)))) do
+                      finally   (return (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
+                                                      collect (gen-code final-box i))))                      
+                      do
                       (let* ,(reverse *let-list*) ,body)
                       ))))
      (setf *let-list* oldletlist)))
+|#
 
+(defmethod compile-patch ((self patchForLoop))
+   "Code generates by Loop patches is generate by this method."
+   (let* ((boxes (boxes self))
+          (oldletlist *let-list*)
+          (*let-list* nil)
+          (do-box (car (find-class-boxes boxes 'OMLoopDo)))
+          (init-box (car (find-class-boxes boxes 'OMinitDo)))
+          (final-box (car (find-class-boxes boxes 'OMFinalDo)))
+          (in-boxes (sort (find-class-boxes boxes 'OMin) '< :key 'indice))
+          (symbols (mapcar #'(lambda (thein) (setf (in-symbol thein) (gensym))) in-boxes))
+          (loop-boxes (find-loop-boxes boxes))
+          (loop-code (mapcan #'(lambda (theout)
+                                 (loop-gen-code theout 0)) loop-boxes))
+          (acum-boxes (find-acum-boxes boxes))
+          (acum-declaration (mapcar #'(lambda (acumm)
+                                        (declare-closure acumm)) acum-boxes))
+          (acum-inits (mapcar #'(lambda (acumm)
+                                  (gen-code acumm -1)) acum-boxes))
+          body init)
+     (setf init (gen-code init-box 0))
+     (setf body (gen-code do-box 0))
+     (setf final (loop for i from 0 to (1- (length (inputs final-box))) collect (gen-code final-box i)))
+     (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
+              (let (,.acum-declaration (iter-count 0))
+                (let* ,(reverse *let-list*)   ;;; LET EV-ONCE HERE 
+                ,.acum-inits
+                ,init   
+                (loop ,.loop-code
+                      do ,(loop-check-code)
+                      finally (return (values ,.final))                    
+                      do
+                      ;;; (let* ,(reverse *let-list*) ,body)
+                      (progn
+                        ;;; rest the ev-once boxes at each iteration... 
+                        ,.(loop for var in *let-list* collect `(setf ,(car var) ,(cadr var)))
+                        ,body)
+                      )))))
+     (setf *let-list* oldletlist)))
+
+(defvar *ev-once-boxes* nil)
+
+(defun reset-let-list 
 
 ;----------------
 ;EDITOR
 ;----------------
-(omg-defclass loopEditor (boxpatchEditor) ())
+(defclass loopEditor (boxpatchEditor) ())
 
 (defmethod get-editor-panel-class ((self loopEditor))  'loopPanel)
 
