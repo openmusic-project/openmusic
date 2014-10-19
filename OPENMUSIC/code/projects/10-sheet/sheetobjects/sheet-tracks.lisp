@@ -144,7 +144,7 @@
 
 ;----------------
 
-(defmethod click-in-obj ((self grap-track-ev) type where)
+(defmethod click-in-obj ((self grap-track-ev) type where view)
    (let* ((rect (rectangle self)))
        (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
          self)))

@@ -52,7 +52,7 @@
          (not (cursor-p self)))
     (setf *score-drag-click* where)
     (setf *score-drag-object* 
-          (click-in-obj (graphic-obj self) (grap-class-from-type (obj-mode self)) where))
+          (click-in-obj (graphic-obj self) (grap-class-from-type (obj-mode self)) where self))
     ))
 
 (defmethod big-icon-p ((self scoreEditor)) t)
@@ -122,7 +122,7 @@
     (t (score-change-view D&DHandler))))
 
 (defmethod test-receptor ((self scorepanel) where)
-   (click-in-obj (graphic-obj self) 'grap-note where))
+   (click-in-obj (graphic-obj self) 'grap-note where self))
      
 (defmethod score-move-inside ((D&DHandler omdrag-drop))
    (let* ((editor (target-view  D&DHandler))

@@ -2383,45 +2383,55 @@
 ;;;========================
 ;;; CLIC IN OBJ DETECTION
 ;;;========================
+(defun grap-obj-visible (obj panel)
+  (let ((x0 (om-h-scroll-position panel))
+        (zoom (staff-zoom panel)))
+    (and (> (* (x obj) zoom) x0)
+         (< (* (x obj) zoom) (+ x0 (w panel))))))
 
-(defmethod click-in-obj ((self grap-container) type where)
+(defmethod click-in-obj ((self grap-container) type where view)
    (if (subtypep (type-of self) type)
      (let* ((rect (rectangle self)))
-       (when (point-in-rectangle-p  where (second rect) (first rect) (fourth rect) (third rect))
+       (when (and (grap-obj-visible self view) 
+                  (point-in-rectangle-p  where (second rect) (first rect) (fourth rect) (third rect)))
          self))
      (let (rep)
        (loop for item in (inside self)
              while (not rep) do
-             (setf rep (click-in-obj item type where)))
+             (setf rep (click-in-obj item type where view)))
        rep)))
 
-(defmethod click-in-obj ((self grap-group) type where)
+(defmethod click-in-obj ((self grap-group) type where view)
    (if (subtypep  (type-of self) type)
      (let* ((rect (rectangle self)) rep)
        (loop for item in (inside self)
              while (not rep) do
-             (setf rep (click-in-obj item type where)))
-       (or rep (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
+             (setf rep (click-in-obj item type where view)))
+       (or rep (when (and (grap-obj-visible self view)
+                         (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect)))
                  self)))
      (call-next-method)))
 
-(defmethod click-in-obj ((self grap-note) type where)
+(defmethod click-in-obj ((self grap-note) type where view)
   (if (subtypep (type-of self) type)
        (let* ((rect (rectangle self)))
-       (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
+       (when (and (grap-obj-visible self view)
+                  (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect)))
          self))))
 
-(defmethod click-in-obj ((self grap-rest) type where)
+(defmethod click-in-obj ((self grap-rest) type where view)
    (if (or (equal type 'grap-chord)
            (equal type 'grap-note))
      (let* ((rect (rectangle self)))
-       (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
+       (when (and (grap-obj-visible self view)
+                  (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect)))
          self))))
 
-(defmethod click-in-obj ((self grap-rest) type where)
+(defmethod click-in-obj ((self grap-rest) type where view)
    (when (equal type 'grap-chord)
      (let* ((rect (rectangle self)))
-       (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
+       (when (and (grap-obj-visible self view)
+                  (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect)))
          self))))
 
 ;;; click in score :
@@ -2434,69 +2444,69 @@
 ;;; mENU CONTEXT
 
 ;;; VOICE = MESURE, CHORD , ou NOTE
-(defmethod click-in-obj ((self grap-voice) (type (eql 'contex)) where)
+(defmethod click-in-obj ((self grap-voice) (type (eql 'contex)) where view)
   (call-next-method)
   (let (repm repc repn)
     (loop for item in (inside self)
           while (not repm) do
-          (setf repm (click-in-obj item (grap-class-from-type "measure") where))
+          (setf repm (click-in-obj item (grap-class-from-type "measure") where view))
           )
     (when repm
       (loop for obj in (inside repm)
             while (not repc) do
-            (setf repc (click-in-obj obj (grap-class-from-type "chord") where)))
+            (setf repc (click-in-obj obj (grap-class-from-type "chord") where view)))
       (when (and repc (not (is-rest-? repc)))
         (loop for note in (inside repc)
               while (not repn) do
-              (setf repn (click-in-obj note (grap-class-from-type "note") where)))))
+              (setf repn (click-in-obj note (grap-class-from-type "note") where view)))))
     (or repn repc repm)))
 
 ;;; CONTAINER = CHORD OU NOTE
-(defmethod click-in-obj ((self grap-container) (type (eql 'contex)) where)
+(defmethod click-in-obj ((self grap-container) (type (eql 'contex)) where view)
   (let (repc repn)
     (loop for item in (inside self)
           while (not repc) do
-          (setf repc (click-in-obj item (grap-class-from-type "chord") where)))
+          (setf repc (click-in-obj item (grap-class-from-type "chord") where view)))
     (when (and repc (not (is-rest-? repc)))
       (loop for note in (inside repc)
             while (not repn) do
-            (setf repn (click-in-obj note (grap-class-from-type "note") where))))
+            (setf repn (click-in-obj note (grap-class-from-type "note") where view))))
     (or repn repc)))
 
-(defmethod click-in-obj ((self grap-chord) (type (eql 'contex)) where)
+(defmethod click-in-obj ((self grap-chord) (type (eql 'contex)) where view)
   (let (repn)
     (loop for note in (inside self)
             while (not repn) do
-            (setf repn (click-in-obj note (grap-class-from-type "note") where)))
-    (or repn (click-in-obj self (grap-class-from-type "chord") where))))
+            (setf repn (click-in-obj note (grap-class-from-type "note") where view)))
+    (or repn (click-in-obj self (grap-class-from-type "chord") where view))))
 
-(defmethod click-in-obj ((self grap-note) (type (eql 'contex)) where)
-  (click-in-obj self (grap-class-from-type "note") where))
+(defmethod click-in-obj ((self grap-note) (type (eql 'contex)) where view)
+  (click-in-obj self (grap-class-from-type "note") where view))
 
 ;;; N'iMPORTE
 
 ;;; CONTAINER = CHORD OU NOTE
-(defmethod click-in-obj ((self grap-container) (type (eql 'any)) where)
+(defmethod click-in-obj ((self grap-container) (type (eql 'any)) where view)
   (let (repc repn)
     (loop for item in (inside self)
           while (not repc) do
-          (setf repc (click-in-obj item (grap-class-from-type "chord") where)))
+          (setf repc (click-in-obj item (grap-class-from-type "chord") where view)))
     (when (and repc (not (selected repc)) (not (is-rest-? repc)) (> (length (inside repc)) 1))
       (loop for note in (inside repc)
             while (not repn) do
-            (setf repn (click-in-obj note (grap-class-from-type "note") where))))
+            (setf repn (click-in-obj note (grap-class-from-type "note") where view))))
     (or repn repc)))
 
-(defmethod click-in-obj ((self grap-chord) (type (eql 'any)) where)
+(defmethod click-in-obj ((self grap-chord) (type (eql 'any)) where view)
   (let (repn)
     (loop for note in (inside self)
             while (not repn) do
-            (setf repn (click-in-obj note (grap-class-from-type "note") where)))
-    (or repn (click-in-obj self (grap-class-from-type "chord") where))))
+            (setf repn (click-in-obj note (grap-class-from-type "note") where view)))
+    (or repn (click-in-obj self (grap-class-from-type "chord") where view))))
 
 
 ;;; SIMPLE-CONTAINER = SELF OU NIL
-;(defmethod click-in-obj ((self simple-graph-container) (type (eql 'any)) where)
+;(defmethod click-in-obj ((self simple-graph-container) (type (eql 'any)) where view)
 ;  (let* ((rect (rectangle self)))
 ;       (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
 ;         self)))

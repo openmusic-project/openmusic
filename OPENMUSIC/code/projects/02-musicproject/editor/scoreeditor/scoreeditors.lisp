@@ -926,7 +926,7 @@
 (defmethod get-click-in-obj ((self scorePanel) grap-obj mode where)
   (if (score-page-mode self)
       (page-click-in-obj self grap-obj mode where)
-      (click-in-obj grap-obj mode where)))
+      (click-in-obj grap-obj mode where self)))
 
 
 (defmethod collect-page-all-line-elements ((self scorePanel) grap-obj fdoc pagenum line)
@@ -955,7 +955,7 @@
              rep)
         (loop for item in elements
           while (not rep) do
-          (setf rep (click-in-obj item mode where))) rep)))))
+          (setf rep (click-in-obj item mode where self))) rep)))))
 
 
 (defmethod om-score-click-handler ((self scorePanel) where double-click-p)
@@ -1119,8 +1119,9 @@
   (let ((mode-obj (grap-class-from-type  (obj-mode self))))
     (setf *score-lock* t)
     (loop for item in (get-graph-type-obj (graphic-obj self) mode-obj) do
-          (when (rect-intersect (rectangle item) 
-                                (list (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
+          (when (and (grap-obj-visible item self)
+                     (rect-intersect (rectangle item)
+                                     (list (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect)))))
             (push-select-note self item)
             ))
     (setf *score-lock* nil)

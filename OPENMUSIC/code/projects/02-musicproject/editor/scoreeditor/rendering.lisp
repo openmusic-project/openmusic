@@ -2119,7 +2119,7 @@
 ;==================  EVENTS
 
 
-(defmethod click-in-obj ((self grap-container) type where)
+(defmethod click-in-obj ((self grap-container) type where view)
    (if (subtypep (type-of self) type)
      (let* ((rect (rectangle self)))
        (when (point-in-rectangle-p  where (second rect) (first rect) (fourth rect) (third rect))
@@ -2127,33 +2127,33 @@
      (let (rep)
        (loop for item in (inside self)
              while (not rep) do
-             (setf rep (click-in-obj item type where)))
+             (setf rep (click-in-obj item type where view)))
        rep)))
 
-(defmethod click-in-obj ((self grap-group) type where)
+(defmethod click-in-obj ((self grap-group) type where view)
    (if (subtypep  (type-of self) type)
      (let* ((rect (rectangle self)) rep)
        (loop for item in (inside self)
              while (not rep) do
-             (setf rep (click-in-obj item type where)))
+             (setf rep (click-in-obj item type where view)))
        (or rep (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
                  self)))
      (call-next-method)))
 
-(defmethod click-in-obj ((self grap-note) type where)
+(defmethod click-in-obj ((self grap-note) type where view)
   (if (subtypep (type-of self) type)
        (let* ((rect (rectangle self)))
        (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
          self))))
 
-(defmethod click-in-obj ((self grap-rest) type where)
+(defmethod click-in-obj ((self grap-rest) type where view)
    (if (or (equal type 'grap-chord)
            (equal type 'grap-note))
      (let* ((rect (rectangle self)))
        (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
          self))))
 
-(defmethod click-in-obj ((self grap-rest) type where)
+(defmethod click-in-obj ((self grap-rest) type where view)
    (when (equal type 'grap-chord)
      (let* ((rect (rectangle self)))
        (when (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect))
