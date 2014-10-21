@@ -118,7 +118,7 @@
    (declare (ignore approx port))
    (let ((i 0))
      (loop for object in (inside self)
-           for param in (param-list self) do
+           for param in (param-list self) collect
            (let* ((objstart (+ at (offset->ms object)))
                   (track (or voice (if (obj-in-sep-track object) (setf i (+ i 1)) 0)))
                   (pl (player-from-params (cdr (assoc 'player param))))
@@ -126,7 +126,7 @@
                                    (interval-intersec interval (list objstart (+ objstart (get-obj-dur object)))))))
              (when in-interval 
                ;(print (list object (get-obj-dur object) newinterval interval))
-               (PrepareToPlay pl
+               (PrepareToPlay player
                               object objstart
                               :approx (cdr (assoc 'approx param))
                               :port (case (cdr (assoc 'outport param))
