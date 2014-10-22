@@ -2386,7 +2386,7 @@
 (defun grap-obj-visible (obj panel)
   (let ((x0 (om-h-scroll-position panel))
         (zoom (staff-zoom panel)))
-    (and (>= (* (print (x obj)) zoom) x0)
+    (and (>= (* (x obj) zoom) x0)
          (<= (* (x obj) zoom) (+ x0 (w panel))))))
 
 (defmethod click-in-obj ((self grap-container) type where view)
