@@ -2383,11 +2383,34 @@
 ;;;========================
 ;;; CLIC IN OBJ DETECTION
 ;;;========================
-(defun grap-obj-visible (obj panel)
+(defmethod recursive-get-x ((obj t) &optional (child 'car)) (x obj))
+(defmethod recursive-get-x ((obj grap-container) &optional (child 'car)) 
+  (or (x obj) (and (inside obj) (recursive-get-x (funcall child (inside obj))))))
+
+(defmethod grap-obj-visible ((obj grap-container) panel)
   (let ((x0 (om-h-scroll-position panel))
-        (zoom (staff-zoom panel)))
-    (and (>= (* (x obj) zoom) x0)
-         (<= (* (x obj) zoom) (+ x0 (w panel))))))
+        (zoom (staff-zoom panel))
+        (xx (x obj)))
+    (if (x obj)
+        (and (>= (* (x obj) zoom) x0)
+             (<= (* (x obj) zoom) (+ x0 (w panel))))
+      (let ((x1 (recursive-get-x (car (inside obj)) 'car))
+            (x2 (recursive-get-x (last-elem (inside obj)) 'last-elem)))
+        (or (and (>= (* x1 zoom) x0)
+                 (<= (* x1 zoom) (+ x0 (w panel))))
+            (and (>= (* x2 zoom) x0)
+                 (<= (* x2 zoom) (+ x0 (w panel))))
+            (and (<= (* x1 zoom) x0)
+                 (>= (* x2 zoom) (+ x0 (w panel))))))
+    )))
+
+(defmethod grap-obj-visible (obj panel)
+  (let ((x0 (om-h-scroll-position panel))
+        (zoom (staff-zoom panel))
+        (xx (x obj)))
+    (or (null (x obj))
+        (and (>= (* xx zoom) x0)
+             (<= (* xx zoom) (+ x0 (w panel)))))))
 
 (defmethod click-in-obj ((self grap-container) type where view)
    (if (subtypep (type-of self) type)
