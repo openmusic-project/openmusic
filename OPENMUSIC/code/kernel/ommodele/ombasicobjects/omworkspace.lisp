@@ -129,7 +129,7 @@
                                                                       (list "elements"))) :files t :directories t)))
      (setf *loading-ws* t)
 
-     (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)))
+     (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
      (init-output)
      (print (string+ "Loading workspace: \"" (name self) "\" ..."))
      (setf (elements self) (remove nil (mapcar #'(lambda (x) (ws-load-element x (incf j))) elements) :test 'equal))

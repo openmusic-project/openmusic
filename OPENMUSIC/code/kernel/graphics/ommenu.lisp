@@ -84,7 +84,7 @@
 (defun show-audio-mixer-win () nil)
 
 (defun show-listener-win () 
-  (om-make-new-listener :initial-lambda #'(lambda () (in-package :om))))
+  (om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*))
 
 ;;; redefined in scorepalette
 (defun show-score-inspector (editor) nil)

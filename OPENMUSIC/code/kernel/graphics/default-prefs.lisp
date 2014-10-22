@@ -43,11 +43,14 @@
 
 (defvar *reactive-patches* nil)
 
+(defvar *listener-input* t)
+
 (defmethod get-def-vals ((iconID (eql :general)))
    (list :handle-errors t 
          :user-name "Guarigocha" 
          :eval-process :on
          :listener-on-top :no
+         :listener-input t
          :reactive nil
          :out-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
                                                      :host (pathname-host (mypathname *current-workspace*))
@@ -73,10 +76,11 @@
        (om-set-eval-process (equal *eval-process* :on)))
 
      (setf *reactive-patches* (get-pref modulepref :reactive))
+     (setf *listener-input* (get-pref modulepref :listener-input))
 
      (when (get-pref modulepref :listener-on-top) 
        (setf om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes)))
-     
+    
      (setf *composer-name* (get-pref modulepref :user-name))
 
      (if (probe-file (get-pref modulepref :out-files-dir))
@@ -98,7 +102,7 @@
                        :user-name ,*composer-name* 
                        :eval-process ,*eval-process*
                        :reactive ,*reactive-patches*
-                       
+                       :listener-input ,*listener-input*
                        :listener-on-top ,(if om-lisp::*listener-on-top* :yes :no)
                        :out-files-dir ,(om-save-pathname *om-outfiles-folder*)
                        :tmp-files-dir ,(om-save-pathname *om-tmpfiles-folder*)
@@ -156,17 +160,19 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
                                           :font *om-default-font1*)
 
-                                          (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Keep Listener in Front" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Keep Listener in Front" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :listener-on-top (if (om-checked-p item) :yes :no)))
                                           :font *controls-font*
                                           :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
-
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
-                                          :font *om-default-font1*)
-
-                                          (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable reactivity" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable Listener input" 
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :listener-input (om-checked-p item)))
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :listener-input))
+                     
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable reactivity" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :reactive (om-checked-p item)))
                                           :font *controls-font*
