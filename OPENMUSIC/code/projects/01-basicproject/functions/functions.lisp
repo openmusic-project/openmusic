@@ -114,7 +114,7 @@ The resulting function can be connected for example to SAMPLEFUN."
 
 (defun interpole (list-x list-y x-min x-max nbsamples)
   (if (= 1 nbsamples) (list (x-transfer (mat-trans (list list-x list-y)) (+ x-min (/ (- x-max x-min) 2))))
-  (let ((step (/ (- x-max x-min) (1- (float nbsamples)))))
+  (let ((step (/ (- x-max x-min) (1- (coerce nbsamples 'double-float)))))
     (loop with x = (pop list-x) and xx = (pop list-x) 
           and y = (pop list-y) and yy = (pop list-y)
           with x-index = x-min
@@ -279,7 +279,7 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
       (let ((ylist (interpole (x-points self) (y-points self) x0 x1 nn))
             (xlist (if (integerp nbs-sr)
                        (cond ((> nbs-sr 1)
-                              (arithm-ser x0 x1 (float (/ (- x1 x0) (- nbs-sr 1))) nn))
+                              (arithm-ser x0 x1 (/ (- x1 x0) (coerce (/ (- x1 x0) (1- nbs-sr)) 'double-float)) nn))
                              ((= nbs-sr 1) 
                               (list (+ x0 (/ (- x1 x0) 2.0))))
                              (t (om-beep-msg "Number of sample must be > 0 !!!")))
