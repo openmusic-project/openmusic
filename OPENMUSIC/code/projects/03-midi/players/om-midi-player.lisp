@@ -15,6 +15,7 @@
 
     
 (defmethod prepare-to-play ((engine (eql :midi-player)) (player omplayer) object at interval params)
+  ;(print (format nil "~s" params))
   (let ((approx (if (find :approx params)
                     (nth (1+ (position :approx params)) params)
                   (if (caller player) (get-edit-param (caller player) 'approx))))

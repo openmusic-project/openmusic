@@ -287,6 +287,7 @@
         (make-pitchwheel-event (+ at dur) 4 port 0)))
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self chord-seq) at &key approx port interval voice)
+  ;(print (list player approx))
   (if (and *midi-microplay* approx (find approx '(4 8) :test '=))
     (append 
      (microplay-events at (get-obj-dur self) port)
