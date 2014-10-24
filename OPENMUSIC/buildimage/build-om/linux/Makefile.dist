@@ -52,7 +52,7 @@ all:	install
 
 install: $(BUILDROOT)/$(releaseappname)
 	mkdir -p $(omroot)
-	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude 'OM_6.8*' --exclude 'Makefile*'  . $(omroot)
+	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude 'OM_6.9*' --exclude 'Makefile*'  . $(omroot)
 	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(APPNAME)
 	mkdir -p $(datadir)/applications/
 	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
