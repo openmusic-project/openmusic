@@ -306,7 +306,7 @@
             <beg> and <end> can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
             (if (null (buffer s))
                 (om-beep-msg "Error: null sound buffer")
-
+                
               (let* ((nch (nch s))
                      (sr (sr s))
                      (size2 (* (size s) nch))
@@ -317,7 +317,7 @@
                      (final-buffer (om-make-pointer lengthfinal :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch sr size2 beg-smp end-smp lengthfinal))
-
+                
                 (dotimes (i lengthfinal)
                   (setf (fli:dereference final-buffer :index i) (fli:dereference (buffer s) :index (+ beg-smp i))))
               
@@ -621,9 +621,7 @@
 
                   ;(fli:free-foreign-object (buffer s1))
                   ;(fli:free-foreign-object (buffer s2))
-                  
-                  ;(print (list size1 size2))
-                  
+                                    
                   (make-instance 'om-sound-data 
                                  :buffer final-buffer
                                  :size (round final-size nch)
