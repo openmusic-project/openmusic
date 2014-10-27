@@ -660,7 +660,7 @@
 ;;;===================
 ;;; TRACKS
 ;;;===================
-(omg-defclass trackpanel (om-transparent-view)  ; om-view-drop
+(defclass trackpanel (om-transparent-view)  ; om-view-drop
   ((selected :accessor selected :initform nil)
    (reference :accessor reference :initarg :reference :initform nil)
    ))
