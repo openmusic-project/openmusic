@@ -86,8 +86,8 @@
                             (cdr (assoc 'player param))
                             :at (+ at (offset->ms object))
                             :interval interval
-                            :params (list :approx (get-edit-param param 'approx) :port (get-edit-param param 'outport))
-                            )
+                            :params (list :approx (get-edit-param param 'approx) 
+                                          :port (get-edit-param param 'outport)))
            ))
 
 
