@@ -103,41 +103,7 @@
      (if (<= (length kant-voices) 1) (car kant-voices)
          kant-voices)))
    
-
-;;; version quantification "externe"
-(defun quantify-segments (cs tempo maxdiv forbidden precision)
-  (let* ((kant-analysis (car (remove nil (loop for an in (analysis cs) 
-                                               when (equal (type-of an) 'kant-seg)
-                                               collect an)))))
-    (if kant-analysis
-        (let ((kant-voices 
-               (loop for seg in (analysis-segments kant-analysis) collect
-                     (or (voice (segment-data seg))
-                         (quantify-segment cs (segment-begin seg) (segment-end seg) 
-                                           tempo maxdiv forbidden precision)))))
-          (unless (= 0 (segment-begin (car (analysis-segments kant-analysis))))
-            (setf kant-voices 
-                  (cons (quantify-segment cs 0 (segment-begin (car (analysis-segments kant-analysis))) 
-                                          tempo maxdiv forbidden precision)
-                        kant-voices)))
-          (reduce 'concat kant-voices))
-      (om-beep-msg "NO KANT-SEG IN CHORD-SEQ"))))
-
-(defun quantify-segment (cs t1 t2 tempo maxdiv forbidden precision)
-  (let* ((tmpcseq (select cs t1 (min t2 (get-obj-dur cs))))
-         (durs (x->dx (lonset tmpcseq))))
-    (when (zerop t1)
-      (setf durs (cons (- (car (lonset tmpcseq))) durs)))
-    (make-instance 'voice 
-                   :tree (omquantify durs tempo '(4 4)  
-                                     (or maxdiv 8) forbidden
-                                     0 (or precision 0.0))
-                   :chords (get-chords tmpcseq)
-                   :tempo tempo)))
-;;;===========
-
-  
-                               
+                          
 (defmethod kant-data-window ((kdata kant-data))
   (let ((win (om-make-window 'om-dialog :position :centered 
                              :size (om-make-point 430 200)))
@@ -219,6 +185,71 @@
     (om-add-subviews win pane)
     (om-modal-dialog win)
     ))
+
+
+
+;;;===========
+;;; version quantification "externe"
+
+(defun auto-mark (chord-seq beat-times)
+  (let ((an (make-instance 'kant-seg))
+        (cs (clone chord-seq)))
+    (setf (analysis cs) (list an))
+    (analysis-init an cs)
+    (setf (analysis-segments an) nil)
+    (loop for c in (inside cs)
+          for o in (lonset cs)
+          for i = 0 then (1+ i)
+          when (find o beat-times :test '=)
+          do (add-in-analysis an 
+                              (make-instance 'chord-marker 
+                                             :chord c :chord-id i)))
+    cs))
+ 
+
+(defun quantify-segments (cs tempo maxdiv forbidden precision)
+  (let* ((kant-analysis (car (remove nil (loop for an in (analysis cs) 
+                                               when (equal (type-of an) 'kant-seg)
+                                               collect an)))))
+    (if kant-analysis
+        (let ((kant-voices 
+               (loop for seg in (analysis-segments kant-analysis) 
+                     for i = 1 then (+ i 1) collect
+                     (progn 
+                       (print (format nil "SEGMENT ~D: ~Dms - ~Dms" i (segment-begin seg) (segment-end seg)))
+                       (or (voice (segment-data seg))
+                           (quantify-segment cs (segment-begin seg) (segment-end seg) 
+                                             tempo maxdiv forbidden precision))))))
+          (unless (= 0 (segment-begin (car (analysis-segments kant-analysis))))
+            (print (format nil "SEGMENT 0: 0ms - ~Dms" (segment-begin (car (analysis-segments kant-analysis)))))
+            (setf kant-voices 
+                  (cons (quantify-segment cs 0 (segment-begin (car (analysis-segments kant-analysis)))
+                                          tempo maxdiv forbidden precision)
+                        kant-voices)))
+          ;(reduce 'concat kant-voices)
+          kant-voices
+          )
+      (om-beep-msg "NO KANT-SEG IN CHORD-SEQ"))))
+
+(defun quantify-segment (cs t1 t2 tempo maxdiv forbidden precision)
+  (let* ((tmpcseq (select cs t1 (min t2 (get-obj-dur cs))))
+         (durs (x->dx (lonset tmpcseq)))
+         (chords-and-beats (loop for d in durs for c in (get-chords tmpcseq)
+                                 collect (if (get-extras c 'text)
+                                             (list c d) (list nil (- d))))))
+    (when (and (zerop t1) (get-chords tmpcseq))
+      (setf chords-and-beats 
+            (cons (list nil (- (car (lonset tmpcseq)))) chords-and-beats)))
+    (make-instance 'voice 
+                   :tree (omquantify (mapcar 'cadr chords-and-beats)
+                                            tempo '(4 4)  
+                                            (or maxdiv 8) forbidden
+                                            0 (or precision 0.0))
+                   :chords (remove nil (mapcar 'car chords-and-beats))
+                   :tempo tempo)))
+;;;===========
+
+
         
 
 

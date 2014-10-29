@@ -223,8 +223,8 @@
 
 (defmethod segment-handle-add-key ((self chord-marker) analysis panel) 
   (when (selection? panel)
-    (let ((first-in-selection (print (car (sort (get-real-chords (selection? panel)) '< 
-                                   :key #'(lambda (c) (offset->ms c (analysis-object analysis))))))))
+    (let ((first-in-selection (car (sort (get-real-chords (selection? panel)) '< 
+                                   :key #'(lambda (c) (offset->ms c (analysis-object analysis)))))))
       (if first-in-selection
       (if (find first-in-selection (analysis-segments analysis)
                 :key 'chord :test 'equal)
