@@ -412,7 +412,7 @@ Extraction methods.
                 for chan = (or (pop LChan) chan)
                 for port = (or (pop LPort) 0)   ;;; now port can be nil.. 
                 for note = (mki 'note :midic (round midic) :vel (round vel) :dur (round dur) :chan chan )
-                do (setf (offset note)  (round offset))
+                do (setf (offset note) (round offset))
                 (setf (port note)  port)
                 collect note ))
     (QNormalize self)
