@@ -102,9 +102,42 @@
                         kant-analyses)))
      (if (<= (length kant-voices) 1) (car kant-voices)
          kant-voices)))
-     
-     
-                              
+   
+
+;;; version quantification "externe"
+(defun quantify-segments (cs tempo maxdiv forbidden precision)
+  (let* ((kant-analysis (car (remove nil (loop for an in (analysis cs) 
+                                               when (equal (type-of an) 'kant-seg)
+                                               collect an)))))
+    (if kant-analysis
+        (let ((kant-voices 
+               (loop for seg in (analysis-segments kant-analysis) collect
+                     (or (voice (segment-data seg))
+                         (quantify-segment cs (segment-begin seg) (segment-end seg) 
+                                           tempo maxdiv forbidden precision)))))
+          (unless (= 0 (segment-begin (car (analysis-segments kant-analysis))))
+            (setf kant-voices 
+                  (cons (quantify-segment cs 0 (segment-begin (car (analysis-segments kant-analysis))) 
+                                          tempo maxdiv forbidden precision)
+                        kant-voices)))
+          (reduce 'concat kant-voices))
+      (om-beep-msg "NO KANT-SEG IN CHORD-SEQ"))))
+
+(defun quantify-segment (cs t1 t2 tempo maxdiv forbidden precision)
+  (let* ((tmpcseq (select cs t1 (min t2 (get-obj-dur cs))))
+         (durs (x->dx (lonset tmpcseq))))
+    (when (zerop t1)
+      (setf durs (cons (- (car (lonset tmpcseq))) durs)))
+    (make-instance 'voice 
+                   :tree (omquantify durs tempo '(4 4)  
+                                     (or maxdiv 8) forbidden
+                                     0 (or precision 0.0))
+                   :chords (get-chords tmpcseq)
+                   :tempo tempo)))
+;;;===========
+
+  
+                               
 (defmethod kant-data-window ((kdata kant-data))
   (let ((win (om-make-window 'om-dialog :position :centered 
                              :size (om-make-point 430 200)))

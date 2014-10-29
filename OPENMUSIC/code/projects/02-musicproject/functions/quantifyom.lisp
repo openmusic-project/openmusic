@@ -129,6 +129,7 @@ at the beat level. Here is an example:
   ))
 
 
+
 ;;;korrected-kant: kant correction by K. Haddad
 ;;;included in omquantify 21/10/2008 in OM 6.0.4
 ;;;the before last duration is mostly a rest followed by a continuation-chord
