@@ -259,6 +259,8 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
          (t nil)))
    
 
+(arithm-ser 0 1000 (/ 1000 (coerce (/ 1000 (1- 101)) 'double-float)) 101)
+
 (defmethod! om-sample ((self bpf) (nbs-sr number) &optional xmin xmax dec)
     :numouts 3
     (let* ((x0 (or xmin (first (x-points self)))) 
@@ -279,7 +281,7 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
       (let ((ylist (interpole (x-points self) (y-points self) x0 x1 nn))
             (xlist (if (integerp nbs-sr)
                        (cond ((> nbs-sr 1)
-                              (arithm-ser x0 x1 (/ (- x1 x0) (coerce (/ (- x1 x0) (1- nbs-sr)) 'double-float)) nn))
+                              (arithm-ser x0 x1 (coerce (/ (- x1 x0) (1- nbs-sr)) 'double-float) nn))
                              ((= nbs-sr 1) 
                               (list (+ x0 (/ (- x1 x0) 2.0))))
                              (t (om-beep-msg "Number of sample must be > 0 !!!")))
