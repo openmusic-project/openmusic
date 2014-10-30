@@ -680,12 +680,12 @@
 
 
 #-linux (setf *om-def-font-face* "Verdana")
-#+linux (setf *om-def-font-face* "Bitstream Vera Sans")
+#+linux (setf *om-def-font-face* "Liberation Sans")
 ;;; #+win32(setf *om-def-font-face* "MS Shell Dlg")
  
 
 #-linux(setf *om-def-bold-font-face* "Verdana")
-#+linux(setf *om-def-bold-font-face* "Bitstream Vera Sans")
+#+linux(setf *om-def-bold-font-face* "Liberation Sans")
 
 ;(setf *om-def-font-sizes* 
 ;      #+win32'(8 10 11 13 20) 
