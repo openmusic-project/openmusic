@@ -253,7 +253,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
         (multiple-value-bind (fields fieldslsb) 
              (get-fields self value)
           (when (out-of-7bits fields)
-            (om-beep-msg "WARNING: Wrong value in MIDI controller: " fields))
+            (om-beep-msg (format nil "WARNING: Wrong values in MIDI controller: ~A" fields)))
         ;send events for each channel, port, ref...
           (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
                 (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
@@ -270,7 +270,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                           
                           (when (and (equal (ev-type self) :CtrlChange) fieldslsb (not (= 0 (second fieldslsb)))) 
                             (when (out-of-7bits fieldslsb)
-                              (om-beep-msg "WARNING: Wrong value in MIDI controller: " fields))
+                              (om-beep-msg (format nil "WARNING: Wrong values in MIDI controller: ~A" fieldslsb)))
                                       
                             (setf evtLSB (make-instance 'MidiEvent
                                            :ev-date date
