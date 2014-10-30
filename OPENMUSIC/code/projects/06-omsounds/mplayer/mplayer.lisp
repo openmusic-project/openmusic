@@ -133,16 +133,6 @@
   (when playlist
     (dolist (snd playlist) (player-stop-object engine snd))))
 
-(defmethod player-pause-object ((engine (eql :mplayer)) object &key interval)
-  (unless (mplayer-proc-paused (gethash object *mplayers*))
-    (mplayer-send-cmd object "pause")
-    (setf (mplayer-proc-paused (gethash object *mplayers*)) t)))
-
-(defmethod player-pause ((engine (eql :mplayer)) &optional playlist)
-  (when playlist
-    (dolist (snd playlist) (player-pause-object engine snd)))
-  nil)
-
 (defmethod player-continue-object ((engine (eql :mplayer)) object &key interval)
   (declare (ignore interval))
   (when (mplayer-proc-paused (gethash object *mplayers*))
@@ -153,7 +143,6 @@
   (when playlist
     (dolist (snd playlist) (player-continue-object engine snd)))
   nil)
-
 
 (defmethod player-pause-object ((engine (eql :mplayer)) object &key interval)
   (unless (mplayer-proc-paused (gethash object *mplayers*))
