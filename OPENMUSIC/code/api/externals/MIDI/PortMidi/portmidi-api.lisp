@@ -210,9 +210,6 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 (defun make-midi-bytes (type channel vals)
   ;(print (list type channel vals))
-  (when (and (equal type :pitchbend)
-             (not (listp vals)))
-    (setf vals (+ vals 8192)))
   (let ((type-ref (type-to-midi type))
         (v1 (if (listp vals) (car vals) (7-lsb vals)))
         (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))

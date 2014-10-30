@@ -226,28 +226,9 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 ; TOOLS 
 ;======================
 
-
-;======================
-; LSB/MSP UTILS 
-;======================
-
-;=== tests if a controller num corresponds 
-;=== to LSB value of another one
-(defun lsb-controller (ctrlNum)
-  (and (>= ctrlNum 32) (<= ctrlNum 63)))
-
-;=== Converts msb lsb to a value
-(defun Msb-Lsb2value (msb lsb)
-  (+ lsb (* 128 msb)))
-
-;=== gets MSB from a 14bits value
-(defun msb (value)
-  (floor (/ value 128)))
-
-;=== gets LSB from a 14bits value
-(defun lsb (value)
-  (- value (* (msb value) 128)))
-
+(defun out-of-7bits (fields)
+  (or (< (car fields) 0) (> (car fields) 127)
+      (< (cadr fields) 0) (> (cadr fields) 127)))
 
 (defmethod get-fields ((self MidiControl) value)
   (case (ev-type self)
@@ -255,9 +236,9 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
            (values (list (- (ctr-num self) 32) (msb value))
                    (list (ctr-num self) (lsb value)))
          (values (list (ctr-num self) value) nil)))
-    (:PitchBend (if (= (ctr-num self) 14) 
-                    value ; (list (lsb (+ value 8192)) (msb (+ value 8192))))
-                  (pitchbend-to-pitchwheel value) ; (list 0 (+ value 64))
+    (:PitchBend (if (= (ctr-num self) 14)
+                    (val2msb-lsb (+ value 8192))
+                  (list 0 (+ value 64))
                   ))
     (:KeyPress (list 0 value))
     (otherwise value)))
@@ -270,12 +251,13 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
     (loop for date in (Ldates self)
         for value in (Lvalues self) do
         (multiple-value-bind (fields fieldslsb) 
-            (get-fields self value)
-          
+             (get-fields self value)
+          (when (out-of-7bits fields)
+            (om-beep-msg "WARNING: Wrong value in MIDI controller: " fields))
         ;send events for each channel, port, ref...
-        (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
-              (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
-                    (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-type self) :Tempo) 0 1))) do
+          (loop for po in (if (port self) (list! (port self)) (list *def-midi-out*)) do
+                (loop for ch in (if (chan self) (list! (chan self)) (list 1)) do
+                      (loop for re in (if (ref self) (list! (ref self)) (list (if (equal (ev-type self) :Tempo) 0 1))) do
               
                           (setf evtMSB (make-instance 'MidiEvent
                                          :ev-date date
@@ -286,7 +268,10 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                                          :ev-fields fields
                                          ))
                           
-                          (if (and (equal (ev-type self) :CtrlChange) fieldslsb (not (= 0 (second fieldslsb)))) 
+                          (when (and (equal (ev-type self) :CtrlChange) fieldslsb (not (= 0 (second fieldslsb)))) 
+                            (when (out-of-7bits fieldslsb)
+                              (om-beep-msg "WARNING: Wrong value in MIDI controller: " fields))
+                                      
                             (setf evtLSB (make-instance 'MidiEvent
                                            :ev-date date
                                            :ev-type (ev-type self)
@@ -295,7 +280,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                                            :ev-port po
                                            :ev-fields fieldslsb
                                            ))
-                            (setf evtLSB nil))
+                            )
                           
                           (if (or (not test) (funcall test evtMSB))
                             (push evtMSB evtList))

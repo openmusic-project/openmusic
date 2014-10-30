@@ -146,6 +146,32 @@
   evt)
 
 
+;======================
+; LSB/MSP UTILS 
+;======================
+
+;=== tests if a controller num corresponds 
+;=== to LSB value of another one
+(defun lsb-controller (ctrlNum)
+  (and (>= ctrlNum 32) (<= ctrlNum 63)))
+
+;=== Converts msb lsb to a value
+(defun msb-lsb2value (msb lsb)
+  (+ lsb (* 128 msb)))
+
+;=== gets MSB from a 14bits value
+(defun msb (value)
+  (floor (/ value 128)))
+
+;=== gets LSB from a 14bits value
+(defun lsb (value)
+  (- value (* (msb value) 128)))
+
+;=== decomposes a value in two 7 bytes blocks
+(defun val2msb-lsb (value)
+  (let ((msb (msb value)))
+    (list msb (- value (* msb 128)))))
+
 ;==================================
 ;=== Time and tempo conversions ===
 ;==================================
