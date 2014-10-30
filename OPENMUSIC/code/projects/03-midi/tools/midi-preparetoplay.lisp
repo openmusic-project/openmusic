@@ -95,7 +95,7 @@
                                       :chan 0 ;;; WHANT SI THE CHANNEL OF A TIME SIGN EVENT ??
                                       :date at
                                       :fields (list num den 24 div)
-                                      :port port)))
+                                      :port (or port *def-midi-out*))))
 
     (cons MeasureEvent
           (remove nil
@@ -166,16 +166,6 @@
     ;;; by default channel 1 = 25 mc, channel 2 = 50 mc, channel 3 = 75mc
     (round (mod midic 100) channel-mc-unit)))
 
-(round (mod 6452 100) (/ 200 8))
-
-(defun note-events (port chan pitch vel dur date track)
-   (list (om-midi::make-midi-evt :type :Note
-                        :date date 
-                        :port (or port *def-midi-out*) 
-                        :chan chan 
-                        :ref track
-                        :fields (list pitch vel dur))
-         ))
 
 (defun note-events (port chan pitch vel dur date track)
    (list (om-midi::make-midi-evt :type :KeyOn

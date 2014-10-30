@@ -174,11 +174,20 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (:CtrlChange #b1011)
     (:ProgChange #b1100)
     (:ChanPress #b1101)
-    (:PitchBend #b1110)))
+    (:PitchBend #b1110)
+    ))
+
+(defvar *midi-meta-types*
+  '(:TimeSign :SeqNum :Textual :Copyright :SeqName
+    :InstrName :Lyric :Marker :CuePoint :ChanPrefi
+    :EndTrack :Tempo :SMPTEOffset :TimeSign :KeySign
+    :Specific))
+
 
 ; (type-to-midi :KeyOff)
 (defun type-to-midi (type)
   (or (cadr (find type *midi-typenum-table* :key 'car :test 'equal))
+      (and (find type *midi-meta-types*) #xFF)
       (progn (print (format nil "PORTMIDI API - MESSAGE TYPE NOT SUPPORTED: ~S " type)) nil)
       ))
 
@@ -217,17 +226,17 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 
 (defun portmidi-send-evt (evt)
-  (let ((out (get-output-stream-from-port (midi-evt-port evt)))
-        (bytes (make-midi-bytes (midi-evt-type evt) 
-                                (1- (midi-evt-chan evt)) 
-                                (midi-evt-fields evt))))
-    (if (and out bytes)
-        (pm::pm-write-short out 0 bytes)
-      (unless out 
-        (print (format nil "PortMIDI ERROR: port ~A is not connected" (midi-evt-port evt)))
-        nil
-        )
-      )))
+  (when (midi-evt-port evt)
+    (let ((out (get-output-stream-from-port (midi-evt-port evt)))
+          (bytes (make-midi-bytes (midi-evt-type evt) 
+                                  (1- (midi-evt-chan evt)) 
+                                  (midi-evt-fields evt))))
+    ;(print (midi-evt-type evt))
+      (if (and out bytes)
+          (pm::pm-write-short out 0 bytes)
+        (unless out
+          (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" (midi-evt-port evt))) nil)
+      ))))
 
 
 

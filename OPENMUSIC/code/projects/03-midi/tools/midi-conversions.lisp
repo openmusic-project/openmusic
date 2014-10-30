@@ -19,8 +19,10 @@
 (defmethod! get-midievents ((self Note) &optional test)
    :icon 902
    (when (not (memq (tie self) '(continue end)))
-       (let ((event (objfromobjs self (make-instance 'MidiEvent))))
-         (if (or (not test) (funcall test event)) (list event) nil))))
+       (let ((events (NoteToEvents self)))
+         (if test
+             (loop for e in events when (funcall test event) collect e)
+           events))))
 
 (defmethod! get-midievents ((self Rest) &optional test) nil)
 
@@ -72,6 +74,23 @@
 ;=========================================
 ;;; SCORE TO MIDI
 ;=========================================
+
+(defmethod* NoteToEvents ((self Note))
+ (list (make-instance 'MidiEvent   
+                      :ev-type :KeyOn
+                      :ev-date (if (parent self) (offset->ms self) 0)
+                      :ev-ref 1 
+                      :ev-port (port self)
+                      :ev-chan (chan self)
+                      :ev-fields (list (round (/ (midic self) 100)) (vel self)))
+       (make-instance 'MidiEvent   
+                           :ev-type :KeyOff
+                           :ev-date (+ (if (parent self) (offset->ms self) 0)
+                                       (real-dur self))
+                           :ev-ref 1 
+                           :ev-port (port self)
+                           :ev-chan (chan self)
+                           :ev-fields (list (round (/ (midic self) 100)) 0))))
 
 (defmethod* objFromObjs ((self Note) (type MidiEvent))
   (let ((evt (make-instance 'MidiEvent   

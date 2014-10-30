@@ -362,13 +362,12 @@ The range of volume values is 0-127.
 (defmethod! send-midi-note (port chan pitch vel dur track)
    :icon 148
    :initvals '(0 1 60 100 1000 1)
-   (when (< dur 65000)
-     (let ((event (om-midi::make-midi-evt :type :Note :port port :chan chan
-                                          :date 0 :ref track
-                                          :fields (list pitch vel dur)
-                                                              )))
-       (midi-send-evt event))
-     ))
+   (om-run-process "SEND MIDI" 
+                   #'(lambda ()
+                       (let ((notes (note-events port chan pitch vel dur 0 track)))
+                         (midi-send-evt (car notes))
+                         (sleep (/ dur 1000.0))
+                         (midi-send-evt (cadr notes))))))
 
 ; (send-midi-note 0 1 60 100 1000 1)
 
