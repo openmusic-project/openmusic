@@ -78,7 +78,8 @@
 (defclass om-listener-in-pane (capi::listener-pane) ())
 (defclass om-listener-out-pane (capi::collector-pane) ())
 
-(defvar *listener-font* nil)
+#-linux (defvar *listener-font* nil)
+#+linux (defvar *listener-font* (gp::make-font-description :family #+linux "Liberation Mono" :size 9))
 
 ;; do not work on mac...
 
