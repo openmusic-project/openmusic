@@ -943,8 +943,11 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod distribute-chords  ((self score-element) (chords score-element))
   (distribute-chords self (collect-chords chords)))
 
+
 (defmethod distribute-chords  ((self score-element) (chords list))
-  (let ((fringe nil) (chord-model (mki 'chord)) )
+  (let ((fringe nil) 
+        (chord-model (mki 'chord))
+        (def-chord (last-elem chords)))
     (labels ( (distribute (self chords)
                  (setf (inside self)
                        (loop for sub in (inside self)
@@ -959,17 +962,17 @@ of all its direct subcontainers (supposed adjacent)"
                                (progn (setf chord 
                                             (objfromobjs 
                                              (or (loop for c in fringe if (chord-p c) return c)
-                                                 (mki 'chord)) 
+                                                 (mki 'chord))
                                              chord-model))
                                       (change-class chord 'continuation-chord))
-                               (setf chord (objfromobjs  (or (pop chords) (mki 'chord)) chord-model)))
+                               (setf chord (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
                              (setf (offset chord) (offset sub))
                              (InContext sub (setf (extent chord) (extent sub)))
                              (when (and (note-p sub) (eq (tie sub) 'continue))  (push 'tie fringe))
                              (push chord fringe)
                              ;(normalize-chord chord)
                              and collect chord))
-                 chords) )
+                 chords))
       (distribute self chords)
       (setf fringe (nreverse fringe)) 
       (loop for item1 in fringe
@@ -1364,7 +1367,7 @@ of all its direct subcontainers (supposed adjacent)"
 
 ;===============
 
-(om::defmethod! get-measures ((self voice))
+(defmethod! get-measures ((self voice))
   :initvals (list  t) 
   :indoc '("a voice")
   :icon 134
@@ -1373,12 +1376,11 @@ Returns the list of all measure in <self>.
 "
   (inside self))
 
-(om::defmethod! get-measures ((self poly))
+(defmethod! get-measures ((self poly))
   (loop for voice in self
         append (get-measures voice)))
 
-(om::defmethod! get-measures ((self t))
- nil)
+(defmethod! get-measures ((self t)) nil)
 
 ;=============
 (defmethod offset->ms-tempo-fixe ((self simple-container) tempo grandparent)
