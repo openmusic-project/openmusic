@@ -151,9 +151,6 @@
 (defun lsb-controller (ctrlNum)
   (and (>= ctrlNum 32) (<= ctrlNum 63)))
 
-;=== Converts msb lsb to a value
-(defun msb-lsb2value (msb lsb)
-  (+ lsb (* 128 msb)))
 
 ;=== gets MSB from a 14bits value
 (defun msb (value)
@@ -164,9 +161,22 @@
   (- value (* (msb value) 128)))
 
 ;=== decomposes a value in two 7 bytes blocks
-(defun val2msb-lsb (value)
+(defun val2lsbmsb (value)
   (let ((msb (msb value)))
-    (list msb (- value (* msb 128)))))
+    (list (- value (* msb 128)) msb)))
+
+;=== Converts msb lsb to a value
+(defun msb-lsb2value (msb lsb)
+  (+ lsb (* 128 msb)))
+
+;; 7 bits to 14 bits
+;; 7b  = 0-127
+;; 14b = 0-16383
+(defun 7b-to-14b (v)
+  (* v 128))
+;(round (* (/ pb 127) 16383)))
+
+
 
 ;==================================
 ;=== Time and tempo conversions ===
