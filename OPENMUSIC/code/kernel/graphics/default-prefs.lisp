@@ -43,14 +43,14 @@
 
 (defvar *reactive-patches* nil)
 
-(defvar *listener-input* t)
+(defvar *listener-input* nil)
 
 (defmethod get-def-vals ((iconID (eql :general)))
    (list :handle-errors t 
          :user-name "Guarigocha" 
          :eval-process :on
          :listener-on-top :no
-         :listener-input t
+         :listener-input nil
          :reactive nil
          :out-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
                                                      :host (pathname-host (mypathname *current-workspace*))
@@ -76,10 +76,17 @@
        (om-set-eval-process (equal *eval-process* :on)))
 
      (setf *reactive-patches* (get-pref modulepref :reactive))
-     (setf *listener-input* (get-pref modulepref :listener-input))
+     
+     (unless (equal *listener-input* (get-pref modulepref :listener-input))
+       (om-close-window om-lisp::*om-listener*)
+       (setf *listener-input* (get-pref modulepref :listener-input))
+       (show-listener-win))
 
      (when (get-pref modulepref :listener-on-top) 
-       (setf om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes)))
+       (unless (equal om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes))
+         (om-close-window om-lisp::*om-listener*)
+         (setf om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes))
+         (show-listener-win)))
     
      (setf *composer-name* (get-pref modulepref :user-name))
 

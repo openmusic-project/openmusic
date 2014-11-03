@@ -25,7 +25,7 @@
 (defun def-midi-presets () '(("-----" nil)))
 
 (defun put-midi-mixer-values ()
-  (print "restoring mixer preset")
+  (print "MIDI: Restoring presets from preferences...")
   (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
     (init-midi-mixer vals)
     (when *midi-mixer* 
