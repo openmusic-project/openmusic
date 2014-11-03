@@ -228,7 +228,8 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 
 (defun out-of-7bits (fields)
   (or (< (car fields) 0) (> (car fields) 127)
-      (< (cadr fields) 0) (> (cadr fields) 127)))
+      (and (cadr fields)
+           (< (cadr fields) 0) (> (cadr fields) 127))))
 
 (defmethod get-fields ((self MidiControl) value)
   (case (ev-type self)
@@ -237,11 +238,11 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
                    (list (ctr-num self) (lsb value)))
          (values (list (ctr-num self) value) nil)))
     (:PitchBend (if (= (ctr-num self) 14)
-                    (val2msb-lsb (+ value 8192))
+                    (val2lsbmsb (+ value 8192))
                   (list 0 (+ value 64))
                   ))
     (:KeyPress (list 0 value))
-    (otherwise value)))
+    (otherwise (list value))))
 
 
 ;=== Creates a list of MidiEvents 
