@@ -240,6 +240,7 @@
   (in-package :om)
   (om::show-workspaces-dialog)
   (oa::om-select-window om::*om-workspace-win*)
+  (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om)))
   (setf om::*om-startup* nil)
 )
 
