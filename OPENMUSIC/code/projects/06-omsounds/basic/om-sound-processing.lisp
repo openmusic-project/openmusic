@@ -599,13 +599,12 @@
                        (size1 (* nch (size s1)))
                        (size2 (* nch (size s2)))
                        (cf (if (integerp crossfade) (* crossfade 0.001) crossfade))
-                       (smp-cross (round (* nch cf sr)))
+                       (smp-cross (round (* nch cf (/ sr 1000.0))))
                        (smp-cross-side (* nch (ceiling smp-cross 2)))
                        (factor1 (- (/ 1.0 (max 1 smp-cross))))
                        (factor2 (/ 1.0 (max 1 smp-cross)))
                        (final-size (- (+ size1 size2) smp-cross-side))
                        (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
-
                   ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
                   ;(declare (type single-float factor1 factor2))
                   
