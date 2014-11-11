@@ -599,15 +599,15 @@
                        (size1 (* nch (size s1)))
                        (size2 (* nch (size s2)))
                        (cf (if (integerp crossfade) (* crossfade 0.001) crossfade))
-                       (smp-cross (round (* nch cf (/ sr 1000.0))))
-                       (smp-cross-side (* nch (ceiling smp-cross 2)))
+                       (smp-cross (round (* nch cf sr)))
+                       (smp-cross-side (round (* nch (/ cf 2.0) sr)))
                        (factor1 (- (/ 1.0 (max 1 smp-cross))))
                        (factor2 (/ 1.0 (max 1 smp-cross)))
-                       (final-size (- (+ size1 size2) smp-cross-side))
+                       (final-size (- (+ size1 size2) smp-cross))
                        (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
                   ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
                   ;(declare (type single-float factor1 factor2))
-                  
+
                   (dotimes (i final-size)
                     (setf (fli:dereference final-buffer :index i)
                           (cond ((< i (- size1 smp-cross)) 
@@ -617,16 +617,12 @@
                                     (* factor2 (- i (- size1 smp-cross)) (fli:dereference (buffer s2) :index (+ smp-cross (- i size1))))))
                                 ((> i size1) 
                                  (fli:dereference (buffer s2) :index (+ smp-cross (- i size1)))))))
-
-                  ;(fli:free-foreign-object (buffer s1))
-                  ;(fli:free-foreign-object (buffer s2))
                                     
                   (make-instance 'om-sound-data 
                                  :buffer final-buffer
                                  :size (round final-size nch)
                                  :nch nch
-                                 :sr (sr s1)))
-                   )
+                                 :sr (sr s1))))
                   (t
                    (om-beep-msg "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
                    s1)))
