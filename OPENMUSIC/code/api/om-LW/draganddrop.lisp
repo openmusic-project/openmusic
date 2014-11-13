@@ -121,14 +121,15 @@
 (defvar *last-pinboard-under-mouse* nil)
 
 (defun om-drop-callback (self drop-object stage)
-  (handler-bind ((error #'(lambda (e) (print e) ))) ; (abort e))))
+  (handler-bind ((error #'abort))
     (flet ((set-effect-for-operation (drop-object)
 	     ;; In a real application, this would be clever about which effects to allow.
-	     (dolist (effect '(:move :copy))
+	     (error "fgh")
+             (dolist (effect '(:move :copy))
 	       (when (capi:drop-object-allows-drop-effect-p drop-object effect)
-		 (setf (capi:drop-object-drop-effect drop-object) effect)
+               	 (setf (capi:drop-object-drop-effect drop-object) effect)
 		 (return t)))))
-      (case stage
+      (case (print stage)
 	(:formats
 	 (capi:set-drop-object-supported-formats drop-object '(:string :value :om-object :filename-list)))
 	(:enter
