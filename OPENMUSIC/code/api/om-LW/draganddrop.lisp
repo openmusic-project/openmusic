@@ -124,12 +124,11 @@
   (handler-bind ((error #'abort))
     (flet ((set-effect-for-operation (drop-object)
 	     ;; In a real application, this would be clever about which effects to allow.
-	     (error "fgh")
              (dolist (effect '(:move :copy))
 	       (when (capi:drop-object-allows-drop-effect-p drop-object effect)
                	 (setf (capi:drop-object-drop-effect drop-object) effect)
 		 (return t)))))
-      (case (print stage)
+      (case stage
 	(:formats
 	 (capi:set-drop-object-supported-formats drop-object '(:string :value :om-object :filename-list)))
 	(:enter
