@@ -593,15 +593,24 @@
     (setf (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) v)
     (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch)))
 
+;(defun bend (e &optional v)
+;  "read or set the bend value of an event"
+;  (if v
+;    (multiple-value-bind (ms7b ls7b) (floor (+ v 8192) 128)
+;      (setf (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) ls7b)
+;      (setf (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'vel) ms7b))
+;    (- (+ (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) 
+;          (* 128 (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'vel)))
+;       8192)))
 (defun bend (e &optional v)
   "read or set the bend value of an event"
   (if v
-    (multiple-value-bind (ms7b ls7b) (floor (+ v 8192) 128)
+    (multiple-value-bind (ms7b ls7b) (floor v 128)
       (setf (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) ls7b)
       (setf (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'vel) ms7b))
-    (- (+ (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) 
-          (* 128 (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'vel)))
-       8192)))
+    (+ (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'pitch) 
+       (* 128 (%foreign-slot-value e 'tmidi-ev-1 'info 'note 'vel)))
+    ))
 
 (defun clk (e &optional v)
   (if v

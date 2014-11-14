@@ -19,7 +19,7 @@
    (control1-val :initform 0 :initarg :control1-val :accessor control1-val :type integer)
    (control2-val :initform 0 :initarg :control2-val :accessor control2-val :type integer)
    (vol-ctrl :initform 100 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
-   (pitch-ctrl :initform 0 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)))
+   (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)))
 
 (defmethod channel-ctrl-p ((self channel-ctrl))  t)
 (defmethod channel-ctrl-p ((self t)) nil)
@@ -395,7 +395,6 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod make-preset-view ((self ConsoleEditor)) nil)
 
-
 (defmethod initialize-instance :after ((self ConsoleEditor) &rest l)
    (declare (ignore l))
    
@@ -605,7 +604,7 @@ In this case, all internal events are sent simultaneously.
                                                     :di-action (om-dialog-item-act item
                                                                  (change-pitchbend self (om-slider-value item)))
                                                     :increment 1
-                                                    :range '(-8192 8191)
+                                                    :range '(0 16383)
                                                     :value (pitch-ctrl (channelctr self))
                                                     :direction :horizontal
                                                     :tick-side :none
@@ -872,8 +871,8 @@ In this case, all internal events are sent simultaneously.
   (set-value (panSlider self) 64)
   (change-volume self 100)
   (om-set-slider-value (volumeSlider self) 100)
-  (change-pitchbend self 0)
-  (om-set-slider-value (pitchSlider self) 0)
+  (change-pitchbend self 8192)
+  (om-set-slider-value (pitchSlider self) 8192)
   (change-ctrl1-val self 0)
   (om-set-slider-value (ctrl1Slider self) 0)
   (change-ctrl2-val self 0)
@@ -955,3 +954,5 @@ In this case, all internal events are sent simultaneously.
   (set-value (panSlider self) 64)
   (change-volume self 100)
   (om-set-slider-value (volumeSlider self) 100))
+
+

@@ -22,7 +22,7 @@
 (AddClass2Pack '(MidiEvent EventMidi-seq MidiControl Tempo-map Midi-Mix-Console) *midipackage* :position (list (om-make-point 75 295) (om-make-point 75 115)))
 
 
-(AddGenFun2Pack  '(pitchwheel pitchbend pgmout ctrlchg volume sysex midi-reset midi-in) *midisend-package*)
+(AddGenFun2Pack  '(pgmout ctrlchg volume sysex midi-reset midi-in pitchbend pitchwheel mc-to-pitchwheel) *midisend-package*)
 (AddGenFun2Pack  '(test-date test-channel test-type test-track test-port midievent-filter) *midifilter-package*)
 (AddGenFun2Pack  '(mesure-time cseq+tempo->voice) *scorepackage*)
 (AddGenFun2Pack '(mf-info save-as-midi) *midipackage*)

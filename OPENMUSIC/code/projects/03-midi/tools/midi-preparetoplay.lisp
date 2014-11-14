@@ -252,29 +252,27 @@
 
 
 ; (om+ 8192 '(0 1024 2048 3072))
-
+; (* 8192 2)
 (defun microplay-reset (port player)
   (let ((send-fun (or (om-midi::send-midi-event-function player)
                       'midi-send-evt))
         (p (or port *def-midi-out*)))    
-  (funcall send-fun (make-pitchwheel-event 0 1 p 0))
-  (funcall send-fun (make-pitchwheel-event 0 2 p 0))
-  (funcall send-fun (make-pitchwheel-event 0 3 p 0))
-  (funcall send-fun (make-pitchwheel-event 0 4 p 0))
+  (funcall send-fun (make-pitchwheel-event 0 1 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 2 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 3 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 4 p 8192))
   ))
-
-
 
 (defun microplay-events (at dur port)
   ;;; make or send ... ?
-  (list (make-pitchwheel-event at 1 port 0) 
-        (make-pitchwheel-event at 2 port 1024) 
-        (make-pitchwheel-event at 3 port 2048) 
-        (make-pitchwheel-event at 4 port 3072) 
-        (make-pitchwheel-event (+ at dur) 1 port 0) 
-        (make-pitchwheel-event (+ at dur) 2 port 0) 
-        (make-pitchwheel-event (+ at dur) 3 port 0) 
-        (make-pitchwheel-event (+ at dur) 4 port 0)))
+  (list (make-pitchwheel-event at 1 port 8192) 
+        (make-pitchwheel-event at 2 port 9216) 
+        (make-pitchwheel-event at 3 port 10240) 
+        (make-pitchwheel-event at 4 port 11264) 
+        (make-pitchwheel-event (+ at dur) 1 port 8192) 
+        (make-pitchwheel-event (+ at dur) 2 port 8192) 
+        (make-pitchwheel-event (+ at dur) 3 port 8192) 
+        (make-pitchwheel-event (+ at dur) 4 port 8192)))
 
 (defmethod PrepareToPlay ((player (eql :midi)) (self chord-seq) at &key approx port interval voice)
   ;(print (list player approx))

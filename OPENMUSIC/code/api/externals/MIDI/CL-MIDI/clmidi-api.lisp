@@ -136,6 +136,7 @@
 ;; PITCH BEND
 
 ;; range = 14 bits (-8192 -> 8190 in user-code)
+;;; !! not anymore in OM 6.9 PW = 0-16384
 (defun make-pitch-bend-message (time bend chan)
   (make-instance 'midi:pitch-bend-message :time time :value bend :status (logior +pitch-bend-opcode+ chan)))
 (defun 7-msb (14bitval) (logand (ash 14bitval -7) #x7f))

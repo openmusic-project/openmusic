@@ -81,7 +81,7 @@
 
 (defun seqhash-midi-pitch-wheel-msg (seq frame bend &optional (channel 1))
   (let ((mybend (+ bend 8192)))		;expects values between -8192->8191
-    (let ((event (om-midi::make-pitch-bend-message frame mybend channel)))
+    (let ((event (om-midi::make-pitch-bend-message frame bend channel)))   ;;; use bend: in OM 6.9 values are 0-16383
       (seqhash-midi-event seq frame event))))
 
 ;; erase pending note-offs for interval - don't shut off later arriving notes
