@@ -627,6 +627,7 @@
                    (om-beep-msg "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
                    s1)))
 
+
 (defmethod! sound-seq ((s1 om-sound-data) (s2 sound) &optional (crossfade 0))
             ;(declare (type fixnum crossfade))
             (sound-seq s1 (get-om-sound-data s2) crossfade))
