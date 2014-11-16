@@ -108,7 +108,7 @@
                                                                                                 (set-portmidi-connection-view self dialog)
                                                                                                 )))
                                                                               
-                                                        (oa::om-make-dialog-item 'oa::om-pop-up-dialog-item (oa::om-make-point 100 3) (oa::om-make-point 220 20) ""
+                                                        (oa::om-make-dialog-item 'oa::om-pop-up-dialog-item (oa::om-make-point 100 0) (oa::om-make-point 220 20) ""
                                                                                  :range (cons "[disconnected]" devices)
                                                                                  :value (car (cadr portsetting)) ;; device for this port  
                                                                                  :di-action (let ((p (position (car portsetting) (nth pos-in-settings (settings dialog)) 
