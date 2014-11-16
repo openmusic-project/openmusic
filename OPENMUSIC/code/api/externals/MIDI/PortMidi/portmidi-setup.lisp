@@ -96,11 +96,11 @@
                                                               :position (oa::om-make-point 20 y))))
                                                         ;(when (> y 200) (oa::om-set-view-size self (oa::om-make-point (oa::om-width self) (+ y 200))))
                                    (oa::om-add-subviews vv
-                                                        (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 60 0) (oa::om-make-point 30 20)
+                                                        (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 60 3) (oa::om-make-point 30 20)
                                                                                  (format nil "~D" (car portsetting))
                                                                                  :font oa::*om-default-font2b*)
                                                                               
-                                                        (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 0 -3) (oa::om-make-point 40 20) "-"
+                                                        (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 0 0) (oa::om-make-point 40 20) "-"
                                                                                  :di-action (let ((n (car portsetting)))
                                                                                               (oa::om-dialog-item-act button
                                                                                                 (setf (nth pos-in-settings (settings dialog)) 
@@ -108,7 +108,7 @@
                                                                                                 (set-portmidi-connection-view self dialog)
                                                                                                 )))
                                                                               
-                                                        (oa::om-make-dialog-item 'oa::om-pop-up-dialog-item (oa::om-make-point 100 0) (oa::om-make-point 220 20) ""
+                                                        (oa::om-make-dialog-item 'oa::om-pop-up-dialog-item (oa::om-make-point 100 3) (oa::om-make-point 220 20) ""
                                                                                  :range (cons "[disconnected]" devices)
                                                                                  :value (car (cadr portsetting)) ;; device for this port  
                                                                                  :di-action (let ((p (position (car portsetting) (nth pos-in-settings (settings dialog)) 
@@ -126,7 +126,6 @@
                                    vv)
                                  )))
                )))))
-
 
 (defun show-portmidi-dialog (settings &optional action)
   (let ((dd (oa::om-make-window 'portmidi-ports-dialog 

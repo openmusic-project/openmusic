@@ -274,8 +274,7 @@
   ;;; (unless (Started) (Start))
   (cffi:with-foreign-object (p1 :pointer)
     (let ((err (pm-open-output-PTR p1 device (cffi:null-pointer)
-                               buffer-size 
-                               (cffi:null-pointer) (cffi:null-pointer)
+                               buffer-size (cffi:null-pointer) (cffi:null-pointer)
                                latency)))
       (if (= err pmNoError)
           (cffi:mem-ref p1 :pointer)

@@ -139,7 +139,8 @@
       ;(setf *ms-setup-app* (om-run-program *om-midi-settings-app-path*
       ;                                    #'(lambda () (om-message-dialog "Warning: The new MIDI drivers setup will be used for your next OM session only. OM must exit and restart to use them."))))
           (sleep 0.9)
-          (oa::om-select-program *midishare-setup-app*))
+          (oa::om-select-program *midishare-setup-app*)
+          NIL)
       (progn (oa::om-message-dialog "MidiShare Setup Application msDrivers not found!") nil)
     ))))
 

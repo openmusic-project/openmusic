@@ -100,8 +100,8 @@
 (defun init-app-menu ()
   (setf *om-app-menu-items* (list (string+ "OM " *version-string*) 
                                   (list '("About OM..." om::show-about-win)
-                                        '("Preferences" om::show-preferences-win)
-                                        '("Quit" om::om-confirmed-quit)))))
+                                        '("Preferences" om::show-preferences-win ",")
+                                        '("Quit" om::om-confirmed-quit "q")))))
 
 (om-add-init-func 'init-app-menu)
 
@@ -118,7 +118,7 @@
     (cond ((equal menuid 'windows)
            (om-make-menu "Windows" (append 
                                     (unless (om-standalone-p) 
-                                      (list (list (om-new-leafmenu "Preferences" 'show-preferences-win nil 
+                                      (list (list (om-new-leafmenu "Preferences" 'show-preferences-win "," 
                                                                    (if (member "Preferences" disable :test 'string-equal) nil t)))))
                                     (list 
                                      (list 
