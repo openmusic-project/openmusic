@@ -104,7 +104,7 @@
 
 (defun midi-in-start (port fun bsize redirect)
   (let ((sys (check-def-midi-system 'om-midi::midi-in-start-function nil)))
-    (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize redirect err-fun))))
+    (when sys (funcall (om-midi::midi-in-start-function sys) port fun bsize redirect))))
 
 
 (defun midi-in-stop (process)
