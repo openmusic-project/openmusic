@@ -683,7 +683,9 @@
    (lastxy :initform nil :initarg :lastxy :accessor lastxy)
    (camera :initform (make-camera :color '(0.15 0.15 0.15 1.0)) :initarg :camera :accessor camera))
   (:default-initargs 
-   :configuration (list :rgba t :depth t :double-buffered t :depth-buffer 32) ;depth buffer allows to have depth in 3D drawing
+   :configuration
+      #-linux (list :rgba t :depth t :double-buffered t :depth-buffer 32) ;depth buffer allows to have depth in 3D drawing
+      #+linux (list :rgba t :depth nil :double-buffered t)
    :use-display-list t
    :display-callback 'opengl-redisplay-canvas
    :resize-callback 'opengl-resize-canvas
