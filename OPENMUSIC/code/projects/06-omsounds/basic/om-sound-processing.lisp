@@ -166,7 +166,7 @@
                                    (setf tampon nil)))
                            (dotimes (i size2)
                              (setf x (/ (fli:dereference (buffer s) :index i) peak-rms))
-                             (setf (fli:dereference s2 :index i) (cond ((< x -1) -1.0)
+                             (setf (fli:dereference b2 :index i) (cond ((< x -1) -1.0)
                                                                                ((> x 1) 1.0)
                                                                                (t x)))))))
                   (make-instance 'om-sound-data 
