@@ -230,7 +230,7 @@
              (Add-rem-point self in-points?))))))
 
 (defmethod get-help-list ((self cercleeditor)) 
-  (list '((tab "Change Front List")
+  (list '(("tab" "Change Front List")
           (("b") "Show/Hide Background")
           (("c") "Complement")
           (("i") "Inverse")

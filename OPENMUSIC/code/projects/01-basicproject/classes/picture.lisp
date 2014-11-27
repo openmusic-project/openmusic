@@ -284,8 +284,8 @@ Exports as a raw bitmap (TIF format)
 (defmethod editor ((self pictpanel)) (om-view-container self))
 
 (defmethod get-help-list ((self picteditor)) 
-  '(((tab "Select a Graphic Object")
-     (del "Delete Selected Object"))))
+  '((("tab" "Select a Graphic Object")
+     ("del" "Delete Selected Object"))))
 
 (defmethod get-menubar ((self picteditor)) (list (om-make-menu "File"
                                                                (list (om-new-leafmenu "Save Picture" #'(lambda () (save-pict self)) "s")

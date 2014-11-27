@@ -228,12 +228,12 @@
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
 (defmethod get-help-list ((self soundeditor))
-  (list '((alt+clic "Add Marker")
-          (del "Delete Selected Markers")
+  (list '(("alt+clic" "Add Marker")
+          ("del" "Delete Selected Markers")
           (("g") "Show/Hide Grid")
           (("A") "Align Selected Markers to Grid")
-          (esc "Reset cursor")
-          (space "Play/Stop"))))
+          ("esc" "Reset cursor")
+          ("space" "Play/Stop"))))
 
 (defmethod sound-import ((self soundeditor))
   (let ((newsound (get-sound)))

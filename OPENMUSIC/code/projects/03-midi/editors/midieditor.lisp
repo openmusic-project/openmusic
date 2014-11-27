@@ -533,7 +533,7 @@
 
 (defmethod get-help-list ((self midieditor))
   (list '((("g") "Sow/Hide Grid")
-          (space "Play/Stop"))))
+          ("space" "Play/Stop"))))
 
 (defmethod handle-key-event ((self midiPanel) char)
    (case char

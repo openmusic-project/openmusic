@@ -393,16 +393,16 @@
 
 (defmethod get-help-list ((self  3DEditor))
   (remove nil 
-          (list '((#+cocoa cmd+clic #-cocoa ctrl+clic "Add point / Draw")
-                  (lrud "Move selected points")
-                  (del "Delete selected points")
+          (list '((#+cocoa "cmd+clic" #-cocoa "ctrl+clic" "Add point / Draw")
+                  ("lrud" "Move selected points")
+                  ("del" "Delete selected points")
                   (("c") "Change curve color")
                   (("b") "Change 3D background color")
                   (("p") "Show point indices")
                   (("t") "Show point times")
                   )
                 (when (multibpf? self)
-                  '((tab "Change current curve")
+                  '(("tab" "Change current curve")
                     (("n") "Change curve name")
                     )))))
 

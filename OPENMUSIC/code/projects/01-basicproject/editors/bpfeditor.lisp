@@ -665,15 +665,15 @@
 
 (defmethod get-help-list ((self  bpfeditor))
   (remove nil 
-          (list '((#+cocoa cmd+clic #-cocoa ctrl+clic "Add point / Draw")
-                  (lrud "Move selected points")
-                  (del "Delete selected points")
+          (list '((#+cocoa "cmd+clic" #-cocoa "ctrl+clic" "Add point / Draw")
+                  ("lrud" "Move selected points")
+                  ("del" "Delete selected points")
                   (("c") "Change BPF/BPC color")
                   (("p") "Show point indices")
                   )
                 (when (multibpf? self)
-                  '((alt+shift+clic "Add BPF/BPC")
-                    (tab "Change current BPF/BPC")
+                  '(("alt+shift+clic" "Add BPF/BPC")
+                    ("tab" "Change current BPF/BPC")
                     (("n") "Change name")
                     )))))
 
