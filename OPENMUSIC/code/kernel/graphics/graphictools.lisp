@@ -538,7 +538,7 @@ into the unaire-fun-view.#action#"))
 ;;; 3DBORDER VIEW
 ;;;=====================
 
-(omg-defclass 3Dborder-view (om-view)
+(defclass 3Dborder-view (om-view)
   ((c+ :accessor c+ :initform (om-make-color 0.835 0.835 0.843) :initarg :c+)
    (c++ :accessor c++ :initform (om-make-color 0.87 0.87 0.88) :initarg :c++)
    (c- :accessor c- :initform (om-make-color 0.604 0.604 0.604) :initarg :c-)
@@ -611,7 +611,7 @@ into the unaire-fun-view.#action#"))
 ;;; NEW SUPERCLASS 
 ;;;=====================
 
-(omg-defclass object-editor (om-view) 
+(defclass object-editor (om-view) 
   ((title-bar :initarg :title-bar :accessor title-bar :initform nil)))
 
 (defmethod get-control-h ((self object-editor)) *titlebars-h*)
@@ -655,7 +655,7 @@ into the unaire-fun-view.#action#"))
   (init-titlebar self)
   )
 
-(defmethod update-subviews ((self object-editor))
+(defmethod update-subviews :after ((self object-editor))
    (when (title-bar self)
      (om-set-view-size  (title-bar self) (om-make-point (w self) *titlebars-h*)))
    (om-invalidate-view self))

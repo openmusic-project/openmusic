@@ -165,9 +165,12 @@ TEXT-EXTRA is a string (<text>) attached to a particular chord or note in the sc
      (setf x (- (+ (first rect) (round (- (third rect) (first rect)))) (round sizetext 2)))
      (setf y (+ y (* ls (deltay (reference self)))))
      (setf x (+ x (* ls (deltax (reference self)))))
-     (om-with-font thefont
+     (ignore-errors ;;; generates an error in page mode 
+       (om-with-font thefont
                    (om-draw-string x y (thetext (reference self))) 
-                   (setf (rectangle self) (list x (- y fontsize) (+ x sizetext) y)))))
+                   (setf (rectangle self) (list x (- y fontsize) (+ x sizetext) y)))
+     )))
+  
 
 ;------------------------
 (defmethod open-extra-editor ((self scorepanel) (gtext grap-extra-text))
