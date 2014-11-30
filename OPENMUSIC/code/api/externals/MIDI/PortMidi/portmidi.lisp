@@ -35,17 +35,19 @@
 
 (defvar *libportmidi* nil)
 
-#-linux (defun load-portmidi-lib ()
-	  (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
-	  (if (probe-file *libportmidi-pathname*)
-	      (setf *libportmidi* (fli:register-module "PortMidi" 
-						       :real-name (namestring *libportmidi-pathname*)
-						       :connection-style :immediate)
-		    )
-	      (print (format nil "Library PortMIDI not found!! [~A]" (namestring *libportmidi-pathname*)))
-	      ))
+#-linux 
+(defun load-portmidi-lib ()
+  (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
+  (if (probe-file *libportmidi-pathname*)
+      (setf *libportmidi* (fli:register-module "PortMidi" 
+                                               :real-name (namestring *libportmidi-pathname*)
+                                               :connection-style :immediate)
+            )
+    (print (format nil "Library PortMIDI not found!! [~A]" (namestring *libportmidi-pathname*)))
+    ))
 
-#+linux (defun load-portmidi-lib ()
+#+linux 
+(defun load-portmidi-lib ()
 	  (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
 	  (setf *libportmidi* (fli:register-module (namestring *libportmidi-pathname*) 
 						   :connection-style :immediate)))
