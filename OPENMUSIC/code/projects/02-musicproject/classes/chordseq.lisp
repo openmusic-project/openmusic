@@ -595,31 +595,34 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 
 <delta> gives the time interval in ms.
 "
-  (let ((note-seq  (flatten-container self 'note 'chord-seq)) (chseq (make-instance 'chord-seq :empty t)) note-list chord-list)
-    (setQValue note-seq 1000 :recursive t) 
-    (setQValue chseq 1000 :recursive nil)
-    (setf note-list (inside note-seq))
-    (setf chord-list
-          (loop while note-list
-                for note = (car note-list)
-                with pitch-list and dur-list  and offset-list and chan-list and vel-list
-                with base-time = (offset (first note-list))
-                if (<= (- (offset (first note-list)) base-time) delta)
-                do 
-                (push  (midic note) pitch-list)
-                (push (extent note) dur-list)
-                (push (chan note) chan-list)
-                (push (vel note) vel-list)
-                (push 
+  (let ((note-seq (flatten-container self 'note 'chord-seq))
+        (chseq (make-instance 'chord-seq :empty t)) 
+        note-list chord-list)
+    (when (inside self)
+      (setQValue note-seq 1000 :recursive t) 
+      (setQValue chseq 1000 :recursive nil)
+      (setf note-list (inside note-seq))
+      (setf chord-list
+            (loop while note-list
+                  for note = (car note-list)
+                  with pitch-list and dur-list  and offset-list and chan-list and vel-list
+                  with base-time = (offset (first note-list))
+                  if (<= (- (offset (first note-list)) base-time) delta)
+                  do 
+                  (push  (midic note) pitch-list)
+                  (push (extent note) dur-list)
+                  (push (chan note) chan-list)
+                  (push (vel note) vel-list)
+                  (push 
                  ;(- (offset note) base-time) this if wanna keep note offsets 
-                 0 offset-list)
-                (pop note-list)
-                else
-                collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list) into result
-                and do (setf base-time (offset note) pitch-list () dur-list ()   offset-list () chan-list () vel-list ())
-                finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list ))))))
-    (setf (inside chseq) chord-list)
-    (adjust-extent chseq)
+                   0 offset-list)
+                  (pop note-list)
+                  else
+                  collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list) into result
+                  and do (setf base-time (offset note) pitch-list () dur-list ()   offset-list () chan-list () vel-list ())
+                  finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list ))))))
+      (setf (inside chseq) chord-list)
+      (adjust-extent chseq))
     chseq))
 
 
