@@ -488,11 +488,12 @@ make-quanti
 ;=== Conversion Chord-seq -> voice : dans le cas ou le chord-seq ne commence pas 0
 (defmethod* objFromObjs ((self chord-seq) (type voice))
             (if (chords self)
-                (let* ((quantypar *quantify-def-params*)
-                       (durs (append (butlast (x->dx (lonset self)))
-                                     (list (extent->ms (car (last (chords self)))))))
-                       (durs (if (zerop (car (lonset self)))
-                                 durs (cons (* (car (lonset self)) -1) durs)))
+                (let* ((newchordseq (align-chords self *global-deltachords*))
+                       (quantypar *quantify-def-params*)
+                       (durs (append (butlast (x->dx (lonset newchordseq)))
+                                     (list (extent->ms (car (last (chords newchordseq)))))))
+                       (durs (if (zerop (car (lonset newchordseq)))
+                                 durs (cons (* (car (lonset newchordseq)) -1) durs)))
                        (newvoice (make-instance (type-of type)
                                                 :tree (omquantify  durs
                                                                    (first quantypar)
@@ -503,7 +504,7 @@ make-quanti
                                                                    (sixth quantypar))
                                                 :tempo (first quantypar)
                                                 :legato 0
-                                                :chords  (chords self))))
+                                                :chords  (chords newchordseq))))
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
