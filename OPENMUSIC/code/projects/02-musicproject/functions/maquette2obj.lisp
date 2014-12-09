@@ -271,7 +271,7 @@ next note, legato=100."
                 (reverse (push a lst))))))) 
 
 
-(om::defmethod! maquette2obj ((maquette maquette-obj) 
+(defmethod! maquette2obj ((maquette maquette-obj) 
                               (mode symbol)
                               &optional
                               (tempi 60)
@@ -401,8 +401,8 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
 
 (defmethod! maquette2obj ((self ommaquette) (mode symbol)
                               &optional (tempi 60) (measures '(4 4)) (max/ 8) (forbid nil) (offset 0) (precis 0.5))
-            (when (and (car (value self)) (typep (car (value self)) 'maquette-obj))
-              (maquette2obj (car (value self)) mode tempi measures max/ forbid offset precis)))
+            (when (and (value self) (typep (value self) 'maquette-obj))
+              (maquette2obj (value self) mode tempi measures max/ forbid offset precis)))
             
 ;must put the specific lets while choosing the mode not before
 ;because when asking for multiseq, there will be quantification
@@ -483,7 +483,7 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
 
 
 
-(om::defmethod* maquette2sound ((maquette t) 
+(defmethod* maquette2sound ((maquette t) 
                                 &optional (outsound nil))
 
    :icon 333

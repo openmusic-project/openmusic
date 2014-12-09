@@ -114,7 +114,7 @@
   (setf (gen-flag self) nil)
   (setf (push-tag self) nil)
   (setf (color self) nil)
-  (om-invalidate-view (car (frames self))))
+  (when (car (frames self)) (om-invalidate-view (car (frames self)))))
 
 
 

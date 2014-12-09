@@ -1752,13 +1752,15 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (cond
       ((and (equal (allow-lock self) "x") (value self))
        (nth num-out (value self)))
-      ((and (equal (allow-lock self) "o") (reference self)))
+      ((and (equal (allow-lock self) "o") (setf (value self) (list (reference self))) (car (value self))))
       ((equal (allow-lock self) "l")
        (unless (compiled? (reference self))
          (if (and (lisp-exp-p (reference self)) (editorframe self))
            (compile-without-close (editorframe self))
            (compile-patch (reference self))))
-       (special-lambda-value self (intern (string (code (reference self))) :om)))
+       (setf (value self) ;;; test ...
+             (list (special-lambda-value self (intern (string (code (reference self))) :om))))
+       (car (value self)))
       ((and (equal (allow-lock self) "&") (ev-once-p self)) 
        (nth num-out (value self)))
       (t 
@@ -2096,9 +2098,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                               (om-abort)))))
     (cond
      ((and (equal (allow-lock self) "x") (value self))
-      ;(setf (value self) (cons-copy-maquette-object (reference self) (boxes (reference self))))
       (value self))
-     ((equal (allow-lock self) "o") (reference self))
+     ((equal (allow-lock self) "o") (setf (value self) (list (reference self))) (car (value self)))
      ((and (equal (allow-lock self) "&") (ev-once-p self)) (value self))
      (t (let* ((args  (mapcar #'(lambda (input)
                                   (omNG-box-value input)) (inputs self)))
@@ -2131,15 +2132,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
             )
            
           (when (equal (allow-lock self) "&")
-            (setf (ev-once-p self) t)
-            (setf (value self) rep))
+            (setf (ev-once-p self) t))
 
-          (when t ;(equal (allow-lock self) "x")
-            (setf (value self) rep))
-
-          (if (= (mode self) 1)
-              (nth num-out rep)
-            rep)
+          (setf (value self) rep)
+          (nth num-out rep)
           )))))
 
 

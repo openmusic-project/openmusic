@@ -247,8 +247,7 @@
 
 (defmethod clear-ev-once ((self OMMaquette))
   "After one evaluation this methods set the ev-once flag of all boxes in ev-once mode to nil."
-  (mapc #'(lambda (box)
-            (clear-ev-once box)) (boxes self)))
+  (mapc #'(lambda (box) (clear-ev-once box)) (boxes self)))
 
 
 ;; !!! redefinition
