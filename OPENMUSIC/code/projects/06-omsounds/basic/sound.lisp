@@ -145,30 +145,33 @@
 
 (defmethod Class-has-editor-p ((self om-sound-data)) nil)
 
-(defmethod get-om-sound-data ((self string) &optional (track 0))
+(defmethod get-om-sound-data ((self string) &optional track)
    (multiple-value-bind (buffer format channels sr ss size skip)
        (om-audio::om-get-sound-buffer self *default-internal-sample-size*)
      (make-instance 'om-sound-data 
                     :type *default-internal-sample-size*
                     :buffer buffer
-                    :tracknum track
+                    :tracknum (or track 0)
                     :size size
                     :nch channels
                     :sr sr)))
 
-(defmethod get-om-sound-data ((self pathname) &optional (track 0))
+(defmethod get-om-sound-data ((self pathname) &optional track)
   (get-om-sound-data (namestring self) track))
-
 
 (defmethod set-buffer-from-file ((self internalsound) filename)
   (setf (sndbuffer self) (get-om-sound-data self)))
 
+(defmethod get-om-sound-data ((self om-sound-data) &optional track)
+  (let ((rep self))
+    (when track (setf (track rep) track))
+    rep))
 
 ;;==============================
 ;; OM CLASS
 ;;==============================
 
-(defclass! sound (simple-score-element internalsound) 
+(defclass! sound (simple-score-element internalsound)
   ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
    (vol :accessor vol :initform 100)  
@@ -190,13 +193,14 @@ Press 'space' to play/stop the sound file.
 "))
 
 
+(defmethod markers ((self sound)) 
+  (sort (slot-value self 'markers) '<))
+
 (defmethod get-om-sound-data ((self sound) &optional (track 0))
   (and (om-sound-file-name self)
        (get-om-sound-data (om-sound-file-name self) track)))
 
-
 (defparameter *default-sound-player* #-linux :libaudiostream #+linux :jackaudio)
-
 
 (defmethod default-edition-params ((self sound))
   (pairlis '(outport inport player
