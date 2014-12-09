@@ -244,18 +244,19 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
           (values-list (mat-trans 
                         (mapcar #'(lambda (bpf) (multiple-value-list (om-sample bpf nbs-sr xmin xmax dec))) self))))
          ((numberp (car self))
-          (let* ((x0 (or xmin 0))
-                 (x1 (or xmax (1- (length self))))
-                 (lst (nthcdr x0 (if xmax (first-n self (1+ xmax)) self)))
-                 (xpts (arithm-ser 0 (1- (length lst)) 1))
-                 (ylist (if (integerp nbs-sr) 
-                            (interpole xpts lst x0 x1 nbs-sr)
-                          (interpolate xpts lst nbs-sr)))
-                 (xlist (arithm-ser 0 (1- (length ylist)) 1)))
-            (values (simple-bpf-from-list xlist ylist 'bpf (or dec 4))
-                    xlist
-                    (if dec (om-round ylist dec) ylist) 
-                    )))
+          (let* ((x0 (if xmin (round xmin) 0))
+                (x1 (or (if xmax (round xmax) (1- (length self)))))
+                (lst (nthcdr x0 (if xmax (first-n self (round (1+ xmax))) self)))
+                (xpts (arithm-ser 0 (1- (length lst)) 1)))
+            (when (and lst xpts)
+              (let* ((ylist (if (integerp nbs-sr) 
+                                (interpole xpts lst x0 x1 nbs-sr)
+                              (interpolate xpts lst nbs-sr)))
+                     (xlist (arithm-ser 0 (1- (length ylist)) 1)))
+                (values (simple-bpf-from-list xlist ylist 'bpf (or dec 4))
+                        xlist
+                        (if dec (om-round ylist dec) ylist) 
+                        )))))
          (t nil)))
    
 
