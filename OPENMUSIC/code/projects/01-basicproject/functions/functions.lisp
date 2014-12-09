@@ -260,8 +260,6 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
          (t nil)))
    
 
-(arithm-ser 0 1000 (/ 1000 (coerce (/ 1000 (1- 101)) 'double-float)) 101)
-
 (defmethod! om-sample ((self bpf) (nbs-sr number) &optional xmin xmax dec)
     :numouts 3
     (let* ((x0 (or xmin (first (x-points self)))) 
