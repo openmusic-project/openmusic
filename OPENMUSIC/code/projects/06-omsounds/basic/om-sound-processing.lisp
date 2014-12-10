@@ -19,6 +19,7 @@
 ;   - sound-resample
 ;   - sound-seq
 ;   - sound-loop
+;   - sound-reverse
 ;   
 ;======================================================
 
@@ -595,34 +596,34 @@
                    (om-beep-msg "Error : buffer(s) not initialized."))
                   ((and (= (nch s1) (nch s2)) (= (sr s1) (sr s2)))
                    (let* ((nch (nch s1))
-                       (sr (sr s1))
-                       (size1 (* nch (size s1)))
-                       (size2 (* nch (size s2)))
-                       (cf (if (integerp crossfade) (* crossfade 0.001) crossfade))
-                       (smp-cross (round (* nch cf sr)))
-                       (smp-cross-side (round (* nch (/ cf 2.0) sr)))
-                       (factor1 (- (/ 1.0 (max 1 smp-cross))))
-                       (factor2 (/ 1.0 (max 1 smp-cross)))
-                       (final-size (- (+ size1 size2) smp-cross))
-                       (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
+                          (sr (sr s1))
+                          (size1 (* nch (size s1)))
+                          (size2 (* nch (size s2)))
+                          (cf (if (integerp crossfade) (* crossfade 0.001) crossfade))
+                          (smp-cross (round (* nch cf sr)))
+                          (smp-cross-side (round (* nch (/ cf 2.0) sr)))
+                          (factor1 (- (/ 1.0 (max 1 smp-cross))))
+                          (factor2 (/ 1.0 (max 1 smp-cross)))
+                          (final-size (- (+ size1 size2) smp-cross))
+                          (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
                   ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
                   ;(declare (type single-float factor1 factor2))
 
-                  (dotimes (i final-size)
-                    (setf (fli:dereference final-buffer :index i)
-                          (cond ((< i (- size1 smp-cross)) 
-                                 (fli:dereference (buffer s1) :index i))
-                                ((and (>= i (- size1 smp-cross)) (<= i size1)) 
-                                 (+ (* (1+ (* factor1 (- i (- size1 smp-cross)))) (fli:dereference (buffer s1) :index i))
-                                    (* factor2 (- i (- size1 smp-cross)) (fli:dereference (buffer s2) :index (+ smp-cross (- i size1))))))
-                                ((> i size1) 
-                                 (fli:dereference (buffer s2) :index (+ smp-cross (- i size1)))))))
+                     (dotimes (i final-size)
+                       (setf (fli:dereference final-buffer :index i)
+                             (cond ((< i (- size1 smp-cross)) 
+                                    (fli:dereference (buffer s1) :index i))
+                                   ((and (>= i (- size1 smp-cross)) (<= i size1)) 
+                                    (+ (* (1+ (* factor1 (- i (- size1 smp-cross)))) (fli:dereference (buffer s1) :index i))
+                                       (* factor2 (- i (- size1 smp-cross)) (fli:dereference (buffer s2) :index (+ smp-cross (- i size1))))))
+                                   ((> i size1) 
+                                    (fli:dereference (buffer s2) :index (+ smp-cross (- i size1)))))))
                                     
-                  (make-instance 'om-sound-data 
-                                 :buffer final-buffer
-                                 :size (round final-size nch)
-                                 :nch nch
-                                 :sr (sr s1))))
+                     (make-instance 'om-sound-data 
+                                    :buffer final-buffer
+                                    :size (round final-size nch)
+                                    :nch nch
+                                    :sr (sr s1))))
                   (t
                    (om-beep-msg "Error : trying to sequence 2 sounds with different number of channels or different sample-rate. Output is input 1.")
                    s1)))
@@ -640,6 +641,31 @@
             ;(declare (type fixnum crossfade))
             (sound-seq (get-om-sound-data s1) (get-om-sound-data s2) crossfade))
 
+
+;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-REVERSE///////////////
+(defmethod! sound-reverse ((s om-sound-data))
+            :icon 115
+            :initvals '(nil)
+            :indoc '("a sound")
+            "Reverse a sound."
+
+            (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer"))
+            (let* ((size (* (nch s) (size s)))
+                   (out-buffer (om-make-pointer size :type (smpl-type s) :clear t)))
+              (dotimes (i size)
+                (setf (fli:dereference out-buffer :index i) 
+                      (fli:dereference (buffer s) :index (- size i 1))))
+
+              (make-instance 'om-sound-data
+                             :buffer out-buffer
+                             :size (size s)
+                             :nch (nch s)
+                             :sr (sr s))))
+                  
+
+(defmethod! sound-reverse ((s sound))
+            (sound-reverse (get-om-sound-data s)))
 
 
 
