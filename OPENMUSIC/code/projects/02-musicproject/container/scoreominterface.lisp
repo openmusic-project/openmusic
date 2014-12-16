@@ -343,7 +343,8 @@ when :
             :legato 0)
        (mki (type-of self)
             :Lonset (list 0 (- end start))
-            ))))
+            :Lmidic NIL)
+       )))
 
 (defmethod* select ((self multi-seq) (start number) (end number))
    (mki 'multi-seq
