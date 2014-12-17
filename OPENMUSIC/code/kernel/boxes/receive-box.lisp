@@ -72,3 +72,5 @@
 
 (defmethod deliver-message (message (fun symbol))
   (when (fboundp fun) (apply fun (list message))))
+
+
