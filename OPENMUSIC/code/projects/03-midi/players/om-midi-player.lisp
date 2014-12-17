@@ -15,6 +15,7 @@
 
     
 (defmethod prepare-to-play ((engine (eql :midi-player)) (player omplayer) object at interval params)
+  (print "MIDI")
   ;(print (format nil "~s" params))
   (let ((approx (if (find :approx params)
                     (nth (1+ (position :approx params)) params)
@@ -28,6 +29,7 @@
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
                 (schedule-task player 
                                #'(lambda () 
+                                   ;(print evt)
                                    (player-play-object engine evt :interval interval))
                                (+ (or (car interval) 0) (om-midi::midi-evt-date evt))
                                nil)
