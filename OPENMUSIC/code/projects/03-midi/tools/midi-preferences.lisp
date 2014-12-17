@@ -13,6 +13,9 @@
 (defparameter *default-midi-file-system* nil)
 
 (defparameter *midi-microplay* nil)
+(defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
+(defparameter *score-players* '(:midi-player :midishare :osc-scoreplayer))
+(defparameter *force-score-player* nil)
 
 ;; #+linux (setf *default-midi-file-system* :cl-midi)
 ;(setf *default-midi-system* :cl-midi)
@@ -25,6 +28,8 @@
     (setf *def-midi-in* (get-pref modulepref :midi-in))
     (setf *def-midi-out* (get-pref modulepref :midi-out))
     (setf *default-midi-system* (get-pref modulepref :midi-system))
+    (setf *default-score-player* (get-pref modulepref :score-player))
+    (setf *force-score-player* (get-pref modulepref :force-player))
     (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
     (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
       (when *running-midi-boxes*
@@ -46,6 +51,8 @@
 			 #-linux (midishare::*midishare* :midishare)
 			 (pm::*libportmidi* :portmidi)
 			 (t nil))
+          :score-player :midi-player
+          :force-player nil
 	  :midi-file-system  (cond
 			       #-linux (midishare::*midishare* :midishare)
 			       (t :cl-midi))
@@ -100,6 +107,36 @@
                                                         (set-pref modulepref :midi-format (om-get-selected-item-index item)))
                                            )
 
+
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 70)) (om-make-point 200 30) "Default score Player:"
+                                           :font *om-default-font2b*)
+                      
+                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 180 i) (om-make-point 140 24) ""
+                                           :range (if *default-score-player* ; (get-pref modulepref :midi-system)
+                                                      *score-players*
+                                                    (cons "..." *score-players*))
+                                           :value (or (and *default-score-player* (get-pref modulepref :score-player)) "---")
+                                           :di-action (om-dialog-item-act item
+                                                        (set-pref modulepref :score-player (om-get-selected-item item)))
+                                           )
+                      
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
+                                           "... will apply to new score boxes ..."
+                                           :font *om-default-font1*)
+
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 130 40) "Force score player:" :font *controls-font*)
+
+                      (om-make-dialog-item 'om-check-box
+                                           (om-make-point 180  i) 
+                                           (om-make-point 180 20)
+                                           ""
+                                           :checked-p (get-pref modulepref :force-player)
+                                           :di-action #'(lambda (item) 
+                                                          (set-pref modulepref :force-player (om-checked-p item))))
+                      
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
+                                           "... will change the score player of existing boxes as well ..."
+                                           :font *om-default-font1*)
 
                      
                       

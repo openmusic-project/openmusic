@@ -3,7 +3,7 @@
 
 (in-package :om)
 
-(defparameter *default-score-player* :midi-player)
+
 
 (defmethod editor-compatible-params-p ((ed1 scoreeditor) (ed2 scoreeditor)) t)
 
@@ -66,6 +66,11 @@
     (rplacd (assoc 'deltapict rep) (om-correct-point (cdr (assoc 'deltapict  rep))))
     rep))
 
+(defmethod corrige-edition-params ((self score-element) params)
+  (when (and *force-score-player* (not (equal (assoc 'player params) *default-score-player*)))
+    (print (format nil "Warning: replacing player of ~A with default player: ~A (see 'force player' options in the MIDI preferences)." self *default-score-player*))
+    (rplacd (assoc 'player params) *default-score-player*))
+  (call-next-method self params))
 
 ;=====================================================================
 ;PARAMETRES D'EDITION

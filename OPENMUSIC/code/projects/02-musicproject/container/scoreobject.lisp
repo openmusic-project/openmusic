@@ -46,6 +46,12 @@
 (add-player-for-object 'score-element '(:midi-player :midishare :osc-scoreplayer :microplayer))
 (add-player-for-object 'simple-score-element '(:midi-player :midishare :osc-scoreplayer :microplayer))
 
+(defmethod players-for-object ((self score-element)) 
+  (if *force-score-player* 
+      (list *default-score-player*)
+    (call-next-method)))
+
+
 (defclass* note (simple-score-element tonal-object)
   ((midic :initform 6000 :accessor midic :initarg :midic :type number :documentation "pitch (midicents)")
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
