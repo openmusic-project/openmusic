@@ -502,7 +502,7 @@ Extraction methods.
   (when (> legato 0) (normalize-chord self legato))
   (set-ties self ties)
   (setf (tempo self) tempo)
-   self)
+  self)
 
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
   (cond
@@ -947,9 +947,9 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod distribute-chords  ((self score-element) (chords list))
   (let ((fringe nil) 
         (chord-model (mki 'chord))
-        (def-chord (last-elem chords)))
-    (labels ( (distribute (self chords)
-                 (setf (inside self)
+        (def-chord (or (last-elem chords) (mki 'chord))))
+    (labels ((distribute (self chords)
+               (setf (inside self)
                        (loop for sub in (inside self)
                              with chord
                              ;with chord-model  = (mki 'chord)
@@ -973,6 +973,7 @@ of all its direct subcontainers (supposed adjacent)"
                              ;(normalize-chord chord)
                              and collect chord))
                  chords))
+   
       (distribute self chords)
       (setf fringe (nreverse fringe)) 
       (loop for item1 in fringe
