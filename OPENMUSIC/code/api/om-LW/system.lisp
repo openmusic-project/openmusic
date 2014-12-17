@@ -493,8 +493,9 @@
    (when (not hidden-files)
      (setf rep (remove-if #'(lambda (item) (or (and (directoryp item) 
                                                    (string-equal (subseq (car (last (pathname-directory item))) 0 1) "."))
-                                              (and (stringp (pathname-name item)) (> (length (pathname-name item)) 0)
-                                                   (string-equal (subseq (pathname-name item) 0 1) "."))))
+                                              (and (stringp (pathname-name item)) 
+                                                   (or (= (length (pathname-name item)) 0)
+                                                       (string-equal (subseq (pathname-name item) 0 1) ".")))))
                           rep)))
    (when type
      (cond ((stringp type)
