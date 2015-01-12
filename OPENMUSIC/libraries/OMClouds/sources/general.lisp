@@ -552,14 +552,15 @@ optional input : a predicate, which is the equality on numbers "=" by default.
                       (setf *intermediaire* var)
                       (une-descente var))))
         ;(print `(nombre d iterations ,*iter*))
-        (setf rep (valeur var)) 
+        (setf rep (list (valeur var)))
         (when (equal (allow-lock self) "&")
           (setf (ev-once-p self) t)
           (setf (value self) rep))
         (when (equal (allow-lock self) "x")
           (setf (value self) rep))
-        rep)))))
-
+        (when (equal (allow-lock self) nil)
+          (setf (value self) rep))
+        (nth numout rep))))))
 
 
 ;aaa 18/06/15
