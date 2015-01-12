@@ -113,7 +113,7 @@
      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
               (let (,.acum-declaration (iter-count 0))
                 ,.acum-inits
-                (let* ,(reverse *let-list*) ,init) ;;; bug if a let variable depends on a loop iterator !!!!!
+                ;(let* ,(reverse *let-list*) ,init) ;;; bug if a let variable depends on a loop iterator !!!!!
                 (loop ,.loop-code
                       do ,(loop-check-code)
                       finally   (return (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
@@ -122,7 +122,10 @@
                       (let* ,(reverse *let-list*) ,body)
                       ))))
      (setf *let-list* oldletlist)))
+
 |#
+
+
 
 (defmethod compile-patch ((self patchForLoop))
    "Code generates by Loop patches is generate by this method."
@@ -148,7 +151,7 @@
      (setf final (loop for i from 0 to (1- (length (inputs final-box))) collect (gen-code final-box i)))
      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
               (let (,.acum-declaration (iter-count 0))
-                (let* ,(reverse *let-list*)   ;;; LET EV-ONCE HERE 
+                (let* ,(reverse *let-list*)   ;;; LET EV-ONCE HERE / BUG IF ONE OF THE LET-LIST DEPENDS ON THE LOOP-CODE
                 ,.acum-inits
                 ,init   
                 (loop ,.loop-code
