@@ -1007,7 +1007,7 @@
     (setf (mode-buttons (ctrlp self))
           (append 
            (loop for mode in '(:normal :pen :move :zoom :scroll)
-                 for icon in '("mousecursor" "pencursor" "handcursor" "zoomcursor" "handbpfcursor")
+                 for icon in '("mousecursor" "pencursor" "handbpfcursor" "zoomcursor" "handcursor")
                  for i = 0 then (+ i 1)
                  collect 
                  (let ((m mode) button)
