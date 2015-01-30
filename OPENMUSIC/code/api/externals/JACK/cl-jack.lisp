@@ -116,8 +116,8 @@
 
 (defcfun "jack_port_register" :pointer
   (client :pointer)
-  (port-name :string)
-  (port-type :string)
+  (port-name (:string :encoding :utf-8))
+  (port-type (:string :encoding :utf-8))
   (flags :unsigned-long)
   (buffer-size :unsigned-long))
 
