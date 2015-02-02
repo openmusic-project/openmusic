@@ -33,7 +33,7 @@
 ;================================================
 ;Miniview for boxes of editors
 ;================================================
-(omg-defclass general-miniview (om-view-drag select-object) 
+(defclass general-miniview (om-view-drag select-object) 
    ((minipict :initform nil :accessor minipict)))
 
 (defmethod get-box-frame ((self general-miniview)) (om-view-container self))
@@ -52,7 +52,7 @@
 
 ;======================
 ;======================
-(omg-defclass miniview (general-miniview om-item-view) ())
+(defclass miniview (general-miniview om-item-view) ())
 
 ;====================== EVENTS==========================
 
