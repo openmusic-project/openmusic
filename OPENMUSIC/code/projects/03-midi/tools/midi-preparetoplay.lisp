@@ -61,7 +61,7 @@
     (setf (Qtempo evtseq) (Qtempo self))
     (PrepareToPlay player evtseq at
                    :approx approx 
-                   :port port
+                   :port (or port (port self))
                    :interval interval
                    :voice voice)
     ))
