@@ -20,9 +20,8 @@
                  :chord-delta delta
                  :partials
                  (apply #'mapcar
-                           #'(lambda (onset outset freq amp)
-                               
-                               (round-time (make-instance 'partial :ponset onset :outset outset :frequency freq
+                           #'(lambda (onset dur freq amp)
+                               (round-time (make-instance 'partial :ponset onset :outset (+ onset dur) :frequency freq
                                                       :amplitude amp)))
                            analyse))))
        (setf (partials partial-set)
