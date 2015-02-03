@@ -1,42 +1,77 @@
-Welcome to OpenMusic for Linux.
+	== WELCOME TO OPENMUSIC FOR LINUX. ==
 
-DEPENDENCIES:
+This README is about OpenMusic on Linux
 
-If you install OM through your package-system (ie. yum) it should take
-care of the necessary dependencies (libs).
+* OMs HOMEPAGE: http://repmus.ircam.fr/openmusic/home
 
-LIBS:
+* INSTALLATION:
 
-OM for Linux depends on 32-bit versions of some libs.  
+Download installable packages for OM from:
 
-    libportmidi.so, libsndfile.so, libjack.so, libsamplerate.so, libsdif.so
+	https://forge.ircam.fr/p/OM/downloads/
 
-If you install them manually, take care to get the 32-bit versions of
-the package - eg (on Fedora):
+Packages are available for Fedora and Ubuntu distros, pick the one
+which fits your distro's package-system (ie. RPM for Fedora, DEB for
+Ubuntu):
 
-    yum install fluidsynth-libs.i686
-    yum install libsndfile.i686
-    yum install	jack-audio-connection-kit.i686
+	openmusic-x.xx-x.i686.rpm
+	openmusic-x.xx-x.i686.deb
 
-libsdif.so is available at IRCAM or from sourceforge:
-http://sdif.sourceforge.net/.  When compiling from source, take care
-to compile a 32-bit version of the lib (CC flags: -m32 or -march=i686
-or some such).
+** SDIF:
 
-FONTS:
+Before installing OM, SDIF needs to be installed on your system.  SDIF
+(libsdif.so + utilities) is available as package-files at
+https://forge.ircam.fr/p/OM/downloads/, ie:
 
-Theres an RPM-package available for easy install, update, clean on
-rpm-based systems:
+	sdif-3.11.4-2.i386.rpm
+	sdif-3.11.4-2.i386.deb
 
-   http://forge.ircam.fr/p/OM6/downloads/get/omfonts-1.0-1.noarch.rpm
+Sources are at sourceforge: http://sdif.sourceforge.net/.  If
+compiling these, make sure to build a 32-bit version of the lib (CC
+flags: -m32 or -march=i686 and some more).
 
-Alternatively, the fonts are available as part of the OM-download: 
-$OM_RELEASE/resources/fonts/linux/
+** FURTHER DEPENDENCIES:
 
-   omextras.ttf, omheads.ttf, omicron.ttf, omsign.ttf
+If you install OM through your package-system (ie. 'yum' on Fedora,
+'software-installer', 'dpkg' or 'apt-get' on Ubuntu), everything
+needed should be handled automatically.
 
-These should be installed in a omfonts directory in the usual font
-location on your system: eg:
+OM for Linux depends on some additional libs:
 
-	/usr/share/fonts/omfonts/*
-	/usr/local/share/fonts/omfonts/*
+	gtk2
+	portmidi
+	libsndfile
+	jack
+
+As OM is available as a 32-bit application only, all its dependencies
+(dynamically loaded libraries) also need to be 32-bit.  If installing
+these manually make sure to get 32-bit versions of the various
+packages.  Eg. (for Fedora):
+
+	yum install gtk2.i686
+	yum install jack-audio-connection-kit.i686
+	yum install libsndfile.i686
+	yum install portmidi.i686
+	yum install adwaita-gtk2-theme.i686
+
+* SOUND AND MIDI output:
+
+For audio playback, OM will auto-connect to a running Jack-server at
+startup.  If it can't find one running, OM will attempt to start one.
+
+OM uses portmidi to (optionally) connect to whatever external
+softsynth you prefer (no need to go 32-bit here).  One good choice for
+Linux is fluidsynth with a good soundfont:
+
+	yum install fluidsynth
+	yum install fluid-soundfont-gm
+
+To connect OM to your midi-synth of choice, go to the MIDI-tab in OMs
+preferences, and click the matrix-button at the lower right, from
+where you can connect OM to running synths.
+
+* FORUM, BUG-REPORTS, ISSUES:
+
+Theres an OpenMusic forum/wiki at
+http://forumnet.ircam.fr/user-groups/openmusic/ - where subscribed
+members can post questions and send bug-reports etc.
