@@ -118,7 +118,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
              (setf rep markitem))) rep))
 
 
-(defmethod paste-position ((self TemporalBox)) 
+(defmethod paste-position ((self TemporalBox) view) 
    (setf (slot-value self 'posy)  (round (* (posy self) 1.2))) nil)
 
 
