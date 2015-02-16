@@ -33,7 +33,7 @@
 ;----------------------------
 ;relationEditor
 ;----------------------------
-(omg-defclass relationEditor (nonrelationeditor)  ()
+(defclass relationEditor (nonrelationeditor)  ()
    (:documentation "This is the general class for window containing a relationPanel, so windows for Patches, 
 maquettes and hierarchical class editors.#enddoc#
 #seealso# (relationPanel) #seealso#"))
@@ -234,7 +234,7 @@ maquettes and hierarchical class editors.#enddoc#
   (let ((fpx (om-point-h (frame-position self)))
         (fpy (om-point-h (frame-position self))))
     
-    (when (or (> fpx (w view)) (> fpy (h view)))
+    (when (or (> fpx (- (w view) 20)) (> fpy (- (h view) 20)))
       (setf fpx (om-point-h (om-mouse-position view))
             fpy (om-point-v (om-mouse-position view))))
     (om-add-points (om-make-point 
