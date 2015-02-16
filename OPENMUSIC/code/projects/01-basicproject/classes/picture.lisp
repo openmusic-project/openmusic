@@ -149,7 +149,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
 
 (defmethod! save-picture ((self picture) &optional (path nil) (with-graphics nil) (size nil))
    :initvals nil
-   :indoc '("a picture object" "a pathname" "bg pixels or full-picture" "size")
+   :indoc '("a picture object" "a pathname" "bg pixels or pull-picture" "size")
    :doc "Saves picture <self> in a file.
 Exports as a raw bitmap (TIF format)
 
@@ -161,10 +161,14 @@ Exports as a raw bitmap (TIF format)
 "
    :icon 491
    (let ((file (or path (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                       :types '("TIFF File" "*.tiff;*.tif")))))
+                                                   :types '("TIFF File" "*.tiff;*.tif" 
+                                                            "BMP File" "*.bmp"
+                                                            "JPEG File" "*.jpg;*.jpeg" 
+                                                            "PNG File" "*.png" 
+                                                            )))))
      (when file
        (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-       (if (or with-graphics size)
+       (if (or (and with-graphics (extraobjs self)) size)
            (let* ((pictsize (or size (and (thepict self) (om-get-picture-size (thepict self)))
                                 (om-make-point 100 100)))
                   (tmppict (om-record-pict nil pictsize 
