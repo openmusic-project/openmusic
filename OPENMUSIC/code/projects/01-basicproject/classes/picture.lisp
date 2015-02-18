@@ -149,7 +149,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
 
 (defmethod! save-picture ((self picture) &optional (path nil) (with-graphics nil) (size nil))
    :initvals nil
-   :indoc '("a picture object" "a pathname" "bg pixels or pull-picture" "size")
+   :indoc '("a picture object" "a pathname" "bg pixels or full picture" "size")
    :doc "Saves picture <self> in a file.
 Exports as a raw bitmap (TIF format)
 
