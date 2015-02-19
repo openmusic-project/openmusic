@@ -149,7 +149,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
 
 (defmethod! save-picture ((self picture) &optional (path nil) (with-graphics nil) (size nil))
    :initvals nil
-   :indoc '("a picture object" "a pathname" "bg pixels or full-picture" "size")
+   :indoc '("a picture object" "a pathname" "bg pixels or full picture" "size")
    :doc "Saves picture <self> in a file.
 Exports as a raw bitmap (TIF format)
 
@@ -161,10 +161,14 @@ Exports as a raw bitmap (TIF format)
 "
    :icon 491
    (let ((file (or path (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                       :types '("TIFF File" "*.tiff;*.tif")))))
+                                                   :types '("TIFF File" "*.tiff;*.tif" 
+                                                            "BMP File" "*.bmp"
+                                                            "JPEG File" "*.jpg;*.jpeg" 
+                                                            "PNG File" "*.png" 
+                                                            )))))
      (when file
        (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-       (if (or with-graphics size)
+       (if (or (and with-graphics (extraobjs self)) size)
            (let* ((pictsize (or size (and (thepict self) (om-get-picture-size (thepict self)))
                                 (om-make-point 100 100)))
                   (tmppict (om-record-pict nil pictsize 
@@ -200,7 +204,7 @@ Exports as a raw bitmap (TIF format)
 
 ;---------
 ;FRAME
-(omg-defclass PictboxFrame (boxEditorFrame) ()
+(defclass PictboxFrame (boxEditorFrame) ()
    (:documentation "Simple frame for OMBoxEditCall meta objects. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
 
@@ -252,13 +256,18 @@ Exports as a raw bitmap (TIF format)
        (om-invalidate-view patchpanel t)
        )))
    
-(defmethod reinit-size ((box PictboxFrame))
-  (let ((thepict (thepict (value (object box)))) newsize)
-     (when thepict
-       (setf newsize (om-get-picture-size thepict))
-       (setf (frame-size (object box)) (om-add-points newsize (om-make-point 0 17)))
-       (box-draw-connections box nil)
-       (omG-select (redraw-frame box)))))
+(defmethod reinit-size ((boxframe PictboxFrame))
+  (let ((thepict (thepict (value (object boxframe)))))
+    (when thepict
+      (let* ((pict-size (om-get-picture-size thepict))
+             (pw (om-point-h pict-size)) (ph (om-point-v pict-size))
+             (ref-h (- (h boxframe) 16)) (ref-w (w boxframe))
+             (new-size (if (> ref-w ref-h) 
+                           (om-make-point ref-w (* ref-w (/ ph pw)))
+                         (om-make-point (* ref-h (/ pw ph)) ref-h))))
+        (setf (frame-size (object boxframe)) (om-add-points new-size (om-make-point 0 16)))
+        (box-draw-connections boxframe nil)
+        (omG-select (redraw-frame boxframe))))))
 
 
 
@@ -274,12 +283,12 @@ Exports as a raw bitmap (TIF format)
    ;(thepict self) 
   t)
 
-(omg-defclass pictEditor (editorview) 
+(defclass pictEditor (editorview) 
   ((mode :initform :normal :accessor mode)
    (selection :initform nil :accessor selection)
    (controlview :initform nil :accessor controlview)))
 
-(omg-defclass pictpanel (om-view om-drag-view om-drop-view) ())
+(defclass pictpanel (om-view om-drag-view om-drop-view) ())
 
 (defmethod editor ((self pictpanel)) (om-view-container self))
 
@@ -299,6 +308,7 @@ Exports as a raw bitmap (TIF format)
                                                  (make-om-menu 'help :editor self)))
 
 (defmethod initialize-instance :after ((self picteditor) &rest args)
+  (om-set-bg-color self (om-make-color 0.8 0.8 0.8))
   (om-add-subviews self
                    (setf (panel self) (om-make-view 'pictpanel
                                                     :position (om-make-point 0 0)
@@ -309,9 +319,19 @@ Exports as a raw bitmap (TIF format)
                                                           :bg-color *om-light-gray-color*))))
 
 (defmethod update-subviews ((self picteditor))
-  (om-set-view-size (panel self) (om-make-point (w self) (- (h self) 40)))
-  (om-set-view-size (controlview self) (om-make-point (w self) 40))
-  (om-set-view-position (controlview self) (om-make-point 0 (- (h self) 40))))
+  (let ((pict (thepict (object self))))
+    (when pict
+      (let ((pw (om-pict-width pict)) (ph (om-pict-height pict))
+            (vw (w self)) (vh (- (h self) 40)))
+        (if (<= (* vw (/ ph pw)) vh)
+            (let ((vh2 (* vw (/ ph pw))))
+              (om-set-view-size (panel self) (om-make-point vw vh2))
+              (om-set-view-position (panel self) (om-make-point 0 (- (/ vh 2) (/ vh2 2)))))
+          (let ((vw2 (* vh (/ pw ph))))
+            (om-set-view-size (panel self) (om-make-point vw2 vh))
+            (om-set-view-position (panel self) (om-make-point (- (/ vw 2) (/ vw2 2)) 0))))
+        (om-set-view-size (controlview self) (om-make-point (w self) 40))
+        (om-set-view-position (controlview self) (om-make-point 0 (- (h self) 40)))))))
 
 (defmethod load-new-pict ((self picteditor))
   (let ((tmppict (get-picture-file)))
