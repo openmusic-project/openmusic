@@ -78,9 +78,9 @@
      (setf *reactive-patches* (get-pref modulepref :reactive))
      
      (unless (equal *listener-input* (get-pref modulepref :listener-input))
-       (om-close-window om-lisp::*om-listener*)
        (setf *listener-input* (get-pref modulepref :listener-input))
-       (show-listener-win))
+       (when om-lisp::*om-listener* (om-close-window om-lisp::*om-listener*))
+       (unless om::*om-startup* (show-listener-win)))
 
      (when (get-pref modulepref :listener-on-top) 
        (unless (equal om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes))

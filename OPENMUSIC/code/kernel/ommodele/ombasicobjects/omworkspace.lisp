@@ -93,7 +93,7 @@
         (load-package-from-folders)
         (ws-load-user-pack)
 
-        (load-elements self)
+        (load-elements self)  ;; will also open the listener
         (setf (packages *current-workSpace*) (list *om-package-tree*))
 
         (setf (mypathname *om-package-tree*) (mypathname *current-workspace*))
@@ -223,8 +223,8 @@
    (setf *splash-screen* (show-kero-pict nil))
    (init-om-package)                    
    (load-om-libs)
-   (workspace-from-name pathname)                   
-   (initWorkSpace *current-workSpace*)
+   (workspace-from-name pathname)      ;; will set the preferences             
+   (initWorkSpace *current-workSpace*) ;; will open the listener
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
    (om-close-window *splash-screen*)
