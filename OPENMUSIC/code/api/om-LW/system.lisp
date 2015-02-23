@@ -98,6 +98,7 @@
           om-with-priority
           om-with-new-gc
           om-without-interrupts
+          om-process-state
 
           om-error-handle-funcall
           om-with-error-handle
@@ -579,6 +580,9 @@
 
 (defun om-find-process (id)
   (mp:find-process-from-name id))
+
+(defun om-process-state (process)
+  (mp:process-state process))
 
 
 ;;;===================
