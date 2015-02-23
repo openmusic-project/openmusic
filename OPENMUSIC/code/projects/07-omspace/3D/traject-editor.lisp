@@ -63,7 +63,7 @@
              (loop for i in (selected-points self) do 
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ((selected-points self)
-             (loop for i from 0 to (- (length verticess) 1) do                  
+             (loop for i from 0 to (- (length vertices) 1) do                  
                    (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
             ))
     (restore-om-gl-colors-and-attributes)
@@ -75,12 +75,14 @@
             "create a vector of colors for a 3D-timed-curve depending on the mode selected"
             (let* ((points (om-3dobj-points self))
                    (size (length points))
-                   (min_h (max 0 (nth 0 (color-min self))))
-                   (min_s (max 0 (nth 1 (color-min self))))
-                   (min_v (max 0 (nth 2 (color-min self))))
-                   (max_h (min 1.0 (nth 0 (color-max self))))
-                   (max_s (min 1.0 (nth 1 (color-max self))))
-                   (max_v (min 1.0 (nth 2 (color-max self))))
+                   (cmi (or (color-min self) '(0 0 0)))
+                   (cma (or (color-max self) '(1.0 1.0 1.0)))
+                   (min_h (max 0 (nth 0 cmi)))
+                   (min_s (max 0 (nth 1 cmi)))
+                   (min_v (max 0 (nth 2 cmi)))
+                   (max_h (min 1.0 (nth 0 cma)))
+                   (max_s (min 1.0 (nth 1 cma)))
+                   (max_v (min 1.0 (nth 2 cma)))
                    (range_h (- max_h min_h))
                    (range_s (- max_s min_s))
                    (range_v (- max_v min_v)))
