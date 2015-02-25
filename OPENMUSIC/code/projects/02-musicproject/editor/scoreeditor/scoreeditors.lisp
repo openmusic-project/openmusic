@@ -2449,10 +2449,10 @@
 (defmethod get-score-class-panel ((self multiseqEditor)) 'multiseqPanel)
 (defmethod get-score-class-ctrls ((self multiseqEditor)) 'multiseq-controls-view)
 
+
 (defmethod update-editor-after-eval ((self multiseqEditor) val)
-   (let* ((obj (editor-object-from-value val))
-          (newstaff (correct-staff-val obj (staff-sys (panel self)) (panel self))))
-     (setf (object self) obj)
+   (let ((newstaff (correct-staff-val  val (staff-sys (panel self)) (panel self))))
+     (setf (object self) val)
      (setf (staff-sys (panel self)) newstaff)
      (set-edit-param self 'staff  (loop for item in newstaff collect (sysname item)))
      (init-music-patch  (panel self))
@@ -5331,4 +5331,5 @@
  (loop for voice in (inside grap-obj)
           for i = 0 then (+ i 1) append
           (get-page-line-elements voice fdoc pagenum line 0)))
+
 
