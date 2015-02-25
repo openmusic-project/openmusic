@@ -623,18 +623,16 @@
     (om-select-window w)
     pictarray))
 
-(defmethod om-save-picture (pict path &optional type)
+(defmethod om-save-picture (pict path &optional (type :tiff))
   (ensure-pict-win)
   (gp::externalize-and-write-image *temp-pictlayout* pict path :type type :if-exists :supersede)
   path)
 
-(defmethod om-save-picture ((pict internal-picture) path &optional type)
+(defmethod om-save-picture ((pict internal-picture) path &optional (type :tiff))
   ;(gp::write-external-image (gp::externalize-image *record-view* (om-internal-picture-to-pict pict *record-view*)) path :if-exists :supersede)
   (gp::externalize-and-write-image 
    *record-view* 
    (om-internal-picture-to-pict pict *record-view*) 
-   path 
-   :type type
-   :if-exists :supersede)
+   path :type type :if-exists :supersede)
   path)
 

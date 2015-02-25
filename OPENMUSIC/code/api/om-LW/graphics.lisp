@@ -982,3 +982,4 @@
          ((equal (intern (string ,style) :oa) 'dash)
           (gp::with-graphics-state (*curstream* :dashed t :dash '(2 2)) ,@body))
          (t (progn ,@body))))
+
