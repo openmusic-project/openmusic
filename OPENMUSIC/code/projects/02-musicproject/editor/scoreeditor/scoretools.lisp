@@ -166,7 +166,7 @@
         (when (> (length line) 1)
           (om-with-fg-color nil *om-black-color*
             (om-with-line-size 3
-              (om-draw-line  x y (+ x 4) (- y 4))
+              (om-draw-line x y (+ x 4) (- y 4))
               (om-draw-line x y x posy)
               (om-draw-line x posy (+ x 4) (+ posy 4))
               )))
