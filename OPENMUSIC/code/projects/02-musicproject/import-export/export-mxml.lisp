@@ -1083,16 +1083,24 @@
 
 
 (defun liaison-notation (liaison)
-	(let ((start (append *t *t *t *t (chr "<tied type=") *g (chr "start") *g (chr "/>") *r))
+  (let ((start (append *t *t *t *t (chr "<tied type=") *g (chr "start") *g (chr "/>") *r))
 	(stop (append *t *t *t *t (chr "<tied type=") *g (chr "stop") *g (chr "/>") *r))
 	(stop-start (append 
-			*t *t *t *t (chr "<tied type=") *g (chr "stop") *g (chr "/>") *r
-			*t *t *t *t (chr "<tied type=") *g (chr "start") *g (chr "/>") *r)))
+                     *t *t *t *t (chr "<tied type=") *g (chr "stop") *g (chr "/>") *r
+                     *t *t *t *t (chr "<tied type=") *g (chr "start") *g (chr "/>") *r)))
 	;-------
-	(case liaison
-		(s start)
-		(o stop)
-		(os stop-start))))
+    (case liaison
+      (s start)
+      (o stop)
+      (os stop-start))))
+
+(defun tied? (self)
+  (or (and (not (om::cont-chord-p self))
+           (om::cont-chord-p (om::next-container self '(om::chord))))
+      (and (om::cont-chord-p self)
+           (not (om::cont-chord-p (om::next-container self '(om::chord)))))
+      (and (om::cont-chord-p self)
+           (om::cont-chord-p (om::next-container self '(om::chord))))))
 
 (defun tied-notation (self)
   (cond ((and (not (om::cont-chord-p self))
@@ -1108,90 +1116,119 @@
 
 
 
+  
+
+(defun accent? (self) nil)
+
+(defun accent-notation (self)
+  (if (accent? self)
+    (append *t *t *t *t *t (chr "<articulations>") *r 
+            *t *t *t *t *t *t (chr "<accent default-x=\"-1\" default-y=\"-61\" placement=\"below\"/>") 
+            *t *t *t *t *t (chr "</articulations>") *r)
+    '("")))
+
 (defun groupnotation (self)
-   (apply 'om::string+
-           (if (in-group? self)
-               (let* ((lvl (get-grp-level self))
-                      (ratio (getratiogroup (om::parent self)))
-                      (act-note (second lvl))
-                      (norm-note (third lvl))
-                      (indx (car lvl))
-                      (numdeno (getallgroups self))
-                      (numdenom (remove nil (loop for i in numdeno
-                                                  collect (if (not (= 1 (/ (car i) (second i)))) i )   ;;; PB if group (n n) !!!
-                                                  )))
-                      (simpli (/  act-note norm-note))
-                      (strg nil))
-      
-                 (if (not (= (/  act-note norm-note) 1))
+  (apply 'om::string+
+         (if (in-group? self)
+             (let* ((lvl (get-grp-level self))
+                    (ratio (getratiogroup (om::parent self)))
+                    (act-note (second lvl))
+                    (norm-note (third lvl))
+                    (indx (car lvl))
+                    (numdeno (getallgroups self))
+                    (numdenom (remove nil (loop for i in numdeno
+                                                collect (if (not (= 1 (/ (car i) (second i)))) i )   ;;; PB if group (n n) !!!
+                                                )))
+                    (simpli (/ act-note norm-note))
+                    (strg nil))
+               
+               (if (not (= (/ act-note norm-note) 1))
         
-                     (cond 
-                      ((and (om::last-of-group? self) (om::first-of-group? self))
-                       (list ""))
+                   (cond 
+                    ((and (om::last-of-group? self) (om::first-of-group? self))
+                     (if (accent? self)
+                         (list (str 
+                                (append (append *t *t *t (chr "<notations>") *r)
+                                        (accent-notation self)  
+                                        (append *t *t *t (chr "</notations>") *r)))
+                               )
+                       (list "")))
              
-                      ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-                       (progn
-                         (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
-                         (setf strg (append strg (list (str
-                                                        (let ((obj self)
-                                                              (indx (+ (length numdenom) 1)))
-                                                          (remove nil (om::flat (loop for i in (reverse numdenom)           
-                                                                                      collect (progn 
-                                                                                                (setf obj (om::parent obj))
-                                                                                                (setf indx (- indx 1))
+                    ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
+                     (progn
+                       (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
+                       (setf strg (append strg (list (str
+                                                      (let ((obj self)
+                                                            (indx (+ (length numdenom) 1)))
+                                                        (remove nil (om::flat (loop for i in (reverse numdenom)           
+                                                                                    collect (progn 
+                                                                                              (setf obj (om::parent obj))
+                                                                                              (setf indx (- indx 1))
                                                                                  
-                                                                                                (if (first-of-this-group self obj)
+                                                                                              (if (first-of-this-group self obj)
                                                                         
-                                                                                                    (firstofgroup (car i) (second i) (third i) indx)
-                                                                                                  )
-                                                                                                )))))
-                                                        ))))
-                         (setf strg (append strg (list (str (tied-notation self)))))
-                         (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
-                         ))
+                                                                                                  (firstofgroup (car i) (second i) (third i) indx)
+                                                                                                )
+                                                                                              )))))
+                                                      ))))
+                       (setf strg (append strg (list (str (tied-notation self)))))
+                       (if (accent? self) (setf strg (append strg (list (str (accent-notation self))))))
+                       (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
+                       ))
 
 
 
-                      ((and (om::last-of-group? self) (not (om::first-of-group? self)))
-
-                       (progn
+                    ((and (om::last-of-group? self) (not (om::first-of-group? self)))
+                     
+                     (progn
                  
-                         (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
-                         (setf strg (append strg (list (str 
-                                                        (let ((obj self)
-                                                              (indx (+ (length numdenom) 1)))
-                                                          (remove nil (om::flat (loop for i in numdenom           
-                                                                                      collect (progn 
-                                                                                                (setf obj (om::parent obj))
-                                                                                                (setf indx (- indx 1))
-                                                                                                (if (last-of-this-group self obj)
-                                                                                                    (lastofgroup indx)))))))
-                                                        ))))
-                         (setf strg (append strg (list (str (tied-notation self)))))
-                         (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
-                         ))
+                       (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
+                       (setf strg (append strg (list (str 
+                                                      (let ((obj self)
+                                                            (indx (+ (length numdenom) 1)))
+                                                        (remove nil (om::flat (loop for i in numdenom           
+                                                                                    collect (progn 
+                                                                                              (setf obj (om::parent obj))
+                                                                                              (setf indx (- indx 1))
+                                                                                              (if (last-of-this-group self obj)
+                                                                                                  (lastofgroup indx)))))))
+                                                      ))))
+                       (setf strg (append strg (list (str (tied-notation self)))))
+                       (setf strg (append strg (list (str (accent-notation self)))))
+                       (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
+                       ))
 
        
 
-                      (t (list "")))
+                    (t ;(list "")
+                     (if (accent? self)
+                         (list (str 
+                                (append (append *t *t *t (chr "<notations>") *r)
+                                        (accent-notation self)  
+                                        (append *t *t *t (chr "</notations>") *r)))
+                               )
+                       (list ""))
+                     ))
 
         
-                   (progn
-                     (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
-                     (setf strg (append strg (list (str (tied-notation self)))))
-                     (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
-                     )))
+                 (when (or (tied? self) (accent? self))
+                   (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
+                   (setf strg (append strg (list (str (tied-notation self)))))
+                   (setf strg (append strg (list (str (accent-notation self)))))
+                   (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
+                   )))
 
 
-             (let* ((strg nil))
-               (progn
-                 (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
-                 (setf strg (append strg (list (str (tied-notation self)))))
-                 (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
-                 ))    
+           (let* ((strg nil))
+             (when (or (tied? self) (accent? self))
+               (setf strg (append strg (list (str (append *t *t *t (chr "<notations>") *r)))))
+               (setf strg (append strg (list (str (tied-notation self)))))
+               (setf strg (append strg (list (str (accent-notation self)))))
+               (setf strg (append strg (list (str (append *t *t *t (chr "</notations>") *r)))))
+               ))
 
 
-             )))
+           )))
 
 
 
@@ -1350,7 +1387,18 @@
     ))
 
 
-
+(defun text-extras-as-xml (self) 
+  (when (om::get-extras self "text")
+    (append *t *t *t *t (chr "<lyric default-y=\"-80\" justify=\"left\" number=\"1\">") *r 
+                    *t *t *t *t *t (chr "<syllabic>single</syllabic>") *r 
+                    *t *t *t *t *t 
+                    (chr "<text>") 
+                    (list (om::thetext (car (om::get-extras self "text"))))
+                    (chr "</text>") *r 
+                    *t *t *t *t *t (chr "<extend type=\"start\"/>") *r 
+                    *t *t *t *t (chr "</lyric>") *r
+                    )))
+   
 (defmethod cons-xml-expr ((self om::chord) fig &optional (key '((G 2))) (approx 2))
   
   (let* ((figure (if (listp fig) (car fig) fig))
@@ -1387,6 +1435,10 @@
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
+          
+          ;;; text extras
+          (setf strg (append strg (text-extras-as-xml self)))
+          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r)))))
           )
       
@@ -1410,6 +1462,10 @@
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
+          
+          ;;; text extras
+          (setf strg (append strg (text-extras-as-xml self)))
+          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r))))))
         (loop for note in (cdr inside) ;;;;les autres notes de l'accord
               do (progn 
