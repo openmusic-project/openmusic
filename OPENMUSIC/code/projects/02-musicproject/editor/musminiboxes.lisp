@@ -275,7 +275,7 @@
 
 (defun draw-multi-mini-obj (self view grapobj staffsys sizefont size deltay) 
   (draw-score-line staffsys view -6 deltay
-                   (w view) sizefont (minitempo self) nil nil)
+                  (w view) sizefont (minitempo self) nil nil)
   (draw-object grapobj view (* 2 sizefont) deltay
                (get-mini-zoom view)
                0 (om-point-h size) 0 (om-point-v size) 'midic sizefont t staffsys nil nil))
