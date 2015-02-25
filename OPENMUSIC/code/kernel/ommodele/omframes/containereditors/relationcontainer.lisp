@@ -33,7 +33,7 @@
 ;----------------------------
 ;relationEditor
 ;----------------------------
-(omg-defclass relationEditor (nonrelationeditor)  ()
+(defclass relationEditor (nonrelationeditor)  ()
    (:documentation "This is the general class for window containing a relationPanel, so windows for Patches, 
 maquettes and hierarchical class editors.#enddoc#
 #seealso# (relationPanel) #seealso#"))
@@ -107,22 +107,22 @@ maquettes and hierarchical class editors.#enddoc#
        (let ((val (get-clipboard self)))
        (when val
          (let ((connections (second val))
-               (new-frames (eval (first val))))
+               (new-boxes (eval (first val))))
            (loop for item in (get-actives container) do
                  (omG-unselect item))
            (om-with-delayed-update container
              (mapcar #'(lambda (object)
                          (setf (name object) (mk-unique-name container (name object)))
-                         (setf (frame-position object) (paste-position object))
+                         (setf (frame-position object) (paste-position object self))
                          (let ((new-frame (make-frame-from-callobj object)))
                            (omG-add-element container new-frame)
-                           (omG-select new-frame))) new-frames)
+                           (omG-select new-frame))) new-boxes)
              )
-             (remake-draggeds-connections container container new-frames connections)
+             (remake-draggeds-connections container container new-boxes connections)
              (progn
                ; for multiple paste : make another copy in the clipboard
-               (setf copies (mapcar #'(lambda (frame) (omNG-copy frame)) new-frames))
-               (set-clipboard self (list `(list ,.copies) (save-connections container container new-frames))))
+               (setf copies (mapcar #'(lambda (box) (omNG-copy box)) new-boxes))
+               (set-clipboard self (list `(list ,.copies) (save-connections container container new-boxes))))
              )
          (om-invalidate-view container)
          ))) 
@@ -230,10 +230,20 @@ maquettes and hierarchical class editors.#enddoc#
    "Close the window 'self' and load the last save version of the patch associated to the scroller."
    (update-last-saved (object (panel self))))
 
-(defmethod paste-position ((self t))
-   "The position for a duplicate command is calculated by this method."
-   (borne-position (om-add-points (frame-position self) (om-make-point 20 20))))
-
+(defmethod paste-position ((self t) view)
+  (let ((fpx (om-point-h (frame-position self)))
+        (fpy (om-point-h (frame-position self))))
+    
+    (when (or (> fpx (- (w view) 20)) (> fpy (- (h view) 20)))
+      (setf fpx (om-point-h (om-mouse-position view))
+            fpy (om-point-v (om-mouse-position view))))
+    (om-add-points (om-make-point 
+                    (max 0 fpx)
+                    (max 0 fpy))
+                   (om-make-point 20 20))
+    ))
+    
+      
 
 
 ;----------------------------

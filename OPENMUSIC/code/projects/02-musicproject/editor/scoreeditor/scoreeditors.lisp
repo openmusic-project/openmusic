@@ -5332,3 +5332,4 @@
           for i = 0 then (+ i 1) append
           (get-page-line-elements voice fdoc pagenum line 0)))
 
+

@@ -161,11 +161,11 @@
                                :window-show nil
                                :toolbox (member :toolbox wintype) 
                                :size sizewin
-                               :obj object))
+                               :obj (editor-object-from-value object)))
           (editor (om-make-view class
                                 :ref ref
                                 :owner win
-                                :object object
+                                :object (editor-object-from-value object)
                                 :position (om-make-point 0 0)
                                :size (om-interior-size win)
                                 ))
@@ -367,8 +367,10 @@
 
 (defmethod key-event-around ((self EditorView) char) t)
 
+(defmethod editor-object-from-value ((self t)) self)
+
 (defmethod update-editor-after-eval ((self EditorView) val)
-  (setf (object self) val)
+  (setf (object self) (editor-object-from-value val))
   (om-invalidate-view self t))
 
 

@@ -37,9 +37,38 @@
     (ccolor :initform 0 :initarg :ccolor :accessor ccolor)
     (point-sel :initform nil :accessor point-sel)))
 
+(defun get-ramped-sine-pts (pts resolution)
+  (let ((x1 (om-point-h (car pts)))
+        (y1 (om-point-v (car pts)))
+        (x2 (om-point-h (last-elem pts)))
+        (y2 (om-point-v (last-elem pts))))
+        
+    (let* ((width (abs (- x2 x1)))
+         ;calculate 'mirrored' y2 (a clipped linear function)
+           (anti-y2 (om-max 
+                     (+ (* -1/3 y2)
+                        (* 4/3 (+ y1 (* 1/2 width))))
+                     y2)
+                    ))
+
+      (loop for k from 0 to resolution
+            for rad = (om-scale k -1.57 1.57 0 resolution)
+            for ramp = (* (* (+ (sin (om-scale k -1.57 1.57 0 resolution)) 1) 0.5) ;; 0 to 1 half-sine-curve 
+                          (- anti-y2 y2)) ;; positive number
+            collect
+            (om-make-point (om-scale (sin rad) x1 x2 -1 1)
+                           (- (om-scale k y1 anti-y2 0 resolution)
+                              ramp
+                              ))))))
+
+(defparameter *curve-draw-resolution* 50)
+(defparameter *curve-detect-resolution* 250)
+
 (defmethod class-of-connection ((self t)) 'c-connection)
 (defmethod get-graph-points ((self c-connection))
-   (points self))
+   (if *curved-connections*
+       (get-ramped-sine-pts (points self) *curve-draw-resolution*)
+     (points self)))
 
 (defmethod get-graph-point-sel ((self c-connection))
    (point-sel self))
@@ -69,18 +98,19 @@
 (defvar *init-con-rect* nil)
 
 (defmethod scroll-points ((Self c-connection))
-  (let* ((scroller (panel (thebox self)))
-         (where (om-mouse-position scroller)))
-  (setf *con-last-click* where)
-  (setf *con-first-click* where)
-  (setf *con-offset-click* (om-make-point 0 0))
-  (setf *cur-drag-connection* self)
-  (setf *first-point* (copy-list (points *cur-drag-connection*)))
-  (setf *init-con-rect* (get-rectangle-space *cur-drag-connection*))
-  (om-init-motion-functions scroller 'make-drag-conections 'release-drag-conections)
+  (unless *curved-connections*
+    (let* ((scroller (panel (thebox self)))
+           (where (om-mouse-position scroller)))
+      (setf *con-last-click* where)
+      (setf *con-first-click* where)
+      (setf *con-offset-click* (om-make-point 0 0))
+      (setf *cur-drag-connection* self)
+      (setf *first-point* (copy-list (points *cur-drag-connection*)))
+      (setf *init-con-rect* (get-rectangle-space *cur-drag-connection*))
+      (om-init-motion-functions scroller 'make-drag-conections 'release-drag-conections)
   ;(om-new-movable-object scroller (first (get-rectangle-space *cur-drag-connection*))
   ;                       (third (get-rectangle-space *cur-drag-connection*)) 4 4 'om-movable-line)
-  ))
+      )))
 
 (defmethod release-drag-conections ((Self relationPanel) Where)
   (let (finalrect)
@@ -225,7 +255,7 @@
 		   (when thepoints
 		     (if (member prim (point-sel self))
 			 (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
-			 (when sel?
+			 (when (and sel? (not *curved-connections*))
 			   (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
 			 ))
 		   )

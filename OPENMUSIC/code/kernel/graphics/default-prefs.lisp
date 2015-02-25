@@ -78,9 +78,9 @@
      (setf *reactive-patches* (get-pref modulepref :reactive))
      
      (unless (equal *listener-input* (get-pref modulepref :listener-input))
-       (om-close-window om-lisp::*om-listener*)
        (setf *listener-input* (get-pref modulepref :listener-input))
-       (show-listener-win))
+       (when om-lisp::*om-listener* (om-close-window om-lisp::*om-listener*))
+       (unless om::*om-startup* (show-listener-win)))
 
      (when (get-pref modulepref :listener-on-top) 
        (unless (equal om-lisp::*listener-on-top* (equal (get-pref modulepref :listener-on-top) :yes))
@@ -263,6 +263,7 @@
 (defvar *default-folder-pres* 0)
 
 (defvar *patch-show-win-buttons* t)
+(defvar *curved-connections* nil)
 
 ;;; ??
 (defun init-om-pref-color ()
@@ -283,6 +284,7 @@
     (setf *icon-size-factor* (get-pref modulepref :box-fact))
     (setf *ombox-font* (or (eval (get-pref modulepref :boxname-font)) *om-default-font1*))
     (setf *patch-show-win-buttons* (get-pref modulepref :patch-win-buttons))
+    (setf *curved-connections* (get-pref modulepref :curved-connections))
     (setf *miniview-font-size* (get-pref modulepref :mv-font-size))
     
     ;;; maquette
@@ -309,6 +311,7 @@
    :boxname-font *om-default-font1*
    :folder-pres 1
    :patch-win-buttons t
+   :curved-connections nil
    :mv-font-size 20
 
    :maq-color (om-make-color 0.85 0.85 0.83) 
@@ -369,6 +372,16 @@
                                           :checked-p (get-pref modulepref :patch-win-buttons)
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :patch-win-buttons (om-checked-p item))))
+                                                       
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Curved connections"
+                                          :font *controls-font*)
+
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 200 26) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :curved-connections)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :curved-connections (om-checked-p item)))) 
+                                                       
   
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 90 24) "Boxes"
                                           :font *om-default-font1b*)
