@@ -220,7 +220,8 @@
                        (or (voice (segment-data seg))
                            (quantify-segment cs (segment-begin seg) (segment-end seg) 
                                              tempo maxdiv forbidden precision))))))
-          (unless (= 0 (segment-begin (car (analysis-segments kant-analysis))))
+          (unless (or (= 0 (segment-begin (car (analysis-segments kant-analysis))))
+                      (= (car (lonset cs)) (segment-begin (car (analysis-segments kant-analysis)))))
             (print (format nil "SEGMENT 0: 0ms - ~Dms" (segment-begin (car (analysis-segments kant-analysis)))))
             (setf kant-voices 
                   (cons (quantify-segment cs 0 (segment-begin (car (analysis-segments kant-analysis)))
