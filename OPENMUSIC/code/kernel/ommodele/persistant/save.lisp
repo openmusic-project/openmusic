@@ -1738,13 +1738,15 @@
 (defvar *loading-methods* nil)
 (defvar *loading-initmet* nil)
 
+; 
+
 (defun fill-package-from-path (path package)
   (catch 'om-read-error
     (handler-bind ((error #'(lambda (err) (om-message-dialog (format nil "The user item ~s could not be loaded because of the following error: ~s" 
                                                                      (namestring path) (om-report-condition err)))
                               (throw 'om-read-error nil))))
       ;;; NEW : load lisp files
-      (if (member (pathname-type path) '("lisp" "lsp") :test 'string-equal)
+      (if (member (pathname-type path) (list "lisp" "lsp" cl-user::*compile-type*) :test 'string-equal)
           (load path)
         (when (om-persistant-p path)
           (if (directoryp path)
