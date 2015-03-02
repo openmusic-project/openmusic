@@ -230,13 +230,16 @@ maquettes and hierarchical class editors.#enddoc#
    "Close the window 'self' and load the last save version of the patch associated to the scroller."
    (update-last-saved (object (panel self))))
 
+
+;;; todo : find a good (relative!) paste position when fpx/fpy are out of the window...
 (defmethod paste-position ((self t) view)
   (let ((fpx (om-point-h (frame-position self)))
-        (fpy (om-point-h (frame-position self))))
+        (fpy (om-point-v (frame-position self))))
     
     (when (or (> fpx (- (w view) 20)) (> fpy (- (h view) 20)))
-      (setf fpx (om-point-h (om-mouse-position view))
-            fpy (om-point-v (om-mouse-position view))))
+      (setf fpx (- fpx (w view)) ; (om-point-h (om-mouse-position view))
+            fpy (- fpy (h view)) ; (om-point-v (om-mouse-position view))
+            ))
     (om-add-points (om-make-point 
                     (max 0 fpx)
                     (max 0 fpy))
