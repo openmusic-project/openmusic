@@ -595,8 +595,10 @@
    ;;; jb
    
    (when (and (not grille-p) (stem self) (chordpos self))
-     (draw-stem self (+ (chordpos self) (/ size 3.5)) y (selected self) (stem self))
-     )
+     (if (< (list-min (lmidic (reference self))) 7000)
+         (draw-stem self (+ (chordpos self) (/ size 3.5)) y (selected self) (stem self))
+       (draw-stem self (chordpos self) y (selected self) (- (stem self)))
+       ))
    (collect-rectangles self)
    (draw-extras self view size staff)
   )
