@@ -1,0 +1,10 @@
+0.02 -  ???
+  * fixed duplicate :text-length in XMLIFY-KEYWORD (format-xml.lisp)
+  * added ADD-NAMESPACE method, available to all elements (svg.lisp)
+  * added SCRIPT-LINK function (svg.lisp)
+  * added MAKE-FOREIGN-OBJECT (svg.lisp)
+  * bug in TRANSFORM with multiple transformations fixed (svg.lisp)
+  * SCRIPT includes a type property now (svg.lisp)
+
+0.01 - June 14 2008
+  * initial release
