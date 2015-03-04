@@ -4,6 +4,7 @@
 *.ufasl
 *.lisp~
 *.lisp#
+*.*~
 
 *.app/
 
