@@ -1101,10 +1101,20 @@
   (om-point-in-region-p reg where))
 
 
+(defmethod export-menu ((self bpfeditor))
+  (when (export-formats (object self))
+  (om-make-menu "Export" 
+                (mapcar #'(lambda (item) 
+                            (om-new-leafmenu (cadr item) #'(lambda () 
+                                                             (bpf-export (car item) (object self)))))
+                        (export-formats (object self))))))
+
 
 (defmethod get-menubar ((self bpfEditor)) 
   (list (om-make-menu "File" 
-                      (list (om-new-leafmenu  "Close" #'(lambda () (om-close-window (window self))) "w")))
+                      (list 
+                       (export-menu self)
+                       (om-new-leafmenu  "Close" #'(lambda () (om-close-window (window self))) "w")))
         (om-make-menu "Edit" 
                       (list (om-new-leafmenu  "Select All" #'(lambda () (editor-select-all self)) "a")))
         (make-om-menu 'windows :editor self)

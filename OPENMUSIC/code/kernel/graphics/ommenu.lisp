@@ -211,7 +211,7 @@
                                   (list 
                                  ;(om-new-leafmenu "Make Alias" #'(lambda () (alias-window win)) "m" 
                                  ;                 (if (member "Make Alias" disable :test 'string-equal) nil t))
-                                   (om-new-leafmenu "Get Info" #'(lambda() (get-info-window win)) "i" 
+                                   (om-new-leafmenu "Get Info" #'(lambda () (get-info-window win)) "i" 
                                                     (if (member "Get Info" disable :test 'string-equal) nil t))
                                    )
                                   (list 

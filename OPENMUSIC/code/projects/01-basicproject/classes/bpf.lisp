@@ -63,6 +63,20 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
 (defmethod bpf-p ((self bpf)) t)
 (defmethod bpf-p ((self t)) nil)  
   
+(defmethod export-formats ((self bpf))
+  '((text "Text")
+    (om "OM instance")
+    (svg "SVG")))
+
+(defmethod bpf-export ((format (eql 'om)) object)
+  (save-instance object))
+
+(defmethod bpf-export ((format (eql 'text)) object)
+  (save-data object))
+
+(defmethod bpf-export ((format (eql 'svg)) object)
+  (export-svg object nil))
+
 (defmethod (setf bpfcolor) ((c t) (self bpf))
   (when c
     (setf (slot-value self 'bpfcolor) (om-correct-color c))))

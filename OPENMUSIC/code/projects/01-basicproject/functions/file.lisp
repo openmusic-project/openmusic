@@ -75,16 +75,21 @@
 (defmethod save-params ((self t) (file string))
   (save-params self (pathname file)))
 
-(defmethod! save-data ((self t) &optional (path "data.txt"))
+(defmethod! save-data ((self t) &optional (path nil))
   :icon 908
   :initvals '(nil "data.txt")
   :indoc '("data (list, BPF, or TextFile)" "a file location")
   :doc "Saves the data from <self> as a text file in <path>." 
-  (let ((out (if (pathnamep path) path (outfile path))))
+  (let ((out (cond ((pathnamep path) path)
+                   (path (outfile path))
+                   (t (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                 :prompt "New Text file"
+                                                 :types '("Text Files" "*.txt;*.*"))))))
     (when (and (pathnamep out)
                (or (bpf-p self)
                    (typep self 'textfile)
                    (listp self)))
+      (setf *last-saved-dir* (make-pathname :directory (pathname-directory out)))
       (save-params self out)
       out)))
 
