@@ -4,34 +4,6 @@
 (in-package #:cl-svg-tests)
 
 
-(defun export-svg (bpf file_path)
-  (let ((bpf-points (om::point-list bpf))
-        (scene (make-svg-toplevel 'svg-1.1-toplevel :height 300 :width 300))
-        (prev_p nil)
-        (path (make-path)))
-    (loop for pt in bpf-points
-          do
-          (draw scene (:circle 
-                       :cx (om-api:om-point-x pt)
-                       :cy (om-api:om-point-y pt)
-                       :r 4)
-                :stroke "rgb(0, 0, 0)"
-                :fill "rgb(100, 100, 100)")
-          (with-path path
-            (if prev_p
-                (line-to (om-api:om-point-x pt) (om-api:om-point-y pt))
-              (move-to (om-api:om-point-x pt) (om-api:om-point-y pt))))
-           (setf prev_p pt))
-    (draw scene (:path :d path)
-          :fill "none" :stroke "blue" :stroke-width 1)
-  (with-open-file (s #P"/Users/jgarcia/Desktop/test.svg" :direction :output :if-exists :supersede)
-    (stream-out s scene)))
-  )
-
-
-
-
-
 (defun one-of (list)
   (nth (random (length list)) list))
 
