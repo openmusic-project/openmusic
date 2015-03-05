@@ -110,7 +110,7 @@ Exports <self> to SVG format.
                                                        :types '("SVG Files" "*.svg")))))
     (when pathname
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-      (let ((bpf-points (point-pairs (bpf-scale self :x1 margins :x2 (- w margins) :y1 margins :y2 (- h margins))))
+      (let ((bpf-points (point-pairs (bpf-scale self :x1 margins :x2 (- w margins) :y2 margins :y1 (- h margins)))) ; y2 and y1 switched to have the correct orientation
             (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel :height h :width w))
             (prev_p nil)
             (path (svg::make-path))
@@ -118,18 +118,23 @@ Exports <self> to SVG format.
                                  (round (* 255 (om-color-r (bpfcolor self))))
                                  (round (* 255 (om-color-g (bpfcolor self))))
                                  (round (* 255 (om-color-b (bpfcolor self)))))))
+        ;draw line
         (loop for pt in bpf-points do
-              (when with-points
-                (svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
-                           :stroke "rgb(0, 0, 0)"
-                           :fill bpfcolorstr))
               (svg::with-path path
                 (if prev_p
                     (svg::line-to (car pt) (cadr pt))
                   (svg::move-to (car pt) (cadr pt))))
               (setf prev_p pt))
         (svg::draw scene (:path :d path)
-                   :fill "none" :stroke (print bpfcolorstr) :stroke-width line-size)
+                   :fill "none" :stroke bpfcolorstr :stroke-width line-size)
+
+        ;if points, draw points
+         (when with-points
+           (loop for pt in bpf-points do
+                 (svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
+                            :stroke "rgb(0, 0, 0)"
+                            :fill bpfcolorstr)))
+
         (with-open-file (s pathname :direction :output :if-exists :supersede)
           (svg::stream-out s scene)))
       pathname
