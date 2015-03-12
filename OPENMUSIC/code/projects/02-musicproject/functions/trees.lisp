@@ -868,17 +868,19 @@ Inverts <tree> : every note becomes a rest and every rest becomes a note.
   (let* (res
          (pulses (flat (get-s-by-mes tree)))
          (ratios (flat (tree-to-ratios tree))))
-
-    (loop 
-      for p in pulses
-      do ( if (floatp p)
-              (progn 
-                (setf (car res) (+ (car res) (car ratios)))
-                (pop ratios))
-              (progn 
-              (push (car ratios) res)
-              (pop ratios))))
+    (loop for p in pulses do 
+          (if (floatp p)
+              ;;; tie with previous ratio
+              (if res 
+                  ;; not the first pulse
+                  (setf (car res) (+ (or (car res) 0) (pop ratios)))
+                ;; first pulse
+                (setf res (list (- (pop ratios)))))
+            ;;; new ratio
+            (push (pop ratios) res)
+            ))
     (reverse res)))
+
 
 
 
