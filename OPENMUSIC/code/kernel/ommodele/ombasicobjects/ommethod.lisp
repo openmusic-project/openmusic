@@ -290,11 +290,11 @@ Class methods are the init-instance method and slot reader and writer. #class-me
    (multiple-value-bind (qualy lambda-list numouts initvals icon indoc outdoc doc menuins body)
                         (parse-defmethod* name args)
      (let ((lambda-var (get-lambda-var lambda-list))
-           method iv id od)
+            iv id od)
        (setf iv (or initvals `',(make-list (length lambda-var) :initial-element nil)))
        (setf id (or indoc `',(make-list (length lambda-var) :initial-element "")))
        (setf od (or outdoc `',(make-list (length lambda-var) :initial-element nil)))
-       `(let (gen-fun nouts)
+       `(let (gen-fun nouts method)
           (unless (fboundp ',name)
             (progn
               (setf gen-fun (defgeneric ,name ,lambda-var
