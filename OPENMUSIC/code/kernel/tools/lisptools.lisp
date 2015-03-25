@@ -958,8 +958,9 @@ Source must be subclass of target"
 ; EXIT OM
 ;=======================
 (defun om-quit ()  
-   (when (om-y-or-n-dialog  (string+ (om-str :quit) " " *app-name* " ?"))
-     (om-confirmed-quit)))
+  (let ((om-app-name (pathname-name *app-name*)))
+    (when (om-y-or-n-dialog  (string+ (om-str :quit) " " om-app-name "?"))
+      (om-confirmed-quit))))
 
 ;=======================
 ; Print IN listener

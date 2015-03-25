@@ -226,7 +226,7 @@
   (oa::set-om-logical-path)
   (om::load-modif-patches)
   (clos::set-clos-initarg-checking nil)
-  #+win32 (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
+  #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   (om::set-language *release-language*)
   (oa::om-init-funcall)
   (setf dspec::*active-finders* (append dspec::*active-finders*
