@@ -1610,7 +1610,9 @@
     (let* ((dir (stemdir self))
            (thenotes (copy-list (inside self))))
       (loop for item in thenotes do
-            (draw-object-ryth item view x y zoom minx maxx miny maxy slot size linear? staff chnote))
+            (if (zerop (offset (reference item)))
+                (draw-object-ryth item view x y zoom minx maxx miny maxy slot size linear? staff chnote)
+              (draw-object-ryth item view (+ x (* zoom (offset (reference item)))) y zoom minx maxx miny maxy slot size linear? staff chnote)))
       (collect-rectangles self)
       (when (bigchord self) 
         (om-with-font (om-make-font *signs-font* (round size 1.6))  ;a faire
