@@ -253,10 +253,10 @@
 
 (defun only-one-point (n)
   (cond
-   ((zerop n) (om-beep-msg (format nil "Warning zero is not allowed in rhythm tree -> ~D" n)))
+   ;((zerop n) (om-beep-msg (format nil "Warning: 0 is not allowed in rhythm trees")))
    ((floatp n) (mapcar 'float (only-one-point (round n))))  
    (t                              
-    (if (member n '(1 2 3 4 6 8 12 16 32)) ;only for optimization
+    (if (member n '(0 1 2 3 4 6 8 12 16 32)) ;only for optimization
       (list n)
       (let ((bef (car (before&after-bin n))))
         (cond

@@ -715,27 +715,45 @@ Extraction methods.
         (Extent (* (fullratio (first tree)) PropagateExtent))
         (nbsubunits (reduce  
                      #'(lambda (x y) (+   (abs x) (subtree-extent y))) 
-                     (second tree) :initial-value 0)))
-    (loop 
-      for subtree in subtrees
-      collect (cond
-               ((numberp subtree)
-                (let ((object 
-                       (if (plusp subtree)
-                         (make-instance 'note :empty t :extent  (* (fullratio subtree) (/ Extent nbsubunits)))
-                         (make-instance 'rest :extent (*  (abs (fullratio subtree)) (/ Extent nbsubunits))))))
-                  (when (and (plusp subtree) (floatp subtree))
-                    (setf (tie object) 'continue))
-                  object))
-               ((listp subtree)
-                (make-instance (next-metric-class self)
-                  :tree subtree 
-                  :PropagateExtent (/ Extent nbsubunits)
-                  :InternalCall t)))
-      into inside
-      finally 
-      (setf (slot-value self 'inside) inside
-            (slot-value self 'extent) Extent) )))
+                     (second tree)
+                     :initial-value 0))
+        (curr-obj nil)
+        (current-graces nil) (current-note nil))
+    (remove NIL
+            (loop 
+             for subtree in subtrees
+             do (setf curr-obj 
+                      (cond
+                       ((numberp subtree)
+                        (let ((object 
+                               (cond 
+                                ((zerop subtree) ;; GRACE NOTE
+                                 (if current-note (setf (mus-const current-note) (append (list! (mus-const current-note)) '(1)))
+                                   (setf current-graces (cons -1 current-graces)))
+                                 NIL)
+                                ((> subtree 0)
+                                 (let ((note (make-instance 'note :empty t :extent (* (fullratio subtree) (/ Extent nbsubunits)))))
+                                   (when current-graces 
+                                     (setf (mus-const note) current-graces))
+                                   (setf current-note note)
+                                   note))
+                                ((< subtree 0)
+                                 (make-instance 'rest :extent (*  (abs (fullratio subtree)) (/ Extent nbsubunits)))))))
+                          (when (and (plusp subtree) (floatp subtree))
+                            (setf (tie object) 'continue))
+                          object))
+                       ((listp subtree)
+                        (make-instance (next-metric-class self)
+                                       :tree subtree 
+                                       :PropagateExtent (/ Extent nbsubunits)
+                                       :InternalCall t))))
+             when curr-obj
+             collect curr-obj
+             into inside
+             finally 
+             (setf (slot-value self 'inside) inside
+                   (slot-value self 'extent) Extent)
+             ))))
   
 
 (defmethod set-relative-offset ((self sequence*))
@@ -949,8 +967,7 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod distribute-chords  ((self score-element) (chords score-element))
   (distribute-chords self (collect-chords chords)))
 
-
-(defmethod distribute-chords  ((self score-element) (chords list))
+(defmethod distribute-chords ((self score-element) (chords list))
   (let ((fringe nil) 
         (chord-model (mki 'chord))
         (def-chord (or (last-elem chords) (mki 'chord))))
@@ -971,16 +988,40 @@ of all its direct subcontainers (supposed adjacent)"
                                                  (mki 'chord))
                                              chord-model))
                                       (change-class chord 'continuation-chord))
-                               (setf chord (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
+                               (if (mus-const sub)  ;;; THERE ARE GRACE NOTES !!
+                                   (let* ((grace-time 100)  ;;; 50ms ?
+                                          (nnotes-before (count -1 (mus-const sub) :test '=))
+                                          (nnotes-after (count 1 (mus-const sub) :test '=))
+                                          (chords-before (loop for i from 1 to nnotes-before collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
+                                          (main-chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))
+                                          (chords-after (loop for i from 1 to nnotes-after collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))))
+                                     (loop for c in (reverse chords-before)
+                                           for dt = grace-time then (+ dt grace-time)
+                                           do (setf (loffset c) (om- (loffset c) dt)))
+                                     (loop for c in chords-after
+                                           for dt = grace-time then (+ dt grace-time)
+                                           do (setf (loffset c) (om+ (loffset c) dt)))
+                                     ;(print (mapcar 'loffset (append chords-before (list main-chord) chords-after)))
+                                     (setf chord (objfromobjs (append chords-before (list main-chord) chords-after) chord-model))
+                                     ;;; OBJFROMOBJS REDUCES LOFFSET TO 1 ...
+                                     (setf (loffset chord) 
+                                           (append (flat (mapcar 'loffset chords-before)) 
+                                                   (loffset main-chord)
+                                                   (flat (mapcar 'loffset chords-after))))
+                                     ;(print (loffset chord))
+                                     )
+                                 
+                                 (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))
+                                 ))
                              (setf (offset chord) (offset sub))
                              (InContext sub (setf (extent chord) (extent sub)))
                              (when (and (note-p sub) (eq (tie sub) 'continue))  (push 'tie fringe))
                              (push chord fringe)
-                             ;(normalize-chord chord)
                              and collect chord))
                  chords))
    
       (distribute self chords)
+      ;(print (mapcar 'loffset (chords self)))
       (setf fringe (nreverse fringe)) 
       (loop for item1 in fringe
             for item2 = (rest fringe) then (rest item2)
