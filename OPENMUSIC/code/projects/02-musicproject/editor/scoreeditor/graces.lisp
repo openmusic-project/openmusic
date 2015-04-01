@@ -59,7 +59,7 @@
 (defmethod! add-grace-notes ((self voice) chord-pos pitches)
   (let* ((mesure (nth  (car chord-pos)  (inside self)))
          (chords (cons-chord&rest-list mesure))
-         (thechord (nth  (second chord-pos)  chords)))
+         (thechord (nth (second chord-pos) chords)))
     (when thechord
       (set-grace-notes thechord pitches t))
     self))

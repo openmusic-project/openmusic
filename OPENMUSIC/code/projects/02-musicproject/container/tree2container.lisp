@@ -31,12 +31,10 @@
 (defun ratios-tree-p (l) (list-subtypep l '(ratio number)))
 
 ;'((4 4) ((1 (1 1 1)))) = T
-(defun measure-single? (mes)
-  (= (length (cadr mes)) 1))
+(defun measure-single? (mes) (= (length (cadr mes)) 1))
 
 ;'((4 4) (5)) = T
-(defun measure-super-single? (mes)
-  (and (measure-single? mes) (numberp (caadr mes))))
+(defun measure-super-single? (mes) (and (measure-single? mes) (numberp (caadr mes))))
 
 ;'((4 4) (3 (1 (1 1 1)) -5)) = '(3 1 5)
 (defun measure-repartition (mes)
@@ -57,8 +55,6 @@
   (setf tree (tree-ruler4 tree))
   (setf tree (tree-ruler5 tree))
   tree)
-
-
 
 ;================RULER1=====================
 ;Check the syntax of the tree and computes the value of '? if there is in the tree
@@ -206,8 +202,6 @@
         ((listp tree)
          (list (list (first tree) (mapcan #'add-measure-ties (second tree)))))))
 
-
-
 (defun add-ties-to-tree (tree)
    (let* ((measures (cadr tree)))
      (list (car tree)
@@ -293,16 +287,15 @@
                          (second tree) :initial-value 0)))
         (loop 
           for subtree in subtrees
-          collect (list-to-container subtree  (/ nbunits nbsubunits) 
+          collect (list-to-container subtree (/ nbunits nbsubunits) 
                                      :class (next-metric-class class)) into inside
           finally (return (mki class :inside inside :extent nbunits))))))
 
 (defmethod list-to-container ((tree number) unit &key class)
   (declare (ignore class))
-  (if (>= tree 0)
-    (mki 'note :extent  (* tree unit))
-    (mki 'rest :extent  (abs (* tree unit)))
-    )
+  (cond 
+   ((>= tree 0) (mki 'note :extent  (* tree unit)))
+   ((< tree 0)(mki 'rest :extent  (abs (* tree unit)))))
   )
 
 (defun tree->group (tree)
