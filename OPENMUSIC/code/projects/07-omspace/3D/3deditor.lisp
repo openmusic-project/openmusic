@@ -24,8 +24,7 @@
 (in-package :om)
 
 
-;;; 3D PANEL (OpenGL...)
-
+;;; 3OpenGL
 
 (defparameter *OM-GL-DEFAULT-LINEWIDTH* 1.0)
 (defparameter *OM-GL-DEFAULT-COLOR* (list 0.0 0.0 0.0 1.0))
@@ -212,15 +211,9 @@
 
     (opengl:gl-end)))
 
+;;;=============================
 ;;; 3DC editor 
-
-(defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
-
-(defmethod default-edition-params ((self 3DC)) 
-  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
-           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
-
-(defmethod get-editor-class ((self 3DC)) '3DEditor)
+;;;=============================
 
 (defclass 3DEditor (EditorView)
   ((xyp :accessor xyp :initform nil)
@@ -240,6 +233,79 @@
    (mode :accessor mode :initform :normal)
  )
   (:default-initargs :drawing-mode :quality))
+
+;not used anymore
+(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
+  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
+                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
+
+(defmethod get-current-object ((self 3Deditor))
+  (if (multibpf? self) 
+      (nth (selected-component self) (bpf-list (object self)))
+    (object self)))
+
+
+(defmethod editor-3Dobj ((self 3Deditor))
+  (when (3Dp self) 
+    (if (and (multibpf? self) (show-back-p self))
+        (nth (selected-component self) (om-get-3D-objects (om-get-gl-object (3Dp self))))
+      (om-get-gl-object (3Dp self)))))
+
+;trywithou transformation
+(defmethod format-3D-points  ((self 3DC))
+  (mat-trans (list (x-points self) (y-points self) (z-points self))))
+  
+(defun 3Dobj-from-points (points drawmode color line-width)
+  (let ((clist (when color (list (float (om-color-r color)) 
+                                 (float (om-color-g color)) 
+                                 (float (om-color-b color))))))  
+    (make-instance '3D-curve :points points :color clist :lines drawmode :line-width line-width)))
+                   
+
+(defmethod all-points ((self 3DC) axe)
+    (case axe
+      ('x (x-points self))
+      ('y (y-points self))
+      ('z (z-points self))))
+
+(defmethod all-points ((self 3DC-lib) axe)
+  (remove nil (reduce #'append (mapcar #'(lambda (3DC) (all-points 3DC axe)) (bpf-list self)))))
+
+(defmethod set-lines ((self om-3D-object-list) val)
+  (mapcar #'(lambda (curve) (set-lines curve val)) (om-get-3D-objects self)))
+
+(defmethod set-lines ((self 3D-curve) val)
+  (setf (lines self) val))
+
+(defmethod set-lines ((self t) val) nil)
+    
+(defmethod gl-3DC-from-obj ((self 3Deditor))
+  (let* ((obj (if (and (multibpf? self) (not (show-back-p self)))
+                  (get-current-object self)
+                (object self))))
+    (let ((newobj (gen-3D-obj obj (lines-p self) (param-line-width self))))
+      newobj)))
+
+(defmethod gen-3D-obj ((obj 3DC) mode line-width)
+  (let ((glpoints (format-3d-points obj)))
+    (3Dobj-from-points glpoints mode (bpfcolor obj) line-width)))
+
+(defmethod gen-3D-obj ((obj 3DC-lib) mode line-width)
+  (make-instance 'om-3D-object-list 
+                 :objects (mapcar #'(lambda (o) 
+                                      (3Dobj-from-points (format-3d-points o) mode (bpfcolor o) line-width))
+                                  (bpf-list obj))))
+
+
+(defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
+
+(defmethod default-edition-params ((self 3DC)) 
+  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
+
+(defmethod get-editor-class ((self 3DC)) '3DEditor)
+
 
 ;parameters stored with the editor
 (defmethod param-room-size ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
@@ -262,40 +328,28 @@
       (set-edit-param self 'line-width set-val)
     (get-edit-param self 'line-width)))
 
+
 ;util to store boolean parameters as values
 (defun param-value-to-boolean (val)
   (equal 1 val))
 
 ;util to convert boolean as values for storage
 (defun boolean-to-param-value (boolean)
-  (if boolean 
-      1
-    0))
+  (if boolean 1 0))
 
 (defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
 
 
-(defmethod get-current-object ((self 3Deditor))
-  (if (multibpf? self) 
-      (nth (selected-component self) (bpf-list (object self)))
-    (object self)))
-
-(defmethod editor-3Dobj ((self 3Deditor))
-  (when (3Dp self) 
-    (if (and (multibpf? self) (show-back-p self))
-        (nth (selected-component self) (om-get-3D-objects (om-get-gl-object (3Dp self))))
-      (om-get-gl-object (3Dp self)))))
-
-(defmethod bpc-editors ((self 3Deditor))
-  (list (xyp self) (xzp self) (yzp self)))
 
 
 
+
+
+;;;=============================
 ;;;3D Panel
-(defclass 3DPanel (om-opengl-view) 
-  ()
-  )
+;;;=============================
 
+(defclass 3DPanel (om-opengl-view) ())
 
 (defmethod om-draw-contents ((self 3DPanel))
   (when (param-value-to-boolean (param-show-room (om-view-container self)))
@@ -325,13 +379,23 @@
 ;jgarcia
 (defmethod draw-3D-room ((self 3DEditor))
   "Draw the room"
-  (opengl:gl-color4-f 0.9 0.9 0.9 1.0)
-  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) t)
-  (opengl:gl-color4-f 0.1 0.1 0.1 1.0)
-  (opengl:gl-line-width 1.0)
+  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
   (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
   (restore-om-gl-colors-and-attributes))
 
+(defmethod update-3D-view ((self 3Deditor))
+  (let ((sel (when (editor-3Dobj self) (selected-points (editor-3Dobj self))))
+        (3D-obj (gl-3DC-from-obj self)))    
+    (setf (selected-points (if (and (multibpf? self) (show-back-p self))
+                               (nth (selected-component self) (om-get-3D-objects 3D-obj)) 
+                             3D-obj)) sel)
+    (om-set-gl-object (3Dp self) 3D-obj)
+    ))
+
+
+;;;=============================
+;;; Controls
+;;;=============================
 
 (defclass 3Dcontrols (3Dborder-view) 
   ((mode-buttons :accessor mode-buttons :initform nil :initarg :mode-buttons)
@@ -353,7 +417,14 @@
        (om-draw-string 35 104 "Z")))))
 
 
+(defmethod update-3D-controls ((self 3Deditor))
+  (add-curve-edit-buttons self (ctrlp self))
+  (om-invalidate-view (ctrlp self)))
+
+
+;;;=============================
 ;;; AUX BPC editor (2D views)
+;;;=============================
 
 (defclass internalbpceditor (bpceditor) 
   ((x-label :accessor x-label :initarg :x-label :initform "")
@@ -361,6 +432,10 @@
 
 (defclass internalbpcpanel (bpcpanel) 
   ((show-time :accessor show-time :initarg :show-time :initform nil)))
+
+(defmethod bpc-editors ((self 3Deditor))
+  (list (xyp self) (xzp self) (yzp self)))
+
 
 (defmethod get-panel-class ((self internalbpceditor)) 'internalbpcpanel)
 
@@ -399,7 +474,6 @@
 
 (defmethod ruleroffsety-from-editor ((self internalbpceditor)) 0)
 
-
 (defmethod om-view-click-handler ((self internalbpcpanel) pos)
   (setf (focus (editor (om-view-window self))) self)
   (call-next-method))
@@ -408,165 +482,56 @@
 (defmethod do-after-move ((Self internalbpcpanel)) 
   (report-modifications (editor self)))
 
-;not used anymore
-(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
-  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
+(defmethod handle-key-event ((self internalbpcpanel) char) 
+  (cond ((and (equal char :om-key-delete) (listp (selection? self)))
+         (let ((del (mapcar 'cadr (slot-value self 'selection?)))
+               (ed (om-view-container (editor self))))
+           (loop for i in del do
+                 (remove-nth-point (get-current-object ed) i))
+           (set-points-selection ed nil)
+           (init-tmp-objs ed)
+           (update-editor-contents ed)
+           (report-modifications ed)
+           (om-invalidate-view (3Dp ed))
+           ))
+        ((equal char #\t) (setf (show-time self) (not (show-time self)))
+             (om-invalidate-view self))
+        (t (call-next-method))))
 
-;;; 3DC editor 
+(defmethod add-point-to-bpf ((self internalbpcpanel) where)
+   (let* ((ed (om-view-container (editor self)))
+         (length (length (point-list (currentbpf self))))
+         (new-point (pixel2point self where))
+         (position-seg (segment-in-bpf self (currentbpf self) where))
+         (prevpt (if position-seg 
+                     (nth (1- position-seg) (point-list (get-current-object ed)))
+                   (or (car (last (point-list (get-current-object ed))))
+                       (make-obj-point (get-current-object ed) :x 0.0 :y 0.0 :z 0.0))))
+         (3DP (cond ((and (equal (x-label (editor self)) 'x) (equal (y-label (editor self)) 'y))
+                     (make-obj-point (get-current-object ed) :x (om-point-x new-point) :y (om-point-y new-point) 
+                                     :z (om-point-z prevpt)))
+                    ((and (equal (x-label (editor self)) 'x) (equal (y-label (editor self)) 'z)) 
+                     (make-obj-point (get-current-object ed) :x (om-point-x new-point) :z (om-point-y new-point) 
+                                     :y (om-point-v prevpt)))
+                    ((and (equal (x-label (editor self)) 'y) (equal (y-label (editor self)) 'z)) 
+                     (make-obj-point (get-current-object ed) :y (om-point-x new-point) :z (om-point-y new-point) 
+                                     :x (om-point-x prevpt))))))
+         (if position-seg
+             (cons-bpf (get-current-object ed) (insert-in-list (point-list (get-current-object ed)) 3DP position-seg))
+           (insert-point (get-current-object ed) 3DP))
 
-(defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
+     (init-tmp-objs ed)
+     (update-editor-contents ed)
+     (report-modifications ed)
+     (om-invalidate-view (3Dp ed))
+     
+     (if position-seg
+         (setf (selection? self) (list (list 3DP position-seg)))
+       (setf (selection? self) (list (list 3DP length))))
+     
+     (scroll-point self 3DP)
+     ))
 
-(defmethod default-edition-params ((self 3DC)) 
-  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
-           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
-
-(defmethod get-editor-class ((self 3DC)) '3DEditor)
-
-(defclass 3DEditor (EditorView)
-  ((xyp :accessor xyp :initform nil)
-   (xzp :accessor xzp :initform nil)
-   (yzp :accessor yzp :initform nil)
-   (3Dp :accessor 3Dp :initform nil)
-   (ctrlp :accessor ctrlp :initform nil)
-   (selected-component :accessor selected-component :initarg :selected-component :initform 0)
-   (sc-label :accessor sc-label :initarg :sc-label :initform nil)
-   (display-mode :accessor display-mode :initarg :display-mode :initform 0)
-   (multibpf? :accessor multibpf? :initarg :multibpf? :initform nil)
-   (show-back-p :accessor show-back-p :initarg :show-back-p :initform t)
-   ;(show-axes :accessor show-axes :initarg :show-axes :initform t)
-   (lines-p :accessor lines-p :initarg :lines-p :initform t)
-   (tmpview-objs :accessor tmpview-objs :initarg :tmpview-objs :initform nil)
-   (focus :accessor focus :initform nil)
-   (mode :accessor mode :initform :normal)
- ))
-
-
-(defmethod draw-3D-axes ((self 3DEditor))
-  (let ((l (/ (float (param-room-size self)) 2.0)))
-    (opengl:gl-begin opengl:*GL-LINES*)
-    (opengl:gl-color3-f 0.8 0.3 0.3)
-    (opengl:gl-vertex3-f (- l) 0.0 0.0) 
-    (opengl:gl-vertex3-f l 0.0 0.0)
-    (opengl:gl-color3-f 0.3 0.6 0.3)
-    (opengl:gl-vertex3-f 0.0 (- l) 0.0) 
-    (opengl:gl-vertex3-f 0.0 l 0.0) 
-    (opengl:gl-color3-f 0.3 0.3 0.6)
-    (opengl:gl-vertex3-f 0.0 0.0 (- l)) 
-    (opengl:gl-vertex3-f 0.0 0.0 l) 
-    (opengl:gl-end)))
-
-;jgarcia
-(defmethod draw-3D-room ((self 3DEditor))
-  "Draw the room"
-  (opengl:gl-color4-f 0.5 0.5 0.5 0.5)
-  (draw-point-cube (list 0.0 0.0 0.0) (param-room-size self) nil)
-  (restore-om-gl-colors-and-attributes))
-
-
-
-;parameters stored with the editor
-(defmethod param-room-size ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
-  (if set-val 
-      (set-edit-param self 'room-size set-val)
-    (get-edit-param self 'room-size)))
-
-(defmethod param-show-room ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
-  (if set-val-supplied-p 
-      (set-edit-param self 'show-room set-val)
-    (get-edit-param self 'show-room)))
-
-(defmethod param-show-axes ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
-  (if set-val 
-      (set-edit-param self 'show-axes set-val)
-    (get-edit-param self 'show-axes)))
-
-(defmethod param-line-width ((self 3DEditor) &optional (set-val nil set-val-supplied-p))
-  (if set-val 
-      (set-edit-param self 'line-width set-val)
-    (get-edit-param self 'line-width)))
-
-;util to store boolean parameters as values
-(defun param-value-to-boolean (val)
-  (equal 1 val))
-
-;util to convert boolean as values for storage
-(defun boolean-to-param-value (boolean)
-  (if boolean 
-      1
-    0))
-
-(defmethod metaobj-scrollbars-params ((self 3DEditor))  '(nil nil))
-
-
-(defmethod get-current-object ((self 3Deditor))
-  (if (multibpf? self) 
-      (nth (selected-component self) (bpf-list (object self)))
-    (object self)))
-
-(defmethod editor-3Dobj ((self 3Deditor))
-  (when (3Dp self) 
-    (if (and (multibpf? self) (show-back-p self))
-        (nth (selected-component self) (om-get-3D-objects (om-get-gl-object (3Dp self))))
-      (om-get-gl-object (3Dp self)))))
-
-(defmethod bpc-editors ((self 3Deditor))
-  (list (xyp self) (xzp self) (yzp self)))
-
-;original
-(defmethod scaled-3D-points  ((self 3DC) xmi xma ymi yma zmi zma maxrange)
-  (mat-trans (list (om-scale (om- (x-points self) (round (+ xmi xma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (y-points self) (round (+ ymi yma) 2)) 1.0 -1.0 (- (/ maxrange 2)) (/ maxrange 2))
-                   (om-scale (om- (z-points self) (round (+ zmi zma) 2)) -1.0 1.0 (- (/ maxrange 2)) (/ maxrange 2)))))
-
-
-;trywithou transformation
-(defmethod format-3D-points  ((self 3DC))
-  (mat-trans (list (x-points self) (y-points self) (z-points self))))
-  
-(defun 3Dobj-from-points (points drawmode color line-width)
-  (let ((clist (when color (list (float (om-color-r color)) 
-                                 (float (om-color-g color)) 
-                                 (float (om-color-b color))))))  
-    (make-instance '3D-curve :points points :color clist :lines drawmode :line-width line-width)))
-                   
-
-(defmethod all-points ((self 3DC) axe)
-    (case axe
-      ('x (x-points self))
-      ('y (y-points self))
-      ('z (z-points self))))
-
-
-(defmethod all-points ((self 3DC-lib) axe)
-  (remove nil (reduce #'append (mapcar #'(lambda (3DC) (all-points 3DC axe)) (bpf-list self)))))
-
-
-(defmethod set-lines ((self om-3D-object-list) val)
-  (mapcar #'(lambda (curve) (set-lines curve val)) (om-get-3D-objects self)))
-
-(defmethod set-lines ((self 3D-curve) val)
-  (setf (lines self) val))
-
-(defmethod set-lines ((self t) val) nil)
-    
-(defmethod gl-3DC-from-obj ((self 3Deditor))
-  (let* ((obj (if (and (multibpf? self) (not (show-back-p self)))
-                  (get-current-object self)
-                (object self))))
-    (let ((newobj (gen-3D-obj obj (lines-p self) (param-line-width self))))
-      newobj)))
-
-(defmethod gen-3D-obj ((obj 3DC) mode line-width)
-  (let ((glpoints (format-3d-points obj)))
-    (3Dobj-from-points glpoints mode (bpfcolor obj) line-width)))
-
-(defmethod gen-3D-obj ((obj 3DC-lib) mode line-width)
-  (make-instance 'om-3D-object-list 
-                 :objects (mapcar #'(lambda (o) 
-                                      (3Dobj-from-points (format-3d-points o) mode (bpfcolor o) line-width))
-                                  (bpf-list obj))))
 
 ;;; DISPLAY-MODE = 1 : BPC EDITS
 (defmethod init-tmp-objs ((self 3Deditor))
@@ -589,20 +554,6 @@
                     (make-instance 'bpc :point-list nil :decimals (decimals curr3Dc)))
               )))
           ))
-
-
-(defmethod update-3D-view ((self 3Deditor))
-  (let ((sel (when (editor-3Dobj self) (selected-points (editor-3Dobj self))))
-        (3D-obj (gl-3DC-from-obj self)))    
-    (setf (selected-points (if (and (multibpf? self) (show-back-p self))
-                               (nth (selected-component self) (om-get-3D-objects 3D-obj)) 
-                             3D-obj)) sel)
-    (om-set-gl-object (3Dp self) 3D-obj)
-    ))
-
-(defmethod update-3D-controls ((self 3Deditor))
-  (add-curve-edit-buttons self (ctrlp self))
-  (om-invalidate-view (ctrlp self)))
 
 (defmethod update-editor-contents ((self 3DEditor))
   (setf (object (xyp self)) (nth 0 (tmpview-objs self)))
@@ -643,18 +594,6 @@
     (set-points-selection ed indices)
     (selection? self)))
  
-(defmethod report-bpfmodif ((self 3Deditor) &key xpts ypts zpts times)
-  (let ((3DCobj (if (multibpf? self) 
-                    (nth (selected-component self) (bpf-list (object self)))
-                  (object self))))
-    (unless xpts (setf xpts (x-points 3DCobj)))
-    (unless ypts (setf ypts (y-points 3DCobj)))
-    (unless zpts (setf zpts (z-points 3DCobj)))
-    (let ((new-bpf (3Dc-from-list xpts ypts zpts (type-of 3DCobj) (decimals 3DCobj))))
-      (cons-bpf 3DCobj (point-list new-bpf)))
-    (init-tmp-objs self)
-    (update-editor-contents self)))
-
 (defmethod report-modifications ((self internalbpceditor)) 
   (let* ((sel (slot-value (panel self) 'selection?))
         (selectedpts (if (consp sel) (mapcar 'cadr sel) sel))
@@ -718,57 +657,25 @@
               (setf (lines-p (panel 2Ded)) (lines-p ed))
               ) (bpc-editors ed)))
 
-(defmethod handle-key-event ((self internalbpcpanel) char) 
-  (cond ((and (equal char :om-key-delete) (listp (selection? self)))
-         (let ((del (mapcar 'cadr (slot-value self 'selection?)))
-               (ed (om-view-container (editor self))))
-           (loop for i in del do
-                 (remove-nth-point (get-current-object ed) i))
-           (set-points-selection ed nil)
-           (init-tmp-objs ed)
-           (update-editor-contents ed)
-           (report-modifications ed)
-           (om-invalidate-view (3Dp ed))
-           ))
-        ((equal char #\t) (setf (show-time self) (not (show-time self)))
-             (om-invalidate-view self))
-        (t (call-next-method))))
 
-(defmethod add-point-to-bpf ((self internalbpcpanel) where)
-   (let* ((ed (om-view-container (editor self)))
-         (length (length (point-list (currentbpf self))))
-         (new-point (pixel2point self where))
-         (position-seg (segment-in-bpf self (currentbpf self) where))
-         (prevpt (if position-seg 
-                     (nth (1- position-seg) (point-list (get-current-object ed)))
-                   (or (car (last (point-list (get-current-object ed))))
-                       (make-obj-point (get-current-object ed) :x 0.0 :y 0.0 :z 0.0))))
-         (3DP (cond ((and (equal (x-label (editor self)) 'x) (equal (y-label (editor self)) 'y))
-                     (make-obj-point (get-current-object ed) :x (om-point-x new-point) :y (om-point-y new-point) 
-                                     :z (om-point-z prevpt)))
-                    ((and (equal (x-label (editor self)) 'x) (equal (y-label (editor self)) 'z)) 
-                     (make-obj-point (get-current-object ed) :x (om-point-x new-point) :z (om-point-y new-point) 
-                                     :y (om-point-v prevpt)))
-                    ((and (equal (x-label (editor self)) 'y) (equal (y-label (editor self)) 'z)) 
-                     (make-obj-point (get-current-object ed) :y (om-point-x new-point) :z (om-point-y new-point) 
-                                     :x (om-point-x prevpt))))))
-         (if position-seg
-             (cons-bpf (get-current-object ed) (insert-in-list (point-list (get-current-object ed)) 3DP position-seg))
-           (insert-point (get-current-object ed) 3DP))
+(defmethod report-bpfmodif ((self 3Deditor) &key xpts ypts zpts times)
+  (daclare (ignore times))
+  (let ((3DCobj (if (multibpf? self) 
+                    (nth (selected-component self) (bpf-list (object self)))
+                  (object self))))
+    (unless xpts (setf xpts (x-points 3DCobj)))
+    (unless ypts (setf ypts (y-points 3DCobj)))
+    (unless zpts (setf zpts (z-points 3DCobj)))
+    (let ((new-bpf (3Dc-from-list xpts ypts zpts (type-of 3DCobj) (decimals 3DCobj))))
+      (cons-bpf 3DCobj (point-list new-bpf)))
+    (init-tmp-objs self)
+    (update-editor-contents self)))
+  
 
-     (init-tmp-objs ed)
-     (update-editor-contents ed)
-     (report-modifications ed)
-     (om-invalidate-view (3Dp ed))
-     
-     (if position-seg
-         (setf (selection? self) (list (list 3DP position-seg)))
-       (setf (selection? self) (list (list 3DP length))))
-     
-     (scroll-point self 3DP)
-     ))
 
-;;; END DISPLAY-MODE = 1 : BPC EDITS         
+;;;=========================
+;;; INIT & UPDATE
+;;;=========================
 
 (defmethod update-editor-after-eval ((self 3DEditor) val)
   (call-next-method)
@@ -777,7 +684,6 @@
     (init-bpc-editors self))
   (update-3D-view self)
   (om-invalidate-view (3Dp self)))
-
 
 ;anchor-init
 (defmethod initialize-instance :after ((self 3DEditor) &rest l)
@@ -789,19 +695,16 @@
  
   ;compatibilité versions précédentes.. 
   ;à enlever si get-parameter retourne valeur par defaut au lieu de nil
-  (unless (param-room-size self)
-    (param-room-size self *OM-DEFAULT-ROOM-SIZE*))
+  ;(unless (param-room-size self)
+  ;  (param-room-size self *OM-DEFAULT-ROOM-SIZE*))
+  ;(unless (param-show-room self)
+  ;  (param-show-room self *OM-DEFAULT-SHOW-ROOM*))
+  ;(unless (param-show-axes self)
+  ;  (param-show-axes self *OM-DEFAULT-SHOW-AXES*))
+  ;(unless (param-line-width self)
+  ;  (param-line-width self *OM-GL-DEFAULT-LINEWIDTH*))
 
-  (unless (param-show-room self)
-    (param-show-room self *OM-DEFAULT-SHOW-ROOM*))
 
-  (unless (param-show-axes self)
-    (param-show-axes self *OM-DEFAULT-SHOW-AXES*))
-
-  (unless (param-line-width self)
-    (param-line-width self *OM-GL-DEFAULT-LINEWIDTH*))
-
- 
   (init-tmp-objs self)
   (om-add-subviews self
                    (setf (ctrlp self) (om-make-view '3Dcontrols
@@ -826,6 +729,7 @@
                    (om-make-dialog-item 'om-button (om-make-point 5 20) (om-make-point 100 20)
                                         "Init View"
                                         :di-action (om-dialog-item-act item
+                                                     (declare (ignore item))
                                                      (om-init-3D-view (3Dp self))))
                    
                    (om-make-dialog-item 'om-check-box (om-make-point 5 50) (om-make-point 100 20)
@@ -938,11 +842,11 @@
                                                                 :fg-color *om-black-color*))
                      (om-make-view 'om-icon-button :position (om-make-point 10 540) :size (om-make-point 18 18)
                                    :icon1 "+" :icon2 "+-pushed"
-                                   :action #'(lambda (item) (add-new-curve self))
+                                   :action #'(lambda (item) (declare (ignore item)) (add-new-curve self))
                                    )
                      (om-make-view 'om-icon-button :position (om-make-point 30 540) :size (om-make-point 18 18)
                                    :icon1 "-" :icon2 "--pushed"
-                                   :action #'(lambda (item) (remove-current-curve self))
+                                   :action #'(lambda (item) (declare (ignore item)) (remove-current-curve self))
                                    )
                      (om-make-dialog-item 'om-check-box (om-make-point 8 560) (om-make-point 100 40)
                                           " Show all"
@@ -1018,7 +922,8 @@
                                               :lock-push t
                                               :selected-p (and (bpc-editors ed) ;;; before initialization...
                                                                (equal m (mode (car (bpc-editors ed)))))
-                                              :action #'(lambda (item) (mapcar #'(lambda (ed)
+                                              :action #'(lambda (item) (declare (ignore item))
+                                                          (mapcar #'(lambda (ed)
                                                                                    (when ed
                                                                                      (setf (mode (panel ed)) m)))
                                                                                (bpc-editors ed))
@@ -1031,7 +936,7 @@
                          :id :resize
                          :icon1 "resize" :icon2 "resize-pushed"
                          :lock-push nil
-                         :action #'(lambda (item) 
+                         :action #'(lambda (item) (declare (ignore item))
                                      (mapcar #'(lambda (bpc-ed)
                                                  (init-coor-system (panel bpc-ed)))
                                              (bpc-editors ed)))))
@@ -1058,8 +963,6 @@
                 (adapt-coor-system (panel ed) (- newvalue oldvalue)))
             (bpc-editors self)))))
   
-
-
 
 (defun set-sc-label (ed)
   (when (multibpf? ed)
@@ -1094,6 +997,10 @@
     (om-set-view-size (yzp self) (om-make-point (floor (- (w self) ctrlw) 2) (- (h self) (floor (h self) 2))))
   ))))
 
+
+;;;=========================
+;;; ACTIONS
+;;;=========================
 
 (defmethod handle-key-event ((self 3DEditor) char)
   (cond 
