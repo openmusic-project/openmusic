@@ -311,7 +311,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 
 (defmethod om-make-array (type numcols &rest args-and-key-list)
    (let* ((array (make-instance type))
-         (slots (get-slot-in-out-names array)))
+          (slots (get-slot-in-out-names array)))
      (setf array (cons-array array (append (list nil numcols) (first-n args-and-key-list (- (length slots) 2)))
                              (nthcdr (- (length slots) 2) args-and-key-list)))
      (set-data array)

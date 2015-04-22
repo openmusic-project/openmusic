@@ -30,7 +30,10 @@
 
 (defmethod cons-array ((self time-array) args argkeys)
   (let ((terr (error-test-times (second args))))
-    (if terr (error terr) (call-next-method))))
+    (if terr (error terr) 
+      (let ((rep (call-next-method)))
+        (setf (times rep) (second args))
+        rep))))
     
 
 (defmethod get-row-bpf ((array time-array) (row list) &optional (precision 4))
