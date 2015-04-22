@@ -98,7 +98,8 @@
                    (setf speeds (loop for i from 0 to (1- (1- size)) collect
                                       (let ((dist (3d-points-distance (nth i points) (nth (1+ i) points)))                                           
                                             (time (- (nth (1+ i) times) (nth i times))))
-                                        (if (= time 0) -1 (/ dist time)))))
+                                       (if (= time 0) -1 (/ dist time)))))
+                   
                    (setf speeds (append (last speeds) speeds))
                    (setf speeds (filter-and-normalize-speeds-list speeds))
                    (loop for speed in speeds
@@ -183,8 +184,12 @@
 ;;; EDITOR
 (defclass traject-editor (3DEditor) 
   ((color-mode-buttons :accessor color-mode-buttons :initarg :color-mode-buttons :initform nil)
-   (interpol-show-p :accessor interpol-show-p :initarg :interpol-show-p :initform nil))
-  )
+   (interpol-show-p :accessor interpol-show-p :initarg :interpol-show-p :initform nil)))
+
+(defmethod default-edition-params ((self 3D-trajectory)) 
+  (append (call-next-method)
+          (pairlis '(color-mode color-min color-max)
+                   (list *OM-TRAJ-COLOR-MODE* *OM-TRAJ-COLOR-MIN* *om-traj-color-max*))))
 
 ;parameters stored with the editor
 (defmethod param-color-mode ((self traject-editor) &optional (set-val nil set-val-supplied-p))
@@ -204,7 +209,6 @@
 
 
 (defmethod get-editor-class ((self 3D-trajectory)) 'traject-editor)
-
 
 (defmethod gl-3DC-from-obj ((self traject-editor))
   (let* ((obj (if (and (multibpf? self) (not (show-back-p self)))
@@ -228,18 +232,18 @@
   (declare (ignore l))
   
   ;pour compatibilité
-  (unless (param-color-mode self)
-    (param-color-mode self *OM-TRAJ-COLOR-MODE*))
+  ;(unless (param-color-mode self)
+  ;  (param-color-mode self *OM-TRAJ-COLOR-MODE*))
   
   (when (= 2 (param-color-mode self))
     (when (member nil (times (object self)))
       (param-color-mode self *OM-TRAJ-COLOR-MODE*)))
   
-  (unless (param-color-min self)
-    (param-color-min self *OM-TRAJ-COLOR-MIN*))
+  ;(unless (param-color-min self)
+  ;  (param-color-min self *OM-TRAJ-COLOR-MIN*))
 
-  (unless (param-color-max self)
-    (param-color-max self *OM-TRAJ-COLOR-MAX*))
+  ;(unless (param-color-max self)
+  ;  (param-color-max self *OM-TRAJ-COLOR-MAX*))
   
   (om-add-subviews (ctrlp self)
                    

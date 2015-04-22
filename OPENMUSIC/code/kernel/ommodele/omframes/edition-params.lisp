@@ -52,11 +52,12 @@
 
 (defmethod editor-edit-params ((self EditorView))
   (cond ((or (ominstance-p (ref self)) (is-boxpatch-p (ref self)))
+         (print "a")
           ;;; cas principal: edition-params de l'objet de reference
-          (or (edition-params (ref self)) (editor-default-edit-params self)))
+          (or (edition-params (ref self)) (setf (edition-params (ref self)) (editor-default-edit-params self))))
          ((and (EditorView-p (ref self)) (editor-compatible-params-p self (ref self)))
           ;;; editeur interne : edition params de l'editeur principal
-          (editor-edit-params (ref self)))
+          (print "b") (editor-edit-params (ref self)))
          (t (editor-default-edit-params self))))
 
 (defmethod editor-compatible-params-p ((ed1 t) (ed2 t)) nil)
@@ -64,17 +65,21 @@
 ;; accessors
 (defmethod get-edit-param ((self EditorView) param)
    ;;; renvoie sur la liste d'assoc
-   (get-edit-param (editor-edit-params self) param))
-
-
+  (get-edit-param (editor-edit-params self) param))
+   
 (defmethod get-edit-param ((paramlist list) param)
    (cdr (assoc param paramlist)))
 
 (defmethod set-edit-param ((self EditorView) param val)
-   (if (and (editor-edit-params self) (assoc param (editor-edit-params self)))
-     (rplacd (assoc param (editor-edit-params self)) val)
-     (when (edition-params (ref self))
-       (push (cons param val) (edition-params (ref self))))))
+  ;(print (list self param val))
+  (let ((paramlist (print (editor-edit-params self))))
+    (if (and paramlist (assoc param paramlist))
+        (rplacd (assoc param paramlist) val)
+      (if paramlist (push (cons param val) paramlist)))
+    ))
+  ;    (if (edition-params (ref self))
+  ;        (push (cons param val) (edition-params (ref self)))
+  ;      ))))
 
 (defmethod get-edit-param ((self OMBoxcall) param) 
   (cdr (find param (edition-params self) :test 'eql :key 'car)))

@@ -1008,6 +1008,7 @@ of all its direct subcontainers (supposed adjacent)"
                                            (append (flat (mapcar 'loffset chords-before)) 
                                                    (loffset main-chord)
                                                    (flat (mapcar 'loffset chords-after))))
+                                     
                                      ;(print (loffset chord))
                                      )
                                  

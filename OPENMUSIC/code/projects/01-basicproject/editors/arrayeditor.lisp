@@ -297,7 +297,14 @@
 (defmethod editor-array-panel-class ((self arrayeditor)) 'arraypanel)
 
 (defmethod edition-params ((self arrayeditor)) 
-  (default-edition-params (object self)))
+  (or (edition-params (ref self))
+      (setf (edition-params (ref self)) (default-edition-params (ref self)))))
+
+;;; DO NOTHING ?
+(defmethod (setf edition-params) (params (self arrayeditor)) 
+  (setf (edition-params (ref self)) params))
+
+(defmethod editor-compatible-params-p ((ed1 t) (ed2 arrayeditor)) t)
 
 ;;; dans class-editor...
 (defmethod edition-params ((self initform-button)) 
