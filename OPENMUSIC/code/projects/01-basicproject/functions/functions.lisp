@@ -157,14 +157,14 @@ Optional <dec> is the number of decimals in the result."
   (let* ((paires self)
          (y-around (y-around y0 paires))
          (xpts (loop for i in y-around
-                     collect (om-round (linear-interpol (second (first i))
-                                                        (second (second i))
-                                                        (first (first i))
-                                                        (first (second i))
-                                                        y0)))))
+                     collect (linear-interpol (second (first i)) ; removed OM-ROUND here
+                                              (second (second i))
+                                              (first (first i))
+                                              (first (second i))
+                                              y0))))
     (if dec (om-round xpts dec) xpts)))
 
-(om::defmethod! y-transfer ((self bpf) (y0 number) &optional (dec nil))
+(defmethod! y-transfer ((self bpf) (y0 number) &optional (dec nil))
   (y-transfer (point-pairs self) y0 dec))
 
 
