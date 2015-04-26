@@ -387,8 +387,12 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 ;                                            (get-all-initargs-of-class (type-of rep))))))
 ;    rep))
 
+(defmethod array-size-from-input ((self class-array) input) (length input))
+
 (defmethod cons-array ((self class-array) args argkeys)
-  (let* ((nc (if (listp (second args)) (length (second args)) (second args)))
+  (let* ((nc (if (listp (second args)) 
+                (array-size-from-input self (second args))
+               (second args)))
          (rep (make-instance (type-of self) :numcols nc))
          (initargs (get-all-initargs-of-class (type-of rep)))
          slot?)

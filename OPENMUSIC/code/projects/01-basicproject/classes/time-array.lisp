@@ -35,6 +35,8 @@
         (setf (times rep) (second args))
         rep))))
     
+(defmethod array-size-from-input ((self time-array) input)
+  (max 0 (1- (length input))))
 
 (defmethod get-row-bpf ((array time-array) (row list) &optional (precision 4))
   (if (and (list-subtypep row 'number) (> (length row) 1))
@@ -112,7 +114,9 @@
     (format () "~,2F" num))
 
 (defmethod get-comp-str ((self time-array) comp-num)
-  (format nil "t= ~D" (nth (or comp-num (1- (length (times self)))) (times self))))
+  (if comp-num
+      (format nil "t= [~D-~D]" (nth comp-num (times self)) (or (nth (1+ comp-num) (times self)) "..."))
+    ""))
 
 (defmethod do-editor-null-event ((self timearrayeditor))
    (when (and (om-view-contains-point-p (panel self) (om-mouse-position self)) (>= (om-point-h (om-mouse-position self)) *array-ruler-width*))
@@ -121,7 +125,7 @@
             (sizex (assoc-w (panel self)))
             (durpointx (- (second (rangex (panel self))) (first (rangex (panel self)))))
             (x1 (+ (first (rangex (panel self))) (* (/ x sizex) durpointx))))
-       (setf (select-comp self) (position x1 (times (object self)) :test '<=))
+       (setf (select-comp self) (position x1 (times (object self)) :test '>= :from-end t))
        (show-composant (title-bar self))
        (show-composant (panel self))
        )))
