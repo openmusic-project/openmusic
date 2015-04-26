@@ -97,7 +97,7 @@
                        (times (times self)))
                    (setf speeds (loop for i from 0 to (1- (1- size)) collect
                                       (let ((dist (3d-points-distance (nth i points) (nth (1+ i) points)))                                           
-                                            (time (- (nth (1+ i) times) (nth i times))))
+                                            (time (- (or (nth (1+ i) times) 0) (or (nth i times) 0))))    ;; added (OR 0) in case a point is added and has no time...
                                        (if (= time 0) -1 (/ dist time)))))
                    
                    (setf speeds (append (last speeds) speeds))

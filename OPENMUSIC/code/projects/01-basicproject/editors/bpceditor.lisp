@@ -28,27 +28,27 @@
 
 
 
-(omg-defclass control-bpc (control-bpf) ())
+(defclass control-bpc (control-bpf) ())
 
 
 
 (defmethod initialize-instance :after  ((self control-bpc) &key)
-  (om-add-subviews self
-                   (om-make-dialog-item 'om-check-box (om-make-point 92 20) (om-make-point 100 16) "Closed BPC"
-                                        :di-action (om-dialog-item-act item
-                                                     (setf (close-line (panel (om-view-container (om-view-container item))))
-                                                           (om-checked-p item))
-                                                     (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
-                                        :font *om-default-font1*
-                                        :checked-p nil
-                                        )))
-
+  (om-add-subviews 
+   self
+   (om-make-dialog-item 'om-check-box (om-make-point 92 20) (om-make-point 100 16) "Closed BPC"
+                        :di-action (om-dialog-item-act item
+                                     (setf (close-line (panel (om-view-container (om-view-container item))))
+                                           (om-checked-p item))
+                                     (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
+                        :font *om-default-font1*
+                        :checked-p nil
+                        )))
 
 ;------------------------------------
 ;bpc EDITOR Class definition and initialization
 ;------------------------------------
 
-(omg-defclass bpcEditor (bpfEditor) ())
+(defclass bpcEditor (bpfEditor) ())
 
 (defmethod get-panel-class ((self bpcEditor)) 'bpcPanel)
 (defmethod get-control-class ((self bpcEditor)) 'control-bpc)
@@ -57,7 +57,7 @@
 ;------------------------------------
 ;bpc EDITOR VIEW Definition and initialization
 ;------------------------------------
-(omg-defclass bpcPanel (bpfPanel)  
+(defclass bpcPanel (bpfPanel)  
    ((close-line :initform nil :accessor close-line)))
 
 (defmethod draw-bpf ((self bpcPanel) (bpc bpc) minx maxx miny maxy &optional (deltax 0) (deltay 0) (dr-points nil))

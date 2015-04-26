@@ -304,7 +304,7 @@
     (om-invalidate-view self t)
     (om-invalidate-view (panel self) t)))
 
-(defun update-editor-pict (editor object)
+(defun update-editor-pict (editor object) 
   (when (and (subtypep (type-of object) 'object-with-pict) (pict object))
     (set-edit-param editor 'picture (pict object)))
   (setf (pict editor) (get-edit-param editor 'picture)))
