@@ -13,7 +13,7 @@
 
 
 (defmethod player-play-object ((engine (eql :osc-player)) (object oscevent) &key interval params)
-  ;(print (format nil "~A : play ~A - ~A" engine object interval))
+  ;(print (format nil "~A : play ~A - ~A" engine object (list (port object) (host object) (bundle object))))
   (om-send-osc-bundle (port object) (host object) (bundle object))
   )
 
