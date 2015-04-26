@@ -190,7 +190,7 @@
 (defmethod om-remove-subviews ((self om-graphic-object) &rest subviews)
   "Removes subviews from graphic object"
     (capi::apply-in-pane-process (om-get-view self) #'(lambda ()
-                                                        (loop for item in subviews do (internal-remove-subview self item))
+                                                        (loop for item in (remove nil subviews) do (internal-remove-subview self item))
                                                         (maybe-call-update self)))
   )
 
