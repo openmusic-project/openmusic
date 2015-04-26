@@ -38,7 +38,7 @@ See the dedicated chapter in the OM User Manual for more details.")
 
 
 (defmethod default-edition-params ((self omsheet))
-  (append (get-default-score-params self)
+  (append (default-edition-params self)
           (pairlis '(show-tracks show-time grille grille-step patch-open) 
                    '(t t nil 1000 nil))
           ))

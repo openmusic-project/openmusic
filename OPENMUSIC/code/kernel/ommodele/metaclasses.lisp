@@ -85,6 +85,9 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
 'edpos' is the position of the editorframe of self
 'edsize' the size of the editorframe of self.#wsparams#"))
 
+;;; separate this for later (see edition-params.lisp)
+(defclass object-with-persistant-params ()
+  ((edition-params :initform nil  :accessor edition-params)))
 
 (defclass OMPersistantFolder (OMPersistantObject) ()
   (:documentation "This is yhe class of persistant objects that are saved as folders.
@@ -252,13 +255,12 @@ they have a building class correspondant, for this see the function initbasic-li
 #seealso# (OMBasicObject) #seealso#
 #defval# The default value for the Basic Type.#defval#"))
 
-(defclass OMInstance (OMPersistantObject) 
+(defclass OMInstance (OMPersistantObject object-with-persistant-params) 
    ((loaded? :initform t  :accessor loaded?)
     (instance :initform nil :initarg :instance :accessor instance)
     (saved? :initform nil  :accessor saved?)
     (setfInfo :initform nil :accessor setfInfo)
-    (pictu-list :initform nil :accessor pictu-list)
-    (edition-params :initform nil  :accessor edition-params))
+    (pictu-list :initform nil :accessor pictu-list))
    (:documentation "This is the class used to implement instances,
 we use the technique of delegation. #enddoc#
 #seealso# (OMConstant OMListInstance) #seealso#

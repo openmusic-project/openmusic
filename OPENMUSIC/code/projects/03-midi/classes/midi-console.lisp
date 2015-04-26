@@ -302,7 +302,7 @@ In this case, all internal events are sent simultaneously.
 ;(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (+ 6 (min (* *channel-w* 6) (* *channel-w* (nbtracks self)))) 560))
 (defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (min (* *channel-w* 16) (* *channel-w* (nbtracks self))) 560))
 
-(defmethod get-default-score-params ((self settings-ctrl))
+(defmethod default-edition-params ((self settings-ctrl))
   (pairlis '(winsize winpos) 
            (list (get-win-ed-size self) (om-make-point 300 20))))
 

@@ -745,15 +745,14 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
          newbox)))))
 
 
-(defclass OMBoxEditCall (OMBoxRelatedWClass) 
+(defclass OMBoxEditCall (OMBoxRelatedWClass object-with-persistant-params) 
    ((numouts :initform 1 :accessor numouts)
     (player :initform nil :accessor player)
     (play-state :initform nil :accessor play-state)
     (showpict :initform nil :accessor showpict)
     (minieditor? :initform nil :accessor minieditor?)
     (view-of-patch :initform nil :accessor view-of-patch)
-    (ed-pictu-list :initform nil :accessor ed-pictu-list)
-    (edition-params :initform nil :accessor edition-params))
+    (ed-pictu-list :initform nil :accessor ed-pictu-list))
    (:documentation "This is a particular factory for classes that have an editor.#enddoc#
 #seealso# (OMBoxRelatedWClass) #seealso#
 #numouts# How many outputs have the box ?. #numouts#

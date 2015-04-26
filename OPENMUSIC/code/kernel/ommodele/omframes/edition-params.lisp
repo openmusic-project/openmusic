@@ -27,76 +27,64 @@
 
 (in-package :om)
 
-
 ;;; compat only
 (defclass ed-par-array () ())
-
 ;;; return new list of params corrected according to the type of object
 ;;; (for version changes and compatibility)
 (defmethod corrige-edition-params ((self t) params) 
-  (if (consp params) params
-    (default-edition-params self)))
+  (if (consp params) params (default-edition-params self)))
 
-;; parametre par defaut pour differentes classes d'objets
+
+;;;===========================
+;; EDITION-PARAMS 
+;;;===========================
+
+;; The default are determined according to the box VALUES !
 (defmethod default-edition-params ((self t)) 
-  (pairlis '(winsize winpos)
-           (list (or (get-win-ed-size self) (om-make-point 370 280))
-                 (or (get-win-ed-pos self) (om-make-point 400 20)))))
+  (list (cons 'winsize (or (get-win-ed-size self) (om-make-point 370 280)))
+        (cons 'winpos (or (get-win-ed-pos self) (om-make-point 400 20)))))
 
+;; security :(
 (defmethod edition-params ((self t))  nil)
+(defmethod get-edit-param ((self t) param) 
+  (print (format nil "error: objects of type ~A have no edition params!" (type-of self)))
+  nil)
 
-(defmethod get-edit-param ((self t) param) nil)
+;(defmethod get-edit-param ((paramlist list) param)
+;   (cdr (assoc param paramlist)))
+(defmethod get-edit-param ((self object-with-persistant-params) param) 
+  (let ((par-pair (find param (edition-params self) :test 'eql :key 'car)))
+    (if par-pair ;; ok
+        (cdr par-pair)
+      ;; not ok : add the defaut to the edition params
+      (let ((def-pair (find param (default-edition-params (value self)) :test 'eql :key 'car)))
+        (if def-pair 
+            (progn (push (copy-list def-pair) (edition-params self))
+              (cdr def-pair))
+          ;(om-beep-msg (format nil "error: def param ~A not found for object ~A" param (value self)))
+          nil
+          ))
+      )))
 
-(defmethod editor-default-edit-params ((self EditorView)) 
-  (default-edition-params (object self)))
-
-(defmethod editor-edit-params ((self EditorView))
-  (cond ((or (ominstance-p (ref self)) (is-boxpatch-p (ref self)))
-         (print "a")
-          ;;; cas principal: edition-params de l'objet de reference
-          (or (edition-params (ref self)) (setf (edition-params (ref self)) (editor-default-edit-params self))))
-         ((and (EditorView-p (ref self)) (editor-compatible-params-p self (ref self)))
-          ;;; editeur interne : edition params de l'editeur principal
-          (print "b") (editor-edit-params (ref self)))
-         (t (editor-default-edit-params self))))
-
-(defmethod editor-compatible-params-p ((ed1 t) (ed2 t)) nil)
-
-;; accessors
-(defmethod get-edit-param ((self EditorView) param)
-   ;;; renvoie sur la liste d'assoc
-  (get-edit-param (editor-edit-params self) param))
-   
-(defmethod get-edit-param ((paramlist list) param)
-   (cdr (assoc param paramlist)))
-
-(defmethod set-edit-param ((self EditorView) param val)
-  ;(print (list self param val))
-  (let ((paramlist (print (editor-edit-params self))))
-    (if (and paramlist (assoc param paramlist))
-        (rplacd (assoc param paramlist) val)
-      (if paramlist (push (cons param val) paramlist)))
-    ))
-  ;    (if (edition-params (ref self))
-  ;        (push (cons param val) (edition-params (ref self)))
-  ;      ))))
-
-(defmethod get-edit-param ((self OMBoxcall) param) 
-  (cdr (find param (edition-params self) :test 'eql :key 'car)))
-
-(defmethod set-edit-param ((self OMBoxcall) param newval) 
+(defmethod set-edit-param ((self object-with-persistant-params) param newval) 
   (if (find param (edition-params self) :test 'eql :key 'car)
     (setf (cdr (find param (edition-params self) :test 'eql :key 'car)) newval)
-    (push (cons param newval) (edition-params self)))
-  )
-
+    (push (cons param newval) (edition-params self))))
 
 (defmethod set-edit-param ((self OMBoxEditCall) param newval) 
   (call-next-method)
-  (when (editorframe self)
-    (update-editor-controls (editorframe self))
-    ))
+  (when (editorframe self) (update-editor-controls (editorframe self))))
 
+;;; for box instancfe, it's special
+;;; the instance is likely to be exported without the box, 
+;;; and embeds the edition params.
+(defmethod edition-params ((self OMBoxInstance))
+   (edition-params (reference self)))
+
+
+;;;===========================
+;; Utilities...
+;;;===========================
 
 (defmethod set-win-position ((self omboxeditcall) newpos) 
   (set-edit-param self 'winpos newpos))
@@ -105,13 +93,10 @@
   (set-edit-param self 'winsize newsize))
 
 (defmethod copy-value-params ((self t) box)
-  (when self
-   `(copy-alist ',(edition-params box))))
+  (when self `(copy-alist ',(edition-params box))))
 
 (defmethod save-value-params ((self t) params) 
   (save-alist (corrige-edition-params self params)))
-
-
 
 ;;; saved form (eventually corrects) of the edition params of the box
 (defmethod save-edition-params ((self OMBoxEditCall))
@@ -127,5 +112,33 @@
 (defmethod copy-edition-params ((self temporalBox))
    (copy-value-params (car (value self)) self))
 
-(defmethod edition-params ((self OMBoxInstance))
-   (edition-params (reference self)))
+
+;;;===========================
+;; access from editors...
+;;;===========================
+
+(defmethod get-edit-param ((self EditorView) param)
+  ;(print (list self param))
+  (let ((val (and (ref self) (get-edit-param (ref self) param))))
+    (or  val 
+        (let ((def-pair (find param (default-edition-params (object self)) :test 'eql :key 'car)))
+          (if def-pair 
+              (progn (when (ref self) (set-edit-param (ref self) param (cdr def-pair)))
+                (cdr def-pair))
+            ;(om-beep-msg (format nil "error: def param ~A not found for object ~A" param (object self)))
+            nil
+            ))
+        )))
+        
+
+(defmethod set-edit-param ((self EditorView) param val)
+  (when (ref self) (set-edit-param (ref self) param val)))
+
+;; not used anywhere else
+(defmethod editor-compatible-params-p ((ed1 t) (ed2 t)) nil)
+
+
+
+
+
+

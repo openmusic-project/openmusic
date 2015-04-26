@@ -301,8 +301,8 @@
 (defmethod get-win-ed-size ((self 3DC)) (om-make-point 800 800))
 
 (defmethod default-edition-params ((self 3DC)) 
-  (pairlis '(winsize winpos mode show-axes show-room room-size line-width) 
-           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH*)))
+  (pairlis '(winsize winpos mode show-axes show-room room-size line-width bg-color) 
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH* nil)))
 
 (defmethod get-editor-class ((self 3DC)) '3DEditor)
 

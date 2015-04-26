@@ -3087,7 +3087,7 @@
 (defmethod update-subviews ((self maqobjEditor))
    (change-zoom (panel self)))
 
-(defmethod get-edit-param   ((self maqobjEditor) (param (eql 'staff))) 'g)
+(defmethod get-edit-param  ((self maqobjEditor) (param (eql 'staff))) 'g)
 
 ;-------------INITS
 (defmethod get-score-class-panel ((self maqobjEditor)) 'maqobjPanel)

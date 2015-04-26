@@ -31,7 +31,6 @@
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil)))
 
-
 ;(defmethod set-edition-params ((self simple-container) box)
 ;   (setf (edition-params box) (get-default-score-params self)))
 

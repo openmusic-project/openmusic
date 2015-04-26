@@ -406,15 +406,12 @@
 (defmethod get-win-ed-size  ((self scale)) (om-make-point 700 200))
 (defmethod get-editor-field-size ((self scaleeditor)) (om-make-point 10000 10))
 
-(defmethod get-default-score-params ((self scale))
+(defmethod default-edition-params ((self scale))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport 
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  nil nil
                  1 nil 1000 0 (om-make-point 720 230) (om-make-point 100 100) 0 1 :normal t nil)))
-
-(defmethod default-edition-params ((self scale))
-  (get-default-score-params self))
 
 (defmethod objectfromeditor ((self scalepanel)) 
    (ref-chord (editor self)))

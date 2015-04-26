@@ -288,10 +288,9 @@ these changements, this method is called for OMlistInstance"
 
 ;---------------------------------------
  
-(defclass OMConstant (OMPersistantObject) 
+(defclass OMConstant (OMPersistantObject object-with-persistant-params) 
    ((value :initform nil :initarg :value :accessor value)
-    (setfInfo :initform nil :accessor setfInfo)
-    (edition-params :initform nil  :accessor edition-params))
+    (setfInfo :initform nil :accessor setfInfo))
    (:documentation "Constants are instance of the OMBasictype class.#enddoc#
 #seealso# (OMBasictype OMInstance) #seealso#
 #value# The value of the constant #value#
