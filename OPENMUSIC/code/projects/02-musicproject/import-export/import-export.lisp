@@ -202,16 +202,16 @@
   (save-instance object))
 
 (defmethod score-export ((format (eql 'midi)) object params)
-  (save-as-midi object nil :approx (or (get-edit-param params 'approx) 2)))
+  (save-as-midi object nil :approx (or (get-param params 'approx) 2)))
 
 (defmethod score-export ((format (eql 'etf)) object params)
-  (save-as-etf object (or (get-edit-param params 'approx) 2)))
+  (save-as-etf object (or (get-param params 'approx) 2)))
 
 (defmethod score-export ((format (eql 'xml)) object params)
-  (export-musicxml object '((G 2)) (or (get-edit-param params 'approx) 2)))
+  (export-musicxml object '((G 2)) (or (get-param params 'approx) 2)))
 
 (defmethod score-export ((format (eql 'finale)) object params)
-  (finale-export object (or (get-edit-param params 'approx) 2) 'file))
+  (finale-export object (or (get-param params 'approx) 2) 'file))
 
 ;;;===============================
 ;;; clipboard-mode

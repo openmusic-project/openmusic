@@ -729,7 +729,7 @@ Press 'space' to play/stop the sound file.
   (draw-obj-in-rect val 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
 (defmethod draw-obj-in-rect ((self sound) x x1 y y1 edparams view)
-  (let ((picture (if (and (pict-spectre self) (get-edit-param edparams :show-spectrum))
+  (let ((picture (if (and (pict-spectre self) (get-param edparams :show-spectrum))
                      (thepict (pict-spectre self))
                    (sound-get-pict self))))
     (om-with-focused-view view 

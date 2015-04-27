@@ -720,11 +720,11 @@ The matrix \"components\" can be accessed and modified using the functions get-c
    (draw-obj-in-rect value 0 (w self)  0 (h self) (view-get-ed-params self) self))
 
 (defmethod get-draw-visibles-list ((self class-array) edparams)
-  (when (get-edit-param edparams 'cur-group-ind)
-    (let ((fields (loop for item in (cdr (nth (get-edit-param edparams 'cur-group-ind)
-                                              (get-edit-param edparams 'panel-list)))
+  (when (get-param edparams 'cur-group-ind)
+    (let ((fields (loop for item in (cdr (nth (get-param edparams 'cur-group-ind)
+                                              (get-param edparams 'panel-list)))
                         when (second item) collect (car item))))
-   ;(when (get-edit-param edparams 'show-opt-fields)
+   ;(when (get-param edparams 'show-opt-fields)
    ;  (setf fields (append fields (arithm-ser (num-array-slots self) (+ (num-array-slots self) (num-array-controls self) -1) 1))))
       fields)))
   
@@ -745,7 +745,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
                 for posy = y then (+ posy deltay) do
                 (let* ((row (get-array-row self i))                     
                        (bpf? (get-row-bpf self row))
-                       (color (nth i (get-edit-param edparams 'color-list))))
+                       (color (nth i (get-param  edparams 'color-list))))
                   (if bpf?
                       (progn
                         (setf (bpfcolor bpf?) color)
@@ -761,7 +761,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
                                                     (default-edition-params (nth (* di jumpx) row)) view)
                                   )
                                 (om-draw-line posx posy posx (+ posy deltay)))
-                        (draw-obj-in-rect row x x1 posy (+ posy deltay) (default-edition-params row) view)
+                        ;(draw-obj-in-rect row x x1 posy (+ posy deltay) (default-edition-params row) view)
                         )))
                 (om-draw-line x (+ posy deltay) x1  (+ posy deltay))
                 ))))))))

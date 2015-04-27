@@ -50,6 +50,9 @@
   (print (format nil "error: objects of type ~A have no edition params!" (type-of self)))
   nil)
 
+(defun get-param (editparams param)
+  (cdr (find param editparams :test 'eql :key 'car)))
+
 ;(defmethod get-edit-param ((paramlist list) param)
 ;   (cdr (assoc param paramlist)))
 (defmethod get-edit-param ((self object-with-persistant-params) param) 
