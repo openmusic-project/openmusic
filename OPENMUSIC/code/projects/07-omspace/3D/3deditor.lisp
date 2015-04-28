@@ -659,7 +659,7 @@
 
 
 (defmethod report-bpfmodif ((self 3Deditor) &key xpts ypts zpts times)
-  (daclare (ignore times))
+  (declare (ignore times))
   (let ((3DCobj (if (multibpf? self) 
                     (nth (selected-component self) (bpf-list (object self)))
                   (object self))))
