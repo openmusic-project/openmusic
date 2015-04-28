@@ -139,7 +139,11 @@
     ))
 
 (defmethod get-ith-pixvalue ((self time-list-parameter-panel) i)
-  (norme2pixel (om-view-container self) 'x (1+ (nth i (times (object (get-panel self)))))))
+  ;(norme2pixel (om-view-container self) 'x (1+ (nth i (times (object (get-panel self))))))
+  (let ((container (om-view-container self)))
+    (om-point-h (point2pixel container 
+                             (om-make-point (nth i (times (object (get-panel self)))) 0) 
+                             (get-system-etat container)))))
 
 (defmethod get-ith-deltax ((self time-list-parameter-panel) i)
   (let ((timelist (times (object (get-panel self)))))
@@ -154,11 +158,13 @@
 
 (defmethod om-draw-contents ((self timearray-parameter-panel)) 
   (call-next-method)
-  (om-with-focused-view self
-    (om-with-line-size 2
-    (om-with-fg-color self *om-red2-color*
-      (loop for time in (times (object (get-panel self))) do
-            (let ((x (norme2pixel (om-view-container self) 'x (1+ time))))
-             (om-draw-line x 0 x (h self))))))))
+  (let* ((container (om-view-container self))
+         (se (get-system-etat container)))
+    (om-with-focused-view self
+      (om-with-line-size 2
+        (om-with-fg-color self *om-red2-color*
+          (loop for time in (times (object (get-panel self))) do
+                (let ((x (om-point-h (point2pixel container (om-make-point time 0) se))))
+                  (om-draw-line x 0 x (h self)))))))))
           
  

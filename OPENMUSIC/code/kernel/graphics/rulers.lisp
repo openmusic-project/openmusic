@@ -537,7 +537,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    "Convert 'point' to pixels in the view 'self', 'sys-etat' is calculated by the 'get-system-etat' function."
    (let* ((x  (om-point-h point))
           (x1 (round (* x (first sys-etat)))))
-     (om-make-point (- x1 (second sys-etat))  0)))
+     (om-make-point (- x1 (second sys-etat)) 0)))
 
 (defmethod xpoint2pixel ((self view-with-ruler-x) x sys-etat)
   (- (round (* x (first sys-etat))) (second sys-etat)))
