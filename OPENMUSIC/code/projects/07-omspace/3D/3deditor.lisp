@@ -862,6 +862,7 @@
     (add-bpc-editors self))
   (when (lines-p self)
     (add-curve-edit-buttons self (ctrlp self)))
+
   (om-init-3D-view (3Dp self))
   )
 

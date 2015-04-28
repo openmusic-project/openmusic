@@ -288,7 +288,7 @@
 
 (defparameter *fovy* 45.0d0)
 (defparameter *aspect* 1.0d0)
-(defparameter *near* 1.0d0)
+(defparameter *near* 0.001d0)
 (defparameter *far* 100.0d0)
 
 
@@ -376,7 +376,7 @@
                  :center (copy-structure (or center *center*))
                  :up (copy-structure (or up *up*))
                  :projection (or projection (make-projection))
-                 :bgcolor (or color '(0.0 0.0 0.0 1.0))))
+                 :bgcolor (or color '(0.9 0.9 0.9 1.0))))
 
 (defun init-camera (camera)
   (setf (eye camera) (copy-structure *eye*))
@@ -510,13 +510,22 @@
     (opengl:gl-load-identity)
     (opengl:gl-get-doublev opengl:*gl-modelview-matrix* transform)))
 
-(defparameter *pointer-rotation-gain* 0.4d0)
+(defparameter *pointer-rotation-gain* 0.2d0)
+(defparameter *pointer-translation-gain* 0.02d0)
 
 (defun polar-rotate (transform dx dy)
   (opengl:with-matrix-pushed
     (opengl:gl-load-identity)
-    (opengl:gl-rotated (float (* dx *pointer-rotation-gain*) 1.0d0) 0.0d0 0.0d0 1.0d0)
-    (opengl:gl-rotated (float (* (- dy) *pointer-rotation-gain*) 1.0d0) 1.0d0 0.0d0 0.0d0)
+    (opengl:gl-rotated  (float (* dx *pointer-rotation-gain*) 1.0d0) 0.0d0 0.0d0 1.0d0)
+    (opengl:gl-rotated  (float (* dy *pointer-rotation-gain*) 1.0d0) 1.0d0 0.0d0 0.0d0) 
+    (opengl:gl-mult-matrixd transform)
+    (opengl:gl-get-doublev opengl:*gl-modelview-matrix* transform)))
+
+(defun translate (transform dx dy)
+  (opengl:with-matrix-pushed
+    (opengl:gl-load-identity)
+    (opengl:gl-translated (float (* dx *pointer-translation-gain*) 1.0d0) 0.0d0 0.0d0 )
+ ;   (opengl:gl-translated 0.0d0 (float (* dy *pointer-translation-gain*) 1.0d0) 0.0d0)
     (opengl:gl-mult-matrixd transform)
     (opengl:gl-get-doublev opengl:*gl-modelview-matrix* transform)))
 
@@ -525,6 +534,9 @@
 
 (defun polar-rotate-icosahedron (viewer dx dy)
   (polar-rotate (icotransform viewer) dx dy))
+
+(defun translate-icosahedron (viewer dx dy)
+  (translate (icotransform viewer) dx dy))
 
 (defparameter *light-model-ambient* nil)
 (defparameter *light-position* nil)
@@ -606,27 +618,16 @@
       (opengl:gl-light-modelf opengl:*gl-light-model-local-viewer* 0.0)
       (opengl:gl-light-modelf opengl:*gl-light-model-two-side* 0.0)
       
-      ;(opengl:gl-enable opengl:*gl-lighting*)
       (opengl:gl-enable opengl:*gl-light0*)
-      ;(opengl:gl-lightfv opengl:*gl-light0* opengl:*gl-position* *light-position*)
-      ;(opengl:gl-lightfv opengl:*gl-light0* opengl:*gl-ambient* *light-ambient*)
-      ;(opengl:gl-lightfv opengl:*gl-light0* opengl:*gl-diffuse* *light-diffuse*)
-      ;(opengl:gl-lightfv opengl:*gl-light0* opengl:*gl-specular* *light-specular*)
       )
     
     (opengl:with-matrix-pushed
       (opengl:gl-mult-matrixd (icotransform canvas))
-      ;(opengl:gl-cull-face opengl:*gl-back*)
-      ;(opengl:gl-enable opengl:*gl-cull-face*)
       
       (opengl:gl-enable opengl:*gl-color-material*)
       (opengl:gl-color-material opengl:*gl-front* opengl:*gl-ambient-and-diffuse*)
       
-      ;(opengl:gl-materialfv opengl:*gl-front* opengl:*gl-specular* *material-specular*)
-      ;(opengl:gl-materialf opengl:*gl-front* opengl:*gl-shininess* *material-shininess*)
-      ;(opengl:gl-materialfv opengl:*gl-front* opengl:*gl-emission* *material-emission*)
       
-      ;(draw-axes canvas)
       (om-draw-contents canvas)
       (if (g-object canvas)
         (draw (g-object canvas)))
@@ -681,7 +682,7 @@
    (light-transform :initform nil :initarg :light-transform :accessor light-transform)
    (double-buffered-p :initform t :initarg :double-buffered-p :accessor double-buffered-p)
    (lastxy :initform nil :initarg :lastxy :accessor lastxy)
-   (camera :initform (make-camera :color '(0.15 0.15 0.15 1.0)) :initarg :camera :accessor camera))
+   (camera :initform (make-camera :color '(0.9 0.9 0.9 1.0)) :initarg :camera :accessor camera))
   (:default-initargs 
    :configuration
       #-linux (list :rgba t :depth t :double-buffered t :depth-buffer 32) ;depth buffer allows to have depth in 3D drawing
@@ -692,9 +693,13 @@
    :input-model '(((:button-1 :press) opengl-viewer-button-1)
                   ((:button-2 :press) opengl-viewer-button-2)
                   ((:button-1 :shift :press) opengl-viewer-button-1-shift)
+                  ((:button-1 :meta :press) opengl-viewer-button-1-alt)
                   ((:motion :button-1) opengl-viewer-motion-button-1)
                   ((:motion :button-2) opengl-viewer-motion-button-2)
-                  ((:motion :button-1 :shift) opengl-viewer-motion-button-1-shift))
+                  ((:motion :button-1 :shift) opengl-viewer-motion-button-1-shift)
+                  ((:motion :button-1 :meta) opengl-viewer-motion-button-1-alt)
+                  ((:button-1 :second-press) opengl-viewer-button-1-second-press))
+   
    ))
 
 
@@ -719,7 +724,8 @@
     (setf (bgcolor (camera self)) (list (float (om-color-r (om-get-bg-color self)))
                                         (float (om-color-g (om-get-bg-color self)))
                                         (float (om-color-b (om-get-bg-color self)))
-                                        1.0))))
+                                        1.0)))
+  (om-init-3d-view self))
 
 (defmethod om-set-bg-color ((self om-opengl-view) color)
   (call-next-method)
@@ -734,38 +740,53 @@
 (defmethod om-draw-contents ((self om-opengl-view)) nil)
 
 (defun opengl-viewer-button-1 (canvas x y)
-    (setf (lastxy canvas) (cons x y)))
+  (setf (lastxy canvas) (cons x y)))
 
-(defun opengl-viewer-button-2 (canvas x y)
-    (setf (lastxy canvas) (cons x y)))
+(defun opengl-viewer-button-1-second-press (canvas x y)
+  (om-init-3d-view canvas))
 
 (defun opengl-viewer-motion-button-1 (canvas x y)
-    (let ((last (lastxy canvas)))
-      (when last
-        (opengl:rendering-on (canvas)
-	  (polar-rotate-icosahedron canvas (- x (car last)) (- (cdr last) y)))
-        (opengl-redisplay-canvas canvas))
-      (setf (lastxy canvas) (cons x y))))
+  (let ((last (lastxy canvas)))
+    (when last
+      (opengl:rendering-on (canvas)
+        (polar-rotate-icosahedron canvas (- x (car last)) (- y (cdr last))))
+      (opengl-redisplay-canvas canvas))
+    (setf (lastxy canvas) (cons x y))))
+
+(defun opengl-viewer-button-2 (canvas x y)
+  (setf (lastxy canvas) (cons x y)))
 
 (defun opengl-viewer-motion-button-2 (canvas x y)
-    (let ((last (lastxy canvas)))
-      (when last
-        (opengl:rendering-on (canvas)
-	  (polar-rotate-light canvas (- x (car last)) (- y (cdr last))))
-        (opengl-redisplay-canvas canvas))
-      (setf (lastxy canvas) (cons x y))))
+  (let ((last (lastxy canvas)))
+    (when last
+      (opengl:rendering-on (canvas)
+        (polar-rotate-light canvas (- x (car last)) (- y (cdr last))))
+      (opengl-redisplay-canvas canvas))
+    (setf (lastxy canvas) (cons x y))))
 
 (defun opengl-viewer-button-1-shift (canvas x y)
-    (setf (lastxy canvas) (cons x y)))
+  (setf (lastxy canvas) (cons x y)))
 
 (defun opengl-viewer-motion-button-1-shift (canvas x y)
-    (let ((last (lastxy canvas)))
-      (when last
-        (let ((eye (eye (camera canvas))))
-          (setf (xyz-y eye)
-                (min (+ (xyz-y eye) (/ (- (cdr last) y) 20)) -1.5d0)))
-        (opengl-redisplay-canvas canvas))
-      (setf (lastxy canvas) (cons x y))))
+  (let ((last (lastxy canvas)))
+    (when last
+      (let ((eye (eye (camera canvas))))
+        (setf (xyz-y eye)
+              (min (- (xyz-y eye) (* (/ (- (cdr last) y) 20) (/ (xyz-y eye) 20))) -0.011d0))
+        )
+      (opengl-redisplay-canvas canvas))
+    (setf (lastxy canvas) (cons x y))))
+
+(defun opengl-viewer-button-1-alt (canvas x y)
+  (setf (lastxy canvas) (cons x y)))
+
+(defun opengl-viewer-motion-button-1-alt (canvas x y)
+  (let ((last (lastxy canvas)))
+    (when last
+      (opengl:rendering-on (canvas)
+        (translate-icosahedron canvas (- x (car last)) (- y (cdr last))))
+      (opengl-redisplay-canvas canvas))
+    (setf (lastxy canvas) (cons x y))))
 
 (defun opengl-viewer-character-callback (canvas x y character)
   x y
@@ -820,8 +841,10 @@
 
 
 (defmethod om-init-3D-view ((self om-opengl-view))
-  (om-adapt-camera-to-object self)
   (initialize-viewer self)
+  (om-adapt-camera-to-object self)
+  (opengl:rendering-on (self)
+    (polar-rotate (icotransform self) -30 20))
   (opengl-redisplay-canvas self))
   
 (defmethod om-adapt-camera-to-object ((self om-opengl-view))
