@@ -412,12 +412,13 @@
 
 
 (defmethod pixel2point ((self arraypanel) pixel)
-  (let* ((x (- (om-point-h pixel) 25))
+  (let* (;(x (- (om-point-h pixel) 25))
+         (x (om-point-h pixel))
          (sizex (assoc-w self))
          (durpointx (- (second (rangex self)) (first (rangex self))))
-         (x1 (ceiling (* (/ x sizex) durpointx))))
+         (x1 (floor (* (/ x sizex) durpointx))))
     ;(print (format nil "~D ~D ~D ~f" x sizex durpointx x1))
-    (om-make-big-point (+ x1 (first (rangex self))) 0)
+    (om-make-point (+ x1 (first (rangex self))) 0)
     ))
 
 
@@ -518,13 +519,13 @@
 ;      (om-beep))))
 
 (defmethod component-n-at ((self arraypanel) where)
-  (when (pixel2point self where)
-    (max 0 (om-point-h (pixel2point self where)))))
+  (let ((p (pixel2point self where)))
+    (and p (om-point-h p))))
 
 (defmethod open-internal-edit ((self arraypanel) where row)
   (let* ((select-comp (component-n-at self where))
          (array (object (om-view-container self)))
-         (val (and select-comp (get-array-val array row select-comp)))) 
+         (val (and select-comp (>= select-comp 0) (get-array-val array row select-comp))))
     (if (and val (Class-has-editor-p val))
       (push (make-editor-window (get-editor-class val) val (format nil "Array Component #~D" select-comp)
                                                            (om-view-container self)) 
@@ -710,7 +711,7 @@
 
 (defclass array-parameter-panel () ())
 
-(omg-defclass list-parameter-panel (om-view view-with-ruler-x array-parameter-panel) 
+(defclass list-parameter-panel (om-view view-with-ruler-x array-parameter-panel) 
    ((index :initform 0 :initarg :index :accessor index)
     (lines-p :initform nil  :accessor lines-p)
     (control-p :initform nil :initarg :control-p :accessor control-p)
@@ -733,7 +734,11 @@
   (member (index self) (selected-index (om-view-container self))))
 
 (defmethod get-ith-pixvalue ((self list-parameter-panel) i)
-  (norme2pixel (om-view-container self) 'x i))
+  ;(norme2pixel (om-view-container self) 'x i)
+  (let ((container (om-view-container self)))
+    (om-point-h (point2pixel container 
+                             (om-make-point i 0) 
+                             (get-system-etat container)))))
 
 (defmethod get-ith-deltax ((self list-parameter-panel) i)
   (norme2pixel (om-view-container self) 'x 1))
