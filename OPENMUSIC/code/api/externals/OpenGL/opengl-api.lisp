@@ -511,7 +511,7 @@
     (opengl:gl-get-doublev opengl:*gl-modelview-matrix* transform)))
 
 (defparameter *pointer-rotation-gain* 0.2d0)
-(defparameter *pointer-translation-gain* 0.005d0)
+(defparameter *pointer-translation-gain* 0.02d0)
 
 (defun polar-rotate (transform dx dy)
   (opengl:with-matrix-pushed
