@@ -325,7 +325,7 @@
 (defmethod stop-boxes ((boxlist list))
   (mapcar #'(lambda (box)
               (when (play-obj? (value box))
-                (player-stop (get-param box 'player) (list (value box)))
+                (player-stop (get-edit-param box 'player) (list (value box)))
                 (setf (play-state box) nil)
                 (setf *play-boxes* (remove box *play-boxes*))
                 ))
@@ -339,8 +339,8 @@
 
 
 (defmethod additional-player-params ((self omboxeditcall))
-  (list :port (get-param self 'outport)
-        :approx (get-param self 'approx)))
+  (list :port (get-edit-param self 'outport)
+        :approx (get-edit-param self 'approx)))
 
 
 ;;;=================================
