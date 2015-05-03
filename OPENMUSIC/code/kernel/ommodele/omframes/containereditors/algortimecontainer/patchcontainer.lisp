@@ -271,6 +271,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                                   (set-active (object boxframe) (not (active (object boxframe))))
                                   (om-invalidate-view boxframe))
                               actives))
+
+      (#\E (om-encapsulate self actives))
+      (#\U (om-unencapsulate self actives))
       
       (otherwise (om-beep)))))
 
