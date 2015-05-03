@@ -1447,9 +1447,8 @@
 ; ENCAPSULATION
 ;=================================================================
 
-(defmethod is-inout-p ((self t)) nil)
-(defmethod is-inout-p ((self omin)) t)
-(defmethod is-inout-p ((self omout)) t)
+(defmethod is-inout-p (box)
+  (member (type-of box) '(omin omout)))
 
 (defmethod get-inactives ((self relationPanel))
   (remove-if #'(lambda (f)
