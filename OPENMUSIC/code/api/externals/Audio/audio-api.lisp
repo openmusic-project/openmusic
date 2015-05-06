@@ -21,10 +21,24 @@
 
 
 
+;======================
+; FORMAT HANDLERS
+;======================
+
+(defvar *additional-audio-formats* nil)
+
+(defun try-other-file-support (path ext)
+  (let ((format-id (car (find ext *additional-audio-formats* :key 'cdr 
+                              :test #'(lambda (ext list) (find ext list :test 'string-equal))))))
+    (and format-id 
+         (audio-file-get-info format-id path))))
+   
+;;; MUST RETURN (values format channels sr ss size skip)
+(defun audio-file-get-info (type path) nil)
+
 ;;==================================
 ;;; FILE I/O
 ;;==================================
-
 
 (defun convert-filename-encoding (path)
   #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
@@ -34,12 +48,15 @@
 ;;; READ
 (defun om-sound-get-info (path)
   ;; RETURNS format n-channels sample-rate sample-size size skip
-  (sf::sndfile-get-info (convert-filename-encoding path)))
+  (let* ((cool-path (convert-filename-encoding path))
+         (sf-info  (multiple-value-list (sf::sndfile-get-info cool-path))))
+    (if (car sf-info) (values-list sf-info)
+      (try-other-file-support cool-path (pathname-type path)))))
+ 
 
 (defun om-get-sound-buffer (path &optional (format :double))
   ;; RETURNS buffer format n-channels sample-rate sample-size size skip
   (sf::sndfile-get-sound-buffer (convert-filename-encoding path) format))
-
 
 
 ;;;Function used to get the display array from the file path (and choosed max window)

@@ -10,7 +10,7 @@
 (defconstant formatAIFFint 2)
 (defconstant formatAIFFfloat 3)
 
-(defun decode-format (sndfile-format)
+(defun decode-format (sndfile-format) ; (print sndfile-format)
  (let* ((format_list (map 'list #'digit-char-p (prin1-to-string (write-to-string sndfile-format :base 16))))
         (ff (cond ((and (= 1 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 0)
                   ((and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 1)
@@ -41,6 +41,7 @@
 
 
 ;;; READ
+#|
 (defun sndfile-get-info (path)
   "Returns info about the soudn file (not the actual data)."
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
@@ -59,6 +60,25 @@
           (decode-format format)
         ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open 
         (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
+        (values nn channels sr ss size skip)))))
+|#
+
+(defun sndfile-get-info (path)
+  "Returns info about the soudn file (not the actual data)."
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0) ; Initialize the slots
+    (let* ((sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
+           (size (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames))
+           (channels (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels))
+           (sr (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate))
+           (format (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format))
+           (skip (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::seekable)))
+      ;(print (sf::sf_format_check sfinfo))
+      (multiple-value-bind (ff ss nn)
+          (decode-format format)
+        ;;;Detection format and Sample size : cf http://www.mega-nerd.com/libsndfile/api.html#open 
+        (sf::sf_close sndfile-handle) ; should return 0 on successful closure.
+        ;(print (list nn channels sr ss size skip))
         (values nn channels sr ss size skip)))))
 
 

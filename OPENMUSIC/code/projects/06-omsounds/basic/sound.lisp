@@ -105,9 +105,10 @@
             ;  (print (format nil "Warning : unsupported audio format ~A" format))
             ;  (setf (loaded sound) :error))
             )
-        (progn 
-          (print (format nil "Error loading file ~s" (filename self)))
-          (setf (loaded self) :error))))
+       
+       (progn 
+         (print (format nil "Error loading file ~s" (filename self)))
+         (setf (loaded self) :error))))
     (loaded self)))
 
 
@@ -407,7 +408,6 @@ Press 'space' to play/stop the sound file.
 
 
 
-
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
     (let* ((sr (* (om-sound-sample-rate self) 0.001))
@@ -488,17 +488,6 @@ Press 'space' to play/stop the sound file.
     (when (and snd pan) (setf (pan snd) pan))
     snd))
 
-
-;======================
-; FORMAT HANDLERS
-;======================
-
-(defvar *additional-audio-formats* nil)
-
-(push '(:flac "flac") *additional-audio-formats*)
-
-
-
 ;======================
 ; EDITOR
 ;======================
@@ -518,8 +507,6 @@ Press 'space' to play/stop the sound file.
       (setf (tracknum rep) (if (integerp (nth 1 args)) (nth 1 args) 0))
       (when (consp (nth 2 args)) (setf (markers rep) (nth 2 args)))
     rep)))
-
-
 
 
 ;;; default value at box evaluation

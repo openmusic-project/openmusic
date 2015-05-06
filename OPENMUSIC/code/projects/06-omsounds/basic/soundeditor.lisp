@@ -790,7 +790,8 @@
 (defmethod om-draw-waveform ((self soundPanel))
   (multiple-value-bind (data smplevel)
       (om-get-display-slice self)
-    (let* ((thesound (object (om-view-container self)))
+    (when (and (> (car (array-dimensions data)) 0) (> (cadr (array-dimensions data)) 0))
+      (let* ((thesound (object (om-view-container self)))
            (window-v-size (* 0.99 (om-point-v (om-view-size self))))
            (system-etat (get-system-etat self))
            (xmin (car (rangex self)))
@@ -831,7 +832,7 @@
                                              ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 9))
                                              ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 9)))))
                       (om-draw-line pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10) pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))
-                    (setq pixprev pixpoint pixtprev pixtime)))))))))
+                    (setq pixprev pixpoint pixtprev pixtime))))))))))
 
 
 

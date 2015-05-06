@@ -153,7 +153,7 @@
 (defconstant  SF_COUNT_MAX #x7FFFFFFFFFFFFFFF)
 
 (defcstruct SF_INFO
-	(frames :double)
+	(frames :long-long)
 	(samplerate :int)
 	(channels :int)
 	(format :int)
