@@ -34,7 +34,7 @@
          (audio-file-get-info format-id path))))
    
 ;;; MUST RETURN (values format channels sr ss size skip)
-(defun audio-file-get-info (type path) nil)
+(defmethod audio-file-get-info (type path) nil)
 
 ;;==================================
 ;;; FILE I/O
@@ -93,7 +93,8 @@
 
 
 ;;;Function used to FILL the display array of a sound (and choosed max window)
-(defun om-fill-sound-display-array (path ptr &optional (window 128))
+(defmethod om-fill-sound-display-array ((format t) path ptr channels size &optional (window 128))
+  ;(print (list channels size window))
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     ;;;Initialisation du descripteur
@@ -125,7 +126,7 @@
       (sf::sf_close sndfile-handle))))
 
 
-(defun om-get-sound-display-array-slice (path nsmp-out start-time end-time)
+(defmethod om-get-sound-display-array-slice ((format t) path nsmp-out nchannels start-time end-time)
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     ;;;Initialisation du descripteur
@@ -137,6 +138,7 @@
            (start-smp (floor (* start-time sr-ratio)))
            (end-smp (ceiling (* end-time sr-ratio)))
            (size (- end-smp start-smp))
+           ;;; use nchannels !
            (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
            (window (/ size nsmp-out 1.0))
            (window-adaptive (round window))
