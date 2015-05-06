@@ -403,8 +403,6 @@ Press 'space' to play/stop the sound file.
            (print (format nil "~A Loaded..." (filename self))))
        self))))
 
-
-
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
     (let* ((sr (* (om-sound-sample-rate self) 0.001))
@@ -435,7 +433,7 @@ Press 'space' to play/stop the sound file.
             ((> nbpix maxnbpix)
              (setq result (om-audio:om-get-sound-display-array-slice 
                            (audio-format self)
-                           (namestring (filename self)) nbpix (om-sound-n-channels self) start-time end-time))))
+                           (namestring (filename self)) (om-sound-n-channels self) nbpix start-time end-time))))
       (values result (< (cadr (array-dimensions result)) nbpix)))))
 
 (defmethod* get-sound () 
