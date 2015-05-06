@@ -16,26 +16,29 @@
                   ((and (= 1 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 1)
                   ((and (= 2 (cadr format_list)) (< (cadddr (cddr format_list)) 6)) 2)
                   ((and (= 2 (cadr format_list)) (>= (cadddr (cddr format_list)) 6)) 3)
-                  (t 0)))
-        (ss (cond ((= 1 (cadddr (cddr format_list))) 8)
-                  ((= 2 (cadddr (cddr format_list))) 16)
-                  ((= 3 (cadddr (cddr format_list))) 24)
-                  ((= 4 (cadddr (cddr format_list))) 32)
-                  ((= 5 (cadddr (cddr format_list))) 8)
-                  ((= 6 (cadddr (cddr format_list))) 32)
-                  (t 0)))
+                  (t nil)))
+        (ss (and ff 
+                 (cond ((= 1 (cadddr (cddr format_list))) 8)
+                       ((= 2 (cadddr (cddr format_list))) 16)
+                       ((= 3 (cadddr (cddr format_list))) 24)
+                       ((= 4 (cadddr (cddr format_list))) 32)
+                       ((= 5 (cadddr (cddr format_list))) 8)
+                       ((= 6 (cadddr (cddr format_list))) 32)
+                       (t -1))))
         (name (case ff
                 (0 "Wav(int)")
                 (1 "Wav(float)")
                 (2 "AIFF(int)")
                 (3 "AIFF(float)")
-                (otherwise "Unknown")
+                (otherwise nil)
                 )))
    (values ff ss name)))
   
-;(cadddr (cddr (map 'list #'digit-char-p (prin1-to-string (write-to-string SF_FORMAT_WAV :base 16)))))
+;(cadddr (cddr (map 'list #'digit-char-p (prin1-to-string (write-to-string SF_FORMAT_AIFF :base 16)))))
 ;(write-to-string 255 :base 16)
-;(logior (ash sf::sf_format_aiff 1) (ash b 8) c)
+;(logior (ash sf::sf_format_aiff 1) (ash b 8) c
+;(decode-format SF_FORMAT_AIFF)
+
 
 ;;; READ
 (defun sndfile-get-info (path)
