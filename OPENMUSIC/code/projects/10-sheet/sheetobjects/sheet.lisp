@@ -37,11 +37,21 @@ See the dedicated chapter in the OM User Manual for more details.")
   self)
 
 
+;;; this one breaks...
+
+;; (defmethod default-edition-params ((self omsheet))
+;;   (append (default-edition-params self)
+;;           (pairlis '(show-tracks show-time grille grille-step patch-open) 
+;;                    '(t t nil 1000 nil))
+;;           ))
+
+;;; this one is perhaps returning reasonable results?
+
 (defmethod default-edition-params ((self omsheet))
-  (append (default-edition-params self)
-          (pairlis '(show-tracks show-time grille grille-step patch-open) 
-                   '(t t nil 1000 nil))
-          ))
+  (append (call-next-method)
+	  (pairlis '(show-tracks show-time grille grille-step patch-open) 
+		   '(t t nil 1000 nil))))
+
 
 (defmethod omNG-copy ((self OMSheet))
   `(copy-container ,self))
