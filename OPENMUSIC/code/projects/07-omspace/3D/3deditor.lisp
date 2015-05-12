@@ -26,19 +26,28 @@
 
 ;;; 3OpenGL
 
-(defparameter *OM-GL-DEFAULT-LINEWIDTH* 1.0)
-(defparameter *OM-GL-DEFAULT-COLOR* (list 0.0 0.0 0.0 1.0))
+(defvar *OM-GL-DEFAULT-LINEWIDTH* 1.0)
+(defvar *OM-GL-DEFAULT-COLOR* (list 0.0 0.0 0.0 1.0))
+(defparameter *OM-DEFAULT-ROOM-COLOR* (list 0.9 0.9 0.9 1.0))
 
 ;editors default parameters
-(defparameter *OM-DEFAULT-ROOM-SIZE* 2)
-(defparameter *OM-DEFAULT-SHOW-ROOM* 1)
-(defparameter *OM-DEFAULT-SHOW-AXES* 1)
+(defvar *OM-DEFAULT-ROOM-SIZE* 2)
+(defvar *OM-DEFAULT-SHOW-ROOM* 1)
+(defvar *OM-DEFAULT-SHOW-AXES* 1)
 
 
 (defmethod restore-om-gl-colors-and-attributes ()
   (opengl:gl-color4-f (nth 0 *OM-GL-DEFAULT-COLOR*) (nth 1 *OM-GL-DEFAULT-COLOR*) (nth 2 *OM-GL-DEFAULT-COLOR*) (nth 3 *OM-GL-DEFAULT-COLOR*))
   (opengl:gl-line-width *OM-GL-DEFAULT-LINEWIDTH*)
+  (opengl:gl-enable opengl:*gl-point-size*)
+  (opengl:gl-enable opengl:*gl-point-smooth*)
   )
+
+(defmethod om-color-to-single-float-list (color)
+  (list (coerce (om-color-r color) 'single-float)
+        (coerce (om-color-g color) 'single-float)
+        (coerce (om-color-b color) 'single-float)
+        (coerce 1.0 'single-float)))
 
 (defclass 3D-cube (om-3D-object) 
   ((center :accessor center :initarg :center :initform nil)
@@ -63,7 +72,7 @@
                   
 
 (defmethod om-draw-contents ((self 3D-cube))
-  (let* ((vertices (om-get-points self)))
+  (let* ((vertices (om-get-gl-points self)))
     (if (om-3Dobj-color self)
         (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0))
 
@@ -120,35 +129,52 @@
    (lines :accessor lines :initarg :lines :initform t)
    (line-width :accessor line-width :initarg :line-width :initform *OM-GL-DEFAULT-LINEWIDTH*)))
    
-
-(defmethod om-draw-contents ((self 3D-curve))
+(defmethod om-draw-contents ((self 3d-curve))
   (let* ((vertices (om-get-gl-points self))
-         (size (- (length vertices) 1)))
+         (size (- (length vertices) 1))
+         (selection (selected-points self))
+         (vertices-colors (get-vertices-colors self))
+         (sel-rgb (om-color-to-single-float-list *om-dark-red-color*)))
     (opengl:gl-enable opengl:*gl-light0*)
     (opengl:gl-line-width (float (line-width self)))
-    (if (om-3Dobj-color self)
-        (opengl:gl-color4-f (car (om-3Dobj-color self)) (cadr (om-3Dobj-color self)) (caddr (om-3Dobj-color self)) 1.0)
-      (opengl:gl-color4-f 0.0 0.0 0.0 1.0))
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
-    (loop for i from 0 to size do
-          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (opengl:gl-vertex4-dv (aref vertices i))
-            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
-                                                                     (find i (selected-points self) :test '=)
-                                                                   t))))
-    (opengl:gl-end)
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (cond ((consp (selected-points self))
-             (loop for i in (selected-points self) do 
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ((selected-points self)
-             (loop for i from 0 to (- (length vertices) 1) do                  
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ))
-    (restore-om-gl-colors-and-attributes)
-    ))
 
+    ;draw the lines first
+    (when (and (lines self) (> size 1))
+      (opengl:gl-begin opengl:*GL-LINE-STRIP*)
+      (loop for i from 0 to size do 
+            (let ((rgb (or (nth i vertices-colors) (om-color-to-single-float-list *om-light-gray-color*))))
+              (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 0.8)
+              (opengl:gl-vertex4-dv (aref vertices i))))
+      (opengl:gl-end))
+  
+    ;draw the points an the selection (as bigger opaque points)
+    (loop for i from 0 to size do
+          (let* ((rgb (or (nth i vertices-colors) (om-color-to-single-float-list *om-light-gray-color*)))
+                 (selected (or (equal '(t) selection) (find i selection)))
+                 (alpha (if selected 1.0 0.7))
+                 (point (nth i (om-3dobj-points self)))
+                 (x (float (car point)))
+                 (y (float (cadr point)))
+                 (z (float (caddr point))))
+            (if selected
+                (opengl:gl-color4-f (nth 0 sel-rgb) (nth 1 sel-rgb) (nth 2 sel-rgb) alpha)
+              (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) alpha))
+            (opengl:gl-point-size (* 3.0 (line-width self)))
+            (opengl:gl-begin opengl:*gl-points*)
+            (opengl:gl-vertex3-f x y z)
+            (opengl:gl-end))))
+    ;restore gl params
+    (restore-om-gl-colors-and-attributes)
+    )
+
+
+(defun default-color-vertices (obj)
+  (make-list (length (om-3dobj-points obj)) :initial-element (oa::color obj)))
+
+;jgarcia
+(defmethod get-vertices-colors ((self 3d-curve))
+  "create a vector of colors for a 3D-curve depending on the mode selected"
+  (default-color-vertices self))
 
 (defun draw-point-cube (point size faces)
   (let* ((hs (/ size 2))
