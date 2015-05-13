@@ -21,10 +21,24 @@
 
 
 
+;======================
+; FORMAT HANDLERS
+;======================
+
+(defvar *additional-audio-formats* nil)
+
+(defun try-other-file-support (path ext)
+  (let ((format-id (car (find ext *additional-audio-formats* :key 'cdr 
+                              :test #'(lambda (ext list) (find ext list :test 'string-equal))))))
+    (and format-id 
+         (audio-file-get-info format-id path))))
+   
+;;; MUST RETURN (values format channels sr ss size skip)
+(defmethod audio-file-get-info (type path) nil)
+
 ;;==================================
 ;;; FILE I/O
 ;;==================================
-
 
 (defun convert-filename-encoding (path)
   #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
@@ -34,12 +48,15 @@
 ;;; READ
 (defun om-sound-get-info (path)
   ;; RETURNS format n-channels sample-rate sample-size size skip
-  (sf::sndfile-get-info (convert-filename-encoding path)))
+  (let* ((cool-path (convert-filename-encoding path))
+         (sf-info  (multiple-value-list (sf::sndfile-get-info cool-path))))
+    (if (car sf-info) (values-list sf-info)
+      (try-other-file-support cool-path (pathname-type path)))))
+ 
 
 (defun om-get-sound-buffer (path &optional (format :double))
   ;; RETURNS buffer format n-channels sample-rate sample-size size skip
   (sf::sndfile-get-sound-buffer (convert-filename-encoding path) format))
-
 
 
 ;;;Function used to get the display array from the file path (and choosed max window)
@@ -76,7 +93,8 @@
 
 
 ;;;Function used to FILL the display array of a sound (and choosed max window)
-(defun om-fill-sound-display-array (path ptr &optional (window 128))
+(defmethod om-fill-sound-display-array ((format t) path ptr channels size &optional (window 128))
+  ;(print (list channels size window))
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     ;;;Initialisation du descripteur
@@ -108,7 +126,7 @@
       (sf::sf_close sndfile-handle))))
 
 
-(defun om-get-sound-display-array-slice (path nsmp-out start-time end-time)
+(defmethod om-get-sound-display-array-slice ((format t) path size nchannels start-time end-time)
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     ;;;Initialisation du descripteur
@@ -119,15 +137,16 @@
            (sr-ratio (* sr 0.001))
            (start-smp (floor (* start-time sr-ratio)))
            (end-smp (ceiling (* end-time sr-ratio)))
-           (size (- end-smp start-smp))
+           (dur-smp (- end-smp start-smp))
+           ;;; use nchannels !
            (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
-           (window (/ size nsmp-out 1.0))
+           (window (/ dur-smp size 1.0))
            (window-adaptive (round window))
            ;;;Variables liées au calcul de waveform
            (buffer-size (* (ceiling window) channels))
            (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
-           (MaxArray (make-array (list channels (min nsmp-out size)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
-           (indxmax (1- (min nsmp-out size)))
+           (MaxArray (make-array (list channels (min size dur-smp)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (indxmax (1- (min size dur-smp)))
            (frames-read 0)
            (frames-count 0)
            (winsum 0)
@@ -136,7 +155,7 @@
         (setq throw-buffer (fli::allocate-foreign-object :type :float :nelems (* start-smp channels)))
         (sf::sf-readf-float sndfile-handle throw-buffer start-smp)
         (fli:free-foreign-object throw-buffer))
-      (if (> size nsmp-out)
+      (if (> dur-smp size)
           (loop for indx from 0 do
                 (setq winsum (+ winsum window-adaptive))
                 (if (> indx 0) (setq window-adaptive (- (round (* (+ 2 indx) window)) (round winsum))))

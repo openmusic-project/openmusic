@@ -6,7 +6,9 @@
 
 (defparameter *externals-directory* (pathname-directory *load-pathname*))
 
-(load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))
+(handler-case (require :asdf)				    ;use what lw provides if it's there
+  (error () (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))))
+
 (load (make-pathname :directory (append *externals-directory* '("FFI")) :name "load-cffi"))
 (load (make-pathname :directory (append *externals-directory* '("ieee-floats")) :name "ieee-floats"))
 

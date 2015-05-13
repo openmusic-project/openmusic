@@ -524,9 +524,7 @@
 (defun translate (transform dx dy)
   (opengl:with-matrix-pushed
     (opengl:gl-load-identity)
-    (opengl:gl-translated (float (* dx *pointer-translation-gain*) 1.0d0) 0.0d0 (float (* (* -1 dy) *pointer-translation-gain*) 1.0d0))
-  ; (opengl:gl-translated (float (* dx *pointer-translation-gain*) 1.0d0) 0.0d0 0.0d0 )    
-  ; (opengl:gl-translated 0.0d0 (float (* dy *pointer-translation-gain*) 1.0d0) 0.0d0)
+    (opengl:gl-translated (float dx 1.0d0) 0.0d0 (float dy 1.0d0))
     (opengl:gl-mult-matrixd transform)
     (opengl:gl-get-doublev opengl:*gl-modelview-matrix* transform)))
 
@@ -537,7 +535,8 @@
   (polar-rotate (icotransform viewer) dx dy))
 
 (defun translate-icosahedron (viewer dx dy)
-  (translate (icotransform viewer) dx dy))
+  (let ((factor (/ (xyz-y (eye (camera viewer))) 1500)))
+    (translate (icotransform viewer) (* dx factor) (* dy factor))))
 
 (defparameter *light-model-ambient* nil)
 (defparameter *light-position* nil)
@@ -785,7 +784,7 @@
   (let ((last (lastxy canvas)))
     (when last
       (opengl:rendering-on (canvas)
-        (translate-icosahedron canvas (- x (car last)) (- y (cdr last))))
+        (translate-icosahedron canvas (- (car last) x) (- y (cdr last)) ))
       (opengl-redisplay-canvas canvas))
     (setf (lastxy canvas) (cons x y))))
 
@@ -827,15 +826,27 @@
                (turn-off-texture viewer)
                (turn-on-texture viewer))
              t)
-        ((#\begin #\home) 
-         (opengl:rendering-on ((canvas viewer))
-           (initialize-transform (icotransform viewer))
-           (initialize-transform (light-transform viewer)) t)
-         (setf (xyz-y (eye (camera (canvas viewer))))
-               (xyz-y *eye*)))
-        (#\Insert (opengl:rendering-on ((canvas viewer)) (reset-lights-and-materials) t))
-        (#\escape (opengl:rendering-on ((canvas viewer)) (delete-display-list (icosahedron viewer)))
-	          (capi:quit-interface viewer)))
+        #-lispworks7 ((#\begin #\home) 
+		      (opengl:rendering-on ((canvas viewer))
+			(initialize-transform (icotransform viewer))
+			(initialize-transform (light-transform viewer)) t)
+		      (setf (xyz-y (eye (camera (canvas viewer))))
+			    (xyz-y *eye*)))
+        #-lispworks7 (#\Insert (opengl:rendering-on ((canvas viewer)) (reset-lights-and-materials) t))
+        #-lispworks7 (#\escape (opengl:rendering-on ((canvas viewer)) (delete-display-list (icosahedron viewer)))
+			       (capi:quit-interface viewer))
+	
+	#+lispworks7 (("begin" "home") 
+		      (opengl:rendering-on ((canvas viewer))
+			(initialize-transform (icotransform viewer))
+			(initialize-transform (light-transform viewer)) t)
+		      (setf (xyz-y (eye (camera (canvas viewer))))
+			    (xyz-y *eye*)))
+        #+lispworks7 ("Insert" (opengl:rendering-on ((canvas viewer)) (reset-lights-and-materials) t))
+        #+lispworks7 ("Escape" (opengl:rendering-on ((canvas viewer)) (delete-display-list (icosahedron viewer)))
+			       (capi:quit-interface viewer))
+
+	)
     (set-button-states viewer)
     (capi:with-busy-interface (viewer)
       (opengl-redisplay-canvas (canvas viewer)))))
@@ -902,8 +913,16 @@
 (defmethod initialize-instance :after ((self om-3D-object) &key points &allow-other-keys)
   (setf (glvertexes self) (points2vertex points)))
 
+  ;anti aliasing things. Warning: if depth enable it may not work...
+(defun activate-anti-aliasing-parameters ()
+  (opengl:gl-enable opengl:*gl-blend*)
+  (opengl:gl-enable opengl:*gl-line-smooth*)
+  (opengl:gl-blend-func opengl:*gl-src-alpha* opengl:*gl-one-minus-src-alpha*)
+  (opengl:gl-hint opengl:*gl-line-smooth-hint* opengl:*gl-dont-care*)
+  )
+
 (defmethod draw ((self om-3D-object))
-  (opengl:gl-shade-model opengl:*gl-smooth*)
+  (activate-anti-aliasing-parameters)
   (om-draw-contents self))
 
 (defmethod om-draw-contents ((self om-3D-object)) nil)

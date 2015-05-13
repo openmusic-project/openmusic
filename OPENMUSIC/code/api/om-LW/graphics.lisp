@@ -121,6 +121,7 @@
                 *om-darkgray-pattern*
                 *om-gray-pattern*
                 *om-lightgray-pattern*
+                *om-dark-red-color*
                 *om-white-pattern*
                 
                 om-with-pen
@@ -549,6 +550,7 @@
 (defparameter *om-light-gray-color* #-win32 (om-make-color 0.9 0.9 0.9)  #+win32 (om-make-color 0.96 0.96 0.96))
 (defparameter *om-gray-color* (om-make-color 0.6 0.6 0.6))
 (defparameter *om-dark-gray-color* (om-make-color 0.3 0.3 0.3))
+(defparameter *om-dark-red-color* (om-make-color 0.9 0.3 0.3))
 (defparameter *om-white-color* (make-instance 'omcolor :c (color::get-color-spec :white)))
 
 (defvar *om-window-def-color* "The default background color for windows")

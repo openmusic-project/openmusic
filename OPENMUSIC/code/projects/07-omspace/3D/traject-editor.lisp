@@ -37,40 +37,6 @@
    (color-max :accessor color-max :initarg :color-max :initform *OM-TRAJ-COLOR-MAX*))
 )
 
-(defmethod om-draw-contents ((self 3D-timed-curve))
-  "Draw a 3D timed curve witgh stroke with and colors"
-  (let* ((vertices (om-get-gl-points self))
-         (size (- (length vertices) 1))
-         (vertices-colors (get-vertices-colors self)))
-    (opengl:gl-enable opengl:*GL-LIGHT0*)    
-    (opengl:gl-line-width (float (line-width self)))
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (opengl:gl-begin opengl:*GL-LINE-STRIP*))
-
-    (loop for i from 0 to size do
-          (if (and (lines self) (> (length (om-3Dobj-points self)) 1))
-              (let ((rgb (nth i vertices-colors )))
-                (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) 1.0)
-                (opengl:gl-vertex4-dv (aref vertices i)))
-            (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 (if (consp (selected-points self))
-                                                                     (find i (selected-points self) :test '=)
-                                                                   t))
-            ))
-    (opengl:gl-end)
-    (restore-om-gl-colors-and-attributes)
-    (when (and (lines self) (> (length (om-3Dobj-points self)) 1))
-      (cond ((consp (selected-points self))
-             (loop for i in (selected-points self) do 
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ((selected-points self)
-             (loop for i from 0 to (- (length vertices) 1) do                  
-                   (draw-point-cube (nth i (om-3Dobj-points self)) 0.02 t)))
-            ))
-    (restore-om-gl-colors-and-attributes)
-    ))
-
-
-;jgarcia
 (defmethod get-vertices-colors ((self 3d-timed-curve))
             "create a vector of colors for a 3D-timed-curve depending on the mode selected"
             (let* ((points (om-3dobj-points self))
@@ -122,9 +88,6 @@
     (setf range_speed (- max_speed min_speed))
     (setf speeds (om/ (om- speeds min_speed) range_speed))))
 
-(defun default-color-vertices (3D-timed-curve)
-  (make-list (length (om-3dobj-points 3D-timed-curve)) :initial-element (oa::color 3D-timed-curve)))
-
 (defun 3D-points-distance (p1 p2)
   (let ((x1 (nth 0 p1))
         (x2 (nth 0 p2))
@@ -135,7 +98,7 @@
     (sqrt (+ (+ (* (- x1 x2) (- x1 x2)) (* (- y1 y2) (- y1 y2))) (* (- z1 z2) (- z1 z2))))
     ))
 
-;jgarcia
+
 (defun rgb2hsv (col)
   "convert RGB values into HSV values (list in float format (0.0 to 1.0))"
   (let* (
@@ -160,7 +123,7 @@
                (s (/ (- max_rgb min_rgb) max_rgb)))
           (list h s v))))))
 
-;jgarcia
+
 (defun hsv2rgb (col)
   "convert HSV values into RGB values (list in float format (0.0 to 1.0))"
   (let* (

@@ -327,7 +327,7 @@ these changements, this method is called for OMlistInstance"
 ;The simple frame for OMConstants
 ;============================================================
 
-(omg-defclass constant-simple-frame (OMCompoundFrame)  
+(defclass constant-simple-frame (OMCompoundFrame)  
    ((nameview :initform nil :accessor nameview)
     (iconview :initform nil :accessor iconview)
     (change-name-p :initform nil :accessor change-name-p))
@@ -351,7 +351,7 @@ these changements, this method is called for OMlistInstance"
 (defmethod om-drag-selection-p ((self constant-simple-frame) mouse-position) nil)
 
 ;============================================================
-(omg-defclass constant-ttybox (ttybox om-static-text-drag) ()
+(defclass constant-ttybox (ttybox om-static-text-drag) ()
    (:documentation "This class is a normal ttybox but used to show and edit slots values.#enddoc#
 #seealso# (cons-enter-view) #seealso#"))
 
@@ -380,7 +380,7 @@ these changements, this method is called for OMlistInstance"
 
  
 ;============================================================
-(omg-defclass cosnt-enter-view (edit-text-enter-view) ()
+(defclass cosnt-enter-view (edit-text-enter-view) ()
    (:documentation "This class allow edition of constant slots.#enddoc#
 #seealso# (constant-ttybox) #seealso#")) 
 
@@ -400,6 +400,8 @@ these changements, this method is called for OMlistInstance"
 
 ;============================================
 
-
 (defmethod save-edition-params ((self OMInstance))
    (save-value-params (instance self) (edition-params self)))
+
+;; hack
+(defmethod value ((self ominstance)) (instance self))
