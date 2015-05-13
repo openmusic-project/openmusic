@@ -357,11 +357,13 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
     (value self)
     (cons-maquette-object self (boxes self))))
 
+(defmethod get-obj-for-maquette-display ((self t)) self)
+ 
 (defmethod get-mus-ob ((self t)) nil)
 (defmethod get-mus-ob ((self TemporalBox))
    (cond
     ((Maquette-p (reference self)) (get-maq-mus-obj (reference self)))
-    (t (nth 0 (value self)))))
+    (t (get-obj-for-maquette-display (nth 0 (value self))))))
 
 (defmethod get-obj-to-draw ((self t)) nil)
 (defmethod get-obj-to-draw ((self TemporalBox))
