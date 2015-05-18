@@ -836,7 +836,7 @@
         #-lispworks7 (#\escape (opengl:rendering-on ((canvas viewer)) (delete-display-list (icosahedron viewer)))
 			       (capi:quit-interface viewer))
 	
-	#+lispworks7 (("begin" "home") 
+	#+lispworks7 (("Begin" "Home") 
 		      (opengl:rendering-on ((canvas viewer))
 			(initialize-transform (icotransform viewer))
 			(initialize-transform (light-transform viewer)) t)
