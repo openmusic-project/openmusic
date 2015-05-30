@@ -2313,15 +2313,20 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                   (cons-new-object (make-instance ',symbol) (list nil ,.(cdr args)) nil)))))))
 
 ;-----------------code generation
+;;; now works with keywords ! -- jb 30/05/2015
 (defmethod curry-lambda-code ((self OMBoxcall) symbol)
    "Lisp code generetion for a box in lambda mode."
    (let* ((nesymbs nil)
-          (args  (mapcar #'(lambda (input)
-                             (if (connected? input)
-                               (gen-code input 0)
-                               (let ((newsymbol (gensym)))
-                                 (push newsymbol nesymbs)
-                                 newsymbol))) (inputs self))))
+          (args  (mapcan #'(lambda (input)
+                             (let ((a (if (connected? input)
+                                          (gen-code input 0)
+                                        (let ((newsymbol (gensym)))
+                                          (push newsymbol nesymbs)
+                                          newsymbol))))
+                               (if (keyword-input-p input) 
+                                   (list (value input) a) 
+                                 (list a))))
+                         (inputs self))))
      `#'(lambda ,(reverse nesymbs)
           (apply ',symbol (list ,.args)))))
 
