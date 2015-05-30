@@ -56,7 +56,7 @@
 ;; (defclass om-listener-pane (capi:listener-pane capi:collector-pane) ())
 
 (defun init-listener ()
-  (setq *listener-font* (or *listener-font* (gp::make-font-description :family "Verdana" :size 8 :weight :bold)))
+  (setq *listener-font* (or *listener-font* (gp::make-font-description :family "Verdana" :size 10 :weight :bold)))
   (setq *om-stream* (capi:collector-pane-stream (make-instance 'capi:collector-pane)))
   (setf *trace-output* *om-stream*)
   (let ((lispworks::*HANDLE-WARN-ON-REDEFINITION* nil))
@@ -78,8 +78,8 @@
 (defclass om-listener-in-pane (capi::listener-pane) ())
 (defclass om-listener-out-pane (capi::collector-pane) ())
 
-#-linux (defvar *listener-font* nil)
-#+linux (defvar *listener-font* (gp::make-font-description :family #+linux "Liberation Mono" :size 9))
+#-linux (defparameter *listener-font* (gp::make-font-description :family "Verdana" :size 12 :weight :normal))
+#+linux (defparameter *listener-font* (gp::make-font-description :family "Liberation Mono" :size 9))
 
 ;; do not work on mac...
 
