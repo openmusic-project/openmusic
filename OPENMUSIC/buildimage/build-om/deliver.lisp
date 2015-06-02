@@ -2,7 +2,7 @@
 
 (load-all-patches)
 
-(require "hqn-web")
+#+lispworks6(require "hqn-web")
 
 #+win32(require "ole")
 

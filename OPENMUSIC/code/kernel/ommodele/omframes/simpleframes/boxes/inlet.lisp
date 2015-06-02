@@ -84,7 +84,7 @@
 
 ;This is the little bubble icon for inputs
 ;this class could be a simpleframe but i find that is sampler that
-(omg-defclass input-funboxframe (icon-view) 
+(defclass input-funboxframe (icon-view) 
   ((object :initform nil :initarg :object :accessor object)))
 
 
@@ -125,7 +125,6 @@
                                   thetext
                                   :container panel
                                   :font *om-default-font1*))
-          ;(set-field-size panel)
           )))))
 
 ;;;new : text-view is on the panel
@@ -198,7 +197,7 @@
   
 ;-------
 
-(omg-defclass temp-funboxframe (input-funboxframe) ())
+(defclass temp-funboxframe (input-funboxframe) ())
 
 (defmethod frame-icon-input ((self temp-funboxframe)) 227)
 
@@ -209,7 +208,7 @@
 ;------------------------------------------------------
 
 
-(omg-defclass input-classframe (icon-view) 
+(defclass input-classframe (icon-view) 
   ((object :initform nil :initarg :object :accessor object)))
 
 (defmethod initialize-instance :after ((self input-classframe) &key controls)
@@ -219,7 +218,7 @@
 ;--------------------------------------------------------------------
 ;Text showed when mouse in input (non edit)
 ;--------------------------------------------------------------------
-(omg-defclass text-enter-view (om-static-text) ())
+(defclass text-enter-view (om-static-text) ())
 
 ;(defmethod om-draw-contents ((self text-enter-view))
 ;   (call-next-method)
@@ -229,7 +228,7 @@
 ; Edit input value
 ;--------------------------------------------------------------------
 
-(omg-defclass edit-text-enter-view (om-editable-text) 
+(defclass edit-text-enter-view (om-editable-text) 
   ((object :initform nil :initarg :object :accessor object)))
 
 
@@ -270,7 +269,7 @@
 (defmethod menu-input-p ((self input-funmenu)) t)
 (defmethod menu-input-p ((self t)) nil) 
 
-(omg-defclass in-pop-up-menu (om-pop-up-menu)
+(defclass in-pop-up-menu (om-pop-up-menu)
   ((in-value :initform 0 :initarg :in-value :accessor in-value)
    (items :initform nil :initarg :items :accessor items)
    (originallist :initform nil :initarg :originallist :accessor originallist)))
@@ -421,7 +420,7 @@
                                                    :font *om-default-font2*))
      (om-remove-subviews container self)))
 
-(omg-defclass edit-click-and-edit (edit-text-enter-view) 
+(defclass edit-click-and-edit (edit-text-enter-view) 
    ((object :initform nil :initarg :object :accessor object)))
 
 ;;;new : text-view is on the panel

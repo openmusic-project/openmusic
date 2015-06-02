@@ -219,47 +219,46 @@
          (position (if (subtypep class 'om-editable-text) (om-get-text-edit-pos position) position))
          (size (if (subtypep class 'om-editable-text) (om-get-text-edit-size size) size))        
          (di (apply 'make-instance 
-                   (append (list class
-                           :default-x (om-point-h position)
-                           :default-y (om-point-v position)
-                           :default-width (om-point-h size)
-                           :default-height (om-point-v size)
-                           :external-min-width (unless (subtypep class 'om-static-text) (om-point-h size))
-                           :external-max-width (unless (subtypep class 'om-static-text) (om-point-h size))
-                           :visible-max-width nil
-                           :visible-max-height nil
-			   ;;#+linux :external-min-height (unless (subtypep class 'om-static-text) (om-point-v size))
-			   ;;#+linux :external-max-height (unless (subtypep class 'om-static-text) (om-point-v size))
-                           :width nil :height nil
-                           :text text
-                           :font font
-                           :enabled enable
-                           :background bcol
-                           :foreground fcol
-                           :selected checked-p
-                           :allows-newline-p allow-returns
-                           :default-p default-button
-                           :items range
-                           :start (or (first range) 0)
-                           :end (or (second range) 100)
-                           :orientation direction
-                           :start-point (if (equal direction :vertical) :bottom :left)
-                           :slug-start value
+                    (append (list class
+                                  :default-x (om-point-h position)
+                                  :default-y (om-point-v position)
+                                  :default-width (om-point-h size)
+                                  :default-height (om-point-v size)
+                                  :external-min-width (unless (subtypep class 'om-static-text) (om-point-h size))
+                                  :external-max-width (unless (subtypep class 'om-static-text) (om-point-h size))
+                                  :visible-max-width nil
+                                  :visible-max-height nil
+                                  ;;#+linux :external-min-height (unless (subtypep class 'om-static-text) (om-point-v size))
+                                  ;;#+linux :external-max-height (unless (subtypep class 'om-static-text) (om-point-v size))
+                                  :width nil :height nil
+                                  :text text
+                                  :font font
+                                  :enabled enable
+                                  :background bcol
+                                  :foreground fcol
+                                  :selected checked-p
+                                  :allows-newline-p allow-returns
+                                  :default-p default-button
+                                  :items range
+                                  :start (or (first range) 0)
+                                  :end (or (second range) 100)
+                                  :orientation direction
+                                  :start-point (if (equal direction :vertical) :bottom :left)
+                                  :slug-start value
                            ; :popup-callback #'om-dialog-item-action
-                           :internal-border 0
+                                  :internal-border 0
                            ;:visible-border :default ;  nil  ; :outline
-                           :TITLE-ADJUST t
-                           :compact t
-                           :horizontal-scroll (dialog-item-scrollbar-h scrollbars)
-                           :vertical-scroll (dialog-item-scrollbar-v scrollbars)
+                                  :TITLE-ADJUST t
+                                  :compact t
+                                  :horizontal-scroll (dialog-item-scrollbar-h scrollbars)
+                                  :vertical-scroll (dialog-item-scrollbar-v scrollbars)
                            ;:button-group radio-button-cluster
                            ;:title text
-                           :selected-item nil
-                           :allow-other-keys t)
-                   attributes))))
+                                  :selected-item nil
+                                  :allow-other-keys t)
+                            attributes))))
     (when (or bg-color (special-bg di))
       (om-set-bg-color di (or bg-color (special-bg di))))
-    
     (setf (vx di) (om-point-h position)
           (vy di) (om-point-v position)
           (vw di) (om-point-h size) 

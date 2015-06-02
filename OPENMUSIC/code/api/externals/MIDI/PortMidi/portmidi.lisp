@@ -25,7 +25,7 @@
 (in-package :pm)
 
 
-(defvar *libportmidi-pathname* 
+(defparameter *libportmidi-pathname* 
   #+win32
   "/WINDOWS/system32/libPortMidi.dll"
   #+macosx
@@ -271,6 +271,13 @@
   (buffer-size :long) 
   (time-proc pm-time-proc-ptr) 
   (time-info :pointer))
+
+
+
+;(setf ptr (cffi::foreign-alloc :pointer))
+;(pm-open-output-PTR ptr 1 (cffi:null-pointer) 512 (cffi:null-pointer) (cffi:null-pointer) 0)
+;(pm::pm-open-output 1 512 512)
+
 
 (defun pm-open-output (device buffer-size latency)
   ;;; (unless (Started) (Start))
