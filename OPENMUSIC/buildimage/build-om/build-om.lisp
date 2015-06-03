@@ -216,10 +216,9 @@
 
 ;; (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
 ;; #-linux (oa::load-external-libs '(:portmidi))
-(oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
+(oa::load-external-libs '(:midi :portmidi :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
 #+linux (oa::load-external-libs '(:jack))
 ;; (oa::load-external-libs '(:fluidsynth))
-(oa::load-external-libs '(:portmidi))
 
 
 
