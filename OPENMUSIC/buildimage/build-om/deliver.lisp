@@ -8,7 +8,6 @@
 
 (load (current-pathname "build-om"))
 
-
 (defvar *app-name+version* "OM")
 (setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
