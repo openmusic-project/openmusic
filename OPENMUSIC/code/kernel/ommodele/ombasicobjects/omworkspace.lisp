@@ -220,15 +220,15 @@
 ;Init the WorkSpace specified by pathname.
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
-   (setf *splash-screen* (show-kero-pict nil))
+   ;(setf *splash-screen* (show-kero-pict nil))
    (init-om-package)                    
    (load-om-libs)
    (workspace-from-name pathname)      ;; will set the preferences             
    (initWorkSpace *current-workSpace*) ;; will open the listener
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
-   (om-close-window *splash-screen*)
-   (setf *splash-screen* nil)
+   ;(om-close-window *splash-screen*)
+   ;(setf *splash-screen* nil)
    (ShowObjectEditor *current-workSpace*)
    )
 
@@ -453,7 +453,9 @@
     (make-pathname
      :device (pathname-device userpref)
      :directory (append (pathname-directory userpref) (list "OpenMusic" 
-                                                            (format nil "~D" (/ (round (* 100 *version*)) 100.0))))
+                                                            ;(format nil "~D" (/ (round (* 100 *version*)) 100.0))
+                                                            (cl-user::version-to-string *version* nil nil)
+                                                            ))
      :name "OMPrefs" :type "lisp")))
 
 (defmethod save-omprefs ()

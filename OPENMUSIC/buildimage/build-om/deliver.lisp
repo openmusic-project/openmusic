@@ -20,7 +20,7 @@
 (capi:define-interface om-application (capi::cocoa-default-application-interface) ()
   (:menus
    (application-menu
-      *app-name+version*
+      "OM" ; *app-name+version*
       ((:component
         (("About OM"
           :callback 'om::show-about-win
@@ -36,46 +36,47 @@
         ;; This is a special named component where the CAPI will
         ;; attach the standard Services menu.
        ; :name :application-services)
-       (:component
-        (("Hide OM"
-          :accelerator "accelerator-h"
-          :callback-data :hidden)
-         ("Hide Others"
-          :accelerator "accelerator-meta-h"
-          :callback-data :others-hidden)
-         ("Show All"
-          :callback-data :all-normal))
-        :callback #'(setf capi:top-level-interface-display-state)
-        :callback-type :data-interface)
-       (:component
-        (("Quit OM"
-          :accelerator "accelerator-q"
-          :callback #'(lambda (interface)
-                        (capi:destroy interface))
-          :callback-type :interface)))))
-   (windows-menu
-      "Windows"
-      ((:component
-        (("Workspace"
-          :callback 'om::show-workspace-win
-          :accelerator "accelerator-shift-w"
-          :callback-type :none)
-         ("Library"
-          :callback 'om::show-packages-win
-          :accelerator "accelerator-shift-p"
-          :callback-type :none
-          :enabled-slot nil)
-         ))
-       (:component
-        (("Lisp Listener"
-          :callback 'om::show-listener-win
-          :callback-type :none)
-         ("Lisp Editor"
-          :callback 'oa::om-open-new-text-editor
-          :callback-type :none)))
+       ;(:component
+       ; (("Hide OM"
+       ;   :accelerator "accelerator-h"
+       ;   :callback-data :hidden)
+       ;  ("Hide Others"
+       ;   :accelerator "accelerator-meta-h"
+       ;   :callback-data :others-hidden)
+       ;  ("Show All"
+       ;   :callback-data :all-normal))
+       ; :callback #'(setf capi:top-level-interface-display-state)
+       ; :callback-type :data-interface)
+       ;(:component
+       ; (("Quit OM"
+       ;   :accelerator "accelerator-q"
+       ;   :callback #'(lambda (interface)
+       ;                 (capi:destroy interface))
+       ;   :callback-type :interface)))
        ))
+   ;(windows-menu
+   ;   "Windows"
+   ;   ((:component
+   ;     (("Workspace"
+   ;       :callback 'om::show-workspace-win
+   ;       :accelerator "accelerator-shift-w"
+   ;       :callback-type :none)
+   ;      ("Library"
+   ;       :callback 'om::show-packages-win
+   ;       :accelerator "accelerator-shift-p"
+   ;       :callback-type :none
+   ;       :enabled-slot nil)
+   ;      ))
+   ;    (:component
+   ;     (("Lisp Listener"
+   ;       :callback 'om::show-listener-win
+   ;       :callback-type :none)
+   ;      ("Lisp Editor"
+   ;       :callback 'oa::om-open-new-text-editor
+   ;       :callback-type :none)))
+   ;    ))
    )
-  (:menu-bar application-menu windows-menu)
+  (:menu-bar application-menu )  ; windows-menu
   (:default-initargs
    :title *app-name+version*
    :application-menu 'application-menu
@@ -170,6 +171,13 @@
 (clos::set-clos-initarg-checking nil)
 (om::gen-om-reference)
 
+(defparameter *startup-bmp* nil)
+(setq *startup-bmp* (or (find *version-str* 
+                              (directory (make-pathname :directory (pathname-directory (current-pathname))) :directories nil)
+                              :key 'pathname-name :test 'string-equal)
+                        (probe-file (merge-pathnames (make-pathname :name "om" :type "bmp") (current-pathname)))))
+    
+
 ;;;==========================
 ;;; SOURCE DEFINITIONS
 ;;;==========================
@@ -263,8 +271,12 @@
 	 :keep-editor t
 	 :keep-debug-mode t
          :keep-load-function t
-         #+win32 :editor-style #+win32 :pc
-         #+win32 :keep-gc-cursor #+ win32 nil
+         :keep-complex-numbers nil
+         :keep-conditions :all
+         :keep-xref-info t   ;; ??
+         :editor-style :default
+         :startup-bitmap-file *startup-bmp*
+         #+win32 :keep-gc-cursor #+win32 nil
          #+win32 :versioninfo #+win32 (list :binary-version (read-from-string (version-to-hex *version*))
                                             :version-string (version-to-string *version* t nil)
                                             :company-name "IRCAM" :product-name "OpenMusic" :file-description "")
