@@ -127,11 +127,11 @@
   
 (defmethod export-menu ((self scoreeditor))
   (when (export-formats (object self))
-  (om-make-menu "Export" 
-                (mapcar #'(lambda (item) 
-                            (om-new-leafmenu (cadr item) #'(lambda () 
-                                                             (score-export (car item) (object self) (editor-edit-params self)))))
-                        (export-formats (object self))))))
+    (om-make-menu "Export" 
+		  (mapcar #'(lambda (item) 
+			      (om-new-leafmenu (cadr item) #'(lambda () 
+							       (score-export (car item) (object self) (edition-params self)))))
+			  (export-formats (object self))))))
   
 
 ;; box menu context
