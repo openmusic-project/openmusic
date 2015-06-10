@@ -510,7 +510,7 @@ Extraction methods.
   ;(print (mapcar 'loffset (chords self)))
   (set-ties self ties)
   (setf (tempo self) tempo)
-  (print (mapcar 'loffset (chords self)))
+  ;(print (mapcar 'loffset (chords self)))
   self)
 
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
