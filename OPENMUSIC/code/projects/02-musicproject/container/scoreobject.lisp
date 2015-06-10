@@ -504,10 +504,13 @@ Extraction methods.
   self)
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
-  (distribute-chords self  chords)
+  (distribute-chords self chords)
+  ;(print (mapcar 'loffset (chords self)))
   (when (> legato 0) (normalize-chord self legato))
+  ;(print (mapcar 'loffset (chords self)))
   (set-ties self ties)
   (setf (tempo self) tempo)
+  (print (mapcar 'loffset (chords self)))
   self)
 
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
@@ -1008,7 +1011,6 @@ of all its direct subcontainers (supposed adjacent)"
                                            (append (flat (mapcar 'loffset chords-before)) 
                                                    (loffset main-chord)
                                                    (flat (mapcar 'loffset chords-after))))
-                                     
                                      ;(print (loffset chord))
                                      )
                                  
@@ -1020,9 +1022,9 @@ of all its direct subcontainers (supposed adjacent)"
                              (push chord fringe)
                              and collect chord))
                  chords))
-   
+      
       (distribute self chords)
-      ;(print (mapcar 'loffset (chords self)))
+      
       (setf fringe (nreverse fringe)) 
       (loop for item1 in fringe
             for item2 = (rest fringe) then (rest item2)
@@ -1034,6 +1036,7 @@ of all its direct subcontainers (supposed adjacent)"
                     (t (tie-chord item1 'continue) (setf (state item1) 'continue))))
                   ((not (eq item1 'tie))
                    (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
+      ;(print (mapcar 'loffset (chords self)))
       self)))
 
 (defmethod tie-chord ((self chord) mode)
