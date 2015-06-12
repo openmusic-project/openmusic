@@ -54,7 +54,7 @@
 (omg-defclass InstancePanel (nonrelationPanel) ()
    (:documentation "This is the class for OMInstance's editors. 
 Elements of these editors are instance-icon-frame instances.#enddoc#
-#seealso# (OMInstance instapnce-icon-frame listPanel) #seealso#"))
+#seealso# (OMInstance instance-icon-frame listPanel) #seealso#"))
 
 (defmethod instsroller-p ((self InstancePanel)) t)
 (defmethod instsroller-p ((self t)) nil)  
