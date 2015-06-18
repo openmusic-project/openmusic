@@ -527,7 +527,7 @@
                                             :name (pathname-name item) :type (pathname-type item))))))
 
 
-(defvar *om-doc-types* '("omp" "omm" "omc" "omi" "ome" "she"))
+(defvar *om-doc-types* '("omp" "omm" "omc" "omi" "ome" "she" "oml"))
 
 (defun om-persistant-p (path)
   (or (directoryp path) 
