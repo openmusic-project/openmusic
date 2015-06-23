@@ -275,7 +275,16 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\E (om-encapsulate self actives))
       (#\U (om-unencapsulate self actives))
       
-      (otherwise (om-beep)))))
+      (otherwise (loop for box in activeboxes
+                           with hotbox = nil
+                           do (when (find-method #'handle-key-event '() (list (class-of box)
+                                                                              (find-class t)) nil)
+                                (setf hotbox t)  
+                                (handle-key-event box char))
+                           finally
+                           do (unless hotbox 
+                                (om-beep) ;no boxes have specialized handle-key-event methods
+                                ))))))
 
 
 
