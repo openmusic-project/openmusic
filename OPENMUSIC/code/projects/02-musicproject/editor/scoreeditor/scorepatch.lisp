@@ -658,9 +658,15 @@
   (list+  (list (list (om-new-leafmenu "Update Doc"
                                        #'(lambda () (apply-win (om-view-window object) 'update-doc))))) 
           (boxframe-default-list object)
+          (list (om-new-leafmenu "Eval Inputs and Set Defaults" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (om-inputs-to-patch-defaults
+                                          ,object))))))
           (when (scorepanel-p (om-view-container object))
             (list (list (om-new-leafmenu "Score action"
-                                       #'(lambda () (edit-score-action object))))))))
+                                         #'(lambda () (edit-score-action object))))))))
 
 
 ;score-action = (action (list "pos" (0 0 0) (deltax deltay)))

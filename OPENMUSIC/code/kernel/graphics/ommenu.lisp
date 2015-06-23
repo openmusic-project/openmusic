@@ -666,7 +666,13 @@
   (list+  (list (list (om-new-leafmenu "Update Doc"
                                        #'(lambda () (apply-win (om-view-window object) 'update-doc))))
                 ) 
-          (boxframe-default-list object)))
+          (boxframe-default-list object)
+          (list (om-new-leafmenu "Eval Inputs and Set Defaults" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (om-inputs-to-patch-defaults
+                                          ,object))))))))
 
 
 (defmethod om-get-menu-context ((self maquetteframe))
