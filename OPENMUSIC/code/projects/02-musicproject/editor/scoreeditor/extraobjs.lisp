@@ -22,7 +22,9 @@
 (defmethod extra-p ((self t)) nil)
 
 (defmethod transpose-a ((self extra-objet) trans)
-   (setf (deltay self) (+ (deltay self) (* -1 (round trans 100)))))
+  (setf (deltay self) 
+        (+ (deltay self) 
+           (* -1 (if (plusp trans) (ceiling trans 100) (floor trans 100))))))
 
 (defmethod move-in-x ((self extra-objet) trans)
    (setf (deltax self) (+ (deltax self) trans)))
