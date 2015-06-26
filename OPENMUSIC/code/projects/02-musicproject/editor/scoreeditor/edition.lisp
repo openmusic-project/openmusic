@@ -66,7 +66,8 @@
     rep))
 
 (defmethod corrige-edition-params ((self score-element) params)
-  (when (and *force-score-player* (not (equal (cdr (assoc 'player params)) *default-score-player*)))
+  (when (and *force-score-player* (assoc 'player params) 
+             (not (equal (cdr (assoc 'player params)) *default-score-player*)))
     (print (format nil "Warning: replacing player of ~A with default player: ~A (see 'force player' options in the MIDI preferences)." self *default-score-player*))
     (rplacd (assoc 'player params) *default-score-player*))
   (call-next-method self params))
