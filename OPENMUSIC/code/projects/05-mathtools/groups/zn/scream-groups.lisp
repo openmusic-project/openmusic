@@ -17,17 +17,17 @@
 
 ;================PREDICATS=============
 
-(defun complementaire (l n)
+(defun complem (l n)
   (sort (set-difference (om::arithm-ser 0 (- n 1) 1) l) '<))
 
 (defun autocomp-p ( n &rest l) 
-  (equalrot l (structure (complementaire (gamme l) n) n)))
+  (equalrot l (structure (complem (gamme l) n) n)))
 
 (defun autoinv-p ( &rest l)
   (equalrot l (reverse  l) ))
 
 (defun tic-p (n &rest l)
-  (equalrot l (structure (complementaire (gamme (reverse  l)) n) n) ))
+  (equalrot l (structure (complem (gamme (reverse  l)) n) n) ))
 
 (defun ttl-p (n &rest l)
   (let ((rep nil)
@@ -43,10 +43,10 @@
   (let* ((s (gamme l))
          (rep s)
          (trans (/  n (length l)))
-         (sprime (complementaire rep n) ))
+         (sprime (complem rep n) ))
     (loop for i from 1 to (- trans 1) do
           (setf rep (append rep (om::mod+ (car sprime) s n)))
-          (setf sprime (complementaire rep n)))
+          (setf sprime (complem rep n)))
     (setf rep (remove-duplicates rep))
     (= (length rep) n)))
 
@@ -55,7 +55,7 @@
 (defun tp-p (n &rest l)
   (let* ((s (gamme l))
          (trans (/  n (length l)))
-         (vide (complementaire s n) )
+         (vide (complem s n) )
          (rep (one-value (group-tp-tp n trans vide s))))
     rep))
 
