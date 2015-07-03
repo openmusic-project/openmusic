@@ -74,6 +74,33 @@
 
 
 ;;;=====================================
+;;; DELAY / MEMORY
+
+(defclass ReactiveDelayBox (ReactiveCollBox) 
+  ())
+
+(defmethod process-input ((self ReactiveDelayBox) inputs)
+  (let ((in (omng-box-value (car inputs)))
+        (size (omng-box-value (cadr inputs))))
+    (setf (memory self)
+          (if size
+              (list in (first-n (cons (car (memory self)) (list! (cadr (memory self)))) size))
+            (list in (car (memory self)))))
+    in))
+
+(defmethod! mem (in size) 
+   :icon nil :initvals '(nil nil) :numouts 2
+   (values in size))
+
+(defmethod current-box-value ((self ReactiveDelayBox) &optional (numout nil))
+  (if (and numout (> numout 0))
+      (cadr (memory self))
+    (car (memory self))))
+
+
+(defmethod get-boxcallclass-fun ((self (eql 'mem))) 'ReactiveDelayBox)
+
+;;;=====================================
 ;;; TIMED-COLL 
 
 (defclass ReactiveTimeCollBox (ReactiveCollBox) 
