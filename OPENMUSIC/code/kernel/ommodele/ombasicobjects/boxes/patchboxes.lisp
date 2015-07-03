@@ -212,11 +212,14 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                       (when (connected? insou)
                         (let ((posi (position (first (connected? insou)) listsource :test 'equal)))
                           (when posi
+                            (connect-ctrl (nth posi listtarget) intarg (second (connected? insou)))
                             (setf (connected? intarg)
-                                  (list (nth posi listtarget)
-                                        (second (connected? insou))
+                                  (list (nth posi listtarget) ;; redundant with connect-ctrl
+                                        (second (connected? insou)) ;; redundant with connect-ctrl
                                         (third (connected? insou))
-                                        (if (null (fourth (connected? insou))) 0 (fourth (connected? insou))))))))
+                                        (if (null (fourth (connected? insou))) 0 (fourth (connected? insou)))))
+                            
+                            )))
                       (setf (value intarg) (value insou))) inputssource  inputstarget))))
 
 

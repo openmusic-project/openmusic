@@ -95,7 +95,7 @@
 ;;; AN EXTERNAL EVENT HAPPENS
 (defmethod signal-event ((self OMReactiveBox))
   (setf (state-lock self) t)
-  (OMR-Notify self)
+  (OMR-Notify self) 
   (setf (state-lock self) nil))
 
 ;;; SELF-NOTIFICATION (REEVALUATES/SIGNALS ON A SEPARATE THREAD)
