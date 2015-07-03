@@ -967,9 +967,10 @@ Source must be subclass of target"
 ;=======================
 
 (defvar *om-verbose* t)
-(defun om-print (str)  
-  (when *om-verbose*
-    (print str)))
+(defun om-print (str &optional pre)  
+  (when t ; *om-verbose*
+    (if pre (format *om-stream* "~A ~A~%" pre str)
+     (print str))))
 
 ;=======================
 ; bouton "add something"
