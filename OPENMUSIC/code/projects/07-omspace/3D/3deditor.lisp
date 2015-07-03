@@ -150,7 +150,7 @@
     ;draw the points an the selection (as bigger opaque points)
     (loop for i from 0 to size do
           (let* ((rgb (or (nth i vertices-colors) (om-color-to-single-float-list *om-light-gray-color*)))
-                 (selected (or (equal '(t) selection) (find i selection)))
+                 (selected (or (equal t selection) (find i selection)))
                  (alpha (if selected 1.0 0.7))
                  (point (nth i (om-3dobj-points self)))
                  (x (float (car point)))
