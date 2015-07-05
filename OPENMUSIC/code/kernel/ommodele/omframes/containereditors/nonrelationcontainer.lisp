@@ -306,11 +306,20 @@ with the objects respectly associeted."))
 
 ;SORT by type or by name
 
+(defmethod get-object-creation-date ((self ompersistantobject)) (car (create-info self)))
+(defmethod get-object-modification-date ((self ompersistantobject)) (cadr (create-info self)))
+
+(defmethod get-object-creation-date ((self OMframe)) (print self) (print (get-object-creation-date (object self))))
+(defmethod get-object-modification-date ((self OMframe)) (get-object-modification-date (object self)))
+
+
 (defmethod sort-subframes ((self nonrelationPanel) elements)
  (case (presentation (om-view-container self))
        (0 elements)
        (1  (sort elements #'string-lessp :key #'name))
        (2  (sort elements #'string-lessp :key #'get-object-insp-name))
+       (3  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-creation-date))
+       (4  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-modification-date))
      ))
 
 ;------------------------------------------------------------------
@@ -336,7 +345,8 @@ with the objects respectly associeted."))
                                (setf (col icon) i)
                                (setf (fil icon) 1)
                                (set-size icon self)
-                               (incf i)) (sort-subframes self (get-subframes self))))
+                               (incf i)) 
+                           (sort-subframes self (get-subframes self))))
                    (set-triangles self))))))
 
 
@@ -586,17 +596,16 @@ Workspace Panels contain icons of patches, maquettes and folders
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
 
-(defmethod sort-subframes ((self WorkspacePanel) elements)
-  (let* ((packframe (find *om-package-tree* elements :key 'object))
-         (elts (remove packframe elements)))
-    (remove nil 
-            (append 
-             (case (presentation (om-view-container self))
-               (0 elts)
-               (1  (sort elts #'string-lessp :key #'name))
-               (2  (sort elts #'string-lessp :key #'get-object-insp-name)))
-             (list packframe)))))
+(defmethod sort-subframes ((self nonrelationPanel) elements)
+ (case (presentation (om-view-container self))
+       (0 elements)
+       (1  (sort elements #'string-lessp :key #'name))
+       (2  (sort elements #'string-lessp :key #'get-object-insp-name))
+       (3  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-creation-date))
+       (4  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-modification-date))
+     ))
 
+ 
 (defun import-dragged-file (pane filename pos)
   (let ((dirname (make-pathname :directory (append (pathname-directory filename) (list (pathname-name filename))))))
     (cond ((or (string-equal "omp" (pathname-type filename)) 
@@ -627,7 +636,7 @@ Workspace Panels contain icons of patches, maquettes and folders
 ;-----------------
 
 
-(omg-defclass folderEditor (nonRelationEditor)  ()
+(defclass folderEditor (nonRelationEditor)  ()
    (:documentation "This is the class of the folder's window.#enddoc#
 #seealso# (Omfolder FolderPanel) #seealso#"))
 

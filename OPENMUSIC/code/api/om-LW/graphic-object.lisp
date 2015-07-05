@@ -39,6 +39,7 @@
           om-graphic-object
           om-width
           om-height
+          om-get-help-spec
           om-view-size
           om-view-position
           om-set-view-size
@@ -147,6 +148,7 @@
 		  )
    ))
  
+(defmethod om-get-help-spec ((self om-graphic-object))  (help-spec self))
 
 (defmethod om-draw-contents-callback (self x y w h))
 (defmethod om-resize-callback (self x y w h))

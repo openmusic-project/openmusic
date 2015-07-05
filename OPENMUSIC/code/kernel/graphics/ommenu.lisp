@@ -165,9 +165,7 @@
           ((equal menuid 'presentation)
            (om-make-menu "Presentation" (list
                                          (list :selection
-                                               (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0)
-                                                                          ;(om-add-menu-to-win win)
-                                                                            ) 
+                                               (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0))
                                                                 nil
                                                                 (if (member "Icons" disable :test 'string-equal) nil t)
                                                                 #'(lambda () (= (presentation (editor win)) 0)))
@@ -179,17 +177,17 @@
                                          (when win
                                            #'(lambda (win)
                                                (list (if (list-presentation? win)
-                                                         (om-new-menu "Sort..."
-                                                                      (om-new-leafmenu "By Name" #'(lambda () 
-                                                                                                     (change-frame-presentation (panel (editor win)) 1)
-                                                                                             ;(omG-change-presentation win 1)
-                                                                                                     ))
-                                                              
-                                                                      (om-new-leafmenu "By Type" #'(lambda () 
-                                                                                                     (change-frame-presentation (panel (editor win)) 2)
-                                                                                             ;(omG-change-presentation win 2)
-                                                                                                     ))
-                                                                      )
+                                                         (om-make-menu "Sort..."
+                                                                      (list (list :selection
+                                                                             (om-new-leafmenu "By Name" #'(lambda () (change-frame-presentation (panel (editor win)) 1)) nil t 
+                                                                                              #'(lambda () (= 1 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Type" #'(lambda () (change-frame-presentation (panel (editor win)) 2)) nil t 
+                                                                                              #'(lambda () (= 2 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Date Created" #'(lambda () (change-frame-presentation (panel (editor win)) 3)) nil t 
+                                                                                              #'(lambda () (= 3 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Date Modified" #'(lambda () (change-frame-presentation (panel (editor win)) 4)) nil t
+                                                                                              #'(lambda () (= 4 (presentation (editor win)))))
+                                                                             )))
                                                        (om-new-leafmenu "Align" #'(lambda () (omG-align-presentation win))))))))
                          ))
           ((equal menuid 'file)

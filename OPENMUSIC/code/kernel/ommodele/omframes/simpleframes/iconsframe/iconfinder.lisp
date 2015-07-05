@@ -36,7 +36,7 @@
 ;===========================================
 ;ICON FINDER CLASS
 ;===========================================
-(omg-defclass icon-finder (OMCompoundFrame om-view-drop)
+(defclass icon-finder (OMCompoundFrame om-view-drop)
    ((nameView :initform nil :initarg :nameView :accessor nameView)
     (iconView :initform nil :initarg :iconView :accessor iconView)
     (triangle :initform nil :accessor triangle)
@@ -104,6 +104,8 @@ this slot store a subview containing it subview if exists.#triangle#
     (om-add-subviews icon-finder (nameView icon-finder))
     (setf (fil icon-finder) x (col icon-finder) y (bx icon-finder) bx (by icon-finder) by)  
     icon-finder))
+
+
 
 (defmethod get-finder-iconID ((self t)) (icon self))
 
@@ -413,6 +415,13 @@ this slot store a subview containing it subview if exists.#triangle#
 
 (defmethod view-frame ((self icon-finder-icon)) 
   (icon-finder self))
+
+;;; for tooltips
+(defmethod om-get-help-spec ((self icon-finder-icon)) 
+  (let ((obj (object (icon-finder self))))
+    (format nil "~A~%Created: ~A~%Modified: ~A"
+            (get-object-insp-name obj) 
+            (or (car (create-info obj)) :?) (or (cadr (create-info obj)) :?))))
 
 
 (defmethod get-position-icon ((self icon-finder-icon))
