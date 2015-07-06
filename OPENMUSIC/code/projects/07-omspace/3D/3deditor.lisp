@@ -136,7 +136,7 @@
          (vertices-colors (get-vertices-colors self))
          (sel-rgb (om-color-to-single-float-list *om-dark-red-color*)))
     (opengl:gl-enable opengl:*gl-light0*)
-    (opengl:gl-line-width (float (line-width self)))
+    (opengl:gl-line-width (float (or (line-width self) 1.0)))
 
     ;draw the lines first
     (when (and (lines self) (> size 1))
@@ -159,7 +159,7 @@
             (if selected
                 (opengl:gl-color4-f (nth 0 sel-rgb) (nth 1 sel-rgb) (nth 2 sel-rgb) alpha)
               (opengl:gl-color4-f (nth 0 rgb) (nth 1 rgb) (nth 2 rgb) alpha))
-            (opengl:gl-point-size (* 3.0 (line-width self)))
+            (opengl:gl-point-size (* 3.0 (or (line-width self) 1.0)))
             (opengl:gl-begin opengl:*gl-points*)
             (opengl:gl-vertex3-f x y z)
             (opengl:gl-end))))
