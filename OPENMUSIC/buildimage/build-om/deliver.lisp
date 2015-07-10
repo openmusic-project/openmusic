@@ -36,23 +36,23 @@
         ;; This is a special named component where the CAPI will
         ;; attach the standard Services menu.
        ; :name :application-services)
-       ;(:component
-       ; (("Hide OM"
-       ;   :accelerator "accelerator-h"
-       ;   :callback-data :hidden)
-       ;  ("Hide Others"
-       ;   :accelerator "accelerator-meta-h"
-       ;   :callback-data :others-hidden)
-       ;  ("Show All"
-       ;   :callback-data :all-normal))
-       ; :callback #'(setf capi:top-level-interface-display-state)
-       ; :callback-type :data-interface)
-       ;(:component
-       ; (("Quit OM"
-       ;   :accelerator "accelerator-q"
-       ;   :callback #'(lambda (interface)
-       ;                 (capi:destroy interface))
-       ;   :callback-type :interface)))
+       (:component
+        (("Hide OM"
+         :accelerator "accelerator-h"
+          :callback-data :hidden)
+         ("Hide Others"
+          :accelerator "accelerator-meta-h"
+          :callback-data :others-hidden)
+         ("Show All"
+          :callback-data :all-normal))
+       :callback #'(setf capi:top-level-interface-display-state)
+        :callback-type :data-interface)
+       (:component
+       (("Quit OM"
+          :accelerator "accelerator-q"
+          :callback #'(lambda (interface)
+                       (capi:destroy interface))
+          :callback-type :interface)))
        ))
    ;(windows-menu
    ;   "Windows"
@@ -275,7 +275,7 @@
          :keep-conditions :all
          :keep-xref-info t   ;; ??
          :editor-style :default
-         :startup-bitmap-file *startup-bmp*
+         :startup-bitmap-file NIL ;; *startup-bmp*  ;; removed because of a delivery bug with menus in OM 7
          #+win32 :keep-gc-cursor #+win32 nil
          #+win32 :versioninfo #+win32 (list :binary-version (read-from-string (version-to-hex *version*))
                                             :version-string (version-to-string *version* t nil)
