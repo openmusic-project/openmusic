@@ -1432,10 +1432,6 @@
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
-          
-          ;;; text extras
-          (setf strg (append strg (text-extras-as-xml self)))
-          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r)))))
           )
       
@@ -1453,16 +1449,12 @@
                     do 
                     (setf strg (append strg (list (str (append *t *t *t (chr "<dot/>") *r))))))
             "")
-          (let ((toto (mycassq (third (mc->xmlnotes (om::midic frst))) *note-accidentals*)))
+          (let ((toto (mycassq (third (mc->xmlnotes (om::midic frst) approx)) *note-accidentals*))) ;;;oublie l'approx !
             (if (not (null toto))
-                (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic frst))) *note-accidentals*))))))))))
+                (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic frst) approx )) *note-accidentals*)))))))))) ;;oublie approx
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
-          
-          ;;; text extras
-          (setf strg (append strg (text-extras-as-xml self)))
-          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r))))))
         (loop for note in (cdr inside) ;;;;les autres notes de l'accord
               do (progn 
@@ -1479,9 +1471,9 @@
                              (setf strg (append strg (list (str (append *t *t *t (chr "<dot/>") *r))))))
                      "")
 
-                   (let ((toto (mycassq (third (mc->xmlnotes (om::midic note))) *note-accidentals*)))
+                   (let ((toto (mycassq (third (mc->xmlnotes (om::midic note) approx)) *note-accidentals*)))
                      (if (not (null toto))
-                         (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic note))) *note-accidentals*))))))))))
+                         (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic note) approx)) *note-accidentals*))))))))))
                    (setf strg (append strg (list (timemod self))))
                    (setf strg (append strg (remove nil (list (makebeam self)))));;??
                    (setf strg (append strg (list (groupnotation self))));;??
