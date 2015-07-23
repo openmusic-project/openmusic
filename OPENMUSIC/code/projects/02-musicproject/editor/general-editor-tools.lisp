@@ -37,4 +37,15 @@
    (setf *mark* (om-make-cursor "marker-cursor" (om-make-point 0 0)))
    )
 
+
+(defmethod obj-to-pict ((object score-element) pict-path size w h)
+  (let* ((polyed (om-make-view (get-editor-class object) polyeditor :object object))
+         (scorepanel (panel polyed))
+         (pict-size (om-make-point w h)))
+    (om-set-view-size scorepanel pict-size)
+    (let ((pict (om-record-pict nil pict-size 
+                  (draw-mini-obj object scorepanel size pict-size))))
+      (om-save-picture pict pict-path :png)
+      )))
+
 (om-add-init-func 'create-score-cursors) 
