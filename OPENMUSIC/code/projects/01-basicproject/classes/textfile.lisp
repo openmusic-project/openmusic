@@ -451,8 +451,9 @@ else create a new Editor frame, and select its window."
     varname))
 
 
-(defmethod gen-new-val ((self TextFile) val mode numout)
-   (setf (ed-mode self) mode)
+(defmethod gen-new-val ((self TextFile) val ed-mode ev-mode numout)
+   (setf (ed-mode self) ed-mode
+         (eval-mode self) ev-mode)
    (setf val (list! val))
    (add/replace-to-buffer self val)
    (rep-editor self numout))
@@ -463,7 +464,10 @@ else create a new Editor frame, and select its window."
          (setf (ed-mode textfile) ,(gen-code (third (inputs self)) 0))
          (setf (eval-mode textfile) ,(gen-code (fourth (inputs self)) 0))
          (rep-editor textfile ,numout))
-   `(gen-new-val ,(value self) ,(gen-code (second (inputs self)) 0) ,(gen-code (third (inputs self)) 0) ,numout)))
+   `(gen-new-val ,(value self) ,(gen-code (second (inputs self)) 0) 
+                 ,(gen-code (third (inputs self)) 0)
+                 ,(gen-code (fourth (inputs self)) 0)
+                 ,numout)))
 
 
 
