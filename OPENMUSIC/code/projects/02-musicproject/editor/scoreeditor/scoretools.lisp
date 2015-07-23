@@ -2881,3 +2881,16 @@
                             thechord)))))
     rep))
 
+;;;==================================
+;;; SAVE THE EDITOR AS A PICT FILE
+;;;==================================
+
+(defmethod obj-to-pict ((object score-element) pict-path size w h)
+  (let* ((scored (om-make-view (get-editor-class object) :object object))
+         (scorepanel (panel scored))
+         (pict-size (om-make-point w h)))
+    (om-set-view-size scorepanel pict-size)
+    (let ((pict (om-record-pict nil pict-size 
+                  (draw-mini-obj object scorepanel size pict-size))))
+      (om-save-picture pict pict-path :png)
+      )))
