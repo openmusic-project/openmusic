@@ -553,6 +553,9 @@
 (defun divisions (divisions)
   (append *t *t *t *t (chr "<divisions>") (lister! (chr divisions)) (chr "</divisions>") *r))
 
+;;;; divisions problem....
+;;;finale's value to be tested on Sibelius....
+;;;sibelius ' value is 256....
 ;(defun divisions (divisions)
 ;	(append *t *t *t *t (chr "<divisions>") (lister! (chr 768)) (chr "</divisions>") *r))
 
@@ -1115,7 +1118,8 @@
        (""))) ;;;;the nil thing is comin from here
 
 
-(defun accent? (self) nil)
+;; disons que tous les char sont des accents :)
+(defun accent? (self) (om::get-extras self "char"))
 
 (defun accent-notation (self)
   (if (accent? self)
@@ -1432,6 +1436,10 @@
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
+          
+          ;;; text extras
+          (setf strg (append strg (text-extras-as-xml self)))
+          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r)))))
           )
       
@@ -1449,12 +1457,16 @@
                     do 
                     (setf strg (append strg (list (str (append *t *t *t (chr "<dot/>") *r))))))
             "")
-          (let ((toto (mycassq (third (mc->xmlnotes (om::midic frst) approx)) *note-accidentals*))) ;;;oublie l'approx !
+          (let ((toto (mycassq (third (mc->xmlnotes (om::midic frst) approx)) *note-accidentals*)))
             (if (not (null toto))
-                (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic frst) approx )) *note-accidentals*)))))))))) ;;oublie approx
+                (setf strg (append strg (list (str (str (accidental (car (mycassq (third (mc->xmlnotes (om::midic frst) approx)) *note-accidentals*))))))))))
           (setf strg (append strg (list (timemod self))))
           (setf strg (append strg (remove nil (list (makebeam self)))))
           (setf strg (append strg (list (groupnotation self))))
+          
+          ;;; text extras
+          (setf strg (append strg (text-extras-as-xml self)))
+          
           (setf strg (append strg (list (str (append *t *t *t (chr "</note>") *r))))))
         (loop for note in (cdr inside) ;;;;les autres notes de l'accord
               do (progn 
