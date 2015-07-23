@@ -20,7 +20,7 @@
 ;There is an old class change-tempo-item but it works better
 (defvar *tempi-list* '(3/2 1 3/4 1/2 3/8 1/4 3/16 1/8 3/32 1/16))
 
-(omg-defclass new-change-tempo-item (om-view)
+(defclass new-change-tempo-item (om-view)
   ((temponum :initform 1/4 :initarg :temponum :accessor temponum)))
 
 (defmethod om-draw-contents ((self new-change-tempo-item))

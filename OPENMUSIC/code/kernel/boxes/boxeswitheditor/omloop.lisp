@@ -126,7 +126,6 @@
 |#
 
 
-
 (defmethod compile-patch ((self patchForLoop))
    "Code generates by Loop patches is generate by this method."
    (let* ((boxes (boxes self))
