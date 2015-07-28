@@ -23,8 +23,8 @@
       (setf (value (car (inputs self))) inval)))
   (value self))
   
-(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
-  (if numout (nth numout (value self)) (value self)))
+;(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
+;  (if numout (nth numout (value self)) (value self)))
 
 (defun find-boxes (type)
   (loop for win in (remove-if-not 
