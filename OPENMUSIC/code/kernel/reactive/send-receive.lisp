@@ -21,7 +21,7 @@
     (unless (equal inval (value (car (inputs self))))
       (print (format nil "RECEIVE ID SET TO: ~A" inval))
       (setf (value (car (inputs self))) inval)))
-  (value self))
+  (if numout (nth numout (value self)) (value self)))
   
 ;(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
 ;  (if numout (nth numout (value self)) (value self)))
