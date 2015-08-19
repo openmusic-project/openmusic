@@ -255,6 +255,28 @@ Ex. (om-round '(4.308 5.167 6.809) 1 2)  => (2.2 2.6 3.4)
 
 ;------------------------------------------------------------------------
 
+(defmethod* om-clip ((self number) &key min max)
+  :initvals (list nil 0 1) 
+  :indoc '("number or tree" "minimum value" "maximum value") 
+  :icon 209
+  :doc " If val is below min, return min,
+  if val is above max, return max,
+  otherwise return val.
+"
+  (let ((result
+         (cond 
+          ((and min (< self min)) min)
+          ((and max (> self max)) max)
+          (t self))))
+    result))
+    
+(defmethod* om-clip ((self list) &key min max)         
+            (mapcar #'(lambda (input)
+                        (om-clip input :min min :max max)) self)
+            )
+
+;------------------------------------------------------------------------
+
 (defmethod mat-trans-with-nil ((matrix list))
  (let ((maxl (1- (loop for elt in matrix maximize (length elt))))
         result)
