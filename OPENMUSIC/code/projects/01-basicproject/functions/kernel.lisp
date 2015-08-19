@@ -255,13 +255,17 @@ Ex. (om-round '(4.308 5.167 6.809) 1 2)  => (2.2 2.6 3.4)
 
 ;------------------------------------------------------------------------
 
-(defmethod* om-clip ((self number) &key min max)
-  :initvals (list nil 0 1) 
-  :indoc '("number or tree" "minimum value" "maximum value") 
+(defmethod* om-clip ((self number) min max)
+  :initvals (list nil nil nil) 
+  :indoc '("number or list" "minimum value or list of values" "maximum value or list of values") 
   :icon 209
-  :doc " If val is below min, return min,
-  if val is above max, return max,
-  otherwise return val.
+  :doc "Clips numeric values to a range defined by either <min> or <max> or both.
+
+This function can be applied to numbers or lists.
+
+If self is below min, return min,
+if self is above max, return max,
+otherwise return self
 "
   (let ((result
          (cond 
@@ -270,10 +274,20 @@ Ex. (om-round '(4.308 5.167 6.809) 1 2)  => (2.2 2.6 3.4)
           (t self))))
     result))
     
-(defmethod* om-clip ((self list) &key min max)         
-            (mapcar #'(lambda (input)
-                        (om-clip input :min min :max max)) self)
-            )
+(defmethod* om-clip ((self list) min max)
+            (cond
+             ((and (consp min) (consp max))
+              (mapcar #'(lambda (input mins maxs)
+                          (om-clip input mins maxs)) self min max))
+             ((consp min)
+              (mapcar #'(lambda (input mins)
+                          (om-clip input mins max)) self min))
+             ((consp max)
+              (mapcar #'(lambda (input maxs)
+                          (om-clip input min maxs)) self max))
+             (t (mapcar #'(lambda (input)
+                        (om-clip input min max)) self))
+            ))
 
 ;------------------------------------------------------------------------
 
@@ -519,6 +533,27 @@ Ex. (om-scale '(0 2 5) 0 100)  => (0 40 100)
       (mapcar #'(lambda (item) (om-scale item minout maxout min max)) self)))
 
 (defmethod* om-scale ((self null) (minout number) (maxout number) &optional (minin 0) (maxin 0)) nil)
+
+;------------------------------------------------------------------------
+;;this exponent might be added as optional to the current om-scale function
+
+(defmethod! om-scale^ ((self t) (minout number) (maxout number) (exponent number) &optional (minin 0) (maxin 0))
+  :initvals '(1 0 1 1) 
+  :indoc '("number or list"  "a number" "a number" "an exponent")
+  :icon '(209)
+  :doc 
+"Scales <self> (a number or list of numbers) considered to be in the interval [<minin> <maxin>] towards the interval [<minout> <maxout>].
+
+If [<minin> <maxin>] not specified or equal to [0 0], it is bound to the min and the max of the list.
+Non-linear scaling is possible by specifying a value for <exponent>: 
+For values >1 scaling is exponential, for values <1 scaling is logarithmic.
+
+Ex. (om-scale^ '(0 2 5) 0 100 1.0 0 10)  => (0 20 50)
+Ex. (om-scale^ '(0 2 5) 0 100 2.0 0 10)  => (0 4 25)
+Ex. (om-scale^ '(0 2 5) 0 100 0.5 0 10)  => (0 44.72 70.71)
+ "
+  (om-scale (om^ (om-scale self 0. 1. minin maxin) exponent) minout maxout 0. 1.)
+  )
 
 ;------------------------------------------------------------------------
 ;;
