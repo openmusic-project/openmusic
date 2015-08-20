@@ -503,7 +503,10 @@
          (play (nth (selected-component self) 
                      (nth (car (selected-index self))
                           (data (object (om-view-container self)))))))
-
+        ((equal char #\s)
+         (stop (nth (selected-component self) 
+                     (nth (car (selected-index self))
+                          (data (object (om-view-container self)))))))
         (t (loop for item in (bpf-views self) do
         (when (selected-p item)
           (handle-key-event item char))))
