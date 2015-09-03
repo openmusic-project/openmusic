@@ -1057,6 +1057,8 @@ See OM User Manual and the OMLOOP refernce section for more details.
 
 (defmethod get-frame-class ((self omloop-box)) 'loopboxframe)
 
+(defmethod get-patch-of-frame ((self loopboxframe)) (patch (object self)))
+
 (defmethod omG-rename :after ((self loopboxframe) new-name)
    (declare (ignore new-name))
    (set-patch-box-name (object self)))
