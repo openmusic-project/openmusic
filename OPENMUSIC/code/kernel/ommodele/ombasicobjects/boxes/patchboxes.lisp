@@ -2251,6 +2251,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 (defmethod get-frame-name ((self general-box-dead))
    (name self))
 
+(defmethod get-frame-class ((self general-box-dead)) 'deadboxframe)
+(defclass deadboxframe (boxframe) ())
+
+
 
 ;---------Evaluation
 
@@ -2273,6 +2277,34 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod do-add-one-keyword ((self general-box-dead) &optional (input-key nil))  nil)
 (defmethod do-delete-one-keyword ((self general-box-dead)) nil)
+
+
+;---------Resuscitation
+
+(defmethod revive-dead-box ((self deadboxframe))
+  (let* ((panel (om-view-container self))
+         (patch (object panel)))
+    (let ((result (add-box-in-patch-panel (name self)
+                                          panel
+                                          (om-view-position self))))
+      (when result
+        (let ((conn (mk-connection-list (boxes patch)))
+              (pos (position (object self) (boxes patch)))
+              (newpos (position result (boxes patch)))  ;;; always 0?
+              )
+          (remk-connections (boxes patch)
+                            (dup-connections conn pos newpos))
+
+          (omg-remove-element panel self)
+
+          ;redraw connections
+          (mapc #'(lambda (box)
+                    (when (frames box)
+                      (redraw-frame (first (frames box)))))
+                (boxes patch))
+
+          
+        )))))
 
 
 

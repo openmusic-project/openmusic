@@ -692,6 +692,16 @@
         (om-new-leafmenu "Text Font" #'(lambda () (font-comments (panel (om-view-window object)))))))
 
 
+(defmethod om-get-menu-context ((object deadboxframe))
+  (list+   
+          (boxframe-default-list object)
+          (list (om-new-leafmenu "Revive" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (revive-dead-box
+                                          ,object))))))))
+
 
 (defmethod player-menu-item ((self t)) nil)
 
