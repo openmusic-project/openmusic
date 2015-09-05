@@ -680,6 +680,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
       (get-slot-in-out-names self)
     (inputs-from-list args initvals docinps menus)))
 
+
 ;if T, the class of self allows an editor. Subclass this method if  you want construct an editor box.
 (defmethod Class-has-editor-p ((self t)) nil)
 
@@ -689,6 +690,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;Inputs of factories are initargs of the class reference, if you want change this redefine this method.
 (defmethod make-exeption-box ((self t) posi name)
    (declare (ignore posi name)) nil)
+
+
 
 ;--------------Evaluation
 
@@ -2208,6 +2211,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod get-boxcallclass-fun ((self (eql 'dead-method))) 'box-dead)
 
+(defclass deadboxframe (boxframe) ())
+
+(defmethod get-frame-class ((self box-dead)) 'deadboxframe)
+
 (defmethod* dead-method (&rest rest) 
    :icon 190 
    :doc "I have lost my reference, I am dead"
@@ -2252,7 +2259,6 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    (name self))
 
 (defmethod get-frame-class ((self general-box-dead)) 'deadboxframe)
-(defclass deadboxframe (boxframe) ())
 
 
 
@@ -2294,6 +2300,12 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
               )
           (remk-connections (boxes patch)
                             (dup-connections conn pos newpos))
+
+          ; copy input values (which, like the connections, survive even when the box is dead)
+          (loop for input in (inputs result)
+                for orig-input in (inputs (object self))
+                do (setf (value input)
+                         (value orig-input)))
 
           (omg-remove-element panel self)
 
