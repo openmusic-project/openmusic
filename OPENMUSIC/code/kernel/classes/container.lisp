@@ -324,16 +324,16 @@ i.e. the smallest possible integer number, considering the offset and extent val
 that have to be expressed  as integer quantities of 1/QValue."
   ;(print (list self (QValue self) (Extent self)))
   (loop with gcd = (gcd  (QValue self) (Extent self)
-                        (reduce  #'gcd (inside self) :key 'offset :initial-value 0))
-      for sub in (inside self) do 
+                         (reduce  #'gcd (inside self) :key 'offset :initial-value 0))
+        for sub in (inside self) do 
         (setf (offset sub) (/ (offset sub) gcd))
         (QNormalize sub)
-      finally (setf (QValue self) (/ (QValue self) gcd)
-                (extent self) (/ (extent self) gcd)))
+        finally (setf (QValue self) (/ (QValue self) gcd)
+                      (extent self) (/ (extent self) gcd)))
   self)
 
 (defmethod QNormalize ((self simple-container))
-""
+  ""
   (let ((gcd (gcd (QValue self) (extent self))))
     (setf (QValue self) (/ (QValue self) gcd)
           (extent self) (/ (extent self) gcd))
