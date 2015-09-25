@@ -66,7 +66,8 @@
 		      t))
 	#+linux (progn 
 		  (define-foreign-library libsdif
-		    (:unix (:or "/usr/local/lib/libsdif.so" "libsdif.so" (om-lib-pathname *sdif-pathname*)))
+		    #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" (om-lib-pathname *sdif-pathname*)))
+		    #+:LISPWORKS-32BIT (:unix (:or "/usr/local/lib/libsdif.so" (om-lib-pathname *sdif-pathname*)))
 		    (t (:default "libsdif") ))
 		  (handler-case (progn
 				  (let ((lib (use-foreign-library libsdif)))
