@@ -564,7 +564,7 @@
 (defvar *delete-file* t)
 
 (defun delete-file-protection (path)
-   (declare (special *delete-file*))
+  (declare (special *delete-file*))
    (when (and *delete-file* (probe-file path))
      (om-delete-file path)))
  

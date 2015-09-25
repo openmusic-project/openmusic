@@ -547,7 +547,13 @@
 ;===========================loop
 (defmethod om-get-menu-context ((object loopboxframe))
   (list+ (list (om-new-leafmenu "Update Doc" #'(lambda () (apply-win (om-view-window object) 'update-doc)))) 
-         (boxframe-default-list object)))
+         (boxframe-default-list object)
+         (list (om-new-leafmenu "Eval Inputs and Set Defaults" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (om-inputs-to-patch-defaults
+                                          ,object))))))))
 
 ;===============WS and FOLDERS
 (defmethod om-get-menu-context ((self metaobj-panel))
@@ -690,6 +696,16 @@
 (defmethod om-get-menu-context ((object commentboxframe))
   (list (om-new-leafmenu "Text Color" #'(lambda () (color-comments (panel (om-view-window object)))))
         (om-new-leafmenu "Text Font" #'(lambda () (font-comments (panel (om-view-window object)))))))
+
+(defmethod om-get-menu-context ((object deadboxframe))
+  (list+   
+          (boxframe-default-list object)
+          (list (om-new-leafmenu "Revive" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (revive-dead-box
+                                          ,object))))))))
 
 
 
@@ -837,9 +853,4 @@
       (om-new-leafmenu "Last Saved" #'(lambda () (window-last-saved (editor self))) nil
                        (not (om-maquette-abs-p (object (editor self)))))
       ))))
-
-
-
-
-
 

@@ -305,11 +305,10 @@ Extraction methods.
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
   (call-next-method)
-  (unless empty
-    (SetQValue self 1000)
+  (unless empty 
+    (setqvalue self 1000)
     (setf (slot-value self 'extent) (slot-value self 'dur))
-    (QNormalize self)
-    )
+    (qnormalize self))
   self)
 
 ;;; CHORDS
@@ -332,8 +331,6 @@ Extraction methods.
         collect (Offset->ms note)))
 (defmethod LPort ((self chord))
   (get-port self))
-
-
 
 (defmethod (setf Lmidic) ((LMidic list) (self chord))
   (do-initialize self 
