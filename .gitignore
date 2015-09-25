@@ -1,7 +1,7 @@
 *.xfasl
 *.ofasl
 *.nfasl
-*.ufasl
+*.*ufasl
 *.lisp~
 *.lisp#
 *.*~
