@@ -367,6 +367,12 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
            '(nil nil nil (( 3 (("fff" (dyn-fff))  ("ff" (dyn-ff)) ("f" (dyn-f))
                                ("mf" (dyn-mf)) ("mp" (dyn-mp)) ("ppp" (dyn-ppp)) ("pp" (dyn-pp)) ("p" (dyn-p))))))))
 
+(defparameter *vel-chars*
+  `(("fff" ,(dyn-fff))  ("ff" ,(dyn-ff)) ("f" ,(dyn-f))
+    ("mf" ,(dyn-mf)) ("mp" ,(dyn-mp)) ("ppp" ,(dyn-ppp)) ("pp" ,(dyn-pp)) ("p" ,(dyn-p))))
+
+(defun get-vel-string (char-str)
+  (car (find char-str *vel-chars* :key 'cadr :test 'string-equal)))
 
 (defmethod draw-obj-in-rect ((self vel-extra) x x1 y y1 edparams view)
   (let* ((fontsize 24)
