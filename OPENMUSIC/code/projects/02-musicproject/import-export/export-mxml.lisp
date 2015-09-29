@@ -150,7 +150,7 @@
         "<tie type=\"stop\"/>")
         ((and (om::cont-chord-p self)
               (om::cont-chord-p (om::next-container self '(om::chord))))
-        "<tie type=\"stop\"/><tied type=\"start\"/>")
+        "<tie type=\"stop\"/><tie type=\"start\"/>")
        (t nil))) ;;;;the nil thing is comin from here
 
 (defun tied-notation (self)
@@ -197,81 +197,77 @@
         "</articulations>"))
 
 (defun groupnotation (self)
-  (if (in-group? self)
-      (let* ((lvl (get-grp-level self))
-             (ratio (getratiogroup (om::parent self)))
-             (act-note (second lvl))
-             (norm-note (third lvl))
-             (indx (car lvl))
-             (numdeno (getallgroups self))
-             (numdenom (remove nil 
-                               (loop for i in numdeno
-                                     collect (if (not (= 1 (/ (car i) (second i)))) i )   ;;; PB if group (n n) !!!
-                                     )))
-             (simpli (/ act-note norm-note)))
+  (list "<notations>"
+        (if (in-group? self)
+            (let* ((lvl (get-grp-level self))
+                   (ratio (getratiogroup (om::parent self)))
+                   (act-note (second lvl))
+                   (norm-note (third lvl))
+                   (indx (car lvl))
+                   (numdeno (getallgroups self))
+                   (numdenom (remove nil 
+                                     (loop for i in numdeno
+                                           collect (if (not (= 1 (/ (car i) (second i)))) i )   ;;; PB if group (n n) !!!
+                                           )))
+                   (simpli (/ act-note norm-note)))
                
-        (if (not (= (/ act-note norm-note) 1))
-        
-            (cond 
-             ((and (om::last-of-group? self) (om::first-of-group? self))
-              (when (accent? self) (list "<notations>" (list (accent-notation self)) "</notations>")))
+              (if (not (= (/ act-note norm-note) 1))
+                  
+                  (cond 
+                   ((and (om::last-of-group? self) (om::first-of-group? self))
+                    (when (accent? self) (list (accent-notation self))))
              
-             ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-              (list "<notations>" 
+                   ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
                     (remove nil 
                             (append 
                              (let ((obj self)
                                    (indx (+ (length numdenom) 1)))
                                (remove nil (loop for i in (reverse numdenom)           
-                                                           append (progn 
-                                                                     (setf obj (om::parent obj))
-                                                                     (setf indx (- indx 1))
-                                                                     (when (first-of-this-group self obj)
-                                                                       (firstofgroup (car i) (second i) (third i) indx))))))
-                            (list (tied-notation self)
-                                  (when (accent? self) (accent-notation self)))))
-                    "</notations>"))
-              
-              ((and (om::last-of-group? self) (not (om::first-of-group? self)))
-               (list "<notations>" 
-                     (remove nil 
-                             (append 
-                              (let ((obj self)
-                                    (indx (+ (length numdenom) 1)))
-                                (remove nil (loop for i in numdenom           
-                                                            append (progn 
-                                                                      (setf obj (om::parent obj))
-                                                                      (setf indx (- indx 1))
-                                                                      (when (last-of-this-group self obj)
-                                                                        (lastofgroup indx))))))
-                              (list (tied-notation self)
-                                    (when (accent? self) (accent-notation self)))))
-                     "</notations>"))
-              
-             (t (when (accent? self) (list "<notations>" (list (accent-notation self)) "</notations>")))
-             )
+                                                 append (progn 
+                                                          (setf obj (om::parent obj))
+                                                          (setf indx (- indx 1))
+                                                          (when (first-of-this-group self obj)
+                                                            (firstofgroup (car i) (second i) (third i) indx))))))
+                             (list (tied-notation self)
+                                   (when (accent? self) (accent-notation self))))))
+                   
+                   ((and (om::last-of-group? self) (not (om::first-of-group? self)))
+                    (remove nil 
+                            (append 
+                             (let ((obj self)
+                                   (indx (+ (length numdenom) 1)))
+                               (remove nil (loop for i in numdenom           
+                                                 append (progn 
+                                                          (setf obj (om::parent obj))
+                                                          (setf indx (- indx 1))
+                                                          (when (last-of-this-group self obj)
+                                                            (lastofgroup indx))))))
+                             (list (tied-notation self)
+                                   (when (accent? self) (accent-notation self))))))
+                   
+                   (t (when (accent? self) (list (accent-notation self))))
+                   )
 
-        
-          (when (or (tied? self) (accent? self))
-            (list "<notations>"
+                (when (or (tied? self) (accent? self))
                   (remove nil 
                           (list 
                            (when (tied? self) (tied-notation self))
-                           (when (accent? self) (accent-notation self))))
-                  "</notations>"))
-          ))
+                           (when (accent? self) (accent-notation self)))))
+                ))
 
 
-    (when (or (tied? self) (accent? self))
-        (list "<notations>"
-              (remove nil 
-                      (list 
-                       (when (tied? self) (tied-notation self))
-                       (when (accent? self) (accent-notation self))))
-              "</notations>"))
-
-
-    ))
+          (when (or (tied? self) (accent? self))
+            (remove nil 
+                    (list 
+                     (when (tied? self) (tied-notation self))
+                     (when (accent? self) (accent-notation self)))))
+          )
+        
+        ;;; VEL
+        (velocity-as-xml self)
+        
+        "</notations>"
+        ))
 
 
 (defun get-parent-measure (self)
@@ -481,20 +477,23 @@
                  "<extend type=\"start\"/>")
           "</lyric>")))
 
-(defun velocity-as-xml (self) 
+
+(defmethod velocity-as-xml ((self om::chord))
   (when (om::get-extras self "vel")
     (let ((schar (om::thechar (car (om::get-extras self "vel")))))
-      (list (format nil "<dynamics><~A/></dynamics>" (om::get-vel-string schar))))))
+      (list (format nil "<dynamics placement=\"below\"><~A/></dynamics>" (om::get-vel-string schar))))))
 
-;     <direction placement="below">
-;        <direction-type>
-;          <dynamics default-x="129" default-y="-75">
-;            <pp/>
-;          </dynamics>
-;        </direction-type>
-;        <staff>1</staff>
-;        <sound dynamics="40"/>
-;      </direction>
+(defmethod velocity-as-xml ((self om::rest)) nil)
+
+;(list "<direction placement=\"below\">"
+;      (list "<direction-type>"
+;            (format nil "<dynamics><~A/></dynamics>" (om::get-vel-string schar)) ;; default-x="129" default-y="-75">
+;            "</direction-type>"
+;            "<staff>1</staff>")
+;      "</direction>")
+
+(defun midi-vel-to-mxml-vel (vel)
+  (round (* (/ vel 90.0) 100)))
 
 ;;;================
 ;;; CHORD / NOTES
@@ -508,38 +507,37 @@
          (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
          (inside (om::inside self)))
     (loop for note in inside 
-          for i = 0 then (+ i 1) append 
-          (let* ((note-values (mc->xmlvalues (om::midic note) approx))
-                 (step (nth 1 note-values))
-                 (alteration (nth 2 note-values))
-                 (octave (nth 3 note-values)))
+           for i = 0 then (+ i 1) append 
+           (let* ((note-values (mc->xmlvalues (om::midic note) approx))
+                  (step (nth 1 note-values))
+                  (alteration (nth 2 note-values))
+                  (octave (nth 3 note-values)))
                          
-            (list "<note>"
-                  (unless (= i 0) "<chord/>") ;;; if this is not the first note in the chord
-                  (remove nil 
-                          (append 
-                           (list "<pitch>"
-                                 (remove nil 
-                                         (list (format nil "<step>~A</step>" step)
-                                               (when alteration (format nil "<alter>~A</alter>" alteration))
-                                               (format nil "<octave>~A</octave>" octave)))
-                                 "</pitch>"
-                                 (format nil "<duration>~A</duration>" durtot) 
-                                 (tied self) ;;; ties (performance)
-                                 (let ((headstr (format nil "<type>~A</type>" note-head)))
-                                   (loop for i from 0 to nbpoints do (setf headstr (concatenate 'string headstr "<dot/>")))
-                                   headstr)
-                                 (when (find alteration *note-accidentals* :key 'car)  ;;; accidental (if any)
-                                   (format nil "<accidental>~A</accidental>" (cadr (find alteration *note-accidentals* :key 'car)))))
-                           (time-modifications self)
-                           (makebeam self)
-                           (groupnotation self)
-                           (when (= i 0) 
-                             (append
-                              (text-extras-as-xml self)
-                              (velocity-extras-as-xml self)))))
-                  "</note>")
-            ))))
+             (list (format nil "<note dynamics=\"~D\">" (midi-vel-to-mxml-vel (om::vel note)))
+                   (unless (= i 0) "<chord/>") ;;; if this is not the first note in the chord
+                   (remove nil 
+                           (append 
+                            (list "<pitch>"
+                                  (remove nil 
+                                          (list (format nil "<step>~A</step>" step)
+                                                (when alteration (format nil "<alter>~A</alter>" alteration))
+                                                (format nil "<octave>~A</octave>" octave)))
+                                  "</pitch>"
+                                  (format nil "<duration>~A</duration>" durtot)
+                                  (tied self) ;;; ties (performance)
+                                  (let ((headstr (format nil "<type>~A</type>" note-head)))
+                                    (loop for i from 1 to nbpoints do (setf headstr (concatenate 'string headstr "<dot/>")))
+                                    headstr)
+                                  (when (find alteration *note-accidentals* :key 'car)  ;;; accidental (if any)
+                                    (format nil "<accidental>~A</accidental>" (cadr (find alteration *note-accidentals* :key 'car)))))
+                            (time-modifications self)
+                            (makebeam self)
+                            (groupnotation self)
+                            (when (= i 0) (text-extras-as-xml self))
+                            ))
+                   "</note>")
+             ))))
+
    
 (defmethod cons-xml-expr ((self om::rest) &key free key (approx 2))
   (let* ((dur free)
@@ -553,7 +551,7 @@
                   (list 
                    (format nil "<duration>~A</duration>" durtot)
                    (let ((headstr (format nil "<type>~A</type>" note-head)))
-                     (loop for i from 0 to nbpoints do (setf headstr (concatenate 'string headstr "<dot/>")))
+                     (loop for i from 1 to nbpoints do (setf headstr (concatenate 'string headstr "<dot/>")))
                      headstr)
                    (time-modifications self)
                    (makebeam self)
@@ -565,31 +563,38 @@
 ;;; RECURSIVE CONTAINERS (JB 29/09/15)
 ;;;===================================
 
+
 (defmethod cons-xml-expr ((self om::group) &key free key (approx 2))
   (let* ((inside (om::inside self))
          (durtot free)
          (cpt (if (listp free) (cadr free) 0))
-         (num (or (om::get-group-ratio self)  (om::extent self)))
+         (num (or (om::get-group-ratio self) (om::extent self)))
          (denom (om::find-denom num durtot))
          (num (if (listp denom) (car denom) num))
          (denom (if (listp denom) (cadr denom) denom))
          (unite (/ durtot denom)))
     (cond
      ((not (om::get-group-ratio self))
+      ;(print "NO GROUP")
       (loop for obj in inside append 
             (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
                                (/ (om::extent self) (om::qvalue self)))))
               (cons-xml-expr obj :free (* dur-obj durtot)))))
-     (t (loop for obj in inside append
-              (cons-xml-expr obj :free (* num unite)))   ;;;; ACHTUNG !!
+     (t ;(print "GROUP") 
+        ;(print (list num denom durtot))
+        (loop for obj in inside 
+              append
+              (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                   (/ (om::extent self) (om::qvalue self))))
+                     (dur-obj (* num operation)))                     
+                ;(print (list obj dur-obj (* dur-obj unite)))
+                (cons-xml-expr obj :free (* dur-obj unite))))   ;;;; ACHTUNG !!
         ))))
 
 
-;;;; divisions problem....
-;;;finale's value to be tested on Sibelius....
+;;;; <divisions> problem....
+;;;finale's value to be tested on Sibelius.... (768)
 ;;;sibelius ' value is 256....
-;(defun divisions (divisions)
-;	(append *t *t *t *t (chr "<divisions>") (lister! (chr 768)) (chr "</divisions>") *r))
 
 
 (defmethod cons-xml-expr ((self om::measure) &key free (key '(G 2)) (approx 2))
@@ -602,11 +607,11 @@
     (list (format nil "<measure number=\"~D\">" mesnum)
           (append (remove nil
                           (list "<attributes>"
-                                (list (format nil "<divisions>~A</divisions>" 768)  ;;; (caar (dursdivisions self)))
+                                (list (format nil "<divisions>~A</divisions>" 1/4)  ;;; (caar (dursdivisions self)))
                                       "<key>"
                                       (remove nil
                                               (list  "<fifths>0</fifths>"
-                                                     (if (and approx (= approx 4)) "<mode>major</mode>")))
+                                                     (if (and approx (= approx 2)) "<mode>major</mode>")))
                                       "</key>"
                                       "<time>"
                                       (list (format nil "<beats>~D</beats>" (car signature))
