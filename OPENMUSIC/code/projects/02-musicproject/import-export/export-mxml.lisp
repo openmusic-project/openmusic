@@ -31,12 +31,13 @@
 ;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-(defpackage "XML" 
-  (:use "COMMON-LISP"))
+(defpackage "MusicXML" 
+  (:use "COMMON-LISP")
+  (:nicknames "MXML"))
 
-(in-package "XML")
+(in-package "MXML")
 
-(pushnew 'XML *features*)
+(pushnew :musicxml *features*)
 
 (defvar *xml-version* "XML 1.0")
 
@@ -196,11 +197,9 @@
 	(- (max* source) (min* source)))
 
 (defclass discretion ()
-	(
-	(discretise 	:initform nil	:accessor discretise	:initarg :discretise	:type t)
-	(discretisant	:initform nil	:accessor discretisant	:initarg :discretisant	:type t)
-	))
-
+  ((discretise 	:initform nil	:accessor discretise	:initarg :discretise	:type t)
+   (discretisant	:initform nil	:accessor discretisant	:initarg :discretisant	:type t)
+   ))
 
 (defun discretiser (source discretisant)
 	(let* (	(discretisant (pts* discretisant 0)) 
@@ -317,8 +316,8 @@
 		'n 'c))))
 
 (defun sub_grouper_si_identiques_selon_rang (source rang)
-	(let* ((n (1- (lim* (nbr rang) 1 (min* (lengths source))))) (groupe (loop for x in source collecting (nth n x))))
-	(grouper source (lengths (grouper groupe)))))
+  (let* ((n (1- (lim* (nbr rang) 1 (min* (lengths source))))) (groupe (loop for x in source collecting (nth n x))))
+    (grouper source (lengths (grouper groupe)))))
 
 (defun grouper (source &optional matrice mode)
 	(let ((src (copy-list source)) (mat matrice) (md mode))
@@ -333,65 +332,65 @@
 (defun grouper* (source matrice) (grouper source matrice '*))
 
 (defun lister* (source dimension)
-	(loop for x in (sub_lister source (max dimension 0)) when (listp x) append x else append (list x)))
+  (loop for x in (sub_lister source (max dimension 0)) when (listp x) append x else append (list x)))
 
 (defun lister (source dimension &optional mode)
-	(let ((sr source) (dm dimension) (md mode))
+  (let ((sr source) (dm dimension) (md mode))
 	;---
-	(case md
-		('() (sub_lister sr dm))
-		(b (sub_lister_en_batterie sr dm))
-		(b* (sub_lister_en_batterie* sr dm))
-		(b+ (sub_lister_en_batterie+ sr dm))
-		(b+* (sub_lister_en_batterie+* sr dm))
-		(m (sub_lister_selon_une_matrice sr dm))
-		(m* (sub_lister_selon_une_matrice* sr dm))
-		(m+ (sub_lister_selon_une_matrice+ sr dm))
-		(m+* (sub_lister_selon_une_matrice+* sr dm))
-		(d (sub_lister_selon_des_dimensions sr dm))
-		(d* (sub_lister_selon_des_dimensions* sr dm))
-		(d+ (sub_lister_selon_des_dimensions+ sr dm))
-		(d+* (sub_lister_selon_des_dimensions+* sr dm))
-	)))
+    (case md
+      ('() (sub_lister sr dm))
+      (b (sub_lister_en_batterie sr dm))
+      (b* (sub_lister_en_batterie* sr dm))
+      (b+ (sub_lister_en_batterie+ sr dm))
+      (b+* (sub_lister_en_batterie+* sr dm))
+      (m (sub_lister_selon_une_matrice sr dm))
+      (m* (sub_lister_selon_une_matrice* sr dm))
+      (m+ (sub_lister_selon_une_matrice+ sr dm))
+      (m+* (sub_lister_selon_une_matrice+* sr dm))
+      (d (sub_lister_selon_des_dimensions sr dm))
+      (d* (sub_lister_selon_des_dimensions* sr dm))
+      (d+ (sub_lister_selon_des_dimensions+ sr dm))
+      (d+* (sub_lister_selon_des_dimensions+* sr dm))
+      )))
 
 (defun sub_lister (source dimension)
-	(make-list (max dimension 0) :initial-element source))
+  (make-list (max dimension 0) :initial-element source))
 
 (defun sub_lister_en_batterie (sources dimensions)
-	(loop for x in sources and d in dimensions collecting (sub_lister x d)))
+  (loop for x in sources and d in dimensions collecting (sub_lister x d)))
 
 (defun sub_lister_en_batterie* (sources dimensions)
-	(loop for x in sources and d in dimensions collecting (lister* x d)))
+  (loop for x in sources and d in dimensions collecting (lister* x d)))
 
 (defun sub_lister_en_batterie+ (sources dimensions)
-	(loop for x in sources and d in dimensions appending (sub_lister x d)))
+  (loop for x in sources and d in dimensions appending (sub_lister x d)))
 
 (defun sub_lister_en_batterie+* (sources dimensions)
-	(loop for x in sources and d in dimensions appending (lister* x d)))
+  (loop for x in sources and d in dimensions appending (lister* x d)))
 
 (defun sub_lister_selon_une_matrice (source matrice)
-	(sub_lister_en_batterie source (lengths matrice)))
+  (sub_lister_en_batterie source (lengths matrice)))
 
 (defun sub_lister_selon_une_matrice* (source matrice)
-	(sub_lister_en_batterie* source (lengths matrice)))
+  (sub_lister_en_batterie* source (lengths matrice)))
 
 (defun sub_lister_selon_une_matrice+ (source matrice)
-	(sub_lister_en_batterie+ source (lengths matrice)))
+  (sub_lister_en_batterie+ source (lengths matrice)))
 
 (defun sub_lister_selon_une_matrice+* (source matrice)
-	(sub_lister_en_batterie+* source (lengths matrice)))
+  (sub_lister_en_batterie+* source (lengths matrice)))
 
 (defun sub_lister_selon_des_dimensions (source matrice)
-	(sub_lister_en_batterie source matrice))
+  (sub_lister_en_batterie source matrice))
 
 (defun sub_lister_selon_des_dimensions* (source matrice)
-	(sub_lister_en_batterie* source matrice))
+  (sub_lister_en_batterie* source matrice))
 
 (defun sub_lister_selon_des_dimensions+ (source matrice)
-	(sub_lister_en_batterie+ source matrice))
+  (sub_lister_en_batterie+ source matrice))
 
 (defun sub_lister_selon_des_dimensions+* (source matrice)
-	(sub_lister_en_batterie+* source matrice))
+  (sub_lister_en_batterie+* source matrice))
 
 
 
@@ -522,115 +521,6 @@
 		(os stop-start))))
 
 
-(defun accord () (append *t *t *t *t (chr "<chord/>")  *r))
-
-(defun silence () (append *t *t *t *t (chr "<rest/>")  *r))
-
-
-(defun note (hauteur duree liaison &optional accord)
-  (append *t *t *t (chr "<note>") *r
-	  (if accord (accord))
-	  (if (equal hauteur -1) (silence) (hauteur hauteur))
-	  (duree duree)
-	  (if (not (equal '- liaison)) (liaison liaison))
-	  *t *t *t (chr "</note>") *r))
-
-
-(defun cle (signe ligne)
-	(append *t *t *t *t (chr "<clef>") *r
-		*t *t *t *t *t (chr "<sign>") (lister! (chr signe)) (chr "</sign>") *r
-		*t *t *t *t *t (chr "<line>") (lister! (chr ligne)) (chr "</line>") *r
-		*t *t *t *t (chr "</clef>") *r))
-
-
-(defun chiffrage (numerateur denominateur)
-	(append *t *t *t *t (chr "<time>") *r
-		*t *t *t *t *t (chr "<beats>") (lister! (chr numerateur)) (chr "</beats>") *r
-		*t *t *t *t *t (chr "<beat-type>") (lister! (chr denominateur)) (chr "</beat-type>") *r
-		*t *t *t *t (chr "</time>") *r))
-
-
-(defun divisions (divisions)
-  (append *t *t *t *t (chr "<divisions>") (lister! (chr divisions)) (chr "</divisions>") *r))
-
-;;;; divisions problem....
-;;;finale's value to be tested on Sibelius....
-;;;sibelius ' value is 256....
-;(defun divisions (divisions)
-;	(append *t *t *t *t (chr "<divisions>") (lister! (chr 768)) (chr "</divisions>") *r))
-
-;;;pour les 1/4 de tons
-
-(defun key (key)
-  (if (= key 4)
-    (append *t *t *t *t (chr "<key>") *r
-            *t *t *t *t (chr "<fifths>0</fifths>") *r
-            *t *t *t *t (chr "</key>") *r)
-    (append *t *t *t *t (chr "<key>") *r
-            *t *t *t *t (chr "<fifths>0</fifths>") *r
-            *t *t *t *t (chr "<mode>major</mode>") *r
-            *t *t *t *t (chr "</key>") *r)))
-
-
-
-(defun mesure_entete (chiffrage &optional divisions clef temper)
-  (append 
-   *t *t *t (chr "<attributes>") *r
-   (if divisions (divisions divisions))
-   (if temper (key temper))
-   (chiffrage (first chiffrage) (second chiffrage))
-   (if clef (cle (first clef) (second clef)))
-   *t *t *t (chr "</attributes>") *r))
-
-
-(defun mesure_corps (hauteurs durees liaisons accords)
-  (loop for h in hauteurs and d in durees and l in liaisons and a in accords 
-	when (equal (length h) 1) append (note (first h) d l)
-	else append (note (first h) d l) and append (loop for hh in (rest h) appending (note hh d l a))))
-
-
-;(str (append *t *t (chr "<measure number=")  *g (lister! (chr 5)) (list (chr ">")) *r))
-
-(defun mesure (numero entete corps)
-  (append
-   *t *t (chr "<measure number=") *g (lister! (chr numero)) *g (list (chr ">")) *r
-   (if entete (mesure_entete (first entete) (second entete) (third entete)))
-   (mesure_corps (first corps) (second corps) (third corps) (fourth corps))
-   *t *t (chr "</measure>") *r
-   *t *t (chr "<!--=======================================================-->") *r))
-
-
-(defun partie (index corps)
-  (append
-   *t (chr "<part id=") *g (lister! (chr index)) *g (list (chr ">")) *r
-   corps
-   *t (chr "</part>") *r))
-
-
-(defun score_part (index nom)
-  (append
-   *t *t (chr "<score-part id=") *g (lister! (chr index)) *g (list (chr ">")) *r
-   *t *t *t (chr "<part-name>") (lister! (chr nom)) (chr "</part-name>") *r
-   *t *t (chr "</score-part>") *r))
-
-
-(defun parties (index noms)
-  (append
-   *t (chr "<part-list>") *r
-   (loop for i in index and n in noms appending (score_part i n))
-   *t (chr "</part-list>") *r
-   *t (chr "<!--=========================================================-->") *r))
-
-
-(defun placer_les_silences (durees hauteurs)
-  (reverse (loop with h = hauteurs and resultat = nil for x in durees
-                 when (nn? x) do (push '(-1) resultat)
-                 else do (push (pop h) resultat)
-                 finally return resultat)))
-
-
-
-
 
 ;          |-------------------------------------------------------------------------------------|
 ;          |                                   INTERFACE OM                                      | 
@@ -641,87 +531,6 @@
 
 ;;;;;;;;;;;;;;tools
 
-(defmethod getdembeams ((self om::measure) lastmes chiffrage)
-  (let* ((inside (om::inside self))
-         (tree (om::tree self))
-         (real-beat-val (/ 1 (om::fdenominator (first tree))))
-         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
-         (rep nil))
-    
-    (loop for obj in inside do
-          (setf rep (list rep 
-                          (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
-                                 (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
-                                 (exp (getdembeams obj (* symb-beat-val factor) (car (om::tree self)))))
-                            exp
-                            )
-                          )))
-    (remove nil (om::flat rep))
-    ))
-
-
-(defmethod getdembeams ((self om::group) dur ratio)
-  (let* ((durtot (if (listp dur) (car dur) dur))
-         (cpt (if (listp dur) (cadr dur) 0))
-         (num (or (om::get-group-ratio self)  (om::extent self)))
-         (denom (om::find-denom num durtot))
-         (num (if (listp denom) (car denom) num))
-         (denom (if (listp denom) (second denom) denom))
-         (unite (/ durtot denom))
-         (inside (om::inside self))
-         (sympli (/ num denom))
-         (rep nil) (val nil))
-    (cond
-     ((not (om::get-group-ratio self)) 
-      (loop for obj in inside
-            do (setf rep (append rep (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                        (/ (om::extent self) (om::qvalue self)))))
-                                       (list (getdembeams obj (* dur-obj durtot) ratio)))))))
-     ((= sympli 1)
-      (loop for obj in inside
-            do (setf rep (list rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                        (/ (om::extent self) (om::qvalue self))))
-                                          (dur-obj (numerator (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                                 (/ (om::extent self) (om::qvalue self))))))
-                                     (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                     (list (getdembeams obj (* dur-obj unite) ratio))))))
-      
-      )
-     
-     
-     (t
-      (let ((pos (length rep))
-            (depth 0))
-        (loop for obj in inside do
-              (setf rep (list rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                       (/ (om::extent self) (om::qvalue self))))
-                                         (dur-obj (numerator operation))
-                                         exp tmp)
-                                    (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                    (setf tmp (multiple-value-list 
-                                               (getdembeams obj (list (* dur-obj unite) cpt) ratio))
-                                    )
-                                    (setf exp (car tmp))
-                                    (when (and (cadr tmp) (> (cadr tmp) depth))
-                                      (setf depth (cadr tmp)))
-                                    exp
-                                    ;(list exp)
-                                    ))))
-        (setf val (+ depth 1))
-        
-        )
-      )
-     )
-     (values rep val)))
-
-
-(defmethod getdembeams ((self om::chord) dur ratio)
-  (if (listp dur) (car dur) dur))
-
-
-(defmethod getdembeams ((self om::rest) dur ratio)
-  (if (listp dur) (car dur) dur)) 
-
 
 (defparameter *note-types*
   '((2 breve) (1 whole)
@@ -730,166 +539,13 @@
     (1/32 32nd) (1/62 64th)
     (1/128 128th) (1/256 256th)
     (1/512 512th)(1/1024 1024th)))
-
-
-(defun durs-divisions (liste)
-  (let* ((res (car liste))
-         (pgcd (if (not (= 1 (length liste)))
-                 (progn 
-                   (loop for i in (cdr liste)
-                         do (setf res (om::pgcd res i)))
-                   (om::denominator res))
-                 (om::denominator res)))
-         (durs (om::om* pgcd liste)))
-    (list (list pgcd) durs)))
-
-(defmethod dursdivisions ((self om::measure))
-  (let* ((tree (om::tree self))
-         (ratios (om::tree2ratio (list '? (om::om-round (list tree)))))
-         (note-type (getdembeams self t t))
-         (xmltypes (om::flat (loop for i in note-type
-                         collect (mycassq i *note-types*)))))
-    
-    (list '(1/4) ratios xmltypes)
-    ))
-
-
-(defmethod get-signature ((self om::measure))
-  (car (om::tree self)))
   
-
-;;;;;;;;;;;;;;;
-
-
-(setf *entete* (append
-                (chr "<?xml version=") *g (chr "1.0") *g 
-                (chr " encoding=") *g (chr "UTF-8") *g (chr "?>") *r
-                (chr "<!DOCTYPE score-partwise PUBLIC") *r
-                *t *g (chr "-//Recordare//DTD MusicXML 1.1 Partwise//EN") *g *r
-                *t *g (chr "http://www.musicxml.org/dtds/partwise.dtd") *g (list (chr ">")) *r)
-      )
-
-
-(defmethod cons-xml-expr ((self om::poly) free &optional (key '((G 2))) (approx 2))
-  (setf *voice-num* 0)
-  (let* (rep
-         (voices (om::inside self))
-         (lastvoice nil))
-    (setf rep (append rep (list (str *entete*))))
-    (setf rep (append rep (list (str (append (chr "<score-partwise>") *r
-                                             (chr " <identification>") *r
-                                             (chr "  <encoding>") *r
-                                             (chr "   <software>")
-                                             (chr "OM ") (chr om::*version-string*)
-                                             (chr "</software>") *r
-                                             (chr "  </encoding>") *r
-                                             (chr " </identification>") *r
-                                             (chr " <part-list>") *r
-                                             )))))
-    (loop for i in voices 
-          do 
-          (setf *voice-num* (incf *voice-num*))
-          (setf rep (append rep (list (str (append (chr " <score-part id=") *g (lister! (chr "P"))
-                                                   (lister! (chr *voice-num*)) *g 
-                                                   (list (chr ">")) *r)))))
-          
-          (setf rep (append rep (list (str (append (chr "   <part-name>MusicXML Part</part-name>") *r
-                                                   (chr "   <score-instrument id=") *g (lister! (chr "P"))(lister! (chr *voice-num*))(lister! (chr "-I")) (lister! (chr *voice-num*)) *g 
-                                                   (list (chr ">")) *r
-                                                   (chr "    <instrument-name>Grand Piano</instrument-name>") *r
-                                                   (chr "   </score-instrument>") *r
-                                                   (chr "   <midi-instrument id=") *g (lister! (chr "P"))(lister! (chr *voice-num*))(lister! (chr "-I")) (lister! (chr *voice-num*)) *g 
-                                                   (list (chr ">")) *r
-                                                   
-                                                   (chr "    <midi-channel>1</midi-channel>")  *r
-                                                   (chr "    <midi-program>1</midi-program>")  *r
-                                                   (chr "   </midi-instrument>")  *r
-                                                   (chr " </score-part>")  *r)))))
-          
-          
-          )
-    (setf rep (append rep (list (str (append (chr " </part-list>") *r)))))
-    (setf rep (append rep (list (str (append (chr "<!--===================================================================-->") *r)))))
-    (setf *voice-num* 0)    
-    
-    (if (= 1 (length key))
-      
-      (loop for i in voices 
-            do 
-            (setf *voice-num* (incf *voice-num*))
-            (setf rep (append rep (cons-xml-expr i *voice-num* (car key) approx))))
-      (loop for i in voices
-            for k in key
-            do 
-            (setf *voice-num* (incf *voice-num*))
-            (setf rep (append rep (cons-xml-expr i *voice-num* k approx))))
-      )
-    (setf rep (append rep (list (str (append (chr "</score-partwise>") *r)))))
-    rep )
-  )
-
-
-(defmethod cons-xml-expr ((self om::voice) voicenum &optional (key '((G 2))) (approx 2))
-  (setf *mesure-num* 0)
-  (let* (rep
-         (measures (om::inside self))
-         (lastmes nil))
-    
-    (setf rep (append rep (list (append *t *t (chr "<part id=") *g (lister! (chr "P")) (lister!  (chr voicenum)) *g (list (chr ">")) *r))))
-    (loop for mes in measures
-          for i = 1 then (+ i 1)
-          do (setf *mesure-num* (incf *mesure-num*))
-          (setf rep (append rep (cons-xml-expr mes *mesure-num* key approx)))
-          (setf lastmes mes))
-    
-    
-    
-    (setf rep (append rep (list (str (append *t *t (chr "<!--=======================================================-->") *r)))))
-    (setf rep (append rep (list (str (append (chr "</part>") *r)))))
-    (om::flat rep)
-    ))
-
-
-
-(defmethod cons-xml-expr ((self om::measure) mesnum &optional (key '((G 2))) (approx 2))
-  (setf *chords-and-cont* (om::collect-chords  self))
-  (let* ((inside (om::inside self))
-         (tree (om::tree self))
-         (real-beat-val (/ 1 (om::fdenominator (first tree))))
-         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
-         (rep nil)
-         (meas-header (if (equal 1 mesnum)
-			  (str (mesure_entete (get-signature self) (caar (dursdivisions self)) key approx)) ;;;voir comment obtenir les clefs !!!!
-			  (str (mesure_entete (get-signature self) (caar (dursdivisions self)))))))
-    
-    
-    
-    (setf rep (list (str (append *t *t (chr "<measure number=") *g (lister! (chr mesnum)) *g (list (chr ">")) *r))))
-    (setf rep (append rep (list (format nil "~d" meas-header))))
-    (loop for obj in inside 
-					;for fig in (cadr (dursdivisions self))  ;;;;;transmetre les note-types
-       do (setf rep (append rep
-			    (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
-				   (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
-				   (exp (cons-xml-expr obj (* symb-beat-val factor) key approx)))
-			      exp))))
-    
-    (setf rep (append rep (list (str (append
-	                              *t *t (chr "</measure>") *r
-	                              *t *t (chr "<!--=======================================================-->") *r)))))
-    rep))
-
-
-
-
 (defmethod in-group?  ((self om::chord)) 
   (om::group-p (om::parent self)))
 (defmethod in-group?  ((self om::rest)) 
   (om::group-p (om::parent self)))
 (defmethod in-group?  ((self t)) 
   nil)
-
-
 
 (defmethod alone-in-group?  ((self om::chord)) 
   (if (= (length (om::inside (om::parent self))) 1)
@@ -901,64 +557,6 @@
 
 (defmethod alone-in-group?  ((self t)) 
   nil)
-
-
-
-
-(defmethod cons-xml-expr ((self om::group) dur &optional (key '((G 2))) (approx 2))
-  (let* ((durtot (if (listp dur) (car dur) dur))
-         (cpt (if (listp dur) (cadr dur) 0))
-         (num (or (om::get-group-ratio self)  (om::extent self)))
-         (denom (om::find-denom num durtot))
-         (num (if (listp denom) (car denom) num))
-         (denom (if (listp denom) (second denom) denom))
-         (unite (/ durtot denom))
-         (inside (om::inside self))
-         (sympli (/ num denom))
-         (rep nil) (val nil) (depth 0))
-    (cond
-     ((not (om::get-group-ratio self)) 
-      (loop for obj in inside
-            do (setf rep (append rep (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                        (/ (om::extent self) (om::qvalue self)))))
-                                       (cons-xml-expr obj (* dur-obj durtot)
-                                                      ))))))
-     
-     ((= sympli 1)
-      (loop for obj in inside
-            do (setf rep (append rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                          (/ (om::extent self) (om::qvalue self))))
-                                            (dur-obj (numerator (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                                   (/ (om::extent self) (om::qvalue self))))))
-                                       (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                       (cons-xml-expr obj (* dur-obj unite) key approx)
-                                       )))))
-     
-     
-     (t
-      (let ((pos (length rep)))
-        (loop for obj in inside do
-              ;(setf rep (append rep (list (format nil "\\times ~d/~d {" denom num))))
-              (setf rep (append rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                                         (/ (om::extent self) (om::qvalue self))))
-                                           (dur-obj (numerator operation))
-                                           exp tmp)
-                                      (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                      
-                                      (setf tmp (multiple-value-list 
-                                                 (cons-xml-expr obj (list (* dur-obj unite) cpt))))
-                                      
-                                      (setf exp (car tmp))
-                                      (when (and (cadr tmp) (> (cadr tmp) depth))
-                                        (setf depth (cadr tmp)))
-                                      exp
-                                      ))))
-        (setf val (+ depth 1))
-        )
-      ))
-    (values rep val)
-    ))
-
 
 
 (defun tied (self)
@@ -1006,8 +604,6 @@
      
 (defmethod getratiogroup ((self om::measure))
 (list 1 1))
-
-
 
 (defmethod getratiogroup ((self om::group))
   (let* ((tree (om::tree self))
@@ -1232,9 +828,6 @@
            )))
 
 
-
-
-
 (defun get-parent-measure (self)
   "Donne la mesure liee a l'obj chord par exemple"
   (let ((obj (om::parent self)))
@@ -1400,9 +993,11 @@
                     *t *t *t *t (chr "</lyric>") *r
                     )))
    
-(defmethod cons-xml-expr ((self om::chord) fig &optional (key '((G 2))) (approx 2))
+
+
+(defmethod cons-xml-expr ((self om::chord) &key free key (approx 2))
   
-  (let* ((figure (if (listp fig) (car fig) fig))
+  (let* ((figure (if (listp free) (car free) free))
          (hd-and-pts (get-head-and-points figure))
          (truefigure (car hd-and-pts))
          ;(truefigure figure)
@@ -1495,8 +1090,8 @@
     strg))
 
 
-(defmethod cons-xml-expr ((self om::rest) fig &optional (key '((G 2))) (approx 2))
-  (let* ((figure (if (listp fig) (car fig) fig))
+(defmethod cons-xml-expr ((self om::rest) &key free key (approx 2))
+  (let* ((figure (if (listp free) (car free) free))
          (hd-and-pts (get-head-and-points figure))
          (truefigure (car hd-and-pts))
          ;(truefigure figure)
@@ -1527,28 +1122,144 @@
 
 
 
+;;;===================================
+;;; RECURSIVE CONTAINERS (JB 29/09/15)
+;;;===================================
+
+(defmethod cons-xml-expr ((self om::group) &key free key (approx 2))
+  (let* ((inside (om::inside self))
+         (durtot free)
+         (cpt (if (listp free) (cadr free) 0))
+         (num (or (om::get-group-ratio self)  (om::extent self)))
+         (denom (om::find-denom num durtot))
+         (num (if (listp denom) (car denom) num))
+         (denom (if (listp denom) (cadr denom) denom))
+         (unite (/ durtot denom)))
+    (cond
+     ((not (om::get-group-ratio self))
+      (loop for obj in inside collect 
+            (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
+                               (/ (om::extent self) (om::qvalue self)))))
+              (cons-xml-expr obj :free (* dur-obj durtot)))))
+     (t (loop for obj in inside collect
+              (cons-xml-expr obj :free (* num unite)))   ;;;; ACHTUNG !!
+        ))))
 
 
+;;;; divisions problem....
+;;;finale's value to be tested on Sibelius....
+;;;sibelius ' value is 256....
+;(defun divisions (divisions)
+;	(append *t *t *t *t (chr "<divisions>") (lister! (chr 768)) (chr "</divisions>") *r))
 
 
-;          |-------------------------------------------------------------------------------------|
-;          |                                   Vers OPENMUSIC                                    | 
-;          |-------------------------------------------------------------------------------------|
+(defmethod cons-xml-expr ((self om::measure) &key free (key '(G 2)) (approx 2))
+  (let* ((mesnum free) 
+         (inside (om::inside self))
+         (tree (om::tree self))
+         (signature (car tree))
+         (real-beat-val (/ 1 (om::fdenominator signature)))
+         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator signature)))))
+    (list (format nil "<measure number=\"~D\">" mesnum)
+          (append (remove nil
+                          (list "<attributes>"
+                                (list (format nil "<divisions>~A</divisions>" 768)  ;;; (caar (dursdivisions self)))
+                                      "<key>"
+                                      (remove nil
+                                              (list  "<fifths>0</fifths>"
+                                                     (if (and approx (= approx 4)) "<mode>major</mode>")))
+                                      "</key>"
+                                      "<time>"
+                                      (list (format nil "<beats>~D</beats>" (car signature))
+                                            (format nil "<beat-type>~D</beat-type>" (cadr signature)))
+                                      "</time>")
+                                (and key
+                                     (list "<clef>"
+                                           (list (format nil "<sign>~D</sign>" (car key))
+                                                 (format nil "<line>~D</line>" (cadr key)))
+                                           "</clef>"
+                                           ))
+                                "</attributes>"))
+                  (loop for obj in inside ;for fig in (cadr (dursdivisions self))  ;;;;;transmetre les note-types
+                        append
+                        (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
+                               (factor (/ (* 1/4 dur-obj-noire) real-beat-val))) 
+                          (cons-xml-expr obj :free (* symb-beat-val factor) :approx approx) ;;; NOTE: KEY STOPS PROPAGATING HERE
+                          )))
+          "</measure>"
+          "<!--=======================================================-->")))
 
 
+(defmethod cons-xml-expr ((self om::voice) &key free (key '(G 2)) (approx 2))
+  (let ((voicenum free)
+        (measures (om::inside self)))
+    (list (format nil "<part id=\"P~D\">" voicenum)
+          (loop for mes in measures
+                for i = 1 then (+ i 1)
+                collect (cons-xml-expr mes :free i :key key :approx approx))
+          "<!--=======================================================-->"
+          "</part>")))
+
+(defun mxml-header () 
+  (list "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 1.1 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">"))
+
+(defmethod cons-xml-expr ((self om::poly) &key free (key '((G 2))) (approx 2))
+  (let ((voices (om::inside self)))
+    (list "<score-partwise>"
+          (list "<identification>"
+                (list "<encoding>"
+                      (list (concatenate 'string "<software>" "OM " om::*version-string*"</software>"))
+                      "</encoding>")
+                "</identification>")
+          (list "<part-list>"
+                (loop for v in voices 
+                      for voice-num = 1 then (+ voice-num 1)
+                      append 
+                      (list (format nil "<score-part id=\"P~D\">" voice-num)
+                            (list "<part-name>MusicXML Part</part-name>")
+                            (list (format nil "<score-instrument id=\"P~D-I~D\">" voice-num voice-num)
+                                  (list "<instrument-name>Grand Piano</instrument-name>")
+                                  "</score-instrument>")
+                            (list (format nil "<midi-instrument id=\"P~D-I~D\">" voice-num voice-num)
+                                  (list "<midi-channel>1</midi-channel>"
+                                        "<midi-program>1</midi-program>")
+                                  "</midi-instrument>")
+                            "</score-part>"))
+                "</part-list>")
+          "<!--===================================================================-->"
+          (if (= 1 (length key))
+              ;;; SAME KEY FOR ALL VOICES
+              (loop for v in voices
+                    for i = 1 then (+ i 1) append 
+                    (cons-xml-expr v :free i :key (car key) :approx approx))
+            ;;; EACH VOICE HAS A KEY
+            (loop for v in voices 
+                  for i = 1 then (+ i 1)
+                  for k in key append
+                  (cons-xml-expr v :free i :key k :approx approx)))
+          "</score-partwise>")))
+  
+;;;===================================
+;;; OM INTERFACE / API
+;;;===================================
 
 (in-package :om)
 
-
+(defun recursive-write-xml (stream text level)
+  (if (listp text)
+      (loop for elt in text do 
+            (recursive-write-xml stream elt (1+ level)))
+    (format stream "~A~A~%" (string+ (make-sequence 'string level :initial-element #\Tab)) text)))
+    
 (defun write-xml-file (list path)
   (let ((pathname (or path (om-choose-new-file-dialog))))
     (when pathname 
       (WITH-OPEN-FILE (out pathname :direction :output 
                            :if-does-not-exist :create :if-exists :supersede)
-        (loop for item in list do
-              (format out "~A" item)))
-      )
-      pathname))
+        (loop for line in (mxml::mxml-header) do (format out "~A~%" line))
+        (recursive-write-xml out list -1))
+      pathname)))
 
 (defmethod! export-musicxml ((self poly) &optional (keys '((G 2))) (approx 2) (path nil))
   :icon 351
@@ -1562,7 +1273,7 @@ Exports <self> to MusicXML format.
                                                        :types '("XML Files" "*.xml")))))
     (when pathname
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-      (write-xml-file (xml::cons-xml-expr self 0 keys approx) pathname))))
+      (write-xml-file (mxml::cons-xml-expr self :free 0 :key keys :approx approx) pathname))))
 
 
 (defmethod! export-musicxml ((self voice) &optional (keys '((G 2))) (approx 2) (path nil))
@@ -1571,10 +1282,7 @@ Exports <self> to MusicXML format.
                                                        :types '("XML Files" "*.xml")))))
     (when pathname 
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-      (write-xml-file (xml::cons-xml-expr (make-instance 'poly
-                                                         :voices self) 0 keys approx) pathname))))
-
-
+      (write-xml-file (mxml::cons-xml-expr (make-instance 'poly :voices self) :free 0 :key keys :approx approx) pathname))))
 
 
 ;;;  UTILS 
@@ -1582,12 +1290,10 @@ Exports <self> to MusicXML format.
 (defmethod make-empty-voice ((signs list))
   (let ((mesures (loop for i in signs
                        collect (list i '(-1)))))
-    (make-instance 'voice 
-                   :tree (list '? mesures))))
-
+    (make-instance 'voice :tree (list '? mesures))))
 
 (defmethod normalize-poly ((self poly))
-  "Comlpletes the poly in a manner that all voices got the same number of mesures for mucxmnlexport"
+  "Comlpletes the poly in a manner that all voices got the same number of mesures for MusicXML export"
   (let* ((voices (inside self))
          (signs (get-signatures self))
          (lgts (loop for i in signs
@@ -1602,3 +1308,111 @@ Exports <self> to MusicXML format.
                                     (concat i new-vx)))))
     (make-instance 'poly :voices newvoices)
     ))
+
+
+
+
+;;===========================================================
+;; NOT USED ANYMORE (?)
+
+#|
+(defmethod getdembeams ((self om::measure) lastmes chiffrage)
+  (let* ((inside (om::inside self))
+         (tree (om::tree self))
+         (real-beat-val (/ 1 (om::fdenominator (first tree))))
+         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
+         (rep nil))
+    
+    (loop for obj in inside do
+          (setf rep (list rep 
+                          (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
+                                 (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
+                                 (exp (getdembeams obj (* symb-beat-val factor) (car (om::tree self)))))
+                            exp
+                            )
+                          )))
+    (remove nil (om::flat rep))
+    ))
+
+
+(defmethod getdembeams ((self om::group) dur ratio)
+  (let* ((durtot (if (listp dur) (car dur) dur))
+         (cpt (if (listp dur) (cadr dur) 0))
+         (num (or (om::get-group-ratio self)  (om::extent self)))
+         (denom (om::find-denom num durtot))
+         (num (if (listp denom) (car denom) num))
+         (denom (if (listp denom) (second denom) denom))
+         (unite (/ durtot denom))
+         (inside (om::inside self))
+         (sympli (/ num denom))
+         (rep nil) (val nil))
+    (cond
+     ((not (om::get-group-ratio self)) 
+      (loop for obj in inside
+            do (setf rep (append rep (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                                        (/ (om::extent self) (om::qvalue self)))))
+                                       (list (getdembeams obj (* dur-obj durtot) ratio)))))))
+     ((= sympli 1)
+      (loop for obj in inside
+            do (setf rep (list rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                                        (/ (om::extent self) (om::qvalue self))))
+                                          (dur-obj (numerator (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                                                 (/ (om::extent self) (om::qvalue self))))))
+                                     (setf dur-obj (* dur-obj (/ num (denominator operation))))
+                                     (list (getdembeams obj (* dur-obj unite) ratio))))))
+      
+      )
+     
+     
+     (t
+      (let ((pos (length rep))
+            (depth 0))
+        (loop for obj in inside do
+              (setf rep (list rep (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                                       (/ (om::extent self) (om::qvalue self))))
+                                         (dur-obj (numerator operation))
+                                         exp tmp)
+                                    (setf dur-obj (* dur-obj (/ num (denominator operation))))
+                                    (setf tmp (multiple-value-list 
+                                               (getdembeams obj (list (* dur-obj unite) cpt) ratio))
+                                    )
+                                    (setf exp (car tmp))
+                                    (when (and (cadr tmp) (> (cadr tmp) depth))
+                                      (setf depth (cadr tmp)))
+                                    exp
+                                    ;(list exp)
+                                    ))))
+        (setf val (+ depth 1))
+        
+        )
+      )
+     )
+     (values rep val)))
+
+
+(defmethod getdembeams ((self om::chord) dur ratio)
+  (if (listp dur) (car dur) dur))
+
+(defmethod getdembeams ((self om::rest) dur ratio)
+  (if (listp dur) (car dur) dur)) 
+
+(defmethod dursdivisions ((self om::measure))
+  (let* ((tree (om::tree self))
+         (ratios (om::tree2ratio (list '? (om::om-round (list tree)))))
+         (note-type (getdembeams self t t))
+         (xmltypes (om::flat (loop for i in note-type
+                                   collect (mycassq i *note-types*)))))
+    (list '(1/4) ratios xmltypes)))
+
+(defun durs-divisions (liste)
+  (let* ((res (car liste))
+         (pgcd (if (not (= 1 (length liste)))
+                 (progn 
+                   (loop for i in (cdr liste)
+                         do (setf res (om::pgcd res i)))
+                   (om::denominator res))
+                 (om::denominator res)))
+         (durs (om::om* pgcd liste)))
+    (list (list pgcd) durs)))
+
+|#
