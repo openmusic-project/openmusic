@@ -103,6 +103,7 @@
 (defstruct microplay-note (date) (pitch) (vel) (dur) (chan))
 
 (defun send-200 ()
+  ;(print "SEND200")
   (loop for i from 1 to 200
         while (< *index-packets* (length *microosc-packets*)) do
         (let ((event (copy-microplay-note (nth *index-packets* *microosc-packets*))))
