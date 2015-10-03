@@ -4,7 +4,7 @@
 ;;; EXTRA PALETTE :
 (defvar *extramanager* nil)
 
-(omg-defclass extra-palette-win (om-windoid) 
+(defclass extra-palette-win (om-windoid) 
   ((extramanager :initform nil :initarg :extramanager :accessor extramanager)
    (buttons :initform nil :initarg :buttons :accessor buttons)
    (extraitems :initform nil :initarg :extraitems :accessor extraitems)
@@ -297,7 +297,8 @@
   (case value
     (:dyn
      ;;; size char color
-     (list (elt (dyn-f) 0)  12 *om-black-color*))
+     (list #\- ; (elt (dyn-f) 0) 
+           12 *om-black-color*))
     (:figure
      ;;; size char color
      (list (code-char 113) 12 *om-black-color*))
@@ -515,7 +516,7 @@
                                :font *om-default-font1b*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 55)
                                (om-make-point 70 20) ""
-                               :range (list (dyn-ppp) (dyn-pp) (dyn-p) (dyn-mp) (dyn-mf) (dyn-f) (dyn-ff) (dyn-fff))
+                               :range (list "-" (dyn-ppp) (dyn-pp) (dyn-p) (dyn-mp) (dyn-mf) (dyn-f) (dyn-ff) (dyn-fff))
                                :value (string (nth 0 params))
                                :font (om-make-music-font *extras-font* 24)
                                :di-action (om-dialog-item-act item
