@@ -343,10 +343,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 ;***************
 ;VELOCITIES
 ;***************
-
-
 (defclass! vel-extra (extra-objet) 
-   ((thechar :initform (dyn-fff) :initarg :thechar :accessor thechar))
+   ((dynamics :initform NIL :initarg :dynamics :accessor dynamics))
    (:icon 499)
    (:documentation 
 "
@@ -355,7 +353,9 @@ A velocity symbol to be attached to a particular chord or note in the score.
 EXTRA objects are additional data or graphics integrated in the score objects (voice, chord-seq, etc.)
 They can be added and manipulated thanks to the Extra package functions (add-extra, etc.)
 
-<dynamic> is a string of a single character interpreted graphically in the OM extra fonts.
+<dynamics> is a string of a single character symbol interpreted graphically in the OM extra fonts. 
+If <dynamics> 
+
 <deltax> and <deltay> are relative horizontal and vertical offsets (arbitrary non-temporal unit depending on the zoom and font size)
 
 "))
@@ -364,40 +364,35 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (values '("self" "deltax" "deltay" "dynamic")
            '(nil 0 0 "h")
            '("object" "horizontal offset" "vertical offset" "dynamics character" )
-           '(nil nil nil (( 3 (("fff" (dyn-fff))  ("ff" (dyn-ff)) ("f" (dyn-f))
-                               ("mf" (dyn-mf)) ("mp" (dyn-mp)) ("ppp" (dyn-ppp)) ("pp" (dyn-pp)) ("p" (dyn-p))))))))
+           '(nil nil nil (( 3 (("unspecific" NIL)
+                               ("fff" :fff)  ("ff" :ff) ("f" :f)
+                               ("mf" :ff) ("mp" :mp) 
+                               ("ppp" :ppp) ("pp" :pp) ("p" :p)))))))
 
-(defparameter *vel-chars*
-  `(("fff" ,(dyn-fff))  ("ff" ,(dyn-ff)) ("f" ,(dyn-f))
-    ("mf" ,(dyn-mf)) ("mp" ,(dyn-mp)) ("ppp" ,(dyn-ppp)) ("pp" ,(dyn-pp)) ("p" ,(dyn-p))))
-
-(defun get-vel-string (char-str)
-  (car (find char-str *vel-chars* :key 'cadr :test 'string-equal)))
+(defmethod vel-extra-p ((self vel-extra)) t)
+(defmethod vel-extra-p ((self t)) nil)
 
 (defmethod draw-obj-in-rect ((self vel-extra) x x1 y y1 edparams view)
   (let* ((fontsize 24)
          (thefont (om-make-music-font *extras-font* fontsize))
-         (sizetext (round (get-name-size (thechar self) thefont) 2)))
+         (sizetext (round (get-name-size (dynamics self) thefont) 2)))
      (om-with-font thefont
                    (om-draw-string (round (- (+ x (/ (- x1 x) 2)) sizetext)) 
-                                   (round (+ y (/ (- y1 y) 2))) (thechar self)))))
-
-(defmethod vel-extra-p ((self vel-extra)) t)
-(defmethod vel-extra-p ((self t)) nil)
+                                   (round (+ y (/ (- y1 y) 2)))
+                                   (if (dynamics self) (string (dynamics self)))))))
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'dynamic)) dc)
   (let ((size (staff-size self))
         newextra obj points)
-    (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
+    (setf obj (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
     (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos*) size))
-    (setf newextra (make-instance 'vel-extra
-                                  :object (reference obj) ))
-    (setf (thechar newextra) (string (car (get-extra-param *extramanager* (edit-mode *extramanager*)))))
+    (setf newextra (make-instance 'vel-extra :object (reference obj)))
+    (setf (dynamics newextra) (car (get-extra-param *extramanager* (edit-mode *extramanager*))))
     (setf (deltax newextra) (om-point-h (car points))
           (deltay newextra) (om-point-v (car points)))
     (push newextra (extra-obj-list (reference obj)))
-    (set-vel (reference obj) (get-vel-midi (thechar newextra)))
+    ;(set-vel (reference obj) (get-vel-midi (dynamics newextra)))
     (update-panel self t)))
 
 
@@ -406,14 +401,14 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (notes (notesforhead self))
           (vel (vel (car notes)))
           (dyn (get-dyn-from-vel vel)))
-     (setf (thechar newextra) dyn)
+     (setf (dynamics newextra) dyn)
      (push newextra (extra-obj-list self))
      (set-vel self vel)))
 
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
    (setf (object extra) self)
    (push extra (extra-obj-list self))
-   (set-vel self (get-vel-midi (thechar extra))))
+   (set-vel self (get-vel-midi (vel-sign extra))))
 
 
 (defun get-vel-midi (str)
@@ -445,7 +440,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (object (reference self))
           (rect (rectangle grap-obj))
           (fontsize (round size 4/3))
-          (text (thechar (reference self)))
+          (text (dynamics (reference self)))
           (thefont (om-make-music-font *extras-font* fontsize))
           (ls (round size 4))
           (sizetext (get-name-size text thefont))

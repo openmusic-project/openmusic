@@ -516,7 +516,7 @@
                                :font *om-default-font1b*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 55)
                                (om-make-point 70 20) ""
-                               :range (list "-" (dyn-ppp) (dyn-pp) (dyn-p) (dyn-mp) (dyn-mf) (dyn-f) (dyn-ff) (dyn-fff))
+                               :range (append '("unspecific" "-") (mapcar #'(lambda (d) (string (cadr d))) *dynamics-list*))
                                :value (string (nth 0 params))
                                :font (om-make-music-font *extras-font* 24)
                                :di-action (om-dialog-item-act item

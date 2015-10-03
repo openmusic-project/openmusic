@@ -131,14 +131,14 @@
 (defun d-6/7 () (code-char 37)) 
 
 ;;;=============dynamics
-(defun dyn-ppp () (format nil "~D" (code-char 82)))
-(defun dyn-pp () (format nil "~D" (code-char 81)))
-(defun dyn-p () (format nil "~D" (code-char 112)))
-(defun dyn-mp () (format nil "~D" (code-char 80)))
-(defun dyn-mf () (format nil "~D" (code-char 70)))
-(defun dyn-f () (format nil "~D" (code-char 102)))
-(defun dyn-ff () (format nil "~D" (code-char 103)))
-(defun dyn-fff () (format nil "~D" (code-char 104)))
+(defun dyn-ppp () (code-char 82))
+(defun dyn-pp () (code-char 81))
+(defun dyn-p () (code-char 112))
+(defun dyn-mp () (code-char 80))
+(defun dyn-mf () (code-char 70))
+(defun dyn-f () (code-char 102))
+(defun dyn-ff () (code-char 103))
+(defun dyn-fff () (code-char 104))
 
 
 ;;;==============Key

@@ -480,8 +480,9 @@
 
 (defmethod velocity-as-xml ((self om::chord))
   (when (om::get-extras self "vel")
-    (let ((schar (om::thechar (car (om::get-extras self "vel")))))
-      (list (format nil "<dynamics placement=\"below\"><~A/></dynamics>" (om::get-vel-string schar))))))
+    (let ((schar (om::dynamics (car (om::get-extras self "vel")))))
+      (list (format nil "<dynamics placement=\"below\"><~A/></dynamics>" (om::dyn-to-char schar))))))
+
 
 (defmethod velocity-as-xml ((self om::rest)) nil)
 
