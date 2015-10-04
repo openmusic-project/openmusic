@@ -840,8 +840,11 @@
 
 (defun get-dyn-from-vel (vel)
   (or (car (find vel *dynamics-symbols-list* :key 'third :test '<=))
-      (third (last *dynamics-symbols-list*))))
-      
+      (third (last *dynamics-symbols-list*))))     
+
+(defun get-vel-from-dyn (dyn)
+  (caddr (find dyn *dynamics-symbols-list* :key 'car :test 'equal)))
+  
 
 ;;;===========================
 
@@ -866,7 +869,8 @@
        ((equal slot 'dyn)
         (om-with-font (get-font-to-draw 4)
                       (om-draw-string  realpos (+ y (round size 1.5)) 
-                                       (string (get-dyn-from-vel (vel (reference self)))))))
+                                       (string (dyn-to-char (get-dyn-from-vel (vel (reference self)))))
+                                       )))
        ))))
 
 

@@ -37,7 +37,7 @@
 (defvar *default-satff* 'g)
 
 (defmethod put-preferences ((id (eql :score)))
-   (let ((modulepref (find-pref-module iconID)))
+   (let ((modulepref (find-pref-module ID)))
      (setf *global-midi-approx* (get-pref modulepref :approx))
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
@@ -251,20 +251,20 @@
                                                   :max-val 127
                                                   :name i
                                                   :enabled t
-                                                  :afterfun #'(lambda (item)
+                                                  :afterfun (let ((curr-i i))
+                                                              #'(lambda (item)
                                                                 (let ((newnum (value item))
-                                                                      (curr-i i)
                                                                       (cur-values (get-pref object :dyn-list)))
                                                                   (if (and (integerp newnum)
-                                                                           (and (nth (- curr-i 1) cur-values) (> newnum (nth (- curr-i 1) cur-values)))
+                                                                           (or (= curr-i 0) (> newnum (nth (- curr-i 1) cur-values)))
                                                                            (< newnum (nth (+ curr-i 1) cur-values)))
                                                                       (let ((newlist cur-values))
                                                                         (setf (nth curr-i newlist) newnum)
                                                                         (set-pref object :dyn-list newlist)
                                                                         (om-invalidate-view self t))
                                                                     (progn
-                                                                      (set-value item (nth i cur-values))
-                                                                      (om-beep)))))
+                                                                      (set-value item (nth curr-i cur-values))
+                                                                      (om-beep))))))
                                                   :font *om-default-font2*)))
       ;;; last value (127) is not editable
       (om-add-subviews self
