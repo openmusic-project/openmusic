@@ -374,12 +374,13 @@ If <dynamics>
 
 (defmethod draw-obj-in-rect ((self vel-extra) x x1 y y1 edparams view)
   (let* ((fontsize 24)
-         (thefont (om-make-music-font *extras-font* fontsize))
-         (sizetext (round (get-name-size (dynamics self) thefont) 2)))
+         (thefont  (if (dynamics self) (om-make-music-font *extras-font* fontsize) *om-default-font1b*))
+         (str (if (dynamics self) (string (dyn-to-char (dynamics self))) "?"))
+         (sizetext (round (get-name-size str thefont) 2)))
      (om-with-font thefont
                    (om-draw-string (round (- (+ x (/ (- x1 x) 2)) sizetext)) 
                                    (round (+ y (/ (- y1 y) 2)))
-                                   (if (dynamics self) (string (dynamics self)))))))
+                                   str))))
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'dynamic)) dc)
@@ -408,23 +409,10 @@ If <dynamics>
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
    (setf (object extra) self)
    (push extra (extra-obj-list self))
-   (set-vel self (get-vel-midi (vel-sign extra))))
+   (when (dynamics extra)
+     (set-vel self (get-vel-from-dyn (dynamics extra)))))
 
 
-(defun get-vel-midi (str)
-   (let ((pos (position str *cur-dynamic-chars* :test 'string-equal)))
-   (cond
-    (pos (- (nth pos (cdr *cur-dynamic-list*)) 1))
-    (t 10))))
-
-
-(defmethod! set-vel ((self container) vel)
-   (loop for item in (inside self) do (set-vel item vel)))
-
-(defmethod! set-vel ((self note) vel)
-   (setf (vel self) vel))
-
-(defmethod! set-vel ((self t) vel) t)
 ;--------------------
 
 (defclass grap-extra-vel (grap-extra-objet) ())
@@ -437,15 +425,16 @@ If <dynamics>
    
 (defmethod draw-graph-extra-obj ((self grap-extra-vel) view size staff)
    (let* ((grap-obj (gobject self))
-          (object (reference self))
+          (extra (reference self))
           (rect (rectangle grap-obj))
           (fontsize (round size 4/3))
-          (text (dynamics (reference self)))
+          (text (string (dyn-to-char (or (dynamics extra) 
+                                         (get-dyn-from-vel (get-object-vel (object extra)))))))
           (thefont (om-make-music-font *extras-font* fontsize))
           (ls (round size 4))
           (sizetext (get-name-size text thefont))
           points x y)
-     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax (reference self)) (deltay (reference self))))  size))
+     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax extra) (deltay extra)))  size))
      (setf y (om-point-v (car points)))
      (setf x (om-point-h (car points)))
      (om-with-font thefont

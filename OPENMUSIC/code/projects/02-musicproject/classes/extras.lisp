@@ -242,7 +242,7 @@ The extras are distributed successively in the internal objects in <self> (e.g. 
 
 <newobj> is an optional input determining if a new object should be returned (T), or if the input object should be modified (NIL).
 "
-   (let* ((rep (if newobj (clone self) self))
+ (let* ((rep (if newobj (clone self) self))
           (objs (inside rep))
           (extralist (loop for item in (list! extras) collect (convert-extra item)))
           (n (length extralist)))
