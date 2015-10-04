@@ -23,8 +23,8 @@
 
 (defmethod transpose-a ((self extra-objet) trans)
   (setf (deltay self) 
-        (+ (deltay self) 
-           (* -1 (if (plusp trans) (ceiling trans 100) (floor trans 100))))))
+        (+ (deltay self)
+           (* -1 (if (plusp trans) (ceiling trans 1000) (floor trans 1000))))))
 
 (defmethod move-in-x ((self extra-objet) trans)
    (setf (deltax self) (+ (deltax self) trans)))
@@ -323,22 +323,23 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (setf (graphic-frame self) rep)))
    
 (defmethod draw-graph-extra-obj ((self grap-extra-char) view size staff)
-   (let* ((grap-obj (gobject self))
-          (object (reference self))
-          (rect (rectangle grap-obj))
-          (fontsize size)
-          (text (thechar (reference self)))
-          (thefont (om-make-music-font *extras-font* fontsize))
-          (ls (round size 4))
-          (sizetext (get-name-size text thefont))
-          points x y)
-     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax (reference self)) (deltay (reference self))))  size))
-     (setf y (om-point-v (car points)))
-     (setf x (om-point-h (car points)))
-     (om-with-font thefont
-                   (om-draw-string (om-point-h (car points)) (om-point-v (car points)) text))
-     (setf (rectangle self) (list x (+  ls (- y fontsize)) (+ x sizetext) (+ ls y))))
-  )
+  (let* ((grap-obj (gobject self))
+         (object (reference self))
+         (rect (rectangle grap-obj))
+         (fontsize size)
+         (text (thechar (reference self)))
+         (thefont (om-make-music-font *extras-font* fontsize))
+         (ls (round size 4))
+         (sizetext (get-name-size text thefont))
+         points x y)
+    (setf points (convert-delta-to-points grap-obj 
+                                          (list (om-make-point (deltax (reference self)) (deltay (reference self)))) 
+                                          size))
+    (setf y (om-point-v (car points)))
+    (setf x (om-point-h (car points)))
+    (om-with-font thefont
+                  (om-draw-string (om-point-h (car points)) (om-point-v (car points)) text))
+    (setf (rectangle self) (list x (+  ls (- y fontsize)) (+ x sizetext) (+ ls y)))))
 
 ;***************
 ;VELOCITIES
@@ -398,13 +399,16 @@ If <dynamics>
 
 
 (defmethod add-vel-extra ((self t)) 
-   (let* ((newextra (make-instance 'vel-extra :object self))
-          (notes (notesforhead self))
-          (vel (vel (car notes)))
-          (dyn (get-dyn-from-vel vel)))
-     (setf (dynamics newextra) dyn)
-     (push newextra (extra-obj-list self))
-     (set-vel self vel)))
+  (when (print (get-extras self "vel"))
+    (remove-extras self "vel" nil))
+  (let* ((newextra (make-instance 'vel-extra :object self))
+         (notes (notesforhead self))
+         (vel (vel (car notes)))
+         (dyn (get-dyn-from-vel vel)))
+    (setf (dynamics newextra) dyn)
+    (push newextra (extra-obj-list self))
+    (set-vel self vel)))
+
 
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
    (setf (object extra) self)
@@ -479,7 +483,9 @@ If <dynamics>
     (loop for item in pixpoints
           for i = 0 then (+ i 1)
           while (not point) do
-          (when (point-in-rectangle-p where (om-point-v item) (om-point-h item) (+ (om-point-v item) selec-size)  (+ (om-point-h item) selec-size))
+          (when (point-in-rectangle-p where (om-point-v item) (om-point-h item) 
+                                      (+ (om-point-v item) selec-size)  
+                                      (+ (om-point-h item) selec-size))
             (setf point i)))
     (unless point
       (let ((select-rect (extra-rectangle-selection frame)))
