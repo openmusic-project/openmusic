@@ -207,6 +207,12 @@ If <x-list>, <y-list> and <z-list> are not of the same length, the last coordina
 (defmethod* objFromObjs ((self 3DC) (type 3DC))
   (clone self))
 
+(defmethod* objFromObjs ((self 3D-trajectory) (type 3DC))
+  (let ((new-3DC (3Dc-from-list (x-points self) (y-points self) (z-points self) (type-of type) (decimals self))))
+    (setf (bpfcolor new-3DC) (bpfcolor self))
+    (setf  (decimals new-3DC) (decimals self))
+    new-3DC))
+
 ;;;============================
 ;;; 3DC LIB
 ;;;============================
