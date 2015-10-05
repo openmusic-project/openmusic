@@ -369,7 +369,7 @@
 
 
 ;poly
- (defun bach2poly (channels info)
+(defun bach2poly (channels info)
    (make-instance 'poly
                   :voices (loop for voice in info
                                     for ch in channels
@@ -378,8 +378,8 @@
 
 ;====================INTERFACE=======================
 
-(defmethod score-export ((format (eql 'bach)) object params)
-  (export-bach object))
+(defmethod score-export ((format (eql 'bach)) object params name)
+  (save-for-bach object :name name))
 
 (defmethod score-import ((format (eql 'bach)) object)
   (let ((name (catch-cancel (om-choose-file-dialog)))
@@ -394,14 +394,9 @@
 
 ;=======BOXES==========
 
-(defmethod! export-bach ((self t) &optional (path nil))
-  :icon 351
-  :indoc '("a VOICE, POLY, CHORD-SEQ or MULTI-SEQ object" "a target pathname")
-  :initvals '(nil nil)
-  :doc "
-Exports <self> to bach format.
-"
+(defmethod save-for-bach ((self t) &key path name)
   (let* ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                       :name name
                                                        :prompt "New bach file"
                                                        :types '("Text File" "*.txt")
                                                        ))))
@@ -409,6 +404,15 @@ Exports <self> to bach format.
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
       (om2bach self pathname))
     pathname))
+
+(defmethod! export-bach ((self t) &optional (path nil))
+  :icon 351
+  :indoc '("a VOICE, POLY, CHORD-SEQ or MULTI-SEQ object" "a target pathname")
+  :initvals '(nil nil)
+  :doc "
+Exports <self> to bach format.
+"
+  (save-for-bach self :path path))
 
 
 (defmethod! import-bach (&optional path)

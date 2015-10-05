@@ -3,46 +3,6 @@
 ;===========================================
 ;Save objects in MidiFile (const tempo = 60)
 ;===========================================
-
-(defmethod* save-as-midi ((object t) &optional filename &key (approx 2) (format nil)) 
-    :initvals '(nil) 
-  :icon 900
-  :doc "Saves <object> as a MIDI file.
-
-- <filename> defines the target pathname. If not specified, will be asked through a file choose dialog.
-- <approx> specifies the tone division (2, 4 or 8).
-- <format> alows to choose the MIDIFile format (0 or 1)
-
-For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Otherwise all voices are saved at tempo 60."
-  (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog  :directory (def-save-directory) 
-                                                                                 :prompt (om-str :save-as) 
-                                                                                 :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
-    (when name 
-      (unless (stringp (pathname-type name))
-          (setf name (make-pathname :device (pathname-device name)
-                                    :directory (pathname-directory name)
-                                    :name (pathname-name name)
-                                    :type "midi")))
-      (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-      (when (save-midifile name object approx nil (or format *def-midi-format*))
-        (namestring name)
-        ))))
-
-
-(defmethod* save-as-midi ((object voice) &optional filename &key (approx 2) (format nil)) 
-            (let ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                                                          :prompt (om-str :save-as) 
-                                                                                          :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
-              (when name 
-                (unless (stringp (pathname-type name))
-                  (setf name (make-pathname :device (pathname-device name)
-                                            :directory (pathname-directory name)
-                                            :name (pathname-name name)
-                                            :type "midi")))
-                (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-                (when (save-midifile name object approx (tempo-a-la-noire (car (tempo object))) (or format *def-midi-format*))
-                  (namestring name)))))
-
 ;=======================================================
 ;== Save voice/poly in midifile                       ==
 ;== Considering tempo and time signature information ==
@@ -63,23 +23,51 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
                   (setf currtempo nil) (setf currtempo (car item))))
     (list currtempo nil)))
 
+(defmethod object-midi-tempo ((self t)) nil)
 
-(defmethod* save-as-midi ((object poly) &optional filename &key (approx 2) (format nil))
-  (let* ((name (or (and filename (pathname filename)) (om-choose-new-file-dialog
-                                                          :directory (def-save-directory) 
-                                                          :prompt (om-str :save-as) 
-                                                          :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi"))))
-           (tempo (poly-same-tempo object)))
-      (when name 
-        (unless (stringp (pathname-type name))
-          (setf name (make-pathname :device (pathname-device name)
-                                    :directory (pathname-directory name)
-                                    :name (pathname-name name)
+(defmethod object-midi-tempo ((self voice)) 
+  (tempo-a-la-noire (car (tempo self))))
+
+(defmethod object-midi-tempo ((self poly)) 
+  (let ((poly-same-tempo self))
+    (if tempo (tempo-a-la-noire (car tempo)) nil)))
+
+(defmethod midi-export ((self t) &key path name format approx)
+  (let ((pathname (or path (om-choose-new-file-dialog  :directory (def-save-directory) 
+                                                       :name name
+                                                       :prompt (om-str :save-as) 
+                                                       :types (list (format nil (om-str :file-format) "MIDI") "*.mid;*.midi")))))
+    (when pathname 
+      (unless (stringp (pathname-type pathname))
+          (setf pathname (make-pathname :device (pathname-device pathname)
+                                    :directory (pathname-directory pathname)
+                                    :name (pathname-name pathname)
                                     :type "midi")))
-        (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
-        (when 
-            (save-midifile name object approx 
-                           (if tempo (tempo-a-la-noire (car tempo)) nil)
-                           (or format *def-midi-format*)))  
-        (namestring name))))
+      (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
+      (let ((tempo (object-midi-tempo self)))
+        (when (save-midifile pathname self approx tempo (or format *def-midi-format*))
+          (namestring name)
+          )
+        ))))
+
+
+;;; OM BOX 
+
+(defmethod* save-as-midi ((object t) &optional filename &key (approx 2) (format nil)) 
+    :initvals '(nil) 
+  :icon 900
+  :doc "Saves <object> as a MIDI file.
+
+- <filename> defines the target pathname. If not specified, will be asked through a file choose dialog.
+- <approx> specifies the tone division (2, 4 or 8).
+- <format> alows to choose the MIDIFile format (0 or 1)
+
+For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Otherwise all voices are saved at tempo 60."
+  (midi-export object :path filename :approx approx :format format))
+
+
+
+
+
+
 

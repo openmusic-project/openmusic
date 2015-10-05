@@ -691,36 +691,40 @@
     (format stream "~A~A~%" (string+ (make-sequence 'string level :initial-element #\Tab)) text)))
     
 (defun write-xml-file (list path)
-  (let ((pathname (or path (om-choose-new-file-dialog))))
-    (when pathname 
-      (WITH-OPEN-FILE (out pathname :direction :output 
-                           :if-does-not-exist :create :if-exists :supersede)
-        (loop for line in (mxml::mxml-header) do (format out "~A~%" line))
-        (recursive-write-xml out list -1))
+  (WITH-OPEN-FILE (out path :direction :output 
+                       :if-does-not-exist :create :if-exists :supersede)
+    (loop for line in (mxml::mxml-header) do (format out "~A~%" line))
+    (recursive-write-xml out list -1)))
+
+(defmethod xml-export ((self t) &key keys approx path name) nil)
+
+(defmethod xml-export ((self voice) &key keys approx path name) 
+  (xml-export (make-instance 'poly :voices self) :keys keys :approx approx :path path :name name))
+ 
+(defmethod xml-export ((self poly) &key keys approx path name) 
+  (let* ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                       :name name 
+                                                       :prompt "New XML file"
+                                                       :types '("XML Files" "*.xml")))))
+    (when pathname
+      (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
+      (write-xml-file (mxml::cons-xml-expr self :free 0 :key keys :approx approx) pathname)
       pathname)))
 
-(defmethod! export-musicxml ((self poly) &optional (keys '((G 2))) (approx 2) (path nil))
+
+(defmethod! export-musicxml ((self t) &optional (keys '((G 2))) (approx 2) (path nil))
   :icon 351
   :indoc '("a VOICE or POLY object" "list of voice keys" "tone subdivision approximation" "a target pathname")
   :initvals '(nil ((G 2)) 2 nil)
   :doc "
 Exports <self> to MusicXML format.
+
+- <keys> defines the staff
+- <approx> is the microtonal pitch approximation
+- <path> is a pathname to write the file in
 "
-  (let* ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                       :prompt "New XML file"
-                                                       :types '("XML Files" "*.xml")))))
-    (when pathname
-      (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-      (write-xml-file (mxml::cons-xml-expr self :free 0 :key keys :approx approx) pathname))))
+  (xml-export self :keys keys :approx approx :path path))
 
-
-(defmethod! export-musicxml ((self voice) &optional (keys '((G 2))) (approx 2) (path nil))
-  (let* ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                       :prompt "New XML file"
-                                                       :types '("XML Files" "*.xml")))))
-    (when pathname 
-      (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-      (write-xml-file (mxml::cons-xml-expr (make-instance 'poly :voices self) :free 0 :key keys :approx approx) pathname))))
 
 
 ;;;  UTILS 

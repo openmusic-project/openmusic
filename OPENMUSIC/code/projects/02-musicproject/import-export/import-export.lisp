@@ -130,7 +130,8 @@
     (om-make-menu "Export" 
 		  (mapcar #'(lambda (item) 
 			      (om-new-leafmenu (cadr item) #'(lambda () 
-							       (score-export (car item) (object self) (edition-params self)))))
+							       (score-export (car item) (object self) 
+                                                                             (edition-params self) (name (ref self))))))
 			  (export-formats (object self))))))
   
 
@@ -153,7 +154,7 @@
   (om-make-menu "Export" 
                 (mapcar #'(lambda (item) 
                             (om-new-leafmenu (cadr item) #'(lambda () 
-                                                             (score-export (car item) (value self) (edition-params self)))))
+                                                             (score-export (car item) (value self) (edition-params self) (name self)))))
                         (export-formats (value self)))))
 
 
@@ -195,23 +196,23 @@
     ))
 
 
-(defmethod score-export ((format t) object params)
+(defmethod score-export ((format t) object params name)
   (om-beep))
 
-(defmethod score-export ((format (eql 'om)) object params)
-  (save-instance object))
+(defmethod score-export ((format (eql 'om)) object params name)
+  (save-instance object name))
 
-(defmethod score-export ((format (eql 'midi)) object params)
-  (save-as-midi object nil :approx (or (get-param params 'approx) 2)))
+(defmethod score-export ((format (eql 'midi)) object params name)
+  (midi-export object :approx (or (get-param params 'approx) 2) :name name))
 
-(defmethod score-export ((format (eql 'etf)) object params)
-  (save-as-etf object (or (get-param params 'approx) 2)))
+(defmethod score-export ((format (eql 'etf)) object params name)
+  (etf-export object :approx (or (get-param params 'approx) 2) :name name))
 
-(defmethod score-export ((format (eql 'xml)) object params)
-  (export-musicxml object '((G 2)) (or (get-param params 'approx) 2)))
+(defmethod score-export ((format (eql 'xml)) object params name)
+  (xml-export object :keys '((G 2)) :approx (or (get-param params 'approx) 2) :name name))
 
-(defmethod score-export ((format (eql 'finale)) object params)
-  (finale-export object (or (get-param params 'approx) 2) 'file))
+(defmethod score-export ((format (eql 'finale)) object params name)
+  (finale-export object (or (get-param params 'approx) 2) name))
 
 ;;;===============================
 ;;; clipboard-mode

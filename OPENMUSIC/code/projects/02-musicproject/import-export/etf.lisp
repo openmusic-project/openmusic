@@ -1285,7 +1285,39 @@
 
 (in-package :om)
 
-(defmethod! save-as-etf ((object t) &optional (approx 2))
+
+(defmethod etf-export ((self t) &key approx path name)
+  (om-beep-msg "Only for voice or poly objects"))
+
+(defmethod etf-export ((self voice) &key (approx 2) path name)
+  (let ((pathname (or path (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                      :name name
+                                                      :prompt "New ETF file"  :types '("ETF Files" "*.etf")))))
+    (when pathname
+      (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
+      (setf cleni::*my-score* (cleni::new-score))
+      (eval (cleni::cons-cleni-expr (make-instance 'poly :voices self) 0 approx))
+      (cleni::translate-score cleni::*my-score* pathname)
+      pathname)))
+
+(defmethod etf-export ((self poly) &key (approx 2) path name)
+  (let ((pathname (or path 
+                      (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                 :name name 
+                                                 :prompt "New ETF file"  :types '("ETF Files" "*.etf")))))
+     (when pathname 
+       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
+       (setf cleni::*my-score* (cleni::new-score))
+       (eval (cleni::cons-cleni-expr self 0 approx))
+       (cleni::translate-score cleni::*my-score* pathname))
+     pathname))
+
+(defmethod etf-export ((self t) &key approx path name)
+  (om-beep-msg "Only for voice or poly objects"))
+
+
+
+(defmethod! save-as-etf ((object t) &optional (approx 2) path)
    :initvals '(nil) 
    :indoc '("a VOICE or POLY object") 
    :icon 350
@@ -1294,30 +1326,8 @@ Saves <object> as an ETF (Enigma Transportable Format by MakeMusic) file.
 
 The target pathnamewill be asked through a file choose dialog.
 - <approx> specifies the tone division (supported: 2 or 4).
+- <path> is a pathname for output
 "
-   (om-beep-msg "Only for voice or poly objects"))
-
-
-(defmethod! save-as-etf ((self voice) &optional (approx 2))
-   (let ((pathname (om-choose-new-file-dialog  :directory (def-save-directory) 
-                                               :prompt "New ETF file"  :types '("ETF Files" "*.etf"))))
-     (when pathname 
-       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-       (setf cleni::*my-score* (cleni::new-score))
-       (eval (cleni::cons-cleni-expr 
-              (make-instance 'poly
-                :voices self) 0 approx))
-       (cleni::translate-score cleni::*my-score* pathname))))
-
-
-
-(defmethod! save-as-etf ((self poly)  &optional (approx 2))
-            (let ((pathname (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                       :prompt "New ETF file"  :types '("ETF Files" "*.etf"))))
-     (when pathname 
-       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
-       (setf cleni::*my-score* (cleni::new-score))
-       (eval (cleni::cons-cleni-expr self 0 approx))
-       (cleni::translate-score cleni::*my-score* pathname))))
+   (etf-export object :approx approx :path path))
 
 
