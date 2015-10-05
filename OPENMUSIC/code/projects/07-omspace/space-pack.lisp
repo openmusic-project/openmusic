@@ -4,6 +4,7 @@
 
 (defvar *3D-package* (omNG-protect-object (omNG-make-new-package "3D")))
 (AddClass2Pack '(3DC 3DC-lib) *3D-package*)
+(AddGenFun2Pack '(3D-interpol 3D-sample) *3D-package*)
 (AddPackage2Pack *3D-package* *basic-package*)
 
 ;;; GEOMETRIC UTILS
@@ -15,8 +16,8 @@
 ;;; IN OM ROOT
 ;(AddPackage2Pack *space-package* *om-package-tree* )
 
-(add-ref-section 
+(add-ref-section  
  '("BASIC TOOLS" (
-                  ("3D" (3DC 3DC-lib 3D-trajectory))
+                  ("3D" (3DC 3DC-lib 3D-trajectory 3D-interpol 3D-sample))
                   ("Geometry" (deg->rad rad->deg car->pol pol->car xy->ad ad->xy xyz->aed aed->xyz))
                  )))

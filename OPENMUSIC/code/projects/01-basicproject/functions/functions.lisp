@@ -45,6 +45,34 @@ The resulting function can be connected for example to SAMPLEFUN."
   (linear x0 y0 x1 y1))
 
 
+;------------ TRIGONOMETRIK -----------------
+; (from OMPrisma)
+;*** sine/cosine functions for lists
+
+(defmethod! om-sin ((arg1 number))  
+  :initvals '(nil)
+  :icon '(209) 
+  :indoc '("list")
+  :doc "Sine for every item in list."
+  (sin arg1))
+
+(defmethod! om-sin ((arg1 list))   
+  (mapcar #'(lambda (input) (sin input)) arg1))
+
+;*** cosine function for lists
+
+(defmethod! om-cos ((arg1 number))  
+  :initvals '(nil) 
+  :icon '(209) 
+  :indoc '("list")
+  :doc "Cos for every item in list."
+  (cos arg1))
+
+(defmethod! om-cos ((arg1 list))   
+  (mapcar #'(lambda (input) (cos input)) arg1))
+
+
+
 ;;;==========================
 ;;; INTERPOLATION
 
@@ -250,7 +278,7 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
                 (xpts (arithm-ser 0 (1- (length lst)) 1)))
             (when (and lst xpts)
               (let* ((ylist (if (integerp nbs-sr) 
-                                (interpole xpts lst x0 x1 nbs-sr)
+                                (mapcar #'(lambda (f) (coerce f 'single-float)) (interpole xpts lst x0 x1 nbs-sr))
                               (interpolate xpts lst nbs-sr)))
                      (xlist (arithm-ser 0 (1- (length ylist)) 1)))
                 (values (simple-bpf-from-list xlist ylist 'bpf (or dec 4))
@@ -525,6 +553,7 @@ Outputs
         ))
 
 
+
 (defmethod! bpf-offset ((self bpf) offset)
             :icon 213   
             :initvals '(nil 0) 
@@ -630,6 +659,57 @@ Outputs
          (xlist (if (or x1 x2) (om-scale xp (or x1 (car xp)) (or x2 (last-elem xp))) xp))
          (ylist (if (or y1 y2) (om-scale yp (or y1 (car yp)) (or y2 (last-elem yp))) yp)))
     (simple-bpf-from-list xlist ylist (type-of self) (decimals self))))
+
+
+
+
+;;; From OMPrisma traj-rotate
+(defmethod! om-rotate ((self BPC) (axis symbol) (degrees number))  
+     :icon 500  
+     :initvals '(nil 'yaw 0) 
+     :indoc '("a bpc or 3DC" "rotation axis" "number of degrees")
+     :menuins '((1 (("yaw" 'yaw) ("pitch" 'pitch) ("roll" 'roll))))
+     :numouts 1
+     :doc "Rotation in 3D using Euler angles. Rotates 3d-trajectory, dc, BPC, 3dc-lib"
+         
+            (let* ((xpoints (x-points self))
+                   (ypoints (y-points self))                   
+                   (ad (multiple-value-list (xy->ad xpoints ypoints )))
+                   (a (om+ (first ad) degrees))
+                   (xy (multiple-value-list (ad->xy a (second ad)))))
+              (simple-bpf-from-list (first xy) (second xy) (type-of self) (decimals self))
+            ))
+
+(defmethod! om-translate ((self bpc) &key x y z)  
+            :icon 500  
+            :initvals '(nil) 
+            :indoc '("A bpc, 3DC or board")
+            :numouts 1
+            :doc "Translates a Bpc or 3DC"
+            (let (mybpf (thex x) (they y))
+              (unless (numberp x) (setf thex 0))
+              (unless (numberp y) (setf they 0))
+              (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
+              ))
+
+
+;;; From OMPrisma traj-mirror
+(defmethod! om-mirror ((self bpc) &key x y z)
+  :icon 500  
+  :initvals '(nil) 
+  :indoc '("A bpc or 3DC")
+  :numouts 1
+  :doc "Calculates a symmetric curve."             
+  (setf xrev (x-points self)
+                  yrev (y-points self))
+              (unless (or x y)
+                (setf xrev (om* -1 (x-points self)))
+                (setf yrev (om* -1 (y-points self))))
+                   (when x (setf xrev (om* -1 (x-points self))))
+                   (when y (setf yrev (om* -1 (y-points self))))
+              (simple-bpf-from-list xrev yrev 'bpc (decimals self))
+              )
+
 
 
 
