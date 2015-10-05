@@ -52,19 +52,29 @@
 
 ;==============================================
 
-(omg-defclass info-window (om-dialog)
+(defclass info-window (om-dialog)
    ((sujet :initform nil :initarg :sujet :accessor sujet)
-    (doc-item :initform nil :initarg :doc-item :accessor doc-item)))
+    (doc-item :initform nil :initarg :doc-item :accessor doc-item)
+    (cp-item :initform nil :accessor cp-item)))
 
 (defmethod om-window-class-menubar ((self info-window))
   (list (om-make-menu "File"
                       (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")))
+        (om-make-menu "Edit" (list (om-new-leafmenu "Cut" #'(lambda () (cut self)) "x")
+                                   (om-new-leafmenu "Copy" #'(lambda () (copy self)) "c") 
+                                   (om-new-leafmenu "Paste" #'(lambda () (paste self)) "v")))
         (make-om-menu 'windows :editor self)))
 
 (defmethod om-window-close-event :after ((self info-window))
   (update-close (sujet self) self)
   (setf (infowin (sujet self)) nil))
 
+(defmethod cut ((self info-window)) 
+  (if (cp-item self) (om-cut-command (cp-item self)) (om-beep)))
+(defmethod copy ((self info-window)) 
+  (if (cp-item self) (om-copy-command (cp-item self)) (om-beep)))
+(defmethod paste ((self info-window)) 
+  (if (cp-item self) (om-paste-command (cp-item self)) (om-beep)))
 
 (defmethod update-close ((self t) win)
   (when (doc-item win)
@@ -85,7 +95,9 @@
                                    :font *om-default-font2*
                                    )))
       (eval `(om-add-subviews ,dialog ,.(cdr info)))
-      (setf (doc-item dialog) (cadr info))
+      (setf (doc-item dialog) (nth 1 info))
+      (setf (cp-item dialog) (nth 4 info))
+      
       (setf (infowin self) dialog)
       (om-add-menu-to-win dialog)
       (om-select-window dialog)
@@ -324,6 +336,7 @@
                                "Name:"
                                
                                :font *om-default-font2*)
+          
           (om-make-dialog-item 'om-editable-text (om-make-point 80 28)
                                (om-make-point 150 20)
                                (name self)
@@ -653,7 +666,7 @@
 ;;; SPECIAL MAQUETTE
 
 
-(omg-defclass info+offset-window (info-window)
+(defclass info+offset-window (info-window)
   ((posx :initform nil :initarg :posx :accessor posx)
    (changes :initform nil  :accessor changes)))
 
