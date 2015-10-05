@@ -398,16 +398,18 @@ If <dynamics>
     (update-panel self t)))
 
 
+
+(defmethod add-vel-extra ((self rest)) nil)
+
 (defmethod add-vel-extra ((self t)) 
-  (when (print (get-extras self "vel"))
+  (when (get-extras self "vel")
     (remove-extras self "vel" nil))
   (let* ((newextra (make-instance 'vel-extra :object self))
-         (notes (notesforhead self))
-         (vel (vel (car notes)))
+         (vel (get-object-vel self))
          (dyn (get-dyn-from-vel vel)))
-    (setf (dynamics newextra) dyn)
-    (push newextra (extra-obj-list self))
-    (set-vel self vel)))
+  ;(setf (dynamics newextra) dyn)
+  (push newextra (extra-obj-list self))
+  (set-vel self vel)))
 
 
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
