@@ -269,7 +269,7 @@
                               "Color Mode"
                               :font *controls-font*
                               :fg-color *om-black-color*)
-         (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 290) (om-make-point 100 20) ""
+         (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 8 280) (om-make-point 100 20) ""
                               :range '("Simple" "Path" "Speed")
                               :value (case (param-color-mode self)
                                        ((equal 0) "Simple")
@@ -307,7 +307,7 @@
   
     (let ((mode (param-color-mode self))
           (_x 5)
-          (_y 320))
+          (_y 310))
       (setf (color-mode-buttons self)
             (case mode
               ((= 0)
@@ -317,8 +317,8 @@
                                      :font *controls-font*
                                      :fg-color *om-black-color*)
                 (om-make-view 'om-color-view 
-                              :position (om-make-point (+ _x 75) _y) 
-                              :size (om-make-point 30 22) 
+                              :position (om-make-point (+ _x 75) (+ _y 2)) 
+                              :size (om-make-point 25 18) 
                               :color (bpfcolor (get-current-object self))
                               :after-fun #'(lambda (item) 
                                              (setf (bpfcolor (get-current-object self)) (color item))
@@ -332,8 +332,8 @@
                                      :font *controls-font*
                                      :fg-color *om-black-color*)
                 (om-make-view 'om-color-view 
-                              :position (om-make-point (+ _x 25) _y) 
-                              :size (om-make-point 25 22) 
+                              :position (om-make-point (+ _x 25) (+ _y 2)) 
+                              :size (om-make-point 25 18) 
                               :color (let ((rgb (hsv2rgb (param-color-min self))))
                                        (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
                               :after-fun #'(lambda (item) 
@@ -346,8 +346,8 @@
                                      :font *controls-font*
                                      :fg-color *om-black-color*)
                 (om-make-view 'om-color-view 
-                              :position (om-make-point (+ _x 85) _y) 
-                              :size (om-make-point 25 22) 
+                              :position (om-make-point (+ _x 85) (+ _y 2)) 
+                              :size (om-make-point 25 18) 
                               :color (let ((rgb (hsv2rgb (param-color-max self))))
                                        (om-make-color (nth 0 rgb) (nth 1 rgb) (nth 2 rgb)))
                               :after-fun #'(lambda (item) 

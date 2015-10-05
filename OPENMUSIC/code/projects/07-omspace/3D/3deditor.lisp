@@ -328,7 +328,13 @@
 
 (defmethod default-edition-params ((self 3DC)) 
   (pairlis '(winsize winpos mode show-axes show-room room-size line-width bg-color) 
-           (list (om-make-point 800 800) (om-make-point 600 200) 0 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH* nil)))
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 
+                 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH* nil)))
+
+(defmethod default-edition-params ((self 3DC-lib)) 
+  (pairlis '(winsize winpos mode show-axes show-room room-size line-width bg-color) 
+           (list (om-make-point 800 800) (om-make-point 600 200) 0 
+                 *OM-DEFAULT-SHOW-AXES* *OM-DEFAULT-SHOW-ROOM* *OM-DEFAULT-ROOM-SIZE* *OM-GL-DEFAULT-LINEWIDTH* nil)))
 
 (defmethod get-editor-class ((self 3DC)) '3DEditor)
 
@@ -387,7 +393,7 @@
     (draw-3D-axes (om-view-container self))
     (opengl:gl-pop-matrix)))
 
-(defmethod draw-3D-axes ((self 3DEditor))
+(defmethod draw-3D-axes ((self 3DEditor)) 
   (let ((l (/ (float (param-room-size self)) 2.0)))
     (opengl:gl-begin opengl:*GL-LINES*)
     (opengl:gl-color3-f 0.8 0.3 0.3)
@@ -735,7 +741,7 @@
   (om-add-subviews self
                    (setf (ctrlp self) (om-make-view '3Dcontrols
                                                      :owner self
-                                                     :title "3D Controls"
+                                                     ;:title "3D Controls"
                                                      :bg-color *om-light-gray-color*
                                                      :c++ *om-gray-color*
                                                      :c+ *om-light-gray-color*
@@ -799,8 +805,8 @@
                                         :font *controls-font*
                                         :fg-color *om-black-color*)
                    (om-make-view 'om-color-view 
-                                 :position (om-make-point 80 170) 
-                                 :size (om-make-point 30 22) 
+                                 :position (om-make-point 80 172) 
+                                 :size (om-make-point 25 18) 
                                  :color (om-get-bg-color (3Dp self))
                                  :after-fun #'(lambda (item) 
                                                 (set-edit-param (ref self) 'bg-color (color item))
@@ -919,8 +925,8 @@
                               :font *controls-font*
                               :fg-color *om-black-color*)
          (om-make-view 'om-color-view 
-                       :position (om-make-point 80 260) 
-                       :size (om-make-point 30 22) 
+                       :position (om-make-point 80 262) 
+                       :size (om-make-point 25 18) 
                        :color (bpfcolor (get-current-object self))
                        :after-fun #'(lambda (item) 
                                       (setf (bpfcolor (get-current-object self)) (color item))
