@@ -1,19 +1,3 @@
-;; ==================================================================================== 
-;;                                musicxml export
-;; ==================================================================================== 
-;;
-;;                                  
-;;                authors : Karim Haddad  and Petar Klanac 
-;;                     
-;;
-;;
-;;                           $Revision: 1.1 $
-;;                      $Date: 2008/06/23 15:07:04 $
-;;
-;;
-;;
-;;
-;;
 ;This program is free software; you can redistribute it and/or
 ;modify it under the terms of the GNU General Public License
 ;as published by the Free Software Foundation; either version 2
@@ -31,6 +15,22 @@
 ;Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
+;; ==================================================================================== 
+;;                                musicxml export
+;; ==================================================================================== 
+;;
+;;                                  
+;;                authors : Karim Haddad and Petar Klanac 
+;;                     
+;;
+;;
+;;                           $Revision: 1.1 $
+;;                      $Date: 2008/06/23 15:07:04 $
+;;                           $Revision: 2 $
+;;                      $Date: 2015/10/05 Jean Bresson $
+;;
+
+
 (defpackage "MusicXML" 
   (:use "COMMON-LISP")
   (:nicknames "MXML"))
@@ -43,8 +43,6 @@
 
 
 ;;; TOOLS
-
-;;By Karim Haddad
 
 (defmethod in-group?  ((self om::chord)) 
   (om::group-p (om::parent self)))
@@ -480,18 +478,13 @@
 
 (defmethod velocity-as-xml ((self om::chord))
   (when (om::get-extras self "vel")
-    (let ((schar (om::dynamics (car (om::get-extras self "vel")))))
-      (list (format nil "<dynamics placement=\"below\"><~A/></dynamics>" (om::dyn-to-char schar))))))
-
+    
+    (let* ((ex (car (om::get-extras self "vel")))
+           (schar (or (om::dynamics ex)
+                      (om::get-dyn-from-vel (om::get-object-vel (om::object ex))))))
+      (list (format nil "<dynamics placement=\"below\"><~A/></dynamics>" schar)))))
 
 (defmethod velocity-as-xml ((self om::rest)) nil)
-
-;(list "<direction placement=\"below\">"
-;      (list "<direction-type>"
-;            (format nil "<dynamics><~A/></dynamics>" (om::get-vel-string schar)) ;; default-x="129" default-y="-75">
-;            "</direction-type>"
-;            "<staff>1</staff>")
-;      "</direction>")
 
 (defun midi-vel-to-mxml-vel (vel)
   (round (* (/ vel 90.0) 100)))
