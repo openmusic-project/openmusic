@@ -254,6 +254,12 @@ Optional params allow to compute precise trajectories from the object points. Se
     new-3DC))
 
 
+(defmethod* objFromObjs ((self 3D-trajectory) (type 3DC))
+  (let ((new-3DC (3Dc-from-list (x-points self) (y-points self) (z-points self) (type-of type) (decimals self))))
+    (setf (bpfcolor new-3DC) (bpfcolor self))
+    (setf  (decimals new-3DC) (decimals self))
+    new-3DC))
+
 ;;;================================================
 
 (defun get-segments (points) 
