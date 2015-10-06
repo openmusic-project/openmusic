@@ -50,7 +50,7 @@
                     "system"
                     "tools"
                     "graphics"
-                    ;"movable-object"
+                    "movable-object"
                     "graphic-object"
                     "window"
                     "view"
