@@ -57,7 +57,12 @@
   (:default-initargs :color *om-red2-color*))
 
 (defmethod segment-begin ((self marker-segment)) (mrk-time self))
-(defmethod segment-end ((self marker-segment)) (mrk-time self))
+(defmethod segment-end ((self marker-segment)) 
+  (if (and (container-analysis self) (analysis-object (container-analysis self)))
+      (if (next-segment self)
+          (segment-begin (next-segment self))
+        (get-obj-dur (analysis-object (container-analysis self))))
+    (te self)))
 
 (defmethod draw-segment ((self marker-segment) view) 
   (let* ((p1 (time-to-pixels view (mrk-time self))))
