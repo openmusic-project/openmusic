@@ -221,7 +221,6 @@
    (click-motion-action :initform nil :accessor click-motion-action)
    (release-motion-action :initform nil :accessor release-motion-action)))
 
-
 (defmethod om-init-motion-functions ((self om-movable-view) click-motion release)
   (setf *clicked-view* self)
   (setf (click-motion-action self) click-motion)
