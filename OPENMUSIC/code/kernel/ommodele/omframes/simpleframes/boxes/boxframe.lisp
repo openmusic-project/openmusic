@@ -82,15 +82,15 @@
 	      (initpoint (om-convert-coordinates where self panel ))
 	      (rx (om-point-h initpoint))
 	      (ry (om-point-v initpoint)))
-	 (om-init-motion-draw panel where :motion-draw 'make-connection-motion :release-action 'release-connection-motion)
+	 (om-init-motion-draw panel where :motion-draw 'make-connection-motion :release-action 'release-connection-motion :mode 5)
 	 ;(om-new-movable-object panel rx ry 4 4 'om-movable-line)
 	 (setf *show-input-vals* nil))))
   t)
 
 
 
-(defmethod make-connection-motion ((self outfleche) init-pos pos)
-  (let* ((panel (panel (om-view-container self)))
+(defmethod make-connection-motion ((self om-view) init-pos pos)
+  (let* ((panel self) ; (panel (om-view-container self)))
          (initpoint (om-convert-coordinates pos self panel ))
          (rx (om-point-h initpoint))
          (ry (om-point-v initpoint))
@@ -101,11 +101,11 @@
              (ny (om-rect-top newrect))
              (nw (om-rect-w newrect))  
              (nh (om-rect-h newrect)))
-        (om-with-focused-view panel
+        ;(om-with-focused-view panel
           (om-with-line-size 2
             ;(om-update-movable-object panel nx ny (max nw 2) (max nh 2))
             (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))
-            ))
+            );)
             )
       (let ((myview (om-find-view-containing-point panel (om-make-point rx ry))))
         (if (input? myview) 
@@ -113,13 +113,13 @@
           (om-hide-tooltip myview))))))
 
 
-(defmethod release-connection-motion ((self outfleche) pos)
+(defmethod release-connection-motion ((self om-view) init-pos pos)
   (let* ((panel (panel (om-view-container self)))
          (initpoint (om-convert-coordinates pos self panel ))
          (rx (om-point-h initpoint))
          (ry (om-point-v initpoint))
          ctrl)
-    (om-erase-movable-object panel)
+    ;(om-erase-movable-object panel)
     (setf *show-input-vals* t)
     (setf ctrl (om-find-view-containing-point panel (om-make-point rx ry)))
     (om-hide-tooltip ctrl)

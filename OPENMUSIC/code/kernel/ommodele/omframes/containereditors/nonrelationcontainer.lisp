@@ -495,7 +495,8 @@ with the objects respectly associeted."))
           (y2 (max (om-point-y pos) (om-point-y initpos))))
       (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
         (when (not (= 0 (caddr rect) (cadddr rect)))
-          (do-select-items-in-rect self rect)))
+          (do-select-items-in-rect self rect))
+        (om-invalidate-view self))
       ))
 
 
