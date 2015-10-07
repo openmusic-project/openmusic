@@ -60,7 +60,7 @@
 ;INPUTS
 ;===========================
 
-(omg-defclass input-tempobj-frame (input-funboxframe) ())
+(defclass input-tempobj-frame (input-funboxframe) ())
 
 (defmethod initialize-instance :after ((self input-tempobj-frame) &key controls)
   (declare (ignore controls))
@@ -104,7 +104,7 @@
 ;===========================
 ;OUTPUTS
 ;===========================
-(omg-defclass outtempobj (outfleche) ())
+(defclass outtempobj (outfleche) ())
 
 (defmethod initialize-instance :after ((self outtempobj) &key controls)
   (declare (ignore controls))
@@ -123,7 +123,8 @@
 ;===========================
 ;FRAME
 ;===========================
-(omg-defclass tempobjframe (om-view-drag boxframe om-view-drop) 
+; boxframe
+(defclass tempobjframe (om-view-drag boxframe om-view-drop) 
    ((mode :initform 'normal :accessor mode)
     (minipict :initform nil :accessor minipict))
    (:documentation "Simple frame for temporalbox boxes in maquettes. #enddoc#

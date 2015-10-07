@@ -36,7 +36,9 @@
 ;===========================================
 ;ICON FINDER CLASS
 ;===========================================
-(defclass icon-finder (OMCompoundFrame om-view-drop)
+
+; OMCompoundFrame
+(defclass icon-finder (OMAtomicFrame om-view-drop)
    ((nameView :initform nil :initarg :nameView :accessor nameView)
     (iconView :initform nil :initarg :iconView :accessor iconView)
     (triangle :initform nil :accessor triangle)

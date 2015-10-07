@@ -922,13 +922,13 @@
   (om-init-motion-functions self 'zoom-system-motion 'zoom-system-release)
   (om-new-movable-object self (om-point-h where) 0 4 (h self) 'om-selection-rectangle))
 
-(defmethod zoom-system-motion ((self Bpf-Parameter-Panel) pos)
+(defmethod zoom-system-motion ((self Bpf-Parameter-Panel) initpos pos)
   (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
     (when rect
       (om-update-movable-object self (first rect) 0 (max 4 (third rect)) (h self)))))
 
 
-(defmethod zoom-system-release ((self Bpf-Parameter-Panel) pos)
+(defmethod zoom-system-release ((self Bpf-Parameter-Panel) initpos pos)
   (let ((editor (om-view-container self))
         (rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
         user-rect )

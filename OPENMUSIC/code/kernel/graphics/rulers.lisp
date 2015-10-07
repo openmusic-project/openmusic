@@ -186,17 +186,25 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 
 (defmethod om-view-click-handler  ((self ruler) where)
     (reset-selection self)
-    (setf *ruler-last-click* where)
-    (om-init-motion-functions self 'strech-ruler-motion 'strech-ruler-release))
+    (setf *ruler-last-click* where))
 
-(defmethod strech-ruler-motion ((self ruler) pos) 
+(defmethod om-click-motion-handler ((self ruler) pos)
+  (strech-ruler-motion self pos *ruler-last-click*)
+  (setf *ruler-last-click* pos))
+
+(defmethod om-click-release-handler ((self ruler) pos)
+  (strech-ruler-release self pos)
+  (setf *ruler-last-click* nil))
+
+(defmethod strech-ruler-motion ((self ruler) pos prev-pos) 
   (let* ((axe (axe self))
          (editor (assoc-view-singleton self))
-         (oldrange (if (eql axe 'x) (second (rangex editor))
+         (oldrange (if (eql axe 'x) 
+                       (second (rangex editor))
                      (second (rangey editor))))
          (delta  (if (eql axe 'x) 
-                     (- (om-point-h *ruler-last-click*) (om-point-h pos))
-                   (-  (om-point-v pos) (om-point-v *ruler-last-click*))))
+                     (- (om-point-h prev-pos) (om-point-h pos))
+                   (-  (om-point-v pos) (om-point-v prev-pos))))
          (ppu (norme2pixel editor axe (zoom self)))
          (deltapoint (pixel2norme editor axe delta)))
     (unless (and (minusp delta) nil
@@ -208,7 +216,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
               (setf (second (rangey item)) (+ oldrange deltapoint)))
             (set-units-ruler item self))
       (om-redraw-view self)
-      (setf *ruler-last-click* pos))))
+      )))
 
 (defmethod strech-ruler-release ((view ruler) pos)
   (om-invalidate-view view)
@@ -219,6 +227,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    (when (ruler-selection? self)
      (setf (ruler-selection? self) nil)
      (om-invalidate-view self t)))
+
 
 ;(defmethod corrige-selection ((self ruler) editor)
 ;   (when (ruler-selection? self)
@@ -246,7 +255,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 
 (omg-defclass static-ruler (ruler) () )
 
-(defmethod strech-ruler-motion ((self static-ruler) pos) t)
+(defmethod strech-ruler-motion ((self static-ruler)  pos prev-pos) t)
 (defmethod strech-ruler-release ((view static-ruler) pos) t)
 (defmethod om-view-cursor ((self static-ruler)) nil)
 
@@ -683,26 +692,17 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 
 
 (defmethod zoom-system ((self view-with-ruler-xy) where)
-  "Used to zoom in the wiew 'self' if it containts x and y rulers"
-  (om-init-motion-functions self 'zoom-system-motion 'zoom-system-release)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle))
+  (om-init-motion-draw self where :motion-draw 'zoom-system-motion :release-action 'zoom-system-release :mode 2))
 
 
-(defmethod zoom-system-motion ((self view-with-ruler-xy) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect))))))
+(defmethod zoom-system-motion ((self view-with-ruler-xy) initpos pos)
+  (draw-selection-rectangle self initpos pos))
 
-(defmethod zoom-system-release ((self view-with-ruler-xy) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-        user-rect )
-    (when rect
-      (om-erase-movable-object self)
-      (setf user-rect (om-make-rect (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
-      (let* ((x (om-rect-topleft user-rect))
-             (x1 (om-rect-bottomright user-rect))
-             (dif (om-subtract-points x1 x)))
-        (when (and (> (abs  (om-point-h dif)) 10) (> (abs (om-point-v dif)) 10))
+(defmethod zoom-system-release ((self view-with-ruler-xy) initpos pos)
+  (let* ((x initpos)
+         (x1 pos)
+         (dif (om-subtract-points x1 x)))
+    (when (and (> (abs  (om-point-h dif)) 10) (> (abs (om-point-v dif)) 10))
           (let ((new-point (pixel2point self x))
                 (new-point1 (pixel2point self x1)))
             (when (and (>  (om-point-h new-point1) (+  (om-point-h new-point) 1))
@@ -711,8 +711,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
                           (list (om-point-v new-point1) (om-point-v new-point) ))
               (update-view-of-ruler self))))
         (om-invalidate-view (rulerx self) t)
-     (om-invalidate-view (rulery self) t))))) ;effacer zoom-system
-
+     (om-invalidate-view (rulery self) t)))
 
 
 (defmethod init-coor-system ((self view-with-ruler-xy))

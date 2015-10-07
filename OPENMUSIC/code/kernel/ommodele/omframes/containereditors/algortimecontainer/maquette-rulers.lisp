@@ -32,7 +32,7 @@
 ;-------------------------------------------------
 ; X RULER
 ;-------------------------------------------------
-(omg-defclass maq-ruler (ruler) 
+(defclass maq-ruler (ruler) 
   ((x-step :accessor x-step :initarg :x-step :initform 1)))
 
 
@@ -68,7 +68,7 @@
 ;-------------------------------------------------
 ;;; VERTICAL RULER
 ;-------------------------------------------------
-(omg-defclass maq-y-ruler (ruler) 
+(defclass maq-y-ruler (ruler) 
    ((y-step :accessor y-step :initarg :y-step :initform 1)
     (force :accessor force :initarg :force :initform t)))
 
@@ -131,7 +131,7 @@
 ;-------------------------------------------------
 ;This is the optional metric ruler
 ;-------------------------------------------------
-(omg-defclass metric-ruler (om-view-drop ruler-metric) ())
+(defclass metric-ruler (om-view-drop ruler-metric) ())
 
 (defmethod draw-metric  ((self metric-ruler) mesure)
   (om-with-fg-color self *om-dark-gray-color*
@@ -193,7 +193,7 @@
 
 ;;===========================================
 
-(omg-defclass change-tempo-item (om-view)
+(defclass change-tempo-item (om-view)
   ((temponum :initform 4 :initarg :temponum :accessor temponum)))
 
 (defmethod om-draw-contents ((self change-tempo-item))

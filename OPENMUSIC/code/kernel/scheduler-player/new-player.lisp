@@ -511,21 +511,25 @@
 ;--------------------
 
 (defmethod new-interval-cursor ((self cursor-play-view-mixin) where)
-  (om-init-motion-functions self 'interval-select-action 'release-interval-select)
-  (om-new-movable-object self (om-point-h where) 0 4 (h self) 'om-selection-rectangle))
+  (om-init-motion-draw self (om-make-point (om-point-x where) 0) 
+                       :motion-draw 'draw-selection-interval 
+                       :release-action 'release-interval-select))
 
-(defmethod interval-select-action ((self cursor-play-view-mixin) pos)
- (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
+(defmethod draw-selection-interval (view initpos pos)
+  (om-with-fg-color view oa::*om-select-color-alpha*
+    (om-fill-rect (om-point-x initpos) 0 (- (om-point-x pos) (om-point-x initpos)) (h view)))
+  (om-with-fg-color view (om-make-color 0.5 0.5 0.5)
+    (om-draw-rect (om-point-x initpos) 0 (- (om-point-x pos) (om-point-x initpos)) (h view) :pensize 1)))
+
+
+(defmethod release-interval-select ((self cursor-play-view-mixin) initpos pos)  
+  (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
+        (y1 (min (om-point-y pos) (om-point-y initpos)))
+        (x2 (max (om-point-x pos) (om-point-x initpos)))
+        (y2 (max (om-point-y pos) (om-point-y initpos))))
+    (let ((rect (list x1 y1 (- x2 x1) (- y2 y1)))
+          (minpixel 2) position)
     (when rect
-     (om-update-movable-object self (first rect) (om-v-scroll-position self) 
-                               (max 4 (third rect)) (om-point-v (om-interior-size self))))))
-
-(defmethod release-interval-select ((self cursor-play-view-mixin) pos)  
-
-  (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-        (minpixel 2) position)
-    (when rect
-      (om-erase-movable-object self)
       (setf position (if (> (third rect) minpixel)
                          (list (car rect) (+ (car rect) (third rect)))
                        (car rect)))
@@ -537,7 +541,8 @@
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
       (update-player-interval (om-view-container self) (or (cursor-interval self) (list (cursor-pos self) nil)))
-      (om-invalidate-view self))))
+      (om-invalidate-view self)
+      ))))
 
 
 (defmethod draw-interval-cursor ((self cursor-play-view-mixin))

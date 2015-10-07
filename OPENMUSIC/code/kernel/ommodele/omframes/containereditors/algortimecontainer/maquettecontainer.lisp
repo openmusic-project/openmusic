@@ -744,7 +744,7 @@
    (om-invalidate-view self)
    )
   
-(defmethod zoom-system-release ((self maquettepanel) pos)
+(defmethod zoom-system-release ((self maquettepanel) initpos pos)
   (call-next-method)
   (when (< (car (rangex self)) 0) 
     (set-ranges self (list 0  (cadr (rangex self))) (rangey self))

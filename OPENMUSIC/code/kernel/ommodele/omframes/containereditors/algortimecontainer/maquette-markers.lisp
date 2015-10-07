@@ -244,7 +244,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
 ;-------------------------------------------
 
 ;------------simple frame class
-(omg-defclass markerframe (simpleboxframe) ())
+(defclass markerframe (boxframe) ())
 
 (defmethod markerframe-p ((self markerframe)) t)
 (defmethod markerframe-p ((self t)) nil)

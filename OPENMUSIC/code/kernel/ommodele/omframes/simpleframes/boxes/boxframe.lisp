@@ -37,7 +37,7 @@
 ;General outputs class
 ;==================================================
 
-(omg-defclass outfleche (icon-view) 
+(defclass outfleche (icon-view) 
    ((index :initform 0 :initarg :index :accessor index)))
 
 ;------------INITS
@@ -82,29 +82,30 @@
 	      (initpoint (om-convert-coordinates where self panel ))
 	      (rx (om-point-h initpoint))
 	      (ry (om-point-v initpoint)))
-	 (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-	 (om-new-movable-object panel rx ry 4 4 'om-movable-line)
+	 (om-init-motion-draw panel where :motion-draw 'make-connection-motion :release-action 'release-connection-motion)
+	 ;(om-new-movable-object panel rx ry 4 4 'om-movable-line)
 	 (setf *show-input-vals* nil))))
   t)
 
 
 
-(defmethod make-connection-motion ((self outfleche) pos)
+(defmethod make-connection-motion ((self outfleche) init-pos pos)
   (let* ((panel (panel (om-view-container self)))
          (initpoint (om-convert-coordinates pos self panel ))
          (rx (om-point-h initpoint))
          (ry (om-point-v initpoint))
-         (initpos  (om-init-point-movable-object panel)))
+         (initpos (om-init-point-movable-object panel)))
     (when initpos
       (let* ((newrect (om-pts-to-rect (om-make-point (first initpos) (second initpos)) (om-make-point rx ry)))
              (nx  (om-rect-left newrect))
              (ny (om-rect-top newrect))
              (nw (om-rect-w newrect))  
              (nh (om-rect-h newrect)))
-        ;(om-with-focused-view panel
-        ;  (om-with-line-size 2
-            (om-update-movable-object panel nx ny (max nw 2) (max nh 2))
-        ; ))
+        (om-with-focused-view panel
+          (om-with-line-size 2
+            ;(om-update-movable-object panel nx ny (max nw 2) (max nh 2))
+            (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))
+            ))
             )
       (let ((myview (om-find-view-containing-point panel (om-make-point rx ry))))
         (if (input? myview) 
@@ -150,7 +151,7 @@
 ;==================================================
 ; The main icon in a box
 ;==================================================
-(omg-defclass icon-box (icon-view om-view-drag) ())
+(defclass icon-box (icon-view om-view-drag) ())
 ;-------------EVENTS (command-key-p)
 (defmethod om-view-click-handler ((self icon-box) where)
   ;(call-next-method))
@@ -194,10 +195,10 @@
 ;==================================================
 ; The name dialog-item in a box
 ;==================================================
-(omg-defclass edit-boxframe-name (om-editable-text) 
+(defclass edit-boxframe-name (om-editable-text) 
   ((object :initform nil :initarg :object :accessor object)))
 
-(omg-defclass box-dialog-name (om-static-text-drag) ())
+(defclass box-dialog-name (om-static-text-drag) ())
 
 (defmethod get-drag-object ((self box-dialog-name))
   (om-view-container self))
@@ -274,7 +275,7 @@
 
 ;;; NOT FOR INSTANCIATE
 ;;; SUPERCLASS OF BOXFRAME AND SIMPLEBOXFRAME
-(omg-defclass omboxframe (om-view-drop) ;
+(defclass omboxframe (om-view-drop) ;
 ;(defclass boxframe (OMSimpleFrame om-view-drop)
    ((outframes :initform nil :accessor outframes)
     (inputframes :initform nil :accessor inputframes)
@@ -292,9 +293,10 @@
 #connections# A list of connections where the box is the target.#connections#
 #lock-button# The lock-button subview if exists.#lock-button#"))
 
-(omg-defclass boxframe (omboxframe OMCompoundFrame) ())
-(omg-defclass simpleboxframe (omboxframe OMAtomicFrame) ())
+;(defclass boxframe (omboxframe OMCompoundFrame) ())
+;(defclass simpleboxframe (omboxframe OMAtomicFrame) ())
 
+(defclass boxframe (omboxframe OMAtomicFrame) ())
 
 (defmethod get-box-frame ((self omboxframe)) self)
 
@@ -605,8 +607,8 @@
 ; BUTTON for ev-once lambda or lock
 ;==================================================
 
-(omg-defclass lock-button (button-icon) 
-              ((mode :accessor mode :initarg :mode :initform "x")))
+(defclass lock-button (button-icon) 
+  ((mode :accessor mode :initarg :mode :initform "x")))
 
 (defun get-icon-lock (str)
   (cond
@@ -741,7 +743,7 @@
 ;***********************************
 
 ;;; Mixin class : 
-(omg-defclass ev-onceboxframe (boxframe) ()
+(defclass ev-onceboxframe (boxframe) ()
    (:documentation "Simple frame for boxes that allow the lock button only in ev-once mode.#enddoc#
 #seealso# (OMBoxCall lock-button) #seealso#"))
 
@@ -761,7 +763,7 @@
 
 ;-------------------------------------------------
 ;;; Mixin class : 
-(omg-defclass nonbuttonboxframe () ()
+(defclass nonbuttonboxframe () ()
    (:documentation "Simple frame for boxes that do not allow a lock button.#enddoc#
 #seealso# (OMBoxCall lock-button) #seealso#"))
 
@@ -770,7 +772,7 @@
    (declare (ignore icon)) nil)
 
 ;-------------------------------------------------
-(omg-defclass boxTypeFrame (nonbuttonboxframe simpleboxframe) ()
+(defclass boxTypeFrame (nonbuttonboxframe boxframe) ()
    (:documentation "Simple frame for OMBoxTypeCall boxes. #enddoc#
 #seealso# (OMBoxTypeCall) #seealso#"))
 
@@ -820,7 +822,7 @@
 
 
 ;-------------------------------------------------
-(omg-defclass aliasBoxframe (boxframe) ()
+(defclass aliasBoxframe (boxframe) ()
    (:documentation "Simple frame for OMBoxAlias meta objects. #enddoc#
 #seealso# (OMBoxAlias) #seealso#"))
 
@@ -843,7 +845,7 @@
 
 ;--------------------------------------
 
-(omg-defclass input-instframe (input-funboxframe) ())
+(defclass input-instframe (input-funboxframe) ())
 
 (defmethod initialize-instance :after ((self input-instframe) &key controls)
   (declare (ignore controls))
@@ -851,7 +853,7 @@
 
 ;--------------------------------------
 
-(omg-defclass instBoxframe (boxframe) ()
+(defclass instBoxframe (boxframe) ()
    (:documentation "Simple frame for OMBoxinstance boxes. #enddoc#
 #seealso# (OMBoxinstance) #seealso#"))
 
@@ -900,7 +902,7 @@
   
 ;----------------------------------------
 
-(omg-defclass slotboxFrame (boxframe) ()
+(defclass slotboxFrame (boxframe) ()
    (:documentation "Simple frame for OMSlotsBox boxes. #enddoc#
 #seealso# (OMSlotsBox) #seealso#"))
 
@@ -914,7 +916,7 @@
 ;----------------------------------------
 ;Comments draw + edition
 ;----------------------------------------
-(omg-defclass commentboxframe (simpleboxframe) () ; boxframe
+(defclass commentboxframe (boxframe) ()
    (:documentation "Simple frame for OMBoxcomment boxes. #enddoc#
 #seealso# (OMBoxcomment) #seealso#"))
 
@@ -963,7 +965,7 @@
         )))
 
 ;------------------the comment contents-----------------------
-(omg-defclass commentview (box-dialog-name) ())
+(defclass commentview (box-dialog-name) ())
 
 (defmethod (setf selected-p) (selected-p (self commentview))
   (let ((color (when (om-view-container self) (textcolor (object (om-view-container self)))))
@@ -1037,7 +1039,7 @@
 
 
 ;--------EDITION
-(omg-defclass edit-comment (om-text-edit-view) 
+(defclass edit-comment (om-text-edit-view) 
    ((object :initform nil :initarg :object :accessor object)))
 
 (defmethod om-dialog-item-action ((self commentview)) (call-next-method))
@@ -1268,7 +1270,7 @@
 
 ;----------------------------------------
 
-(omg-defclass patchboxFrame (boxframe) ()
+(defclass patchboxFrame (boxframe) ()
    (:documentation "Simple frame for OMBoxpatch boxes. #enddoc#
 #seealso# (OMBoxpatch) #seealso#"))
 
@@ -1321,7 +1323,7 @@
 
 ;----------------------------------------
 
-(omg-defclass maquetteframe (boxframe) ()
+(defclass maquetteframe (boxframe) ()
    (:documentation "Simple frame for OMBoxmaquette boxes. #enddoc#
 #seealso# (OMBoxmaquette) #seealso#"))
 
@@ -1347,7 +1349,7 @@
     (om-invalidate-view self)
     (setf (allow-lock (object self)) mode)))
 
-(omg-defclass maquetteabsframe (maquetteframe) ()
+(defclass maquetteabsframe (maquetteframe) ()
               (:documentation "Simple frame for OMBoxAbsmaq boxes (red maquettes). #enddoc#
 #seealso# (OMBoxAbsmaq) #seealso#"))
 
@@ -1389,7 +1391,7 @@
 
 
 
-(omg-defclass outflecheclass (outfleche) ())
+(defclass outflecheclass (outfleche) ())
 
 (defmethod initialize-instance :after ((self outflecheclass) &key controls)
   (declare (ignore controls))
@@ -1418,7 +1420,7 @@
 
 ;-------------------------------------
 
-(omg-defclass classboxFrame (boxframe) ()
+(defclass classboxFrame (boxframe) ()
    (:documentation "Simple frame for OMBoxclass meta objects. #enddoc#
 #seealso# (OMBoxclass) #seealso#"))
 

@@ -75,7 +75,7 @@
   `(defclass ,name ,superclass ,slots ,.class-options))
 
 
-(defclass om-graphic-object (om-movable-view)
+(defclass om-graphic-object () ;om-movable-view
   ((vcontainer :initform nil :initarg :vcontainer :accessor vcontainer)
    (vsubviews :initform nil :initarg :vsubviews :accessor vsubviews)
    (locked :initform nil :initarg :locked :accessor locked)

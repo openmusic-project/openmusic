@@ -483,12 +483,12 @@ with the objects respectly associeted."))
 (defmethod control-actives ((view nonrelationPanel) where)
   (when (and (editor view) (text-view (editor view)))
     (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
-  (om-init-motion-draw view where 'draw-selection-rectangle 'release-selection)
-  ;(om-init-motion-functions view where 'make-selection-rectangle 'release-selection-rectangle)
-  ;(om-new-movable-object view (om-point-h where) (om-point-v where) 4 4 'om-selecti`on-rectangle)
-  )
+  (om-init-motion-draw view where 
+                       :motion-draw 'draw-selection-rectangle 
+                       :release-action 'release-selection
+                       :mode 2))
 
-(defmethod release-selection ((self nonrelationPanel) pos initpos)
+(defmethod release-selection ((self om-view) initpos pos)
     (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
           (y1 (min (om-point-y pos) (om-point-y initpos)))
           (x2 (max (om-point-x pos) (om-point-x initpos)))
@@ -496,33 +496,8 @@ with the objects respectly associeted."))
       (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
         (when (not (= 0 (caddr rect) (cadddr rect)))
           (do-select-items-in-rect self rect)))
-      (om-invalidate-view self)))
+      ))
 
-
-(defmethod draw-selection-rectangle (view x1 y1 x2 y2)
-  ;#-cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*) :operation boole-orc1)
-  ;#+cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*))
-  ;(gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled nil :foreground (c (om-make-color 0.5 0.5 0.5)) :thickness 1)
-  (om-with-fg-color view oa::*om-select-color-alpha*
-    (om-fill-rect x1 y1 (- x2 x1) (- y2 y1)))
-  (om-with-fg-color view (om-make-color 0.5 0.5 0.5)
-    (om-draw-rect x1 y1 (- x2 x1) (- y2 y1) :pensize 1))
-  )
-
-
-;(defmethod make-selection-rectangle ((self nonrelationPanel) pos)
-;  (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-;    (when rect
-;      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect)))
-;      )))
-
-;(defmethod release-selection-rectangle ((self nonrelationPanel) pos)   ;remove in score maquette and patch
-;  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-;        user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
-;    (om-erase-movable-object self)
-;    (when (and rect (not (= 0 (caddr rect) (cadddr rect))))
-;      (do-select-items-in-rect self rect)
-;      )))
 
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)

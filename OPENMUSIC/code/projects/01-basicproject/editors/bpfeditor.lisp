@@ -696,12 +696,17 @@
      (update-panel self t)))
 
 (defmethod draw-points-in-bpf ((Self Bpfpanel) Where)
-  (om-init-motion-functions self 'draw-in-bpf 'end-draw-bpf))
+  (setf (selection? self) nil)
+  (om-invalidate-view self)
+  (om-init-motion-draw self where :motion-action 'draw-in-bpf :release-action 'end-draw-bpf
+                       :motion-draw 'draw-panel))
 
-(defun end-draw-bpf (panel pos)
+(defun end-draw-bpf (panel init-pos pos)
+  (do-after-move panel)
   (update-panel panel t))
 
-(defun draw-in-bpf (panel pos)
+(defun draw-in-bpf (panel pos prev-pos)
+ 
   (let* ((new-point (pixel2point panel pos))
          (position-obj (point-in-bpf panel (currentbpf panel) pos)))
     (if (and position-obj (listp position-obj))
@@ -729,7 +734,8 @@
           ;;; essayer d'optimizer...
          (scroll-point self new-point)
          ;(update-panel self t)
-         ))))
+         ))
+     (do-after-move self)))
 
 (defmethod delete-current-bpf ((Self Bpfpanel))
    (if (multibpf? (om-view-container  self))
@@ -756,25 +762,26 @@
   (setf *bpf-last-click* where)
   (setf *bpf-first-click* where)
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-functions self 'make-scroll-bpf 'release-scroll-bpf))
+  (om-init-motion-draw self where :motion-action 'make-scroll-bpf :release-action 'release-scroll-bpf
+                       :motion-draw 'draw-panel))
 
-(defmethod release-scroll-bpf ((Self Bpfpanel) Where) 
+(defmethod release-scroll-bpf ((Self Bpfpanel) init-pos pos) 
   (update-panel self t))
 
 
-(defmethod make-scroll-bpf ((Self Bpfpanel) Where)
-   (let* ((old-Mouse *bpf-last-click*)
+(defmethod make-scroll-bpf ((Self Bpfpanel) pos prev-pos)
+   (let* ((old-Mouse prev-pos)
           (first-Mouse *bpf-first-click*)
           (Initx (om-point-h *bpf-offset-click*))
           (Inity (om-point-v *bpf-offset-click*))
-          (Offx (pixel2norme self 'x (- (om-point-h where) (om-point-h first-mouse))))
-          (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v where)))))
+          (Offx (pixel2norme self 'x (- (om-point-h pos) (om-point-h first-mouse))))
+          (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v pos)))))
      (move-bpf-in-x-y (currentbpf self) (- offx initx) (- offy inity ))
      (report-modifications (om-view-container self))
      (om-invalidate-view self t)
      (show-position (om-view-container self))
      (setf *bpf-offset-click* (om-make-point offx  offy))
-     (setq *bpf-last-click* where)))
+     (setq *bpf-last-click* pos)))
 
 
 
@@ -782,55 +789,61 @@
   (setf *bpf-last-click* (om-mouse-position self))
   (setf *bpf-first-click* *bpf-last-click*)
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-functions self 'make-scroll-point 'release-scroll-point))
+  (om-init-motion-draw self where :motion-action 'make-scroll-point :release-action 'release-scroll-point
+                       :motion-draw 'draw-panel))
 
-(defmethod release-scroll-point ((Self Bpfpanel) Where) 
-  (unless (om-points-equal-p where *bpf-first-click*)
+(defmethod release-scroll-point ((Self Bpfpanel) init-pos pos) 
+  (unless (om-points-equal-p pos init-pos)
     (update-panel self t)))
 
-(defmethod make-scroll-point ((Self Bpfpanel) Where)
-  (when (om-view-contains-point-p self (om-convert-coordinates where self (om-view-container self)))
+(defmethod make-scroll-point ((Self Bpfpanel) pos prev-pos)
+  (when (om-view-contains-point-p self (om-convert-coordinates pos self (om-view-container self)))
   (let* ((old-Mouse *bpf-last-click*)
          (first-Mouse *bpf-first-click*)
          (Initx (om-point-h *bpf-offset-click*))
          (Inity (om-point-v *bpf-offset-click*))
-         (Offx (pixel2norme self 'x (- (om-point-h where) (om-point-h first-mouse))))
-         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v where))))
+         (Offx (pixel2norme self 'x (- (om-point-h pos) (om-point-h first-mouse))))
+         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v pos))))
          (Moveds (move-points-in-bpf (currentbpf self) (get-selected-points-list self) (- offx initx) (- offy inity ))))
     (if moveds (setf (selection? self) moveds))
     (om-invalidate-view self)
     (show-position (om-view-container self))
     (setf *bpf-offset-click* (om-make-point offx offy))
-    (setq *bpf-last-click* where))))
+    (setq *bpf-last-click* pos))))
 
 (defmethod scroll-system ((Self Bpfpanel) where)
   (setf *bpf-last-click* where)
   (setf *bpf-first-click* where)
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-functions self 'make-scroll-system 'release-scroll-system))
+  (om-init-motion-draw self where :motion-action 'make-scroll-system :release-action 'release-scroll-system
+                       :motion-draw 'draw-panel)
+  )
 
-(defmethod release-scroll-system ((Self Bpfpanel) Where) 
+(defmethod draw-panel ((self bpfpanel) initpos pos)
+  (om-with-fg-color self (om-color-alpha *om-white-color* 0.8)
+    (om-fill-rect 0 0 (w self) (h self)))
+  (om-draw-contents self))
+ 
+(defmethod release-scroll-system ((Self Bpfpanel) init-pos pos) 
   (update-panel self t))
 
-(defmethod make-scroll-system ((Self Bpfpanel) Where)
-  (let* ((old-Mouse *bpf-last-click*)
+(defmethod make-scroll-system ((Self Bpfpanel) pos prev-pos)
+  (let* ((old-Mouse prev-pos)
          (Initmouse old-mouse)
          (Initx (om-point-h *bpf-offset-click*))
          (Inity (om-point-v *bpf-offset-click*))
          (Initrangex (rangex self))
          (Initrangey (rangey self))
          Deltax Deltay)
-    (setf deltax (pixel2norme self 'x (- (om-point-h initmouse) (om-point-h Where))))
-    (setf deltay (pixel2norme self 'y (- (om-point-v Where) (om-point-v initmouse))))
+    (setf deltax (pixel2norme self 'x (- (om-point-h initmouse) (om-point-h pos))))
+    (setf deltay (pixel2norme self 'y (- (om-point-v pos) (om-point-v initmouse))))
     (setf (rangex self) (list (+ (first initrangex) deltax)
                               (+ (second initrangex) deltax)))
     (setf (rangey self) (list (+ (first initrangey) deltay)
                               (+ (second initrangey) deltay)))
     (redraw-rulers self)
-    ;(om-redraw-view self)
-    ;(show-position (om-view-container self))
-    (om-invalidate-view self)
-    (setq *bpf-last-click* where)))
+    ;(om-invalidate-view self)
+    (setq *bpf-last-click* pos)))
 
 
 (defmethod do-after-move ((Self Bpfpanel)) 
@@ -980,10 +993,9 @@
                 (setf (currentbpf self) newbpf)
                 (om-invalidate-view (control (om-view-container  self)) t)
                 (om-invalidate-view self t))
-            (progn 
-              (om-init-motion-functions self 'make-select-system 'release-select-system)
-              (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle)
-              ))
+            (om-init-motion-draw self where :motion-draw 'draw-selection-rectangle 
+                                 :release-action 'release-selection)
+            )
           ))
        ((listp position-obj)
         (cond 
@@ -1004,17 +1016,7 @@
         (om-invalidate-view self t)))))
 
 
-(defmethod make-select-system ((Self Bpfpanel) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect))))))
-
-(defmethod release-select-system ((self Bpfpanel) pos)  
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-        user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
-    (when rect
-      (om-erase-movable-object self)
-      (do-select-items-in-rect self rect))))
+;;; called by release-selection
 
 (defmethod do-select-items-in-rect ((self Bpfpanel) rect) 
   (let (user-rect)
@@ -1082,15 +1084,6 @@
   )
 
 (defun dr-reg-2-points (Primo Seco Approx)
-;;;   (let ((Mline (abs (m-line primo seco))) Dx Dy)
-;;;     (if (< mline 1)
-;;;       (setf dx 0 dy approx)
-;;;       (setf dy 0 dx approx))
-;;;     (#_MoveTo :long (om-add-points primo (om-make-point (* -1 dx) (* -1 dy))))
-;;;     (#_LineTo :long (om-add-points primo (om-make-point  dx  dy)))
-;;;     (#_LineTo :long (om-add-points seco (om-make-point  dx  dy)))
-;;;     (#_LineTo :long (om-add-points seco (om-make-point (* -1 dx) (* -1 dy))))
-;;;     (#_lineTo :long (om-add-points primo (om-make-point (* -1 dx) (* -1 dy)))))
    (om-open-region-add-line Primo Seco Approx)
    )
 
