@@ -781,14 +781,14 @@
   ;(setf (grille-p self) nil)
   (om-init-motion-functions self 'make-scroll-system 'release-scroll-system))
 
-(defmethod release-scroll-system ((Self MaquettePanel) Where) 
+(defmethod release-scroll-system ((Self MaquettePanel) init-pos pos) 
   (setf (grille-p self) *maq-old-grille*)
   (save-ranges self)
   (change-view-ranges self)
   (update-scrollers self)
   (om-invalidate-view self t))
 
-(defmethod make-scroll-system ((Self MaquettePanel) Where)
+(defmethod make-scroll-system ((Self MaquettePanel) init-pos pos)
   (let* ((old-Mouse *maq-last-click*)
          (Initmouse old-mouse)
          (Initx (om-point-h *maq-offset-click*))
