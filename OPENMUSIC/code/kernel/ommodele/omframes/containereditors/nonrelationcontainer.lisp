@@ -484,8 +484,8 @@ with the objects respectly associeted."))
   (when (and (editor view) (text-view (editor view)))
     (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
   ;(om-init-motion-draw view where 'draw-selection-rectangle 'release-selection)
-  (om-init-motion-functions view where 'make-selection-rectangle 'release-selection-rectangle)
-  (om-new-movable-object view (om-point-h where) (om-point-v where) 4 4 'om-selecti`on-rectangle)
+  (om-init-motion-functions view 'make-selection-rectangle 'release-selection-rectangle)
+  (om-new-movable-object view (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle)
   )
 
 #|
