@@ -882,23 +882,23 @@
   (setf *bpf-offset-click* 0)
   (om-init-motion-functions self 'make-scroll-point 'release-scroll-point))
 
-(defmethod release-scroll-point ((Self bpf-parameter-panel) Where) 
+(defmethod release-scroll-point ((Self bpf-parameter-panel) initpos pos) 
   ;(change2exact-bpf self)
   (change-array-row self)
   (om-invalidate-view self t)
   (update-panel (editor self) t))
 
-(defmethod make-scroll-point ((Self bpf-parameter-panel) Where)
+(defmethod make-scroll-point ((Self bpf-parameter-panel) pos prevpos)
   (let* ((old-Mouse *bpf-last-click*)
          (first-Mouse *bpf-first-click*)
          (Inity *bpf-offset-click*)
-         (new-mouse where)
+         (new-mouse pos)
          (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v new-mouse))))
          (moveds (move-points-in-bpf (currentbpf self) (selection? self)  0 (- offy inity ))))
     (if moveds (setf (selection? self) moveds))
     (om-invalidate-view self t)
     (setf *bpf-offset-click*  offy)
-    (setq *bpf-last-click* where)))
+    (setq *bpf-last-click* pos)))
 
 
 ;(defmethod change2exact-bpf ((self bpf-parameter-panel))  

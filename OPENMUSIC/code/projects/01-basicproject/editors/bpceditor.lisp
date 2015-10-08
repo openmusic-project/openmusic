@@ -69,19 +69,19 @@
 ;------------------------------------
 
 
-(defmethod make-scroll-point ((Self bpcPanel) Where)
+(defmethod make-scroll-point ((Self bpcPanel) pos prev-pos)
   (let* ((old-Mouse *bpf-last-click*)
          (first-Mouse *bpf-first-click*)
          (Initx (om-point-h *bpf-offset-click*))
          (Inity (om-point-v *bpf-offset-click*))
-         (Offx (pixel2norme self 'x (- (om-point-h where) (om-point-h first-mouse))))
-         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v where))))
+         (Offx (pixel2norme self 'x (- (om-point-h pos) (om-point-h first-mouse))))
+         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v pos))))
          (moveds (move-selection-bpf self  (- offx initx) (- offy inity))))
     (if moveds (setf (selection? self) moveds))
     (om-invalidate-view self t)
     (show-position (om-view-container self))
     (setf *bpf-offset-click* (om-make-point offx  offy))
-    (setq *bpf-last-click* where)))
+    (setq *bpf-last-click* pos)))
 
 
 (defmethod add-new-bpf ((self bpcPanel))

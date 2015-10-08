@@ -155,11 +155,11 @@
 
 (defmethod spline ((self t)) nil)
 
-(defmethod release-scroll-point :after ((Self Bpfpanel) Point)
+(defmethod release-scroll-point :after ((Self Bpfpanel) initpos pos)
   (when (and (spline (editor self)) (active (spline (editor self))))
     (compute-spline (spline (editor self)))))
 
-(defmethod release-scroll-bpf :after ((Self Bpfpanel) Where)
+(defmethod release-scroll-bpf :after ((Self Bpfpanel)  initpos pos)
   (when (and (spline (editor self)) (active (spline (editor self))))
     (compute-spline (spline (editor self)))))
 

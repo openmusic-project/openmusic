@@ -1213,7 +1213,7 @@
      (setf *extra-initial-pos* where)
      (add-new-extra-drag self where obj mode dc)))
 
-(defmethod make-connection-motion ((self scorepanel) pos)
+(defmethod make-connection-motion ((self scorepanel) initpos pos)
   (let* ((panel self)
          (initpoint pos)
          (rx (om-point-h initpoint))
@@ -1227,7 +1227,7 @@
              (nh (om-rect-h newrect)))
         (om-update-movable-object panel nx ny (max nw 2) (max nh 2))))))
 
-(defmethod release-connection-motion ((self scorepanel) pos)
+(defmethod release-connection-motion ((self scorepanel) initpos pos)
   (om-erase-movable-object self)
   (do-release-extra-action self (score-get-extra-mode) pos ))
 
