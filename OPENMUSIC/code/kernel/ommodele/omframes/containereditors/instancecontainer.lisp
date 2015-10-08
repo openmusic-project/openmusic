@@ -46,12 +46,12 @@
      (setf slot-boxes (slots-inst-boxes (ref  self) val))
      (mapc #'(lambda (frame)
                (omG-add-element (panel self) frame)) slot-boxes)
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 ;---------------------
 ;PANEL
 ;---------------------
-(omg-defclass InstancePanel (nonrelationPanel) ()
+(defclass InstancePanel (nonrelationPanel) ()
    (:documentation "This is the class for OMInstance's editors. 
 Elements of these editors are instance-icon-frame instances.#enddoc#
 #seealso# (OMInstance instance-icon-frame listPanel) #seealso#"))
@@ -210,7 +210,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
      (setf newboxes (make-elemnts-list-boxes (object self) (car new-range) (second new-range)))
      (mapc #'(lambda (frame)
                        (omG-add-element (panel self) frame)) newboxes)
-     (om-invalidate-view self t)
+     (om-invalidate-view self)
      t))
 
 

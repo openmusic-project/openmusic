@@ -54,7 +54,7 @@
                   (cond
                    ((= 1 (first box))
                     (om-set-view-size frame (om-make-point (- (x item) (x frame)) (h frame)))
-                    (om-invalidate-view frame t))
+                    (om-invalidate-view frame))
                    ((= 0 (first box))
                     (update-movement frame (om-make-point (x item) (y frame))))))
                 ))

@@ -376,7 +376,7 @@
 ;------------------------------------
 
 ; om-view-drop
-(omg-defclass bpfpanel (om-view view-with-ruler-xy) 
+(defclass bpfpanel (om-view view-with-ruler-xy) 
    ((mode :initform :normal :accessor mode)
     (selection? :initform nil :accessor selection?)
     (show-back-p :initform t :accessor show-back-p)
@@ -698,7 +698,7 @@
 (defmethod draw-points-in-bpf ((Self Bpfpanel) Where)
   (setf (selection? self) nil)
   (om-invalidate-view self)
-  (om-init-motion-draw self where :motion-action 'draw-in-bpf :release-action 'end-draw-bpf
+  (om-init-motion-click self where :motion-action 'draw-in-bpf :release-action 'end-draw-bpf
                        :motion-draw 'draw-panel))
 
 (defun end-draw-bpf (panel init-pos pos)
@@ -754,16 +754,15 @@
    (update-panel self t))
 
 
-(defvar *bpf-last-click* nil)
 (defvar *bpf-offset-click* nil)
 (defvar *bpf-first-click* nil)
 
 (defmethod scroll-bpf ((Self Bpfpanel) Where)
-  (setf *bpf-last-click* where)
   (setf *bpf-first-click* where)
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-draw self where :motion-action 'make-scroll-bpf :release-action 'release-scroll-bpf
-                       :motion-draw 'draw-panel))
+  (om-init-motion-click self where :motion-action 'make-scroll-bpf :release-action 'release-scroll-bpf
+                       ;:motion-draw 'draw-panel
+                       ))
 
 (defmethod release-scroll-bpf ((Self Bpfpanel) init-pos pos) 
   (update-panel self t))
@@ -781,16 +780,14 @@
      (om-invalidate-view self t)
      (show-position (om-view-container self))
      (setf *bpf-offset-click* (om-make-point offx  offy))
-     (setq *bpf-last-click* pos)))
-
-
+     ))
 
 (defmethod scroll-point ((Self Bpfpanel) where)
-  (setf *bpf-last-click* (om-mouse-position self))
-  (setf *bpf-first-click* *bpf-last-click*)
+  (setf *bpf-first-click* (om-mouse-position self))
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-draw self where :motion-action 'make-scroll-point :release-action 'release-scroll-point
-                       :motion-draw 'draw-panel))
+  (om-init-motion-click self where :motion-action 'make-scroll-point :release-action 'release-scroll-point
+                       ;:motion-draw 'draw-panel
+                       ))
 
 (defmethod release-scroll-point ((Self Bpfpanel) init-pos pos) 
   (unless (om-points-equal-p pos init-pos)
@@ -798,7 +795,7 @@
 
 (defmethod make-scroll-point ((Self Bpfpanel) pos prev-pos)
   (when (om-view-contains-point-p self (om-convert-coordinates pos self (om-view-container self)))
-  (let* ((old-Mouse *bpf-last-click*)
+  (let* ((old-Mouse prev-pos)
          (first-Mouse *bpf-first-click*)
          (Initx (om-point-h *bpf-offset-click*))
          (Inity (om-point-v *bpf-offset-click*))
@@ -809,15 +806,12 @@
     (om-invalidate-view self)
     (show-position (om-view-container self))
     (setf *bpf-offset-click* (om-make-point offx offy))
-    (setq *bpf-last-click* pos))))
+    )))
 
 (defmethod scroll-system ((Self Bpfpanel) where)
-  (setf *bpf-last-click* where)
   (setf *bpf-first-click* where)
   (setf *bpf-offset-click* (om-make-point 0 0))
-  (om-init-motion-draw self where :motion-action 'make-scroll-system :release-action 'release-scroll-system
-                       :motion-draw 'draw-panel)
-  )
+  (om-init-motion-click self where :motion-action 'make-scroll-system :release-action 'release-scroll-system))
 
 (defmethod draw-panel ((self bpfpanel) initpos pos)
   (om-with-fg-color self (om-color-alpha *om-white-color* 0.8)
@@ -842,14 +836,12 @@
     (setf (rangey self) (list (+ (first initrangey) deltay)
                               (+ (second initrangey) deltay)))
     (redraw-rulers self)
-    ;(om-invalidate-view self)
-    (setq *bpf-last-click* pos)))
+    ))
 
 
 (defmethod do-after-move ((Self Bpfpanel)) 
   (when (and (spline-p (editor self)) (active (spline (editor self))))
     (compute-spline (spline (editor self))))
-  ;(update-panel self t)
   (om-invalidate-view self))
 
 (defmethod x-class-move-point ((Self Bpfpanel)) 'om-editable-text)
@@ -993,7 +985,7 @@
                 (setf (currentbpf self) newbpf)
                 (om-invalidate-view (control (om-view-container  self)) t)
                 (om-invalidate-view self t))
-            (om-init-motion-draw self where :motion-draw 'draw-selection-rectangle 
+            (om-init-motion-click self where :motion-draw 'draw-selection-rectangle 
                                  :release-action 'release-selection)
             )
           ))

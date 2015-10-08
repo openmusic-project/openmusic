@@ -75,7 +75,7 @@
   `(defclass ,name ,superclass ,slots ,.class-options))
 
 
-(defclass om-graphic-object () ;om-movable-view
+(defclass om-graphic-object ()
   ((vcontainer :initform nil :initarg :vcontainer :accessor vcontainer)
    (vsubviews :initform nil :initarg :vsubviews :accessor vsubviews)
    (locked :initform nil :initarg :locked :accessor locked)
@@ -86,6 +86,7 @@
    (help-spec :initform nil :initarg :help-spec :accessor help-spec)
    (initialized-p :initform nil :accessor initialized-p)
    (highlight :initform nil :accessor highlight)
+   (temp-data :initform nil :accessor temp-data)
    (images :initarg :images :accessor images :initform nil))
   (:default-initargs 
    :create-callback 'om-create-callback

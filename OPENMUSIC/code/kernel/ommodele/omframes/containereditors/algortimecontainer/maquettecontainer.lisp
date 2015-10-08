@@ -114,10 +114,10 @@
                                                        :lock-push nil
                                                        :action #'(lambda (item) 
                                                                    (init-coor-system (panel self))
-                                                                   (om-invalidate-view (rulerx (panel self)) t)
-                                                                   (om-invalidate-view (rulery (panel self)) t)
+                                                                   (om-invalidate-view (rulerx (panel self)))
+                                                                   (om-invalidate-view (rulery (panel self)))
                                                                    (when (rulermetric self) 
-                                                                     (om-invalidate-view (rulermetric self) t))))
+                                                                     (om-invalidate-view (rulermetric self)))))
                                          
                                          (om-make-view 'om-icon-button :position (om-make-point 350 2) :size (om-make-point 22 22)
                                                        :id :resize
@@ -181,7 +181,7 @@
     ))
 
 (defmethod om-drag-leave-view ((self drop-patch-view))
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 (defmethod om-drag-receive ((view drop-patch-view) 
                             (dragged-view t) position &optional (effect nil)) 
@@ -213,7 +213,7 @@
   (mapc #'(lambda (control) 
             (omG-unselect control)) (get-actives (panel (om-view-container self))))
   (setf (selected self) t)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 (defmethod om-view-doubleclick-handler ((self drop-patch-view) pos)
   (unless (eval-func (object (om-view-container self)))
@@ -231,7 +231,7 @@
 (defun unselect-eval-func (maquetteeditor)
   (when (patchview maquetteeditor)
     (setf (selected (patchview maquetteeditor)) nil)
-    (om-invalidate-view (patchview maquetteeditor) t)))
+    (om-invalidate-view (patchview maquetteeditor))))
 
 (defmethod close-editor-before ((self maquetteeditor))  
   (call-next-method)
@@ -445,7 +445,7 @@
 (defmethod delete-general :after ((self maquettepanel))
   (when (and (patchview (editor self)) (selected (patchview (editor self))))
     (set-eval-func (object (editor self)) nil)
-    (om-invalidate-view (patchview (editor self)) t)))
+    (om-invalidate-view (patchview (editor self)))))
 
 (defmethod om-view-click-handler ((self maquettepanel) pos)
   (unselect-eval-func (editor self))
@@ -548,24 +548,24 @@
              )
            (cond 
             ((om-command-key-p)
-              (om-init-motion-functions view 'make-selection-rectangle 'release-maquette-new-box)
-              (om-new-movable-object view (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle))
+              (om-init-motion-click view where :motion-draw  'draw-newbox-rectangle :display-mode 2 
+                                    :release-action 'release-maquette-new-box))
             (t (call-next-method)))))))))
 
-(defmethod make-selection-rectangle ((self MaquettePanel) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect))))))
-
-(defmethod release-maquette-new-box ((self MaquettePanel) pos)   
-  (let* ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-erase-movable-object self)
-      (let (user-rect )
-        (setf user-rect (om-make-rect (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
-        (if (om-shift-key-p)
-                   (make-maq-tempobj self (om-make-point  (first rect) (second rect)) (om-rect-bottomright user-rect))
-                 (make-tempobj self (om-make-point  (first rect) (second rect)) (om-rect-bottomright user-rect)))))))
+(defmethod draw-newbox-rectangle ((self maquettepanel) p1 p2)
+  (draw-selection-rectangle self p1 p2)
+  (om-with-fg-color self *om-dark-gray-color*
+    (om-with-font *om-default-font1b*
+                  (om-draw-string (- (max (om-point-x p1) (om-point-x p2)) 12)
+                                  (- (max (om-point-y p1) (om-point-y p2)) 4)
+                                  "+"))))
+  
+(defmethod release-maquette-new-box ((self MaquettePanel) initpos pos)
+  (let ((p1 (om-make-point (min (om-point-x initpos) (om-point-x pos)) (min (om-point-y initpos) (om-point-y pos))))
+        (p2 (om-make-point (max (om-point-x initpos) (om-point-x pos)) (max (om-point-y initpos) (om-point-y pos)))))
+    (if (om-shift-key-p)
+        (make-maq-tempobj self p1 p2)
+      (make-tempobj self p1 p2))))
 
 (defmethod do-select-items-in-rect ((self MaquettePanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
@@ -725,7 +725,7 @@
        (draw-interval-cursor self))
      ;;; !!  boucle quand on ajoute le ruler metric...
      ;;;(when (rulermetric (editor self))
-     ;;;  (om-invalidate-view (rulermetric (editor self)) t))
+     ;;;  (om-invalidate-view (rulermetric (editor self))))
      (call-next-method)))
 
 
@@ -749,9 +749,9 @@
   (when (< (car (rangex self)) 0) 
     (set-ranges self (list 0  (cadr (rangex self))) (rangey self))
     (update-view-of-ruler self)
-    (om-invalidate-view (rulerx self) t))
+    (om-invalidate-view (rulerx self)))
   (when (rulermetric (editor self))
-    (om-invalidate-view (rulermetric (editor self)) t)))
+    (om-invalidate-view (rulermetric (editor self)))))
 
 (defmethod update-size+pos-frames ((self MaquettePanel)) 
   (let* ((frames (get-subframes self)))
@@ -768,34 +768,32 @@
       ((integerp (/ num 100)) (format () "~,1F" (/ num 1000)))
       (t (format () "~,2F" (/ num 1000))))))
 
-(defvar *maq-last-click* nil)
+
 (defvar *maq-first-click* nil)
 (defvar *maq-offset-click* nil)
 (defvar *maq-old-grille* nil)
 
-(defmethod scroll-system ((Self MaquettePanel) where)
-  (setf *maq-last-click* where)
+(defmethod scroll-system ((self MaquettePanel) where)
   (setf *maq-first-click* where)
   (setf *maq-offset-click* (om-make-point 0 0))
   (setf *maq-old-grille*  (grille-p self))
-  ;(setf (grille-p self) nil)
-  (om-init-motion-functions self 'make-scroll-system 'release-scroll-system))
+  (om-init-motion-click self where :motion-action 'make-scroll-system :release-action 'release-scroll-system
+                        :motion-draw 'draw-maq-items))
 
 (defmethod release-scroll-system ((Self MaquettePanel) init-pos pos) 
   (setf (grille-p self) *maq-old-grille*)
   (save-ranges self)
   (change-view-ranges self)
   (update-scrollers self)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
-(defmethod make-scroll-system ((Self MaquettePanel) init-pos pos)
-  (let* ((old-Mouse *maq-last-click*)
-         (Initmouse old-mouse)
+(defmethod make-scroll-system ((Self MaquettePanel) pos prev)
+  (let* ((initmouse prev)
          (Initx (om-point-h *maq-offset-click*))
          (Inity (om-point-v *maq-offset-click*))
          (Initrangex (rangex self))
          (Initrangey (rangey self))
-         (new-mouse where)
+         (new-mouse pos)
          (frames (get-subframes self))
          Deltax Deltay)
     (setf deltax (pixel2norme self 'x (- (om-point-h initmouse) (om-point-h new-mouse))))
@@ -808,22 +806,21 @@
                                        (+ (second initrangey) deltay)))
     (when (rulermetric (editor self))
       (om-redraw-view (rulermetric (editor self))))
-    (draw-items-frames self frames)
     (om-redraw-view (rulerx self))
     (om-redraw-view (rulery self))
     (om-redraw-view self)
     (show-position (om-view-container self))
-    (setq *maq-last-click* where)))
+    ))
 
-
+(defmethod draw-maq-items ((self MaquettePanel) init-pos pos) 
+  (draw-items-frames self (get-subframes self)))
 
 (defun draw-items-frames (cont items)
-  (om-with-focused-view cont
-     (om-with-dashline
-      (loop for item in items do
-            (let ((maqpos (get-offset/posy-in-pixel item cont)))
-              (om-draw-rect (om-point-h maqpos) (om-point-v maqpos)  (w item) (h item)))))))
-
+  (loop for item in items do
+        (let ((maqpos (get-offset/posy-in-pixel item cont)))
+          (om-with-fg-color cont (om-make-color-alpha 0.5 0.5 0.5 0.5)
+              (om-fill-rect (om-point-h maqpos) (om-point-v maqpos)  (w item) (h item))
+              (om-draw-rect (om-point-h maqpos) (om-point-v maqpos)  (w item) (h item) :pensize 2)))))
 
   
 ;======================
@@ -900,9 +897,9 @@
                                      (+ (om-point-h (om-view-position self)) (om-width self)))
                              (list (om-point-v (om-view-position self))
                                    (+ (om-point-v (om-view-position self)) (om-height self)))))
-    (om-init-motion-functions scroll 'move-maq-scroller 'release-maq-scroller)))
+    (om-init-motion-click scroll pos :motion-action 'move-maq-scroller :release-action 'release-maq-scroller)))
   
-(defmethod move-maq-scroller ((self maq-scroller) pos) 
+(defmethod move-maq-scroller ((self maq-scroller) pos prevpos) 
   (let* ((panel (referenceview self))
          (maqranges (give-editor-list-range (om-view-container self)))
          (deltapix (if (equal :h (scrolldirection self))
@@ -933,12 +930,11 @@
           )
       )
     (update-view-of-ruler panel)
-    ;(setf *ruler-last-click* (om-add-points *ruler-last-click* (om-make-point deltapixx deltapixy)))
     ))
 
 
 
-(defmethod release-maq-scroller ((self maq-scroller) pos)
+(defmethod release-maq-scroller ((self maq-scroller) initpos pos)
   (om-invalidate-view self)
   (om-invalidate-view (referenceview self)))
 

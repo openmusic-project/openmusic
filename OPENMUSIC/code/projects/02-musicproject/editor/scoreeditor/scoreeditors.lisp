@@ -1200,39 +1200,9 @@
    (update-panel self t))
 
 
-(defvar *start-extra-obj-click* nil)
-(defvar *start-extra-gobj-click* nil)
-(defvar *extra-initial-pos* nil)
-(defmethod make-new-extra-mode ((self scorePanel) where gobj dc)
-   (let ((mode (score-get-extra-mode))
-         obj)
-     (when gobj
-       (setf obj (reference gobj))
-       (setf *start-extra-obj-click* obj)
-       (setf *start-extra-gobj-click* gobj))
-     (setf *extra-initial-pos* where)
-     (add-new-extra-drag self where obj mode dc)))
 
-(defmethod make-connection-motion ((self scorepanel) initpos pos)
-  (let* ((panel self)
-         (initpoint pos)
-         (rx (om-point-h initpoint))
-         (ry (om-point-v initpoint))
-         (rect  (om-init-point-movable-object panel)))
-    (when rect
-      (let* ((newrect (om-pts-to-rect (om-make-point (first rect) (second rect)) (om-make-point rx ry)))
-             (nx  (om-rect-left newrect))
-             (ny (om-rect-top newrect))
-             (nw (om-rect-w newrect))  
-             (nh (om-rect-h newrect)))
-        (om-update-movable-object panel nx ny (max nw 2) (max nh 2))))))
 
-(defmethod release-connection-motion ((self scorepanel) initpos pos)
-  (om-erase-movable-object self)
-  (do-release-extra-action self (score-get-extra-mode) pos ))
 
-(defmethod do-release-extra-action ((self scorepanel) mode pos) t)
-       
 ;;;==========================
 ;;; DRAW
 ;;;==========================

@@ -158,7 +158,7 @@ Boxes refer to classes and connections to inheritance.#enddoc#
         (make-move-after container (get-actives container)))
        (:om-key-right  (mapc #'(lambda (item) (move-frame-delta item 2)) (get-actives container))
         (make-move-after container (get-actives container)))
-       (#\D  (om-invalidate-view self t))
+       (#\D  (om-invalidate-view self))
        (#\d  (mapcar 'show-big-doc (get-actives container)))
        (otherwise (om-beep)))))
 

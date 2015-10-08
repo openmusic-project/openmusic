@@ -138,7 +138,7 @@
   (om-view-click-handler (capi::top-level-interface self) position)
   t)
 
-(defmethod om-view-click-handler :before ((self om-graphic-object) position) 
+(defmethod om-view-click-handler :before ((self om-graphic-object) position)
  (setf *clicked-view* self))
 
 ;;;=================
@@ -149,7 +149,6 @@
 (defmethod om-clic-motion-callback ((self om-graphic-object) x y type)
   (set-meta-keys (eval type))
   ;(print (list self x y *clicked-view*))
-  ;(print (list (om-shift-key-p) (om-shift-key-p) (om-command-key-p))) 
   (unless (equal *clicked-view* :abort) 
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       ; ?!! verifier si tout va bien...

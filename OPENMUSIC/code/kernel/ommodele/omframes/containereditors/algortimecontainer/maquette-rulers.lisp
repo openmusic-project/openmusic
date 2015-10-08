@@ -63,7 +63,7 @@
 (defmethod strech-ruler-release ((view maq-ruler) pos)
   (call-next-method)
   (when (rulermetric (editor (assoc-view view)))
-    (om-invalidate-view (rulermetric (editor (assoc-view view))) t)))
+    (om-invalidate-view (rulermetric (editor (assoc-view view))))))
 
 ;-------------------------------------------------
 ;;; VERTICAL RULER
@@ -76,7 +76,7 @@
   (let ((changes (edit-y-params ruler)))
        (when (consp changes)
            (change-y-params ruler changes)
-           (om-invalidate-view ruler t))))
+           (om-invalidate-view ruler))))
   
 (defmethod om-view-doubleclick-handler ((self maq-y-ruler) where) nil)
 ;  (edit-y-ruler self))
@@ -159,7 +159,7 @@
    (t  (let* ((container (panel (om-view-container self)))
               (frames (get-subframes container)))
          (call-next-method)
-         (om-invalidate-view (rulerx container) t)
+         (om-invalidate-view (rulerx container))
          (make-move-after container frames)   ;;; ?? pourquoi ??
          ))))
 
@@ -167,8 +167,8 @@
   (let ((changes (edit-metric-ruler ruler)))
     (when (consp changes)
       (change-params ruler changes)
-      (om-invalidate-view (om-view-container ruler) t)
-      (om-invalidate-view ruler t))))
+      (om-invalidate-view (om-view-container ruler))
+      (om-invalidate-view ruler))))
 
 (defmethod om-view-doubleclick-handler  ((self metric-ruler) where)
   (if (om-add-key-p) 
@@ -189,7 +189,7 @@
 
 (defmethod strech-ruler-release ((view metric-ruler) pos)
   (call-next-method)
-  (om-invalidate-view (rulerx (assoc-view view)) t))
+  (om-invalidate-view (rulerx (assoc-view view))))
 
 ;;===========================================
 
@@ -214,7 +214,7 @@
            (setf strin (get-stringfrom-num numtempo))
            )
      (setf (temponum self)  numtempo)
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 (defmethod edit-metric-ruler  ((self metric-ruler))
   (let ((dialog (om-make-window 'om-dialog

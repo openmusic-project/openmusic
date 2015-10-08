@@ -261,7 +261,7 @@ with the objects respectly associeted."))
    "See generic function's documentation."
    (om-add-subviews self frame)
    ;;; new
-   (om-invalidate-view self t)
+   (om-invalidate-view self)
    (set-field-size self)
    ;;;
 )
@@ -483,10 +483,10 @@ with the objects respectly associeted."))
 (defmethod control-actives ((view nonrelationPanel) where)
   (when (and (editor view) (text-view (editor view)))
     (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
-  (om-init-motion-draw view where 
+  (om-init-motion-click view where 
                        :motion-draw 'draw-selection-rectangle 
                        :release-action 'release-selection
-                       :mode 2))
+                       :display-mode 2))
 
 (defmethod release-selection ((self om-view) initpos pos)
     (let ((x1 (min (om-point-x pos) (om-point-x initpos)))

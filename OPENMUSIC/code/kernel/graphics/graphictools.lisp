@@ -285,7 +285,7 @@
     (when (text-view theeditor)
       (exit-from-dialog (text-view theeditor) 
                         (om-dialog-item-text (text-view theeditor))))
-    (om-init-motion-draw panel 
+    (om-init-motion-click panel 
                          (om-convert-coordinates where self panel)
                          :motion-draw #'(lambda (view pp1 pp2)
                                           (let* ((p1 (om-view-position boxframe))
@@ -297,13 +297,14 @@
                                               (om-fill-rect x y w h)) 
                                             (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
                                               (om-draw-rect x y w h :pensize 1))))
-                         :mode NIL
+                         :display-mode NIL
                          :release-action #'(lambda (view pp1 pp2)
                                              (let ((p1 (om-view-position boxframe))
                                                    (p2 pp2))
                                                (change-boxframe-size boxframe 
                                                                      (om-add-points (om-view-size boxframe)
-                                                                                    (om-subtract-points pp2 pp1))))))
+                                                                                    (om-subtract-points pp2 pp1)))
+                                               )))
 
     ))
 
@@ -357,7 +358,7 @@
 (defmethod update-dailo ((self pair-pop-up-menu) text)
   (when (dialo self)
     (om-set-dialog-item-text (dialo self) text)
-    (om-invalidate-view (dialo self) t)))
+    (om-invalidate-view (dialo self))))
 
 
 (defun cons-pair-pop-menu (itemtext fun container list-vals default-item pos size)
@@ -668,7 +669,7 @@ into the unaire-fun-view.#action#"))
 
 (defmethod om-set-fg-color ((self om-icon-button) color)
   (setf (fg-color self) color)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 (defmethod om-view-doubleclick-handler ((self om-icon-button) where)
   (om-view-click-handler self where))
@@ -679,12 +680,12 @@ into the unaire-fun-view.#action#"))
    (when (enabled self)
      (setf (selected-p self) t)
      (om-redraw-view self)
-     (om-init-motion-draw (om-view-container self) where 
+     (om-init-motion-click (om-view-container self) where 
                           :release-action #'(lambda (view p1 p2) 
                               (declare (ignore view p1 p2))
                               (when (action self) (om-with-error-handle (apply (action self) (list self))))
                               (unless (lock-push self) (setf (selected-p self) nil))
-                              (om-invalidate-view self t)))
+                              (om-invalidate-view self)))
      ))
 
 (defmethod om-draw-contents ((self om-icon-button))

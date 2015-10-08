@@ -456,7 +456,7 @@
 (defmethod set-value ((self numbox) value)
    (om-set-dialog-item-text self (format () " ~S" value))
    (setf (value self) value)
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 
 
@@ -535,7 +535,7 @@
 (defmethod set-value ((self graphic-numbox) value)
   (setf (pict-part self) (floor (* (- (nbpict self) 1) (/ (- value (min-val self)) (- (max-val self) (min-val self))))))
   (setf (value self) value)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 
 ;;; NUMBOX + EDIT ======================================================

@@ -261,12 +261,12 @@ this function is executed each time that the user click into the button-icon.#ac
   (declare (ignore where))
   (setf (selected-p self) t)
   (om-redraw-view self) 
-  (om-init-motion-draw (om-view-container self) where 
+  (om-init-motion-click (om-view-container self) where 
                           :release-action #'(lambda (view p1 p2) 
                               (declare (ignore view p1 p2))
                               (when (action self) (om-with-error-handle (apply (action self) (list self))))
                               (setf (selected-p self) nil)
-                              (om-invalidate-view self t))))
+                              (om-invalidate-view self))))
 
 ;==========================================================
 ; stays hilited ("pushed") after click 

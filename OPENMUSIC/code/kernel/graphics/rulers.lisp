@@ -226,7 +226,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 (defmethod reset-selection ((self ruler))
    (when (ruler-selection? self)
      (setf (ruler-selection? self) nil)
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 
 ;(defmethod corrige-selection ((self ruler) editor)
@@ -253,7 +253,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 ;-------------------------------------------
 
 
-(omg-defclass static-ruler (ruler) () )
+(defclass static-ruler (ruler) () )
 
 (defmethod strech-ruler-motion ((self static-ruler)  pos prev-pos) t)
 (defmethod strech-ruler-release ((view static-ruler) pos) t)
@@ -263,7 +263,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 ;metric rulers
 ;-------------------------------------------
 
-(omg-defclass ruler-metric (ruler) 
+(defclass ruler-metric (ruler) 
    ((tempo :initform '(60 4) :initarg :tempo :accessor tempo)
     (maxsub :initform 16 :initarg :maxsub :accessor maxsub)
     (loop-mes-p :initform t  :initarg :loop-mes-p :accessor loop-mes-p)
@@ -692,7 +692,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 
 
 (defmethod zoom-system ((self view-with-ruler-xy) where)
-  (om-init-motion-draw self where :motion-draw 'zoom-system-motion :release-action 'zoom-system-release :mode 2))
+  (om-init-motion-click self where :motion-draw 'zoom-system-motion :release-action 'zoom-system-release :display-mode 2))
 
 
 (defmethod zoom-system-motion ((self view-with-ruler-xy) initpos pos)
@@ -710,8 +710,8 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
               (set-ranges self (list  (om-point-h new-point)  (om-point-h new-point1))
                           (list (om-point-v new-point1) (om-point-v new-point) ))
               (update-view-of-ruler self))))
-        (om-invalidate-view (rulerx self) t)
-     (om-invalidate-view (rulery self) t)))
+        (om-invalidate-view (rulerx self))
+     (om-invalidate-view (rulery self))))
 
 
 (defmethod init-coor-system ((self view-with-ruler-xy))

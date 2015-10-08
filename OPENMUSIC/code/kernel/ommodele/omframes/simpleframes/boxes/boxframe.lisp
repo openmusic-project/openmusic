@@ -79,54 +79,40 @@
 			     (clear-ev-once ,(om-view-container (om-view-container self)))
 			     )))))
     (t (let* ((panel (panel (om-view-container self)))
-	      (initpoint (om-convert-coordinates where self panel ))
-	      (rx (om-point-h initpoint))
-	      (ry (om-point-v initpoint)))
-	 (om-init-motion-draw panel where :motion-draw 'make-connection-motion :release-action 'release-connection-motion :mode 5)
-	 ;(om-new-movable-object panel rx ry 4 4 'om-movable-line)
+	      (initpoint (om-convert-coordinates where self panel)))
+       
+	 (om-init-motion-click self where
+                               :motion-draw 'draw-connection-drag :draw-pane panel :display-mode 5
+                               :motion-action 'connection-drag
+                               :release-action 'release-connection-drag
+                               )
 	 (setf *show-input-vals* nil))))
   t)
 
 
-
-(defmethod make-connection-motion ((self om-view) init-pos pos)
-  (let* ((panel self) ; (panel (om-view-container self)))
-         (initpoint (om-convert-coordinates pos self panel ))
-         (rx (om-point-h initpoint))
-         (ry (om-point-v initpoint))
-         (initpos (om-init-point-movable-object panel)))
-    (when initpos
-      (let* ((newrect (om-pts-to-rect (om-make-point (first initpos) (second initpos)) (om-make-point rx ry)))
-             (nx  (om-rect-left newrect))
-             (ny (om-rect-top newrect))
-             (nw (om-rect-w newrect))  
-             (nh (om-rect-h newrect)))
-        ;(om-with-focused-view panel
-          (om-with-line-size 2
-            ;(om-update-movable-object panel nx ny (max nw 2) (max nh 2))
-            (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))
-            );)
-            )
-      (let ((myview (om-find-view-containing-point panel (om-make-point rx ry))))
-        (if (input? myview) 
-            (om-show-tooltip myview t t) 
-          (om-hide-tooltip myview))))))
-
-
-(defmethod release-connection-motion ((self om-view) init-pos pos)
+(defmethod connection-drag ((self outfleche) pos prevpos)
   (let* ((panel (panel (om-view-container self)))
-         (initpoint (om-convert-coordinates pos self panel ))
-         (rx (om-point-h initpoint))
-         (ry (om-point-v initpoint))
-         ctrl)
-    ;(om-erase-movable-object panel)
-    (setf *show-input-vals* t)
-    (setf ctrl (om-find-view-containing-point panel (om-make-point rx ry)))
+         (ppos (om-convert-coordinates pos self panel))
+         (myview (om-find-view-containing-point panel ppos)))
+    (if (input? myview)
+        (om-show-tooltip myview t t)
+      (om-hide-tooltip myview))))
+
+(defmethod release-connection-drag ((self outfleche) init-pos pos)
+  (let* ((panel (panel (om-view-container self)))
+         (ppos (om-convert-coordinates pos self panel))
+         (ctrl (om-find-view-containing-point panel ppos)))
     (om-hide-tooltip ctrl)
-    (connect-box self ctrl)
-    ))
+    (setf *show-input-vals* t)
+    (connect-box self ctrl)))
 
+(defmethod draw-connection-drag ((self om-view) init-pos pos)
+  (om-with-line-size 2
+    (om-with-line '(2 2)
+      (om-with-fg-color self (om-make-color-alpha 0.3 0.3 0.3 0.7)
+        (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))))))
 
+ 
 
 ;--------------CONNECTION
 (defmethod connect-box ((self t) (ctrl t)) nil)
@@ -569,7 +555,7 @@
 (defmethod omG-change-icon ((self omboxframe)  new-icon)
    "Set the icon ID of self to 'new-icon'."
    (setf (iconID (iconview self))  new-icon)
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 
 (defmethod centre-icon ((self omboxframe))
@@ -591,7 +577,7 @@
     (when (setf new-position (allow-new-size view new-position))
        (om-set-view-size view new-position)
        (make-move-after (om-view-container view) (list view))
-       (om-invalidate-view view t)))
+       (om-invalidate-view view)))
 
 (defmethod box-print-connections ((self omboxframe))
   (mapc #'(lambda (conection) (print-connection conection)) (connections self)))
@@ -927,7 +913,7 @@
    "Change de color font of 'self'."
    (om-set-fg-color (iconview self) newcolor)
    (setf (textcolor (object self)) newcolor)
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 (defmethod comment-new-style ((self commentboxframe) newfont)
    "Change de style font of 'self'."
@@ -935,7 +921,7 @@
    ;(print (list "BEFORE" (textstyle (object self))))
    ;(print (list "AFTER" newlist))
    (setf (textstyle (object self)) newfont)
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 
   
@@ -1121,7 +1107,7 @@
         (when (minipict (iconview self))
           (om-kill-picture (minipict (iconview self)))
           (setf (minipict (iconview self)) nil))
-        (om-invalidate-view self t))
+        (om-invalidate-view self))
       (progn
         (setf (showpict (object self)) t)
         (update-miniview (iconview self) (value (object self)))))))
@@ -1157,14 +1143,15 @@
        (make-move-after (om-view-container view) (list view))
        (if (showpict (object view))
          (update-miniview (iconview view) (value (object view))))
-       (om-invalidate-view view)))
+       (om-invalidate-view view)
+       ))
 
 (defmethod reinit-size ((self boxEditorFrame)) 
    (when (get-edit-param (object self) 'deltapict)
      (set-edit-param (object self) 'deltapict (om-make-point 0 0)))
    (setf (frame-size (object self)) (get-boxsize (object self)))
    (change-boxframe-size self (frame-size (object self)))
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 (defmethod reinit-contents ((self boxEditorFrame)) 
   (setf (value (object self)) (get-super-default-value (type-of (value (object self)))))
@@ -1173,7 +1160,7 @@
       (update-miniview (iconview self) (value (object self))))
   (when (get-name (value (object self)))
     (setf (name (object self)) (get-name (value (object self)))))
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
    
 (defmethod remove-lock-button ((self boxEditorFrame))
    "Do not set value to nil."
@@ -1257,13 +1244,13 @@
    (if (view-of-patch (object self))
      (progn
        (setf (view-of-patch (object self)) nil)
-       (om-invalidate-view self t))
+       (om-invalidate-view self))
      (let ((oldview (find-the-view-of-patch (om-view-container self))))
        (when oldview
          (setf (view-of-patch (object oldview)) nil)
-         (om-invalidate-view oldview t))
+         (om-invalidate-view oldview))
        (setf (view-of-patch (object self)) t)
-       (om-invalidate-view self t))))
+       (om-invalidate-view self))))
      
 
 

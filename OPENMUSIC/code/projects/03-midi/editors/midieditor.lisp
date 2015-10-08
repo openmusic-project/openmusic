@@ -139,7 +139,7 @@
    (om-with-focused-view (panel (om-view-container self))
      (om-with-line 'dash 
        (om-draw-line 0 (om-point-v where) (w (panel (om-view-container self))) (om-point-v where))))
-   (om-init-motion-draw self where 
+   (om-init-motion-click self where 
                         :release-action #'(lambda (view p1 p2) 
                                             (declare (ignore p1 p2))
                                             (om-invalidate-view (panel (om-view-container view))))))
@@ -239,27 +239,6 @@
           ))
       (om-invalidate-view (om-view-container self))
       ))
-
-(defmethod om-click-motion-handler ((self midiPanel) pos)
-  (scroll-system-motion self pos *midi-panel-last-click*)
-  (setf *midi-panel-last-click* pos))
-
-(defmethod scroll-system-motion ((self midiPanel) pos prev-pos)
-  (let* ((initrangex (rangex self))
-         (x (om-point-h pos))
-         (y (om-point-v pos))
-         (deltax (norme2pixel self 'x (- (om-point-h prev-pos) x))))
-    (setf deltax (* 10 deltax))
-    (if (minusp (+ (first initrangex) deltax))
-        (setf (rangex self) (list 0 (- (second initrangex) (first initrangex))))
-      (setf (rangex self) (list (+ (first initrangex) deltax)
-                                (+ (second initrangex) deltax))))
-    
-    (om-invalidate-view self)
-    (om-invalidate-view (preview (editor self)))
-    ))
-
-
 
 ;------------------------------------
 (defclass MidiEditor (EditorView object-editor play-editor-mixin) 

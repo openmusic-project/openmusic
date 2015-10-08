@@ -52,7 +52,8 @@
                 om-point-y
                 om-point-in-line-p 
                 om-point-*
-
+                om-points-to-rect
+                
                 om-make-rect
                 om-pts-to-rect
                 om-sect-rect
@@ -283,6 +284,14 @@
   (om-make-point (* (om-point-h point) fact)
                  (* (om-point-v point) fact)))
 
+
+(defmethod om-points-to-rect (p1 p2)
+  (let ((x1 (min (om-point-x p1) (om-point-x p2)))
+        (y1 (min (om-point-y p1) (om-point-y p2)))
+        (x2 (max (om-point-x p1) (om-point-x p2)))
+        (y2 (max (om-point-y p1) (om-point-y p2))))
+    (values x1 y1 (- x2 x1) (- y2 y1))))
+
 ;;;=========================
 ;;; RECTS 
 ;;;=========================
@@ -511,7 +520,7 @@
 (defclass omcolor () 
   ((c :accessor c :initarg :c)))
 ;;; modifs dans graphics.lisp, windows.lisp, dialog-items.lisp
-;;; user-interface.lisp; movable-object.lisp
+;;; user-interface.lisp;
 
 (defmethod c ((self symbol)) (or self :black))
 

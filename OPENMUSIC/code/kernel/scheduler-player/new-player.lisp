@@ -483,7 +483,7 @@
 ; VIEW WITH CURSOR
 ;;;===================================
 
-(defclass cursor-play-view-mixin (om-view-cursor-play) 
+(defclass cursor-play-view-mixin (om-view) 
   ((cursor-mode  :initform :normal :accessor cursor-mode :initarg :cursor-mode)   ;; :normal ou :interval
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))
@@ -511,7 +511,7 @@
 ;--------------------
 
 (defmethod new-interval-cursor ((self cursor-play-view-mixin) where)
-  (om-init-motion-draw self (om-make-point (om-point-x where) 0) 
+  (om-init-motion-click self (om-make-point (om-point-x where) 0) 
                        :motion-draw 'draw-selection-interval 
                        :release-action 'release-interval-select))
 

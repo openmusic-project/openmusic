@@ -551,7 +551,7 @@ so this class inherite from view. #enddoc#
      (setf (active-mode self) t)
      (when (iconView self)
        (setf (selected-p (iconView self)) t))
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 (defmethod omG-unselect ((self OMSimpleFrame))
    "Set the frame SELF and the object pointed for frame in unselected mode"
@@ -559,7 +559,7 @@ so this class inherite from view. #enddoc#
      (setf (active-mode self) nil)
      (when (iconView self)
        (setf (selected-p (iconView self)) nil))
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 (defmethod toggle-icon-active-mode ((self OMSimpleFrame))
    "Select or unselect 'self'."
