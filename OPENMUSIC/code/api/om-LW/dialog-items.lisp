@@ -324,9 +324,8 @@
 (defun text-wrap-pix (text-str font width-pix)
   (if (find #\Newline text-str)
       (loop for ttt in (om-text-to-lines text-str) append (text-wrap-pix ttt font width-pix))
-    (progn (setf (capi::simple-pane-font *record-view*) font)
-      (let* ((p (position width-pix (gp::compute-char-extents *record-view* text-str) :test '<)))
-        (if p (capi::wrap-text text-str (max 1 (- p 1))) (list text-str))))))
+    (let* ((p (position width-pix (gp::compute-char-extents *record-view* text-str (and font (gp::find-best-font *record-view* font))) :test '<)))
+      (if p (capi::wrap-text text-str (max 1 (- p 1))) (list text-str)))))
 
 ;--------om-static-text
 

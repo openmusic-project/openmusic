@@ -212,11 +212,14 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                       (when (connected? insou)
                         (let ((posi (position (first (connected? insou)) listsource :test 'equal)))
                           (when posi
+                            (connect-ctrl (nth posi listtarget) intarg (second (connected? insou)))
                             (setf (connected? intarg)
-                                  (list (nth posi listtarget)
-                                        (second (connected? insou))
+                                  (list (nth posi listtarget) ;; redundant with connect-ctrl
+                                        (second (connected? insou)) ;; redundant with connect-ctrl
                                         (third (connected? insou))
-                                        (if (null (fourth (connected? insou))) 0 (fourth (connected? insou))))))))
+                                        (if (null (fourth (connected? insou))) 0 (fourth (connected? insou)))))
+                            
+                            )))
                       (setf (value intarg) (value insou))) inputssource  inputstarget))))
 
 
@@ -677,6 +680,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
       (get-slot-in-out-names self)
     (inputs-from-list args initvals docinps menus)))
 
+
 ;if T, the class of self allows an editor. Subclass this method if  you want construct an editor box.
 (defmethod Class-has-editor-p ((self t)) nil)
 
@@ -686,6 +690,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;Inputs of factories are initargs of the class reference, if you want change this redefine this method.
 (defmethod make-exeption-box ((self t) posi name)
    (declare (ignore posi name)) nil)
+
+
 
 ;--------------Evaluation
 
@@ -704,6 +710,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (if (= num 0)
        self
        (eval `(,(internp (nth num outs) (symbol-package (type-of self))) ,self)))))
+
+
 
 (defmethod make-one-instance ((self t) &rest slots-vals)
    (setf slots-vals (apply 'pretraitement (cons self slots-vals)))
@@ -2203,6 +2211,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod get-boxcallclass-fun ((self (eql 'dead-method))) 'box-dead)
 
+(defclass deadboxframe (boxframe) ())
+
+(defmethod get-frame-class ((self box-dead)) 'deadboxframe)
+
 (defmethod* dead-method (&rest rest) 
    :icon 190 
    :doc "I have lost my reference, I am dead"
@@ -2246,6 +2258,9 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 (defmethod get-frame-name ((self general-box-dead))
    (name self))
 
+(defmethod get-frame-class ((self general-box-dead)) 'deadboxframe)
+
+
 
 ;---------Evaluation
 
@@ -2268,6 +2283,40 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod do-add-one-keyword ((self general-box-dead) &optional (input-key nil))  nil)
 (defmethod do-delete-one-keyword ((self general-box-dead)) nil)
+
+
+;---------Resuscitation
+
+(defmethod revive-dead-box ((self deadboxframe))
+  (let* ((panel (om-view-container self))
+         (patch (object panel)))
+    (let ((result (add-box-in-patch-panel (name self)
+                                          panel
+                                          (om-view-position self))))
+      (when result
+        (let ((conn (mk-connection-list (boxes patch)))
+              (pos (position (object self) (boxes patch)))
+              (newpos (position result (boxes patch)))  ;;; always 0?
+              )
+          (remk-connections (boxes patch)
+                            (dup-connections conn pos newpos))
+
+          ; copy input values (which, like the connections, survive even when the box is dead)
+          (loop for input in (inputs result)
+                for orig-input in (inputs (object self))
+                do (setf (value input)
+                         (value orig-input)))
+
+          (omg-remove-element panel self)
+
+          ;redraw connections
+          (mapc #'(lambda (box)
+                    (when (frames box)
+                      (redraw-frame (first (frames box)))))
+                (boxes patch))
+
+          
+        )))))
 
 
 

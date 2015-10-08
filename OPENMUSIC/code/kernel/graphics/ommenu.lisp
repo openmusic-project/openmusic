@@ -165,9 +165,7 @@
           ((equal menuid 'presentation)
            (om-make-menu "Presentation" (list
                                          (list :selection
-                                               (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0)
-                                                                          ;(om-add-menu-to-win win)
-                                                                            ) 
+                                               (om-new-leafmenu "Icons" #'(lambda () (omG-change-presentation win 0))
                                                                 nil
                                                                 (if (member "Icons" disable :test 'string-equal) nil t)
                                                                 #'(lambda () (= (presentation (editor win)) 0)))
@@ -179,17 +177,17 @@
                                          (when win
                                            #'(lambda (win)
                                                (list (if (list-presentation? win)
-                                                         (om-new-menu "Sort..."
-                                                                      (om-new-leafmenu "By Name" #'(lambda () 
-                                                                                                     (change-frame-presentation (panel (editor win)) 1)
-                                                                                             ;(omG-change-presentation win 1)
-                                                                                                     ))
-                                                              
-                                                                      (om-new-leafmenu "By Type" #'(lambda () 
-                                                                                                     (change-frame-presentation (panel (editor win)) 2)
-                                                                                             ;(omG-change-presentation win 2)
-                                                                                                     ))
-                                                                      )
+                                                         (om-make-menu "Sort..."
+                                                                      (list (list :selection
+                                                                             (om-new-leafmenu "By Name" #'(lambda () (change-frame-presentation (panel (editor win)) 1)) nil t 
+                                                                                              #'(lambda () (= 1 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Type" #'(lambda () (change-frame-presentation (panel (editor win)) 2)) nil t 
+                                                                                              #'(lambda () (= 2 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Date Created" #'(lambda () (change-frame-presentation (panel (editor win)) 3)) nil t 
+                                                                                              #'(lambda () (= 3 (presentation (editor win)))))
+                                                                             (om-new-leafmenu "By Date Modified" #'(lambda () (change-frame-presentation (panel (editor win)) 4)) nil t
+                                                                                              #'(lambda () (= 4 (presentation (editor win)))))
+                                                                             )))
                                                        (om-new-leafmenu "Align" #'(lambda () (omG-align-presentation win))))))))
                          ))
           ((equal menuid 'file)
@@ -549,7 +547,13 @@
 ;===========================loop
 (defmethod om-get-menu-context ((object loopboxframe))
   (list+ (list (om-new-leafmenu "Update Doc" #'(lambda () (apply-win (om-view-window object) 'update-doc)))) 
-         (boxframe-default-list object)))
+         (boxframe-default-list object)
+         (list (om-new-leafmenu "Eval Inputs and Set Defaults" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (om-inputs-to-patch-defaults
+                                          ,object))))))))
 
 ;===============WS and FOLDERS
 (defmethod om-get-menu-context ((self metaobj-panel))
@@ -666,7 +670,13 @@
   (list+  (list (list (om-new-leafmenu "Update Doc"
                                        #'(lambda () (apply-win (om-view-window object) 'update-doc))))
                 ) 
-          (boxframe-default-list object)))
+          (boxframe-default-list object)
+          (list (om-new-leafmenu "Eval Inputs and Set Defaults" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (om-inputs-to-patch-defaults
+                                          ,object))))))))
 
 
 (defmethod om-get-menu-context ((self maquetteframe))
@@ -686,6 +696,16 @@
 (defmethod om-get-menu-context ((object commentboxframe))
   (list (om-new-leafmenu "Text Color" #'(lambda () (color-comments (panel (om-view-window object)))))
         (om-new-leafmenu "Text Font" #'(lambda () (font-comments (panel (om-view-window object)))))))
+
+(defmethod om-get-menu-context ((object deadboxframe))
+  (list+   
+          (boxframe-default-list object)
+          (list (om-new-leafmenu "Revive" 
+                                 #'(lambda ()
+                                     (om-eval-enqueue 
+                                      `(progn
+                                         (revive-dead-box
+                                          ,object))))))))
 
 
 
@@ -833,9 +853,4 @@
       (om-new-leafmenu "Last Saved" #'(lambda () (window-last-saved (editor self))) nil
                        (not (om-maquette-abs-p (object (editor self)))))
       ))))
-
-
-
-
-
 

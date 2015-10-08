@@ -1,6 +1,4 @@
 
-
-
 (in-package :om-api)
 
 (compile&load (make-pathname :directory (append oa::*externals-directory* (list "MIDI" "PortMidi")) :name "portmidi"))
@@ -19,7 +17,6 @@
 
 (defmethod om-midi::midi-in-start-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-in-start)
 (defmethod om-midi::midi-in-stop-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-in-stop)
-
 
 (om-add-init-func 'om-midi::om-start-portmidi)
 

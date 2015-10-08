@@ -1,3 +1,3 @@
 cd ./OPENMUSIC/buildimage/build-om/
 
-/Applications/LispWorks\ 6.1/LispWorks.app/Contents/MacOS/lispworks-6-1-0-macos-universal -build pack-src.lisp
+/Applications/LispWorks\ 7.0\ \(32-bit\)/LispWorks\ \(32-bit\).app/Contents/MacOS/lispworks-7-0-0-x86-darwin -build pack-src.lisp

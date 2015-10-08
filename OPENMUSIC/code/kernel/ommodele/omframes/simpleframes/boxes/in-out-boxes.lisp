@@ -192,12 +192,7 @@
   
 ;----FRAME
 
-(omg-defclass TypedInFrame (boxframe) ())
-
-(defmethod initialize-instance ((self TypedInFrame) &rest initargs)
-   (call-next-method)
-   (om-set-font self *om-default-font1*))
-
+(defclass TypedInFrame (boxframe) ())
 
 (defmethod omG-change-type ((self TypedInFrame) thetype)
    (if (keys (object self))
@@ -276,7 +271,8 @@
         (t t)))
 
 (defmethod omG-rename ((self TypedInFrame) new-name)
-  (if (check-method-arg-name new-name (om-view-container self))
+  (if (and (not (string-equal new-name (name (object self))))
+           (check-method-arg-name new-name (om-view-container self)))
     (setf (name (object self)) new-name))
   (call-next-method self (name (object self))))
 
@@ -354,7 +350,7 @@
 
 ;;; FRAME
 
-(omg-defclass selfInFrame (TypedInFrame) ())
+(defclass selfInFrame (TypedInFrame) ())
 
 (defmethod omg-remove-element ((self patchPanel) (box selfInFrame))
    "When you remove 'box' from 'self' you must update all omboxpatch instances having 'self' as reference."
@@ -460,7 +456,7 @@
 (defmethod do-delete-one-keyword ((self Omin)) nil)
 
 ;-------FRAME
-(omg-defclass inFrame (boxframe) ()
+(defclass inFrame (boxframe) ()
    (:documentation "Simple frame for OMIN boxes. #enddoc#
 #seealso# (OMIN) #seealso#")
    (:default-initargs :view-font (list *signs-font* 18)))
@@ -566,7 +562,7 @@
 (defmethod do-delete-one-keyword ((self OmOut)) nil)
 
 ;-------------FRAME
-(omg-defclass outFrame (boxframe) ()
+(defclass outFrame (boxframe) ()
    (:documentation "Simple frame for OMOut boxes. #enddoc#
 #seealso# (OMIN) #seealso#")
    (:default-initargs :view-font (list *signs-font* 18)))
@@ -611,7 +607,7 @@
 ; special icon-view avec numero dessus
 ;==================================
 
-(omg-defclass inout-icon-box (icon-box) ())
+(defclass inout-icon-box (icon-box) ())
 
 (defmethod om-draw-contents ((self inout-icon-box))
   (call-next-method)
@@ -680,7 +676,7 @@
     theout))
 
 ;-----FRAME
-(omg-defclass tempOutFrame (boxframe) ())
+(defclass tempOutFrame (boxframe) ())
 
 (defmethod tempoutframe-p ((setf t)) nil)
 (defmethod tempoutframe-p ((setf tempoutframe)) t)
@@ -700,7 +696,7 @@
 
 ;======================INPUTS DIALOGS================================
 
-(omg-defclass inputEditor (editorView) ())
+(defclass inputEditor (editorView) ())
 
 (defmethod handle-key-event ((self inputEditor) char) nil)
 
@@ -762,7 +758,7 @@
 
 ;-----------
 
-(omg-defclass defval-editbox (om-text-edit-view) 
+(defclass defval-editbox (om-text-edit-view) 
    ((item :initform nil :initarg :item :accessor item)))
 
 (defmethod om-view-key-handler ((self defval-editbox) key)

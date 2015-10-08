@@ -210,7 +210,8 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
      (setf newboxes (make-elemnts-list-boxes (object self) (car new-range) (second new-range)))
      (mapc #'(lambda (frame)
                        (omG-add-element (panel self) frame)) newboxes)
-     (om-invalidate-view self t)))
+     (om-invalidate-view self t)
+     t))
 
 
 (defmethod advance-range ((self listEditor) dir)
@@ -248,3 +249,70 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
 #seealso# (OMListInstance instance-icon-frame InstancePanel) #seealso#"))
 
 (defmethod om-view-cursor ((self InstancePanel))  *om-arrow-cursor*)
+
+
+
+
+
+
+
+;;;===========================
+;;; key shortcuts 'p' and 's' for list editor, to play selected score-objects and sounds
+;;; without opening a window
+
+;;; arrow keys navigate the selection
+
+
+(defmethod handle-key-event ((self listPanel) char)
+  (let ((actives (get-actives self)))
+    (labels ((selected-pos () (position (car actives) (om-subviews self)))
+
+             (pos-select (p)
+               (omg-select (nth (max 0 (min (1- (length (om-subviews self))) 
+                                            p))
+                                (om-subviews self))))
+
+             (shift-select (dir)
+               (if (null actives)
+                   (pos-select 0)
+
+                 (when (<= 1 (length actives))
+                   (let ((pos (selected-pos)))
+                     (omg-unselect (car actives))
+                     
+                     (cond ((and (= pos 0) (= dir -1))
+                            (if (> (car (ranges (om-view-container self))) 0)
+                                (pos-select (1- (length (om-subviews self))))
+                              (pos-select pos)))
+                           
+                           ((and (= pos (1- (length (om-subviews self)))) (= dir 1))
+                            (if (advance-range (om-view-container self) 1)
+                                (pos-select 0)
+                              (pos-select pos)))
+
+                           (t (pos-select (+ pos dir)))))))))
+
+      (case char
+
+        (#\p (let ((f (first (get-actives self))))
+               (when f (play (instance (object f))))))
+                 
+
+        (#\s (stop *general-player*))
+
+        (:om-key-left 
+         (shift-select -1))
+
+        (:om-key-right
+         (shift-select 1))
+
+        (:om-key-up 
+         (let ((pos (selected-pos)))
+           (advance-range (om-view-container self) 0)
+           (pos-select pos)))
+
+        (:om-key-down 
+         (let ((pos (selected-pos)))
+           (advance-range (om-view-container self) 1)
+           (pos-select pos)))
+        ))))

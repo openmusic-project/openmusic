@@ -37,4 +37,5 @@
    (setf *mark* (om-make-cursor "marker-cursor" (om-make-point 0 0)))
    )
 
+
 (om-add-init-func 'create-score-cursors) 

@@ -275,7 +275,16 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\E (om-encapsulate self actives))
       (#\U (om-unencapsulate self actives))
       
-      (otherwise (om-beep)))))
+      (otherwise (loop for box in activeboxes
+                           with hotbox = nil
+                           do (when (find-method #'handle-key-event '() (list (class-of box)
+                                                                              (find-class t)) nil)
+                                (setf hotbox t)  
+                                (handle-key-event box char))
+                           finally
+                           do (unless hotbox 
+                                (om-beep) ;no boxes have specialized handle-key-event methods
+                                ))))))
 
 
 
@@ -493,6 +502,17 @@ Elements of the list are list as (source-position source-output target-position 
                          (fourth item)
                          (fifth item)
                          (sixth item)))))
+
+
+(defun dup-connections (list id new-id)
+  "make new connection specifiers based on 'list', where id is replace with new-id.
+   usage might be: (remk-connections boxes (dup-connections (mk-connection-list boxes) id new-id))"
+  (loop for conn in list
+        collect `(,(if (= (first conn) id) new-id (first conn))
+                  ,(second conn)
+                  ,(if (= (third conn) id) new-id (third conn))
+                  ,@(nthcdr 3 conn))))
+
 
 (defun find-box-with-name (list name)
    "Return the box in 'list' named 'name'."

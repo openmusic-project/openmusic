@@ -150,33 +150,109 @@
 ;;;OM PRESENTATION + About
 ;;;=======================
 
-(omg-defclass splash-screen (om-view) 
+(defclass splash-screen (om-view) 
    ((thepict :initform nil :initarg :thepict :accessor thepict))
    (:documentation "The class of the About OM window.#enddoc#
 #thepict# This slot contains the *graph-pres* global variable.#thepict#"))
     
-(defvar *splash-screen* nil)
+(defparameter *splash-screen* nil)
+
+(defun make-splash-view (&optional (credits nil))
+  (let* ((name (string+ "OpenMusic " *version-string*))
+         (textcolor  (om-make-color 0.384 0.302 0.266))
+         (backcolor (om-make-color 0.9529412 0.9294118 0.803916))
+         (mainfont  (om-make-font "Verdana" (nth 0 *om-def-font-sizes*)))
+         (boldfont  (om-make-font "Verdana" (nth 0 *om-def-font-sizes*) :style '(:bold)))
+         (view (om-make-view 'splash-screen
+                             :thepict *graph-pres*
+                             :bg-color backcolor
+                             :size (om-add-points 
+                                    (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
+                                    (if credits (om-make-point 300 0) (om-make-point 0 0)))
+                             :subviews (list (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 58 6) (om-make-point 400 36) 
+                                                                  name
+                                                                  :font (om-make-font "Arial" (nth 4 *om-def-font-sizes*) :style '(:bold))
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+                                             (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 92 57) (om-make-point 300 18) 
+                                                                  (string+ "(c) 1995-"
+                                                                           (subseq *release-date* 0 4)
+                                                                           " Ircam-Centre Georges Pompidou")
+                                                                  :font mainfont
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+                                             (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 118 42) (om-make-point 250 20) 
+                                                                  (string+ (string-until-space *release-date*)
+                                                                           " - Music Representations Group")
+                                                                  :font mainfont
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+                                                        
+                                             (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 58 320) (om-make-point 300 36)
+                                                                  (format nil "release ~,6f" *om-version*)
+                                                                  :font mainfont
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+
+                                             (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 58 350) (om-make-point 300 36)
+                                                                  "Dedicated to the memory of G. Grisey (1946-1998)"
+                                                                  :font mainfont
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+                                             )
+                             )))
+    (when credits 
+      (om-add-subviews view
+                       (om-make-dialog-item 'om-static-text  
+                                            (om-make-point 490 16) (om-make-point 210 600) 
+                                            *credits-1*
+                                            :font boldfont
+                                            :fg-color textcolor
+                                            :bg-color backcolor)
+                       #+linux (om-make-dialog-item 'om-static-text  
+                                                    (om-make-point 490 60) (om-make-point 210 100) 
+                                                    *credits-3*
+                                                    :font boldfont
+                                                    :fg-color textcolor
+                                                    :bg-color backcolor)
+                       (om-make-dialog-item 'om-static-text  
+                                            (om-make-point 390 #-linux 60 #+linux 80)
+                                            (om-make-point 320 600) 
+                                            *credits-2*
+                                            :font mainfont
+                                            :fg-color textcolor
+                                            :bg-color backcolor)
+                       ))
+    view))
+
 
 (defmethod om-view-click-handler ((self splash-screen) where)
   "When you click in the about window it is hidden"
   (declare (ignore where))
-  (om-close-window (om-view-window self))
-  (setf *splash-screen* nil))
-
+  (close-credits))
 
 (defmethod om-draw-contents ((self splash-screen)) 
   (om-draw-picture self (thepict self))
   (call-next-method))
 
+(defun close-credits ()
+  (om-close-window *splash-screen*)
+  (setf *splash-screen* nil))
+
 (defun show-kero-pict (&optional (credits nil))
   (if *splash-screen* (om-select-window *splash-screen*)
-      (let ((name (string+ "OpenMusic " *version-string*))
-	    (textcolor  (om-make-color 0.384 0.302 0.266))
-	    (backcolor (om-make-color 0.9529412 0.9294118 0.803916))
-	    (mainfont  (om-make-font "Verdana" (nth 0 *om-def-font-sizes*)))
-	    (boldfont  (om-make-font "Verdana" (nth 0 *om-def-font-sizes*) :style '(:bold)))
-	    win view)
-	(setf win (om-make-window 'om-no-border-win
+    (let* ((view (make-splash-view credits))
+           (win (om-make-window 'om-no-border-win
 				  :window-title "About OpenMusic"
 				  :close nil
 				  :minimize nil
@@ -184,85 +260,13 @@
 				  :resizable nil
 				  :window-show nil
 				  :position :centered 
-				  :bg-color backcolor
-				  :size (om-add-points 
-					 (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-					 (if credits (om-make-point 300 0) (om-make-point 0 0)))
-				  ))
-
-	(om-add-subviews win (setf view (om-make-view 'splash-screen
-						      :thepict *graph-pres*
-						      :bg-color backcolor
-						      :size (om-interior-size win)
-						      :subviews (list (om-make-dialog-item 'om-static-text  
-											   (om-make-point 58 6) (om-make-point 400 36) 
-											   name
-											   :font (om-make-font "Arial" (nth 4 *om-def-font-sizes*) :style '(:bold))
-											   :fg-color textcolor
-											   :bg-color backcolor
-											   )
-								      (om-make-dialog-item 'om-static-text  
-											   (om-make-point 92 57) (om-make-point 300 18) 
-											   (string+ "(c) 1995-"
-												    (subseq *release-date* 0 4)
-												    " Ircam-Centre Georges Pompidou")
-											   :font mainfont
-											   :fg-color textcolor
-											   :bg-color backcolor
-											   )
-								      (om-make-dialog-item 'om-static-text  
-											   (om-make-point 118 42) (om-make-point 250 20) 
-											   (string+ (string-until-space *release-date*)
-												    " - Music Representations Group")
-											   :font mainfont
-											   :fg-color textcolor
-											   :bg-color backcolor
-											   )
-                                                        
-								      (om-make-dialog-item 'om-static-text  
-											   (om-make-point 58 320) (om-make-point 300 36)
-											   (format nil  "release ~D" *om-version*)
-											   :font mainfont
-											   :fg-color textcolor
-											   :bg-color backcolor
-											   )
-
-								      (om-make-dialog-item 'om-static-text  
-											   (om-make-point 58 350) (om-make-point 300 36)
-											   "Dedicated to the memory of Gérard Grisey (1946-1998)"
-											   :font mainfont
-											   :fg-color textcolor
-											   :bg-color backcolor
-											   )
-								      )
-						      )))
- 
-	(when credits (om-add-subviews view
-				       (om-make-dialog-item 'om-static-text  
-							    (om-make-point 490 16) (om-make-point 210 600) 
-							    *credits-1*
-							    :font boldfont
-							    :fg-color textcolor
-							    :bg-color backcolor)
-				       #+linux (om-make-dialog-item 'om-static-text  
-								    (om-make-point 490 60) (om-make-point 210 100) 
-								    *credits-3*
-								    :font boldfont
-								    :fg-color textcolor
-								    :bg-color backcolor)
-				       (om-make-dialog-item 'om-static-text  
-							    (om-make-point 390 #-linux 60 #+linux 80)
-							    (om-make-point 330 600) 
-							    *credits-2*
-							    :font mainfont
-							    :fg-color textcolor
-							    :bg-color backcolor)
-				       ))
-    
+				  ;:bg-color backcolor
+				  :size (om-view-size view))))
+	(om-add-subviews win view)
 	(setf *splash-screen* win)
-	(om-select-window win))))
-
-; (show-kero-pict t)
+	(om-select-window win)
+        win
+        )))
 
 (defvar *credits-1* "OM Credits")
 (defvar *credits-2* "OM Credits")
@@ -271,43 +275,25 @@
 "Design and development: 
 C. Agon, G. Assayag, J. Bresson")
 
-#-linux (setf *credits-2* 
+(setf *credits-2* 
 	      "Contributions:
-E. Amiot, M. Andreatta, D. Bouche, O. Delerue, K. Haddad, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, A. Vinjar, F. Voisin, ...
+E. Amiot, M. Andreatta, D. Bouche, O. Delerue, J. Garcia, K. Haddad, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, A. Vinjar, F. Voisin, ...
 
 External code from: 
-Grame (Midishare / LibAudioStream interfaces), H. Taube (MidiShare bindings), C. T. Binghe (UDP), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML)
+Grame (Midishare / LibAudioStream interfaces), H. Taube (MIDI bindings), C. T. Binghe (lispworks-udp), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML), H. Huebner (Yason), W. S. Annis (cl-svg)
 
 External Libraries:
-  MIDI support: MidiShare (c) Grame
+  MIDI support: PortMidi (c) PortMedia
   Audio support: LibAudioStream (c) Grame
         use LibSndFile (c) Erik de Castro Lopo
   Sound Description Interchange Format SDIF (c) Ircam
 
 ArtWork: A. Mohsen
 ")
-#+linux (setf *credits-2* 
-"Contributions:
-E. Amiot, M. Andreatta, D. Bouche, O. Delerue, K. Haddad, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, A. Vinjar, F. Voisin, ...
-
-External code from: 
-C. T. Binghe (UDP), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML)
-
-External Libraries:
-  PortMidi: <http://portmedia.sourceforge.net>
-  Audio support: JACK <http://jackaudio.org>
-  SDIF: Ircam <http://sdif.sourceforge.net>
-
-ArtWork: A. Mohsen
-")
 
 #+linux (setf *credits-3* "Linux port: Anders Vinjar")
 
-
-; Musical Expertise:
-;J. Baboni, A. Bancquart, G. Bloch, J. Fineberg, K. Haddad, J.-L. Hervé, M. Lanza, P. Leroux, F. Lévy, G. Lorieux, C. Malherbe, M. Malt, Y. Maresz, T. Murail, P. Nauert, O. Sandred, K. Sprotte, M. Stroppa, H. Tutschku, ...    
-
-
+; (show-kero-pict t)
 
 ;;;=======================
 ;;; MESSAGE WIN

@@ -22,7 +22,9 @@
 (defmethod extra-p ((self t)) nil)
 
 (defmethod transpose-a ((self extra-objet) trans)
-   (setf (deltay self) (+ (deltay self) (* -1 (round trans 100)))))
+  (setf (deltay self) 
+        (+ (deltay self)
+           (* -1 (if (plusp trans) (ceiling trans 1000) (floor trans 1000))))))
 
 (defmethod move-in-x ((self extra-objet) trans)
    (setf (deltax self) (+ (deltax self) trans)))
@@ -321,30 +323,29 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (setf (graphic-frame self) rep)))
    
 (defmethod draw-graph-extra-obj ((self grap-extra-char) view size staff)
-   (let* ((grap-obj (gobject self))
-          (object (reference self))
-          (rect (rectangle grap-obj))
-          (fontsize size)
-          (text (thechar (reference self)))
-          (thefont (om-make-music-font *extras-font* fontsize))
-          (ls (round size 4))
-          (sizetext (get-name-size text thefont))
-          points x y)
-     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax (reference self)) (deltay (reference self))))  size))
-     (setf y (om-point-v (car points)))
-     (setf x (om-point-h (car points)))
-     (om-with-font thefont
-                   (om-draw-string (om-point-h (car points)) (om-point-v (car points)) text))
-     (setf (rectangle self) (list x (+  ls (- y fontsize)) (+ x sizetext) (+ ls y))))
-  )
+  (let* ((grap-obj (gobject self))
+         (object (reference self))
+         (rect (rectangle grap-obj))
+         (fontsize size)
+         (text (thechar (reference self)))
+         (thefont (om-make-music-font *extras-font* fontsize))
+         (ls (round size 4))
+         (sizetext (get-name-size text thefont))
+         points x y)
+    (setf points (convert-delta-to-points grap-obj 
+                                          (list (om-make-point (deltax (reference self)) (deltay (reference self)))) 
+                                          size))
+    (setf y (om-point-v (car points)))
+    (setf x (om-point-h (car points)))
+    (om-with-font thefont
+                  (om-draw-string (om-point-h (car points)) (om-point-v (car points)) text))
+    (setf (rectangle self) (list x (+  ls (- y fontsize)) (+ x sizetext) (+ ls y)))))
 
 ;***************
 ;VELOCITIES
 ;***************
-
-
 (defclass! vel-extra (extra-objet) 
-   ((thechar :initform (dyn-fff) :initarg :thechar :accessor thechar))
+   ((dynamics :initform NIL :initarg :dynamics :accessor dynamics))
    (:icon 499)
    (:documentation 
 "
@@ -353,7 +354,9 @@ A velocity symbol to be attached to a particular chord or note in the score.
 EXTRA objects are additional data or graphics integrated in the score objects (voice, chord-seq, etc.)
 They can be added and manipulated thanks to the Extra package functions (add-extra, etc.)
 
-<dynamic> is a string of a single character interpreted graphically in the OM extra fonts.
+<dynamics> is a string of a single character symbol interpreted graphically in the OM extra fonts. 
+If <dynamics> 
+
 <deltax> and <deltay> are relative horizontal and vertical offsets (arbitrary non-temporal unit depending on the zoom and font size)
 
 "))
@@ -362,66 +365,60 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (values '("self" "deltax" "deltay" "dynamic")
            '(nil 0 0 "h")
            '("object" "horizontal offset" "vertical offset" "dynamics character" )
-           '(nil nil nil (( 3 (("fff" (dyn-fff))  ("ff" (dyn-ff)) ("f" (dyn-f))
-                               ("mf" (dyn-mf)) ("mp" (dyn-mp)) ("ppp" (dyn-ppp)) ("pp" (dyn-pp)) ("p" (dyn-p))))))))
-
-
-(defmethod draw-obj-in-rect ((self vel-extra) x x1 y y1 edparams view)
-  (let* ((fontsize 24)
-         (thefont (om-make-music-font *extras-font* fontsize))
-         (sizetext (round (get-name-size (thechar self) thefont) 2)))
-     (om-with-font thefont
-                   (om-draw-string (round (- (+ x (/ (- x1 x) 2)) sizetext)) 
-                                   (round (+ y (/ (- y1 y) 2))) (thechar self)))))
+           '(nil nil nil (( 3 (("unspecific" NIL)
+                               ("fff" :fff)  ("ff" :ff) ("f" :f)
+                               ("mf" :ff) ("mp" :mp) 
+                               ("ppp" :ppp) ("pp" :pp) ("p" :p)))))))
 
 (defmethod vel-extra-p ((self vel-extra)) t)
 (defmethod vel-extra-p ((self t)) nil)
+
+(defmethod draw-obj-in-rect ((self vel-extra) x x1 y y1 edparams view)
+  (let* ((fontsize 24)
+         (thefont  (if (dynamics self) (om-make-music-font *extras-font* fontsize) *om-default-font1b*))
+         (str (if (dynamics self) (string (dyn-to-char (dynamics self))) "?"))
+         (sizetext (round (get-name-size str thefont) 2)))
+     (om-with-font thefont
+                   (om-draw-string (round (- (+ x (/ (- x1 x) 2)) sizetext)) 
+                                   (round (+ y (/ (- y1 y) 2)))
+                                   str))))
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'dynamic)) dc)
   (let ((size (staff-size self))
         newextra obj points)
-    (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
+    (setf obj (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
     (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos*) size))
-    (setf newextra (make-instance 'vel-extra
-                                  :object (reference obj) ))
-    (setf (thechar newextra) (string (car (get-extra-param *extramanager* (edit-mode *extramanager*)))))
+    (setf newextra (make-instance 'vel-extra :object (reference obj)))
+    (setf (dynamics newextra) (car (get-extra-param *extramanager* (edit-mode *extramanager*))))
     (setf (deltax newextra) (om-point-h (car points))
           (deltay newextra) (om-point-v (car points)))
     (push newextra (extra-obj-list (reference obj)))
-    (set-vel (reference obj) (get-vel-midi (thechar newextra)))
+    ;(set-vel (reference obj) (get-vel-midi (dynamics newextra)))
     (update-panel self t)))
 
 
+
+(defmethod add-vel-extra ((self rest)) nil)
+
 (defmethod add-vel-extra ((self t)) 
-   (let* ((newextra (make-instance 'vel-extra :object self))
-          (notes (notesforhead self))
-          (vel (vel (car notes)))
-          (dyn (get-dyn-from-vel vel)))
-     (setf (thechar newextra) dyn)
-     (push newextra (extra-obj-list self))
-     (set-vel self vel)))
+  (when (get-extras self "vel")
+    (remove-extras self "vel" nil))
+  (let* ((newextra (make-instance 'vel-extra :object self))
+         (vel (get-object-vel self))
+         (dyn (get-dyn-from-vel vel)))
+  ;(setf (dynamics newextra) dyn)
+  (push newextra (extra-obj-list self))
+  (set-vel self vel)))
+
 
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
    (setf (object extra) self)
    (push extra (extra-obj-list self))
-   (set-vel self (get-vel-midi (thechar extra))))
+   (when (dynamics extra)
+     (set-vel self (get-vel-from-dyn (dynamics extra)))))
 
 
-(defun get-vel-midi (str)
-   (let ((pos (position str *cur-dynamic-chars* :test 'string-equal)))
-   (cond
-    (pos (- (nth pos (cdr *cur-dynamic-list*)) 1))
-    (t 10))))
-
-
-(defmethod! set-vel ((self container) vel)
-   (loop for item in (inside self) do (set-vel item vel)))
-
-(defmethod! set-vel ((self note) vel)
-   (setf (vel self) vel))
-
-(defmethod! set-vel ((self t) vel) t)
 ;--------------------
 
 (defclass grap-extra-vel (grap-extra-objet) ())
@@ -434,15 +431,16 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    
 (defmethod draw-graph-extra-obj ((self grap-extra-vel) view size staff)
    (let* ((grap-obj (gobject self))
-          (object (reference self))
+          (extra (reference self))
           (rect (rectangle grap-obj))
           (fontsize (round size 4/3))
-          (text (thechar (reference self)))
+          (text (string (dyn-to-char (or (dynamics extra) 
+                                         (get-dyn-from-vel (get-object-vel (object extra)))))))
           (thefont (om-make-music-font *extras-font* fontsize))
           (ls (round size 4))
           (sizetext (get-name-size text thefont))
           points x y)
-     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax (reference self)) (deltay (reference self))))  size))
+     (setf points (convert-delta-to-points grap-obj (list (om-make-point (deltax extra) (deltay extra)))  size))
      (setf y (om-point-v (car points)))
      (setf x (om-point-h (car points)))
      (om-with-font thefont
@@ -487,7 +485,9 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (loop for item in pixpoints
           for i = 0 then (+ i 1)
           while (not point) do
-          (when (point-in-rectangle-p where (om-point-v item) (om-point-h item) (+ (om-point-v item) selec-size)  (+ (om-point-h item) selec-size))
+          (when (point-in-rectangle-p where (om-point-v item) (om-point-h item) 
+                                      (+ (om-point-v item) selec-size)  
+                                      (+ (om-point-h item) selec-size))
             (setf point i)))
     (unless point
       (let ((select-rect (extra-rectangle-selection frame)))

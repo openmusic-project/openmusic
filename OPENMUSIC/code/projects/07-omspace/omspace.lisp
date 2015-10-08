@@ -28,6 +28,8 @@
     "3D;3dc"    
     "3D;traject"    
     "3D;3d-tools"
+    "3D;3d-functions"
+    
     #+om-opengl-api "3D;3deditor"
     #+om-opengl-api "3D;traject-editor"
     "space-pack"

@@ -132,18 +132,18 @@ in relation with the reference.#reference#
          (boxnamefont *ombox-font*)
          (numouts (numouts self))
          (index 0)
-         (size-name (get-name-size name boxnamefont))
+         (size-name (round (get-name-size name boxnamefont)))
          (h-name (if name (+ 3 (om-string-h boxnamefont))0))
          input-frames module boxframex)
     
     (setf (inputs self) (update-inputs (reference self) (inputs self)))
     
-    (setf boxframex  (if (frame-size self)
-                         (om-point-h (frame-size self))
-                       (apply #'max (list (first iconsize) 
-                                          (* (boxinputs-sizefactor self) numouts) 
-                                          (* (boxinputs-sizefactor self) (length (inputs self))) 
-                                          size-name))))
+    (setf boxframex (if (frame-size self)
+                        (om-point-h (frame-size self))
+                      (apply #'max (list (first iconsize) 
+                                         (* (boxinputs-sizefactor self) numouts) 
+                                         (* (boxinputs-sizefactor self) (length (inputs self))) 
+                                         size-name))))
         
     (setf input-frames (mapcar #'(lambda (input)   
                                    (let ((docstr (doc-string input)))
@@ -160,13 +160,14 @@ in relation with the reference.#reference#
                                      ))
                                (inputs self)))
     (setq module
-          (om-make-view (get-frame-class self) 
+          (om-make-view (get-frame-class self)
                         :position (frame-position self)
                         ;;;:help-spec (get-documentation self)
-                        :size  (om-make-point boxframex (+ (second iconsize) (+ 19 h-name)))
+                        :size (om-make-point boxframex (+ (second iconsize) (+ 19 h-name)))
                         :object self
                         :subviews input-frames
                         ))
+   
     (setf (inputframes module) input-frames)
     ;;;(loop for input-f in input-frames do (om-add-subviews module input-f))
     

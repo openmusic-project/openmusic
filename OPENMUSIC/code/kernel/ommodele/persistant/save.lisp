@@ -1245,12 +1245,15 @@
                                                    ,instance ,(save-alist (edition-params self)) ,pictlist ,(str-without-nl (doc self))))))
 
 ;;; used by editor exports
-(defmethod save-instance (value)
+(defmethod save-instance (value &optional name)
   (catch-cancel
-    (let ((name (om-choose-new-file-dialog     
+    (let ((name (om-choose-new-file-dialog 
+                 :name name
+                 :directory (def-save-directory) 
                  :prompt "Save the instance of this editor"
                  :types '("OM instance" "*.omi"))))
       (when name
+        (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
         (delete-file-protection name)
         (WITH-OPEN-FILE (out name :direction :output  
                              :if-does-not-exist :create :if-exists :supersede )
@@ -1261,6 +1264,7 @@
         t))))
 
 
+;;; COMPAT ONLY
 (defun om-load-ominstance1 (class name icon instance edparams &optional pictlist doc &rest rest)
    (let ((copy (make-instance class
                  :name name

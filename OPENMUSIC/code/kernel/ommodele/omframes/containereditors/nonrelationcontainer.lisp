@@ -306,11 +306,20 @@ with the objects respectly associeted."))
 
 ;SORT by type or by name
 
+(defmethod get-object-creation-date ((self ompersistantobject)) (car (create-info self)))
+(defmethod get-object-modification-date ((self ompersistantobject)) (cadr (create-info self)))
+
+(defmethod get-object-creation-date ((self OMframe)) (print self) (print (get-object-creation-date (object self))))
+(defmethod get-object-modification-date ((self OMframe)) (get-object-modification-date (object self)))
+
+
 (defmethod sort-subframes ((self nonrelationPanel) elements)
  (case (presentation (om-view-container self))
        (0 elements)
        (1  (sort elements #'string-lessp :key #'name))
        (2  (sort elements #'string-lessp :key #'get-object-insp-name))
+       (3  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-creation-date))
+       (4  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-modification-date))
      ))
 
 ;------------------------------------------------------------------
@@ -336,7 +345,8 @@ with the objects respectly associeted."))
                                (setf (col icon) i)
                                (setf (fil icon) 1)
                                (set-size icon self)
-                               (incf i)) (sort-subframes self (get-subframes self))))
+                               (incf i)) 
+                           (sort-subframes self (get-subframes self))))
                    (set-triangles self))))))
 
 
@@ -473,9 +483,32 @@ with the objects respectly associeted."))
 (defmethod control-actives ((view nonrelationPanel) where)
   (when (and (editor view) (text-view (editor view)))
     (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
+  ;(om-init-motion-draw view where 'draw-selection-rectangle 'release-selection)
   (om-init-motion-functions view 'make-selection-rectangle 'release-selection-rectangle)
   (om-new-movable-object view (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle)
-)
+  )
+
+#|
+(defmethod release-selection ((self nonrelationPanel) pos initpos)
+    (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
+          (y1 (min (om-point-y pos) (om-point-y initpos)))
+          (x2 (max (om-point-x pos) (om-point-x initpos)))
+          (y2 (max (om-point-y pos) (om-point-y initpos))))
+      (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
+        (when (not (= 0 (caddr rect) (cadddr rect)))
+          (do-select-items-in-rect self rect)))
+      (om-invalidate-view self)))
+
+(defmethod draw-selection-rectangle (view x1 y1 x2 y2)
+  ;#-cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*) :operation boole-orc1)
+  ;#+cocoa (gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled t :foreground (c *om-select-color-alpha*))
+  ;(gp::draw-rectangle self (1+ x) (1+ y) (- w 3) (- h 3) :filled nil :foreground (c (om-make-color 0.5 0.5 0.5)) :thickness 1)
+  (om-with-fg-color view oa::*om-select-color-alpha*
+    (om-fill-rect x1 y1 (- x2 x1) (- y2 y1)))
+  (om-with-fg-color view (om-make-color 0.5 0.5 0.5)
+    (om-draw-rect x1 y1 (- x2 x1) (- y2 y1) :pensize 1))
+  )
+|#
 
 (defmethod make-selection-rectangle ((self nonrelationPanel) pos)
   (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
@@ -586,17 +619,16 @@ Workspace Panels contain icons of patches, maquettes and folders
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
 
-(defmethod sort-subframes ((self WorkspacePanel) elements)
-  (let* ((packframe (find *om-package-tree* elements :key 'object))
-         (elts (remove packframe elements)))
-    (remove nil 
-            (append 
-             (case (presentation (om-view-container self))
-               (0 elts)
-               (1  (sort elts #'string-lessp :key #'name))
-               (2  (sort elts #'string-lessp :key #'get-object-insp-name)))
-             (list packframe)))))
+(defmethod sort-subframes ((self nonrelationPanel) elements)
+ (case (presentation (om-view-container self))
+       (0 elements)
+       (1  (sort elements #'string-lessp :key #'name))
+       (2  (sort elements #'string-lessp :key #'get-object-insp-name))
+       (3  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-creation-date))
+       (4  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-modification-date))
+     ))
 
+ 
 (defun import-dragged-file (pane filename pos)
   (let ((dirname (make-pathname :directory (append (pathname-directory filename) (list (pathname-name filename))))))
     (cond ((or (string-equal "omp" (pathname-type filename)) 
@@ -627,7 +659,7 @@ Workspace Panels contain icons of patches, maquettes and folders
 ;-----------------
 
 
-(omg-defclass folderEditor (nonRelationEditor)  ()
+(defclass folderEditor (nonRelationEditor)  ()
    (:documentation "This is the class of the folder's window.#enddoc#
 #seealso# (Omfolder FolderPanel) #seealso#"))
 

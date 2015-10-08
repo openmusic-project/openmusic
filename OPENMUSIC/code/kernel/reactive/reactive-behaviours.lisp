@@ -65,9 +65,6 @@
       (om-invalidate-view (car (frames box)))
       (when wait
         (sleep (or wait *defcolortime*))))))
-  
-
-
 
 (defmethod box-color ((box OMBoxTypeCall) color &optional wait)
     (when *defcolortime*
@@ -81,7 +78,6 @@
           (om-invalidate-view (iconview (car (frames box))))
           ))))
 
-
 (defmethod draw-before-box :after ((self omboxframe)) 
   (draw-active-state self))  ;;; reactive state)
 
@@ -91,21 +87,18 @@
   (om-with-focused-view self
     (when (or (active (object self)) (color (object self)))
       (om-with-fg-color nil (or (color (object self)) *reactive-color*)
-        ;(if (active (object self))
-            (om-fill-rect 0 0 (1- (w self)) (- (h self) 4))
-          ;(om-draw-rect 0 4 (1- (w self)) (- (h self) 8))
-        ;  )
-        ))
-    ;(when (push-tag (object self))
-    ;  (om-with-fg-color nil *om-black-color*        
-    ;    (om-fill-rect 0 0 6 6)))
-    ;(when (gen-flag (object self))
-    ;  (om-with-fg-color nil *om-red-color*        
-    ;    (om-fill-rect 8 0 6 6)))
-    ;(when (state-lock (object self))
-    ;  (om-with-fg-color nil *om-purple-color*        
-    ;    (om-fill-rect 16 0 6 6)))
-    ))
+        (om-fill-rect 0 0 (1- (w self)) (- (h self) 4))
+        ))))
+
+;(when (push-tag (object self))
+;  (om-with-fg-color nil *om-black-color*        
+;    (om-fill-rect 0 0 6 6)))
+;(when (gen-flag (object self))
+;  (om-with-fg-color nil *om-red-color*        
+;    (om-fill-rect 8 0 6 6)))
+;(when (state-lock (object self))
+;  (om-with-fg-color nil *om-purple-color*        
+;    (om-fill-rect 16 0 6 6)))
 
 
 (defmethod clear-ev-once :around ((self OMReactiveBox))
@@ -125,12 +118,10 @@
      ;(print (list "EVAL BOX" (name self) numout))
      (box-color self *eval-color* *defcolortime*)   
      (setf val (call-next-method))
-     ;(print val)
      (setf (gen-flag self) t)
-     (box-color self nil) ; *inactive-color*
+     (box-color self nil)
      val)
-   )
- )
+   ))
 
 
 
@@ -154,8 +145,7 @@
 ;;; BoxType edited
 (defmethod exit-from-dialog ((self BoxType-enter-view) newtext)
   (call-next-method)
-  (self-notify (object (om-view-container (object self))))
-  )
+  (self-notify (object (om-view-container (object self)))))
 
 
 (defmethod set-delivered-value :after ((box ReceiveBox) msg)

@@ -356,8 +356,8 @@
      (if (equal mode 'clipboard)
          (om-set-clipboard str)
        (let ((filename (or (and (pathnamep mode) mode)
-                           (and (stringp mode) (pathname mode))
                            (om-choose-new-file-dialog :directory (def-save-directory) 
+                                                      :name (and (stringp mode) mode)
                                                       :prompt "New Export file"
                                                       :types '("OM/Finale/NAP format" "*.om")))))
          (when filename 

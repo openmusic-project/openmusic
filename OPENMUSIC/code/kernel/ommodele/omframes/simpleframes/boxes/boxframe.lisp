@@ -1303,6 +1303,22 @@
      (name box) new-name
      (name thepatch) new-name)))
 
+
+;-------------- AUTO INPUT DEFAULT SETTING
+
+(defmethod get-patch-of-frame ((self omboxframe)) (reference (object self)))
+
+(defmethod om-inputs-to-patch-defaults ((self omboxframe))
+  "evaluate patch inputs and set default values"
+  (print 'working)
+  (let ((args (eval-box-inputs (object self))))
+    (loop for input in (get-patch-inputs (get-patch-of-frame self))
+          for arg in args
+          do (setf (defval input)
+                   (if (listp arg)
+                      `(quote ,arg)
+                     arg)))))
+
 ;----------------------------------------
 
 (omg-defclass maquetteframe (boxframe) ()

@@ -527,7 +527,7 @@
                                             :name (pathname-name item) :type (pathname-type item))))))
 
 
-(defvar *om-doc-types* '("omp" "omm" "omc" "omi" "ome" "she"))
+(defvar *om-doc-types* '("omp" "omm" "omc" "omi" "ome" "she" "oml"))
 
 (defun om-persistant-p (path)
   (or (directoryp path) 
@@ -564,7 +564,7 @@
 (defvar *delete-file* t)
 
 (defun delete-file-protection (path)
-   (declare (special *delete-file*))
+  (declare (special *delete-file*))
    (when (and *delete-file* (probe-file path))
      (om-delete-file path)))
  
@@ -868,12 +868,11 @@ would not be restricted to variables)."
   `(make-instance ,class ,. rest))
 
 (defmethod copy-instance-to ((source standard-object) (target standard-object))
-   "Shallow copies the slots of 'source' to the slots of 'target'. 
-Source must be subclass of target"
-   (loop for slot in (mapcar 'car (class-instance-slots (class-of source)))
-          do (setf (slot-value target slot) (slot-value source slot)))
-   target)
-
+  "Shallow copies the slots of 'source' to the slots of 'target'. Source must be subclass of target"
+  (loop for slot in (mapcar #'slot-definition-name (class-slots (class-of (mki 'chord-seq))))
+     when (slot-boundp source slot)
+     do (setf (slot-value target slot) (slot-value source slot)))
+  target)
 
 ;;; -------------------------------
 
@@ -967,9 +966,10 @@ Source must be subclass of target"
 ;=======================
 
 (defvar *om-verbose* t)
-(defun om-print (str)  
-  (when *om-verbose*
-    (print str)))
+(defun om-print (str &optional pre)  
+  (when t ; *om-verbose*
+    (if pre (format *om-stream* "~A ~A~%" pre str)
+     (print str))))
 
 ;=======================
 ; bouton "add something"

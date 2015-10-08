@@ -13,7 +13,7 @@
  
 
 
-;postulat : on suppose toutes les listes triees par ordre croissant
+; postulat : on suppose toutes les listes triees par ordre croissant
 
 ; le crible modulaire n'est pas un crible. C'est un ensemble succeptible de subir
 ; un harcelement criblidien.

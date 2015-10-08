@@ -12,7 +12,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.090100)
+(defparameter *version* 6.100000)
 
 (defparameter *beta-release* t)
 (defparameter *version-str* "")
@@ -30,7 +30,7 @@
          (beta (if (> (length rest) 4) (read-from-string (subseq rest 4)))))
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
-                 (if show-beta
+                 (if nil; show-beta
 		     (format nil "_beta_~d" beta)
                      "")
                  )))
@@ -216,10 +216,9 @@
 
 ;; (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
 ;; #-linux (oa::load-external-libs '(:portmidi))
-(oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
+(oa::load-external-libs '(:midi :portmidi :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
 #+linux (oa::load-external-libs '(:jack))
 ;; (oa::load-external-libs '(:fluidsynth))
-(oa::load-external-libs '(:portmidi))
 
 
 
@@ -261,6 +260,7 @@
 (push :om *features*)
 
 (defvar om::*om-startup* nil)
+
 
 (defun start-openmusic ()
   (setf om::*om-startup* t)
@@ -313,6 +313,7 @@
 ;;; (start-openmusic)
 ;;; (om::show-workspace-win)
 ;;; (om::gen-om-reference)
+;;; (om::show-about-win)
 
 ;;; WINDOWS :
 ;;; INSTALL OM FONTS IN C:/WINDOWS/Fonts/

@@ -80,15 +80,15 @@
   (prepare-to-play engine player obj at interval params))
 
 (defmethod player-schedule ((player omplayer) (obj maquette-obj) engine &key (at 0) interval params)
-   (loop for object in (inside obj)
-           for param in (param-list obj) do
-           (player-schedule player object
-                            (cdr (assoc 'player param))
-                            :at (+ at (offset->ms object))
-                            :interval interval
-                            :params (list :approx (get-param param 'approx) 
-                                          :port (get-param param 'outport)))
-           ))
+  (loop for object in (inside obj)
+        for param in (param-list obj) do
+        (player-schedule player object
+                         (cdr (assoc 'player param))
+                         :at (+ at (offset->ms object))
+                         :interval interval
+                         :params (list :approx (get-param param 'approx) 
+                                       :port (get-param param 'outport)))
+        ))
 
 
 (defmethod general-play ((player omplayer)) ;;; &key (start-t 0) (end-t 3600000))
@@ -402,7 +402,7 @@
 (defmethod additional-player-params ((self t)) nil)
 
 (defmethod schedule-editor-contents ((self play-editor-mixin))
-  ;(print (list  "SCHEDULE" (get-obj-to-play self)  (get-player-engine self)))
+  ;(print (list  "SCHEDULE" (get-obj-to-play self)  (get-player-engine self) (get-interval-to-play self) (additional-player-params self)))
   (player-schedule (player self) 
                    (get-obj-to-play self)
                    (get-player-engine self)

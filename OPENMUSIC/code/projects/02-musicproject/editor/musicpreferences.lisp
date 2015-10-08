@@ -35,16 +35,15 @@
 
 (defvar *music-fontsize* 24)
 (defvar *default-satff* 'g)
-(defvar *cur-dynamic-list* '(-1 20 40 55 60 85 100 115 127))
 
-(defmethod put-preferences ((iconID (eql :score)))
-   (let ((modulepref (find-pref-module iconID)))
+(defmethod put-preferences ((id (eql :score)))
+   (let ((modulepref (find-pref-module ID)))
      (setf *global-midi-approx* (get-pref modulepref :approx))
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *system-color* (or (get-pref modulepref :sys-color) *om-black-color*))
      (setf *select-color* (or (get-pref modulepref :select-color) *om-gray-color*))
-     (setf *cur-dynamic-list* (or (get-pref modulepref :dyn-list) '(-1 20 40 55 60 85 100 115 127)))
+     (set-dynamics-velocities (or (get-pref modulepref :dyn-list) '(20 40 55 60 85 100 115 127)))
      (when *om-tonalite* (put-tonal-prefs (get-pref modulepref :tonal-options)))
      ;(setf *current-1/2-scale*  (or (nth 8 (defvals modulepref)) *2-tone-chromatic-scale*))
      ;(setf *current-1/4-scale* (or (nth 9 (defvals modulepref)) *4-tone-chromatic-scale*) )     
@@ -60,13 +59,13 @@
 
 (defmethod get-def-vals ((iconID (eql :score)))
    (list :approx 2 :fontsize 24 :staff 'g :sys-color *om-black-color* :select-color *om-gray-color* 
-         :dyn-list '(-1 20 40 55 60 85 100 115 127)
+         :dyn-list '(20 40 55 60 85 100 115 127)
          :tonal-options (when *om-tonalite* (tonal-defaults))
          :diapason 440.0))
 
 ; *2-tone-chromatic-scale* *4-tone-chromatic-scale* *8-tone-chromatic-scale*))
 
-(omg-defclass change-color-dialog-item (om-static-text) 
+(defclass change-color-dialog-item (om-static-text) 
    ((object :initform 0 :initarg :object :accessor object)
     (i :initform 0 :initarg :i :accessor i)))
 
@@ -217,7 +216,7 @@
 
 
 
-(omg-defclass dynamics-view (om-view) 
+(defclass dynamics-view (om-view) 
   ((object :initform nil :initarg :object :accessor object)))
 
 (defmethod om-component-border ((self dynamics-view)) :line)
@@ -227,42 +226,45 @@
   (let ((list (get-pref (object self) :dyn-list)))
     (om-with-focused-view self
       (om-with-font (om-make-music-font *extras-font* 16)
-                    (loop for i from  0 to (- (length *cur-dynamic-chars*) 1) do
-                          (om-draw-string 6 (+ 14 (* i 20)) (nth i *cur-dynamic-chars*))))
+                    (loop for c in (dyn-chars)
+                          for i = 0 then (+ i 1) do
+                          (om-draw-string 6 (+ 14 (* i 20)) (string c))))
       (om-with-font *om-default-font2*
-                    (loop for dyn in (butlast list)
+                    (loop for dyn in (cons -1 list)
                           for i = 0 then (+ 1 i) do
-                          (om-draw-string  40 (+ 17 (* i 20)) (string+ (format () "~D" (+ dyn 1)) " to ")))))
-    
+                          (om-draw-string  40 (+ 17 (* i 20)) (format () "~D to" (+ dyn 1)))
+                          ))
+      )
     ))
   
 (defmethod initialize-instance :after ((self dynamics-view) &rest initargs)
   (let ((pos (position :object initargs)) object)
     (when pos
       (setf object (nth (+ pos 1) initargs))
-      (loop for diain in (butlast (cdr (get-pref object :dyn-list)))
-            for i = 0 then (+ 1 i)  do
+      (loop for dyn-item in (butlast (get-pref object :dyn-list)) ;;; the last element (127) is fixed !
+            for i = 0 then (+ i 1) do
             (om-add-subviews self
-                             (om-make-dialog-item 'numbox (om-make-point 84 (+ 1 (* i 20))) (om-make-point 36 19) (format ()  " ~D" diain)
-                                                  :value diain
+                             (om-make-dialog-item 'numbox (om-make-point 84 (+ 1 (* i 20))) (om-make-point 36 19) (format ()  " ~D" dyn-item)
+                                                  :value dyn-item
                                                   :bg-color *om-white-color*
                                                   :min-val 1
                                                   :max-val 127
                                                   :name i
                                                   :enabled t
-                                                  :afterfun #'(lambda (item)
+                                                  :afterfun (let ((curr-i i))
+                                                              #'(lambda (item)
                                                                 (let ((newnum (value item))
-                                                                      (i (+ 1 (om-get-view-name item))))
-                                                                  (if (and (integerp newnum) (< i (- (length (get-pref object :dyn-list)) 1))
-                                                                           (> newnum (nth (- i 1) (get-pref object :dyn-list)))
-                                                                           (< newnum (nth (+ i 1) (get-pref object :dyn-list))))
-                                                                      (let ((newlist (get-pref object :dyn-list)))
-                                                                          (setf (nth i newlist) newnum)
-                                                                          (set-pref object :dyn-list newlist)
-                                                                          (om-invalidate-view self t))
+                                                                      (cur-values (get-pref object :dyn-list)))
+                                                                  (if (and (integerp newnum)
+                                                                           (or (= curr-i 0) (> newnum (nth (- curr-i 1) cur-values)))
+                                                                           (< newnum (nth (+ curr-i 1) cur-values)))
+                                                                      (let ((newlist cur-values))
+                                                                        (setf (nth curr-i newlist) newnum)
+                                                                        (set-pref object :dyn-list newlist)
+                                                                        (om-invalidate-view self t))
                                                                     (progn
-                                                                      (set-value item (nth i (get-pref object :dyn-list)))
-                                                                      (om-beep)))))
+                                                                      (set-value item (nth curr-i cur-values))
+                                                                      (om-beep))))))
                                                   :font *om-default-font2*)))
       ;;; last value (127) is not editable
       (om-add-subviews self

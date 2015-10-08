@@ -4,7 +4,7 @@
 ;;; EXTRA PALETTE :
 (defvar *extramanager* nil)
 
-(omg-defclass extra-palette-win (om-windoid) 
+(defclass extra-palette-win (om-windoid) 
   ((extramanager :initform nil :initarg :extramanager :accessor extramanager)
    (buttons :initform nil :initarg :buttons :accessor buttons)
    (extraitems :initform nil :initarg :extraitems :accessor extraitems)
@@ -72,7 +72,7 @@
                                                                    25)
                                                                 )
                                             (om-make-point 100 400))
-                              :size (om-make-point 182 50)))
+                              :size (om-make-point 156 50)))
         (add-buttons (win *extramanager*))
         (setf (edit-mode *extramanager*) nil)
         (setf (current-editor *extramanager*) self)
@@ -92,22 +92,21 @@
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item nil))
-                                 :icon1 "mousecursor"
+                                 :icon1 "chord"
                                  :owner self)
                    ;vel
-                   (om-make-view 'om-icon-button
-                                 :lock-push t
-                                 :position (om-make-point 26 0)
-                                 :size (om-make-point 26 25)
-                                 :action #'(lambda (item)
-                                             (extra-action item :dyn))
-                                 :icon1 "vel"
-                                 :owner self)
+                   ;(om-make-view 'om-icon-button
+                   ;              :lock-push t
+                   ;              :position (om-make-point 26 0)
+                   ;              :size (om-make-point 26 25)
+                   ;              :action #'(lambda (item) (extra-action item :dyn))
+                   ;              :icon1 "vel"
+                   ;              :owner self)
                    
                    ;;; figure
                    (om-make-view 'om-icon-button
                                  :lock-push t
-                                 :position (om-make-point 52 0)
+                                 :position (om-make-point 26 0)
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item :figure))
@@ -116,7 +115,7 @@
                    ;;; lines
                    (om-make-view 'om-icon-button
                                  :lock-push t
-                                 :position (om-make-point 78 0)
+                                 :position (om-make-point 52 0)
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item :lines))
@@ -125,7 +124,7 @@
                    ;;; pict
                    (om-make-view 'om-icon-button
                                  :lock-push t
-                                 :position (om-make-point  104 0)
+                                 :position (om-make-point  78 0)
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item :pict))
@@ -134,7 +133,7 @@
                    ;;; text
                    (om-make-view 'om-icon-button
                                  :lock-push t
-                                 :position (om-make-point 130 0)
+                                 :position (om-make-point 104 0)
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item :text))
@@ -143,7 +142,7 @@
                    ;;; graphics
                    (om-make-view 'om-icon-button
                                  :lock-push t
-                                 :position (om-make-point 156 0)
+                                 :position (om-make-point 130 0)
                                  :size (om-make-point 26 25)
                                  :action #'(lambda (item)
                                              (extra-action item :graphics))
@@ -292,12 +291,12 @@
         (setf (cadr (nth pos (params em))) val)
       (push (list id val) (params em)))))
 
-; (setf (params *extramanager*) nil)
+
 (defun extraedit-def-params (value)
   (case value
-    (:dyn
-     ;;; size char color
-     (list (elt (dyn-f) 0)  12 *om-black-color*))
+    ;(:dyn
+    ; ;;; size char color
+    ; (list nil 12 *om-black-color*))
     (:figure
      ;;; size char color
      (list (code-char 113) 12 *om-black-color*))
@@ -342,8 +341,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 60)
                                (om-make-point 100 20) "Shape"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 55)
-                               (om-make-point 100 20) ""
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
+                               (om-make-point 85 20) ""
                                :range '("Rectangle" "Circle" "Line" "Polygon")
                                :value (nth (position (nth 0 params) '(rect circ line polyg)) '("Rectangle" "Circle" "Line" "Polygon"))
                                :di-action (om-dialog-item-act item
@@ -353,8 +352,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 90)
                                (om-make-point 100 20) "Line"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 85)
-                               (om-make-point 100 20) ""
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 85)
+                               (om-make-point 85 20) ""
                                :range '("Normal" "Dashed")
                                :value (nth (position (nth 1 params) '(plain dash)) '("Normal" "Dashed"))
                                :di-action (om-dialog-item-act item
@@ -365,7 +364,7 @@
                                (om-make-point 100 20) "Pen Size"
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 115)
-                               (om-make-point 100 20) ""
+                               (om-make-point 75 20) ""
                                :range '("1" "2" "3" "4" "5" "6" "7" "8")
                                :value (nth (position (nth 2 params) '(1 2 3 4 5 6 7 8)) '("1" "2" "3" "4" "5" "6" "7" "8"))
                                :di-action (om-dialog-item-act item
@@ -376,7 +375,7 @@
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
           (om-make-view 'om-color-view :position (om-make-point 75 150)
-                               :size (om-make-point 80 16) 
+                               :size (om-make-point 60 16) 
                                :color (nth 3 params)
                                :after-fun #'(lambda (item)
                                             (let ((c (color item)))
@@ -406,8 +405,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 60)
                                (om-make-point 100 20) "Shape"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 55)
-                               (om-make-point 100 20) ""
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
+                               (om-make-point 80 20) ""
                                :range '("Slur" "Crescendo" "Decrescendo" "Bracket")
                                :value (nth (position (nth 0 params) '(slur cresc decresc brack)) 
                                            '("Slur" "Crescendo" "Decrescendo" "Bracket"))
@@ -418,8 +417,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 90)
                                (om-make-point 100 20) "Line"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 85)
-                               (om-make-point 100 20) ""
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 85)
+                               (om-make-point 80 20) ""
                                :range '("Normal" "Dashed")
                                :value (nth (position (nth 1 params) '(plain dash)) '("Normal" "Dashed"))
                                :di-action (om-dialog-item-act item
@@ -430,7 +429,7 @@
                                (om-make-point 100 20) "Pen Size"
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 115)
-                               (om-make-point 100 20) ""
+                               (om-make-point 70 20) ""
                                :range '("1" "2" "3" "4" "5" "6" "7" "8")
                                :value (nth (position (nth 2 params) '(1 2 3 4 5 6 7 8)) '("1" "2" "3" "4" "5" "6" "7" "8"))
                                :di-action (om-dialog-item-act item
@@ -441,7 +440,7 @@
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
           (om-make-view 'om-color-view :position (om-make-point 75 152)
-                               :size (om-make-point 80 16) 
+                               :size (om-make-point 60 16) 
                                :color (nth 3 params)
                                :after-fun #'(lambda (item)
                                             (let ((c (color item)))
@@ -463,8 +462,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 60)
                                (om-make-point 100 20) "Font"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-button (om-make-point 70 58)
-                               (om-make-point 90 20) "Choose"
+          (om-make-dialog-item 'om-button (om-make-point 60 58)
+                               (om-make-point 80 20) "Choose"
                                :di-action (om-dialog-item-act item
                                             (let ((f (om-choose-font-dialog :font (nth 0 params))))
                                               (when f 
@@ -475,8 +474,8 @@
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
           
-          (om-make-view 'om-color-view :position (om-make-point 75 92)
-                               :size (om-make-point 80 16) 
+          (om-make-view 'om-color-view :position (om-make-point 65 92)
+                               :size (om-make-point 70 16) 
                                :color (nth 1 params)
                                :after-fun #'(lambda (item)
                                             (let ((c (color item)))
@@ -493,7 +492,7 @@
                                (om-make-point 160 20) "Articulation Symbols"
                                :fg-color *om-dark-gray-color*
                                :font *om-default-font1b*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 60)
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 20 60)
                                (om-make-point 70 20) ""
                                :range (loop for i from 113 to 125 collect (string (code-char i)))
                                :value (string (nth 0 params))
@@ -505,6 +504,7 @@
                                             ))
           )))
 
+#|
 (defmethod get-extra-items ((value (eql :dyn))) 
   (let ((params (cadr (find value (params *extramanager*) :key 'car))))
     (list 100 
@@ -515,12 +515,13 @@
                                :font *om-default-font1b*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 55)
                                (om-make-point 70 20) ""
-                               :range (list (dyn-ppp) (dyn-pp) (dyn-p) (dyn-mp) (dyn-mf) (dyn-f) (dyn-ff) (dyn-fff))
+                               :range (append '("unspecific" "-") (mapcar #'(lambda (d) (string (cadr d))) *dynamics-list*))
                                :value (string (nth 0 params))
                                :font (om-make-music-font *extras-font* 24)
                                :di-action (om-dialog-item-act item
                                             (setf (nth 0 params) (elt (om-get-selected-item item) 0))
                                             (set-extra-param *extramanager* value params))))))
+|#
 
 
 (defmethod get-extra-items ((value (eql nil)))
@@ -536,7 +537,7 @@
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
           (om-make-view 'om-color-view :position (om-make-point 75 62)
-                               :size (om-make-point 80 16) 
+                               :size (om-make-point 65 16) 
                                :color *om-black-color*
                                :after-fun #'(lambda (item)
                                               (let ((sel (selection? (panel (current-editor *extramanager*)))))
@@ -544,7 +545,8 @@
                                                     (let ((c (color item)))
                                                       (when c 
                                                         (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                              (set-mus-color obj c))
+                                                             (when (or (container-p obj) (simple-container-p obj))
+                                                               (set-mus-color obj c)))
                                                         (update-panel (panel (current-editor *extramanager*)))))
                                                   (om-beep)))))
           
@@ -559,9 +561,10 @@
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (if (= (om-get-selected-item-index item) 0)
+                                                    (when (or (container-p obj) (simple-container-p obj))
+                                                      (if (= (om-get-selected-item-index item) 0)
                                                         (delete-extras (get-extras obj "head"))
-                                                        (add-head-extra obj (nth (om-get-selected-item-index item) heads-list))))
+                                                        (add-head-extra obj (nth (om-get-selected-item-index item) heads-list)))))
                                               (update-panel (panel (current-editor *extramanager*))))))
           (om-make-dialog-item 'om-static-text (om-make-point 10 130)
                                (om-make-point 100 20) "Dynamics"
@@ -572,7 +575,8 @@
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (add-vel-extra obj))
+                                                   (when (or (container-p obj) (simple-container-p obj))
+                                                     (add-vel-extra obj)))
                                               (update-panel (panel (current-editor *extramanager*)))
                                             )))
           (om-make-dialog-item 'om-button (om-make-point 70 140)
@@ -580,7 +584,8 @@
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
                                             (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (delete-extras (get-extras obj "vel")))
+                                                    (when (or (container-p obj) (simple-container-p obj))
+                                                      (delete-extras (get-extras obj "vel"))))
                                             (update-panel (panel (current-editor *extramanager*)))
                                             )))
     )))

@@ -572,13 +572,20 @@
 
 ;;; view bidon
 (defvar *record-view* nil)
+(defvar *dummy-view* nil)
+;; capi:create-dummy-graphics-port
 
 (defun init-record-view ()
   (let* ((pl (make-instance 'capi:pinboard-layout))
          (win (capi:display (make-instance 'capi:interface 
                                            :display-state :hidden
                                            :layout pl))))
-    (setf  *record-view* pl)))
+    (setf *record-view* pl)
+    (setf *dummy-view* 
+          #+lispworks7 (capi:create-dummy-graphics-port) 
+          #-lispworks7 *record-view*)))
+
+
 
 (om-api-add-init-func 'init-record-view)
 
@@ -647,18 +654,23 @@
 
 (defun om-font-mode (font) nil)
 
-(defun om-string-size (name &optional font)
-  (setf (capi::simple-pane-font *record-view*) (or font *om-default-font2*))
-  (if name (gp::port-string-width *record-view* name) 0)
-  ;(if name (GP:GET-STRING-EXTENT *record-view* name) 0)
-)
+(defun om-string-size (str &optional font)
+  (if str 
+      (multiple-value-bind (x1 y1 x2 y2) 
+          (gp::get-string-extent *record-view* str 
+                                 (and font (if (gp::font-p font) font (gp::find-best-font *record-view* font))))
+        (- x2 x1))
+    0))
+
 
 (defun om-string-h (&optional (font *om-default-font2*))
-  (setf (capi::simple-pane-font *record-view*) font)
-  (multiple-value-bind (x1 y1 x2 y2) (gp::get-string-extent *record-view* "ABC") (- y2 y1)))
-
+  (multiple-value-bind (x1 y1 x2 y2) 
+      (gp::get-string-extent *record-view* "ABC" 
+                             (and font (if (gp::font-p font) font (gp::find-best-font *record-view* font))))
+    (- y2 y1)))
+  
 ; (om-string-size "Hello" (om-make-font "arial" 20))
-; GP:GET-STRING-EXTENT
+; GP:GET-STRING-EXTENT 
 
 
 

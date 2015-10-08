@@ -16,10 +16,15 @@
 
 (defclass OMReceiveBox (OMBoxCall) ())
 (defmethod get-boxcallclass-fun ((self (eql 'om-receive))) 'OMReceiveBox)
-(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0)) (value self))
-  
-(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
+(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0)) 
+  (let ((inval (omng-box-value (car (inputs self)))))
+    (unless (equal inval (value (car (inputs self))))
+      (print (format nil "RECEIVE ID SET TO: ~A" inval))
+      (setf (value (car (inputs self))) inval)))
   (if numout (nth numout (value self)) (value self)))
+  
+;(defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
+;  (if numout (nth numout (value self)) (value self)))
 
 (defun find-boxes (type)
   (loop for win in (remove-if-not 

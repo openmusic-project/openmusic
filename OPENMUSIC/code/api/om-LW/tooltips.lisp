@@ -66,11 +66,11 @@
 
 (defmethod internal-show-tooltip ((self om-graphic-object) &optional (remove nil) (short nil))
   (if (and
-       (help-spec self)
-       (not (string-equal (help-spec self) ""))
+       (om-get-help-spec self)
+       (not (string-equal (om-get-help-spec self) ""))
        t)
       (let ((text (reduce #'(lambda (val segment) (concatenate 'string val segment (string #\Newline)))
-                          (oa::text-wrap-pix (help-spec self) *om-default-font1* 200)
+                          (oa::text-wrap-pix (om-get-help-spec self) *om-default-font1* 200)
                           :initial-value "")))
         (if short
             (setf text (string-downcase (read-from-string text)))
@@ -101,7 +101,7 @@
     (multiple-value-bind (x y) (capi::current-pointer-position :relative-to pane)
       (let ((hview (or (capi::pinboard-object-at-position pane x y) pane)))
         (case type
-          (:tooltip (help-spec hview))
+          (:tooltip (om-get-help-spec hview))
           (t nil)
           )))))
 ;    (:pointer-documentation-enter

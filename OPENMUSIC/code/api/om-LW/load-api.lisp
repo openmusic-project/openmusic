@@ -57,6 +57,7 @@
                     "item-view"
                     "draw"
                     "actions"
+                    "transient-drawing"
                     "dialog-items"
                     "icons-picts"
                     "menu"

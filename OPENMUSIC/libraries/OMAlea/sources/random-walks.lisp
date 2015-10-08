@@ -341,7 +341,7 @@ La sortie est  liste qui  est la matrice de transition"
          (basedata espace)  ;liste de donnŽes de base
          
          (long (length basedata))  ;longueur de la liste de donnees de base
-         (assocbase (om::mat-trans (list basedata (om::arithm-ser 0 1 (1- long))))) ;liste d'association
+         (assocbase (om::mat-trans (list basedata (om::arithm-ser 0  (1- long) 1)))) ;liste d'association
          ;des paires le premier elem-> data
          ; le deuxieme l'indice!!
          (matrice (make-array (list long long) :initial-element 0))

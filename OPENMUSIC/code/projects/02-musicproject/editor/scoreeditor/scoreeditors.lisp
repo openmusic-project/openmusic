@@ -1674,36 +1674,6 @@
 
 ;-------------
 
-(defmethod set-dur-to-note ((self note) dur) 
-   (set-extent-ms self dur))
-(defmethod set-dur-to-note ((self container) dur) 
-   (loop for item in (inside self) do (set-dur-to-note item dur)))
-
-;-------------
-(defmethod set-dyn-to-note ((self note) dyn) 
-   (setf (vel self) dyn))
-(defmethod set-dyn-to-note ((self container) dyn) 
-   (loop for item in (inside self) do (set-dyn-to-note item dyn)))
-(defmethod set-dyn-to-note ((self t) dyn) t)
-
-;-------------
-(defmethod set-chan-to-note ((self note) chan) 
-   (setf (chan self) chan))
-(defmethod set-chan-to-note ((self container) chan) 
-   (loop for item in (inside self) do (set-chan-to-note item chan)))
-(defmethod set-chan-to-note ((self t) chan) t)
-
-;-------------
-(defmethod set-offset-ms ((note note) (offset integer))
-   (when (parent note)
-     (SetQvalue (parent note) 1000)
-     (setf (slot-value note 'offset) offset)
-     (QNormalize (parent note))))
-(defmethod set-offset-ms ((note t) (offset integer)) t)
-(defmethod set-offset-ms ((self container) (offset integer))
-   (loop for item in (inside self) do (set-offset-ms item offset)))
-;-------------
-
 (defmethod update-slot-edit ((self scorePanel))
   (unless (score-page-mode self)
     (let ((control (slotedit (ctr-view (om-view-container self))))
@@ -1723,7 +1693,7 @@
           (setf (afterfun control) 
                 #'(lambda (x)  
                     (loop for item in (selection? self) do
-                          (set-dur-to-note item (value x)))
+                          (set-dur item (value x)))
                     (update-panel self))))
         ((equal slotmode 'port)
          (setf (min-val control) 0)
@@ -1751,7 +1721,7 @@
          (setf (afterfun control)
                #'(lambda (x) 
                    (loop for item in (selection? self) do
-                         (set-dyn-to-note item (value x)))
+                         (set-vel item (value x)))
                    (update-panel self))))
         ((equal slotmode 'chan)
          (setf (min-val control) 1)
@@ -1760,7 +1730,7 @@
          (setf (afterfun control)
                #'(lambda (x) 
                    (loop for item in (selection? self) do
-                         (set-chan-to-note item (value x)))
+                         (set-channel item (value x)))
                    (update-panel self))))
         ((equal slotmode 'midic)
          (setf (min-val control) 0)
@@ -4232,7 +4202,7 @@
         (change-dur-to-note elt val)))
 
 (defmethod change-dur-to-note ((self note) val)
-  (set-dur-to-note self (max 10 (+ (extent->ms self) val))))
+  (set-dur self (max 10 (+ (extent->ms self) val))))
 
 (defmethod change-dur-to-note ((self chord) val)
   (loop for note in (inside self) do 

@@ -387,10 +387,48 @@
 
 
 
+;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL-CURVE///////////////
+(defmethod! sound-vol-curve ((s om-sound-data) (curve bpf))
+            :icon 106
+            :initvals '(nil nil)
+            :indoc '("a sound" "a gain value BPF")
+            "Apply a BPF to a sound as a volume curve.
 
+<curve> is a BPF."
+            (if (null (buffer s))
+                (om-beep-msg "Error: null sound buffer")
 
+              (let* ((datatype (smpl-type s))
+                     (nch (nch s))
+                     (sr (sr s))
+                     (size (size s))
+                     (size2 (* size nch))
+                     (y-list (mapcar #'(lambda (x) (coerce x 'single-float))
+                                     (interpole (x-points curve)
+                                                (y-points curve)
+                                                (car (x-points curve))
+                                                (last-elem (x-points curve))
+                                                (floor (* (get-obj-dur curve) (/ sr 1000))))))
+                     (lasty (last-elem y-list))
+                     (final-buffer (om-make-pointer size2 :type (smpl-type s) :clear t))
+                     index)
+                (if (> size (length y-list))
+                    (setq y-list (append y-list (make-list (- size (length y-list)) :initial-element lasty))))
+                (loop for i from 0 to (1- size)
+                      for y in y-list
+                      do
+                      (dotimes (n nch)
+                        (setf (fli:dereference final-buffer :index (+ (* i nch) n))
+                              (* (fli:dereference (buffer s) :index (+ (* i nch) n)) y))))
+                  
+                (make-instance 'om-sound-data 
+                               :buffer final-buffer
+                               :size (round size2 nch)
+                               :nch nch
+                               :sr sr))))
 
-
+(defmethod! sound-vol-curve ((s sound) (curve bpf))
+   (sound-vol-curve (get-om-sound-data s) curve))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MONO-TO-STEREO///
 (defmethod! sound-mono-to-stereo ((s om-sound-data) &optional (pan 0))

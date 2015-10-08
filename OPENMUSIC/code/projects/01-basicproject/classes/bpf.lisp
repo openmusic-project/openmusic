@@ -78,8 +78,7 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
   (export-svg object nil))
 
 (defmethod (setf bpfcolor) ((c t) (self bpf))
-  (when c
-    (setf (slot-value self 'bpfcolor) (om-correct-color c))))
+  (when c (setf (slot-value self 'bpfcolor) (om-correct-color c))))
 
 
 (defmethod check-decimals ((self bpf))
@@ -143,13 +142,25 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
      (cons-bpf self (point-list new-bpf))
      (y-points self)))
 
-
-
-
 (defmethod change-precision ((self bpf) decimals)
       (let ((new-bpf (simple-bpf-from-list (x-points self) (y-points self) (type-of self) decimals)))
         (cons-bpf self (point-list new-bpf))
         (setf (decimals self) decimals)))
+
+(defmethod! set-color ((self bpf) color &optional new?) 
+ :initvals '(nil nil t)
+  :indoc '("a BPF or BPC" " color" "create a new object")
+  :icon 241 
+  :doc "Sets the color of <self> with <color>.
+
+If <new?> the finction will retrun a new colored object; otherwise it will change the clor of <self>.
+
+If <color> is :random, will choose a random color.
+"
+
+(let ((bpf (if new? (clone self) self)))
+  (setf (bpfcolor bpf) (if (equal color :random) (om-random-color) color)) 
+  bpf))
 
 
 
@@ -158,7 +169,6 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
 ;--------------------cons a bpf from a list of points------------------
 (defmethod cons-bpf ((self bpf) points)
    (setf (point-list self) (sort points '< :key 'om-point-h)))
-
 
 
 ;-------------------insert a point in the x axe-----------------------

@@ -207,6 +207,8 @@ If <x-list>, <y-list> and <z-list> are not of the same length, the last coordina
 (defmethod* objFromObjs ((self 3DC) (type 3DC))
   (clone self))
 
+
+
 ;;;============================
 ;;; 3DC LIB
 ;;;============================

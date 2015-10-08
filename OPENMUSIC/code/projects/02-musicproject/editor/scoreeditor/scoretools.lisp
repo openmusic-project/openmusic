@@ -815,22 +815,38 @@
                       (om-draw-char  (+ x (* (- i 1) (round size 4))) y  #\.) ) ) )
 
 
+;;;===========================
+;;; DYNAMICS
+;;;===========================
 
-(defvar *cur-dynamic-chars* 
-    (list (dyn-ppp) (dyn-pp) (dyn-p) (dyn-mp) (dyn-mf) (dyn-f) (dyn-ff) (dyn-fff)))
+(defparameter *dynamics-symbols-list* 
+  `((:ppp ,(dyn-ppp) 20) (:pp ,(dyn-pp) 40) (:p ,(dyn-p) 55)
+    (:mp ,(dyn-mp) 60) (:mf ,(dyn-mf) 85)
+    (:f ,(dyn-f) 100) (:ff ,(dyn-ff) 115) (:fff ,(dyn-fff) 127)))
+
+;;; previously *dynamic-list*
+(defun set-dynamics-velocities (list)
+  (setf *dynamics-symbols-list*
+        (loop for dyn in *dynamics-symbols-list*
+              for newvel in list collect 
+              (list (car dyn) (cadr dyn) newvel))))
+
+(defun dyn-list () (mapcar 'car *dynamics-symbols-list*))
+(defun dyn-chars () (mapcar 'cadr *dynamics-symbols-list*))
+(defun dyn-vels () (mapcar 'caddr *dynamics-symbols-list*))
+
+(defun dyn-to-char (dyn-symbol)
+  (cadr (find dyn-symbol *dynamics-symbols-list* :key 'car :test 'equal)))
 
 (defun get-dyn-from-vel (vel)
-    (if (<= vel 0) (car *cur-dynamic-chars*)
-        (let (rep)
-          (loop for item in *cur-dynamic-list*
-                for i = 0 then (+ i 1)
-                while (not rep) do
-                (when (> item vel)
-                  (setf rep (nth (- i 1) *cur-dynamic-chars*))))
-          (if rep rep (car (last *cur-dynamic-chars*))))))
+  (or (car (find vel *dynamics-symbols-list* :key 'third :test '<=))
+      (third (last *dynamics-symbols-list*))))     
 
+(defun get-vel-from-dyn (dyn)
+  (caddr (find dyn *dynamics-symbols-list* :key 'car :test 'equal)))
+  
 
-
+;;;===========================
 
 (defun write-note-slot (self realpos y slot size zoom) 
   (unless (equal slot 'midic)
@@ -852,7 +868,10 @@
                         (round size 12))))
        ((equal slot 'dyn)
         (om-with-font (get-font-to-draw 4)
-                      (om-draw-string  realpos (+ y (round size 1.5)) (get-dyn-from-vel (vel (reference self))))))))))
+                      (om-draw-string  realpos (+ y (round size 1.5)) 
+                                       (string (dyn-to-char (get-dyn-from-vel (vel (reference self)))))
+                                       )))
+       ))))
 
 
 
@@ -2881,3 +2900,16 @@
                             thechord)))))
     rep))
 
+;;;==================================
+;;; SAVE THE EDITOR AS A PICT FILE
+;;;==================================
+
+(defmethod obj-to-pict ((object score-element) pict-path size w h)
+  (let* ((scored (om-make-view (get-editor-class object) :object object))
+         (scorepanel (panel scored))
+         (pict-size (om-make-point w h)))
+    (om-set-view-size scorepanel pict-size)
+    (let ((pict (om-record-pict nil pict-size 
+                  (draw-mini-obj object scorepanel size pict-size))))
+      (om-save-picture pict pict-path :png)
+      )))

@@ -305,11 +305,10 @@ Extraction methods.
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
   (call-next-method)
-  (unless empty
-    (SetQValue self 1000)
+  (unless empty 
+    (setqvalue self 1000)
     (setf (slot-value self 'extent) (slot-value self 'dur))
-    (QNormalize self)
-    )
+    (qnormalize self))
   self)
 
 ;;; CHORDS
@@ -332,8 +331,6 @@ Extraction methods.
         collect (Offset->ms note)))
 (defmethod LPort ((self chord))
   (get-port self))
-
-
 
 (defmethod (setf Lmidic) ((LMidic list) (self chord))
   (do-initialize self 
@@ -504,10 +501,13 @@ Extraction methods.
   self)
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
-  (distribute-chords self  chords)
+  (distribute-chords self chords)
+  ;(print (mapcar 'loffset (chords self)))
   (when (> legato 0) (normalize-chord self legato))
+  ;(print (mapcar 'loffset (chords self)))
   (set-ties self ties)
   (setf (tempo self) tempo)
+  ;(print (mapcar 'loffset (chords self)))
   self)
 
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
@@ -1008,7 +1008,6 @@ of all its direct subcontainers (supposed adjacent)"
                                            (append (flat (mapcar 'loffset chords-before)) 
                                                    (loffset main-chord)
                                                    (flat (mapcar 'loffset chords-after))))
-                                     
                                      ;(print (loffset chord))
                                      )
                                  
@@ -1020,9 +1019,9 @@ of all its direct subcontainers (supposed adjacent)"
                              (push chord fringe)
                              and collect chord))
                  chords))
-   
+      
       (distribute self chords)
-      ;(print (mapcar 'loffset (chords self)))
+      
       (setf fringe (nreverse fringe)) 
       (loop for item1 in fringe
             for item2 = (rest fringe) then (rest item2)
@@ -1034,6 +1033,7 @@ of all its direct subcontainers (supposed adjacent)"
                     (t (tie-chord item1 'continue) (setf (state item1) 'continue))))
                   ((not (eq item1 'tie))
                    (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
+      ;(print (mapcar 'loffset (chords self)))
       self)))
 
 (defmethod tie-chord ((self chord) mode)
@@ -1303,23 +1303,6 @@ of all its direct subcontainers (supposed adjacent)"
     measure))
 
 
-
-
-;==========================================================================
-;    send to CMN
-;==========================================================================
-
-
-
-#|
-(defmethod* ->Cmn ((self simple-container)) 
-   :initvals (list (make-instance 'note)) :indoc '("a score-element or a simple-score-element" )
-   :doc "Transcribe into notation any score-element or simple-score-element" :icon 193
-   (eval (print `(cmn::wcmn ,.  (container->cmn self :tellcmn '((cmn::size 40)))))))
-|#
-
-
- 
 ;from modifs
 
 (defmethod collect-chords ((self container))
@@ -1345,14 +1328,11 @@ of all its direct subcontainers (supposed adjacent)"
 
 
 ;import from modif by aaa
-
-
 (defmethod ot-clone ((self chord))
   (let ((object (call-next-method)))
     (loop for note in (inside object) do (setf (slot-value note 'tie) nil ))
     object))
           
-
 (defmethod ot-clone ((self note))
    (let ((note (call-next-method)))
      (setf (slot-value note 'tie) nil)
@@ -1364,72 +1344,46 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod! set-channel ((self list) chan)
    :icon 148
    (loop for item in self collect (set-channel item chan)))
-
 (defmethod! set-channel ((self container) chan)
    (loop for item in (inside self) do (set-channel item chan)))
-
 (defmethod! set-channel ((self note) chan)
    (setf (chan self) chan))
-
 (defmethod! set-channel ((self t) chan) t)
 
 
+;;; VELOCITY 
+(defmethod! set-vel ((self container) vel)
+   (loop for item in (inside self) do (set-vel item vel)))
+(defmethod! set-vel ((self list) vel)
+   (loop for item in self do (set-vel item vel)))
+(defmethod! set-vel ((self note) vel)
+   (setf (vel self) vel))
+(defmethod! set-vel ((self t) vel) t)
 
-;=================== pas terrible !!
 
-(defmethod! set-port ((self list) port)
-   :icon 148
-   (loop for item in self collect (set-port item port)))
+(defmethod get-object-vel ((self note)) (vel self))
+(defmethod get-object-vel ((self t)) nil)
+(defmethod get-object-vel ((self container)) 
+  (or (om-mean (remove nil (mapcar 'get-object-vel (inside self)))) 0))
 
-(defmethod! set-port ((self container) port)
-   (loop for item in (inside self) do (set-port item port)))
 
-(defmethod! set-port ((self note) port)
-   (setf (port self) port))
+;=================== DURATION
 
-(defmethod! set-port ((self t) port) t)
+(defmethod set-dur ((self note) dur) 
+   (set-extent-ms self dur))
+(defmethod set-dur ((self container) dur) 
+   (loop for item in (inside self) do (set-dur item dur)))
 
-;=======================
+;=================== OFFSET
 
-(defmethod! get-port ((self note))
-   :icon 148
-   (port self))
-
-(defmethod! get-port ((self container))
-   (loop for item in (inside self) collect (get-port item)))
-
-(defmethod! get-port ((self voice)) nil)
-(defmethod! get-port ((self t) ) nil)
-
-;===============
-
-(defmethod load-port-info ((self note) port)
-   :icon 148
-   (setf (port self) port))
-
-(defmethod load-port-info ((self container) port)
-   (loop for item in (inside self)
-         for port-elem in (list! port) do
-         (load-port-info item port-elem)))
-
-(defmethod load-port-info  ((self t) port) nil)
-
-;===============
-
-(defmethod! get-measures ((self voice))
-  :initvals (list  t) 
-  :indoc '("a voice")
-  :icon 134
-  :doc "
-Returns the list of all measure in <self>.
-"
-  (inside self))
-
-(defmethod! get-measures ((self poly))
-  (loop for voice in self
-        append (get-measures voice)))
-
-(defmethod! get-measures ((self t)) nil)
+(defmethod set-offset-ms ((note note) (offset integer))
+   (when (parent note)
+     (SetQvalue (parent note) 1000)
+     (setf (slot-value note 'offset) offset)
+     (QNormalize (parent note))))
+(defmethod set-offset-ms ((note t) (offset integer)) t)
+(defmethod set-offset-ms ((self container) (offset integer))
+   (loop for item in (inside self) do (set-offset-ms item offset)))
 
 ;=============
 (defmethod offset->ms-tempo-fixe ((self simple-container) tempo grandparent)
@@ -1475,6 +1429,59 @@ Returns the list of all measure in <self>.
                     )))
      (+ (- (* 1000 (/ 60.0 lasttempo) (/ (offset current) (QValue self))) (offset->ms-tempo-fixe last-fig lasttempo self))
         cont))))
+
+
+;=================== pas terrible !!
+
+(defmethod! set-port ((self list) port)
+   :icon 148
+   (loop for item in self collect (set-port item port)))
+
+(defmethod! set-port ((self container) port)
+   (loop for item in (inside self) do (set-port item port)))
+(defmethod! set-port ((self note) port)
+   (setf (port self) port))
+(defmethod! set-port ((self t) port) t)
+
+(defmethod! get-port ((self note))
+   :icon 148
+   (port self))
+
+(defmethod! get-port ((self container))
+   (loop for item in (inside self) collect (get-port item)))
+
+(defmethod! get-port ((self voice)) nil)
+(defmethod! get-port ((self t) ) nil)
+
+(defmethod load-port-info ((self note) port)
+   :icon 148
+   (setf (port self) port))
+
+(defmethod load-port-info ((self container) port)
+   (loop for item in (inside self)
+         for port-elem in (list! port) do
+         (load-port-info item port-elem)))
+
+(defmethod load-port-info  ((self t) port) nil)
+
+;===============
+
+(defmethod! get-measures ((self voice))
+  :initvals (list  t) 
+  :indoc '("a voice")
+  :icon 134
+  :doc "
+Returns the list of all measure in <self>.
+"
+  (inside self))
+
+(defmethod! get-measures ((self poly))
+  (loop for voice in self
+        append (get-measures voice)))
+
+(defmethod! get-measures ((self t)) nil)
+
+;===============
 
 (defun get-fig-from-path (father path)
   (if (null path) father (get-fig-from-path  (nth (car path) (inside father)) (cdr path))))

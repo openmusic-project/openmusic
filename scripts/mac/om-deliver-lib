@@ -3,6 +3,6 @@ cd ../../
 
 echo "(setf *lib-name* #P\"${PWD}/LIBRARIES/$1/\")" > 'lib-name.lisp.tmp'
 
-/Applications/LispWorks\ 6.1/LispWorks.app/Contents/MacOS/lispworks-6-1-0-macos-universal -build OPENMUSIC/buildimage/build-om/pack-one-library.lisp
+/Applications/LispWorks\ 7.0\ \(32-bit\)/LispWorks\ \(32-bit\).app/Contents/MacOS/lispworks-7-0-0-x86-darwin -build OPENMUSIC/buildimage/build-om/pack-one-library.lisp
 
 rm 'lib-name.lisp.tmp'

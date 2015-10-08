@@ -126,7 +126,6 @@
 |#
 
 
-
 (defmethod compile-patch ((self patchForLoop))
    "Code generates by Loop patches is generate by this method."
    (let* ((boxes (boxes self))
@@ -1057,6 +1056,8 @@ See OM User Manual and the OMLOOP refernce section for more details.
 
 
 (defmethod get-frame-class ((self omloop-box)) 'loopboxframe)
+
+(defmethod get-patch-of-frame ((self loopboxframe)) (patch (object self)))
 
 (defmethod omG-rename :after ((self loopboxframe) new-name)
    (declare (ignore new-name))
