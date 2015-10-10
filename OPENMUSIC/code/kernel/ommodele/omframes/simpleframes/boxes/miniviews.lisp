@@ -60,11 +60,11 @@
   (toggle-icon-active-mode (om-view-container self)))
 
 
-;(defmethod om-view-doubleclick-handler ((self miniview) where)
-;  (when (equal self (call-next-method))  ;;; new for click in lock-button
-;    (OpenObjectEditor (object (om-view-container self)))))
+(defmethod om-view-doubleclick-handler ((self miniview) where)
+  (when (equal self (call-next-method))  ;;; new for click in lock-button
+    (OpenObjectEditor (object (om-view-container self)))))
 
-(defmethod om-view-doubleclick-handler ((self miniview) where) nil)
+;(defmethod om-view-doubleclick-handler ((self miniview) where) nil)
 
 
 (defmethod get-fonde-pict ((self t)) *boxedit-pict*)

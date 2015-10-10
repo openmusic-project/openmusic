@@ -12,7 +12,7 @@
 (defparameter *click-motion-action* nil)
 
 (defmethod om-start-transient-drawing ((self om-view) draw-fun position size &key display-mode)
-  ;(print "start")
+  ;(print (list "start" self))
   ;(capi:output-pane-free-cached-display self)
   (capi:start-drawing-with-cached-display 
    self 
@@ -57,6 +57,7 @@
 
 ;;; typically called in a click-handler
 (defmethod om-init-motion-click ((self om-graphic-object) position &key motion-draw draw-pane motion-action release-action display-mode)
+  ;(print (list "start" self))
   (setf *click-motion-view* self)
   (setf *click-motion-action* t)
   (when (or motion-action release-action)
@@ -69,7 +70,8 @@
     (start-transient-drawing (or draw-pane self) 
                              motion-draw 
                              (if draw-pane (om-convert-coordinates position self draw-pane) position) 
-                             display-mode)))
+                             display-mode))
+  t)
 
 (defmethod start-transient-drawing ((self om-view) motion-draw position display-mode) 
   ;(capi:output-pane-free-cached-display self)
@@ -120,6 +122,7 @@
 
 (defmethod om-click-release-handler :after ((self om-graphic-object) pos)
   (declare (ignore pos))
+  ;(print (list self *click-motion-action* *click-motion-view*))
   (when *click-motion-action* ; (equal *click-motion-view* self) 
     (let* ((view *click-motion-view*)
            (motion-info (temp-data view)))

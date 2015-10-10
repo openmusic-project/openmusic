@@ -672,12 +672,13 @@ into the unaire-fun-view.#action#"))
    (when (enabled self)
      (setf (selected-p self) t)
      (om-redraw-view self)
-     (om-init-motion-click (om-view-container self) where 
+     (om-init-motion-click self where 
                           :release-action #'(lambda (view p1 p2) 
-                              (declare (ignore view p1 p2))
-                              (when (action self) (om-with-error-handle (apply (action self) (list self))))
-                              (unless (lock-push self) (setf (selected-p self) nil))
-                              (om-invalidate-view self)))
+                                              (declare (ignore view p1 p2))
+                                              (when (action self) (om-with-error-handle (apply (action self) (list self))))
+                                              (unless (lock-push self) (setf (selected-p self) nil))
+                                              (om-invalidate-view self)))
+     t
      ))
 
 (defmethod om-draw-contents ((self om-icon-button))

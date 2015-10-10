@@ -257,16 +257,20 @@ when you click in it.#enddoc#
 #action# This slot contains a function with one parameter (the icon-button), 
 this function is executed each time that the user click into the button-icon.#action#"))
 
+(defmethod release-button-action ((self button-icon) pos)
+  (declare (ignore pos))
+  (when (action self) (om-with-error-handle (apply (action self) (list self))))
+  (setf (selected-p self) nil)
+  (om-invalidate-view self))
+
 (defmethod om-view-click-handler ((self button-icon) where)
   (declare (ignore where))
   (setf (selected-p self) t)
   (om-redraw-view self) 
   (om-init-motion-click (om-view-container self) where 
                           :release-action #'(lambda (view p1 p2) 
-                              (declare (ignore view p1 p2))
-                              (when (action self) (om-with-error-handle (apply (action self) (list self))))
-                              (setf (selected-p self) nil)
-                              (om-invalidate-view self))))
+                              (declare (ignore view p1))
+                              (release-button-action self p2))))
 
 ;==========================================================
 ; stays hilited ("pushed") after click 

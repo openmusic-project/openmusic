@@ -778,7 +778,7 @@
      (move-bpf-in-x-y (currentbpf self) (- offx initx) (- offy inity ))
      (report-modifications (om-view-container self))
      (om-invalidate-view self t)
-     (show-position (om-view-container self))
+     ;(show-position (om-view-container self))
      (setf *bpf-offset-click* (om-make-point offx  offy))
      ))
 
@@ -836,6 +836,7 @@
     (setf (rangey self) (list (+ (first initrangey) deltay)
                               (+ (second initrangey) deltay)))
     (redraw-rulers self)
+    (om-invalidate-view self)
     ))
 
 
