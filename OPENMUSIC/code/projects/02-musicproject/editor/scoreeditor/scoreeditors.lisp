@@ -1793,8 +1793,9 @@
                  (rect-line (sixth currevent))
                  (rect-page (fourth currevent))
                  (rect-event (rectlist-page-to-pixel rect-page (or (score-scale self) 1) (rectangle cur-evt))))
-            ;(om-update-movable-cursor self (car rect-event) (- (om-rect-top rect-line) (round (staff-size self) 2))  
-            ;                          4 (- (om-rect-bottom rect-line) (om-rect-top rect-line)))
+            (om-update-transient-drawing-geometry self :x (car rect-event) :y (- (om-rect-top rect-line) (round (staff-size self) 2))
+                                                  :w 4 :h (- (om-rect-bottom rect-line) (om-rect-top rect-line)))
+            (om-update-transient-drawing self)
             )))
     (call-next-method)))
 

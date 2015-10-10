@@ -876,11 +876,6 @@
             (equal char :om-key-down)) 
     (call-next-method))) 
 
-(defmethod scroll-point ((Self bpf-parameter-panel) where) (call-next-method))
-  (setf *bpf-first-click* (om-mouse-position self))
-  (setf *bpf-offset-click* 0)
-  (om-init-motion-click self where :motion-action 'make-scroll-point :release-action 'release-scroll-point
-                        ))
 
 (defmethod release-scroll-point ((Self bpf-parameter-panel) initpos pos) 
   ;(change2exact-bpf self)

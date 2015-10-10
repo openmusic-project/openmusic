@@ -146,7 +146,7 @@
 ;;;=================
 (defmethod om-init-motion (self x y))
 
-(defmethod om-clic-motion-callback ((self om-graphic-object) x y type)
+(defmethod om-clic-motion-callback ((self om-graphic-object) x y type) 
   (set-meta-keys (eval type))
   ;(print (list self x y *clicked-view*))
   (unless (equal *clicked-view* :abort) 

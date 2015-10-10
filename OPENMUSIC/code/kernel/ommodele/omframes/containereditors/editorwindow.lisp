@@ -354,8 +354,7 @@
 (defmethod om-set-view-size ((self editorView) size)
    (declare (ignore size))
    (call-next-method)
-  (update-subviews self)
-)
+   (update-subviews self))
 
 (defmethod handle-key-event ((self EditorView) char)
    (if (text-view self)

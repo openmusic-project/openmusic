@@ -900,7 +900,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod draw-obj-in-rect ((self  crescendo) x x1 y y1 edparams  view)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
-  (om-draw-line  x (round (+ y (/ (- y1 y) 2))) x1 y1))
+  (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'cresc)) pos) 
   (let ((size (staff-size self))
@@ -919,9 +919,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
        self where :motion-draw 'draw-cresc-connection :display-mode 2 
        :release-action 'release-score-connection))
 
-(multiple-value-bind (x y w h) (pane-geometry object)
-    (draw-line self x y (- (+ x w) 1) (round (+ y (/ h 2))))
-    (draw-line self x  (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2)))))
+
+(defmethod draw-cresc-connection ((self scorepanel) p1 p2)
+  (multiple-value-bind (x y w h) (om-points-to-rect p1 P2)
+    (om-draw-line x (round (+ y (/ h 2))) (- (+ x w) 1) y)
+    (om-draw-line x (round (+ y (/ h 2))) (- (+ x w) 1) (- (+ y h) 1))))
 
 
 ;decresc
@@ -929,8 +931,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
            (:default-initargs  :cresc nil))
 
 (defmethod draw-obj-in-rect ((self diminuendo) x x1 y y1 edparams  view)
-  (om-draw-line x y  x1 (round (+ y (/ (- y1 y) 2))))
-  (om-draw-line  x y1  x1 (round (+ y (/ (- y1 y) 2)))))
+  (om-draw-line x y x1 (round (+ y (/ (- y1 y) 2))))
+  (om-draw-line x y1 x1 (round (+ y (/ (- y1 y) 2)))))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'decresc)) pos) 
   (let ((size (staff-size self))
@@ -953,7 +955,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod draw-decresc-connection ((self scorepanel) p1 p2)
  (multiple-value-bind (x y w h) (om-points-to-rect p1 P2)
     (om-draw-line x y (- (+ x w) 1) (round (+ y (/ h 2))))
-    (om-draw-line x  (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2))))))
+    (om-draw-line x (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2))))))
 
 (defclass grap-d-dynamic-extra (grap-compose-extra) ())
 
@@ -971,6 +973,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (selec-size 6) fun)
      (setf points (convert-delta-to-points grap-obj (p-points object) size))
      (setf fun (if (crescendo-p (reference self)) 'draw-cresc 'draw-decresc))
+     (when points 
      (om-with-fg-color view (fourth params)
        (om-with-line-size (third params)
          (if (equal (second params) 'dash)
@@ -983,7 +986,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
        (setf (selection-rec self) (list (+ (om-point-h (car points)) (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
                                         (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2))))
         (om-with-fg-color nil *om-red-color*
-          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))
 
 ;***************
 ;slur

@@ -11,17 +11,19 @@
 (defparameter *click-motion-view* nil)
 (defparameter *click-motion-action* nil)
 
-(defmethod om-start-transient-drawing ((self om-view) draw-fun position size &key display-mode )
+(defmethod om-start-transient-drawing ((self om-view) draw-fun position size &key display-mode)
+  ;(print "start")
+  ;(capi:output-pane-free-cached-display self)
   (capi:start-drawing-with-cached-display 
    self 
    #'(lambda (view x y w h)
-         (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
-           (when dragging-info
-             (destructuring-bind (mode x y w h)
-                 dragging-info 
-               (om-with-focused-view view 
-                 (print x)
-                 (funcall draw-fun view (om-make-point x y) (om-make-point w h)))))))
+       ;(print "draw") ; not after click ???
+       (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
+         (when dragging-info
+           (destructuring-bind (mode x y w h)
+               dragging-info 
+             (om-with-focused-view view 
+               (funcall draw-fun view (om-make-point x y) (om-make-point w h)))))))
    :user-info (list display-mode
                     (om-point-x position) (om-point-y position)
                     (om-point-x size) (om-point-y size)
@@ -37,7 +39,7 @@
       (destructuring-bind (mode x y w h)
           dragging-info 
         (if mode
-            (capi:update-drawing-with-cached-display-from-points self x y (+ x w) (+ y h) :extend (if (numberp mode) mode 0))
+            (capi:update-drawing-with-cached-display-from-points self x y (+ x w) (+ y h) :extend (if (numberp mode) mode 1))
           (capi:update-drawing-with-cached-display self))
         ))))
 
@@ -50,6 +52,7 @@
       (when w (setf (nth 3 dragging-info) w))
       (when h (setf (nth 4 dragging-info) h))
       )))
+
 
 
 ;;; typically called in a click-handler
@@ -68,7 +71,8 @@
                              (if draw-pane (om-convert-coordinates position self draw-pane) position) 
                              display-mode)))
 
-(defmethod start-transient-drawing ((self om-view) motion-draw position display-mode)
+(defmethod start-transient-drawing ((self om-view) motion-draw position display-mode) 
+  ;(capi:output-pane-free-cached-display self)
   (capi:start-drawing-with-cached-display 
    self 
    #'(lambda (view x y w h) 
@@ -123,8 +127,8 @@
         (destructuring-bind (motion-action release-action x0 y0 old-x old-y draw-pane)
             motion-info  
           (let ((dragging-info (capi:output-pane-free-cached-display (or draw-pane view))))
-            ;; nothing more to do...
-            )
+           ;; nothing more to do...
+              )
           (when release-action
             (funcall release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
             )))
