@@ -208,10 +208,9 @@
                                  (pos (om-make-point 0 0)) size
                                  (srctopleft (om-make-point 0 0)) (srcsize nil)
                                  selected alpha)
-  ;(print (list view pict))
-  ;(print (list view pict))
-  (if *click-motion-action*
-     
+ 
+  (if #+macosx *click-motion-action* #-macosx nil
+        
       (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
         (om-fill-rect (om-point-x pos) (om-point-y pos)
                       (if size (om-point-x size) (gp:image-width image))
@@ -300,7 +299,7 @@
 (defmethod om-draw-picture (view (pict internal-picture) &key (pos (om-make-point 0 0)) size
                                  (srctopleft (om-make-point 0 0)) (srcsize nil))
   
-   (if *click-motion-action*
+   (if #+macosx *click-motion-action* #-macosx nil
      
       (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
         (om-fill-rect (om-point-x pos) (om-point-y pos)
