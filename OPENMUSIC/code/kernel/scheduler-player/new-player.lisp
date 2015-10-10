@@ -577,8 +577,16 @@
                                                    (> start (cadr range))))
       (scroll-play-view self at-pix)
       )
-    (om-erase-movable-cursor self)
-    (om-new-movable-cursor self (start-position self) 0 4 (h self) 'om-cursor-line)))
+    (om-stop-transient-drawing self)
+    (om-start-transient-drawing self 'draw-cursor-line (om-make-point (start-position self) 0) (om-make-point 4 (h self)))))
+
+(defmethod draw-cursor-line ((self cursor-play-view-mixin) position size)
+  (om-with-line-size 3
+    (om-with-fg-color self (om-make-color 0.6 0.2 0.2)
+      (om-draw-line (om-point-x position) (om-point-y position)
+                    (om-point-x position)
+                    (+ (om-point-y position) (om-point-y size))))))
+  
 
 (defmethod reset-cursor ((self cursor-play-view-mixin))
   (setf (cursor-pos self) 0)
@@ -617,7 +625,8 @@
       (scroll-play-view self (- pixel (get-key-space self)))
       ;(om-invalidate-view self)
       )
-    (om-update-movable-cursor self pixel y 4 h)
+    (om-update-transient-drawing-geometry self :x pixel :y y)
+    (om-update-transient-drawing self)
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)

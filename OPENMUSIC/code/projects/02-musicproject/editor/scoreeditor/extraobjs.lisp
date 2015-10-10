@@ -485,24 +485,8 @@ If <dynamics>
      (setf *extra-initial-pos* where)
      (add-new-extra-drag self where obj mode dc)))
 
-
-(defmethod connection-drag ((self scorepanel) initpos pos)
-  (let* ((panel self)
-         (initpoint pos)
-         (rx (om-point-h initpoint))
-         (ry (om-point-v initpoint))
-         (rect  (om-init-point-movable-object panel)))
-    (when rect
-      (let* ((newrect (om-pts-to-rect (om-make-point (first rect) (second rect)) (om-make-point rx ry)))
-             (nx  (om-rect-left newrect))
-             (ny (om-rect-top newrect))
-             (nw (om-rect-w newrect))  
-             (nh (om-rect-h newrect)))
-        (om-update-movable-object panel nx ny (max nw 2) (max nh 2))))))
-
-(defmethod release-connection-drag ((self scorepanel) initpos pos)
-  (om-erase-movable-object self)
-  (do-release-extra-action self (score-get-extra-mode) pos ))
+(defmethod release-score-connection ((self scorepanel) initpos pos)
+  (do-release-extra-action self (score-get-extra-mode) pos))
 
 (defmethod do-release-extra-action ((self scorepanel) mode pos) t)
 
@@ -536,11 +520,11 @@ If <dynamics>
       (setf *which-point* point)
       (setf *which-extra* self)
       (setf *pixpoints* pixpoints)
-      (om-init-motion-functions score 'drag-points-geometry 'release-points-geometry)
-      (om-new-movable-points-geometry score (extra-movable-edit-class self) pixpoints)
+      (om-init-motion-click score where :motion-action 'drag-points-geometry :release-action 'release-points-geometry)
+      ;;; (om-new-movable-points-geometry score (extra-movable-edit-class self) pixpoints)
       t)))
 
-(defmethod drag-points-geometry ((self scorepanel) pos)
+(defmethod drag-points-geometry ((self scorepanel) pos prevpos)
   (if (=  *which-point* -1)
       (let ((diff-point (om-subtract-points *comp-last-click* pos)))
         (setf *pixpoints* (loop for item in *pixpoints*
@@ -550,7 +534,7 @@ If <dynamics>
   (setf *comp-last-click* pos)
   (om-update-points-geometry self *pixpoints*))
 
-(defmethod release-points-geometry ((self scorepanel) pos) 
+(defmethod release-points-geometry ((self scorepanel) initpos pos) 
   (let* ((gobj (gobject (graphic-frame *which-extra*)))
          (x0 (car (rectangle gobj)))
          (y0 (second (rectangle gobj))))
@@ -630,8 +614,9 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'line)) dc)
-  (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-line))
+  (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection))
 
 (defmethod draw-obj-in-rect ((self  line-extra) x x1 y y1 edparams  view)
    (om-draw-line (round (+ x (/ (- x1 x) 2))) y (round (+ x (/ (- x1 x) 2))) y1))
@@ -697,10 +682,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'rect)) dc)
-  (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-rectangle))
+  (om-init-motion-click 
+   self where :motion-draw 'draw-selection-rectangle :display-mode 2 
+       :release-action 'release-score-connection))
 
-(defmethod draw-obj-in-rect ((self  rect-extra) x x1 y y1 edparams  view)
+(defmethod draw-obj-in-rect ((self rect-extra) x x1 y y1 edparams  view)
    (om-draw-line (round (+ x (/ (- x1 x) 2))) y (round (+ x (/ (- x1 x) 2))) y1))
 
 (defclass grap-extra-rect (grap-compose-extra) ())
@@ -758,10 +744,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'circ)) dc)
-  (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-rectangle))
+  (om-init-motion-click 
+   self where :motion-draw 'draw-selection-rectangle :display-mode 2 
+   :release-action 'release-score-connection))
 
-(defmethod draw-obj-in-rect ((self  rect-extra) x x1 y y1 edparams  view)
+(defmethod draw-obj-in-rect ((self cercle-extra) x x1 y y1 edparams  view)
    (om-draw-line (round (+ x (/ (- x1 x) 2))) y (round (+ x (/ (- x1 x) 2))) y1))
 
 (defclass grap-extra-cercle (grap-compose-extra) ())
@@ -928,14 +915,20 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'cresc)) dc)
-  (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-cresc))
+  (om-init-motion-click 
+       self where :motion-draw 'draw-cresc-connection :display-mode 2 
+       :release-action 'release-score-connection))
+
+(multiple-value-bind (x y w h) (pane-geometry object)
+    (draw-line self x y (- (+ x w) 1) (round (+ y (/ h 2))))
+    (draw-line self x  (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2)))))
+
 
 ;decresc
 (defclass! diminuendo (d-dynamic-extra) ()
            (:default-initargs  :cresc nil))
 
-(defmethod draw-obj-in-rect ((self  diminuendo) x x1 y y1 edparams  view)
+(defmethod draw-obj-in-rect ((self diminuendo) x x1 y y1 edparams  view)
   (om-draw-line x y  x1 (round (+ y (/ (- y1 y) 2))))
   (om-draw-line  x y1  x1 (round (+ y (/ (- y1 y) 2)))))
 
@@ -943,7 +936,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (let ((size (staff-size self))
         newextra obj points)
     (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
-    (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos* pos) size))
+    (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj))
+                                          (list *extra-initial-pos* pos) size))
     (setf newextra (make-instance 'diminuendo
                                   :object (reference obj) 
                                   :p-points points
@@ -952,9 +946,14 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'decresc)) dc)
-  (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-decresc))
+  (om-init-motion-click 
+   self where :motion-draw 'draw-decresc-connection :display-mode 2 
+   :release-action 'release-score-connection))
 
+(defmethod draw-decresc-connection ((self scorepanel) p1 p2)
+ (multiple-value-bind (x y w h) (om-points-to-rect p1 P2)
+    (om-draw-line x y (- (+ x w) 1) (round (+ y (/ h 2))))
+    (om-draw-line x  (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2))))))
 
 (defclass grap-d-dynamic-extra (grap-compose-extra) ())
 
@@ -1014,21 +1013,24 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (output-bezier  x0 y0 x1 y1 x2 y2 x3 y3 *slur-accuracy*)
   (output-bezier  x0 y0 x1 (- y1 1) x2 (- y2 1) x3 y3 *slur-accuracy*))
 
-
 (defclass! slur (compose-extra-object)
            ((slurname :initform nil :initarg :slurname :accessor slurname)
             (b-s-p :initform t :initarg :b-s-p  :accessor b-s-p))
            (:icon 490))
 
-(defmethod extra-movable-edit-class ((self slur))
-  'movable-extra-slur)
+(defmethod extra-movable-edit-class ((self slur)) 'movable-extra-slur)
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'slur)) dc)
   (if obj
-     (progn
-       (om-init-motion-functions self 'make-connection-motion 'release-connection-motion)
-       (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-movable-line))
+      (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection)
     (om-beep)))
+
+(defmethod draw-score-connection ((self scorepanel) initpos pos)
+  (om-with-dashline 
+    (om-draw-line (om-point-x initpos) (om-point-y initpos)  
+                  (om-point-x pos) (om-point-y pos))))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'slur)) pos) 
   (let* ((size (staff-size self))
@@ -1129,7 +1131,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
             (setf point i)))
     (unless point
       (let ((select-rect (extra-rectangle-selection frame)))
-      (when (point-in-rectangle-p where (second select-rect) (car select-rect) (fourth select-rect) (third select-rect) )
+      (when (and select-rect
+                 (point-in-rectangle-p where (second select-rect) (car select-rect) (fourth select-rect) (third select-rect)))
         (setf point -1))))
     (unless point
       (when (point-in-rectangle-p where 
@@ -1144,8 +1147,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
       (setf *which-extra* self)
       (setf *which-slur* (reference beginslur) )
       (setf *pixpoints* pixpoints)
-      (om-init-motion-functions score 'drag-points-slur 'release-points-slur)
-      (om-new-movable-points-geometry score (extra-movable-edit-class self) pixpoints)
+      (om-init-motion-click score where :motion-action 'drag-points-slur :release-action 'release-points-slur)
+      ;;; (om-new-movable-points-geometry score (extra-movable-edit-class self) pixpoints)
       t)))
 
 (defmethod drag-points-slur ((self scorepanel) pos)

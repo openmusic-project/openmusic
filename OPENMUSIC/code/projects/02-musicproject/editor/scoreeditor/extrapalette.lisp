@@ -407,7 +407,7 @@
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
                                (om-make-point 80 20) ""
-                               :range '("Slur" "Crescendo" "Decrescendo" "Bracket")
+                               :range '("Slur" "Crescendo" "Decrescendo") ; "Bracket"
                                :value (nth (position (nth 0 params) '(slur cresc decresc brack)) 
                                            '("Slur" "Crescendo" "Decrescendo" "Bracket"))
                                :di-action (om-dialog-item-act item

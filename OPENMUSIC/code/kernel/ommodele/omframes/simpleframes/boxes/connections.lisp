@@ -109,8 +109,6 @@
       (om-init-motion-click pane where ;:motion-draw 'draw-drag-connections
                             :motion-action 'drag-conections 
                             :release-action 'release-drag-conections)
-  ;(om-new-movable-object scroller (first (get-rectangle-space *cur-drag-connection*))
-  ;                       (third (get-rectangle-space *cur-drag-connection*)) 4 4 'om-movable-line)
       )))
 
 (defmethod release-drag-conections ((Self relationPanel) initpos pos)

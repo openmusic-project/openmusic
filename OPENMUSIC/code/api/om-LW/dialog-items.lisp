@@ -114,7 +114,8 @@
 
 (defmethod om-invalidate-view ((self om-standard-dialog-item) &optional erase)
   (declare (ignore erase))
-  (capi::redisplay self))
+  (capi::redisplay self)
+  )
 
 (defmethod om-redraw-view ((self om-standard-dialog-item))
  (capi::redisplay self))

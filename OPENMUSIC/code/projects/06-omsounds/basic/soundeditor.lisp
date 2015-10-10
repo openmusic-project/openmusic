@@ -165,7 +165,8 @@
   (let ((y (or y1 0))
         (h (if y2 (- y2 y1) (h self)))
         (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-    (om-update-movable-cursor self pixel y 4 h)))
+    ;(om-update-movable-cursor self pixel y 4 h)
+    ))
 
 
 (defmethod om-draw-contents ((self full-preview))  

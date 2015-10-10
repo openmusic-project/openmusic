@@ -285,8 +285,8 @@
     (when (text-view theeditor)
       (exit-from-dialog (text-view theeditor) 
                         (om-dialog-item-text (text-view theeditor))))
-    (om-init-motion-click panel 
-                         (om-convert-coordinates where self panel)
+    (om-init-motion-click self 
+                          where ;(om-convert-coordinates where self panel)
                          :motion-draw #'(lambda (view pp1 pp2)
                                           (let* ((p1 (om-view-position boxframe))
                                                  (p2 pp2)
@@ -297,7 +297,7 @@
                                               (om-fill-rect x y w h)) 
                                             (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
                                               (om-draw-rect x y w h :pensize 1))))
-                         :display-mode NIL
+                         :draw-pane panel :display-mode nil
                          :release-action #'(lambda (view pp1 pp2)
                                              (let ((p1 (om-view-position boxframe))
                                                    (p2 pp2))
@@ -308,10 +308,7 @@
 
     ))
 
-(defmethod om-click-motion-handler ((self c-resize-box) pos)
-  (let ((panel (om-view-container (get-box-frame self))))
-    (om-click-motion-handler panel (om-convert-coordinates pos self panel))))
-                             
+
 (defmethod add-box-resize ((self om-graphic-object))
   (om-add-subviews self
                    (om-make-view 'c-resize-box :size (om-make-point 10 10)
@@ -417,13 +414,8 @@
 ;;;=======================
 
 (defclass om-view-drop (om-drop-view) ()
-   ;(:default-initargs nil
-     ;;;:drag-allow-move-p t
-     ;;;:drag-accepted-flavor-list (list :|OMVW| :|hfs | #$flavorTypePromiseHFS :|PICT| :|OMSC|))
-     ;:drag-accepted-flavor-list (list :|OMVW| :|PICT| :|OMSC|)
-   ;  )
-   (:documentation "Abstract class, all view which wants to accept drops must inherit from this class.#enddoc#")
-   )
+  (:documentation "Abstract class, all view which wants to accept drops must inherit from this class.#enddoc#")
+  )
 
 (defclass om-view-drag (om-drag-view om-view-drop) () 
    (:documentation "Abstract class, all view which wants to be draggable and droppable must inherit from this class.#enddoc#")

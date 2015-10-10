@@ -1237,6 +1237,6 @@ else create a new Editor frame, and select its window."
              (y0 (om-v-scroll-position self)))
         (when (> cur-pixel (+ (om-h-scroll-position self) (w self)))
           (om-set-scroll-position self (om-make-point cur-pixel (om-v-scroll-position self))))
-        (om-update-movable-cursor self cur-pixel (om-v-scroll-position self) 4 (h self))
+        ;(om-update-movable-cursor self cur-pixel (om-v-scroll-position self) 4 (h self))
         ))))
 

@@ -483,104 +483,119 @@ Exports as a raw bitmap (TIF format)
   (om-invalidate-view self))
                 
 
-(defvar *draw-initpos* nil)
-
 (defmethod add-line-extra ((self pictpanel) pos)
-  (setf *draw-initpos* pos)
-  (om-init-motion-functions self 'create-extra 'release-line-extra)
-  (om-new-movable-object self (om-point-h pos) (om-point-v pos) 4 4 'om-movable-line))
+  (om-init-motion-click 
+   self pos
+   :motion-draw 'draw-line-extra :display-mode 2
+   :release-action 'release-line-extra))
+
+(defmethod draw-line-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (om-with-fg-color self (currentcolor ctrl)
+                      (om-with-line (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
+                        (om-with-line-size (currentsize ctrl)
+                          (om-draw-line (om-point-x initpos) (om-point-y initpos) (om-point-x pos) (om-point-y pos)))))
+    ))
+
+(defmethod release-line-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (unless (om-points-equal-p initpos pos)
+      (pushr (list 'line 
+                  (list (/ (om-point-h initpos) (w self)) (/ (om-point-v initpos) (h self)) 
+                        (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
+                  (list (currentcolor ctrl) (currentsize ctrl) 
+                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2 (currentsize ctrl))) (currentline ctrl))
+                        (currentfill ctrl))
+                  nil)
+            (extraobjs (object (editor self))))
+      ))
+  (om-invalidate-view self))
+
 
 (defmethod add-fleche-extra ((self pictpanel) pos)
-  (setf *draw-initpos* pos)
-  (om-init-motion-functions self 'create-extra 'release-fleche-extra)
-  (om-new-movable-object self (om-point-h pos) (om-point-v pos) 4 4 'om-movable-line))
+  (om-init-motion-click 
+   self pos
+   :motion-draw 'draw-line-extra :display-mode 2
+   :release-action 'release-fleche-extra))
+
+(defmethod release-fleche-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (unless (om-points-equal-p initpos pos)
+      (pushr (list 'arrow 
+                   (list (/ (om-point-h initpos) (w self)) (/ (om-point-v initpos) (h self)) 
+                         (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
+                   (list (currentcolor ctrl) (currentsize ctrl) 
+                         (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2 (currentsize ctrl))) (currentline ctrl))
+                         (currentfill ctrl))
+                   nil)
+             (extraobjs (object (editor self))))
+      ))
+  (om-invalidate-view self))
+
 
 (defmethod add-rect-extra ((self pictpanel) pos)
-  (setf *draw-initpos* pos)
-  (om-init-motion-functions self 'create-extra 'release-rect-extra)
-  (om-new-movable-object self (om-point-h pos) (om-point-v pos) 4 4 'om-movable-rectangle))
+  (om-init-motion-click 
+   self pos
+   :motion-draw 'draw-rect-extra :display-mode 20
+   :release-action 'release-rect-extra))
+
+(defmethod draw-rect-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (multiple-value-bind (x y w h) (om-points-to-rect initpos pos)
+      (om-with-fg-color self (currentcolor ctrl)
+        (if (currentfill ctrl)
+            (om-fill-rect x y w h)
+          (om-with-line (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
+            (om-with-line-size (currentsize ctrl)
+              (om-draw-rect x y w h))))
+        ))))
+
+(defmethod release-rect-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (unless (om-points-equal-p initpos pos)
+      (pushr (list 'rect 
+                  (list (/ (om-point-h initpos) (w self)) (/ (om-point-v initpos) (h self)) 
+                        (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
+                  (list (currentcolor ctrl) (currentsize ctrl) 
+                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2 (currentsize ctrl))) (currentline ctrl))
+                        (currentfill ctrl))
+                  nil)
+            (extraobjs (object (editor self)))))
+    (om-invalidate-view self)))
+
 
 (defmethod add-cerc-extra ((self pictpanel) pos)
-  (setf *draw-initpos* pos)
-  (om-init-motion-functions self 'create-extra 'release-cercle-extra)
-  (om-new-movable-object self (om-point-h pos) (om-point-v pos) 4 4 'om-movable-cercle))
+  (om-init-motion-click 
+   self pos
+   :motion-draw 'draw-cercle-extra :display-mode 6
+   :release-action 'release-cercle-extra))
 
-(defmethod create-extra ((self pictpanel) pos)
-  (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) (second rect) (third rect) (fourth rect)))))
-
-(defmethod release-line-extra ((self pictpanel) pos)
+(defmethod draw-cercle-extra ((self pictpanel) initpos pos)
   (let ((ctrl (controlview (editor self))))
-    (om-erase-movable-object self)
-    (unless (or (not *draw-initpos*) 
-                (om-points-equal-p *draw-initpos* pos))
-      (pushr (list 'line 
-                  (list (/ (om-point-h *draw-initpos*) (w self)) (/ (om-point-v *draw-initpos*) (h self)) 
-                        (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
+    (multiple-value-bind (x y w h) (om-points-to-rect initpos pos)
+      (om-with-fg-color self (currentcolor ctrl)
+        (if (currentfill ctrl)
+            (om-fill-ellipse (+ x (/ w 2)) (+ y (/ h 2)) (max 1 (/ w 2)) (max 1 (/ h 2)))
+          (om-with-line (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
+            (om-with-line-size (currentsize ctrl)
+              (om-draw-ellipse (+ x (/ w 2)) (+ y (/ h 2)) (max 1 (/ w 2)) (max 1 (/ h 2))))))
+        ))))
+
+(defmethod release-cercle-extra ((self pictpanel) initpos pos)
+  (let ((ctrl (controlview (editor self))))
+    (unless (om-points-equal-p initpos pos)
+       (multiple-value-bind (x y w h) (om-points-to-rect initpos pos)
+         (pushr (list 'cercle 
+                  (list (/ (+ x (/ w 2)) (w self))
+                        (/ (+ y (/ h 2)) (h self)) 
+                        (/ w 2 (w self))
+                        (/ h 2 (h self)))
                   (list (currentcolor ctrl) (currentsize ctrl) 
-                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
+                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2 (currentsize ctrl))) (currentline ctrl))
                         (currentfill ctrl))
                   nil)
             (extraobjs (object (editor self))))
-      ))
-  (setf *draw-initpos* nil)
-  (om-invalidate-view self))
-
-(defmethod release-fleche-extra ((self pictpanel) pos)
-  (let ((ctrl (controlview (editor self))))
-    (om-erase-movable-object self)
-    (unless (or (not *draw-initpos*) 
-                (om-points-equal-p *draw-initpos* pos))
-      (pushr (list 'arrow 
-                  (list (/ (om-point-h *draw-initpos*) (w self)) (/ (om-point-v *draw-initpos*) (h self)) 
-                        (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
-                  (list (currentcolor ctrl) (currentsize ctrl) 
-                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
-                        (currentfill ctrl))
-                  nil)
-            (extraobjs (object (editor self))))
-      ))
-  (setf *draw-initpos* nil)
-  (om-invalidate-view self))
-
-(defmethod release-rect-extra ((self pictpanel) pos)
-  (let ((ctrl (controlview (editor self))))
-    (om-erase-movable-object self)
-    (unless (or (not *draw-initpos*) 
-                (om-points-equal-p *draw-initpos* pos))
-      (pushr (list 'rect 
-                  (list (/ (om-point-h *draw-initpos*) (w self)) (/ (om-point-v *draw-initpos*) (h self)) 
-                        (/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self)))
-                  (list (currentcolor ctrl) (currentsize ctrl) 
-                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
-                        (currentfill ctrl))
-                  nil)
-            (extraobjs (object (editor self))))
-      ))
-  (setf *draw-initpos* nil)
-  (om-invalidate-view self))
-
-(defmethod release-cercle-extra ((self pictpanel) pos)
-  (let ((ctrl (controlview (editor self))))
-    (om-erase-movable-object self)
-    (unless (or (not *draw-initpos*) 
-                (om-points-equal-p *draw-initpos* pos))
-      (pushr (list 'cercle 
-                  (list (/ (+ (om-point-h *draw-initpos*) (/ (- (om-point-h pos) (om-point-h *draw-initpos*)) 2)) (w self))
-                        (/ (+ (om-point-v *draw-initpos*) (/ (- (om-point-v pos) (om-point-v *draw-initpos*)) 2)) (h self)) 
-                        ;(/ (om-point-h pos) (w self)) (/ (om-point-v pos) (h self))
-                        (/ (- (om-point-h pos) (om-point-h *draw-initpos*)) 2 (w self))
-                        (/ (- (om-point-v pos) (om-point-v *draw-initpos*)) 2 (h self))
-                        
-                        )
-                  (list (currentcolor ctrl) (currentsize ctrl) 
-                        (if (equal 'dash (currentline ctrl)) (list (* 2 (currentsize ctrl)) (* 2(currentsize ctrl))) (currentline ctrl))
-                        (currentfill ctrl))
-                  nil)
-            (extraobjs (object (editor self))))
-      ))
-  (setf *draw-initpos* nil)
+      )))
   (om-invalidate-view self))
 
 ;;;==========================

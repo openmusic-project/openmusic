@@ -189,11 +189,41 @@
 
 (defmethod om-view-cursor ((self maq-c-resize-box)) (call-next-method))
 
+(defmethod add-box-resize ((self tempobjframe))
+   (om-add-subviews self
+                    (setf (resize-box self)
+                          (om-make-view 'maq-c-resize-box
+                                        :size (om-make-point 8 8)
+                                        :position (om-make-point (- (w self) 8) (- (h self) 8))))
+                    ;(setf (bottomresize (resize-box self))
+                    ;      (om-make-view 'maq-b-resize-box
+                    ;                    :size (om-make-point (- (w self) 8) 8)
+                    ;                    :position (om-make-point 0 (- (h self) 8))
+                    ;                    ))
+                    ;(setf (rightresize (resize-box self))
+                    ;      (om-make-view 'maq-r-resize-box
+                    ;                    :size (om-make-point 8 (- (h self) 8))
+                    ;                    :position (om-make-point (- (w self) 8) 0)
+                    ;                    ))
+                    ))
+
+
+#|
 (defmethod resize-box-motion ((self maq-b-resize-box) pos)
   (let* ((panel (om-view-container (get-box-frame self)))
            (initpoint (om-convert-coordinates pos self panel))
            (initsize (om-add-points (om-add-points (om-view-size (get-box-frame self)) (om-view-position (get-box-frame self)))
                                      (om-make-point 0 (- (om-point-v pos) (om-point-v *init-resize-pos*)))))
+           (rx (om-point-h initsize))
+           (ry (om-point-v initsize))
+           (rect  (om-init-point-movable-object panel)))
+     (om-update-movable-object panel (first rect) (second rect) (max 4  (- rx (first rect))) (max 4 (- ry (second rect) )))))
+
+(defmethod resize-box-motion ((self maq-r-resize-box) pos)
+  (let* ((panel (om-view-container (get-box-frame self)))
+           (initpoint (om-convert-coordinates pos self panel))
+           (initsize (om-add-points (om-add-points (om-view-size (get-box-frame self)) (om-view-position (get-box-frame self)))
+                                     (om-make-point (- (om-point-h pos) (om-point-h *init-resize-pos*)) 0)))
            (rx (om-point-h initsize))
            (ry (om-point-v initsize))
            (rect  (om-init-point-movable-object panel)))
@@ -214,16 +244,6 @@
      (setf *init-resize-pos* nil)
      ))
 
-(defmethod resize-box-motion ((self maq-r-resize-box) pos)
-  (let* ((panel (om-view-container (get-box-frame self)))
-           (initpoint (om-convert-coordinates pos self panel))
-           (initsize (om-add-points (om-add-points (om-view-size (get-box-frame self)) (om-view-position (get-box-frame self)))
-                                     (om-make-point (- (om-point-h pos) (om-point-h *init-resize-pos*)) 0)))
-           (rx (om-point-h initsize))
-           (ry (om-point-v initsize))
-           (rect  (om-init-point-movable-object panel)))
-     (om-update-movable-object panel (first rect) (second rect) (max 4  (- rx (first rect))) (max 4 (- ry (second rect) )))))
-
 (defmethod resize-box-release ((self maq-r-resize-box) pos) 
   (let* ((boxframe (get-box-frame self))
          (panel (om-view-container boxframe))
@@ -238,33 +258,7 @@
      ;(om-invalidate-rectangle panel (x boxframe) (y boxframe) (w boxframe) (h boxframe)) 
      (setf *init-resize-pos* nil)
      ))
-
-(defmethod add-box-resize ((self tempobjframe))
-   (om-add-subviews self
-                    (setf (resize-box self)
-                          (om-make-view 'maq-c-resize-box
-                                        :size (om-make-point 8 8)
-                                        :position (om-make-point (- (w self) 8) (- (h self) 8))))
-                    ;(setf (bottomresize (resize-box self))
-                    ;      (om-make-view 'maq-b-resize-box
-                    ;                    :size (om-make-point (- (w self) 8) 8)
-                    ;                    :position (om-make-point 0 (- (h self) 8))
-                    ;                    ))
-                    ;(setf (rightresize (resize-box self))
-                    ;      (om-make-view 'maq-r-resize-box
-                    ;                    :size (om-make-point 8 (- (h self) 8))
-                    ;                    :position (om-make-point (- (w self) 8) 0)
-                    ;                    ))
-                    ))
-
-
-;(defmethod add-box-resize ((self tempobjframe))
-;   (om-add-subviews self
-;                 (setf (resize-box self)
-;                       (om-make-view 'c-resize-box
-;                         :size (om-make-point 8 8)
-;                         :position (om-make-point (- (w self) 8) (- (h self) 8))))))
-
+|#
 
    
 ;-------DRAW ------
@@ -1053,15 +1047,6 @@
        )))
 
 
-;;; CONNECT BOXES
-
-(defmethod drag-out-line ((self tempobjframe) where)
-   (let* ((panel (panel (om-view-window self)))
-          (initpoint (om-convert-coordinates where self panel))
-          (rx (om-point-h initpoint))
-          (ry (om-point-v initpoint)))
-     (om-init-motion-functions self 'make-connection-marker-motion 'release-connection-marker-motion)
-     (om-new-movable-object panel rx ry 4 4 'om-movable-line)))
 
 
 
