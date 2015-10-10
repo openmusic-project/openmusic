@@ -210,6 +210,14 @@
                                  selected alpha)
   ;(print (list view pict))
   ;(print (list view pict))
+  (if *click-motion-action*
+     
+      (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
+        (om-fill-rect (om-point-x pos) (om-point-y pos)
+                      (if size (om-point-x size) (gp:image-width image))
+                      (if size (om-point-y size) (gp:image-height image)))
+        )
+                    
   (when pict
     (let* ((port (om-get-view view))
            (image (and port (find-pict-in-port pict port)))
@@ -249,7 +257,7 @@
           )
         )       
       )
-    ))
+    )))
 
 
 (defmethod om-get-picture-size (picture)
@@ -290,8 +298,16 @@
 (defmethod om-get-view ((self t))  (or *default-printer-port* self))
 
 (defmethod om-draw-picture (view (pict internal-picture) &key (pos (om-make-point 0 0)) size
-                                  (srctopleft (om-make-point 0 0)) (srcsize nil))
+                                 (srctopleft (om-make-point 0 0)) (srcsize nil))
   
+   (if *click-motion-action*
+     
+      (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
+        (om-fill-rect (om-point-x pos) (om-point-y pos)
+                      (if size (om-point-x size) (gp:image-width image))
+                      (if size (om-point-y size) (gp:image-height image)))
+        )
+     
   (when (themetafile pict)
     (let* ((port (om-get-view view))
            (size (or size (om-view-size view)))
@@ -314,7 +330,7 @@
           #-cocoa(capi::draw-metafile port (themetafile pict) (+ x *pox*) (+ y *poy*) w h)
 	  )
       ;(capi::draw-metafile port (themetafile pict) 0 0 (om-point-h size)  (om-point-v size))
-      ))))
+      )))))
 
 
 (defmethod om-internal-picture-to-pict  ((self internal-picture) view)
