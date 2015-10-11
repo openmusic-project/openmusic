@@ -230,7 +230,7 @@
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged genfun-icon-frame) 
                          (target patchPanel) position)
-  (make-func-from-obj target dragged position) t)
+  (make-func-from-obj target dragged (om-mouse-position target)) t)
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged lispfun-icon-frame) 
                          (target patchPanel) position)
@@ -253,8 +253,8 @@
    (let* ((theobj (object dragged))
           (new-name (name theobj)) newobj)
      (if (om-shift-key-p)
-       (setf newobj (omNG-make-new-boxcall-slots theobj  position (mk-unique-name target new-name)))
-       (setf newobj (omNG-make-new-boxcall theobj  position (mk-unique-name target new-name))))
+         (setf newobj (omNG-make-new-boxcall-slots theobj  (om-mouse-position target) (mk-unique-name target new-name)))
+       (setf newobj (omNG-make-new-boxcall theobj  (om-mouse-position target) (mk-unique-name target new-name))))
      (omG-add-element target (make-frame-from-callobj newobj))
      t))
 
