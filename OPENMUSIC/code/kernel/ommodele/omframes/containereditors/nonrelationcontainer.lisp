@@ -499,7 +499,6 @@ with the objects respectly associeted."))
         (om-invalidate-view self))
       ))
 
-
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
      (setf user-rect (om-make-rect (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))

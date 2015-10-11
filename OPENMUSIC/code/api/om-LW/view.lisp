@@ -402,6 +402,18 @@
        )))
 
 
+(defun om-view-absolute-position (view)
+   (let ((container (om-view-container view)))
+     (if container
+       (let ((position (om-view-position view))
+             (container-origin (om-view-origin container)))
+         (if position
+	     (om-add-points container-origin position)
+           container-origin))
+       (om-make-point 0 0)
+       )))
+
+
 (defun find-pane-with-focus (layout)
   (capi:map-pane-descendant-children 
    layout

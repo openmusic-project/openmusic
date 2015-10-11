@@ -66,6 +66,7 @@
 (defmethod om-drag-reference-view ((self om-view-drag))
   (get-drag-object self))
 
+
 (defmethod om-drag-start ((view om-view-drag))
   (let* ((theview (get-drag-object view))
 	 (container (and theview (om-view-container theview))))
@@ -103,8 +104,8 @@
                                                      view)
               
               ;;; wrong in the case of drag from package windows' sub-panels...
-              (initial-mouse-pos *OM-drag&drop-handler*) (om-convert-coordinates (initial-mouse-pos *OM-drag&drop-handler*) 
-                                                                                 (dragged-view *OM-drag&drop-handler*) 
+              (initial-mouse-pos *OM-drag&drop-handler*) (om-convert-coordinates (initial-mouse-pos *OM-drag&drop-handler*)
+                                                                                 (dragged-view *OM-drag&drop-handler*)
                                                                                  (target-view  *OM-drag&drop-handler*))
              
               (true-target-view *OM-drag&drop-handler*) (view-frame view)
@@ -266,8 +267,8 @@
                     (setf some-item-used (perform-drop D&DHandler dragged-frame target-frame
                                                       (om-add-points  (drop-mouse-pos D&DHandler)
                                                                        (om-subtract-points 
-                                                                              (get-position dragged-frame)
-                                                                              (initial-mouse-pos D&DHandler)))
+                                                                        (get-position dragged-frame)
+                                                                        (initial-mouse-pos D&DHandler)))
                                                       )
                           ))
                 (dragged-list-objs D&DHandler))
