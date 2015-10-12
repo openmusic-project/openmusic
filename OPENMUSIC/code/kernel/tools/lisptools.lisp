@@ -869,7 +869,7 @@ would not be restricted to variables)."
 
 (defmethod copy-instance-to ((source standard-object) (target standard-object))
   "Shallow copies the slots of 'source' to the slots of 'target'. Source must be subclass of target"
-  (loop for slot in (mapcar #'slot-definition-name (class-slots (class-of (mki 'chord-seq))))
+  (loop for slot in (mapcar #'slot-definition-name (class-slots (class-of source)))
      when (slot-boundp source slot)
      do (setf (slot-value target slot) (slot-value source slot)))
   target)
