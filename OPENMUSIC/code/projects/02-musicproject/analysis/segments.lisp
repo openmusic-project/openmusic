@@ -81,6 +81,22 @@
   (setf (mrk-time self) (pixels-to-time panel (om-point-h pos)))
   self)
 
+
+(defmethod segment-handle-add-key ((self marker-segment) analysis panel) 
+  (when (selection? panel)
+    (let ((ordered-selection (sort (get-real-chords (selection? panel)) '< 
+                                   :key #'(lambda (c) (offset->ms c (analysis-object analysis))))))
+      (if ordered-selection
+          (if (find ordered-selection (analysis-segments analysis)
+                    :key 'mrk-time :test 'equal)
+              (om-beep-msg "This segment already exists !")
+            (progn
+              (setf (mrk-time self) (offset->ms (car ordered-selection))               
+                    (color self) (om-random-color))
+          self))
+        (om-beep)))))
+
+
 (defmethod handle-segment-doubleclick ((self abstract-analysis) (segment marker-segment) panel pos)
   (let ((str (om-get-user-string "Enter new label for the segment"
                                  :initial-string (if (stringp (segment-data segment))
