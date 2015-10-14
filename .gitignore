@@ -1,4 +1,5 @@
 *.xfasl
+*.64xfasl
 *.ofasl
 *.nfasl
 *.*ufasl
