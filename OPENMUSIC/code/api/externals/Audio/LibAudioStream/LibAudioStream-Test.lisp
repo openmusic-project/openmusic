@@ -31,10 +31,11 @@
 
 ;;(setq player (OpenAudioPlayer 0 0 32 44100 1024 65536 65536 kPortAudioRenderer 1))
 
+; (las::OpenAudioPlayer 0 2 32 44100 512 65536 26460000 2 1)
 
 ;; WARNING !! when using Jack, the Sample rate and Buffer size values much match the values currently used with Jack server
  
-(setq player (OpenAudioPlayer 0 2 32 44100 512 65536 65536 kCoreAudioRenderer 1))
+;(setq player (OpenAudioPlayer 0 2 32 44100 512 65536 26460000 kCoreAudioRenderer 1))
 
 (CloseAudioPlayer player)
 

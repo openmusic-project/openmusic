@@ -66,7 +66,8 @@
 
 (defun las-init-full-system ()
   (instanciate-players)
-  (start-global-audio-context))
+  (start-global-audio-context)
+  )
 
 ; (las-close-full-system)
 ; (las-init-full-system)
@@ -259,6 +260,7 @@
 ;Returns a LAS player pointer
 (defun make-new-player ()
   (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
+
 
 (defun las-set-sample-rate (sr)
   (setf las-srate sr)
