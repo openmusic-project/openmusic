@@ -575,8 +575,7 @@
 	 )
     (when (and (view-turn-pages-p self) (or (< start (car range))
                                                    (> start (cadr range))))
-      (scroll-play-view self at-pix)
-      )
+      (scroll-play-view self at-pix))
     (om-stop-transient-drawing self)
     (om-start-transient-drawing self 'draw-cursor-line 
                                 (om-make-point (start-position self) 0) 
@@ -628,8 +627,7 @@
       (scroll-play-view self (- pixel (get-key-space self)))
       ;(om-invalidate-view self)
       )
-    (om-update-transient-drawing-geometry self :x pixel :y y)
-    (om-update-transient-drawing self)
+    (om-update-transient-drawing self :x pixel :y y)
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)

@@ -164,8 +164,8 @@
   (let ((y (or y1 0))
         (h (if y2 (- y2 y1) (h self)))
         (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-    (om-update-transient-drawing-geometry self :x pixel :y y :w 4 :h h)
-    (om-update-transient-drawing self)))
+    (om-update-transient-drawing self :x pixel :y y :w 4 :h h)
+    ))
 
 
 (defmethod om-draw-contents ((self midi-preview))  

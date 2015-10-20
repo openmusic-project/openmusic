@@ -1235,7 +1235,6 @@ else create a new Editor frame, and select its window."
              (y0 (om-v-scroll-position self)))
         (when (> cur-pixel (+ (om-h-scroll-position self) (w self)))
           (om-set-scroll-position self (om-make-point cur-pixel (om-v-scroll-position self))))
-        (om-update-transient-drawing-geometry self :x cur-pixel :y (om-v-scroll-position self) :w 4 :h (h self))
-        (om-update-transient-drawing self)
+        (om-update-transient-drawing self :x cur-pixel :y (om-v-scroll-position self) :w 4 :h (h self))
         ))))
 

@@ -11,6 +11,10 @@
 (defparameter *click-motion-view* nil)
 (defparameter *click-motion-action* nil)
 
+;;;=====================================
+;;; CURSORS AND OTHER MOVING DRAWINGS
+;;;=====================================
+
 (defmethod om-start-transient-drawing ((self om-view) draw-fun position size &key display-mode)
   ;(print (list "start" self))
   ;(capi:output-pane-free-cached-display self)
@@ -27,31 +31,38 @@
    :user-info (list display-mode
                     (om-point-x position) (om-point-y position)
                     (om-point-x size) (om-point-y size)
-                    )))
+                    )
+   :automatic-cancel t
+   :resize-automatic-cancel #'(lambda (pane) (setf (capi:output-pane-cached-display-user-info pane) nil))
+   ))
 
 (defmethod om-stop-transient-drawing ((self om-view))
   (capi:output-pane-free-cached-display self)
   (om-invalidate-view self))
 
 (defmethod om-update-transient-drawing ((self om-view))
-  (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
-    (when dragging-info
-      (destructuring-bind (mode x y w h)
-          dragging-info 
-        (if mode
-            (capi:update-drawing-with-cached-display-from-points self x y (+ x w) (+ y h) :extend (if (numberp mode) mode 1))
-          (capi:update-drawing-with-cached-display self))
-        ))))
+  (capi::apply-in-pane-process 
+   self
+   #'(lambda ()
+       (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
+         (when dragging-info
+           (destructuring-bind (mode x y w h)
+               dragging-info 
+             (if dragging-info
+                 (progn 
+                   (when x (setf (nth 1 dragging-info) x))
+                   (when y (setf (nth 2 dragging-info) y))
+                   (when w (setf (nth 3 dragging-info) w))
+                   (when h (setf (nth 4 dragging-info) h))
+                   (if mode
+                       (capi:update-drawing-with-cached-display-from-points self x y (+ x w) (+ y h) :extend (if (numberp mode) mode 1))
+                     (capi:update-drawing-with-cached-display self))
+             ))))))))
 
-(defmethod om-update-transient-drawing-geometry ((self om-view) &key x y w h)
-  (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
-    (when dragging-info
-      ;(print x)
-      (when x (setf (nth 1 dragging-info) x))
-      (when y (setf (nth 2 dragging-info) y))
-      (when w (setf (nth 3 dragging-info) w))
-      (when h (setf (nth 4 dragging-info) h))
-      )))
+
+;;;=====================================
+;;; CLICK-AND-DRAG DRAWING
+;;;=====================================
 
 
 
