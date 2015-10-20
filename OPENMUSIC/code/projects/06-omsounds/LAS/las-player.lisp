@@ -31,7 +31,7 @@
 (defvar *channel-numbers-hash-table* (make-hash-table))
 
 ;Constants to use to create players.
-(defconstant las-inchan 0)
+(defconstant las-inchan 2)
 (defconstant las-outchan 2)
 (defconstant las-channels 32)
 (defparameter las-srate 44100)
