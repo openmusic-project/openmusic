@@ -2,62 +2,97 @@
 
 (in-package :om-api)
 
-(export '(om-start-transient-drawing
-          om-stop-transient-drawing
-          om-update-transient-drawing-geometry
-          om-update-transient-drawing
-          om-init-motion-click) :oa)
+(export 
+ '(om-transient-drawing-view
+   om-start-transient-drawing
+   om-stop-transient-drawing
+   om-update-transient-drawing
+   om-init-motion-click) 
+ :oa)
+
+(defclass om-transient-drawing-view (om-graphic-object)
+  ((animation :initform nil :accessor animation))
+  (:default-initargs :destroy-callback 'transient-drawing-view-destroy-calback))
 
 (defparameter *click-motion-view* nil)
 (defparameter *click-motion-action* nil)
+
 
 ;;;=====================================
 ;;; CURSORS AND OTHER MOVING DRAWINGS
 ;;;=====================================
 
-(defmethod om-start-transient-drawing ((self om-view) draw-fun position size &key display-mode)
-  ;(print (list "start" self))
-  ;(capi:output-pane-free-cached-display self)
-  (capi:start-drawing-with-cached-display 
-   self 
-   #'(lambda (view x y w h)
-       ;(print "draw") ; not after click ???
-       (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
-         (when dragging-info
-           (destructuring-bind (mode x y w h)
-               dragging-info 
-             (om-with-focused-view view 
-               (funcall draw-fun view (om-make-point x y) (om-make-point w h)))))))
-   :user-info (list display-mode
-                    (om-point-x position) (om-point-y position)
-                    (om-point-x size) (om-point-y size)
-                    )
-   :automatic-cancel t
-   :resize-automatic-cancel #'(lambda (pane) (setf (capi:output-pane-cached-display-user-info pane) nil))
+(defmethod transient-drawing-view-destroy-calback ((self om-transient-drawing-view))
+  (om-stop-transient-drawing self)
+  (om-destroy-callback self))
+
+
+(defun start-transient-drawing-fun (view draw-fun position size &key display-mode)
+  (loop 
+   ;;; this loop breaks when killed 
+   (capi:start-drawing-with-cached-display 
+    view     
+    #'(lambda (view x y w h)
+        (let ((user-info (capi:output-pane-cached-display-user-info view)))
+          (when user-info
+            (destructuring-bind (mode x y w h)
+                user-info 
+              (om-with-focused-view view 
+                (funcall draw-fun view (om-make-point x y) (om-make-point w h)))))))
+    :user-info (list display-mode
+                     (om-point-x position) (om-point-y position)
+                     (om-point-x size) (om-point-y size))
+    :automatic-cancel nil
+    :resize-automatic-cancel #'(lambda (pane)
+                                 ;; will break the loop and restart
+                                 (setf (capi:output-pane-cached-display-user-info pane) nil))
+    )
+   ;(print 'start)
+   ;(loop 
+   ; ;;; this loop breaks when user-info is NIL (caused by a resize)
+   ; (sleep 0.2)
+   ; (when (not (capi:output-pane-cached-display-user-info view))
+   ;   (return)))
    ))
 
-(defmethod om-stop-transient-drawing ((self om-view))
-  (capi:output-pane-free-cached-display self)
-  (om-invalidate-view self))
 
-(defmethod om-update-transient-drawing ((self om-view))
-  (capi::apply-in-pane-process 
-   self
-   #'(lambda ()
-       (let ((dragging-info (capi:output-pane-cached-display-user-info self)))
-         (when dragging-info
-           (destructuring-bind (mode x y w h)
-               dragging-info 
-             (if dragging-info
-                 (progn 
-                   (when x (setf (nth 1 dragging-info) x))
-                   (when y (setf (nth 2 dragging-info) y))
-                   (when w (setf (nth 3 dragging-info) w))
-                   (when h (setf (nth 4 dragging-info) h))
-                   (if mode
-                       (capi:update-drawing-with-cached-display-from-points self x y (+ x w) (+ y h) :extend (if (numberp mode) mode 1))
-                     (capi:update-drawing-with-cached-display self))
-             ))))))))
+(defmethod om-start-transient-drawing ((self om-transient-drawing-view) draw-fun position size &key display-mode)
+  (om-stop-transient-drawing self)
+  (setf (animation self)
+        (mp:process-run-function (format nil "Animation for ~A" self) NIL
+                                 'start-transient-drawing-fun 
+                                 self draw-fun position size :display-mode display-mode)))
+
+
+(defmethod om-stop-transient-drawing ((self om-transient-drawing-view))
+  (when (animation self)
+    (capi:output-pane-free-cached-display self)
+    (mp:process-kill (animation self))
+    (setf (animation self) nil)
+    (om-invalidate-view self)))
+
+(defun update-transient-drawing-fun (view &key x y w h)
+  (let ((user-info (capi:output-pane-cached-display-user-info view)))
+    (when user-info
+      (when x (setf (nth 1 user-info) x))
+      (when y (setf (nth 2 user-info) y))
+      (when w (setf (nth 3 user-info) (+ (nth 1 user-info) w)))
+      (when h (setf (nth 4 user-info) (+ (nth 2 user-info) h)))
+      (if (car user-info)
+          (capi:update-drawing-with-cached-display-from-points 
+           view      
+           (nth 1 user-info) (nth 2 user-info)
+           (nth 3 user-info) (nth 4 user-info)
+           :extend (if (numberp (car user-info)) (car user-info) 1))
+        (capi:update-drawing-with-cached-display view))
+      )))
+
+(defmethod om-update-transient-drawing ((self om-view) &key x y w h)
+  (when (and (animation self) (not *click-motion-action*))
+    (capi::apply-in-pane-process 
+     self
+     'update-transient-drawing-fun
+     self :x x :y y :w w :h h)))
 
 
 ;;;=====================================
@@ -78,13 +113,14 @@
                 (om-point-x position) (om-point-y position)
                 draw-pane)))
   (when motion-draw
-    (start-transient-drawing (or draw-pane self) 
+    (setf (capi:output-pane-cached-display-user-info self) nil) ;;; will break the animation loop if any
+    (start-transient-click-drawing (or draw-pane self) 
                              motion-draw 
                              (if draw-pane (om-convert-coordinates position self draw-pane) position) 
                              display-mode))
   t)
 
-(defmethod start-transient-drawing ((self om-view) motion-draw position display-mode) 
+(defmethod start-transient-click-drawing ((self om-view) motion-draw position display-mode) 
   ;(capi:output-pane-free-cached-display self)
   (capi:start-drawing-with-cached-display 
    self 
@@ -142,7 +178,7 @@
             motion-info  
           (let ((dragging-info (capi:output-pane-free-cached-display (or draw-pane view))))
            ;; nothing more to do...
-              )
+           (setf (capi:output-pane-cached-display-user-info (or draw-pane view)) nil))
           (when release-action
             (funcall release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
             )))

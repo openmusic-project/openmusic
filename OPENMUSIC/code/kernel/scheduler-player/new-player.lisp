@@ -483,7 +483,7 @@
 ; VIEW WITH CURSOR
 ;;;===================================
 
-(defclass cursor-play-view-mixin (om-view) 
+(defclass cursor-play-view-mixin (om-view om-transient-drawing-view) 
   ((cursor-mode  :initform :normal :accessor cursor-mode :initarg :cursor-mode)   ;; :normal ou :interval
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))
