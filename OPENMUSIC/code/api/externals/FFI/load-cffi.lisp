@@ -42,7 +42,7 @@
 (provide :cffi)
 (asdf:load-system :cffi)
 
-(cl-user::compile-file-if-needed (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference" :type "lisp"))
-(load (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference"))
+#+om-api (cl-user::compile-file-if-needed (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference" :type "lisp"))
+#+om-api (load (make-pathname :directory (pathname-directory *load-pathname*) :name "dereference"))
 
 

@@ -74,6 +74,5 @@
 
 
 
-
-
+(pushnew :om-api *features*)
 
