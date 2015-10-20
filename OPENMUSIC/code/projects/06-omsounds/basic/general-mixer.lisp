@@ -356,12 +356,13 @@
 ;Get the pan and vol values in *general-mixer-values* and apply these to the LAS player.
 (defun apply-mixer-values ()
   (let (pan vol)
-    (loop for i from 0 to (- *audio-n-channels* 1) do
-          (setf pan (car (nth i (mixer-values *audio-mixer*)))
-                vol (cadr (nth i (mixer-values *audio-mixer*))))
-          (player-change-channel-pan (mixer-player *audio-mixer*)  (+ i 1) (- 1.0 (float (/ (+ pan 100) 200))))
-          (player-change-channel-vol (mixer-player *audio-mixer*)  (+ i 1) (float (/ vol 100))))))
-
+    (when *audio-player-visible*
+      (loop for i from 0 to (- *audio-n-channels* 1) do
+            (setf pan (car (nth i (mixer-values *audio-mixer*)))
+                  vol (cadr (nth i (mixer-values *audio-mixer*))))
+            (player-change-channel-pan (mixer-player *audio-mixer*)  (+ i 1) (- 1.0 (float (/ (+ pan 100) 200))))
+            (player-change-channel-vol (mixer-player *audio-mixer*)  (+ i 1) (float (/ vol 100)))))))
+  
 
 
 ;/SAVE CURRENT SETTINGS FUNCTION

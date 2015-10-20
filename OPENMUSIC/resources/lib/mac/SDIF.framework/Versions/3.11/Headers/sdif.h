@@ -1,4 +1,4 @@
-/* $Id: sdif.h,v 1.67 2009/04/20 14:18:37 diemo Exp $
+/* $Id: sdif.h.in,v 1.3 2012/01/02 23:49:08 roebel Exp $
  *
  * IRCAM SDIF Library (http://www.ircam.fr/sdif)
  *
@@ -29,7 +29,31 @@
  * externally visible API of the IRCAM SDIF library (http://www.ircam.fr/sdif).
  *
  *
- * $Log: sdif.h,v $
+ * $Log: sdif.h.in,v $
+ * Revision 1.3  2012/01/02 23:49:08  roebel
+ * Base selection of WIN32 specific implementation on definition of macros  WIN32 OR _WIN32. The latter being standard in
+ * Visual C++ it is most important to have it.
+ *
+ * Revision 1.2  2011/06/11 23:23:10  roebel
+ * Fixed a number of issues with the conditional include of stdint.h and sys/types.h in instaled include file
+ * sdif.h.
+ * Correctly use the types provided by these include files for definition of sdif types.
+ *
+ * Revision 1.1  2011/04/18 18:46:27  roebel
+ * added sdif.h.in to cvs
+ *
+ * Revision 1.71  2011/04/12 20:17:33  roebel
+ * Fixed large file support to properly work on linux as well.
+ *
+ * Revision 1.70  2011/04/12 14:18:18  roebel
+ * Fixed Sdif[fF]GetPos and Sdif[fF]SetPos to correctly support large files (>2GB).
+ *
+ * Revision 1.69  2011/04/06 17:08:45  diemo
+ * realloc query tree
+ *
+ * Revision 1.68  2009/10/19 17:01:28  diemo
+ * added prototype for SdifFreeQueryTree
+ *
  * Revision 1.67  2009/04/20 14:18:37  diemo
  * example for SdifSelectAddSignature
  * move SDIF_API out of generating macro, to avoid it in SdifSelect.c (error on windows compilation)
@@ -317,7 +341,7 @@
  * Revision 1.1.2.1  2000/08/21  13:07:41  tisseran
  * *** empty log message ***
  *
- * $Date: 2009/04/20 14:18:37 $
+ * $Date: 2012/01/02 23:49:08 $
  *
  */
 
@@ -332,11 +356,24 @@ extern "C" {
 #endif
 
 
-static const char _sdif_h_cvs_revision_ [] = "$Id: sdif.h,v 1.67 2009/04/20 14:18:37 diemo Exp $";
+static const char _sdif_h_cvs_revision_ [] = "$Id: sdif.h.in,v 1.3 2012/01/02 23:49:08 roebel Exp $";
 
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
+  /* the following two #if are configured by autoconf/cmake
+   * and reflect capabilities of the installing compiler.
+   * You cannot use an installed sdif with a comiler that des not provide  
+   * stdint.h and/or sys/types.h when the configurin compiler provided those
+   */
+  /* will be 0 if HAVE_STDINT_H is not set or set to 0, will be 10 if HAVE_STDINT_H is set */
+#if 10
+#  define HAVE_STDINT_HEADER 1
+#  include <stdint.h>
 #endif
+
+  /* will be 0 if HAVE_SYS_TYPES_H  is not set or set to 0, will be 10 if HAVE_SYS_TYPES_H is set */
+#if 10
+#  include <sys/types.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -447,13 +484,12 @@ SDIF_API int SdifFTruncate(SdifFileT *file);
 /*DOC:
   Get position in file.
   [return] file offset or -1 for error.
-  SdiffPosT is actually long.
  */
 int SdiffGetPos(SdifFileT *file, SdiffPosT *pos);
 
 /*DOC:
   Set absolute position in file.
-  SdiffPosT is actually long.
+  SdiffPosT is a plattform dependent integer type that should correctly work with long files. 
   [Return] 0 on success, 
           -1 on error (errno is set, see fseek(3) for details)
 
@@ -464,33 +500,41 @@ int SdiffSetPos(SdifFileT *file, SdiffPosT *pos);
 
 #endif  /* if 0 */
 
+/* do not use off_t here, because the size of off_t may depend on compiler options
+ * so that the interface becomes unstable. 
+ * This should be a 64bit int type such that for all configurations and compiler options
+ * a long file position can be stored here.
+ */
+typedef int64_t SdiffPosT;
 
-/* to do fpos_t compatible on MacinTosh */
-#if defined(MACINTOSH) || defined(WIN32)
-    /* on mac or windows, seeking on a stream is always considered
+/* support file positions with files larger than 2GB */
+#if defined(_WIN32) || defined(_WIN32)
+    /* on  windows, seeking on a stream is always considered
        successful (return 0)! */
-#   define SdiffPosT            long
-#   define SdiffIsFile(f)       ((f)!=stdin && (f)!=stdout && (f)!=stderr)
-#   define Sdiffftell(f)        (SdiffIsFile(f)  ?  ftell(f)  :  0)
-#   define SdiffGetPos(f,p)     ((*(p) = Sdiffftell(f)) == -1  ?  -1  :  0)
-#   define SdiffSetPos(f,p)     (SdiffIsFile(f)  \
-                                    ?  fseek(f, (long)(*(p)), SEEK_SET)  :  0)
+/* these 2 are used only localy here to test whether the stream supports seeking */ 
+#  define SdiffIsFile(f)       ((f)!=stdin && (f)!=stdout && (f)!=stderr)
+#  define Sdiffftell(f)        (SdiffIsFile(f)  ?  _ftelli64(f)  :  0)
+#  define SdiffGetPos(f,p)     ((*(p) = Sdiffftell(f)) == -1  ?  -1  :  0)
+#  define SdiffSetPos(f,p)     (SdiffIsFile(f)  \
+                                ?  _fseeki64(f, (*(p)), SEEK_SET)  :  0)
 #else
-/*
-#   define SdiffPosT            fpos_t
-#   define SdiffGetPos(f,p)     fgetpos((f),(p))
-#   define SdiffSetPos(f,p)     fsetpos((f),(p))
+#  define SdiffGetPos(f,p)     ((*(p) = ftello(f)) == -1  ?  -1  :  0)
+#  define SdiffSetPos(f,p)     (fseeko(f, (*(p)), SEEK_SET))
 
+/*
 #   define SdiffGetPos(f,p)     ((*(p) = ftell(f)) == -1  ?  -1  :  0)
 #   define SdiffSetPos(f,p)     (fseek(f, (long)(*(p)), SEEK_SET))
 */
 
+
 /*DS: FORCE long fpos*/
 /* ftell/fseek can be applied to stdin/out/err at least in a restricted manner
  * (same as fgetpos/fsetpos) so let's try */
+/* don't use ftell any more because it does not support files larger 2GB
 #   define SdiffPosT            long
 #   define SdiffGetPos(f,p)     ((*(p) = ftell(f)) == -1  ?  -1  :  0)
 #   define SdiffSetPos(f,p)     (fseek(f, (long)(*(p)), SEEK_SET))
+*/
 #endif
 
 
@@ -498,15 +542,15 @@ int SdiffSetPos(SdifFileT *file, SdiffPosT *pos);
 /*DOC:
   Get position in file.
   [return] file offset or -1 for error.
-  SdiffPosT is actually long.
+  SdiffPosT is a plattform dependent integer type that should correctly work with long files. 
  */
 SDIF_API int SdifFGetPos(SdifFileT *file, SdiffPosT *pos);
 
 /*DOC:
   Set absolute position in file.
-  SdiffPosT is actually long.
+  SdiffPosT is a plattform dependent integer type that should correctly work with long files. 
   [Return] 0 on success, 
-          -1 on error (errno is set, see fseek(3) for details)
+          -1 on error (errno is set, see fseeko/_fseeki64(3) for details)
 
   On Mac or Windows, seeking on a stream is always considered
   successful (return 0), even if no seek was done!
@@ -517,7 +561,7 @@ SDIF_API int SdifFSetPos(SdifFileT *file, SdiffPosT *pos);
 
 
 /* SdifHard_OS.h */
-#ifdef HAVE_STDINT_H
+#ifdef HAVE_STDINT_HEADER
 typedef char           SdifChar;
 typedef char           SdifInt1;
 typedef int16_t        SdifInt2;
@@ -2223,11 +2267,14 @@ typedef struct
 } SdifQueryTreeT;
 
 
-/* allocate query tree for max elements */
+/* allocate query tree, starting with max elements (will be reallocated dynamically) */
 SDIF_API SdifQueryTreeT *SdifCreateQueryTree(int max);
 
 /* clean all elements from tree */
 SDIF_API SdifQueryTreeT *SdifInitQueryTree(SdifQueryTreeT *tree);
+
+/* free memory for tree and its elements */
+SDIF_API void SdifFreeQueryTree(SdifQueryTreeT *tree);
 
 /* create summary of file's data in query tree, return bytesize of file */
 SDIF_API size_t SdifQuery (const char            *filename, 

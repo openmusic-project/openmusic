@@ -28,10 +28,10 @@
 #define SDIF_VERSION_MINOR   11 
 
 /* release number of current version of sdif library */
-#define SDIF_VERSION_RELEASE 2
+#define SDIF_VERSION_RELEASE 5
 
 /* current version of sdif library */
-#define SDIF_VERSION_STRING  "3.11.2"
+#define SDIF_VERSION_STRING  "3.11.5"
 
 #define TOSTRING(x) #x
 
