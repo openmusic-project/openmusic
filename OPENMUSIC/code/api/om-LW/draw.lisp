@@ -193,10 +193,11 @@
 
 (defmethod om-invalidate-rectangle ((self om-graphic-object) x y w h)
   (when (interface-visible-p self)
-    (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self)
-				 ;;x y w h
-				 )
-    ))
+    (capi::apply-in-pane-process 
+     (om-get-view self) 
+     'gp::invalidate-rectangle 
+     (om-get-view self) x y w h
+     )))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
   (when (item-container self)

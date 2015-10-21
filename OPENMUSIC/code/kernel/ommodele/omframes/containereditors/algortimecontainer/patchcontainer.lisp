@@ -584,14 +584,14 @@ Elements of the list are list as (source-position source-output target-position 
             (setf *pict-mov-size* (pict-size sel))
             (setf *pict-mov-delta* where)
             (setf *initial-rectangle* r)
-            (om-init-motion-click self where :motion-action 'draw-resize-bg-pict)
+            (om-init-motion-click self where :motion-action 'draw-resize-bg-pict :release-action 'draw-update-bg-pict)
             t)
         (if (om-point-in-rect-p where r) 
             (progn
               (setf *pict-mov-size* (pict-size sel))
               (setf *pict-mov-delta* (om-make-point (- (om-point-h where) x0) (- (om-point-v where) y0)))
               (setf *initial-rectangle* r)
-              (om-init-motion-click self where :motion-action 'draw-move-bg-pict)
+              (om-init-motion-click self where :motion-action 'draw-move-bg-pict :release-action 'draw-update-bg-pict)
               t)
           (progn
             (setf (selected-p sel) nil)
@@ -630,6 +630,9 @@ Elements of the list are list as (source-position source-output target-position 
                )
              ))
          (om-beep)))))
+
+(defmethod draw-update-bg-pict ((self patchpanel) initpos pos)
+  (om-invalidate-view self))
 
 (defmethod invalidate-picture ((self patch-picture) view)
   (om-invalidate-corners view (pict-pos self) (om-make-point (+ (om-point-h (pict-pos self)) (om-point-h (pict-size self)) 4)

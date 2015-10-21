@@ -336,7 +336,8 @@
   (let* ((pixel (om-mouse-position (panel self))))
     (when pixel
       (setf (current-point self) (pixel2point (panel self) pixel))
-      (om-invalidate-view (title-bar self)))))
+      (om-invalidate-rectangle (title-bar self) (- (w (title-bar self)) 200) 0 200 (h (title-bar self)))
+      )))
 
 
 
@@ -778,7 +779,7 @@
      (move-bpf-in-x-y (currentbpf self) (- offx initx) (- offy inity ))
      (report-modifications (om-view-container self))
      (om-invalidate-view self t)
-     ;(show-position (om-view-container self))
+     (show-position (om-view-container self))
      (setf *bpf-offset-click* (om-make-point offx  offy))
      ))
 
