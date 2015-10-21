@@ -102,7 +102,7 @@ Outputs
 ;;;=======================================
 
 ;;; ROTATION 
-;;; (from OMPrisma traj-rotate)
+;;; From OMPrisma traj-rotate
 (defmethod* om-rotate ((self 3dc) (axis symbol) (degrees number))  
              (let* ((xpoints (x-points self))
                     (ypoints (y-points self))
@@ -147,8 +147,15 @@ Outputs
                                                            (sample-params self) (interpol-mode self))))
               ))
 
+;;; For 3DC-libs
+(defmethod! om-rotate ((self 3dc-lib) (axis symbol) (degrees number))
+            (let ((the3dc-lib (make-instance '3dc-lib)))
+              (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) (bpf-list self)))
+              the3dc-lib)
+            )
+
 ;;; TRANSLATION 
-;;; (from OMPrisma traj-translate)
+;;; From OMPrisma traj-translate
 (defmethod! om-translate ((self 3dc) &key x y z)  
             (let (mybpf (thex x) (they y) (thez z))
               (unless (numberp x) (setf thex 0))
@@ -167,18 +174,20 @@ Outputs
                                  (sample-params self) (interpol-mode self))
               ))
 
+;*** For 3DC-libs
+(defmethod! om-translate ((self 3dc-lib) &key x y z)
+            (let ((the3dc-lib (make-instance '3dc-lib)))
+              (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) (bpf-list self)))
+              the3dc-lib)
+            )
+
 ;;; MIRROR
-;;; (from OMPrisma traj-mirror)
+;;; From OMPrisma traj-mirror
 (defmethod! om-mirror ((self 3D-trajectory) &key x y z)
-            :initvals '(nil t t t)
-            :indoc '("3DC or 3D-trajectory")
-            :outdoc '("3DC or 3D-trajectory")
-            :numouts 1
-            :doc "Mirrors a 3Dc or 3D-trajectory along principle axes."
-                   (traject-from-list (if x (om* -1 (x-points self)) (x-points self)) 
-                                      (if y (om* -1 (y-points self)) (y-points self)) 
-                                      (if z (om* -1 (z-points self)) (z-points self)) 
-                                      (times self) '3d-trajectory (decimals self) (sample-params self) (interpol-mode self))
+            (traject-from-list (if x (om* -1 (x-points self)) (x-points self)) 
+                               (if y (om* -1 (y-points self)) (y-points self)) 
+                               (if z (om* -1 (z-points self)) (z-points self)) 
+                               (times self) '3d-trajectory (decimals self) (sample-params self) (interpol-mode self))
                    )
 
 
@@ -190,3 +199,9 @@ Outputs
                              '3Dc (decimals self))
               )
 
+;*** For 3DC-libs
+(defmethod! om-mirror ((self 3dc-lib) &key x y z)
+            (let ((the3dc-lib (make-instance '3dc-lib)))
+              (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-mirror thelist :x x :y y :z z)) (bpf-list self)))
+              the3dc-lib)
+            )
