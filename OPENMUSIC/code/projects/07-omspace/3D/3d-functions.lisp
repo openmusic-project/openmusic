@@ -28,7 +28,7 @@
 (defmethod* 3D-interpol ((first 3DC) (second 3DC) (steps number) &optional (curve 0.0) (decimals nil) (mode 'points))
    :icon 213   
             :initvals '(nil nil 1 0.0 nil 'points) 
-            :indoc '("an 3DC or trajectory" "an 3DC or trajectory" "number of steps" "interpolation curve" "precision" "interpolation mode")
+            :indoc '("a 3DC or trajectory" "a 3DC or trajectory" "number of steps" "interpolation curve" "precision" "interpolation mode")
             :outdoc '("list of 3DC" "list of x-points" "list of y-points" "list of z-points")
             :numouts 4
             :menuins '((5 (("points to point" 'points) ("resample curves" 'sample))))
@@ -46,7 +46,7 @@
 <decimals> is the precision (number of decimals) in the returned curves (default NIL = precision of <first>).
 
 <mode> determines how interpolation is done :
- - 'points is point-by-point interpolation: the curves must have the same number of points, or the biggest one will be truncated.
+ - 'points is point-by-point interpolation: the curves must have the same number of points, or the bigger one will be truncated.
  - 'sample means that the curves are resampled before interpolation. In case of BPfs, x-points will be added if needed so that the interpolated curves all have the same x points. In case of BPCs, the one with fewer points is resampled, then point-by-point interpolation is applied.
 
 Outputs
@@ -97,30 +97,31 @@ Outputs
                       x y z)))
 
 ;;;=======================================
-;;; REDEFINITION OF BPC FUNCTIONS FOR 3DCs and 3D-trajectories
+;;; REDEFINITION OF BPC FUNCTIONS FOR 3DCs and 3D-trajectories from OMPrisma
+;;; by M.Schumacher, http://sourceforge.net/p/omprisma/
 ;;;=======================================
 
 ;;; ROTATION 
 ;;; (from OMPrisma traj-rotate)
 (defmethod* om-rotate ((self 3dc) (axis symbol) (degrees number))  
              (let* ((xpoints (x-points self))
-                   (ypoints (y-points self))
-                   (zpoints (z-points self))
-                   (aed (multiple-value-list (cond ((equal axis 'yaw) (xyz->aed xpoints ypoints zpoints))
-                                                   ((equal axis 'pitch) (xyz->aed zpoints ypoints xpoints))
-                                                   ((equal axis 'roll) (xyz->aed xpoints zpoints ypoints)))))
-                   (e (second aed))
-                   (d (third aed))
-                   (a (om+ (first aed) degrees))
-                   (prelim-xyz (multiple-value-list (aed->xyz a e d)))
-                   (x (first prelim-xyz))
-                   (y (second prelim-xyz))
-                   (z (third prelim-xyz)))
-                   (cond ((equal axis 'yaw) (3dc-from-list x y z (type-of self) (decimals self)))
-                         ((equal axis 'pitch) (3dc-from-list z y x (type-of self) (decimals self)))
-                         ((equal axis 'roll) (3dc-from-list x z y (type-of self) (decimals self))))
-            ))
-                  
+                    (ypoints (y-points self))
+                    (zpoints (z-points self))
+                    (aed (multiple-value-list (cond ((equal axis 'yaw) (xyz->aed xpoints ypoints zpoints))
+                                                    ((equal axis 'pitch) (xyz->aed zpoints ypoints xpoints))
+                                                    ((equal axis 'roll) (xyz->aed xpoints zpoints ypoints)))))
+                    (e (second aed))
+                    (d (third aed))
+                    (a (om+ (first aed) degrees))
+                    (prelim-xyz (multiple-value-list (aed->xyz a e d)))
+                    (x (first prelim-xyz))
+                    (y (second prelim-xyz))
+                    (z (third prelim-xyz)))
+               (cond ((equal axis 'yaw) (3dc-from-list x y z (type-of self) (decimals self)))
+                     ((equal axis 'pitch) (3dc-from-list z y x (type-of self) (decimals self)))
+                     ((equal axis 'roll) (3dc-from-list x z y (type-of self) (decimals self))))
+               ))
+
 (defmethod* om-rotate ((self 3d-trajectory) (axis symbol) (degrees number))  
             (let* ((xpoints (x-points self))
                    (ypoints (y-points self))
@@ -168,22 +169,24 @@ Outputs
 
 ;;; MIRROR
 ;;; (from OMPrisma traj-mirror)
-(defmethod! om-mirror ((self 3DC) &key x y z)
-            :icon 39  
-            :initvals '(nil)
-            :indoc '("a bpf, bpc, board, 3Dc")
+(defmethod! om-mirror ((self 3D-trajectory) &key x y z)
+            :initvals '(nil t t t)
+            :indoc '("3DC or 3D-trajectory")
+            :outdoc '("3DC or 3D-trajectory")
             :numouts 1
-            :doc "mirrors a board,bpc or 3Dc along axes"
-            (setf xrev (x-points self)
-                  yrev (y-points self)
-                  zrev (z-points self))
-              (unless (or x y z)
-                (setf xrev (om* -1 (x-points self)))
-                (setf yrev (om* -1 (y-points self)))
-                (setf zrev (om* -1 (z-points self))))
-                   (when x (setf xrev (om* -1 (x-points self))))
-                   (when y (setf yrev (om* -1 (y-points self))))
-                   (when z (setf zrev (om* -1 (z-points self))))
-              (3Dc-from-list xrev yrev zrev '3Dc (decimals self))
+            :doc "Mirrors a 3Dc or 3D-trajectory along principle axes."
+                   (traject-from-list (if x (om* -1 (x-points self)) (x-points self)) 
+                                      (if y (om* -1 (y-points self)) (y-points self)) 
+                                      (if z (om* -1 (z-points self)) (z-points self)) 
+                                      (times self) '3d-trajectory (decimals self) (sample-params self) (interpol-mode self))
+                   )
+
+
+;*** for 3DCs
+(defmethod! om-mirror ((self 3DC) &key x y z)
+              (3Dc-from-list (if x (om* -1 (x-points self)) (x-points self)) 
+                             (if y (om* -1 (y-points self)) (y-points self)) 
+                             (if z (om* -1 (z-points self)) (z-points self))
+                             '3Dc (decimals self))
               )
 
