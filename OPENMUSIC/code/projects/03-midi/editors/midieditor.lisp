@@ -250,7 +250,10 @@
 
 
 (defmethod cursor-panes ((self MidiEditor))
-  (list (panel self) (preview self)))
+  (list 
+   (panel self) 
+   (preview self)
+   ))
 
 (defmethod editor-play ((self midieditor))
   (call-next-method)
@@ -358,7 +361,7 @@
                                                         (cadr (bounds-x (panel self))))))
                                            0)))
   
-  (om-invalidate-view self t))
+  )
 
 (defmethod initialize-instance :after ((self MidiEditor) &rest l)
    (declare (ignore l))
