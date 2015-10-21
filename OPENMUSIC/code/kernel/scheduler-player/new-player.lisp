@@ -627,7 +627,7 @@
       (scroll-play-view self (- pixel (get-key-space self)))
       ;(om-invalidate-view self)
       )
-    (om-update-transient-drawing self :x pixel :y y)
+    (om-update-transient-drawing self :x pixel :y y :h (h self))
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
