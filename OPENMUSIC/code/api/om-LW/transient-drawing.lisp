@@ -14,6 +14,10 @@
   ((animation :initform nil :accessor animation))
   (:default-initargs :destroy-callback 'transient-drawing-view-destroy-calback))
 
+(defmethod transient-drawing-view-destroy-calback ((self om-transient-drawing-view))
+  (om-stop-transient-drawing self)
+  (om-destroy-callback self))
+
 (defparameter *click-motion-view* nil)
 (defparameter *click-motion-action* nil)
 
@@ -21,12 +25,7 @@
 ;;;=====================================
 ;;; CURSORS AND OTHER MOVING DRAWINGS
 ;;;=====================================
-
-(defmethod transient-drawing-view-destroy-calback ((self om-transient-drawing-view))
-  (om-stop-transient-drawing self)
-  (om-destroy-callback self))
-
-
+#|
 (defun start-transient-drawing-fun (view draw-fun position size &key display-mode)
   (loop 
    ;;; this loop breaks when killed 
@@ -47,12 +46,12 @@
                                  ;; will break the loop and restart
                                  (setf (capi:output-pane-cached-display-user-info pane) nil))
     )
-   ;(print 'start)
-   ;(loop 
-   ; ;;; this loop breaks when user-info is NIL (caused by a resize)
-   ; (sleep 0.2)
-   ; (when (not (capi:output-pane-cached-display-user-info view))
-   ;   (return)))
+   (print 'start)
+   (loop 
+    ;;; this loop breaks when user-info is NIL (caused by a resize)
+    (sleep 0.2)
+    (when (not (capi:output-pane-cached-display-user-info view))
+      (return)))
    ))
 
 
@@ -87,19 +86,65 @@
         (capi:update-drawing-with-cached-display view))
       )))
 
-(defmethod om-update-transient-drawing ((self om-view) &key x y w h)
+(defmethod om-update-transient-drawing ((self om-transient-drawing-view) &key x y w h)
   (when (and (animation self) (not *click-motion-action*))
     (capi::apply-in-pane-process 
      self
      'update-transient-drawing-fun
      self :x x :y y :w w :h h)))
+|#
+
+;;;=====================================
+;;; SAME USING A SIMPLE PINBOARD OBJECT
+;;;=====================================
+
+(defmethod om-draw-contents-callback ((self om-transient-drawing-view) x y w h)
+  (call-next-method)
+  (when (animation self)
+    (capi::draw-pinboard-object self (animation self))))
+
+(defmethod om-start-transient-drawing ((self om-transient-drawing-view) draw-fun position size &key display-mode)
+  (om-stop-transient-drawing self)
+  (setf (animation self)
+        (make-instance 'drawn-pinboard-object
+                       :display-callback #'(lambda (pane obj x y w h)
+                                             (om-with-focused-view pane
+                                               (funcall draw-fun pane (om-make-point x y) (om-make-point w h))))
+                       :x (om-point-x position) :y (om-point-y position)
+                       :visible-min-width (om-point-x size) :visible-min-height (om-point-y size)
+                       ))
+  (capi:manipulate-pinboard self (animation self) :add-top)
+  )
+
+(defmethod om-stop-transient-drawing ((self om-transient-drawing-view))
+  (when (animation self)
+    (capi:manipulate-pinboard self (animation self) :delete)
+    (setf (animation self) nil)
+    (om-invalidate-view self)))
+
+
+(defmethod om-update-transient-drawing ((self om-transient-drawing-view) &key x y w h)
+  (when (animation self)
+     (capi::apply-in-pane-process 
+      self
+      #'(lambda ()
+          (capi:with-geometry (animation self)
+            (when (or x y)
+              (setf (capi:pinboard-pane-position (animation self)) 
+                    (values (or x capi:%x%) (or y capi:%y%))))
+            (when (or w h)
+              (setf (capi:pinboard-pane-size (animation self)) 
+                    (values (or w capi:%width%) (or h capi:%height%))))
+            )
+          ;(capi::redraw-pinboard-object (animation self))
+          ))
+    ))
+
 
 
 ;;;=====================================
 ;;; CLICK-AND-DRAG DRAWING
 ;;;=====================================
-
-
 
 ;;; typically called in a click-handler
 (defmethod om-init-motion-click ((self om-graphic-object) position &key motion-draw draw-pane motion-action release-action display-mode)
