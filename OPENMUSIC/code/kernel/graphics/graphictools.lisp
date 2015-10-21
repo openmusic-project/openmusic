@@ -247,6 +247,7 @@
 
 
 (defmethod draw-selection-rectangle (view p1 p2)
+  #-linux
   (om-with-fg-color view oa::*om-select-color-alpha*
     (om-fill-rect (om-point-x p1) (om-point-y p1) 
                   (- (om-point-x p2) (om-point-x p1)) (- (om-point-y p2) (om-point-y p1))))
@@ -293,10 +294,11 @@
                                                  (x (om-point-x p1)) (y (om-point-y p1))
                                                  (w (- (om-point-x p2) (om-point-x p1))) 
                                                  (h (- (om-point-y p2) (om-point-y p1))))
-                                            (om-with-fg-color view (om-make-color-alpha 1 1 1 0.7)
-                                              (om-fill-rect x y w h)) 
-                                            (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
-                                              (om-draw-rect x y w h :pensize 1))))
+                                              #-linux
+                                              (om-with-fg-color view (om-make-color-alpha 1 1 1 0.7)
+                                                (om-fill-rect x y w h)) 
+                                              (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
+                                                (om-draw-rect x y w h :pensize 1))))
                          :draw-pane panel :display-mode nil
                          :release-action #'(lambda (view pp1 pp2)
                                              (let ((p1 (om-view-position boxframe))
