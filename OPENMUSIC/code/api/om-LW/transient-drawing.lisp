@@ -208,7 +208,9 @@
               dragging-info 
             (unless (and (= old-x x) (= old-y y))
               (if mode
-                  (capi::apply-in-pane-process view 'capi:update-drawing-with-cached-display-from-points pane x0 y0 x y :extend (if (numberp mode) mode 0))
+                  (capi::apply-in-pane-process view 'capi:update-drawing-with-cached-display-from-points 
+                                               pane x0 y0 x y 
+                                               :extend (if (numberp mode) mode 0))
                 (capi::apply-in-pane-process view 'capi:update-drawing-with-cached-display pane))
               (setf (nth 3 dragging-info) x (nth 4 dragging-info) y))
             ))))
