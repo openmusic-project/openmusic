@@ -489,7 +489,8 @@ extern "C"
     \param sound The stream to be inserted in the channel.
     \param chan The audio channel number to be used.
     \param vol The volume between 0 and 1.
-    \param pan The panning between 0 and 1.
+    \param panLeft The left panning between 0 and 1.
+    \param panRight The right panning between 0 and 1.
     \return An error code.
     */
     long LoadChannelPtr(AudioPlayerPtr player, AudioStreamPtr sound, long chan, float vol, float panLeft, float panRight);
