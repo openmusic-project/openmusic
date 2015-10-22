@@ -271,7 +271,7 @@
 ;Bind both *audio-player-visible* and *audio-player-hidden* with LAS player pointers, init players infos
 (defun instanciate-players ()
   (progn
-    ;(setf *audio-player-visible* (make-new-player))
+    (setf *audio-player-visible* (make-new-player))
     (setf *audio-player-hidden* (make-new-player))
     (loop for i from 0 to (- las-channels 1) do
           (setf (gethash i *audio-player-hidden-tracks-info*) (list nil "Idle" 1.0 1.0 0.0))
