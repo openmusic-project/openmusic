@@ -1,4 +1,4 @@
-     ;OpenMusic
+;OpenMusic
 ;
 ;Copyright (C) 1997, 1998, 1999, 2000 by IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
@@ -662,15 +662,19 @@ Outputs
 
 
 
+;;;=======================================
+;;; GEO-TRANSFORM FUNCTIONS from OMPrisma
+;;; by M.Schumacher, http://sourceforge.net/p/omprisma/
+;;;=======================================
 
 ;;; From OMPrisma traj-rotate
 (defmethod! om-rotate ((self BPC) (axis symbol) (degrees number))  
      :icon 500  
      :initvals '(nil 'yaw 0) 
-     :indoc '("a bpc or 3DC" "rotation axis" "number of degrees")
+     :indoc '("a bpc, 3DC, 3D-trajectory, 3DC-lib" "rotation axis" "number of degrees")
      :menuins '((1 (("yaw" 'yaw) ("pitch" 'pitch) ("roll" 'roll))))
      :numouts 1
-     :doc "Rotation in 3D using Euler angles. Rotates 3d-trajectory, dc, BPC, 3dc-lib"
+     :doc "Rotation in 3D using Euler angles. Rotates 3D-trajectory, 3DC, BPC, 3DC-lib"
          
             (let* ((xpoints (x-points self))
                    (ypoints (y-points self))                   
@@ -680,26 +684,49 @@ Outputs
               (simple-bpf-from-list (first xy) (second xy) (type-of self) (decimals self))
             ))
 
+;*** For lists and bpc-libs
+(defmethod! om-rotate ((self list) (axis symbol) (degrees number))
+            (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) self)
+            )
+                                     
+(defmethod! om-rotate ((self bpc-lib) (axis symbol) (degrees number))
+            (let ((thebpc-lib (make-instance 'bpc-lib)))
+              (setf (bpf-list thebpc-lib) (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) (bpf-list self)))
+              thebpc-lib)
+            )
+
+;;; From OMPrisma traj-translate
 (defmethod! om-translate ((self bpc) &key x y z)  
             :icon 500  
             :initvals '(nil) 
-            :indoc '("A bpc, 3DC or board")
+            :indoc '("A bpc, 3DC, 3D-trajectory")
             :numouts 1
-            :doc "Translates a Bpc or 3DC"
+            :doc "Translates a bpc, 3DC, 3D-trajectory"
             (let (mybpf (thex x) (they y))
               (unless (numberp x) (setf thex 0))
               (unless (numberp y) (setf they 0))
               (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
               ))
 
+;*** For lists and bpc-libs
+(defmethod! om-translate ((self list) &key x y z)
+            (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) self)
+            )
+
+(defmethod! om-translate ((self bpc-lib) &key x y z)
+            (let ((thebpc-lib (make-instance 'bpc-lib)))
+              (setf (bpf-list thebpc-lib) (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) (bpf-list self)))
+              thebpc-lib)
+            )
 
 ;;; From OMPrisma traj-mirror
 (defmethod! om-mirror ((self bpc) &key x y z)
   :icon 500  
-  :initvals '(nil) 
-  :indoc '("A bpc or 3DC")
+  :initvals '(nil t t t) 
+  :indoc '("A bpc, 3DC, 3D-trajectory")
+  :outdoc '("A bpc, 3DC, 3D-trajectory")
   :numouts 1
-  :doc "Calculates a symmetric curve."             
+  :doc "Mirrors (calculates a symmetric curve) of bpc, 3DC, 3D-trajectory along principle axes."           
   (setf xrev (x-points self)
                   yrev (y-points self))
               (unless (or x y)
@@ -710,9 +737,14 @@ Outputs
               (simple-bpf-from-list xrev yrev 'bpc (decimals self))
               )
 
+;*** For lists and bpc-libs
+(defmethod! om-mirror ((self list) &key x y z)
+            (mapcar (lambda (thelist) (om-mirror thelist :x x :y y :z z)) self)
+            )
 
-
-
-
-                   
+(defmethod! om-mirror ((self bpc-lib) &key x y z)
+            (let ((thebpc-lib (make-instance 'bpc-lib)))
+              (setf (bpf-list thebpc-lib) (mapcar (lambda (thelist) (om-mirror thelist :x x :y y :z z)) (bpf-list self)))
+              thebpc-lib)
+            )     
 

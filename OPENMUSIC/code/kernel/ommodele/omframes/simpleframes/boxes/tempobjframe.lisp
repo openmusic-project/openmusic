@@ -596,11 +596,16 @@
        (om-set-view-position (resize-box self) (om-make-point (- (w self) 8) (- (h self) 8)))
        (loop for input in (inputframes self)
              for i from 1 to numins do
-             (om-set-view-position input (om-make-point (- (* i  (round (w self) (+ numins 1))) 6) 0)))
+             (om-set-view-position input (om-make-point (- (* i  (round (w self) (+ numins 1))) 6) 0))
+             ; horizontal connections:
+             ;(om-set-view-position input (om-make-point 0 (- (* i  (round (h self) (+ numins 1))) 6)))
+             )
        (loop for output in (outframes self)
              for i from 1 to numouts do
-             (om-set-view-position output (om-make-point (- (* i (round (w self) (+ numouts 1))) 6) 
-                                                         (- (h self) 8))))
+             (om-set-view-position output (om-make-point (- (* i (round (w self) (+ numouts 1))) 6) (- (h self) 8)))
+             ; horizontal connections:
+             ;(om-set-view-position output (om-make-point (- (w self) 8) (- (* i (round (h self) (+ numouts 1))) 6)))
+             )
        )))
 
 
@@ -791,28 +796,25 @@
 (defmethod class-of-connection ((self tempobjframe)) 'maq-connection)
 
 (defmethod get-connection-lines ((self tempobjframe) i)
-   (let* ((container (om-view-container self))
-            (ctrl (nth i (inputframes self)))
-            (connection (connected? (object ctrl)))
-            (boxsource (first connection))
-            possource sizesource
-            (x-self (x self))
-            (y-self (y self))
-            (in-xs (x ctrl))
-            x1 y1 xi yi)
-     (if (car (frames boxsource))
-         (progn
-            (setf possource (om-view-position (car (frames boxsource))))
-            (setf sizesource (om-view-size (car (frames boxsource))))
-            (setq x1 (round (+ (om-point-h possource)  
-                                              (- (* (+ (second connection) 1) (/ (om-point-h sizesource) (+ (numouts boxsource) 1))) 2))))
-            (setq y1 (- (y+h (car (frames boxsource))) 2))
-            (setq xi (+ x-self in-xs 4))
-            (setq yi  y-self)
-            (normalize-points container (list (om-make-point x1 y1)
-                                                                         (om-make-point xi yi))))
-       nil)
-     ))
+  (let* ((container (om-view-container self))
+         (inframe (nth i (inputframes self)))
+         (connection (connected? (object inframe)))
+         (boxsource (first connection)))
+    (when (car (frames boxsource))
+      (let* ((possource (om-view-position (car (frames boxsource))))
+             (sizesource (om-view-size (car (frames boxsource))))
+             (x1 (round (+ (om-point-h possource) (- (* (+ (second connection) 1) (/ (om-point-h sizesource) (+ (numouts boxsource) 1))) 2))))
+             (y1 (- (y+h (car (frames boxsource))) 2))
+             (xi (+ (x self) (x inframe) 4))
+             (yi (y self))
+             ; HORIZONTAL CONNECTIONS:
+             ;(x1 (- (x+w (car (frames boxsource))) 2))
+             ;(y1 (round (+ (om-point-y possource) (- (* (+ (second connection) 1) (/ (om-point-y sizesource) (+ (numouts boxsource) 1))) 2))))
+             ;(xi (x self))
+             ;(yi (+ (y self) (y inframe) 4))
+             )
+        (normalize-points container (list (om-make-point x1 y1) (om-make-point xi yi))))
+      )))
 
 ;-------D&D------
 

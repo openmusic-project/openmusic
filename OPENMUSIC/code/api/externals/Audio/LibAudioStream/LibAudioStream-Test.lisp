@@ -11,7 +11,7 @@
 
 (defparameter soundfile1 "/Users/bresson/Dropbox/workspaces/om-acmmm/in-files/guitar-extract.aif")
 (defparameter soundfile2 "/Users/bresson/WORKSPACES/aaaa/in-files/africa.aiff")
-(defparameter soundfile3 "/Users/bresson/Desktop/rap.wav")
+(defparameter soundfile3 "/Users/bresson/Desktop/Bassclarinet1.aif")
 
 (defparameter soundfile1 "C:\\Users\\Jean Bresson\\Desktop\\ccc.aif")
 (defparameter soundfile2 "C:\\Users\\Jean Bresson\\Desktop\\audio-problematik\\farinelli.aif")
@@ -35,7 +35,7 @@
 
 ;; WARNING !! when using Jack, the Sample rate and Buffer size values much match the values currently used with Jack server
  
-;(setq player (OpenAudioPlayer 0 2 32 44100 512 65536 26460000 kCoreAudioRenderer 1))
+;(setq player (OpenAudioPlayer 2 2 32 44100 512 65536 26460000 kCoreAudioRenderer 1))
 
 (CloseAudioPlayer player)
 

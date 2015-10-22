@@ -148,22 +148,45 @@
      (setf init (gen-code init-box 0))
      (setf body (gen-code do-box 0))
      (setf final (loop for i from 0 to (1- (length (inputs final-box))) collect (gen-code final-box i)))
-     (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
-              (let (,.acum-declaration (iter-count 0))
-                (let* ,(reverse *let-list*)   ;;; LET EV-ONCE HERE / BUG IF ONE OF THE LET-LIST DEPENDS ON THE LOOP-CODE
-                ,.acum-inits
-                ,init   
-                (loop ,.loop-code
-                      do ,(loop-check-code)
-                      finally (return (values ,.final))                    
-                      do
-                      ;;; (let* ,(reverse *let-list*) ,body)
-                      (progn
-                        ;;; rest the ev-once boxes at each iteration... 
-                        ,.(loop for var in *let-list* collect `(setf ,(car var) ,(cadr var)))
-                        ,body)
-                      )))))
+     (eval (gen-loop-function (intern (string (first (code self))) :om) 
+                          symbols
+                          acum-declaration acum-inits init loop-code final 
+                          (reverse *let-list*) 
+                          body))
      (setf *let-list* oldletlist)))
+     
+
+(defparameter *loop-compile-mode* 1)
+
+(defun gen-loop-function (name args 
+                           acum-declaration acum-inits init loop-code final 
+                           let-list body)
+  (case *loop-compile-mode*
+    (1  ;; as the older loop
+     `(defun ,name (,.args) 
+        (let (,.acum-declaration (iter-count 0))
+          ,.acum-inits
+          ,init   
+          (loop ,.loop-code
+                do ,(loop-check-code)
+                finally (return (values ,.final))                    
+                do (let* ,let-list ,body)  ;;; ;;; LET EV-ONCE HERE / BUG IF THE LOOP-CODE DEPENDS ON THE LET-LIST 
+                ))))
+    (2  ;; as in OM 6.9
+     `(defun ,name (,.args) 
+        (let (,.acum-declaration (iter-count 0))
+          (let* ,(reverse *let-list*)   ;;; LET EV-ONCE HERE / BUG IF ONE OF THE LET-LIST DEPENDS ON THE LOOP-CODE
+            ,.acum-inits
+            ,init   
+            (loop ,.loop-code
+                  do ,(loop-check-code)
+                  finally (return (values ,.final))                    
+                  do (progn
+                       ;;; NEED TO RESET THE EV-ONCE BOXES AT EACH ITERATION 
+                       ,.(loop for var in *let-list* collect `(setf ,(car var) ,(cadr var)))
+                       ,body)
+                  )))))
+    ))
 
 
 ;----------------
