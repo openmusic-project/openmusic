@@ -194,7 +194,7 @@
             motion-info 
           (unless (and (= old-x x) (= old-y y))
             (when motion-action
-              (capi::apply-in-pane-process view motion-action view position (om-make-point old-x old-y)))
+              (capi::apply-in-pane-process (om-get-view view) motion-action view position (om-make-point old-x old-y)))
             (setf (nth 4 (temp-data view)) x (nth 5 (temp-data view)) y))
           (when draw-pane 
             (let ((pp (om-convert-coordinates position self draw-pane)))
@@ -208,10 +208,10 @@
               dragging-info 
             (unless (and (= old-x x) (= old-y y))
               (if mode
-                  (capi::apply-in-pane-process view 'capi:update-drawing-with-cached-display-from-points 
+                  (capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display-from-points 
                                                pane x0 y0 x y 
                                                :extend (if (numberp mode) mode 0))
-                (capi::apply-in-pane-process view 'capi:update-drawing-with-cached-display pane))
+                (capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display pane))
               (setf (nth 3 dragging-info) x (nth 4 dragging-info) y))
             ))))
     (call-next-method)))
@@ -229,7 +229,7 @@
            ;; nothing more to do...
            (setf (capi:output-pane-cached-display-user-info (or draw-pane view)) nil))
           (when release-action
-            (capi::apply-in-pane-process view release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
+            (capi::apply-in-pane-process (om-get-view view) release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
             )))
       (setf *click-motion-action* nil)
       (setf (temp-data view) nil))))
