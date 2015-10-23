@@ -360,7 +360,7 @@
           (setf pan (car (nth i (mixer-values *audio-mixer*)))
                 vol (cadr (nth i (mixer-values *audio-mixer*))))
           (player-change-channel-pan (mixer-player *audio-mixer*)  (+ i 1) (- 1.0 (float (/ (+ pan 100) 200))))
-          (player-change-channel-vol (mixer-player *audio-mixer*)  (+ i 1) (float (/ vol 100)))))  
+          (player-change-channel-vol (mixer-player *audio-mixer*)  (+ i 1) (float (/ vol 100))))))
 
 
 ;/SAVE CURRENT SETTINGS FUNCTION
