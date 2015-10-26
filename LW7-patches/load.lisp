@@ -21,9 +21,9 @@
     ;; Example form inside the flet to load a :system sequence patch
     ;; from the file my-patch.
     ;; (load-one-private-patch "my-patch" :system)
-   (load-one-private-patch (print "constrain-copy") :capi)
-   (load-one-private-patch (print "cached-display-automatic-cancel") :capi)
-   (load-one-private-patch (print "with-port-context-current") :capi-cocoa)
-   
+   (load-one-private-patch "constrain-copy" :capi)
+   (load-one-private-patch "cached-display-automatic-cancel" :capi)
+   (load-one-private-patch "with-port-context-current" :capi-cocoa)
+   #+lispworks-64bit(load-one-private-patch "nsglyphstorage-removed" :cocoa)
     ))
 
