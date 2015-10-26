@@ -166,7 +166,7 @@
                     (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
                   (setf (aref MaxArray n (min indx indxmax)) maxi)
                   (setq maxi 0.0))
-                while (and (< frames-count size) (= frames-read window-adaptive)))
+                while (and (< frames-count dur-smp) (= frames-read window-adaptive)))
         (loop for indx from 0 do
               (setq window-adaptive (max window-adaptive 1)
                     frames-read (sf::sf-readf-float sndfile-handle buffer window-adaptive)
@@ -174,7 +174,6 @@
               (dotimes (n channels)
                 (setf (aref MaxArray n (min indx indxmax)) (fli:dereference buffer :type :float :index n)))
               while (and (< frames-count size) (= frames-read window-adaptive))))
-
       (fli:free-foreign-object buffer)
       (sf::sf_close sndfile-handle)
       MaxArray)))
