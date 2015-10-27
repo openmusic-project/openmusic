@@ -212,9 +212,9 @@
   (if #+macosx *click-motion-action* #-macosx nil
         
       (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
-        (om-fill-rect (om-point-x pos) (om-point-y pos)
-                      (if size (om-point-x size) (gp:image-width image))
-                      (if size (om-point-y size) (gp:image-height image)))
+        (om-draw-rect (om-point-x pos) (om-point-y pos)
+                      (1- (if size (om-point-x size) (gp:image-width image)))
+                      (1- (if size (om-point-y size) (gp:image-height image))))
         )
                     
   (when pict
@@ -302,7 +302,7 @@
    (if #+macosx *click-motion-action* #-macosx nil
      
       (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.5)
-        (om-fill-rect (om-point-x pos) (om-point-y pos)
+        (om-draw-rect (om-point-x pos) (om-point-y pos)
                       (if size (om-point-x size) (gp:image-width image))
                       (if size (om-point-y size) (gp:image-height image)))
         )
