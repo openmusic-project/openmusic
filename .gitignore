@@ -7,7 +7,9 @@
 *.lisp#
 *.*~
 
-*.app/
-
 # don't track auto-generated html's:
 /OPENMUSIC/resources/**/*.html
+
+# don’t track OM releases
+*.app/
+/OM 6.*/**/*
