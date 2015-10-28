@@ -362,7 +362,7 @@ If <dynamics>
 "))
 
 (defmethod get-slot-in-out-names ((self vel-extra))
-   (values '("self" "deltax" "deltay" "dynamic")
+   (values '("self" "deltax" "deltay" "dynamics")
            '(nil 0 0 "h")
            '("object" "horizontal offset" "vertical offset" "dynamics character" )
            '(nil nil nil (( 3 (("unspecific" NIL)
