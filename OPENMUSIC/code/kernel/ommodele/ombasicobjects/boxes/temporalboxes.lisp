@@ -278,7 +278,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
                    :offset (om-point-h posi)
                    :icon nil
                    :colorframe *patch-box-color*
-                    :sizey 20)))
+                   :sizey 20)))
     (push newobj (attached-objs self))
     (update-from-reference newobj)
     newobj))

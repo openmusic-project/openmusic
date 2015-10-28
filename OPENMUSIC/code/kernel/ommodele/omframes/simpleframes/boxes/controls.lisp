@@ -411,7 +411,6 @@
 
 
 (defmethod numbox-motion ((self numbox) pos prevpos)
-  (PRINT POS)
   (let* ((y (om-point-v pos))
          (x (om-point-h pos))
          (first-v (* -1 y)))
