@@ -608,8 +608,8 @@
     (167 "x") (168 "&")  (145 "l") (166 "o")))
 
 (defmethod om-view-doubleclick-handler ((self lock-button) where)
-  (release-button-action self where)
-  (release-button-action self where)
+  (funcall (action self) self)
+  (funcall (action self) self)
   t)
 
 (defmethod add-rem-lock-button ((self omboxframe))
@@ -652,10 +652,10 @@
                                              (let* ((modes (allowed-lock-modes (object self)))
                                                     (mpos (position (mode item) modes :test 'string-equal))
                                                     (newmode (when mpos (nth (mod (1+ mpos) (length modes)) modes))))
-                                               (setf (mode item) newmode
-                                                     (iconID item) (get-icon-lock newmode))
+                                               (setf (mode item) newmode (iconID item) (get-icon-lock newmode))
                                                (setf (allow-lock (object self)) newmode)
-                                               (om-draw-contents item)))))
+                                               (om-invalidate-view self)
+                                               ))))
      (om-invalidate-view self)
      (setf (allow-lock (object self)) mode)))
 
