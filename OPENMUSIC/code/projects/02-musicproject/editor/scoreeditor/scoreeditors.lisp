@@ -3866,13 +3866,18 @@
                (push win  (attached-editors (om-view-container self)))
                )))))
 
+
+(defmethod handle-internal-open ((self voicePanel) type obj add-info)
+  (unless (equal type 'voiceEditor)
+    (let ((win (make-editor-window  type obj add-info (om-view-container self))))
+      (push win (attached-editors (om-view-container self)))
+      )))
+
 (defmethod open-internal-editor ((self voicePanel))
-   (loop for item in (real-internal-editor-list (selection? self)) do
-         (let ((int-info (obj-for-internal-editor item)))
-           (when (and int-info (not (equal (car int-info) 'voiceEditor)))
-             (let ((win (make-editor-window (first int-info) item (second int-info) (om-view-container self))))
-               (push win  (attached-editors (om-view-container self)))
-               )))))
+  (loop for item in (real-internal-editor-list (selection? self)) do
+        (let ((int-info (obj-for-internal-editor item)))
+          (when int-info 
+            (handle-internal-open self (first int-info) item (second int-info))))))
 
 (defmethod open-internal-editor ((self polyPanel))
    (loop for item in (real-internal-editor-list (selection? self)) do
