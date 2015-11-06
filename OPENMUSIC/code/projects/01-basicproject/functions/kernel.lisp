@@ -255,7 +255,7 @@ Ex. (om-round '(4.308 5.167 6.809) 1 2)  => (2.2 2.6 3.4)
 
 ;------------------------------------------------------------------------
 
-(defmethod* om-clip ((self number) min max)
+(defmethod* clip ((self number) min max)
   :initvals (list nil nil nil) 
   :indoc '("number or list" "minimum value or list of values" "maximum value or list of values") 
   :icon 209
@@ -274,7 +274,7 @@ otherwise return self
           (t self))))
     result))
     
-(defmethod* om-clip ((self list) min max)
+(defmethod* clip ((self list) min max)
             (cond
              ((and (consp min) (consp max))
               (mapcar #'(lambda (input mins maxs)
