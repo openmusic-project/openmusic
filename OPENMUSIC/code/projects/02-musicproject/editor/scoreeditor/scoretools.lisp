@@ -724,7 +724,8 @@
      (om-draw-ellipse-arc left top   (- right left)    (round (- bot top) 2) (* 3 (/ pi 2))  (/ pi 2) )
    (om-draw-ellipse-arc left top   (- right left)    (round (- bot top) 2) 0  (/ pi 2) )))
 
-
+(defmethod get-note-color ((note note) view chnote)
+  (if chnote (nth (1- (chan note)) *16-color-list*) (get-mus-color note)))
 
 (defmethod draw-object ((self grap-note) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
@@ -737,11 +738,10 @@
          (str (or extra-head (headchar self)))
          (headsizex (round size 2)) ;(get-name-size str (om-make-font *heads-font* size)))
          (note (reference self))
-         (note-color (get-mus-color note))
          (altstr (string (alt-char self)))  
          tie)
     
-    (om-with-fg-color nil (if chnote (nth (1- (chan (reference self))) *16-color-list*) note-color)
+    (om-with-fg-color nil (get-note-color (reference self) view chnote)
       
       (om-draw-string realpos (+ y (y self)) str)
       
