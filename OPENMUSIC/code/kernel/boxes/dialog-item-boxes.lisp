@@ -201,28 +201,27 @@
       (progn
         (setf (showpict (object self)) nil)
         (om-remove-subviews (iconview self) (value (object self)))
-        (om-invalidate-view self t))
+        (om-invalidate-view self))
       (progn
         (setf (showpict (object self)) t)
         (om-add-subviews (iconview self) (value (object self)))
         (update-di-size (value (object self)) (iconview self))
-        (om-invalidate-view self t))))
+        (om-invalidate-view self))))
 
 (defmethod change-boxframe-size ((view DIEditorframe) new-position)
    (when (setf new-position (allow-new-size view new-position))
        (om-set-view-size view new-position)
        (make-move-after (om-view-container view) (list view))
-       (if (showpict (object view))
-         (progn
-           (update-miniview (iconview view) (value (object view)))
-           (update-di-size (value (object view)) (iconview view))))
-       (om-invalidate-view view t)))
+       (when (showpict (object view))
+         (update-miniview (iconview view) (value (object view)))
+         (update-di-size (value (object view)) (iconview view)))
+       (om-invalidate-view view)))
 
 (defmethod reinit-size ((self DIEditorframe)) 
    (setf (frame-size (object self)) (get-boxsize (object self)))
    (change-boxframe-size self (frame-size (object self)))
    (update-di-size (value (object self)) (iconview self))
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
    (om-make-point (max 30 (om-point-h new-pos )) (max 50 (om-point-v new-pos ))))

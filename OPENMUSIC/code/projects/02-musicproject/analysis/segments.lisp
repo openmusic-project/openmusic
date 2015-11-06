@@ -35,16 +35,16 @@
     ))
 
 (defmethod segment-handle-add-click ((self time-segment) analysis panel pos)
-  (let ((segment-release-selection #'(lambda (view pos)
-                                       (release-interval-select view pos)
+  (let ((segment-release-selection #'(lambda (view initpos pos)
+                                       (release-interval-select view initpos pos)
                                        (unless (= (car (cursor-interval view))
                                                   (second (cursor-interval view)))
                                          (setf (t2 self) (second (cursor-interval view)))))))
     (setf (t1 self) (pixels-to-time panel (om-point-h pos))
           (t2 self) (t1 self))
-    (om-init-motion-functions panel 'interval-select-action 
-                              segment-release-selection)
-    (om-new-movable-object panel (om-point-h pos) 0 4 (h panel) 'om-selection-rectangle)
+    (om-init-motion-click panel pos :motion-draw 'draw-selection-interval 
+                          :release-action segment-release-selection
+                          )
     self))
 
 

@@ -841,7 +841,7 @@
 
 
 ;------------------------------------
-(omg-defclass bpf-parameter-panel (bpfpanel array-parameter-panel) 
+(defclass bpf-parameter-panel (bpfpanel array-parameter-panel) 
   ((index :initform 0 :initarg :index :accessor index)
    (control-p :initform nil :initarg :control-p :accessor control-p)))
 
@@ -876,29 +876,23 @@
             (equal char :om-key-down)) 
     (call-next-method))) 
 
-(defmethod scroll-point ((Self bpf-parameter-panel) where)
-  (setf *bpf-last-click* (om-mouse-position self))
-  (setf *bpf-first-click* *bpf-last-click*)
-  (setf *bpf-offset-click* 0)
-  (om-init-motion-functions self 'make-scroll-point 'release-scroll-point))
 
-(defmethod release-scroll-point ((Self bpf-parameter-panel) Where) 
+(defmethod release-scroll-point ((Self bpf-parameter-panel) initpos pos) 
   ;(change2exact-bpf self)
   (change-array-row self)
   (om-invalidate-view self t)
   (update-panel (editor self) t))
 
-(defmethod make-scroll-point ((Self bpf-parameter-panel) Where)
-  (let* ((old-Mouse *bpf-last-click*)
-         (first-Mouse *bpf-first-click*)
-         (Inity *bpf-offset-click*)
-         (new-mouse where)
+(defmethod make-scroll-point ((Self bpf-parameter-panel) pos prevpos)
+  (let* ((first-Mouse *bpf-first-click*)
+         (inity (om-point-y *bpf-offset-click*))
+         (new-mouse pos)
          (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v new-mouse))))
          (moveds (move-points-in-bpf (currentbpf self) (selection? self)  0 (- offy inity ))))
     (if moveds (setf (selection? self) moveds))
     (om-invalidate-view self t)
-    (setf *bpf-offset-click*  offy)
-    (setq *bpf-last-click* where)))
+    (setf *bpf-offset-click* (om-make-point 0 offy))
+    ))
 
 
 ;(defmethod change2exact-bpf ((self bpf-parameter-panel))  
@@ -916,35 +910,6 @@
          (bpf (currentbpf self)))
     (setf (nth (index self) (data thearray))
           (y-points bpf))))
-
-
-(defmethod zoom-system ((self Bpf-Parameter-Panel) where)
-  (om-init-motion-functions self 'zoom-system-motion 'zoom-system-release)
-  (om-new-movable-object self (om-point-h where) 0 4 (h self) 'om-selection-rectangle))
-
-(defmethod zoom-system-motion ((self Bpf-Parameter-Panel) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) 0 (max 4 (third rect)) (h self)))))
-
-
-(defmethod zoom-system-release ((self Bpf-Parameter-Panel) pos)
-  (let ((editor (om-view-container self))
-        (rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-        user-rect )
-    (when rect
-      (om-erase-movable-object self)
-      (setf user-rect (om-make-rect (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
-      (let* ((x (om-rect-topleft user-rect))
-             (x1 (om-rect-bottomright user-rect))
-             (dif (om-subtract-points x1 x)))
-        (when (and (> (abs  (om-point-h dif)) 10) (> (abs (om-point-v dif)) 10))
-          (let ((new-point (pixel2point editor x))
-                (new-point1 (pixel2point editor x1)))
-            (when  (>  (om-point-h new-point1) (+  (om-point-h new-point) 1)) 
-              (setf (rangex editor) (list (om-point-h new-point) (om-point-h new-point1))))))))))
-
-
 
 (defmethod x-class-move-point ((self bpf-parameter-panel)) 'om-static-text)
 

@@ -60,11 +60,11 @@
   (toggle-icon-active-mode (om-view-container self)))
 
 
-;(defmethod om-view-doubleclick-handler ((self miniview) where)
-;  (when (equal self (call-next-method))  ;;; new for click in lock-button
-;    (OpenObjectEditor (object (om-view-container self)))))
+(defmethod om-view-doubleclick-handler ((self miniview) where)
+  (when (equal self (call-next-method))  ;;; new for click in lock-button
+    (OpenObjectEditor (object (om-view-container self)))))
 
-(defmethod om-view-doubleclick-handler ((self miniview) where) nil)
+;(defmethod om-view-doubleclick-handler ((self miniview) where) nil)
 
 
 (defmethod get-fonde-pict ((self t)) *boxedit-pict*)
@@ -140,16 +140,16 @@
       (3 (set-mini-param self 'deltapict (om-add-points (get-mini-param self 'deltapict) (om-make-point -1 0)))))
     (om-invalidate-view self t)))
 
-(defmethod scroll-miniview ((Self t))
+(defmethod scroll-miniview ((self t))
   (when (get-mini-param self 'deltapict)
     (setf *maq-last-click* (om-mouse-position self))
     (setf *maq-first-click* *maq-last-click*)
     (setf *maq-offset-click* (om-make-point (om-point-h (get-mini-param self 'deltapict)) 
                                             (om-point-v (get-mini-param self 'deltapict))))
-    (om-init-motion-functions self 'make-scroll-miniview nil)))
+    (om-init-motion-click self *maq-last-click* :motion-action 'make-scroll-miniview)))
   
 
-(defmethod make-scroll-miniview ((Self t) Where)
+(defmethod make-scroll-miniview ((Self t) where prevpos)
   (let* ((old-Mouse *maq-last-click*)
          (first-mouse *maq-first-click*)
          (new-mouse where)

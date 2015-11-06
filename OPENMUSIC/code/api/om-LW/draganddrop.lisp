@@ -82,27 +82,6 @@
       (gp:destroy-pixmap-port pp)
       )))
 
-;;;===========================
-;;; TEST D&D WINDOWS
-;(defun movable-drop (self pos) nil)
-
-;(defvar *drag-pict-delta* nil)
-
-;(defun movable-drag (self pos)
-;  (om-update-movable-object self 
-;                            (- (om-point-h pos) (om-point-h *drag-pict-delta*))
-;                            (- (om-point-v pos) (om-point-v *drag-pict-delta*))
-;                            (vw self) (vh self)))
-
-;(defun internal-drag-start (self posi)
-;  (let* ((pane (car (capi::layout-description (capi::pane-layout (capi::top-level-interface self)))))
-;         (pane (om-view-container (item-container self)))
-;        (pos (om-convert-coordinates (om-view-position self) self pane)))
-;    (setf *drag-pict-delta* (om-make-point (- (om-point-h posi) (om-point-h pos)) (- (om-point-v posi) (om-point-v pos))))
-;    (om-init-motion-functions pane 'movable-drag 'movable-drop)
-;    (om-new-movable-object pane (om-point-h pos) (om-point-v pos) (vw self) (vh self) 'om-selection-rectangle)))
-;;;===========================
-
 (defun internal-drag-start (self)
   (and (om-drag-start self)
        (capi:drag-pane-object  
@@ -115,8 +94,9 @@
         )))
 
 (defmethod om-click-motion-handler :before ((self om-drag-view) pos)
-  (setf (om-drag-view-cursor-pos self) pos)
-  (internal-drag-start self))
+  (unless *click-motion-action* ;; cf. transient-drawing.lisp
+    (setf (om-drag-view-cursor-pos self) pos)
+    (internal-drag-start self)))
 
 (defvar *last-pinboard-under-mouse* nil)
 

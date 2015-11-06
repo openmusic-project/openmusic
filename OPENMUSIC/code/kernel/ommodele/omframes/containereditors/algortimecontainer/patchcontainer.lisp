@@ -93,7 +93,10 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 (defmethod get-patchpanel ((self t)) (panel self))
 
 (defmethod om-view-click-handler ((view patchPanel) where)
-  ;(om-inspect view) 
+  
+  (unless (and (get-selected-picts view)
+               (handle-patch-pictures view (car (get-selected-picts view)) where))
+   
   (if *adding-a-box*
       ;;; a box is being added ...
     (progn
@@ -119,7 +122,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (setf *adding-a-box* nil)
       (setf *new-obj-initial-pos* nil)
       )
-    (call-next-method)))
+    (call-next-method))))
 
 (defmethod om-view-doubleclick-handler ((Self patchPanel) Where)
   (when (equal self (call-next-method))
@@ -568,57 +571,40 @@ Elements of the list are list as (source-position source-output target-position 
 (defvar *pict-mov-delta* nil)
 (defvar *initial-rectangle* nil)
 
-(defmethod om-view-click-handler :around ((self patchPanel) where)  
-   (let ((sel (car (get-selected-picts self))))
-     (om-with-focused-view self 
-       (if sel
-           (let ((w (om-point-h (pict-size sel)))
-                 (h (om-point-v (pict-size sel)))
-                 (x0 (om-point-h (pict-pos sel)))
-                 (y0 (om-point-v (pict-pos sel))))
-           (let ((r (om-make-rect x0 y0 (+ x0 w) (+ y0 h)))
-                 (resizerect (om-make-rect (+ x0 w -8) (+ y0 h -8) (+ x0 w) (+ y0 h))))
-             (modify-patch self)
-             (if (om-point-in-rect-p where resizerect)
-                 (progn
-                   (setf *pict-mov-size* (pict-size sel))
-                   (setf *pict-mov-delta* where)
-                   (setf *initial-rectangle* r)
-                   (om-init-motion-functions self 'make-resize-bg-pict 'release-resize-bg-pict)
-                   (om-new-movable-object self x0 y0 w h 'om-selection-rectangle)
-                   )
-               (if (om-point-in-rect-p where r) 
-                   (progn
-                     (setf *pict-mov-size* (pict-size sel))
-                     (setf *pict-mov-delta* (om-make-point (- (om-point-h where) x0) (- (om-point-v where) y0)))
-                     (setf *initial-rectangle* r)
-                     (om-init-motion-functions self 'make-move-bg-pict 'release-move-bg-pict)
-                     (om-new-movable-object self x0 y0 w h 'om-selection-rectangle)
-                     )
-                 (progn
-                   (setf (selected-p sel) nil)
-                   (invalidate-picture sel self)
-                   (call-next-method))))))
-         (call-next-method)))))
+(defmethod handle-patch-pictures ((self patchPanel) sel where)
+  (let ((w (om-point-h (pict-size sel)))
+        (h (om-point-v (pict-size sel)))
+        (x0 (om-point-h (pict-pos sel)))
+        (y0 (om-point-v (pict-pos sel))))
+    (let ((r (om-make-rect x0 y0 (+ x0 w) (+ y0 h)))
+          (resizerect (om-make-rect (+ x0 w -8) (+ y0 h -8) (+ x0 w) (+ y0 h))))
+      (modify-patch self)
+      (if (om-point-in-rect-p where resizerect)
+          (progn
+            (setf *pict-mov-size* (pict-size sel))
+            (setf *pict-mov-delta* where)
+            (setf *initial-rectangle* r)
+            (om-init-motion-click self where :motion-action 'draw-resize-bg-pict :release-action 'draw-update-bg-pict)
+            t)
+        (if (om-point-in-rect-p where r) 
+            (progn
+              (setf *pict-mov-size* (pict-size sel))
+              (setf *pict-mov-delta* (om-make-point (- (om-point-h where) x0) (- (om-point-v where) y0)))
+              (setf *initial-rectangle* r)
+              (om-init-motion-click self where :motion-action 'draw-move-bg-pict :release-action 'draw-update-bg-pict)
+              t)
+          (progn
+            (setf (selected-p sel) nil)
+            (invalidate-picture sel self)
+            nil))))))
 
-(defmethod make-move-bg-pict ((Self patchPanel) pos)
-   (om-update-movable-object self (- (om-point-h pos) (om-point-h *pict-mov-delta*))
-                                (- (om-point-v pos) (om-point-v *pict-mov-delta*))
-                                (om-point-h *pict-mov-size*) (om-point-v *pict-mov-size*)))
 
-(defmethod make-resize-bg-pict ((Self patchPanel) pos)
-   (om-update-movable-object self (om-rect-left *initial-rectangle*) (om-rect-top *initial-rectangle*)
-                             (+ (om-point-h *pict-mov-size*) (- (om-point-h pos) (om-point-h *pict-mov-delta*)))
-                             (+ (om-point-v *pict-mov-size*) (- (om-point-v pos) (om-point-v *pict-mov-delta*)))
-                             ))
-
-(defmethod release-move-bg-pict ((Self relationPanel) pos)
-  (om-erase-movable-object self)
-   (let ((sel (car (get-selected-picts self))))
-     (when sel
-       (if (om-view-contains-point-p self pos)
-         (let ((newp (om-make-point (- (om-point-h pos) (om-point-h *pict-mov-delta*))
-                                    (- (om-point-v pos) (om-point-v *pict-mov-delta*)))))
+(defmethod draw-move-bg-pict ((self patchPanel) pos prev-pos)
+  (let ((sel (car (get-selected-picts self))))
+    (when sel
+      (if (om-view-contains-point-p self pos)
+          (let ((newp (om-make-point (- (om-point-h pos) (om-point-h *pict-mov-delta*))
+                                     (- (om-point-v pos) (om-point-v *pict-mov-delta*)))))
            (unless (om-points-equal-p (pict-pos sel) newp)
              (setf (pict-pos sel) newp)
              (when *initial-rectangle*
@@ -629,10 +615,8 @@ Elements of the list are list as (source-position source-output target-position 
              ))
          (om-beep)))))
 
-
-(defmethod release-resize-bg-pict ((Self relationPanel) pos)
-  (om-erase-movable-object self)
-   (let ((sel (car (get-selected-picts self))))
+(defmethod draw-resize-bg-pict ((Self patchPanel) pos prev-pos)
+  (let ((sel (car (get-selected-picts self))))
      (when sel
        (if (om-view-contains-point-p self pos)
          (let ((newp (om-make-point (+ (om-point-h *pict-mov-size*) (- (om-point-h pos) (om-point-h *pict-mov-delta*)))
@@ -647,6 +631,9 @@ Elements of the list are list as (source-position source-output target-position 
              ))
          (om-beep)))))
 
+(defmethod draw-update-bg-pict ((self patchpanel) initpos pos)
+  (om-invalidate-view self))
+
 (defmethod invalidate-picture ((self patch-picture) view)
   (om-invalidate-corners view (pict-pos self) (om-make-point (+ (om-point-h (pict-pos self)) (om-point-h (pict-size self)) 4)
                                                              (+ (om-point-v (pict-pos self)) (om-point-v (pict-size self)) 4))))
@@ -657,7 +644,7 @@ Elements of the list are list as (source-position source-output target-position 
        (progn
          (setf (pictu-list (object self)) (remove sel (pictu-list (object self)) :test 'equal))
          (om-kill-picture (thepict sel))
-         (om-invalidate-view self t))
+         (om-invalidate-view self))
        (call-next-method))))
 
 
@@ -709,7 +696,7 @@ Elements of the list are list as (source-position source-output target-position 
         (setf (pict-size patchpict) (om-get-picture-size (thepict patchpict)))
         (push patchpict (pictu-list (object self)))
         (setf (selected-p patchpict) t)
-        (om-invalidate-view self t)
+        (om-invalidate-view self)
         )
       ))
 

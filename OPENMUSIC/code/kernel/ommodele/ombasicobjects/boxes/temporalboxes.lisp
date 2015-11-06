@@ -278,7 +278,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
                    :offset (om-point-h posi)
                    :icon nil
                    :colorframe *patch-box-color*
-                    :sizey 20)))
+                   :sizey 20)))
     (push newobj (attached-objs self))
     (update-from-reference newobj)
     newobj))
@@ -579,7 +579,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
              (setf (mode view) 'changed))
            (make-move-after (om-view-container view) (list view))
            (setf (slot-value self 'strech-fact) strech-fact)
-           (om-invalidate-view view t))))
+           (om-invalidate-view view))))
      (setf (slot-value self 'strech-fact) strech-fact))
     (t (om-beep-msg "Incorrect stretch-fact value"))))
 
@@ -601,7 +601,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
            (when (patch-temp-p (reference (object view)))
              (setf (mode view) 'changed))
            (make-move-after (om-view-container view) (list view))
-           (om-invalidate-view view t))))
+           (om-invalidate-view view))))
      (setf (slot-value self 'extend) extend))
     (t (om-beep-msg "Incorrect extend value"))))
 
@@ -630,7 +630,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
          (when (showpict (object view))
            (update-miniview view (soft-get-mus-ob (object view))))
          (make-move-after (om-view-container view) (list view))
-         (om-invalidate-view view t)))
+         (om-invalidate-view view)))
      (setf (slot-value self 'sizey) sizey))
     (t (om-beep-msg "Incorrect sizey value"))))
 

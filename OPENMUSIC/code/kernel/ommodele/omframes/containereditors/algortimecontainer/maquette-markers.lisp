@@ -54,7 +54,7 @@
                   (cond
                    ((= 1 (first box))
                     (om-set-view-size frame (om-make-point (- (x item) (x frame)) (h frame)))
-                    (om-invalidate-view frame t))
+                    (om-invalidate-view frame))
                    ((= 0 (first box))
                     (update-movement frame (om-make-point (x item) (y frame))))))
                 ))
@@ -244,7 +244,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
 ;-------------------------------------------
 
 ;------------simple frame class
-(omg-defclass markerframe (simpleboxframe) ())
+(defclass markerframe (boxframe) ())
 
 (defmethod markerframe-p ((self markerframe)) t)
 (defmethod markerframe-p ((self t)) nil)
@@ -345,43 +345,20 @@ boxes attached to the flag, the car of each element say if the box is attached a
           (initpoint (om-convert-coordinates where self panel))
           (rx (om-point-h initpoint))
           (ry (om-point-v initpoint)))
-     (om-init-motion-functions self 'make-connection-marker-motion 'release-connection-marker-motion)
-     (om-new-movable-object panel rx ry 4 4 'om-movable-line)))
+     (om-init-motion-click self where
+                               :motion-draw 'draw-connection-drag :draw-pane panel :display-mode 5
+                               :release-action 'release-marker-connection)
+     ))
 
-
-
-(defmethod make-connection-marker-motion ((self bandera) pos)
-  ;(print pos)
-  (let* ((panel (panel (om-view-window self)))
-         (initpoint (om-convert-coordinates pos self panel ))
-         (rx (om-point-h initpoint))
-         (ry (om-point-v initpoint))
-         (rect  (om-init-point-movable-object panel)))
-    (when rect
-      (let* ((newrect (om-pts-to-rect (om-make-point (first rect) (second rect)) (om-make-point rx ry)))
-             (nx  (om-rect-left newrect))
-             (ny (om-rect-top newrect))
-             (nw (om-rect-w newrect))  
-             (nh (om-rect-h newrect)))
-        (om-update-movable-object panel nx ny (max nw 2) (max nh 2)))
-      )))
-
-
-(defmethod release-connection-marker-motion ((self bandera) pos) 
+(defmethod release-marker-connection ((self bandera) initpos pos) 
   (let* ((panel (panel (om-view-window self)))
          (initpoint (om-convert-coordinates pos self panel ))
          (rx (om-point-h initpoint))
          (ry (om-point-v initpoint))
          ctrl)
-    (om-erase-movable-object panel)
     (setf ctrl (om-find-view-containing-point panel (om-make-point rx ry)))
     (connect-box (om-view-container self) ctrl)
-    ;(om-invalidate-view panel)
     ))
-
-
-
-
 
 (defmethod init-size&position ((self markerframe) container)
    (let ((sysetat (get-system-etat container)))

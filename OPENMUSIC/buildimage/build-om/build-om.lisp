@@ -12,7 +12,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.100000)
+(defparameter *version* 6.100003)
 
 (defparameter *beta-release* t)
 (defparameter *version-str* "")
@@ -30,7 +30,7 @@
          (beta (if (> (length rest) 4) (read-from-string (subseq rest 4)))))
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
-                 (if nil; show-beta
+                 (if show-beta
 		     (format nil "_beta_~d" beta)
                      "")
                  )))

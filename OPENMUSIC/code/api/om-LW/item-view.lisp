@@ -172,7 +172,8 @@
 (defmethod om-view-size ((self om-item-view))
   (om-make-point (vw self) (vh self)))
 
-;(defmethod om-invalidate-view ((self om-graphic-object) &optional (erase t))
+;(defmethod om-invalidate-view ((self om-graphic-object) &optional erase)
+;  (declare (ignore erase))
 ;  (when (interface-visible-p self)
 ;   (gp::invalidate-rectangle (om-get-view self))))
 

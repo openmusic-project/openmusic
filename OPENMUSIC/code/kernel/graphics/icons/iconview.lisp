@@ -185,7 +185,7 @@
 
 
 
-(omg-defclass icon-view (om-item-view select-object) 
+(defclass icon-view (om-item-view select-object) 
 ;(defclass icon-view (om-view) 
    ((iconID :initform 1  :initarg :iconID :accessor iconID))
    (:documentation "This class implement a simple view that draw one icon in it.
@@ -249,7 +249,7 @@ selected parameter is used to draw the icon in normal or selected mode"
 ;==========================================================
 ;;; ICON VIEW + ACTION
 
-(omg-defclass button-icon (icon-view) 
+(defclass button-icon (icon-view) 
    ((action :initform nil :initarg :action :accessor action))
    (:documentation "The button-icon is a special icon-view which perform an action
 when you click in it.#enddoc#
@@ -257,29 +257,26 @@ when you click in it.#enddoc#
 #action# This slot contains a function with one parameter (the icon-button), 
 this function is executed each time that the user click into the button-icon.#action#"))
 
-(defmethod om-view-click-handler ((self button-icon) where)
-   "this function call the slot action of SELF with the parameter SELF"
-   (declare (ignore where))
-   (setf (selected-p self) t)
-   (om-redraw-view self)
-   (om-init-motion-functions self nil 'release-button-action)
-   ;(when (action self)
-   ; (apply (action self) (list self)))
-   )
-
-(defmethod release-button-action ((Self button-icon) Where)
-  (declare (ignore where))
-  (when (action self)
-    (apply (action self) (list self)))
+(defmethod release-button-action ((self button-icon) pos)
+  (declare (ignore pos))
+  (when (action self) (om-with-error-handle (apply (action self) (list self))))
   (setf (selected-p self) nil)
-  (om-invalidate-view self t)
-  )
+  (om-invalidate-view self))
+
+(defmethod om-view-click-handler ((self button-icon) where)
+  (declare (ignore where))
+  (setf (selected-p self) t)
+  (om-redraw-view self) 
+  (om-init-motion-click (om-view-container self) where 
+                          :release-action #'(lambda (view p1 p2) 
+                              (declare (ignore view p1))
+                              (release-button-action self p2))))
 
 ;==========================================================
 ; stays hilited ("pushed") after click 
 ; drawn special if clicked
 
-(omg-defclass hilite-button-icon (button-icon) ())
+(defclass hilite-button-icon (button-icon) ())
 
 (defmethod om-view-click-handler ((self hilite-button-icon) where)
    (declare (ignore where))

@@ -483,7 +483,7 @@
 ; VIEW WITH CURSOR
 ;;;===================================
 
-(defclass cursor-play-view-mixin (om-view-cursor-play) 
+(defclass cursor-play-view-mixin (om-view om-transient-drawing-view) 
   ((cursor-mode  :initform :normal :accessor cursor-mode :initarg :cursor-mode)   ;; :normal ou :interval
    (cursor-interval :initform '(0 0) :accessor cursor-interval)
    (cursor-pos :initform 0 :accessor cursor-pos)))
@@ -511,21 +511,25 @@
 ;--------------------
 
 (defmethod new-interval-cursor ((self cursor-play-view-mixin) where)
-  (om-init-motion-functions self 'interval-select-action 'release-interval-select)
-  (om-new-movable-object self (om-point-h where) 0 4 (h self) 'om-selection-rectangle))
+  (om-init-motion-click self (om-make-point (om-point-x where) 0) 
+                       :motion-draw 'draw-selection-interval 
+                       :release-action 'release-interval-select))
 
-(defmethod interval-select-action ((self cursor-play-view-mixin) pos)
- (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
+(defmethod draw-selection-interval (view initpos pos)
+  (om-with-fg-color view oa::*om-select-color-alpha*
+    (om-fill-rect (om-point-x initpos) 0 (- (om-point-x pos) (om-point-x initpos)) (h view)))
+  (om-with-fg-color view (om-make-color 0.5 0.5 0.5)
+    (om-draw-rect (om-point-x initpos) 0 (- (om-point-x pos) (om-point-x initpos)) (h view) :pensize 1)))
+
+
+(defmethod release-interval-select ((self cursor-play-view-mixin) initpos pos)  
+  (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
+        (y1 (min (om-point-y pos) (om-point-y initpos)))
+        (x2 (max (om-point-x pos) (om-point-x initpos)))
+        (y2 (max (om-point-y pos) (om-point-y initpos))))
+    (let ((rect (list x1 y1 (- x2 x1) (- y2 y1)))
+          (minpixel 2) position)
     (when rect
-     (om-update-movable-object self (first rect) (om-v-scroll-position self) 
-                               (max 4 (third rect)) (om-point-v (om-interior-size self))))))
-
-(defmethod release-interval-select ((self cursor-play-view-mixin) pos)  
-
-  (let ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-        (minpixel 2) position)
-    (when rect
-      (om-erase-movable-object self)
       (setf position (if (> (third rect) minpixel)
                          (list (car rect) (+ (car rect) (third rect)))
                        (car rect)))
@@ -537,7 +541,8 @@
           (setf (cursor-interval self) nil)
           (setf (cursor-pos self) (max 0 (om-point-h (pixel2point self (om-make-point position 0)))))))
       (update-player-interval (om-view-container self) (or (cursor-interval self) (list (cursor-pos self) nil)))
-      (om-invalidate-view self))))
+      (om-invalidate-view self)
+      ))))
 
 
 (defmethod draw-interval-cursor ((self cursor-play-view-mixin))
@@ -570,10 +575,20 @@
 	 )
     (when (and (view-turn-pages-p self) (or (< start (car range))
                                                    (> start (cadr range))))
-      (scroll-play-view self at-pix)
-      )
-    (om-erase-movable-cursor self)
-    (om-new-movable-cursor self (start-position self) 0 4 (h self) 'om-cursor-line)))
+      (scroll-play-view self at-pix))
+    (om-stop-transient-drawing self)
+    (om-start-transient-drawing self 'draw-cursor-line 
+                                (om-make-point (start-position self) 0) 
+                                (om-make-point 4 (h self))
+                                :display-mode NIL)))
+
+(defmethod draw-cursor-line ((self cursor-play-view-mixin) position size)
+  (om-with-line-size 1
+    (om-with-fg-color self (om-make-color 0.6 0.2 0.2)
+      (om-draw-line (om-point-x position) (om-point-y position)
+                    (om-point-x position)
+                    (+ (om-point-y position) (om-point-y size))))))
+  
 
 (defmethod reset-cursor ((self cursor-play-view-mixin))
   (setf (cursor-pos self) 0)
@@ -612,7 +627,7 @@
       (scroll-play-view self (- pixel (get-key-space self)))
       ;(om-invalidate-view self)
       )
-    (om-update-movable-cursor self pixel y 4 h)
+    (om-update-transient-drawing self :x pixel :y y :h (h self))
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)

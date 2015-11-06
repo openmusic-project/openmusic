@@ -63,7 +63,7 @@
    (main-pinboard-object :accessor main-pinboard-object :initarg :main-pinboard-object :initform nil))
   (:default-initargs
    ;; #+win32 :draw-pinboard-objects #+win32  :once ;:local-buffer :buffer :once 
-   ;; #+win32 :draw-with-buffer #+win32 t
+   :draw-with-buffer t
    :highlight-style :standard
    :scroll-if-not-visible-p nil
    :fit-size-to-children nil

@@ -1,8 +1,7 @@
-*.xfasl
-*.64xfasl
-*.ofasl
-*.nfasl
-*.*ufasl
+/OPENMUSIC/**/*.*xfasl
+/OPENMUSIC/**/*.*ofasl
+/OPENMUSIC/**/*.*nfasl
+/OPENMUSIC/**/*.*ufasl
 *.lisp~
 *.lisp#
 *.*~

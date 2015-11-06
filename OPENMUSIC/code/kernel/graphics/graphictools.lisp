@@ -246,6 +246,16 @@
         (om-draw-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec)))))))
 
 
+(defmethod draw-selection-rectangle (view p1 p2)
+  #-linux
+  (om-with-fg-color view oa::*om-select-color-alpha*
+    (om-fill-rect (om-point-x p1) (om-point-y p1) 
+                  (- (om-point-x p2) (om-point-x p1)) (- (om-point-y p2) (om-point-y p1))))
+  (om-with-fg-color view (om-make-color 0.5 0.5 0.5)
+    (om-draw-rect (om-point-x p1) (om-point-y p1) 
+                  (- (om-point-x p2) (om-point-x p1)) (- (om-point-y p2) (om-point-y p1))
+                  :pensize 1)))
+
 
 ;;;===== SPECIAL DIALOG ITEMS =====
 
@@ -257,75 +267,57 @@
 ;=======================================================================
 ;  invisible resize box
 ;=======================================================================
-(omg-defclass c-resize-box (om-item-view) ()  ; (om-transparent-view) ()
+(defclass c-resize-box (om-item-view) ()  ; (om-transparent-view) ()
    (:documentation "This subclass the view allow resize another view by click and draw within it.#enddoc#
 #seealso# (box-frame) #seealso#"))
 
-(defmethod om-view-cursor ((self c-resize-box))
-   *om-resize-cursor*)
-
-(defvar *init-resize-pos* nil)
+(defmethod om-view-cursor ((self c-resize-box)) *om-resize-cursor*)
 
 
 (defmethod get-box-frame ((self c-resize-box)) (get-box-frame (om-view-container self)))
 
 (defmethod om-view-click-handler ((self c-resize-box) where)
-   (declare (ignore where))
-   (let* ((boxframe (get-box-frame self))
-          (theeditor (editor (om-view-container boxframe)))
-          (panel (om-view-container (get-box-frame self)))
-          (rx (x boxframe)) 
-          (ry (y  boxframe)))
-     (when (text-view theeditor)
-       (exit-from-dialog (text-view theeditor) 
-                                       (om-dialog-item-text (text-view theeditor))))
-     (setf *init-resize-pos* where)
-     (om-new-movable-object panel rx ry (w boxframe) (h boxframe) 'om-movable-rectangle)
-     (om-init-motion-functions self 'resize-box-motion 'resize-box-release)
-    ))
-      
-
-(defmethod resize-box-motion ((self c-resize-box) pos)
-  (when *init-resize-pos*
-  (let ((panel (om-view-container (get-box-frame self))))
-    (when panel
-      (let* ((initpoint (om-convert-coordinates pos self panel))
-            (initsize (om-add-points (om-add-points (om-view-size (get-box-frame self)) (om-view-position (get-box-frame self)))
-                                     (om-subtract-points pos *init-resize-pos*)))
-            (rx (om-point-h initsize))
-            (ry (om-point-v initsize))
-            (rect  (om-init-point-movable-object panel)))
-        (om-update-movable-object panel (first rect) (second rect) (max 4  (- rx (first rect))) (max 4 (- ry (second rect) )))
-        )))))
-
-(defmethod resize-box-release ((self c-resize-box) pos) 
+  (declare (ignore where))
   (let* ((boxframe (get-box-frame self))
-         (panel (om-view-container boxframe)))
-    (when (and boxframe panel)
-      (let* ((initpoint (om-convert-coordinates pos self panel ))
-             (initsize (om-add-points (om-view-size boxframe) (om-view-position boxframe)))
-             (initsizepos (om-add-points initsize (om-subtract-points pos *init-resize-pos*)))         
-             (rx (om-point-h initsizepos))
-             (ry (om-point-v initsizepos))
-             (rect  (om-init-point-movable-object panel)))
-     (om-erase-movable-object panel)
-     (change-boxframe-size boxframe (om-make-point (- rx (first rect) ) (- ry (second rect) )))
-     (om-invalidate-rectangle panel (x boxframe) (y boxframe) (w boxframe) (h boxframe)) 
-     (setf *init-resize-pos* nil)
-     ))))
+         (theeditor (editor (om-view-container boxframe)))
+         (panel (om-view-container (get-box-frame self)))
+         (rx (x boxframe)) 
+         (ry (y boxframe)))
+    (when (text-view theeditor)
+      (exit-from-dialog (text-view theeditor) 
+                        (om-dialog-item-text (text-view theeditor))))
+    (om-init-motion-click self 
+                          where ;(om-convert-coordinates where self panel)
+                         :motion-draw #'(lambda (view pp1 pp2)
+                                          (let* ((p1 (om-view-position boxframe))
+                                                 (p2 pp2)
+                                                 (x (om-point-x p1)) (y (om-point-y p1))
+                                                 (w (- (om-point-x p2) (om-point-x p1))) 
+                                                 (h (- (om-point-y p2) (om-point-y p1))))
+                                              #-linux
+                                              (om-with-fg-color view (om-make-color-alpha 1 1 1 0.7)
+                                                (om-fill-rect x y w h)) 
+                                              (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
+                                                (om-draw-rect x y w h :pensize 1))))
+                         :draw-pane panel :display-mode nil
+                         :release-action #'(lambda (view pp1 pp2)
+                                             (let ((p1 (om-view-position boxframe))
+                                                   (p2 pp2))
+                                               (change-boxframe-size boxframe 
+                                                                     (om-add-points (om-view-size boxframe)
+                                                                                    (om-subtract-points pp2 pp1)))
+                                               )))
+
+    ))
+
 
 (defmethod add-box-resize ((self om-graphic-object))
-   "add a resize view to the wiew 'self'"
-   (om-add-subviews self
-     (om-make-view 'c-resize-box
-                   ;:bg-color (om-make-color-alpha 0.8 0.8 0.8 0.2)
-                   :size (om-make-point 10 10)
-                   :position (om-make-point (- (w self) 10) (- (h self) 10)))))
-
+  (om-add-subviews self
+                   (om-make-view 'c-resize-box :size (om-make-point 10 10)
+                                 :position (om-make-point (- (w self) 10) (- (h self) 10)))))
 
 
 ;;; resizes an object to fit its container size without loosing proportions
-
 (defun resize-to-fit (object-size container-size)
    (let (new-size new-pos fact fact2)
      (cond ((and (< (om-point-h object-size) (om-point-h container-size)) (< (om-point-v object-size) (om-point-v container-size)))
@@ -359,13 +351,13 @@
 ; POP-UP MENUS
 ;========================================================================
 
-(omg-defclass pair-pop-up-menu (om-pop-up-menu) 
+(defclass pair-pop-up-menu (om-pop-up-menu) 
   ((dialo :initform nil :accessor dialo)))
 
 (defmethod update-dailo ((self pair-pop-up-menu) text)
   (when (dialo self)
     (om-set-dialog-item-text (dialo self) text)
-    (om-invalidate-view (dialo self) t)))
+    (om-invalidate-view (dialo self))))
 
 
 (defun cons-pair-pop-menu (itemtext fun container list-vals default-item pos size)
@@ -386,8 +378,6 @@
     (when itemtext
         (setf (dialo menu) itemtext))
     (om-open-pop-up-menu menu container)))
-
-
 
 
 
@@ -426,13 +416,8 @@
 ;;;=======================
 
 (defclass om-view-drop (om-drop-view) ()
-   ;(:default-initargs nil
-     ;;;:drag-allow-move-p t
-     ;;;:drag-accepted-flavor-list (list :|OMVW| :|hfs | #$flavorTypePromiseHFS :|PICT| :|OMSC|))
-     ;:drag-accepted-flavor-list (list :|OMVW| :|PICT| :|OMSC|)
-   ;  )
-   (:documentation "Abstract class, all view which wants to accept drops must inherit from this class.#enddoc#")
-   )
+  (:documentation "Abstract class, all view which wants to accept drops must inherit from this class.#enddoc#")
+  )
 
 (defclass om-view-drag (om-drag-view om-view-drop) () 
    (:documentation "Abstract class, all view which wants to be draggable and droppable must inherit from this class.#enddoc#")
@@ -442,7 +427,7 @@
 ; Text dialog item which allow drop used for names in boxes and ws icons
 ; this class allow its text edition used in controls
 ;=======================================================================
-(omg-defclass om-static-text-drag (om-view-drag om-static-text select-object) ()
+(defclass om-static-text-drag (om-view-drag om-static-text select-object) ()
    (:documentation "This is the class for all graphic-text which allow drag and drop
 i.e. boxes'names, default values in slots, etc. #enddoc#
 It's posible also to edit this text by double click into it,
@@ -474,7 +459,7 @@ i.e. inputs edition, change the name for a folder, etc.
 ;;;=======================
 
 
-(omg-defclass drop-area (OM-View om-view-drop) 
+(defclass drop-area (OM-View om-view-drop) 
               ((object :accessor object :initarg :object :initform nil)))
 
 (defmethod get-drag-object ((self drop-area)) self)
@@ -491,7 +476,7 @@ i.e. inputs edition, change the name for a folder, etc.
 ;==========================================================
 ; DRAG&DROP --> ACTION
 
-(omg-defclass unaire-fun-view (OMSimpleFrame om-view-drop) 
+(defclass unaire-fun-view (OMSimpleFrame om-view-drop) 
    ((drop-action :initform nil :initarg :drop-action :accessor drop-action))
    (:documentation "The unaire-fun-view is a special view which perform an action
 when you drag a OMFrame in it.#enddoc#
@@ -523,7 +508,7 @@ into the unaire-fun-view.#action#"))
 
 
 ;=== simple horizontal bar component ===
-(omg-defclass bar-item (om-item-view) 
+(defclass bar-item (om-item-view) 
   ((fg-color :accessor fg-color :initarg :fg-color :initform *om-black-color*)))
 
 (defmethod om-draw-contents ((self bar-item))
@@ -665,20 +650,20 @@ into the unaire-fun-view.#action#"))
 ;==========================================================
 ; BUTTON with pict in "resources/di/"
  
-(omg-defclass om-icon-button (om-item-view select-object) ;om-transparent-view
-              ((icon1 :initform nil :accessor icon1 :initarg :icon1)
-               (icon2 :initform nil :accessor icon2 :initarg :icon2)
-               (action :initform nil :accessor action :initarg :action)
-               (lock-push :initform nil :accessor lock-push :initarg :lock-push)
-               (enabled :initform t :accessor enabled :initarg :enabled)
-               (text :initform nil :accessor text :initarg :text)
-               (fg-color :initform nil :accessor fg-color :initarg :fg-color)
-               (font :initform nil :accessor font :initarg :font)))
+(defclass om-icon-button (om-item-view select-object) ;om-transparent-view
+  ((icon1 :initform nil :accessor icon1 :initarg :icon1)
+   (icon2 :initform nil :accessor icon2 :initarg :icon2)
+   (action :initform nil :accessor action :initarg :action)
+   (lock-push :initform nil :accessor lock-push :initarg :lock-push)
+   (enabled :initform t :accessor enabled :initarg :enabled)
+   (text :initform nil :accessor text :initarg :text)
+   (fg-color :initform nil :accessor fg-color :initarg :fg-color)
+   (font :initform nil :accessor font :initarg :font)))
              
 
 (defmethod om-set-fg-color ((self om-icon-button) color)
   (setf (fg-color self) color)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 (defmethod om-view-doubleclick-handler ((self om-icon-button) where)
   (om-view-click-handler self where))
@@ -689,14 +674,14 @@ into the unaire-fun-view.#action#"))
    (when (enabled self)
      (setf (selected-p self) t)
      (om-redraw-view self)
-     (om-init-motion-functions self nil 'release-button-action)))
-
-(defmethod release-button-action ((self om-icon-button) where)
-  (when (action self)
-    (om-with-error-handle 
-      (apply (action self) (list self))))
-  (unless (lock-push self) (setf (selected-p self) nil))
-  (om-invalidate-view self t))
+     (om-init-motion-click self where 
+                          :release-action #'(lambda (view p1 p2) 
+                                              (declare (ignore view p1 p2))
+                                              (when (action self) (om-with-error-handle (apply (action self) (list self))))
+                                              (unless (lock-push self) (setf (selected-p self) nil))
+                                              (om-invalidate-view self)))
+     t
+     ))
 
 (defmethod om-draw-contents ((self om-icon-button))
    (call-next-method)
@@ -724,7 +709,7 @@ into the unaire-fun-view.#action#"))
 
 ;;;===========================================
 
-(omg-defclass picture-view (om-item-view)
+(defclass picture-view (om-item-view)
    ((pict :initform nil :initarg :pict :accessor pict)))
 
 (defmethod om-draw-contents ((self picture-view))

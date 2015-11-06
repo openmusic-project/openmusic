@@ -126,7 +126,7 @@
 
 
 ;=============The ruler y===========
-(omg-defclass piano-roll-view (om-view) 
+(defclass piano-roll-view (om-view) 
    ((thepal :initform (om-load-and-store-picture "piano-pict" 'kernel) :accessor thepal)
     (nb-tracks :initform 1 :accessor nb-tracks :initarg :nb-tracks)))
 
@@ -138,8 +138,13 @@
 (defmethod om-view-click-handler ((self piano-roll-view) where)
    (om-with-focused-view (panel (om-view-container self))
      (om-with-line 'dash 
-       (om-draw-line 0 (om-point-v where) (w (panel (om-view-container self))) (om-point-v where)))
-    (om-init-motion-functions self nil 'piano-release)))
+       (om-draw-line 0 (om-point-v where) (w (panel (om-view-container self))) (om-point-v where))))
+   (om-init-motion-click self where 
+                        :release-action #'(lambda (view p1 p2) 
+                                            (declare (ignore p1 p2))
+                                            (om-invalidate-view (panel (om-view-container view))))))
+
+
 
 (defmethod piano-release ((self piano-roll-view) pos)
   (om-invalidate-view (panel (om-view-container self))))
@@ -159,7 +164,8 @@
   (let ((y (or y1 0))
         (h (if y2 (- y2 y1) (h self)))
         (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-    (om-update-movable-cursor self pixel y 4 h)))
+    (om-update-transient-drawing self :x pixel :y y :w 4 :h h)
+    ))
 
 
 (defmethod om-draw-contents ((self midi-preview))  
@@ -212,27 +218,28 @@
 
 (defvar *midi-preview-last-click* nil)
 (defmethod om-view-click-handler ((self midi-preview) where)
-     (om-init-motion-functions self 'scroll-panel-motion nil)
-     (setf *midi-preview-last-click* where))
+  (setf *midi-preview-last-click* where))
 
-(defmethod scroll-panel-motion ((self midi-preview) pos)
+(defmethod om-click-motion-handler ((self midi-preview) pos)
+  (scroll-system-motion self pos *midi-preview-last-click*)
+  (setf *midi-preview-last-click* pos))
+
+
+(defmethod scroll-system-motion ((self midi-preview) pos prev-pos)
   (let* ((panel (panel (om-view-container self)))
-         (initmouse *midi-preview-last-click*)
          (initrangex (rangex panel))
          (x (om-point-h pos))
          (y (om-point-v pos))
-         deltax)
-      (setf deltax (* 50 (- x (om-point-h initmouse))))
+         (deltax (norme2pixel panel 'x (- x (om-point-h prev-pos)))))
+      (setf deltax (* 10 deltax))
       (unless (> (+ (second initrangex) deltax) (cadr (bounds-x panel)))
         (if (minusp (+ (first initrangex) deltax))
             (setf (rangex panel) (list 0 (- (second initrangex) (first initrangex))))
           (setf (rangex panel) (list (+ (first initrangex) deltax)
                                      (+ (second initrangex) deltax)))
           ))
-      (om-invalidate-view (om-view-container self) t)
-      (setf *midi-preview-last-click* (om-make-point x y))))
-
-
+      (om-invalidate-view (om-view-container self))
+      ))
 
 ;------------------------------------
 (defclass MidiEditor (EditorView object-editor play-editor-mixin) 
@@ -243,7 +250,10 @@
 
 
 (defmethod cursor-panes ((self MidiEditor))
-  (list (panel self) (preview self)))
+  (list 
+   (panel self) 
+   (preview self)
+   ))
 
 (defmethod editor-play ((self midieditor))
   (call-next-method)
@@ -351,7 +361,7 @@
                                                         (cadr (bounds-x (panel self))))))
                                            0)))
   
-  (om-invalidate-view self t))
+  )
 
 (defmethod initialize-instance :after ((self MidiEditor) &rest l)
    (declare (ignore l))
@@ -422,43 +432,54 @@
     (t *om-arrow-cursor*)
     ))
 
-;(defmethod om-view-scrolled ((self soundpanel) x y)
-;  (let ((oldrange (rangex self))
-;        (newx (round (* (/ x (om-point-h (om-field-size self))) (cadr (bounds-x self))))))
-;    (setf (rangex self)
-;          (list newx (+ newx (- (cadr oldrange) (car oldrange)))))
-;    (om-invalidate-view (rulerx self))
-;    (om-invalidate-view (preview (editor self)))))
+
 
 (defvar *midi-panel-last-click* nil)
 (defmethod om-view-click-handler ((self midiPanel) where)
+  (setf *midi-panel-last-click* where)
   (case (mode (editor self))
     (:interval
      (new-interval-cursor self where)
      (om-invalidate-view self)
      (om-invalidate-view (preview (editor self))))
     (:move
-      (om-init-motion-functions self 'scroll-system-motion nil)
-      (setf *midi-panel-last-click* where))
+     (setf *midi-panel-last-click* where))
     (othewise nil)))
 
-(defmethod release-interval-select ((self midiPanel) pos)  
+(defmethod release-interval-select ((self midiPanel) initpos pos)  
   (call-next-method)
   (om-invalidate-view (preview (editor self))))
-  
-(defmethod scroll-system-motion ((self midiPanel) pos)
-  (let* ((initmouse *midi-panel-last-click*)
-         (initrangex (rangex self))
+
+(defmethod release-scroll ((self midiPanel) initpos pos)  
+  (setf *midi-panel-last-click* nil)
+  (om-invalidate-view self)
+  (om-invalidate-view (preview (editor self))))
+
+(defmethod om-click-motion-handler ((self midiPanel) pos)
+  (scroll-system-motion self pos *midi-panel-last-click*)
+  (setf *midi-panel-last-click* pos))
+
+(defmethod scroll-system-motion ((self midiPanel) pos prev-pos)
+  (let* ((initrangex (rangex self))
          (x (om-point-h pos))
          (y (om-point-v pos))
-         deltax)
-      (setf deltax (* 100 (- (om-point-h initmouse) x)))
-      (if (minusp (+ (first initrangex) deltax))
-          (setf (rangex self) (list 0 (- (second initrangex) (first initrangex))))
-        (setf (rangex self) (list (+ (first initrangex) deltax)
-                                  (+ (second initrangex) deltax))))
-      (om-invalidate-view (om-view-container self) t)
-      (setf *midi-panel-last-click* (om-make-point x y))))
+         (deltax (norme2pixel self 'x (- (om-point-h prev-pos) x))))
+    (setf deltax (* 10 deltax))
+    (if (minusp (+ (first initrangex) deltax))
+        (setf (rangex self) (list 0 (- (second initrangex) (first initrangex))))
+      (setf (rangex self) (list (+ (first initrangex) deltax)
+                                (+ (second initrangex) deltax))))
+    
+    (om-invalidate-view self)
+    (om-invalidate-view (preview (editor self)))
+    ))
+
+(defmethod redraw-midi-panel ((self midiPanel) initpos pos)  
+  ;(om-with-fg-color self (om-color-alpha *om-white-color* 0.9)
+  ;  (om-fill-rect 0 0 (w self) (h self)))
+  ;(om-draw-contents self)
+  ;(om-invalidate-view (preview (editor self)))
+  )
 
 (defmethod select-all ((self midiPanel)) nil)
 

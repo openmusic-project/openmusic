@@ -69,19 +69,18 @@
 ;------------------------------------
 
 
-(defmethod make-scroll-point ((Self bpcPanel) Where)
-  (let* ((old-Mouse *bpf-last-click*)
+(defmethod make-scroll-point ((Self bpcPanel) pos prev-pos)
+  (let* ((old-Mouse prev-pos)
          (first-Mouse *bpf-first-click*)
          (Initx (om-point-h *bpf-offset-click*))
          (Inity (om-point-v *bpf-offset-click*))
-         (Offx (pixel2norme self 'x (- (om-point-h where) (om-point-h first-mouse))))
-         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v where))))
+         (Offx (pixel2norme self 'x (- (om-point-h pos) (om-point-h first-mouse))))
+         (Offy (pixel2norme self 'y (- (om-point-v first-mouse) (om-point-v pos))))
          (moveds (move-selection-bpf self  (- offx initx) (- offy inity))))
     (if moveds (setf (selection? self) moveds))
     (om-invalidate-view self t)
     (show-position (om-view-container self))
-    (setf *bpf-offset-click* (om-make-point offx  offy))
-    (setq *bpf-last-click* where)))
+    (setf *bpf-offset-click* (om-make-point offx  offy))))
 
 
 (defmethod add-new-bpf ((self bpcPanel))
@@ -122,8 +121,9 @@
        ((null position-obj)
         (setf (selected-p (currentbpf self)) nil)
         (setf (selection? self) nil)
-        (om-init-motion-functions self 'make-select-system 'release-select-system)
-        (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle))
+        (om-init-motion-click self where
+                              :motion-draw 'draw-selection-rectangle 
+                              :release-action 'release-selection))
        ((listp position-obj)
         (let ((selection-list (get-real-selection-list self)))
           (cond 
@@ -136,7 +136,7 @@
                 (setf (slot-value self 'selection?) position-obj))))
           (setf selection-list (get-real-selection-list self))
           (when (find (car (first position-obj)) selection-list :test 'om-points-equal-p :key 'first)
-            (scroll-point self (first position-obj)))
+            (scroll-point self where))
           (om-invalidate-view self)
           ))
        (t

@@ -735,6 +735,7 @@
                                       1.0)))
 
 (defmethod om-invalidate-view ((self om-opengl-view) &optional erase)
+  (declare (ignore erase))
   (opengl-redisplay-canvas self))
 
 (defmethod om-draw-contents ((self om-opengl-view)) nil)

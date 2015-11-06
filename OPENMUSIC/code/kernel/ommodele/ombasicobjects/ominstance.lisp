@@ -326,8 +326,8 @@ these changements, this method is called for OMlistInstance"
 ;============================================================
 ;The simple frame for OMConstants
 ;============================================================
-
-(defclass constant-simple-frame (OMCompoundFrame)  
+; OMCompoundFrame
+(defclass constant-simple-frame (OMAtomicFrame)  
    ((nameview :initform nil :accessor nameview)
     (iconview :initform nil :accessor iconview)
     (change-name-p :initform nil :accessor change-name-p))

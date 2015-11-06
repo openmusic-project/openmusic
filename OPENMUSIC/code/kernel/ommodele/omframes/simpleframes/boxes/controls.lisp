@@ -407,10 +407,10 @@
 (defmethod om-view-click-handler  ((self numbox) where)
   (when (enable self)
     (setf *numbox-last-click* (om-make-point (om-point-h where) (* -1 (om-point-v where))))
-    (om-init-motion-functions self 'numbox-motion 'numbox-release)))
+    (om-init-motion-click self where :motion-action 'numbox-motion :release-action 'numbox-release)))
 
 
-(defmethod numbox-motion ((self numbox) pos)
+(defmethod numbox-motion ((self numbox) pos prevpos)
   (let* ((y (om-point-v pos))
          (x (om-point-h pos))
          (first-v (* -1 y)))
@@ -423,7 +423,7 @@
      (item-action-while-drag self))))
 
 
-(defmethod numbox-release ((view numbox) pos) 
+(defmethod numbox-release ((view numbox) initpos pos) 
   (item-action-after-drag view)
   (om-invalidate-view view))
 
@@ -456,7 +456,7 @@
 (defmethod set-value ((self numbox) value)
    (om-set-dialog-item-text self (format () " ~S" value))
    (setf (value self) value)
-   (om-invalidate-view self t))
+   (om-invalidate-view self))
 
 
 
@@ -491,10 +491,10 @@
 (defvar *gnumbox-last-click* nil)
 (defmethod om-view-click-handler  ((self graphic-numbox) where)
   (setf *gnumbox-last-click* (om-make-point (om-point-h where) (* -1 (om-point-v where))))
-  (om-init-motion-functions self 'g-numbox-motion 'g-numbox-release))
+  (om-init-motion-click self where :motion-action 'g-numbox-motion :release-action 'g-numbox-release))
 
 
-(defmethod g-numbox-motion ((self graphic-numbox) pos)
+(defmethod g-numbox-motion ((self graphic-numbox) pos prevpos)
   (let* ((y (om-point-v pos))
          (x (om-point-h pos))
          (first-v (* -1 y)))
@@ -506,7 +506,7 @@
     (item-action-while-drag self)))
 
 
-(defmethod g-numbox-release ((view graphic-numbox) pos) 
+(defmethod g-numbox-release ((view graphic-numbox) initpos pos) 
   (item-action-after-drag view)
   (om-invalidate-view view))
 
@@ -535,7 +535,7 @@
 (defmethod set-value ((self graphic-numbox) value)
   (setf (pict-part self) (floor (* (- (nbpict self) 1) (/ (- value (min-val self)) (- (max-val self) (min-val self))))))
   (setf (value self) value)
-  (om-invalidate-view self t))
+  (om-invalidate-view self))
 
 
 ;;; NUMBOX + EDIT ======================================================

@@ -90,34 +90,33 @@
              (setf (selected? self ) t))))
   (draw-connection self t))
 
-(defvar *con-last-click* nil)
+
 (defvar *con-offset-click* nil)
 (defvar *con-first-click* nil)
 (defvar *cur-drag-connection* nil)
-(defvar *first-point* nil)
+(defvar *curr-connection-init-points* nil)
 (defvar *init-con-rect* nil)
 
-(defmethod scroll-points ((Self c-connection))
+(defmethod scroll-points ((self c-connection))
   (unless *curved-connections*
-    (let* ((scroller (panel (thebox self)))
-           (where (om-mouse-position scroller)))
-      (setf *con-last-click* where)
+    (let* ((pane (panel (thebox self)))
+           (where (om-mouse-position pane)))
       (setf *con-first-click* where)
       (setf *con-offset-click* (om-make-point 0 0))
       (setf *cur-drag-connection* self)
-      (setf *first-point* (copy-list (points *cur-drag-connection*)))
+      (setf *curr-connection-init-points* (copy-list (points *cur-drag-connection*)))
       (setf *init-con-rect* (get-rectangle-space *cur-drag-connection*))
-      (om-init-motion-functions scroller 'make-drag-conections 'release-drag-conections)
-  ;(om-new-movable-object scroller (first (get-rectangle-space *cur-drag-connection*))
-  ;                       (third (get-rectangle-space *cur-drag-connection*)) 4 4 'om-movable-line)
+      (om-init-motion-click pane where ;:motion-draw 'draw-drag-connections
+                            :motion-action 'drag-conections 
+                            :release-action 'release-drag-conections)
       )))
 
-(defmethod release-drag-conections ((Self relationPanel) Where)
+(defmethod release-drag-conections ((Self relationPanel) initpos pos)
   (let (finalrect)
     (setf (point-sel *cur-drag-connection*) 
 	  (loop for item in (point-sel *cur-drag-connection*) 
-                collect (nth (position item *first-point*) (points *cur-drag-connection*))))
-    (unless (equal (points *cur-drag-connection*) *first-point*)
+                collect (nth (position item *curr-connection-init-points*) (points *cur-drag-connection*))))
+    (unless (equal (points *cur-drag-connection*) *curr-connection-init-points*)
       (setf (nth 2 (connected? (object (nth (index *cur-drag-connection*) (inputframes (thebox *cur-drag-connection*))))))
 	    (points *cur-drag-connection*)))
     (setf finalrect (get-rectangle-space *cur-drag-connection*))
@@ -135,21 +134,17 @@
                            (om-make-point (+ 8 (second rect)) (+ 8 (fourth rect))))
     ))
 
-(defmethod make-drag-conections ((Self relationPanel) Where) 
-  (let* ((old-mouse *con-last-click*)
-         (first-mouse *con-first-click*)
-         (new-mouse old-mouse))
-    (setq new-mouse where)
-    (draw-connection *cur-drag-connection* NIL)
-    (invalidate-connection-region *cur-drag-connection* self)
-    (loop for point in (point-sel *cur-drag-connection*) do
-          (let ((pos (position point *first-point*))) 
-            (setf (nth pos (points *cur-drag-connection*))
-                  (scr-point-con *cur-drag-connection* self (nth pos *first-point*) 
-                                 (om-subtract-points new-mouse first-mouse))))) 
-    (draw-connection *cur-drag-connection* 'redraw)
-    (setq *con-last-click* where)))
+(defmethod drag-conections ((self relationPanel) pos prevpos) 
+  (loop for point in (point-sel *cur-drag-connection*) do
+        (let ((p-pos (position point *curr-connection-init-points*)))
+          (setf (nth p-pos (points *cur-drag-connection*))
+                (scr-point-con  *cur-drag-connection* self (nth p-pos *curr-connection-init-points*) 
+                                (om-subtract-points pos *con-first-click*))))) 
+  (invalidate-connection-region *cur-drag-connection* self)
+  )
 
+;(draw-connection *cur-drag-connection* NIL)
+;(draw-connection *cur-drag-connection* 'redraw)
 
 (defmethod scr-point-con ((self c-connection) container point0 delta)
    (declare (ignore container))
@@ -355,18 +350,6 @@
 (defun get-line-connection (x1 y1 xi yi)
   (list (om-make-point x1 y1) (om-make-point xi yi)))
 
-;=======PRINT
-
-;;;(defmethod print-connection ((self c-connection))
-;;;   (let* ((thepoints (copy-list (get-graph-points self)))
-;;;          (prim (pop thepoints))
-;;;          (color (if (zerop (ccolor self)) *black-color* (nth (-  (ccolor self) 1) *16-color-list*)))) 
-;;;     (om-with-fg-color nil color
-;;;       (loop while thepoints do
-;;;                 ;;;(#_MoveTo :long prim)
-;;;                 ;;;(#_LineTo :long (car thepoints))
-;;;                 (om-draw-line prim (car thepoints))
-;;;             (setf prim (pop thepoints))))))
 
 ;=======Maquettes
 ;connections in maquettes are relatives

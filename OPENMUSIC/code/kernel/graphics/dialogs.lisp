@@ -721,9 +721,9 @@ ArtWork: A. Mohsen
                                                 
                                                 (setf (pict preview) tmp-pict)
                                                 (om-set-dialog-item-text sizetxt (format nil "~Dx~D" (om-pict-width tmp-pict) (om-pict-height tmp-pict)))
-                                                (om-invalidate-view preview t)
-                                                (om-invalidate-view item t)
-                                                (when user (om-invalidate-view scrolluser t))
+                                                (om-invalidate-view preview)
+                                                (om-invalidate-view item)
+                                                (when user (om-invalidate-view scrolluser))
                                                 )
                                               :range (if (equal resource-type :icon) 
                                                          (mapcar 'integer-to-string listkernel)
@@ -763,10 +763,10 @@ ArtWork: A. Mohsen
                                                          
                                                          (setf (pict preview) tmp-pict)
                                                          (om-set-dialog-item-text sizetxt (format nil "~Dx~D" (om-pict-width tmp-pict) (om-pict-height tmp-pict)))
-                                                         (om-invalidate-view preview t)
-                                                         (om-invalidate-view item t)
+                                                         (om-invalidate-view preview)
+                                                         (om-invalidate-view item)
                                                          (when kernel 
-                                                           (om-invalidate-view scrollkernel t)))
+                                                           (om-invalidate-view scrollkernel)))
                                             :range listuser
                                             :container thedialog
                                             ))
@@ -804,8 +804,8 @@ ArtWork: A. Mohsen
                                                                          )
                                                                    (setf (pict preview) tmp-pict)
                                                                    (om-set-dialog-item-text sizetxt (format nil "~Dx~D" (om-pict-width tmp-pict) (om-pict-height tmp-pict)))
-                                                                   (om-invalidate-view preview t)
-                                                                   (om-invalidate-view scrolluser t)
+                                                                   (om-invalidate-view preview)
+                                                                   (om-invalidate-view scrolluser)
                                                                    )
                                                                (om-message-dialog (format nil "Bad file type or extension!
  Please check the original file has type/extension ~s" (if (equal resource-type :icon) *om-icon-type* *om-pict-type*)))
@@ -826,7 +826,7 @@ ArtWork: A. Mohsen
                                                              (om-set-item-list scrolluser listuser)
                                                              (setf name nil resfolder nil tmp-pict nil (pict preview) nil)
                                                              (om-set-dialog-item-text sizetxt "")
-                                                             (om-invalidate-view preview t)
+                                                             (om-invalidate-view preview)
                                                              )))
                                             )
                        )

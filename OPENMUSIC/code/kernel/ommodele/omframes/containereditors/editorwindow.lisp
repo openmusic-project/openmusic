@@ -342,7 +342,7 @@
 (defmethod om-view-click-handler ((self EditorView) where)
    (declare (ignore where))
    (if (and (mini-editor-p self) (not (selected-p self)))
-     (progn (setf (selected-p self) t) (om-invalidate-view self t))
+     (progn (setf (selected-p self) t) (om-invalidate-view self))
      (call-next-method)))
 
 (defmethod om-draw-contents ((self EditorView))
@@ -354,8 +354,7 @@
 (defmethod om-set-view-size ((self editorView) size)
    (declare (ignore size))
    (call-next-method)
-  (update-subviews self)
-)
+   (update-subviews self))
 
 (defmethod handle-key-event ((self EditorView) char)
    (if (text-view self)
@@ -379,7 +378,7 @@
         ((EditorView-p (ref self))
          (setf (attached-editors (ref self)) 
                (remove self (attached-editors (ref self)) :test 'equal))
-          (om-invalidate-view (ref self) t))
+          (om-invalidate-view (ref self)))
          ((slot-initform-p (ref self))
           (change-initform-ed (ref self) (object self)))
          ((ominstance-p (ref self))

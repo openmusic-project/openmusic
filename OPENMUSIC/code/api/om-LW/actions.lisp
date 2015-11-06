@@ -91,7 +91,7 @@
     ;(when (equal function 'om-view-click-handler)
     ;  (print (list "clic in" self "at "))
     ;  (print-point position))
-    (loop for item in (item-subviews self)
+    (loop for item in (reverse (item-subviews self)) ;;; inverse of the draw order => select the one on top !
           while (equal clicked self) do
           (when (om-view-contains-point-p item (om-convert-coordinates position self (vcontainer item)))
             ;(when (equal function 'om-view-click-handler)
@@ -138,7 +138,7 @@
   (om-view-click-handler (capi::top-level-interface self) position)
   t)
 
-(defmethod om-view-click-handler :before ((self om-graphic-object) position) 
+(defmethod om-view-click-handler :before ((self om-graphic-object) position)
  (setf *clicked-view* self))
 
 ;;;=================
@@ -149,8 +149,7 @@
 (defmethod om-clic-motion-callback ((self om-graphic-object) x y type)
   (set-meta-keys (eval type))
   ;(print (list self x y *clicked-view*))
-  ;(print (list (om-shift-key-p) (om-shift-key-p) (om-command-key-p))) 
-  (unless (equal *clicked-view* :abort) 
+  (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       ; ?!! verifier si tout va bien...
       ;(apply-in-item-subview *clicked-view* 'om-click-motion-handler (om-convert-coordinates (om-make-point x y) self *clicked-view*))
@@ -159,9 +158,9 @@
 (defmethod om-clic-motion-callback ((self window-layout) x y type)
   (set-meta-keys (eval type))
   ; click in window, pos in layout
-  (unless (equal *clicked-view* :abort) 
-    (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
-    (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y))))
+  (unless (equal *clicked-view* :abort)
+    (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
+      (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))))
    
 (defmethod om-click-motion-handler (self pos) t)
 
@@ -173,8 +172,8 @@
   (set-meta-keys (eval type))
   (unless (equal *clicked-view* :abort) 
     (if *clicked-view* 
-        (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*)))
-    (apply-in-item-subview self 'om-click-release-handler (om-make-point x y))))
+        (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
+      (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
 

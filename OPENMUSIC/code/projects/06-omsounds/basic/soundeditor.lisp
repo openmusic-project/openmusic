@@ -165,7 +165,8 @@
   (let ((y (or y1 0))
         (h (if y2 (- y2 y1) (h self)))
         (pixel (round (* (/ time (cadr (bounds-x (panel (om-view-container self))))) (w self)))))
-    (om-update-movable-cursor self pixel y 4 h)))
+    (om-update-transient-drawing self :x pixel :y y :w 4 :h h)
+    ))
 
 
 (defmethod om-draw-contents ((self full-preview))  
@@ -480,7 +481,7 @@
   (:default-initargs
    #+win32 :draw-with-buffer #+win32 t))
 
-;;; temp compatibilité
+;;; temp compatibility
 (defmethod (setf cursor-p) (val (self soundpanel))
   (setf (cursor-mode self) (if val :interval :normal)))
 (defmethod cursor-p ((self soundpanel))
@@ -505,9 +506,7 @@
    (om-add-points (call-next-method) (om-scroll-position self)))
            
 
-(defmethod assoc-w ((self soundpanel)) 
-  (w self))
-;   (om-point-h (om-field-size self)))
+(defmethod assoc-w ((self soundpanel)) (w self))
 
 (defmethod pixel2point ((self soundpanel) pixel)
   (call-next-method self (om-subtract-points pixel (om-scroll-position self))))
@@ -621,8 +620,7 @@
     (if (equal (cursor-mode self) :interval)
         (progn 
           (setf (selection? self) nil)
-          (new-interval-cursor self where)
-          )
+          (new-interval-cursor self where))
       (let* ((graph-obj (click-in-sound-marker-p self where)))
         (setf (cursor-pos self) 0)
         (if graph-obj
@@ -657,31 +655,21 @@
 (defmethod control-actives ((self soundPanel) where)
   (unless (om-shift-key-p)
     (setf (selection? self) nil))
-  (om-init-motion-functions self 'make-selection-rectangle 'release-selection-rectangle)
-  (om-new-movable-object self (om-point-h where) (om-point-v where) 4 4 'om-selection-rectangle))
+  (om-init-motion-click self where 
+                       :motion-draw 'draw-selection-rectangle 
+                       :release-action 'release-selection
+                       :display-mode 2))
 
-(defmethod make-selection-rectangle ((self soundPanel) pos)
-  (let ((rect  (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos))))
-    (when rect
-      (om-update-movable-object self (first rect) (second rect) (max 4 (third rect)) (max 4 (fourth rect))))))
-
-(defmethod release-selection-rectangle ((self soundPanel) pos) 
-  (let* ((rect (om-get-rect-movable-object self (om-point-h pos) (om-point-v pos)))
-         (dur (cadr (bounds-x self)))
-         minx maxx)
-    (when rect
-      (om-erase-movable-object self)
-      (let (user-rect)
-        (setf user-rect (om-make-rect  (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
-        (setf minx (min (om-rect-left user-rect) (om-rect-right user-rect)))
-        (setf maxx (max (om-rect-left user-rect) (om-rect-right user-rect)))
-        (loop for item in (markers (object (editor self)))
-              for k = 0 then (+ k 1) do
-            (let ((marker-pix (round (* (om-point-h (om-field-size self)) item 1000) dur)))
-              (when (and (>= marker-pix minx) (<= marker-pix maxx))
-                (push k (selection? self))))))
-      (om-invalidate-view self))
-    ))
+(defmethod release-selection ((self soundPanel) initpos pos) 
+  (let ((minx (min (om-point-x initpos) (om-point-x pos)))
+         (maxx (max (om-point-x initpos) (om-point-x pos)))
+         (dur (cadr (bounds-x self))))
+    (loop for item in (markers (object (editor self)))
+          for k = 0 then (+ k 1) do
+          (let ((marker-pix (round (* (om-point-h (om-field-size self)) item 1000) dur)))
+            (when (and (>= marker-pix minx) (<= marker-pix maxx))
+              (push k (selection? self))))))
+  (om-invalidate-view self))
 
 (defmethod omselect-with-shift ((self soundPanel) graph-obj)
   (if (member graph-obj (selection? self) :test 'equal)
@@ -856,6 +844,7 @@
            ))))
    
 (defmethod om-invalidate-view ((self soundpanel) &optional erase)
+  (declare (ignore erase))
   (call-next-method)
   (om-invalidate-view (preview (editor self))))
 
@@ -894,41 +883,36 @@
 
 (defmethod om-drag-start ((self soundpanel))
   (when (om-drag-selection-p self (om-mouse-position self))
-  (setf (dragged-view *OM-drag&drop-handler*) self
-        (dragged-list-objs *OM-drag&drop-handler*) nil
-        (container-view *OM-drag&drop-handler*) self
-        (true-dragged-view *OM-drag&drop-handler*) self
-        (drag-flavor *OM-drag&drop-handler*) :omvw)
-  (let ((r (om-new-region))
-        (marks (markers (object (editor self))))
-        (m (click-in-sound-marker-p self (om-mouse-position self) 10)))
-    (if m
-        (progn 
-          (setf (selection? self) (list m))
-          (setf (dragged-list-objs *OM-drag&drop-handler*) m))
-      (when (cursor-interval self)
-        (setf r (om-set-rect-region r
-                                    (+ (om-h-scroll-position self)
-                                     )
-                                    0 
-                                    (om-point-h (point2pixel self (om-make-big-point (cadr (cursor-interval self)) 0) (get-system-etat self)))
-                                       (h self))))
-      )
-    )
-  ))
+    (setf (dragged-view *OM-drag&drop-handler*) self
+          (dragged-list-objs *OM-drag&drop-handler*) nil
+          (container-view *OM-drag&drop-handler*) self
+          (true-dragged-view *OM-drag&drop-handler*) self
+          (drag-flavor *OM-drag&drop-handler*) :omvw)
+    (let ((r (om-new-region))
+          (marks (markers (object (editor self))))
+          (m (click-in-sound-marker-p self (om-mouse-position self) 10)))
+      (if m
+          (progn 
+            (setf (selection? self) (list m))
+            (setf (dragged-list-objs *OM-drag&drop-handler*) m))
+        (when (cursor-interval self)
+          (setf r (om-set-rect-region r 
+                                      (+ (om-h-scroll-position self)) 0  
+                                      (om-point-h (point2pixel self (om-make-big-point (cadr (cursor-interval self)) 0) (get-system-etat self)))
+                                      (h self))))
+        )
+      )))
   
 
 (defmethod extract-sound-selection ((self soundpanel) &optional filename)
   (let ((file (or filename (om-choose-new-file-dialog :prompt "Choose a New File" 
-                                                      :directory *om-outfiles-folder*
-                                                      ))
-              ))
+                                                      :directory *om-outfiles-folder*))))
     (when file 
       (setf *last-saved-dir* (om-make-pathname :directory file))
-      (save-sound (sound-cut (object (editor self)) (car (cursor-interval self)) (cadr (cursor-interval self)))
-                  file))
+      (save-sound 
+       (sound-cut (object (editor self)) (car (cursor-interval self)) (cadr (cursor-interval self))) 
+       file))
     ))
-
 
 
 (defmethod om-drag-receive ((target soundpanel) (dragged-ref t) position &optional (effect nil))
@@ -941,14 +925,11 @@
                 (/ (om-point-h (pixel2point target newpos)) 1000.0))
           (om-invalidate-view target)
           (report-modifications (editor target))
-          t
-          ))
+          t))
       )))
-
 
 ;;;============================
 ;;; SPECIAL AUDIO EDITOR TO PATCHPANEL
-
 (defmethod om-drag-receive ((target patchpanel) (dragged-ref t) position &optional (effect nil))
   (let ((dragged (dragged-view *OM-drag&drop-handler*))
         (posi (om-mouse-position target)))
@@ -976,8 +957,7 @@
                 (omG-select new-frame))
               )
             (om-invalidate-view target)
-            t
-            ))
+            t))
       (call-next-method))))
 
 

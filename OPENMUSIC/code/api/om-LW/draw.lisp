@@ -148,7 +148,8 @@
 
 
 
-(defmethod om-invalidate-view ((self om-graphic-object) &optional (erase t))
+(defmethod om-invalidate-view ((self om-graphic-object) &optional erase)
+  (declare (ignore erase))
   (when (and (interface-visible-p self) (om-get-view self))
     ;(capi::with-atomic-redisplay ((om-get-view self))
       ;(capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
@@ -157,7 +158,8 @@
     ;  )
   ))
 
-(defmethod om-invalidate-view ((self om-item-view) &optional (erase t))
+(defmethod om-invalidate-view ((self om-item-view) &optional erase)
+  (declare (ignore erase))
   ;(capi:redraw-pinboard-object self)
   (when (item-container self)
     (capi::apply-in-pane-process (item-container self)
@@ -191,10 +193,11 @@
 
 (defmethod om-invalidate-rectangle ((self om-graphic-object) x y w h)
   (when (interface-visible-p self)
-    (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self)
-				 ;;x y w h
-				 )
-    ))
+    (capi::apply-in-pane-process 
+     (om-get-view self) 
+     'gp::invalidate-rectangle 
+     (om-get-view self) x y w h
+     )))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
   (when (item-container self)

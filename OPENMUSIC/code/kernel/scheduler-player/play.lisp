@@ -36,14 +36,11 @@
 
 (defmethod* Play ((self t) &key (player t))
    :initvals '(nil nil 2 nil nil) 
-   :indoc '("object" "a player designator" "micro interval approx" "selection in object" "") 
+   :indoc '("object" "a player designator") 
    :icon 207
    :doc "Plays any OM Musical object.
 
 <player> designates a particular player (t = dispatch automatically) 
-<approx> sets the temperament (2, 4, 8) in the case of MIDI player
-<interval> allows to select a time interval to play '(begin[ms] end[ms])
-<port> plays to a particular MIDI port.
 "
    (declare (ignore approx port))
    (general-stop *general-player*)
@@ -64,7 +61,7 @@
    (general-play *general-player*))
 
 
-(defmethod* Play ((self list) &key (player t) (approx 2) interval port)
+(defmethod* Play ((self list) &key (player t))
    (call-next-method)
    (loop for obj in self do
          (Play obj :player player)))

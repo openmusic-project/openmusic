@@ -52,7 +52,8 @@
                 om-point-y
                 om-point-in-line-p 
                 om-point-*
-
+                om-points-to-rect
+                
                 om-make-rect
                 om-pts-to-rect
                 om-sect-rect
@@ -283,6 +284,14 @@
   (om-make-point (* (om-point-h point) fact)
                  (* (om-point-v point) fact)))
 
+
+(defmethod om-points-to-rect (p1 p2)
+  (let ((x1 (min (om-point-x p1) (om-point-x p2)))
+        (y1 (min (om-point-y p1) (om-point-y p2)))
+        (x2 (max (om-point-x p1) (om-point-x p2)))
+        (y2 (max (om-point-y p1) (om-point-y p2))))
+    (values x1 y1 (- x2 x1) (- y2 y1))))
+
 ;;;=========================
 ;;; RECTS 
 ;;;=========================
@@ -511,7 +520,7 @@
 (defclass omcolor () 
   ((c :accessor c :initarg :c)))
 ;;; modifs dans graphics.lisp, windows.lisp, dialog-items.lisp
-;;; user-interface.lisp; movable-object.lisp
+;;; user-interface.lisp;
 
 (defmethod c ((self symbol)) (or self :black))
 
@@ -820,15 +829,20 @@
 (defun om-draw-point (x y)  
    (gp:draw-point *curstream* (+ x *pox*) (+ y *poy*)))
 
-(defun om-draw-rect (x &optional y (w  0) (h 0) &key (erasable nil) (pensize 1))
-  (let (top left wi he)
-    (if y
-        (setf left x top y wi w he h)
-      (setf left (rx x) top (ry x) wi (rw x) he (rh x)))
+(defun convert-rectangle-args (x y w h)
+  (if y
+      (if (or (minusp w) (minusp h))
+          (values (min x (+ x w)) (min y (+ y h)) (abs w) (abs h))
+        (values x y w h))
+    (values (rx x) (ry x) (rw x) (rh x))))
+
+(defun om-draw-rect (x &optional y (w 0) (h 0) &key (erasable nil) (pensize 1))
+  (multiple-value-bind (left top wi he)
+      (convert-rectangle-args x y w h)
     (gp::with-graphics-state (*curstream* :thickness pensize)
-    (gp:draw-rectangle *curstream* (+ left *pox* 0.5) (+ top *poy* 0.5) wi he :filled nil
-                       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
-                       ))))
+      (gp:draw-rectangle *curstream* (+ left *pox* 0.5) (+ top *poy* 0.5) wi he :filled nil
+                         #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+                         ))))
 
 (defun om-draw-rect-outline (x y w h &optional (pensize 1))
   (gp::with-graphics-state (*curstream* :thickness pensize)
@@ -836,35 +850,31 @@
 
 
 (defun om-fill-rect (x &optional y (w 0) (h 0)  &key (erasable nil))
-  (let (top left wi he)
-    (if y
-	(setf left x top y wi w he h)
-	(setf left (rx x) top (ry x) wi (rw x) he (rh x)))
-    (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
+   (multiple-value-bind (left top wi he)
+       (convert-rectangle-args x y w h)
+     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
 		       :filled t
 		       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
 		       #+linux :compositing-mode #+linux :copy
 		       )
-    ))
+     ))
 
 (defun om-erase-rect-content (x &optional y (w 0) (h 0))
-  (let (top left wi he)
-    (if y (setf left x top y wi w he h)
-      (setf left (rx x) top (ry x) wi (rw x) he (rh x)))
+  (multiple-value-bind (left top wi he)
+      (convert-rectangle-args x y w h)
     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he :filled t 
                        #+cocoa :foreground #+cocoa (simple-pane-background *curstream*)
                        #-cocoa :operation #-cocoa boole-eqv
                        )))
 
 (defun om-erase-rect (x &optional y (w 0) (h 0))
-  (let (top left wi he)
-    (if y (setf left x top y wi w he h)
-      (setf left (rx x) top (ry x) wi (rw x) he (rh x)))
+  (multiple-value-bind (left top wi he)
+      (convert-rectangle-args x y w h)
     #+cocoa(gp:draw-rectangle *curstream* (- (+ left *pox*) 1) (- (+ top *poy*) 1) (+ wi 3) (+ he 3) 
                               :filled t :foreground (simple-pane-background *curstream*))
     #-cocoa(gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
-                       :filled nil :operation boole-eqv
-                       )))
+                              :filled nil :operation boole-eqv
+                              )))
 
 (defun om-draw-ellipse (x y rx ry)  
   (gp:draw-ellipse *curstream* (+ x *pox*) (+ y *poy*) rx ry :filled nil))

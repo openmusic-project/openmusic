@@ -287,7 +287,7 @@ Frames can be simple frames (icons, boxes, etc.) or container frames (patch edit
 #seealso# (boxframe icon-finder icon-method) #seealso#
 #active-mode# T if the object of the frame is selected.#active-mode#"))
 
-;;; OMSimpleFrame and OMCompoundFrame are identical in OM 
+;;; OMAtomicFrame and OMCompoundFrame are identical in OM 
 ;;; but they are implemented differently in the underlying API
 (defclass OMAtomicFrame (om-item-view OMSimpleFrame) ())
 (defclass OMCompoundFrame (om-internal-view OMSimpleFrame) ())

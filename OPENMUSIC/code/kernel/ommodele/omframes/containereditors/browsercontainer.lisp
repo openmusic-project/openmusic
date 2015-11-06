@@ -96,7 +96,7 @@
      (om-set-interior-size (window self) (om-make-point (- (* (+ (om-point-h size) *inter-panes*) (length scroll-list))
                                                            *inter-panes*)
                                                         (om-point-v (om-view-size self))))
-     (om-invalidate-view self t)))
+     (om-invalidate-view self)))
 
 (defmethod remove-scrolls ((editor mult-scrollerEditor)) 
   (let ((delete (subseq (scroll-list editor) (+ 1 (current-scroll editor)))))

@@ -50,7 +50,6 @@
                     "system"
                     "tools"
                     "graphics"
-                    "movable-object"
                     "graphic-object"
                     "window"
                     "view"
@@ -75,6 +74,5 @@
 
 
 
-
-
+(pushnew :om-api *features*)
 
