@@ -108,8 +108,8 @@
 
 (defmethod draw-connection-drag ((self om-view) init-pos pos)
   (om-with-line-size 2
-    (om-with-line '(2 2)
-      (om-with-fg-color self (om-make-color-alpha 0.3 0.3 0.3 0.7)
+    (om-with-line '(2 3)
+      (om-with-fg-color self (om-make-color-alpha 0 0 0 0.5)
         (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))))))
 
  
