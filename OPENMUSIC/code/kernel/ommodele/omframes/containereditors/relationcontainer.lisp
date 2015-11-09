@@ -253,7 +253,7 @@ maquettes and hierarchical class editors.#enddoc#
 ;relationPanel
 ;----------------------------
 
-(omg-defclass relationPanel (nonrelationpanel) 
+(defclass relationPanel (nonrelationpanel) 
    ((scroll-scrap-pa :initform nil :allocation :class :accessor scroll-scrap-pa))
    (:documentation "This is the general class of editors containing objects plus a relation beetwen them.
 Patches, maquettes and hierarchical class editors are sub-classes of this class.#enddoc#

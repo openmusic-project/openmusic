@@ -536,10 +536,9 @@
 ;----main
 
 (defmethod make-graph-form-obj ((self chord)  x top linespace  mode scale sel system stem)
-  
-   (let* ((thenotes (copy-list (inside self)))
-          (thenotes (cond 
-                     ((or (=  mode 3) (=  mode 4)) thenotes)
+  (let* ((thenotes (copy-list (inside self)))
+         (thenotes (cond 
+                     ((or (= mode 3) (=  mode 4)) thenotes)
                      ((= mode 2) (sort thenotes '> :key 'midic))
                      (t (sort thenotes '< :key 'midic))))
           (offsets (Loffset self))

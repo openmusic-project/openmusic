@@ -33,7 +33,7 @@
 ;EDITOR
 ;----------------------
 
-(omg-defclass nonrelationEditor (metaobj-Editor)  
+(defclass nonrelationEditor (metaobj-Editor)  
    ((presentation :initform 0 :initarg :presentation :accessor presentation))
    (:documentation ""))
 
@@ -210,7 +210,7 @@
 ;PANEL
 ;-------------------------------------
 
-(omg-defclass nonrelationPanel (metaobj-Panel)
+(defclass nonrelationPanel (metaobj-Panel)
    ((scroll-scrap :initform nil :allocation :class :accessor scroll-scrap))
    (:documentation "Editorframes of meta objects where there are not connections beetwen their elements 
 are instances of this class. (i.e. Folders, WorkSpaces, Classes, Generic functions, etc.) .#enddoc#

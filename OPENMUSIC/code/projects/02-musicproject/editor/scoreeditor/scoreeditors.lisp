@@ -34,9 +34,9 @@
 ;;; SPECIAL TITLEBAR
 (defclass score-titlebar (editor-titlebar) 
   ((play-buttons :accessor play-buttons :initform nil)
-  (edit-buttons :accessor edit-buttons :initform nil)
-  (mode-buttons :accessor mode-buttons :initform nil)
-  ))
+   (edit-buttons :accessor edit-buttons :initform nil)
+   (mode-buttons :accessor mode-buttons :initform nil)
+   ))
 
 (defmethod editor ((self editor-titlebar)) (om-view-container self))
 
@@ -78,7 +78,7 @@
               (om-make-view 'om-icon-button
                             :lock-push t
                             :position (om-make-point x 2)
-                            :selected-p (= (get-edit-param self 'obj-mode) n)
+                            :selected-p (and (get-edit-param self 'obj-mode) (= (get-edit-param self 'obj-mode) n))
                             :size (om-make-point 22 22)
                             :action (let ((m n))
                                       #'(lambda (item)
@@ -290,9 +290,9 @@
 
 (defmethod initialize-instance :after ((self scoreEditor) &rest l)
   (declare (ignore l))
-  (let* ((size (get-edit-param self 'fontsize))
+  (let* ((size (or (get-edit-param self 'fontsize) 20))
          (mode (get-edit-param self 'mode))
-         (obj-mode (get-edit-param self 'obj-mode))
+         (obj-mode (or (get-edit-param self 'obj-mode) 0))
          (zoom (get-edit-param self 'zoom))
          (score-mode (or (get-edit-param self 'score-mode) 0))
          (noteaschan (get-edit-param self 'notechancolor?))
@@ -553,7 +553,7 @@
 
 
 (defun add-zoom2control (control zoom &optional position)
-  (setf zoom (round (* zoom 100)))
+  (setf zoom (if zoom (round (* zoom 100)) 100))
   (let ((pos (or (om-add-points position (om-make-point 3 2))
                  (om-make-point 100 2))))
   (om-add-subviews control 
@@ -654,7 +654,7 @@
 ;===========================================================
 
 
-(omg-defclass scorePanel (patchpanel cursor-play-view-mixin om-view-drag om-view-drop) 
+(defclass scorePanel (patchpanel cursor-play-view-mixin om-view-drag om-view-drop) 
    ((staff-size :initform 24 :initarg :staff-size :accessor staff-size)
     (staff-sys :initform 'ggff :initarg :staff-sys :accessor staff-sys)
     (staff-mode :initform 0  :initarg :staff-mode :accessor staff-mode)
@@ -1417,7 +1417,7 @@
 
 
 (defmethod objectfromeditor ((self scorePanel)) 
-   (object (editor self)))
+  (object (editor self)))
 
 (defvar *redraw-diamonds* nil)
 
@@ -2382,10 +2382,10 @@
 ;==========================================================
 
 
-(omg-defclass multiseq-controls-view (chordseq-controls-view) ())
+(defclass multiseq-controls-view (chordseq-controls-view) ())
 
 ;---------------------
-(omg-defclass multiseqEditor (chordseqEditor) ())
+(defclass multiseqEditor (chordseqEditor) ())
 (defmethod get-score-class-panel ((self multiseqEditor)) 'multiseqPanel)
 (defmethod get-score-class-ctrls ((self multiseqEditor)) 'multiseq-controls-view)
 
@@ -2401,7 +2401,7 @@
 
 ;---------------------
    
-(omg-defclass multiseqPanel (chordseqPanel) ())
+(defclass multiseqPanel (chordseqPanel) ())
 
 (defmethod correct-staff ((self multiseqpanel) staff)
   (setf staff (correct-staff-val (object (editor self)) staff self))
@@ -2620,14 +2620,14 @@
 
 
 ;CONTROLS
-(omg-defclass voice-controls-view (chordseq-controls-view) ())
+(defclass voice-controls-view (chordseq-controls-view) ())
 
 (defmethod GET-slot-LIST ((self voice-controls-view)) 
    '(("midic" midic) ("channel" chan) ("dyn" dyn) ("port" port)))
 
 
 ;VIEW
-(omg-defclass voiceEditor (chordseqEditor) ())
+(defclass voiceEditor (chordseqEditor) ())
 
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
@@ -2644,7 +2644,7 @@
 
 
 (defmethod objectfromeditor ((self rythmicpanel))
-   (if (emptymode self) 
+   (if (emptymode self)
      (or (rhyt-object self)
          (new-ryth-object self (object (om-view-container self)))) (call-next-method)))
 
@@ -2670,7 +2670,7 @@
 
 ;(defclass voicepanel (rythmicpanel chordseqPanel) ())
 
-(omg-defclass voicepanel  (chordseqPanel) ())
+(defclass voicepanel  (chordseqPanel) ())
 
 
  
@@ -3022,7 +3022,7 @@
 ;WINDOW
 
 ;CONTROLS
-(omg-defclass maqobjEditor (scoreEditor) ())
+(defclass maqobjEditor (scoreEditor) ())
 
 (defmethod update-subviews ((self maqobjEditor))
    (change-zoom (panel self)))
@@ -3035,7 +3035,7 @@
 
 
 ;PANEL
-(omg-defclass maqobjPanel (chordseqPanel) 
+(defclass maqobjPanel (chordseqPanel) 
    ())
                  
 (defmethod update-panel ((self maqobjPanel) &optional (updateref nil))

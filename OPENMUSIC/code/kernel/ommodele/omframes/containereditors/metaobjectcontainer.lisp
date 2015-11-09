@@ -45,7 +45,7 @@
 ;;;#seealso# (om-view-d-d nonrelationpanel) #seealso#"))
 
 
-(omg-defclass metaobj-panel (om-scroller OMContainerFrame om-view-drop) ()    ;;;  
+(defclass metaobj-panel (om-scroller OMContainerFrame om-view-drop) ()    ;;;  
    (:default-initargs :scrollbars t)
    (:documentation "General class for scrollers in meta-object's editor window.
 This class inherites from om-view-d-d, so all scrollers allow  drag and drop, which is the first way for edition.#enddoc#
