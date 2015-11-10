@@ -51,7 +51,7 @@
     "synth;synthesize"
 
     #-linux "multi;multiplayer"
-    #+linux "JACK;jack-audio-player"
+    #+cl-jack "JACK;jack-audio-player"
     #+linux "mplayer;mplayer"
  ))
 
