@@ -318,9 +318,10 @@
 
 (defvar *om-separator* "/")
 
-(defvar *om-compiled-type* 
+(defparameter *om-compiled-type* 
   #+win32 "ofasl"
-  #+macosx (if (member :X86 *features*) "xfasl" "nfasl")
+  #+(and macosx lispworks-64bit) "64xfasl" 
+  #+(and macosx (not lispworks-64bit)) "xfasl"
   #+linux (pathname-type (cl-user::compile-file-pathname "")))
 
 (defvar *om-root* nil)
