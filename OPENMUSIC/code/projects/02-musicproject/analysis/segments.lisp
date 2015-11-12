@@ -91,8 +91,7 @@
                     :key 'mrk-time :test 'equal)
               (om-beep-msg "This segment already exists !")
             (progn
-              (setf (mrk-time self) (offset->ms (car ordered-selection))               
-                    (color self) (om-random-color))
+              (setf (mrk-time self) (offset->ms (car ordered-selection)))
           self))
         (om-beep)))))
 

@@ -1340,9 +1340,11 @@
                                     (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
                                     )))))
               
+              
               (unless (or (first-of-group? self) (subtypep (type-of view) 'polypanel)) ;; poly-p
                 (om-draw-line  (car (rectangle self))  ys 
                                (car (rectangle self)) (+ ys size))))))
+    
     
     (draw-extras self view size staff)
     ))
