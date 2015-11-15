@@ -66,15 +66,14 @@
 		      t))
 	#+linux (progn 
 		  (define-foreign-library libsdif
-		    #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" (om-lib-pathname *sdif-pathname*)))
-		    #+:LISPWORKS-32BIT (:unix (:or "/usr/local/lib/libsdif.so" (om-lib-pathname *sdif-pathname*)))
-		    (t (:default "libsdif") ))
+		    #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" (oa:om-lib-pathname *sdif-pathname*) "libsdif.so"))
+		    #+:LISPWORKS-32BIT (:unix (:or "/usr/local/lib/libsdif.so" (oa:om-lib-pathname *sdif-pathname*) "libsdif.so"))
+		    (t (:default "libsdif")))
 		  (handler-case (progn
 				  (let ((lib (use-foreign-library libsdif)))
 				    (print (format nil "Loaded SDIF lib: ~A" (foreign-library-pathname lib))))
 				  t)
-		    (error () (progn (print (format nil "could not load foreign-library libsdif"))
-				     nil))))))
+		    (error () (progn (print (format nil "could not load foreign-library libsdif")) nil))))))
 
 ; (oa::om-start-sdif)
 ; (load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")
