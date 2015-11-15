@@ -39,6 +39,7 @@ compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
 exclude_fasl	= --include 'dspec-database.ufasl' --exclude '$(rubbish)'
 
+exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
 checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
 ifdef checkname
@@ -68,7 +69,7 @@ clean:
 
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
-	rsync $(rsyncflags) $(exclude_fasl) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
+	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
 	find $(release)/buildimage/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp README.LINUX $(release)/
 	cp Makefile.dist $(release)/Makefile
