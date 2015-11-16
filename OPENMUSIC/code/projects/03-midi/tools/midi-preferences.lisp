@@ -14,7 +14,7 @@
 
 (defparameter *midi-microplay* nil)
 (defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
-(defparameter *score-players* '(:midi-player :microplayer))
+(defparameter *score-players* '(:midi-player :microplayer :osc-scoreplayer))
 (defparameter *force-score-player* nil)
 
 ;; #+linux (setf *default-midi-file-system* :cl-midi)
