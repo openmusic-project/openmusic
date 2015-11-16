@@ -316,8 +316,7 @@
     ;(om-set-field-size ed-view (get-editor-field-size self))
     (setf (show-stems ed-view) stemp)
     (setf (panel self) ed-view)
-    (setf staff (correct-staff (panel self) (get-edit-param self 'staff)))
-    (setf (staff-sys (panel self)) (get-staff-system staff))
+    (setf (staff-sys (panel self)) (get-staff-system (correct-staff (panel self) (get-edit-param self 'staff))))
     (setf controls (om-make-view  (get-score-class-ctrls self) 
                                   :position (om-make-point 0 (- (h self) (get-control-h self))) 
                                   :size (om-make-point (w self) (get-control-h self))
@@ -1437,7 +1436,7 @@
                                 120 linespace 
                                 (staff-mode self)
                                 (get-approx-scale self)
-                                (selection? self) (staff-sys self) (show-stems self) )))
+                                (selection? self) (staff-sys self) (show-stems self))))
    (when (and (graphic-obj self) (not (score-page-mode self)))
      (space-objects (graphic-obj self) (* 4 linespace))
      (set-graph-rectangles (graphic-obj self))

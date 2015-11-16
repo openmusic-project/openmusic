@@ -1029,17 +1029,18 @@
 (defclas grap-poly (grap-container) ())
 
 
-(defmethod make-graph-form-obj ((self poly)  x top linespace mode scale sel system stem)
-   (let ((graph-obj (make-graph-ryth-obj self top system linespace  scale sel nil nil nil)))
-     graph-obj))
+(defmethod make-graph-form-obj ((self poly) x top linespace mode scale sel system stem)
+  (let ((graph-obj (make-graph-ryth-obj self top system linespace  scale sel nil nil nil)))
+    graph-obj))
 
+; 
 
-(defmethod make-graph-ryth-obj ((self poly) top staffsys linespace  scale sel pere durtot &optional ryth)
+(defmethod make-graph-ryth-obj ((self poly) top staffsys linespace scale sel pere durtot &optional ryth)
    (declare (ignore ryth durtot))
    (let* ((thepoly (make-instance 'grap-poly :reference self :parent pere))
           (voicelist (loop for item in (inside self)
                            for i = 0 then (+ i 1) collect
-                           (make-graph-ryth-obj item (top-in-midi (nth i staffsys))  (nth i staffsys) linespace  scale sel thepoly nil))))
+                           (make-graph-ryth-obj item (top-in-midi (nth i staffsys)) (nth i staffsys) linespace  scale sel thepoly nil))))
      (setf (inside thepoly) voicelist)
      (make-graphic-extras thepoly)
      thepoly))
