@@ -169,7 +169,7 @@
   ;(capi:output-pane-free-cached-display self)
   (capi::apply-in-pane-process 
    self 
-   'capi:start-drawing-with-cached-display 
+   'capi:start-drawing-with-cached-display  
    self 
    #'(lambda (view x y w h) 
        (let ((dragging-info (capi:output-pane-cached-display-user-info view)))
@@ -180,7 +180,9 @@
                (funcall motion-draw view (om-make-point x1 y1) (om-make-point x2 y2)))))))
    :user-info (list display-mode
                     (om-point-x position) (om-point-y position)
-                    (om-point-x position) (om-point-y position))))
+                    (om-point-x position) (om-point-y position))
+   ;:automatic-cancel nil
+   ))
 
 (defmethod om-click-motion-handler :around ((self om-graphic-object) position)
   ;(print (list self position *click-motion-view*))
@@ -222,6 +224,7 @@
   (when *click-motion-action* ; (equal *click-motion-view* self) 
     (let* ((view *click-motion-view*)
            (motion-info (temp-data view)))
+      (setf *click-motion-action* nil)
       (when motion-info
         (destructuring-bind (motion-action release-action x0 y0 old-x old-y draw-pane)
             motion-info  
@@ -231,6 +234,6 @@
           (when release-action
             (capi::apply-in-pane-process (om-get-view view) release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
             )))
-      (setf *click-motion-action* nil)
+      ;(setf *click-motion-action* nil)
       (setf (temp-data view) nil))))
 
