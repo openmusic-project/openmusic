@@ -37,7 +37,7 @@
 (defparameter las-srate 44100)
 (defconstant las-buffsize 512)
 (defconstant las-streambuffsize 65536)
-(defparameter las-instreamduration (* las-srate 600))
+(defparameter las-instreamduration 0) ;; does not use RT input
 (defconstant las-renderer #+macosx las::kCoreAudioRenderer #-macosx las::kPortAudioRenderer)
 (defconstant las-thread 1)
 
@@ -161,7 +161,7 @@
     (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-current :accessor number-of-samples-current :initform nil)
-    ;;;pointeur LAS envoyé à la lecture (dérivé de current)
+    ;;;pointeur LAS envoye a� la lecture (derive de current)
     (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)
@@ -259,7 +259,9 @@
 ;/MAKE NEW PLAYER FUCNTION
 ;Returns a LAS player pointer
 (defun make-new-player ()
-  (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
+  (las::OpenAudioPlayer  las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
+
+
 
 
 (defun las-set-sample-rate (sr)
