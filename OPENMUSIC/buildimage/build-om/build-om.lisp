@@ -12,9 +12,9 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.100004)
+(defparameter *version* 6.100005)
 
-(defparameter *beta-release* t)
+(defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
@@ -145,7 +145,7 @@
               (if (system::directory-pathname-p file)
                   (clean-sources file)
                 (when (and (pathname-type file)
-                           (or (find (pathname-type file) '("xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~") :test 'string-equal)
+                           (or (find (pathname-type file) '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~") :test 'string-equal)
 			       (string= (pathname-type file) *compile-type*))) ; remove compiled files
                   (print (concatenate 'string "Deleting " (namestring file) " ..."))
                   (delete-file file)
@@ -200,7 +200,7 @@
 ; (directory (make-pathname :directory "Users"))
 
 (defparameter *om-libs* (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 2) '("libraries"))))
-(defparameter *ircam-libs* (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("LIBRARIES" "IRCAM-LIBS"))))
+(defparameter *ircam-libs* (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("omlibraries"))))
 
 ; (clean-sources *om-libs*)
 ; (clean-sources *ircam-libs*)
@@ -269,6 +269,9 @@
   (om::load-modif-patches)
   #+cocoa(objc:make-autorelease-pool)
   (clos::set-clos-initarg-checking nil)
+
+  (init-root-definition-pathname cl-user::*om-src-directory* om::*om-root*)
+
   (setf *print-case* :downcase)
   (setf *msg-error-label-on* nil)
   (in-package :om)
