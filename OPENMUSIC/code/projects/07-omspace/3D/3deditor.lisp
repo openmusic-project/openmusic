@@ -139,7 +139,7 @@
     (opengl:gl-line-width (float (or (line-width self) 1.0)))
 
     ;draw the lines first
-    (when (and (lines self) (> size 1))
+    (when (and (lines self) (>= size 1))
       (opengl:gl-begin opengl:*GL-LINE-STRIP*)
       (loop for i from 0 to size do 
             (let ((rgb (or (nth i vertices-colors) (om-color-to-single-float-list *om-light-gray-color*))))
