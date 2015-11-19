@@ -103,56 +103,56 @@ Outputs
 
 ;;; ROTATION 
 ;;; From OMPrisma traj-rotate
-(defmethod* om-rotate ((self 3dc) (axis symbol) (degrees number))  
-             (let* ((xpoints (x-points self))
-                    (ypoints (y-points self))
-                    (zpoints (z-points self))
-                    (aed (multiple-value-list (cond ((equal axis 'yaw) (xyz->aed xpoints ypoints zpoints))
-                                                    ((equal axis 'pitch) (xyz->aed zpoints ypoints xpoints))
-                                                    ((equal axis 'roll) (xyz->aed xpoints zpoints ypoints)))))
-                    (e (second aed))
-                    (d (third aed))
-                    (a (om+ (first aed) degrees))
-                    (prelim-xyz (multiple-value-list (aed->xyz a e d)))
-                    (x (first prelim-xyz))
-                    (y (second prelim-xyz))
-                    (z (third prelim-xyz)))
-               (cond ((equal axis 'yaw) (3dc-from-list x y z (type-of self) (decimals self)))
-                     ((equal axis 'pitch) (3dc-from-list z y x (type-of self) (decimals self)))
-                     ((equal axis 'roll) (3dc-from-list x z y (type-of self) (decimals self))))
-               ))
+(defmethod* om-rotate ((self 3dc) &key (yaw 0) (pitch 0) (roll 0))  
+   (let* ((res self))
+     (when (and yaw (not (zerop yaw)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (x-points res) (y-points res) (z-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a yaw) e d)
+                 (3dc-from-list x y z (type-of self) (decimals self))))))
+     (when (and pitch (not (zerop pitch)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (z-points res) (y-points res) (x-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a pitch) e d)
+                 (3dc-from-list z y x (type-of self) (decimals self))))))
+     (when (and roll (not (zerop roll)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (x-points res) (z-points res) (y-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a roll) e d)
+                 (3dc-from-list x z y (type-of self) (decimals self))))))
+     res))
+  
+  
+(defmethod* om-rotate ((self 3d-trajectory) &key (yaw 0) (pitch 0) (roll 0))  
+   (let* ((res self))
+     (when (and yaw (not (zerop yaw)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (x-points res) (y-points res) (z-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a yaw) e d)
+                 (traject-from-list x y z (times self) (type-of self) (decimals self) (sample-params self) (interpol-mode self))))))
+     (when (and pitch (not (zerop pitch)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (z-points res) (y-points res) (x-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a pitch) e d)
+                 (traject-from-list z y x (times self) (type-of self) (decimals self) (sample-params self) (interpol-mode self))))))
+     (when (and roll (not (zerop roll)))
+       (setf res 
+             (multiple-value-bind (a e d) (xyz->aed (x-points res) (z-points res) (y-points res))
+               (multiple-value-bind (x y z) (aed->xyz (om+ a roll) e d)
+                 (traject-from-list x z y (times self) (type-of self) (decimals self) (sample-params self) (interpol-mode self))))))
+     res)) 
 
-(defmethod* om-rotate ((self 3d-trajectory) (axis symbol) (degrees number))  
-            (let* ((xpoints (x-points self))
-                   (ypoints (y-points self))
-                   (zpoints (z-points self))
-                   (aed (multiple-value-list (cond ((equal axis 'yaw) (xyz->aed xpoints ypoints zpoints))
-                                                   ((equal axis 'pitch) (xyz->aed zpoints ypoints xpoints))
-                                                   ((equal axis 'roll) (xyz->aed xpoints zpoints ypoints)))))
-                   (e (second aed))
-                   (d (third aed))
-                   (a (om+ (first aed) degrees))
-                   (prelim-xyz (multiple-value-list (aed->xyz a e d)))
-                   (x (first prelim-xyz))
-                   (y (second prelim-xyz))
-                   (z (third prelim-xyz)))
-              (cond ((equal axis 'yaw) (traject-from-list x y z (times self) 
-                                                          (type-of self) (decimals self) 
-                                                          (sample-params self) (interpol-mode self)))
-                    ((equal axis 'pitch) (traject-from-list z y x (times self) 
-                                                            (type-of self) (decimals self)
-                                                            (sample-params self) (interpol-mode self)))
-                    ((equal axis 'roll) (traject-from-list x z y (times self) 
-                                                           (type-of self) (decimals self) 
-                                                           (sample-params self) (interpol-mode self))))
-              ))
+
 
 ;;; For 3DC-libs
-(defmethod! om-rotate ((self 3dc-lib) (axis symbol) (degrees number))
-            (let ((the3dc-lib (make-instance '3dc-lib)))
-              (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) (bpf-list self)))
-              the3dc-lib)
-            )
+(defmethod! om-rotate ((self 3dc-lib) &key (yaw 0) (pitch 0) (roll 0))
+  (let ((the3dc-lib (make-instance '3dc-lib)))
+    (setf (bpf-list the3dc-lib) 
+          (mapcar 
+           #'(lambda (3Dc) (om-rotate 3DC :yaw yaw :pitch pitch :roll roll))
+           (bpf-list self)))
+    the3dc-lib)
+  )
 
 ;;; TRANSLATION 
 ;;; From OMPrisma traj-translate

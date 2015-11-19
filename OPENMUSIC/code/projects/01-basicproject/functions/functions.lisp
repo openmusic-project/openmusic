@@ -668,32 +668,34 @@ Outputs
 ;;;=======================================
 
 ;;; From OMPrisma traj-rotate
-(defmethod! om-rotate ((self BPC) (axis symbol) (degrees number))  
+(defmethod! om-rotate ((self BPC) &key (yaw 0) (pitch 0) (roll 0))  
      :icon 500  
-     :initvals '(nil 'yaw 0) 
-     :indoc '("a bpc, 3DC, 3D-trajectory, 3DC-lib" "rotation axis" "number of degrees")
-     :menuins '((1 (("yaw" 'yaw) ("pitch" 'pitch) ("roll" 'roll))))
+     :initvals '(nil 0 0 0) 
+     :indoc '("a bpc, 3DC, 3D-trajectory, 3DC-lib" "x-y plane" "y-z plane" "x-z plane")
      :numouts 1
      :doc "Rotation in 3D using Euler angles. Rotates 3D-trajectory, 3DC, BPC, 3DC-lib"
          
             (let* ((xpoints (x-points self))
                    (ypoints (y-points self))                   
-                   (ad (multiple-value-list (xy->ad xpoints ypoints )))
-                   (a (om+ (first ad) degrees))
+                   (ad (multiple-value-list (xy->ad xpoints ypoints)))
+                   (a (om+ (first ad) yaw))
                    (xy (multiple-value-list (ad->xy a (second ad)))))
               (simple-bpf-from-list (first xy) (second xy) (type-of self) (decimals self))
-            ))
+              ))
 
 ;*** For lists and bpc-libs
-(defmethod! om-rotate ((self list) (axis symbol) (degrees number))
-            (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) self)
-            )
-                                     
-(defmethod! om-rotate ((self bpc-lib) (axis symbol) (degrees number))
-            (let ((thebpc-lib (make-instance 'bpc-lib)))
-              (setf (bpf-list thebpc-lib) (mapcar (lambda (thelist) (om-rotate thelist axis degrees)) (bpf-list self)))
-              thebpc-lib)
-            )
+(defmethod! om-rotate ((self list) &key (yaw 0) (pitch 0) (roll 0))
+  (mapcar #'(lambda (item) (om-rotate item :yaw yaw :pitch pitch :roll roll)) self))
+
+(defmethod! om-rotate ((self bpc-lib) &key (yaw 0) (pitch 0) (roll 0))
+  (let ((thebpc-lib (make-instance 'bpc-lib)))
+    (setf (bpf-list thebpc-lib) 
+          (mapcar 
+           #'(lambda (bpf) (om-rotate bpf :yaw yaw :pitch pitch :roll roll))
+           (bpf-list self)))
+    thebpc-lib))
+          
+
 
 ;;; From OMPrisma traj-translate
 (defmethod! om-translate ((self bpc) &key x y z)  
