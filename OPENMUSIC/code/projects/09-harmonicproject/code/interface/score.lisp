@@ -389,7 +389,7 @@
 ;Tonalite pane for preferences 225
 ;======================================================
 
-(omg-defclass tonaloptions-view (om-view) 
+(defclass tonaloptions-view (om-view) 
   ((object :initform nil :initarg :object :accessor object)))
 
 (defmethod om-component-border ((self tonaloptions-view)) :line)

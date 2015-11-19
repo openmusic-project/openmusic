@@ -199,7 +199,7 @@
 ;----------------
 ;PANEL
 ;----------------
-(omg-defclass loopPanel (boxpatchPanel) ()
+(defclass loopPanel (boxpatchPanel) ()
    (:documentation "This is the class for the editor panel which define a OMloop box.  #enddoc#
 #seealso# (omLoop-Box box-with-patch-frame) #seealso#
 #patch# This slot keeps the patch associated to the box. #patch#"))
@@ -1073,7 +1073,7 @@ See OM User Manual and the OMLOOP refernce section for more details.
 
 ;----frame
 
-(omg-defclass loopboxframe (boxframe) ()
+(defclass loopboxframe (boxframe) ()
    (:documentation "Simple frame for OMLOOP boxes. #enddoc#
 #seealso# (OMloop) #seealso#"))
 

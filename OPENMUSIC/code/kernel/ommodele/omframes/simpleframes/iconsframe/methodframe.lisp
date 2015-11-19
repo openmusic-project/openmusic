@@ -29,7 +29,7 @@
 
 (in-package :om)
 
-(omg-defclass icon-method (OMAtomicFrame)   ; om-transparent-view 
+(defclass icon-method (OMAtomicFrame)   ; om-transparent-view 
    ((iconview :initform nil :accessor iconview)
     (nameview :initform nil :accessor nameview))
    (:documentation "This is the class used to visulisate OMMethods meta objects as a simple frame.
@@ -85,7 +85,7 @@ so this class inherits from view. #enddoc#
 ;icon view
 ;--------------------------
 
-(omg-defclass method-icon-view (icon-view om-view-drag) ())
+(defclass method-icon-view (icon-view om-view-drag) ())
 
 (defmethod get-drag-object ((self method-icon-view)) (om-view-container self))
 
@@ -122,7 +122,7 @@ t)
 ;icon name
 ;--------------------------
 
-(omg-defclass method-name-text-dialog (om-static-text-drag)  ())
+(defclass method-name-text-dialog (om-static-text-drag)  ())
 
 (defmethod om-drag-selection-p ((self method-name-text-dialog) mouse-position)
   (declare (ignore mouse-position))
@@ -144,7 +144,6 @@ t)
 
 
 ;--------------
-
 
 (defun make-icon-from-method (method position)
   (let* ((thespe (method-specializers method))

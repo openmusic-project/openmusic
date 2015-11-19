@@ -16,11 +16,11 @@
 ;;; Un widget pour choisir une tonalite
 ;;;=======================================
 
-(omg-defclass tonalite-dialog-item (om-view)
+(defclass tonalite-dialog-item (om-view)
   ((nthton :accessor nthton :initarg :nthton :initform 7)
    (mode :accessor mode :initarg :mode :initform 0)))
 
-(omg-defclass scoretonaliteview (om-view)
+(defclass scoretonaliteview (om-view)
   ((ref-item :accessor ref-item :initarg :ref-item :initform nil)))
 
 (defmethod make-tonalite-dialog-item (&optional ton-obj (pos (om-make-point 0 0)))

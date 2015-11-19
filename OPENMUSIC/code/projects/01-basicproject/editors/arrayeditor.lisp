@@ -28,7 +28,7 @@
 ;editor
 ;===========================================================
 ;==================================================
-(omg-defclass comp-text-enter-view (edit-text-enter-view) ())
+(defclass comp-text-enter-view (edit-text-enter-view) ())
 
 (defmethod exit-from-dialog ((self comp-text-enter-view) newtext)
    (let* ((container (editor (om-view-container self)))
@@ -43,7 +43,7 @@
      (om-remove-subviews container self)))
 
 
-(omg-defclass array-controls (3Dborder-view)  
+(defclass array-controls (3Dborder-view)  
    ((groupname :initform nil :accessor groupname)))
 
 
@@ -381,7 +381,7 @@
 ;------------------------------------
 
 
-(omg-defclass arraypanel (om-scroller view-with-ruler-x) 
+(defclass arraypanel (om-scroller view-with-ruler-x) 
   ((mode :initform :normal :accessor mode)
    (panel-list :initform nil :initarg :panel-list :accessor panel-list)
    (c-panel-list :initform nil :initarg :c-panel-list :accessor c-panel-list)   ;;; not used anymore...
@@ -567,7 +567,7 @@
 
 
 ;---------------------------------------------------------------------
-(omg-defclass bar-name (om-view) 
+(defclass bar-name (om-view) 
    ((index :initform 0 :initarg :index :accessor index)
     (control-p :initform nil :initarg :control-p :accessor control-p)
     (at-editor :initform nil  :accessor at-editor)))

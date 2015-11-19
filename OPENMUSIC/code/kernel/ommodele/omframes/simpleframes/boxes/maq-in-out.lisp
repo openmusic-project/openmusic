@@ -34,8 +34,8 @@
 
 (defclass maqinoutframe () ())
 
-(omg-defclass maqinFrame (maqinoutframe inFrame) ())
-(omg-defclass maqoutFrame (maqinoutframe outFrame) ())
+(defclass maqinFrame (maqinoutframe inFrame) ())
+(defclass maqoutFrame (maqinoutframe outFrame) ())
 
 (defmethod om-view-click-handler ((self tempobjframe) pos)
   ;(print (car (frames (first (connected? (object (car (inputframes self))))))))

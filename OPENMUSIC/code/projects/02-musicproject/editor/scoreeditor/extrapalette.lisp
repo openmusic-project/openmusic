@@ -151,7 +151,7 @@
                    )))
 
 
-(omg-defclass extra-preview (om-view) ())
+(defclass extra-preview (om-view) ())
 
 (defmethod om-draw-contents ((self extra-preview))
   (let* ((value (edit-mode *extramanager*))

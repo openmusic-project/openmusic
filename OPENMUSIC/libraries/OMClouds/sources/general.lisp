@@ -176,7 +176,7 @@
 
 (defclass var-i+ (var-i) ())
 
-(omg-defclass inframei+ (Inframe) ())
+(defclass inframei+ (Inframe) ())
 
 
 (defmethod get-frame-class ((self var-i+)) 'inFramei+)
@@ -620,12 +620,11 @@ optional input : a predicate, which is the equality on numbers "=" by default.
 
 
 
-(omg-defclass vareditor (boxpatchEditor) ())
+(defclass vareditor (boxpatchEditor) ())
 
 (defmethod get-editor-panel-class ((self vareditor)) 'varpanel)
 
-(omg-defclass varpanel (boxpatchPanel) 
-   ())
+(defclass varpanel (boxpatchPanel) ())
 
 (defmethod omg-remove-element ((self varpanel) (box inFrame))
    "The inputs of a this patch can be removed only from the box."
@@ -803,9 +802,8 @@ optional input : a predicate, which is the equality on numbers "=" by default.
      (apply (fdefinition (intern (string (first (code (patch self)))) :om)) args))
 
 
-(omg-defclass varboxframe (boxframe) ()
-   (:documentation "Simple frame for csp boxes. #enddoc#
-"))
+(defclass varboxframe (boxframe) ()
+   (:documentation "Simple frame for csp boxes."))
 
 
 (defmethod update-from-reference ((self asbox) &optional (udt? t))

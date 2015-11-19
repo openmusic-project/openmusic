@@ -178,7 +178,7 @@
 ;----------------
 ;EDITOR
 ;----------------
-(omg-defclass openfileEditor (loopEditor) ())
+(defclass openfileEditor (loopEditor) ())
 
 (defmethod get-editor-class ((self openfilepatch)) 'openfileEditor)
 
@@ -187,7 +187,7 @@
 ;----------------
 ;PANEL
 ;----------------
-(omg-defclass openfilePanel (loopPanel) ()
+(defclass openfilePanel (loopPanel) ()
    (:documentation "This is the class for the editor panel which define a file-box box.  #enddoc#
 #seealso# (file-box-box box-with-patch-frame) #seealso#
 #patch# This slot keeps the patch associated to the box. #patch#"))
@@ -418,7 +418,7 @@ See OM User Manual for more details."
 
 
 ;Editor
-(omg-defclass streamwindow (editorwindow) ())
+(defclass streamwindow (editorwindow) ())
 
 
 (defmethod get-editor-class ((self streamwindow)) 'streamEditor)
@@ -430,7 +430,7 @@ See OM User Manual for more details."
   (when (text-view (editor self))  ;;; and  (not (equal (find-clicked-subview self where) (text-view (editor self))))) 
     (exit-from-dialog (text-view (editor self)) (dialog-item-text (text-view (editor self))))))
 
-(omg-defclass StreamEditor (editorView) ())
+(defclass StreamEditor (editorView) ())
 
 (defmethod handle-key-event ((self StreamEditor) char)  nil)
 

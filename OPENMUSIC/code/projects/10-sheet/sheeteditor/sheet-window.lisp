@@ -711,7 +711,7 @@
 ;;;===================
 ;;; OBJECT FRAMES
 ;;;===================
-(omg-defclass sheet-objectframe (om-scroller om-view-drag om-view-drop) 
+(defclass sheet-objectframe (om-scroller om-view-drag om-view-drop) 
   ((selected :accessor selected :initform nil)
    (reference :initarg :reference :accessor reference :initform nil)))
 
@@ -723,10 +723,10 @@
   (setf (selected self) nil))
 
 ;;; scoreobjects
-(omg-defclass sheet-scoreobjectframe (sheet-objectframe scorepanel) ())
+(defclass sheet-scoreobjectframe (sheet-objectframe scorepanel) ())
 
 ;;; maquette, sound, bpf, midifile
-(omg-defclass sheet-linobjectframe (sheet-objectframe) ((graphic-obj :initform nil :accessor graphic-obj)))
+(defclass sheet-linobjectframe (sheet-objectframe) ((graphic-obj :initform nil :accessor graphic-obj)))
 
 (defmethod get-sheetframe-class ((self t)) 'sheet-linobjectframe)
 (defmethod get-sheetframe-class ((self score-element)) 'sheet-scoreobjectframe)

@@ -257,7 +257,7 @@ As output it returns the contents of the text buffer as a list formatted accordi
 ;;; TEXT EDITOR IS A SPECIAL CASE OF EDITOR 
 ;;; DIRECTLY MANAGED BY OM-API
 
-(omg-defclass TextEditorWindow (om-text-edit-window) 
+(defclass TextEditorWindow (om-text-edit-window) 
    ((object :initform nil :initarg :object :accessor object)
     (ref :initform nil :initarg :ref :accessor ref)))
 
@@ -474,7 +474,7 @@ else create a new Editor frame, and select its window."
 ;---------------------Menu Contextual--------
 
 
-(omg-defclass textEditorFrame (boxEditorFrame) ()
+(defclass textEditorFrame (boxEditorFrame) ()
    (:documentation "Simple frame for OMTextFilebox meta objects. #enddoc#
 #seealso# (OMTextFilebox) #seealso#"))
 

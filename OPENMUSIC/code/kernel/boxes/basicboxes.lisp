@@ -297,7 +297,7 @@ This function is equaivalent to a logical OR."
 #seealso# (OMBoxcall) #seealso#
 #whichclass# Say the class of the instance which is being initialized. #whichclass#"))
 
-(omg-defclass nextinitboxframe (nonbuttonboxframe boxframe) ())
+(defclass nextinitboxframe (nonbuttonboxframe boxframe) ())
 
 (defmethod get-boxcallclass-fun ((self (eql 'init-instance))) 'OMBoxCallNextInit)
 (defmethod get-frame-class ((self OMBoxCallNextInit)) 'nextinitboxframe)

@@ -30,10 +30,10 @@
 (in-package :om)
 
 
-(omg-defclass pckbrowser-icon-frame (icon-finder) ())
+(defclass pckbrowser-icon-frame (icon-finder) ())
 
-(omg-defclass pckbrowser-icon (icon-finder-icon) ())
-(omg-defclass pckbrowser-name (icon-finder-name) ())
+(defclass pckbrowser-icon (icon-finder-icon) ())
+(defclass pckbrowser-name (icon-finder-name) ())
 
 ;; no copy
 (defmethod om-drag-selection-p ((self pckbrowser-icon) mouse-position)
@@ -104,11 +104,11 @@
 ;============================
 ;PACKAGES
 ;============================
-(omg-defclass package-icon-frame (pckbrowser-icon-frame) ()
+(defclass package-icon-frame (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMpackage meta objects.#enddoc#
 #seealso# (OMpackage) #seealso#"))
 
-(omg-defclass pckicon-finder-icon (pckbrowser-icon) ())
+(defclass pckicon-finder-icon (pckbrowser-icon) ())
 (defmethod get-class-icon-icon ((self OMPackage)) 'pckicon-finder-icon)
 (defmethod get-class-icon-name ((self OMPackage)) 'pckbrowser-name)
 
@@ -238,11 +238,11 @@
 ;============================
 ;OMLIB
 ;============================
-(omg-defclass lib-icon-frame (package-icon-frame) ()
+(defclass lib-icon-frame (package-icon-frame) ()
   (:documentation "The class of simple frames for OMLib meta objects.#enddoc#
 #seealso# (OMLib) #seealso#"))
 
-(omg-defclass libicon-finder-icon (pckicon-finder-icon) ())
+(defclass libicon-finder-icon (pckicon-finder-icon) ())
 (defmethod get-class-icon-icon ((self OMLib)) 'libicon-finder-icon)
 (defmethod get-class-icon-name ((self OMLib)) 'pckbrowser-name)
 
@@ -283,11 +283,11 @@
 ;============================
 ;GenFun
 ;============================
-(omg-defclass genfun-icon-frame (pckbrowser-icon-frame) ()
+(defclass genfun-icon-frame (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMGenericFunction meta objects.#enddoc#
 #seealso# (OMGenericFunction) #seealso#"))
 
-(omg-defclass genfun-finder-icon (pckbrowser-icon) ())
+(defclass genfun-finder-icon (pckbrowser-icon) ())
 (defmethod get-class-icon-icon ((self OMGenericFunction)) 'genfun-finder-icon)
 (defmethod get-class-icon-name ((self OMGenericFunction)) 'pckbrowser-name)
 
@@ -325,11 +325,11 @@
 ;============================
 ;LispFun
 ;============================
-(omg-defclass lispfun-icon-frame (pckbrowser-icon-frame) ()
+(defclass lispfun-icon-frame (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMGenericFunction meta objects.#enddoc#
 #seealso# (OMGenericFunction) #seealso#"))
 
-(omg-defclass lispfun-finder-icon (pckbrowser-icon) ())
+(defclass lispfun-finder-icon (pckbrowser-icon) ())
 (defmethod get-class-icon-icon ((self OMLispFun)) 'lispfun-finder-icon)
 (defmethod get-class-icon-name ((self OMLispFun)) 'pckbrowser-name)
 
@@ -349,11 +349,11 @@
 ;============================
 ;CLASSES
 ;============================
-(omg-defclass class-icon-frame (pckbrowser-icon-frame) ()
+(defclass class-icon-frame (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMClass meta objects.#enddoc#
 #seealso# (OMClass) #seealso#"))
 
-(omg-defclass class-finder-icon (pckbrowser-icon) ())
+(defclass class-finder-icon (pckbrowser-icon) ())
 (defmethod get-class-icon-icon ((self OMClass)) 'class-finder-icon)
 (defmethod get-class-icon-name ((self OMClass)) 'pckbrowser-name)
 
@@ -423,7 +423,7 @@
 ;=================
 ; GLOBALS
 ;=================
-(omg-defclass globals-folder-icon (pckbrowser-icon-frame) ()
+(defclass globals-folder-icon (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMGlobalsFolder meta objects.#enddoc#
 #seealso# (OMglobalsFolder) #seealso#"))
 

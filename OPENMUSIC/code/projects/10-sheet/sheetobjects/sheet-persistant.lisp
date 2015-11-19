@@ -176,8 +176,8 @@
 ; BOXES
 ;------------------------------------------------------------------------
 ; Workspace
-(omg-defclass sheet-icon-frame (patch-icon-frame) ())
-(omg-defclass sheet-finder-icon (icon-finder-icon) ())
+(defclass sheet-icon-frame (patch-icon-frame) ())
+(defclass sheet-finder-icon (icon-finder-icon) ())
 
 (defmethod get-class-icon ((self sheet)) 'sheet-icon-frame)
 (defmethod get-class-icon-icon ((self sheet)) 'sheet-finder-icon)
@@ -226,7 +226,7 @@
      copy))
 
 ;--------------Inits
-(omg-defclass sheetboxframe (boxframe) ()
+(defclass sheetboxframe (boxframe) ()
    (:documentation "Simple frame for OMBoxmaquette boxes. #enddoc#
 #seealso# (OMBoxmaquette) #seealso#"))
 

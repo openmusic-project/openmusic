@@ -68,7 +68,7 @@
 
 
 ;================================================
-(omg-defclass scoreboxframe (boxframe) ())
+(defclass scoreboxframe (boxframe) ())
 
 (defmethod frame-in-score-p ((self scoreboxframe)) t)
 

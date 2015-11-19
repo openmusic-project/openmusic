@@ -564,7 +564,7 @@ this slot store a subview containing it subview if exists.#triangle#
   
 ;= FOR LITTLE ICONS =
 
-(omg-defclass triangle-icon (icon-view)  
+(defclass triangle-icon (icon-view)  
   ((open? :initform nil :accessor open?)
    (icon-finder :initform nil :initarg :icon-finder :accessor icon-finder)))
 
@@ -693,7 +693,7 @@ this slot store a subview containing it subview if exists.#triangle#
 ;============================
 ;INstances
 ;============================
-(omg-defclass instance-icon-frame (icon-finder) ()
+(defclass instance-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMInstance meta objects.#enddoc#
 #seealso# (OMInstance) #seealso#"))
 
@@ -709,7 +709,7 @@ this slot store a subview containing it subview if exists.#triangle#
 ;============================
 ;Maquette
 ;============================
-(omg-defclass maquette-icon-frame (icon-finder) ()
+(defclass maquette-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMMaquette meta objects.#enddoc#
 #seealso# (OMMaquette) #seealso#"))
 
@@ -732,7 +732,7 @@ this slot store a subview containing it subview if exists.#triangle#
 ;============================
 ;PATCH
 ;============================
-(omg-defclass patch-icon-frame (icon-finder) ()
+(defclass patch-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMPatch meta objects.#enddoc#
 #seealso# (OMPatch) #seealso#"))
 
@@ -777,7 +777,7 @@ this slot store a subview containing it subview if exists.#triangle#
 ;FOLDER
 ;============================
 
-(omg-defclass folder-icon-frame (icon-finder) ()
+(defclass folder-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMFolder meta objects.#enddoc#
 #seealso# (OMFolder) #seealso#"))
 
@@ -795,7 +795,7 @@ this slot store a subview containing it subview if exists.#triangle#
 ;============================
 ;TYPES
 ;============================
-(omg-defclass type-icon-frame (icon-finder) ()
+(defclass type-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMBasicType meta objects.#enddoc#
 #seealso# (OMBasicType) #seealso#"))
 

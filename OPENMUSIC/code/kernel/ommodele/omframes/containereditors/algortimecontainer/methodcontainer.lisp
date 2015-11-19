@@ -34,7 +34,7 @@
 ;EDITOR
 ;---------------------------------------------------------------------
 
-(omg-defclass methodEditor (patchEditor)  
+(defclass methodEditor (patchEditor)  
   ((win-mod :initform nil :initarg :win-mod :accessor win-mod)
    (quali-buttons :initform nil :initarg :quali-buttons :accessor quali-buttons)
    (iconID :initform 145 :accessor iconID)
@@ -76,7 +76,7 @@
 ;PANEL
 ;---------------------------------------------------------------------
 
-(omg-defclass methodPanel (patchPanel) 
+(defclass methodPanel (patchPanel) 
    ((docu :initform "" :accessor docu))
    (:documentation "Method editors are instance of this class.
 Elements of methodPanels are instaces of the boxframe class.#enddoc#
@@ -307,7 +307,7 @@ Elements of methodPanels are instaces of the boxframe class.#enddoc#
 
 
 ;;; SPECIAL CLASS
-(omg-defclass typed-input-button (unaire-fun-view om-icon-button) ())
+(defclass typed-input-button (unaire-fun-view om-icon-button) ())
 
 
 (defun make-typed-input-from-obj (object panel &optional value)

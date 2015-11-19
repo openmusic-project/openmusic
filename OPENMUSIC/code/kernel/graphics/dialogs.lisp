@@ -645,7 +645,7 @@ ArtWork: A. Mohsen
 ;;;==============================
 ;;; CHOOSE PICTURE DIALOG
 
-(omg-defclass om-preview-pane (om-view) 
+(defclass om-preview-pane (om-view) 
    ((pict :accessor pict :initform nil :initarg :pict)))
 
 (defmethod om-draw-contents ((self om-preview-pane))
@@ -850,7 +850,7 @@ ArtWork: A. Mohsen
 ;;; CHOSE BG PICT & PARAMS
 
 
-(omg-defclass choose-picture-view (om-transparent-view) 
+(defclass choose-picture-view (om-transparent-view) 
    ((picture :accessor picture :initarg :picture :initform (make-instance 'picture))))
 
 (defmethod picture-dialog ((self choose-picture-view))
@@ -894,7 +894,7 @@ ArtWork: A. Mohsen
 ;help windows
 ;===========================================
 
-(omg-defclass help-item-view (om-item-view) 
+(defclass help-item-view (om-item-view) 
   ((pict :accessor pict :initarg :pict :initform nil)
    (keytxt :accessor keytxt :initarg :keytxt :initform nil)
    (text :accessor text :initarg :text :initform nil)))

@@ -29,7 +29,7 @@
 
 (in-package :om)
 
-(omg-defclass Mult-scrollerEditor (nonrelationEditor) 
+(defclass Mult-scrollerEditor (nonrelationEditor) 
    ((current-scroll :initform 0 :accessor current-scroll)
     (scroll-list :initform nil  :accessor scroll-list))
    (:documentation "This is the class of windows containing one or more scrollers.#enddoc#
@@ -134,7 +134,7 @@
 ;Package browser
 ;------------------------------------------------------
 
-(omg-defclass PackageEditor (Mult-scrollerEditor)  
+(defclass PackageEditor (Mult-scrollerEditor)  
    ((panel-title :initarg :panel-title :initform "" :accessor panel-title)
     ;(titles :initarg :titles :initform nil :accessor titles)
     (selection :accessor selection :initarg :selection :initform nil))
@@ -156,7 +156,7 @@
    "Open a new editor containing the simple frames elements of 'self'."
    nil)
 
-(omg-defclass PackagePanel (nonrelationPanel) ()
+(defclass PackagePanel (nonrelationPanel) ()
    ;;;(:default-initargs :retain-scrollbars t)
 
               #+(and win32 (not ml-maquette)) 
@@ -212,7 +212,7 @@ Packages panels contains icons of sub-packages, classes and sometimes slots.#end
 ;PANEL 2 : functions / classes 
 ;------------------------------------
 
-(omg-defclass PackageContentsPanel (metaobj-panel) 
+(defclass PackageContentsPanel (metaobj-panel) 
               ((funpanel :accessor funpanel :initarg :funpanel :initform nil)
                (clsspanel :accessor clsspanel :initarg :clsspanel :initform nil)))
 
@@ -230,11 +230,11 @@ Packages panels contains icons of sub-packages, classes and sometimes slots.#end
           (omg-remove-element (clsspanel self) frame))
          (t nil)))
    
-(omg-defclass packagesubpanel (packagepanel) 
+(defclass packagesubpanel (packagepanel) 
               ((panel-title :accessor panel-title :initarg :panel-title :initform "")))
 
-(omg-defclass packageclassespanel (packagesubpanel) ())
-(omg-defclass packagefunspanel (packagesubpanel) ())
+(defclass packageclassespanel (packagesubpanel) ())
+(defclass packagefunspanel (packagesubpanel) ())
 
 (defmethod editor ((self packagesubpanel))
   (editor (om-view-container self)))

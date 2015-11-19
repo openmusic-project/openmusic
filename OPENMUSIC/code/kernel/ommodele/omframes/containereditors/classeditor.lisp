@@ -34,11 +34,11 @@
 ;============================
 ;SLOT
 ;============================
-(omg-defclass slot-icon-frame (pckbrowser-icon-frame) ()
+(defclass slot-icon-frame (pckbrowser-icon-frame) ()
    (:documentation "The class of simple frames for OMSlot meta objects.#enddoc#
 #seealso# (OMSlot) #seealso#"))
 
-(omg-defclass slot-finder-icon (pckbrowser-icon) ())
+(defclass slot-finder-icon (pckbrowser-icon) ())
 (defmethod get-class-icon-icon ((self OMSlot)) 'slot-finder-icon)
 
 (defvar *size-slot-icon-finder* nil)
@@ -176,7 +176,7 @@
 
 ;INITFORM FOR SLOTS
 
-(omg-defclass initform-button (icon-view om-view-drop) 
+(defclass initform-button (icon-view om-view-drop) 
    ((object :initform nil :initarg :object :accessor object)
     (val :initform nil :initarg :val :accessor val)
     (editorframe :initform nil :accessor editorframe)))

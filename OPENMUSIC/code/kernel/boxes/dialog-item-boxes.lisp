@@ -94,16 +94,12 @@
 ;the class for the frame
 ;=======================
 
-
 (defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
-;(omg-defclass DIEditorframe (boxEditorFrame) ())
 
 (defclass di-miniview (general-miniview om-view) ())
 
 (defmethod get-miniview-class ((self OMDIebox)) 'di-miniview)
 
-;(defmethod om-view-cursor ((self DIEditorframe))
-;  (om-view-cursor (iconview self)))
 
 ;======================BOXFRAME=======================
 ;;; from boxeditorframe

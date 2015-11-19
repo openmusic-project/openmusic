@@ -661,7 +661,7 @@
      thescroll))
 
 
-(omg-defclass loadlibs-view (om-scroller) 
+(defclass loadlibs-view (om-scroller) 
   ((prefobject :initform nil :initarg :prefobject :accessor prefobject)))
 
 (defmethod om-component-border ((self loadlibs-view)) :line)

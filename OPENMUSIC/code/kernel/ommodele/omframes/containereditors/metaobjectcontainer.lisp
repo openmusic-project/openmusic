@@ -54,7 +54,7 @@ This class inherites from om-view-d-d, so all scrollers allow  drag and drop, wh
 (defmethod metaobj-panel-p ((self t)) nil)
 (defmethod metaobj-panel-p ((self metaobj-panel)) t)
 
-(omg-defclass metaobj-editor (EditorView)  ()
+(defclass metaobj-editor (EditorView)  ()
    (:documentation "xx"))
 
 ;The editor frame of the object asociated with the scroller is set to NIL.

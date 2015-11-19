@@ -169,7 +169,7 @@
     (call-next-method))
 
 ;;;=========================================
-(omg-defclass drop-patch-view (om-transparent-view om-view-drop) 
+(defclass drop-patch-view (om-transparent-view om-view-drop) 
   ((selected :accessor selected :initform nil :initarg :selected)))
 
 (defmethod om-view-drag-hilite-p ((self drop-patch-view)) t)

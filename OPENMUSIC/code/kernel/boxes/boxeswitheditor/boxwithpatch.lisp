@@ -42,7 +42,7 @@ This class is the abstract class for these patches.  #enddoc#
 
 
 ;EDITOR
-(omg-defclass boxpatchEditor (patchEditor) ())
+(defclass boxpatchEditor (patchEditor) ())
 
 (defmethod get-editor-panel-class ((self boxpatchEditor))  'boxpatchPanel)
 
@@ -168,7 +168,7 @@ This class is the abstract class for these boxes.  #enddoc#
     newbox))
 
 
-(omg-defclass box-with-patch-frame (boxframe) ()
+(defclass box-with-patch-frame (boxframe) ()
    (:documentation "Abstract class for simple frames of the box-with-patch instances.#enddoc#
 #seealso# (box-with-patch) #seealso#"))
 

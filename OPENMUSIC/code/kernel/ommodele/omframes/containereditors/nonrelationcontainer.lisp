@@ -533,7 +533,7 @@ with the objects respectly associeted."))
 
 ;---------------------------------------------
 
-(omg-defclass workSpaceEditor (nonRelationEditor)  ()
+(defclass workSpaceEditor (nonRelationEditor)  ()
    (:documentation "This is the class of the workspace's window.#enddoc#
 #seealso# (OmWorkspace WorkSpaceScroller) #seealso#"))
 
@@ -573,7 +573,7 @@ with the objects respectly associeted."))
 ;PANEL
 ;--------------------------
 
-(omg-defclass workSpacePanel (nonRelationPanel) () 
+(defclass workSpacePanel (nonRelationPanel) () 
 
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
@@ -669,7 +669,7 @@ Workspace Panels contain icons of patches, maquettes and folders
 ;PANEL
 ;--------------------------
 
-(omg-defclass folderPanel (nonRelationPanel) ()
+(defclass folderPanel (nonRelationPanel) ()
 
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
@@ -710,7 +710,7 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
 ;Global Folder
 ;-----------------
 
-(omg-defclass GlobalsfolderEditor (nonRelationEditor)  ()
+(defclass GlobalsfolderEditor (nonRelationEditor)  ()
    (:documentation "This is the class of the Globalsfolder's window.#enddoc#
 #seealso# (OmGlobalsfolder GlobalsFolderPanel) #seealso#"))
 
@@ -727,7 +727,7 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
 (defmethod get-win-size ((self OMGlobalsFolder))
    (om-make-point 300 200))
 
-(omg-defclass GlobalsfolderPanel (nonRelationPanel)
+(defclass GlobalsfolderPanel (nonRelationPanel)
    ((scroll-scrap-glo :initform nil :allocation :class :accessor scroll-scrap-glo))
    (:documentation "This is the class for OMGlobalsFolder'editors. 
 Elements in these editors are instance-icon-frame instances.#enddoc#
@@ -760,7 +760,7 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
 ;Class
 ;-----------------
 
-(omg-defclass classEditor (nonRelationEditor)  
+(defclass classEditor (nonRelationEditor)  
    ((initform-editor :initform nil :accessor initform-editor))
    (:documentation "")
    (:default-initargs  :presentation 1))
@@ -795,7 +795,7 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
    (if (initform-editor self)
      (om-close-window (initform-editor self))))
 
-(omg-defclass classPanel (nonRelationPanel) ()
+(defclass classPanel (nonRelationPanel) ()
    (:documentation "This is the editor class for a OMClass. Elements of these editors are slots simple frames.#enddoc#
 #seealso# (OMClass slot-icon-frame) #seealso# "))
 
@@ -854,7 +854,7 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
 ;Generic function's Editor
 ;-----------------
 
-(omg-defclass GenericFunEditor (nonRelationEditor)  ()
+(defclass GenericFunEditor (nonRelationEditor)  ()
    (:documentation "This is the class of the GenericFun's window.#enddoc#
 #seealso# (OmGenericFun GenericFunPanel) #seealso#"))
 
@@ -871,7 +871,7 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
 (defmethod editor-change-presentation ((self GenericFunEditor) presentation)
    (declare (ignore presentation)) nil)
 
-(omg-defclass GenericFunPanel (nonRelationPanel) ()
+(defclass GenericFunPanel (nonRelationPanel) ()
 
               #+(and win32 (not ml-maquette)) 
               (:default-initargs :draw-pinboard-objects :local-buffer)
@@ -919,14 +919,14 @@ Elements in these editors are instance-icon-frame instances.#enddoc#
 ;----------------
 
 
-(omg-defclass InternalMethEditor (GenericFunEditor)  ()
+(defclass InternalMethEditor (GenericFunEditor)  ()
    (:documentation "This is the class of the InternalMeth's window.#enddoc#
 #seealso# (OmInternalMeth InternalMethScroller) #seealso#"))
 
 (defmethod get-editor-panel-class ((self InternalMethEditor))  'InternalMethPanel)
 
 
-(omg-defclass InternalMethPanel (GenericFunPanel) ()
+(defclass InternalMethPanel (GenericFunPanel) ()
    (:documentation "This is the class for the editor of init methods and read/write slots methods associated to an OMClass.#enddoc#
 #seealso# (OMClass) #seealso#"))
 

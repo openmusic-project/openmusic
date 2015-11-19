@@ -50,7 +50,7 @@
 
 ;---------------------------------------------
 
-(omg-defclass classTreeEditor (relationEditor)  ()
+(defclass classTreeEditor (relationEditor)  ()
    (:documentation "xx"))
 
 (defmethod get-editor-panel-class ((self classTreeEditor))  'classTreePanel)
@@ -92,7 +92,7 @@
 ;PANEL
 ;--------------
 
-(omg-defclass classTreePanel (relationPanel) ()
+(defclass classTreePanel (relationPanel) ()
    (:documentation "This is the class for hierarchical class tree editors.
 Boxes refer to classes and connections to inheritance.#enddoc#
 #seealso# (OMBoxClass classboxframe) #seealso#"))

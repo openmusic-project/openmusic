@@ -32,7 +32,7 @@
 
 ;---------------------
 
-(omg-defclass InstanceEditor (nonrelationEditor) ())
+(defclass InstanceEditor (nonrelationEditor) ())
 
 (defmethod get-editor-panel-class ((self InstanceEditor))  'InstancePanel)
 
@@ -88,7 +88,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
 
 
 
-(omg-defclass list-enter-view (edit-text-enter-view) 
+(defclass list-enter-view (edit-text-enter-view) 
    ((direction :initform 0 :initarg :direction :accessor direction)))
 
 ;; new : text-view sur self directement
@@ -102,7 +102,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
      (setf (text-view container) nil)
      (om-remove-subviews container self)))
 
-(omg-defclass control-list (om-view)  ())
+(defclass control-list (om-view)  ())
 
 
 (defmethod initialize-instance :after  ((self control-list) &key)
@@ -171,7 +171,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
 ; Editor
 ;---------------------------
 
-(omg-defclass listEditor (instanceEditor) 
+(defclass listEditor (instanceEditor) 
    ((control :initform nil :accessor control)
     (ranges :initform '(0 0) :accessor ranges)))
 
@@ -243,7 +243,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
 ;Panel
 ;-------------------
 
-(omg-defclass listPanel (InstancePanel) ()
+(defclass listPanel (InstancePanel) ()
    (:documentation "This is the class for OMListInstance's editors. 
 Elements of these editors are instance-icon-frame instances.#enddoc#
 #seealso# (OMListInstance instance-icon-frame InstancePanel) #seealso#"))

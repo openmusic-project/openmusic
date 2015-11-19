@@ -43,7 +43,7 @@
 
 ;;; obj est rajoute pour associer un objet a une fenetre
 ;;; pour les pb de menubar en multiplateforme
-(omg-defclass EditorWindow (om-window) 
+(defclass EditorWindow (om-window) 
    ((editor :initform nil  :accessor editor)
     (obj :initform nil  :initarg :obj :accessor obj)))
 

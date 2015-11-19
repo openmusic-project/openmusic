@@ -190,7 +190,7 @@ TEXT-EXTRA is a string (<text>) attached to a particular chord or note in the sc
     (om-add-subviews self (text-view editor))
     (text-view editor)))
 
-(omg-defclass text-edition-class (edit-text-enter-view) 
+(defclass text-edition-class (edit-text-enter-view) 
    ((object :initform nil :initarg :object :accessor object)))
 
 (defmethod exit-from-dialog ((self text-edition-class) newtext)

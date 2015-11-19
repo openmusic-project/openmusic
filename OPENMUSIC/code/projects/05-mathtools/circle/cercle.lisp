@@ -146,7 +146,7 @@
 ;=============================================
 ;EDITOR
 ;=============================================
-(omg-defclass cercleEditor (editorview) ())
+(defclass cercleEditor (editorview) ())
 
 (defmethod get-panel-class ((self cercleEditor)) 'cerclePanel)
 

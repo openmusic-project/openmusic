@@ -28,7 +28,7 @@
 (in-package :om)
 
 
-(omg-defclass patch-lambda-exp-window (om-lisp-edit-window) 
+(defclass patch-lambda-exp-window (om-lisp-edit-window) 
   ((patchref :initform nil :initarg :patchref :accessor patchref))
    (:documentation "Special fred editor, used when the patch is defined by a lambda expression.#enddoc#
 #seealso# (OMPatch) #seealso#

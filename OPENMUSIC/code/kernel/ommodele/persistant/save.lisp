@@ -1450,12 +1450,6 @@
                         )))
 
 
-(defun om-load-method-ws2 (name icon doc boxes connections lambda-list initvals indocs qualy flag
-                                &optional (numouts 1) pictlist create-info)
-  (let ((new-method (om-load-method-ws1 name icon doc boxes connections lambda-list initvals indocs qualy flag
-                                        numouts pictlist)))
-    (when create-info (setf (create-info new-method) create-info))
-    new-method))
 
 (defun om-load-method-ws1 (name icon doc boxes connections lambda-list initvals indocs qualy flag
                                 &optional (numouts 1) pictlist)
@@ -1477,9 +1471,17 @@
          (setf (protected-p (fdefinition name)) nil)
          (when (listp icon)
            (icon-for-user-package (fdefinition name) (second icon))))
-       new-method)))
-                       
-                       
+       new-method)
+     )
+   )
+                     
+
+(defun om-load-method-ws2 (name icon doc boxes connections lambda-list initvals indocs qualy flag
+                                &optional (numouts 1) pictlist create-info)
+  (let ((new-method (om-load-method-ws1 name icon doc boxes connections lambda-list initvals indocs qualy flag
+                                        numouts pictlist)))
+    (when (and new-method create-info) (setf (create-info new-method) create-info))
+    new-method))                       
 
 (defun define-really-method (method)
    (when method
