@@ -43,7 +43,6 @@
                 memq
                 while
                 
-                
                 om-copy-command
                 om-paste-command
                 om-cut-command
@@ -51,8 +50,7 @@
                 om-random-value
                 
                 om-show-documentation
-                om-edit-definition
-
+                
                 om-page-setup
                 om-print-window
                 

@@ -670,7 +670,7 @@
    )
 
 (defmethod show-fun-code ((self omboxframe))
-  (om-edit-definition (reference (object self))))
+  (edit-definition (reference (object self))))
 
 
 (defmethod lib-ref-location ((self t)) nil)
@@ -1086,7 +1086,7 @@
 #seealso# (OMBoxEditCall) #seealso#"))
 
 (defmethod show-fun-code ((self boxEditorFrame))
-  (om-edit-definition (class-name (reference (object self)))))
+  (edit-definition (class-name (reference (object self)))))
 
 (defmethod special-ref-location ((self t)) nil)
 

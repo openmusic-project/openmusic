@@ -109,7 +109,7 @@
 ;;; from boxeditorframe
 
 (defmethod show-fun-code ((self DIEditorframe))
-  (om-edit-definition (class-name (reference (object self)))))
+  (edit-definition (class-name (reference (object self)))))
 
 (defmethod show-big-doc ((self DIEditorframe))
   (om-show-reference-doc (class-name (reference (object self)))))

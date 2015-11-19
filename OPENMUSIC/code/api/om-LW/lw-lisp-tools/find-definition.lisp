@@ -30,19 +30,21 @@
 
 (in-package :om-lisp)
 
-(export '(om-edit-definition
-          restore-ompath) :om-lisp)
+(export '(
+          edit-definition
+          add-class-definition
+          add-method-definition
+          init-root-definition-pathname
+          ) :om-lisp)
 
 ;=======================
 ; find and edit source code 
 ;=======================
 
- 
-; (when (setf layout (make-window-layout thewin ,bg-color)) (setf (pane-layout thewin) layout))
-
+; 
 
 (defun show-definitions-dialog (symb deflist)
-  (let* ((w 400) (h 300)
+  (let* ((w 300) (h 200)
         (win (make-instance 'capi::interface
                              :title (concatenate 'string "Definitions of " (string-upcase (string symb)))
                              :name (gensym)
@@ -59,22 +61,36 @@
                                              (list
                                               (make-instance 'capi::list-panel
                                                              :x 10 :y 10
-                                                             :width 370 :height 260
+                                                             :width 270 :height 160
                                                              :interaction :single-selection
                                                              :retract-callback nil
                                                              :focus nil
                                                              :callback-type '(:collection)
                                                              :test-function 'string-equal
-                                                             :items (loop for item in deflist collect (format nil "~A" (car item)))
+                                                             :items (loop for item in deflist collect
+                                                                          (if (listp (car item)) (format nil "~A ~A" (caar item) (cadar item))
+                                                                            (format nil "~A" (car item))))
+                                                                            
                                                              :action-callback #'(lambda (list)
-                                                                                  (let ((file (cadr (nth (capi::choice-selection list) deflist))))
-                                                                                    (if (pathnamep file)
+                                                                                  (let ((def (car (nth (capi::choice-selection list) deflist)))
+                                                                                        (file (cadr (nth (capi::choice-selection list) deflist))))
+                                                                                    (if file
                                                                                         (if (probe-file file)
-                                                                                            (om-open-new-text-editor-at file 
-                                                                                                                        (car (nth (capi::choice-selection list) deflist)))
-                                                                 (progn (beep-pane nil) 
-                                                                   (print (format nil "File ~A not found" file))))
-                                                             (progn (beep-pane nil) (print (format nil "Unknown location for ~A definition.." symb)))
+                                                                                            (progn
+                                                                                              (om-open-new-text-editor-at 
+                                                                                               file 
+                                                                                               (if (listp def)
+                                                                                                   (apply 'concatenate (append 
+                                                                                                                        (list 'string 
+                                                                                                                              (format nil "(def.*[^\s]~A" (car def)))
+                                                                                                                        (loop for type in (cadr def) when (not (equal t type))
+                                                                                                                              collect (format nil ".*~A" type))))
+                                                                                                 (string def)))
+                                                                                              (capi:quit-interface win)
+                                                                                              )
+                                                                                          (progn (beep-pane nil) 
+                                                                                            (print (format nil "File ~A not found" file))))
+                                                                                      (progn (beep-pane nil) (print (format nil "Unknown location for ~A definition.." symb)))
                                                              )))
                                                              ))))
                            win)
@@ -94,11 +110,88 @@
     ))
 
 
-;; to be redefined depending on actual source file location
-  ;; (path records the original location at compiling the symbol
-(defun restore-ompath (path) path)
+;;;=====================
+;;; CUSTOM SOURCE TRACKER
+;;;=====================
+
+(defvar *class-definitions* nil)
+(defvar *method-definitions* nil)
+
+(defun add-class-definition (class path)
+  (let ((pathstr (namestring path))
+        (name (class-name class)))
+    (unless (find (list name pathstr) *class-definitions*
+                  :test #'(lambda (a b) (and (equal (car a) (car b))
+                                             (string-equal (cadr a) (cadr b)))))
+      (push (list name pathstr) *class-definitions*))))
+
+(defun add-method-definition (method path)
+  (let ((name (clos::generic-function-name (clos::method-generic-function method)))
+        (pathstr (and path (namestring path))))
+      (unless (find (list (list name (mapcar 'class-name (clos::method-specializers method))) pathstr) 
+                    *method-definitions*
+                    :test #'(lambda (a b) (and (equal (caar a) (caar b))
+                                               (equal (cadar a) (cadar b))
+                                               (if (and (cadr a) (cadr b)) (string-equal (cadr a) (cadr b)) (equal (cadr a) (cadr b))))))
+      (push (list (list name 
+                        (mapcar 'class-name (clos::method-specializers method)))
+                  pathstr) *method-definitions*))))
 
 
+
+(defun restore-root (path oldroot newroot)
+  (let ((rec-root-dir (pathname-directory oldroot))
+        (path-dir (pathname-directory (translate-logical-pathname path))))
+    (if (and (>= (length path-dir) (length rec-root-dir))
+             (equal rec-root-dir (butlast path-dir (- (length path-dir) (length rec-root-dir)))))
+        ;;; => path is recorded in the original rec-root-dir
+        (merge-pathnames (make-pathname :name (pathname-name path)
+                                        :type (or (pathname-type path) "lisp")
+                                        :directory (append (pathname-directory newroot)
+                                                           (nthcdr (length rec-root-dir) path-dir))) 
+                         newroot)
+      path)))
+
+(defun init-root-definition-pathname (oldroot newroot) 
+  (loop for def in *class-definitions* do
+        (setf (nth 1 def) (restore-root (nth 1 def) oldroot newroot)))
+  (loop for def in *method-definitions* do
+        (setf (nth 1 def) (restore-root (nth 1 def) oldroot newroot))))
+
+(defun edit-definition (symbol &optional type)
+  (let ((definitions 
+         (loop for item in (cond ((equal type :method) *method-definitions*)
+                                 ((equal type :class) *class-definitions*)
+                                 (t (append *method-definitions* *class-definitions*)))
+               when (if (listp (car item)) (equal symbol (caar item)) (equal symbol (car item)))
+               collect (list (car item)
+                             (and (cadr item) (merge-pathnames (cadr item) (make-pathname :type "lisp")))))))
+    (if definitions
+        (if (= (length definitions) 1)
+            (let ((file (car (last (car definitions)))))
+              (if (pathnamep file)
+                  (if (probe-file file)
+                      (om-open-new-text-editor-at file (string (if (listp (caar definitions)) (car (caar definitions)) (caar definitions))))
+                    (progn (beep-pane nil) (print (format nil "File ~A not found" file))))
+                (progn (beep-pane nil) (print (format nil "Unknown location for ~A definition..." symbol)))))
+          (show-definitions-dialog symbol definitions)) 
+      (progn (beep-pane nil)
+        (print (format nil "No definition found for ~A" (string-upcase (string symbol))))))
+    ))
+
+
+
+#|
+
+; (edit-definition 'om::om+)
+; (setf dspec::*active-finders* (list :internal dspec::*active-finders*))
+; (dspec:find-name-locations dspec:*dspec-classes* 'om::om+)
+; (dspec:name-definition-locations dspec:*dspec-classes* 'om::om+)
+; (*active-finders*)
+; save-tags-database
+
+
+;;; not used anymore
 (defun restore-definitions-pathnames (def-list)
   (loop for def in def-list collect
         (list (car def)
@@ -109,9 +202,7 @@
                       (cadr def)))
                 (cadr def)))))
 
-
-
-(defun om-edit-definition (symbol)
+(defun edit-definition (symbol)
     (if (symbolp symbol)
       (let ((definitions 
              ;(dspec:name-definition-locations dspec:*dspec-classes* symbol)
@@ -138,10 +229,4 @@
             (print (format nil "~A is not a valid symbol" symbol)))))
     (progn (beep-pane nil)
       (print (format nil "~A is not a valid symbol" symbol)))))
-
-; (om-edit-definition 'om::om+)
-; (setf dspec::*active-finders* (list :internal dspec::*active-finders*))
-; (dspec:find-name-locations dspec:*dspec-classes* 'om::om+)
-; (dspec:name-definition-locations dspec:*dspec-classes* 'om::om+)
-; (*active-finders*)
-; save-tags-database
+|#

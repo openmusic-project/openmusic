@@ -181,14 +181,13 @@
 ;;;==========================
 ;;; SOURCE DEFINITIONS
 ;;;==========================
+; doesn't work anymore in LW 7
+;*active-finders*
+;(dspec::save-tags-database (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))
+;                                          :name "dspec-database" :type oa::*om-compiled-type*))
+;(dspec:discard-source-info)
 
-; (*active-finders*)
-
-(dspec::save-tags-database (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))
-                                          :name "dspec-database" :type oa::*om-compiled-type*))
-
-(dspec:discard-source-info)
-
+(defvar *recorded-root* cl-user::*om-src-directory*)
 
 ;;;==========================
 ;;; BUILD IMAGE
@@ -235,11 +234,16 @@
   (clos::set-clos-initarg-checking nil)
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   (om::set-language *release-language*)
+  
+  (om-lisp::init-root-definition-pathname *recorded-root* om::*om-root*)
+  
   (oa::om-init-funcall)
-  (setf dspec::*active-finders* (append dspec::*active-finders*
-                                        (list (make-pathname
-                                               :directory (pathname-directory (om::omroot "resources;"))
-                                               :name "dspec-database" :type oa::*om-compiled-type*))))
+  
+  ; doesn't work anymore on LW7...
+  ;(setf dspec::*active-finders* (append dspec::*active-finders*
+  ;                                      (list (make-pathname
+  ;                                             :directory (pathname-directory (om::omroot "resources;"))
+  ;                                             :name "dspec-database" :type oa::*om-compiled-type*))))
 
   (setf *print-case* :downcase)
   #+cocoa(setf system::*stack-overflow-behaviour* nil)

@@ -546,22 +546,21 @@
 (defun om-open-new-text-editor (&optional path)
   (open-new-text-editor path))
 
+
 ; cherche def in path
-(defun om-open-new-text-editor-at (path def)
+(defun om-open-new-text-editor-at (path str)
   (let ((edwin (open-new-text-editor path))
-        (string-to-search (concatenate 'string (string (car def))
-                                        "[!\*]* "
-                                        (string (cadr def)))
-                          ))
+        (string-to-search str))
     ;(print string-to-search)
     (when edwin
-    (capi::execute-with-interface edwin
-                                  #'(lambda () 
-                                      (with-slots (ep) edwin
-                                        (let ((buffer (editor-pane-buffer ep)))
-                                          (editor::use-buffer buffer
-                                            (call-editor ep (list 'EDITOR::REGEXP-FORWARD-SEARCH-COMMAND buffer string-to-search))
-                                            ))))))
+      (capi::execute-with-interface 
+       edwin
+       #'(lambda () 
+           (with-slots (ep) edwin
+             (let ((buffer (editor-pane-buffer ep)))
+               (editor::use-buffer buffer
+                 (call-editor ep (list 'EDITOR::REGEXP-FORWARD-SEARCH-COMMAND buffer string-to-search))
+                 ))))))
     edwin))
 
 ;;; ouvre un fichier only
@@ -892,7 +891,7 @@
       (editor::use-buffer buffer
         (setf symbol (editor::intern-symbol-from-string (editor::read-symbol-from-point :previous t :read-package-name t)))
         ;(print (list symbol (type-of symbol)))
-        (when symbol (om-lisp::om-edit-definition symbol))
+        (when symbol (om-lisp::edit-definition symbol))
       ))))
 
 ;;; LOAD THE LISP FILE ATTACHED...

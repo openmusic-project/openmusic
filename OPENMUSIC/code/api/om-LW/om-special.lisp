@@ -31,43 +31,7 @@
 
 
 (in-package :om-api)
-
-
-
-(export '( 
-          om-inspect
-          ) :om-api)
-
-
-  
-
-
-;;; SPECIAL FOR OM-LISP FIND-DEFINITION
-
-(defvar *recorded-root* nil)
-
-
-(setf *recorded-root* cl-user::*om-src-directory*)
-
-; (restore-ompath #P"/Applications/OM-6.0.10/patches/pitch-conversions.lisp")
-
-;;; remplace *recorded-root* by *om-root*
-(defun restore-ompath (path) 
-  (let ((rec-root-dir (pathname-directory *recorded-root*))
-        (path-dir (pathname-directory (translate-logical-pathname path))))   ; truename ?
-    (if (and (>= (length path-dir) (length rec-root-dir))
-             (equal rec-root-dir (butlast path-dir (- (length path-dir) (length rec-root-dir)))))
-        ;;; => path is recorded in the original rec-root-dir
-        (merge-pathnames (make-pathname :name (pathname-name path)
-                                        :type (pathname-type path)
-                                        :directory (append (pathname-directory *om-root*)
-                                                           (nthcdr (length rec-root-dir) path-dir))) *om-root*)
-      path)))
-
-
-
-
-
+(export '(om-inspect) :om-api)
 
 ;=======================
 ; INSPECTOR

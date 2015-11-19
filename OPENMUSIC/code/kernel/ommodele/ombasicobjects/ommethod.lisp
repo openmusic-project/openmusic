@@ -284,8 +284,6 @@ Class methods are the init-instance method and slot reader and writer. #class-me
 ;            method)))))
 
 
-(defun def-method-icon () 150)
- 
 (defmacro defmethod* (name &rest args)
    (multiple-value-bind (qualy lambda-list numouts initvals icon indoc outdoc doc menuins body)
                         (parse-defmethod* name args)
@@ -308,7 +306,7 @@ Class methods are the init-instance method and slot reader and writer. #class-me
               (setf (outputs-doc gen-fun) ,od)
               (setf (icon gen-fun) ,icon) ;;; (or ,icon (def-method-icon)))
               (setf (name gen-fun) ,(string name))))
-          
+                  
           (unless gen-fun 
             (setf gen-fun (fdefinition ',name))
             (when ,doc (setf (documentation gen-fun 'function) ,doc)))
@@ -322,6 +320,8 @@ Class methods are the init-instance method and slot reader and writer. #class-me
           
           (setf method (defmethod ,name ,.qualy ,lambda-list  ,.body))
           (setf (name method) ,(string name))
+          
+          (om-lisp::add-method-definition method *load-pathname*)
           
           method))))
 

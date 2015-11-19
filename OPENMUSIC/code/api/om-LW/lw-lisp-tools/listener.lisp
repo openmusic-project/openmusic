@@ -321,7 +321,7 @@
       (editor::use-buffer buffer
         (setf symbol (editor::intern-symbol-from-string (editor::read-symbol-from-point :previous t :read-package-name t)))
         ;(print (list symbol (type-of symbol)))
-        (when symbol (om-lisp::om-edit-definition symbol))
+        (when symbol (om-lisp::edit-definition symbol))
       ))))
 
 

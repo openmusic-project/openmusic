@@ -322,6 +322,7 @@ This method return a list of these methods."
         (setf (name new-class) (string ',name))
         (setf (icon new-class) ,icon)
         (attache-to-superclasses new-class)
+        (om-lisp::add-class-definition new-class *load-pathname*)
         (update-from-reference new-class ,(not up?))
         new-class)))
 
