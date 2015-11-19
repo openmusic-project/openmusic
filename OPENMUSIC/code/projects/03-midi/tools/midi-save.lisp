@@ -46,7 +46,7 @@
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
       (let ((tempo (object-midi-tempo self)))
         (when (save-midifile pathname self approx tempo (or format *def-midi-format*))
-          (namestring name)
+          (namestring pathname)
           )
         ))))
 
@@ -63,7 +63,7 @@
 - <format> alows to choose the MIDIFile format (0 or 1)
 
 For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile. Otherwise all voices are saved at tempo 60."
-  (midi-export object :path filename :approx approx :format format))
+  (midi-export object :path filename :name (if filename (pathname-name filename) "midi-out") :approx approx :format format))
 
 
 
