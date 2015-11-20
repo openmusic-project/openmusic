@@ -79,10 +79,8 @@
 (defclass om-listener-out-pane (capi::collector-pane) ())
 
 #+macosx (defparameter *listener-font* (gp::make-font-description :family "Verdana" :size 12 :weight :normal))
-#+mswindows (defparameter *listener-font* (gp::make-font-description :family "Verdana" :size 10 :weight :normal))
+#+mswindows (defparameter *listener-font* (gp::make-font-description :family "Verdana" :size 8 :weight :normal))
 #+linux (defparameter *listener-font* (gp::make-font-description :family "Liberation Mono" :size 9))
-
-*features*
 
 ;; do not work on mac...
 

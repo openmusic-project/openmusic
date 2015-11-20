@@ -110,12 +110,12 @@
   (let ((om-lisp::*om-prompt* ""))
     (print 
      (format nil 
-             "==================================
+"====================
  OpenMusic v. ~D                            
  r. ~A
  (c) IRCAM - Representations Musicales
  http://repmus.ircam.fr/openmusic/
- ==================================
+ ====================
 " 
              *version-string* *release-date*))))
 
