@@ -16,7 +16,7 @@ LISP		= $(HOME)/bin/lw $(LISPFLAGS)
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-SVNAPPNAME	= OM_6.7_beta_4
+SVNAPPNAME	= OM_6.10
 
 path_to_omroot	= ../../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
