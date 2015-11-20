@@ -777,7 +777,7 @@
                         (om-draw-line x0 0 x0 (h self))
                         (setf cur-x (incf cur-x delta-x))
                         (when (and (selected-component panel) (= i (selected-component panel)))
-                          (draw-h-rectangle (list x0 0 (+ x0 delta-x) (h self)) t))
+                          (draw-h-rectangle (list x0 0 (+ x0 delta-x) (h self)) :fill t))
                         (if (class-has-editor-p obj)
                             (draw-obj-in-rect obj x0 (+ x0 delta-x) 0 (h self) (default-edition-params obj) self)
                           (om-with-clip-rect self (om-make-rect  x0 0 (+ x0 delta-x) (h self))

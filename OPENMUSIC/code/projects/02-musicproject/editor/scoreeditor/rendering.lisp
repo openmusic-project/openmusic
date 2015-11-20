@@ -356,7 +356,7 @@
    (extras :initform nil)))
 
 (defmethod draw-rectangle ((self simple-graph-container) &optional fill )
-   (draw-h-rectangle (rectangle self) fill))
+   (draw-h-rectangle (rectangle self) :fill fill))
 
 ;debe ser mas complicado si esta eb modo linear o no mais cette fun n'est pas utilisee
 ; donc a effacer

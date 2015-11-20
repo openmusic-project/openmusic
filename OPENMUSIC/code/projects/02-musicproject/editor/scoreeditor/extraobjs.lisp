@@ -76,7 +76,7 @@
 
 (defmethod draw-score-selection ((self grap-extra-objet) selection system size)
    (if (member (reference self) selection :test 'equal)
-     (draw-h-rectangle (rectangle self)  t)))
+     (draw-h-rectangle (rectangle self) :fill t)))
 
 (defmethod open-extra-editor ((self scorepanel) (gtext grap-extra-objet)) t)
 
@@ -1250,7 +1250,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod draw-score-selection ((self grap-extra-pict) selection system size)
    (if (member (reference self) selection :test 'equal)
-     (draw-h-rectangle (rectangle self) )))
+     (draw-h-rectangle (rectangle self))))
 
 
 

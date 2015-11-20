@@ -238,12 +238,13 @@
 
 ;;;;-------select in x --------
 
-(defun draw-h-rectangle (rec &optional fill mode)
+(defun draw-h-rectangle (rec &key fill color)
   (when rec
-    (om-with-fg-color nil *om-select-color*
-      (if fill
-          (om-draw-hilite-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec)));  *om-select-color*)
-        (om-draw-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec)))))))
+    (let ((c (or color *om-select-color*)))
+      (om-with-fg-color nil c
+        (if fill
+            (om-draw-hilite-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec)) c)
+          (om-draw-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec))))))))
 
 
 (defmethod draw-selection-rectangle (view p1 p2)

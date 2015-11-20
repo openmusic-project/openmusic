@@ -550,7 +550,7 @@
          (interval (cursor-interval self)))
     (om-with-focused-view self
       (when interval
-        (draw-h-rectangle (list (time-to-pixels self (car interval)) 0 (time-to-pixels self (cadr interval)) (h self)) t))
+        (draw-h-rectangle (list (time-to-pixels self (car interval)) 0 (time-to-pixels self (cadr interval)) (h self)) :fill t))
        
       ;;; start pos
       (om-with-fg-color self *om-red2-color*

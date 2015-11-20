@@ -462,12 +462,17 @@
     (extras :initform nil)
     (boxes-from-patch :initform nil)))
 
+;;; redefine this to set a specific selection color in specific contexts
+(defmethod get-object-selection-color ((self t) (in t)) nil)
+
 (defmethod draw-rectangle ((self simple-graph-container) system size &optional fill )
   ;(om-draw-hilite-rect (- (car (rectangle self)) 4) (- (cadr (rectangle self)) 4)
   ;                        (+ (caddr (rectangle self)) 4) (+ (cadddr (rectangle self)) 4))
   (draw-h-rectangle (list (- (car (rectangle self)) 4) (- (cadr (rectangle self)) 4)
-                          (+ (caddr (rectangle self)) 4) (+ (cadddr (rectangle self)) 4)) fill t)
-  )
+                          (+ (caddr (rectangle self)) 4) (+ (cadddr (rectangle self)) 4)) 
+                    :fill fill
+                    :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
+                    ))
 
 ;debe ser mas complicado si esta eb modo linear o no
 (defmethod get-rendered-rectangle ((self simple-graph-container) x y zoom)
@@ -509,7 +514,7 @@
    (loop for item in (extras self) do
            (draw-score-selection item selection system size))
    (if (member (reference self) selection :test 'equal)
-     (draw-rectangle self system size t)
+       (draw-rectangle self system size t)
      (loop for item in (inside self) do
            (draw-score-selection item selection system size))))
 
@@ -707,7 +712,7 @@
             (rec (list (- (car rec) 4) (- (second rec) 2) (+ (third rec) 4 ) (+ (fourth rec) 2))))
        (if fill
           ; (om-draw-hilite-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec)) *om-select-color*)
-         (draw-h-rectangle rec fill t)
+         (draw-h-rectangle rec :fill fill)
          (om-with-fg-color nil (om-choose-color-dialog :color *om-select-color*)
            (om-draw-rect (car rec) (second rec) (- (third rec) (car rec) ) (- (fourth rec) (second rec))))
          ))))

@@ -195,7 +195,8 @@
                           (round (* (w self) (cursor-pos panel)) dur) (h self)))
           (when (cursor-interval panel)
             (draw-h-rectangle (list (round (* (w self) (car (cursor-interval panel))) dur) 0 
-                                    (round (* (w self) (cadr (cursor-interval panel))) dur) (h self)) t t))
+                                    (round (* (w self) (cadr (cursor-interval panel))) dur) (h self))
+                              :fill t))
           ))
       )
     (om-with-focused-view self 

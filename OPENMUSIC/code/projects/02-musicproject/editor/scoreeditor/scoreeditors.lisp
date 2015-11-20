@@ -2800,7 +2800,7 @@
 ;                                (+ (get-key-space self) (ms2pixel (cadr interval) (/ (staff-size self) 4) (staff-zoom self)))
 ;                                ;(third (rectangle (fourth interval))) 
 ;                                (+ (om-v-scroll-position self) (h self)))
-;                          t)) 
+;                          :fill t)) 
 ;      (om-with-fg-color self *om-red2-color*
 ;        (om-with-dashline 
 ;            (om-with-line-size 2 
