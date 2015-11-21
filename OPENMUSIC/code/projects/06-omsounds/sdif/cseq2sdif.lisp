@@ -156,11 +156,72 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
   (probe-file out-path)
   )))
 
+
+
 ;;; compat
 (defmethod! chordseq->sdif ((self chord-seq) &optional (outpath "cseq.sdif"))
   (chord-seq->sdif self outpath))
 
+;;; merge frames for same kind of (single) matrices (adds data in the matrix)
+;;; (from OM-Spat...)
+(defun merge-frame-data (frames)
+  (let ((newframes nil))
+    (loop while frames do
+          (let ((fr (pop frames)))
+            (if (and newframes (= (ftime (car newframes)) (ftime fr))
+                     (string-equal (signature (car newframes)) (signature fr)))
+                (loop for matrix in (lmatrix fr) do
+                      (let ((fmat (find (signature matrix) (lmatrix (car newframes)) :test 'string-equal :key 'signature)))
+                        (if fmat 
+                            (setf (data fmat) (append (data fmat) (data matrix))
+                                  (num-elts fmat) (1+ (num-elts fmat)))
+                          (setf (lmatrix fr) (append (lmatrix fr) (list matrix))))))
+              (push (make-instance 'SDIFFrame :ftime (ftime fr) :signature (signature fr)
+                                   :streamID 0 :lmatrix (lmatrix fr))
+                    newframes))))
+    (reverse newframes)))
 
+(defun make-trc-frames (partials)
+  (merge-frame-data 
+   (sort 
+    (loop for partial in partials 
+          for i = 1 then (+ i 1) append
+          (loop for p in (mat-trans partial) collect
+                (make-instance 'SDIFFrame :ftime (car p) :streamid i 
+                               :signature "1TRC"
+                               :lmatrix (list (make-instance 'raw-SDIFMatrix :signature "1TRC"
+                                                             :num-elts 1 :num-fields 4
+                                                             :data (list i (cadr p) (caddr p) 0))))
+                ))
+    '< :key 'ftime)))
+
+
+(defmethod! partials->sdif ((partials list) &optional (outpath "partials.sdif"))
+  :icon 264
+  :indoc '("a list of partials" "output pathname")
+  :doc "Saves the contents of <partials> as an SDIF file in <outpath>.
+
+Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
+"
+  (let ((out-path (cond ((pathnamep outpath) outpath)
+                         ((stringp outpath) (outfile outpath))
+                         (t (om-choose-new-file-dialog)))))
+    (when out-path
+      (let ((outfile (sdif-open-file (om-path2cmdpath out-path) 1)))
+        (sdif::SdifFWriteGeneralHeader outfile)
+        (write-nvt-tables outfile (list (default-om-NVT)))
+        (write-sdif-types outfile  "{1FTD 1TRC {1TRC sinusoidal tracks;}}")
+        (sdif::SdifFWriteAllASCIIChunks outfile)
+        (let ((frames (make-trc-frames partials)))
+          (loop for frame in frames do
+                (save-sdif frame outfile)))
+        (sdif-close-file outfile)
+        (probe-file out-path)
+        ))))
+
+
+
+;;;=========================================================
 ; get Chordseq from SDIF
 
 (defmethod! chord-seq-raw-data ((self sdiffile) &optional (datatype 'all) (stream nil))
@@ -213,8 +274,8 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
                                                 (sdif::SdifFReadOneRow ptrfile)
                                                 collect 
                                                 (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1))
-                                                      (sdif::SdifFCurrOneRowCol ptrfile 2)
-                                                      (sdif::SdifFCurrOneRowCol ptrfile 3))))
+                                                      (coerce (sdif::SdifFCurrOneRowCol ptrfile 2) 'single-float)
+                                                      (coerce (sdif::SdifFCurrOneRowCol ptrfile 3) 'single-float))))
                                     (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
                                     )
                               
@@ -258,9 +319,9 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
                                     (loop for i from 1 to nrows do
                                           (sdif::SdifFReadOneRow ptrfile)
                                           (let* ((ind (floor (sdif::SdifFCurrOneRowCol ptrfile 1)))
-                                                 (freq (sdif::SdifFCurrOneRowCol ptrfile 2))
-                                                 (amp (sdif::SdifFCurrOneRowCol ptrfile 3))
-                                                 (phase (sdif::SdifFCurrOneRowCol ptrfile 4))
+                                                 (freq (coerce (sdif::SdifFCurrOneRowCol ptrfile 2) 'single-float))
+                                                 (amp (coerce (sdif::SdifFCurrOneRowCol ptrfile 3) 'single-float))
+                                                 (phase (coerce (sdif::SdifFCurrOneRowCol ptrfile 4) 'single-float))
                                                  (par (gethash ind trc-partials)))
                                             (if par
                                                 (progn 
