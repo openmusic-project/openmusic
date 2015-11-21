@@ -118,7 +118,7 @@
 (defvar *method-definitions* nil)
 
 (defun add-class-definition (class path)
-  (let ((pathstr (namestring path))
+  (let ((pathstr (and path (namestring path)))
         (name (class-name class)))
     (unless (find (list name pathstr) *class-definitions*
                   :test #'(lambda (a b) (and (equal (car a) (car b))
@@ -133,9 +133,9 @@
                     :test #'(lambda (a b) (and (equal (caar a) (caar b))
                                                (equal (cadar a) (cadar b))
                                                (if (and (cadr a) (cadr b)) (string-equal (cadr a) (cadr b)) (equal (cadr a) (cadr b))))))
-      (push (list (list name 
-                        (mapcar 'class-name (clos::method-specializers method)))
-                  pathstr) *method-definitions*))))
+        (push (list 
+               (list name (mapcar 'class-name (clos::method-specializers method)))
+               pathstr) *method-definitions*))))
 
 
 
@@ -154,9 +154,9 @@
 
 (defun init-root-definition-pathname (oldroot newroot) 
   (loop for def in *class-definitions* do
-        (setf (nth 1 def) (restore-root (nth 1 def) oldroot newroot)))
+        (setf (nth 1 def) (namestring (restore-root (nth 1 def) oldroot newroot))))
   (loop for def in *method-definitions* do
-        (setf (nth 1 def) (restore-root (nth 1 def) oldroot newroot))))
+        (setf (nth 1 def) (namestring (restore-root (nth 1 def) oldroot newroot)))))
 
 (defun edit-definition (symbol &optional type)
   (let ((definitions 
