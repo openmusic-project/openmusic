@@ -159,7 +159,12 @@
 
 (defmethod om-view-click-handler ((self om-pick-color-view) pos)
   (declare (ignore pos))
-  (let ((color (make-instance 'omcolor :c (prompt-for-color "Color Chooser" :color (c (color self))))))
+  (let* ((c (prompt-for-color "Color Chooser")) ; :color (c (color self))))
+         (color (make-instance 'omcolor :c (color:make-rgb 
+                                            (coerce (color::color-red c) 'single-float) 
+                                            (coerce (color::color-green c) 'single-float) 
+                                            (coerce (color::color-blue c) 'single-float) 
+                                            (coerce (color::color-alpha c) 'single-float)))))
     (om-set-bg-color self color)
     (setf (color self) color)
     (when (after-fun self) (funcall (after-fun self) self))))
