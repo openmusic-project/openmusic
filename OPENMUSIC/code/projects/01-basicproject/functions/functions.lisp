@@ -675,13 +675,15 @@ Outputs
      :numouts 1
      :doc "Rotation in 3D using Euler angles. Rotates 3D-trajectory, 3DC, BPC, 3DC-lib"
          
-            (let* ((xpoints (x-points self))
-                   (ypoints (y-points self))                   
-                   (ad (multiple-value-list (xy->ad xpoints ypoints)))
-                   (a (om+ (first ad) yaw))
-                   (xy (multiple-value-list (ad->xy a (second ad)))))
-              (simple-bpf-from-list (first xy) (second xy) (type-of self) (decimals self))
-              ))
+    (let* ((xpoints (x-points self))
+           (ypoints (y-points self))                   
+           (ad (multiple-value-list (xy->ad xpoints ypoints)))
+           (a (om+ (first ad) yaw))
+           (xy (multiple-value-list (ad->xy a (second ad))))
+           (bpf (simple-bpf-from-list (first xy) (second xy) (type-of self) (decimals self))))
+      (set-color bpf (bpfcolor self))
+      bpf))
+            
 
 ;*** For lists and bpc-libs
 (defmethod! om-rotate ((self list) &key (yaw 0) (pitch 0) (roll 0))
@@ -707,8 +709,10 @@ Outputs
             (let (mybpf (thex x) (they y))
               (unless (numberp x) (setf thex 0))
               (unless (numberp y) (setf they 0))
-              (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
-              ))
+              (set-color 
+               (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
+               (bpfcolor self)
+               ))
 
 ;*** For lists and bpc-libs
 (defmethod! om-translate ((self list) &key x y z)
@@ -736,8 +740,10 @@ Outputs
                 (setf yrev (om* -1 (y-points self))))
                    (when x (setf xrev (om* -1 (x-points self))))
                    (when y (setf yrev (om* -1 (y-points self))))
-              (simple-bpf-from-list xrev yrev 'bpc (decimals self))
-              )
+              (set-color 
+               (simple-bpf-from-list xrev yrev 'bpc (decimals self))
+               (bpfcolor self)
+               ))
 
 ;*** For lists and bpc-libs
 (defmethod! om-mirror ((self list) &key x y z)

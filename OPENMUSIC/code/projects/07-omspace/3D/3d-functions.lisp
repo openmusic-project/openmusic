@@ -120,6 +120,7 @@ Outputs
              (multiple-value-bind (a e d) (xyz->aed (x-points res) (z-points res) (y-points res))
                (multiple-value-bind (x y z) (aed->xyz (om+ a roll) e d)
                  (3dc-from-list x z y (type-of self) (decimals self))))))
+     (set-color res (bpfcolor self))
      res))
   
   
@@ -140,7 +141,8 @@ Outputs
              (multiple-value-bind (a e d) (xyz->aed (x-points res) (z-points res) (y-points res))
                (multiple-value-bind (x y z) (aed->xyz (om+ a roll) e d)
                  (traject-from-list x z y (times self) (type-of self) (decimals self) (sample-params self) (interpol-mode self))))))
-     res)) 
+     (set-color res (bpfcolor self))
+     res))
 
 
 
@@ -157,47 +159,52 @@ Outputs
 ;;; TRANSLATION 
 ;;; From OMPrisma traj-translate
 (defmethod! om-translate ((self 3dc) &key x y z)  
-            (let (mybpf (thex x) (they y) (thez z))
-              (unless (numberp x) (setf thex 0))
-              (unless (numberp y) (setf they 0))
-              (unless (numberp z) (setf thez 0))
-              (3dc-from-list (om+ (x-points self) thex) (om+ (y-points self) they) (om+ (z-points self) thez) (type-of self) (decimals self))
-              ))
+   (let (mybpf (thex x) (they y) (thez z))
+     (unless (numberp x) (setf thex 0))
+     (unless (numberp y) (setf they 0))
+     (unless (numberp z) (setf thez 0))
+     (set-color 
+      (3dc-from-list (om+ (x-points self) thex) (om+ (y-points self) they) (om+ (z-points self) thez) (type-of self) (decimals self))
+      (bpfcolor self))
+     ))
 
 (defmethod! om-translate ((self 3d-trajectory) &key x y z)  
-            (let (mybpf (thex x) (they y) (thez z))
-              (unless (numberp x) (setf thex 0))
-              (unless (numberp y) (setf they 0))
-              (unless (numberp z) (setf thez 0))
-              (traject-from-list (om+ (x-points self) thex) (om+ (y-points self) they) (om+ (z-points self) thez) 
-                                 (times self) (type-of self) (decimals self) 
-                                 (sample-params self) (interpol-mode self))
-              ))
+  (let (mybpf (thex x) (they y) (thez z))
+    (unless (numberp x) (setf thex 0))
+    (unless (numberp y) (setf they 0))
+    (unless (numberp z) (setf thez 0))
+    (set-color 
+     (traject-from-list (om+ (x-points self) thex) (om+ (y-points self) they) (om+ (z-points self) thez) 
+                        (times self) (type-of self) (decimals self) 
+                        (sample-params self) (interpol-mode self))
+     (bpfcolor self)
+     )))
 
-;*** For 3DC-libs
 (defmethod! om-translate ((self 3dc-lib) &key x y z)
-            (let ((the3dc-lib (make-instance '3dc-lib)))
-              (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) (bpf-list self)))
-              the3dc-lib)
-            )
+  (let ((the3dc-lib (make-instance '3dc-lib)))
+    (setf (bpf-list the3dc-lib) (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) (bpf-list self)))
+    the3dc-lib))
+
 
 ;;; MIRROR
 ;;; From OMPrisma traj-mirror
 (defmethod! om-mirror ((self 3D-trajectory) &key x y z)
-            (traject-from-list (if x (om* -1 (x-points self)) (x-points self)) 
-                               (if y (om* -1 (y-points self)) (y-points self)) 
-                               (if z (om* -1 (z-points self)) (z-points self)) 
-                               (times self) '3d-trajectory (decimals self) (sample-params self) (interpol-mode self))
-                   )
+    (set-color 
+     (traject-from-list (if x (om* -1 (x-points self)) (x-points self)) 
+                        (if y (om* -1 (y-points self)) (y-points self)) 
+                        (if z (om* -1 (z-points self)) (z-points self)) 
+                        (times self) '3d-trajectory (decimals self) (sample-params self) (interpol-mode self))
+     (bpfcolor self)))
 
 
 ;*** for 3DCs
 (defmethod! om-mirror ((self 3DC) &key x y z)
-              (3Dc-from-list (if x (om* -1 (x-points self)) (x-points self)) 
-                             (if y (om* -1 (y-points self)) (y-points self)) 
-                             (if z (om* -1 (z-points self)) (z-points self))
-                             '3Dc (decimals self))
-              )
+  (set-color 
+   (3Dc-from-list (if x (om* -1 (x-points self)) (x-points self)) 
+                  (if y (om* -1 (y-points self)) (y-points self)) 
+                  (if z (om* -1 (z-points self)) (z-points self))
+                  '3Dc (decimals self))
+   (bpfcolor self)))
 
 ;*** For 3DC-libs
 (defmethod! om-mirror ((self 3dc-lib) &key x y z)
