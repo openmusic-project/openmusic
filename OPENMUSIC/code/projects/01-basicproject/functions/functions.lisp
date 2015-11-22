@@ -712,7 +712,7 @@ Outputs
               (set-color 
                (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
                (bpfcolor self)
-               ))
+               )))
 
 ;*** For lists and bpc-libs
 (defmethod! om-translate ((self list) &key x y z)
@@ -754,5 +754,5 @@ Outputs
             (let ((thebpc-lib (make-instance 'bpc-lib)))
               (setf (bpf-list thebpc-lib) (mapcar (lambda (thelist) (om-mirror thelist :x x :y y :z z)) (bpf-list self)))
               thebpc-lib)
-            )     
+            )
 
