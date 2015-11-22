@@ -713,6 +713,7 @@ Outputs
                (simple-bpf-from-list (om+ (x-points self) thex) (om+ (y-points self) they) 'bpc (decimals self))
                (bpfcolor self)
                ))
+            )
 
 ;*** For lists and bpc-libs
 (defmethod! om-translate ((self list) &key x y z)
