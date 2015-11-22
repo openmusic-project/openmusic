@@ -706,7 +706,7 @@ Outputs
             :indoc '("A bpc, 3DC, 3D-trajectory")
             :numouts 1
             :doc "Translates a bpc, 3DC, 3D-trajectory"
-            (let (mybpf (thex x) (they y))
+            (let ((mybpf (thex x) (they y)))
               (unless (numberp x) (setf thex 0))
               (unless (numberp y) (setf they 0))
               (set-color 
@@ -714,10 +714,10 @@ Outputs
                (bpfcolor self)
                )))
 
+
 ;*** For lists and bpc-libs
 (defmethod! om-translate ((self list) &key x y z)
-            (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) self)
-            )
+   (mapcar (lambda (thelist) (om-translate thelist :x x :y y :z z)) self))
 
 (defmethod! om-translate ((self bpc-lib) &key x y z)
             (let ((thebpc-lib (make-instance 'bpc-lib)))
