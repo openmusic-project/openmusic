@@ -26,6 +26,6 @@
    (load-one-private-patch "with-port-context-current" :capi-cocoa)
    (load-one-private-patch "draw-metafile" :capi)
    (load-one-private-patch "draw-metafile-cocoa" :capi-cocoa)
-   #+lispworks-64bit(load-one-private-patch "nsglyphstorage-removed" :cocoa)
+   (load-one-private-patch "nsglyphstorage-removed" :cocoa)
     ))
 
