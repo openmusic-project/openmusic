@@ -224,16 +224,22 @@
       (t (print (format nil "(cl-midi) message-type ~A isn't supported yet" type)) NIL))))
 
 (defun seq2tracks (seq)
-  (remove nil
-          (loop for ev in seq
-                for msg = (make-messages-from-event ev)
-                if (listp msg) append msg
-                else collect msg)))
+  (let ((tracks nil))
+    (loop for ev in seq
+          for msg = (make-messages-from-event ev)
+          do (let* ((tracknum (or (midi-evt-ref ev) 0))
+                    (trackpos (position tracknum tracks :key 'car :test '=)))
+               (if trackpos (setf (nth trackpos tracks) 
+                                  (list tracknum
+                                        (append (cadr (nth trackpos tracks)) (if (listp msg) msg (list msg)))))
+                 (push (list tracknum (if (listp msg) msg (list msg))) tracks))))
+    (mapcar 'cadr (sort tracks '< :key 'car))))
+
 
 (defun cl-midi-save-file (seq filename fileformat clicks)
   (declare (ignore timedef tracks))
   (let ((mf (make-instance 'midi:midifile :format fileformat :division clicks)))
-    (setf (slot-value mf 'midi::tracks) (list (seq2tracks seq)))
+    (setf (slot-value mf 'midi::tracks) (seq2tracks seq))
     #+lispworks(sys::ENSURE-DIRECTORIES-EXIST filename :verbose t)  ;;; !!! LW specific
     (midi:write-midi-file mf filename)
     filename))
