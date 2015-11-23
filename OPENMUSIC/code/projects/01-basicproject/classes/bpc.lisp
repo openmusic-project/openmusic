@@ -131,8 +131,8 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
               (let ((next-pixel (point-to-pixel-with-sizes ranges next-point (- x1 x) (- y1 y))))
                 (om-draw-line (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point))
                               (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel))))))
-          (unless lines
-            (om-draw-rect (- (om-point-h pix-point) 1) (- (om-point-v pix-point) 1) 3 3))))))
+          (unless nil ; lines
+            (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3))))))
 
 
 
