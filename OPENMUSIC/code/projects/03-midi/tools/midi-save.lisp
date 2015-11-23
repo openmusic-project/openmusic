@@ -29,7 +29,7 @@
   (tempo-a-la-noire (car (tempo self))))
 
 (defmethod object-midi-tempo ((self poly)) 
-  (let ((poly-same-tempo self))
+  (let ((tempo (poly-same-tempo self)))
     (if tempo (tempo-a-la-noire (car tempo)) nil)))
 
 (defmethod midi-export ((self t) &key path name format approx)

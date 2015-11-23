@@ -168,19 +168,19 @@
 
 
 (defun note-events (port chan pitch vel dur date track)
-   (list (om-midi::make-midi-evt :type :KeyOn
-                        :date date 
-                        :port (or port *def-midi-out*) 
-                        :chan chan 
-                        :ref track
-                        :fields (list pitch vel))
-         (om-midi::make-midi-evt :type :KeyOff
-                        :date (+ dur date) 
-                        :port (or port *def-midi-out*) 
-                        :chan chan 
-                        :ref track
-                        :fields (list pitch 0))
-         ))
+  (list (om-midi::make-midi-evt :type :KeyOn
+                                :date date 
+                                :port (or port *def-midi-out*) 
+                                :chan chan 
+                                :ref track
+                                :fields (list pitch vel))
+        (om-midi::make-midi-evt :type :KeyOff
+                                :date (+ dur date) 
+                                :port (or port *def-midi-out*) 
+                                :chan chan 
+                                :ref track
+                                :fields (list pitch 0))
+        ))
          
 (defmethod PrepareToPlay ((player (eql :midi)) (self note) at &key  approx port interval voice)
   (when (not (memq (tie self) '(continue end)))
