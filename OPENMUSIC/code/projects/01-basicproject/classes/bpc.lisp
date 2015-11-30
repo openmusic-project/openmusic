@@ -118,10 +118,12 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
       (draw-bpc-in-rect self x x1 y y1 (give-bpf-range self)))))
 
 (defun draw-bpc-in-rect (bpf x x1 y y1 ranges)
-  (if (= 1 (length (point-list bpf)))
-      (let* ((pix-point (point-to-pixel-with-sizes ranges (car (point-list bpf)) (- x1 x) (- y1 y))))
-        (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3))
-    (loop for thepoint in (point-list bpf)
+  (let* ((pl (length (point-list bpf)))
+        (draw-points (< pl 50)))
+    (if (= 1 pl)
+        (let* ((pix-point (point-to-pixel-with-sizes ranges (car (point-list bpf)) (- x1 x) (- y1 y))))
+          (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3))
+      (loop for thepoint in (point-list bpf)
         for i = 0 then (+ i 1) do
         (let* ((pix-point (point-to-pixel-with-sizes ranges thepoint (- x1 x) (- y1 y)))
                (next-point (nth (+ i 1) (point-list bpf)))
@@ -131,8 +133,8 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
               (let ((next-pixel (point-to-pixel-with-sizes ranges next-point (- x1 x) (- y1 y))))
                 (om-draw-line (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point))
                               (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel))))))
-          (unless nil ; lines
-            (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3))))))
+          (when draw-points
+            (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3)))))))
 
 
 

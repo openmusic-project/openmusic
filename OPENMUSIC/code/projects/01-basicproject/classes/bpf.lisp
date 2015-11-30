@@ -522,8 +522,9 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
 
 
 (defun draw-bpf-in-rect (bpf x x1 y y1 ranges)
-  (let ((pixels (- x1 x))
-        (points (length (point-list bpf))))
+  (let* ((pixels (- x1 x))
+        (points (length (point-list bpf)))
+        (draw-points (< points 50)))
     (if (> points (* 4 pixels))
         (min-max-draw-bpf (point-list bpf) (- x1 x) (- y1 y) ranges x y)
         (loop for point-list on (point-list bpf) do
@@ -540,9 +541,10 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
 			 (and (second point-list) next-point ;; ?
 			      (not (equal next-point (second point-list)))))
 		 (let ((next-pixel (point-to-pixel-with-sizes ranges next-point (- x1 x) (- y1 y))))
-		   ;;(print *curstream*)
 		   (om-draw-line (+ x (om-point-h pix-point)) (+ y (om-point-v pix-point))
-				 (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel))))))))))
+				 (+ x (om-point-h next-pixel)) (+ y (om-point-v next-pixel)))))
+               (when draw-points (om-fill-rect (+ x (- (om-point-h pix-point) 1)) (+ y (- (om-point-v pix-point) 1)) 3 3))
+               )))))
 
 
 

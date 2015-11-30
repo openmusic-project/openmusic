@@ -155,7 +155,7 @@
 
 
 ; (clean-sources)
-; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 5) '("OM-LIBRARIES" "trunk" "OM-Faust"))))
+; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("OTHER-LIBS" "OM-SoX 1.0b7"))))
 
 
 (defun count-lines (file)
