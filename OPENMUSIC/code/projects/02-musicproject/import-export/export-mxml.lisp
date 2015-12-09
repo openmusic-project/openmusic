@@ -368,11 +368,11 @@
   (mapc #'(lambda (x) (setf (car x) (string-upcase (string (car x)))))
     '((c . :n) (c . :h) (c . :q) (c . :hq) (c . :s) (c . :hs) (c . :qs) (c . :hqs)
       (d . :n) (d . :h) (d . :q) (d . :hq) (d . :s) (d . :hs) (d . :qs) (d . :hqs)
-      (e . :n) (e . :q) (e . :q) (e . :hq)
-      (f . :n) (f . :q) (f . :s) (f . :qs) (f . :s) (f . :hs) (f . :qs) (f . :hqs)
-      (g . :n) (g . :q) (g . :s) (g . :qs) (g . :s) (g . :hs) (g . :qs) (g . :hqs)
-      (a . :n) (a . :q) (a . :s) (a . :qs) (a . :s) (a . :hs) (a . :qs) (a . :hqs)
-      (b . :n) (b . :q) (b . :q) (b . :hq))))
+      (e . :n) (e . :h) (e . :q) (e . :hq)
+      (f . :n) (f . :h) (f . :q) (f . :hq) (f . :s) (f . :hs) (f . :qs) (f . :hqs)
+      (g . :n) (g . :h) (g . :q) (g . :hq) (g . :s) (g . :hs) (g . :qs) (g . :hqs)
+      (a . :n) (a . :h) (a . :q) (a . :hq) (a . :s) (a . :hs) (a . :qs) (a . :hqs)
+      (b . :n) (b . :h) (b . :q) (b . :hq))))
 
 (defparameter *kascii-note-scales* (list *kascii-note-C-scale*))
 
@@ -392,7 +392,7 @@
     (1.75 sharp-three)
     ))
 
-; (mc->xmlvalues 6125 8)
+; (mc->xmlvalues 6548 4)
 
 (defun mc->xmlvalues (midic &optional (approx 2))
   "Converts <midic> to a string representing a symbolic ascii note."
