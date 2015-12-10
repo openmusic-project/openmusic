@@ -374,7 +374,6 @@
       (a . :n) (a . :h) (a . :q) (a . :hq) (a . :s) (a . :hs) (a . :qs) (a . :hqs)
       (b . :n) (b . :h) (b . :q) (b . :hq))))
 
-
 (defparameter *kascii-note-scales* (list *kascii-note-C-scale*))
 
 (defparameter *kascii-note-alterations*
