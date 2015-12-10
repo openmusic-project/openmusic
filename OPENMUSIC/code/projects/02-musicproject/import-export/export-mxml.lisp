@@ -569,20 +569,16 @@
          (unite (/ durtot denom)))
     (cond
      ((not (om::get-group-ratio self))
-      ;(print "NO GROUP")
       (loop for obj in inside append 
             (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
                                (/ (om::extent self) (om::qvalue self)))))
-              (cons-xml-expr obj :free (* dur-obj durtot)))))
-     (t ;(print "GROUP") 
-        ;(print (list num denom durtot))
-        (loop for obj in inside 
+              (cons-xml-expr obj :free (* dur-obj durtot) :approx approx))))
+     (t (loop for obj in inside 
               append
               (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
                                    (/ (om::extent self) (om::qvalue self))))
                      (dur-obj (* num operation)))                     
-                ;(print (list obj dur-obj (* dur-obj unite)))
-                (cons-xml-expr obj :free (* dur-obj unite))))   ;;;; ACHTUNG !!
+                (cons-xml-expr obj :free (* dur-obj unite) :approx approx)))   ;;;; ACHTUNG !!
         ))))
 
 
