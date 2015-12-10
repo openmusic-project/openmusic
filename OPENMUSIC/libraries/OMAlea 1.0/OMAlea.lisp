@@ -36,9 +36,9 @@
 ;--------------------------------------------------
 (defvar *subpackages-list* nil)
 (setf *subpackages-list*
-      '(("distributions" nil nil (ran ran01 choix choixmultiple istexp  expobi distlin
+      '(("distributions" nil nil (ran ran01 choix choixmultiple distexp  expobi distlin
                                       distcauchy distlog distCsHp distarsin poisson triang weilbull
-                                      gauss gamma beta) nil)
+                                      gauss gamma beta bfp-to-distribution) nil)
         ("alea-seq" nil nil (not-centr alea-seq   linea-seq triang-seq) nil)
         ("random-walks" nil nil ( brownian1 brownian2  randwalk1  randwalk2  
    randwalkX achorripsis i1/f seq1/f markov1 markov2 Ana-Mark Ana-Mark1 Ana-Mark2 transition2) nil)
