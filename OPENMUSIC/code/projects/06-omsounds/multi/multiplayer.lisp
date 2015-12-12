@@ -92,13 +92,14 @@
    )
 
 
-
 (defmethod player-start ((engine (eql :multiplayer)) &optional play-list) (call-next-method))
 
 (defmethod player-play-object ((engine (eql :multiplayer)) (object sound) &key interval params)
   ;(print "multiplayer play")
   (when *multiplayer-file-to-play*
-    (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 1))))
+    (progn 
+      (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/gain" (multi-vol-convert (vol (print object)))))
+      (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 1)))))
 
 (defmethod player-stop ((engine (eql :multiplayer)) &optional play-list)
   ;(print "multiplayer stop")
@@ -243,8 +244,37 @@
       )
     (om-modal-dialog dialog)))
 
+; Editor controls
 
+(defmethod multi-vol-convert ((self number)) 
+  (lin->db (* 0.01 self)))
 
+(defmethod multi-convert-vol ((self number)) 
+  (om-round (* 100 (db->lin self)) 5)
+  )
 
-
+(defmethod make-player-specific-controls ((self (eql :multiplayer)) control-view)
+  (let ((snd (object (editor control-view))))
+   ; ------------------------------------------
+    (list 
+     (om-make-dialog-item 'om-static-text 
+                          (om-make-point 145 8)
+                          (om-make-point 40 20) "Gain" ;level
+                          :font *om-default-font1*)
+     
+     (om-make-dialog-item 'edit-numBox
+                          (om-make-point 110 8)
+                          (om-make-point 35 18) (format nil " ~4f" (om-round (multi-vol-convert (vol snd)) 3))
+                          :min-val -76 :max-val 12
+                         ;:incr 0.01
+                          :font *om-default-font1*
+                          :bg-color *om-white-color*
+                          :value (setf *multigain* (multi-vol-convert (vol snd)))
+                          :afterfun #'(lambda (item)
+                                        (setf (vol snd) (multi-convert-vol (value item)))
+                                        (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/gain" (value item))))
+                                        )
+     ; to add: Decoding Options
+     )
+    ))
 
