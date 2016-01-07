@@ -739,6 +739,19 @@
   (setf (selected-component (om-view-container self)) (component-n-at (om-view-container self) where))
   (update-bar-names (om-view-container self)))
 
+(defmethod om-view-doubleclick-handler ((self list-parameter-panel) where)
+  (let ((array (object (get-panel self)))
+        (n (component-n-at (om-view-container self) where)))
+    (when (>= n 0)
+      (let* ((val (nth n (get-array-row array (index self))))
+            (rep (om-get-user-string "Array cell value:" :initial-string (format nil "~A" val))))
+        (when rep 
+          (if (stringp val)
+              (setf (nth n (nth (index self) (data array))) rep)
+            (setf (nth n (nth (index self) (data array))) (read-from-string rep nil)))
+          (om-invalidate-view self)
+          (report-modifications (editor (get-panel self))))))))
+  
 (defmethod selected-p ((self list-parameter-panel)) 
   (member (index self) (selected-index (om-view-container self))))
 
