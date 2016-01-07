@@ -40,6 +40,7 @@
 
 
 (defmethod active ((self t)) nil)
+(defmethod color ((self t)) nil)
 (defmethod listeners ((self t)) nil)
 (defmethod (setf listeners) (a b) nil)
 
