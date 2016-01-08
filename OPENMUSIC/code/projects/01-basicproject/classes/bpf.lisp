@@ -512,13 +512,14 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
     ))
 
 (defmethod min-max-draw-bpf (points w h ranges pix0 piy0)
-  (let* ((winsize (/ (length points) w )))
-    (loop for i from 0 to (- w 1)
-       for j = pix0 then (+ j 1) do
-	 (let* ((minmax (get-minmax points i winsize))
-		(min (point-to-pixel-with-sizes ranges (om-make-big-point 0 (car minmax)) w h))
-		(max (point-to-pixel-with-sizes ranges (om-make-big-point 0 (second minmax)) w h)))
-	   (om-draw-line j (+ piy0 (om-point-v min)) j (+ piy0 (om-point-v max)))))))
+  (when (> w 0)
+    (let* ((winsize (/ (length points) w)))
+      (loop for i from 0 to (- w 1)
+            for j = pix0 then (+ j 1) do
+            (let* ((minmax (get-minmax points i winsize))
+                   (min (point-to-pixel-with-sizes ranges (om-make-big-point 0 (car minmax)) w h))
+                   (max (point-to-pixel-with-sizes ranges (om-make-big-point 0 (second minmax)) w h)))
+              (om-draw-line j (+ piy0 (om-point-v min)) j (+ piy0 (om-point-v max))))))))
 
 
 (defun draw-bpf-in-rect (bpf x x1 y y1 ranges)

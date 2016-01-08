@@ -137,7 +137,7 @@
                                 ))
         (inv (oa::om-make-view 'portmidi-ports-view :position (oa::om-make-point 10 10)
                                :size (oa::om-make-point 380 210)
-                               :direction :in))
+                               :direction :in :scrollbars t))
         
         (outv (oa::om-make-view 'portmidi-ports-view :position (oa::om-make-point 400 10)
                                 :size (oa::om-make-point 380 210)

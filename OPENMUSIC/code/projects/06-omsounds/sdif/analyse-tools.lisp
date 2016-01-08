@@ -193,7 +193,7 @@ Other more specific type of data can be extracted by setting the <stream>, <fram
   :icon 608
   ;;; test si le type de la matrice est 1BEG 
   ;;; les marqueurs automatiques renvoient 1BEG, les marqueurs manuels revoient nil
-  (if (first (nth 0 (fifth (nth 0 (framesdesc self))))) 
+  (if (first (nth 0 (fifth (nth 0 (framesdesc self)))))
       (get-times self streamid "1MRK" "1BEG" nil nil)
     (get-times self streamid "1MRK" nil nil nil) ))
 
