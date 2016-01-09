@@ -1916,12 +1916,11 @@
          (1 (make-instance 'arp-chord :notes (sort notes '< :key 'midic)))
          (2 (make-instance 'arp-chord :notes (sort notes '> :key 'midic)))
          (3 (make-instance 'arp-chord :notes notes)))
-     ;(list objtoplay 
-     ;      :port (get-edit-param self 'outport)
-     ;      :approx (get-edit-param self 'approx))
        )
     self))
 
+;;; request from TM/JF: never play a box in "arp" mode
+;;; to do it, just use mode = 0 always
 (defmethod play-obj-from-value ((value chord) (box omboxeditcall)) 
   (chord-obj-to-play value (get-edit-param box 'mode)))
 
