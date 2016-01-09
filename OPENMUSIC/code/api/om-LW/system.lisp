@@ -424,7 +424,7 @@
 
 (defun om-delete-directory (path)
   (if (system::directory-pathname-p path)
-      (let ((directories (om-directory  path :directories t :files t)))     
+      (let ((directories (om-directory path :directories t :files t :hidden-files t)))     
         (loop for item in directories do
               (om-delete-directory item))
         (delete-directory path :no-error)
