@@ -23,6 +23,7 @@
                     (nth (1+ (position :port params)) params)
                 (if (caller player) (get-edit-param (caller player) 'outport)))))
     ;(print params)
+    ;(print port)
     (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
@@ -33,10 +34,11 @@
                                (+ (or (car interval) 0) (om-midi::midi-evt-date evt))
                                nil)
                 )
-
-                ;(remove-if #'(lambda (evt) (or (null evt) (and interval (or (< (om-midi::midi-evt-date evt) (car interval))
-                ;                                                           (> (om-midi::midi-evt-date evt) (cadr interval))))))
-            (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))
+            
+            
+            (append (and (and *midi-microplay* approx (find approx '(4 8) :test '=))
+                         (microplay-events at (get-obj-dur object) port))
+                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port))))
             )
     (sort-events player)
     ))
@@ -55,6 +57,7 @@
                ))
         )
   (midi-stop)
+  (if *midi-microplay* (microplay-reset nil engine))
   (setf *key-ons* (make-list 16)))
 
 (defmethod player-loop ((self (eql :midi-player)) player &optional play-list)
@@ -84,9 +87,58 @@
   )
 
 
+;;;==============================
+;;; MICROTONALITE
+;;;==============================
+
+;;; use msb / LSB ?
+(defun make-pitchwheel-event (date chan port val)
+  (om-midi::make-midi-evt :type :PitchBend
+                        :date date
+                        :port port 
+                        :chan chan 
+                        :ref 0
+                        :fields val))
+
+;;; variable set by the MIDI preferences
+(defvar *midi-microplay* nil)
 
 
+; (om+ 8192 '(0 1024 2048 3072))
+; (* 8192 2)
+(defun microplay-reset (port player)
+  (let ((send-fun (or (om-midi::send-midi-event-function player)
+                      'midi-send-evt))
+        (p (or port *def-midi-out*)))    
+  (funcall send-fun (make-pitchwheel-event 0 1 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 2 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 3 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 4 p 8192))
+  ))
 
+; (microplay-set 0 :portmidi)
+; (microplay-reset 0 :portmidi)
 
+(defun microplay-set (port player)
+  (let ((send-fun (or (om-midi::send-midi-event-function player)
+                      'midi-send-evt))
+        (p (or port *def-midi-out*)))    
+  (funcall send-fun (make-pitchwheel-event 0 1 p 8192))
+  (funcall send-fun (make-pitchwheel-event 0 2 p 9216))
+  (funcall send-fun (make-pitchwheel-event 0 3 p 10240))
+  (funcall send-fun (make-pitchwheel-event 0 4 p 11264))
+  ))
+
+(defun microplay-events (at dur port)
+  ;;; make or send ... ?
+  (let ((port (or port *def-midi-out*)))
+    (list (make-pitchwheel-event at 1 port 8192) 
+          (make-pitchwheel-event at 2 port 9216) 
+          (make-pitchwheel-event at 3 port 10240) 
+          (make-pitchwheel-event at 4 port 11264) 
+          (make-pitchwheel-event (+ at dur) 1 port 8192) 
+          (make-pitchwheel-event (+ at dur) 2 port 8192) 
+          (make-pitchwheel-event (+ at dur) 3 port 8192) 
+          (make-pitchwheel-event (+ at dur) 4 port 8192))))
 
 
