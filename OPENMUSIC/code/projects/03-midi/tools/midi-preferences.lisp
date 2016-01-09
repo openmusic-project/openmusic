@@ -9,8 +9,8 @@
 (defvar *def-midi-in* 0 "default input port number")
 
 (defvar *def-midi-format* 1)
-(defparameter *default-midi-system* nil)
-(defparameter *default-midi-file-system* nil)
+(defvar *default-midi-system* nil)
+(defvar *default-midi-file-system* nil)
 
 (defparameter *midi-microplay* nil)
 (defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
@@ -66,12 +66,6 @@
                                   :font *controls-font* 
                                   :scrollbars :v :retain-scrollbars t
                                   :bg-color *om-light-gray-color*))
-         (init-action #'(lambda () 
-                          (when *running-midi-boxes*
-                            (om-message-dialog 
-                             (format nil "Warning: Restarting MIDI will stop all currently running MIDI receie loops.~%[currently: ~D running]" 
-                                     (length *running-midi-boxes*)))
-                            (mapcar 'stop-midi-in *running-midi-boxes*))))
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2)) (i 0))
      (om-add-subviews thescroll
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 200 30) 
@@ -203,21 +197,17 @@
                                            :checked-p (get-pref modulepref :auto-microtone-bend)
                                            :di-action #'(lambda (item) 
                                                           (set-pref modulepref :auto-microtone-bend (om-checked-p item))))
+
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 400 30) 
+                                           "(works only with objects using a global MIDI port)"
+                                           :font *om-default-font1*)
                       
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 45)) (om-make-point 160 24) "Devices/ports setup:" :font *controls-font*)
                       (if (and *default-midi-system* (om-midi::midi-setup-function *default-midi-system*))
                           (om-make-view 'button-icon
                                     :position (om-make-point 570 (- i 4)) 
                                     :size (om-make-point 32 32)
-                                    :action #'(lambda (item) (declare (ignore item))
-                                                (let ((setup-values (funcall (om-midi::midi-setup-function *default-midi-system*) (get-pref modulepref :midi-setup) init-action)))
-                                                  (when setup-values 
-                                                    (set-pref modulepref :midi-setup setup-values)
-                                                    (when (om-midi::midi-connect-function *default-midi-system*)
-                                                      (funcall init-action)
-                                                      (funcall (om-midi::midi-connect-function *default-midi-system*) setup-values)
-                                                      ))
-                                                  ))
+                                    :action #'(lambda (item) (declare (ignore item)) (midi-setup modulepref))
                                     :iconid 135)
                         (om-make-dialog-item 'om-static-text (om-make-point 560 i) (om-make-point 100 40) 
                                            "SETUP UNAVAILABLE"
@@ -235,9 +225,8 @@
                                            :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
                                            :di-action #'(lambda (item) (declare (ignore item))
                                                           (when (om-midi::midi-restart-function *default-midi-system*)
-                                                            (funcall init-action)
+                                                            (before-restart-action)
                                                             (funcall (om-midi::midi-restart-function *default-midi-system*)))
-                                                          
                                                           ;;; TEST
                                                           (when (om-midi::midi-connect-function *default-midi-system*)
                                                             (funcall (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
@@ -245,6 +234,25 @@
                       )
     thescroll))
 
+(defun before-restart-action () 
+  (when *running-midi-boxes*
+    (om-message-dialog 
+     (format nil "Warning: Restarting MIDI will stop all currently running MIDI receive loops.~%[currently: ~D running]" 
+             (length *running-midi-boxes*)))
+    (mapcar 'stop-midi-in *running-midi-boxes*)))
+
+(defun apply-setup (vals)
+  (before-restart-action)
+  (when (om-midi::midi-connect-function *default-midi-system*)
+    (funcall (om-midi::midi-connect-function *default-midi-system*) vals)))
+
+(defun midi-setup (modulepref)
+  (funcall (om-midi::midi-setup-function *default-midi-system*)
+           (get-pref modulepref :midi-setup) 
+           #'(lambda (vals) 
+              (set-pref modulepref :midi-setup vals) 
+              (apply-setup vals))))
+    
 (defun add-midi-preferences ()
   (push-pref-module (list :midi (get-def-vals :midi))))
 

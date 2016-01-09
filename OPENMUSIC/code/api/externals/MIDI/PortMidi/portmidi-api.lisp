@@ -226,6 +226,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 
 (defun portmidi-send-evt (evt)
+  (print evt)
   (when (midi-evt-port evt)
     (let ((out (get-output-stream-from-port (midi-evt-port evt)))
           (bytes (make-midi-bytes (midi-evt-type evt) 
