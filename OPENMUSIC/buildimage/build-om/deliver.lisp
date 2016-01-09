@@ -181,11 +181,11 @@
 ;;;==========================
 ;;; SOURCE DEFINITIONS
 ;;;==========================
-; doesn't work anymore in LW 7
+; doesn't work anymore in LW 7 ?
 ;*active-finders*
-;(dspec::save-tags-database (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))
-;                                          :name "dspec-database" :type oa::*om-compiled-type*))
-;(dspec:discard-source-info)
+(dspec::save-tags-database (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))
+                                          :name "dspec-database" :type oa::*om-compiled-type*))
+(dspec:discard-source-info)
 
 (defvar *recorded-root* cl-user::*om-src-directory*)
 
@@ -239,11 +239,11 @@
   
   (oa::om-init-funcall)
   
-  ; doesn't work anymore on LW7...
-  ;(setf dspec::*active-finders* (append dspec::*active-finders*
-  ;                                      (list (make-pathname
-  ;                                             :directory (pathname-directory (om::omroot "resources;"))
-  ;                                             :name "dspec-database" :type oa::*om-compiled-type*))))
+  ; doesn't work anymore on LW7...?
+  (setf dspec::*active-finders* (append dspec::*active-finders*
+                                        (list (make-pathname
+                                               :directory (pathname-directory (om::omroot "resources;"))
+                                               :name "dspec-database" :type oa::*om-compiled-type*))))
 
   (setf *print-case* :downcase)
   #+cocoa(setf system::*stack-overflow-behaviour* nil)

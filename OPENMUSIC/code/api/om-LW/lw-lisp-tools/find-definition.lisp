@@ -44,12 +44,12 @@
 ; 
 
 (defun show-definitions-dialog (symb deflist)
-  (let* ((w 300) (h 200)
+  (let* ((w 400) (h 200)
         (win (make-instance 'capi::interface
                              :title (concatenate 'string "Definitions of " (string-upcase (string symb)))
                              :name (gensym)
                              :width w :height h
-                             :resizable nil
+                             :resizable t
                              ;:window-styles nil
                              )))
     (set-hint-table win (list :external-min-width w :external-max-width w 
@@ -61,20 +61,26 @@
                                              (list
                                               (make-instance 'capi::list-panel
                                                              :x 10 :y 10
-                                                             :width 270 :height 160
+                                                             :width 370 :height 160
                                                              :interaction :single-selection
                                                              :retract-callback nil
                                                              :focus nil
                                                              :callback-type '(:collection)
                                                              :test-function 'string-equal
                                                              :items (loop for item in deflist collect
-                                                                          (if (listp (car item)) (format nil "~A ~A" (caar item) (cadar item))
-                                                                            (format nil "~A" (car item))))
+                                                                          (concatenate 'string 
+                                                                                       (if (listp (car item)) 
+                                                                                           (if (cadar item) 
+                                                                                               (format nil "~A ~A" (caar item) (cadar item))
+                                                                                             (format nil "~A" (caar item)))
+                                                                                         (format nil "~A" (car item)))
+                                                                                       " -- "
+                                                                                       (format nil "~A" (cadr item))))
                                                                             
                                                              :action-callback #'(lambda (list)
                                                                                   (let ((def (car (nth (capi::choice-selection list) deflist)))
                                                                                         (file (cadr (nth (capi::choice-selection list) deflist))))
-                                                                                    (if file
+                                                                                    (if (and file (or (stringp file) (pathnamep file)))
                                                                                         (if (probe-file file)
                                                                                             (progn
                                                                                               (om-open-new-text-editor-at 
@@ -152,20 +158,54 @@
                          newroot)
       path)))
 
+(defparameter *rec-def-path-root* nil)
+(defparameter *new-def-path-root* nil)
+
 (defun init-root-definition-pathname (oldroot newroot) 
+  (setf *rec-def-path-root* oldroot
+        *new-def-path-root* newroot)
   (loop for def in *class-definitions* do
         (setf (nth 1 def) (namestring (restore-root (nth 1 def) oldroot newroot))))
   (loop for def in *method-definitions* do
         (setf (nth 1 def) (namestring (restore-root (nth 1 def) oldroot newroot)))))
 
+
+(defun om-find-definitions (symbol &optional type)
+  (loop for item in (cond ((equal type :method) *method-definitions*)
+                          ((equal type :class) *class-definitions*)
+                          (t (append *method-definitions* *class-definitions*)))
+        when (if (listp (car item)) (equal symbol (caar item)) (equal symbol (car item)))
+        collect (list (car item)
+                      (and (cadr item) (merge-pathnames (cadr item) (make-pathname :type "lisp"))))))
+
+;(om-find-definitions 'om::om+)
+;(lw-find-definitions 'om-find-definitions)
+
+
+(defparameter *find-dspecs* 
+  '(defclass method-combination method defgeneric  package defsetf 
+     structure structure-class deftype type compiler-macro defmacro 
+     defun function define-symbol-macro defconstant defvar variable))
+
+
+(defun lw-find-definitions (symbol &optional type)
+  ;(dspec:name-definition-locations *find-dspecs* 'first)
+  (let ((defs (ignore-errors (dspec:find-name-locations *find-dspecs* symbol))))
+    (loop for def in defs collect 
+          (list (cdr (car def))
+                (if (and (or (stringp (cadr def)) (pathnamep (cadr def))))
+                    (let ((restored (restore-root (cadr def) *rec-def-path-root* *new-def-path-root*)))
+                      (if (and (pathnamep restored) (probe-file restored))
+                          (truename restored)
+                        (cadr def)))
+                  (cadr def))
+                ))))
+ 
+
 (defun edit-definition (symbol &optional type)
   (let ((definitions 
-         (loop for item in (cond ((equal type :method) *method-definitions*)
-                                 ((equal type :class) *class-definitions*)
-                                 (t (append *method-definitions* *class-definitions*)))
-               when (if (listp (car item)) (equal symbol (caar item)) (equal symbol (car item)))
-               collect (list (car item)
-                             (and (cadr item) (merge-pathnames (cadr item) (make-pathname :type "lisp")))))))
+         (or (om-find-definitions symbol type)
+             (lw-find-definitions symbol type))))
     (if definitions
         (if (= (length definitions) 1)
             (let ((file (car (last (car definitions)))))
@@ -189,7 +229,6 @@
 ; (dspec:name-definition-locations dspec:*dspec-classes* 'om::om+)
 ; (*active-finders*)
 ; save-tags-database
-
 
 ;;; not used anymore
 (defun restore-definitions-pathnames (def-list)
