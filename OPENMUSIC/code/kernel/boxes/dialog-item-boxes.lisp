@@ -95,7 +95,7 @@
 ;the class for the frame
 ;=======================
 
-(defclass DIEditorframe (omboxframe om-view OMSimpleFrame) ())
+(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
 
 (defclass di-miniview (general-miniview om-view) ())
 
@@ -211,10 +211,10 @@
 (defmethod change-boxframe-size ((view DIEditorframe) new-position)
    (when (setf new-position (allow-new-size view new-position))
        (om-set-view-size view new-position)
-       ;(make-move-after (om-view-container view) (list view))
-       ;(when (showpict (object view))
-       ;  (update-miniview (iconview view) (value (object view)))
-       ;  (update-di-size (value (object view)) (iconview view)))
+       (make-move-after (om-view-container view) (list view))
+       (when (showpict (object view))
+         (update-miniview (iconview view) (value (object view)))
+         (update-di-size (value (object view)) (iconview view)))
        (om-invalidate-view view)
        ))
 
