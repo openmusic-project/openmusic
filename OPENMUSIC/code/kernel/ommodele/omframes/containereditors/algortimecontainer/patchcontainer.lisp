@@ -259,7 +259,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
            (mapc #'(lambda (item) (delete-one-input item) t) actives)
          (progn
            (mapc #'(lambda (item) (move-frame-delta item 3)) actives)
-           (make-move-after self actives))
+           (make-move-after self actives)
+           )
          ))
       (:om-key-right 
        (if (om-option-key-p)

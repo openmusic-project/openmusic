@@ -83,7 +83,11 @@
 (defmethod set-layout ((view om-view))
   (setf (capi:layout-description view)
         (remove-duplicates (remove nil (cons (main-pinboard-object view)
-                                             (append (vsubviews view) (item-subviews view)))))))
+                                             (append (vsubviews view) (item-subviews view))))))
+  ;; this fixed the problem with dialog item box display on windows...
+  (print (list "layout" view))
+  (setf (pinboard-pane-position view) (values (vx view) (vy view)))
+  )
 
 (defmethod set-layout ((view t)) nil)
 
@@ -140,8 +144,10 @@
   (setf (initialized-p self) t))
 
 (defmethod om-set-view-position ((self om-graphic-object) pos-point) 
-  (capi:apply-in-pane-process self #'(lambda ()
-                                       (setf (pinboard-pane-position self) (values (om-point-h pos-point) (om-point-v pos-point)))))
+  (capi:apply-in-pane-process 
+   self #'(lambda ()
+            (setf (pinboard-pane-position self) 
+                  (values (om-point-h pos-point) (om-point-v pos-point)))))
   ;(set-hint-table self (list :default-x (om-point-h pos-point) :default-x (om-point-v pos-point))))
   (setf (vx self) (om-point-h pos-point)
         (vy self) (om-point-v pos-point)))
@@ -156,14 +162,14 @@
 (defmethod om-set-view-size ((self om-graphic-object) size-point) 
   (let ((w (or (om-point-h size-point) (vw self)))
         (h (or (om-point-v size-point) (vh self))))
-  (capi:apply-in-pane-process self 
-                              #'(lambda ()                                  
-                                  (setf (pinboard-pane-size self) (values  w h))
-                                  #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
-                                  ))
-  ; (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point))))
-  (setf (vw self) w)
-  (setf (vh self) h)))
+    (capi:apply-in-pane-process self 
+                                #'(lambda ()                                  
+                                    (setf (pinboard-pane-size self) (values  w h))
+                                    #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
+                                    ))
+    (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point)))
+    (setf (vw self) w)
+    (setf (vh self) h)))
 
 (defmethod om-view-size ((self om-graphic-object)) 
   (if (interface-visible-p self)

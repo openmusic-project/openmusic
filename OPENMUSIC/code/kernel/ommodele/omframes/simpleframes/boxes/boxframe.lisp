@@ -334,10 +334,10 @@
 
 ;;; bizarre : on doit mettre les size des in/outs et lock button à la main sinon ils sont modifiés.
 ;;; aussi pour les "lisp" icon...
-(defmethod om-set-view-size ((self omboxframe) h)
-  (declare (ignore h))
-  (call-next-method)
-  (let* ((outs (copy-list (outframes self)))
+(defmethod om-set-view-size ((self omboxframe) size)
+  (let* ((w (om-point-x size))
+         (h (om-point-y size))
+         (outs (copy-list (outframes self)))
          (ins (copy-list (inputframes self)))
          (outputs (sort outs  '< :key 'index))
          (numouts (length outputs))
@@ -345,19 +345,21 @@
          (i 0))
     (loop for out in outputs do
           (setf i (+ i 1))
-          (om-set-view-position out (om-make-point (- (* i (round (w self) (+ numouts 1))) 4) 
-                                                   (- (h self) 9)))
+          (om-set-view-position out (om-make-point (- (* i (round w (+ numouts 1))) 4) 
+                                                   (- h 9)))
           (om-set-view-size out (om-make-point 8 8)))
     (setf i 0)
      (loop for in in ins do
            (setf i (+ i 1))
-           (om-set-view-position in (om-make-point (- (* i  (round (w self) (+ numins 1))) 4) 1))
+           (om-set-view-position in (om-make-point (- (* i  (round w (+ numins 1))) 4) 1))
            (om-set-view-size in (om-make-point 8 8)))
-    (centre-icon self)
-    (setf (frame-size (object self)) (om-view-size self))
+    
+    (setf (frame-size (object self)) size)
     (when (lock-button self) (om-set-view-size (lock-button self) (om-make-point 10 10)))
-    (when (resize-box self) (om-set-view-position (resize-box self) (om-make-point (- (w self) 10) (- (h self) 10))))
-    ))
+    (when (resize-box self) (om-set-view-position (resize-box self) (om-make-point (- w 10) (- h 10))))
+    )
+  (call-next-method)
+  (centre-icon self))
 
 
 (defmethod add-box-resize ((self omboxframe))
@@ -417,7 +419,7 @@
    ;(mapc #'(lambda (conection)
    ;          (draw-connection conection nil)) (connections self))
    (setf new-position (borne-position new-position))
-   (om-set-view-position self new-position)
+   ;(om-set-view-position self new-position)
    (setf (frame-position (object self)) new-position)
    (om-highlight-view self nil)
    )

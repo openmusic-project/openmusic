@@ -628,7 +628,7 @@
  (capi::item-text self))
 
 (defmethod om-set-dialog-item-text ((self om-button) text)
- (setf (capi::item-text self) text))
+  (capi::apply-in-pane-process self (setf (capi::item-text self) text)))
 
 (defmethod om-enable-dialog-item ((self om-button) t-or-nil)
   (setf (capi::button-enabled self) t-or-nil))

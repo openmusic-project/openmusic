@@ -56,20 +56,21 @@
 (defmethod capi::draw-pinboard-object (pane (po om-view-pinboard-object) &key x y w h)
 
   (declare (ignore x y w h))
-
-  (capi::apply-in-pane-process pane (lambda (pa) 
-                                      (let ((posx (or (capi::get-horizontal-scroll-parameters pa :slug-position) 0))
-                                            (posy (or (capi::get-vertical-scroll-parameters pa :slug-position) 0)))
+  
+  (capi::apply-in-pane-process pane 
+                               (lambda (pa) 
+                                 (let ((posx (or (capi::get-horizontal-scroll-parameters pa :slug-position) 0))
+                                       (posy (or (capi::get-vertical-scroll-parameters pa :slug-position) 0)))
                                       ;(set-graphics-port-coordinates pa :left 0 :top 0)
                                       ; (gp::with-graphics-state (pa :mask (list posx posy (om-width pa) (om-height pa)))
                                       ;  (om-with-focused-view pa
                                       ;    (om-draw-rect 2 2 (- (om-width pa) 4) (- (om-height pa) 4)))
-                                      (om-draw-contents pa)
-                                      (when (highlight pa) 
-                                        (om-with-focused-view pa
-                                          (om-draw-hilite-rect posx posy (om-width pa) (om-height pa))))
+                                   (om-draw-contents pa)
+                                   (when (highlight pa) 
+                                     (om-with-focused-view pa
+                                       (om-draw-hilite-rect posx posy (om-width pa) (om-height pa))))
                                      ; )
-                                      ))
+                                   ))
                                pane))
 
 ;;; ONLY FOR COCOA
@@ -104,7 +105,7 @@
 (defmethod capi::draw-pinboard-object (pane (self om-item-view) &key x y w h)
   (call-next-method)
   (unless (initialized-p self) (setf (initialized-p self) t))
- (capi::apply-in-pane-process pane 'draw-po pane self)
+  (capi::apply-in-pane-process pane 'draw-po pane self)
   )
 
 (defun draw-po (pane po)
@@ -152,11 +153,10 @@
   (declare (ignore erase))
   (when (and (interface-visible-p self) (om-get-view self))
     ;(capi::with-atomic-redisplay ((om-get-view self))
-      ;(capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-      (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-      #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
-    ;  )
-  ))
+    (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
+    #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
+    ;)
+    ))
 
 (defmethod om-invalidate-view ((self om-item-view) &optional erase)
   (declare (ignore erase))

@@ -25,14 +25,15 @@
              (rep-editor (value self) numout))
         (t (let* ((args  (mapcar #'(lambda (input) (omNG-box-value input)) (inputs self)))
                   rep)
-              (setf rep (set-dialog-item-params (value self) self args))
-              (if (null rep)
+             (setf rep (set-dialog-item-params (value self) self args))
+             (if (null rep)
                   (progn
-                    (om-beep-msg (string+ "I can not construct a " (string editorclass) " with these parameters"))
+                    (om-beep-msg (string+ "I can not construct a " (string (type-of (value self))) " with these parameters"))
                     (om-abort))
                 (progn
                   (setf (value self) rep)
-                  (rep-editor (value self) numout))))))
+                  (rep-editor (value self) numout)
+                  )))))
      )
      ))
 
@@ -94,7 +95,7 @@
 ;the class for the frame
 ;=======================
 
-(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
+(defclass DIEditorframe (omboxframe om-view OMSimpleFrame) ())
 
 (defclass di-miniview (general-miniview om-view) ())
 
@@ -126,9 +127,12 @@
    (setf (allow-lock (object self)) nil))
 
 (defmethod centre-icon ((self DIEditorframe))
-   (om-set-view-size (iconview self) 
-                  (om-subtract-points (om-view-size self) 
-                                      (if (minieditor? (object self)) (om-make-point 4 21) (om-make-point 0 17)))))
+   (om-set-view-size 
+    (iconview self) 
+    (om-subtract-points (om-view-size self) 
+                        (if (minieditor? (object self)) 
+                            (om-make-point 4 21) 
+                          (om-make-point 0 17)))))
 
 (defmethod make-drag-region ((self DIEditorframe) region x0 y0 view)
   (declare (ignore view))
@@ -207,11 +211,12 @@
 (defmethod change-boxframe-size ((view DIEditorframe) new-position)
    (when (setf new-position (allow-new-size view new-position))
        (om-set-view-size view new-position)
-       (make-move-after (om-view-container view) (list view))
-       (when (showpict (object view))
-         (update-miniview (iconview view) (value (object view)))
-         (update-di-size (value (object view)) (iconview view)))
-       (om-invalidate-view view)))
+       ;(make-move-after (om-view-container view) (list view))
+       ;(when (showpict (object view))
+       ;  (update-miniview (iconview view) (value (object view)))
+       ;  (update-di-size (value (object view)) (iconview view)))
+       (om-invalidate-view view)
+       ))
 
 (defmethod reinit-size ((self DIEditorframe)) 
    (setf (frame-size (object self)) (get-boxsize (object self)))
@@ -714,14 +719,17 @@ Evaluating the 5th output will also call and get the result of the function with
 
 (defmethod set-dialog-item-params ((self slider) box args)
   (let* ((boxframe (om-view-container self))
-        (newslider (om-make-dialog-item 'slider (if (equal (car args) :horizontal)
-                                                    (om-make-point 8 (if boxframe (- (round (h boxframe) 2) 12) 20))
-                                                  (om-make-point (if boxframe (- (round (w boxframe) 2) 12) 20) 8))
-                                        (if (equal (car args) :horizontal)
-                                                    (om-make-point (if boxframe (- (w boxframe) 16) 60) 24)
-                                          (om-make-point 24 (if boxframe (- (h boxframe) 16) 60)))
-                                        "untitled"
-                                        :direction (car args) :range (second args) :increment (third args) :value (fourth args))))
+         (newslider (om-make-dialog-item 
+                    'slider 
+                    (if (equal (car args) :horizontal)
+                        (om-make-point 8 (if boxframe (- (round (h boxframe) 2) 12) 20))
+                      (om-make-point (if boxframe (- (round (w boxframe) 2) 12) 20) 8))
+                    (if (equal (car args) :horizontal)
+                        (om-make-point (if boxframe (- (w boxframe) 16) 60) 24)
+                      (om-make-point 24 (if boxframe (- (h boxframe) 16) 60)))
+                    "untitled"
+                    :direction (car args) :range (second args) 
+                    :increment (third args) :value (fourth args))))
     (when boxframe
       (om-remove-subviews boxframe self)
       (om-add-subviews boxframe newslider)
