@@ -419,7 +419,7 @@
    ;(mapc #'(lambda (conection)
    ;          (draw-connection conection nil)) (connections self))
    (setf new-position (borne-position new-position))
-   ;(om-set-view-position self new-position)
+   (om-set-view-position self new-position)
    (setf (frame-position (object self)) new-position)
    (om-highlight-view self nil)
    )
