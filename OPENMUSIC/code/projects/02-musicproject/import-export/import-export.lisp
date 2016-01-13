@@ -124,14 +124,20 @@
                                                                  (update-panel (panel self) t))))))
                         (import-formats (object self))))))
 
-  
+
+(defun export-command (editor format)
+  (score-export format 
+                (object editor) 
+                (edition-params (ref editor))
+                (name (ref editor))))
+                                                                             
 (defmethod export-menu ((self scoreeditor))
   (when (export-formats (object self))
     (om-make-menu "Export" 
 		  (mapcar #'(lambda (item) 
-			      (om-new-leafmenu (cadr item) #'(lambda () 
-							       (score-export (car item) (object self) 
-                                                                             (edition-params self) (name (ref self))))))
+			      (om-new-leafmenu (cadr item) 
+                                               #'(lambda () 
+                                                   (export-command self (car item)))))
 			  (export-formats (object self))))))
   
 
