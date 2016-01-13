@@ -400,7 +400,7 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
 
 
 (defmethod! maquette2obj ((self ommaquette) (mode symbol)
-                              &optional (tempi 60) (measures '(4 4)) (max/ 8) (forbid nil) (offset 0) (precis 0.5))
+                          &optional (tempi 60) (measures '(4 4)) (max/ 8) (forbid nil) (offset 0) (precis 0.5))
             (when (and (value self) (typep (value self) 'maquette-obj))
               (maquette2obj (value self) mode tempi measures max/ forbid offset precis)))
             
@@ -483,12 +483,9 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
 
 
 
-(defmethod* maquette2sound ((maquette t) 
-                                &optional (outsound nil))
-
+(defmethod* maquette2sound ((maquette maquette-obj) &optional (outsound nil))
    :icon 333
    :indoc '("maquette" "pathname")
-  
    :doc "Outputs a sound file mixing the present sound files in the maquette." 
    (let ((sndlist (remove nil 
                           (loop for b in (inside maquette) collect
@@ -496,3 +493,10 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
          sndmix)
      (setf sndmix (reduce 'sound-mix (mapcar #'(lambda (b) (sound-seq (sound-silence (offset b)) b)) sndlist)))
      (save-sound sndmix outsound)))
+
+
+(defmethod* maquette2sound ((maquette ommaquette) &optional (outsound nil))
+   (if (and (value self) (typep (value self) 'maquette-obj))
+       (maquette2sound (value self) outsound)
+     (om-beep-msg "The maquette output must be a maquette-obj (check your synth-patch?)")))
+   
