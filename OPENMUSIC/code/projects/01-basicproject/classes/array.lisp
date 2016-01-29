@@ -559,6 +559,13 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 
 (defmethod special-keyword-index (value object) nil)
 
+(defmethod default-control-keywords ((self t)) nil)
+
+(defmethod special-init ((self arrayBox)) 
+  (loop for k in (default-control-keywords (value self)) do
+        (do-add-one-keyword self k)))
+
+
 ;;; donne l'indice reel en fonction des slots visibles
 (defmethod get-index-rep ((self control-keyword) n)
   (or (special-keyword-index (value self) (value (box-ref self)))
@@ -568,7 +575,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 (defmethod do-add-one-keyword ((self arrayBox) &optional (input-key nil))
    (let* ((usedkeywords (loop for item in (find-class-boxes (inputs self) 'control-keyword)
                               collect (value item)))
-          (newval "K0"))
+          (newval (or input-key "K0")))
      (loop for i = 1 then (+ i 1)
            while (member newval usedkeywords :test 'string-equal :key 'string) do
            (setf newval (format nil "K~D" i)))

@@ -746,12 +746,15 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                         :inputs (get-inputs-from-inst defval))))
          (setf (value newbox) defval)
          (setf (frame-position newbox) (borne-position posi))
+         
          (set-edition-params (value newbox) newbox)
          (push newbox (attached-objs self))
+         (special-init newbox)
          (set-box-to-inputs (inputs newbox) newbox)
          (setf (numouts newbox) (length (get-outs-name (value newbox))))
          newbox)))))
 
+(defmethod special-init ((self t)) nil)
 
 (defclass OMBoxEditCall (OMBoxRelatedWClass object-with-persistant-params) 
    ((numouts :initform 1 :accessor numouts)
