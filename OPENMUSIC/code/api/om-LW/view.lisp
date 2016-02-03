@@ -85,7 +85,7 @@
         (remove-duplicates (remove nil (cons (main-pinboard-object view)
                                              (append (vsubviews view) (item-subviews view))))))
   ;; this fixed the problem with dialog item box display on windows...
-  ;(setf (pinboard-pane-position view) (values (vx view) (vy view)))
+  #-linux (setf (pinboard-pane-position view) (values (vx view) (vy view)))
   )
 
 (defmethod set-layout ((view t)) nil)
@@ -166,7 +166,7 @@
                                     (setf (pinboard-pane-size self) (values  w h))
                                     #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
                                     ))
-    (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point)))
+    #-linux (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point)))
     (setf (vw self) w)
     (setf (vh self) h)))
 
