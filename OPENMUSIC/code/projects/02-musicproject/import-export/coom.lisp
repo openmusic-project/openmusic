@@ -382,16 +382,18 @@
 
 (defmethod! finale-import  (&optional path)
   :icon 354
-  :doc "Constructs a poly object from the data exported by Finale. "
-  (let* ((file (or path (om-choose-file-dialog :directory (def-save-directory) 
-                                               :types '("OM/Finale/NAP format" "*.om")))))
+  :doc "Constructs a poly object from the data exported by NAP. "
+  (let* ((file (or path (om-choose-file-dialog :types '("OM/NAP format" "*.om")))))
     (when file
       (let ((string (if (probe-file file)
                         (string-from-file file)
                       (progn (om-message-dialog (format nil "Error: file ~s not found." (namestring file))) nil)
                       )))
   (when (and string (stringp string))
-    (string2Poly string))))))
+    (string2Poly string))
+  ))))
+
+
 
 (defun string-from-file (pathname)
   (let ((tmpbuffer (om-make-buffer))

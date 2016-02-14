@@ -269,6 +269,8 @@
 (defmethod top-in-midi ((self list))
    (top-in-midi (car self) ))
 
+(defmethod top-in-midi ((self t)) 120)
+
 (defmethod system-offset-in-pix ((self list) size)
    (system-offset-in-pix (car self) size))
 
@@ -1043,9 +1045,12 @@
 (defmethod make-graph-ryth-obj ((self poly) top staffsys linespace scale sel pere durtot &optional ryth)
    (declare (ignore ryth durtot))
    (let* ((thepoly (make-instance 'grap-poly :reference self :parent pere))
-          (voicelist (loop for item in (inside self)
-                           for i = 0 then (+ i 1) collect
-                           (make-graph-ryth-obj item (top-in-midi (nth i staffsys)) (nth i staffsys) linespace  scale sel thepoly nil))))
+          (voicelist (loop 
+                      for item in (inside self)
+                      for i = 0 then (+ i 1) collect
+                      (make-graph-ryth-obj item (top-in-midi (car staffsys)) (car staffsys) linespace  scale sel thepoly nil)
+                      )
+                     ))
      (setf (inside thepoly) voicelist)
      (make-graphic-extras thepoly)
      thepoly))
@@ -1132,8 +1137,8 @@
                 (let* ((firstm (car bar))
                        (lastm (car (last bar)))
                        (realmes (nth (first firstm) (inside (nth (second firstm) (inside self)))))
-                       (ys (round (nth (second firstm) positions)))
-                       (ysf (round (nth (second  lastm) positions))))
+                       (ys (round (or (nth (second firstm) positions) 0)))
+                       (ysf (round (or (nth (second lastm) positions) 0))))
                   (om-with-font (get-font-to-draw 5)
                                 (om-draw-string  (- (car (rectangle realmes)) (round size 4)) (- ys (round size 4)) 
                                                  (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1))))
@@ -1183,7 +1188,9 @@
    (declare (ignore ryth durtot))
    (let* ((thevoice (make-instance 'grap-voice :reference self :parent pere))
           (meslist (loop for item in (inside self) collect
-                           (make-graph-ryth-obj item  top staffsys linespace  scale sel thevoice nil))))
+                           (make-graph-ryth-obj item  top 
+                                                (or staffsys (make-instance 'omsystem))
+                                                linespace  scale sel thevoice nil))))
      (setf (inside thevoice) meslist)
      (make-graphic-extras thevoice)
      thevoice))

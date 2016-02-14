@@ -100,9 +100,13 @@
                             (om-new-leafmenu (cadr item) #'(lambda () 
                                                              (let ((obj (score-import (car item) (object self))))
                                                                (when obj
+                                                                 ;;; if we don't close the window the editor crashes 
+                                                                 ;;; when the new score loaded has more voices than the previous one
+                                                                 (om-close-window (window self))
                                                                  (setf (inside (object self)) (clone (inside obj)))
                                                                  (after-editor-import (object self))
-                                                                 (update-panel (panel self) t)
+                                                                 (openobjecteditor (ref self))
+                                                                 ;(update-panel (panel self) t)
                                                                  )
                                                                )
                                                              )))
@@ -198,9 +202,7 @@
   (let ((import-obj (finale-import)))
     (if (equal (type-of import-obj) (type-of object))
         import-obj
-      (objfromobjs import-obj object))
-    ))
-
+      (objfromobjs import-obj object))))
 
 (defmethod score-export ((format t) object params name)
   (om-beep))

@@ -1437,6 +1437,7 @@
                                 (staff-mode self)
                                 (get-approx-scale self)
                                 (selection? self) (staff-sys self) (show-stems self))))
+ 
    (when (and (graphic-obj self) (not (score-page-mode self)))
      (space-objects (graphic-obj self) (* 4 linespace))
      (set-graph-rectangles (graphic-obj self))
