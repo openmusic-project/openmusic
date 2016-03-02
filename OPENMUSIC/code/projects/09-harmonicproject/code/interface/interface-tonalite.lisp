@@ -254,5 +254,43 @@
     ))
 
 
+(defvar *alteration-strings* '("bb" "b" "." "#" "##"))
+
+;;; returns the list of alterations / enharmonic info
+;;; each item is either NIl or the "note name" (e.g. (do "#") (fa "bb") etc.)
+(defmethod get-alterations ((cs chord-seq))
+  (flet ((alt-name (a) 
+           (let ((p (position a '((bemol bemol) bemol becarre diese (diese diese)) :test 'equal)))
+             (and p (nth p *alteration-strings*)))))
+    (loop for chord in (get-chords cs) collect
+          (loop for note in (inside chord) collect 
+                (if (tonalite note) (list (tonnote (tonalite note)) 
+                                          (alt-name (tonalt (tonalite note)))
+                                          ))))))
+
+;;; alt list is a list of list (for notes)
+;;; each item is either NIl or the "note name" (e.g. (do "#") (fa "bb") etc.)
+;;; it is the user responsability that this name corresponds to the actual pitch in midicents !
+(defmethod set-alterations ((cs chord-seq) alt-list) 
+  (flet ((alt-n (a) 
+           (cond ((stringp a) 
+                  (- (position a *alteration-strings* :test 'string-equal) 2))
+                 (t a))))
+    (let ((newcs (clone cs)))
+      (loop for c in (inside newcs)
+            for c-alt in alt-list do
+            (loop for n in (inside c) 
+                  for i = 0 then (+ i 1)
+                  do (let ((alt (if (and (listp c-alt) (listp (nth i c-alt)))
+                                    (nth i c-alt)
+                                  c-alt)))
+                     (if alt
+                       (set-note-tonalite n (car alt) (alt-n (cadr alt)))
+                       (set-tonalite n nil)))))
+    newcs)))
+
+
+
+
 
 
