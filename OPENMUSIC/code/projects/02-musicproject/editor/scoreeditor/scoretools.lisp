@@ -579,7 +579,7 @@
                       :reference self
                       :main-point (list x 0)
                       :rectangle (list 0 0 0 0)
-                      :stem (if (and stem (or (= mode 0) (= mode 4))) 
+                      :stem (if (and stem (or (= mode 0) (= mode 4)) (lmidic self)) 
                                 (if (< (list-min (lmidic self)) 7100) 
                                     (round (* 3 linespace))
                                   (- (round (* 3 linespace)))
