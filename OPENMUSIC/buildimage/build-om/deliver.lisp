@@ -274,7 +274,7 @@
          :interface :capi
 	 :keep-editor t
 	 :keep-debug-mode t
-         :keep-load-function t
+         :keep-load-function t :keep-pretty-printer t
          :keep-complex-numbers nil
          :keep-conditions :all
          :keep-xref-info t   ;; ??
