@@ -292,7 +292,7 @@ Class methods are the init-instance method and slot reader and writer. #class-me
        (setf iv (or initvals `',(make-list (length lambda-var) :initial-element nil)))
        (setf id (or indoc `',(make-list (length lambda-var) :initial-element "")))
        (setf od (or outdoc `',(make-list (length lambda-var) :initial-element nil)))
-       `(let (gen-fun nouts method)
+       `(let (gen-fun method)
           (unless (fboundp ',name)
             (progn
               (setf gen-fun (defgeneric ,name ,lambda-var
