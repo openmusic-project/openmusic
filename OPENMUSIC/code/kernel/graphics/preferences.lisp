@@ -97,11 +97,12 @@
      (setf *restore-defaults* nil)))
 
 ;(restore-preferences)
-
 (defmethod put-all-preferences ()
    (loop for item in *current-pref* do
          (put-preferences (car item))))
 
+
+;;; never used
 (defmethod put-default-preferences ()
   (loop for item in *current-pref* do
         (setf (cadr item) (get-def-vals (car item)))

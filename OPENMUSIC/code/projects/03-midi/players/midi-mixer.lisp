@@ -25,11 +25,12 @@
 (defun def-midi-presets () '(("-----" nil)))
 
 (defun put-midi-mixer-values ()
-  (print "MIDI: Restoring presets from preferences...")
   (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
-    (init-midi-mixer vals)
-    (when *midi-mixer* 
-      (set-preset *midi-mixer* (cadr (car vals))))))
+    (unless (and *midi-mixer* (equal (presets *midi-mixer*) vals))
+      (print "MIDI: Restoring state from preferences...")
+      (init-midi-mixer vals)
+      (when *midi-mixer* 
+        (set-preset *midi-mixer* (cadr (car vals)))))))
 
 
 (defun save-midi-presets-in-preferences (mixer)

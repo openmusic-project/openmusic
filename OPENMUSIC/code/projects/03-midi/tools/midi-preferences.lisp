@@ -11,6 +11,7 @@
 (defvar *def-midi-format* 1)
 (defvar *default-midi-system* nil)
 (defvar *default-midi-file-system* nil)
+(defvar *midi-setup* nil)
 
 (defparameter *midi-microplay* nil)
 (defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
@@ -30,8 +31,10 @@
     (setf *default-midi-system* :portmidi)  ; (get-pref modulepref :midi-system)
     (setf *default-score-player* (get-pref modulepref :score-player))
     (setf *force-score-player* (get-pref modulepref :force-player))
-    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))    
-    (when (and (om-midi::midi-connect-function *default-midi-system*) (get-pref modulepref :midi-setup))
+    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
+    (when (and (om-midi::midi-connect-function *default-midi-system*) 
+               (not (equal *midi-setup* (get-pref modulepref :midi-setup))))
+      (setf *midi-setup* (get-pref modulepref :midi-setup))
       (when *running-midi-boxes*
 	(om-message-dialog 
 	 (format nil "Warning: Restarting MIDI will stop all currently running MIDI receive loops.~%[currently: ~D running]" 

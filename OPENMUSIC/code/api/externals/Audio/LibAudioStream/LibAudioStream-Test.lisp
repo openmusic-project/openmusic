@@ -35,7 +35,7 @@
 
 ;; WARNING !! when using Jack, the Sample rate and Buffer size values much match the values currently used with Jack server
  
-;(setq player (OpenAudioPlayer 2 2 32 44100 512 65536 26460000 kCoreAudioRenderer 1))
+;(setq player (OpenAudioPlayer 2 2 32 48000 512 65536 26460000 kCoreAudioRenderer 1))
 
 (CloseAudioPlayer player)
 

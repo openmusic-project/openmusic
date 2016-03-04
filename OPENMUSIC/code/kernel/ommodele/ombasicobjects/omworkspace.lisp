@@ -225,6 +225,24 @@
    (load-om-libs)
    (workspace-from-name pathname)      ;; will set the preferences             
    (initWorkSpace *current-workSpace*) ;; will open the listener
+   
+
+   (catch :load-prefs 
+     (handler-bind 
+         ((error #'(lambda (err)
+                     (om-message-dialog (format nil "Warning: An error occurred while setting the workspace preferences.~%=> ~A" err))
+                      (delete-file preffile nil)
+                      (setf *saved-pref* nil)
+                      (throw :load-prefs :err)
+                      )))
+       (restore-preferences)
+       ))
+   
+   ;;; check if it is the right place...
+   #+libaudiostream (libaudiostream-start)
+   
+   (libs-autoload)
+
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
    ;(om-close-window *splash-screen*)
@@ -302,9 +320,6 @@
     
     (setf  *current-workSpace* (make-new-WorkSpace name))
   
-  
-
-  ;new by AAA
     (when (probe-file (om-make-pathname :directory name :name  "wsparams" :type "lisp"))
       (load (om-make-pathname :directory  name :name  "wsparams" :type "lisp")))
 
@@ -313,21 +328,8 @@
   
     ;;; new
     (user-init-funcs)
-    (put-all-preferences)
-  
-    (catch :load-prefs 
-      (handler-bind 
-          ((error #'(lambda (err)
-                      (om-message-dialog (format nil "Warning: An error occurred while setting the workspace preferences.~%=> ~A" err))
-                      (delete-file preffile nil)
-                      (setf *saved-pref* nil)
-                      (throw :load-prefs :err)
-                      )))
-        (restore-preferences)
-        ))
-
-    (libs-autoload)
-
+    
+    ;;(put-all-preferences)
   
     ))
 

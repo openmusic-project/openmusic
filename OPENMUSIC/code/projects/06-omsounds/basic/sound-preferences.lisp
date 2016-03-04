@@ -34,13 +34,12 @@
       (setf *def-snd-format* (get-pref modulepref :audio-format)))
     (when new-sr
       (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
-          (when (/= new-sr *audio-sr*)
-            (setf *audio-sr* new-sr)
-            #+libaudiostream(las-set-sample-rate *audio-sr*))
+          (setf *audio-sr* new-sr)
         (progn 
           (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
           (set-pref modulepref :audio-sr 44100)
           )))
+    #+libaudiostream(las-set-sample-rate *audio-sr*) ;;; las can apply this only the first time..
     (setf *delete-inter-file* (get-pref modulepref :delete-tmp))
     (setf *automatic-rename* (get-pref modulepref :auto-rename))
     (setf *normalize* (get-pref modulepref :normalize))

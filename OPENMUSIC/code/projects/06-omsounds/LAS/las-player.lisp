@@ -66,8 +66,7 @@
 
 (defun las-init-full-system ()
   (instanciate-players)
-  (start-global-audio-context)
-  )
+  (start-global-audio-context))
 
 ; (las-close-full-system)
 ; (las-init-full-system)
@@ -259,20 +258,14 @@
 ;/MAKE NEW PLAYER FUCNTION
 ;Returns a LAS player pointer
 (defun make-new-player ()
-  (las::OpenAudioPlayer  las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
+  (las::OpenAudioPlayer las-inchan las-outchan las-channels las-srate las-buffsize las-streambuffsize las-instreamduration las-renderer las-thread))
 
-
-
-
-(defun las-set-sample-rate (sr)
-  (setf las-srate sr)
-  (las-close-full-system)
-  (las-init-full-system))
   
 ;/INSTANCIATE PLAYERS FUCNTION
 ;Bind both *audio-player-visible* and *audio-player-hidden* with LAS player pointers, init players infos
 (defun instanciate-players ()
   (progn
+    (print (format nil "LibAudioStream player initialization (SR=~D)" las-srate))
     (setf *audio-player-visible* (make-new-player))
     (setf *audio-player-hidden* (make-new-player))
     (loop for i from 0 to (- las-channels 1) do
@@ -290,14 +283,16 @@
         (las::StartAudioPlayer *audio-player-visible*)
         (loop for i from 0 to (- las-channels 1) do
               (las::SetStopCallbackChannel *audio-player-visible* i (cffi:callback channel-stop-callback-visible) (gethash i *channel-numbers-hash-table*)))
-        "Audio player 1 ready")
+        ;(print "Audio player 1 ready")
+        t)
     (print "WARNING : Audio context can't be started. Missing player 1."))
   (if *audio-player-hidden*
       (progn
         (las::StartAudioPlayer *audio-player-hidden*)
         (loop for i from 0 to (- las-channels 1) do
               (las::SetStopCallbackChannel *audio-player-hidden* i (cffi:callback channel-stop-callback-hidden) (gethash i *channel-numbers-hash-table*)))
-        "Audio player 2 ready")
+        ;(print "Audio player 2 ready")
+        t)
     (print "WARNING : Audio context can't be started. Missing one player."))
   )
 
@@ -741,11 +736,18 @@
 
 (add-player-for-object 'sound :libaudiostream)
 
+;;; should be caulled only when las-srate is set
+(defun libaudiostream-start ()
+  (las-init-full-system)
+  (enable-player :libaudiostream)
+  (sleep 0.5))
+       
 (defun libaudiostream-open ()
  (if (las-load-library (om-lib-pathname las::*libaudiostream-pathname*))
      (progn 
-       (las-init-full-system)
-       (enable-player :libaudiostream))
+       ;; (libaudiostream-start) ;; => call delayed after preferences are set (i.e. in las-set-sample-rate)
+       ;; (print "LibAudioStream is loaded")
+       )
    (om-message-dialog (format nil (om-str :lib-error) "LibAudioStream"))))
 
 (defun libaudiostream-close ()
@@ -755,6 +757,24 @@
 (om-add-init-func 'libaudiostream-open)  
 (om-add-exit-cleanup-func 'libaudiostream-close t)
 
+;; called from preferences
+(defun las-set-sample-rate (sr)
+
+  (unless (= las-srate sr)
+    (if (find :libaudiostream *enabled-players*)  ;;; the audio system is already running
+        (let ((quit? 
+               (om-y-or-n-dialog 
+                (format nil "The new audio sample rate will be used only after restarting OM.~%~%Quit and restart now ?"))))
+          (when quit? 
+            (save-preferences)
+            (om-quit)))
+      (progn 
+        (setf las-srate sr)
+        ;(las-close-full-system)
+        ;(las-init-full-system)
+        ;(libaudiostream-start)
+        )
+      )))
 
 
 (defmethod prepare-to-play ((engine (eql :libaudiostream)) (player omplayer) object at interval params)
