@@ -1759,7 +1759,8 @@
                                                                              (* dur-obj unite)))
                                                                          
                                                                          (list (/ (car (second ryth)) (first ryth))
-                                                                               (nth i (cadr (second ryth)))))))
+                                                                               (nth i (remove 0 ;;; dirty fix when 0 (grace notes) are misplaced in the tree... 
+                                                                                              (cadr (second ryth))))))))
                                       newchord))))
      (when (numdenom new-group)
        (setf (chiflevel new-group) (calcule-chiff-level new-group)))
