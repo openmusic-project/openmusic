@@ -733,7 +733,7 @@ Extraction methods.
                                  NIL)
                                 ((> subtree 0)
                                  (let ((note (make-instance 'note :empty t :extent (* (fullratio subtree) (/ Extent nbsubunits)))))
-                                   (when current-graces 
+                                   (when current-graces ;; add grace notes before
                                      (setf (mus-const note) current-graces))
                                    (setf current-note note)
                                    note))

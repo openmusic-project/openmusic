@@ -512,7 +512,7 @@
 (defmethod list->group (item-list)
    "effectue le regroupement d'un ensemble de simple-containers"
   (if (chord-p (car item-list))
-    (let ((new-extent  (* (loop for sc in item-list sum (/ (extent sc )   (qvalue sc))     )  (qvalue (car item-list))   )))
+    (let ((new-extent (* (loop for sc in item-list sum (/ (extent sc ) (qvalue sc))) (qvalue (car item-list)))))
       (setf (extent (car item-list )) new-extent )
       (loop for note in (inside (car item-list))
             do (progn 
@@ -522,10 +522,10 @@
             )
       (car item-list)
       )
-    (let ((new-extent  (* (loop for sc in item-list sum (/ (extent sc )   (qvalue sc))     )  (qvalue (car item-list))   )))
+    (let ((new-extent (* (loop for sc in item-list sum (/ (extent sc ) (qvalue sc)))  (qvalue (car item-list)))))
       (setf (extent (car item-list )) new-extent )
       (if (note-p (car item-list)) 
-        (setf (tie (car item-list)) (tie-remplacement (car item-list) (car (last item-list)))       ) 
+        (setf (tie (car item-list)) (tie-remplacement (car item-list) (car (last item-list)))) 
         ())
       (car item-list)
       )
