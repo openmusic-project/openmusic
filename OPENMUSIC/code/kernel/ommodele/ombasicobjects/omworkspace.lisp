@@ -129,8 +129,8 @@
                                                                       (list "elements"))) :files t :directories t)))
      (setf *loading-ws* t)
 
-     (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
-     (init-output)
+     ;(oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
+     ;(init-output)
      (print (string+ "Loading workspace: \"" (name self) "\" ..."))
      (setf (elements self) (remove nil (mapcar #'(lambda (x) (ws-load-element x (incf j))) elements) :test 'equal))
      (setf *loading-ws* nil)
@@ -221,6 +221,7 @@
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
    ;(setf *splash-screen* (show-kero-pict nil))
+
    (init-om-package)                    
    (load-om-libs)
    (workspace-from-name pathname)      ;; will set the preferences             
@@ -245,6 +246,11 @@
 
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
+   
+   (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
+   (init-output)
+
+
    ;(om-close-window *splash-screen*)
    ;(setf *splash-screen* nil)
    (ShowObjectEditor *current-workSpace*)

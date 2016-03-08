@@ -740,7 +740,8 @@
 (defun libaudiostream-start ()
   (las-init-full-system)
   (enable-player :libaudiostream)
-  (sleep 0.5))
+  ;(sleep 0.5)
+  )
        
 (defun libaudiostream-open ()
  (if (las-load-library (om-lib-pathname las::*libaudiostream-pathname*))
