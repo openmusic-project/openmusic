@@ -171,6 +171,7 @@
   (call-next-method)
   (update-play-buttons (title-bar self)))
 
+
 (defmethod editor-pause ((self scoreeditor))
   (call-next-method)
   (update-play-buttons (title-bar self)))
@@ -2588,6 +2589,17 @@
                (set-name item name)))
        (om-invalidate-view self t))
      (om-beep)))
+
+
+;;; ECOUTE SELECTIVE (JUSTE LA SELECTION)
+(defmethod get-obj-to-play ((self multiseqeditor))
+  (let ((selected (selection? (panel self))))
+    (if (and selected
+             (equal (type-of (car selected)) (type-of (car (inside (object self))))))
+        (let ((temp-obj (make-instance (type-of (object self)))))
+          (setf (inside temp-obj) selected)
+          temp-obj)
+      (call-next-method))))
 
 
 (defmethod get-help-list ((self multiseqpanel)) 
