@@ -181,15 +181,16 @@ Constructs a POLY object from a MusicXML file.
 
 
 (defun end-tuplet (tree-builder n) 
-  (let ((current-tup (find n (tree-builder-tuplet-stack tree-builder) :key 'tuplet-builder-num :test 'string-equal :from-end nil)))
+  (let ((current-tup (find n (tree-builder-tuplet-stack tree-builder) 
+                           :key 'tuplet-builder-num :test 'string-equal :from-end nil)))
     (loop while current-tup do 
           (setf (tuplet-builder-closed current-tup) t)
           (loop while (tuplet-builder-closed (car (tree-builder-tuplet-stack tree-builder))) do
                 (pop-tuplet tree-builder))
           (setf current-tup (find n (tree-builder-tuplet-stack tree-builder) 
-                                         :test #'(lambda (n tuplet) (and (not (tuplet-builder-closed tuplet))
-                                                                         (string-equal n (tuplet-builder-num tuplet)))) 
-                                         :from-end nil))
+                                  :test #'(lambda (n tuplet) (and (not (tuplet-builder-closed tuplet))
+                                                                  (string-equal n (tuplet-builder-num tuplet)))) 
+                                  :from-end nil))
           )))
 
 (defun add-new-pulse (tree-builder prop)
@@ -284,9 +285,10 @@ Constructs a POLY object from a MusicXML file.
                           (setf grouped t)
                           (new-tuplet tree-builder (car b) (third b)))))
               
-
-              
+                
+                ;(print (list "NEW PROP"  proportion))
                 (add-new-pulse tree-builder proportion)
+                ;(print (get-tree tree-builder))
 
                 (when tup 
                   (loop for tu in tup do 
@@ -297,12 +299,14 @@ Constructs a POLY object from a MusicXML file.
                   (loop for b in beam do
                         (when (string-equal (symbol-name (second b)) "end")  ;; <beam number="n">end</beam>
                           (end-tuplet tree-builder (car b)))))
+                
+                ;(print (get-tree tree-builder))
               
                 ))
-
+        
         (setf tree (get-tree tree-builder))
-      ;(om-print (format nil "Imported measure: ~A" tree))
-
+        ;(om-print (format nil "Imported measure: ~A" tree))
+        
         (list omchords
               (list signature tree)
               (and (stringp tempo) (read-from-string tempo))
@@ -314,8 +318,10 @@ Constructs a POLY object from a MusicXML file.
 
 ;;; pitch duration begtie endtie
 (defun decode-note (xmlnote) 
-  (let ((pitch (decode-xml-pitch (get-tag-contents (get-tagged-elt xmlnote 'pitch))))
-        (dur (get-tag-contents (get-tagged-elt xmlnote 'duration))))
+  (let* ((pitchtag (get-tagged-elt xmlnote 'pitch))
+         (unpitch-tag (get-tagged-elt xmlnote 'unpitched))
+         (pitch (decode-xml-pitch (get-tag-contents (or pitchtag unpitch-tag)) unpitch-tag))
+         (dur (get-tag-contents (get-tagged-elt xmlnote 'duration))))
     (if dur
         (list pitch dur
               (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
@@ -328,13 +334,13 @@ Constructs a POLY object from a MusicXML file.
 
 (defparameter *halftone-alter* 1.0)
 
-(defun decode-xml-pitch (xmlpitch) 
+(defun decode-xml-pitch (xmlpitch &optional unpitched) 
   (when xmlpitch
-    (let* ((note (get-tag-contents (get-tagged-elt xmlpitch 'step)))
+    (let* ((note (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-step 'step))))
            (notenum (and note (position note '("c" nil "d" nil "e" "f" nil "g" nil "a" nil "b") 
                               :test 'string-equal)))
-           (alt (get-tag-contents (get-tagged-elt xmlpitch 'alter)))
-           (octave (get-tag-contents (get-tagged-elt xmlpitch 'octave))))
+           (alt (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-alter 'alter))))
+           (octave (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-octave 'octave)))))
       (when (and octave notenum)
         (* 100 (+ (* (1+ octave) 12) notenum (if alt (/ alt *halftone-alter*) 0))))
       )))
