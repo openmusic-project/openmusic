@@ -542,7 +542,7 @@
 
 ;----main
 
-(defmethod make-graph-form-obj ((self chord)  x top linespace  mode scale sel system stem)
+(defmethod make-graph-form-obj ((self chord)  x top linespace mode scale sel system stem)
   (let* ((thenotes (copy-list (inside self)))
          (thenotes (cond 
                      ((or (= mode 3) (=  mode 4)) thenotes)
@@ -1377,14 +1377,10 @@
 
 (defmethod make-graph-ryth-obj ((self note) top staffsys linespace scale sel pere durtot &optional ryth)
    (declare (ignore ryth))
-   (let* (
-          ;(ypos (midi2pixel (midic self) top linespace scale)) 
-          
+   (let* (;(ypos (midi2pixel (midic self) top linespace scale)) 
           (ypos (get-graphic-pos self top linespace scale))
-
           (alt-char (get-alt-char self scale (armure staffsys)))
-          alteration
-          thenote)
+          alteration thenote)
      (when alt-char (setf alteration (get-alteration-n alt-char)))
      (setf thenote
            (make-instance 'grap-ryth-note
@@ -1563,7 +1559,7 @@
 (defmethod grap-ryth-chord-p  ((self grap-ryth-chord)) t)
 (defmethod grap-ryth-chord-p  ((self t)) nil)
 
-(defmethod make-graph-ryth-obj ((self chord)  top staffsys linespace  scale sel pere durtot &optional ryth)
+(defmethod make-graph-ryth-obj ((self chord) top staffsys linespace scale sel pere durtot &optional ryth)
   (let* ((thenotes (sort (copy-list (inside self)) '< :key 'midic))
          (onlyhead (note-head-and-points durtot))  ;(onlyhead (/ (second ryth) (first ryth))))
          (points (second onlyhead))
@@ -1590,7 +1586,7 @@
                 for pos in note-head-list
                 for i = 0 then (+ i 1)
                 collect
-                (let ((notegrap (make-graph-ryth-obj item  top staffsys linespace  scale sel new-chr durtot ryth))
+                (let ((notegrap (make-graph-ryth-obj item top staffsys linespace scale sel new-chr durtot ryth))
                       (alt-char (get-alt-char item scale (armure staffsys)))
                       notew)
                   (setf (delta-head notegrap) pos)
@@ -1638,14 +1634,25 @@
      (if (< moyen (* staff-center 100)) "up" "dw")))
   
 
-(defmethod draw-object-ryth ((self grap-ryth-chord) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
+(defmethod get-edit-param ((self scorepanel) param) 
+  (get-edit-param (editor self) param))
+
+(defmethod get-edit-param ((self miniview) param) 
+  (get-edit-param (object (om-view-container self)) param))
+
+
+(defmethod draw-object-ryth ((self grap-ryth-chord) view x y zoom minx maxx miny maxy slot size linear? staff chnote)
   (om-with-fg-color nil (mus-color (reference self))
     (let* ((dir (stemdir self))
-           (thenotes (copy-list (inside self))))
+           (thenotes (copy-list (inside self)))
+           (offsets (and (scorepanel-p view) (get-edit-param view 'mode) (= (get-edit-param view 'mode) 4))))
       (loop for item in thenotes do
-            (if (zerop (offset (reference item)))
-                (draw-object-ryth item view x y zoom minx maxx miny maxy slot size linear? staff chnote)
-              (draw-object-ryth item view (+ x (* zoom (offset (reference item)))) y zoom minx maxx miny maxy slot size linear? staff chnote)))
+            (if offsets
+                ;;; show offsets
+                (draw-object-ryth item view (+ x (* zoom (offset (reference item)))) y zoom minx maxx miny maxy slot size linear? staff chnote)
+              ;;; not show
+              (draw-object-ryth item view x y zoom minx maxx miny maxy slot size linear? staff chnote)
+              ))
       (collect-rectangles self)
       (when (bigchord self) 
         (om-with-font (om-make-font *signs-font* (round size 1.6))  ;a faire
