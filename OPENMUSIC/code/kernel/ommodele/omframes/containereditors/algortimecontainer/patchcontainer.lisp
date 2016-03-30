@@ -156,6 +156,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                      (("n") "show/hide Name")
                      (("a") "internalize patch Abstraction")
                      (("y") "activate/switch bg picture")
+                     (("E" "U") "encapsulation/de-encap.")
                      
                      (space "Play / Stop")
                      ;; (h "Show this Help window")
