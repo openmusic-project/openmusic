@@ -46,11 +46,10 @@
                     (not (equal (om-midi::midi-evt-type event) :EndTrack)))
           collect   
         (let ((newevent (om-midi::copy-midi-evt event))
-               ;(really-at (if interval (- (+ at date) (first interval)) (+ at date))) 
               (really-at (if interval 
                              (- (+ at (strechDate (om-midi::midi-evt-date event) (Qtempo self))) (first interval)) 
                            (+ at (strechDate (om-midi::midi-evt-date event) (Qtempo self))))))
-          (setf (om-midi::midi-evt-port newevent) port)
+          (unless (om-midi::midi-evt-port newevent) (setf (om-midi::midi-evt-port newevent) port))
           (setf (om-midi::midi-evt-date newevent) really-at)
           newevent))
     ))
