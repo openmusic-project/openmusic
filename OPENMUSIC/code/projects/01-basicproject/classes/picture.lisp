@@ -179,9 +179,9 @@ Exports as a raw bitmap (TIF format)
                              (when with-graphics 
                                (loop for o in (extraobjs self) do (draw-pict-extraobj nil o (om-make-point 0 0) pictsize)))
                              )))
-             (om-save-picture tmppict file))
+             (om-save-picture tmppict file :tiff))
          (if (thepict self)
-             (om-save-picture (thepict self) file)
+             (om-save-picture (thepict self) file :tiff)
            (progn (om-beep-msg "nothing to save...") (om-abort)))))))
 
 

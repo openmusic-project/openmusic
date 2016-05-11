@@ -643,6 +643,16 @@
   (gp::externalize-and-write-image *temp-pictlayout* pict path :type type :if-exists :supersede)
   path)
 
+;(defmethod om-save-picture ((pict external-image) path &optional (type :tiff))
+;  (ensure-pict-win)
+;  (gp::write-external-image pict path :if-exists :supersede)
+;  path)
+
+(defmethod om-save-picture ((pict external-image) path &optional (type :tiff))
+  (om-save-picture (om-internalize-image pict) path type))
+
+
+
 (defmethod om-save-picture ((pict internal-picture) path &optional (type :tiff))
   ;(gp::write-external-image (gp::externalize-image *record-view* (om-internal-picture-to-pict pict *record-view*)) path :if-exists :supersede)
   (gp::externalize-and-write-image 
