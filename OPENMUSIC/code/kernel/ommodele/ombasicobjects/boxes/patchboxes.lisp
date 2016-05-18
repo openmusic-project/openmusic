@@ -547,6 +547,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
       (and (value self) (rep-editor (value self) numout))
     (value self)))
 
+
 (defmethod omNG-box-value ((self OMBoxRelatedWClass) &optional (numout 0))
    "Eval a factory."
    (handler-bind ((error #'(lambda (c)
@@ -696,9 +697,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;--------------Evaluation
 
 (defmethod pretraitement ((self t) &rest args) args)
-
-                 
-
+      
 ;called by omng-box-value, sometimes is usefull redefine the builder for a class.
 (defmethod cons-new-object ((self t) args objs)
   (if objs
@@ -710,8 +709,6 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (if (= num 0)
        self
        (eval `(,(internp (nth num outs) (symbol-package (type-of self))) ,self)))))
-
-
 
 (defmethod make-one-instance ((self t) &rest slots-vals)
    (setf slots-vals (apply 'pretraitement (cons self slots-vals)))

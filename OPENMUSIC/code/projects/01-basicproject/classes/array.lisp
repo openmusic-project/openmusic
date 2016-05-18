@@ -421,12 +421,11 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 
 ;;; numcols n'est pas un slot OM, il faut le faire sortir explicitement
 
+(defclass arrayBox (OMBoxEditCall) ())
 
-(defmethod get-type-of-ed-box ((self class-array))  'arrayBox)
+(defmethod get-type-of-ed-box ((self class-array)) 'arrayBox)
 (defmethod Class-has-editor-p ((self class-array)) t)
 (defmethod get-editor-class ((self class-array)) 'ArrayEditor)
-
-(defclass arrayBox (OMBoxEditCall) ())
 
 ;;; config initiale
 (defmethod get-slot-in-out-names ((self class-array))
