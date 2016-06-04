@@ -12,8 +12,7 @@
                                        :types '("MusicXML Documents" "*.xml" "All Documents" "*.*")))))
     (when file
       (setf *last-imported* (make-pathname :directory (pathname-directory file)))
-      (with-open-file (f file :direction :input)
-        (setf thelist (om-list-from-xml f)))
+      (setf thelist (om-list-from-xml-file file))
       (when thelist (xml-list-to-Poly thelist)))))
 
 (defmethod! import-musicxml (&optional path)

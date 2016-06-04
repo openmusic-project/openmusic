@@ -41,7 +41,12 @@
 
 (in-package :om-api)
 
-(export '(om-list-from-xml) :om-api)
+(export '(om-lisp-from-xml-file) :om-api)
+
+(defun om-lisp-from-xml-file (file)
+  (when (probe-file file)
+    (with-open-file (f file :direction :input :element-type 'character)
+      (om-list-from-xml f))))
 
 (defun om-list-from-xml (stream)
   (s-xml::parse-xml-dom stream :lxml))

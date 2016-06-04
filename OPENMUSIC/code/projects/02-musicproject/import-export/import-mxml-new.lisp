@@ -13,15 +13,9 @@ Constructs a POLY object from a MusicXML file.
 (defparameter *import-error-signal* t)
 
 (defun new-import-xml (file)
-  (when (and file (probe-file file))
-    (with-open-file (f file :direction :input ; :external-format '(:unicode :little-indian t :eol-style :lf)
-                       :element-type 'character
-                       )
-      (let () ; ((*import-error-signal* t))
-        (read-xml-list 
-        (om-list-from-xml f))       
-        )
-      )))
+  (read-xml-list 
+   (om-list-from-xml-file file)))
+
   
 (defun xml-equal (a b)
   (and (symbolp a) (symbolp b)
