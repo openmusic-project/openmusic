@@ -37,17 +37,9 @@
 (compile&load (make-pathname :directory (append *externals-directory* (list "XML" "S-XML")) :name "lxml-dom"))
 (compile&load (make-pathname :directory (append *externals-directory* (list "XML" "S-XML")) :name "xml"))
 
+(compile&load (make-pathname :directory (append *externals-directory* (list "XML")) :name "xml-api"))
+
 (push :om-xml-api *features*)
 
-(in-package :om-api)
 
-(export '(om-lisp-from-xml-file) :om-api)
-
-(defun om-lisp-from-xml-file (file)
-  (when (probe-file file)
-    (with-open-file (f file :direction :input :element-type 'character)
-      (om-list-from-xml f))))
-
-(defun om-list-from-xml (stream)
-  (s-xml::parse-xml-dom stream :lxml))
 

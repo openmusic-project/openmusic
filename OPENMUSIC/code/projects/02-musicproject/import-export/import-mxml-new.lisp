@@ -238,7 +238,6 @@ Constructs a POLY object from a MusicXML file.
                 
                 )))
       
-      
       (setf xmlchords (reverse xmlchords))
 
       (let* ((omchords nil) 
@@ -262,7 +261,8 @@ Constructs a POLY object from a MusicXML file.
                      (ch-dur (if (first (car c)) max-dur-in-the-chord (- max-dur-in-the-chord))) ;; chord or rest..
                      (proportion (if (fourth (car c)) (float ch-dur) ch-dur))
                      (grouped nil)) ;;; continuation chord => float in the tree
-              
+                
+                ;(print xmlchord)
                 (when tup 
                   (loop for tu in tup 
                         ;;; while (not grouped) 
