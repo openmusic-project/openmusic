@@ -246,7 +246,8 @@
     (capi::find-interface (type-of win) :name (capi::capi-object-name win)))
   (om-activate-callback self t)
   (let ((clicked (om-find-view-containing-point self (om-make-point x y))))
-    (om-view-click-handler clicked (om-convert-coordinates (om-make-point x y) self clicked))
+    ;; do we really need to call om-view-click-handler ??
+    ;(om-view-click-handler clicked (om-convert-coordinates (om-make-point x y) self clicked))
     (when (om-get-menu-context clicked)
       (setf *menu-context-open* t)
       (om-open-pop-up-menu (capi::make-menu-for-pane self (list-to-menu (om-get-menu-context clicked))) self)

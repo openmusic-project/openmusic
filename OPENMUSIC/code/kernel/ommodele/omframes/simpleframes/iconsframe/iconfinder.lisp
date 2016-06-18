@@ -135,10 +135,8 @@ this slot store a subview containing it subview if exists.#triangle#
 	      )))
 	(when (container-p self)
 	  (add-triangle self container))
-	;; new jb
-	(om-invalidate-view container t)
-	;;
-	)))
+	(om-invalidate-view container)
+      	)))
 
 
 (defun add-triangle (self container)

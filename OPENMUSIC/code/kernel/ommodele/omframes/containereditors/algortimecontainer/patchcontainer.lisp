@@ -711,9 +711,10 @@ Elements of the list are list as (source-position source-output target-position 
        (om-new-leafmenu "Comment" #'(lambda () 
                                       (let ((newbox (omNG-make-new-boxcall 'comment posi "comment")))
                                         (when newbox
-                                          (omG-add-element self (make-frame-from-callobj newbox))))))
+                                          (omG-add-element self (make-frame-from-callobj newbox))
+                                          ))))
        (om-new-leafmenu "Picture" #'(lambda () 
-                                                 (make-bg-pict self posi)))
+                                      (make-bg-pict self posi)))
        (list 
         (om-package-fun2menu *om-package-tree* nil #'(lambda (f) (add-box-from-menu f posi)))
         (om-package-classes2menu *om-package-tree* nil #'(lambda (c) (add-box-from-menu c posi)))
