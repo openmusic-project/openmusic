@@ -51,6 +51,7 @@
           om-buffer-insert-file
           om-buffer-write-file
           om-buffer-eval
+          om-read-string-from-file
           ) :om-lisp)
 
 
@@ -350,3 +351,13 @@
                                                                     (editor:buffers-end textbuffer))
                                            ")")))
       )))
+
+
+
+(defun om-read-string-from-file (pathname)
+  (let ((tmpbuffer (om-make-buffer))
+        (str nil))
+    (om-buffer-insert-file tmpbuffer pathname)
+    (setf str (om-buffer-text tmpbuffer))
+    (om-kill-buffer tmpbuffer)
+    str))
