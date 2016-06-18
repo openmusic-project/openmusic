@@ -229,7 +229,10 @@
                                         (om-new-leafmenu "Cut" #'(lambda () (editor-cut self)) "x")
                                         (om-new-leafmenu "Copy" #'(lambda () (editor-copy self)) "c")
                                         (om-new-leafmenu "Paste" #'(lambda () (editor-paste self)) "v"))
-                                       (list (om-new-leafmenu "Copy Special (score data)" #'(lambda () (score-copy self)) "C" (score-copy-p self)))
+                                       (list (om-new-leafmenu "Copy Special (score data)" 
+                                                              #'(lambda () (score-copy self)) "C" (score-copypaste-p self))
+                                             (om-new-leafmenu "Paste Special (replace the whole score)" 
+                                                              #'(lambda () (score-paste self)) "V" (score-copypaste-p self)))
                                        (om-new-leafmenu "Select All" #'(lambda () (editor-select-all self)) "a"))))
         (om-make-menu "Presentation" (list (list :selection
                                       (om-new-leafmenu "Normal" #'(lambda () (change-score-mode (panel self) 0)) 
@@ -250,7 +253,7 @@
 (defmethod editor-select-all ((self scoreEditor)) (select-all (panel self)))
 
 ;;; special copuy for copy/paste export (Finale/NAP...)
-(defmethod score-copy-p ((self t)) nil)
+(defmethod score-copypaste-p ((self t)) nil)
 
 
 
@@ -5029,6 +5032,7 @@
 ;;;=================================
 ;;; COPY/PASTE
 ;;;=================================
+
 
 (defvar *score-clipboard* nil)
 

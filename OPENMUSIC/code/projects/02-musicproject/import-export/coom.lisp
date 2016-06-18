@@ -63,9 +63,7 @@
          for token = (parse (cur-token))
          collect (if (numberp token) (- token) token))))
 
-
-(defmethod parse ((token t)) 
-  token)
+(defmethod parse ((token t)) token)
 
 
 
@@ -115,10 +113,7 @@
                          (setf group nil))
                        (push beat result))
                      (cond
-                      ;;; previously here: (push beat group)
-                      ;;; => I suspect this would grate an unnecessary level of grouping
-                      ;;;; A tester !
-                      ((integerp beat) (push beat result))
+                      ((integerp beat) (push beat group))
                       ((float beat) 
                        (when (not (null group))
                          (push (handle-break-group (reverse group)) result))
@@ -280,10 +275,10 @@
                                 for offset = (offset self) then (+ offset (offset group))
                                 finally (return offset)))))
       (coom-out "<BR> ~%"))
-    (coom-out "<D> ~D </D> ~%" (* 4096 durtot))
+    (coom-out "<D> ~D </D>~%" (* 4096 durtot))
     (loop for note in (inside self)
           for coom-tie = (coom-note-tie note)
-          do (coom-out "<N> ~D ~D </N> ~% " (approx-m (midic note) approx) coom-tie)
+          do (coom-out "<N> ~D ~D</N>~%" (approx-m (midic note) approx) coom-tie)
           )
     (coom-out "</C> ~%"))
 
@@ -347,19 +342,27 @@
 ;---------
 (defvar *coam* :coom)
 
-(defun from-coda ()
-  ;(om-get-scrap-flavor-data *coam*)
-  (om-get-clipboard))
-
+(defun from-coda (&optional mode)
+  (if (equal mode :clipboard)
+      (om-get-clipboard)
+    (let* ((file (or (and (pathnamep mode) mode)
+                     (om-choose-file-dialog :types '("OM/NAPro exchange format" "*.om")))))
+      (when file
+        (if (probe-file file)
+            (om-read-string-from-file file)
+          (progn (om-message-dialog (format nil "Error: file ~s not found." (namestring file))) nil)
+          )))
+    ))
+  
 (defun to-coda (str &optional mode)
    (when str 
-     (if (equal mode 'clipboard)
+     (if (equal mode :clipboard)
          (om-set-clipboard str)
        (let ((filename (or (and (pathnamep mode) mode)
                            (om-choose-new-file-dialog :directory (def-save-directory) 
                                                       :name (and (stringp mode) mode)
                                                       :prompt "New Export file"
-                                                      :types '("OM/Finale/NAP format" "*.om")))))
+                                                      :types '("OM/NAPro exchange format" "*.om")))))
          (when filename 
            (WITH-OPEN-FILE (out filename :direction :output 
                                 :if-does-not-exist :create :if-exists :supersede)
@@ -367,42 +370,59 @@
          ))))
 
 
-(defmethod! finale-export ((self poly) &optional (temperament 2) (mode 'clipboard))
+
+;;;======================
+;;; NoteAbility Pro
+;;;======================
+
+(defmethod! export-nap ((self poly) &optional (temperament 2) (to :clipboard))
+  :icon 353
+  :indoc '("a voice or poly"  "approx (2,4,8)" "destination for export")
+  :initvals '(nil 2 :clipboard)
+  :doc "Saves <self> as text in the OM - NoteAbilityPro format or copy it to clipborad
+
+If <to> = :clipboard : copy to clipboard (for paste into NAPro)
+If <to> is a pathname, save at this location on the disk. 
+"
+  (to-coda (container->coom-string self 0 temperament) to))
+
+(defmethod! export-nap  ((self voice) &optional (temperament 2) (to :clipboard))
+  (export-nap (make-instance 'poly :voices (list self)) temperament to))
+
+(defmethod! import-nap  (&optional (from :clipboard))
+  :icon 354
+  :initvals '(:clipboard)
+  :indoc '("origin of import")
+  :doc "Imports a POLY object from NoteAbility Pro. 
+
+If <from> = :clipboard : import from what was last copied from NAPro
+If <from> is a pathname, import from the file at this location. 
+"
+  (let ((string (from-coda from)))
+    (when (and string (stringp string))
+      (string2Poly string))))
+
+
+;;;======================
+;;; COMPAT (DEPRECATED)
+;;;======================
+
+(defmethod! finale-export ((self poly) &optional (temperament 2) (to :clipboard))
   :icon 353
   :indoc '("a voice or poly"  "approx (2,4,8)")
-  :initvals '((make-instance 'voice)  2)
-  :doc "Send a voice or a poly object to Finale through the clipboard "
-  (to-coda (container->coom-string self 0 temperament) mode)
-  
-  )
+  :initvals '(nil  2)
+  :doc "Send a voice or a poly object through the clipboard [DEPRECATED]"
+  (to-coda (container->coom-string self 0 temperament) to))
 
+(defmethod! finale-export  ((self voice) &optional (temperament 2) (to :clipboard))
+  (finale-export (make-instance 'poly :voices (list self)) temperament to))
 
-(defmethod! finale-export  ((self voice) &optional (temperament 2) (mode 'clipboard))
-  (to-coda  (container->coom-string (make-instance 'poly :voices (list self)) 0 temperament) mode))
-
-(defmethod! finale-import  (&optional path)
+(defmethod! finale-import  (&optional (from :clipboard))
   :icon 354
-  :doc "Constructs a poly object from the data exported by NAP. "
-  (let* ((file (or path (om-choose-file-dialog :types '("OM/NAP format" "*.om")))))
-    (when file
-      (let ((string (if (probe-file file)
-                        (string-from-file file)
-                      (progn (om-message-dialog (format nil "Error: file ~s not found." (namestring file))) nil)
-                      )))
-  (when (and string (stringp string))
-    (string2Poly string))
-  ))))
-
-
-
-(defun string-from-file (pathname)
-  (let ((tmpbuffer (om-make-buffer))
-        (str nil))
-    (om-buffer-insert-file tmpbuffer pathname)
-    (setf str (om-buffer-text tmpbuffer))
-    (om-kill-buffer tmpbuffer)
-    str))
-  
+  :doc "DEPRECATED"
+  (let ((string (from-coda from)))
+    (when (and string (stringp string))
+      (string2Poly string))))
 
 ;-----
 ;debug
@@ -417,7 +437,6 @@
     (list (expt 2 (- exp 1)) (expt 2 exp))))
 |#
 
-
 #|
 (defmethod my-get-group-ratio ((self group) )
   (let* ((tree (tree self))
@@ -432,24 +451,6 @@
                 (power-of-two-p (/ addition extent))))  nil)
      (t addition))))
 |#
-
-(defmethod my-get-group-ratio ((self group) )
-  (let* ((tree (tree self))
-         (extent (car tree))
-         (addition (loop for item in (second tree) sum (floor (abs (if (listp item) (car item) item))))))
-    (cond
-     ((= (round (abs addition)) 1) nil)
-     ;( (integerp (/ extent addition))  addition)
-     ( (or (and (integerp (/ extent addition)) 
-                (power-of-two-p (/ extent addition)))
-           (and (integerp (/ addition extent)) 
-                (power-of-two-p (/ addition extent))))  nil)
-     (t addition))))
-
-
-(defmethod* Objfromobjs ((Self poly) (Type voice))
-  (ObjFromObjs (first (voices self)) type))               
-               
 
 #|
 (string2Poly

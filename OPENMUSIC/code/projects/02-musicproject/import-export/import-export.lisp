@@ -47,13 +47,13 @@
 (defmethod import-formats ((self voice))
   '((om "OM instance")
     (xml "MusicXML")
-    (finale "From NAP")
+    (finale "From NoteAbilityPro")
     (bach "From bach")))
 
 (defmethod import-formats ((self poly))
   '((om "OM instance")
     (xml "MusicXML")
-    (finale "From NAP")
+    (finale "From NoteAbilityPro")
     (bach "From bach")
     ))
 
@@ -81,7 +81,7 @@
     (midi "MIDI")
     (xml "MusicXML")
     (etf "ETF")
-    (finale "To NAP")
+    (finale "To NoteAbilityPro")
     (bach "To bach")))
 
 (defmethod export-formats ((self poly))
@@ -89,7 +89,7 @@
     (midi "MIDI")
     (xml "MusicXML")
     (etf "ETF")
-    (finale "To NAP")
+    (finale "To NoteAbilityPro")
     (bach "To bach")))
 
 
@@ -106,7 +106,7 @@
                                                                  (setf (inside (object self)) (clone (inside obj)))
                                                                  (after-editor-import (object self))
                                                                  (openobjecteditor (ref self))
-                                                                 ;(update-panel (panel self) t)
+                                                                 (report-modifications self)
                                                                  )
                                                                )
                                                              )))
@@ -199,7 +199,8 @@
       )))
 
 (defmethod score-import ((format (eql 'finale)) object)
-  (let ((import-obj (finale-import)))
+  (let* ((file (catch-cancel (om-choose-file-dialog :types '("OM-NAPro exchange file" "*.om"))))
+         (import-obj (import-nap file)))
     (if (equal (type-of import-obj) (type-of object))
         import-obj
       (objfromobjs import-obj object))))
@@ -220,30 +221,53 @@
   (xml-export object :keys '((G 2)) :approx (or (get-param params 'approx) 2) :name name))
 
 (defmethod score-export ((format (eql 'finale)) object params name)
-  (finale-export object (or (get-param params 'approx) 2) name))
+  (export-nap object (or (get-param params 'approx) 2) name))
 
 ;;;===============================
 ;;; clipboard-mode
 
-(defmethod score-copy-p ((self voiceeditor)) t)
-(defmethod score-copy-p ((self polyeditor)) t)
+(defmethod score-copypaste-p ((self voiceeditor)) t)
+(defmethod score-copypaste-p ((self polyeditor)) t)
 
 (defmethod score-copy ((self scoreeditor)) 
   (let ((data (get-score-export-data self)))
     (om-set-clipboard data)))
 
+(defmethod score-paste ((self scoreeditor)) 
+  (let* ((import-obj (import-nap))
+         (obj (if (equal (type-of import-obj) (type-of (object self)))
+                  import-obj
+                (objfromobjs import-obj (object self)))))
+    (when obj
+      ;;; if we don't close the window the editor crashes 
+      ;;; when the new score loaded has more voices than the previous one
+      (om-close-window (window self))
+      (setf (inside (object self)) (clone (inside obj)))
+      (after-editor-import (object self))
+      (openobjecteditor (ref self))
+      (report-modifications self)
+      )))
+
+
 (defun selection-to-voice (editor)
-  (when (and (equal 'grap-measure (grap-class-from-type (obj-mode (panel editor))))
-             (selection? (panel editor)))
-    (let ((voice (make-instance 'voice)))
-      (setf (inside voice) (reverse (clone (selection? (panel editor)))))
-      voice)))
+  (when (selection? (panel editor))
+    (case (grap-class-from-type (obj-mode (panel editor))) 
+      (grap-measure
+       (let ((voice (make-instance 'voice)))
+         (setf (inside voice) (reverse (clone (selection? (panel editor)))))
+         voice))
+      (grap-voice (clone (car (selection? (panel editor)))))
+      (otherwise nil))))
 
 (defmethod get-score-export-data ((self voiceeditor))
-  (let* ((voice (or (selection-to-voice self) (object self)))
-         (poly (make-instance 'poly :voices (list voice)))
-         (appx (or (get-edit-param self 'approx) 2)))
-    (container->coom-string poly 0 appx)))
+  (let* ((voice (if (selection? (panel self)) 
+                    (selection-to-voice self) 
+                  (object self))))
+    (if voice 
+        (container->coom-string 
+         (make-instance 'poly :voices (list voice)) 0
+         (or (get-edit-param self 'approx) 2))
+      (om-beep-msg "This selection can not be copied"))))
 
 (defmethod get-score-export-data ((self polyeditor))
   (let* ((selectionvoice (selection-to-voice self))

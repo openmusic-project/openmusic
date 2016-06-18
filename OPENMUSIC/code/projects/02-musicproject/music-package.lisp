@@ -88,10 +88,7 @@
 
 (addPackage2Pack *iopackage* *scorepackage*)
 
-(AddGenFun2Pack '(save-as-etf export-musicxml import-musicxml import-bach export-bach) *iopackage*)
-
-
-
+(AddGenFun2Pack '(save-as-etf import-musicxml export-musicxml import-bach export-bach import-nap export-nap) *iopackage*)
 
 
 
