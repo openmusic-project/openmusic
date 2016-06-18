@@ -478,15 +478,13 @@ with the objects respectly associeted."))
    self)
    
 
-;Click on the scroller not in a subview
-
 (defmethod control-actives ((view nonrelationPanel) where)
-  (when (and (editor view) (text-view (editor view)))
-    (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
+  (close-enter-dialog (editor view))
   (om-init-motion-click view where 
                        :motion-draw 'draw-selection-rectangle 
                        :release-action 'release-selection
-                       :display-mode 2))
+                       :display-mode 2)
+  )
 
 (defmethod release-selection ((self om-view) initpos pos)
     (let ((x1 (min (om-point-x pos) (om-point-x initpos)))

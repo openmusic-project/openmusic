@@ -78,11 +78,15 @@
      (thestring (object (om-view-container self))))
     (t (format () "~S" (value (object (om-view-container self)))))))
 
-(defmethod text-enter-multiline-p ((self t)) t)
+(defmethod text-enter-multiline-p ((self t)) nil)
+
+(remove #\Newline "fhgjjh")
 
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
-  (let* ((thetext (initial-text-ttybox self))
+  (let* ((thetext (if (text-enter-multiline-p self)
+                      (initial-text-ttybox self)
+                    (remove #\Newline (initial-text-ttybox self))))
 	 (panel (om-view-container (om-view-container self)))
 	 (container (editor panel)))
     (when (text-view container)

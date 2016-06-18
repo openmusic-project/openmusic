@@ -314,10 +314,8 @@
 (defmethod draw-after-box ((self omboxframe)) nil)
 
 (defmethod om-view-click-handler ((self omboxframe) where)
-  ;(when (eq (call-next-method) self)
-   ; (when (frame-size (object self))
-      (do-click-inbox self where)
-      self) ;) ;)
+  (do-click-inbox self where)
+  self)
 
 (defmethod om-view-doubleclick-handler ((self omboxframe) where)
    (declare (ignore where))

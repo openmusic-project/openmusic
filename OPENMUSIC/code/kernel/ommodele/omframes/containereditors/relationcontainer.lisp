@@ -427,8 +427,7 @@ it redraw the connections involving in the deleying operation."
 
 ;;;;Click on the scroller not in a subview.
 (defmethod control-actives ((view relationPanel) where)
-  (when (and (editor view) (text-view (editor view)))
-    (exit-from-dialog (text-view (editor view)) (om-dialog-item-text (text-view (editor view)))))
+  (close-enter-dialog (editor view)) 
   (if (click-in-connection view where)
       (mapc #'(lambda (control) 
                 (omG-unselect control)) (get-actives  view))

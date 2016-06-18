@@ -450,5 +450,13 @@
 
 
 
+(defmethod close-enter-dialog ((self t)) nil)
+(defmethod close-enter-dialog ((self editorview)) 
+  (when (text-view self)
+    (exit-from-dialog (text-view self) (om-dialog-item-text (text-view self)))))
+
+(defmethod om-view-click-handler :before ((self om-item-view) where)
+  (close-enter-dialog (editor (om-view-window self))))
+
 
 
