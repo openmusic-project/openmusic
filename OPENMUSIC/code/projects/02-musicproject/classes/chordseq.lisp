@@ -642,6 +642,9 @@ Transforms <self> so that notes falling in a small time interval are grouped int
   (reduce #'merger 
           (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
 
+;;; POLY -> VOICE = just keeps the first voice of the poly
+(defmethod* Objfromobjs ((Self poly) (Type voice))
+    (ObjFromObjs (first (voices self)) type)) 
 
 ;==================
 

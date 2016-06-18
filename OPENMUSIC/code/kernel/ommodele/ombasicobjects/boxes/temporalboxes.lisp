@@ -300,6 +300,34 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
      (update-from-reference newobj)
      newobj))
 
+;; hack cons maq from maquette-objs
+;; not sure if we should keep that
+(defmethod omNG-make-tempobj ((self maquette-obj) posi name)
+   (let ((newmaq (make-instance 'ommaqabs :value self :icon 265)))
+
+     (mapcar #'(lambda (o) (omng-add-element 
+                            newmaq 
+                            (omng-make-tempobj o 
+                                               (om-make-point (offset->ms o) 0) 
+                                               "tempobj")))
+                                                
+             (inside self))
+ 
+     (let ((newobj (make-instance *def-metaclass-box-tempo* 
+                   :name name
+                   :reference newmaq
+                   :extend (get-obj-dur self)
+                   :posy (om-point-v posi)
+                   :offset (om-point-h posi)
+                   :icon nil
+                   :colorframe *maquette-box-color*
+                   :sizey 20)))
+     (push newobj (attached-objs newmaq))
+     ;; ***
+     (update-from-reference newobj)
+     newobj)))
+
+
 ;-------from BoxInstance-------
 (defmethod omNG-make-tempobj ((self OMBoxInstance) posi name)
   (omNG-make-tempobj (clone (reference self)) posi name))
