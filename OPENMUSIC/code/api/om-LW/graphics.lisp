@@ -850,14 +850,13 @@
 
 
 (defun om-fill-rect (x &optional y (w 0) (h 0)  &key (erasable nil))
-   (multiple-value-bind (left top wi he)
-       (convert-rectangle-args x y w h)
-     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
+  (multiple-value-bind (left top wi he)
+      (convert-rectangle-args x y w h)
+    (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
 		       :filled t
-		       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
-		       #+linux :compositing-mode #+linux :copy
-		       )
-     ))
+		       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1))))
+
+
 
 (defun om-erase-rect-content (x &optional y (w 0) (h 0))
   (multiple-value-bind (left top wi he)
