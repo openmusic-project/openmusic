@@ -646,6 +646,9 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 (defmethod* Objfromobjs ((Self poly) (Type voice))
     (ObjFromObjs (first (voices self)) type)) 
 
+(defmethod* Objfromobjs ((Self voice) (Type poly))
+    (make-instance (type-of type) :voices (list (clone self))))
+
 ;==================
 
 (defclass* multi-seq (superposition tonal-object) 
