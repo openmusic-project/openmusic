@@ -706,7 +706,8 @@ Press 'space' to play/stop the sound file.
    (player-menu-item (object self))
    (object-specific-menu (value (object self)))))
 
-(defmethod object-specific-menu ((self sound))
+(defmethod object-specific-menu ((self sound) box)
+  (declare (ignore box))
   (list (om-new-leafmenu "Open with external editor..."
                          #'(lambda () (om-cmd-line (string+ *om-open-cmd* " "  (namestring (sound-path self))))))))
 
