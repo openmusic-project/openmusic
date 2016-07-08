@@ -370,7 +370,7 @@
   (let ((lcm (abs (reduce #'lcm subtrees :key #'(lambda (x) (fdenominator (if (listp x) (first x) x))))))
         (gcd (abs (reduce #'gcd subtrees :key #'(lambda (x) (fnumerator (if (listp x) (first x) x)))))))
     (mapcar #'(lambda (x) (if (listp x) 
-                            (list (*  (fullratio (first x)) (/ lcm gcd)) (second x))
+                              (list (*  (fullratio (first x)) (/ lcm gcd)) (second x))
                             (*  (fullratio x) (/ lcm gcd))))
             subtrees)))
 
@@ -398,9 +398,10 @@
 (defmethod build-tree ((self measure))
   (and (inside self)
        (let ((tree (call-next-method)))
-         (if (slot-value  self 'tree)
+         (if (slot-value self 'tree)
            (list (first (slot-value  self 'tree)) (simplify-subtrees (second tree)))
-           (list (mk-signature (/  (first tree) 4)) (simplify-subtrees (second tree)))))))
+           (when (remove nil (second tree))
+             (list (mk-signature (/  (first tree) 4)) (simplify-subtrees (second tree))))))))
 
 (defmethod build-tree ((self group)) 
   (and (inside self)
@@ -410,7 +411,8 @@
 (defmethod build-tree ((self metric-sequence))
   (and (inside self)
        (list (/ (extent self) (Qvalue self))
-             (mapcar 'build-tree (inside self)))))
+             (remove nil
+                     (mapcar 'build-tree (inside self))))))
 
 
 ;(setf voice (mki 'voice :tree '(? ((4//4 (1 (1 (1 -2 1 1)) 1 1)) (7//8 (1 (1 (4 2 1)) -1 1 1 1 ))))))
