@@ -316,6 +316,16 @@
 (setf *current-1/4-scale* *4-tone-chromatic-scale*)
 (setf *current-1/8-scale* *8-tone-chromatic-scale*)
 
+#|
+(setf *current-1/4-scale*
+   (make-instance 'scale
+     :alteration-list
+     (list  nil (t-1/4) (diese) (inv-bemol) nil (t-1/4) (diese) (inv-bemol) nil (t-1/4) nil (t-1/4) (diese)
+            (inv-bemol) nil (t-1/4) (diese) (inv-bemol) nil (t-1/4) (diese) (inv-bemol) nil (t-1/4))
+     :lines-list
+     (list  0 0 0 1 1 1 1 2 2 2 3 3 3 4 4 4 4 5 5 5 5 6 6 6)
+     :approx-factor 50))
+|#
 
 (defparameter *scales-list* (list 
                              (list 1   *1-tone-chromatic-scale*  "1")
@@ -613,6 +623,7 @@
 
 ;(pushr (list 63 *19-equal-scale* "19 ET") *scales-list*)
 
+    
 
 ;(defparameter *5-equal-scale*
 ;  (make-instance 'atone-scale
