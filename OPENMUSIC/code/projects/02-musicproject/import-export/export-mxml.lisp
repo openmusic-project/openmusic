@@ -613,7 +613,7 @@
                                       "</time>")
                                 (and key
                                      (list "<clef>"
-                                           (list (format nil "<sign>~D</sign>" (car key))
+                                           (list (format nil "<sign>~:@(~a~)</sign>" (car key))
                                                  (format nil "<line>~D</line>" (cadr key)))
                                            "</clef>"
                                            ))
