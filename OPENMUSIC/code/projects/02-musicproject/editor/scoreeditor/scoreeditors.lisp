@@ -1312,6 +1312,7 @@
   (cdr (assoc param (default-edition-params (make-instance 'note)))))
 
 (defvar *extra-with-pairs-list* nil)
+ 
 (defmethod draw-view-contents ((self scorePanel))
   (let* ((x0  (om-h-scroll-position self))
          (y0  (om-v-scroll-position self))
@@ -2693,8 +2694,7 @@
          (y0  (om-v-scroll-position self))
          (size (staff-size self))
          (deltax (get-key-space self))
-         (deltay (round (* size (score-top-margin self))))
-         )
+         (deltay (round (* size (score-top-margin self)))))
     (when (and (linear? self) (cursor-p self))
       (draw-interval-cursor self))
     (om-with-focused-view self
@@ -2953,7 +2953,7 @@
                      (when (graphic-obj self)
                        (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
            
-                         (draw-object  (graphic-obj self) self deltax deltay 
+                         (draw-object (graphic-obj self) self deltax deltay 
                                       (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self) ) 
                                       (slots-mode self) (staff-size self) (linear? self) (staff-sys self) 
                                       (grille-step-p self) (noteaschan? self))

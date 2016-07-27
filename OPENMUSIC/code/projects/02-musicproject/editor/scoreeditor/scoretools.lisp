@@ -126,7 +126,7 @@
   (om-with-fg-color nil (if selected *select-color* (or (color self) *system-color*))
      (let (y0 y1)
        (loop for staff in (staff-list self) do
-             (let ((y (draw-staff staff x  (top-in-midi self) xsize fontsize deltay (unless y0 showtempo) (unless y0 name))))
+             (let ((y (draw-staff staff x (top-in-midi self) xsize fontsize deltay (unless y0 showtempo) (unless y0 name))))
                (when *om-tonalite* 
                  (draw-armure staff (armure self) x (top-in-midi self) xsize fontsize deltay))
                (unless y0 (setf y0 (first y)))
@@ -266,8 +266,8 @@
 (defmethod system-offset-in-pix ((self OMSystem) size)
    (round (* (/ size 4) (posy (car (staff-list self))))))
 
-(defmethod top-in-midi ((self list))
-   (top-in-midi (car self) ))
+(defmethod top-in-midi ((self cons))
+   (top-in-midi (car self)))
 
 (defmethod top-in-midi ((self t)) 120)
 
@@ -580,7 +580,8 @@
                       :main-point (list x 0)
                       :rectangle (list 0 0 0 0)
                       :stem (if (and stem (or (= mode 0) (= mode 4)) (lmidic self)) 
-                                (if (< (list-min (lmidic self)) 7100) 
+                                (if (< (list-min (lmidic self)) 
+                                       (* 100 (om-mean (range (car (staff-list system))))))
                                     (round (* 3 linespace))
                                   (- (round (* 3 linespace)))
                                   ))
@@ -601,16 +602,16 @@
         (draw-object item view x y zoom minx maxx miny maxy slot size linear? staff nil chnote))
   
   (when *om-tonalite*
-     (draw-chiffrage self x y zoom size))
-   ;;; jb
-   
-   (when (and (not grille-p) (stem self) (chordpos self))
-     (if (< (list-min (lmidic (reference self))) 7100)
-         (draw-stem self (+ (chordpos self) (/ size 3.5)) y (selected self) (stem self))
-       (draw-stem self (chordpos self) y (selected self) (stem self))
-       ))
-   (collect-rectangles self)
-   (draw-extras self view size staff)
+    (draw-chiffrage self x y zoom size))
+     
+  (let ((stem-up-limit 7100))
+    (when (and (not grille-p) (stem self) (chordpos self))
+      (if (plusp (stem self)) ; (< (list-min (lmidic (reference self))) stem-up-limit)
+          (draw-stem self (+ (chordpos self) (/ size 3.5)) y (selected self) (stem self))
+        (draw-stem self (chordpos self) y (selected self) (stem self))
+        )))
+  (collect-rectangles self)
+  (draw-extras self view size staff)
   )
 
 (defmethod draw-stem ((self grap-chord) x y sel stemsize)
@@ -619,7 +620,7 @@
             (thenotes (sort thenotes '< :key 'y))
             (y-min (y (car thenotes)))
             (y-max (y (car (last thenotes)))))
-       (if (plusp stemsize) 
+       (if (plusp stemsize)
            (setf y-min (- y-min stemsize))
          (setf y-max (- y-max stemsize)))
        #+win32 (setf x (+ x 2)) 
@@ -943,8 +944,6 @@
      (make-graphic-extras newc-s)
      newc-s))
 
-
-
 (defmethod draw-object ((self grap-chord-seq) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (let* (endxms previous)
     (om-with-font (get-font-to-draw 0)
@@ -1043,17 +1042,18 @@
 ; 
 
 (defmethod make-graph-ryth-obj ((self poly) top staffsys linespace scale sel pere durtot &optional ryth)
-   (declare (ignore ryth durtot))
-   (let* ((thepoly (make-instance 'grap-poly :reference self :parent pere))
-          (voicelist (loop 
-                      for item in (inside self)
-                      for i = 0 then (+ i 1) collect
-                      (make-graph-ryth-obj item (top-in-midi (car staffsys)) (car staffsys) linespace  scale sel thepoly nil)
-                      )
-                     ))
-     (setf (inside thepoly) voicelist)
-     (make-graphic-extras thepoly)
-     thepoly))
+  (declare (ignore ryth durtot))
+  (let* ((thepoly (make-instance 'grap-poly :reference self :parent pere))
+         (voicelist (loop 
+                     for item in (inside self)
+                     for i = 0 then (+ i 1) collect
+                     (let ((system (or (nth i staffsys) (car staffsys))))
+                       (make-graph-ryth-obj item (top-in-midi system) system linespace  scale sel thepoly nil)
+                       ))
+                    ))
+    (setf (inside thepoly) voicelist)
+    (make-graphic-extras thepoly)
+    thepoly))
 
 
 (defun get-staff-pos&size (stafflist interlinea)
@@ -1418,7 +1418,7 @@
 
 (defmethod make-graph-ryth-obj ((self rest) top staffsys linespace scale sel pere durtot &optional ryth)
   (declare (ignore head ryth))
-  (let* ((ypos (midi2pixel (default-rest-position staffsys)  top linespace scale))
+  (let* ((ypos (midi2pixel (default-rest-position staffsys) top linespace scale))
          (symb-info (note-head-and-points (abs durtot) t))
          (str (first symb-info))
          (str (if (listp str) (string+ (rest-4) (num2sstr (car str)) (rest-4)) str)) 
@@ -1429,7 +1429,7 @@
     (setf sizex (get-name-size str (get-font-to-draw 0)))
     (setf beams (get-number-of-beams durtot))
     (setf beams-num (if (listp beams) (car beams) beams))
-    (setf delta-y (if (< beams-num 1) (list (round  linespace -2) 0) (list 0 0))) 
+    (setf delta-y (if (< beams-num 1) (list (round linespace -2) 0) (list 0 0))) 
     (setf obj (make-instance 'grap-rest
                              :reference self
                              :durtot durtot
@@ -1533,7 +1533,7 @@
     (if (bigrest self)
       (draw-long-silence self size xpos ypos (bigrest self) (points  self))
       (progn
-        (om-draw-string  xpos ypos str)
+        (om-draw-string xpos ypos str)
         (write-note-points self  (+ (round size 2) xpos) ypos size)
         (when line
           (om-draw-line (- xpos (round size 8)) (- ypos line) (+ xpos (round size 12/5)) (- ypos line)))
@@ -1619,7 +1619,7 @@
     (when  (grap-grace-notes new-chr) 
       (set-graces-dir-after (grap-grace-notes new-chr) new-chr staffsys linespace))
     
-    (setf (rectangle new-chr)  (list 0 0  maxw 0))
+    (setf (rectangle new-chr)  (list 0 0 maxw 0))
     (make-graphic-extras new-chr)
     (if (gnotes self)
         (list (grap-grace-notes new-chr) new-chr)
