@@ -305,6 +305,15 @@ Extraction methods.
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
   (call-next-method)
+  
+  (when (find-if 'consp (cadr (mat-trans (group-list initargs 2 'circular))))
+    (om-beep-msg "Error NOTE attributes must be atomic value (not lists) !")
+    (if (consp (midic self)) (setf (midic self) (car (midic self))))
+    (if (consp (vel self)) (setf (vel self) (car (vel self))))
+    (if (consp (dur self)) (setf (dur self) (car (dur self))))
+    (if (consp (chan self)) (setf (chan self) (car (chan self))))
+    )
+      
   (unless empty 
     (setqvalue self 1000)
     (setf (slot-value self 'extent) (slot-value self 'dur))
@@ -405,6 +414,15 @@ Extraction methods.
 
 (defmethod do-initialize ((self chord) &key LMidic LVel Loffset LDur LChan LPort)
     (setQValue self 1000 :recursive nil)
+    (when (find-if 'atom  (list LMidic LVel Loffset LDur LChan LPort))
+      (om-beep-msg "Error CHORD attributes must be LISTS !!")
+      (unless (listp LMidic) (setf LMidic (list LMidic)))
+      (unless (listp LVel) (setf LVel (list LVel)))
+      (unless (listp Loffset) (setf Loffset (list Loffset)))
+      (unless (listp LDur) (setf LDur (list LDur)))
+      (unless (listp LChan) (setf LChan (list LChan)))
+      (unless (listp LPort) (setf LPort (list LPort)))
+      )
     (setf (inside self)
           (loop while LMidic 
                 for midic = (or (pop LMidic) midic)
