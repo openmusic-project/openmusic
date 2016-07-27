@@ -70,8 +70,8 @@
         "editor;scoreeditor;contextmenu"       
         "editor;scoreeditor;pagebreak"
         "editor;scoreeditor;strandhbreak"
-        
-        
+    
+        "editor;scoreeditor;score-playback"
         
         "classes;extras"
 

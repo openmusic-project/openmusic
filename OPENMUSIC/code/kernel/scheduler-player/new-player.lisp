@@ -134,7 +134,7 @@
            (mapcar #'(lambda (pl) (player-set-loop pl start-t end-t)) 
                    (engines player)))
 
-         (mapcar #'player-start (engines player) 
+         (mapcar #'player-start (engines player)
                  (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
            
          (setf (state player) :play
@@ -192,11 +192,12 @@
   )
 
 
+#|
 (defmethod general-record ((player omplayer))
   (if (equal (state player) :stop)
     (progn
       (setf (state player) :record)
-      (mapcar #'player-record (engines player)))
+      (mapcar #'player-record (print (engines player))))
     (om-beep)))
 
 (defmethod general-stop-record ((player omplayer))
@@ -213,7 +214,7 @@
     (setf (scheduling-process player) nil))
   (setf (engines player) nil)
   )
-
+|#
 
 ;;;=====================
 ;;; SUB-PLAYERS (AKA "ENGINES")
@@ -263,6 +264,7 @@
   ;(print (format nil "~A : loop" engine))
   t)
 
+#|
 (defmethod player-record ((engine t))
   (om-beep-msg (format nil "Player ~A : can not record" engine)))
 
@@ -270,6 +272,7 @@
 (defmethod player-record-stop ((engine t))
   ;(print (format nil "~A : record stop" engine))
   nil)
+|#
 
 ;;;=================================
 ;;; GENERAL PLAYER: USED IN PATCH EDITORS
@@ -348,6 +351,7 @@
 ;;;=================================
 (defclass play-editor-mixin ()
    ((player :initform nil :accessor player)
+    (recording :initform nil :accessor recording)
     (player-type :initform nil :accessor player-type)
     (loop-play :initform nil :accessor loop-play)
     (end-callback :initform nil :accessor end-callback)
@@ -443,8 +447,8 @@
   (general-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
-  (if (equal (state (player self)) :record)
-      (editor-stop-record self))
+  ;(if (equal (state (player self)) :record)
+  ;    (editor-stop-record self))
   (general-stop (player self)))
 
 (defmethod editor-play/stop ((self play-editor-mixin))
@@ -452,6 +456,7 @@
       (editor-play self)
     (editor-stop self)))
 
+#|
 (defmethod editor-record ((self play-editor-mixin))
   (setf (engines (player self)) (list (get-player-engine self)))
   (general-record (player self)))
@@ -459,6 +464,7 @@
 (defmethod editor-stop-record ((self play-editor-mixin))
   (general-stop-record (player self))
   (cadr (car (play-list (player self)))))
+|#
 
 ;;; A REDEFINIR PAR LES SOUS-CLASSES
 (defmethod cursor-panes ((self play-editor-mixin)) nil)

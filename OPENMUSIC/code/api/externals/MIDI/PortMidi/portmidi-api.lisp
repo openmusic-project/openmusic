@@ -287,7 +287,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 (defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil))
   (UNWIND-PROTECT 
       
-      (let ((out? (get-output-stream-from-port port)))                       
+      (let ((out? (get-output-stream-from-port port)))               
         (loop do
               (if (portmidi-poll stream)
                   (let ((n (portmidi-read stream buff size)))

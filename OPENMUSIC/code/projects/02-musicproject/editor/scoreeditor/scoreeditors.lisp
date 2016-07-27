@@ -104,7 +104,11 @@
               (om-make-view 'om-icon-button :position (om-make-point 463 2) :size (om-make-point 22 22)
                             :icon1 "rec" :icon2 "rec-pushed"
                             :lock-push t
-                            :action #'(lambda (item) (editor-record self)))
+                            :action #'(lambda (item) 
+                                        (if (recording self)
+                                            (stop-recording self)
+                                          (start-recording self))
+                                        (setf (selected-p item) (recording self))))
               
               (om-make-view 'om-icon-button :position (om-make-point 484 2) :size (om-make-point 22 22)
                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
@@ -154,8 +158,8 @@
     (setf (selected-p (first (play-buttons self))) (or (equal state :play) (equal state :pause))
           (selected-p (second (play-buttons self))) (equal state :pause)
           (selected-p (third (play-buttons self))) (equal state :stop))
-    (when (fourth (play-buttons self))
-      (setf (selected-p (fourth (play-buttons self))) (equal state :record)))
+;    (when (fourth (play-buttons self))
+;      (setf (selected-p (fourth (play-buttons self))) (equal state :record)))
     (om-invalidate-view self)
     (setf (selected-p (third (play-buttons self))) nil)))
 
@@ -667,7 +671,7 @@
     (slots-mode :initform 'midic  :accessor slots-mode)
     (selection? :initform nil :accessor selection?)
     (graphic-obj :initform nil :accessor graphic-obj)
-    (recording? :initform nil :accessor recording?)
+    ;;(recording? :initform nil :accessor recording?)
     (edition-values :initform nil :initarg :edition-values :accessor edition-values)
     ;;(linear? :initform t :accessor linear?)
     (obj-mode :initform "note" :accessor obj-mode)
@@ -1477,36 +1481,6 @@
                                           :max-val 255))))
 
 
-;------------ Redefinition of player
-
-;(defmethod selection-to-play-? ((self scorePanel)) nil)
-
-;(defmethod get-obj-to-play ((self scorePanel))
-;   (list (object (editor self)) 
-;         :port (get-edit-param (om-view-container self) 'outport)
-;         :approx (get-edit-param (om-view-container self) 'approx)))
-
-(defmethod additional-player-params ((self scoreeditor))
-  (list :port (get-edit-param self 'outport) 
-        :approx (get-edit-param self 'approx)))
-
-(defmethod record2obj ((self scorePanel) list)
-   (object (om-view-container self)))
-
-(defmethod allow-record ((self scorePanel)) t)
-
-
-(defmethod editor-stop-record ((self scoreeditor))
-  (let ((data (call-next-method))
-        (lastobject (object self))
-        (newobject nil))
-    (when data
-      (setf newobject (record2obj (panel self) data))
-      (when newobject
-        (setf (object self) newobject)
-        (change-val-of-reference self newobject lastobject)
-        (update-panel (panel self) t)))
-    ))
 
 
 ;===================================================================
@@ -1830,8 +1804,6 @@
 (defmethod get-key-space ((self notePanel))
    (* (get-deltax (staff-sys self)) (staff-size self) 2))
 
-(defmethod allow-record ((self notePanel)) nil)
-
 
 (defmethod get-help-list ((self notepanel)) 
   (list '(("ud" "Transpose")
@@ -1933,28 +1905,6 @@
 (defmethod get-obj-to-play ((self chordeditor))
   (chord-obj-to-play (object self) (staff-mode (panel self))))
 
-(defmethod record2obj ((self chordPanel) list)
-  (let ((chord (object (editor self))))
-    (setf (Lmidic chord) (loop for item in list
-                               collect (* 100 (first item))))
-    (setf (Lvel chord) (loop for item in list
-                             collect (fourth item)))
-    (setf (Ldur chord) (loop for item in list
-                             collect (third item)))
-    (setf (Lchan chord) (loop for item in list
-                              collect (fifth item)))
-    ))
-     
-(defun record2chord (list)
-   (make-instance 'chord
-     :LMidic  (loop for item in list
-                    collect (* 100 (first item)))
-     :LVel (loop for item in list
-                 collect (fourth item))
-     :Ldur (loop for item in list
-                 collect (third item))
-     :Lchan (loop for item in list
-                  collect (fifth item))))
 
 
 (defmethod panel-show-cursor-p ((self chordpanel)) t)
@@ -2116,22 +2066,6 @@
                                    (om-v-scroll-position self)
                                    ))))
 
-(defmethod record2obj ((self chordseqPanel) list)
-   (let* ((editor (om-view-container self))
-          (obj  (object editor)))
-     (when list
-       (close-attached-editors editor)
-       (let* ((chords (sort (make-quanti-chords list *global-deltachords*) '< :key 'offset))
-              (first (offset (car chords))))
-         (loop for item in chords do
-               (setf (offset item) (- (offset item) first))
-               (setf (parent item) obj))
-         (setQValue obj 1000 :recursive nil)
-         (setf (inside obj) nil)
-         (setf (inside obj)  chords)
-         (adjust-extent obj)
-         (QNormalize obj)))
-     obj))
 
 
 
@@ -2540,36 +2474,7 @@
                 (grille-step-p self) (noteaschan? self)))
 
 
-(defmethod record2obj ((self multiseqPanel) list)
-   (let* ((editor (om-view-container self))
-          (obj  (object editor)))
-     (when list
-       (close-attached-editors editor)
-       (let ((track-list (make-list 16 :initial-element nil))
-             (min 10000000) rep)
-         (loop for note in list do
-               (push note (nth (fifth note) track-list)))
-         (setf track-list (remove nil track-list))
-         (loop for item in track-list do
-               ;(setf item (sort item '< :key 'second))
-               (let* ((newlist (reverse item))
-                      (newcs (make-instance 'chord-seq))
-                      (chords (sort (make-quanti-chords newlist *global-deltachords*) '< :key 'offset))
-                      first )
-                 (setQValue newcs 1000 :recursive nil)
-                 (setf (inside newcs) nil)
-                 (setf (inside newcs)  chords)
-                 (adjust-extent newcs)
-                 (QNormalize newcs)
-                 (push newcs rep)
-                 (setf first (offset->ms (car chords)))
-                 (setf min (min min first))))
-         (loop for item in rep do
-               (loop for ch in (chords item) do
-                     (setf (offset ch) (- (offset ch) min))
-                     (setf (parent ch) item)))
-         (change-multi-inside self (reverse rep))))
-     obj))
+
 
 (defmethod change-multi-inside ((self multiseqPanel) newobjes)
    (let* ((editor (om-view-container self))
@@ -2759,16 +2664,6 @@
 (defmethod show-tempo ((self voicepanel)) 
   (car (tempo (object (om-view-container self)))))
 
-(defmethod record2obj ((self voicepanel) list)
-   (let* ((editor (om-view-container self))
-          (obj  (object editor)))
-     (when list
-       (close-attached-editors editor)
-       (let* ((news (make-quanti-chords list *global-deltachords*)))
-         (setf (chords obj) (loop for item in (chords obj)
-                                  for newc in news
-                                  collect newc))))
-     obj))
 
 
 ;(defun rhythm-convert-interval (self)
@@ -2906,22 +2801,6 @@
 ;(defmethod edit-step-grille ((self polypanel)) t)
 
 (defmethod draw-line-cursor ((self polypanel) &key newpixel (draw? t)) 0)
-
-(defmethod record2obj ((self polyPanel) list)
-   (let* ((obj (object (om-view-container self))))
-     (when list
-       (let ((track-list (make-list 16 :initial-element nil)) rep)
-         (loop for note in list do
-               (push note (nth (fifth note) track-list)))
-         (setf track-list (remove nil track-list))
-         (loop for item in track-list do
-               (setf item (sort item '< :key 'second))
-               (let ((chords (sort (make-quanti-chords item *global-deltachords*) '< :key 'offset)))
-                 (push chords rep)))
-         (loop for item in (inside obj)
-               for chrds in (reverse rep) do
-               (setf (chords item) chrds))))
-     obj))
 
 
 (defmethod change-ties-too ((self polypanel) chord)
