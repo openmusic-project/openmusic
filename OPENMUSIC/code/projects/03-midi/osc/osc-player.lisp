@@ -64,6 +64,6 @@
                             :host "localhost" :port *osc-score-output*
                             :bundle (list "/om/note" pitch vel dur chan))))
     (setf (offset evt) date)
-    evt))
+    (list evt)))
 
  

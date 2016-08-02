@@ -146,15 +146,6 @@
             ))))
 
 
-;=== Play a chord in "arp" mode
-(defmethod PrepareToPlay ((player (eql :midi)) (chord arp-chord) at &key  approx port interval voice)
-     ;(setf port (verify-port port))
-    (loop for note in (notes chord)
-          for offset from 0 by 400
-          collect (PrepareToPlay player note (+ offset at) 
-                                 :approx approx
-                                 :port port :interval interval :voice voice)))
-
 
 ;=== Note is a leaf of the "container tree"
 

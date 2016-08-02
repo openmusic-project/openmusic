@@ -101,6 +101,7 @@
                                      :voice voice)))
                   ))))
 
+
 ;;; FOR THE MAQUETTE CONTENTS
 ;;; check if we need to instanciate a specific track for this object
 (defmethod obj-in-sep-track ((self t)) nil)

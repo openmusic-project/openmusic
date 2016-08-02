@@ -1897,6 +1897,15 @@
        )
     self))
 
+;=== Play a chord in "arp" mode
+(defmethod PrepareToPlay ((player t) (chord arp-chord) at &key  approx port interval voice)
+     ;(setf port (verify-port port))
+    (loop for note in (notes chord)
+          for offset from 0 by 400
+          collect (PrepareToPlay player note (+ offset at) 
+                                 :approx approx
+                                 :port port :interval interval :voice voice)))
+
 ;;; request from TM/JF: never play a box in "arp" mode
 ;;; to do it, just use mode = 0 always
 (defmethod play-obj-from-value ((value chord) (box omboxeditcall)) 

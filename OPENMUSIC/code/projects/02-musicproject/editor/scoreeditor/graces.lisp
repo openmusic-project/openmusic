@@ -22,6 +22,7 @@
                       :voice voice)))
    (call-next-method)))
 
+
 ;a voir
 (defmethod PrepareToPlay ((player t) (self rest) at &key approx port interval voice)
   (append
