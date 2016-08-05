@@ -606,7 +606,7 @@
                              (om-point-h size) (om-point-v size)))))
 
 
-(defmethod object-specific-menu ((self t) box) nil)
+(defmethod object-box-specific-menu ((self t) box) nil)
 
 (defmethod om-get-menu-context ((self boxeditorframe))
   (remove nil 
@@ -616,7 +616,7 @@
                          ))
                   (boxframe-default-list self)
                   (player-menu-item (object self))
-                  (object-specific-menu (value (object self)) (object self)) 
+                  (object-box-specific-menu (value (object self)) (object self)) 
                   (when (scorepanel-p (om-view-container self))
                     (list (list (om-new-leafmenu "Score action"
                                                  #'(lambda () (edit-score-action self)))))))))
