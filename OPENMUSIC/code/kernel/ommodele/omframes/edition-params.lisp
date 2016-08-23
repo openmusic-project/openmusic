@@ -69,6 +69,7 @@
           ))
       )))
 
+; (print (list "====>" self (edition-params self)))
 (defmethod set-edit-param ((self object-with-persistant-params) param newval) 
   (if (find param (edition-params self) :test 'eql :key 'car)
     (setf (cdr (find param (edition-params self) :test 'eql :key 'car)) newval)

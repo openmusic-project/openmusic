@@ -631,7 +631,7 @@ Press 'space' to play/stop the sound file.
               (om-record-pict *om-default-font2* (om-make-point nbpix pict-h)
                 (dotimes (i nch)  
                   (om-draw-line 0 (+ (* i channels-h) offset-y) nbpix (+ (* i channels-h) offset-y)))
-                (om-with-fg-color nil *om-steel-blue-color*
+                (om-with-fg-color nil *om-steel-blue-color* ; *om-dark-gray-color*
                   (dotimes (c nch)
                     (setq pixpointprev (round (* offset-y (* 0.99 (aref data c 0)))))
                     (loop for i from 1 to (1- nbpix) do

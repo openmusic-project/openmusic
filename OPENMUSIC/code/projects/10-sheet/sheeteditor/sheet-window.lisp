@@ -668,6 +668,10 @@
 (defmethod sheet-editor ((self trackpanel)) 
   (sheet-editor (om-view-container self)))
 
+(defmethod get-edit-param ((self trackpanel) param) 
+  (get-edit-param (sheet-editor self) param))
+
+
 (defmethod off-selection ((self trackpanel))
   (setf (selected self) nil)
   (mapcar #'off-selection (om-subviews self)))
@@ -700,7 +704,10 @@
       (push (reference graph-obj) (selection? self))
       (setf (selected graph-obj) t))))
 
+;; pb with the edition params: never change
+;; seems that set-edit-arams is recalled a second time somewhere...
 (defmethod om-draw-contents ((self trackpanel))
+  ;(print (edition-params (ref (sheet-editor self))))
   (when (or (get-edit-param (sheet-editor self) 'show-tracks) (selected self))
     (om-with-focused-view self 
       (om-with-fg-color self (if (selected self) (om-make-color-alpha 0.78 0.8 0.79 0.4) (om-make-color-alpha 0.9 0.9 0.9 0.4))
@@ -724,6 +731,9 @@
 
 ;;; scoreobjects
 (defclass sheet-scoreobjectframe (sheet-objectframe scorepanel) ())
+
+(defmethod sheet-editor ((self sheet-scoreobjectframe)) 
+  (sheet-editor (om-view-container self)))
 
 ;;; maquette, sound, bpf, midifile
 (defclass sheet-linobjectframe (sheet-objectframe) ((graphic-obj :initform nil :accessor graphic-obj)))
