@@ -142,6 +142,16 @@
 (defmethod editor-compatible-params-p ((ed1 t) (ed2 t)) nil)
 
 
+;;;===========================
+;; BoxInstance have no edit-params.. Instances do.
+;;;===========================
+
+(defmethod get-edit-param ((self OMBoxInstance) param)
+  (print (get-edit-param (reference self) param)))
+
+(defmethod set-edit-param ((self OMBoxInstance) param value)
+  (set-edit-param (reference self) param value))
+
 
 
 
