@@ -149,12 +149,17 @@
 
 ;=== Note is a leaf of the "container tree"
 
-;;; split note on channels in case of microtonal setup
+;;; split note on channels in case of microtonal setup (4 or 8)
 ;;; tone = 0, 1/8 = 1, 1/4 = 2, 1/8 = 3
+;;; default bend channel 1 = 0, channel 2 = 25 mc, channel 3 = 50 mc, channel 4 = 75mc
+;(defun micro-channel (midic &optional approx)
+;  (let ((channel-mc-unit (/ 200 (or approx 8))))
+;    (round (mod midic 100) channel-mc-unit)))
+
 (defun micro-channel (midic &optional approx)
-  (let ((channel-mc-unit (/ 200 (or approx 8))))
-    ;;; by default channel 1 = 25 mc, channel 2 = 50 mc, channel 3 = 75mc
-    (round (mod midic 100) channel-mc-unit)))
+  (if (find approx '(4 8) :test '=)
+      (round (mod midic 100) 25)
+    0))
 
 
 (defun note-events (port chan pitch vel dur date track)
