@@ -6,6 +6,8 @@
 *.lisp#
 *.*~
 
+.DS_Store
+
 # don't track auto-generated html's:
 /OPENMUSIC/resources/**/*.html
 
