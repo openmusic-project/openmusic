@@ -156,9 +156,22 @@
 ;  (let ((channel-mc-unit (/ 200 (or approx 8))))
 ;    (round (mod midic 100) channel-mc-unit)))
 
+;; t / nil / list of apprix where it must be applied
+(defparameter *micro-channel-mode-on* '(4 8))
+(defparameter *micro-channel-approx* 8)
+
+(defun micro-channel-on (approx)
+  (and 
+   approx
+   (if (consp *micro-channel-mode-on*) 
+       (find approx *micro-channel-mode-on* :test '=)
+     *micro-channel-mode-on*)))
+
+
 (defun micro-channel (midic &optional approx)
-  (if (find approx '(4 8) :test '=)
-      (round (mod midic 100) 25)
+  (if (micro-channel-on approx)
+      (let ((mod (/ 200 (or *micro-channel-approx* approx))))
+        (round (approx-m (mod midic 100) mod) mod))
     0))
 
 
@@ -176,12 +189,14 @@
                                 :ref track
                                 :fields (list pitch 0))
         ))
+
+(approx-m 50 7)
          
 (defmethod PrepareToPlay ((player (eql :midi)) (self note) at &key  approx port interval voice)
   (when (not (memq (tie self) '(continue end)))
     (setf port (or port (port self)))
     (setf approx (or approx 2))
-    (let ((chan (+ (chan self) (micro-channel (approx-m (midic self) approx) approx)))
+    (let ((chan (+ (chan self) (print (micro-channel (approx-m (midic self) approx) approx))))
           (pitch (truncate (approx-scale (get-current-scale approx) (midic self)) 100))
           (vel (vel self))
           (dur (- (real-dur self) 2))			    ; why ?
