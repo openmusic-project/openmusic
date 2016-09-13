@@ -515,13 +515,15 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;Classe with a OM Class by reference
 ;---------------------------------------------------------
 
-(defclass OMBoxRelatedWClass (OMBoxcall) ()
+(defclass OMBoxRelatedWClass (OMBoxcall) 
+  ((uniquename :initform nil :accessor uniquename))
    (:documentation "Boxes with a class as reference are instances of this class.#enddoc#
 #seealso# (OMBoxcall  OMBoxEditCall OMSlotsBox) #seealso#")
    (:metaclass omstandardclass))
 
 (defmethod initialize-instance :after ((self OMBoxRelatedWClass) &key controls)
   (declare (ignore controls))
+  (setf (uniquename self) (gensym (name (reference self))))
   (get&corrige-icon (icon (reference self))))
 
 
