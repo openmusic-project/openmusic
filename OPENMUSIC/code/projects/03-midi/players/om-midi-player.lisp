@@ -38,7 +38,8 @@
             
             (append (and (and *midi-microplay* approx (find approx '(4 8) :test '=))
                          (microplay-events at (get-obj-dur object) port))
-                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port))))
+                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))
+                    )
             )
     (sort-events player)
     ))

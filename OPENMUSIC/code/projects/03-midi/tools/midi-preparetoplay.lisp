@@ -196,7 +196,7 @@
   (when (not (memq (tie self) '(continue end)))
     (setf port (or port (port self)))
     (setf approx (or approx 2))
-    (let ((chan (+ (chan self) (print (micro-channel (approx-m (midic self) approx) approx))))
+    (let ((chan (+ (chan self) (micro-channel (approx-m (midic self) approx) approx)))
           (pitch (truncate (approx-scale (get-current-scale approx) (midic self)) 100))
           (vel (vel self))
           (dur (- (real-dur self) 2))			    ; why ?

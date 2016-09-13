@@ -412,7 +412,8 @@
                    (get-player-engine self)
                    :at 0 
                    :interval (get-interval-to-play self)
-                   :params (additional-player-params self)))
+                   :params (additional-player-params self)
+                   ))
 
 (defmethod get-editor-callback ((self play-editor-mixin))
   #'(lambda (editor time)
