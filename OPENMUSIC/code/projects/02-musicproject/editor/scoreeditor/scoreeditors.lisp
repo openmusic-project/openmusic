@@ -3362,8 +3362,9 @@
 
 (defun delete-with-test (self container)
    (deep-delete-obj self container)
-   (unless (inside container)
-     (set-defaul-value container)))
+   ;(unless (inside container)
+   ;  (set-defaul-value container))
+   )
 
 (defmethod general-delete ((view t) (self t))
    (let ((thechord (object (om-view-container view))))
