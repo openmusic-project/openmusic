@@ -1749,9 +1749,10 @@
      (setf (numdenom new-group)  (cond
                                   ((not group-ratio) nil)
                                   ((= sympli 1) nil)
-                                  (t  (list num denom))))
+                                  (t  (reduce-num-den (list num denom)))))    ;;; kh 10/2016 add reduce-num-den
      
-     (setf (inside new-group) (flat (loop for item in (inside self) 
+     (setf (inside new-group) (flat ;;; FLAT or not flat ?
+                               (loop for item in (inside self) 
                                     for i = 0 then (+ i 1)
                                     collect
                                     (let ((newchord (make-graph-ryth-obj item  top staffsys linespace  scale sel new-group 
@@ -1766,9 +1767,13 @@
                                                                              (* dur-obj unite)))
                                                                          
                                                                          (list (/ (car (second ryth)) (first ryth))
-                                                                               (nth i (remove 0 ;;; dirty fix when 0 (grace notes) are misplaced in the tree... 
-                                                                                              (cadr (second ryth))))))))
-                                      newchord))))
+                                                                               (nth i 
+                                                                                     ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
+                                                                                    (remove 0
+                                                                                            (cadr (second ryth))))))))
+                                      newchord))
+                               )
+           )
      (when (numdenom new-group)
        (setf (chiflevel new-group) (calcule-chiff-level new-group)))
      (when (figure-? new-group)
