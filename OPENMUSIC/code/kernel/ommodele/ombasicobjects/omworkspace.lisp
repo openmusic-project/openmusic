@@ -240,7 +240,7 @@
        ))
    
    ;;; check if it is the right place...
-   #+libaudiostream (libaudiostream-start)
+   (when (member :las-player *features*) (libaudiostream-start))
    
    (libs-autoload)
 

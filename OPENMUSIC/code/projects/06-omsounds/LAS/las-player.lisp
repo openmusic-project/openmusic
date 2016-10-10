@@ -14,7 +14,7 @@
 ;         -One called *audio-player-hidden*, which is used when the user just wants to play sounds without going through a track system.
 ;The *audio-player-hidden* has a track system, but it's internally managed and it's impossible to apply effects or anything else on these tracks. They are "hidden".
 
-
+(push :las-player *features*)
 
 (defvar *audio-player-visible* nil)
 (defvar *audio-player-hidden* nil)
@@ -736,7 +736,7 @@
 
 (add-player-for-object 'sound :libaudiostream)
 
-;;; should be caulled only when las-srate is set
+;;; should be called only when las-srate is set
 (defun libaudiostream-start ()
   (las-init-full-system)
   (enable-player :libaudiostream)
