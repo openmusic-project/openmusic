@@ -223,12 +223,12 @@
 
 (defun om-add-menu-to-win (window) 
  (let ((menubar (remove nil (append (default-app-menubar window) (om-window-class-menubar window)))))
-   (capi::execute-with-interface window
-                                 #'(lambda () (setf (capi::interface-menu-bar-items window) menubar)
-                                     ))))
+   (capi::execute-with-interface 
+    window
+    #'(lambda () (setf (capi::interface-menu-bar-items window) menubar)
+        ))))
 
 
-  
 ;;;;===================
 ;;;; POP UP / CONTEXT MENU
 ;;;;===================

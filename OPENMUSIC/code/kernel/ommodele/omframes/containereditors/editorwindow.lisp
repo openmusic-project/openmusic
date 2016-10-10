@@ -142,8 +142,6 @@
 (defmethod om-window-class-menubar ((self EditorWindow))
      (get-menubar (editor self)))
 
-
- 
 (defmethod make-editor-window ((class t) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil))
@@ -158,7 +156,7 @@
                                :close close-p
                                :resizable resize
                                :maximize resize
-                               :window-show nil
+                               :window-show winshow
                                :toolbox (member :toolbox wintype) 
                                :size sizewin
                                :obj (editor-object-from-value object)))
@@ -172,7 +170,7 @@
           )
       (setf (editor win) editor)
       (om-add-menu-to-win win)  
-      (when winshow (om-select-window win))
+      (om-select-window win)
       (om-set-view-size editor (om-interior-size win))
       win))
 

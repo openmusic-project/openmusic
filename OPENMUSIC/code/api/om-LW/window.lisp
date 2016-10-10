@@ -329,60 +329,64 @@
 
 (defmethod correct-win-h ((win t)) nil)
 
-(defmacro om-make-window (class &rest attributes 
+(defun om-make-window (class &rest attributes 
 			  &key (position (om-make-point 200 200)) (size (om-make-point 500 400))
 			  name window-title owner (font *om-default-font2*)  (bg-color *om-white-color*)
 			  (window-show t) subviews (resizable t) (close t) (minimize t) (maximize t) (topmost nil) (toolbox nil)
+                          menu-items
 			  &allow-other-keys)  
-  `(let* ((pos ,position)
-            (size ,size)
-            (winparent (or ,owner (capi:convert-to-screen)))
-            (winname (or ,name (string (gensym))))
-            (title (or ,window-title ,name "OM Window"))
-            (w (om-point-h size))
-            (h (om-point-v size))
-          (x (if (equal pos :centered) (round (- (* (capi::screen-width winparent) 0.5) (* w 0.5))) (om-point-h pos)))
-          (y (if (equal pos :centered) (round (- (* (capi::screen-height winparent) 0.5) (* h 0.5))) (om-point-v pos)))
-          (style (append (get-window-styles-from-class ,class) 
-                         (when ,(not minimize) (list :never-iconic))
-                         (when ,topmost (list :always-on-top))
-                         (when ,toolbox (list :toolbox))
-                         (list :no-character-palette)))
-          layout thewin)
+  (let* ((pos position)
+         (size size)
+         (winparent (or owner (capi:convert-to-screen)))
+         (winname (or name (string (gensym))))
+         (title (or window-title name "OM Window"))
+         (w (om-point-h size))
+         (h (om-point-v size))
+         (x (if (equal pos :centered) (round (- (* (capi::screen-width winparent) 0.5) (* w 0.5))) (om-point-h pos)))
+         (y (if (equal pos :centered) (round (- (* (capi::screen-height winparent) 0.5) (* h 0.5))) (om-point-v pos)))
+         (style (append (get-window-styles-from-class class) 
+                        (when (not minimize) (list :never-iconic))
+                        (when topmost (list :always-on-top))
+                        (when toolbox (list :toolbox))
+                        (list :no-character-palette)))
+         layout thewin)
      ;(if (> (+ x w) (capi::screen-width (capi:convert-to-screen nil))) 
      ;    (setf w (- (capi::screen-width (capi:convert-to-screen nil)) x)))
      ;(if (> (+ y h) (capi::screen-height (capi:convert-to-screen nil))) 
      ;    (setf h (- (capi::screen-height (capi:convert-to-screen nil)) y)))
      ;(print (list "SIZE FOR MAKE INSTANCE IS" size))
-     (setf thewin (make-instance ,class
-                                 :title title :name winname
-                                 :x x :y y 
-                                 :width w :height h
-                                 ;:external-min-width w :external-min-height h
-                                 ;;; this works for Windows (on Mac : :width / :height ==> a tester)
-                                 :parent winparent
-                                 :internal-border nil :external-border nil
-                                 :display-state (if ,window-show :normal :hidden)
-                                 ;:window-styles '(:internal-borderless)
-                                 ;:external-min-height 50 :external-min-width 50
-                                 :no-character-palette t
-                                 :menu-bar-items nil
-                                 :window-styles style
-                                 :font ,font
-                                 :resizable ,resizable
-                                 ;;; OM-GRAPHIC-OBJECT SLOTS
-                                 :vx x :vy y :vw w :vh h
-                                 :allow-other-keys t
-                                 ,.attributes
-                                 ))
+    (setf thewin (apply 'make-instance 
+                        (cons class
+                              (append 
+                               (list :title title :name winname
+                                     :x x :y y 
+                                     :width w :height h
+                                     ;:external-min-width w :external-min-height h
+                                     ;;; this works for Windows (on Mac : :width / :height ==> a tester)
+                                     :parent winparent
+                                     :internal-border nil :external-border nil
+                                     :display-state (if window-show :normal :hidden)
+                                     ;:window-styles '(:internal-borderless)
+                                     ;:external-min-height 50 :external-min-width 50
+                                     :no-character-palette t
+                                     ;:menu-bar-items nil
+                                     :activate-callback #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     :window-styles style
+                                     :font font
+                                     :resizable resizable
+                                     ;;; OM-GRAPHIC-OBJECT SLOTS
+                                     :vx x :vy y :vw w :vh h
+                                     :menu-bar-items menu-items
+                                     :allow-other-keys t)
+                               attributes
+                               ))))
      
-     (when (setf layout (make-window-layout thewin ,bg-color))
-       #+cocoa(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
-       (setf (capi::pane-layout thewin) layout)
-       )
-     (when ,subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) ,subviews))
+    (when (setf layout (make-window-layout thewin bg-color))
+      #+cocoa(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
+      (setf (capi::pane-layout thewin) layout))
+     (when subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) subviews))
      (correct-win-h thewin)
-     (when (or (not ,resizable) (window-dialog-p thewin))
+     (when (or (not resizable) (window-dialog-p thewin))
        (set-not-resizable thewin w h))
      (unless (window-dialog-p thewin)
        (internal-display thewin))
