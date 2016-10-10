@@ -8,6 +8,18 @@
 ;          (addition (loop for item in (second tree) sum (floor (abs (if (listp item) (car item) item))))))
 ;     (if (integerp (/ extent addition)) nil addition)))
 
+(defun reduce-num-den (list)
+  "Reduit les ratios dedoubles. C-a-d  si on a (14 8) il retourne (7 4)"
+  (let ((res list))
+    (setf res
+          (list (/  (car res) 2)
+                (/ (second res) 2)))
+    (if (or (ratiop (car res))
+            (ratiop (second res)))
+        (list (* 2 (car res))
+              (* 2 (second res)))
+      (reduce-num-den res)
+      )))
 
 (defmethod get-group-ratio ((self group))
    (let* ((tree (tree self))
@@ -15,13 +27,20 @@
           (addition (loop for item in (second tree) sum (floor (abs (if (listp item) (car item) item))))))
      (cond
       ((= (round (abs addition)) 1) nil)
-      ((integerp (/ extent addition)) addition)
+      ;; ((integerp (/ extent addition)) addition)   ;;; modif kh 10/2016
       ;; never happen
       ((and (integerp (/ extent addition)) 
              (or (power-of-two-p (/ extent addition))
                  (and (integerp (/ addition extent)) 
                       (power-of-two-p (/ addition extent)))))  nil)
-      (t addition))))
+      (t (if (atom addition)
+             addition
+           (reduce-num-den addition)))   ;;; modif kh 10/2016
+      )))
+
+
+
+
 
 
 (defun powerof2? (n)
@@ -60,9 +79,12 @@
 (defun find-denom (num durtot)
   "Find the rigth denom to ratio of tuplet."
   (cond
-   ((is-binaire? durtot) (get-denom 'bin num))
+   ((or (is-binaire? durtot)
+        (powerof2? durtot))    ;;; modif kh 10/2016
+    (get-denom 'bin num))
    ((is-ternaire? durtot) (get-denom 'ter num))
    (t (get-denom-other durtot num))))
+
 
 
 (defmethod get-denom ((type t) (num t) ))
@@ -138,6 +160,17 @@
      (list (/ exp 2) exp)))
 
 
+(defun regler-num (num durtot)
+  (let ((res num))
+    (if (>= (ceiling (/ durtot 2)) res)
+        (if (and (< res durtot)
+                 (>=  (- durtot (* res 2)) res))
+            (progn
+              (setf res (* 2 res))
+              (regler-num res durtot))
+          (* res 2))
+      res)))
+
 ;When the answer is a list its change num
 (defun get-denom-other ( durtot num )
    (setf durtot (numerator durtot))
@@ -145,7 +178,9 @@
     ((= (+ num 1) durtot) durtot)
     ((= num durtot) num)
     ((< num durtot)
-     (list (* num 2) durtot))
+     ;;; (list (* num 2) durtot)
+     (list (regler-num num durtot) durtot)  ;;; modif kh 09/2016
+     )
     ;((< num (- (* 2 durtot) 1))   ;OJO OJO ESTOS CASOS HAY QUE VERLOS CON KARIM
      ;durtot)
     (t
