@@ -12,7 +12,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.100200)
+(defparameter *version* 6.110000)
 
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
@@ -256,7 +256,6 @@
 (load-om-projects '("10-sheet"))
 
 
-
 (push :om *features*)
 
 (defvar om::*om-startup* nil)
@@ -279,17 +278,8 @@
   (oa::om-init-funcall)
     
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
-  
-  ;(oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)))
-  
   (om::show-workspaces-dialog)
-  
-  ;(om::gen-reference om::*om-ref-entries* om::*om-reference-dir*)
-
-  (capi::execute-with-interface 
-   om::*om-workspace-win* 
-   #'(lambda () (in-package :om)))
-  
+  (when om::*om-workspace-win* (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om))))
   (setf om::*om-startup* nil)
   )
 
