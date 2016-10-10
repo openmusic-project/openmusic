@@ -664,7 +664,7 @@
 (defun om-font-mode (font) nil)
 
 (defun om-string-size (str &optional font)
-  (if str 
+  (if (and str *record-view*) 
       (multiple-value-bind (x1 y1 x2 y2) 
           (gp::get-string-extent *record-view* str 
                                  (and font (if (gp::font-p font) font (gp::find-best-font *record-view* font))))
@@ -673,10 +673,12 @@
 
 
 (defun om-string-h (&optional (font *om-default-font2*))
-  (multiple-value-bind (x1 y1 x2 y2) 
-      (gp::get-string-extent *record-view* "ABC" 
-                             (and font (if (gp::font-p font) font (gp::find-best-font *record-view* font))))
-    (- y2 y1)))
+  (if *record-view*
+      (multiple-value-bind (x1 y1 x2 y2) 
+          (gp::get-string-extent *record-view* "ABC" 
+                                 (and font (if (gp::font-p font) font (gp::find-best-font *record-view* font))))
+        (- y2 y1))
+    20))
   
 ; (om-string-size "Hello" (om-make-font "arial" 20))
 ; GP:GET-STRING-EXTENT 

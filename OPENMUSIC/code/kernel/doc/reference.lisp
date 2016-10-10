@@ -388,7 +388,9 @@ P,UL,LI, TD {
        
 (defun set-ref-dir ()
   (setf *om-reference-dir* 
-        (make-pathname :directory (append (pathname-directory *om-resources-folder*) '("reference")))))
+        (make-pathname :directory (append (if *om-resources-folder* (pathname-directory *om-resources-folder*) '(:relative)) 
+                                          ;; relative is just to avoid crash, in principel ressourrce folder is always set
+                                          '("reference")))))
 
 (om-add-init-func 'set-ref-dir)
 

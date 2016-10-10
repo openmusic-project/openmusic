@@ -324,10 +324,12 @@
     (reverse list)))
 
 (defun text-wrap-pix (text-str font width-pix)
-  (if (find #\Newline text-str)
-      (loop for ttt in (om-text-to-lines text-str) append (text-wrap-pix ttt font width-pix))
-    (let* ((p (position width-pix (gp::compute-char-extents *record-view* text-str (and font (gp::find-best-font *record-view* font))) :test '<)))
-      (if p (capi::wrap-text text-str (max 1 (- p 1))) (list text-str)))))
+  (if *record-view*
+    (if (find #\Newline text-str)
+        (loop for ttt in (om-text-to-lines text-str) append (text-wrap-pix ttt font width-pix))
+      (let* ((p (position width-pix (gp::compute-char-extents *record-view* text-str (and font (gp::find-best-font *record-view* font))) :test '<)))
+        (if p (capi::wrap-text text-str (max 1 (- p 1))) (list text-str))))
+    (list text-str)))
 
 ;--------om-static-text
 

@@ -279,7 +279,7 @@
              *relative-path-reference*))
         ((equal folder 'kernel) *om-pict-folder*)
         ((equal folder 'di) *om-di-folder*)
-        ((equal folder 'internal) (make-pathname :directory (append (pathname-directory *om-pict-folder*)
+        ((equal folder 'internal) (make-pathname :directory (append (if *om-pict-folder* (pathname-directory *om-pict-folder*) '(:RELATIVE))
                                                                     (list "internal"))))
         (t (if (exist-lib-p (string folder))
                (probe-file (make-pathname :directory (append (pathname-directory (lib-pathname  (exist-lib-p (string folder))))

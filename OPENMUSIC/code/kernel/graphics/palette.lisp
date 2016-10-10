@@ -43,21 +43,22 @@
 ;;; Editor window appears
 (defmethod om-select-window ((self EditorWindow))
   (let ((rep (call-next-method)))
-    (editor-open-palettes (editor self))
+    (when (editor self) (editor-open-palettes (editor self)))
     rep))
 
 ;;; Editor window is closed
 (defmethod om-window-close-event ((self EditorWindow)) 
-  (editor-close-palettes (editor self))
+  (when (editor self) (editor-close-palettes (editor self)))
   (call-next-method))
 
 ;;; Editor window is activated/deactivated
 (defmethod om-window-activate ((self EditorWindow) &optional (activatep t))
   (call-next-method)
-  (if activatep
-    (editor-open-palettes (editor self))
-    (editor-close-palettes (editor self))
-    ))
+  (when(editor self)
+    (if activatep
+        (editor-open-palettes (editor self))
+      (editor-close-palettes (editor self))
+      )))
 
 ;;; Editor is programmatically selected / unselected
 (defmethod (setf selected-p) :after (selected-p (self EditorView))
