@@ -28,5 +28,9 @@
    (load-one-private-patch "draw-metafile-cocoa" :capi-cocoa)
    (load-one-private-patch "nsglyphstorage-removed" :cocoa)
    (load-one-private-patch "maybe-kill-dspec-table-2" :delivery)
+   (load-one-private-patch "nsglyphstorage-removed" :cocoa)
+   (load-one-private-patch "layout-divider-perform-move" :capi)
+   (load-one-private-patch "ns-alerts" :cocoa)
+   (load-one-private-patch "prompters-non-deprecated" :capi-cocoa)
    ))
 
