@@ -44,7 +44,7 @@
       (setf newtempob (omNG-make-tempobj reference maqpos name))   
       (setf (numouts newtempob) numouts)
       (setf (inputs newtempob) (mapcar #'(lambda (input) (eval input)) inputs))
-      (set-box-to-inputs (inputs newbox) newbox)
+      (set-box-to-inputs (inputs newtempob) newtempob)
       (setf (extend newtempob) sizex)
       (setf (colorframe newtempob) (om-correct-color clorf))
       (setf (free-store newtempob) store)
