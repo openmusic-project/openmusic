@@ -56,17 +56,19 @@
 ;; (defclass om-listener-pane (capi:listener-pane capi:collector-pane) ())
 
 (defun init-listener ()
-  (setq *listener-font* (or *listener-font* (gp::make-font-description :family "Verdana" :size 10 :weight :bold)))
+  (setq *listener-font* 
+        (or *listener-font* 
+            (gp::make-font-description :family "Verdana" :size 10 :weight :bold)))
   (setq *om-stream* (capi:collector-pane-stream (make-instance 'capi:collector-pane)))
   (setf *trace-output* *om-stream*)
   (let ((lispworks::*HANDLE-WARN-ON-REDEFINITION* nil))
     (defun print (something &optional stream)
-      (declare (ignore stream))
-      (format *om-stream* "~D ~D~%" *om-prompt* something)
-      (when om-lisp::*om-listener* (listener-end-of-buffer om-lisp::*om-listener*))
-      something
-      ))
-  )
+      (let ((output-stream (or stream *om-stream*)))
+        (write something :stream output-stream :escape t)
+        (terpri output-stream)
+        (when om-lisp::*om-listener* (listener-end-of-buffer om-lisp::*om-listener*))
+        something))
+    ))
 
 
 
