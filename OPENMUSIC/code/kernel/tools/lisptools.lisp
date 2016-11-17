@@ -967,9 +967,10 @@ would not be restricted to variables)."
 
 (defvar *om-verbose* t)
 (defun om-print (str &optional pre)  
-  (when t ; *om-verbose*
-    (if pre (format *om-stream* "~A ~A~%" pre str)
-     (print str))))
+  (let ((str
+         (if pre (format nil "~A ~A~%" pre str)
+           str)))
+    (write str :stream *om-stream* :escape nil)))
 
 ;=======================
 ; bouton "add something"

@@ -105,11 +105,11 @@
 
 (defvar *loading-ws* nil)
 
-
+;(init-output)
 (defun init-output ()
-  (let ((om-lisp::*om-prompt* ""))
-    (print 
-     (format nil 
+  (let ((om-lisp::*om-prompt* "")
+        (initstr
+         (format nil 
 "====================
  OpenMusic v. ~D                            
  r. ~A
@@ -117,7 +117,9 @@
  http://repmus.ircam.fr/openmusic/
  ====================
 " 
-             *version-string* *release-date*))))
+             *version-string* *release-date*)))
+    (write initstr :stream *om-stream* :escape nil)
+    ))
 
 
 (defmethod load-elements ((self OMWorkSpace))
