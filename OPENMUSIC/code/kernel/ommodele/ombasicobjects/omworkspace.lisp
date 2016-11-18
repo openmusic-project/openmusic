@@ -118,7 +118,7 @@
  ====================
 " 
              *version-string* *release-date*)))
-    (write initstr :stream *om-stream* :escape nil)
+    (om-print initstr nil)
     ))
 
 
