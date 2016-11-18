@@ -23,42 +23,77 @@
 (in-package :om)
 
 
+;;; genertal package for low-level audio features
+(defpackage :om-audio
+  (:nicknames "AU")
+  (:use cl-user common-lisp))
+
+
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "omjuceaudiolib")) :name "omjuceaudiolib"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api")) :name "file-access"))
+
+
+(defparameter *juceaudiolib-pathname* 
+  #+win32
+  "/WINDOWS/system32/OMJuceAudioLib.dll"
+  #+(or darwin macos macosx)  
+  "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
+  #+(or linux (and clisp unix (not macos)))
+  "/usr/lib/OMJuceAudioLib.so")
+
+(defvar *juceaudiolib* nil)
+
+(defun load-juceaudiolib ()
+  (or *juceaudiolib*
+      (setq *juceaudiolib*
+            (if (probe-file *juceaudiolib-pathname*)
+                (progn 
+                  (print (concatenate 'string "Loading Juce Audio library: " (namestring *juceaudiolib-pathname*)))
+                  (fli:register-module "JuceAudio" 
+                                       :real-name (namestring *juceaudiolib-pathname*)
+                                       :connection-style :immediate)
+                  (hcl::add-special-free-action 'audio-cleanup) 
+                  t)))))
+
+(om::om-add-init-func 'load-juceaudiolib)
+
+(push :audio *features*)
+
 ;======================
 ; BASICS
 ;======================
 
-(defvar *snd-files* nil)
-
-(setf *snd-files* 
-  '(
-    "basic;sound"   
-    "basic;soundeditor"
-    "basic;audio-mix-console"
-    "basic;general-mixer"
-    "basic;automations"
-    ;;#+libaudiostream "basic;sound-preferences"
-    "basic;sound-preferences"
-    #+libsndfile "basic;om-sound-processing"
-    
-    #+(and libaudiostream (not linux)) "LAS;las-player"
-
-    "tools;sound-tools"
-    "tools;control-tools"
-    "tools;param-process"
-    "tools;utils-from-chroma"
-
-    "synth;synthesis-event"
-    "synth;synthesize"
-
-    #-linux "multi;multiplayer"
-    #+cl-jack "JACK;jack-audio-player"
-    #+linux "mplayer;mplayer"
- ))
-
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
-        *snd-files*))
+        '(
+          "basic;sound"   
+          "basic;soundeditor"
+          "basic;audio-mix-console"
+          "basic;general-mixer"
+          "basic;automations"
+          "basic;sound-preferences"
+          "basic;om-sound-processing"
+    
+          "tools;sound-tools"
+          "tools;control-tools"
+          "tools;param-process"
+          "tools;utils-from-chroma"
+
+          "synth;synthesis-event"
+          "synth;synthesize"
+    
+          "players;juce-player"
+          #-linux "players;multiplayer"
+          #+cl-jack "players;jack-audio-player"
+          #+linux "players;mplayer"
+          )))
+
+
+
+
 
 ;;;================= AUDIO PACKAGES ================
 (defvar *audiopackage* (omNG-protect-object (omNG-make-new-package "Audio")))
@@ -105,7 +140,10 @@
 ;======================
 (defvar *sdif-lib-files* nil)
 
-(setf *sdif-lib-files* '("sdif;sdif-struct"
+(setf *sdif-lib-files* '(
+                         "sdif;sdif-lib;sdif"
+                         "sdif;sdif-lib;sdif-api"
+                         "sdif;sdif-struct"
 			 "sdif;sdiffile"
                          "sdif;sdifeditor"
 			 "sdif;sdif-write"
@@ -114,7 +152,6 @@
                          "sdif;cseq2sdif"
                          "sdif;sdifpack"
                          ))
-
 
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 

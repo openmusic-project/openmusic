@@ -137,7 +137,7 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
                          ((stringp outpath) (outfile outpath))
                          (t (om-choose-new-file-dialog)))))
     (when out-path
-      (setf outfile (sdif-open-file (om-path2cmdpath out-path) 1))
+      (setf outfile (sdif::sdif-open-file (namestring out-path) 1))
       (sdif::SdifFWriteGeneralHeader outfile)
       (write-nvt-tables outfile (list (default-om-NVT)))
       (write-sdif-types outfile  "{1FTD 1MRK {1TRC chord_seq_partials;}}")
@@ -152,7 +152,7 @@ Data is stored as a sequence of 1MRK frames containing 1BEG and 1END matrices fo
           ; (t nil))
           (write-mrk-frame outfile data)
           ))
-  (sdif-close-file outfile)
+  (sdif::sdif-close-file outfile)
   (probe-file out-path)
   )))
 
@@ -207,7 +207,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                          ((stringp outpath) (outfile outpath))
                          (t (om-choose-new-file-dialog)))))
     (when out-path
-      (let ((outfile (sdif-open-file (om-path2cmdpath out-path) 1)))
+      (let ((outfile (sdif::sdif-open-file (namestring out-path) 1)))
         (sdif::SdifFWriteGeneralHeader outfile)
         (write-nvt-tables outfile (list (default-om-NVT)))
         (write-sdif-types outfile  "{1FTD 1TRC {1TRC sinusoidal tracks;}}")
@@ -215,7 +215,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
         (let ((frames (make-trc-frames partials)))
           (loop for frame in frames do
                 (save-sdif frame outfile)))
-        (sdif-close-file outfile)
+        (sdif::sdif-close-file outfile)
         (probe-file out-path)
         ))))
 
@@ -251,7 +251,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                            (multiple-value-bind (msig nrows ncols size pos)
                                (read-matrix-header ptrfile) 
                              ;(print (list msig nrows ncols size pos))
-                             ;(print (sdif-calculate-padding nrows ncols size))
+                             ;(print (sdif::sdif-calculate-padding nrows ncols size))
                              (cond ((equal "1BEG" msig) 
                                     ;;; a begin matrix :
                                     ;;; ajoute (onset (note1 note2 ...)) dans tmplist 
@@ -262,7 +262,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                                                 collect (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1)) time))
                                           )
                                     
-                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                     
                                     )
                               
@@ -276,7 +276,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                                                 (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1))
                                                       (coerce (sdif::SdifFCurrOneRowCol ptrfile 2) 'single-float)
                                                       (coerce (sdif::SdifFCurrOneRowCol ptrfile 3) 'single-float))))
-                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                     )
                               
                                    ((equal "1END" msig)
@@ -287,7 +287,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                                                 (sdif::SdifFReadOneRow ptrfile)
                                                 collect (list (floor (sdif::SdifFCurrOneRowCol ptrfile 1)) time))
                                           )
-                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                     )
                                
                                    (t (sdif::SdifFSkipMatrixData ptrfile)))
@@ -314,7 +314,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                      (loop for mn from 0 to (1- nbmat) do
                            (multiple-value-bind (msig nrows ncols size pos)
                                (read-matrix-header ptrfile) 
-                             ;(print (list msig nrows ncols size pos (sdif-calculate-padding nrows ncols size)))
+                             ;(print (list msig nrows ncols size pos (sdif::sdif-calculate-padding nrows ncols size)))
                              (cond ((or (equal "1TRC" msig) (equal "1HRM" msig))
                                     (loop for i from 1 to nrows do
                                           (sdif::SdifFReadOneRow ptrfile)
@@ -333,7 +333,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
                                               (sethash trc-partials ind (list (list time) (list freq) (list amp) (list phase))))
                                             )
                                           )
-                                    (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                    (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                     )
                                
                                    (t (sdif::sdiffskipmatrixdata ptrfile)))
@@ -341,11 +341,11 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
 
                     (t (sdif::SdifFSkipFrameData ptrfile)))
                    ))
-               (sdif-get-signature ptrfile)
+               (sdif::sdif-get-signature ptrfile)
                ;(setf nextFrame (nextframep self ptrfile))
                )
 
-         (sdif-close-file ptrfile)
+         (sdif::sdif-close-file ptrfile)
          ))
      
      (when (or (equal datatype 'mrk) (equal datatype 'all))
@@ -459,7 +459,7 @@ Internally calls and formats data from GetSDIFChords.
   (let* ((error nil) time
     (in-path (or asfile (om-choose-new-file-dialog)))
     (out-path (or outpath (om-choose-new-file-dialog)))
-    (outfile (sdif-open-file (om-path2cmdpath out-path) 1)))
+    (outfile (sdif::sdif-open-file (namestring out-path) 1)))
   (sdif::SdifFWriteGeneralHeader outfile)
   (write-1nvt-table outfile (list "Author" ) (list (string+ "OpenMusic " *version-string*)))
   (write-sdif-types outfile  "{1FTD 1MRK {1TRC chord_seq_partials;}}")
@@ -471,6 +471,6 @@ Internally calls and formats data from GetSDIFChords.
           while (not error) do
           (write-mrk-frame outfile data)
           ))
-  (sdif-close-file outfile)
+  (sdif::sdif-close-file outfile)
   (om-namestring out-path)
 ))

@@ -20,7 +20,7 @@
     (if (not fftp) (om-message-dialog "Sorry this SDIF file does not contain a SVP fft")
         (let* ((error nil) time (onemat nil)
                (out-path (om-CHOOSE-new-FILE-DIALOG))
-               (outfile (sdif-open-file (om-path2cmdpath out-path) 1))
+               (outfile (sdif::sdif-open-file (namestring out-path) 1))
                val (newMat nil) (data nil) str sstr)
           (sdif::SdifFWriteGeneralHeader outfile)
           (write-1nvt-table outfile
@@ -53,7 +53,7 @@
                                                              (sdif::SdifFReadOneRow ptrfile)
                                                              (loop for c from 1 to col collect
                                                                    (sdif::SdifFCurrOneRowCol ptrfile c)))))
-                                (sdif-close-file ptrfile)
+                                (sdif::sdif-close-file ptrfile)
                                 (loop for f from f-min to f-max by f-step do
                                       (setf val (find-amplitude f onemat))
                                       (push (list f val) newmat))
@@ -62,7 +62,7 @@
                                 ;(push (list time (reverse newmat)) data)
                                 ))
                             )))))
-          (sdif-close-file outfile)
+          (sdif::sdif-close-file outfile)
           (om-namestring out-path)
           ;(reverse data)
           ))))
@@ -71,7 +71,7 @@
 (defmethod! fftdata2sdif ((fftdata list) &optional timelist &key file)
   (let* ((error nil) time
          (out-path (or file (om-CHOOSE-new-FILE-DIALOG)))
-         (outfile (sdif-open-file (om-path2cmdpath out-path) 1))
+         (outfile (sdif::sdif-open-file (namestring out-path) 1))
          val (data nil) str sstr)
     (sdif::SdifFWriteGeneralHeader outfile)
     (write-1nvt-table outfile
@@ -91,7 +91,7 @@
         (write-1GB1-frame outfile framedata time)
         ;(push (list time framedata) data)
         )
-  (sdif-close-file outfile)
+  (sdif::sdif-close-file outfile)
   (om-namestring out-path)
 ))   
 
@@ -220,7 +220,7 @@ If <outfile> is just a filename (not a pathname) the file is written in the defa
          (out-path (cond ((stringp outfile) (outfile outfile))
                          ((pathnamep outfile) outfile)
                          (t (om-CHOOSE-new-FILE-DIALOG))))
-         (file (sdif-open-file (om-path2cmdpath out-path) 1))
+         (file (sdif::sdif-open-file (namestring out-path) 1))
          (datatype 4))
     (sdif::SdifFWriteGeneralHeader file)
     (write-nvt-tables file (list (default-om-NVT)))
@@ -250,7 +250,7 @@ If <outfile> is just a filename (not a pathname) the file is written in the defa
         (sdif::SdifFWriteMatrix file (sdif::SdifStringToSignature mtype) datatype (length (point-list self)) 1 valptr)
         (om-free-pointer valptr))
       )
-    (sdif-close-file file)
+    (sdif::sdif-close-file file)
     (om-namestring out-path)
     ))
 
@@ -274,7 +274,7 @@ If <outfile> is just a filename (not a pathname) the file is written in the defa
          (out-path (cond ((stringp outfile) (outfile outfile))
                          ((pathnamep outfile) outfile)
                          (t (om-CHOOSE-new-FILE-DIALOG))))
-         (file (sdif-open-file (om-path2cmdpath out-path) 1))
+         (file (sdif::sdif-open-file (namestring out-path) 1))
          (datatype 4))
     (sdif::SdifFWriteGeneralHeader file)
     (write-nvt-tables file (list (default-om-NVT)))
@@ -285,7 +285,7 @@ If <outfile> is just a filename (not a pathname) the file is written in the defa
             while (not error) do
             (sdif::SdifFSetCurrFrameHeader file (sdif::SdifStringToSignature ftype) framesize 0 0 (coerce time 'double-float))
             (sdif::SdifFWriteFrameHeader file)))
-    (sdif-close-file file)
+    (sdif::sdif-close-file file)
     (om-namestring out-path)
     ))
 

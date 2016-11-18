@@ -51,7 +51,7 @@
 (defmethod! partials2sdif ((partialdata list))
   (let* ((error nil) time
     (out-path (om-CHOOSE-new-FILE-DIALOG))
-    (outfile (sdif-open-file (om-path2cmdpath out-path) 1))
+    (outfile (sdif::sdif-open-file (namestring out-path) 1))
     f-data a-data)
   (sdif::SdifFWriteGeneralHeader outfile)
     (write-sdif-ascii-chunks outfile 
@@ -65,7 +65,7 @@
                 (setf f-data (second partial))
                 (setf a-data (third partial))
                 (write-partial-frame outfile time f-data a-data)))
-  (sdif-close-file outfile)
+  (sdif::sdif-close-file outfile)
   out-path
 ))
 
@@ -75,7 +75,7 @@
         ptrfile (cptpart 0) vals fmatrix amatrix 
         rows matdesc)
     (setf ptrfile (sdif-open self))
-    (if (sdif-null-ptr-p ptrfile) (setf stop t)
+    (if (sdif::sdif-null-ptr-p ptrfile) (setf stop t)
         (progn
           (print "Finding XPBF SDIF data...")
           (sdif::SdifFReadGeneralHeader ptrfile)

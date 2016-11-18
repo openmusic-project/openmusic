@@ -234,7 +234,7 @@
      (handler-bind 
          ((error #'(lambda (err)
                      (om-message-dialog (format nil "Warning: An error occurred while setting the workspace preferences.~%=> ~A" err))
-                      (delete-file preffile nil)
+                     (delete-file (preferences-file) nil)
                       (setf *saved-pref* nil)
                       (throw :load-prefs :err)
                       )))
@@ -242,7 +242,8 @@
        ))
    
    ;;; check if it is the right place...
-   (when (member :las-player *features*) (libaudiostream-start))
+   ;;; start-audio now
+   (mapcar 'player-open *enabled-players*)
    
    (libs-autoload)
 
@@ -323,7 +324,7 @@
         ((error #'(lambda (err)
                     (om-message-dialog (format nil "Warning: An error occurred while loading the workspace preferences.~%=> ~A" err))
                     (delete-file preffile nil))))
-      (load preffile))    
+      (load preffile))  
     
     
     (setf  *current-workSpace* (make-new-WorkSpace name))

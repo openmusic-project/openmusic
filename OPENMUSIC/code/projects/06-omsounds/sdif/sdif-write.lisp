@@ -185,7 +185,7 @@ If <outpath> is not specified, a pop-up dialog will open and allow to choose a d
        (when outfile 
          (unless (probe-file dir)
            (om-create-directory dir))
-         (let ((thefile (sdif-open-file (namestring outfile) :eWriteFile)))
+         (let ((thefile (sdif::sdif-open-file (namestring outfile) :eWriteFile)))
            (sdif::SdifFWriteGeneralHeader thefile)
            (write-types-table thefile (list! (types self)))
            (write-nvt-tables thefile (cons (default-om-NVT) (list! (NVTs self))))
@@ -193,7 +193,7 @@ If <outpath> is not specified, a pop-up dialog will open and allow to choose a d
            (sdif::SdifFWriteAllASCIIChunks thefile)
            (loop for item in (LFrames self) do
                  (save-sdif item thefile))
-           (sdif-close-file thefile))
+           (sdif::sdif-close-file thefile))
          outfile)))
 
 
@@ -234,4 +234,129 @@ This is a compulsory operation before to start writing SDIF frames in the file.
   (when types (write-types-table fstream (list! types)))
   (when sids (write-sid-table fstream sids))
   (sdif::SdifFWriteAllASCIIChunks fstream))
+
+
+;;; REDEFINITION
+(defmethod compile-patch ((self openfilepatch))
+  "Code generates by Loop patches is generate by this method."
+  (let* ((boxes (boxes self))
+         (oldletlist *let-list*)
+         (*let-list* nil)
+         (do-box (car (find-class-boxes boxes 'OMLoopDo)))
+         (final-box (car (find-class-boxes boxes 'OMFinalDo)))
+         (init-box (car (find-class-boxes boxes 'OMinitDo)))
+         (in-boxes (sort (find-class-boxes boxes 'OMin) '< :key 'indice))
+         (symbols (mapcar #'(lambda (thein) (setf (in-symbol thein) (gensym))) in-boxes))
+         (loop-boxes (find-loop-boxes boxes))
+         (loop-code (mapcan #'(lambda (theout)
+                                (loop-gen-code theout 0)) loop-boxes))
+         (acum-boxes (find-acum-boxes boxes))
+         (acum-declaration (mapcar #'(lambda (acumm)
+                                       (declare-closure acumm)) acum-boxes))
+         (acum-inits (mapcar #'(lambda (acumm)
+                                 (gen-code acumm -1)) acum-boxes))
+         (stream-boxes (find-class-boxes boxes 'Streambox))
+         (streams (loop for sb in stream-boxes collect (list 
+                                                       (get-stream-type sb)
+                                                       (car (decode sb))
+                                                       (direction sb)
+                                                       (if-ex sb)
+                                                       (id sb))))
+         (streamids (loop for s in streams collect (nth 4 s)))
+         (stream-box (car stream-boxes))
+         body init)
+    (setf body (gen-code do-box 0))
+    (setf init (gen-code init-box 0))
+    (cond
+     (loop-boxes
+      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols)
+                  (let (rep ,.streamids)
+                  ,.(remove nil (loop for item in streams collect 
+                                      (when (nth 1 item)
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
+                                               `(setf ,(nth 4 item) (sdif::sdif-open-file (namestring (eval ,(nth 1 item))) 
+                                                                                    (cond ((equal ,(nth 2 item) :input) :eReadFile)
+                                                                                          ((equal ,(nth 2 item) :output) :eWriteFile)
+                                                                                          (t :eReadWriteFile)))))
+                                              ((equal (nth 0 item) 'text)
+                                               `(setf ,(nth 4 item) (open (eval ,(nth 1 item)) 
+                                                                   :if-does-not-exist :create 
+                                                                   :direction ,(nth 2 item) :if-exists ,(nth 3 item)))))
+                                        )))
+
+                  (let (,.acum-declaration (iter-count 0)) 
+                    ,.acum-inits
+                    (let* ,*let-list* ,init)
+                    (setf rep (loop ,.loop-code 
+                                    do ,(loop-check-code)
+                                    finally (return (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
+                                                                    collect  (gen-code final-box i)))) do
+                                    (let* ,*let-list* ,body)))
+                    )
+                         
+                         ,.(remove nil (loop for item in streams collect 
+                                             (when (nth 1 item)
+                                               (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
+                                                      `(sdif::sdif-close-file ,(nth 4 item)))
+                                                     ((equal (nth 0 item) 'text)
+                                                      `(close ,(nth 4 item))))
+                                               )))
+                         rep)
+                  )))
+     (t 
+      (eval `(defun ,(intern (string (first (code self))) :om)  (,.symbols) 
+               (let (rep ,.streamids)
+                  ,.(remove nil (loop for item in streams collect 
+                                      (when (nth 1 item)
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
+                                               `(setf ,(nth 4 item) (sdif::sdif-open-file (om-path2cmdpath (eval ,(nth 1 item))) 
+                                                                                    (cond ((equal ,(nth 2 item) :input) :eReadFile)
+                                                                                          ((equal ,(nth 2 item) :output) :eWriteFile)
+                                                                                          (t :eReadWriteFile)))))
+                                              ((equal (nth 0 item) 'text)
+                                               `(setf ,(nth 4 item) (open (eval ,(nth 1 item)) 
+                                                                   :if-does-not-exist :create 
+                                                                   :direction ,(nth 2 item) :if-exists ,(nth 3 item)))))
+                                        )))
+
+                  (let (,.acum-declaration) ,.acum-inits
+                       (let* ,*let-list* 
+                         ,init
+                         ,body
+                         (setf rep (values ,.(loop for i from 0 to (- (length (inputs final-box)) 1)
+                                                   collect  (gen-code final-box i))))))
+                  
+                  ,.(remove nil (loop for item in streams collect 
+                                      (when (nth 1 item)
+                                        (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
+                                                `(sdif::sdif-close-file ,(nth 4 item)))
+                                                ((equal (nth 0 item) 'text)
+                                                 `(close ,(nth 4 item)))))
+                                        ))
+                  rep)
+                ))))
+    ;(compile (intern (string (first (code self)))))
+    ;(print (fdefinition (intern (string (first (code self))))))
+    (setf *let-list* oldletlist)))
+
+;;; REDEFINITION
+(defmacro with-open-loop-file (self &body body)
+  `(let* ((pathname ,(car (decode self)))
+          (pathname (or pathname (om-choose-file-dialog :prompt "Choose a File to Read/Write")))
+          rep)
+     (cond 
+      ((equal (get-stream-type ,self) 'text)
+       (let ((stream (open pathname :if-does-not-exist :create :direction ,(direction self) :if-exists ,(if-ex self))))
+         (setf rep ,@body)
+         (close stream)))
+
+      ((and (find :sdif *features*) (equal (get-stream-type ,self) 'sdif))
+       (let* ((dir (cond ((equal ,(direction self) :input) :eReadFile)
+                         ((equal ,(direction self) :output) :eWriteFile)
+                         (t :eReadWriteFile)))
+              (stream (sdif::sdif-open-file (namestring pathname) dir)))
+         (setf rep ,@body)
+         (sdif::sdif-close-file stream)))
+      (t nil))
+      rep))
 

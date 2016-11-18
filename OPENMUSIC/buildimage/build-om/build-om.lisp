@@ -213,12 +213,8 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "externals"))
                      :name "externals" :type "lisp"))
 
-
-;; (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
-;; #-linux (oa::load-external-libs '(:portmidi))
-(oa::load-external-libs '(:midi :portmidi :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
+(oa::load-external-libs '(:midi :portmidi :xml :udp :osc :opengl :json :yason :svg))
 #+linux (oa::load-external-libs '(:jack))
-;; (oa::load-external-libs '(:fluidsynth))
 
 
 

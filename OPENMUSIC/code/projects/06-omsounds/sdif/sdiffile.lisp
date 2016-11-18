@@ -69,13 +69,13 @@ Lock the box ('b') to keep the current file.
   (sdif-open (namestring self)))
 
 (defmethod sdif-open ((self string))
-  (let ((fileptr (sdif-open-file self :eReadFile)))
-    (when (and fileptr (not (sdif-null-ptr-p fileptr)))
+  (let ((fileptr (sdif::sdif-open-file self :eReadFile)))
+    (when (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))
       fileptr)))
 
 ;;; useless
 (defmethod sdif-close ((self t) ptr)
-   (sdif-close-file ptr)
+   (sdif::sdif-close-file ptr)
    t)
 
 
@@ -136,10 +136,10 @@ Lock the box ('b') to keep the current file.
     (setf (filepathname rep) name)
     (when name
     (if (probe-file name)
-        (if (sdif-check-file (om-path2cmdpath name))
-            (let ((fileptr (sdif-open-file (om-path2cmdpath name) :eReadFile)))
+        (if (sdif::sdif-check-file (om-path2cmdpath name))
+            (let ((fileptr (sdif::sdif-open-file (namestring name) :eReadFile)))
               (om-print (string+ "Loading SDIF file : " (om-namestring name)))
-              (if (and fileptr (not (sdif-null-ptr-p fileptr)))
+              (if (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))
                   (init-description rep name fileptr)
                 (om-beep-msg (format nil "Error at opening the file ~D" name))
                 ))
@@ -177,11 +177,11 @@ Lock the box ('b') to keep the current file.
              (record-in-streams self fdesc)
              (push fdesc framelist) 
              ;(setf nextFrame (nextframep self ptrfile))
-             (sdif-get-signature ptrfile)
+             (sdif::sdif-get-signature ptrfile)
              ))
      (setf (framesdesc self) (reverse framelist))
      (setf (loaded self) t)
-     (sdif-close-file ptrfile) t))
+     (sdif::sdif-close-file ptrfile) t))
 
 
 (defun record-in-streams (self fdesc)
@@ -234,7 +234,7 @@ Lock the box ('b') to keep the current file.
 (defmethod description-frame (ptr)
    (let ((nummatrix 0) pos rep)
          ;(*read-default-float-format* 'double-float))
-     (setf pos (- (sdif-get-pos ptr) 4))
+     (setf pos (- (sdif::sdif-get-pos ptr) 4))
      (sdif::SdifFReadFrameHeader ptr)
      (setf rep (list (sdif::SdifSignatureToString (sdif::SdifFCurrFrameSignature ptr))
                      (sdif::SdifFCurrTime ptr)
@@ -246,7 +246,7 @@ Lock the box ('b') to keep the current file.
                              collect (description-matrix ptr))))))
 
 (defun read-frame-header (ptr)
-  (let ((pos (- (sdif-get-pos ptr) 4)))
+  (let ((pos (- (sdif::sdif-get-pos ptr) 4)))
     (sdif::SdifFReadFrameHeader ptr)
     (values (sdif::SdifSignatureToString (sdif::SdifFCurrFrameSignature ptr))
             (sdif::SdifFCurrTime ptr)
@@ -258,7 +258,7 @@ Lock the box ('b') to keep the current file.
 
 (defmethod description-matrix (ptr)
    (let (rep pos)
-     (setf pos (sdif-get-pos ptr))
+     (setf pos (sdif::sdif-get-pos ptr))
      (sdif::SdifFReadMatrixHeader ptr)
      (setf rep (list  (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr)) 
                       (sdif::SdifFCurrNbRow ptr) 
@@ -270,7 +270,7 @@ Lock the box ('b') to keep the current file.
      rep))
 
 (defun read-matrix-header (ptr)
-  (let ((pos (- (sdif-get-pos ptr) 4)))
+  (let ((pos (- (sdif::sdif-get-pos ptr) 4)))
     (sdif::SdifFReadMatrixHeader ptr)
     (values (sdif::SdifSignatureToString (sdif::SdifFCurrMatrixSignature ptr))
             (sdif::SdifFCurrNbRow ptr) 
@@ -296,7 +296,7 @@ Lock the box ('b') to keep the current file.
   (good-signature-p (sdif::SdifSignatureToString (sdif::SdifFCurrSignature ptr))))
 
 (defmethod nextframep ((self sdifFile) ptr)
-   (let ((signature (sdif-get-signature ptr)))
+   (let ((signature (sdif::sdif-get-signature ptr)))
      (good-signature-p (sdif::SdifSignatureToString (sdif::SdifFCurrSignature ptr)))))
 
 
@@ -313,7 +313,7 @@ Lock the box ('b') to keep the current file.
            (loop for j from 1 to i do
                  (sdif::SdifFReadFrameHeader ptrfile)
                  (sdif::SdifFSkipFrameData ptrfile)
-                 (sdif-get-signature ptrfile))
+                 (sdif::sdif-get-signature ptrfile))
            ptrfile)))
      (om-beep-msg (format nil "the sdif file ~D has only ~D frames" (filepathname self) (numframes self)))))
 
@@ -343,7 +343,7 @@ Lock the box ('b') to keep the current file.
                  (sdif::SdifFReadOneRow ptrfile))
            (loop for k from 1 to (+ j 1) do
                  (setf rep (sdif::SdifFCurrOneRowCol ptrfile k)))
-           (sdif-close-file ptrfile)
+           (sdif::sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "the point (~D, ~D) is out of range, the matrix dimension is (~D,~D)" i j row col))))))
 
@@ -360,7 +360,7 @@ Lock the box ('b') to keep the current file.
                            collect (progn
                                      (sdif::SdifFReadOneRow ptrfile)
                                      (sdif::SdifFCurrOneRowCol ptrfile (+ i 1)))))
-           (sdif-close-file ptrfile)
+           (sdif::sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "Error the matrix dimension is (~D,~D)" row col))))))
 
@@ -378,7 +378,7 @@ Lock the box ('b') to keep the current file.
                  (sdif::SdifFReadOneRow ptrfile))
            (setf rep (loop for k from 1 to col collect
                            (sdif::SdifFCurrOneRowCol ptrfile k)))
-           (sdif-close-file ptrfile)
+           (sdif::sdif-close-file ptrfile)
            rep)
          (om-beep-msg (format nil "Error the matrix dimension is (~D,~D)" row col))))))
 
@@ -407,10 +407,10 @@ Lock the box ('b') to keep the current file.
                                             :name (pathname-name (filepathname self)) :type "txt")))
          (if (and ptr targetname)
              (progn
-                (sdif-to-text ptr (namestring targetname))
+                (sdif::sdif-to-text ptr (namestring targetname))
                 (setf rep targetname))
            (om-message-dialog "Could not convert SDIF file to text..."))
-         (when ptr (sdif-close-file ptr)))
+         (when ptr (sdif::sdif-close-file ptr)))
      (om-message-dialog "SDIFFile box seems not to have attached SDIF file..."))
      rep))
 
@@ -656,7 +656,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                              (push val onecol)
                                              )
                                        (loop for k from (1+ r2) to (1- nrows) do (sdif::SdifFSkipOneRow ptrfile))
-                                       (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                       (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                        (when onecol
                                          (push (reverse onecol) data)
                                          (push time times)
@@ -671,10 +671,10 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                  (sdif::SdifFSkipFrameData ptrfile)
                  )
                ;(setf nextFrame (nextframep self ptrfile))
-               (sdif-get-signature ptrfile)
+               (sdif::sdif-get-signature ptrfile)
                ))
 
-             (sdif-close-file ptrfile)
+             (sdif::sdif-close-file ptrfile)
             ))))
       
       (if (not data) (om-print (format nil "No data found with t1=~D t2=~D r1=~D r2=~D " tmin tmax rmin rmax)) 
@@ -687,15 +687,15 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 
 ;;; seems to crash in recent versions
 (defun sdif-read-headers (ptrfile framepos matpos)
-  (sdif-set-pos ptrfile framepos)
-  (sdif-get-signature ptrfile)
+  (sdif::sdif-set-pos ptrfile framepos)
+  (sdif::sdif-get-signature ptrfile)
   (sdif::SdifFReadFrameHeader ptrfile)
-  (sdif-set-pos ptrfile matpos)
+  (sdif::sdif-set-pos ptrfile matpos)
   (sdif::SdifFReadMatrixHeader ptrfile))
 
 ;(defun sdif-read-headers (ptrfile framepos matnum)
-;  (sdif-set-pos ptrfile framepos)
-;  (sdif-get-signature ptrfile)
+;  (sdif::sdif-set-pos ptrfile framepos)
+;  (sdif::sdif-get-signature ptrfile)
 ;  (sdif::SdifFReadFrameHeader ptrfile)
 ; (loop for k from 0 to (1- matnum) do
 ;       (sdif::SdifFReadMatrixHeader ptrfile)
@@ -784,7 +784,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
               while (not error) do
               (multiple-value-bind (sig time id pos nbmat)
                   (read-frame-header ptrfile) 
-                   ;(sdif-get-signature ptrfile)
+                   ;(sdif::sdif-get-signature ptrfile)
                 (if (and (= streamNum id) (or (null frameT) (string-equal frameT (string sig))) 
                          (or (not tmin) (>= time tmin)))
                     (if (or (not tmax) (<= time tmax))
@@ -793,7 +793,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                         :streamID streamNum
                                                         :signature (string sig)
                                                         :FTime time))
-                              ;(sdif-set-pos ptrfile (fourth item))
+                              ;(sdif::sdif-set-pos ptrfile (fourth item))
                               
                               
                           (loop ;for mat in (fifth item) for mn = 0 then (+ mn 1) do
@@ -813,7 +813,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                           collect (loop for j = 0 then (+ j 1) while (< j ncols) 
                                                                         collect (sdif::SdifFCurrOneRowCol ptrfile (+ j 1))))))
                                         
-                                        (sdif::SdifFReadPadding ptrfile (sdif-calculate-padding nrows ncols size))
+                                        (sdif::SdifFReadPadding ptrfile (sdif::sdif-calculate-padding nrows ncols size))
                                        
                                         (let ((mtype (sdif::sdiftestmatrixtype ptrfile (sdif::SdifStringToSignature sig))))
                                           (setf onemat (make-instance 'sdifmatrix :signature sig))
@@ -821,7 +821,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                                    (list nil nrows sig)
                                                                    (loop for control in data
                                                                          for j = 0 then (+ j 1)
-                                                                         append (list (intern (or (and (not (sdif-null-ptr-p mtype))
+                                                                         append (list (intern (or (and (not (sdif::sdif-null-ptr-p mtype))
                                                                                                        (sdif::SdifMatrixTypeGetColumnName mtype (+ j 1)))
                                                                                                   (format nil "Field ~D" j))
                                                                                               )
@@ -840,9 +840,9 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                   (sdif::SdifFSkipFrameData ptrfile)
                   )
                 ;(setf nextFrame (nextframep self ptrfile))
-                (sdif-get-signature ptrfile)
+                (sdif::sdif-get-signature ptrfile)
                 ))
-        (sdif-close-file ptrfile)))
+        (sdif::sdif-close-file ptrfile)))
     (if (not frameslist) (print (format nil "No data found")))
     (setf rep (make-instance 'sdifstream :id streamNum :LFrames (reverse frameslist)))
     rep))
@@ -853,7 +853,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 (defun matrixinfo-from-signature (file msig)
   (let* ((sig (sdif::SdifStringToSignature msig))
          (mtype (sdif::SdifTestMatrixType file sig)))
-  (if (sdif-null-ptr-p mtype)
+  (if (sdif::sdif-null-ptr-p mtype)
       (progn 
         (print (string+ "Matrix Type " msig " not found."))
         NIL)
@@ -866,14 +866,14 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 (defun frameinfo-from-signature (file fsig)
    (let* ((sig (sdif::SdifStringToSignature fsig))
           (ftype (sdif::SdifTestFrameType file sig)))
-    (if (sdif-null-ptr-p ftype)
+    (if (sdif::sdif-null-ptr-p ftype)
       (progn 
         (print (string+ "Frame Type " fsig " not found."))
         NIL)
       (let ((fnumcomp (sdif::SdifFrameTypeGetNbComponents ftype)))
          (loop for i = 1 then (+ i 1) while (<= i fnumcomp) collect 
                (let ((fcomp (sdif::SdifFrameTypeGetNthComponent ftype i)))
-                 (if (sdif-null-ptr-p fcomp) NIL
+                 (if (sdif::sdif-null-ptr-p fcomp) NIL
                    (let ((msig (sdif::SdifFrameTypeGetComponentSignature fcomp)))
                      (list (sdif::SdifSignaturetoString msig)
                            (matrixinfo-from-signature file (sdif::SdifSignatureToString msig))
@@ -905,7 +905,7 @@ Frame type description is a list of lists containing the internal matrix signatu
                 (if (equal type 'm)
                     (matrixinfo-from-signature ptrfile signature)
                   (frameinfo-from-signature ptrfile signature)))
-          (sdif-close-file ptrfile)))
+          (sdif::sdif-close-file ptrfile)))
     data))
 
 ;;; NVT
@@ -957,7 +957,7 @@ Name/Value tables are formatted as SDIFNVT objects.
                        ))
             (sdif::SdifKillHashTableIterator nvtiter)
             )))
-    (sdif-close-file ptrfile)
+    (sdif::sdif-close-file ptrfile)
     data))
 
 (defmethod! GetNVTList ((self sdiffile))
@@ -1020,7 +1020,7 @@ See http://sdif.sourceforge.net/standard/sdif-standard.html#Stream%20IDs%20Table
                             ))
                     ))
         )
-      (sdif-close-file ptrfile))
+      (sdif::sdif-close-file ptrfile))
     data))
 
 (defmethod! GetSIDTable ((self sdiffile))

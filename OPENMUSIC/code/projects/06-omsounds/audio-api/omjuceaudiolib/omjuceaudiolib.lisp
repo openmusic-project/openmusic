@@ -1,4 +1,5 @@
-(in-package :om)
+(in-package :cl-user)
+
 
 (defpackage :juce)
 
@@ -10,6 +11,7 @@
 (push :omjuceaudiolib *features*)
 
 (in-package :juce)
+
 
 ;;;==============================================
 ;;  PLAYER

@@ -5,7 +5,7 @@
 (defclass sdif-object () ())
 
 (defmethod initialize-instance :after ((self sdif-object) &rest initargs)
-  (sdif-init-cond))
+  (sdif::sdif-init-cond))
 
 
 

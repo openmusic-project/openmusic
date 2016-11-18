@@ -1,14 +1,5 @@
 (in-package :om)
 
-(defvar *sdif-library* nil)
-
-(defun init-sdif-lib ()
-  (setf *sdif-library* (om-start-sdif))
-  (unless *sdif-library* 
-    (om-message-dialog (format nil (om-str :lib-error) "SDIF"))))
-
-(om-add-init-func 'init-sdif-lib)
-
 
 (defvar *sdifpackage* (omNG-protect-object (omNG-make-new-package "SDIF")))
 (addPackage2Pack *sdifpackage* *audiopackage*)

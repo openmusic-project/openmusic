@@ -26,60 +26,78 @@
 
 ;;===========================================================================
 ;DocFile
-;  SDIF FUNCTIONS
+;  SDIF MID-LEVEL FUNCTIONS
 ;;===========================================================================
 
-(in-package :om-api)
 
+(in-package :sdif)
 
-(export '(
-          om-start-sdif       
-          sdif-init sdif-init-cond
-          sdif-kill
-          sdif-open-file
-          sdif-null-ptr-p
-          sdif-close-file
-          sdif-check-file
-          sdif-to-text
-          sdif-get-pos
-          sdif-set-pos
-          sdif-get-signature
-          sdif-calculate-padding
-          
-          ) :om-api)
+(pushnew :sdif *features*)
+
+;;;==============================
+;;; CHARGEMENT
+;;; !!! *sdif-pathname* is modified in OM
+(defvar *sdif-pathname* 
+  #+win32
+  "/WINDOWS/system32/sdif.dll"
+  #+(or darwin macos macosx) 
+  "/Library/Frameworks/SDIF.framework/SDIF"
+  #+linux "libsdif.so"
+  )
+
+(defvar *sdif-library* nil)
+(defvar *sdif-initialized-p* nil)
+
+(defun load-sdif-library ()
+  
+  #-linux (setf sdif::*sdif-pathname* (om::om-lib-pathname sdif::*sdif-pathname*))
+  
+  (setf *sdif-library*
+	#-linux (if (probe-file *sdif-pathname*)
+		    (progn
+		      (print (concatenate 'string "Loading SDIF library: " (namestring *sdif-pathname*)))
+		      (fli:register-module "SDIF" 
+					   :real-name (namestring *sdif-pathname*)
+					   :connection-style :immediate)
+		      t))
+	#+linux (progn 
+		  (define-foreign-library libsdif
+		    #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" (oa:om-lib-pathname *sdif-pathname*) "libsdif.so"))
+		    #+:LISPWORKS-32BIT (:unix (:or "/usr/local/lib/libsdif.so" (oa:om-lib-pathname *sdif-pathname*) "libsdif.so"))
+		    (t (:default "libsdif")))
+		  (handler-case (progn
+				  (let ((lib (use-foreign-library libsdif)))
+				    (print (format nil "Loaded SDIF lib: ~A" (foreign-library-pathname lib))))
+				  t)
+		    (error () (progn (print (format nil "could not load foreign-library libsdif")) nil)))))
+  
+  (setf *sdif-initialized-p* nil)
+  (unless *sdif-library* 
+    (om::om-message-dialog (format nil (om::om-str :lib-error) "SDIF"))))
+
+(om::om-add-init-func 'load-sdif-library)
 
 ;;; INIT/CLOSE SDIF
 (defun sdif-null-ptr-p (sdifptr)
    (cffi:null-pointer-p sdifptr))
 
 (defun sdif-init (string)
-  (unless *sdiflib*
-    (when sdif::*sdif-framework*
+  (unless *sdif-initialized-p*
+    (when *sdif-library*
       (print "Initializing SDIF...")
       (sdif::SdifGenInit string))
-    (setf *sdiflib* t)))
+    (setf *sdif-initialized-p* t)))
 
 (defun sdif-init-cond ()
-  (unless *sdiflib*
-    (when sdif::*sdif-framework*
+  (unless *sdif-initialized-p*
+    (when *sdif-library*
       (print "Initializing SDIF...")
       (sdif::SdifGenInitCond ""))
-    (setf *sdiflib* t)))
+    (setf *sdif-initialized-p* t)))
 
 (defun sdif-kill ()
    (sdif::SdifGenKill)
-   (setf *sdiflib* nil))
-
-
-(defvar *sdiflib* nil)
-
-(defun om-start-sdif ()
-  #-linux (setf sdif::*sdif-pathname* (om-lib-pathname sdif::*sdif-pathname*))
-  (sdif::init-sdif-framework)
-  ;; (sdif-init "") ;; => LATER !!! :(
-  (setf *sdiflib* nil)
-  sdif::*sdif-framework*)
-  
+   (setf *sdif-initialized-p* nil))
 
 ;;; SDIF FILES
 (defun get-file-mode (symb)
@@ -141,7 +159,9 @@
 
 ;;;============================
 ;;; TESTS
-
+; (load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")
+; (init-sdif-framework)
+; (sdif::sdifprintversion)
 ;(Sdif-Init "")
 ;(Sdif-Kill)
 ;(setf filepath (namestring (capi::prompt-for-file nil))) 

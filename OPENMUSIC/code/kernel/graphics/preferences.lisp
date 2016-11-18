@@ -39,8 +39,6 @@
    (find name preflist :key 'car)) 
 
 
-
-
 (defun get-pref (module key)
   (when module
     (let ((pos (position key (cadr module) :test 'equal)))
@@ -108,9 +106,11 @@
         (setf (cadr item) (get-def-vals (car item)))
         (put-preferences (car item))))
 
+(defun preferences-file ()
+  (om-make-pathname :directory (mypathname *current-workSpace*) :name "preferences" :type "lisp"))
 
 (defmethod save-preferences ()
-  (let ((path (om-make-pathname :directory (mypathname *current-workSpace*) :name "preferences" :type "lisp")))
+  (let ((path (preferences-file)))
     (delete-file-protection path)
     (WITH-OPEN-FILE (out path :direction :output 
                          :if-does-not-exist :create :if-exists :supersede) 

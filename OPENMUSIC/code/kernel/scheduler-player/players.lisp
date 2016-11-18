@@ -58,6 +58,11 @@
 (defmethod player-params ((player t)) nil)   ;;; the default values for the player params
 (defmethod player-type ((player t)) nil)   ;;; communication protocol (:midi / :udp)
 
+;;; CALLED AT STARTUP
+(defmethod player-open ((player t)) t)  
+;;; CALLED AT EXIT
+(defmethod player-close ((player t)) t)  
+
 ;;; CALLED WHEN SELECTED
 (defmethod player-init ((self t)) nil)
 
