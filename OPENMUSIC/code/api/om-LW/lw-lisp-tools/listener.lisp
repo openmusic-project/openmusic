@@ -51,7 +51,7 @@
 
 (defvar *om-listener* nil)
 (defvar *om-stream* nil)
-(defvar *om-prompt* "OM >")
+(defvar *om-prompt* "OM > ")
 
 ;; (defclass om-listener-pane (capi:listener-pane capi:collector-pane) ())
 
@@ -63,11 +63,13 @@
   (setf *trace-output* *om-stream*)
   (let ((lispworks::*HANDLE-WARN-ON-REDEFINITION* nil))
     (defun print (something &optional stream)
-      (let ((output-stream (or stream *om-stream*)))
-        (write something :stream output-stream :escape t)
-        (terpri output-stream)
+      (let ((st (or stream *om-stream*)))
+        (write *om-prompt* :stream st :escape nil)
+        (write something :stream st :escape t)
+        (terpri st)
         (when om-lisp::*om-listener* (listener-end-of-buffer om-lisp::*om-listener*))
-        something))
+        something
+        ))
     ))
 
 
