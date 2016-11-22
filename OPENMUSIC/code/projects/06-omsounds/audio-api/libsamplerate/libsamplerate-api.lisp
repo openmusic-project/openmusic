@@ -19,13 +19,13 @@
   (let ((libpath (namestring (om::om-lib-pathname "libsamplerate.dylib"))))
     (if (probe-file libpath)
         (progn
-          (print (format nil "Loading libsamplerate library: ~s" libpath))
+          (print (format nil "Loading libsamplerate library: ~A" libpath))
           (handler-case 
               (fli:register-module "libsamplerate" 
                                    :real-name libpath
                                    :connection-style :immediate)
-            (error () (format nil "could not load foreign-library ~s" libpath))))
-      (print (format nil "could not find foreign-library ~s" libpath)))))
+            (error () (format nil "could not load foreign-library ~A" libpath))))
+      (print (format nil "could not find foreign-library ~A" libpath)))))
 
 (oa:om-add-init-func 'init-libsamplerate)
 

@@ -8,7 +8,6 @@
 ;;;;=================================================
 
 (defvar *sys-console* nil)
-(defvar *audio-sr* 44100)
 (defvar *audio-res* 16)
 (defvar *automatic-rename* nil)
 (defvar *delete-inter-file* t)
@@ -34,12 +33,12 @@
       (setf *def-snd-format* (get-pref modulepref :audio-format)))
     (when new-sr
       (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
-          (setf *audio-sr* new-sr)
+          (set-audio-sample-rate new-sr)
         (progn 
           (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
           (set-pref modulepref :audio-sr 44100)
           )))
-    #+libaudiostream(las-set-sample-rate *audio-sr*) ;;; las can apply this only the first time..
+    
     (setf *delete-inter-file* (get-pref modulepref :delete-tmp))
     (setf *automatic-rename* (get-pref modulepref :auto-rename))
     (setf *normalize* (get-pref modulepref :normalize))
@@ -112,7 +111,7 @@
      
     (om-add-subviews thescroll
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 20)) (om-make-point 300 30)
-					  #-linux "LibAudioStream" #+linux "JACK"
+					  "Audio Player"
 					  :font *om-default-font3b*)
                          
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30)

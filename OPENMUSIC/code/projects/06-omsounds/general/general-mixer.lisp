@@ -23,7 +23,7 @@
 
 ;;; which players can the audio-mixer control ?
 ;;; the first in the list will be the default
-(add-player-for-object 'mixer #+(or macosx win32) '(:libaudiostream) #+linux '(:jackaudio))
+(add-player-for-object 'mixer #+(or macosx win32) '(:om-audio) #+linux '(:jackaudio))
 
 (defparameter *audio-mixer* nil)
 (defparameter *audio-n-channels* 16)

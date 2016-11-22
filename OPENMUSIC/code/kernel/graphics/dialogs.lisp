@@ -280,12 +280,12 @@ C. Agon, G. Assayag, J. Bresson")
 E. Amiot, M. Andreatta, D. Bouche, O. Delerue, J. Garcia, K. Haddad, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, A. Vinjar, F. Voisin, ...
 
 External code from: 
-Grame (Midishare / LibAudioStream interfaces), H. Taube (MIDI bindings), C. T. Binghe (lispworks-udp), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML), H. Huebner (Yason), W. S. Annis (cl-svg)
+H. Taube (MIDI bindings), C. T. Binghe (lispworks-udp), N. Gafney (OSC), S. Ball (Lisp editor tools), J. Bielman, L. Oliveira (CFFI), S. Van Caekenberghe (XML), H. Huebner (Yason), W. S. Annis (cl-svg)
 
 External Libraries:
   MIDI support: PortMidi (c) PortMedia
-  Audio support: LibAudioStream (c) Grame
-        use LibSndFile (c) Erik de Castro Lopo
+  Audio I/O: LibSndFile (c) Erik de Castro Lopo
+  Audio support: Juce 
   Sound Description Interchange Format SDIF (c) Ircam
 
 ArtWork: A. Mohsen

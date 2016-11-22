@@ -57,6 +57,11 @@
           "general;automations"
           "general;sound-preferences"
           
+          "players;juce-player"
+          #-linux "players;multiplayer"
+          #+cl-jack "players;jack-audio-player"
+          #+linux "players;mplayer"
+          
           "tools;sound-processing"
           "tools;sound-tools"
           "tools;control-tools"
@@ -66,10 +71,6 @@
           "synth;synthesis-event"
           "synth;synthesize"
     
-          "players;juce-player"
-          #-linux "players;multiplayer"
-          #+cl-jack "players;jack-audio-player"
-          #+linux "players;mplayer"
           )))
 
 

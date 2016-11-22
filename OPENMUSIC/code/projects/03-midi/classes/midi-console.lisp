@@ -80,7 +80,7 @@ In this case, all internal events are sent simultaneously.
 "
  ))
 
-(add-player-for-object 'midi-mix-console '(:midi-player :midishare))
+(add-player-for-object 'midi-mix-console '(:midi-player))
 
 (defmethod default-edition-params ((self midi-mix-console))
   (pairlis '(player)

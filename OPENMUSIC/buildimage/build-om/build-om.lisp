@@ -314,8 +314,6 @@
 
 ;;; MAC :
 ;;; INSTALL OM FONTS IN /Library/Fonts/
-;;; Run MidiShare installer
-;;; LIBS in /Library/Frameworks   : 
-;;; LibAudioStream.frameworks SDIF.framework
+
 
 

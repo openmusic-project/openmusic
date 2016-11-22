@@ -8,7 +8,8 @@
 (defvar *enabled-players* nil)  
 
 (defun enable-player (player)
-  (pushnew player *enabled-players*))
+  (unless (find player *enabled-players*)
+    (pushr player *enabled-players*)))
 
 (defun disable-player (player)
   (when (find player *enabled-players*)

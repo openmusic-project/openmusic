@@ -8,45 +8,33 @@
 ;Constants to use to create players.
 (defconstant *audio-in-chan* 2)
 (defconstant *audio-out-chan* 2)
-(defparameter *audio-srate* 44100)
+(defvar *audio-sr* 44100)
 (defconstant *audio-buffsize* 512)
 (defconstant *audio-streambuffsize* 65536)
 
 (defvar *juce-player* nil)
 
-(defmethod player-name ((self (eql :juce))) "JuceAudio")
-(defmethod player-desc ((self (eql :juce))) "internal OM Player")
-(enable-player :libaudiostream)
+(defmethod player-name ((self (eql :om-audio))) "Default audio player")
+(defmethod player-desc ((self (eql :om-audio))) "(based on Juce)")
+(enable-player :om-audio)
+(add-player-for-object 'sound :om-audio)
 
-(defmethod player-open ((self (eql :juce)))
-  (setf *juce-player* (juce::OpenAudioPlayer *audio-in-chan* *audio-out-chan* *audio-srate*)))
+(defmethod player-open ((self (eql :om-audio)))
+  (setf *juce-player* (juce::OpenAudioPlayer *audio-in-chan* *audio-out-chan* *audio-sr*)))
 
-(defmethod player-close ((self (eql :juce)))
+(defmethod player-close ((self (eql :om-audio)))
   (juce::closeaudioplayer *juce-player*)
   (setf *juce-player* nil))
 
 
 ;; called from preferences
-(defun las-set-sample-rate (sr)
-
-  (unless (= las-srate sr)
-    (if (find :juce *enabled-players*)  ;;; the audio system is already running
-        (let ((quit? 
-               (om-y-or-n-dialog 
-                (format nil "The new audio sample rate will be used only after restarting OM.~%~%Quit and restart now ?"))))
-          (when quit? 
-            (save-preferences)
-            (om-quit)))
-      (progn 
-        (setf las-srate sr)
-        ;(las-close-full-system)
-        ;(las-init-full-system)
-        ;(libaudiostream-start)
-        )
-      )))
+(defun set-audio-sample-rate (sr)
+  (setq *audio-sr* sr)
+  (player-close :om-audio)
+  (player-open :om-audio))
 
 
-(defmethod prepare-to-play ((engine (eql :juce)) (player omplayer) object at interval params)
+(defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
   (when (loaded object)
   (let* ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at))
          (from (car newinterval))
@@ -73,35 +61,35 @@
           (call-next-method engine player object at newinterval params))))))
 
 
-(defmethod player-start ((engine (eql :juce)) &optional play-list)
+(defmethod player-start ((engine (eql :om-audio)) &optional play-list)
   (call-next-method))
 
 ;;; PAUSE
-(defmethod player-pause ((engine (eql :juce)) &optional play-list)
+(defmethod player-pause ((engine (eql :om-audio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-pause-object engine (nth i play-list)))
     (las-pause-all-players)))
 
 ;;; CONTINUE
-(defmethod player-continue ((engine (eql :juce)) &optional play-list)
+(defmethod player-continue ((engine (eql :om-audio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-continue-object engine (nth i play-list)))
     (las-cont-all-players)))
 
 ;;; STOP
-(defmethod player-stop ((engine (eql :juce)) &optional play-list)
+(defmethod player-stop ((engine (eql :om-audio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-stop-object engine (nth i play-list)))
     (las-stop-all-players)))
 
 ;;; PLAY (NOW)
-(defmethod player-play-object ((engine (eql :juce)) (object sound) &key interval params)
+(defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
-(defmethod player-loop ((self (eql :juce)) player &optional play-list)
+(defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
   (declare (ignore player))
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
@@ -112,15 +100,15 @@
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT
-(defmethod player-pause-object ((engine (eql :juce)) (object sound) &key interval)
+(defmethod player-pause-object ((engine (eql :om-audio)) (object sound) &key interval)
   (las-pause object (tracknum object)))
 
 ;;; RESTART ONLY ONE OBJECT
-(defmethod player-continue-object ((engine (eql :juce)) (object sound) &key interval)
+(defmethod player-continue-object ((engine (eql :om-audio)) (object sound) &key interval)
   (las-play object (car interval) (cadr interval) (tracknum object)))
 
 ;;; STOP ONLY ONE OBJECT
-(defmethod player-stop-object ((engine (eql :juce)) (object sound) &key interval)
+(defmethod player-stop-object ((engine (eql :om-audio)) (object sound) &key interval)
   (las-stop object (tracknum object)))
 
 
