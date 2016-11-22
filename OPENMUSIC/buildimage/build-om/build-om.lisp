@@ -245,6 +245,7 @@
   
 (load-om-projects '("01-basicproject" "02-musicproject"))
 (load-om-projects '("03-midi"))
+(load-om-projects '("04-sdif"))
 (load-om-projects '("05-mathtools"))
 (load-om-projects '("06-omsounds"))
 (load-om-projects '("07-omspace"))
