@@ -45,7 +45,7 @@
                                                                              (t nil)))))) 
               (when file
                 (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                (om-audio::om-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
+                (audio-io::om-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
                 ;(fli:free-foreign-object buffer)
                 (probe-file (namestring file))
                 ))))
@@ -87,9 +87,8 @@
                      ;;; USE LIBSAMPLERATE
                      ;;; (resample-method values correspond to libsamplerate options)
                      (multiple-value-bind (success newsize-or-error)
-                         (om-audio::resample-audio-buffer buffer size nch final-buffer out-size ratio resample-method)
-
-
+                         #+libsamplerate(lsr::resample-audio-buffer buffer size nch final-buffer out-size ratio resample-method)
+                         #+libsamplerate nil
 
                        (if success
                            (progn
@@ -187,7 +186,7 @@
 (defmethod general-normalize ((norm (eql :om)) inpath outpath val &optional resolution)
   (print "Warning: OM normlizer does not take into account the normalization value.")
   (let ((normalized (sound-normalize (get-om-sound-data inpath))))
-    (om-audio::om-save-sound-in-file (buffer normalized) (namestring outpath) 
+    (audio-io::om-save-sound-in-file (buffer normalized) (namestring outpath) 
                                      (size normalized) (nch normalized) (sr normalized) 
                                      (or resolution *audio-res*) *def-snd-format*)
     outpath))

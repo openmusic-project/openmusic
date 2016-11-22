@@ -1,6 +1,5 @@
 (in-package :cl-user)
 
-
 (defpackage :juce)
 
 ;(fli:register-module 
@@ -11,6 +10,29 @@
 (push :omjuceaudiolib *features*)
 
 (in-package :juce)
+
+(defparameter *juceaudiolib-pathname* 
+  #+win32
+  "/WINDOWS/system32/OMJuceAudioLib.dll"
+  #+(or darwin macos macosx)  
+  "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
+  #+(or linux (and clisp unix (not macos)))
+  "/usr/lib/OMJuceAudioLib.so")
+
+(defvar *juceaudiolib* nil)
+
+(defun load-juceaudiolib ()
+  (or *juceaudiolib*
+      (setq *juceaudiolib*
+            (if (probe-file *juceaudiolib-pathname*)
+                (progn 
+                  (print (concatenate 'string "Loading Juce Audio library: " (namestring *juceaudiolib-pathname*)))
+                  (fli:register-module "JuceAudio" 
+                                       :real-name (namestring *juceaudiolib-pathname*)
+                                       :connection-style :immediate)
+                  t)))))
+
+(om::om-add-init-func 'load-juceaudiolib)
 
 
 ;;;==============================================

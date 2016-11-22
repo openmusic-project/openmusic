@@ -8,31 +8,9 @@
 
 (pushnew :libsamplerate *features*)
 
-;;; MUST BE INSTALLED !
-;;; or linked statically (in LibAudioStream / MacOS)
-
-
-#+linux
-(progn
-  (defparameter *libsamplerate* nil)
-
-  (defun init-libsamplerate ()
-    (define-foreign-library libsamplerate
-      (t (:default "libsamplerate")))
-    (setf *libsamplerate*
-	  (handler-case (progn (use-foreign-library libsamplerate) t)
-	    (error () (progn (print (format nil "could not load foreign-library libsamplerate"))
-			     nil)))))
-  (oa:om-add-init-func 'init-libsamplerate))
-
-#+win32
-(define-foreign-library libsamplerate
-  (:darwin "libsamplerate.dylib")
-  #+win32(:unix (:or "libsamplerate.dll" "libsamplerate.so"))
-  #+win32(t (:default "libsamplerate")))
-
-#+win32
-(use-foreign-library libsamplerate)
+;;;============================================================
+;;;============================================================
+;;;============================================================
 
 (defparameter SRC_SINC_BEST_QUALITY 0)
 (defparameter SRC_SINC_MEDIUM_QUALITY 1)

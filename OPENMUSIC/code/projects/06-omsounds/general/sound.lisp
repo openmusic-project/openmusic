@@ -90,7 +90,7 @@
   (when (and (filename self) (probe-file (filename self)))
     (print (format nil "Loading sound file : ~s" (namestring (filename self))))
     (multiple-value-bind (format nch sr ss size skip)
-        (om-audio::om-sound-get-info (namestring (filename self)))
+        (audio-io::om-sound-get-info (namestring (filename self)))
       (if (and format size nch (> size 0) (> nch 0))
           (progn 
             (setf (audio-format self) format
@@ -148,7 +148,7 @@
 
 (defmethod get-om-sound-data ((self string) &optional track)
    (multiple-value-bind (buffer format channels sr ss size skip)
-       (om-audio::om-get-sound-buffer self *default-internal-sample-size*)
+       (audio-io::om-get-sound-buffer self *default-internal-sample-size*)
      (make-instance 'om-sound-data 
                     :type *default-internal-sample-size*
                     :buffer buffer
@@ -370,13 +370,13 @@ Press 'space' to play/stop the sound file.
           (display-builder self) (om-run-process 
                                   "DisplayArrayBuilder" 
                                   #'(lambda (snd)
-                                      ;(setf (display-array snd) (om-audio:om-get-sound-display-array (namestring (filename snd)) ratio))
+                                      ;(setf (display-array snd) (audio-io::om-get-sound-display-array (namestring (filename snd)) ratio))
                                       (setf (display-array snd) 
                                             (make-array (list channels (ceiling size ratio))
                                                         :element-type 'single-float :initial-element 0.0 :allocation :static))
                                       (fli:with-dynamic-lisp-array-pointer 
                                           (ptr (display-array snd) :type :float)
-                                        (om-audio:om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
+                                        (audio-io::om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
                                       (sound-get-best-pict snd)
                                       (setf (display-builder self) nil)
                                       (print (format nil "~A Loaded..." (filename self)))) self))))
@@ -397,7 +397,7 @@ Press 'space' to play/stop the sound file.
                              :element-type 'single-float :initial-element 0.0 :allocation :static))
            (fli:with-dynamic-lisp-array-pointer 
                (ptr (display-array snd) :type :float)
-             (om-audio:om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
+             (audio-io::om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
            (sound-get-best-pict snd)
         ;(setf (display-builder self) nil)
            (print (format nil "~A Loaded..." (filename self))))
@@ -431,7 +431,7 @@ Press 'space' to play/stop the sound file.
                    (setq maxi 0.0)))
                result))
             ((> nbpix maxnbpix)
-             (setq result (om-audio:om-get-sound-display-array-slice 
+             (setq result (audio-io::om-get-sound-display-array-slice 
                            (audio-format self)
                            (namestring (filename self)) nbpix (om-sound-n-channels self) start-time end-time))))
       (values result (< (cadr (array-dimensions result)) nbpix)))))
@@ -529,7 +529,7 @@ Press 'space' to play/stop the sound file.
 ;;; reads a sample at position position in <self>
 (defmethod read-sound-sample ((self sound) position &optional (type :float))
   (multiple-value-bind (buffer format nch sr ss size skip)
-      (om-audio::om-get-sound-buffer (filename self) type)
+      (audio-io::om-get-sound-buffer (filename self) type)
     (when buffer
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
                            (om-read-ptr buffer (+ position chan) type))))
@@ -552,7 +552,7 @@ Press 'space' to play/stop the sound file.
             (>  (car (last positions)) numdat))
         (om-message-dialog "Bad input values")
       (multiple-value-bind (buffer format format nch sr ss size skip)
-          (om-audio::om-get-sound-buffer (filename self) :float)
+          (audio-io::om-get-sound-buffer (filename self) :float)
         (when buffer
           (let ((data (loop for pos in positions collect
                             (if (listp ch)

@@ -8,32 +8,6 @@
 
 (pushnew :libsndfile *features*)
 
-;;; MUST BE INSTALLED !
-;;; or linked statically (in LibAudioStream / MacOS)
-
-#+linux
-(progn
-  (defparameter *libsndfile* nil)
-
-  (defun init-libsndfile ()
-    (define-foreign-library libsndfile
-      (t (:default "libsndfile")))
-    (setf *libsndfile*
-	  (handler-case (progn (use-foreign-library libsndfile) t)
-	    (error () (progn (print (format nil "could not load foreign-library libsndfile"))
-			     nil)))))
-  (oa:om-add-init-func 'init-libsndfile))
-
-#+win32
-(define-foreign-library libsndfile
-  (:darwin "libsndfile.dylib")
-  #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
-  #+win32(t (:default "libsndfile-1"))
-  )
-
-#+win32
-(use-foreign-library libsndfile)
-
 
 ;(defctype :long-long :pointer)
 

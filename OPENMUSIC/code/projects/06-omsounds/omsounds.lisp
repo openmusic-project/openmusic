@@ -23,60 +23,41 @@
 (in-package :om)
 
 
-;;; genertal package for low-level audio features
-(defpackage :om-audio
-  (:nicknames "AU")
-  (:use cl-user common-lisp))
 
+
+
+;;;========================================================
+;;; FILE ACCESS (libsndfile / libsamplerate)
+;;;========================================================
 
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile"))
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate"))
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "omjuceaudiolib")) :name "omjuceaudiolib"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile-api"))
 (compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api")) :name "file-access"))
 
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate-api"))
 
-(defparameter *juceaudiolib-pathname* 
-  #+win32
-  "/WINDOWS/system32/OMJuceAudioLib.dll"
-  #+(or darwin macos macosx)  
-  "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
-  #+(or linux (and clisp unix (not macos)))
-  "/usr/lib/OMJuceAudioLib.so")
-
-(defvar *juceaudiolib* nil)
-
-(defun load-juceaudiolib ()
-  (or *juceaudiolib*
-      (setq *juceaudiolib*
-            (if (probe-file *juceaudiolib-pathname*)
-                (progn 
-                  (print (concatenate 'string "Loading Juce Audio library: " (namestring *juceaudiolib-pathname*)))
-                  (fli:register-module "JuceAudio" 
-                                       :real-name (namestring *juceaudiolib-pathname*)
-                                       :connection-style :immediate)
-                  (hcl::add-special-free-action 'audio-cleanup) 
-                  t)))))
-
-(om::om-add-init-func 'load-juceaudiolib)
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "omjuceaudiolib")) :name "omjuceaudiolib"))
 
 (push :audio *features*)
 
+
 ;======================
-; BASICS
+; LOAD
 ;======================
 
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
         '(
-          "basic;sound"   
-          "basic;soundeditor"
-          "basic;audio-mix-console"
-          "basic;general-mixer"
-          "basic;automations"
-          "basic;sound-preferences"
-          "basic;om-sound-processing"
-    
+          "general;sound"   
+          "general;soundeditor"
+          "general;audio-mix-console"
+          "general;general-mixer"
+          "general;automations"
+          "general;sound-preferences"
+          
+          "tools;sound-processing"
           "tools;sound-tools"
           "tools;control-tools"
           "tools;param-process"
@@ -90,8 +71,6 @@
           #+cl-jack "players;jack-audio-player"
           #+linux "players;mplayer"
           )))
-
-
 
 
 
@@ -135,29 +114,6 @@
 
 
 
-;======================
-;SDIF
-;======================
-(defvar *sdif-lib-files* nil)
-
-(setf *sdif-lib-files* '(
-                         "sdif;sdif-lib;sdif"
-                         "sdif;sdif-lib;sdif-api"
-                         "sdif;sdif-struct"
-			 "sdif;sdiffile"
-                         "sdif;sdifeditor"
-			 "sdif;sdif-write"
-			 "sdif;matrix"
-			 "sdif;analyse-tools"
-                         "sdif;cseq2sdif"
-                         "sdif;sdifpack"
-                         ))
-
-(eval-when (eval compile load)
-  (mapc #'(lambda (filename) 
-            (compile&load (namestring (make-local-path *load-pathname* filename)))) 
-        *sdif-lib-files*))
-     
 
 
 
