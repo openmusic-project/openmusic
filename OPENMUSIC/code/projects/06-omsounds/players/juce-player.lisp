@@ -42,10 +42,9 @@
          newptr)
     (setf (player-data object)
           (juce::makefilereader (namestring (om-sound-file-name object))))
-    (if (or (null interval) newinterval)
-        (progn 
-          (if newinterval (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car newinterval)))))
-          (call-next-method engine player object at newinterval params))))))
+    (when (or (null interval) newinterval)
+      (call-next-method engine player object at newinterval params)))))
+
 
 
 (defmethod player-start ((engine (eql :om-audio)) &optional play-list)
@@ -56,25 +55,29 @@
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-pause-object engine (nth i play-list)))
-    (las-pause-all-players)))
+    ))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :om-audio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-continue-object engine (nth i play-list)))
-    (las-cont-all-players)))
+    ))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :om-audio)) &optional play-list)
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (player-stop-object engine (nth i play-list)))
-    (las-stop-all-players)))
+    ))
+
+
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
-  ;(las-play object (car interval) (cadr interval) (tracknum object))
+  ;(print "play")
+  (when interval 
+    (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
   (juce::startreader *juce-player* (player-data object)))
 
 (defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
