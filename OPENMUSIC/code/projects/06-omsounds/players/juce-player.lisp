@@ -41,23 +41,10 @@
          (to (cadr newinterval))
          newptr)
     (setf (player-data object)
-          (make-instance 'las-player-sound :filename (om-sound-file-name object)))
-    (if (and (or (null interval) newinterval) (las-sound-sndlasptr-current (player-data object)))
-        (progn
-          (setf newptr (if (> (om-sound-n-channels object) 1) 
-                           (las-sound-sndlasptr-current (player-data object)) 
-                         (las-make-stereo-sound (las-sound-sndlasptr-current (player-data object)))))
-          (if (or from to)
-              (let ((begin (if from (round (* from (/ las-srate 1000.0)))))
-                    (end (if to (round (* to (/ las-srate 1000.0)))))
-                    (max (las-sound-n-samples-current (player-data object))))
-                (if (and begin (or (< begin 0) (not begin)))
-                    (setf begin 0))
-                (if (and end (or (> end max) (not end)))
-                    (setf end max))
-                (las-sound-set-sndlasptr-to-play (player-data object) (las-slice-sample-cut newptr begin end)))
-            (las-sound-set-sndlasptr-to-play (player-data object) newptr))
-          (las-sound-update-las-infos (player-data object))
+          (juce::makefilereader (namestring (om-sound-file-name object))))
+    (if (or (null interval) newinterval)
+        (progn 
+          (if newinterval (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car newinterval)))))
           (call-next-method engine player object at newinterval params))))))
 
 
@@ -87,29 +74,39 @@
 
 ;;; PLAY (NOW)
 (defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
-  (las-play object (car interval) (cadr interval) (tracknum object)))
+  ;(las-play object (car interval) (cadr interval) (tracknum object))
+  (juce::startreader *juce-player* (player-data object)))
 
 (defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
   (declare (ignore player))
   (if play-list
       (loop for i from 0 to (1- (length play-list)) do
             (let ((thesound (nth i play-list)))
-              (las-stop thesound (tracknum thesound))
-              (las-loop-play thesound (tracknum thesound))))))
+              ;(las-stop thesound (tracknum thesound))
+              ;(las-loop-play thesound (tracknum thesound))
+              (juce::stopreader *juce-player* (player-data thesound))
+              ;(juce::setposreader (player-data thesound) (round (* (sample-rate thesound) 0.001 TIMEINMS))  ----  REMPLACER TIMEINMS
+              (juce::startreader *juce-player* (player-data thesound))))))
 
 ;;; NOT IN OM PLAYER API
 
 ;;; PAUSE ONLY ONE OBJECT
 (defmethod player-pause-object ((engine (eql :om-audio)) (object sound) &key interval)
-  (las-pause object (tracknum object)))
+  ;(las-pause object (tracknum object))
+  (juce::startreader *juce-player* (player-data object))
+  )
 
 ;;; RESTART ONLY ONE OBJECT
 (defmethod player-continue-object ((engine (eql :om-audio)) (object sound) &key interval)
-  (las-play object (car interval) (cadr interval) (tracknum object)))
+  ;(las-play object (car interval) (cadr interval) (tracknum object))
+  (juce::startreader *juce-player* (player-data object))
+  )
 
 ;;; STOP ONLY ONE OBJECT
 (defmethod player-stop-object ((engine (eql :om-audio)) (object sound) &key interval)
-  (las-stop object (tracknum object)))
+  ;(las-stop object (tracknum object))
+  (juce::stopreader *juce-player* (player-data object))
+  ) 
 
 
 

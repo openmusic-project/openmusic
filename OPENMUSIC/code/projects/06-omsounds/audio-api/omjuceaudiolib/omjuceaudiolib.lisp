@@ -37,7 +37,6 @@
 ;;;==============================================
 ;;  PLAYER
 ;;;==============================================
-
 (cffi:defcfun ("OpenAudioPlayer" OpenAudioPlayer) :pointer (inchannels :int) (outchannels :int) (samplerate :int))
 
 ;(openaudioplayer 2 2 44100)
@@ -48,38 +47,20 @@
 ;;  BUFFER
 ;;;==============================================
 
-(cffi:defcfun ("MakeBufferPointer" MakeBufferPointer) :pointer (buffer :pointer) (channels :int) (size :int) (sr :int))
+(cffi:defcfun ("MakeDataReader" MakeDataReader) :pointer (buffer :pointer) (channels :int) (size :int) (sr :int))
+(cffi:defcfun ("MakeFileReader" MakeFileReader) :pointer (file :string))
 
-(cffi:defcfun ("FreeBufferPointer" FreeBufferPointer) :void (buffer :pointer))
+(cffi:defcfun ("FreeReader" FreeReader) :void (reader :pointer))
 
-(cffi:defcfun ("PlayBuffer" PlayBuffer) :void (player :pointer) (buffer :pointer))
+(cffi:defcfun ("StartReader" StartReader) :void (player :pointer) (reader :pointer))
 
-(cffi:defcfun ("PauseBuffer" PauseBuffer) :void (player :pointer) (buffer :pointer))
+(cffi:defcfun ("PauseReader" PauseReader) :void (player :pointer) (reader :pointer))
 
-(cffi:defcfun ("StopBuffer" StopBuffer) :void (player :pointer) (buffer :pointer))
+(cffi:defcfun ("StopReader" StopReader) :void (player :pointer) (reader :pointer))
 
-(cffi:defcfun ("SetPosBuffer" SetPosBuffer) :void (buffer :pointer) (pos :long))
+(cffi:defcfun ("SetPosReader" SetPosReader) :void (reader :pointer) (pos :long))
 
-(cffi:defcfun ("GetPosBuffer" GetPosBuffer) :long (buffer :pointer))
+(cffi:defcfun ("GetPosReader" GetPosReader) :long (reader :pointer))
 
-(cffi:defcfun ("LoopBuffer" LoopBuffer) :void (buffer :pointer) (looper :boolean))
+(cffi:defcfun ("LoopReader" LoopReader) :void (reader :pointer) (looper :boolean))
 
-;;;==============================================
-;;  FILE
-;;;==============================================
-
-(cffi:defcfun ("MakeFilePointer" MakeFilePointer) :pointer (file :string))
-
-(cffi:defcfun ("FreeFilePointer" FreeFilePointer) :void (file :pointer))
-
-(cffi:defcfun ("PlayFile" PlayFile) :void (player :pointer) (file :pointer))
-
-(cffi:defcfun ("PauseFile" PauseFile) :void (player :pointer) (file :pointer))
-
-(cffi:defcfun ("StopFile" StopFile) :void (player :pointer) (file :pointer))
-
-(cffi:defcfun ("SetPosFile" SetPosFile) :void (file :pointer) (pos :long))
-
-(cffi:defcfun ("GetPosFile" GetPosFile) :long (file :pointer))
-
-;(cffi:defcfun ("LoopFile" LoopFile) :void (file :pointer) (looper :boolean))
