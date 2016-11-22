@@ -23,7 +23,7 @@
   (setf *juce-player* (juce::OpenAudioPlayer *audio-in-chan* *audio-out-chan* *audio-sr*)))
 
 (defmethod player-close ((self (eql :om-audio)))
-  (juce::closeaudioplayer *juce-player*)
+  (when *juce-player* (juce::closeaudioplayer *juce-player*))
   (setf *juce-player* nil))
 
 
