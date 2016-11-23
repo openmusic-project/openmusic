@@ -30,8 +30,8 @@
 ;; called from preferences
 (defun set-audio-sample-rate (sr)
   (setq *audio-sr* sr)
-  (player-close :om-audio)
-  (player-open :om-audio))
+  (when *juce-player* 
+    (juce::ChangeSampleRate *juce-player* 44100)))
 
 (defun get-internal-interval (interval sound at)
   (om- (interval-intersec interval (list at (+ at (real-dur sound)))) at))
