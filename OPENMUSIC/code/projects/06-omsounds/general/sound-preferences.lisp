@@ -60,8 +60,8 @@
     (setf *multiplayer-in-port* (get-pref modulepref :multi-in))
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
     
-    (when (get-pref modulepref :audio-presets)
-      (put-audio-mixer-values (get-pref modulepref :audio-presets)))
+    ;(when (get-pref modulepref :audio-presets)
+    ;  (put-audio-mixer-values (get-pref modulepref :audio-presets)))
     t))
 
 
@@ -78,7 +78,7 @@
               :normalizer ,*normalizer*
               :multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
               :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*))
-              :audio-presets ',(get-audio-mixer-presets)
+              ;:audio-presets ',(get-audio-mixer-presets)
               ) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :audio)))
@@ -86,7 +86,8 @@
         :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :om
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
         :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
-        :audio-presets (init-genmixer-values)))
+        ;;;:audio-presets (init-genmixer-values)
+        ))
 
 
 (defmethod get-def-normalize-value ((self t)) 0.0)

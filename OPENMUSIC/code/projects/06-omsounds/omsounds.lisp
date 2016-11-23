@@ -49,8 +49,8 @@
         '(
           "general;sound"   
           "general;soundeditor"
-          "general;audio-mix-console"
-          "general;general-mixer"
+          ;"general;audio-mix-console"
+          ;"general;general-mixer"
           "general;automations"
           "general;sound-preferences"
           
@@ -88,7 +88,7 @@
 (defvar *synthpackage* (omNG-protect-object (omNG-make-new-package "Sound Synthesis")))
 (addPackage2Pack *synthpackage* *audiopackage*)
 
-(AddClass2Pack '(sound audio-mix-console) *audiopackage*)
+(AddClass2Pack '(sound) *audiopackage*)
 (AddGenFun2Pack '(adsr param-process vibrato jitter) *soundtoolspackage*)
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
