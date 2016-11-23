@@ -577,7 +577,7 @@
   (list (max 0 (om-point-x (pixel2point self (om-scroll-position self))))
         (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
 
-(defmethod start-cursor ((self cursor-play-view-(play-interval player)mixin))
+(defmethod start-cursor ((self cursor-play-view-mixin))
   (let* (;;(dur (get-obj-dur (object (om-view-container self))))
          (range (get-x-range (panel (om-view-container self))))
          ;;(xview (- (second range) (first range)))
