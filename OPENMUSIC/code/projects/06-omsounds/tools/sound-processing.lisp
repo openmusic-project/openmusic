@@ -88,7 +88,7 @@
                      ;;; (resample-method values correspond to libsamplerate options)
                      (multiple-value-bind (success newsize-or-error)
                          #+libsamplerate(lsr::resample-audio-buffer buffer size nch final-buffer out-size ratio resample-method)
-                         #+libsamplerate nil
+                         #-libsamplerate nil
 
                        (if success
                            (progn
@@ -702,7 +702,7 @@
                   
 
 (defmethod! sound-reverse ((s sound))
-            (sound-reverse (get-om-sound-data s)))
+   (sound-reverse (get-om-sound-data s)))
 
 
 

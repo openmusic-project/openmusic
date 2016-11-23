@@ -89,6 +89,10 @@ Lock the box ('b') to keep the current file.
 
 (defclass boxsdifframe (boxEditorFrame) ())
 
+(defmethod update-if-editor ((self sdifFilebox))
+  (when (editorFrame self)
+    (om-close-window (om-view-window (editorFrame self)))))
+
 (defmethod om-get-menu-context ((object boxsdifframe))
   (list+ (boxframe-default-list object)
          ;(list (om-new-leafmenu "SDIF Player..."

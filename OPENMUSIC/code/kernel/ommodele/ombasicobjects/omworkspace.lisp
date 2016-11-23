@@ -226,6 +226,11 @@
 
    (init-om-package)                    
    (load-om-libs)
+
+   ;;; check if it is the right place...
+   ;;; start-audio now
+   (mapcar 'player-open *enabled-players*)
+   
    (workspace-from-name pathname)      ;; will set the preferences             
    (initWorkSpace *current-workSpace*) ;; will open the listener
    
@@ -240,10 +245,6 @@
                       )))
        (restore-preferences)
        ))
-   
-   ;;; check if it is the right place...
-   ;;; start-audio now
-   (mapcar 'player-open *enabled-players*)
    
    (libs-autoload)
 

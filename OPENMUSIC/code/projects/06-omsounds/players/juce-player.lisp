@@ -26,6 +26,7 @@
   (when *juce-player* (juce::closeaudioplayer *juce-player*))
   (setf *juce-player* nil))
 
+; (set-audio-sample-rate 44100)
 ;; called from preferences
 (defun set-audio-sample-rate (sr)
   (setq *audio-sr* sr)

@@ -2,11 +2,6 @@
 
 (defpackage :juce)
 
-;(fli:register-module 
-; "OMJuceAudioLib" 
-; :real-name "/Users/bouche/Documents/GIT/om7/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
-; :connection-style :immediate)
-
 (push :omjuceaudiolib *features*)
 
 (in-package :juce)
@@ -18,7 +13,6 @@
   "OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
   #+(or linux (and clisp unix (not macos)))
   "/usr/lib/OMJuceAudioLib.so")
-
 
 (defun load-juceaudiolib ()
   (let ((libpath (namestring (om::om-lib-pathname *juceaudiolib-pathname*))))

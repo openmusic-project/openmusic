@@ -46,6 +46,8 @@
 
 ;;; USE LIBSNDFILE
 ;;; READ
+
+#+libsndfile
 (defun om-sound-get-info (path)
   ;; RETURNS format n-channels sample-rate sample-size size skip
   (let* ((cool-path (convert-filename-encoding path))
@@ -53,13 +55,15 @@
     (if (car sf-info) (values-list sf-info)
       (try-other-file-support cool-path (pathname-type path)))))
  
-
+#+libsndfile
 (defun om-get-sound-buffer (path &optional (format :double))
   ;; RETURNS buffer format n-channels sample-rate sample-size size skip
   (sf::sndfile-get-sound-buffer (convert-filename-encoding path) format))
 
 
 ;;;Function used to get the display array from the file path (and choosed max window)
+
+#+libsndfile
 (defun om-get-sound-display-array (path &optional (window 128))
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
@@ -96,7 +100,9 @@
 (defmethod om-fill-sound-display-array ((format t) path ptr channels size &optional (window 128))
   ;(print (list channels size window))
   ;;;Ouverture d'un descripteur libsndfile
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+
+#+libsndfile
+(cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
     ;;;Initialisation du descripteur
     (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
     (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
@@ -126,6 +132,7 @@
       (sf::sf_close sndfile-handle))))
 
 
+#+libsndfile
 (defmethod om-get-sound-display-array-slice ((format t) path size nchannels start-time end-time)
   ;;;Ouverture d'un descripteur libsndfile
   (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
@@ -178,7 +185,7 @@
       (sf::sf_close sndfile-handle)
       MaxArray)))
 
-
+#+libsndfile
 (defun om-save-sound-in-file (buffer filename size nch sr resolution format)
   (sf::sndfile-save-sound-in-file buffer filename size nch sr resolution format))
 
