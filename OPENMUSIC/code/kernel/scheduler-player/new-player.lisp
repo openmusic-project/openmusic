@@ -259,10 +259,15 @@
   ;(print (format nil "~A : set loop" engine))
   t)
 
-;;; an engine must choose a strategy to reschedule it's contents on loops
+
+;;; an engine can choose its own strategy to reschedule it's contents on loops
 (defmethod player-loop ((engine t) player &optional play-list)
-  ;(print (format nil "~A : loop" engine))
-  t)
+ (declare (ignore player)) 
+ ;(print (format nil "~A : loop" engine))
+ (loop for obj in play-list do
+       (prepare-to-play self player obj 0 (play-interval player) nil)))
+
+
 
 #|
 (defmethod player-record ((engine t))
@@ -572,7 +577,7 @@
   (list (max 0 (om-point-x (pixel2point self (om-scroll-position self))))
         (om-point-x (pixel2point self (om-add-points (om-scroll-position self) (om-view-size self))))))
 
-(defmethod start-cursor ((self cursor-play-view-mixin))
+(defmethod start-cursor ((self cursor-play-view-(play-interval player)mixin))
   (let* (;;(dur (get-obj-dur (object (om-view-container self))))
          (range (get-x-range (panel (om-view-container self))))
          ;;(xview (- (second range) (first range)))

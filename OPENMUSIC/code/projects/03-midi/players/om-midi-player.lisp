@@ -61,10 +61,8 @@
   (if *midi-microplay* (microplay-reset nil engine))
   (setf *key-ons* (make-list 16)))
 
-(defmethod player-loop ((self (eql :midi-player)) player &optional play-list)
-  (declare (ignore player))
-  (loop for obj in play-list do
-        (prepare-to-play  self player obj 0 (play-interval player) nil)))
+;; (defmethod player-loop ((self (eql :midi-player)) player &optional play-list) (call-next-method))
+
 
 (defparameter *key-ons* (make-list 16))
 

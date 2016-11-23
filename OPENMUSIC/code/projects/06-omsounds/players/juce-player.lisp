@@ -26,90 +26,58 @@
   (when *juce-player* (juce::closeaudioplayer *juce-player*))
   (setf *juce-player* nil))
 
-
 ;; called from preferences
 (defun set-audio-sample-rate (sr)
   (setq *audio-sr* sr)
   (player-close :om-audio)
   (player-open :om-audio))
 
+(defun get-internal-interval (interval sound at)
+  (om- (interval-intersec interval (list at (+ at (real-dur sound)))) at))
 
 (defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
   (when (loaded object)
-  (let* ((newinterval (om- (interval-intersec interval (list at (+ at (real-dur object)))) at))
-         (from (car newinterval))
-         (to (cadr newinterval))
-         newptr)
-    (setf (player-data object)
-          (juce::makefilereader (namestring (om-sound-file-name object))))
-    (when (or (null interval) newinterval)
-      (call-next-method engine player object at newinterval params)))))
+    (let* ((newinterval (get-internal-interval interval object at)))
+      (setf (player-data object)
+            (juce::makefilereader (namestring (om-sound-file-name object))))
+      (when (or (null interval) newinterval) ;; the object has to be played
+        (call-next-method engine player object at newinterval params)
+        ;; => will schedule a player-play-object at <at>
+        ))))
 
-
-
+;;; do nothing 
 (defmethod player-start ((engine (eql :om-audio)) &optional play-list)
   (call-next-method))
 
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :om-audio)) &optional play-list)
-  (if play-list
-      (loop for i from 0 to (1- (length play-list)) do
-            (player-pause-object engine (nth i play-list)))
-    ))
+  (loop for object in play-list do
+        (juce::pausereader *juce-player* (player-data object))))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :om-audio)) &optional play-list)
-  (if play-list
-      (loop for i from 0 to (1- (length play-list)) do
-            (player-continue-object engine (nth i play-list)))
-    ))
+  (loop for object in play-list do
+        (juce::startreader *juce-player* (player-data object))))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :om-audio)) &optional play-list)
-  (if play-list
-      (loop for i from 0 to (1- (length play-list)) do
-            (player-stop-object engine (nth i play-list)))
-    ))
-
+  (loop for object in play-list do
+        (juce::stopreader *juce-player* (player-data object))))
 
 
 ;;; PLAY (NOW)
+;;; we just suppose the stop will be called somewhere else..
 (defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
-  ;(print "play")
   (when interval 
     (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
   (juce::startreader *juce-player* (player-data object)))
 
 (defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
-  (declare (ignore player))
-  (if play-list
-      (loop for i from 0 to (1- (length play-list)) do
-            (let ((thesound (nth i play-list)))
-              ;(las-stop thesound (tracknum thesound))
-              ;(las-loop-play thesound (tracknum thesound))
-              (juce::stopreader *juce-player* (player-data thesound))
-              ;(juce::setposreader (player-data thesound) (round (* (sample-rate thesound) 0.001 TIMEINMS))  ----  REMPLACER TIMEINMS
-              (juce::startreader *juce-player* (player-data thesound))))))
-
-;;; NOT IN OM PLAYER API
-
-;;; PAUSE ONLY ONE OBJECT
-(defmethod player-pause-object ((engine (eql :om-audio)) (object sound) &key interval)
-  ;(las-pause object (tracknum object))
-  (juce::startreader *juce-player* (player-data object))
-  )
-
-;;; RESTART ONLY ONE OBJECT
-(defmethod player-continue-object ((engine (eql :om-audio)) (object sound) &key interval)
-  ;(las-play object (car interval) (cadr interval) (tracknum object))
-  (juce::startreader *juce-player* (player-data object))
-  )
-
-;;; STOP ONLY ONE OBJECT
-(defmethod player-stop-object ((engine (eql :om-audio)) (object sound) &key interval)
-  ;(las-stop object (tracknum object))
-  (juce::stopreader *juce-player* (player-data object))
-  ) 
-
-
-
+  (loop for obj in play-list do
+        (schedule-task player 
+                       #'(lambda () 
+                           (player-play-object 
+                            self obj 
+                            :interval (get-internal-interval (play-interval player) obj (offset->ms obj))))
+                       (car (play-interval player)))
+        ))
