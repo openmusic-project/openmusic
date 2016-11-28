@@ -53,9 +53,9 @@
 
 
 (defmethod om-cleanup ((self internalsound))
-  (when (pict-sound self)
-    ;(print "clean picture")
-    (om-kill-picture (pict-sound self))))
+  (print (list "sound cleanup" self (player-data self)))
+  (when (player-data self) (juce::freereader (player-data self)))
+  (when (pict-sound self) (om-kill-picture (pict-sound self))))
 
 (defmethod om-sound-file-name ((self internalsound))
    (filename self))
@@ -104,7 +104,7 @@
             ;(unless (om-supported-audio-format format)
             ;  (print (format nil "Warning : unsupported audio format ~A" format))
             ;  (setf (loaded sound) :error))
-            )
+           )
        
        (progn 
          (print (format nil "Error loading file ~s" (filename self)))
@@ -149,8 +149,9 @@
 (defmethod get-om-sound-data ((self string) &optional track)
    (multiple-value-bind (buffer format channels sr ss size skip)
        (audio-io::om-get-sound-buffer self *default-internal-sample-size*)
+     (declare (ignore format ss skip))
      (make-instance 'om-sound-data 
-                    :type *default-internal-sample-size*
+                    :smpl-type *default-internal-sample-size*
                     :buffer buffer
                     :tracknum (or track 0)
                     :size size
@@ -248,6 +249,7 @@ Press 'space' to play/stop the sound file.
 (defmethod! set-channel ((self sound) chan)
   (setf (tracknum self) chan))
  
+#|
 (defmethod copy-container ((self sound) &optional (pere ()))
   (let ((snd (if (om-sound-file-name self) 
                  (let ((copy (load-sound-file (om-sound-file-name self)))
@@ -262,7 +264,7 @@ Press 'space' to play/stop the sound file.
     (setf (tracknum snd) (tracknum self))
     (setf (markers snd) (markers self))
     snd))
-
+|#
 
 (defmethod copy-container ((self sound) &optional (pere ()))
   (let ((snd (if (om-sound-file-name self) 
@@ -286,7 +288,7 @@ Press 'space' to play/stop the sound file.
 
 ;;; copie : meme ptrs (pour le maquette play)
 (defun copy-sound-file (sound)
-  (let ((thesound (make-instance (type-of sound)
+  (let ((copy (make-instance (type-of sound)
                     :filename (om-sound-file-name sound)
                     :audio-format (om-sound-format sound)
                     :number-of-samples (om-sound-n-samples sound)
@@ -294,18 +296,17 @@ Press 'space' to play/stop the sound file.
                     :number-of-channels (om-sound-n-channels sound)
                     :data-position (om-sound-data-pos sound)
                     )))
-    (if thesound
+    (if copy
       (progn
-        (setf (pict-sound thesound) (pict-sound sound))
-        (setf (tracknum thesound) (tracknum sound))
-        (setf (markers thesound) (markers sound))
-        (setf (vol thesound) (vol sound))
-        (setf (pan thesound) (pan sound))
-        (setf (extent thesound) nil)
-        )
-      (om-message-dialog (format nil "Cannot copy the file : ~S" (namestring name)))
-      )
-    thesound))
+        (setf (pict-sound copy) (pict-sound sound))
+        (setf (tracknum copy) (tracknum sound))
+        (setf (markers copy) (markers sound))
+        (setf (vol copy) (vol sound))
+        (setf (pan copy) (pan sound))
+        (setf (extent copy) nil)
+        (setf (player-data copy) (player-data sound)))    
+      (om-message-dialog (format nil "Cannot copy the file : ~S" (namestring (om-sound-file-name sound)))))
+  copy))
 
 ;;; copy for play in maq
 (defmethod maq-copy-container ((self sound)  &optional (pere ())) 
@@ -344,11 +345,13 @@ Press 'space' to play/stop the sound file.
 ;;;========   
  
 (defun load-sound-file (name &optional track)
+  (declare (ignore track))
   (let ((sound nil))
     ;;; (om-print (string+ "Loading sound file : " (om-namestring name)))
     (if (probe-file name)
         (progn 
           (setf sound (make-instance 'sound :filename name))
+          (setf (player-data sound) (juce::makefilereader (namestring name)))
           (build-display-array sound)
           (setf (extent sound) nil))
       ;;; (om-supported-audio-format (om-sound-format thesound)))
@@ -363,7 +366,8 @@ Press 'space' to play/stop the sound file.
   (let* ((ratio 128)
          (size (om-sound-n-samples self))
          (channels (om-sound-n-channels self))
-         (array-width (ceiling size ratio)))
+         ;(array-width (ceiling size ratio))
+         )
 ;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
 ;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
     (setf (display-ratio self) ratio
@@ -411,8 +415,8 @@ Press 'space' to play/stop the sound file.
            (timeratio (float (/ targettime maxtime 1.0)))
            (win (display-ratio self))
            (maxnbpix (round (* timeratio (cadr (array-dimensions (display-array self))))))
-           (start-smp (floor (* start-time sr)))
-           (end-smp (ceiling (* end-time sr)))
+           ;(start-smp (floor (* start-time sr)))
+           ;(end-smp (ceiling (* end-time sr)))
            (start (floor (* start-time sr) win))
            (end (ceiling (* end-time sr) win))
            (stoppoint (1- (cadr (array-dimensions (display-array self)))));(+ start (1- maxnbpix)))
@@ -478,8 +482,8 @@ Press 'space' to play/stop the sound file.
 ;    snd))
 
 (defun load-sound (name &optional track vol pan)
-  (let ((snd (om-load-if name 'load-sound-file)))
-    (unless snd (setf snd (make-instance 'sound :filename name)))
+  (let ((snd (or (om-load-if name 'load-sound-file)
+                 (make-instance 'sound :filename name))))
     (when (and snd track) (setf (tracknum snd) track))
     (when (and snd vol) (setf (vol snd) vol))
     (when (and snd pan) (setf (pan snd) pan))
@@ -530,6 +534,7 @@ Press 'space' to play/stop the sound file.
 (defmethod read-sound-sample ((self sound) position &optional (type :float))
   (multiple-value-bind (buffer format nch sr ss size skip)
       (audio-io::om-get-sound-buffer (filename self) type)
+    (declare (ignore format sr ss size skip))
     (when buffer
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
                            (om-read-ptr buffer (+ position chan) type))))
@@ -551,8 +556,9 @@ Press 'space' to play/stop the sound file.
     (if (or (> (list-max (list! ch)) numchan)
             (>  (car (last positions)) numdat))
         (om-message-dialog "Bad input values")
-      (multiple-value-bind (buffer format format nch sr ss size skip)
+      (multiple-value-bind (buffer format nch sr ss size skip)
           (audio-io::om-get-sound-buffer (filename self) :float)
+        (declare (ignore format nch sr ss size skip))
         (when buffer
           (let ((data (loop for pos in positions collect
                             (if (listp ch)
@@ -732,7 +738,7 @@ Press 'space' to play/stop the sound file.
     (om-with-focused-view view 
       (if picture
           (let ((dur (/ (om-sound-n-samples self) (om-sound-sample-rate self)))
-                (pos x) (w (- x1 x)) (h (h view)))
+                (pos x) (w (- x1 x)))
             (om-with-fg-color view *om-dark-gray-color*
               (om-draw-picture view picture :pos (om-make-point x y) :size (om-make-point (- x1 x) (- y1 y))))
             (om-with-fg-color view *om-steel-blue-color*

@@ -39,12 +39,13 @@
 (defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
   (when (loaded object)
     (let* ((newinterval (get-internal-interval interval object at)))
-      (setf (player-data object)
-            (juce::makefilereader (namestring (om-sound-file-name object))))
+      (if (player-data object)   ;; (juce::makefilereader (namestring (om-sound-file-name object)))
+            
       (when (or (null interval) newinterval) ;; the object has to be played
         (call-next-method engine player object at newinterval params)
         ;; => will schedule a player-play-object at <at>
-        ))))
+        )
+        (om-print "SOUND NOT LOADED" "juce-player =>")))))
 
 ;;; do nothing 
 (defmethod player-start ((engine (eql :om-audio)) &optional play-list)
