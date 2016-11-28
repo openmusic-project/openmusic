@@ -138,7 +138,10 @@
   #+win32(make-pathname :directory (pathname-directory (LISP-IMAGE-NAME))
                  :host (pathname-host (LISP-IMAGE-NAME)) :device (pathname-device (LISP-IMAGE-NAME)))
 
-  #+macosx(make-pathname :directory (append (pathname-directory *om-root*) '("resources" "lib" "mac"))
+  #+macosx(make-pathname :directory (append (pathname-directory *om-root*) 
+                                            #+om-deliver(list (concatenate 'string "OM " *version-str* ".app") "Contents" "Frameworks")
+                                            #-om-deliver(list "resources" "lib" "mac")
+                                            )
                  :host (pathname-host *om-root*) :device (pathname-device *om-root*))
   #+linux(make-pathname :directory (append (pathname-directory *om-root*) '("resources" "lib" "linux"))
                  :host (pathname-host *om-root*) :device (pathname-device *om-root*))

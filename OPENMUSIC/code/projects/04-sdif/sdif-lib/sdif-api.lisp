@@ -41,7 +41,7 @@
   #+win32
   "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) 
-  "/Library/Frameworks/SDIF.framework/SDIF"
+  "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF"
   #+linux "libsdif.so"
   )
 

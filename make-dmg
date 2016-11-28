@@ -1,0 +1,404 @@
+#!/bin/bash
+
+####################################################################
+# @brief    Script for code-signing OM
+# 			Must be executed on m2375
+# @author   Thibaut Carpentier
+
+rm -rf panoramixdmgcontent
+rm -f ./panoramix-$PANORAMIX_VERSION.dmg
+mkdir panoramixdmgcontent
+cp -R $APP_PATH panoramixdmgcontent    
+hdiutil create -fs HFS+ -volname "Ircam Panoramix" -srcfolder ./panoramixdmgcontent ./panoramix-$PANORAMIX_VERSION.dmg
+rm -Rf panoramixdmgcontent
+
+# FANCY VERSION
+
+SPAT_VERSION="4.9.2"
+
+HRTF2TEXT_DIR=~/forge/spat/libspat/lib
+SHELL_TOOLS_DIR=~/forge/spat/libircamdsp/lib
+BUILD_DIR=~/forge/spat/Spat4MaxMSP
+
+####################################################################
+
+####################################################################
+create_subfolders_tree()
+{
+    # this function creates all the requires subfolders
+    # $1 : the base folder
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/externals/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/patchers/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/help/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/examples/tutorials/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/examples/tutorials/spat.jit
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/examples/tutorials/spat.jit/abstractions
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/examples/tutorials/spat.jit/help
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/docs/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/docs/ref/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/docs/ref/refpages
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/docs/ref/refpages/spat-ref
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/extras/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/javascript/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/    
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/binaural
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/binaural/biquads
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/binaural/fir
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transaural
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transaural/biquads
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transaural/fir
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/nearfieldfilters
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/nearfieldfilters/biquads
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/nearfieldfilters/fir
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transpan
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transpan/binaural
+    #mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transpan/trans_bandlimit_ratio_1_1
+    #mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transpan/trans_bandlimit_ratio_3_1
+    #mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/hrtf/transpan/trans_bandlimit_ratio_10_1
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/presets/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/img/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/misc/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/tools/
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/soundfiles
+    mkdir -p -m ug=rwx,o=rx "$1"/ircam-spat/media/ir
+    
+    # Create a symbolic link to Max Packages folder
+    #ln -s /Applications/Max\ 6.1/packages/ "$1"/Max6Link
+    #ln -s ~/Documents/Max\ 7/packages/ "$1"/Max7Link
+    
+    # Set Icon for spat folder
+    #./set_icon.sh logo-ircam-transparent.icns "$1"/ircam-spat
+    ./set_icon.sh ./images/spat8.icns "$1"/ircam-spat
+    
+    # Set Icon for Max
+    #./set_icon.sh ./images/Max6.icns "$1"/Max6Link
+    #./set_icon.sh ./images/Max7.icns "$1"/Max7Link
+
+    #mkdir -p -m ug=rwx,o=rx "$1"/.background
+    #ditto --rsrc $BUILD_DIR/distrib/macosx/background.png "$1"/.background/
+
+    # rename the symbolic link to Max Packages folder
+    #mv "$1"/Max6Link "$1"/"Max 6.1 Packages"
+    #mv "$1"/Max7Link "$1"/"Max 7 Packages"
+    cp ./"Max 6.1 Packages" "$1"/"Max 6.1 Packages"
+    cp ./"Max 7 Packages" "$1"/"Max 7 Packages"
+}
+
+####################################################################
+change_permission()
+{
+    # this function change the permission for a given folder
+    # $1 : the folder
+    sudo chown -R root "$1"
+    sudo chgrp -R admin "$1"
+    sudo chmod -R o+rx "$1"
+    sudo chmod -R ug+rwx "$1"
+}
+
+####################################################################
+copy_spat_data()
+{
+    # this function copies all the spat data into the appropriate folder
+    # $1 : the containing folder
+    
+    # extras
+    ditto --rsrc $BUILD_DIR/extras/*.maxpat        	  		"$1"/ircam-spat/extras/    
+    
+    # package info
+    ditto --rsrc $BUILD_DIR/distrib/maxpackage/package-info.json 	"$1"/ircam-spat/   
+    ditto --rsrc $BUILD_DIR/distrib/maxpackage/Icon.png 			"$1"/ircam-spat/   
+    ditto --rsrc $BUILD_DIR/distrib/maxpackage/license.md	 		"$1"/ircam-spat/   
+    ditto --rsrc $BUILD_DIR/distrib/maxpackage/README.md	 		"$1"/ircam-spat/   
+    
+    # externals
+    cp -Rf $BUILD_DIR/externals/*.mxo                       "$1"/ircam-spat/externals/
+    
+    # patchers
+    ditto --rsrc $BUILD_DIR/patchers/*.maxpat        	   "$1"/ircam-spat/patchers/
+    
+    # javascript
+    ditto --rsrc $BUILD_DIR/javascript/*.js           		"$1"/ircam-spat/javascript/
+    
+    # help 
+    ditto --rsrc $BUILD_DIR/help/*.maxhelp                  "$1"/ircam-spat/help/
+    ditto --rsrc $BUILD_DIR/help/*.maxpat                  	"$1"/ircam-spat/help/
+    
+    # tutorials
+    ditto --rsrc $BUILD_DIR/examples/tutorials/*.maxpat             				"$1"/ircam-spat/examples/tutorials/
+    ditto --rsrc $BUILD_DIR/examples/tutorials/spat.jit/abstractions/*.maxpat       "$1"/ircam-spat/examples/tutorials/spat.jit/abstractions/
+    ditto --rsrc $BUILD_DIR/examples/tutorials/spat.jit/help/*.maxhelp              "$1"/ircam-spat/examples/tutorials/spat.jit/help/
+    
+    # documentation
+    #ditto --rsrc $BUILD_DIR/docs/spat.changelog.txt          "$1"/ircam-spat/docs/
+    ditto --rsrc $BUILD_DIR/docs/spat.cpu.benchmark.pdf      "$1"/ircam-spat/docs/
+    ditto --rsrc $BUILD_DIR/docs/spat.cpu.benchmark-*.pdf    "$1"/ircam-spat/docs/
+    #ditto --rsrc $BUILD_DIR/docs/spat.cpu.txt                "$1"/ircam-spat/docs/
+    # ditto --rsrc $BUILD_DIR/docs/spat.licence.txt            "$1"/ircam-spat/docs/
+    ditto --rsrc $BUILD_DIR/docs/Spat4-ReleaseNotes.pdf      "$1"/ircam-spat/docs/
+    ditto --rsrc $BUILD_DIR/docs/Spat4-UserManual.pdf        "$1"/ircam-spat/docs/
+    
+    # references
+    ditto --rsrc $BUILD_DIR/docs/ref/*.xml                       "$1"/ircam-spat/docs/ref/
+    ditto --rsrc $BUILD_DIR/docs/ref/*.xsl                       "$1"/ircam-spat/docs/ref/
+    ditto --rsrc $BUILD_DIR/docs/ref/*.css                       "$1"/ircam-spat/docs/ref/
+    ditto --rsrc $BUILD_DIR/docs/ref/*.html                      "$1"/ircam-spat/docs/ref/
+    ditto --rsrc $BUILD_DIR/docs/ref/refpages/*.xml              "$1"/ircam-spat/docs/ref/refpages
+    ditto --rsrc $BUILD_DIR/docs/ref/refpages/*.xsl              "$1"/ircam-spat/docs/ref/refpages
+    ditto --rsrc $BUILD_DIR/docs/ref/refpages/spat-ref/*.xml     "$1"/ircam-spat/docs/ref/refpages/spat-ref
+    ditto --rsrc $BUILD_DIR/docs/ref/refpages/spat-ref/*.xsl     "$1"/ircam-spat/docs/ref/refpages/spat-ref
+    
+    
+    # media
+    #ditto --rsrc $BUILD_DIR/media/hrtf/binaural/fir/*.hrtf          "$1"/ircam-spat/media/hrtf/binaural/fir
+    ditto --rsrc $BUILD_DIR/media/hrtf/binaural/fir/*.sofa          "$1"/ircam-spat/media/hrtf/binaural/fir
+    #ditto --rsrc $BUILD_DIR/media/hrtf/binaural/biquads/*.hrtf      "$1"/ircam-spat/media/hrtf/binaural/biquads
+    ditto --rsrc $BUILD_DIR/media/hrtf/binaural/biquads/*.sofa      "$1"/ircam-spat/media/hrtf/binaural/biquads
+    #ditto --rsrc $BUILD_DIR/media/hrtf/binaural/biquads/*.coll      "$1"/ircam-spat/media/hrtf/binaural/biquads
+    ditto --rsrc $BUILD_DIR/media/hrtf/transaural/fir/*.b2t         "$1"/ircam-spat/media/hrtf/transaural/fir
+    ditto --rsrc $BUILD_DIR/media/hrtf/transaural/fir/*.sofa         "$1"/ircam-spat/media/hrtf/transaural/fir
+    ditto --rsrc $BUILD_DIR/media/hrtf/transaural/biquads/*.b2t     "$1"/ircam-spat/media/hrtf/transaural/biquads
+    ditto --rsrc $BUILD_DIR/media/hrtf/transaural/biquads/*.sofa     "$1"/ircam-spat/media/hrtf/transaural/biquads
+    ditto --rsrc $BUILD_DIR/media/hrtf/transaural/biquads/*.coll    "$1"/ircam-spat/media/hrtf/transaural/biquads
+    ditto --rsrc $BUILD_DIR/media/hrtf/nearfieldfilters/fir/*.near  "$1"/ircam-spat/media/hrtf/nearfieldfilters/fir
+    ditto --rsrc $BUILD_DIR/media/hrtf/nearfieldfilters/fir/*.sofa  "$1"/ircam-spat/media/hrtf/nearfieldfilters/fir
+    ditto --rsrc $BUILD_DIR/media/hrtf/nearfieldfilters/biquads/*.near       "$1"/ircam-spat/media/hrtf/nearfieldfilters/biquads
+    #ditto --rsrc $BUILD_DIR/media/hrtf/transpan/binaural/*.hrtf     "$1"/ircam-spat/media/hrtf/transpan/binaural
+    ditto --rsrc $BUILD_DIR/media/hrtf/transpan/binaural/*.sofa     "$1"/ircam-spat/media/hrtf/transpan/binaural
+    ditto --rsrc $BUILD_DIR/media/presets/*.xml                     "$1"/ircam-spat/media/presets/
+    ditto --rsrc $BUILD_DIR/media/presets/*.json                     "$1"/ircam-spat/media/presets/
+    ditto --rsrc $BUILD_DIR/media/img/*.*                           "$1"/ircam-spat/media/img/
+    ditto --rsrc $BUILD_DIR/media/misc/*.*                          "$1"/ircam-spat/media/misc/
+    ditto --rsrc $BUILD_DIR/media/tools/*.*                          "$1"/ircam-spat/media/tools/
+    
+    # sound files
+    ditto --rsrc $BUILD_DIR/media/soundfiles/*.wav                   "$1"/ircam-spat/media/soundfiles/
+    ditto --rsrc $BUILD_DIR/media/soundfiles/*.aiff                  "$1"/ircam-spat/media/soundfiles/
+    ditto --rsrc $BUILD_DIR/media/soundfiles/*.aif                   "$1"/ircam-spat/media/soundfiles/
+    
+	# IR
+    ditto --rsrc $BUILD_DIR/media/ir/*.wav                   "$1"/ircam-spat/media/ir/
+    ditto --rsrc $BUILD_DIR/media/ir/*.aiff                  "$1"/ircam-spat/media/ir/
+    ditto --rsrc $BUILD_DIR/media/ir/*.aif                   "$1"/ircam-spat/media/ir/
+
+    # hrtf2text
+    ditto -rsrc $HRTF2TEXT_DIR/hrtf2text                   				 "$1"/ircam-spat/media/tools/
+    ditto -rsrc $HRTF2TEXT_DIR/hrtfstability                   			 "$1"/ircam-spat/media/tools/
+
+	# other shell tools
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileloudness                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileebur128                    	"$1"/ircam-spat/media/tools/	
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileextract                    	"$1"/ircam-spat/media/tools/
+    ditto -rsrc $SHELL_TOOLS_DIR/audiofileconcat                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilecut       	             	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileinfo  	                  	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileresample                   	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilesplit           	        	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilecompare                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileconvert                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilezeropad                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofileanalyze                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilefiltering                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/audiofilenormalize                    	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/eigenmike2hoa 		                   	"$1"/ircam-spat/media/tools/
+	ditto -rsrc $SHELL_TOOLS_DIR/spat.hoa.sorting 	                  	"$1"/ircam-spat/media/tools/	
+	ditto -rsrc $SHELL_TOOLS_DIR/spat.hoa.converter 	               	"$1"/ircam-spat/media/tools/	
+}
+
+####################################################################
+# this one is the old version.
+# it still works perfectly fine
+create_dmg_without_installer()
+{
+    rm -rf dmgcontent
+    rm -f ./Spat-$SPAT_VERSION-noinstaller.dmg
+    mkdir dmgcontent
+    mv Package/** dmgcontent    
+    sudo hdiutil create -fs HFS+ -volname "Ircam Spat" -srcfolder ./dmgcontent ./Spat-$SPAT_VERSION.dmg
+    rm -rf dmgcontent
+    rm -rf Package
+}
+
+####################################################################
+create_fancy_dmg()
+{
+    # remove the 'dmgcontent' folder if it exists
+    if [ -d "dmgcontent" ]; then
+        rm -rf dmgcontent
+    fi
+    
+    mkdir dmgcontent
+
+    # copy the content of the Package to the 'dmgcontent' folder
+    mv Package/** dmgcontent  
+
+    # a temporary dmg that will be tweak
+    DMG_TMP=./SpatTemp.dmg
+
+    # the filename of the final dmg
+    DMG_FINAL=./Spat-${SPAT_VERSION}.dmg
+
+    # the volume name of the dmg (both temporary and final)
+    VOLUME_NAME="Ircam Spat"
+
+    # remove the dmg if it already exists
+    if [ -f "$DMG_TMP" ]; then
+        rm -f "$DMG_TMP"
+    fi
+
+    # remove the dmg if it already exists
+    if [ -f "$DMG_FINAL" ]; then
+        rm -f "$DMG_FINAL"
+    fi
+
+    # create the temp DMG file
+    sudo hdiutil create -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -volname "${VOLUME_NAME}" -srcfolder ./dmgcontent "${DMG_TMP}"
+
+    echo "Created DMG: ${DMG_TMP}"
+
+    # mount it and save the device
+    DEVICE=$(sudo hdiutil attach -readwrite -noverify "${DMG_TMP}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+  
+    sleep 2
+
+    # copy the background image into the dmg
+    backgroundImage=$BUILD_DIR/distrib/macosx/images/newbackground6.png
+    mkdir "/Volumes/${VOLUME_NAME}/.background"
+    cp $backgroundImage "/Volumes/$VOLUME_NAME/.background/"
+
+
+
+    # dmg window dimensions
+    #dmg_width=512
+    #dmg_height=320
+    dmg_width=592
+    #dmg_height=419
+    dmg_height=458
+    dmg_topleft_x=308
+    dmg_topleft_y=308
+    dmg_bottomright_x=`expr $dmg_topleft_x + $dmg_width`
+    dmg_bottomright_y=`expr $dmg_topleft_y + $dmg_height`
+
+    # tell the Finder to resize the window, set the background,
+    # change the icon size, place the icons in the right position, etc.
+    echo '
+       tell application "Finder"
+         tell disk "'${VOLUME_NAME}'"
+                open
+
+                set current view of container window to icon view
+                set toolbar visible of container window to false
+                set statusbar visible of container window to false
+                set the bounds of container window to {'${dmg_topleft_x}', '${dmg_topleft_y}', '${dmg_bottomright_x}', '${dmg_bottomright_y}'}
+                set viewOptions to the icon view options of container window
+                set arrangement of viewOptions to not arranged
+                --set arrangement of viewOptions to snap to grid
+                set icon size of viewOptions to 104                
+                set background picture of viewOptions to file ".background:newbackground6.png"
+                --set position of item "ircam-spat" of container window to {100, 95}
+                set position of item "ircam-spat" of container window to {100, 230}
+                --set position of item "Max 6.1 Packages" of container window to {300, 65}
+                --set position of item "Max 6.1 Packages" of container window to {400, 180}
+            	set position of item "Max 6.1 Packages" of container window to {450, 150}
+                set position of item "Max 7 Packages" of container window to {450, 310}
+               close
+               open
+               update without registering applications
+               delay 8
+               set statusbar visible of container window to true
+         end tell
+       end tell
+    ' | osascript
+ 
+    sync
+
+    # unmount it
+    sudo hdiutil detach "${DEVICE}"
+
+    # now make the final image a compressed disk image
+    echo "Creating compressed image"
+    sudo hdiutil convert "${DMG_TMP}" -format UDZO -imagekey zlib-level=9 -o "${DMG_FINAL}"
+
+    # remove the temporary dmg
+    rm -rf "${DMG_TMP}"
+    
+    rm -rf dmgcontent
+    rm -rf Package
+}
+
+####################################################################
+# The main script starts here
+####################################################################
+cd $BUILD_DIR/distrib/macosx
+
+echo "*********************************************************"
+echo "Preparing distribution for Spat $SPAT_VERSION for Max/MSP"
+echo "*********************************************************"
+
+if [ -d "Package" ]; then
+    echo "Deleting folders..."
+    rm -rf Package/
+fi
+
+echo "Prepare folders..."
+
+mkdir -p -m ug=rwx,o=rx Package/
+create_subfolders_tree "Package"
+
+echo "Copying data..."
+copy_spat_data "Package"
+
+# startup
+echo "Changing permissions..."
+change_permission "Package/"
+
+echo "Creating dmg ..."
+create_fancy_dmg
+
+exit 0
+
+
+###### set_icon.sh #####
+
+# Sets an icon on file or directory
+# Usage set_icon.sh iconimage.jpg /path/to/[file|folder]
+iconSource=$1
+iconDestination=$2
+icon=/tmp/`basename $iconSource`
+rsrc=/tmp/icon.rsrc
+
+# Create icon from the iconSource
+cp $iconSource $icon
+
+# Add icon to image file, meaning use itself as the icon
+sips -i $icon
+
+# Take that icon and put it into a rsrc file
+DeRez -only icns $icon > $rsrc
+
+# Apply the rsrc file to
+SetFile -a C $iconDestination
+
+if [ -f $iconDestination ]; then
+    # Destination is a file
+    Rez -append $rsrc -o $iconDestination
+elif [ -d $iconDestination ]; then
+    # Destination is a directory
+    # Create the magical Icon\r file
+    touch $iconDestination/$'Icon\r'
+    Rez -append $rsrc -o $iconDestination/Icon?
+    SetFile -a V $iconDestination/Icon?
+else
+    # Destination is a file
+    Rez -append $rsrc -o $iconDestination
+fi
+
+# Sometimes Finder needs to be reactivated
+#osascript -e 'tell application "Finder" to quit'
+#osascript -e 'delay 2'
+#osascript -e 'tell application "Finder" to activate'
+
+rm $rsrc $icon
+
+
+

@@ -14,7 +14,7 @@
 
 (defparameter *version* 6.110000)
 
-(defparameter *beta-release* nil)
+(defparameter *beta-release* t)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
