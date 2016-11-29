@@ -268,6 +268,20 @@
 ; (version-to-hex 6.020005)
 ; #x0006000200000005
 
+#+macosx
+(let ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
+      (app-libs-folder (make-pathname 
+                        :directory (append 
+                                    (butlast (pathname-directory (current-pathname)) 2) 
+                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Frameworks")))))
+  (print (format nil 
+                 "===================~%MOVING LIBRARIES~%FROM: ~A~%TO: ~A~%===================" 
+                 libs-folder app-libs-folder))
+  (unless (string-equal (namestring libs-folder) (namestring app-libs-folder))
+    (om::copy-folder libs-folder app-libs-folder) 
+    ))
+
+
 (deliver 'init-om
          *app-name*
          0
@@ -291,11 +305,8 @@
          #+win32 :icon-file #+win32 "./win/OpenMusic.ico")
 
 
-#+macosx
-(let ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
-      (app-libs-folder (om::om-lib-directory)))
-  (unless (string-equal (namestring libs-folder) (namestring app-libs-folder))
-    (om::copy-folder libs-folder app-libs-folder)))
+
+
   
 ;(loop for lib in (directory libs-folder :directories t)
 ;        do (print (format nil "COPY: ~A => ~A" (namestring lib) (namestring app-libs-folder)))

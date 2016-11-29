@@ -10,12 +10,15 @@ OM_VERSION="6.11"
 # location of the standalone
 APP_NAME="OM 6.11_beta_0"
 
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/libportmidi.dylib" 
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/libsamplerate.dylib"
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/libsndfile.dylib"
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/OMJuceAudioLib.dylib"
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/SDIF.framework/Versions/3.11/SDIF"
-codesign -s WP9W99LHHP "$APP_NAME/resources/lib/mac/SDIF.framework/"
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/libportmidi.dylib" 
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/libsamplerate.dylib"
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/libsndfile.dylib"
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/OMJuceAudioLib.dylib"
+
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/SDIF.framework/Versions/3.11/SDIF"
+rm -r "$APP_NAME/$APP_NAME.app/Contents/Frameworks/SDIF.framework/Versions/Current/"
+codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app/Contents/Frameworks/SDIF.framework/"
+
 codesign -s WP9W99LHHP "$APP_NAME/$APP_NAME.app"
 
 # check code signing
@@ -23,3 +26,6 @@ codesign --verify --deep --strict --verbose=2 "$APP_NAME/$APP_NAME.app"
 
 # check Gatekeeper
 spctl -a -t exec -vv "$APP_NAME/$APP_NAME.app"
+
+
+"OM 6.11_beta_0/OM 6.11_beta_0.app/Contents/Frameworks/SDIF.framework/Versions/3.11/SDIF"
