@@ -12,9 +12,9 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.110000)
+(defparameter *version* 6.110001)
 
-(defparameter *beta-release* t)
+(defparameter *beta-release* nil)
 (defparameter *version-str* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
