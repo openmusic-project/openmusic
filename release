@@ -1,0 +1,21 @@
+#!/bin/bash
+
+####################################################################
+# @brief    Script for releasing OM
+# 			Must be executed on m2375
+# @author   Jean Bresson
+
+# 32bits:
+# LWARCH=32-bit
+# LWEXEC=lispworks-7-0-0-x86-darwin
+
+LWARCH=64-bit
+LWEXEC=lispworks-7-0-0-amd64-darwin
+
+rm -rf OPENMUSIC/*.app/
+
+cd ./OPENMUSIC/buildimage/build-om/
+
+/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build deliver.lisp
+/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-intel.lisp
+

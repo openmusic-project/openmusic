@@ -1,6 +1,0 @@
-
-cd ./OPENMUSIC/buildimage/build-om/
-
-/Applications/LispWorks\ 7.0\ \(32-bit\)/LispWorks\ \(32-bit\).app/Contents/MacOS/lispworks-7-0-0-x86-darwin -build deliver.lisp
-
-/Applications/LispWorks\ 7.0\ \(32-bit\)/LispWorks\ \(32-bit\).app/Contents/MacOS/lispworks-7-0-0-x86-darwin -build pack-intel.lisp
