@@ -53,7 +53,7 @@
 
 
 (defmethod om-cleanup ((self internalsound))
-  (print (list "sound cleanup" self (player-data self)))
+  ;(print (list "sound cleanup" self (player-data self)))
   (when (player-data self) (juce::freereader (player-data self)))
   (when (pict-sound self) (om-kill-picture (pict-sound self))))
 
