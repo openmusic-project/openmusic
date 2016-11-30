@@ -208,7 +208,7 @@
                                                           ("Method" ("ome") "./mac/meth.icns")
                                                           ("Workspace" ("omws") "./mac/om.icns"))
                                         :application-icns "./mac/om.icns"
-                                        :identifier "ircam.openmusic"
+                                        :identifier "fr.ircam.repmus.openmusic"
                                         :version (version-to-string *version* t nil)
                                         )))
 
@@ -239,7 +239,6 @@
   
   (oa::om-init-funcall)
   
-  ; doesn't work anymore on LW7...?
   (setf dspec::*active-finders* (append dspec::*active-finders*
                                         (list (make-pathname
                                                :directory (pathname-directory (om::omroot "resources;"))
@@ -268,9 +267,24 @@
 ; (version-to-hex 6.020005)
 ; #x0006000200000005
 
+#+macosx
+(let ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
+      (app-libs-folder (make-pathname 
+                        :directory (append 
+                                    (butlast (pathname-directory (current-pathname)) 2) 
+                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Frameworks")))))
+  (print (format nil 
+                 "===================~%MOVING LIBRARIES~%FROM: ~A~%TO: ~A~%===================" 
+                 libs-folder app-libs-folder))
+  (unless (string-equal (namestring libs-folder) (namestring app-libs-folder))
+    (om::copy-folder libs-folder app-libs-folder) 
+    ))
+
+
 (deliver 'init-om
          *app-name*
          0
+         :split :resources
          :interface :capi
 	 :keep-editor t
 	 :keep-debug-mode t
@@ -288,6 +302,14 @@
          :quit-when-no-windows #+win32 t #-win32 nil
          #+(or cocoa win32) :packages-to-keep #+cocoa '(:objc)  #+win32 '(:comm)
          #+win32 :icon-file #+win32 "./win/OpenMusic.ico")
+
+
+
+
+  
+;(loop for lib in (directory libs-folder :directories t)
+;        do (print (format nil "COPY: ~A => ~A" (namestring lib) (namestring app-libs-folder)))
+        
 
 
 ;  :editor-commands-to-keep :all-groups

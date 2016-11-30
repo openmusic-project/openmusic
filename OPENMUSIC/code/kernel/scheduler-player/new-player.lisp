@@ -259,10 +259,15 @@
   ;(print (format nil "~A : set loop" engine))
   t)
 
-;;; an engine must choose a strategy to reschedule it's contents on loops
+
+;;; an engine can choose its own strategy to reschedule it's contents on loops
 (defmethod player-loop ((engine t) player &optional play-list)
-  ;(print (format nil "~A : loop" engine))
-  t)
+ (declare (ignore player)) 
+ ;(print (format nil "~A : loop" engine))
+ (loop for obj in play-list do
+       (prepare-to-play self player obj 0 (play-interval player) nil)))
+
+
 
 #|
 (defmethod player-record ((engine t))

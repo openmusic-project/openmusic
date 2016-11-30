@@ -43,6 +43,7 @@
 (defun soundms2pix (time-ms pict-size sound-dur)
   (round (* time-ms pict-size) sound-dur))
 
+#+audio
 (defmethod draw-track-event ((self sound) sheet-object view sheetpanel)
     (let* ((bpftime (timebpf sheetpanel))
            (dur (sound-dur-ms self))

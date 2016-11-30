@@ -16,26 +16,19 @@
 (defun load-external-libs (&optional libs)
   
   (loop for lib in libs do
-        (unless (member lib (list :midi :midishare :portmidi :audio :opengl :sdif :osc :xml :jack :fluidsynth))
+        (unless (member lib (list :midi :midishare :portmidi :opengl :sdif :osc :xml :jack :fluidsynth))
           (print (format nil "Library ~s can not be loaded" lib))))
   
   ;;; MINIMAL MIDI API IS ALWAYS LOADED
   (load (make-pathname :directory (append *externals-directory* '("MIDI")) :name "midi-api"))
   (when (member :midi libs)
     (load (make-pathname :directory (append *externals-directory* '("MIDI" "CL-MIDI")) :name "load-clmidi")))
-  (when (member :midishare libs)
-    (load (make-pathname :directory (append *externals-directory* '("MIDI" "MidiShare")) :name "load-midishare")))
-  (when (member :portmidi libs)
+  
+(when (member :portmidi libs)
     (load (make-pathname :directory (append *externals-directory* '("MIDI" "PortMidi")) :name "load-portmidi")))
-
-  (when (member :audio libs)
-    (load (make-pathname :directory (append *externals-directory* '("Audio")) :name "load-audio")))
   
   (when (member :opengl libs)
     (load (make-pathname :directory (append *externals-directory* '("OpenGL")) :name "load-opengl")))
-  
-  (when (member :sdif libs)
-    (load (make-pathname :directory (append *externals-directory* '("SDIF")) :name "load-sdif")))
   
   (when (find :udp libs)
     (load (make-pathname :directory (append *externals-directory* '("lispworks-udp")) :name "lispworks-udp.asd"))

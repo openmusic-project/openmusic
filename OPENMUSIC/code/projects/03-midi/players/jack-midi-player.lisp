@@ -40,7 +40,7 @@
 (om-add-init-func 'init-jack-midi-player)
 
 #+linux (mapc #'(lambda (pl) (disable-player pl))
-	      '(:microplayer :libaudiostream :multiplayer :midishare))
+	      '(:microplayer :multiplayer))
 
 
 

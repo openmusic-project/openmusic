@@ -29,7 +29,7 @@ MIDIControl can be 'played' as a musical object (for instance in a maquette) on 
 "
    ))
 
-(add-player-for-object 'midicontrol '(:midi-player :midishare))
+(add-player-for-object 'midicontrol '(:midi-player))
 
 (defmethod default-point-list ((self MidiControl)) nil)
 (defmethod get-initval ((self MidiControl))

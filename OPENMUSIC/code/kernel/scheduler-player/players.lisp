@@ -8,7 +8,8 @@
 (defvar *enabled-players* nil)  
 
 (defun enable-player (player)
-  (pushnew player *enabled-players*))
+  (unless (find player *enabled-players*)
+    (pushr player *enabled-players*)))
 
 (defun disable-player (player)
   (when (find player *enabled-players*)
@@ -57,6 +58,11 @@
 (defmethod player-special-action ((player t)) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player t)) nil)   ;;; the default values for the player params
 (defmethod player-type ((player t)) nil)   ;;; communication protocol (:midi / :udp)
+
+;;; CALLED AT STARTUP
+(defmethod player-open ((player t)) t)  
+;;; CALLED AT EXIT
+(defmethod player-close ((player t)) t)  
 
 ;;; CALLED WHEN SELECTED
 (defmethod player-init ((self t)) nil)

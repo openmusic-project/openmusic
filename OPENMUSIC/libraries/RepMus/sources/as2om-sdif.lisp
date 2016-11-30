@@ -118,14 +118,14 @@
    :doc "audiosculpt partials to sdifedit partials."
    (let* ((new-path (om-CHOOSE-new-FILE-DIALOG)))
      (when new-path
-         (let ((sfile (sdif-open-file (om-path2cmdpath new-path) :eWriteFile)))
+         (let ((sfile (sdif::sdif-open-file (namestring new-path) :eWriteFile)))
            (write-partial-headers sfile)
            (setf analyse (first analyse))
            (unless (string= (symbol-name (pop analyse)) "PARTIALS")
               (error "This is not a spectral analysis"))
            (loop for cur-point in (cdr analyse) do
                    (write-the-frame sfile cur-point))
-           (sdif-close-file sfile)))
+           (sdif::sdif-close-file sfile)))
            new-path))
 
 
@@ -134,14 +134,14 @@
   :doc "audiosculpt partials to sdifedit partials."
    (let ((new-path (om-CHOOSE-new-FILE-DIALOG)))
      (when new-path
-         (let ((sfile (sdif-open-file (om-path2cmdpath new-path) :eWriteFile))
+         (let ((sfile (sdif::sdif-open-file (namestring new-path) :eWriteFile))
                         (analyse (get-chordseq-data sdiffile)))
            (write-partial-headers sfile)
            (loop for cur-point in analyse do
                    (write-the-frame sfile (list 'points 2 
                                                            (second cur-point) (first cur-point) (fourth cur-point)
                                                            (third cur-point) (first cur-point) (fourth cur-point))))
-           (sdif-close-file sfile)))
+           (sdif::sdif-close-file sfile)))
      new-path))
 
 (defmethod! as-cs2sdifedit ((sdiffile sdifstream))
@@ -149,14 +149,14 @@
   :doc "audiosculpt partials to sdifedit partials."
    (let ((new-path (om-CHOOSE-new-FILE-DIALOG)))
      (when new-path
-         (let ((sfile (sdif-open-file (om-path2cmdpath new-path) :eWriteFile))
+         (let ((sfile (sdif::sdif-open-file (namestring new-path) :eWriteFile))
                         (analyse (get-chordseq-data sdiffile)))
            (write-partial-headers sfile)
            (loop for cur-point in analyse do
                    (write-the-frame sfile (list 'points 2 
                                                            (second cur-point) (first cur-point) (fourth cur-point)
                                                            (third cur-point) (first cur-point) (fourth cur-point))))
-           (sdif-close-file sfile)))
+           (sdif::sdif-close-file sfile)))
      new-path))
 
 
@@ -181,7 +181,7 @@
 ;;;  :icon 639
 ;;;  :doc "audiosculpt partials to sdif."
 ;;;  (let* ((new-path (om-CHOOSE-new-FILE-DIALOG))
-;;;        (sfile (sdif-open-file (om-path2cmdpath new-path) :eWriteFile)) str sstr)
+;;;        (sfile (sdif::sdif-open-file (namestring new-path) :eWriteFile)) str sstr)
 ;;;    (sdif::SdifFWriteGeneralHeader sfile)
 ;;;    (write-1nvt-table sfile
 ;;;                       (list "Author" )

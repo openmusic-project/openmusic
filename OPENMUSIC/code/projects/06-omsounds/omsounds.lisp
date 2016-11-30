@@ -23,42 +23,54 @@
 (in-package :om)
 
 
+;;;========================================================
+;;; FILE ACCESS (libsndfile / libsamplerate)
+;;;========================================================
+
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile-api"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api")) :name "file-access"))
+
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate"))
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate-api"))
+
+(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "omjuceaudiolib")) :name "omjuceaudiolib"))
+
+(push :audio *features*)
+
+
 ;======================
-; BASICS
+; LOAD
 ;======================
-
-(defvar *snd-files* nil)
-
-(setf *snd-files* 
-  '(
-    "basic;sound"   
-    "basic;soundeditor"
-    "basic;audio-mix-console"
-    "basic;general-mixer"
-    "basic;automations"
-    ;;#+libaudiostream "basic;sound-preferences"
-    "basic;sound-preferences"
-    #+libsndfile "basic;om-sound-processing"
-    
-    #+(and libaudiostream (not linux)) "LAS;las-player"
-
-    "tools;sound-tools"
-    "tools;control-tools"
-    "tools;param-process"
-    "tools;utils-from-chroma"
-
-    "synth;synthesis-event"
-    "synth;synthesize"
-
-    #-linux "multi;multiplayer"
-    #+cl-jack "JACK;jack-audio-player"
-    #+linux "mplayer;mplayer"
- ))
 
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
-        *snd-files*))
+        '(
+          "general;sound"   
+          "general;soundeditor"
+          ;"general;audio-mix-console"
+          ;"general;general-mixer"
+          "general;automations"
+          "general;sound-preferences"
+          
+          "players;juce-player"
+          #-linux "players;multiplayer"
+          #+cl-jack "players;jack-audio-player"
+          #+linux "players;mplayer"
+          
+          "tools;sound-processing"
+          "tools;sound-tools"
+          "tools;control-tools"
+          "tools;param-process"
+          "tools;utils-from-chroma"
+
+          "synth;synthesis-event"
+          "synth;synthesize"
+    
+          )))
+
+
 
 ;;;================= AUDIO PACKAGES ================
 (defvar *audiopackage* (omNG-protect-object (omNG-make-new-package "Audio")))
@@ -76,7 +88,7 @@
 (defvar *synthpackage* (omNG-protect-object (omNG-make-new-package "Sound Synthesis")))
 (addPackage2Pack *synthpackage* *audiopackage*)
 
-(AddClass2Pack '(sound audio-mix-console) *audiopackage*)
+(AddClass2Pack '(sound) *audiopackage*)
 (AddGenFun2Pack '(adsr param-process vibrato jitter) *soundtoolspackage*)
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
@@ -100,27 +112,6 @@
 
 
 
-;======================
-;SDIF
-;======================
-(defvar *sdif-lib-files* nil)
-
-(setf *sdif-lib-files* '("sdif;sdif-struct"
-			 "sdif;sdiffile"
-                         "sdif;sdifeditor"
-			 "sdif;sdif-write"
-			 "sdif;matrix"
-			 "sdif;analyse-tools"
-                         "sdif;cseq2sdif"
-                         "sdif;sdifpack"
-                         ))
-
-
-(eval-when (eval compile load)
-  (mapc #'(lambda (filename) 
-            (compile&load (namestring (make-local-path *load-pathname* filename)))) 
-        *sdif-lib-files*))
-     
 
 
 

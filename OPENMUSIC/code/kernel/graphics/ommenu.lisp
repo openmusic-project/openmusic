@@ -81,7 +81,7 @@
 (defun show-midi-mixer-win () nil)
 
 ;;; redefined in the audio project if loaded
-(defun show-audio-mixer-win () nil)
+;;; (defun show-audio-mixer-win () nil)
 
 (defun show-listener-win () 
   (om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*))
@@ -136,7 +136,7 @@
                                     ;                 (if (and (not (member "General Palette" disable :test 'string-equal)) editor 
                                     ;                          (editor-has-palette-p editor)) t nil))
                                       (om-new-leafmenu "MIDI Mixer" 'show-midi-mixer-win)
-                                      (om-new-leafmenu "Audio Mixer" 'show-audio-mixer-win)
+                                      ;(om-new-leafmenu "Audio Mixer" 'show-audio-mixer-win)
                                       (when (score-tools-palettes-p editor)
                                         (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
                                                          (if (member "Score Inspector" disable :test 'string-equal) nil

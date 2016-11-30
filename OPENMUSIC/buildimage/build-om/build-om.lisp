@@ -12,7 +12,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.110000)
+(defparameter *version* 6.110001)
 
 (defparameter *beta-release* nil)
 (defparameter *version-str* "")
@@ -213,12 +213,8 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "externals"))
                      :name "externals" :type "lisp"))
 
-
-;; (oa::load-external-libs '(:midi #-linux :midishare :audio :xml :sdif :udp :osc :opengl :json :yason #+linux :jack #+linux :fluidsynth))
-;; #-linux (oa::load-external-libs '(:portmidi))
-(oa::load-external-libs '(:midi :portmidi :audio :xml :sdif :udp :osc :opengl :json :yason :svg))
+(oa::load-external-libs '(:midi :portmidi :xml :udp :osc :opengl :json :yason :svg))
 #+linux (oa::load-external-libs '(:jack))
-;; (oa::load-external-libs '(:fluidsynth))
 
 
 
@@ -249,6 +245,7 @@
   
 (load-om-projects '("01-basicproject" "02-musicproject"))
 (load-om-projects '("03-midi"))
+(load-om-projects '("04-sdif"))
 (load-om-projects '("05-mathtools"))
 (load-om-projects '("06-omsounds"))
 (load-om-projects '("07-omspace"))
@@ -317,8 +314,6 @@
 
 ;;; MAC :
 ;;; INSTALL OM FONTS IN /Library/Fonts/
-;;; Run MidiShare installer
-;;; LIBS in /Library/Frameworks   : 
-;;; LibAudioStream.frameworks SDIF.framework
+
 
 

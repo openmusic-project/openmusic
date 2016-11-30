@@ -1071,6 +1071,7 @@ else create a new Editor frame, and select its window."
 (defmethod obj-for-internal-editor ((self ommaquette))
   (list 'maquetteeditor "internal maquette"))
 
+#+audio
 (defmethod obj-for-internal-editor ((self sound))
   (list 'soundeditor "sound"))
 
@@ -1208,6 +1209,7 @@ else create a new Editor frame, and select its window."
 (defmethod get-special-cursor-positions ((self sheet-track-obj) (obj bpf)) 
   (mapcar #'(lambda (p) (list (+ (start-t self) (car p)) (make-instance 'grap-marker))) (point-pairs obj)))
 
+#+audio
 (defmethod get-special-cursor-positions ((self sheet-track-obj) (obj sound)) 
   (mapcar #'(lambda (m) (list (+ (start-t self) (round (* m 1000))) (make-instance 'grap-marker))) (markers obj)))
 

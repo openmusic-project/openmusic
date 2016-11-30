@@ -187,9 +187,11 @@ See the dedicated chapter in the OM User Manual for more details.")
 (defmethod allowed-in-sheet ((self chord)) nil)
 
 (defmethod allowed-in-sheet ((self OMSheet)) nil)
-(defmethod allowed-in-sheet ((self sound)) t)
 (defmethod allowed-in-sheet ((self midifile)) nil)
 (defmethod allowed-in-sheet ((self ommaquette)) t)
+
+#+audio
+(defmethod allowed-in-sheet ((self sound)) t)
 
 (defmethod allowed-in-sheet ((self bpf)) t)
 

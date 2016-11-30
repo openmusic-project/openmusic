@@ -43,8 +43,8 @@
 (defclass* sequence* (score-element) () (:icon 230))
 (defclass* metric-sequence (sequence* tonal-object) () (:icon 230))
 
-(add-player-for-object 'score-element '(:midi-player :midishare :osc-scoreplayer :microplayer))
-(add-player-for-object 'simple-score-element '(:midi-player :midishare :osc-scoreplayer :microplayer))
+(add-player-for-object 'score-element '(:midi-player :osc-scoreplayer :microplayer))
+(add-player-for-object 'simple-score-element '(:midi-player :osc-scoreplayer :microplayer))
 
 (defmethod players-for-object ((self score-element)) 
   (if *force-score-player* 

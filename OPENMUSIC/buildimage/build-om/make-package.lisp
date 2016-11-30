@@ -164,8 +164,7 @@
 
 
 ;;; EXTERNAL LIBRARIES
-#+win32(progn
-          (unless (equal *release* :src)
+#+win32(unless (equal *release* :src)
             (mapc #'(lambda (file) 
                       (unless (system::directory-pathname-p file)
                         (system::copy-file file
@@ -175,19 +174,14 @@
                   (directory (make-pathname :directory (append (pathname-directory *image-pathname*)
                                                                '("resources" "lib" "win")))))
             )
-          (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) 
-                                                              '("resources" "lib")))))
 
-#-win32(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*)
-                                                           '("resources" "lib" "win"))))
-                                  
+(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "lib"))))
 
 (print "Cleaning Userlibraries ...")
 (loop for lib in (directory (make-pathname :directory (append (pathname-directory *target-dir*) '("libraries")))) do
       (unless (member (car (last (pathname-directory lib))) *libs-in-om-release* :test 'string-equal)
         (remove-directory lib))
       (clean-sources lib :remove-extensions '("lisp~" "DS_STORE")))
-
 
 
 (if (equal *release* :src)

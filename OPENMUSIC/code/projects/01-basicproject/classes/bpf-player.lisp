@@ -46,10 +46,7 @@
                                      (+ at (car point))))
                   (point-pairs object)))))))
   
-(defmethod player-loop ((self (eql :bpfplayer)) player &optional play-list)
-  (declare (ignore player))
-  (loop for obj in play-list do
-        (prepare-to-play self player obj 0 (play-interval player))))
+;; (defmethod player-loop ((self (eql :bpfplayer)) player &optional play-list) (call-next-method))
   
 ;================================
 ; EDITOR
