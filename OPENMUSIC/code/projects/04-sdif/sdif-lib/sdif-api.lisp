@@ -37,11 +37,10 @@
 ;;;==============================
 ;;; CHARGEMENT
 ;;; !!! *sdif-pathname* is modified in OM
+;;; 
 (defvar *sdif-pathname* 
-  #+win32
-  "/WINDOWS/system32/sdif.dll"
-  #+(or darwin macos macosx) 
-  "SDIF.framework/Versions/3.11/SDIF"
+  #+win32 "/WINDOWS/system32/sdif.dll"
+  #+(or darwin macos macosx) "libSDIF.dylib"
   #+linux "libsdif.so"
   )
 
@@ -77,6 +76,7 @@
                             (error () (progn (print (format nil "Could not load foreign-library libsdif")) nil))))
                 ))
       (om::om-message-dialog (format nil "SDIF library not found: ~A" (namestring libpath))))
+    (setf *sdif-initialized-p* nil)
     ))
 
 (om::om-add-init-func 'load-sdif-library)
@@ -163,7 +163,8 @@
 
 ;;;============================
 ;;; TESTS
-; (load-foreign-library "/Library/Frameworks/SDIF.framework/Versions/3.11/SDIF")
+;(fli:register-module "SDIF" :real-name "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/libSDIF.dylib" :connection-style :immediate)
+;(fli:register-module "SDIF" :real-name "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/SDIF.framework/Versions/3.11/SDIF" :connection-style :immediate)
 ; (init-sdif-framework)
 ; (sdif::sdifprintversion)
 ;(Sdif-Init "")
