@@ -317,7 +317,8 @@
     (om::copy-folder libs-folder app-libs-folder))
   
   (print (format nil "COPYING RESOURCES TO: ~A" app-resources-folder))
-  (loop for item in (oa::om-directory oa::*om-resources-folder* :files t :directories t) do
+  (loop for item in (oa::om-directory oa::*om-resources-folder* :files t :directories t) 
+        unless (string-equal "lib" (car (last (pathname-directory item)))) do
         (if (om::directoryp item)
           (om::copy-folder item (make-pathname :device (pathname-device app-resources-folder) 
                                                :directory (append (pathname-directory app-resources-folder) (last (pathname-directory item)))))
