@@ -6,11 +6,22 @@
 
 #+win32(require "ole")
 
+(print "==============================")
+(print "LOADING SOURCES")
+(print "==============================")
+
 (load (current-pathname "build-om"))
+
+
+(print "==============================")
+(print "APPLICATION SETUP")
+(print "==============================")
+
 
 (defvar *app-name+version* "OM")
 (setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
+(defparameter *om-directory-folders* (butlast (pathname-directory (current-pathname)) 2))
 
 ;;;==========================
 ;;; DEFAULT INTERFACE (MACOS)(defmethod osc-start-receive ((box ReceiveBox))
@@ -163,19 +174,28 @@
 ;;;==========================
 ;;; DOC
 ;;;==========================
+;;; OM is loaded in LW
+;;; Resources are not (yet) in the .app
 
-(setf oa::*om-resources-folder* 
-      (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))))
+(print "==============================")
+(print "DOC GENERATION:")
+(print "==============================")
+
+
+(setf oa::*om-resources-folder* (make-pathname :directory (append *om-directory-folders* '("resources"))))
+
+
 (oa::init-sub-rsrc)
 (om::set-ref-dir)
 (clos::set-clos-initarg-checking nil)
 (om::gen-om-reference)
 
 (defparameter *startup-bmp* nil)
-(setq *startup-bmp* (or (find *version-str* 
-                              (directory (make-pathname :directory (pathname-directory (current-pathname))) :directories nil)
-                              :key 'pathname-name :test 'string-equal)
-                        (probe-file (merge-pathnames (make-pathname :name "om" :type "bmp") (current-pathname)))))
+(setq *startup-bmp* 
+      (or (find *version-str* 
+                (directory (make-pathname :directory (pathname-directory (current-pathname))) :directories nil)
+                :key 'pathname-name :test 'string-equal)
+          (probe-file (merge-pathnames (make-pathname :name "om" :type "bmp") (current-pathname)))))
     
 
 ;;;==========================
@@ -183,7 +203,12 @@
 ;;;==========================
 ; doesn't work anymore in LW 7 ?
 ;*active-finders*
-(dspec::save-tags-database (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) (list "resources"))
+
+(print "==============================")
+(print "SOURCE TRACKING")
+(print "==============================")
+
+(dspec::save-tags-database (make-pathname :directory (pathname-directory oa::*om-resources-folder*)
                                           :name "dspec-database" :type oa::*om-compiled-type*))
 (dspec:discard-source-info)
 
@@ -193,13 +218,17 @@
 ;;; BUILD IMAGE
 ;;;==========================
 
+(print "==============================")
+(print "CREATING APP")
+(print "==============================")
+
 
 (defvar *app-name* nil)
 #+cocoa
 (when (save-argument-real-p)
   (compile-file-if-needed (sys:example-file  "configuration/macos-application-bundle") :load t)
   (setq *app-name*
-        (write-macos-application-bundle (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2)
+        (write-macos-application-bundle (make-pathname :directory *om-directory-folders*
                                                        :name *app-name+version*)
                                         :document-types '(("Patch" ("omp") "./mac/patch.icns")
                                                           ("Maquette" ("omm") "./mac/maq.icns")
@@ -213,9 +242,9 @@
                                         )))
 
 #+win32
-(setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name *app-name+version* :type "exe"))
+(setf *app-name* (make-pathname :directory *om-directory-folders* :name *app-name+version* :type "exe"))
 #+linux
-(setf *app-name* (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name *app-name+version*))
+(setf *app-name* (make-pathname :directory *om-directory-folders* :name *app-name+version*))
 
 
 (setf *debugger-hook* 'oa::om-debugger-hook)
@@ -240,9 +269,10 @@
   (oa::om-init-funcall)
   
   (setf dspec::*active-finders* (append dspec::*active-finders*
-                                        (list (make-pathname
-                                               :directory (pathname-directory (om::omroot "resources;"))
-                                               :name "dspec-database" :type oa::*om-compiled-type*))))
+                                        (list (merge-pathnames 
+                                               #+macosx(concatenate 'string *app-name+version* ".app/Contents/Resources/dspec-database." oa::*om-compiled-type*)
+                                               #-macosx(concatenate 'string "resources/dspec-database." oa::*om-compiled-type*)
+                                               om-api:*om-root*))))
 
   (setf *print-case* :downcase)
   #+cocoa(setf system::*stack-overflow-behaviour* nil)
@@ -267,20 +297,38 @@
 ; (version-to-hex 6.020005)
 ; #x0006000200000005
 
+(print "==============================")
+(print "MOVING RESOURCES")
+(print "==============================")
+
 #+macosx
 (let ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
       (app-libs-folder (make-pathname 
                         :directory (append 
-                                    (butlast (pathname-directory (current-pathname)) 2) 
-                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Frameworks")))))
-  (print (format nil 
-                 "===================~%MOVING LIBRARIES~%FROM: ~A~%TO: ~A~%===================" 
-                 libs-folder app-libs-folder))
+                                    *om-directory-folders* 
+                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Frameworks"))))
+      (app-resources-folder (make-pathname 
+                        :directory (append 
+                                    *om-directory-folders* 
+                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Resources")))))
+  
+  (print (format nil "COPYING LIBRARIES TO: ~A" app-libs-folder))
   (unless (string-equal (namestring libs-folder) (namestring app-libs-folder))
-    (om::copy-folder libs-folder app-libs-folder) 
-    ))
+    (om::copy-folder libs-folder app-libs-folder))
+  
+  (print (format nil "COPYING RESOURCES TO: ~A" app-resources-folder))
+  (loop for item in (oa::om-directory oa::*om-resources-folder* :files t :directories t) do
+        (if (om::directoryp item)
+          (om::copy-folder item (make-pathname :device (pathname-device app-resources-folder) 
+                                               :directory (append (pathname-directory app-resources-folder) (last (pathname-directory item)))))
+          (om::om-copy-file item (make-pathname :device (pathname-device app-resources-folder) 
+                                            :directory (pathname-directory app-resources-folder)
+                                            :name (pathname-name item) :type (pathname-type item)))))
+  )
 
-
+(print "==============================")
+(print "DELIVER")
+(print "==============================")
 (deliver 'init-om
          *app-name*
          0

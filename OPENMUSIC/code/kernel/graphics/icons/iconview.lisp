@@ -38,10 +38,10 @@
 (defvar *om-icon-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp"))
 
 (defun init-icon-folder () 
-   (setf *om-icon-folder* (make-pathname :device (pathname-device *om-root*) 
-                                         :directory (append (pathname-directory *om-root*) (list "resources" "icon"))))
-   (setf *om-di-folder* (make-pathname :device (pathname-device *om-root*) 
-                                         :directory (append (pathname-directory *om-root*) (list "resources" "di")))))
+   (setf *om-icon-folder* (make-pathname :device (pathname-device oa::*om-resources-folder*) 
+                                         :directory (append (pathname-directory oa::*om-resources-folder*) '("icon"))))
+   (setf *om-di-folder* (make-pathname :device (pathname-device oa::*om-resources-folder*) 
+                                         :directory (append (pathname-directory oa::*om-resources-folder*) '("di")))))
 
 (om-add-init-func 'init-icon-folder)
 

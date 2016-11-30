@@ -7,6 +7,10 @@
 (defvar *release* :src)
 
 
+(print "=====================================")
+(print "MAKING PACKAGE")
+(print "=====================================")
+
 ;;;===========================
 ;;; PATH DEFINITIONS
 ;;;===========================
@@ -24,9 +28,9 @@
                                                 ))))
                                                 
 (defvar *projects-in-om-release* nil)
-(setf *projects-in-om-release* '("01-basicproject" "02-musicproject" "03-midi" 	
-                                                  "05-mathtools" "06-omsounds" "07-omspace"
-                                                  "09-harmonicproject" "10-sheet"))
+(setf *projects-in-om-release* '("basicproject" "musicproject" "midi" 	
+                                 "mathtools" "sdif" "omsounds" "space"
+                                 "harmonicproject" "sheet"))
                                               
 
 (defvar *image-pathname* (find "OM" ;(directory (make-pathname :directory (append (pathname-directory *om-root-dir*) (list "image" "macos-i"))))
@@ -132,7 +136,7 @@
 (copy-directory *om-root-dir* *target-dir*)
 
 
-(print "Cleaning sources ...")
+(print "CLEANING SOURCES ...")
 (clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("code")))
                :remove-extensions '("64xfasl" "xfasl" "nfasl" "ofasl" "ufasl" "lisp~" "DS_STORE"))
 
@@ -143,25 +147,13 @@
 
 
 
-(print "Cleaning folders ...")
-(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*)
-                                                    '("buildimage" "build-mlw"))))
-(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*)
-                                                    '("buildimage" "build-mlm"))))
-(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*)
-                                                    '("buildimage" "build-ml"))))
+(print "REMOVING BUILD FOLDERS ...")
+(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("build"))))
 
-(clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("buildimage")))
-               :remove-files (list "deliver" "deliver-UB" "houseKeepingUtils" "make-package" "pack-ub" "pack-intel" "pack-win" "pack-libraries" "pack-one-library" "pack-src" "dde" *image-name*)
-               :remove-extensions '("xfasl" "nfasl" "ofasl" "lisp~" "DS_STORE" "log" "exe"))
-
-(print "Cleaning resources ...")
-(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*)
-                                                    '("resources" "ml-rsrc"))))
-
-(clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")))
-               :remove-extensions '("db" "DS_STORE"))
-
+(print "CLEANING RESOURCES ...")
+#+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" ))))
+#-macosx(clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")))
+                       :remove-extensions '("db" "DS_STORE"))
 
 ;;; EXTERNAL LIBRARIES
 #+win32(unless (equal *release* :src)
@@ -177,7 +169,7 @@
 
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "lib"))))
 
-(print "Cleaning Userlibraries ...")
+(print "CLEANING LIBRARIES ...")
 (loop for lib in (directory (make-pathname :directory (append (pathname-directory *target-dir*) '("libraries")))) do
       (unless (member (car (last (pathname-directory lib))) *libs-in-om-release* :test 'string-equal)
         (remove-directory lib))

@@ -16,7 +16,7 @@ create_simple_dmg()
 	cp -R "$APP_FOLDER" _DMG
 
 	mkdir _DMG/Fonts/
-	cp -R "$APP_FOLDER"/resources/fonts/mac/* _DMG/Fonts/
+	cp -R "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/* _DMG/Fonts/
 	#cp  INSTALL/backgroundImage.tiff _DMG_CONTENTS/.background
 	#cp  INSTALL/DS_Store _DMG_CONTENTS/.DS_Store
 	#ln -s /Applications/ _DMG_CONTENTS/Applications

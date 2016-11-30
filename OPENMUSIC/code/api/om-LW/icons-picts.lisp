@@ -104,7 +104,12 @@
 ;;; default values for resource folders
 (defun init-def-rsrc ()
    (setf *om-resources-folder* (make-pathname :device (pathname-device *om-root*) :host (pathname-host *om-root*) 
-                                           :directory (append (pathname-directory *om-root*) (list "resources")))))
+                                              :directory (append (pathname-directory *om-root*) 
+                                                                 #-macosx(list "resources")
+                                                                 #+macosx(if (member :om-deliver *features*) 
+                                                                             (list (concatenate 'string "OM " *version-str* ".app") "Contents" "Resources")
+                                                                             (list "resources"))
+                                                                 ))))
 
 (defun init-sub-rsrc ()
    (om-set-default-resource-folder :pict (make-pathname :device (pathname-device *om-resources-folder*) 

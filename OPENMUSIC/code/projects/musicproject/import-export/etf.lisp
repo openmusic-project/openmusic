@@ -1065,10 +1065,6 @@
 ;;; a faire bien...
 (defun translate-score (score filename)
   (let ((template-file (om::omroot "resources/template.etf"))
-        ;;(full-pathname
-        ;;(coerce (format nil "code:projects;musicproject;ETF;template.etf") ;(slot-value score 'temperament) removed
-        ;;               'simple-string))
-        
         (target-file filename)   ;;;   (full-pathname (merge-pathnames filename ".etf")))
         )
     ;;;(om::my-copy-file template-file target-file)

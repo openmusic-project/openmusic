@@ -92,26 +92,6 @@
 (export 'compile&load :cl-user)
 
 
-(defun set-cl-logical-path ()
-   (let* ((root-path  (make-pathname :device (pathname-device *om-src-directory*)
-                                     :directory (pathname-directory *om-src-directory*)))
-	  (path-code  (make-pathname :device (pathname-device root-path)
-				     :directory (append (pathname-directory root-path) (list "CODE"))))
-	  (path-api  (make-pathname :device (pathname-device root-path)
-                                    :directory (append (pathname-directory root-path) (list "CODE" "API" "OM-LW")))))
-     (print (format () "~A**;*.*" (namestring root-path)))
-     (setf (logical-pathname-translations "CL")
-	   (list (list "**;*.*.*" (format () "~A**/*.*" (namestring root-path)))))
-     (setf (logical-pathname-translations "code")
-	   (list (list "**;*.*.*" (format () "~A**/*.*" (namestring path-code)))))
-     (setf (logical-pathname-translations "api")
-	   (list (list "**;*.*.*" (format () "~A**/*.*" (namestring path-api)))))
-     (print (list  "--> logical path translation" (truename "cl:")))
-     ))
-
-(set-cl-logical-path)
-
-
 ;;; TEMP -- BUG LISPWORKS
 ; (trace (error :backtrace :bug-form :trace-output *terminal-io*))
 ;(editor:defcommand "Buffer List To File" (p)
@@ -243,14 +223,14 @@
 
 (load-om-kernel)
   
-(load-om-projects '("01-basicproject" "02-musicproject"))
-(load-om-projects '("03-midi"))
-(load-om-projects '("04-sdif"))
-(load-om-projects '("05-mathtools"))
-(load-om-projects '("06-omsounds"))
-(load-om-projects '("07-omspace"))
-(load-om-projects '("09-harmonicproject"))
-(load-om-projects '("10-sheet"))
+(load-om-projects '("basicproject" "musicproject"))
+(load-om-projects '("midi"))
+(load-om-projects '("sdif"))
+(load-om-projects '("mathtools"))
+(load-om-projects '("omsounds"))
+(load-om-projects '("space"))
+(load-om-projects '("harmonicproject"))
+(load-om-projects '("sheet"))
 
 
 (push :om *features*)
