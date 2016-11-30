@@ -164,7 +164,7 @@ in this case this slot keeps the lambda expression.#lisp-exp-p#
   "Sometimes change of OM version needs code to upgrade old patches,
 put this code in this method."
   (setf (omversion self) *om-version*)
-  (print (format nil "~A ~s was upgraded to OM ~D" (type-of self) (name self) *version-string*)) t)
+  (print (format nil "~A '~A' was upgraded to OM ~D" (type-of self) (name self) *version-string*)) t)
 
 (defmethod load-abstraction-attributes ((self ompatch) currentpersistent)
   (setf (boxes self) nil)
