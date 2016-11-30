@@ -239,7 +239,6 @@
   
   (oa::om-init-funcall)
   
-  ; doesn't work anymore on LW7...?
   (setf dspec::*active-finders* (append dspec::*active-finders*
                                         (list (make-pathname
                                                :directory (pathname-directory (om::omroot "resources;"))

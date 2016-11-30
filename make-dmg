@@ -11,84 +11,22 @@ DMG_NAME="OM-"$OM_VERSION"-macOS"
 
 create_simple_dmg()
 {
-	cp -R "$APP_FOLDER" _DMGCONTENTS    
-	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMGCONTENTS $DMG_NAME.dmg
+	rm -rf _DMG
+	mkdir _DMG
+	cp -R "$APP_FOLDER" _DMG
+
+	mkdir _DMG/Fonts/
+	cp -R "$APP_FOLDER"/resources/fonts/mac/* _DMG/Fonts/
+	#cp  INSTALL/backgroundImage.tiff _DMG_CONTENTS/.background
+	#cp  INSTALL/DS_Store _DMG_CONTENTS/.DS_Store
+	#ln -s /Applications/ _DMG_CONTENTS/Applications
+	#ln -s /Library/Fonts/ _DMG_CONTENTS/Fonts
+	
+	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
+	rm -rf _DMG
+	
 }
 
-### TODO 
-### This is just raw copy from chuncks of TC code
-###
-create_fancy_dmg()
-{
-	# a temporary dmg that will be tweak
-	VOLUME_NAME="OpenMusic"
-    	DMG_TMP=./TEMP.dmg
-	rm -f "$DMG_TMP"
-
-	cp -R "$APP_FOLDER" _DMGCONTENTS    
-	    # create the temp DMG file
-    sudo hdiutil create -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -volname "${VOLUME_NAME}" -srcfolder ./dmgcontent "${DMG_TMP}"
-
-    echo "Created DMG: ${DMG_TMP}"
-
-    # mount it and save the device
-    DEVICE=$(sudo hdiutil attach -readwrite -noverify "${DMG_TMP}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
-  
-    sleep 2
-
-    # copy the background image into the dmg
-    backgroundImage=$BUILD_DIR/distrib/macosx/images/newbackground6.png
-    mkdir "/Volumes/${VOLUME_NAME}/.background"
-    cp $backgroundImage "/Volumes/$VOLUME_NAME/.background/"
-
-    # dmg window dimensions
-    dmg_width=592
-    dmg_height=458
-    dmg_topleft_x=308
-    dmg_topleft_y=308
-    dmg_bottomright_x=`expr $dmg_topleft_x + $dmg_width`
-    dmg_bottomright_y=`expr $dmg_topleft_y + $dmg_height`
-
-    # tell the Finder to resize the window, set the background,
-    # change the icon size, place the icons in the right position, etc.
-    echo '
-       tell application "Finder"
-         tell disk "'${VOLUME_NAME}'"
-                open
-
-                set current view of container window to icon view
-                set toolbar visible of container window to false
-                set statusbar visible of container window to false
-                set the bounds of container window to {'${dmg_topleft_x}', '${dmg_topleft_y}', '${dmg_bottomright_x}', '${dmg_bottomright_y}'}
-                set viewOptions to the icon view options of container window
-                set arrangement of viewOptions to not arranged
-                --set arrangement of viewOptions to snap to grid
-                set icon size of viewOptions to 104                
-                set background picture of viewOptions to file ".background:newbackground6.png"
-                --set position of item "ircam-spat" of container window to {100, 95}
-                set position of item "ircam-spat" of container window to {100, 230}
-                --set position of item "Max 6.1 Packages" of container window to {300, 65}
-                --set position of item "Max 6.1 Packages" of container window to {400, 180}
-            	set position of item "Max 6.1 Packages" of container window to {450, 150}
-                set position of item "Max 7 Packages" of container window to {450, 310}
-               close
-               open
-               update without registering applications
-               delay 8
-               set statusbar visible of container window to true
-         end tell
-       end tell
-    ' | osascript
- 
-    sync
-
-    # unmount it
-    sudo hdiutil detach "${DEVICE}"
-
-    # now make the final image a compressed disk image
-    echo "Creating compressed image"
-    sudo hdiutil convert "${DMG_TMP}" -format UDZO -imagekey zlib-level=9 -o "${DMG_FINAL}"
-}
 
 
 change_permission()
@@ -102,7 +40,6 @@ change_permission()
     sudo chmod -R ug+rwx "$1"
 }
 
-
 ##########
 ### GO ###
 ##########
@@ -111,14 +48,11 @@ echo "***************************************************"
 echo "Preparing DMG distribution for $APP_FOLDER"
 echo "***************************************************"
 
-rm -rf _DMGCONTENTS
 rm -f $DMG_NAME.dmg
-mkdir _DMGCONTENTS
 
 # change_permission "$APP_FOLDER"
 create_simple_dmg
 
-rm -Rf _DMGCONTENTS
 
 exit 0
 
