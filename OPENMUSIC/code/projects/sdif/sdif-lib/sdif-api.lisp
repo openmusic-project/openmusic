@@ -61,7 +61,7 @@
                                                   :connection-style :immediate)
                              t)
                           (error () (progn 
-                                      (om::om-message-dialog (format nil "Could not load SDIF foreign-library.~%~A" error))
+                                      (om::om-message-dialog (format nil "Could not load SDIF foreign-library.~%~A" (namestring libpath)))
                                       nil)))
                 
                 #+linux (progn 
@@ -163,7 +163,7 @@
 
 ;;;============================
 ;;; TESTS
-;(fli:register-module "SDIF" :real-name "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/libSDIF.dylib" :connection-style :immediate)
+;(fli:register-module "SDIF" :real-name "/Users/bresson/SRC/OM6/OPENMUSIC/OM 6.11.app/Connts/Frameworks/libSDIF.dylib" :connection-style :immediate)
 ;(fli:register-module "SDIF" :real-name "/Users/bresson/SRC/OM6/OPENMUSIC/resources/lib/mac/SDIF.framework/Versions/3.11/SDIF" :connection-style :immediate)
 ; (init-sdif-framework)
 ; (sdif::sdifprintversion)
