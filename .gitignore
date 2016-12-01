@@ -7,7 +7,7 @@
 *.*~
 
 .DS_Store
-.dmg
+*.dmg
 
 # don't track auto-generated html's:
 /OPENMUSIC/resources/**/*.html
