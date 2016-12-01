@@ -17,10 +17,11 @@ create_simple_dmg()
 
 	mkdir _DMG/Fonts/
 	cp -R "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/* _DMG/Fonts/
-	#cp  INSTALL/backgroundImage.tiff _DMG_CONTENTS/.background
-	#cp  INSTALL/DS_Store _DMG_CONTENTS/.DS_Store
-	#ln -s /Applications/ _DMG_CONTENTS/Applications
-	#ln -s /Library/Fonts/ _DMG_CONTENTS/Fonts
+	cp  INSTALL/README.txt _DMG/README.txt
+	#cp  INSTALL/backgroundImage.tiff _DMG/.background
+	#cp  INSTALL/DS_Store _DMG/.DS_Store
+	#ln -s /Applications/ _DMG/Applications
+	#ln -s /Library/Fonts/ _DMG/Fonts
 	
 	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
 	rm -rf _DMG
