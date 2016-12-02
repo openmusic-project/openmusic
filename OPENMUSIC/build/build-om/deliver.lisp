@@ -228,7 +228,7 @@
 (when (save-argument-real-p)
   (compile-file-if-needed (sys:example-file  "configuration/macos-application-bundle") :load t)
   (setq *app-name*
-        (write-macos-application-bundle (make-pathname :directory *om-directory-folders*
+        (create-macos-application-bundle (make-pathname :directory *om-directory-folders*
                                                        :name *app-name+version*)
                                         :document-types '(("Patch" ("omp") "./mac/patch.icns")
                                                           ("Maquette" ("omm") "./mac/maq.icns")

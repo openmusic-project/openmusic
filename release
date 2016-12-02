@@ -1,10 +1,5 @@
 #!/bin/bash
 
-####################################################################
-# @brief    Script for releasing OM
-# 			Must be executed on m2375
-# @author   Jean Bresson
-
 # 32bits:
 # LWARCH=32-bit
 # LWEXEC=lispworks-7-0-0-x86-darwin
@@ -12,10 +7,94 @@
 LWARCH=64-bit
 LWEXEC=lispworks-7-0-0-amd64-darwin
 
-rm -rf OPENMUSIC/*.app/
+OM_VERSION="6.11"
+APP_FOLDER="OM "$OM_VERSION
+DMG_NAME="OM-"$OM_VERSION"-macOS"
 
-cd ./OPENMUSIC/build/build-om/
 
-/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build deliver.lisp
-/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-intel.lisp
+deliver_app()
+{
+echo "***************************************************"
+echo "COMPILING STANDALONE EXE"
+echo "***************************************************"
+
+	rm -rf ./OPENMUSIC/*.app/
+	cd ./OPENMUSIC/build/build-om/
+	/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build deliver.lisp
+	cd ../../..
+}
+
+
+# deliver_app MUST have been called before..
+pack_app()
+{
+echo "***************************************************"
+echo "Packing $APP_FOLDER"
+echo "***************************************************"
+
+	cd ./OPENMUSIC/build/build-om/
+	/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-intel.lisp
+	cd ../../..
+}
+
+# pack_app MUST have been called before..
+set_fonts()
+{   
+   cp "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/* "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/
+   rm -rf "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/
+   rm -rf "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/win/
+   rm -rf "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/linux/
+	 	   
+   cp "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist .	   
+   defaults write $(pwd)/Info.plist ATSApplicationFontsPath -string "fonts/"
+   mv ./Info.plist "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist
+}
+
+# pack_app MUST have been called before..
+create_simple_dmg()
+{
+echo "***************************************************"
+echo "Preparing DMG distribution for $APP_FOLDER"
+echo "***************************************************"
+
+	rm -f $DMG_NAME.dmg	
+	rm -rf _DMG
+	mkdir _DMG
+	cp -R "$APP_FOLDER" _DMG
+	#ln -s /Applications/ _DMG/Applications
+	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
+	rm -rf _DMG	
+}
+
+
+
+change_permission()
+{
+    # this function change the permission for a given folder
+    # $1 : the folder
+    echo "Setting permissions for $1"
+    sudo chown -R root "$1"
+    sudo chgrp -R admin "$1"
+    sudo chmod -R o+rx "$1"
+    sudo chmod -R ug+rwx "$1"
+}
+
+#=============================
+# MAIN SCRIPT
+#=============================
+
+if 	[ "$1" = "deliver" ]; 	then 	deliver_app
+elif	[ "$1" = "pack" ];	then	pack_app; set_fonts
+elif	[ "$1" = "dp" ];	then	deliver_app; pack_app; set_fonts
+elif	[ "$1" = "dmg" ];	then	create_simple_dmg
+elif	[ "$1" = "all" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
+else 	echo "Dont'know what to do! :("	
+fi
+
+exit 0
+
+
+
+
+
 
