@@ -374,7 +374,6 @@ Press 'space' to play/stop the sound file.
           (display-builder self) (om-run-process 
                                   "DisplayArrayBuilder" 
                                   #'(lambda (snd)
-                                      ;(setf (display-array snd) (audio-io::om-get-sound-display-array (namestring (filename snd)) ratio))
                                       (setf (display-array snd) 
                                             (make-array (list channels (ceiling size ratio))
                                                         :element-type 'single-float :initial-element 0.0 :allocation :static))
