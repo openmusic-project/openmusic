@@ -45,7 +45,7 @@
                                                                              (t nil)))))) 
               (when file
                 (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                (audio-io::om-save-sound-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
+                (audio-io::om-save-buffer-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
                 ;(fli:free-foreign-object buffer)
                 (probe-file (namestring file))
                 ))))
@@ -186,7 +186,7 @@
 (defmethod general-normalize ((norm (eql :om)) inpath outpath val &optional resolution)
   (print "Warning: OM normlizer does not take into account the normalization value.")
   (let ((normalized (sound-normalize (get-om-sound-data inpath))))
-    (audio-io::om-save-sound-in-file (buffer normalized) (namestring outpath) 
+    (audio-io::om-save-buffer-in-file (buffer normalized) (namestring outpath) 
                                      (size normalized) (nch normalized) (sr normalized) 
                                      (or resolution *audio-res*) *def-snd-format*)
     outpath))
