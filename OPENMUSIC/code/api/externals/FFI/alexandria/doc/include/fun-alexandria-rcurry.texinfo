@@ -1,6 +1,0 @@
-@anchor{Function rcurry}
-@deffn {Function} {rcurry} function @&rest arguments
-@findex rcurry
-Returns a function that applies the arguments it is called
-with and @code{arguments} to @code{function}.
-@end deffn

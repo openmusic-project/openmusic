@@ -1,6 +1,0 @@
-@anchor{Function emptyp}
-@deffn {Function} {emptyp} sequence
-@findex emptyp
-Returns true if @code{sequence} is an empty sequence. Signals an error if @code{sequence}
-is not a sequence.
-@end deffn

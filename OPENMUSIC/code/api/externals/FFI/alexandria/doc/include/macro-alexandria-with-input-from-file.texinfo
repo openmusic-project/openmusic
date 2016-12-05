@@ -1,7 +1,0 @@
-@anchor{Macro with-input-from-file}
-@deffn {Macro} {with-input-from-file} (stream-name file-name &rest args &key direction &allow-other-keys) @&body body
-@findex with-input-from-file
-Evaluate @code{body} with @code{stream-name} to an input stream on the file
-@code{file-name}. @code{args} is sent as is to the call to @code{open} except @code{external-format},
-which is only sent to @code{with-open-file} when it's not @code{nil}.
-@end deffn

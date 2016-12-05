@@ -1,5 +1,0 @@
-@anchor{Function median}
-@deffn {Function} {median} sample
-@findex median
-Returns median of @code{sample}. @code{sample} must be a sequence of real numbers.
-@end deffn

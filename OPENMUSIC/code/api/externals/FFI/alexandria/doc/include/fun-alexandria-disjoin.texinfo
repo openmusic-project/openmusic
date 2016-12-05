@@ -1,8 +1,0 @@
-@anchor{Function disjoin}
-@deffn {Function} {disjoin} predicate @&rest more-predicates
-@findex disjoin
-Returns a function that applies each of @code{predicate} and @code{more-predicate}
-functions in turn to its arguments, returning the primary value of the first
-predicate that returns true, without calling the remaining predicates.
-If none of the predicates returns true, @code{nil} is returned.
-@end deffn

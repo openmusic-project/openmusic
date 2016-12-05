@@ -1,5 +1,0 @@
-@anchor{Type non-positive-integer}
-@deftp {Type} {non-positive-integer}
-@tindex non-positive-integer
-Type specifier denoting the integer range from -inf to @code{0}.
-@end deftp

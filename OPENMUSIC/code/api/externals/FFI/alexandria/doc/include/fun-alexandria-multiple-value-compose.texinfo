@@ -1,8 +1,0 @@
-@anchor{Function multiple-value-compose}
-@deffn {Function} {multiple-value-compose} function @&rest more-functions
-@findex multiple-value-compose
-Returns a function composed of @code{function} and @code{more-functions} that applies
-its arguments to each in turn, starting from the rightmost of
-@code{more-functions}, and then calling the next one with all the return values of
-the last.
-@end deffn

@@ -1,5 +1,0 @@
-@anchor{Function hash-table-values}
-@deffn {Function} {hash-table-values} table
-@findex hash-table-values
-Returns a list containing the values of hash table @code{table}.
-@end deffn

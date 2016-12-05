@@ -1,6 +1,0 @@
-@anchor{Macro named-lambda}
-@deffn {Macro} {named-lambda} name lambda-list @&body body
-@findex named-lambda
-Expands into a lambda-expression within whose @code{body} @code{name} denotes the
-corresponding function.
-@end deffn

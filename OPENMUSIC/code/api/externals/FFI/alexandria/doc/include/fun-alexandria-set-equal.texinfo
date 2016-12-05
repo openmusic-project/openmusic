@@ -1,6 +1,0 @@
-@anchor{Function set-equal}
-@deffn {Function} {set-equal} list1 list2 @&key test key
-@findex set-equal
-Returns true if every element of @code{list1} matches some element of @code{list2} and
-every element of @code{list2} matches some element of @code{list1}. Otherwise returns false.
-@end deffn

@@ -1,5 +1,0 @@
-@anchor{Macro with-unique-names}
-@deffn {Macro} {with-unique-names} names @&body forms
-@findex with-unique-names
-Alias for @code{with-gensyms}.
-@end deffn

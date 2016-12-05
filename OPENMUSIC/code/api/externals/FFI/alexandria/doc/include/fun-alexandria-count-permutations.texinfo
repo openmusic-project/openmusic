@@ -1,6 +1,0 @@
-@anchor{Function count-permutations}
-@deffn {Function} {count-permutations} n @&optional k
-@findex count-permutations
-Number of @code{k} element permutations for a sequence of @code{n} objects.
-@code{k} defaults to @code{n}
-@end deffn

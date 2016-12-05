@@ -1,7 +1,0 @@
-@anchor{Function random-elt}
-@deffn {Function} {random-elt} sequence @&key start end
-@findex random-elt
-Returns a random element from @code{sequence} bounded by @code{start} and @code{end}. Signals an
-error if the @code{sequence} is not a proper non-empty sequence, or if @code{end} and @code{start}
-are not proper bounding index designators for @code{sequence}.
-@end deffn

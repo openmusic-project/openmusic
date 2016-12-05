@@ -1,6 +1,0 @@
-@anchor{Function delete-from-plist}
-@deffn {Function} {delete-from-plist} plist @&rest keys
-@findex delete-from-plist
-Just like @code{remove-from-plist}, but this version may destructively modify the
-provided plist.
-@end deffn

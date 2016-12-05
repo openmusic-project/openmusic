@@ -1,5 +1,0 @@
-@anchor{Function read-file-into-byte-vector}
-@deffn {Function} {read-file-into-byte-vector} pathname
-@findex read-file-into-byte-vector
-Read @code{pathname} into a freshly allocated (unsigned-byte 8) vector.
-@end deffn

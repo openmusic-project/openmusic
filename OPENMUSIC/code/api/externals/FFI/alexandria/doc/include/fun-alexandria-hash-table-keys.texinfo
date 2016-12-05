@@ -1,5 +1,0 @@
-@anchor{Function hash-table-keys}
-@deffn {Function} {hash-table-keys} table
-@findex hash-table-keys
-Returns a list containing the keys of hash table @code{table}.
-@end deffn

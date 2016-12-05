@@ -1,6 +1,0 @@
-@anchor{Function first-elt}
-@deffn {Function} {first-elt} sequence
-@findex first-elt
-Returns the first element of @code{sequence}. Signals a type-error if @code{sequence} is
-not a sequence, or is an empty sequence.
-@end deffn

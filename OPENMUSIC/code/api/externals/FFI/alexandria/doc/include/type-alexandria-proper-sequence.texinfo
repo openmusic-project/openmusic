@@ -1,6 +1,0 @@
-@anchor{Type proper-sequence}
-@deftp {Type} {proper-sequence}
-@tindex proper-sequence
-Type designator for proper sequences, that is proper lists and sequences
-that are not lists.
-@end deftp

@@ -1,7 +1,0 @@
-@anchor{Function compose}
-@deffn {Function} {compose} function @&rest more-functions
-@findex compose
-Returns a function composed of @code{function} and @code{more-functions} that applies its
-arguments to to each in turn, starting from the rightmost of @code{more-functions},
-and then calling the next one with the primary value of the last.
-@end deffn

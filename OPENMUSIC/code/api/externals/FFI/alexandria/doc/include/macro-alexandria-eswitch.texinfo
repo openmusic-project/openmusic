@@ -1,5 +1,0 @@
-@anchor{Macro eswitch}
-@deffn {Macro} {eswitch} whole (object &key test key) @&body clauses
-@findex eswitch
-Like @code{switch}, but signals an error if no key matches.
-@end deffn

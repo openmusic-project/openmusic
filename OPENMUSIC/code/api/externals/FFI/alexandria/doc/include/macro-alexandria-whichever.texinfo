@@ -1,5 +1,0 @@
-@anchor{Macro whichever}
-@deffn {Macro} {whichever} @&rest possibilities env
-@findex whichever
-Evaluates exactly one of @code{possibilities}, chosen at random.
-@end deffn

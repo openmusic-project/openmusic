@@ -1,6 +1,0 @@
-@anchor{Function plist-alist}
-@deffn {Function} {plist-alist} plist
-@findex plist-alist
-Returns an association list containing the same keys and values as the
-property list @code{plist} in the same order.
-@end deffn

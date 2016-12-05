@@ -1,5 +1,0 @@
-@anchor{Type non-negative-rational}
-@deftp {Type} {non-negative-rational}
-@tindex non-negative-rational
-Type specifier denoting the rational range from @code{0} to +inf.
-@end deftp

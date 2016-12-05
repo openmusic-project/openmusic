@@ -1,8 +1,0 @@
-@anchor{Function parse-body}
-@deffn {Function} {parse-body} body @&key documentation whole
-@findex parse-body
-Parses @code{body} into (values remaining-forms declarations doc-string).
-Documentation strings are recognized only if @code{documentation} is true.
-Syntax errors in body are signalled and @code{whole} is used in the signal
-arguments when given.
-@end deffn

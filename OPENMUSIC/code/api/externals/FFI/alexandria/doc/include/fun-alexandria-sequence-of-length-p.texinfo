@@ -1,6 +1,0 @@
-@anchor{Function sequence-of-length-p}
-@deffn {Function} {sequence-of-length-p} sequence length
-@findex sequence-of-length-p
-Return true if @code{sequence} is a sequence of length @code{length}. Signals an error if
-@code{sequence} is not a sequence. Returns @code{false} for circular lists.
-@end deffn

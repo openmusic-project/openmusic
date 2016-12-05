@@ -1,7 +1,0 @@
-@anchor{Function variance}
-@deffn {Function} {variance} sample @&key biased
-@findex variance
-Variance of @code{sample}. Returns the biased variance if @code{biased} is true (the default),
-and the unbiased estimator of variance if @code{biased} is false. @code{sample} must be a
-sequence of numbers.
-@end deffn

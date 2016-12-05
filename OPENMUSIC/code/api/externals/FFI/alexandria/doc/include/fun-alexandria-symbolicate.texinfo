@@ -1,6 +1,0 @@
-@anchor{Function symbolicate}
-@deffn {Function} {symbolicate} @&rest things
-@findex symbolicate
-Concatenate together the names of some strings and symbols,
-producing a symbol in the current package.
-@end deffn

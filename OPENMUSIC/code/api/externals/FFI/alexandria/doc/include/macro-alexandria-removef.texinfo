@@ -1,6 +1,0 @@
-@anchor{Macro removef}
-@deffn {Macro} {removef} place item @&rest remove-keywords env
-@findex removef
-Modify-macro for @code{remove}. Sets place designated by the first argument to
-the result of calling @code{remove} with @code{item}, place, and the @code{remove-keywords}.
-@end deffn

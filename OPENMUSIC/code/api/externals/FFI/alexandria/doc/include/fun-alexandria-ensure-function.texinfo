@@ -1,7 +1,0 @@
-@anchor{Function ensure-function}
-@deffn {Function} {ensure-function} function-designator
-@findex ensure-function
-Returns the function designated by @code{function-designator:}
-if @code{function-designator} is a function, it is returned, otherwise
-it must be a function name and its @code{fdefinition} is returned.
-@end deffn

@@ -1,5 +1,0 @@
-@anchor{Macro coercef}
-@deffn {Macro} {coercef} place type-spec env
-@findex coercef
-Modify-macro for @code{coerce}.
-@end deffn

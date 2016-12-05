@@ -1,6 +1,0 @@
-@anchor{Function (setf lastcar)}
-@deffn {Function} {(setf lastcar)}
-@findex (setf lastcar)
-Sets the last element of @code{list}. Signals a type-error if @code{list} is not a proper
-list.
-@end deffn

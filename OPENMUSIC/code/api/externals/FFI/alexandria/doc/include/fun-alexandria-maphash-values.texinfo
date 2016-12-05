@@ -1,5 +1,0 @@
-@anchor{Function maphash-values}
-@deffn {Function} {maphash-values} function table
-@findex maphash-values
-Like @code{maphash}, but calls @code{function} with each value in the hash table @code{table}.
-@end deffn

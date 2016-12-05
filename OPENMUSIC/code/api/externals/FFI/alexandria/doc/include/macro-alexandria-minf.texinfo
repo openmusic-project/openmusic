@@ -1,6 +1,0 @@
-@anchor{Macro minf}
-@deffn {Macro} {minf} place @&rest numbers env
-@findex minf
-Modify-macro for @code{min}. Sets place designated by the first argument to the
-minimum of its original value and @code{numbers}.
-@end deffn

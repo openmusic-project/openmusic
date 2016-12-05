@@ -1,6 +1,0 @@
-@anchor{Function clamp}
-@deffn {Function} {clamp} number min max
-@findex clamp
-Clamps the @code{number} into [min, max] range. Returns @code{min} if @code{number} is lesser then
-@code{min} and @code{max} if @code{number} is greater then @code{max}, otherwise returns @code{number}.
-@end deffn

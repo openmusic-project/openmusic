@@ -1,5 +1,0 @@
-@anchor{Type non-negative-single-float}
-@deftp {Type} {non-negative-single-float}
-@tindex non-negative-single-float
-Type specifier denoting the single-float range from @code{0}.@code{0} to +inf.
-@end deftp

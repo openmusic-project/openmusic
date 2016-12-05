@@ -1,7 +1,0 @@
-@anchor{Function binomial-coefficient}
-@deffn {Function} {binomial-coefficient} n k
-@findex binomial-coefficient
-Binomial coefficient of @code{n} and @code{k}, also expressed as @code{n} choose @code{k}. This is the
-number of @code{k} element combinations given @code{n} choises. @code{n} must be equal to or
-greater then @code{k}.
-@end deffn

@@ -1,6 +1,0 @@
-@anchor{Function lastcar}
-@deffn {Function} {lastcar} list
-@findex lastcar
-Returns the last element of @code{list}. Signals a type-error if @code{list} is not a
-proper list.
-@end deffn

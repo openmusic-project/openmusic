@@ -1,6 +1,0 @@
-@anchor{Function make-gensym-list}
-@deffn {Function} {make-gensym-list} length @&optional x
-@findex make-gensym-list
-Returns a list of @code{length} gensyms, each generated as if with a call to @code{make-gensym},
-using the second (optional, defaulting to "G") argument.
-@end deffn

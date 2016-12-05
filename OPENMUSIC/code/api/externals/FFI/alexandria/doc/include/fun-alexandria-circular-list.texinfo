@@ -1,5 +1,0 @@
-@anchor{Function circular-list}
-@deffn {Function} {circular-list} @&rest elements
-@findex circular-list
-Creates a circular list of @code{elements}.
-@end deffn

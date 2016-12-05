@@ -1,7 +1,0 @@
-@anchor{Function ends-with}
-@deffn {Function} {ends-with} object sequence @&key test key
-@findex ends-with
-Returns true if @code{sequence} is a sequence whose last element is @code{eql} to @code{object}.
-Returns @code{nil} if the @code{sequence} is not a sequence or is an empty sequence. Signals
-an error if @code{sequence} is an improper list.
-@end deffn

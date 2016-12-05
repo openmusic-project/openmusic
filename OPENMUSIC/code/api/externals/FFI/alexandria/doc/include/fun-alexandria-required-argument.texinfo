@@ -1,7 +1,0 @@
-@anchor{Function required-argument}
-@deffn {Function} {required-argument} @&optional name
-@findex required-argument
-Signals an error for a missing argument of @code{name}. Intended for
-use as an initialization form for structure and class-slots, and
-a default value for required keyword arguments.
-@end deffn

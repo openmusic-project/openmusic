@@ -1,6 +1,0 @@
-@anchor{Macro switch}
-@deffn {Macro} {switch} whole (object &key test key) @&body clauses
-@findex switch
-Evaluates first matching clause, returning its values, or evaluates and
-returns the values of @code{default} if no keys match.
-@end deffn

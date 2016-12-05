@@ -1,6 +1,0 @@
-@anchor{Function curry}
-@deffn {Function} {curry} function @&rest arguments
-@findex curry
-Returns a function that applies @code{arguments} and the arguments
-it is called with to @code{function}.
-@end deffn

@@ -1,7 +1,0 @@
-@anchor{Function copy-stream}
-@deffn {Function} {copy-stream} input output @&key element-type buffer-size buffer start end finish-output
-@findex copy-stream
-Reads data from @code{input} and writes it to @code{output}. Both @code{input} and @code{output} must
-be streams, they will be passed to @code{read-sequence} and @code{write-sequence} and must have
-compatible element-types.
-@end deffn

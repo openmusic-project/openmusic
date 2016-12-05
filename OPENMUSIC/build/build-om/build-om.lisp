@@ -210,6 +210,8 @@
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
+(load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "foreign-interface")) :name "foreign-interface"))
+
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "externals"))
                      :name "externals" :type "lisp"))
 

@@ -1,8 +1,0 @@
-@anchor{Macro nth-value-or}
-@deffn {Macro} {nth-value-or} nth-value @&body forms
-@findex nth-value-or
-Evaluates @code{form} arguments one at a time, until the @code{nth-value} returned by one
-of the forms is true. It then returns all the values returned by evaluating
-that form. If none of the forms return a true nth value, this form returns
-@code{nil}.
-@end deffn
