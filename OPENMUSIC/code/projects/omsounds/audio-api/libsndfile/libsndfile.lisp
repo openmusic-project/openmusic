@@ -29,7 +29,7 @@
 (defconstant SF_FORMAT_AVR #x120000)
 (defconstant SF_FORMAT_WAVEX #x130000)
 (defconstant SF_FORMAT_SD2 #x160000)
-(defconstant SF_FORMAT_FLAC #x170000)
+(defconstant SF_FORMAT_FLAC #x170000) 
 (defconstant SF_FORMAT_CAF #x180000)
 (defconstant SF_FORMAT_OGG #x200000)
 (defconstant SF_FORMAT_PCM_S8 #x0001)
@@ -126,7 +126,7 @@
 (defconstant  SF_COUNT_MAX #x7FFFFFFFFFFFFFFF)
 
 (defcstruct SF_INFO
-	(frames :long-long)
+	(frames :double)
 	(samplerate :int)
 	(channels :int)
 	(format :int)
@@ -352,3 +352,12 @@
   (sndfile :pointer)
   (ptr :pointer)
   (frames :long-long))
+
+
+;#-linux
+;(fli:define-foreign-function (sf-readf-float "sf_readf_float")
+;    ((sndfile :pointer)
+;     (ptr :pointer)
+;     (frames :long-long))
+;  :result-type :long-long)
+

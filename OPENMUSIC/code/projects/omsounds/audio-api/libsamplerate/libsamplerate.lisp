@@ -8,10 +8,6 @@
 
 (pushnew :libsamplerate *features*)
 
-;;;============================================================
-;;;============================================================
-;;;============================================================
-
 (defparameter SRC_SINC_BEST_QUALITY 0)
 (defparameter SRC_SINC_MEDIUM_QUALITY 1)
 (defparameter SRC_SINC_FASTEST 2)

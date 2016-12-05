@@ -90,7 +90,7 @@
   (when (and (filename self) (probe-file (filename self)))
     (print (format nil "Loading sound file : ~s" (namestring (filename self))))
     (multiple-value-bind (format nch sr ss size skip)
-        (audio-io::om-sound-get-info (namestring (filename self)))
+        (audio-io::om-get-sound-info (namestring (filename self)))
       (if (and format size nch (> size 0) (> nch 0))
           (progn 
             (setf (audio-format self) format
@@ -361,6 +361,41 @@ Press 'space' to play/stop the sound file.
     sound))
 
 
+;;;===================
+;;; DISPLAY-ARRAY
+;;;===================
+
+;;; Function used to FILL the display array of a sound (and choosed max window)
+;;; (use LIBSNDFILE and FLI)
+(defmethod om-fill-sound-display-array ((format t) path ptr channels size &optional (window 128))
+  #+libsndfile
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    ;;;Initialisation du descripteur
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
+    (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
+           (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
+           (size (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames) :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           ;;;Variables liées au calcul de waveform
+           (buffer-size (* window channels))
+           (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
+           ;(MaxArray (make-array (list channels (ceiling size window)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (indxmax (1- (ceiling size window)))
+           (frames-read 0)
+           maxi)
+      (loop for indx from 0 do ;(print (list indx "/" (ceiling size window)))
+            (setq frames-read (sf::sf-readf-float sndfile-handle buffer window))
+            (dotimes (n channels)
+              (dotimes (i window)
+                (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
+              ;(setf (aref MaxArray n (min indx indxmax)) maxi)
+              (setf (fli:dereference ptr :index (+ (min indx indxmax) (* n (ceiling size window)))) maxi)
+              (setq maxi 0.0))
+            while (= frames-read window))
+      (fli:free-foreign-object buffer)
+      (sf::sf_close sndfile-handle))))
+
+
 ;;; not used for the moment
 (defmethod build-display-array-dynamic ((self sound))
   (let* ((ratio 128)
@@ -379,7 +414,7 @@ Press 'space' to play/stop the sound file.
                                                         :element-type 'single-float :initial-element 0.0 :allocation :static))
                                       (fli:with-dynamic-lisp-array-pointer 
                                           (ptr (display-array snd) :type :float)
-                                        (audio-io::om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
+                                        (om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
                                       (sound-get-best-pict snd)
                                       (setf (display-builder self) nil)
                                       (print (format nil "~A Loaded..." (filename self)))) self))))
@@ -400,11 +435,65 @@ Press 'space' to play/stop the sound file.
                              :element-type 'single-float :initial-element 0.0 :allocation :static))
            (fli:with-dynamic-lisp-array-pointer 
                (ptr (display-array snd) :type :float)
-             (audio-io::om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
+             (om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
            (sound-get-best-pict snd)
         ;(setf (display-builder self) nil)
            (print (format nil "~A Loaded..." (filename self))))
        self))))
+
+
+
+(defun om-get-sound-display-array-slice (path nsmp-out start-time end-time)
+  #+libsndfile
+  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+    ;;;Initialisation du descripteur
+    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
+    (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
+           (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
+           (sr (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) :type :int :index #+powerpc 1 #-powerpc 0))
+           (sr-ratio (* sr 0.001))
+           (start-smp (floor (* start-time sr-ratio)))
+           (end-smp (ceiling (* end-time sr-ratio)))
+           (size (- end-smp start-smp))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           (window (/ size nsmp-out 1.0))
+           (window-adaptive (round window))
+           ;;;Variables calcul de waveform
+           (buffer-size (* (ceiling window) channels))
+           (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   
+           (MaxArray (make-array (list channels (min nsmp-out size)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
+           (indxmax (1- (min nsmp-out size)))
+           (frames-read 0)
+           (frames-count 0)
+           (winsum 0)
+           maxi throw-buffer)
+      (when (> start-smp 0)
+        (setq throw-buffer (fli::allocate-foreign-object :type :float :nelems (* start-smp channels)))
+        (sf::sf-readf-float sndfile-handle throw-buffer start-smp)
+        (fli:free-foreign-object throw-buffer))
+      (if (> size nsmp-out)
+          (loop for indx from 0 do
+                (setq winsum (+ winsum window-adaptive))
+                (if (> indx 0) (setq window-adaptive (- (round (* (+ 2 indx) window)) (round winsum))))
+                (setq frames-read (sf::sf-readf-float sndfile-handle buffer window-adaptive)
+                      frames-count (+ frames-count frames-read))
+                (dotimes (n channels)
+                  (dotimes (i window-adaptive)
+                    (setq maxi (max (abs (fli:dereference buffer :type :float :index (+ n (* channels i)))) (or maxi 0.0))))
+                  (setf (aref MaxArray n (min indx indxmax)) maxi)
+                  (setq maxi 0.0))
+                while (and (< frames-count size) (= frames-read window-adaptive)))
+        (loop for indx from 0 do
+              (setq window-adaptive (max window-adaptive 1)
+                    frames-read (sf::sf-readf-float sndfile-handle buffer window-adaptive)
+                    frames-count (+ frames-count frames-read))
+              (dotimes (n channels)
+                (setf (aref MaxArray n (min indx indxmax)) (fli:dereference buffer :type :float :index n)))
+              while (and (< frames-count size) (= frames-read window-adaptive))))
+      (fli:free-foreign-object buffer)
+      (sf::sf_close sndfile-handle)
+      MaxArray)))
+
 
 (defmethod sound-get-display-array-slice ((self sound) nbpix start-time end-time)
   (when (display-array self)
@@ -434,9 +523,7 @@ Press 'space' to play/stop the sound file.
                    (setq maxi 0.0)))
                result))
             ((> nbpix maxnbpix)
-             (setq result (audio-io::om-get-sound-display-array-slice 
-                           (audio-format self)
-                           (namestring (filename self)) nbpix (om-sound-n-channels self) start-time end-time))))
+             (setq result (om-get-sound-display-array-slice (namestring (filename self)) nbpix start-time end-time))))
       (values result (< (cadr (array-dimensions result)) nbpix)))))
 
 (defmethod* get-sound () 

@@ -101,10 +101,6 @@
 ;; (mplayer-proc-pid (gethash 'one-player *mplayers*))
 ;; (remhash 'one-player *mplayers*)
 
-;; (au::wave-file-p "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
-;; (au::sound-get-info-wave "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
-;; (om-api::om-sound-get-info "/home/andersvi/lyd/andersvi/Floratone-1m.wav")
-
 (defmethod prepare-to-play ((engine (eql :mplayer)) (player omplayer) object at interval params)
   (mplayer-send-cmd object (format nil "loadfile ~A" (namestring (om-sound-file-name object))))
   (mplayer-send-cmd object (format nil "seek ~A 2" (if interval

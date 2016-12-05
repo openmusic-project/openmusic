@@ -2,31 +2,14 @@
 
 (defpackage :juce)
 
+;(fli:register-module 
+; "OMJuceAudioLib" 
+; :real-name "/Users/bouche/Documents/GIT/om7/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
+; :connection-style :immediate)
+
 (push :omjuceaudiolib *features*)
 
 (in-package :juce)
-
-(defparameter *juceaudiolib-pathname*
-  #+win32
-  "/WINDOWS/system32/OMJuceAudioLib.dll"
-  #+(or darwin macos macosx)  
-  "OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
-  #+(or linux (and clisp unix (not macos)))
-  "/usr/lib/OMJuceAudioLib.so")
-
-(defun load-juceaudiolib ()
-  (let ((libpath (namestring (om::om-lib-pathname *juceaudiolib-pathname*))))
-    (if (probe-file libpath)
-        (progn 
-          (print (concatenate 'string "Loading Juce Audio library: " libpath))
-          (fli:register-module "JuceAudio" 
-                               :real-name libpath
-                               :connection-style :immediate)
-          t)
-      (print (concatenate 'string "Juce Audio library not found: " libpath)))))
-
-(om::om-add-init-func 'load-juceaudiolib)
-
 
 ;;;==============================================
 ;;  PLAYER
@@ -59,4 +42,3 @@
 (cffi:defcfun ("GetPosReader" GetPosReader) :long (reader :pointer))
 
 (cffi:defcfun ("LoopReader" LoopReader) :void (reader :pointer) (looper :boolean))
-
