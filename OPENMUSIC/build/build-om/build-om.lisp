@@ -56,6 +56,26 @@
 
 (defvar *remove-error-fasl* nil)
 
+;;; equivalent to LW'w CURRENT-PATHNAME, allowing other reference path like in om-relative-path
+(defun decode-local-path (path &optional (relative-path :current))
+  (labels ((string-until-char (string char)
+             (let ((index (search char string)))
+               (if index (values (subseq string 0 index) (subseq string (+ index 1)))
+                 (values string nil))))
+           (str2list-path (str)
+             (let (list)
+               (loop while str do
+                 (let ((rep (multiple-value-list (string-until-char str "/"))))
+                   (setf str (second rep))
+                   (when (first rep) (push (first rep) list))))
+               (reverse list))))
+    (let ((decoded-path (str2list-path path))
+          (ref *load-pathname*))
+      (make-pathname
+       :host (pathname-host ref) :device (pathname-device ref) 
+       :directory (append (pathname-directory ref) (butlast decoded-path))
+       :name (car (last decoded-path))))))
+
 (defun compile&load (file &optional (verbose t))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
           (fasl-file (probe-file (make-pathname :directory (pathname-directory lisp-file)

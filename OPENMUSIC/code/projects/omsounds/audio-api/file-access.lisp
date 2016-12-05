@@ -21,20 +21,6 @@
 
           ) :audio-io)
 
-;======================
-; FORMAT HANDLERS
-;======================
-
-(defvar *additional-audio-formats* nil)
-
-(defun try-other-file-support (path ext)
-  (let ((format-id (car (find ext *additional-audio-formats* :key 'cdr 
-                              :test #'(lambda (ext list) (find ext list :test 'string-equal))))))
-    (and format-id 
-         (audio-file-get-info format-id path))))
-   
-;;; MUST RETURN (values format channels sr ss size skip)
-(defmethod audio-file-get-info (type path) nil)
 
 ;;==================================
 ;;; FILE I/O

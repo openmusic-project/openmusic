@@ -8,7 +8,6 @@
 
 (pushnew :libsndfile *features*)
 
-
 ;(defctype :long-long :pointer)
 
 (defconstant SF_FORMAT_WAV #x010000)

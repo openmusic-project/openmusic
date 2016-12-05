@@ -27,17 +27,8 @@
 ;;; FILE ACCESS (libsndfile / libsamplerate)
 ;;;========================================================
 
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile"))
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsndfile")) :name "libsndfile-api"))
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api")) :name "file-access"))
 
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate"))
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "libsamplerate")) :name "libsamplerate-api"))
-
-(compile&load (make-pathname :directory (append (pathname-directory *load-pathname*) (list "audio-api" "omjuceaudiolib")) :name "omjuceaudiolib"))
-
-(push :audio *features*)
-
+(load (merge-pathnames "audio-api/load-audio-api" *load-pathname*))
 
 ;======================
 ; LOAD
