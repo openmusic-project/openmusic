@@ -370,7 +370,7 @@
                                      ;:external-min-height 50 :external-min-width 50
                                      :no-character-palette t
                                      ;:menu-bar-items nil
-                                     :activate-callback #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      :window-styles style
                                      :font font
                                      :resizable resizable
