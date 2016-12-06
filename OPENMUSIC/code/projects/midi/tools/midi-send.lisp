@@ -55,7 +55,7 @@
 
 <values> and <chans> can be single numbers or lists. 
 
-The range of pitch wheel is between 0 and 16348. 8192 means no bend.
+The range of pitch wheel is between 0 and 16383 (inclusive).  8192 means no bend.
 "
    (unless port (setf port *def-midi-out*))
    (setf port (list! port))
