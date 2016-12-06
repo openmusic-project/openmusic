@@ -45,17 +45,17 @@
             (error () (format nil "could not load foreign-library ~A" libpath))))
       (print (format nil "could not find foreign-library ~A" libpath)))))
 
-(oa:om-add-init-func 'init-libsndfile)
+#-linux (oa:om-add-init-func 'init-libsndfile)
 
 
 #-macosx
 (defun init-libsamplerate ()
-  (define-foreign-library libsamplerate
+  (cffi:define-foreign-library libsamplerate
     (:darwin "libsamplerate.dylib")
     (:unix (:or "libsamplerate.dll" "/usr/local/lib64/libsamplerate.so" "libsamplerate.so"))
     (t (:default "libsamplerate")))
   (handler-case 
-      (use-foreign-library libsamplerate)
+      (cffi:use-foreign-library libsamplerate)
     (error () (progn 
                 (print (format nil "could not load foreign-library libsamplerate"))
                 nil)))
