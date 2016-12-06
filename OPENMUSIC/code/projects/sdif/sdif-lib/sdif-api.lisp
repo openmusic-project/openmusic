@@ -41,7 +41,7 @@
 (defvar *sdif-pathname* 
   #+win32 "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) "libSDIF.dylib"
-  #+linux "libsdif.so"
+  #+linux "/usr/lib/libsdif.so"
   )
 
 (defvar *sdif-library* nil)
@@ -67,7 +67,7 @@
                 #+linux (progn 
                           (define-foreign-library libsdif
                             #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" libpath "libsdif.so"))
-                            #+:LISPWORKS-32BIT (:unix (:or "/usr/local/lib/libsdif.so" libpath "libsdif.so"))
+                            #+:LISPWORKS-32BIT (:unix (:or "/usr/lib/libsdif.so" libpath "libsdif.so"))
                             (t (:default "libsdif")))
                           (handler-case (progn
                                           (let ((lib (use-foreign-library libsdif)))
