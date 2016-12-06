@@ -33,7 +33,7 @@
 
 (defpackage "SDIF-PACKAGE"
   (:nicknames "SDIF")
-   (:use common-lisp cffi))
+  (:use common-lisp cffi))
 
 (in-package :sdif)
 
