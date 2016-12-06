@@ -216,7 +216,7 @@
                      :name "externals" :type "lisp"))
 
 (oa::load-external-libs '(:midi :portmidi :xml :udp :osc :opengl :json :yason :svg))
-#+linux (oa::load-external-libs '(:jack))
+;; #+linux (oa::load-external-libs '(:jack))
 
 
 
