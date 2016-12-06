@@ -34,6 +34,8 @@
 ; LOAD
 ;======================
 
+(defvar *audio-sr* 44100)
+
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
@@ -45,7 +47,7 @@
           "general;automations"
           "general;sound-preferences"
           
-          "players;juce-player"
+          #-linux "players;juce-player"
           #-linux "players;multiplayer"
           #+cl-jack "players;jack-audio-player"
           #+linux "players;mplayer"
@@ -60,6 +62,8 @@
           "synth;synthesize"
     
           )))
+
+
 
 
 
