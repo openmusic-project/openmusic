@@ -78,6 +78,12 @@ The range of pitch wheel is between 0 and 16383 (inclusive).  8192 means no bend
          for item1 in vals do
          (pitchwheel item1 item port)))
 
+(defmethod* pitchwheel ((vals list) (chans number) &optional port)
+  (loop
+     for chan from chans 
+     for val in vals
+     do (pitchwheel val chan port)))
+
 ;==== MODIFIED FUNCTION
 (defmethod* pitchbend ((val number) (chan number) &optional port)
    :icon 912
