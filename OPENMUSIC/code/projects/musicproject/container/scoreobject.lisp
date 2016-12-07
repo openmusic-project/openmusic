@@ -85,7 +85,8 @@ A simple NOTE defined with :
 (defmethod real-duration ((self note) time)
   (values time (+ time (dur self))))
 
-
+(defmethod LChan ((self note))
+  (list (chan self)))
 
 ;-----grace notes
 (defclass gn-object ()
