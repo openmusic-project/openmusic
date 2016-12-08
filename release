@@ -19,9 +19,7 @@ echo "COMPILING STANDALONE EXE"
 echo "***************************************************"
 
 	rm -rf ./OPENMUSIC/*.app/
-	cd ./OPENMUSIC/build/build-om/
-	/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build deliver.lisp
-	cd ../../..
+	/Applications/LispWorks\ 7.0\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build ./OPENMUSIC/build/build-om/deliver.lisp
 }
 
 

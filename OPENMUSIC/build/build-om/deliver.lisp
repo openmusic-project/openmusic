@@ -24,7 +24,7 @@
 (defparameter *om-directory-folders* (butlast (pathname-directory (current-pathname)) 2))
 
 ;;;==========================
-;;; DEFAULT INTERFACE (MACOS)(defmethod osc-start-receive ((box ReceiveBox))
+;;; DEFAULT INTERFACE (MACOS)
 ;;;==========================
 
 #+cocoa
