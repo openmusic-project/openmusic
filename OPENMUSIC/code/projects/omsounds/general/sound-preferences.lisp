@@ -11,7 +11,7 @@
 (defvar *audio-res* 16)
 (defvar *automatic-rename* nil)
 (defvar *delete-inter-file* t)
-(defvar *def-snd-format* 'aiff)
+(defvar *def-snd-format* #+cocoa 'aiff #-cocoa 'wav)
 (defvar *normalize* t)
 (defvar *normalize-level* 0.0)
 
@@ -82,11 +82,11 @@
               ) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :audio)))
-  (list :audio-format 'aiff :sys-console t :audio-sr 44100 :audio-res 16
+  (list :audio-format #+cocoa 'aiff #-cocoa 'wav :sys-console t :audio-sr 44100 :audio-res 16
         :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :om
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
         :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
-        ;;;:audio-presets (init-genmixer-values)
+	;;:audio-presets (init-genmixer-values)
         ))
 
 
@@ -157,9 +157,10 @@
                                                        (set-pref modulepref :audio-format
                                                                  (nth (om-get-selected-item-index item) '(aiff wav))))
                                           :font *controls-font* 
-                                          :range '("WAV" "AIFF") 
-                                          :value (cond ((equal (get-pref modulepref :audio-format) 'wav) "WAV")
-                                                       (t #-linux "AIFF" #+linux "WAV"))
+                                          :range '("AIFF" "WAV") 
+                                          :value (case (get-pref modulepref :audio-format)
+						   (wav "WAV")
+						   (t  "AIFF"))
                                           )
 
                          
