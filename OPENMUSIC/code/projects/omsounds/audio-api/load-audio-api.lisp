@@ -21,16 +21,15 @@
 ;;; TODO CLEANUP !!!
 #-macosx
 (defun init-libsndfile ()
-  (define-foreign-library libsndfile
+  (cffi:define-foreign-library libsndfile
     (:darwin "libsndfile.dylib")
     #+win32(:unix (:or "cygsndfile-1.dll" "libsndfile.so.1" "libsndfile.so"))
     (t (:default #+win32 "libsndfile-1" #-win32 "libsndfile")))
   (handler-case 
-      (use-foreign-library libsndfile)
+      (cffi:use-foreign-library libsndfile)
     (error () (progn 
                 (print (format nil "could not load foreign-library libsndfile"))
-                nil)))
-  )
+                nil))))
 
 #+macosx
 (defun init-libsndfile ()
@@ -45,14 +44,13 @@
             (error () (format nil "could not load foreign-library ~A" libpath))))
       (print (format nil "could not find foreign-library ~A" libpath)))))
 
-#-linux (oa:om-add-init-func 'init-libsndfile)
-
+(oa:om-add-init-func 'init-libsndfile)
 
 #-macosx
 (defun init-libsamplerate ()
   (cffi:define-foreign-library libsamplerate
     (:darwin "libsamplerate.dylib")
-    (:unix (:or "libsamplerate.dll" "/usr/local/lib64/libsamplerate.so" "libsamplerate.so"))
+    (:unix (:or "libsamplerate.dll" "libsamplerate.so"))
     (t (:default "libsamplerate")))
   (handler-case 
       (cffi:use-foreign-library libsamplerate)
