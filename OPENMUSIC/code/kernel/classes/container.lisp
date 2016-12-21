@@ -61,7 +61,7 @@
 #qvalue# An integer. 1/qvalue defines a rational fraction of the quarter note. This is the abstract time unit in which the extent is expressed #Qvalue#
 #qtempo# An integer. a tempo expressed as a frequency of the quarter note per minute. Gives an interpretation of Qvalue in the physical time #qtempo#
 #offset# An integer. time offset of the simple-container w/regard to the super-container it belongs eventually to. Expressed in the qvalue of the super-container #offset#
-#extent# An integer. duration of the simple-container. Expressed in the qvalue of the simple-container #offset#
+#extent# An integer. duration of the simple-container. Expressed in the qvalue of the simple-container #extent#
 "))
 
 (defclas container (simple-container)
