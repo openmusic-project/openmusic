@@ -44,12 +44,12 @@
 (defvar *dist-iota* 0.03)
 (defvar *proportions-iota* 0.001)
 
-(defmethod* om::OMquantify ((durs list) (tempi t) (measures list)
-                            (max/ t)
-                            &optional
-                            forbid
-                            offset
-                            precis)
+(defmethod* OMquantify ((durs list) (tempi t) (measures list)
+                        (max/ t)
+                        &optional
+                        forbid
+                        offset
+                        precis)
   :initvals '((100) 60 (4 4) 8 nil 0 0.5)
   :icon 252
   :indoc '("durations (list)" "tempo" "list of time signature(s)" "maximum subdivision"  "list forbidden subdivisions" "grace-notes?" "precision (0.0-1.0)")
@@ -126,7 +126,19 @@ at the beat level. Here is an example:
   ;aaa 12-03-98 quantify in ms
   (let ((rep (quant-edit (om/ durs 10) tempi measures  (if (numberp max/) (list (list max/)) max/) (list! forbid) (or offset 0) 1)))
     (korrected-kant (reducetree rep))
-  ))
+    ))
+
+
+
+(defmethod* omquantify ((self chord-seq) 
+                        (tempi t) (measures list)
+                        (max/ t)
+                        &optional
+                        forbid
+                        offset
+                        precis)
+  (omquantify (true-durations self)
+              tempi measures max/ forbid offset precis))
 
 
 
