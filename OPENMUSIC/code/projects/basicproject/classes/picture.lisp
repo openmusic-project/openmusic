@@ -101,7 +101,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
         (slot-value self 'background)
         )))
 
-(defmethod (setf background) (bg  (self picture))
+(defmethod (setf background) (bg (self picture))
   (setf (slot-value self 'background) bg)
   (cond ((pathnamep bg) (path-to-picture self bg))
         ((consp bg) (list-to-picture self bg))

@@ -267,7 +267,8 @@
   (om::load-modif-patches)
   #+cocoa(objc:make-autorelease-pool)
   (clos::set-clos-initarg-checking nil)
-
+  (editor:setup-indent "defmethod!" 2 2 2)
+  (editor:setup-indent "defmethod*" 2 2 2)  
   (init-root-definition-pathname cl-user::*om-src-directory* om::*om-root*)
 
   (setf *print-case* :downcase)
