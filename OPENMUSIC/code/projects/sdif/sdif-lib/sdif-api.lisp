@@ -96,8 +96,9 @@
   (unless *sdif-initialized-p*
     (when *sdif-library*
       (print "Initializing SDIF...")
-      (sdif::SdifGenInitCond ""))
-    (setf *sdif-initialized-p* t)))
+      (sdif::SdifGenInitCond "")
+      (setf *sdif-initialized-p* t))
+    ))
 
 (defun sdif-kill ()
    (sdif::SdifGenKill)

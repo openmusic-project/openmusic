@@ -5,7 +5,8 @@
 (defclass sdif-object () ())
 
 (defmethod initialize-instance :after ((self sdif-object) &rest initargs)
-  (sdif::sdif-init-cond))
+  (unless om::*om-startup* ;; SDIF must not be initalized in the startup sequence
+    (sdif::sdif-init-cond)))
 
 
 
