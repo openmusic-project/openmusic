@@ -49,7 +49,8 @@
 
 (defmethod analyse-one-segment ((self KANT-seg) (seg segment) (object t))
   (let* ((tmpcseq (select object (segment-begin seg) (min (segment-end seg) (get-obj-dur object))))
-         (durs (x->dx (lonset tmpcseq)))
+         ;; (durs (x->dx (lonset tmpcseq)))
+         (durs (true-durations tmpcseq))
          (kant-data (or (segment-data seg) 
                         (setf (segment-data seg) (make-instance 'kant-data)))))
     (setf (voice kant-data) (make-instance 'voice 
@@ -59,6 +60,7 @@
                                             :chords (get-chords tmpcseq)
                                             :tempo (tempo kant-data)))
     (setf (updateflag kant-data) t)))
+
 
 (defmethod handle-segment-doubleclick ((self KANT-seg) segment panel pos) 
   (kant-data-window  (or (segment-data segment) 
@@ -188,7 +190,7 @@
 
 
 
-;;;===========
+;;;=================================================
 ;;; version quantification "externe"
 
 (defun auto-mark (chord-seq beat-times)
@@ -235,20 +237,23 @@
 (defun quantify-segment (cs t1 t2 tempo maxdiv forbidden precision)
   (let* ((tmpcseq (select cs t1 (min t2 (get-obj-dur cs))))
          (durs (x->dx (lonset tmpcseq)))
-         (chords-and-beats (loop for d in durs for c in (get-chords tmpcseq)
+         (chords-and-beats (loop for d in durs 
+                                 for c in (get-chords tmpcseq)
                                  collect (if (get-extras c 'text)
-                                             (list c d) (list nil (- d))))))
+                                             (list c d) 
+                                           (list nil (- d))))))
     (when (and (zerop t1) (get-chords tmpcseq))
       (setf chords-and-beats 
             (cons (list nil (- (car (lonset tmpcseq)))) chords-and-beats)))
     (make-instance 'voice 
                    :tree (omquantify (mapcar 'cadr chords-and-beats)
-                                            tempo '(4 4)  
-                                            (or maxdiv 8) forbidden
-                                            0 (or precision 0.0))
+                                     tempo '(4 4)  
+                                     (or maxdiv 8) forbidden
+                                     0 (or precision 0.0))
                    :chords (remove nil (mapcar 'car chords-and-beats))
                    :tempo tempo)))
-;;;===========
+
+
 
 
         
