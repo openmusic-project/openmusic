@@ -230,13 +230,13 @@
   (setq *app-name*
         (create-macos-application-bundle (make-pathname :directory *om-directory-folders*
                                                        :name *app-name+version*)
-                                        :document-types '(("Patch" ("omp") "./mac/patch.icns")
-                                                          ("Maquette" ("omm") "./mac/maq.icns")
-                                                          ("Sheet" ("oms") "./mac/sheet.icns")
-                                                          ("Class" ("omc") "./mac/class.icns")
-                                                          ("Method" ("ome") "./mac/meth.icns")
-                                                          ("Workspace" ("omws") "./mac/om.icns"))
-                                        :application-icns "./mac/om.icns"
+                                         :document-types `(("Patch" ("omp") ,(merge-pathnames "mac/patch.icns" *load-pathname*))
+                                                           ("Maquette" ("omm") ,(merge-pathnames "mac/maq.icns" *load-pathname*))
+                                                           ("Sheet" ("oms") ,(merge-pathnames "mac/sheet.icns" *load-pathname*))
+                                                           ("Class" ("omc") ,(merge-pathnames "mac/class.icns" *load-pathname*))
+                                                           ("Method" ("ome") ,(merge-pathnames "mac/meth.icns" *load-pathname*))
+                                                           ("Workspace" ("omws") ,(merge-pathnames "mac/om.icns" *load-pathname*)))
+                                        :application-icns (merge-pathnames "mac/om.icns" *load-pathname*)
                                         :identifier "fr.ircam.repmus.openmusic"
                                         :version (version-to-string *version* t nil)
                                         )))
