@@ -131,7 +131,7 @@
                                    :position (om-make-point (delta-tracks self) (- (h self) (delta-tracks self) 45)) 
                                    :scrollbars nil
                                    :retain-scrollbars nil
-                                   :field-size  (om-make-point (- (* *channel-w* *audio-n-channels*) 5) 45)
+                                   :field-size  (om-make-point (- (* *channel-w* 16) 5) 45)
                                    :size (om-make-point (- (* *channel-w* 16) (* 2 (delta-tracks self))) 45)
                                    :bg-color *om-dark-gray-color*))
          

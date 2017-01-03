@@ -45,7 +45,7 @@
         '(
           "general;sound"   
           "general;soundeditor"
-          ;"general;audio-mix-console"
+          "general;audio-mix-console"
           ;"general;general-mixer"
           "general;automations"
           "general;sound-preferences"
