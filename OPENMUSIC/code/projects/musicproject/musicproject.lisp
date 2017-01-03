@@ -93,6 +93,7 @@
         
         ;-------------------OM Interface to Musical Objects----
         "container;scoreominterface"   
+        "functions;true-durations"      
         "functions;quantifyom"      
         "functions;maquette2obj"    
         "functions;conversions"       

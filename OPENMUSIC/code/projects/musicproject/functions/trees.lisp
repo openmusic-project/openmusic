@@ -260,50 +260,49 @@ The output rhythm tree is intended for the <tree> input of a 'voice' factory box
 
 
 (defun grouper1 (liste)
-"groups succesive floats"
+  "groups succesive floats"
   (if (null liste)
-    liste
+      liste
     (let* ((first (car liste))
            (rest (rest liste))
            )
       (if (numberp first)
-        (if (plusp first)
-          (cons (+ first (loop while (and (numberp (first rest)) (floatp (first rest)))
-                               sum (round (pop rest))))
-                (grouper1 rest))
-          (cons first (grouper1 rest)))
+          (if (plusp first)
+              (cons (+ first (loop while (and (numberp (first rest)) (floatp (first rest)))
+                                   sum (round (pop rest))))
+                    (grouper1 rest))
+            (cons first (grouper1 rest)))
         (cons (grouper1 first) (grouper1 rest))))))
-                
-                  
-
+    
+              
 (defun grouper2  (liste)
-"groups succesive rests (-1) into one"
+  "groups succesive rests (-1) into one"
   (if (null liste)
-    liste
+      liste
     (let* ((first (car liste))
            (rest (rest liste)))
       (if (numberp first)
-        (if (plusp first) 
-          (cons first (grouper2 rest))
-          (cons (+ first (loop while (and (integerp (first rest)) (minusp (first rest)))
-                               sum  (pop rest)))
-                (grouper2 rest)))
+          (if (plusp first) 
+              (cons first (grouper2 rest))
+            (cons (+ first (loop while (and (integerp (first rest)) (minusp (first rest)))
+                                 sum  (pop rest)))
+                  (grouper2 rest)))
         (cons (grouper2 first) (grouper2 rest))))))
  
 
 (defun grouper3 (liste)
-"reduces concatenated rests in the form of (1(-3)) into -1"
+  "reduces concatenated rests in the form of (1(-3)) into -1"
   (if (atom  liste)
-    liste
+      liste
     (if (and (numberp (first (second liste)))
              (minusp (first (second liste)))
              (null (rest (second liste)))
              (not (listp (first liste))))
-      (- (first liste))
+        (- (first liste))
       (list (first liste)
             (mapcar 'grouper3 (second liste))))))
 
-(om::defmethod! reduced-tree ((tree list))
+(defmethod! reduced-tree ((tree list))
    :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
    :indoc '("a rhythm tree")
    :icon 254
@@ -314,9 +313,8 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
      (grouper3 (grouper2 (grouper1 liste)))))
 
 
-
 #|
-(om::defmethod! reducetree ((self voice))
+(defmethod! reducetree ((self voice))
    :initvals '(t)
    :indoc '("voice")
    :icon 254
@@ -330,7 +328,7 @@ into a single correct note"
 |#
 
 
-(om::defmethod! reducetree ((tree list))
+(defmethod! reducetree ((tree list))
    :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))))
    :indoc '("a rhythm tree")
    :icon 225
@@ -349,7 +347,7 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
 ;;;;;;;;;;;;;;;;;;;;;;;;;PULSEMAKER;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;(om::defmethod! pulsemaker ((measures-num list) (beat-unit list) (npulses list))
+;(defmethod! pulsemaker ((measures-num list) (beat-unit list) (npulses list))
 ; :initvals (list '(4 4) '(4 4) '(4 4))
 ; :indoc '("measures-num" "beat-unit" "npulses")
 ; :icon 225
@@ -367,7 +365,7 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
 ;     collect (list (list num bt) (list pls))))))
 
 ;;; REPLACED BY PULSEMAKER FROM REPMUS
-(om::defmethod! pulsemaker ((measures list) (beat-unit list) (n-pulses list))
+(defmethod! pulsemaker ((measures list) (beat-unit list) (n-pulses list))
  :initvals (list '(4 4) '(8 8) '(4 (1 1 1 1)))
  :indoc '("measure numerator(s)" "measure denominator(s)" "contents (pulses/subdivisions)")
  :icon 225
@@ -383,17 +381,17 @@ and a (list of) denominator(s) <beat-unit> filling these measures with <npulses>
        (tree (mapcar #'(lambda (x y) (list x (list y))) mes pulses)))
    (list '? tree)))
 
-(om::defmethod! pulsemaker ((measures list) (beat-unit number) (n-pulses list))
+(defmethod! pulsemaker ((measures list) (beat-unit number) (n-pulses list))
   (let* ((lght (length measures))
         (bt-unt-lst (repeat-n beat-unit lght)))
     (pulsemaker measures bt-unt-lst n-pulses)))
 
-(om::defmethod! pulsemaker ((measures number) (beat-unit list) (n-pulses list))
+(defmethod! pulsemaker ((measures number) (beat-unit list) (n-pulses list))
   (let* ((lght (length beat-unit))
         (measure-lst (repeat-n measures lght)))
     (pulsemaker measure-lst beat-unit n-pulses)))
 
-(om::defmethod! pulsemaker ((measures number) (beat-unit number) (n-pulses list))
+(defmethod! pulsemaker ((measures number) (beat-unit number) (n-pulses list))
   (let* ((lght (length n-pulses))
         (bt-unt-lst (repeat-n beat-unit lght))
         (measure-lst (repeat-n measures lght)))
@@ -455,7 +453,7 @@ into notes. From Gerard."
 
 
 
-(om::defmethod! remove-rests ((tree t))
+(defmethod! remove-rests ((tree t))
    :initvals '((2 (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))))
    :indoc '("a rhythm tree")
    :icon 225
@@ -497,7 +495,7 @@ Converts all rests to notes.
 
 
 
-(om::defmethod! filtertree ((tree t) (places list))
+(defmethod! filtertree ((tree t) (places list))
    :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))) (0 1))
    :indoc '("a rhytm tree" "a list of indices")
    :icon 225
@@ -514,7 +512,7 @@ Replaces expressed notes in given positions from <places> with rests.
 
 
 
-(om::defmethod! select-tree ((tree list) (places list))
+(defmethod! select-tree ((tree list) (places list))
    :initvals '('(? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))) '(0 1))
    :indoc '("tree" "places")
    :icon 225
@@ -570,7 +568,6 @@ Replaces expressed notes in given positions from <places> with rests.
          
 
 (defmethod! group-pulses ((tree list))
-  
   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))))
   :indoc '("a rhythm tree")
   :icon 254
@@ -666,7 +663,7 @@ notes ,rests and tied notes."
           (reverse (mapcar 'reversedtree (second tree))))))
 
 
-(om::defmethod! reversetree ((tree t))
+(defmethod! reversetree ((tree t))
   :initvals '((? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))))
   :indoc '("a rhythm tree")
   :icon 225
@@ -747,7 +744,7 @@ outputed."
 ; for accurate computation!
 
 
-(om::defmethod! subst-rhythm ((tree t) 
+(defmethod! subst-rhythm ((tree t) 
                               (pos list)
                               (elem list)
                               &optional 
@@ -811,7 +808,7 @@ into notes. From Gerard."
 
 
 
-(om::defmethod! invert-rhythm ((tree t))
+(defmethod! invert-rhythm ((tree t))
    :initvals '((? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))))
    :indoc '("a rhythm tree")
    :icon 225
@@ -884,7 +881,7 @@ Inverts <tree> : every note becomes a rest and every rest becomes a note.
 
 
 
-(om::defmethod! tree2ratio ((tree t))
+(defmethod! tree2ratio ((tree t))
   :initvals '((? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))))
   :indoc '("a rythm tree")
   :icon 254
@@ -900,7 +897,7 @@ Converts <tree> into a list of ratio where
 ;;example qud on a une seconde mesure commencant par une liaison 
 ;;donc qui appartien t a la premiere mesure on a un probleme!!!
 
-(om::defmethod! rotatetreepulse ((tree t) (nth integer))
+(defmethod! rotatetreepulse ((tree t) (nth integer))
    :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1)
    :indoc '("tree" "nth")
    :icon 225
@@ -943,7 +940,7 @@ element"
 
 
 
-(om::defmethod! rotate-tree ((tree t) (nth integer))
+(defmethod! rotate-tree ((tree t) (nth integer))
    :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1)
    :indoc '("tree" "nth")
    :icon 254
@@ -981,7 +978,7 @@ Applies a rotation of <n> positions to the pulses in <tree>.
 
 ;;pas pour le moment !!!!
 
-(om::defmethod! tree-canon ((tree t) (unite number) (nbr number))
+(defmethod! tree-canon ((tree t) (unite number) (nbr number))
    :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1/4 1)
    :indoc '("tree" "ratio" "nth-times")
    :icon 225
@@ -1067,7 +1064,7 @@ An inconsistent index (> than the length of <figures>) will produce a rest.
 ;;;;;;;;;;;;;;;;;;;;;;;;;GET-SIGNATURES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(om::defmethod! get-signatures ((tree list))
+(defmethod! get-signatures ((tree list))
    :icon 225
    :indoc '("a rhythm tree, voice or poly")
    :initvals (list  '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))) 
@@ -1090,7 +1087,7 @@ Returns the list of time signatures in the rhythm tree (<tree>).
 ;;;;;;;;;;;;;;;;;;;;;;;;;GET-PULSE-PLACES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(om::defmethod! get-pulse-places ((tree list))
+(defmethod! get-pulse-places ((tree list))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
   :indoc '("a rhythm tree")
   :icon 225

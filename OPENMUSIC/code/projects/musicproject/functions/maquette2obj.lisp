@@ -10,151 +10,26 @@
 ;;; =================================================================================== 
 
 
-
-
-
 (in-package :om)
-
-
-;=====================================utilities================================
-
-;-----------------------------reducetree--------------------------------------
-
-(defun grouper1 (liste)
-"groups succesive floats"
-  (if (null liste)
-    liste
-    (let* ((first (car liste))
-           (rest (rest liste))
-           )
-      (if (numberp first)
-        (if (plusp first)
-          (cons (+ first (loop while (and (numberp (first rest)) (floatp (first rest)))
-                               sum (round (pop rest))))
-                (grouper1 rest))
-          (cons first (grouper1 rest)))
-        (cons (grouper1 first) (grouper1 rest))))))
-                
-                  
-
-(defun grouper2  (liste)
-"groups succesive rests (-1) into one"
-  (if (null liste)
-    liste
-    (let* ((first (car liste))
-           (rest (rest liste)))
-      (if (numberp first)
-        (if (plusp first) 
-          (cons first (grouper2 rest))
-          (cons (+ first (loop while (and (integerp (first rest)) (minusp (first rest)))
-                               sum  (pop rest)))
-                (grouper2 rest)))
-        (cons (grouper2 first) (grouper2 rest))))))
- 
-
-(defun grouper3 (liste)
-"reduces concatenated rests in the form of (1(-3)) into -1"
-  (if (atom  liste)
-    liste
-    (if (and (numberp (first (second liste)))
-             (minusp (first (second liste)))
-             (null (rest (second liste)))
-             (not (listp (first liste))))
-      (- (first liste))
-      (list (first liste)
-            (mapcar 'grouper3 (second liste))))))
-
-(om::defmethod! reducetree1 ((tree t))
-   :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
-   :indoc '("tree")
-   :icon 134
-   :doc "reduces and simplifies a tree by concatenating consecutive rests and floats
-into a single correct note"
-   (let* ((tree (if (typep tree 'voice) (tree tree) tree))
-         (liste (resolve-? tree)))
-(grouper3 (grouper2 (grouper1 liste)))))
-
-
-;-----------------------------true-durations--------------------------------------
-
-
-;;;Fixed quand il y a un silence et une note
-;;; updated 11/05/2009 by kh
-
-;;;Very new one. Should work even with polyphonic chord-seqs!
-;;;;fixed on 050411
-
-(defun normalize-chord-seq (chrdseq)
-  (let* ((xdx (x->dx (lonset chrdseq)))
-         (filt-durs1 (mapcar 'list-min (ldur chrdseq)))
-         (lst-durs (mapcar 'list xdx filt-durs1))
-         (filt-durs2 (mapcar 'list-min lst-durs))
-         (newdurs (loop 
-                   for pt in (lmidic chrdseq)
-                   for drs in filt-durs2
-                   collect (repeat-n drs (length pt)))))
-    (make-instance 'chord-seq 
-                   :lmidic (lmidic chrdseq)
-                   :lonset (lonset chrdseq)
-                   :ldur newdurs)))
-
-(om::defmethod! true-durations ((self t)) 
- :icon 134
- :indoc '("a score object")
- :doc "Gives the durations in milliseconds of om object including rests
-(rest are negative numbers).
-IMPORTANT: chord-seqs with overlapping notes will be cropped according to
-next note, legato=100."
-  (let* ((newchrdseq (if (typep self 'note) 
-                           (Objfromobjs (Objfromobjs self (make-instance 'chord)) (make-instance 'chord-seq))
-                           (Objfromobjs self (make-instance 'chord-seq))))
-
-         (newcs (normalize-chord-seq newchrdseq))
-         (onsets (Lonset newcs))
-         (dur (Ldur newcs))
-         (newonsets (if (= 2 (length onsets)) (x->dx  onsets) (butlast (x->dx onsets))))
-         (newdurs (mapcar 'first dur))
-         (resultat1 
-          (x-append 
-          (flat
-           (list (mapcar #'(lambda (x y) (if (= 0 (- x y)) x 
-                                             (list x (- x y))))
-                         newdurs newonsets)
-                 (last newdurs)))
-          (last-elem newdurs)))
-         (resultat2 (butlast
-                     (if (= 0 (first onsets)) resultat1 (cons (* -1 (first onsets)) resultat1)))))
-    
-   (let ((result (remove nil (mapcar #'(lambda (x) (if (not (or (= x 1) (= x -1))) x ))
-          resultat2))))
-         (if (= 2 (length onsets)) (list (car result) (second result)) result))
-   )
-  )
-
-
-
-
-
-
 
 ;-----------------------------------trac-for-mid---------------------------------------
 ;--------------------------quantify-maquette--------------------------------------
 
 (defun transform-seq (maquette)
-"everythy voice or poly is transformed into a chord-seq or multiseq"
+  "every voice or poly is transformed into a chord-seq or multiseq"
   (let ((obj (inside maquette)))
     (remove nil (loop
-      for i in obj
-      collect (cond
-               ((or (typep i 'note) (typep i 'chord) (typep i 'midifile))
-                (objfromobjs i (make-instance 'chord-seq)))
-               ((typep i 'voice)
-                (objfromobjs i (make-instance 'chord-seq )))
-               ((typep i 'poly)
-                (objfromobjs i (make-instance 'multi-seq)))
-               ((typep i 'chord-seq) i)
-               ((typep i 'multi-seq) i)
-               )))))
+                 for i in obj
+                 collect (cond
+                          ((or (typep i 'note) (typep i 'chord) (typep i 'midifile))
+                           (objfromobjs i (make-instance 'chord-seq)))
+                          ((typep i 'voice)
+                           (objfromobjs i (make-instance 'chord-seq )))
+                          ((typep i 'poly)
+                           (objfromobjs i (make-instance 'multi-seq)))
+                          ((typep i 'chord-seq) i)
+                          ((typep i 'multi-seq) i)
+                          )))))
 
 
 (defun find-maq-inside (maquette)
@@ -242,7 +117,7 @@ next note, legato=100."
 #|
 
 ;list format (<name> <offset> <ending>) 
-( parse-mid-tracks '(("a"  1 3 (45 54))
+(parse-mid-tracks '(("a"  1 3 (45 54))
                ("b"  2 4 (45 54))
                ("c"  5 8 (45 54))
                ("d"  6 9 (45 54))
@@ -250,8 +125,6 @@ next note, legato=100."
                ("f"  10 12 (45 54))))
 
 |#
-
-
 
 
 (defun append-last-durs (lst)
