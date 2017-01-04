@@ -467,6 +467,12 @@ If <dynamics>
      (setf (gparams copy) ,(omng-save (gparams self)))
    copy))
 
+(defmethod omNG-copy ((self compose-extra-object))
+  `(let ((copy ,(call-next-method)))
+     (setf (p-points copy) ,(omng-copy (p-points self)))
+     (setf (gparams copy) ,(omng-copy (gparams self)))
+     copy))
+
 (defmethod extra-movable-edit-class ((self compose-extra-object))
   'movable-extra-line)
 
@@ -1012,7 +1018,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
       (setf lastx (+ x0 (* i (+ cx (* i (+ bx (* i ax))))))
             lasty (+ y0 (* i (+ cy (* i (+ by (* i ay))))))))))
 
-(defun g-curveto ( x0 y0 x1 y1 x2 y2 x3 y3)
+(defun g-curveto (x0 y0 x1 y1 x2 y2 x3 y3)
   (output-bezier  x0 y0 x1 y1 x2 y2 x3 y3 *slur-accuracy*)
   (output-bezier  x0 y0 x1 (- y1 1) x2 (- y2 1) x3 y3 *slur-accuracy*))
 
@@ -1041,7 +1047,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
         newextra obj points0 points1)
     (if target
-        (let* ((slurname (gensym)) newextrab newextrae)
+        (let* ((slurname (intern (string (gensym)))) newextrab newextrae)
           (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*)) 
                                                  (list *extra-initial-pos* (om-add-points *extra-initial-pos* (om-make-point size size))) size))
           (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
@@ -1086,12 +1092,16 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
            (let ((object0 (reference beginslur)))
              (setf points0 (convert-delta-to-points (gobject beginslur) (p-points object0) size))
              (setf points1 (convert-delta-to-points (gobject self) (p-points object) size))
-           (apply 'g-curveto (loop for item in (append points0 points1) append (list (om-point-h item) (om-point-v item))))
-           (when (equal (score-get-extra-mode) 'slur)
-             (setf (selection-rec self) (list (+ (om-point-h (car points0)) (round (- (om-point-h (second points1)) (om-point-h (car points0))) 2))
-                                              (+ (om-point-v (car points0)) (round (- (om-point-v (second points1)) (om-point-v (car points0))) 2))))
-            (om-with-fg-color nil *om-red-color*
-              (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))))))
+           (when (and points0 points1)
+             (apply 'g-curveto (loop for item in (append points0 points1) append (list (om-point-h item) (om-point-v item))))
+             (when (equal (score-get-extra-mode) 'slur)
+               (setf (selection-rec self) (list (+ (om-point-h (car points0)) (round (- (om-point-h (second points1)) (om-point-h (car points0))) 2))
+                                                (+ (om-point-v (car points0)) (round (- (om-point-v (second points1)) (om-point-v (car points0))) 2))))
+             
+               (om-with-fg-color nil *om-red-color*
+                 (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
+             ))
+           )))))
 
 (defmethod draw-score-selection ((self grap-slur-extra) selection system size)
   (when (member (reference self) selection :test 'equal)
