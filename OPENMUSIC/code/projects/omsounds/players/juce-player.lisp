@@ -6,7 +6,7 @@
 (in-package :om)
 
 ;Constants to use to create players.
-(defconstant *audio-in-chan* 2)
+(defconstant *audio-in-chan* 0)
 (defconstant *audio-out-chan* 2)
 (defvar *audio-sr* 44100)
 (defconstant *audio-buffsize* 512)
