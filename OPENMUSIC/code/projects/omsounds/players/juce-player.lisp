@@ -19,8 +19,21 @@
 (enable-player :om-audio)
 (add-player-for-object 'sound :om-audio)
 
+(defun player-setup (player)
+  (let ((in-devices (juce::getinputdevicenames player))
+        (out-devices (juce::getoutputdevicenames player)))
+    (print (format nil "AUDIO SETUP: ~A x ~A / ~A x ~A, ~AHz" 
+                   (car out-devices) *audio-out-chan* (car in-devices) *audio-in-chan* *audio-sr*))
+    (juce::setdevices 
+     player 
+     (car in-devices) *audio-in-chan* 
+     (car out-devices) *audio-out-chan*
+     *audio-sr*)  
+    ))
+
 (defmethod player-open ((self (eql :om-audio)))
-  (setf *juce-player* (juce::OpenAudioPlayer *audio-in-chan* *audio-out-chan* *audio-sr*)))
+  (setq *juce-player* (juce::OpenAudioPlayer))
+  (when *juce-player* (player-setup *juce-player*)))
 
 (defmethod player-close ((self (eql :om-audio)))
   (when *juce-player* (juce::closeaudioplayer *juce-player*))
@@ -30,8 +43,7 @@
 ;; called from preferences
 (defun set-audio-sample-rate (sr)
   (setq *audio-sr* sr)
-  (when *juce-player* 
-    (juce::ChangeSampleRate *juce-player* 44100)))
+  (when *juce-player* (player-setup *juce-player*)))
 
 (defun get-internal-interval (interval sound at)
   (om- (interval-intersec interval (list at (+ at (real-dur sound)))) at))
