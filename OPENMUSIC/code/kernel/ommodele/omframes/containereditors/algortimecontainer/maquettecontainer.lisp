@@ -1015,6 +1015,7 @@
      (#\p (editor-play (editor self)))
      (#\g (setf (grille-p self) (not (grille-p self)))
           (om-invalidate-view self))
+     (#\G (when (rulermetric (editor self)) (edit-metrics (rulermetric (editor self)))))
      (#\s (editor-stop (editor self)))
      (#\z (lock-boxes self))
      (#\I (mapc 'reinit-contents (get-actives self)) 
@@ -1034,8 +1035,7 @@
              self
              ))
      (#\V (om-eval-enqueue  
-           `(eval-maquette ,self) self))
-     
+           `(eval-maquette ,self) self)) 
      (otherwise (call-next-method))))
 
 (defmethod get-help-list ((self maquettepanel))
