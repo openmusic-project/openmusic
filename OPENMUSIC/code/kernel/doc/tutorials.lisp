@@ -123,32 +123,32 @@
     (make-new-folder (panel editor) dir (or (find-a-position (panel editor)) (om-make-point 20 30)) name)
     ))
 
+*om-resources-folder*
+
 (defun import-tutorial-menu (editor)
-  (let ((tut-folder (om-directory (OMRoot "resources;tutorials;") :directories t :files nil)))
-    
+  (let ((tut-folder (merge-pathnames "tutorials/" *om-resources-folder*)))
     (list (list 
-           (om-make-menu "Import Tutorials Patches..." 
-                         (append 
-                          (list  (mapcar #'(lambda (f)
-                                             (om-new-leafmenu (car (last (pathname-directory f))) 
-                                                              #'(lambda () 
-                                                                  (import-tutorial f (car (last (pathname-directory f))) 
-                                                                                   ; (string+ (car (last (pathname-directory f))) "-tutorial-patches") 
-                                                                                   editor 'kernel (OMRoot "resources;tutorials;")))))
-                                         tut-folder))
-                          
-                          (list 
-                           (om-make-menu "Libraries"
-                                              (list #'(lambda (x)
-                                                  (remove nil 
-                                                               (mapcar #'(lambda (lib) 
-                                                                           (let ((exdir (find-examples-patches lib)))
-                                                                             (when (and exdir (probe-file exdir) (om-directory exdir :directories t :files t :type '("omp" "omm" "she")))
-                                                                               (om-new-leafmenu (name lib) 
-                                                                                                #'(lambda () 
-                                                                                                    (import-tutorial exdir (string+ (name lib) "-tutorial-patches") editor 'lib (lib-pathname lib)))))))
-                                                                       (subpackages *library-package*))
-                                                               )))))
+           (om-make-menu 
+            "Import Tutorials Patches..." 
+            (append 
+             (list (mapcar #'(lambda (f)
+                               (om-new-leafmenu (car (last (pathname-directory f))) 
+                                                #'(lambda () 
+                                                    (import-tutorial  f (car (last (pathname-directory f))) editor 'kernel tut-folder))))
+                           (om-directory tut-folder :directories t :files nil)))
+             (list 
+              (om-make-menu 
+               "Libraries"
+               (list #'(lambda (x)
+                         (remove nil 
+                                 (mapcar #'(lambda (lib) 
+                                             (let ((exdir (find-examples-patches lib)))
+                                               (when (and exdir (probe-file exdir) (om-directory exdir :directories t :files t :type '("omp" "omm" "she")))
+                                                 (om-new-leafmenu (name lib) 
+                                                                  #'(lambda () 
+                                                                      (import-tutorial exdir (string+ (name lib) "-tutorial-patches") editor 'lib (lib-pathname lib)))))))
+                                         (subpackages *library-package*))
+                                 )))))
                                 
-                                ))))
-          ))
+             ))))
+    ))
