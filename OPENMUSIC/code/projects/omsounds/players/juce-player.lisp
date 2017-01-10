@@ -95,3 +95,33 @@
                             :interval (get-internal-interval (play-interval player) obj (offset->ms obj))))
                        (car (play-interval player)))
         ))
+
+
+(defmethod (setf vol) (vol (object sound))
+  (setf (slot-value object 'vol) vol)
+  ;(print (juce::getgainreader (player-data object)))
+  ;(juce::setgainreader (player-data object) (coerce 1.0 'single-float))
+  )
+
+(defmethod make-player-specific-controls ((self (eql :om-audio)) control-view)
+ (let ((snd (object (editor control-view))))
+   (list 
+    ;(om-make-dialog-item 'om-static-text 
+    ;                     (om-make-point 405 8)
+    ;                     (om-make-point 40 20) "Gain" ;level
+    ;                     :font *om-default-font1*)
+    (om-make-view 'graphic-numbox :position (om-make-point 360 8) 
+                        :size (om-make-point 20 20) ;;; (format nil "~D" zoom)
+                        :pict (om-load-and-store-picture "dial" 'di)
+                        :draw-fun #'(lambda (item) 
+                                      (om-with-font (om-make-font "Verdana" 8)
+                                                    (om-draw-string 1 15 (format nil "~A" (* (value item) 0.01)))))
+                        :nbpict 65
+                        :pict-size (om-make-point 24 24)
+                        :di-action (om-dialog-item-act item
+                                     (setf (vol snd) (* (value item) 0.01)))
+                        :font *om-default-font2*
+                        :value (round (* (vol snd) 100))
+                        :min-val 0
+                        :max-val 100))))
+

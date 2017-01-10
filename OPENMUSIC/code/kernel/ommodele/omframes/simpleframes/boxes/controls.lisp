@@ -475,13 +475,12 @@
    (min-val :initform 0     :initarg :min-val :accessor min-val)
    (max-val :initform 30000 :initarg :max-val :accessor max-val)
    (di-action :initform nil :initarg :di-action :accessor di-action)
-   (afterfun :initform nil :initarg :afterfun :accessor afterfun)))
+   (afterfun :initform nil :initarg :afterfun :accessor afterfun)
+   (draw-fun   :initform nil     :initarg :draw-fun   :accessor draw-fun)))
 
 (defmethod initialize-instance ((self graphic-numbox) &rest initargs)
   (call-next-method)
   (setf (pict-part self) (round (* (- (nbpict self) 1) (/ (- (value self) (min-val self)) (- (max-val self) (min-val self)))))))
-
-
 
 (defmethod om-draw-contents ((self graphic-numbox))
   (when (pict self)
@@ -489,7 +488,10 @@
                           :size (om-view-size self)
                           :srctopleft (om-make-point 0 (* (pict-part self) (om-point-v (pict-size self))))
                           :srcsize (pict-size self) 
-                          )))
+                          ))
+  (when (draw-fun self)
+    (funcall (draw-fun self) self))
+  )
 
 
 (defvar *gnumbox-last-click* nil)

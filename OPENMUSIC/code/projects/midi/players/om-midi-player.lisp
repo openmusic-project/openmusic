@@ -7,7 +7,7 @@
 
 ;;; NEW MIDI PLAYER (NOT YET AVAILABLE)                 
 (defmethod player-name ((player (eql :midi-player))) "OM MIDI player")   ;;; A short name
-(defmethod player-desc ((player (eql :midi-player))) "Uses the default MIDI system to send MIDI events in real time")   ;;; a description
+(defmethod player-desc ((player (eql :midi-player))) "Default MIDI system")   ;;; a description
 (defmethod player-special-action ((player (eql :midi-player))) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player (eql :midi-player))) nil)   ;;; the default values for the player params
 (defmethod player-type ((player (eql :midi-player))) :midi)   ;;; communication protocol (:midi / :udp)

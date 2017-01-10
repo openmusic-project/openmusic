@@ -419,6 +419,7 @@ Press 'space' to play/stop the sound file.
                                       (setf (display-builder self) nil)
                                       (print (format nil "~A Loaded..." (filename self)))) self))))
 
+
 (defmethod build-display-array ((self sound))
   (let ((winsize 128))
     (let* ((format (om-sound-format self))
@@ -525,6 +526,9 @@ Press 'space' to play/stop the sound file.
             ((> nbpix maxnbpix)
              (setq result (om-get-sound-display-array-slice (namestring (filename self)) nbpix start-time end-time))))
       (values result (< (cadr (array-dimensions result)) nbpix)))))
+
+
+
 
 (defmethod* get-sound () 
    :initvals nil

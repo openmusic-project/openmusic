@@ -98,7 +98,7 @@
          (dialog (om-make-window 'om-dialog
                                  :window-title (string+ "Player Settings for " (name reference))
                                  :position :centered
-                                 :size (om-make-point 690 (+ 120 (* (length players-in-dialog) 60)))
+                                 :size (om-make-point 690 (+ 120 (* (length players-in-dialog) 50)))
                                  :maximize nil :resizable nil
                                  :font *om-default-font4*
                                  :bg-color (om-make-color 0.623 0.623 0.623)))
@@ -108,7 +108,7 @@
          (player-types (remove-duplicates players-in-dialog :key 'player-type))
          
          (paneplayer (om-make-view 'om-view :bg-color *om-white-color*
-                                   :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 60)))))
+                                   :position (om-make-point 10 40) :size (om-make-point 320 (+ 20 (* (length players-in-dialog) 50)))))
          (paneports (om-make-view 'om-view :bg-color *om-white-color*
                                   :position (om-make-point 350 40) :size (om-make-point 320 170)))
          (y 10) (y2 10)
@@ -136,14 +136,14 @@
                                                                                                 selected-player)
                                                                  ))
                                                   :font *om-default-font2*)
-                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 160 20) 
-                                                  (string+ "type: " (if (player-type pl) (symbol-name (player-type pl)) "undefined"))
-                                                  :font *om-default-font1*)
-                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 35)) (om-make-point 280 60) 
+                             ;(om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 160 20) 
+                             ;                     (string+ "type: " (if (player-type pl) (symbol-name (player-type pl)) "undefined"))
+                             ;                     :font *om-default-font1*)
+                             (om-make-dialog-item 'om-static-text (om-make-point 40 (+ y 20)) (om-make-point 280 60) 
                                                   (player-desc pl)
                                                   :font *om-default-font1*)
                              )
-            (incf y 60))
+            (incf y 50))
                              
       (incf y 60)
 
