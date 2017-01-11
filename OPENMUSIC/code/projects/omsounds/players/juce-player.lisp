@@ -98,10 +98,12 @@
 
 
 (defmethod (setf vol) (vol (object sound))
-  (setf (slot-value object 'vol) vol)
-  (juce::setgainreader (player-data object) vol)
+  (let ((vv (if (integerp vol) (* vol 0.01) vol)))
+  (setf (slot-value object 'vol) vv)
+  (when (player-data object)
+    (juce::setgainreader (player-data object) vv))
   ;(print (juce::getgainreader (player-data object)))
-  vol)
+  vv))
 
 (defmethod make-player-specific-controls ((self (eql :om-audio)) control-view)
  (let ((snd (object (editor control-view))))
