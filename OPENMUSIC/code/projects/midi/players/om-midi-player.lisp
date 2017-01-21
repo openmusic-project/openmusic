@@ -50,7 +50,7 @@
   (midi-start))
 
 (defmethod player-stop ((engine (eql :midi-player)) &optional play-list)
-  (loop for ch in *key-ons*
+  (loop for ch in *key-ons* 
         for c = 1 then (+ c 1) do
         (loop for note in ch do
               (midi-send-evt 
@@ -72,7 +72,7 @@
 (defmethod player-play-object ((engine (eql :midi-player)) (object om-midi::midi-evt) &key interval params)
   ;;(print (format nil "~A : play ~A - ~A" engine object interval))
   ;;(print object)
-  (let ((key-index (om-midi::midi-evt-chan object)))
+  (let ((key-index (1- (om-midi::midi-evt-chan object))))
     (cond 
       ((or (equal (om-midi::midi-evt-type object) :keyOff)
 	   (and (equal (om-midi::midi-evt-type object) :keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))

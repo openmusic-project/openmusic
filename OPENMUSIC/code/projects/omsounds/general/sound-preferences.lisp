@@ -22,46 +22,64 @@
 (defvar *general-mixer-presets* nil)
 (defun default-genmixer-values () nil)
 
+(defvar *audio-sr* 44100)
+(defvar *audio-out-n-channels* 2)
+(defvar *audio-out-device* nil)
+
+;;; these values depend on the selected device
+(defvar *audio-sr-options* '(44100))
+(defvar *audio-out-chan-options* '(2))
+
+;; redefined by player
+(defmethod player-apply-setup (player) nil)
 
 (defmethod put-preferences ((iconID (eql :audio)))
-  (let* ((modulepref (find-pref-module iconID))
-         (defpref (get-def-vals iconID))
-         (new-sr (get-pref modulepref :audio-sr))
-         (new-res (get-pref modulepref :audio-res)))
-    (setf *sys-console* (get-pref modulepref :sys-console))
-    (when (get-pref modulepref :audio-format)
-      (setf *def-snd-format* (get-pref modulepref :audio-format)))
-    (when new-sr
-      (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
-          (set-audio-sample-rate new-sr)
-        (progn 
-          (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
-          (set-pref modulepref :audio-sr 44100)
-          )))
+  (let ((modulepref (find-pref-module iconID))
+         (defpref (get-def-vals iconID)))
     
+    (setf *sys-console* (get-pref modulepref :sys-console))
+    (setf *def-snd-format* (get-pref modulepref :audio-format)) 
     (setf *delete-inter-file* (get-pref modulepref :delete-tmp))
     (setf *automatic-rename* (get-pref modulepref :auto-rename))
     (setf *normalize* (get-pref modulepref :normalize))
     (setf *normalize-level* (get-pref modulepref :normalize-level))
+    
     (when (get-pref modulepref :normalizer)
       (if (find (get-pref modulepref :normalizer) *loaded-normalizers* :test 'equal)
           (setf *normalizer* (get-pref modulepref :normalizer))
         (print (string+ "Normalize module " (string (get-pref modulepref :normalizer)) " not loaded. Default module (" (string *normalizer*) ") will be used."))
         ))
-    (when new-res
-      (if (and (integerp new-res) (>= new-res 4) (<= new-res 4096))
-          (setf *audio-res* new-res)
-        (progn 
-          (om-beep-msg "Bad value for AUDIO RESOLUTION. The default value will be restored.")
-          (set-pref modulepref :audio-res 16)
-          )))
+
+    (let ((new-sr (get-pref modulepref :audio-sr)))
+      (when new-sr
+        (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
+            (setf *audio-sr* new-sr)
+          (progn 
+            (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
+            (set-pref modulepref :audio-sr 44100)
+            ))))
+    
+    (let ((new-res (get-pref modulepref :audio-res)))
+      (when new-res
+        (if (and (integerp new-res) (>= new-res 4) (<= new-res 4096))
+            (setf *audio-res* new-res)
+          (progn 
+            (om-beep-msg "Bad value for AUDIO RESOLUTION. The default value will be restored.")
+            (set-pref modulepref :audio-res 16)
+            ))))
+
+    (setf *audio-out-device* (get-pref modulepref :audio-device))
+    (setf *audio-out-n-channels* (get-pref modulepref :audio-n-channels))
+    
+    (player-apply-setup :om-audio)
+    (set-pref modulepref :audio-n-channels  *audio-out-n-channels*)
+    (set-pref modulepref :audio-sr *audio-sr*)
+                               
     
     (setf *multiplayer-out-port* (get-pref modulepref :multi-out))
     (setf *multiplayer-in-port* (get-pref modulepref :multi-in))
     (setf *multiplayer-path* (get-pref modulepref :multip-path))
     
-    ;(when (get-pref modulepref :audio-presets)
-    ;  (put-audio-mixer-values (get-pref modulepref :audio-presets)))
     t))
 
 
@@ -78,6 +96,8 @@
               :normalizer ,*normalizer*
               :multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
               :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*))
+              :audio-device ,*audio-out-device*
+              :audio-n-channels ,*audio-out-n-channels*
               ;:audio-presets ',(get-audio-mixer-presets)
               ) *om-version*))
 
@@ -86,7 +106,8 @@
         :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :om
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
         :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
-	;;:audio-presets (init-genmixer-values)
+        :audio-device *audio-out-device* ;; use default
+	:audio-n-channels 2
         ))
 
 
@@ -95,7 +116,6 @@
 
 ;;;(defvals (get-pref-by-icon 287 *pref-item-list*))
 ;;; *om-outfiles-folder*
-
 
 (defmethod make-new-pref-scroll ((num (eql :audio)) modulepref)
   (let ((thescroll (om-make-view 'preference-pane
@@ -106,36 +126,68 @@
                                  :scrollbars :v 
                                  :retain-scrollbars t
                                  :bg-color *om-light-gray-color*))
+        
+        (player-get-devices :om-audio)        
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         normtext normval useval usetext
+        noutlist srlist
         (pos 0))
      
     (om-add-subviews thescroll
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 20)) (om-make-point 300 30)
 					  "Audio Player"
 					  :font *om-default-font3b*)
-                         
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos 30)) (om-make-point 170 30) 
+                                          "Device"
+                                          :font *controls-font*)
+
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
+                                          (om-make-point 160 20)
+                                          ""
+                                          :di-action (om-dialog-item-act item
+                                                       (set-pref modulepref :audio-device
+                                                                 (om-get-selected-item item))
+                                                       )
+                                          :font *controls-font* 
+                                          :range audio-devices 
+                                          :value (get-pref modulepref :audio-device)
+                                          )
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos 30)) (om-make-point 170 30) 
+                                          "Outputs"
+                                          :font *controls-font*)
+
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
+                                          (om-make-point 140 20)
+                                          ""
+                                          :di-action (om-dialog-item-act item
+                                                       (set-pref modulepref :audio-n-channels
+                                                                 (read-from-string (om-get-selected-item item))))
+                                          :font *controls-font* 
+                                          :range (mapcar 'number-to-string *audio-out-chan-options*) 
+                                          :value (number-to-string (get-pref modulepref :audio-n-channels))
+                                          )
+
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30)
 					  (format nil "~A Sample Rate (Hz)" #-linux "Player" #+linux "Server")
 					  :font *controls-font*)
                          
-		     (om-make-dialog-item 'om-editable-text 
-					  (om-make-point 295 (+ pos 6))
-					  (om-make-point 60 13)
-					  (format nil "~D" (get-pref modulepref :audio-sr)) 
-					  :modify-action (om-dialog-item-act item
-							   (let ((text (om-dialog-item-text item))
-								 number)
-							     (unless (string= "" text)
-							       (setf number (ignore-errors (read-from-string text)))
-							       (when (numberp number)
-								 (set-pref modulepref :audio-sr number))
-							       )))
-					  :font *om-default-font2*)
-                         
-		     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 20)) (om-make-point 350 22) 
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
+                                          (om-make-point 140 20)
+                                          ""
+                                          :di-action (om-dialog-item-act item
+                                                       (set-pref modulepref :audio-sr
+                                                                 (read-from-string (om-get-selected-item item))))
+                                          :font *controls-font* 
+                                          :range (mapcar 'number-to-string *audio-sr-options*) 
+                                          :value (number-to-string (get-pref modulepref :audio-sr))
+                                          )
+                     
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 28)) (om-make-point 350 22) 
 					  "(Also used as default SR for sound synthesis)"
 					  :font *om-default-font1*)
+                       		     
 		     #+linux (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 30))
 						  (om-make-point 350 22) 
 						  "OM will attempt to start a JACK-server if its not running already"
@@ -281,8 +333,6 @@
         ;(setf pos 180)
 
     thescroll))
-
-
 
 
 ;;; appele juste apres la creation du workspace

@@ -34,11 +34,6 @@
 ; LOAD
 ;======================
 
-(defvar *audio-sr* 44100)
-
-;; override inside juce-player.lisp:
-(defun set-audio-sample-rate (sr) (setq *audio-sr* sr))
-
 (eval-when (eval compile load)
   (mapc #'(lambda (filename) 
             (compile&load (namestring (make-local-path *load-pathname* filename)))) 
@@ -65,9 +60,6 @@
           "synth;synthesize"
     
           )))
-
-
-
 
 
 ;;;================= AUDIO PACKAGES ================

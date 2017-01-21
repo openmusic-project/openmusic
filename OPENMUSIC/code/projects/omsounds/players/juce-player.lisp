@@ -6,44 +6,64 @@
 (in-package :om)
 
 ;Constants to use to create players.
-(defconstant *audio-in-chan* 0)
-(defconstant *audio-out-chan* 2)
-(defvar *audio-sr* 44100)
 (defconstant *audio-buffsize* 512)
-(defconstant *audio-streambuffsize* 65536)
 
 (defvar *juce-player* nil)
+(defvar *audio-driver* "CoreAudio")  ;;; change this on other platforms
 
 (defmethod player-name ((self (eql :om-audio))) "Default audio player")
 (defmethod player-desc ((self (eql :om-audio))) "(based on Juce)")
 (enable-player :om-audio)
 (add-player-for-object 'sound :om-audio)
 
-(defun player-setup (player)
-  (let ((in-devices (juce::getinputdevicenames player))
-        (out-devices (juce::getoutputdevicenames player)))
-    (print (format nil "AUDIO SETUP: ~A x ~A / ~A x ~A, ~AHz" 
-                   (car out-devices) *audio-out-chan* (car in-devices) *audio-in-chan* *audio-sr*))
-    (juce::setdevices 
-     player 
-     (car in-devices) *audio-in-chan* 
-     (car out-devices) *audio-out-chan*
-     *audio-sr*)  
-    ))
+(defun apply-setup (player)
+     (print (format nil "AUDIO PLAYER SETUP: ~A x ~A, ~AHz" *audio-out-device* *audio-out-n-channels* *audio-sr*))
+     (juce::setdevices  player 
+                        "" 0 
+                        *audio-out-device* *audio-out-n-channels*
+                        *audio-sr* *audio-buffsize*))
+   
+(defun juce-player-setup-with-check ()
+  (let ((in-devices (juce::audio-driver-input-devices *juce-player* *audio-driver*))
+        (out-devices (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
+    (unless (and *audio-out-device* (find *audio-out-device* out-devices :test 'string-equal))
+      (om-beep-msg (format nil "Selected audio device: \"~A\" not available. Restoring default." *audio-out-device*))
+      (setf *audio-out-device* (car out-devices)))
+    
+    (apply-setup *juce-player*)
+
+    (setf *audio-out-chan-options* (juce::getoutputchannelslist *juce-player*))
+    (setf *audio-sr-options* (juce::getsamplerates *juce-player*))
+    (let ((nch-ok (find *audio-out-n-channels* *audio-out-chan-options*))
+          (sr-ok (find *audio-sr* *audio-sr-options*)))
+      (unless nch-ok
+        (setf *audio-out-n-channels* (car (last *audio-out-chan-options*))))
+      (unless sr-ok
+        (setf *audio-sr* (car *audio-sr-options*)))
+      (unless (and nch-ok sr-ok)
+        (if nch-ok
+            (juce::setsamplerate *juce-player* *audio-sr*)
+          (apply-setup *juce-player*)
+          ))
+      )
+    t))
+
+
+;; called from preferences
+(defmethod player-get-devices ((player (eql :om-audio)))
+  (when *juce-player* (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
+
+(defmethod player-apply-setup ((player (eql :om-audio)))
+  (when *juce-player* (juce-player-setup-with-check)))
 
 (defmethod player-open ((self (eql :om-audio)))
-  (setq *juce-player* (juce::OpenAudioPlayer))
-  (when *juce-player* (player-setup *juce-player*)))
+  (setq *juce-player* (juce::openAudioManager))
+  (when *juce-player* (juce-player-setup-with-check)))
 
 (defmethod player-close ((self (eql :om-audio)))
-  (when *juce-player* (juce::closeaudioplayer *juce-player*))
+  (when *juce-player* (juce::closeAudioManager *juce-player*))
   (setf *juce-player* nil))
 
-; (set-audio-sample-rate 44100)
-;; called from preferences
-(defun set-audio-sample-rate (sr)
-  (setq *audio-sr* sr)
-  (when *juce-player* (player-setup *juce-player*)))
 
 (defun get-internal-interval (interval sound at)
   (om- (interval-intersec interval (list at (+ at (real-dur sound)))) at))
@@ -82,6 +102,7 @@
 ;;; PLAY (NOW)
 ;;; we just suppose the stop will be called somewhere else..
 (defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
+  (declare (ignore params))
   (when interval 
     (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
   (juce::startreader *juce-player* (player-data object)))
