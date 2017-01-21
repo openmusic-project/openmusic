@@ -201,8 +201,7 @@
 
 ;Choose the workspace path
 (defmethod start-from-ws ((name t))
-   (om-beep)
-   (show-workspaces-dialog))
+  (show-workspaces-dialog))
 
 (defmethod start-from-ws ((name string))
    (init-om-session (OMRoot (string+ "workspaces;" name ";"))))
@@ -212,8 +211,7 @@
      (cond
       ((or (stringp string) (directory-pathname-p string))
        (init-om-session string))
-      (t (om-beep)
-         (show-workspaces-dialog)))))
+      (t (show-workspaces-dialog)))))
 
 (defmethod start-from-ws ((name pathname))
   (init-om-session name))

@@ -127,7 +127,7 @@
                                  :retain-scrollbars t
                                  :bg-color *om-light-gray-color*))
         
-        (player-get-devices :om-audio)        
+        (audio-devices (player-get-devices :om-audio))        
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         normtext normval useval usetext
         noutlist srlist

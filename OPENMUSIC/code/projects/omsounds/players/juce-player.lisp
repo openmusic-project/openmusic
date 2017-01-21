@@ -27,7 +27,8 @@
   (let ((in-devices (juce::audio-driver-input-devices *juce-player* *audio-driver*))
         (out-devices (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
     (unless (and *audio-out-device* (find *audio-out-device* out-devices :test 'string-equal))
-      (om-beep-msg (format nil "Selected audio device: \"~A\" not available. Restoring default." *audio-out-device*))
+      (when *audio-out-device* 
+          (om-beep-msg (format nil "Selected audio device: \"~A\" not available. Restoring default." *audio-out-device*)))
       (setf *audio-out-device* (car out-devices)))
     
     (apply-setup *juce-player*)
@@ -122,7 +123,7 @@
   (let ((vv (if (integerp vol) (* vol 0.01) vol)))
   (setf (slot-value object 'vol) vv)
   (when (player-data object)
-    (juce::setgainreader (player-data object) vv))
+    (juce::setgainreader (player-data object) (* vv *audio-master-gain*)))
   ;(print (juce::getgainreader (player-data object)))
   vv))
 
