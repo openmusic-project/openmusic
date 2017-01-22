@@ -189,31 +189,36 @@
                                 :ref track
                                 :fields (list pitch 0))
         ))
-
-(approx-m 50 7)
-         
+        
 (defmethod PrepareToPlay ((player (eql :midi)) (self note) at &key  approx port interval voice)
   (when (not (memq (tie self) '(continue end)))
     (setf port (or port (port self)))
     (setf approx (or approx 2))
-    (let ((chan (+ (chan self) (micro-channel (approx-m (midic self) approx) approx)))
-          (pitch (truncate (approx-scale (get-current-scale approx) (midic self)) 100))
-          (vel (vel self))
-          (dur (- (real-dur self) 2))			    ; why ?
-          (date at)					    ; (+ *MidiShare-start-time* at))
-          (voice (or voice 0)))
-      (let ((newinterval (and interval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))))
-        (when (or (null interval) newinterval)
-          (note-events port chan pitch vel 
-		       ;; dur
-		       (if interval 
-			   (- (second newinterval) (first newinterval) 1) 
+    (let ((channel-shift (micro-channel (approx-m (midic self) approx) approx)))
+      (let ((chan (+ (chan self) channel-shift))
+            (pitch (truncate (approx-scale (get-current-scale approx) (midic self)) 100))
+            (vel (vel self))
+            (dur (- (real-dur self) 2))			    ; why ?
+            (date at)					
+            (voice (or voice 0)))
+        
+        (print (format nil "pitch(mc) ~D, chan ~D, approx=~D, appx.pitch=~D ===> shif ~D to channel ~D" 
+                       (midic self) (chan self) approx pitch
+                       channel-shift chan))
+        
+        (let ((newinterval (and interval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))))
+          (when (or (null interval) newinterval)
+            (note-events port chan pitch vel 
+                         ;; dur
+                         (if interval 
+                             (- (second newinterval) (first newinterval) 1) 
 			   dur)
-		       ;; DATE
-		       (if interval
-			   (- (first newinterval)  (first interval)) ; (- (first newinterval)  (+ *MidiShare-start-time* (first newinterval)))
+                         ;; DATE
+                         (if interval
+                             (- (first newinterval)  (first interval)) 
 			   date)
-		       voice))))))
+                         voice))
+          )))))
 
 
 

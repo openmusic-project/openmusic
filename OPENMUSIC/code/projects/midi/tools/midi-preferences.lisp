@@ -266,7 +266,7 @@
                                                           (set-pref modulepref :auto-microtone-bend (om-checked-p item))))
 
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 360 30) 
-                                           "Applies 1/8th tone pitchbend to channels 1-4 during play"
+                                           "Applies 1/8th tone pitchbend to channels 1-4 during playback"
                                            :font *om-default-font1*)
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 16)) (om-make-point 360 30) 
                                            "[works only with objects using a global MIDI port]"

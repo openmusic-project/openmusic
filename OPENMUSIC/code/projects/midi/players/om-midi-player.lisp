@@ -128,6 +128,10 @@
   (funcall send-fun (make-pitchwheel-event 0 4 p 11264))
   ))
 
+
+;; jb: temp. remove 
+;; this is not working the way it is specified in the preferences (i.e. shift channels 1-2-3-4 to 0,1/8,2/8,3/8)
+#|
 (defun microplay-events (approx at dur port chan-offset)
   (let ((port (or port *def-midi-out*))
 	(offset (car (remove-duplicates (flat chan-offset)))))
@@ -140,5 +144,16 @@
 	       repeat (/ approx 2)
 	       for chan from offset
 	       collect (make-pitchwheel-event (+ at dur) chan port 8192)))))
+|#
 
+(defun microplay-events (at dur port)
+  (let ((port (or port *def-midi-out*)))
+    (list (make-pitchwheel-event at 1 port 8192) 
+          (make-pitchwheel-event at 2 port 9216) 
+          (make-pitchwheel-event at 3 port 10240) 
+          (make-pitchwheel-event at 4 port 11264) 
+          (make-pitchwheel-event (+ at dur) 1 port 8192) 
+          (make-pitchwheel-event (+ at dur) 2 port 8192) 
+          (make-pitchwheel-event (+ at dur) 3 port 8192) 
+          (make-pitchwheel-event (+ at dur) 4 port 8192))))
 
