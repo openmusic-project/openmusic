@@ -289,7 +289,7 @@
              (length *running-midi-boxes*)))
     (mapcar 'stop-midi-in *running-midi-boxes*)))
 
-(defun apply-setup (vals)
+(defun apply-midi-setup (vals)
   (before-restart-action)
   (when (om-midi::midi-connect-function *default-midi-system*)
     (funcall (om-midi::midi-connect-function *default-midi-system*) vals)))
@@ -299,7 +299,7 @@
            (get-pref modulepref :midi-setup) 
            #'(lambda (vals) 
               (set-pref modulepref :midi-setup vals) 
-              (apply-setup vals))))
+              (apply-midi-setup vals))))
     
 (defun add-midi-preferences ()
   (push-pref-module (list :midi (get-def-vals :midi))))

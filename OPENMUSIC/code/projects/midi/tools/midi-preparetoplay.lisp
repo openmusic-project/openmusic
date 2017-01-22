@@ -202,9 +202,9 @@
             (date at)					
             (voice (or voice 0)))
         
-        (print (format nil "pitch(mc) ~D, chan ~D, approx=~D, appx.pitch=~D ===> shif ~D to channel ~D" 
-                       (midic self) (chan self) approx pitch
-                       channel-shift chan))
+        ;(print (format nil "pitch(mc) ~D, chan ~D, approx=~D, appx.pitch=~D ===> shif ~D to channel ~D" 
+        ;               (midic self) (chan self) approx pitch
+        ;               channel-shift chan))
         
         (let ((newinterval (and interval (interval-intersec interval (list at (+ at (- (real-dur self) 1)))))))
           (when (or (null interval) newinterval)

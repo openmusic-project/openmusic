@@ -16,7 +16,7 @@
 (enable-player :om-audio)
 (add-player-for-object 'sound :om-audio)
 
-(defun apply-setup (player)
+(defun apply-audio-setup (player)
      (print (format nil "AUDIO PLAYER SETUP: ~A x ~A, ~AHz" *audio-out-device* *audio-out-n-channels* *audio-sr*))
      (juce::setdevices  player 
                         "" 0 
@@ -31,7 +31,7 @@
           (om-beep-msg (format nil "Selected audio device: \"~A\" not available. Restoring default." *audio-out-device*)))
       (setf *audio-out-device* (car out-devices)))
     
-    (apply-setup *juce-player*)
+    (apply-audio-setup *juce-player*)
 
     (setf *audio-out-chan-options* (juce::getoutputchannelslist *juce-player*))
     (setf *audio-sr-options* (juce::getsamplerates *juce-player*))
@@ -44,7 +44,7 @@
       (unless (and nch-ok sr-ok)
         (if nch-ok
             (juce::setsamplerate *juce-player* *audio-sr*)
-          (apply-setup *juce-player*)
+          (apply-audio-setup *juce-player*)
           ))
       )
     t))
