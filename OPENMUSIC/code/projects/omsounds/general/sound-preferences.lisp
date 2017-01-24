@@ -170,7 +170,7 @@
                                           )
 
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30)
-					  (format nil "~A Sample Rate (Hz)" #-linux "Player" #+linux "Server")
+					  "Player Sample Rate (Hz)"
 					  :font *controls-font*)
                          
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
@@ -188,10 +188,10 @@
 					  "(Also used as default SR for sound synthesis)"
 					  :font *om-default-font1*)
                        		     
-		     #+linux (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 30))
-						  (om-make-point 350 22) 
-						  "OM will attempt to start a JACK-server if its not running already"
-						  :font *om-default-font1*)
+		     ;; #+linux (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 30))
+		     ;; 				  (om-make-point 350 22) 
+		     ;; 				  "OM will attempt to start a JACK-server if its not running already"
+		     ;; 				  :font *om-default-font1*)
 		     )
     
                       

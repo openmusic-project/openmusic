@@ -129,7 +129,9 @@
                                  ;:retain-scrollbars t
                                  :bg-color *om-light-gray-color*
                                  ))
-        (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
+        (l1 20)
+	(l2 (round (om-point-h (get-pref-scroll-size)) 2))
+	(l3 (- (om-point-h (get-pref-scroll-size)) 60))
         (posy 0)
         outtxt tmptxt intxt)
     
@@ -201,7 +203,7 @@
                      
                      (om-make-view 'om-icon-button 
                                                       :icon1 "folder" :icon2 "folder-pushed"
-                                                      :position (om-make-point (+ l2 310) (- posy 5)) :size (om-make-point 26 25) 
+                                                      :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
                                                       :action (om-dialog-item-act item
                                                                          (declare (ignore item))
                                                                          (let ((newfolder (om-choose-directory-dialog :directory
@@ -218,7 +220,7 @@
                      
                      (om-make-view 'om-icon-button 
                                    :icon1 "folder" :icon2 "folder-pushed"
-                                   :position (om-make-point (+ l2 310) (- posy 5)) :size (om-make-point 26 25) 
+                                   :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
                                    :action (om-dialog-item-act item
                                              (declare (ignore item))
                                              (let ((newfolder (om-choose-directory-dialog :directory (get-pref modulepref :in-files-dir))))
@@ -234,7 +236,7 @@
                      
                      (om-make-view 'om-icon-button 
                                    :icon1 "folder" :icon2 "folder-pushed"
-                                   :position (om-make-point (+ l2 310) (- posy 5)) :size (om-make-point 26 25) 
+                                   :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
                                    :action (om-dialog-item-act item
                                                        (declare (ignore item))
                                                        (let ((newfolder (om-choose-directory-dialog :directory (get-pref modulepref :tmp-files-dir))))
