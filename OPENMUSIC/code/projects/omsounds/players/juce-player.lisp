@@ -9,7 +9,8 @@
 (defconstant *audio-buffsize* 512)
 
 (defvar *juce-player* nil)
-(defvar *audio-driver* "CoreAudio")  ;;; change this on other platforms
+(defvar *audio-driver* #+macosx "CoreAudio" #+linux "ALSA")  ;;; change this on other platforms
+
 
 (defmethod player-name ((self (eql :om-audio))) "Default audio player")
 (defmethod player-desc ((self (eql :om-audio))) "(based on Juce)")

@@ -45,7 +45,7 @@
           "general;automations"
           "general;sound-preferences"
           
-          #-linux "players;juce-player"
+          "players;juce-player"
           #-linux "players;multiplayer"
           #+cl-jack "players;jack-audio-player"
           #+linux "players;mplayer"

@@ -81,8 +81,9 @@
   "/WINDOWS/system32/OMJuceAudioLib.dll"
   #+(or darwin macos macosx)  
   "OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
-  #+(or linux (and clisp unix (not macos)))
-  "/usr/lib/OMJuceAudioLib.so")
+  #+(and :linux :x86-64) "/usr/lib64/OMJuceAudioLib.so"
+  #+(and :linux :x86) "/usr/lib/OMJuceAudioLib.so"
+  )
 
 (defun load-juceaudiolib ()
   (let ((libpath (namestring (om::om-lib-pathname *juceaudiolib-pathname*))))
