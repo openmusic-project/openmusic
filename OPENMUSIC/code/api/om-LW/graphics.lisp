@@ -847,8 +847,7 @@
                          ))))
 
 (defun om-draw-rect-outline (x y w h &optional (pensize 1))
-  (gp::with-graphics-state (*curstream* :thickness pensize)
-    (om-draw-rect x y (- w 1) (- h 1))))
+  (om-draw-rect x y (- w 1) (- h 1) :pensize pensize))
 
 
 (defun om-fill-rect (x &optional y (w 0) (h 0)  &key (erasable nil))

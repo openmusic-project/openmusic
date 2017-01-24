@@ -248,7 +248,6 @@
 
 
 (defmethod draw-selection-rectangle (view p1 p2)
-  #-linux
   (om-with-fg-color view oa::*om-select-color-alpha*
     (om-fill-rect (om-point-x p1) (om-point-y p1) 
                   (- (om-point-x p2) (om-point-x p1)) (- (om-point-y p2) (om-point-y p1))))
@@ -296,7 +295,6 @@
                                                  (x (om-point-x p1)) (y (om-point-y p1))
                                                  (w (+ (- (om-point-x p2) (om-point-x p1)) (om-point-x dp))) 
                                                  (h (+ (- (om-point-y p2) (om-point-y p1)) (om-point-y dp))))
-                                              #-linux
                                               (om-with-fg-color view (om-make-color-alpha 0 0 0 0.1)
                                                 (om-fill-rect x y w h)) 
                                               (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
