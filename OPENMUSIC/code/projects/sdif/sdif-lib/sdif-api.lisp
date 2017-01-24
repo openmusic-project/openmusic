@@ -41,7 +41,8 @@
 (defvar *sdif-pathname* 
   #+win32 "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) "libSDIF.dylib"
-  #+linux "/usr/lib/libsdif.so"
+  #+(and :linux :x86) "/usr/lib/libsdif.so"
+  #+(and :linux :x86-64) "/usr/lib64/libsdif.so"
   )
 
 (defvar *sdif-library* nil)
