@@ -38,8 +38,10 @@
             
             
             (append (and (and *midi-microplay* approx (find approx '(4 8) :test '=))
-			 (let ((chan-offset (lchan object)))
-			   (microplay-events approx at (get-obj-dur object) port chan-offset)))
+			 ;; (let ((chan-offset (lchan object)))
+			 ;;   (microplay-events approx at (get-obj-dur object) port chan-offset))
+			 (microplay-events at (get-obj-dur object) port)
+			 )
                     (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))
                     )
             )
@@ -49,41 +51,45 @@
 (defmethod player-start ((engine (eql :midi-player)) &optional play-list)
   (midi-start))
 
+(defparameter *key-ons* (make-hash-table :test #'equal))
+
 (defmethod player-stop ((engine (eql :midi-player)) &optional play-list)
-  (loop for ch in *key-ons* 
-        for c = 1 then (+ c 1) do
-        (loop for note in ch do
-              (midi-send-evt 
-               (om-midi:make-midi-evt :type :keyOff
-                                      :chan c :date 0 :ref 0 :port (car note)
-                                      :fields (list (cadr note) 0))
-               ))
-        )
+  (maphash #'(lambda (k ch)
+	       (mapc #'(lambda (note)
+			 (midi-send-evt
+			  (om-midi:make-midi-evt :type :keyOff
+						 :chan (car (last note))
+						 :date 0 :ref 0 :port (car note)
+						 :fields (list (cadr note) 0))))
+		     ch)
+	       (remhash k *key-ons*))
+	   *key-ons*)
   (midi-stop)
-  (if *midi-microplay* (microplay-reset nil engine))
-  (setf *key-ons* (make-list 16)))
+  (if *midi-microplay* (microplay-reset nil engine)))
 
 ;; (defmethod player-loop ((self (eql :midi-player)) player &optional play-list) (call-next-method))
 
-
-(defparameter *key-ons* (make-list 16))
-
 ;;; PLAY (NOW) 
 (defmethod player-play-object ((engine (eql :midi-player)) (object om-midi::midi-evt) &key interval params)
+  (declare (ignore interval params))
   ;;(print (format nil "~A : play ~A - ~A" engine object interval))
   ;;(print object)
-  (let ((key-index (1- (om-midi::midi-evt-chan object))))
-    (cond 
-      ((or (equal (om-midi::midi-evt-type object) :keyOff)
-	   (and (equal (om-midi::midi-evt-type object) :keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))
-       (setf (nth key-index *key-ons*) 
-	     (delete (list (om-midi::midi-evt-port object) (car (om-midi::midi-evt-fields object)))
-		     (nth key-index *key-ons*)
-		     :test 'equal)))
-      ((equal (om-midi::midi-evt-type object) :keyOn)
-       (pushnew (list (om-midi::midi-evt-port object) (car (om-midi::midi-evt-fields object))) (nth key-index *key-ons*) :test 'equal)))
-    
-    ;;(print *key-ons*)
+  (let* ((chan (om-midi::midi-evt-chan object))
+	 (key-index (1- chan))
+	 (port (om-midi::midi-evt-port object)))
+    (when (>= chan 16)
+      (incf port (+ (floor key-index 16)))
+      (setf (om-midi::midi-evt-port object) port
+	    (om-midi::midi-evt-chan object) (mod chan 16)))
+    (cond ((or (equal (om-midi::midi-evt-type object) :keyOff)
+	       (and (equal (om-midi::midi-evt-type object) :keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))
+	   (setf (gethash key-index *key-ons*)
+		 (delete (list port (car (om-midi::midi-evt-fields object)) chan)
+			 (gethash key-index *key-ons*)
+			 :test 'equal)))
+	  ((equal (om-midi::midi-evt-type object) :keyOn)
+	   (pushnew (list port (car (om-midi::midi-evt-fields object)) chan)
+		    (gethash key-index *key-ons*) :test 'equal)))
     (midi-send-evt object)))
 
 ;;;==============================
