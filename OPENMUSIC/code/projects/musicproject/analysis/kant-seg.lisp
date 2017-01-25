@@ -41,11 +41,12 @@
 (defparameter *def-kant-forbid* 0.5)
 (defparameter *def-kant-precision* 60)
 
-(defun set-default-kant-params (&key (tempo *def-kant-tempo* tempo-p)
-                                     (signature *def-kant-signature* signature-p)
-                                     (maxdiv *def-kant-maxdiv* maxdiv-p)
-                                     (forbid *def-kant-forbid* forbid-p)
-                                     (precision *def-kant-precision* precision-p))
+(defun set-default-kant-params 
+       (&key (tempo *def-kant-tempo* tempo-p)
+             (signature *def-kant-signature* signature-p)
+             (maxdiv *def-kant-maxdiv* maxdiv-p)
+             (forbid *def-kant-forbid* forbid-p)
+             (precision *def-kant-precision* precision-p))
   (when tempo-p (setf *def-kant-tempo* tempo))
   (when signature-p (setf *def-kant-signature* signature))
   (when maxdiv-p (setf *def-kant-maxdiv* maxdiv))
@@ -144,77 +145,73 @@
         (i 0)
         tempotxt forbidtxt mesuretxt precistxt maxdivtxt offsettxt)
     
-    (om-add-subviews pane
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
-                                          (om-make-point 380 40)
-                                          "Set quantification parameters for selected segment:"
-                                          :font *om-default-font2b*)
+    (om-add-subviews 
+     pane
+     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
+                          (om-make-point 380 40)
+                          "Set quantification parameters for selected segment:"
+                          :font *om-default-font2b*)
      
-                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Tempi"
-                                          :font *om-default-font1*)
-                     (setf tempotxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
-                                                         (format nil "~D" (tempo kdata)) 
-                                                         :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Tempi"
+                          :font *om-default-font1*)
+     (setf tempotxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
+                                         (format nil "~D" (tempo kdata)) 
+                                         :font *om-default-font1*))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Forbidden Div."
-                                          :font *om-default-font1*)
-                     (setf forbidtxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
-                                                          (format nil "~D" (forbid kdata)) 
-                                                          :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Forbidden Div."
+                          :font *om-default-font1*)
+     (setf forbidtxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
+                                          (format nil "~D" (forbid kdata)) 
+                                          :font *om-default-font1*))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Measure"
-                                          :font *om-default-font1*)
-                     (setf mesuretxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
-                                                          (format nil "~D" (signature kdata))
-                                                          :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Measure"
+                          :font *om-default-font1*)
+     (setf mesuretxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
+                                          (format nil "~D" (signature kdata))
+                                          :font *om-default-font1*))
                          
-                     (om-make-dialog-item 'om-static-text  (om-make-point 210 i) (om-make-point 120 20) "Precision (0.0-1.0)"
-                                          :font *om-default-font1*)
-                     (setf precistxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
-                                                          (format nil "~D" (precision kdata)) 
-                                                          :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 210 i) (om-make-point 120 20) "Precision (0.0-1.0)"
+                          :font *om-default-font1*)
+     (setf precistxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
+                                          (format nil "~D" (precision kdata)) 
+                                          :font *om-default-font1*))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Max. Division"
-                                          :font *om-default-font1*)
-                     (setf maxdivtxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i) (om-make-point 37 13)
-                                                          (format nil "~D" (maxdiv kdata)) 
-                                                          :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Max. Division"
+                          :font *om-default-font1*)
+     (setf maxdivtxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i) (om-make-point 37 13)
+                                          (format nil "~D" (maxdiv kdata)) 
+                                          :font *om-default-font1*))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Offset"
-                                          :font *om-default-font1*)
-                     (setf offsettxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
-                                                          (format nil "~D" (offset kdata)) 
-                                                          :font *om-default-font1*))
+     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Offset"
+                          :font *om-default-font1*)
+     (setf offsettxt (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
+                                          (format nil "~D" (offset kdata)) 
+                                          :font *om-default-font1*))
                          
-                     (om-make-dialog-item 'om-button (om-make-point 200 (incf i 35))
-                                          (om-make-point 80 20)
-                                          "Cancel"
-                                          :di-action (om-dialog-item-act item 
-                                                       (om-return-from-modal-dialog win nil)))
+     (om-make-dialog-item 'om-button (om-make-point 200 (incf i 35)) (om-make-point 80 20) "Cancel"
+                          :di-action (om-dialog-item-act item 
+                                       (om-return-from-modal-dialog win nil)))
                      
-                     (om-make-dialog-item  'om-button (om-make-point 300 i)
-                                           (om-make-point 80 20)
-                                           "OK"
-                                           :di-action (om-dialog-item-act item 
-                                                        (let ((tempo (ignore-errors (read-from-string (om-dialog-item-text tempotxt))))
-                                                              (mesure (ignore-errors (read-from-string (om-dialog-item-text mesuretxt))))
-                                                              (maxdiv (ignore-errors (read-from-string (om-dialog-item-text maxdivtxt))))
-                                                              (forbid (ignore-errors (read-from-string (om-dialog-item-text forbidtxt))))
-                                                              (precis (ignore-errors (read-from-string (om-dialog-item-text precistxt))))
-                                                              (offset (ignore-errors (read-from-string (om-dialog-item-text offsettxt)))))
-                                                          (setf (tempo kdata) tempo
-                                                                (signature kdata) mesure
-                                                                (maxdiv kdata) maxdiv
-                                                                (precision kdata) precis
-                                                                (offset kdata) offset
-                                                                (forbid kdata) forbid)
-                                                          (setf (updateflag kdata) nil)
-                                                          (om-return-from-modal-dialog win t))))
-                     )
+     (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20 "OK"
+                           :di-action (om-dialog-item-act item 
+                                        (let ((tempo (ignore-errors (read-from-string (om-dialog-item-text tempotxt))))
+                                              (mesure (ignore-errors (read-from-string (om-dialog-item-text mesuretxt))))
+                                              (maxdiv (ignore-errors (read-from-string (om-dialog-item-text maxdivtxt))))
+                                              (forbid (ignore-errors (read-from-string (om-dialog-item-text forbidtxt))))
+                                              (precis (ignore-errors (read-from-string (om-dialog-item-text precistxt))))
+                                              (offset (ignore-errors (read-from-string (om-dialog-item-text offsettxt)))))
+                                          (setf (tempo kdata) tempo
+                                                (signature kdata) mesure
+                                                (maxdiv kdata) maxdiv
+                                                (precision kdata) precis
+                                                (offset kdata) offset
+                                                (forbid kdata) forbid)
+                                          (setf (updateflag kdata) nil)
+                                          (om-return-from-modal-dialog win t)))))
   
-    (om-add-subviews win pane)
-    (om-modal-dialog win)
-    ))
+     (om-add-subviews win pane)
+     (om-modal-dialog win)
+     ))
 
 
 
