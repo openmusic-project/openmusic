@@ -222,16 +222,31 @@ is similar to a gaussian distribution. "
           (return (/ y1 (+ y1 y2)))))))
           
 
+(om::defmethod! alea::bpf-to-distribution ((bpf bpf))
+  :indoc '("a bpf in integer mode as a distribution probability function")
+  :icon 240
+  :doc "allows to use a curve in a bpf as a distribution probbility curve. Be carefull, this function outputs indexes"
+  (let* ((x-min (om::list-min (om::x-points bpf) ))
+	 (x-max (om::list-max (om::x-points bpf) ) )
+	 (samples (1+ (- x-max x-min))))
+    (alea::choixmultiple
+     (om::om-scale/sum 
+      (third 
+       (multiple-value-list (om::om-sample bpf samples x-min x-max))) 1))))
+
 (om::defmethod! alea::bfp-to-distribution ((bpf bpf))
-                :indoc '("a bpf in integer mode as a distribution probability function")
-                :icon 240
-                :doc "allows to use a curve in a bpf as a distribution probbility curve. Be carefull, this function outputs indexes"
-                (let* ((x-min (om::list-min (om::x-points bpf) ))
-      (x-max (om::list-max (om::x-points bpf) ) )
-      (samples (1+ (- x-max x-min))))
-  (alea::choixmultiple
-   (om::om-scale/sum 
-    (third 
-     (multiple-value-list (om::om-sample bpf samples x-min x-max))) 1))))
+  :indoc '("a bpf in integer mode as a distribution probability function")
+  :icon 240
+  :doc "allows to use a curve in a bpf as a distribution probbility curve. Be carefull, this function outputs indexes"
+  (warn "deprecated function bfp-to-distribution, use bpf-to-distribution instead~%")
+  (let* ((x-min (om::list-min (om::x-points bpf) ))
+	 (x-max (om::list-max (om::x-points bpf) ) )
+	 (samples (1+ (- x-max x-min))))
+    (alea::choixmultiple
+     (om::om-scale/sum 
+      (third 
+       (multiple-value-list (om::om-sample bpf samples x-min x-max))) 1))))
+
+
 
 
