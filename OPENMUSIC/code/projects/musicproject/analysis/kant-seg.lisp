@@ -35,11 +35,36 @@
           (list (make-instance 'chord-marker :chord-id 0))))
   (call-next-method))
 
+(defparameter *def-kant-tempo* 60)
+(defparameter *def-kant-signature* '(4 4))
+(defparameter *def-kant-maxdiv* 8)
+(defparameter *def-kant-forbid* 0.5)
+(defparameter *def-kant-precision* 60)
+
+(defun set-default-kant-params (&key (tempo *def-kant-tempo* tempo-p)
+                                     (signature *def-kant-signature* signature-p)
+                                     (maxdiv *def-kant-maxdiv* maxdiv-p)
+                                     (forbid *def-kant-forbid* forbid-p)
+                                     (precision *def-kant-precision* precision-p))
+  (when tempo-p (setf *def-kant-tempo* tempo))
+  (when signature-p (setf *def-kant-signature* signature))
+  (when maxdiv-p (setf *def-kant-maxdiv* maxdiv))
+  (when forbid-p (setf *def-kant-forbid* forbid))
+  (when precision-p (setf *def-kant-precision* precision))
+  t)
+
 (defmethod analysis-init-segment ((analyse KANT-seg) segment)
   (unless (segment-data segment) 
-    (setf (segment-data segment) (make-instance 'kant-data)))
+    (setf (segment-data segment) (make-instance 'kant-data
+                                                :tempo *def-kant-tempo*
+                                                :signature *def-kant-signature*
+                                                :maxdiv *def-kant-maxdiv*
+                                                :forbid *def-kant-forbid*
+                                                :precision *def-kant-precision*)))
   (when (previous-segment segment)
     (setf (updateflag (segment-data (previous-segment segment))) nil)))
+
+
   
 (defmethod delete-from-analysis ((self KANT-seg) segment)
   (when (previous-segment segment)
@@ -94,16 +119,19 @@
   (loop for seg in (analysis-segments self) collect
         (voice (segment-data seg))))
 
-(defmethod! concatenate-kant-voices ((self chord-seq))
+
+(defmethod! kant-voices ((self chord-seq) &optional n)
    :icon 252
    (let* ((kant-analyses (remove nil (loop for an in (analysis self) 
                                           when (equal (type-of an) 'kant-seg)
-                                          collect an)))
-          (kant-voices (mapcar 
-                        #'(lambda (kant) (reduce 'concat (get-kant-voices kant)))
-                        kant-analyses)))
-     (if (<= (length kant-voices) 1) (car kant-voices)
-         kant-voices)))
+                                          collect an))))
+     (when (and (> (length kant-analyses) 1) (null n))
+       (om-beep-msg "More than 1 kant-analyses found: taking 1st found occurence. Use optional input 'n' to select another one."))
+     (get-kant-voices (nth (or n 0) kant-analyses))))
+
+(defmethod! concatenate-kant-voices ((self chord-seq) &optional n)
+   :icon 252
+   (reduce 'concat (kant-voices self n)))
    
                           
 (defmethod kant-data-window ((kdata kant-data))
@@ -205,7 +233,9 @@
           when (find o beat-times :test '=)
           do (add-in-analysis an 
                               (make-instance 'chord-marker 
-                                             :chord c :chord-id i)))
+                                             :chord c :chord-id i))
+          (setf beat-times (remove o beat-times :test '=))
+          )
     cs))
  
 
