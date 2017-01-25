@@ -7,6 +7,7 @@
 
 (defvar *def-midi-out* 0 "default output port number")
 (defvar *def-midi-in* 0 "default input port number")
+(defparameter  *midi-port-modulo-channel* t "alloc consecutive ports for channels above 16")
 
 (defvar *def-midi-format* 1)
 (defvar *default-midi-system* nil)
@@ -18,9 +19,8 @@
 (defparameter *score-players* '(:midi-player :microplayer :osc-scoreplayer))
 (defparameter *force-score-player* nil)
 
-;; #+linux (setf *default-midi-file-system* :cl-midi)
-;(setf *default-midi-system* :cl-midi)
-;(setf *default-midi-system* :midishare)
+
+
 
 ;;;==============================================
 
@@ -28,6 +28,7 @@
   (let ((modulepref (find-pref-module iconID)))
     (setf *def-midi-in* (get-pref modulepref :midi-in))
     (setf *def-midi-out* (get-pref modulepref :midi-out))
+    (setf *midi-port-modulo-channel* (get-pref modulepref :port-modulo-channel))
     (setf *default-midi-system* :portmidi)  ; (get-pref modulepref :midi-system)
     (setf *default-score-player* (get-pref modulepref :score-player))
     (setf *force-score-player* (get-pref modulepref :force-player))
@@ -48,11 +49,9 @@
     (setf *default-midi-file-system* :cl-midi) ; (get-pref modulepref :midi-file-system)
     (setf *def-midi-format* (get-pref modulepref :midi-format))))
 
-
-;; #-linux (midishare::*midishare* :midishare)
-;; #-linux (midishare::*midishare* :midishare)
 (defmethod get-def-vals ((ID (eql :midi)))
     (list :midi-out 0 :midi-in 0 
+	  :port-modulo-channel t
 	  :midi-system :portmidi
           :score-player :midi-player
           :force-player nil
@@ -179,7 +178,17 @@
                                                    ))))
                                            :font *om-default-font2*)
 
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 120 40) 
+                      
+		      
+		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 280 40) 
+                                           "MIDI channels above 16 go to successive out ports:" :font *controls-fonti*)
+
+		      (om-make-dialog-item 'om-check-box (om-make-point 320  i) (om-make-point 20 20) ""
+                                           :checked-p (get-pref modulepref :port-modulo-channel)
+                                           :di-action #'(lambda (item) 
+                                                          (set-pref modulepref :port-modulo-channel (om-checked-p item))))
+		      
+		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 120 40) 
                                            "In case of emergency:" :font *controls-fonti*)
                       (om-make-dialog-item 'om-button (om-make-point 180 (+ i 4)) (om-make-point 100 20) "Restart" 
                                            :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
