@@ -69,7 +69,7 @@ in this case this slot keeps the lambda expression.#lisp-exp-p#
 (defmethod obj-file-type ((self OMPatch)) :PATC)
 (defmethod obj-file-extension ((self OMPatch)) "omp")
 
-(defmethod get-object-insp-name ((self OMpatch)) "Patch")
+(defmethod get-object-insp-name ((self OMpatch)) "patch")
 
 
 

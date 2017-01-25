@@ -275,19 +275,19 @@ otherwise return self
     result))
     
 (defmethod* om-clip ((self list) min max)
-            (cond
-             ((and (consp min) (consp max))
-              (mapcar #'(lambda (input mins maxs)
-                          (om-clip input mins maxs)) self min max))
-             ((consp min)
-              (mapcar #'(lambda (input mins)
-                          (om-clip input mins max)) self min))
-             ((consp max)
-              (mapcar #'(lambda (input maxs)
-                          (om-clip input min maxs)) self max))
-             (t (mapcar #'(lambda (input)
-                        (om-clip input min max)) self))
-            ))
+  (cond
+    ((and (consp min) (consp max))
+     (mapcar #'(lambda (input mins maxs)
+		 (om-clip input mins maxs)) self min max))
+    ((consp min)
+     (mapcar #'(lambda (input mins)
+		 (om-clip input mins max)) self min))
+    ((consp max)
+     (mapcar #'(lambda (input maxs)
+		 (om-clip input min maxs)) self max))
+    (t (mapcar #'(lambda (input)
+		   (om-clip input min max)) self))
+    ))
 
 ;------------------------------------------------------------------------
 
