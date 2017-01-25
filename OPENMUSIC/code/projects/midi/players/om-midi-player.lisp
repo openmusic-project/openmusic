@@ -77,7 +77,7 @@
   (let* ((chan (om-midi::midi-evt-chan object))
 	 (key-index (1- chan))
 	 (port (om-midi::midi-evt-port object)))
-    (when (>= chan 16)
+    (when (and *midi-port-modulo-channel* (>= chan 16))
       (incf port (+ (floor key-index 16)))
       (setf (om-midi::midi-evt-port object) port
 	    (om-midi::midi-evt-chan object) (mod chan 16)))
