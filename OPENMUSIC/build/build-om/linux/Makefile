@@ -16,7 +16,7 @@ LISP		= $(HOME)/bin/lw $(LISPFLAGS)
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-SVNAPPNAME	= OM_6.10
+IMAGENAME	= OM_6.11
 
 path_to_omroot	= ../../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
@@ -27,61 +27,59 @@ BUILDROOT	= $(builddir)
 PREFIX		= /usr/local
 APPNAME		= openmusic
 
-bindir		= $(DESTDIR)$(PREFIX)/bin
-datadir		= $(DESTDIR)$(PREFIX)/share
+# bindir		= $(DESTDIR)$(PREFIX)/bin
+# datadir		= $(DESTDIR)$(PREFIX)/share
+# omroot		= $(datadir)/$(APPNAME)
 
-omroot		= $(datadir)/$(APPNAME)
-
-faslname	= ufasl
+faslname	= 64ufasl
 rubbish		= *.$(faslname)
 
 compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
-exclude_fasl	= --include 'dspec-database.ufasl' --exclude '$(rubbish)'
+exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
 exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
-checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
+checkname	= $(shell ls $(BUILDROOT) | grep -e "OM_6.*")
 ifdef checkname
-	svnappname = $(checkname)
+	buildname = $(checkname)
 else
-	svnappname = $(SVNAPPNAME)
+	buildname = $(IMAGENAME)
 endif
 
 compress	= tar
-compressfile	= $(APPNAME).tar.bz2
-compressfile	= $(svnappname).tar.bz2
-compressflags	= -cjf
+compressfile	= $(buildname).tar.xz
+compressflags	= -cJf
 
 
-release		= $(DISTDIR)/$(svnappname)
+release		= $(DISTDIR)/$(buildname)
 
 all:	compile
 
 
-compile buildsvn: 
-	@echo building "$(svnappname)" in source tree: "$(BUILDROOT)"
-	$(LISP) $(BUILDROOT)/buildimage/build-om/deliver.lisp
+compile build-from-git: 
+	@echo building "$(buildname)" in source tree: "$(BUILDROOT)"
+	$(LISP) $(BUILDROOT)/build/build-om/deliver.lisp
 
 clean:
 	find $(BUILDROOT) -name $(rubbish) -delete
-	if [ -f $(BUILDROOT)/$(svnappname) ]; then rm $(BUILDROOT)/$(svnappname); fi;
+	if [ -f $(BUILDROOT)/$(buildname) ]; then rm $(BUILDROOT)/$(buildname); fi;
 
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
-	find $(release)/buildimage/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
+	find $(release)/build/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp README.LINUX $(release)/
 	cp Makefile.dist $(release)/Makefile
 
 tar-dist: dist
-	cd $(shell dirname $(release)) && $(compress) $(compressflags) $(compressfile) $(svnappname) 
+	cd $(shell dirname $(release)) && $(compress) $(compressflags) $(compressfile) $(buildname) 
 
 distclean:
 	rm -rf $(release)
 
-# install: $(release)/$(svnappname)
-# 	cd $(release) && $(INSTALL_PROGRAM) -m 0755 $(svnappname) $(BINDIR)/$(APPNAME)
+# install: $(release)/$(buildname)
+# 	cd $(release) && $(INSTALL_PROGRAM) -m 0755 $(buildname) $(BINDIR)/$(APPNAME)
 # 	cd $(release) && rsync $(rsyncflags) $(exclude_fasl) --exclude 'OM_6.8*' . $(omroot)
 
 
@@ -90,11 +88,11 @@ distclean:
 # 	rm -f $(BINDIR)/$(APPNAME)
 
 help:
-	@echo bygger $(BUILDROOT)/$(svnappname)
+	@echo bygger $(BUILDROOT)/$(buildname)
 	@echo Makefile:		$(thisfile)
 	@echo THISDIR:		$(thisdir)
 	@echo BUILDROOT:	$(BUILDROOT)
-	@echo svnappname:	$(svnappname)
-	@echo SVNAPPNAME:	$(SVNAPPNAME)
+	@echo buildname:	$(buildname)
+	@echo IMAGENAME:	$(IMAGENAME)
 	@echo release:		$(release)
 

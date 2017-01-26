@@ -27,7 +27,7 @@ INSTALL_PROGRAM	= install
 
 BUILDROOT	= $(shell pwd)
 APPNAME		= openmusic
-INSTALLRES	= $(BUILDROOT)/buildimage/build-om/linux
+INSTALLRES	= $(BUILDROOT)/build/build-om/linux
 
 # these two lookup some info which might change once in a while:
 
@@ -46,14 +46,15 @@ endif
 help:
 	@echo BUILDROOT:	$(BUILDROOT)
 	@echo releaseappname:	$(releaseappname)
-	@echo targets: install, uninstall, all (install), help
+	@echo targets: install, uninstall, all '(=install)', help
 
 all:	install
 
 install: $(BUILDROOT)/$(releaseappname)
 	mkdir -p $(omroot)
-	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude 'OM_6.10*' --exclude 'Makefile*'  . $(omroot)
-	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(APPNAME)
+	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude $(releaseappname) --exclude 'Makefile*'  . $(omroot)
+	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(releaseappname)
+	cd $(bindir) && ln -s -f $(releaseappname) $(APPNAME)
 	mkdir -p $(datadir)/applications/
 	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
 	mkdir -p $(datadir)/pixmaps/
