@@ -333,7 +333,7 @@
 (deliver 'init-om
          *app-name*
          0
-         :split :resources
+         #-linux :split #-linux :resources
          :interface :capi
 	 :keep-editor t
 	 :keep-debug-mode t
