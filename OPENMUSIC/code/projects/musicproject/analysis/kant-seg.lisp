@@ -208,10 +208,10 @@
                                                 (forbid kdata) forbid)
                                           (setf (updateflag kdata) nil)
                                           (om-return-from-modal-dialog win t)))))
-  
-     (om-add-subviews win pane)
-     (om-modal-dialog win)
-     ))
+     )
+    (om-add-subviews win pane)
+    (om-modal-dialog win)
+    ))
 
 
 
