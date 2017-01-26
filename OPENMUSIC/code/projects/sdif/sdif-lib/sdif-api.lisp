@@ -42,43 +42,70 @@
   #+win32 "/WINDOWS/system32/sdif.dll"
   #+(or darwin macos macosx) "libSDIF.dylib"
   #+(and :linux :x86) "/usr/lib/libsdif.so"
-  #+(and :linux :x86-64) "/usr/lib64/libsdif.so"
+  #+(and :linux :x86-64) "libsdif.so"
   )
 
 (defvar *sdif-library* nil)
 (defvar *sdif-initialized-p* nil)
 
-(defun load-sdif-library ()
-  (let ((libpath (om::om-lib-pathname sdif::*sdif-pathname*)))
-    ;(om::om-message-dialog (format nil "~A" *sdif-pathname*))
-    ;(om::om-message-dialog (format nil "~A" libpath))
-    (if (probe-file libpath)
-        (progn (print (concatenate 'string "Loading SDIF library: " (namestring libpath)))
-          (setf *sdif-library*
-                #-linux (handler-case 
-                           (progn
-                             (fli:register-module "SDIF" 
-                                                  :real-name (namestring libpath)
-                                                  :connection-style :immediate)
-                             t)
-                          (error () (progn 
-                                      (om::om-message-dialog (format nil "Could not load SDIF foreign-library.~%~A" (namestring libpath)))
-                                      nil)))
+;; (defun load-sdif-library ()
+;;   (let ((libpath (om::om-lib-pathname sdif::*sdif-pathname*)))
+;;     ;(om::om-message-dialog (format nil "~A" *sdif-pathname*))
+;;     ;(om::om-message-dialog (format nil "~A" libpath))
+;;     (if (probe-file libpath)
+;;         (progn (print (concatenate 'string "Loading SDIF library: " (namestring libpath)))
+;;           (setf *sdif-library*
+;;                 #-linux (handler-case 
+;;                            (progn
+;;                              (fli:register-module "SDIF" 
+;;                                                   :real-name (namestring libpath)
+;;                                                   :connection-style :immediate)
+;;                              t)
+;;                           (error () (progn 
+;;                                       (om::om-message-dialog (format nil "Could not load SDIF foreign-library.~%~A" (namestring libpath)))
+;;                                       nil)))
                 
-                #+linux (progn 
-                          (define-foreign-library libsdif
-                            #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" libpath "libsdif.so"))
-                            #+:LISPWORKS-32BIT (:unix (:or "/usr/lib/libsdif.so" libpath "libsdif.so"))
-                            (t (:default "libsdif")))
-                          (handler-case (progn
-                                          (let ((lib (use-foreign-library libsdif)))
-                                            (print (format nil "Loaded SDIF lib: ~A" (foreign-library-pathname lib))))
-                                          t)
-                            (error () (progn (print (format nil "Could not load foreign-library libsdif")) nil))))
-                ))
-      (om::om-message-dialog (format nil "SDIF library not found: ~A" (namestring libpath))))
-    (setf *sdif-initialized-p* nil)
-    ))
+;;                 #+linux (progn 
+;;                           (define-foreign-library libsdif
+;;                             ;; #+:LISPWORKS-64BIT (:unix (:or "/usr/local/lib64/libsdif.so" libpath "libsdif.so"))
+;;                             #+:LISPWORKS-64BIT libpath
+;;                             #+:LISPWORKS-32BIT (:unix (:or "/usr/lib/libsdif.so" libpath "libsdif.so"))
+;;                             (t (:default "libsdif")))
+;;                           (handler-case (progn
+;;                                           (let ((lib (use-foreign-library libsdif)))
+;;                                             (print (format nil "Loaded SDIF lib: ~A" (foreign-library-pathname lib))))
+;;                                           t)
+;;                             (error () (progn (print (format nil "Could not load foreign-library libsdif")) nil))))
+;;                 ))
+;;       (om::om-message-dialog (format nil "SDIF library not found: ~A" (namestring libpath))))
+;;     (setf *sdif-initialized-p* nil)
+;;     ))
+
+(defun load-sdif-library ()
+  ;;(om::om-message-dialog (format nil "~A" *sdif-pathname*))
+  ;;(om::om-message-dialog (format nil "~A" libpath))
+  #-linux  (let ((libpath (om::om-lib-pathname sdif::*sdif-pathname*)))
+	     (if (probe-file libpath)
+		 (progn (print (concatenate 'string "Loading SDIF library: " (namestring libpath)))
+			(setf *sdif-library*
+			      (handler-case 
+				  (progn
+				    (fli:register-module "SDIF" 
+							 :real-name (namestring libpath)
+							 :connection-style :immediate)
+				    t)
+				(error () (progn 
+					    (om::om-message-dialog (format nil "Could not load SDIF foreign-library.~%~A" (namestring libpath)))
+					    nil)))))
+		 (om::om-message-dialog (format nil "SDIF library not found: ~A" (namestring libpath)))))
+                
+  #+linux (handler-case (progn
+			  (fli:register-module (namestring *sdif-pathname*) :connection-style :immediate)
+			  (print (format nil "~A" (namestring *sdif-pathname*)))
+			  t)
+	    (error () (progn (print (format nil "Could not load foreign-library libsdif")) nil)))
+  (setf *sdif-initialized-p* nil))
+
 
 (om::om-add-init-func 'load-sdif-library)
 
