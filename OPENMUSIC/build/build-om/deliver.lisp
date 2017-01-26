@@ -333,7 +333,7 @@
 (deliver 'init-om
          *app-name*
          0
-         #-linux :split #-linux :resources
+         #+macosx :split #+macosx :resources
          :interface :capi
 	 :keep-editor t
 	 :keep-debug-mode t
