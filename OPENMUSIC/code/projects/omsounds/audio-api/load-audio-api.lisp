@@ -81,26 +81,19 @@
   "/WINDOWS/system32/OMJuceAudioLib.dll"
   #+(or darwin macos macosx)  
   "OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
-  #+(and :linux :x86-64) "OMJuceAudioLib.so"
-  #+(and :linux :x86) "/usr/lib/OMJuceAudioLib.so"
+  #+linux "OMJuceAudioLib.so"
   )
 
 (defun load-juceaudiolib ()
   (let ((libpath (namestring (om::om-lib-pathname *juceaudiolib-pathname*))))
-    #-linux (if (probe-file libpath)
-		(progn 
-		  (print (concatenate 'string "Loading Juce Audio library: " libpath))
-		  (fli:register-module "JuceAudio" 
-				       :real-name libpath
-				       :connection-style :immediate)
-		  t)
-		(print (concatenate 'string "Juce Audio library not found: " libpath)))
-    #+linux (progn 
-	      (print (concatenate 'string "Loading Juce Audio library: " libpath))
-	      (fli:register-module "JuceAudio" 
-				   :real-name libpath
-				   :connection-style :immediate)
-	      libpath)))
+    (if (probe-file libpath)
+	(progn 
+	  (print (concatenate 'string "Loading Juce Audio library: " libpath))
+	  (fli:register-module "JuceAudio" 
+			       :real-name libpath
+			       :connection-style :immediate)
+	  t)
+	(print (concatenate 'string "Juce Audio library not found: " libpath)))))
 
 (om::om-add-init-func 'load-juceaudiolib)
 

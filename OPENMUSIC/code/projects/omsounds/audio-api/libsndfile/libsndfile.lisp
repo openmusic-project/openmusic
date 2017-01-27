@@ -353,11 +353,3 @@
   (ptr :pointer)
   (frames :long-long))
 
-
-;#-linux
-;(fli:define-foreign-function (sf-readf-float "sf_readf_float")
-;    ((sndfile :pointer)
-;     (ptr :pointer)
-;     (frames :long-long))
-;  :result-type :long-long)
-

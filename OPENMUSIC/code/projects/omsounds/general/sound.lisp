@@ -202,7 +202,7 @@ Press 'space' to play/stop the sound file.
   (and (om-sound-file-name self)
        (get-om-sound-data (om-sound-file-name self) track)))
 
-(defparameter *default-sound-player* #-linux :om-audio #+linux :jackaudio)
+(defparameter *default-sound-player* :om-audio)
 
 (defmethod default-edition-params ((self sound))
   (pairlis '(outport inport player

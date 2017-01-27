@@ -188,10 +188,6 @@
 					  "(Also used as default SR for sound synthesis)"
 					  :font *om-default-font1*)
                        		     
-		     ;; #+linux (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 30))
-		     ;; 				  (om-make-point 350 22) 
-		     ;; 				  "OM will attempt to start a JACK-server if its not running already"
-		     ;; 				  :font *om-default-font1*)
 		     )
     
                       
