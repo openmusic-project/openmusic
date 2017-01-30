@@ -1452,15 +1452,27 @@ of all its direct subcontainers (supposed adjacent)"
 
 ;=================== pas terrible !!
 
-(defmethod! set-port ((self list) port)
+;;; &optional copy determines wether a modify copy of the object should be returned
+;;; or if the modification occurs on the input object
+;;; for compatibility with previous versions, copy defaults to NIL 
+(defmethod! set-port ((self list) port &optional (copy nil))
    :icon 148
-   (loop for item in self collect (set-port item port)))
+   (loop for item in self collect (set-port item port copy)))
 
-(defmethod! set-port ((self container) port)
-   (loop for item in (inside self) do (set-port item port)))
-(defmethod! set-port ((self note) port)
-   (setf (port self) port))
-(defmethod! set-port ((self t) port) t)
+(defmethod! set-port ((self note) port &optional (copy nil))
+  (let ((obj (if copy (clone self) self)))
+    (setf (port obj) port)
+    obj))
+
+;;; only the top-level container needs to be copied
+(defmethod! set-port ((self container) port &optional (copy nil))
+  (let ((obj (if copy (clone self) self)))
+    (loop for item in (inside obj) do (set-port item port nil))
+    obj))
+  
+(defmethod! set-port ((self t) port &optional (copy nil)) 
+  (om-beep-msg "~A has no 'port' !")
+  self)
 
 (defmethod! get-port ((self note))
    :icon 148
