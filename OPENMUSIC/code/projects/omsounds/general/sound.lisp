@@ -148,7 +148,7 @@
 
 (defmethod get-om-sound-data ((self string) &optional track)
    (multiple-value-bind (buffer format channels sr ss size skip)
-       (audio-io::om-get-sound-buffer self *default-internal-sample-size*)
+       (audio-io::om-get-sound-buffer self *default-internal-sample-size* t)
      (declare (ignore format ss skip))
      (make-instance 'om-sound-data 
                     :smpl-type *default-internal-sample-size*
@@ -421,26 +421,27 @@ Press 'space' to play/stop the sound file.
 
 
 (defmethod build-display-array ((self sound))
-  (let ((winsize 128))
-    (let* ((format (om-sound-format self))
-           (channels (om-sound-n-channels self))
-           (array-width (ceiling (om-sound-n-samples self) winsize)))
+  (let ((winsize 128)
+        (format (om-sound-format self))
+        (channels (om-sound-n-channels self)))
+    (when (and format channels)
+      (let ((array-width (ceiling (om-sound-n-samples self) winsize)))
 ;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
 ;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
-      (setf (display-ratio self) winsize)
+        (setf (display-ratio self) winsize)
       ;"DisplayArrayBuilder" 
-      (funcall 
-       #'(lambda (snd)
-           (setf (display-array snd) 
-                 (make-array (list channels array-width)
-                             :element-type 'single-float :initial-element 0.0 :allocation :static))
-           (fli:with-dynamic-lisp-array-pointer 
-               (ptr (display-array snd) :type :float)
-             (om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
-           (sound-get-best-pict snd)
+        (funcall 
+         #'(lambda (snd)
+             (setf (display-array snd) 
+                   (make-array (list channels array-width)
+                               :element-type 'single-float :initial-element 0.0 :allocation :static))
+             (fli:with-dynamic-lisp-array-pointer 
+                 (ptr (display-array snd) :type :float)
+               (om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
+             (sound-get-best-pict snd)
         ;(setf (display-builder self) nil)
-           (print (format nil "~A Loaded..." (filename self))))
-       self))))
+             (print (format nil "~A Loaded..." (filename self))))
+         self)))))
 
 
 

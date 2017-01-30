@@ -372,7 +372,7 @@
                                ((>= i fade-out-frame-start) (+ gain (* fade-out-factor (- i (- size2 fade-out-frames)))))
                                (t gain)) 
                          (fli:dereference (buffer s) :index i))))
-
+               
               (make-instance 'om-sound-data 
                                :buffer final-buffer
                                :size (round size2 nch)

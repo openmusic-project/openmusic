@@ -88,26 +88,31 @@
 ;;; PAUSE
 (defmethod player-pause ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
-        (juce::pausereader *juce-player* (player-data object))))
+        (when (player-data object)
+          (juce::pausereader *juce-player* (player-data object)))))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
-        (juce::startreader *juce-player* (player-data object))))
+        (when (player-data object)
+          (juce::startreader *juce-player* (player-data object)))))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
-        (juce::stopreader *juce-player* (player-data object))))
+        (when (player-data object)
+          (juce::stopreader *juce-player* (player-data object)))))
 
 
 ;;; PLAY (NOW)
 ;;; we just suppose the stop will be called somewhere else..
 (defmethod player-play-object ((engine (eql :om-audio)) (object sound) &key interval params)
   (declare (ignore params))
-  (when interval 
-    (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
-  (juce::startreader *juce-player* (player-data object)))
+  (when (player-data object)
+    (when interval 
+      (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
+    (juce::startreader *juce-player* (player-data object)))
+  )
 
 (defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
   (loop for obj in play-list do
