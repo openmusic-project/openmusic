@@ -7,7 +7,7 @@
 LWARCH=64-bit
 LWEXEC=lispworks-7-0-0-amd64-darwin
 
-OM_VERSION="6.11"
+OM_VERSION="6.11.1"
 APP_FOLDER="OM "$OM_VERSION
 DMG_NAME="OM-"$OM_VERSION"-macOS"
 
@@ -64,7 +64,11 @@ echo "***************************************************"
 	rm -rf _DMG	
 }
 
-
+zip_release()
+{
+	rm ./"$APP_FOLDER".zip
+	zip -r ./"$APP_FOLDER".zip ./"$APP_FOLDER"/  
+}
 
 change_permission()
 {
@@ -81,12 +85,23 @@ change_permission()
 # MAIN SCRIPT
 #=============================
 
-if 	[ "$1" = "deliver" ]; 	then 	deliver_app
-elif	[ "$1" = "pack" ];	then	pack_app; set_fonts
-elif	[ "$1" = "dp" ];	then	deliver_app; pack_app; set_fonts
-elif	[ "$1" = "dmg" ];	then	create_simple_dmg
-elif	[ "$1" = "all" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
-else 	echo "Dont'know what to do! :("	
+if 	[ "$1" = "-d" ]; 	then 	deliver_app
+elif	[ "$1" = "-p" ];	then	pack_app; set_fonts
+elif	[ "$1" = "-dp" ];	then	deliver_app; pack_app; set_fonts
+elif	[ "$1" = "-dmg" ];	then	create_simple_dmg
+elif	[ "$1" = "-zip" ];	then	zip_release
+elif	[ "$1" = "-dpd" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
+elif	[ "$1" = "-dpz" ];	then	deliver_app; pack_app; set_fonts; zip_release
+else 	
+	echo "Dont'know what to do! :("	
+	echo "Options:"
+	echo "-d = deliver app"
+	echo "-p = pack delivered app as a separate folder (including fonts) "
+	echo "-dp = deliver and pack"
+	echo "-zip = create ZIP from previously packed app"
+	echo "-dmg = create DMG from previously packed app"
+	echo "-dpd = deliver, pack and create DMG"
+	echo "-dpz = deliver, pack and zip"
 fi
 
 exit 0
