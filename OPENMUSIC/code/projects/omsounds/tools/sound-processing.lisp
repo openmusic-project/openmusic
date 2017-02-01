@@ -36,19 +36,22 @@
             (if (null (buffer self))
                 (om-beep-msg "Error: null sound buffer")
               (let ((format (or format *def-snd-format*))
-                  (file (or filename (om-choose-new-file-dialog :directory (def-save-directory) 
-                                                                :prompt (om-str "Save as...")
-                                                                :types (cond ((equal format :aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
-                                                                             ((equal format :wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
-                                                                             ((equal format :flac) (list (format nil (om-str :file-format) "FLAC") "*.flac"))
-                                                                             ((equal format :ogg) (list (format nil (om-str :file-format) "OGG Vorbis") "*.ogg"))
-                                                                             (t nil)))))) 
-              (when file
-                (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                (audio-io::om-save-buffer-in-file (buffer self) (namestring file) (size self) (nch self) (sr self) *audio-res* (or format *def-snd-format*))
+                    (file (or filename (om-choose-new-file-dialog 
+                                        :directory (def-save-directory) 
+                                        :prompt (om-str "Save as...")
+                                        :types (cond ((equal format :aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
+                                                     ((equal format :wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
+                                                     ((equal format :flac) (list (format nil (om-str :file-format) "FLAC") "*.flac"))
+                                                     ((equal format :ogg) (list (format nil (om-str :file-format) "OGG Vorbis") "*.ogg"))
+                                                     (t nil)))))) 
+                (when file
+                  (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
+                  (audio-io::om-save-buffer-in-file (buffer self) (namestring file) (size self) 
+                                                    (nch self) (sr self) *audio-res* 
+                                                    (or format *def-snd-format*))
                 ;(fli:free-foreign-object buffer)
-                (probe-file (namestring file))
-                ))))
+                  (probe-file (namestring file))
+                  ))))
 
 (defmethod! save-sound ((self sound) filename &optional (format 'aiff))
   (save-sound (get-om-sound-data self) filename format))
@@ -645,15 +648,16 @@
                           (final-buffer (om-make-pointer final-size :type (smpl-type s1) :clear t)))
                   ;(declare (type fixnum nch sr size1 size2 smp-cross-side smp-cross-side final-size))
                   ;(declare (type single-float factor1 factor2))
-
+                     
                      (dotimes (i final-size)
+                       
                        (setf (fli:dereference final-buffer :index i)
                              (cond ((< i (- size1 smp-cross)) 
                                     (fli:dereference (buffer s1) :index i))
-                                   ((and (>= i (- size1 smp-cross)) (<= i size1)) 
+                                   ((and (>= i (- size1 smp-cross)) (< i size1)) 
                                     (+ (* (1+ (* factor1 (- i (- size1 smp-cross)))) (fli:dereference (buffer s1) :index i))
                                        (* factor2 (- i (- size1 smp-cross)) (fli:dereference (buffer s2) :index (+ smp-cross (- i size1))))))
-                                   ((> i size1) 
+                                   ((>= i size1) 
                                     (fli:dereference (buffer s2) :index (+ smp-cross (- i size1)))))))
                                     
                      (make-instance 'om-sound-data 
