@@ -48,6 +48,13 @@
         collect p))
 
 
+(defun close-players ()
+  (mapcar 'player-close *enabled-players*))
+
+;;; open is called in the init-OM-session
+(om-add-exit-cleanup-func 'close-players)
+
+
 ;;;=====================
 ;;; SUB-PLAYERS (AKA "ENGINES")
 ;;;=====================
