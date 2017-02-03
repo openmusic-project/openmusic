@@ -13,7 +13,6 @@
 (defmethod player-type ((player (eql :midi-player))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
-    
 (defmethod prepare-to-play ((engine (eql :midi-player)) (player omplayer) object at interval params)
   ;(print (format nil "~s" params))
   
