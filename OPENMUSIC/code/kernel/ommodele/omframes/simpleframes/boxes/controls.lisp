@@ -119,7 +119,6 @@
 				  (when (om-view-container self)
 				    (setf (text-view (editor (om-view-container self))) nil)
 				    (om-remove-subviews (panel (editor (om-view-container self))) self))
-				  (om-remove-subviews (panel (editor (om-view-container self))) self)
 				  (om-beep)
 				  (om-abort))))
     (let ((*package* (find-package :om))
