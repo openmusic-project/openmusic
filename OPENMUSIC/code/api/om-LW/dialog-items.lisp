@@ -486,13 +486,13 @@
 ;  (om-make-point (max 32 (om-point-h pt)) (max 32 (om-point-v pt))))
   
 (defun om-get-text-edit-size (init-size) 
-  #+cocoa(om-add-points init-size (om-make-point 12 8)) 
-  #-cocoa(om-add-points init-size (om-make-point 8 2))
-  )
+  #+(or cocoa linux) (om-add-points init-size (om-make-point 12 8)) 
+  #-(or cocoa linux) (om-add-points init-size (om-make-point 8 2)))
+
 
 (defun om-get-text-edit-pos (init-pos)
-  #+cocoa(om-add-points init-pos (om-make-point -4 -4))
-  #-cocoa(om-add-points init-pos (om-make-point -2 -1)))
+  #+(or cocoa linux) (om-add-points init-pos (om-make-point -4 -4))
+  #-(or cocoa linux) (om-add-points init-pos (om-make-point -2 -1)))
    
 (defmethod om-view-position ((self om-editable-text))
    (om-subtract-points (call-next-method) (om-get-text-edit-pos (om-make-point 0 0))))
