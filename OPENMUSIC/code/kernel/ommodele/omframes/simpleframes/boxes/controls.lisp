@@ -80,8 +80,6 @@
 
 (defmethod text-enter-multiline-p ((self t)) nil)
 
-(remove #\Newline "fhgjjh")
-
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
   (let* ((thetext (if (text-enter-multiline-p self)
@@ -126,7 +124,7 @@
            (newval (read-from-string newtext))
            (newsize (good-text-box-size newtext *om-default-font1*))
            (box (object (om-view-container (object self)))))
-       (setf *provisoire-flag* nil)
+       ;; (setf *provisoire-flag* nil)
        (om-set-dialog-item-text (object self) newtext)
        (setf (value box) newval)
        (setf (thestring box) newtext)
