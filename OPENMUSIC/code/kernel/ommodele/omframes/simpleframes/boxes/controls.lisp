@@ -578,7 +578,8 @@
 ;;;remove text-view from panel
 (defmethod exit-from-dialog ((self edit-numbox-edit) newtext)
    (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
-                             (om-remove-subviews (om-view-container self) self)
+                             (when (om-view-container self)
+			       (om-remove-subviews (om-view-container self) self))
                              (om-beep)
                              (om-abort))))
      (let ((*package* (find-package :om))
