@@ -472,7 +472,8 @@
   (:default-initargs
    :visible-border :outline
    :callback 'om-dialog-item-action
-   :navigation-callback 'text-edit-special-action
+   ;; 2017-02-09: navigation-callback not implemented on linux 
+   #-linux :navigation-callback #-linux 'text-edit-special-action
    :change-callback 'text-edit-changed-action
    :editing-callback 'text-edited-action))
 
