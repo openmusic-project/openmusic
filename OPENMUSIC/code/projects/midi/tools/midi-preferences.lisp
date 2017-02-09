@@ -87,18 +87,40 @@
                       ;                     )
                       ;(om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 300 30) "Library used by OM to read and write MIDI files"
                       ;                     :font *om-default-font1*)
-
                       
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 200 30) 
+                                           "Default score Player:" :font *om-default-font2b*)
+                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 200 i) (om-make-point 140 24) ""
+                                           :range (if *default-score-player* ; (get-pref modulepref :midi-system)
+                                                      *score-players*
+                                                    (cons "..." *score-players*))
+                                           :value (or (and *default-score-player* (get-pref modulepref :score-player)) "---")
+                                           :di-action (om-dialog-item-act item
+                                                        (set-pref modulepref :score-player (om-get-selected-item item)))
+                                           )
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
+                                           "Applies to all new score boxes" :font *om-default-font1*)
+		      
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 22)) (om-make-point 130 40) 
+                                           "Force score player:" :font *controls-font*)
+                      (om-make-dialog-item 'om-check-box (om-make-point 200  i) (om-make-point 180 20) ""
+                                           :checked-p (get-pref modulepref :force-player)
+                                           :di-action #'(lambda (item) 
+                                                          (set-pref modulepref :force-player (om-checked-p item))))
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
+                                           "Changes the score player of existing boxes"
+                                           :font *om-default-font1*)
+                      
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 34)) (om-make-point 200 30) 
                                            "MIDI I/O" :font *om-default-font2b*)
                       (om-make-dialog-item 'om-static-text (om-make-point 180 i) (om-make-point 300 30) 
-                                           "[PortMidi setup]" :font *om-default-font2*)
+                                           "Ports setup" :font *om-default-font2*)
                       
                       ;(om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 45)) (om-make-point 160 24) 
                       ;                     "Devices/ports setup:" :font *controls-font*)
                       (if (and *default-midi-system* (om-midi::midi-setup-function *default-midi-system*))
                           (om-make-view 'button-icon
-                                    :position (om-make-point 290 (- i 4)) 
+                                    :position (om-make-point 285 (- i 4)) 
                                     :size (om-make-point 28 28)
                                     :action #'(lambda (item) (declare (ignore item)) (midi-setup modulepref))
                                     :iconid 135)
@@ -178,19 +200,17 @@
                                                    ))))
                                            :font *om-default-font2*)
 
-                      
-		      
-		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 280 40) 
+		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 300 40) 
                                            "MIDI channels above 16 go to successive out ports:" :font *controls-fonti*)
 
-		      (om-make-dialog-item 'om-check-box (om-make-point 320  i) (om-make-point 20 20) ""
+		      (om-make-dialog-item 'om-check-box (om-make-point 330 i) (om-make-point 20 20) ""
                                            :checked-p (get-pref modulepref :port-modulo-channel)
                                            :di-action #'(lambda (item) 
                                                           (set-pref modulepref :port-modulo-channel (om-checked-p item))))
 		      
-		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 120 40) 
+		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 200 40) 
                                            "In case of emergency:" :font *controls-fonti*)
-                      (om-make-dialog-item 'om-button (om-make-point 180 (+ i 4)) (om-make-point 100 20) "Restart" 
+                      (om-make-dialog-item 'om-button (om-make-point 200 i) (om-make-point 100 20) "Restart" 
                                            :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
                                            :di-action #'(lambda (item) (declare (ignore item))
                                                           (when (om-midi::midi-restart-function *default-midi-system*)
@@ -202,49 +222,31 @@
                                                                      (get-pref modulepref :midi-setup))
                                                             )))
 
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 160 44) 
-                                           "MIDI export format:" :font *om-default-font2b*)
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 180 i) (om-make-point 140 24) ""
-                                           :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
-                                           :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
-                                           :di-action (om-dialog-item-act item
-                                                        (set-pref modulepref :midi-format (om-get-selected-item-index item)))
-                                           )
+                      ;(om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 160 44) 
+                      ;                     "MIDI export format:" :font *om-default-font2b*)
+                      ;(om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 180 i) (om-make-point 140 24) ""
+                      ;                     :range '("0 (Merge all Tracks)" "1 (Split Tracks)")
+                      ;                     :value (nth (get-pref modulepref :midi-format) '("0 (Merge all Tracks)" "1 (Split Tracks)"))
+                      ;                     :di-action (om-dialog-item-act item
+                      ;                                  (set-pref modulepref :midi-format (om-get-selected-item-index item)))
+                      ;                     )
 
                       )
 
      ;;; MIDI PLAYER / RT
      (om-add-subviews thescroll
                       
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (setf i 30)) (om-make-point 200 30) 
-                                           "Default score Player:" :font *om-default-font2b*)
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 580 i) (om-make-point 140 24) ""
-                                           :range (if *default-score-player* ; (get-pref modulepref :midi-system)
-                                                      *score-players*
-                                                    (cons "..." *score-players*))
-                                           :value (or (and *default-score-player* (get-pref modulepref :score-player)) "---")
-                                           :di-action (om-dialog-item-act item
-                                                        (set-pref modulepref :score-player (om-get-selected-item item)))
-                                           )
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 400 30) 
-                                           "... will apply to new score boxes ..." :font *om-default-font1*)
+                     
 
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 130 40) "Force score player:" :font *controls-font*)
-                      (om-make-dialog-item 'om-check-box (om-make-point 580  i) (om-make-point 180 20) ""
-                                           :checked-p (get-pref modulepref :force-player)
-                                           :di-action #'(lambda (item) 
-                                                          (set-pref modulepref :force-player (om-checked-p item))))
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 400 30) 
-                                           "... will change the score player of existing boxes as well ..."
-                                           :font *om-default-font1*)
+                     
 
                       
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 200 30) 
-                                           "Micro-intervals:" :font *om-default-font2b*)
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (setf i 30)) (om-make-point 300 30) 
+                                           "Micro-intervals (MIDI player)" :font *om-default-font2b*)
                       
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 150 24)
-                                           "Shift MIDI chanels:" :font *controls-font*)
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 550 i) (om-make-point 170 24) ""
+                                           "Shift MIDI channels:" :font *controls-font*)
+                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 580 i) (om-make-point 170 24) ""
                                            :range '("always" "never" "when approx is 4 or 8")
                                            :value (let ((mode (get-pref modulepref :channel-shift)))
                                                     (cond ((equal mode t) "always")
@@ -255,20 +257,26 @@
                                                                   (case (om-get-selected-item-index item)
                                                                     (0 t) (1 nil) (2 '(4 8)))))
                                            )
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 340 40) 
+                                           "Ditpatches notes on different MIDI channels when the pitch is not a semi-tone" :font *om-default-font1*)
 
-                     (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 260 24)
-                                           "Shift sensibility (tone division):" :font *controls-font*)
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 600 i) (om-make-point 120 24) ""
-                                           :range '("8" "same as approx") ;(mapcar 'number-to-string '(3 4 5 6 7 8 9 10 11 12 13 14 15 16))
-                                           :value (if (numberp (get-pref modulepref :channel-shift-approx)) "8" "same as approx")
+                     (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 40)) (om-make-point 260 24)
+                                           "Number of channels:" :font *controls-font*)
+                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 580 i) (om-make-point 170 24) ""
+                                           :range '("4" "depending on approx") ;(mapcar 'number-to-string '(3 4 5 6 7 8 9 10 11 12 13 14 15 16))
+                                           :value (if (numberp (get-pref modulepref :channel-shift-approx)) "4" "same as approx")
                                            :di-action (om-dialog-item-act item
                                                         (set-pref modulepref :channel-shift-approx 
                                                                   (if (= 0 (om-get-selected-item-index item))
                                                                       8 nil)))
                                            )
- 
+                      
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 360 80) 
+                                           "The number of channels used for microtones can be fixed for a 1/8th-tone optimal configuration (4 channels / default), or it can be determined according to the score approximation." :font *om-default-font1*)
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 44)) (om-make-point 360 80) 
+                                           "With 4 channels  semi-tones remain on ch.1, 1/8th tones shift to ch.2, 1/4th tones to ch.3 and 3/8th tones to ch.4" :font *om-default-font1*)
 
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 30)) (om-make-point 130 40) "Auto microtone bend:" :font *controls-font*)
+                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 40)) (om-make-point 130 40) "Auto microtone bend:" :font *controls-font*)
                       (om-make-dialog-item 'om-check-box (om-make-point 600 i) (om-make-point 180 20) ""
                                            :checked-p (get-pref modulepref :auto-microtone-bend)
                                            :di-action #'(lambda (item) 
