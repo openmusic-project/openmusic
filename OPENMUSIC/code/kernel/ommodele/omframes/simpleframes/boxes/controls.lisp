@@ -80,8 +80,6 @@
 
 (defmethod text-enter-multiline-p ((self t)) nil)
 
-(remove #\Newline "fhgjjh")
-
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
   (let* ((thetext (if (text-enter-multiline-p self)
@@ -112,27 +110,28 @@
 
 
 (defmethod om-dialog-item-action ((self change-text-enter-view))
- (exit-from-dialog self (om-dialog-item-text self)))
+  (exit-from-dialog self (om-dialog-item-text self)))
      
 
 ;;;remove text-view from panel
 (defmethod exit-from-dialog ((self change-text-enter-view) newtext)
-   (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
-                            (setf (text-view (editor (om-view-container self))) nil)
-                            (om-remove-subviews (panel (editor (om-view-container self))) self)
-                            (om-beep)
-                            (om-abort))))
-     (let ((*package* (find-package :om))
-           (newval (read-from-string newtext))
-           (newsize (good-text-box-size newtext *om-default-font1*))
-           (box (object (om-view-container (object self)))))
-       (setf *provisoire-flag* nil)
-       (om-set-dialog-item-text (object self) newtext)
-       (setf (value box) newval)
-       (setf (thestring box) newtext)
-       (reinit-size (om-view-container (object self)))
-       (setf (text-view (editor (om-view-container self))) nil)
-       (om-remove-subviews (panel (editor (om-view-container self))) self))))
+  (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
+				  (when (om-view-container self)
+				    (setf (text-view (editor (om-view-container self))) nil)
+				    (om-remove-subviews (panel (editor (om-view-container self))) self))
+				  (om-beep)
+				  (om-abort))))
+    (let ((*package* (find-package :om))
+	  (newval (read-from-string newtext))
+	  (newsize (good-text-box-size newtext *om-default-font1*))
+	  (box (object (om-view-container (object self)))))
+      ;; (setf *provisoire-flag* nil)
+      (om-set-dialog-item-text (object self) newtext)
+      (setf (value box) newval)
+      (setf (thestring box) newtext)
+      (reinit-size (om-view-container (object self)))
+      (setf (text-view (editor (om-view-container self))) nil)
+      (om-remove-subviews (panel (editor (om-view-container self))) self))))
 
 ;----------D&D
 (defmethod get-drag-object ((self ttybox)) (om-view-container self))
@@ -578,7 +577,8 @@
 ;;;remove text-view from panel
 (defmethod exit-from-dialog ((self edit-numbox-edit) newtext)
    (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
-                             (om-remove-subviews (om-view-container self) self)
+                             (when (om-view-container self)
+			       (om-remove-subviews (om-view-container self) self))
                              (om-beep)
                              (om-abort))))
      (let ((*package* (find-package :om))
