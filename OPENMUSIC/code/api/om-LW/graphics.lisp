@@ -570,7 +570,9 @@
       )
 
  
-(defvar *om-transparent-color* (make-instance 'omcolor :c :transparent))
+(defvar *om-transparent-color*
+  #-linux (make-instance 'omcolor :c :transparent)
+  #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent)))
 
 ;(om-choose-color-dialog :color (om-make-color 0.803 0.854 0.855))
 
