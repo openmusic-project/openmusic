@@ -32,5 +32,6 @@
    (load-one-private-patch "layout-divider-perform-move" :capi)
    (load-one-private-patch "ns-alerts" :cocoa)
    (load-one-private-patch "prompters-non-deprecated" :capi-cocoa)
+   (load-one-private-patch "logical-font-gdip-compute-character-extents" :capi-win32)
    ))
 
