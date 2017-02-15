@@ -48,8 +48,8 @@ else
 endif
 
 compress	= tar
-compressfile	= $(buildname).tar.xz
-compressflags	= -cJf
+compressfile	= $(buildname).tar.bz2
+compressflags	= -cjf
 
 
 release		= $(DISTDIR)/$(buildname)
