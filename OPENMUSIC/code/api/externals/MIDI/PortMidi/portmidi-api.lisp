@@ -181,14 +181,14 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
   '(:TimeSign :SeqNum :Textual :Copyright :SeqName
     :InstrName :Lyric :Marker :CuePoint :ChanPrefi
     :EndTrack :Tempo :SMPTEOffset :TimeSign :KeySign
-    :MidiPortMsg :EndOfTrackMsg
-    :Specific))
+    :MidiPortMsg :EndOfTrackMsg :ResetAllControllers
+    :Specific :AllNotesOff))
 
-; (type-to-midi :KeyOff)
+; (type-to-midi :resetallcontrollers)
 (defun type-to-midi (type)
   (or (cadr (find type *midi-typenum-table* :key 'car :test 'equal))
       (and (find type *midi-meta-types*) #xFF)
-      (progn (print (format nil "PORTMIDI API - MESSAGE TYPE NOT SUPPORTED: ~S " type)) nil)
+      (progn (print (format nil "PORTMIDI API - MESSAGE TYPE NOT SUPPORTED: ~S" type)) nil)
       ))
 
 ; (midi-to-type 9)
