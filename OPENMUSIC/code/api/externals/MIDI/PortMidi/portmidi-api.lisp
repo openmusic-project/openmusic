@@ -181,8 +181,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
   '(:TimeSign :SeqNum :Textual :Copyright :SeqName
     :InstrName :Lyric :Marker :CuePoint :ChanPrefi
     :EndTrack :Tempo :SMPTEOffset :TimeSign :KeySign
+    :MidiPortMsg :EndOfTrackMsg
     :Specific))
-
 
 ; (type-to-midi :KeyOff)
 (defun type-to-midi (type)
