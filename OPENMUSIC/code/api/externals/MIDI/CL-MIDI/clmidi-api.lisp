@@ -195,6 +195,9 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
   (7-lsb (midi::message-value event)))
 (defmethod midi-data-byte-2 ((event midi::pitch-bend-message))
   (7-msb (midi::message-value event)))
+(defmethod midi-message-fields ((msg midi::pitch-bend-message))
+  (list (midi::message-value msg)))
+
 (defun event2pitch-bend (ev)
   (when (midi-evt-fields ev)
     (make-pitch-bend-message (midi-evt-date ev) (first (midi-evt-fields ev)) (1- (midi-evt-chan ev)))))
