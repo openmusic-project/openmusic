@@ -363,11 +363,17 @@
 	(progn (print (format nil "(cl-midi) message-type ~A isn't supported yet" type))
 	       NIL))))
 
+;; (defun tracks2seq (tracks)
+;;   (sort (loop for track in tracks
+;;               for ref = 0 then (+ ref 1) append
+;;               (loop for msg in track collect (make-event-from-message msg ref)))
+;;         #'midi-evt-<))
+
 (defun tracks2seq (tracks)
-  (sort (loop for track in tracks
-              for ref = 0 then (+ ref 1) append
-              (loop for msg in track collect (make-event-from-message msg ref)))
-        #'midi-evt-<))
+  (loop
+     for track in tracks
+     for ref = 0 then (+ ref 1)
+     append (loop for msg in track collect (make-event-from-message msg ref))))
 
 ;;; THE FUNCTION CALLED BY OM
 (defun cl-midi-load-file (pathname)
