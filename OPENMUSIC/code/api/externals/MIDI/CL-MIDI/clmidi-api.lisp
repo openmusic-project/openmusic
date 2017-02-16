@@ -30,21 +30,15 @@
 
 (in-package :om-midi)
 
-
-;;; TODO:  pack everything in to a macro:
-;;;
-;;; - status-byte
-;;; - typename ie, :note-on
-
 ;;; smf refs:
 ;;;
 ;;; http://acad.carleton.edu/courses/musc108-00-f14/pages/04/04StandardMIDIFiles.html
+;;; http://cs.fit.edu/~ryan/cse4051/projects/midi/midi.html
 ;;;
 
 
 ;;; FILE OUTPUT: building useful midi-messages, writing SMF's:
 ;;;
-
 (defconstant +note-off-opcode+		#x80)
 (defconstant +note-on-opcode+		#x90)
 (defconstant +key-pressure-opcode+	#xA0)
@@ -55,11 +49,10 @@
 (defconstant +tempo-opcode+		#x51)
 (defconstant +time-signature-opcode+	#x58)
 (defconstant +key-signature-opcode+	#x59)
-(defconstant +midi-port-opcode+	#x21)
+(defconstant +midi-port-opcode+		#x21)
 (defconstant +end-of-track-opcode+	#x2F)
 (defconstant +reset-all-controllers-message-opcode+ #xB0)
 (defconstant +all-notes-off-message-opcode+ #xB0)
-
 (defconstant +copyright-opcode+		#x02)
 (defconstant +sequence/track-name-opcode+ #x03)
 (defconstant +instrument-opcode+	#x04)
@@ -67,40 +60,12 @@
 (defconstant +marker-opcode+		#x06)
 (defconstant +cue-point-opcode+		#x07)
 
-#|
-
-Meta events: from http://www.ccarh.org/courses/253/handout/smf/
-
-0x00 	Sequence number
-0x01 	Text event
-0x02 	Copyright notice
-0x03 	Sequence or track name
-0x04 	Instrument name
-0x05 	Lyric text
-0x06 	Marker text
-0x07 	Cue point
-0x20    MIDI channel prefix assignment
-0x2F    End of track
-0x51    Tempo setting
-0x54    SMPTE offset
-0x58    Time signature
-0x59    Key signature
-0x7F    Sequencer specific event
-|#
-
-
-(defun midi-command-type (event)
-  (slot-value event 'midi::status-min))
-
-(defun midi-status-byte (event)
-  (slot-value event 'midi::status))
-
 ;; VOICE MESSAGES
 
 (defmethod midi-channel ((event t)) nil)
 (defmethod midi-channel ((event midi::channel-message))
   ;; used where channel isn't set explicit in instance
-  (- (midi-status-byte event) (midi-command-type event)))
+  (- (slot-value event 'midi::status) (slot-value event 'midi::status-min)))
 
 
 (defmethod midi-message-time ((msg midi::message)) (midi::message-time msg))
@@ -109,14 +74,11 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
 (defmethod midi-message-channel ((msg t)) -1)
 
 ;;; Accessors to define for the different types of MIDI messages
-(defmethod midi-message-type ((msg t)) (intern (concatenate 'string "Unknown:" (string (type-of msg)))))
+(defmethod midi-message-type ((msg t)) (intern (concatenate 'string "clmidi-api: unknown + " (string (type-of msg)))))
 (defmethod midi-message-fields ((msg t)) nil)
 
 
 ;; NOTE OFF
-
-(defmethod midi-key ((event midi::note-off-message))
-  (midi::message-key event))
 
 (defmethod midi-message-type ((msg midi::note-off-message)) :KeyOff)
 
@@ -134,10 +96,10 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
 		   :velocity vel
 		   :status (logior +note-off-opcode+ chan))))
 
-;; NOTE ON
+(defun make-note-off-message (time key vel chan)
+  (make-instance 'midi:note-off-message :key key :time time :velocity vel :status (logior +note-off-opcode+ chan)))
 
-(defmethod midi-key ((event midi::note-on-message))
-  (midi::message-key event))
+;; NOTE ON
 
 (defmethod midi-message-type ((msg midi::note-on-message)) :KeyOn)
 
@@ -154,6 +116,9 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
 		   :key key
 		   :velocity vel
 		   :status (logior +note-on-opcode+ chan))))
+
+(defun make-note-on-message (time key vel chan)
+  (make-instance 'midi:note-on-message :key key :time time :velocity vel :status (logior +note-on-opcode+ chan)))
 
 ;; PROGRAM CHANGE
 
@@ -186,8 +151,6 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
 
 ;; PITCH BEND
 
-;; range = 14 bits (-8192 -> 8190 in user-code)
-;;; !! not anymore in OM 6.9 PW = 0-16384
 (defmethod midi-message-type ((msg midi::pitch-bend-message)) :PitchBend)
 
 (defmethod midi-message-fields ((msg midi::pitch-bend-message))
@@ -274,7 +237,7 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
   (list (midi::message-numerator msg)
         (midi::message-denominator msg)			    ;power of 2
 	(slot-value msg 'midi::cc)			    ;midi clocks pr. metronome click
-        (slot-value msg 'midi::bb)))			    ;n 32nd notes per quarter note
+        (slot-value msg 'midi::bb)))			    ;n 32nd notes notated per quarter note
 
 (defun event2time-signature (ev)
   (let ((inst (make-instance 'midi::time-signature-message
@@ -376,7 +339,7 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
 ;; takes instances of the various midi:*message classes, returning a list of midi-evt
 (defun make-event-from-message (msg ref)
   (make-midi-evt :type (midi-message-type msg)
-                 :date (midi-message-time msg)
+                 :date (midi::message-time msg)
                  :chan (1+ (midi-message-channel msg))
                  :ref ref
                  :fields (midi-message-fields msg)))
@@ -395,19 +358,10 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
             (midi:midifile-division f)
             (midi:midifile-format f))))
 
-;; (defun make-messages-from-event (ev)
-;;   (let ((type (midi-evt-type ev)))
-;;     (cond
-;;       ((equal type :Note) (event2note-on-off ev)) ;returns cons
-;;       ((equal type :keyOn) (event2note-on ev))
-;;       ((equal type :keyOff) (event2note-off ev))
-;;       ((equal type :Tempo) (event2tempo ev))
-;;       (t (print (format nil "(cl-midi) message-type ~A isn't supported yet" type)) (break) NIL))))
-
 (defun make-messages-from-event (ev)
   (let ((type (midi-evt-type ev)))
     (case type
-      (:Note (event2note-on-off ev)) ;returns cons
+      (:Note (event2note-on-off ev))			    ;returns cons
       (:keyOn (event2note-on ev))
       (:keyOff (event2note-off ev))
       (:Tempo (event2tempo ev))
@@ -452,96 +406,6 @@ Meta events: from http://www.ccarh.org/courses/253/handout/smf/
   (declare (ignore timedef tracks))
   (let ((mf (make-instance 'midi:midifile :format fileformat :division clicks)))
     (setf (slot-value mf 'midi::tracks) (seq2tracks seq))
-    #+lispworks(sys::ENSURE-DIRECTORIES-EXIST filename :verbose t)  ;;; !!! LW specific
+    #+lispworks(sys::ENSURE-DIRECTORIES-EXIST filename :verbose t) ;;; !!! LW specific
     (midi:write-midi-file mf filename)
     filename))
-
-
-;; (defun om-midi::cl-midi-send-evt (event &optional player)
-;;   (print 'not-yet-set))
-
-;;; I think there's no need to handle this here.
-;;; In principle OM supports KeyOn/KeyOff as well as Note (incl. duration) messages.
-;;; We can suppose the 'Note' concept is not considered here
-
-#|
-(defun event-is-on-off-or... (msg)
-  (cond ((or (typep msg 'midi:note-off-message)
-	     (and (typep msg 'midi:note-on-message) (zerop (midi:message-velocity msg))))
-	 'off)
-	((typep msg 'midi:note-on-message) 'on)
-	(t t)))
-
-(defun make-event-from-message (msg ref note-list)
-  (case (event-is-on-off-or... msg)
-    (off (let* ((key (midi:message-key msg))
-		(channel (midi:message-channel msg))
-		(startevt (gethash (list key channel) note-list)))
-	   (when startevt
-	     (remhash (list key channel) note-list)
-	     (let ((duration (- (midi:message-time msg) (midi:message-time startevt))))
-	       (change-class startevt 'midimsg2evt)
-	       (setf (event-dur startevt) duration)
-	       (setf (event-ref startevt) ref)
-	       startevt))))
-    (on (let ((key (midi:message-key msg))
-	      (channel (midi:message-channel msg)))
-	  ;;push data to table and return nil (for collectors...):
-	  (setf (gethash (list key channel) note-list) msg)
-	  nil))
-    (t (make-midi-evt :type (midi-message-type msg)
-                      :date (midi::message-time msg)
-                      :channel (midi::message-channel msg)
-                      :ref ref
-                      :fields (midi-message-fields msg)))
-    ))
-
-(defun messages2events (trk ref)
-  (let ((note-list (make-hash-table :test 'equal)))
-    (loop for message in trk
-          for event = (make-event-from-message message ref note-list)
-          when event collect event)))
-
-(defun tracks2seq (tracks)
-  (sort (loop for ref from 0
-              for track in tracks
-              append (messages2events track ref))
-        #'midi-evt-<))
-
-|#
-
-;;; THESE FUNCTIONS ARE NOT USED ANYMORE
-
-#|
-
-;;; run through whole seq 'linking' events:
-
-(defun linkevents (events)
-  (loop for this in events
-       for next in (cdr events)
-       collect (progn (setf (event-link this) next) this) into bag
-       finally (return (nconc bag (list next)))))
-|#
-
-;; (defun tracks2seq (tracks)
-;;   (mapcar #'linkevents (apply #'append (mapcar #'messages2events tracks))))
-
-#|
-(defun tracks2seq (tracks)
-  (if (> (length tracks) 1)
-      (append
-       ;;mf-format=1, ie. dont link events from tempo-track...
-       (messages2events (car tracks) 0)
-       (linkevents
-	(sort (loop for ref from 1
-		 for track in (cdr tracks)
-		 append (messages2events track ref))
-	      #'sort-events-<)))
-      ;; else mf-format=0, handle interspersed tempo-messages
-      (linkevents
-       (sort (loop for ref from 0
-		for track in tracks
-		append (messages2events track ref))
-	     #'sort-events-<))))
-|#
-
