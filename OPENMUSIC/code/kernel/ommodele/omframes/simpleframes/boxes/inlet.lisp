@@ -117,7 +117,7 @@
                 (container (editor panel)))
            (when (text-view container)
              (exit-from-dialog (text-view container) (om-dialog-item-text (text-view container))))
-           (setf (text-view container)
+          (setf (text-view container)
                  (om-make-dialog-item 'text-enter-view
                                       (om-add-points (om-view-position (om-view-container self)) (om-make-point (- (x self) 4) -16))
                                       (om-make-point (get-name-size thetext) 20)

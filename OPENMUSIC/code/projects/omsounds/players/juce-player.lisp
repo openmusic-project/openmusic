@@ -9,8 +9,13 @@
 (defconstant *audio-buffsize* 512)
 
 (defvar *juce-player* nil)
-(defvar *audio-driver* #+macosx "CoreAudio" #+linux "ALSA")  ;;; change this on other platforms
+(defvar *audio-driver* 
+  #+macosx "CoreAudio" 
+  #+linux "ALSA"
+  #+windows nil
+  ) 
 
+; (juce::get-audio-drivers *juce-player*)
 
 (defmethod player-name ((self (eql :om-audio))) "Default audio player")
 (defmethod player-desc ((self (eql :om-audio))) "(based on Juce)")
@@ -25,6 +30,10 @@
                         *audio-sr* *audio-buffsize*))
    
 (defun juce-player-setup-with-check ()
+  (unless *audio-driver* 
+    (setf *audio-driver* (car (juce::get-audio-drivers *juce-player*)))
+    (print (format nil "Selecting default audio driver: \"~A\"." *audio-driver*)))
+  (if *audio-driver*
   (let ((in-devices (juce::audio-driver-input-devices *juce-player* *audio-driver*))
         (out-devices (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
     (unless (and *audio-out-device* (find *audio-out-device* out-devices :test 'string-equal))
@@ -48,7 +57,9 @@
           (apply-audio-setup *juce-player*)
           ))
       )
-    t))
+    t)
+    (om-beep-msg "ERROR OPENING AUDIO: Could not find any audio driver.")
+    ))
 
 
 ;; called from preferences

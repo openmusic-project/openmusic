@@ -571,9 +571,8 @@
 
  
 (defvar *om-transparent-color*
-  #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent))
-  #+cocoa (make-instance 'omcolor :c :transparent)
-  )
+  #-linux (make-instance 'omcolor :c :transparent)
+  #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent)))
 
 ;(om-choose-color-dialog :color (om-make-color 0.803 0.854 0.855))
 
@@ -708,14 +707,12 @@
 
 
 #-linux (setf *om-def-font-face* "Verdana")
-;; #+linux (setf *om-def-font-face* "Liberation Sans")
-#+linux (setf *om-def-font-face* "Dejavu Sans")
+#+linux (setf *om-def-font-face* "Liberation Sans")
 ;;; #+win32(setf *om-def-font-face* "MS Shell Dlg")
  
 
 #-linux(setf *om-def-bold-font-face* "Verdana")
-;; #+linux(setf *om-def-bold-font-face* "Liberation Sans")
-#+linux (setf *om-def-bold-font-face* "Dejavu Sans")
+#+linux(setf *om-def-bold-font-face* "Liberation Sans")
 
 ;(setf *om-def-font-sizes* 
 ;      #+win32'(8 10 11 13 20) 
@@ -734,12 +731,10 @@
 (setf *om-default-font3b* (om-make-font *om-def-bold-font-face* (nth 2 *om-def-font-sizes*) :style '(:bold)))
 (setf *om-default-font4b* (om-make-font *om-def-bold-font-face* (nth 3 *om-def-font-sizes*) :style '(:bold)))
 
-#+win32 (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
-#+linux (setf *om-controls-font* (om-make-font "Bitstream Vera Sans" 13))
+#+(or win32 linux) (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
 #-(or linux win32) (setf *om-controls-font* (om-make-font "LucidaGrande" 13))
 
-#-linux (setf *om-score-font-face* "Times New Roman")
-#+linux (setf *om-score-font-face* "URW Bookman L")
+(setf *om-score-font-face* "Times New Roman")
 
 (defun om-make-font-object (font)
   (gp::find-best-font oa::*record-view* font))

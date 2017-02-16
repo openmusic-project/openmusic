@@ -78,9 +78,9 @@
 
 (defparameter *juceaudiolib-pathname*
   #+win32
-  "/WINDOWS/system32/OMJuceAudioLib.dll"
+  "/WINDOWS/system32/OMAudioLib.dll"
   #+(or darwin macos macosx)  
-  "OM6/OPENMUSIC/resources/lib/mac/OMJuceAudioLib.dylib"
+  "OM6/OPENMUSIC/resources/lib/mac/OMAudioLib.dylib"
   #+linux "OMAudioLib.so"
   )
 

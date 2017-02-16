@@ -57,6 +57,7 @@
   (make-instance 'simple-layout :description
                  (list (setf (om-lisp::ep self) 
                              (make-instance 'capi::editor-pane 
+                                            :font om-lisp::*def-text-edit-font*
                                             :echo-area (echoarea self)
                                             :change-callback 'texteditor-change-callback)))))
 
