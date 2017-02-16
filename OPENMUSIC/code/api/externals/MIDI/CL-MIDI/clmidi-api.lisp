@@ -403,7 +403,6 @@
 
 
 (defun cl-midi-save-file (seq filename fileformat clicks)
-  (declare (ignore timedef tracks))
   (let ((mf (make-instance 'midi:midifile :format fileformat :division clicks)))
     (setf (slot-value mf 'midi::tracks) (seq2tracks seq))
     #+lispworks(sys::ENSURE-DIRECTORIES-EXIST filename :verbose t) ;;; !!! LW specific
