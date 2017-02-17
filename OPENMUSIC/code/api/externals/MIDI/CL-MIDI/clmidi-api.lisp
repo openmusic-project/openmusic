@@ -370,8 +370,8 @@
 (defun make-messages-from-event (ev)
   (let* ((type (midi-evt-type ev))
 	 (func (get-event-to-message-func type)))
-    (when (equal type :TimeSign)
-      (print (list (midi-evt-fields ev) func)))
+    ;; (when (equal type :TimeSign)
+    ;;   (print (list (midi-evt-fields ev) func)))
     (if func
 	(funcall func ev)
 	(progn (print (format nil "(cl-midi) message-type ~A isn't supported yet" type))
