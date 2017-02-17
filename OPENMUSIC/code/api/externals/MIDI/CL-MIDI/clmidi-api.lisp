@@ -45,15 +45,15 @@
 
 ;; DEFINE FUNCTION AND REGISTER IN LOOKUP TABLE:
 
-(defvar *message-from-event-functions* '())
+(defvar *event-to-message-functions* '())
 
 (defmacro defevt2msg ((name type) &body body)
   `(prog1
        (defun ,name (ev) ,@body)
-     (pushnew (cons ,type #',name) *message-from-event-functions*)))
+     (pushnew (cons ,type #',name) *event-to-message-functions*)))
 
 (defun get-event-to-message-func (type)
-  (cdr (assoc type *message-from-event-functions*)))
+  (cdr (assoc type *event-to-message-functions*)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
