@@ -58,6 +58,7 @@
 ;;;  START OF MESSAGE TYPES
 ;;;
 
+;; voice messages
 (defconstant +note-off-opcode+		#x80)
 (defconstant +note-on-opcode+		#x90)
 (defconstant +key-pressure-opcode+	#xA0)
@@ -65,19 +66,27 @@
 (defconstant +program-change-opcode+	#xC0)
 (defconstant +channel-pressure-opcode+	#xD0)
 (defconstant +pitch-bend-opcode+	#xE0)
-(defconstant +tempo-opcode+		#x51)
-(defconstant +time-signature-opcode+	#x58)
-(defconstant +key-signature-opcode+	#x59)
-(defconstant +midi-port-opcode+		#x21)
-(defconstant +end-of-track-opcode+	#x2F)
+
+;; mode messages
+
 (defconstant +reset-all-controllers-message-opcode+ #xB0)
 (defconstant +all-notes-off-message-opcode+ #xB0)
-(defconstant +copyright-opcode+		#x02)
-(defconstant +sequence/track-name-opcode+ #x03)
-(defconstant +instrument-opcode+	#x04)
-(defconstant +lyric-opcode+		#x05)
-(defconstant +marker-opcode+		#x06)
-(defconstant +cue-point-opcode+		#x07)
+
+;; meta messages, all have status-byte=#xFF
+
+(defconstant +midi-port-opcode+		#xFF)
+(defconstant +end-of-track-opcode+	#xFF)
+
+(defconstant +tempo-opcode+		#xFF)
+(defconstant +time-signature-opcode+	#xFF)
+(defconstant +key-signature-opcode+	#xFF)
+
+(defconstant +copyright-opcode+		#xFF)
+(defconstant +sequence/track-name-opcode+ #xFF)
+(defconstant +instrument-opcode+	#xFF)
+(defconstant +lyric-opcode+		#xFF)
+(defconstant +marker-opcode+		#xFF)
+(defconstant +cue-point-opcode+		#xFF)
 
 
 
@@ -191,7 +200,8 @@
 (defevt2msg (event2copyright :CopyRight)
   (let ((time (midi-evt-date ev))
 	(value (first (midi-evt-fields ev))))
-    (let ((inst (make-instance 'midi::copyright-message :time time :status +copyright-opcode+)))
+    (let ((inst (make-instance 'midi::copyright-message :time time
+			       :status +copyright-opcode+)))
       (setf (slot-value inst 'midi::text) value)
       inst)))
 
@@ -357,23 +367,21 @@
 (defun make-messages-from-event (ev)
   (let* ((type (midi-evt-type ev))
 	 (func (assoc type *message-from-event-functions*)))
-    ;;(when (equal type :KeySign) (print (list (midi-evt-fields ev) func)))
+    (when (equal type :TimeSign)
+      (print (list (midi-evt-fields ev) func))
+      )
     (if func
 	(funcall (cdr func) ev)
 	(progn (print (format nil "(cl-midi) message-type ~A isn't supported yet" type))
 	       NIL))))
 
-;; (defun tracks2seq (tracks)
-;;   (sort (loop for track in tracks
-;;               for ref = 0 then (+ ref 1) append
-;;               (loop for msg in track collect (make-event-from-message msg ref)))
-;;         #'midi-evt-<))
+;; TODO: don't need sorting here anymore?
 
 (defun tracks2seq (tracks)
-  (loop
-     for track in tracks
-     for ref = 0 then (+ ref 1)
-     append (loop for msg in track collect (make-event-from-message msg ref))))
+  (sort (loop for track in tracks
+              for ref = 0 then (+ ref 1) append
+              (loop for msg in track collect (make-event-from-message msg ref)))
+        #'midi-evt-<))
 
 ;;; THE FUNCTION CALLED BY OM
 (defun cl-midi-load-file (pathname)
