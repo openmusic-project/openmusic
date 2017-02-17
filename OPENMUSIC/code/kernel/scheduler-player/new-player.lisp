@@ -265,7 +265,7 @@
  (declare (ignore player)) 
  ;(print (format nil "~A : loop" engine))
  (loop for obj in play-list do
-       (prepare-to-play self player obj 0 (play-interval player) nil)))
+       (prepare-to-play engine player obj 0 (play-interval player) nil)))
 
 
 
