@@ -181,8 +181,7 @@
           (newwindow (om-make-window 'ompref-window :window-title "OpenMusic Preferences" 
                                      :size (om-add-points (get-pref-scroll-size) (om-make-point 0 50)) 
                                      :position (om-make-point 100 50) :close t :resizable nil
-                                     :local-prefs prefs))
-          )
+                                     :local-prefs prefs)))
      
      (om-add-subviews newwindow (setf (tabs newwindow) tl))
      (om-add-subviews newwindow              
@@ -190,19 +189,19 @@
                                            :di-action (om-dialog-item-act item
                                                         (let* ((win (om-view-window item))
                                                                (module (find-pref-module (pref-id (om-current-view (tabs win)))
-                                                                                        (local-prefs win))))
+											 (local-prefs win))))
                                                           (when module
                                                             (setf (cadr module) (get-def-vals (pref-id (om-current-view (tabs win)))))
-                                                            (update-pref-scroll win (pref-id (om-current-view (tabs win)))))
-                                                          )))
-
+                                                            #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
+							    #+linux (om-select-window *pref-window*)))))
+		      
                       (om-make-dialog-item 'om-button (om-make-point 130 b-posy) (om-make-point 80 22) "Apply" 
                                            :di-action (om-dialog-item-act item
                                                         (let ((win (om-view-window item)))
-                                                         (setf *current-pref* (local-prefs win))
-                                                         (put-all-preferences)
-                                                         (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-                                                        )))
+							  (setf *current-pref* (local-prefs win))
+							  (put-all-preferences)
+							  #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
+							  #+linux (om-select-window *pref-window*))))
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 
                                            :di-action (om-dialog-item-act  item
@@ -214,9 +213,7 @@
                                                         (setf *current-pref* (local-prefs (om-view-window item)))
                                                         (put-all-preferences)
                                                         (save-preferences)
-                                                        (om-close-window (om-view-window item))
-                                                        )
-                                           ))
+                                                        (om-close-window (om-view-window item)))))
      newwindow))
 
 (defun omG-make-preference-dialog ()
