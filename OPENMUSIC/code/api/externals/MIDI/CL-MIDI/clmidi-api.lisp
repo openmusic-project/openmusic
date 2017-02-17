@@ -52,6 +52,9 @@
        (defun ,name (ev) ,@body)
      (pushnew (cons ,type #',name) *message-from-event-functions*)))
 
+(defun get-event-to-message-func (type)
+  (cdr (assoc type *message-from-event-functions*)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -366,12 +369,11 @@
 
 (defun make-messages-from-event (ev)
   (let* ((type (midi-evt-type ev))
-	 (func (assoc type *message-from-event-functions*)))
+	 (func (get-event-to-message-func type)))
     (when (equal type :TimeSign)
-      (print (list (midi-evt-fields ev) func))
-      )
+      (print (list (midi-evt-fields ev) func)))
     (if func
-	(funcall (cdr func) ev)
+	(funcall func ev)
 	(progn (print (format nil "(cl-midi) message-type ~A isn't supported yet" type))
 	       NIL))))
 
