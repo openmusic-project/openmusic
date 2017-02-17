@@ -131,9 +131,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
 
 
-(setf *patchhelp1* '((lrud "Move")
-                     (shift+lrud "Move faster")
-                     (del "Delete")
+(setf *patchhelp1* '(("lrud" "Move")
+                     ("shift+lrud" "Move faster")
+                     ("del" "Delete")
                      (("v") "eVal")
                      
                      (("b") "lock or change eval mode Button")
@@ -158,7 +158,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                      (("y") "activate/switch bg picture")
                      (("E" "U") "encapsulation/de-encap.")
                      
-                     (space "Play / Stop")
+                     ("space" "Play / Stop")
                      ;; (h "Show this Help window")
                      ))
 
