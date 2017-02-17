@@ -166,7 +166,6 @@
                                     (setf (pinboard-pane-size self) (values  w h))
                                     #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
                                     ))
-    ;;#-linux: don't remember why this was dispatched in feb-16, seems to work (AV. 17.02.17)
     (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point)))
     (setf (vw self) w)
     (setf (vh self) h)))
