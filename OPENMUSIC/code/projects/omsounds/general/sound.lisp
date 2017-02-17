@@ -176,7 +176,7 @@
 (defclass! sound (simple-score-element internalsound)
   ((tracknum :accessor tracknum :initarg :tracknum :initform 0 :documentation "a track index for multichannel mixing (0 = no specific track)")
    (markers :accessor markers :initarg :markers :initform nil :documentation "a list of markers (s)")
-   (vol :accessor vol :initform 100)  
+   (vol :accessor vol :initform 1.0)  
    (pan :accessor pan :initform 0))
    (:icon 287)
    (:documentation "Sound file object.

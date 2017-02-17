@@ -378,8 +378,7 @@
   (apply #'om-remove-subviews (or view self) (player-specific-controls self))
   (setf (player-specific-controls self)
         (make-player-specific-controls player self))
-  (apply #'om-add-subviews (or view self) (player-specific-controls self))
-  )
+  (apply #'om-add-subviews (or view self) (player-specific-controls self)))
   
 
 
