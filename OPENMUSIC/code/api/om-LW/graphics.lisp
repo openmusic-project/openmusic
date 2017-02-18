@@ -731,7 +731,8 @@
 (setf *om-default-font3b* (om-make-font *om-def-bold-font-face* (nth 2 *om-def-font-sizes*) :style '(:bold)))
 (setf *om-default-font4b* (om-make-font *om-def-bold-font-face* (nth 3 *om-def-font-sizes*) :style '(:bold)))
 
-#+(or win32 linux) (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
+#+win32 (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 0 *om-def-font-sizes*)))
+#+linux (setf *om-controls-font* (om-make-font *om-def-font-face* (nth 1 *om-def-font-sizes*)))
 #-(or linux win32) (setf *om-controls-font* (om-make-font "LucidaGrande" 13))
 
 (setf *om-score-font-face* "Times New Roman")

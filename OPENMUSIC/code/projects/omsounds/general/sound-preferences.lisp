@@ -133,14 +133,15 @@
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         normtext normval useval usetext
         noutlist srlist
-        (pos 0))
+        (pos 0)
+	(dy #-linux 30 #+linux 33))
      
     (om-add-subviews thescroll
 		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 20)) (om-make-point 300 30)
 					  "Audio Player"
 					  :font *om-default-font3b*)
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos 30)) (om-make-point 170 30) 
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
                                           "Device"
                                           :font *controls-font*)
 
@@ -156,7 +157,7 @@
                                           :value (get-pref modulepref :audio-device)
                                           )
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos 30)) (om-make-point 170 30) 
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
                                           "Outputs"
                                           :font *controls-font*)
 
@@ -171,7 +172,7 @@
                                           :value (number-to-string (get-pref modulepref :audio-n-channels))
                                           )
 
-		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos 30)) (om-make-point 170 30)
+		     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 170 dy)
 					  "Player Sample Rate (Hz)"
 					  :font *controls-font*)
                          
@@ -186,7 +187,7 @@
                                           :value (number-to-string (get-pref modulepref :audio-sr))
                                           )
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos 28)) (om-make-point 350 22) 
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos dy)) (om-make-point 350 dy) 
 					  "(Also used as default SR for sound synthesis)"
 					  :font *om-default-font1*)
                        		     
@@ -194,11 +195,11 @@
     
                       
     (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point l2 (setf pos 20)) (om-make-point 280 30) 
+                     (om-make-dialog-item 'om-static-text (om-make-point l2 (setf pos 20)) (om-make-point 280 dy) 
                                           "Synthesis / Processing outputs"
                                           :font *om-default-font3b*)
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 170 30) "Default Audio Format"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 170 dy) "Default Audio Format"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 170) pos) 
                                           (om-make-point 100 20)
@@ -214,7 +215,7 @@
                                           )
 
                          
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 170 30) "Default Resolution (b)"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 170 dy) "Default Resolution (b)"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 170) pos) 
                                           (om-make-point 100 20)
@@ -229,7 +230,7 @@
                                                    (t "16"))
                                           )
                          
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 190 30) "If Output File Exists..."
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 190 dy) "If Output File Exists..."
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 170) pos) (om-make-point 100 20) ""
                                           :font *controls-font*
@@ -240,7 +241,7 @@
                                                          (set-pref modulepref :auto-rename t)
                                                          ))
                                           :value (if (get-pref modulepref :auto-rename) "Auto-rename" "Replace"))
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 190 30) "Delete Temporary Files"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 190 dy) "Delete Temporary Files"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-check-box (om-make-point (+ l2 170) pos) (om-make-point 20 20) ""
                                           :font *controls-font*
@@ -248,7 +249,7 @@
                                                        (set-pref modulepref :delete-tmp (om-checked-p item)))
                                           :checked-p (get-pref modulepref :delete-tmp))
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 190 30) "Normalize Output (default)"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 190 dy) "Normalize Output (default)"
                                           :font *controls-font*)
 
                      (om-make-dialog-item 'om-check-box (om-make-point (+ l2 170) pos) (om-make-point 20 20) ""
@@ -278,11 +279,11 @@
                                                        )
                                           :checked-p (get-pref modulepref :normalize))
 
-                     (setf usetext (om-make-dialog-item 'om-static-text (om-make-point (+ l2 200) pos) (om-make-point 40 30) "Use:"
+                     (setf usetext (om-make-dialog-item 'om-static-text (om-make-point (+ l2 200) pos) (om-make-point 40 dy) "Use:"
                                                         :font *controls-font*
                                                         :enable (get-pref modulepref :normalize)))
                          
-                     (setf useval (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 230) pos) (om-make-point 100 20) ""
+                     (setf useval (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 230) (- pos (/ dy 4))) (om-make-point 120 dy) ""
                                                        :font *controls-font*
                                                        :range (mapcar 'get-module-name *loaded-normalizers*)  
                                                        :di-action (om-dialog-item-act item 
@@ -291,7 +292,7 @@
                                                        :value (get-module-name (get-pref modulepref :normalizer))
                                                        :enable (get-pref modulepref :normalize)))
 
-                     (setf normtext (om-make-dialog-item 'om-static-text (om-make-point (+ l2 200) (incf pos 30)) (om-make-point 60 30) 
+                     (setf normtext (om-make-dialog-item 'om-static-text (om-make-point (+ l2 200) (incf pos dy)) (om-make-point 60 dy) 
                                                          "Level (dB)"
                                                              ;(if (equal (get-pref modulepref :normalizer) :supervp) "Level (dB)" "Gain")
                                                          :font *controls-font*
@@ -299,7 +300,7 @@
                          
                      (setf normval (om-make-dialog-item 'om-editable-text 
                                                         (om-make-point (+ l2 280) pos) 
-                                                        (om-make-point 50 13)
+                                                        (om-make-point 50 30)
                                                         (let ((val (get-pref modulepref :normalize-level)))
                                                           (format nil "~D" (if (numberp val) val (get-def-normalize-value (get-pref modulepref :normalizer)))))
                                                         :enable (get-pref modulepref :normalize)
@@ -315,7 +316,7 @@
 
 
 
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos 30)) (om-make-point 190 30) 
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) (incf pos dy)) (om-make-point 190 dy) 
                                           "Print System Outputs"
                                           :font *controls-font*)
                          
