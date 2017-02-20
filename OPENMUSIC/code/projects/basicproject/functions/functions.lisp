@@ -745,6 +745,13 @@ Outputs
                (bpfcolor self)
                ))
 
+(defmethod! om-mirror ((self bpf) &key x y z)
+            (set-color 
+               (simple-bpf-from-list (x-points self) (reverse (y-points self)) 'bpf (decimals self))
+               (bpfcolor self)
+               )
+            )
+
 ;*** For lists and bpc-libs
 (defmethod! om-mirror ((self list) &key x y z)
             (mapcar (lambda (thelist) (om-mirror thelist :x x :y y :z z)) self)

@@ -816,19 +816,10 @@
 ;;; SELECT ALL BUFFER
 ;;; to do ge back to initial position...
 (defmethod text-select-all ((self om-text-editor))
-    (with-slots (ep) self
-      (let ((buffer (editor-pane-buffer ep)))
-        (editor::use-buffer buffer
-          (editor::with-point ((p (editor::buffer-point buffer)))
-            (call-editor ep (list 'editor::beginning-of-buffer-cancelling-selection-command buffer))
-            #+cocoa(call-editor ep (list 'editor::end-of-buffer-extending-selection-command buffer))
-            #-cocoa(call-editor ep (list 'editor::end-of-buffer-modifying-selection-command buffer))
-            ;(editor::goto-line buffer 4)
-            ;(call-editor ep (list 'editor::goto-point-command buffer p))
-            ;(editor::move-point (editor::current-point) p)
-            ;(editor::set-current-mark (editor::current-point))
-            ;(call-editor ep (list 'editor::goto-point-command p 3))
-            )))))
+  (with-slots (ep) self
+    (let ((buffer (editor-pane-buffer ep)))
+      (editor::use-buffer buffer
+	(call-editor ep (list 'editor::mark-whole-buffer-command buffer))))))
 
 
 ;;; Utile pour la suite...
