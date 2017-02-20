@@ -32,6 +32,7 @@
 (cffi:defcfun ("getInputChannelsCount" GetInputChannelsCount) :int (player :pointer))
 (cffi:defcfun ("getOutputChannelsCount" GetOutputChannelsCount) :int (player :pointer))
 
+(cffi:defcfun ("getCurrentDeviceName" getCurrentDeviceName) :string (player :pointer))
 (cffi:defcfun ("getAvailableSampleRatesCount" getAvailableSampleRatesCount) :int (player :pointer))
 (cffi:defcfun ("getNthAvailableSampleRate" getNthAvailableSampleRate) :int (player :pointer) (n :int))
 (cffi:defcfun ("getCurrentSampleRate" getCurrentSampleRate) :int (player :pointer))
@@ -116,10 +117,11 @@
                               :test 'string-equal) 0)))
     (juce::setaudiodevice player in-n out-n inch outch sample-rate buffer-size)))
 
+;(get-all-audio-output-devices om::*juce-player*)
 ;(convert-string input-device-name)
 ;(cffi::lisp-string-to-foreign input-device-name str (1+ (length input-device-name)))
 ;(setf str (getNthOutputDeviceName om::*juce-player* 0 3))
-
+; (juce::GetOutputChannelsCount om::*juce-player*)
 ;;;==============================================
 ;;  BUFFER
 ;;;==============================================

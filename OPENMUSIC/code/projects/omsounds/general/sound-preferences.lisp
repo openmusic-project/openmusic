@@ -22,9 +22,9 @@
 (defvar *general-mixer-presets* nil)
 (defun default-genmixer-values () nil)
 
-(defvar *audio-sr* 44100)
-(defvar *audio-out-n-channels* 2)
-(defvar *audio-out-device* nil)
+(defparameter *audio-sr* 44100)
+(defparameter *audio-out-n-channels* 2)
+(defparameter *audio-out-device* "")
 
 ;;; these values depend on the selected device
 (defvar *audio-sr-options* '(44100))
@@ -72,6 +72,8 @@
     (setf *audio-out-n-channels* (get-pref modulepref :audio-n-channels))
     
     (player-apply-setup :om-audio)
+    
+    ;;; after setup these parameters might have been force-changed
     (set-pref modulepref :audio-n-channels  *audio-out-n-channels*)
     (set-pref modulepref :audio-sr *audio-sr*)
                                
