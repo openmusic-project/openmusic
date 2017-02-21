@@ -86,22 +86,22 @@
 
 
 (defmethod save-pref-module ((iconID (eql :audio)) values)
-  (list iconID `(list 
-              :audio-format ',*def-snd-format*
-              :sys-console ,*sys-console*
-              :audio-sr ,*audio-sr*
-              :audio-res ,*audio-res*
-              :auto-rename ,*automatic-rename* 
-              :delete-tmp ,*delete-inter-file* 
-              :normalize ,*normalize*
-              :normalize-level ,*normalize-level*
-              :normalizer ,*normalizer*
-              :multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
-              :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*))
-              :audio-device ,*audio-out-device*
-              :audio-n-channels ,*audio-out-n-channels*
-              ;:audio-presets ',(get-audio-mixer-presets)
-              ) *om-version*))
+  (list iconID `(list
+		 :audio-format ',*def-snd-format*
+		 :sys-console ,*sys-console*
+		 :audio-sr ,*audio-sr*
+		 :audio-res ,*audio-res*
+		 :auto-rename ,*automatic-rename* 
+		 :delete-tmp ,*delete-inter-file* 
+		 :normalize ,*normalize*
+		 :normalize-level ,*normalize-level*
+		 :normalizer ,*normalizer*
+		 #+multiplayer ,@`(:multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
+					    :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*)))
+		 :audio-device ,*audio-out-device*
+		 :audio-n-channels ,*audio-out-n-channels*
+		 ;;:audio-presets ',(get-audio-mixer-presets)
+		 ) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :audio)))
   (list :audio-format #+cocoa 'aiff #-cocoa 'wav :sys-console t :audio-sr 44100 :audio-res 16
