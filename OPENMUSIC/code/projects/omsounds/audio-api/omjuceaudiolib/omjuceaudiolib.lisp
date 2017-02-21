@@ -17,22 +17,26 @@
 (cffi:defcfun ("openAudioManager" openAudioManager) :pointer)
 (cffi:defcfun ("closeAudioManager" closeAudioManager) :void (player :pointer))
 
+(cffi:defcfun ("initializeAudioChannels" initializeAudioChannels) :void (player :pointer) (in-channels :int) (out-channels :int))
+(cffi:defcfun ("getInputChannelsCount" GetInputChannelsCount) :int (player :pointer))
+(cffi:defcfun ("getOutputChannelsCount" GetOutputChannelsCount) :int (player :pointer))
+(cffi:defcfun ("setOutputChannelsMapping" setOutputChannelsMapping) :int (player :pointer) (n :int) (map :pointer))
+
 (cffi:defcfun ("getDevicesTypeCount" getDevicesTypeCount) :int (player :pointer))
 (cffi:defcfun ("getDeviceTypeName" getDeviceTypeName) :string (player :pointer) (type :int))
 (cffi:defcfun ("setDeviceType" setDeviceType) :void (player :pointer) (type :string))
 (cffi:defcfun ("getCurrentDeviceType" getCurrentDeviceType) :string (player :pointer))
 
+(cffi:defcfun ("getInputDevicesCount" getInputDevicesCount) :int (player :pointer))
+(cffi:defcfun ("getOutputDevicesCount" getOutputDevicesCount) :int (player :pointer))
 (cffi:defcfun ("getInputDevicesCountForType" getInputDevicesCountForType) :int (player :pointer) (type :int))
 (cffi:defcfun ("getOutputDevicesCountForType" getOutputDevicesCountForType) :int (player :pointer) (type :int))
 (cffi:defcfun ("getNthInputDeviceName" getNthInputDeviceName) :string (player :pointer) (type :int) (n :int))
 (cffi:defcfun ("getNthOutputDeviceName" getNthOutputDeviceName) :string (player :pointer) (type :int) (n :int))
-(cffi:defcfun ("getInputDevicesCount" getInputDevicesCount) :int (player :pointer))
-(cffi:defcfun ("getOutputDevicesCount" getOutputDevicesCount) :int (player :pointer))
-
-(cffi:defcfun ("getInputChannelsCount" GetInputChannelsCount) :int (player :pointer))
-(cffi:defcfun ("getOutputChannelsCount" GetOutputChannelsCount) :int (player :pointer))
-
+(cffi:defcfun ("setInputDevice" setInputDevice) :int (player :pointer) (n :int))
+(cffi:defcfun ("setOutputDevice" setOutputDevice) :int (player :pointer) (n :int))
 (cffi:defcfun ("getCurrentDeviceName" getCurrentDeviceName) :string (player :pointer))
+
 (cffi:defcfun ("getAvailableSampleRatesCount" getAvailableSampleRatesCount) :int (player :pointer))
 (cffi:defcfun ("getNthAvailableSampleRate" getNthAvailableSampleRate) :int (player :pointer) (n :int))
 (cffi:defcfun ("getCurrentSampleRate" getCurrentSampleRate) :int (player :pointer))
@@ -47,7 +51,6 @@
 (cffi:defcfun ("setAudioDevice" setAudioDevice) :void 
   (player :pointer) (output :int) (input :int)  (in-channels :int) (out-channels :int) (sr :int) (buffsize :int))
 
-(cffi:defcfun ("setOutputChannelsMapping" setOutputChannelsMapping) :int (player :pointer) (n :int) (map :pointer))
 
 ;;; SCAN UTILITIES (INDEPENDENT ON THE CURRENT SETUP)
 (defun get-audio-drivers (audiomanager)
@@ -111,10 +114,10 @@
   (let* ((driver (getCurrentDeviceType player))
          (in-n (or (position input-device-name 
                              (audio-driver-output-devices player driver) 
-                             :test 'string-equal) 0))
+                             :test 'string-equal) -1))
          (out-n (or (position output-device-name 
                               (audio-driver-input-devices player driver) 
-                              :test 'string-equal) 0)))
+                              :test 'string-equal) -1)))
     (juce::setaudiodevice player in-n out-n inch outch sample-rate buffer-size)))
 
 ;(get-all-audio-output-devices om::*juce-player*)
@@ -132,9 +135,8 @@
 (cffi:defcfun ("StartReader" StartReader) :void (player :pointer) (reader :pointer))
 (cffi:defcfun ("PauseReader" PauseReader) :void (player :pointer) (reader :pointer))
 (cffi:defcfun ("StopReader" StopReader) :void (player :pointer) (reader :pointer))
-(cffi:defcfun ("SetPosReader" SetPosReader) :void (reader :pointer) (pos :long))
 (cffi:defcfun ("GetPosReader" GetPosReader) :long (reader :pointer))
-(cffi:defcfun ("LoopReader" LoopReader) :void (reader :pointer) (looper :boolean))
+(cffi:defcfun ("SetPosReader" SetPosReader) :void (reader :pointer) (pos :long))
 (cffi:defcfun ("GetGainReader" GetGainReader) :float (reader :pointer))
 (cffi:defcfun ("SetGainReader" SetGainReader) :void (reader :pointer) (gain :float))
 

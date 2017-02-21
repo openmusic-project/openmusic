@@ -26,28 +26,28 @@
 ; "Speaker/HP (Realtek High Definition Audio)" 
 ; (juce-player-setup-with-check)
 
-(defun juce-player-setup-with-check ()
+(defun juce-player-setup-with-check (player)
   (unless *audio-driver* 
-    (setf *audio-driver* (car (juce::get-audio-drivers *juce-player*)))
+    (setf *audio-driver* (car (juce::get-audio-drivers player)))
     (print (format nil "No driver set for audio. Selecting default: '~A'." *audio-driver*)))
   (if *audio-driver*
-      (let ((out-devices (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
+      (let ((out-devices (juce::audio-driver-output-devices player *audio-driver*)))
         (if out-devices
             (let ()
                ;;; try with the recorded device
                (print (format nil "AUDIO PLAYER SETUP: ~A x ~A, ~AHz" *audio-out-device* *audio-out-n-channels* *audio-sr*))
-               (juce::setdevices *juce-player* 
+               (juce::setdevices player 
                         "" 0 
                         *audio-out-device* *audio-out-n-channels*
                         *audio-sr* *audio-buffsize*)
                
-               (unless (string-equal *audio-out-device* (juce::getCurrentDeviceName *juce-player*))
+               (unless (string-equal *audio-out-device* (juce::getCurrentDeviceName player))
                  (om-beep-msg (format nil "Selected audio device: '~A' not available.~%Restoring default: '~A'" 
-                                      *audio-out-device* (juce::getCurrentDeviceName *juce-player*)))
-                 (setf *audio-out-device* (juce::getCurrentDeviceName *juce-player*)))
+                                      *audio-out-device* (juce::getCurrentDeviceName player)))
+                 (setf *audio-out-device* (juce::getCurrentDeviceName player)))
           
-               (setf *audio-out-chan-options* (juce::getoutputchannelslist *juce-player*))
-               (setf *audio-sr-options* (juce::getsamplerates *juce-player*))
+               (setf *audio-out-chan-options* (juce::getoutputchannelslist player))
+               (setf *audio-sr-options* (juce::getsamplerates player))
               
                (let ((nch-ok (find *audio-out-n-channels* *audio-out-chan-options*))
                      (sr-ok (find *audio-sr* *audio-sr-options*)))
@@ -57,12 +57,12 @@
                    (setf *audio-sr* (or (car *audio-sr-options*) 44100)))
                  (unless (and nch-ok sr-ok)
                    (if nch-ok
-                       (juce::setsamplerate *juce-player* *audio-sr*)
+                       (juce::setsamplerate player *audio-sr*)
                      
                      (progn ;; try a reset 
-                       (print (format nil "AUDIO PLAYER SETUP (COORECTED PARAMS): ~A x ~A, ~AHz" 
+                       (print (format nil "AUDIO PLAYER SETUP (CORRECTED PARAMS): ~A x ~A, ~AHz" 
                                       *audio-out-device* *audio-out-n-channels* *audio-sr*))
-                       (juce::setdevices  *juce-player* 
+                       (juce::setdevices  player 
                                           "" 0 
                                           *audio-out-device* *audio-out-n-channels*
                                           *audio-sr* *audio-buffsize*)
@@ -74,23 +74,48 @@
     (om-beep-msg "ERROR OPENING AUDIO: Could not find any audio driver.")
     ))
 
+; (juce::get-audio-drivers *juce-player*)
+; (juce::getCurrentDeviceType *juce-player*)
+; (juce::setDeviceType *juce-player* "DirectSound")
+;"Speaker/HP (Realtek High Definition Audio)"
 ;;; a version with no choice of device and only default options
-(defun juce-player-setup-default ()
-  (juce::setaudiodevice *juce-player* 
-                    -1 -1 
-                    0 *audio-out-n-channels*
-                    *audio-sr* *audio-buffsize*)
-  (setf *audio-out-device* (juce::getCurrentDeviceName *juce-player*))
+(defun juce-player-setup-default (player)
+  
+  (let ((drivers (juce::get-audio-drivers player)))
+    (unless (find *audio-driver* drivers :test 'string-equal)
+      (print (format nil "Warning: Device type '~A' not available.~%Will use '~A' as default..." 
+                     *audio-driver* (car drivers)))
+      (setf *audio-driver* (car drivers))))
+  
+  (unless (string-equal (juce::getCurrentDeviceType player) *audio-driver*)
+    (print (format nil "Current driver = ~A" (juce::getCurrentDeviceType player)))
+    (juce::setDeviceType player *audio-driver*)
+    (print (format nil "Setting audio driver: ~A" *audio-driver*)))
+  (print (format nil "Audio driver = ~A" (juce::getCurrentDeviceType player)))
+  
+  (let ((out-devices (juce::audio-driver-output-devices player (juce::getCurrentDeviceType player))))
+    (print (format nil "Recorded device = ~A" *audio-out-device*)) 
+    (if (find *audio-out-device* out-devices :test 'string-equal)
+        (juce::setoutputdevice player (position *audio-out-device* out-devices :test 'string-equal))
+      (print (format nil "=> not found in available devices: ~A" out-devices)))
+    )
+  
+  (setf *audio-out-device* (juce::getCurrentDeviceName player))
   (print (format nil "Audio initialized with audio device: '~A'" *audio-out-device*))  
-  (setf *audio-out-chan-options* (juce::getoutputchannelslist *juce-player*))
-  (setf *audio-sr-options* (juce::getsamplerates *juce-player*))
-  (setf *audio-sr* (juce::getcurrentsamplerate *juce-player*))    
-  (unless (find *audio-out-n-channels* *audio-out-chan-options*)
-    (setf *audio-out-n-channels* (or (car (last *audio-out-chan-options*)) 0))))
+  
+  (setf *audio-out-chan-options* (juce::getoutputchannelslist player))
+  (setf *audio-sr-options* (juce::getsamplerates player))
+  
+  (juce::setsamplerate player *audio-sr*)
+  (setf *audio-sr* (juce::getcurrentsamplerate player)) 
 
-(defun juce-player-setup ()
-  #+windows(juce-player-setup-default)
-  #-windows(juce-player-setup-with-check)
+  (unless (find *audio-out-n-channels* *audio-out-chan-options*)
+    (setf *audio-out-n-channels* (or (car (last *audio-out-chan-options*)) 2))
+    (print (format nil "Restoring default output channels (~A)" *audio-out-n-channels*)))
+  
+  (print (format nil "Initializing audio channels (~Ax~A)" 0 *audio-out-n-channels*))
+  (juce::initializeaudiochannels *juce-player* 0 *audio-out-n-channels*)
+  
   )
 
 ;; called from preferences
@@ -99,12 +124,14 @@
  
 ;;; called from preferences
 (defmethod player-apply-setup ((player (eql :om-audio)))
-  (when *juce-player* (juce-player-setup)))
+  (when *juce-player*   
+    #+windows(juce-player-setup-default *juce-player*)
+    #-windows(juce-player-setup-with-check *juce-player*)))
 
 ;; called from init-om-session
 (defmethod player-open ((self (eql :om-audio)))
   (setq *juce-player* (juce::openAudioManager))
-  (when *juce-player* (juce-player-setup)))
+  (when *juce-player* (juce::initializeaudiochannels *juce-player* 0 2)))
 
 (defmethod player-close ((self (eql :om-audio)))
   (when *juce-player* (juce::closeAudioManager *juce-player*))
