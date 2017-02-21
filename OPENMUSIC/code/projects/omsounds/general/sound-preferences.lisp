@@ -33,9 +33,9 @@
 ;; redefined by player
 (defmethod player-apply-setup (player) nil)
 
-(defmethod put-preferences ((iconID (eql :audio)))
-  (let ((modulepref (find-pref-module iconID))
-         (defpref (get-def-vals iconID)))
+(defmethod put-preferences ((id (eql :audio)))
+  (let ((modulepref (find-pref-module id))
+        (defpref (get-def-vals id)))
     
     (setf *sys-console* (get-pref modulepref :sys-console))
     (setf *def-snd-format* (get-pref modulepref :audio-format)) 
