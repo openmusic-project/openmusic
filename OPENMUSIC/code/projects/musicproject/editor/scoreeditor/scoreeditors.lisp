@@ -291,8 +291,11 @@
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
 
-(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 60)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 70)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
+
+(defparameter *second-row-y* #-linux 25 #+linux 35)
+
 
 ;;(default-edition-params (object self))
 
@@ -460,7 +463,7 @@
          (l1 230)
          (l2 380)
          (c1 2)
-         (c2 25)
+         (c2 *second-row-y*)
 
          ;;; Slot
          (minied (om-make-dialog-item 'edit-numbox (om-make-point 96 (+ c1 2)) (om-make-point 50 18) " "
@@ -596,7 +599,7 @@
 (defun add-chordseq-control (self mode)
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
-                                        (om-make-point 5 25)
+                                        (om-make-point 5 *second-row-y*)
                                         (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (case (om-get-selected-item-index item) (0 0) (1 4))))
@@ -609,7 +612,7 @@
 (defun add-chord-control (self mode)
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
-                                        (om-make-point 5 25)
+                                        (om-make-point 5 *second-row-y*)
                                         (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (cadr (nth (om-get-selected-item-index item) '(("chord"  0) ("arpUp" 1) ("arpDown" 2) ("order" 3) ("offset" 4))))))
