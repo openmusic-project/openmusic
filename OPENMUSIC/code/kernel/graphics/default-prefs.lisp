@@ -133,6 +133,7 @@
 	(l2 (round (om-point-h (get-pref-scroll-size)) 2))
 	(l3 (- (om-point-h (get-pref-scroll-size)) 60))
         (posy 0)
+	(dy 30)
         outtxt tmptxt intxt)
     
     (om-add-subviews thescroll 
@@ -140,7 +141,7 @@
                      ;                      :font *om-default-font4b*)
                      
 
-                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 30)) (om-make-point 90 24) "User Name"
+                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy dy)) (om-make-point 90 24) "User Name"
                                           :font *controls-font*) 
 
                      (om-make-dialog-item 'om-editable-text (om-make-point (+ l1 100) posy)
@@ -160,7 +161,7 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Catch Lisp erros and display a simple message window)"
                                           :font *om-default-font1*)
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable Evaluation Process" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Enable Evaluation Process" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :eval-process (if (om-checked-p item) :on :off)))
                                           :font *controls-font*
@@ -169,19 +170,19 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
                                           :font *om-default-font1*)
 
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Keep Listener in Front" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Keep Listener in Front" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :listener-on-top (if (om-checked-p item) :yes :no)))
                                           :font *controls-font*
                                           :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable Listener input" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Enable Listener input" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :listener-input (om-checked-p item)))
                                           :font *controls-font*
                                           :checked-p (get-pref modulepref :listener-input))
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy 30)) (om-make-point 200 15) " Enable reactivity" 
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Enable reactivity" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :reactive (om-checked-p item)))
                                           :font *controls-font*
@@ -195,7 +196,7 @@
                      (om-make-dialog-item 'om-static-text (om-make-point l2 (setf posy 50)) (om-make-point 200 30) "Default Folders"
                                           :font *om-default-font2b*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 30)) (om-make-point 80 22) "Output Files:"
+                     (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy dy)) (om-make-point 80 22) "Output Files:"
                                           :font *controls-font*)
                      (setf outtxt (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 25)) (om-make-point 320 45)
                                                        (om-namestring (get-pref modulepref :out-files-dir))
@@ -338,6 +339,7 @@
                                   :bg-color *om-light-gray-color*))
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
          (posy 0)
+	 (dy #-linux 30 #+linux 35)
          test-wscolor test-comment boxfont)
      (om-add-subviews thescroll       
                       
@@ -361,7 +363,8 @@
 					  :di-action (om-dialog-item-act item 
                                                         (let ((choice (om-get-selected-item item)))
                                                           (set-pref modulepref :folder-pres
-                                                              (if (string-equal choice "icons") 0 1)))))
+                                                              (if (string-equal choice "icons") 0 1))))
+					  :font *controls-font*)
        
                      (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 90 24) "Patches"
                                           :font *om-default-font2b*)        
@@ -405,7 +408,8 @@
                                                                     ((string-equal choice "75%") 0.75)
                                                                     ((string-equal choice "150%") 1.5)
                                                                     ((string-equal choice "200%") 2)
-                                                                    (t 1))))))
+                                                                    (t 1)))))
+					  :font *controls-font*)
                      
                      (om-make-dialog-item 'om-button (om-make-point (+ l1 150) posy) (om-make-point 105 24) "Name Font"
                                           :di-action (om-dialog-item-act item
@@ -414,7 +418,8 @@
                                                          (when font
                                                            (set-pref modulepref :boxname-font font)
                                                            (om-set-font boxfont font)
-                                                           (om-invalidate-view thescroll)))))
+                                                           (om-invalidate-view thescroll))))
+					  :font *controls-font*)
 
                      (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 260) posy) (om-make-point 70 24) "mybox"
                                           :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
@@ -436,7 +441,8 @@
                                                          (when font
                                                            (set-pref modulepref :comment-font font)
                                                            (om-set-font test-comment font)
-                                                           (om-invalidate-view thescroll)))))
+                                                           (om-invalidate-view thescroll))))
+					  :font *controls-font*)
 
                      (om-make-dialog-item 'om-button (om-make-point (+ l1 220) (- posy 5)) (om-make-point 70 24) "Color"
                                           :di-action (om-dialog-item-act item
@@ -445,7 +451,8 @@
                                                          (when newcolor
                                                            (set-pref modulepref :comment-color newcolor)
                                                            (om-set-fg-color test-comment newcolor)
-                                                           (om-invalidate-view thescroll)))))
+                                                           (om-invalidate-view thescroll))))
+					  :font *controls-font*)
                      )   
 
      (om-add-subviews thescroll
@@ -460,7 +467,8 @@
                                           :range '("8" "10" "12" "14" "16" "18" "20" "24")
                                           :value (number-to-string (get-pref modulepref :mv-font-size))
                                           :di-action (om-dialog-item-act item 
-                                                          (set-pref modulepref :mv-font-size (read-from-string (om-get-selected-item item)))))
+                                                          (set-pref modulepref :mv-font-size (read-from-string (om-get-selected-item item))))
+					  :font *controls-font*)
                      
                      (om-make-dialog-item 'om-static-text (om-make-point l2 (incf posy 40)) (om-make-point 330 30) "Maquette"
                                           :font *om-default-font2b*)
@@ -508,7 +516,7 @@
                                            
                      
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 30)) (om-make-point 250 22) "Miniview Background:"
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy dy)) (om-make-point 250 22) "Miniview Background:"
                                           :font *controls-font*)
                      
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 220) posy) (om-make-point 130 24) ""
@@ -522,9 +530,10 @@
                                                                (cond ((string-equal choice "White") :white)
                                                                      ((string-equal choice "Box Color") :box)
                                                                      (t nil))
-                                                               ))))
+                                                               )))
+					  :font *controls-font*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 30)) (om-make-point 250 22) "Score Box Mode:"
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy dy)) (om-make-point 250 22) "Score Box Mode:"
                                           :font *controls-font*)
                      
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l2 220) posy) (om-make-point 130 24) ""
@@ -538,9 +547,10 @@
                                                                (cond ((string-equal choice "Score") :score)
                                                                      ((string-equal choice "Piano Roll") :pianoroll)
                                                                      (t nil))
-                                                               ))))
+                                                               )))
+					  :font *controls-font*)
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 30)) (om-make-point 250 22) "Show Box Icons:"
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy dy)) (om-make-point 250 22) "Show Box Icons:"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-check-box (om-make-point (+ l2 220) posy) (om-make-point 20 20) "" 
                                           :di-action (om-dialog-item-act item 

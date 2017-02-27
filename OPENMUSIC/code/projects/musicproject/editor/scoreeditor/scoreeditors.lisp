@@ -291,8 +291,11 @@
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
 
-(defmethod get-control-h ((self scoreEditor)) 50)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 70)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
+
+(defparameter *second-row-y* #-linux 25 #+linux 35)
+
 
 ;;(default-edition-params (object self))
 
@@ -460,7 +463,7 @@
          (l1 230)
          (l2 380)
          (c1 2)
-         (c2 25)
+         (c2 *second-row-y*)
 
          ;;; Slot
          (minied (om-make-dialog-item 'edit-numbox (om-make-point 96 (+ c1 2)) (om-make-point 50 18) " "
@@ -483,7 +486,7 @@
                                        ""
                                        :range (loop for item in (GET-slot-LIST self) collect (car item)) 
                                        :value "midic"
-                                       :font *om-default-font1* ;*om-default-font1*
+				       :font *controls-font*
                                        :di-action 
                                        (om-dialog-item-act item
                                          (let ((newslot (cadr (nth (om-get-selected-item-index item) (GET-slot-LIST self)))))
@@ -494,7 +497,7 @@
          (sizeitem (om-make-dialog-item 'om-static-text 
                                         (om-make-point (- l1 (om-string-size "Font size" *om-default-font1*) 8) (+ c2 2)) 
                                         (om-make-point 90 16) "Font size"
-                                        :font *om-default-font1*
+					:font *om-default-font1*
                                         :bg-color *controls-color*))
          (sizebut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l1 c2) 
@@ -504,7 +507,7 @@
                                                                (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
                                                                  (change-editor-size (panel (om-view-container self)) newsize)))
                                        
-                                       :font *om-default-font1* 
+                                       :font *controls-font* 
                                        :range (loop for item in *mus-font-size* collect (car item)) 
                                        :value font-size
                                        ))
@@ -522,7 +525,7 @@
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
                                                                  (change-system (panel (om-view-container self)) newstaff)))
                                        
-                                       :font *om-default-font1*
+                                       :font *controls-font*
                                        :range (loop for item in (GET-staff-LIST self) collect (car item)) 
                                        :value (car (find (get-edit-param (editor (om-view-container self)) 'staff) (GET-staff-LIST self) :key 'cadr :test 'equal))
                                        ))   
@@ -537,7 +540,7 @@
                                        :di-action (om-dialog-item-act item
                                                                (let ((newtone (cadr (nth (om-get-selected-item-index item) (GET-tone-LIST self)))))
                                                                  (change-editor-tone (panel (om-view-container self)) newtone)))
-                                       :font *om-default-font1*
+                                       :font *controls-font*
                                        :range (loop for item in (GET-tone-LIST self) collect (car item)) 
                                        :value tone
                                        ))
@@ -596,12 +599,12 @@
 (defun add-chordseq-control (self mode)
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
-                                        (om-make-point 5 25)
+                                        (om-make-point 5 *second-row-y*)
                                         (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (case (om-get-selected-item-index item) (0 0) (1 4))))
                                                        (change-editor-mode (panel (om-view-container self)) newtone)))
-                                        :font *om-default-font1*
+                                        :font *controls-font*
                                         :range '("chord" "offset") 
                                         :value (case mode (0 "chord") (4 "offset"))
                                         )))
@@ -609,12 +612,12 @@
 (defun add-chord-control (self mode)
   (om-add-subviews self 
                    (om-make-dialog-item 'om-pop-up-dialog-item 
-                                        (om-make-point 5 25)
+                                        (om-make-point 5 *second-row-y*)
                                         (om-make-point 80 22) ""
                                         :di-action (om-dialog-item-act item
                                                      (let ((newtone (cadr (nth (om-get-selected-item-index item) '(("chord"  0) ("arpUp" 1) ("arpDown" 2) ("order" 3) ("offset" 4))))))
                                                        (change-editor-mode (panel (om-view-container self)) newtone)))
-                                        :font *om-default-font1*
+                                        :font *controls-font*
                                         :range (loop for item in '(("chord"  0) ("arpUp" 1) ("arpDown" 2) ("order" 3) ("offset" 4)) collect (car item)) 
                                         :value (case mode (0 "chord") (1 "arpUp") (2 "arpDown") (3 "order") (4 "offset"))
                                         )
