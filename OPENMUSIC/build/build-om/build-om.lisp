@@ -157,7 +157,7 @@
 ; (clean-sources)
 ; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("OTHER-LIBS" "OM-SoX 1.0b7"))))
 
-
+; does not count blank lines and Lisp comments
 (defun count-lines (file)
   (flet ((delete-spaces (string)
            (let ((pos (position-if #'(lambda (x) (not (member x (list #\Linefeed #\Space #\Tab) :test 'equal))) string)))
@@ -177,14 +177,15 @@
 (defun count-sources (&optional dir)
   (let ((nfiles 0)
         (nlines 0)
-        (src-root (or dir (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 2) '("code"))))))
+        (src-root (or dir (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 2) '("code")))))
+        (types '("lisp")))
     (mapc #'(lambda (file) 
               (if (system::directory-pathname-p file)
                   (let ((count (count-sources file)))
                     (setf nfiles (+ nfiles (car count)))
                     (setf nlines (+ nlines (caDr count))))
                 (when (and (pathname-type file)
-                           (string-equal (pathname-type file) "lisp"))
+                           (find (pathname-type file) types :test 'string-equal))
                   (setf nfiles (+ nfiles 1))
                   (setf nlines (+ nlines (count-lines file)))
                   )
@@ -193,7 +194,8 @@
     (list nfiles nlines)
     ))
 
-; (count-sources)
+; (setf *folder* (om-api:om-choose-directory-dialog))
+; (count-sources *folder*)
 ; ==> 444 files,  132219 lines of code,  183377 lines
 
 ; zarbi : (directory dir) different avec ou sans namestring si dir = (truename "cl:")
