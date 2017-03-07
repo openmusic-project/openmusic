@@ -30,7 +30,7 @@
 ;EDITOR
 ;===========================================================
 (defmethod make-editor-window ((class (eql 'midiEditor)) object name ref &key 
-                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               winsize winpos (close-p t) (winshow nil) (resize t) (retain-scroll nil)
                                (wintype nil))
   (call-next-method class object (namestring (midifilename object)) ref :winsize winsize :winpos winpos :resize resize 
                     :close-p close-p :winshow winshow :resize resize

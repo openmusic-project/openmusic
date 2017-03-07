@@ -307,7 +307,7 @@ In this case, all internal events are sent simultaneously.
            (list (get-win-ed-size self) (om-make-point 300 20))))
 
 (defmethod make-editor-window ((class (eql 'ConsoleEditor)) object name ref &key 
-                                 winsize winpos (close-p t) (winshow t) 
+                                 winsize winpos (close-p t) (winshow nil) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
                                                       :close-p t :winshow t
@@ -931,7 +931,7 @@ In this case, all internal events are sent simultaneously.
 (defmethod get-win-ed-size ((self simple-midi-mix-console)) (om-make-point (+ 6 (min (* *channel-w* 6) (* 140 (nbtracks self)))) 340))
 
 (defmethod make-editor-window ((class (eql 'simpleConsoleEditor)) object name ref &key 
-                                 winsize winpos (close-p t) (winshow t) 
+                                 winsize winpos (close-p t) (winshow nil) 
                                  (resize nil) (maximize nil))
    (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize nil 
                                                       :close-p t :winshow t

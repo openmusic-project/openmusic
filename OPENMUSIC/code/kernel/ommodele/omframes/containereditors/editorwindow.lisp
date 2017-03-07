@@ -143,7 +143,7 @@
      (get-menubar (editor self)))
 
 (defmethod make-editor-window ((class t) object name ref &key 
-                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               winsize winpos (close-p t) (winshow nil) (resize t) (retain-scroll nil)
                                (wintype nil))
    (declare (ignore retain-scroll))
    (let* ((sizewin (or (and (om-point-p winsize) winsize)
