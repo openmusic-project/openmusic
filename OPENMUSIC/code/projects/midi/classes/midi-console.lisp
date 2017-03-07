@@ -52,7 +52,15 @@
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
 (defmethod update-miniview ((self t) (value settings-ctrl)) 
-   (om-invalidate-view self t))
+  (om-invalidate-view self t))
+
+(defmethod draw-obj-in-rect ((self settings-ctrl) x x1 y y1 edparams view)
+  (let ((pw (round (w view) (nbtracks self)))
+        (pic (om-load-and-store-picture "audiotrack-bg" 'internal)))
+    (loop
+       for i from 0 to (nbtracks self)
+       do (om-draw-picture view pic :pos (om-make-point (* i pw) 0)
+			   :size (om-make-point pw (h view))))))
 
 ;;; SOME SUBCLASSES MAY USE DIFFERENT CHANNEL CONTROLLERS
 (defmethod get-channel-ctrl-class ((self t)) 'channel-ctrl)
