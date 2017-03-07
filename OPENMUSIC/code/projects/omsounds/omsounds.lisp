@@ -47,8 +47,8 @@
           
           "players;juce-player"
           #-linux "players;multiplayer"
-          #+cl-jack "players;jack-audio-player"
-          #+linux "players;mplayer"
+          ;; "players;jack-audio-player"
+          ;; "players;mplayer"
           
           "tools;sound-processing"
           "tools;sound-tools"

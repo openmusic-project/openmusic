@@ -91,15 +91,17 @@
                                  :scrollbars :v 
                                  :bg-color *om-light-gray-color*
                                  :retain-scrollbars t))
-        (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2)))
+        (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
+	(pos 0)
+	(dy #-linux 30 #+linux 35))
     (om-add-subviews thescroll
 
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 15) (om-make-point 200 30) "Score Editors"
+                     (om-make-dialog-item 'om-static-text (om-make-point 20 (setf pos 15)) (om-make-point 200 30) "Score Editors"
                                           :font *om-default-font3b*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 45) (om-make-point 150 20) "Default approx."
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos dy)) (om-make-point 150 20) "Default approx."
                                           :font *controls-font*)
-                     (om-make-dialog-item 'om-radio-button (om-make-point 140 45) (om-make-point 80 20) "1/2 tone" 
+                     (om-make-dialog-item 'om-radio-button (om-make-point 140 pos) (om-make-point 80 20) "1/2 tone" 
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore item))
                                                        (set-pref modulepref :approx 2))
@@ -107,7 +109,7 @@
                                           :radio-button-cluster 'approx
                                           :font *om-default-font2*)
                      
-                     (om-make-dialog-item 'om-radio-button (om-make-point 220 45) (om-make-point 80 20) "1/4 tone" 
+                     (om-make-dialog-item 'om-radio-button (om-make-point 220 pos) (om-make-point 80 20) "1/4 tone" 
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore item))
                                                        (set-pref modulepref :approx 4))
@@ -115,7 +117,7 @@
                                           :radio-button-cluster 'approx
                                           :font *om-default-font2*)
                      
-                     (om-make-dialog-item 'om-radio-button (om-make-point 300 45) (om-make-point 80 20) "1/8 tone" 
+                     (om-make-dialog-item 'om-radio-button (om-make-point 300 pos) (om-make-point 80 20) "1/8 tone" 
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore item))
                                                        (set-pref modulepref :approx 8))
@@ -124,11 +126,9 @@
                                           :font *om-default-font2*)
                      
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 75) (om-make-point 120 20) "Music Font Size"
+                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Music Font Size"
                                           :font *controls-font*)
-                     (om-make-dialog-item 'om-pop-up-dialog-item 
-                                       (om-make-point 160 75) 
-                                       (om-make-point 80 20)
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                     (set-pref modulepref :fontsize
@@ -141,32 +141,30 @@
                      
                      
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point 20 105) (om-make-point 120 20) "Staff System"
+                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Staff System"
                                           :font *controls-font*)
                      
-                     (om-make-dialog-item  'om-pop-up-dialog-item
-                                           (om-make-point 160 105)
-                                           (om-make-point 80 20)
+                     (om-make-dialog-item  'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
                                            ""
                                            :range (loop for item in *all-satff-om* collect (string item))
-					   :font *om-default-font2*
+					   :font *controls-font*
                                            :value (string (get-pref modulepref :staff))
                                            :di-action (om-dialog-item-act item
                                                          (set-pref modulepref :staff 
                                                                    (nth (om-get-selected-item-index item) *all-satff-om*)))
                                            )
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 140) (om-make-point 80 20) "Staff Colors"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 80 20) "Staff Colors"
                                           :font *controls-font*)
                      
-                     (om-make-dialog-item 'change-color-dialog-item  (om-make-point 160 140) (om-make-point 80 22) " Normal"
+                     (om-make-dialog-item 'change-color-dialog-item  (om-make-point 160 pos) (om-make-point 80 22) " Normal"
                                           :fg-color (get-pref modulepref :sys-color)
                                           :font *controls-font*
                                           :bg-color *om-white-color*
                                           :object  modulepref 
                                           :i :sys-color)
          
-                     (om-make-dialog-item 'change-color-dialog-item  (om-make-point 260 140) (om-make-point 80 22) " Selected"
+                     (om-make-dialog-item 'change-color-dialog-item  (om-make-point 260 pos) (om-make-point 80 22) " Selected"
                                           :fg-color (get-pref modulepref :select-color)
                                           :font *controls-font*
                                           :bg-color *om-white-color*
@@ -174,14 +172,10 @@
                                           :i :select-color)
 
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 210) (om-make-point 150 20) "Diapason"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 2 dy))) (om-make-point 150 20) "Diapason"
                                           :font *controls-font*)
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 235) (om-make-point 350 22) 
-                                              "(Frequency of the A4, used for freq-MIDI conversions)"
-                                              :font *om-default-font1*)
-                     
                      (om-make-dialog-item 'om-editable-text 
-                                              (om-make-point 160 210)
+                                              (om-make-point 160 pos)
                                               (om-make-point 60 13)
                                               (format nil "~D" (get-pref modulepref :diapason)) 
                                               :modify-action (om-dialog-item-act item
@@ -193,6 +187,10 @@
                                                                     (set-pref modulepref :diapason number))
                                                                   )))
                                               :font *om-default-font2*)
+                     
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* dy 0.8))) (om-make-point 350 22) 
+                                              "(Frequency of the A4, used for freq-MIDI conversions)"
+                                              :font *om-default-font1*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 30) 45) (om-make-point 80 20) "Dynamics"
                                           :font *controls-font*)

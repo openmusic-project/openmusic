@@ -96,7 +96,7 @@
       (om-print (format nil "=> not found in available devices: ~A" out-devices)))
     )
   
-  (setf *audio-out-device* (juce::getCurrentDeviceName player))
+  #-linux (setf *audio-out-device* (juce::getCurrentDeviceName player))
   (om-print (format nil "Audio initialized with: '~A'" *audio-out-device*))  
   
   (setf *audio-out-chan-options* (juce::getoutputchannelslist player))

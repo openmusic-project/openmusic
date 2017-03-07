@@ -188,7 +188,8 @@ but in all case you can open an editor for the instance slots, see the class Ins
    (let* ((thewindow (make-editor-window 'InstanceEditor
                                          self (name self) nil 
                                          :winpos (om-make-point 150 100)
-                                         :winsize (om-make-point 250 280)))
+                                         :winsize (om-make-point 250 280)
+					 :winshow nil))
           (slot-boxes (make-slots-ins-boxes self)))
      (setf (presentation (editor thewindow)) 0)
      (mapc #'(lambda (frame)

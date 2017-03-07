@@ -170,7 +170,7 @@
           )
       (setf (editor win) editor)
       (om-add-menu-to-win win)  
-      (om-select-window win)
+      (when winshow (om-select-window win))
       #-linux (om-set-view-size editor (om-interior-size win))
       win))
 

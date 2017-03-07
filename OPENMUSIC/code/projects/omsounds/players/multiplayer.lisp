@@ -278,3 +278,4 @@
      )
     ))
 
+(pushnew :multiplayer *features*)
