@@ -988,7 +988,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    (let* ((thewindow (make-editor-window 'InstanceEditor
                                          self (name self) self 
                                          :winpos (om-make-point 150 100)
-                                         :winsize (om-make-point 250 280)))
+                                         :winsize (om-make-point 250 280)
+					 :winshow nil))
           (slot-boxes (slots-inst-boxes self (value self))))
      (setf (presentation (editor thewindow)) 0)
      (mapc #'(lambda (frame)

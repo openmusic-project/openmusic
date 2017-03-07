@@ -160,7 +160,8 @@
             (make-editor-window (get-editor-class self) *current-workSpace* (name self) nil 
                                 :winsize *workSpace-win-size*             
                                 :winpos *workSpace-win-pos*             
-                                :close-p nil))
+                                :close-p nil
+				:winshow t))
       (setf (editorFrame self) (panel *om-workSpace-win*))
          
       (om-with-delayed-update (panel *om-workSpace-win*)
