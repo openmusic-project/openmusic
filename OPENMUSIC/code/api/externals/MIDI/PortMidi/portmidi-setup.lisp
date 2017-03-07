@@ -86,7 +86,8 @@
                                    when (nth (if (equal (direction self) :in) 6 8) ref) 
                                    collect (nth 4 ref))))
          (pos-in-settings (if (equal (direction self) :in) 0 1))
-         (settings-list (nth pos-in-settings (settings dialog))))
+         (settings-list (nth pos-in-settings (settings dialog)))
+	 (dy #-linux 25 #+linux 35))
     (oa::om-with-delayed-update self
       (apply 'oa::om-remove-subviews (cons self (portlines self)))
       (oa::om-set-field-size self (oa::om-make-point (oa::om-point-x (oa::om-view-size self)) 
@@ -97,9 +98,9 @@
                      (setf (portlines self)
                            (loop for portsetting in (sort settings-list '< :key 'car)
                                  for i = 0 then (+ i 1) collect
-                                 (let* ((y (+ 10 (* i 25)))
+                                 (let* ((y (+ 10 (* i dy)))
                                         (vv (oa::om-make-view 'oa::om-view 
-                                                              :size (oa::om-make-point 400 25)
+                                                              :size (oa::om-make-point 400 dy)
                                                               :position (oa::om-make-point 20 y))))
                                                         ;(when (> y 200) (oa::om-set-view-size self (oa::om-make-point (oa::om-width self) (+ y 200))))
                                    (oa::om-add-subviews vv
