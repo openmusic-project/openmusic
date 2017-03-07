@@ -48,6 +48,12 @@
 
 (defmethod allowed-in-maq-p ((self settings-ctrl))  t)
 
+(defmethod draw-mini-view  ((self t) (value settings-ctrl)) 
+   (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
+
+(defmethod update-miniview ((self t) (value settings-ctrl)) 
+   (om-invalidate-view self t))
+
 ;;; SOME SUBCLASSES MAY USE DIFFERENT CHANNEL CONTROLLERS
 (defmethod get-channel-ctrl-class ((self t)) 'channel-ctrl)
 
