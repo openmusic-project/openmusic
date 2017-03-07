@@ -194,6 +194,8 @@
 (defmethod midi-message-type ((msg midi:sequence/track-name-message)) :SeqName)
 (defmethod midi-message-type ((msg midi::instrument-message)) :InstrName)
 (defmethod midi-message-type ((msg midi::lyric-message)) :Lyric)
+(defmethod midi-message-type ((msg midi::marker-message)) :Marker)
+(defmethod midi-message-type ((msg midi::cue-point-message)) :CuePoint)
 (defmethod midi-message-type ((msg midi::copyright-message)) :CopyRight)
 
 ;;; Superclass for all text messages
