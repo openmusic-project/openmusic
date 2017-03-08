@@ -50,6 +50,8 @@ endif
 compress	= tar
 compressfile	= $(buildname).tar.bz2
 compressflags	= -cjf
+# compressfile	= $(buildname).tar.xz
+# compressflags	= -cJf
 
 
 release		= $(DISTDIR)/$(buildname)
