@@ -44,8 +44,8 @@
                                               (subseq name 0 2)
                                             ""))
                                         #+win32(let ((name (pathname-name file)))
-                                                 (if (and 
-                                                      (stringp name) (> (length name) 2))
+                                                 (if (and (string-equal (pathname-type file) "exe")
+							  (stringp name) (> (length name) 2))
                                                      (subseq name 0 2)
                                                    ""))
                                         )))
