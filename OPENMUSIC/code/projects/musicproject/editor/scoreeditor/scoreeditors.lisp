@@ -460,6 +460,7 @@
   (declare (ignore l))
   
   (let* ((bgcol *controls-color*)
+         (di-font *controls-font*)
          (l1 230)
          (l2 380)
          (c1 2)
@@ -486,7 +487,7 @@
                                        ""
                                        :range (loop for item in (GET-slot-LIST self) collect (car item)) 
                                        :value "midic"
-				       :font *controls-font*
+				       :font di-font
                                        :di-action 
                                        (om-dialog-item-act item
                                          (let ((newslot (cadr (nth (om-get-selected-item-index item) (GET-slot-LIST self)))))
@@ -507,7 +508,7 @@
                                                                (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
                                                                  (change-editor-size (panel (om-view-container self)) newsize)))
                                        
-                                       :font *controls-font* 
+                                       :font di-font 
                                        :range (loop for item in *mus-font-size* collect (car item)) 
                                        :value font-size
                                        ))
@@ -525,7 +526,7 @@
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
                                                                  (change-system (panel (om-view-container self)) newstaff)))
                                        
-                                       :font *controls-font*
+                                       :font di-font
                                        :range (loop for item in (GET-staff-LIST self) collect (car item)) 
                                        :value (car (find (get-edit-param (editor (om-view-container self)) 'staff) (GET-staff-LIST self) :key 'cadr :test 'equal))
                                        ))   
@@ -540,7 +541,7 @@
                                        :di-action (om-dialog-item-act item
                                                                (let ((newtone (cadr (nth (om-get-selected-item-index item) (GET-tone-LIST self)))))
                                                                  (change-editor-tone (panel (om-view-container self)) newtone)))
-                                       :font *controls-font*
+                                       :font di-font
                                        :range (loop for item in (GET-tone-LIST self) collect (car item)) 
                                        :value tone
                                        ))

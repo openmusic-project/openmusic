@@ -177,7 +177,7 @@
 (defvar *ombox-font* nil)
 
 (defun init-om-fonts-vars ()
-  (setf *controls-font* *om-controls-font*)
+  (setf *controls-font* *om-default-font1*)
   (setf *controls-fonti* (om-make-font (om-font-face *controls-font*) (om-font-size *controls-font*) :style '(:italic)))
   (setf *ombox-font* *om-default-font1*))
 
@@ -298,7 +298,7 @@
                                               (om-with-fg-color view (om-make-color-alpha 0 0 0 0.1)
                                                 (om-fill-rect x y w h)) 
                                               (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
-                                                (om-with-line '(8 2) (om-draw-rect x y w h :pensize 2)))))
+                                                (om-with-line '(#-linux 2 #+linux 8 2) (om-draw-rect x y w h :pensize 2)))))
                          :draw-pane panel :display-mode nil
                          :release-action #'(lambda (view pp1 pp2)
                                              (let ((p1 (om-view-position boxframe))
