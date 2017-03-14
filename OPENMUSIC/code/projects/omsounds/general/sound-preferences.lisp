@@ -24,7 +24,7 @@
 
 (defparameter *audio-sr* 44100)
 (defparameter *audio-out-n-channels* 2)
-(defparameter *audio-out-device* "")
+(defparameter *audio-out-device* nil)
 
 ;;; these values depend on the selected device
 (defvar *audio-sr-options* '(44100))

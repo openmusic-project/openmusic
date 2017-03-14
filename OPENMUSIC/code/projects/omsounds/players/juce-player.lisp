@@ -76,6 +76,7 @@
 ;"Speaker/HP (Realtek High Definition Audio)"
 
 (defun juce-player-setup (player)
+  (om-print "")
   (om-print "========AUDIO SETUP========")
   (let ((drivers (juce::get-audio-drivers player)))
     (unless (find *audio-driver* drivers :test 'string-equal)
@@ -89,15 +90,23 @@
     (om-print (format nil "Setting audio driver: ~A" *audio-driver*)))
   (om-print (format nil "Audio driver: ~A" (juce::getCurrentDeviceType player)))
   
+  (juce::getCurrentDeviceName player)
+
   (let ((out-devices (juce::audio-driver-output-devices player (juce::getCurrentDeviceType player))))
-    (om-print (format nil "Selected device: ~A" *audio-out-device*)) 
-    (if (find *audio-out-device* out-devices :test 'string-equal)
-        (juce::setoutputdevice player (position *audio-out-device* out-devices :test 'string-equal))
-      (om-print (format nil "=> not found in available devices: ~A" out-devices)))
-    )
+    (if (and *audio-out-device* (not (string-equal *audio-out-device* "")))
+      (progn 
+        (om-print (format nil "Selected device: ~A" *audio-out-device*)) 
+        (if (find *audio-out-device* out-devices :test 'string-equal)
+            (juce::setoutputdevice player (position *audio-out-device* out-devices :test 'string-equal))
+          (om-print (format nil "=> not found in available devices: ~A" out-devices)))
+        )
+      (progn 
+        (om-print (format nil "Selecting default device: ~A" (car out-devices)))
+        (setf *audio-out-device* (car out-devices))
+        (juce::setoutputdevice player 0))))
   
-  #-linux (setf *audio-out-device* (juce::getCurrentDeviceName player))
-  (om-print (format nil "Audio initialized with: '~A'" *audio-out-device*))  
+  ;#-linux (setf *audio-out-device* (juce::getCurrentDeviceName player))
+  ;(om-print (format nil "Audio initialized with: '~A'" *audio-out-device*))  
   
   (setf *audio-out-chan-options* (juce::getoutputchannelslist player))
   (setf *audio-sr-options* (juce::getsamplerates player))
