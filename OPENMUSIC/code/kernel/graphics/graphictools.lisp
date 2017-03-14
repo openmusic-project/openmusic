@@ -177,7 +177,7 @@
 (defvar *ombox-font* nil)
 
 (defun init-om-fonts-vars ()
-  (setf *controls-font* *om-default-font1*)
+  (setf *controls-font* #+linux *om-controls-font* #-linux *om-default-font1*)
   (setf *controls-fonti* (om-make-font (om-font-face *controls-font*) (om-font-size *controls-font*) :style '(:italic)))
   (setf *ombox-font* *om-default-font1*))
 
