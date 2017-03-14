@@ -331,7 +331,7 @@
 (defmethod make-new-pref-scroll ((num (eql :appearance)) modulepref)
    (let ((thescroll (om-make-view 'preference-pane
                                   :pref-id num
-                                  :name " Appearance "
+                                  :name "Appearance"
                                   :size (get-pref-scroll-size)
                                   :position (om-make-point 0 0)
                                   :scrollbars nil 
@@ -796,7 +796,7 @@
 (defmethod make-new-pref-scroll ((num (eql :externals)) modulepref)
    (let ((thescroll (om-make-view 'preference-pane
                                   :pref-id num
-                                  :name " Externals "
+                                  :name "Externals"
                                   :size (get-pref-scroll-size)
                                   :position (om-make-point 66 0)
                                   :scrollbars :v 
