@@ -351,7 +351,7 @@
 
 (defmethod make-new-pref-scroll ((num (eql :conversion)) modulepref)
   (let ((thescroll (om-make-view 'preference-pane
-                                 :name "Quantification" 
+                                 :name "Quantification"
                                  :pref-id num
                                  :size (get-pref-scroll-size)
                                  :position (om-make-point 66 0)

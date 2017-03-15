@@ -433,6 +433,9 @@
 
 (defclass om-tab-layout (capi::tab-layout om-graphic-object) ())
 
+(defun print-tab-name (pane)
+  (format nil " ~A " (or (capi::capi-object-name pane) "Untitled Tab")))
+
 (defun om-make-tab-layout (view-list &key (size (om-make-point 200 200)) (position (om-make-point 0 0))
                                      (selection 0))
   (let ((x (om-point-v position))
@@ -447,7 +450,7 @@
                    :accepts-focus-p t
                    :vx x :vy y :vw w :vh h
                    :items view-list
-                   :print-function #'(lambda (pane) (or (capi::capi-object-name pane) "Untitled Tab"))
+                   :print-function #'print-tab-name
                    :visible-child-function 'identity
                    :selected-item (nth selection view-list)
                    ))
