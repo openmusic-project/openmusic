@@ -165,8 +165,10 @@
                                 #'(lambda ()                                  
                                     (setf (pinboard-pane-size self) (values  w h))
                                     #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
+                                    
+                                    (set-hint-table self (list :default-width (om-point-h size-point) 
+                                                               :default-height (om-point-v size-point)))
                                     ))
-    (set-hint-table self (list :default-width (om-point-h size-point) :default-height (om-point-v size-point)))
     (setf (vw self) w)
     (setf (vh self) h)))
 
