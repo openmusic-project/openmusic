@@ -148,6 +148,14 @@
 
 
 (print "REMOVING BUILD FOLDERS ...")
+
+;; copy the icon file in resources (for the installer)
+#+win32(copy-file (make-pathname :directory (append (pathname-directory *target-dir*) '("build" "build-om" "win"))
+                                   :name "OpenMusic" :type "ico")
+                    (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")) 
+                                   :name "OpenMusic" :type "ico"))
+                    
+
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("build"))))
 
 (print "CLEANING RESOURCES ...")
@@ -168,6 +176,10 @@
             )
 
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "lib"))))
+
+#-macos(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "mac"))))
+#-win32(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "win"))))
+#-linux(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "linux"))))
 
 (print "CLEANING LIBRARIES ...")
 (loop for lib in (directory (make-pathname :directory (append (pathname-directory *target-dir*) '("libraries")))) do
