@@ -33,7 +33,7 @@ OM for Linux depends on some standard libs:
 	libsndfile
 	libsamplerate
 
-If you install OM through your package-system (ie. 'yum' on Fedora,
+If you install OM through your package-system (ie. 'dnf' on Fedora,
 'software-installer', 'dpkg' or 'apt-get' on Ubuntu), all dependencies
 should be handled automatically.
 
@@ -45,18 +45,18 @@ default audio device on your system.  Check in the
 
 Currently there's no native support for JACK in OM.  To use OM (or any
 Pulse based or ALSA app) with Jack you may set up
-pulseaudio-jack-sink, as explained in various guides lying around.
+pulseaudio-jack-sink, as explained in various guides lying around on
+the internet.
 
-OM uses portmidi to connect to whatever external softsynth you prefer
-(no need to go 32-bit here).  One good choice for Linux is fluidsynth
-with a good soundfont:
+OM uses portmidi to connect to whatever external softsynth you prefer.
+One good choice for Linux is fluidsynth with a good soundfont:
 
-	yum install fluidsynth
-	yum install fluid-soundfont-gm
+	dnf install fluidsynth
+	dnf install fluid-soundfont-gm
 
 To connect OM to your midi-synth of choice, go to the MIDI-tab in OMs
-preferences, and click the matrix-button at the top left, from where
-you can connect OM to the device of choice.
+preferences, and click the matrix-button in the left section, from
+where you can connect OM to the device of choice.
 
 * FORUM, BUG-REPORTS, ISSUES:
 
@@ -64,5 +64,5 @@ Please send bug reports!
 
 Theres an OpenMusic forum/wiki at
 http://forumnet.ircam.fr/user-groups/openmusic/ - where subscribed
-members can post questions send bug reports etc.
+members can post questions, send bug reports etc.
 
