@@ -192,7 +192,7 @@
                           :di-action (om-dialog-item-act item 
                                        (om-return-from-modal-dialog win nil)))
                      
-     (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20 "OK"
+     (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20) "OK"
                            :di-action (om-dialog-item-act item 
                                         (let ((tempo (ignore-errors (read-from-string (om-dialog-item-text tempotxt))))
                                               (mesure (ignore-errors (read-from-string (om-dialog-item-text mesuretxt))))
@@ -207,7 +207,7 @@
                                                 (offset kdata) offset
                                                 (forbid kdata) forbid)
                                           (setf (updateflag kdata) nil)
-                                          (om-return-from-modal-dialog win t)))))
+                                          (om-return-from-modal-dialog win t))))
      )
     (om-add-subviews win pane)
     (om-modal-dialog win)
