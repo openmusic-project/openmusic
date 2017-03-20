@@ -86,7 +86,9 @@
 (defun gen-reference (entries dir &key title maintext)
   (when (probe-file dir) (om-delete-directory dir))
   (om-create-directory dir)
-  (setf *credit-line* (concatenate 'string "<center><font size=-2>" "Auto doc generation by OpenMusic " *version-string* " © 2011 IRCAM"  "</font></center>"))
+  (setf *credit-line* (concatenate 'string
+				   "<center><font size=-2>" "Auto doc generation by OpenMusic " *version-string*
+				   " © " (subseq cl-user::*release-date* 0 4) " IRCAM"  "</font></center>"))
   (let ((title (or title (concatenate 'string "OM " *version-string*)))
         (indexpath (make-pathname :directory (pathname-directory dir)
                                   :name "index" :type "html"))
