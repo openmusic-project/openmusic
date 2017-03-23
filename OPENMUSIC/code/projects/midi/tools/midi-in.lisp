@@ -10,7 +10,7 @@
 Right-click and select the appropriate option to turn on/off.
 When the server is on, MIDI-IN waits for MIDI messages on port <port> and calls <msg-processing-fun> with the decoded message as parameter.
 
-<msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to an OSC message. 
+<msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to a MIDI message. 
 This patch should handle and process the incoming messages.
 "
   t)
