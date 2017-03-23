@@ -428,10 +428,10 @@ Extraction methods.
           (loop while LMidic 
                 for midic = (or (pop LMidic) midic)
                 while midic
-                for vel = (or (pop LVel) vel)
-                for offset = (or (pop LOffset) offset)
-                for dur = (or (pop LDur) dur)
-                for chan = (or (pop LChan) chan)
+                for vel = (or (pop LVel) vel 80)
+                for offset = (or (pop LOffset) offset 0)
+                for dur = (or (pop LDur) dur 1000)
+                for chan = (or (pop LChan) chan 1)
                 for port = (or (pop LPort) 0)   ;;; now port can be nil.. 
                 for note = (mki 'note :midic (round midic) :vel (round vel) :dur (round dur) :chan chan )
                 do (setf (offset note) (round offset))
