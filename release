@@ -7,7 +7,7 @@
 LWARCH=64-bit
 LWEXEC=lispworks-7-0-0-amd64-darwin
 
-OM_VERSION="6.11.1"
+OM_VERSION="6.12"
 APP_FOLDER="OM "$OM_VERSION
 DMG_NAME="OM-"$OM_VERSION"-macOS"
 
@@ -59,6 +59,7 @@ echo "***************************************************"
 	rm -rf _DMG
 	mkdir _DMG
 	cp -R "$APP_FOLDER" _DMG
+	cp "README" _DMG
 	#ln -s /Applications/ _DMG/Applications
 	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
 	rm -rf _DMG	
