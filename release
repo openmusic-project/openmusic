@@ -38,6 +38,9 @@ echo "***************************************************"
 # pack_app MUST have been called before..
 set_fonts()
 {   
+echo "***************************************************"
+echo "Setting font resources in $APP_FOLDER"
+echo "***************************************************"
    cp "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/* "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/
    rm -rf "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/mac/
    rm -rf "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Resources/fonts/win/
@@ -46,6 +49,7 @@ set_fonts()
    cp "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist .	   
    defaults write $(pwd)/Info.plist ATSApplicationFontsPath -string "fonts/"
    mv ./Info.plist "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist
+   chmod 644 "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist
 }
 
 # pack_app MUST have been called before..
