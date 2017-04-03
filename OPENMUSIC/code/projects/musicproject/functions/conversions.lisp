@@ -200,32 +200,35 @@ Floating values are allowed for <approx>.
 
 (defun n->mc1 (str &optional (*ascii-note-scale* (car *ascii-note-scales*)))
   "Converts a string representing a symbolic ascii note to a midic."
-  (setq str (string str))
-  (let ((note (some #'(lambda (note)
-                        (when (and (null (cdr note))
-                                   (eql 0 (search (car note) str :test #'string-equal)))
-                          note)) *ascii-note-scale*))
-        index midic alt)
-    (unless note (error "Note not found in ~S using the ~S ~%~S"
-                        str '*ascii-note-scale* *ascii-note-scale*))
-    (setq midic (* (position note *ascii-note-scale*)
-                   (/ 1200 (length *ascii-note-scale*))))
-    ;; at this point: "C" -> 0 ; "D" -> 100 ; "E" -> 200 ; etc.
-    (setq index (length (car note)))
-    ;; alteration
-    (when (setq alt (some #'(lambda (alt)
-                              (when (eql index (search (cadr alt) str :start2 index
-                                                       :test #'string-equal))
-                                alt)) *ascii-note-alterations*))
-      (incf midic (third alt)) ;it's there!
-      (incf index (length (second alt))))
-    ;; octave
-    (multiple-value-bind (oct i) (parse-integer str :start index :junk-allowed t)
-      (incf midic (* (+ oct 2) 1200))
-      (setq index i))
-    (unless (= index (length str))
-      (incf midic (parse-integer str :start index)))
-    midic))
+  (if (integerp str)
+      str
+      (progn 
+	(setq str (string str))
+	(let ((note (some #'(lambda (note)
+			      (when (and (null (cdr note))
+					 (eql 0 (search (car note) str :test #'string-equal)))
+				note)) *ascii-note-scale*))
+	      index midic alt)
+	  (unless note (error "Note not found in ~S using the ~S ~%~S"
+			      str '*ascii-note-scale* *ascii-note-scale*))
+	  (setq midic (* (position note *ascii-note-scale*)
+			 (/ 1200 (length *ascii-note-scale*))))
+	  ;; at this point: "C" -> 0 ; "D" -> 100 ; "E" -> 200 ; etc.
+	  (setq index (length (car note)))
+	  ;; alteration
+	  (when (setq alt (some #'(lambda (alt)
+				    (when (eql index (search (cadr alt) str :start2 index
+							     :test #'string-equal))
+				      alt)) *ascii-note-alterations*))
+	    (incf midic (third alt))			    ;it's there!
+	    (incf index (length (second alt))))
+	  ;; octave
+	  (multiple-value-bind (oct i) (parse-integer str :start index :junk-allowed t)
+	    (incf midic (* (+ oct 2) 1200))
+	    (setq index i))
+	  (unless (= index (length str))
+	    (incf midic (parse-integer str :start index)))
+	  midic))))
 
 (defvar *ascii-intervals*)
 
