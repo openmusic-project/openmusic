@@ -475,7 +475,8 @@
    ;; 2017-02-09: navigation-callback not implemented on linux 
    #-linux :navigation-callback #-linux 'text-edit-special-action
    :change-callback 'text-edit-changed-action
-   :editing-callback 'text-edited-action))
+   :editing-callback 'text-edited-action
+   ))
 
 ;;; :allows-newline-p
 ;;; :compact
@@ -511,16 +512,19 @@
 (defmethod special-bg ((self  om-editable-text)) *om-white-color*)
 
 (defun text-edit-special-action (self action)
-  ;(print (list "edit special" action))
+  ;(print (list "edit special" action (capi::text-input-allows-newline-p self)))
   (cond ((equal action :enter) 
-         (om-dialog-item-action self))
-        ((equal action :return) (if (capi::text-input-allows-newline-p self)
-                                    (let ((rec (capi::clipboard self)))
+         (if (capi::text-input-allows-newline-p self)
+                                    (let ((rec (capi::clipboard self))
+                                          (pos (capi::text-input-pane-selection self)))
                                       (capi::set-clipboard self (string #\Newline))
                                       (capi::text-input-pane-paste self)
-                                      (capi::set-clipboard self rec))
+                                      (capi::set-clipboard self rec)
+                                      (capi::set-text-input-pane-selection self (1+ pos) (1+ pos))
+                                      )
                                   (om-dialog-item-action self)
                                   ))
+        ((equal action :return) (om-dialog-item-action self))
         ))
 
 (defmethod om-dialog-item-after-action ((self om-standard-dialog-item)) 
@@ -534,7 +538,7 @@
   (if (equal action :end) (om-dialog-item-after-action self)))
  
 (defun text-edit-changed-action (text self win position)
-  ;(print (list "chaged" position text))
+  ;(print (list "changed" position text))
   (when (di-action self)
     (funcall (di-action self) self))
   (unless (or (string-equal text "")
@@ -560,19 +564,23 @@
   (capi::set-pane-focus self)
   (capi::set-text-input-pane-selection self 0 (length (capi::text-input-pane-text self))))
 
-
-
 (defmethod om-copy-command ((self om-editable-text))
   ;(capi::set-clipboard self (om-dialog-item-text self))
   (capi::text-input-pane-copy self))
 
 (defmethod om-paste-command ((self om-editable-text))
-  (let ((pos (capi::text-input-pane-selection self))
-        (pasted (length (capi::clipboard self))))
+  (multiple-value-bind (pos1 pos2) 
+      (capi::text-input-pane-selection self)
+    (let ((pasted (length (capi::clipboard self)))
+          (init-text (capi::text-input-pane-text self)))
     (if (capi::text-input-allows-newline-p self)
         (capi::text-input-pane-paste self)      
-      (om-set-dialog-item-text self (remove #\Newline (capi::clipboard self))))
-    (capi::set-text-input-pane-selection self (+ pos pasted) (+ pos pasted))))
+      (om-set-dialog-item-text self 
+                               (concatenate 'string 
+                                            (subseq init-text 0 pos1)
+                                            (remove #\Newline (capi::clipboard self))
+                                            (subseq init-text pos2))))
+    (capi::set-text-input-pane-selection self (+ pos1 pasted) (+ pos1 pasted)))))
 
 
 (defmethod om-cut-command ((self om-editable-text))

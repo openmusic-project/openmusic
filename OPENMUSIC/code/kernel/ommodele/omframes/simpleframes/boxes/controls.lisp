@@ -146,6 +146,7 @@
 ;a text box for an undefined function
 
 (defclass undef-ttybox (ttybox om-static-text-drag) ())
+(defmethod text-enter-multiline-p ((self undef-ttybox)) t)
 
 ;select
 (defmethod (setf selected-p) (selected-p (self undef-ttybox))

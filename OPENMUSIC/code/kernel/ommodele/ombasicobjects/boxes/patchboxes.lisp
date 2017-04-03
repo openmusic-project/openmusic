@@ -1341,6 +1341,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 
 (defclass boxtype-iconview (ttybox om-static-text-drag) ())
+(defmethod text-enter-multiline-p ((self boxtype-iconview)) t)
 
 ;The const type boxes are a little differents
 (defmethod make-frame-from-callobj ((self OMBoxTypeCall))
@@ -1411,7 +1412,6 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 (defmethod do-add-all-inputs ((self OMBoxTypeCall)) nil)
 (defmethod do-add-one-keyword ((self OMBoxTypeCall) &optional (input-key nil))  nil)
 (defmethod do-delete-one-keyword ((self OMBoxTypeCall)) nil)
-
 
 
 ;------------------------------------------
