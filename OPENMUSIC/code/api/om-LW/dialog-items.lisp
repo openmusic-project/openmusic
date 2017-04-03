@@ -479,10 +479,7 @@
    ))
 
 ;;; :allows-newline-p
-;;; :compact
 ;;; :multi-line-p
-;;; :editing-callback
-
 
 ;(let ((pt (om-add-points init-size (om-make-point 16 16))))
 ;  (om-make-point (max 32 (om-point-h pt)) (max 32 (om-point-v pt))))

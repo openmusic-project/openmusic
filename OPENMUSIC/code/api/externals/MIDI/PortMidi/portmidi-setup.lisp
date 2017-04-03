@@ -200,15 +200,16 @@
       (set-portmidi-connection-view outv dd)
   
       (oa::om-add-subviews dd 
-                         
-                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 10 230) (oa::om-make-point 130 20) "Refresh Devices"
-                                                    :di-action #'(lambda (item) 
-                                                                   ;;;(portmidi-restart)
-                                                                   (when action (funcall action (settings dd)))
-                                                                   (portmidi-connect-ports (settings dd))
-                                                                   (set-portmidi-connection-view inv dd)
-                                                                   (set-portmidi-connection-view outv dd)
-                                                                   ))
+                           ;;; DOES NOT WORK...
+                           ;(oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 10 230) (oa::om-make-point 130 20) 
+                           ;                         "Refresh Devices"
+                           ;                         :di-action #'(lambda (item) 
+                           ;                                        ;;;(portmidi-restart)
+                           ;                                        (when action (funcall action (settings dd)))
+                           ;                                        (portmidi-connect-ports (settings dd))
+                           ;                                        (set-portmidi-connection-view inv dd)
+                           ;                                        (set-portmidi-connection-view outv dd)
+                           ;                                        ))
                                                   
                            (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 680 230) (oa::om-make-point 100 20) "Apply"
                                                     :di-action #'(lambda (item) (when action (funcall action (settings dd))))

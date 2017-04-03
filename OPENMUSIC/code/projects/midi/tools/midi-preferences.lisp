@@ -114,17 +114,11 @@
                       
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 34)) (om-make-point 200 30) 
                                            "MIDI I/O" :font *om-default-font2b*)
-                      (om-make-dialog-item 'om-static-text (om-make-point 180 i) (om-make-point 300 30) 
-                                           "Ports setup" :font *om-default-font2*)
                       
-                      ;(om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 45)) (om-make-point 160 24) 
-                      ;                     "Devices/ports setup:" :font *controls-font*)
                       (if (and *default-midi-system* (om-midi::midi-setup-function *default-midi-system*))
-                          (om-make-view 'button-icon
-                                    :position (om-make-point 285 (- i 4)) 
-                                    :size (om-make-point 28 28)
-                                    :action #'(lambda (item) (declare (ignore item)) (midi-setup modulepref))
-                                    :iconid 135)
+                          (om-make-dialog-item 'om-button (om-make-point 200 (- i 2)) (om-make-point 120 30) 
+                                           "Ports setup" :font *om-default-font1*
+                                           :di-action #'(lambda (item) (declare (ignore item)) (midi-setup modulepref)))
                         (om-make-dialog-item 'om-static-text (om-make-point 240 i) (om-make-point 100 40) 
                                              "SETUP UNAVAILABLE"
                                              :font *om-default-font1* :fg-color *om-gray-color*))
@@ -212,16 +206,18 @@
 		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 200 40) 
                                            "In case of emergency:" :font *controls-fonti*)
                       (om-make-dialog-item 'om-button (om-make-point 200 i) (om-make-point 100 20) "Restart" 
-                                           :enable (and *default-midi-system* (om-midi::midi-restart-function *default-midi-system*))
+                                           :enable (and *default-midi-system* (or (om-midi::midi-connect-function *default-midi-system*)
+                                                                                  (om-midi::midi-restart-function *default-midi-system*)))
                                            :di-action #'(lambda (item) (declare (ignore item))
-                                                          (when (om-midi::midi-restart-function *default-midi-system*)
-                                                            (before-restart-action)
-                                                            (funcall (om-midi::midi-restart-function *default-midi-system*)))
-                                                          ;;; TEST
-                                                          (when (om-midi::midi-connect-function *default-midi-system*)
-                                                            (funcall (om-midi::midi-connect-function *default-midi-system*) 
-                                                                     (get-pref modulepref :midi-setup))
-                                                            ))
+                                                          (before-restart-action)  
+                                                          (if (om-midi::midi-connect-function *default-midi-system*)
+                                                              ;;; will restart MIDI
+                                                              (funcall (om-midi::midi-connect-function *default-midi-system*) 
+                                                                       (get-pref modulepref :midi-setup))
+                                                            (when (om-midi::midi-restart-function *default-midi-system*)
+                                                              (funcall (om-midi::midi-restart-function *default-midi-system*)))
+                                                            )
+                                                          )
 					   :font *controls-font*)
 
                       ;(om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 60)) (om-make-point 160 44) 
