@@ -398,7 +398,8 @@
             for y = (lineh self) then (round (+ (lineh self) (* posy (lineh self) (il self))))
             while (< (- y (lineh self)) (vh self)) do
            (gp:draw-string port
-                            (substitute #\Space #\Tab line) (+ (dx self) *pox*) (round (+ (lineh self) (* posy (lineh self) (il self)) *poy*)))
+                            line ;; (substitute #\Space #\Tab line)
+			    (+ (dx self) *pox*) (round (+ (lineh self) (* posy (lineh self) (il self)) *poy*)))
             ))
     (when (om-component-border self)
       (if (om-color-p (om-component-border self))
