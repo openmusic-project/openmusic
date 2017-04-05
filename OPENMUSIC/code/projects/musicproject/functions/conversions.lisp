@@ -345,7 +345,8 @@ Gradations smaller than a quartertone are expressed as the closest  quartertone 
 (om::defmethod! n->mc ((strs string))
   (car (n->mc (list strs))))
 
-
+(om::defmethod! n->mc ((symb symbol))
+  (n->mc (string symb)))
 
 ;;;=======================================
 ;;; TEMPO UTILS
