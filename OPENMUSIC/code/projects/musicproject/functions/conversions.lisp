@@ -171,6 +171,7 @@ Floating values are allowed for <approx>.
 
 (setf *ascii-note-alterations*
    '((:s "#" +100) (:f "b" -100)
+     (:s "s" +100) (:f "f" -100)
      (:q "+" +50) (:qs "#+" +150) (:-q "_" -50) (:f-q "b-" -150)
      (:s "d" +100)))
 
