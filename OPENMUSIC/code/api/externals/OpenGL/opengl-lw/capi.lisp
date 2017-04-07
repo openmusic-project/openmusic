@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/capi.lisp,v 1.28.2.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/capi.lisp,v 1.29.1.1 2014/05/27 20:56:57 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 
 (in-package "OPENGL")
@@ -43,8 +43,8 @@
 
 ;;; ------------------------------------------------------------
 ;;; Locking
-;;; One GL context is current at any time, so we need a locking mechanism to stop
-;;; thread interfering with each other.
+;;; Only one GL context can be current at any time, so we need a
+;;; locking mechanism to stop threads interfering with each other.
 
 (defvar *current-opengl-window* nil)
 

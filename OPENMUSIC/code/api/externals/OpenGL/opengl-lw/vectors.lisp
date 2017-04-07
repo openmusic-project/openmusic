@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/vectors.lisp,v 1.7.12.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/vectors.lisp,v 1.8.1.1 2014/05/27 20:56:57 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 
 (in-package "OPENGL")
@@ -90,10 +90,10 @@
 ;;; ----------------------------------------------------------------------
 ;;; This current use of auto-gc'ing foreign data is here to mimic the behavior
 ;;; of lisp foreign arrays.
-;;; using ADD-SPECIAL-FREE-ACTION and FLAG-SPECIAL-FREE-ACTION is not normally
-;;; recommended when using the FLI as
-;;; 1. It can slow down the GC mechanism by adding overheads to objects to cleanup.
-;;; 2. Can have disastrous results if the allocated foreign object is
+;;; Using ADD-SPECIAL-FREE-ACTION and FLAG-SPECIAL-FREE-ACTION is not normally
+;;; recommended when using the FLI because:
+;;; 1. It can slow down the GC by adding overheads to objects to cleanup.
+;;; 2. It can have disastrous results if the allocated foreign object is
 ;;;    not cleaned up before an image save - data allocated by
 ;;;    fli:allocate-foreign-object is not persistent across image saves.
 
@@ -116,9 +116,9 @@
 (defun opengl:make-gl-vector (type length &key (contents nil contentsp))
   #+:use-fli-gl-vector
   (let ((new-vector (fli:allocate-foreign-object 
-               :type (convert-to-fli-type type)
-               :nelems length
-               :initial-contents contents)))
+                     :type (convert-to-fli-type type)
+                     :nelems length
+                     :initial-contents contents)))
     (incf *gl-vectors-allocated*)
     (flag-special-free-action new-vector)
     new-vector)
@@ -151,7 +151,7 @@
 ;;; ----------------------------------------------------------------------
 #-:use-fli-gl-vector
 (defvar *dynamically-allocated-float-vectors* nil
-  "Holds on to dynamically scoped lisp arrays - prevent the gc from eating them (at least until the scope is left).")
+  "Holds on to dynamically scoped lisp arrays - prevent the gc from eating them (at least until the end of the scope).")
 
 (defun gl-vector-bindings (binding
                            &key (type :single-float)
@@ -165,14 +165,14 @@
                ,@(when contentsp `(:initial-contents ,contents))))
    #-:use-fli-gl-vector
    `(,binding (sys:in-static-area 
-                     (make-array ,length
-                                 :element-type ',(convert-to-lisp-type type)
-                                 ,@(when contentsp `(:initial-contents ,contents)))))
+                (make-array ,length
+                            :element-type ',(convert-to-lisp-type type)
+                            ,@(when contentsp `(:initial-contents ,contents)))))
    binding))
 
       
 (defmacro opengl:with-gl-vectors ((&rest bindings)
-                                 &body body)
+                                  &body body)
   (let (let-bindings binding-names)
     (dolist (binding bindings)
       (multiple-value-bind (let-binding binding-name)
@@ -183,12 +183,12 @@
     `(fli:with-dynamic-foreign-objects ()
        (let* ,let-bindings
          ,@body))
-  #-:use-fli-gl-vector
-  `(let* (,@let-bindings
-         ,@(when binding-names
-                  `((*dynamically-allocated-float-vectors* `(,,@binding-names)))))
-     (declare (dynamic-extent *dynamically-allocated-float-vectors*))
-    ,@body)))
+    #-:use-fli-gl-vector
+    `(let* (,@let-bindings
+            ,@(when binding-names
+                `((*dynamically-allocated-float-vectors* `(,,@binding-names)))))
+       (declare (dynamic-extent *dynamically-allocated-float-vectors*))
+       ,@body)))
   
 
 ;;; ----------------------------------------------------------------------

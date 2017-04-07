@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/ufns.lisp,v 1.8.10.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/ufns.lisp,v 1.9.1.2 2014/06/05 12:08:37 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
 
@@ -13,20 +13,20 @@
 
 (fli:define-foreign-function (glu-error-string "gluErrorString" :source)
     ((error-code glenum))
-  :result-type #+Win32 (w:LPSTR :pass-by :reference)
-               #-Win32 (:reference :lisp-string-array)
+  :result-type #+mswindows (w:LPSTR :pass-by :reference)
+               #-mswindows (:reference :lisp-string-array)
   :language :ansi-c)
 
 ;;; glu-error-string - Win32 implmentation includes gluErrorUnicodeStringEXT which returns
 ;;;   a UNICODE error string. Only access this when running on NT - use glu-error-string-win
 ;;;   to dispatch to the correct OS function.
 
-#+Win32
+#+mswindows
 (fli:define-foreign-function (glu-error-unicode-string "gluErrorUnicodeStringEXT" :source)
     ((error-code glenum))
   :result-type (w:LPWSTR :pass-by :reference))
 
-#+Win32
+#+mswindows
 (defun glu-error-string-win (glenum)
   (if (string= (software-type) "Windows NT")
       (glu-error-unicode-string glenum)
@@ -35,8 +35,8 @@
 
 (fli:define-foreign-function (glu-get-string "gluGetString" :source)
     ((name glenum))
-  :result-type #+Win32 (w:LPSTR :pass-by :reference)
-               #-Win32 (:reference :lisp-string-array)
+  :result-type #+mswindows (w:LPSTR :pass-by :reference)
+               #-mswindows (:reference :lisp-string-array)
   :language :ansi-c)
 
 (fli:define-foreign-function (glu-ortho2-d "gluOrtho2D" :source)
@@ -137,6 +137,8 @@
   :result-type (:signed :int)
   :language :ansi-c)
 
+(fli:define-c-struct (gluquadric (:foreign-name "GLUquadric")
+                                 (:forward-reference-p t)))
 (fli:define-c-typedef (gluquadric-obj (:foreign-name "GLUquadricObj"))
   (:struct gluquadric))
 
@@ -223,6 +225,8 @@
   :result-type :void
   :language :ansi-c)
 
+(fli:define-c-struct (GLUtesselator (:foreign-name "GLUtesselator")
+                                    (:forward-reference-p t)))
 (fli:define-c-typedef (glutriangulator-obj
                        (:foreign-name "GLUtriangulatorObj"))
   (:struct GLUtesselator))
@@ -267,6 +271,8 @@
   :result-type :void
   :language :ansi-c)
 
+(fli:define-c-struct (glunurbs (:foreign-name "GLUnurbs")
+                               (:forward-reference-p t)))
 (fli:define-c-typedef (glunurbs-obj (:foreign-name "GLUnurbsObj"))
   (:struct glunurbs))
 

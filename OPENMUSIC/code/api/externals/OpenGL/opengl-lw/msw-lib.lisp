@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/msw-lib.lisp,v 1.11.9.1 2011/08/24 13:27:19 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/msw-lib.lisp,v 1.11.10.1 2014/05/27 20:56:56 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
 

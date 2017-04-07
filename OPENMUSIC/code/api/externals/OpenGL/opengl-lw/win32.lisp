@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/win32.lisp,v 1.9.2.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/win32.lisp,v 1.10.1.1 2014/05/27 20:56:57 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 (in-package "WIN32")
 
@@ -106,7 +106,7 @@
 ;;; ------------------------------------------------------------
 ;;;
 
-(fli:define-foreign-function (wgl-Create-Context "wglCreateContext")
+(fli:define-foreign-function (wgl-create-context "wglCreateContext")
     ((hdc HDC))
   :documentation "Creates a new OpenGL rendering context, which is suitable for drawing on the device referenced by hdc.
    The rendering context has the same pixel format as the device context."
@@ -216,12 +216,12 @@
 ;;;                         then no data will be stored.
 ;;;  START : INTEGER - First of the set of glyphs which will form the display-list
 ;;;  COUNT : INTEGER - Number of glyphs to be used in the creation of the display-list.
-;;;  ERRORP : BOOLEAN - When not NULL, an error will be signaled when a glerror occurs.
-;;;                     otherwise NIL will be returned from the WGL-USE-FONT
+;;;  ERRORP : BOOLEAN - When true, an error will be signaled when a glerror occurs.
+;;;                     Otherwise NIL will be returned from the WGL-USE-FONT
 ;;;  LIST-BASE : INTEGER - Specifies the start of the  display-list.
 ;;; RESULTS :
-;;;   The list-base used for creating the font. (or NIL indicating an error)
-;;; Note that once the font list (pointed to by the list-base) is nolonger
+;;;   The list-base used for creating the font (or NIL indicating an error).
+;;; Note that once the font list (pointed to by the list-base) is no longer
 ;;; required then it should be destroyed by calling OPENGL:GL-DELETE-LISTS
 
 (defun wgl-use-font (opengl-pane &key
@@ -253,8 +253,8 @@
 
           (select-object hdc (drawing-tool-handle gpfont))
           ;; For some reason - OpenGL on NT sometimes fails to
-          ;; create the font the first time around. Not sure for
-          ;; the reason why. The simple fix is if the creation
+          ;; create the font the first time around.  Not sure of
+          ;; the reason why.  The simple fix is if the creation
           ;; of the font fails the first time - try calling 
           ;; wglUseFont... again to make sure that there really
           ;; is some form or error???

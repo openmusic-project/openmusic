@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/types.lisp,v 1.5.4.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/types.lisp,v 1.5.5.2 2014/06/05 12:08:37 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
 
@@ -60,6 +60,6 @@
   :char)
 
 (fli:define-c-typedef glstring-return
-  #+Win32 (w:lpstr :pass-by :reference)
-  #-Win32 (:reference :ef-mb-string))
+  #+mswindows (w:lpstr :pass-by :reference)
+  #-mswindows (:reference :ef-mb-string))
 

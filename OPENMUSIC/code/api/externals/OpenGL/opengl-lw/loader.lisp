@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/loader.lisp,v 1.6.8.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/loader.lisp,v 1.7.1.1 2014/05/27 20:56:57 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 
 (in-package "CL-USER")
@@ -51,6 +51,12 @@
   #+Solaris2
   (dolist (name '("-lGL" "-lGLU"))
     (fli:register-module name))
+
+  #+AIX
+  (dolist (name  '("-lGL" "-lGLU"
+                          "-lXext" "-lX11" "-lIM" ; Not obvious that these are needed
+                          ))
+    (fli:register-module name))
   
   #+HP-UX
   (link-load:read-foreign-modules "-L/opt/graphics/OpenGL/lib"
@@ -59,9 +65,7 @@
   #+IRIX
   (link-load:read-foreign-modules "-lGLcore" "-lGL" "-lGLU" "-lX11")
   
-  #+AIX
-  (link-load:read-foreign-modules "-lGL" "-lGLU" "-lXext" "-lX11" "-lIM")
-
+  
   )
 
 

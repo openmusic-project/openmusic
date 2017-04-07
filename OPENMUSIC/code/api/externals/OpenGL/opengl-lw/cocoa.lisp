@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.6.2.1 2011/08/24 13:27:19 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.7.1.1 2014/05/27 20:56:56 davef Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 ;; Support for OpenGL with CAPI/Cocoa.
 ;; Symbols in the CAPI-COCOA-LIB package are not part of a supported API.
@@ -88,35 +88,43 @@
                                            
 
 ;; NSOpenGLPixelFormatAttribute
-(defconstant ns-open-gl-pfa-all-renderers 1)
-(defconstant ns-open-gl-pfa-double-buffer 5)
-(defconstant ns-open-gl-pfa-stereo 6)
-(defconstant ns-open-gl-pfa-aux-buffers 7)
-(defconstant ns-open-gl-pfa-color-size 8)
-(defconstant ns-open-gl-pfa-alpha-size 11)
-(defconstant ns-open-gl-pfa-depth-size 12)
-(defconstant ns-open-gl-pfa-stencil-size 13)
-(defconstant ns-open-gl-pfa-accum-size 14)
-(defconstant ns-open-gl-pfa-minimum-policy 51)
-(defconstant ns-open-gl-pfa-maximum-policy 52)
-(defconstant ns-open-gl-pfa-off-screen 53)
-(defconstant ns-open-gl-pfa-full-screen 54)
-(defconstant ns-open-gl-pfa-sample-buffers 55)
-(defconstant ns-open-gl-pfa-samples 56)
+(defconstant ns-open-gl-pfa-all-renderers      1)
+(defconstant ns-open-gl-pfa-double-buffer      5)
+(defconstant ns-open-gl-pfa-stereo             6)
+(defconstant ns-open-gl-pfa-aux-buffers        7)
+(defconstant ns-open-gl-pfa-color-size         8)
+(defconstant ns-open-gl-pfa-alpha-size        11)
+(defconstant ns-open-gl-pfa-depth-size        12)
+(defconstant ns-open-gl-pfa-stencil-size      13)
+(defconstant ns-open-gl-pfa-accum-size        14)
+(defconstant ns-open-gl-pfa-minimum-policy    51)
+(defconstant ns-open-gl-pfa-maximum-policy    52)
+(defconstant ns-open-gl-pfa-off-screen        53)
+(defconstant ns-open-gl-pfa-full-screen       54)
+(defconstant ns-open-gl-pfa-sample-buffers    55)
+(defconstant ns-open-gl-pfa-samples           56)
 (defconstant ns-open-gl-pfa-aux-depth-stencil 57)
-(defconstant ns-open-gl-pfa-renderer-id 70)
-(defconstant ns-open-gl-pfa-single-renderer 71)
-(defconstant ns-open-gl-pfa-no-recovery 72)
-(defconstant ns-open-gl-pfa-accelerated 73)
-(defconstant ns-open-gl-pfa-closest-policy 74)
-(defconstant ns-open-gl-pfa-robust 75)
-(defconstant ns-open-gl-pfa-backing-store 76)
-(defconstant ns-open-gl-pfa-mp-safe 78)
-(defconstant ns-open-gl-pfa-window 80)
-(defconstant ns-open-gl-pfa-multi-screen 81)
-(defconstant ns-open-gl-pfa-compliant 83)
-(defconstant ns-open-gl-pfa-screen-mask 84)
-(defconstant ns-open-gl-pfa-virtual-screen-count 128)
+(defconstant ns-open-gl-pfa-color-float       58)  ; >= 10.4
+(defconstant ns-open-gl-pfa-multisample       59)  ; >= 10.4
+(defconstant ns-open-gl-pfa-supersample       60)  ; >= 10.4
+(defconstant ns-open-gl-pfa-sample-alpha      61)  ; >= 10.4
+(defconstant ns-open-gl-pfa-renderer-id       70)
+(defconstant ns-open-gl-pfa-single-renderer   71)
+(defconstant ns-open-gl-pfa-no-recovery       72)
+(defconstant ns-open-gl-pfa-accelerated       73)
+(defconstant ns-open-gl-pfa-closest-policy    74)
+(defconstant ns-open-gl-pfa-robust            75)
+(defconstant ns-open-gl-pfa-backing-store     76)
+(defconstant ns-open-gl-pfa-mp-safe           78)
+(defconstant ns-open-gl-pfa-window            80)
+(defconstant ns-open-gl-pfa-multi-screen      81)
+(defconstant ns-open-gl-pfa-compliant         83)
+(defconstant ns-open-gl-pfa-screen-mask       84)
+(defconstant ns-open-gl-pfa-pixel-buffer      90)  ; >= 10.3
+(defconstant ns-open-gl-pfa-remote-pixel-buffer     91)  ; >= 10.6
+(defconstant ns-open-gl-pfa-allow-offline-renderers 96)  ; >= 10.5
+(defconstant ns-open-gl-pfa-accelerated-compute     97)  ; >= 10.6
+(defconstant ns-open-gl-pfa-virtual-screen-count   128)
 
 (defun ns-open-gl-pixel-format-attribute-type ()
   (if (> (floor (cocoa:ns-app-kit-version-number))
@@ -125,33 +133,6 @@
     ':int))
   
 
-;(defun choose-cocoa-pixel-format (view configuration)
-;  "Returns the NSOpenGLPixelFormat for rep which supports the 
-;   requested configuration. Returns NIL if it fails.
-;   Configuration is a plist with the following allowed
-;   indicators: 
-;      :double-buffer, :double-buffered, - synonyms, value T or NIL."
-;  (fli:with-dynamic-foreign-objects ()
-;    (let* ((attributes-list
-;            (nconc (and (or (getf configuration :double-buffer)
-;                            (getf configuration :double-buffered))
-;                        (list ns-open-gl-pfa-double-buffer))
-;                   (let ((depth-buffer (getf configuration :depth-buffer)))
-;                     (and depth-buffer
-;                          (list ns-open-gl-pfa-depth-size depth-buffer)))
-;                   (list 0)))
-;           (attributes (fli:allocate-dynamic-foreign-object
-;                        :type (ns-open-gl-pixel-format-attribute-type)
-;                        :initial-contents attributes-list)))
-;      (let ((format (objc:invoke (objc:invoke "NSOpenGLPixelFormat" "alloc")
-;                                 "initWithAttributes:"
-;                                 attributes)))
-;        (if (objc:null-objc-pointer-p format)
-;            nil
-;          format)))))
-
-
-;modification to support antialiasing with OSX
 (defun choose-cocoa-pixel-format (view configuration)
   "Returns the NSOpenGLPixelFormat for rep which supports the 
    requested configuration. Returns NIL if it fails.
@@ -165,10 +146,8 @@
                         (list ns-open-gl-pfa-double-buffer))
                    (let ((depth-buffer (getf configuration :depth-buffer)))
                      (and depth-buffer
-                          (list ns-open-gl-pfa-depth-size depth-buffer
-                                ns-open-gl-pfa-sample-buffers 1
-                                ns-open-gl-pfa-samples 4)))
-                          (list 0)))
+                          (list ns-open-gl-pfa-depth-size depth-buffer)))
+                   (list 0)))
            (attributes (fli:allocate-dynamic-foreign-object
                         :type (ns-open-gl-pixel-format-attribute-type)
                         :initial-contents attributes-list)))
@@ -178,7 +157,6 @@
         (if (objc:null-objc-pointer-p format)
             nil
           format)))))
-
 
 (defun pixel-format-attribute-value (pixel-format
                                      attribute

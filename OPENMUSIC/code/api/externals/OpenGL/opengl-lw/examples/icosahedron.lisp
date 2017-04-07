@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/9/LISPopengl-examples/RCS/icosahedron.lisp,v 1.20.2.1 2011/08/24 13:27:20 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/9/LISPopengl-examples/RCS/icosahedron.lisp,v 1.20.3.3 2014/11/19 16:14:40 martin Exp $" -*-
 
-;; Copyright (c) 1987--2012 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
 
 
 (in-package "USER")
@@ -750,8 +750,8 @@
                   :callback-type :interface-data
                   :selection-callback 'process-character
                   :layout-class 'capi:row-layout
-                  :items (list #\home #\Insert)
-                  :print-function #'(lambda (x) (getf '(#\home "View" #\Insert "Material") x)))
+                  :items (list :home :insert)
+                  :print-function #'(lambda (x) (getf '(:home "View" :insert "Material") x)))
    (quit-button capi:button-panel
                 :interaction :no-selection
                 :callback-type :interface-data
@@ -939,13 +939,13 @@
                (turn-off-texture viewer)
                (turn-on-texture viewer))
              t)
-        ((#\begin #\home) 
+        (:home
          (opengl:rendering-on ((canvas viewer))
            (initialize-transform (icotransform viewer))
            (initialize-transform (light-transform viewer)) t)
          (setf (xyz-y (eye (camera viewer)))
                (xyz-y *eye*)))
-        (#\Insert (opengl:rendering-on ((canvas viewer)) (reset-lights-and-materials) t))
+        (:insert (opengl:rendering-on ((canvas viewer)) (reset-lights-and-materials) t))
         (#\escape (opengl:rendering-on ((canvas viewer)) (delete-display-list (icosahedron viewer)))
 	          (capi:quit-interface viewer)))
     (set-button-states viewer)
@@ -1043,8 +1043,8 @@
 
 (defun resize-canvas (canvas x y width height)
   x y
-  (when #+Win32 (win32:is-window-visible (win32:pane-hwnd (capi-internals:representation canvas)))
-	#-Win32 T
+  (when #+mswindows (win32:is-window-visible (win32:pane-hwnd (capi-internals:representation canvas)))
+	#-mswindows t
     (opengl:rendering-on (canvas)
       (opengl:gl-viewport 0 0 width height))
     (with-slots ((viewer capi:interface)) canvas
