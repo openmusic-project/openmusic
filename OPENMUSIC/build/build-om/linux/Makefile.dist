@@ -8,8 +8,11 @@
 # will install the binary in $prefix and the various source-files and
 # needed resources under $prefix/share/$(APPNAME)
 #
-# For development-work, you want to get the sources via svn or
-# download from the ircam forge:
+# For development-work, you want to get the sources via git:
+#
+#	git clone git://git@git.forge.ircam.fr/OM.git
+# 
+# or download from the ircam forge:
 # 
 #	http://forge.ircam.fr/p/OM6/downloads/
 #	
