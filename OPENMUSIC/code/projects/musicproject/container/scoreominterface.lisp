@@ -306,9 +306,10 @@ when :
              do (case (tie note)
                   (begin (setf (tie note) nil))
                   (continue (setf (tie note) 'end)))))
-     (loop for measure in measures
-           with offset = (offset (first measures))
-           do (setf (offset measure) (- (offset measure) offset)))
+     (loop
+	with offset = (offset (first measures))
+	for measure in measures
+	do (setf (offset measure) (- (offset measure) offset)))
      (let ((voice (mki 'voice 
                        :empty t
                        :offset 0
