@@ -253,7 +253,7 @@
           (setf (chord self) first-in-selection
                 (chord-id self) (position first-in-selection (get-real-chords (analysis-object analysis))))
           self))
-        (om-beep-msg "Select a CHORD in the score to create a chord-marlker!")))))
+        (om-beep-msg "Select a CHORD in the score to create a chord-marker!")))))
 
 ;;;============================
 ;;; MESURE
