@@ -84,16 +84,20 @@
 
 (defmethod segment-handle-add-key ((self marker-segment) analysis panel) 
   (when (selection? panel)
-    (let ((ordered-selection (sort (get-real-chords (selection? panel)) '< 
-                                   :key #'(lambda (c) (offset->ms c (analysis-object analysis))))))
-      (if ordered-selection
-          (if (find ordered-selection (analysis-segments analysis)
-                    :key 'mrk-time :test 'equal)
-              (om-beep-msg "This segment already exists !")
-            (progn
-              (setf (mrk-time self) (offset->ms (car ordered-selection)))
-          self))
-        (om-beep)))))
+    (if (equal (obj-mode panel) "chord")
+	(let ((ordered-selection (sort (get-real-chords (selection? panel)) '< 
+				       :key #'(lambda (c) (offset->ms c (analysis-object analysis))))))
+	  (if ordered-selection
+	      (if (find ordered-selection (analysis-segments analysis)
+			:key 'mrk-time :test 'equal)
+		  (om-beep-msg "This segment already exists !")
+		  (progn
+		    (setf (mrk-time self) (offset->ms (car ordered-selection)))
+		    self))
+	      (om-beep)))
+	(progn (om-beep-msg (format nil "set edit mode to 'chord while adding segments"))
+	       (make-unselect panel)))))
+
 
 
 (defmethod handle-segment-doubleclick ((self abstract-analysis) (segment marker-segment) panel pos)
