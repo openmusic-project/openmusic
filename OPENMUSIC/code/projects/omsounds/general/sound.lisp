@@ -624,7 +624,7 @@ Press 'space' to play/stop the sound file.
 ;;; reads a sample at position position in <self>
 (defmethod read-sound-sample ((self sound) position &optional (type :float))
   (multiple-value-bind (buffer format nch sr ss size skip)
-      (audio-io::om-get-sound-buffer (filename self) type)
+      (audio-io::om-get-sound-buffer (filename self) type t)
     (declare (ignore format sr ss size skip))
     (when buffer
       (let ((snddata (loop for chan from 0 to (- nch 1) collect 
@@ -648,7 +648,7 @@ Press 'space' to play/stop the sound file.
             (>  (car (last positions)) numdat))
         (om-message-dialog "Bad input values")
       (multiple-value-bind (buffer format nch sr ss size skip)
-          (audio-io::om-get-sound-buffer (filename self) :float)
+          (audio-io::om-get-sound-buffer (filename self) :float t)
         (declare (ignore format nch sr ss size skip))
         (when buffer
           (let ((data (loop for pos in positions collect
