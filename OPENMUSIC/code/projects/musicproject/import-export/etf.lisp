@@ -1062,19 +1062,15 @@
 
 
 (in-package "CLENI")
-;;; a faire bien...
+
 (defun translate-score (score filename)
-  (let ((template-file (om::omroot "resources/template.etf"))
-        (target-file filename)   ;;;   (full-pathname (merge-pathnames filename ".etf")))
-        )
-    ;;;(om::my-copy-file template-file target-file)
+  (let ((template-file (om::om-make-pathname :directory oa:*om-resources-folder*
+                                             :name "template" :type "etf"))
+        (target-file filename))
     (oa::om-copy-file template-file target-file)
     (with-output-to-file (target-file :if-exists :append)
-      (translate-to-enigma score)
-      )
-    ;;;(set-mac-file-type target-file :ETF3)
-    ;;;(set-mac-file-creator target-file :FIN3)
-    T))
+      (translate-to-enigma score))
+    t))
 
 ;;(full-pathname "CLENI:template~D.etf")
 ;;; ====================================================================
