@@ -43,9 +43,9 @@
 ;  CONCAT
 ;--------------------
 
-(defmethod* concat ((s1 sequence*) (s2 sequence*))
+(defmethod* concat ((s1 sequence*) (s2 sequence*) &optional s2-offset)
   :initvals '(nil nil) 
-  :indoc '("a musical sequence" "a musical sequence")
+  :indoc '("a musical sequence" "a musical sequence" "(absolute) offset, expressed in qvalue of s1")
   :icon 230
   :doc "Concatenates two music sequences into a new one.
 
@@ -64,16 +64,19 @@ Type of the return value :
     (change-qvalue ss1 frac-min)
     (change-qvalue ss2 frac-min)
 
-    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (extent ss1))))
+    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (or s2-offset (extent ss1)))))
     (mki (type-of s1) 
              :empty t
              :offset 0
-             :extent (+ (extent ss1) (extent ss2))
+             :extent (+ (extent ss1) (extent ss2) (or s2-offset 0))
              :qvalue frac-min
              :inside (append (inside ss1) (inside ss2)))))
 
-(defmethod* concat ((s1 simple-container) (s2 null)) s1)
-(defmethod* concat ((s1 null) (s2 simple-container)) s2)
+(defmethod* concat ((s1 simple-container) (s2 null) &optional s2-offset)
+  s1)
+(defmethod* concat ((s1 null) (s2 simple-container) &optional s2-offset)
+  (concat-w-offset (mki (type-of s2) :empty t) s2 s2-offset))
+
 
 (defun equal-tempi (t1 t2)
   (and (= (car t1) (car t2))
@@ -96,7 +99,8 @@ Type of the return value :
                                                               (caar item)) (second (car item))) (second item))))))
     newtempo))
       
-(defmethod* concat ((s1 voice) (s2 voice))
+(defmethod* concat ((s1 voice) (s2 voice) &optional s2-offset)
+ (declare (ignore s2-offset))
  (let ((frac-min (fraction-minimale-commune s1 s2))
         (ss1 (duplique-structure-musicale s1))
         (ss2 (duplique-structure-musicale s2))
@@ -114,28 +118,32 @@ Type of the return value :
     (setf (tempo rep) (concat-tempi s1 s2))
     rep))
 
-(defmethod* concat ((s1 measure) (s2 voice))
+(defmethod* concat ((s1 measure) (s2 voice) &optional s2-offset)
+  (declare (ignore s2-offset))
   (concat (measure->voice s1) s2))
 
-(defmethod* concat ((s1 voice ) (s2 measure))
+(defmethod* concat ((s1 voice ) (s2 measure) &optional s2-offset)
+  (declare (ignore s2-offset))
   (concat  s1 (measure->voice s2)))
 
-
-(defmethod* concat ((s1 poly ) (s2 poly))
+(defmethod* concat ((s1 poly ) (s2 poly) &optional s2-offset)
+  (declare (ignore s2-offset))
   (mki 'poly
        :voices (mapcar 'concat (inside s1) (inside s2)) ))
 
-(defmethod* concat ((s1 multi-seq ) (s2 multi-seq))
+(defmethod* concat ((s1 multi-seq ) (s2 multi-seq) &optional s2-offset)
+  (setqvalue s1 1000)
+  (setqvalue s2 1000)
   (mki 'multi-seq 
        :chord-seqs
-       (loop 
-         with chs1 = (inside s1)
-         with chs2 = (inside s2)
-         while (or chs1 chs2)
-         collect (if chs1
-                   (if chs2 (concat (pop chs1) (pop chs2))
-                       (pop chs1))
-                   (pop chs2)))))
+       (let ((cur-offset (or s2-offset 0)))
+	 (loop 
+	    with chs1 = (inside s1)
+	    with chs2 = (inside s2)
+	    do (setf cur-offset (or s2-offset (and (car chs1) (extent (car chs1))) cur-offset))
+	    while (or chs1 chs2)
+	    collect (concat (pop chs1) (pop chs2) cur-offset)))))
+
 
 
 
