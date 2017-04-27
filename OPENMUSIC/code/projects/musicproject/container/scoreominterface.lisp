@@ -49,6 +49,9 @@
   :icon 230
   :doc "Concatenates two music sequences into a new one.
 
+Optional input 's2-offset' may be used to pass (absolute) offset value for s2.  s2-offset is
+expressed in terms of the qvalue of s1: if qvalue is 1000, the value equals ms.
+
 Type of the return value :
  voice x voice   => Voice
  measure x voice => Voice
@@ -75,7 +78,7 @@ Type of the return value :
 (defmethod* concat ((s1 simple-container) (s2 null) &optional s2-offset)
   s1)
 (defmethod* concat ((s1 null) (s2 simple-container) &optional s2-offset)
-  (concat-w-offset (mki (type-of s2) :empty t) s2 s2-offset))
+  (concat (mki (type-of s2) :empty t) s2 s2-offset))
 
 
 (defun equal-tempi (t1 t2)
