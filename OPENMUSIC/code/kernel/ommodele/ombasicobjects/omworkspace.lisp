@@ -231,9 +231,7 @@
    (mapcar 'player-open *enabled-players*)
    
    (workspace-from-name pathname)      ;; will set the preferences             
-   (initWorkSpace *current-workSpace*) ;; will open the listener
    
-
    (catch :load-prefs 
      (handler-bind 
          ((error #'(lambda (err)
@@ -244,6 +242,8 @@
                       )))
        (restore-preferences)
        ))
+   
+   (initWorkSpace *current-workSpace*) ;; will open the listener
    
    (libs-autoload)
 
