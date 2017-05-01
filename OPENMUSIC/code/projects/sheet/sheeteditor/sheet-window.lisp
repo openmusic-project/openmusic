@@ -781,8 +781,7 @@
       (push (reference graph-obj) (selection? self))
       (setf (selected graph-obj) t))))
 
-
-
+ 
 (defmethod view-get-ed-params ((self sheet-objectframe))
   (let ((obj (reference self)))
     (corrige-edition-params (obj obj) (edition-params obj))

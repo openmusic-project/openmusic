@@ -55,12 +55,15 @@
 
 ;(defmethod get-edit-param ((paramlist list) param)
 ;   (cdr (assoc param paramlist)))
+
+(defmethod value-for-params ((self t)) (value self))
+
 (defmethod get-edit-param ((self object-with-persistant-params) param) 
   (let ((par-pair (find param (edition-params self) :test 'eql :key 'car)))
     (if par-pair ;; ok
         (cdr par-pair)
       ;; not ok : add the defaut to the edition params
-      (let ((def-pair (find param (default-edition-params (value self)) :test 'eql :key 'car)))
+      (let ((def-pair (find param (default-edition-params (value-for-params self)) :test 'eql :key 'car)))
         (if def-pair 
             (progn (push (copy-list def-pair) (edition-params self))
               (cdr def-pair))

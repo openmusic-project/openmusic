@@ -1634,10 +1634,10 @@
      (if (< moyen (* staff-center 100)) "up" "dw")))
   
 
-(defmethod get-edit-param ((self scorepanel) param) 
+(defmethod get-edit-param ((self scorepanel) param)
   (get-edit-param (editor self) param))
 
-(defmethod get-edit-param ((self miniview) param) 
+(defmethod get-edit-param ((self miniview) param)
   (get-edit-param (object (om-view-container self)) param))
 
 

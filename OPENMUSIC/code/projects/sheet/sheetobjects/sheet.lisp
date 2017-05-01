@@ -95,7 +95,7 @@ See the dedicated chapter in the OM User Manual for more details.")
 ;=====================================================================
 ; SHEET OBJECTS
 ;=====================================================================
-(defclass* sheet-track-obj (container)
+(defclass* sheet-track-obj (container object-with-persistant-params)
   ((obj :initform nil :accessor obj :initarg :obj :documentation "a musical object")
    (id :initform nil :accessor id :initarg :id :documentation "object ID (integer)")
    (start-t :initform 0 :accessor start-t :initarg :start-t :documentation "object onset (ms)")
@@ -115,8 +115,10 @@ See the dedicated chapter in the OM User Manual for more details.")
 
 (defmethod get-fonde-pict ((self sheet-track-obj)) nil)
 
-(defmethod obj ((self sheet-track-obj))
+(defmethod obj ((self sheet-track-obj)) 
   (car (inside self)))
+
+(defmethod value-for-params ((self sheet-track-obj)) (obj self))
 
 (defmethod get-obj-dur ((self sheet-track-obj))
   (if (obj self) (get-obj-dur (obj self)) 500))
