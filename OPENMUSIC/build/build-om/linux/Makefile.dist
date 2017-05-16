@@ -69,3 +69,4 @@ install: $(BUILDROOT)/$(releaseappname)
 uninstall:
 	rm -rfv $(omroot)
 	rm -f $(bindir)/$(APPNAME)
+	rm -f $(bindir)/$(releaseappname)
