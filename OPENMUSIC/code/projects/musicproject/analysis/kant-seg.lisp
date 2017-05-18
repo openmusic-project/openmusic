@@ -236,7 +236,7 @@
     cs))
  
 
-(defun quantify-segments (cs tempo maxdiv forbidden precision)
+(defun quantify-segments (cs tempo metrics maxdiv forbidden precision)
   (let* ((kant-analysis (car (remove nil (loop for an in (analysis cs) 
                                                when (equal (type-of an) 'kant-seg)
                                                collect an)))))
@@ -248,20 +248,20 @@
                        (print (format nil "SEGMENT ~D: ~Dms - ~Dms" i (segment-begin seg) (segment-end seg)))
                        (or (voice (segment-data seg))
                            (quantify-segment cs (segment-begin seg) (segment-end seg) 
-                                             tempo maxdiv forbidden precision))))))
+                                             tempo metrics maxdiv forbidden precision))))))
           (unless (or (= 0 (segment-begin (car (analysis-segments kant-analysis))))
                       (= (car (lonset cs)) (segment-begin (car (analysis-segments kant-analysis)))))
             (print (format nil "SEGMENT 0: 0ms - ~Dms" (segment-begin (car (analysis-segments kant-analysis)))))
             (setf kant-voices 
                   (cons (quantify-segment cs 0 (segment-begin (car (analysis-segments kant-analysis)))
-                                          tempo maxdiv forbidden precision)
+                                          tempo metrics maxdiv forbidden precision)
                         kant-voices)))
           ;(reduce 'concat kant-voices)
           kant-voices
           )
       (om-beep-msg "NO KANT-SEG IN CHORD-SEQ"))))
 
-(defun quantify-segment (cs t1 t2 tempo maxdiv forbidden precision)
+(defun quantify-segment (cs t1 t2 tempo metrics maxdiv forbidden precision)
   (let* ((tmpcseq (select cs t1 (min t2 (get-obj-dur cs))))
          (durs (x->dx (lonset tmpcseq)))
          (chords-and-beats (loop for d in durs 
@@ -274,7 +274,7 @@
             (cons (list nil (- (car (lonset tmpcseq)))) chords-and-beats)))
     (make-instance 'voice 
                    :tree (omquantify (mapcar 'cadr chords-and-beats)
-                                     tempo '(4 4)  
+                                     tempo metrics  
                                      (or maxdiv 8) forbidden
                                      0 (or precision 0.0))
                    :chords (remove nil (mapcar 'car chords-and-beats))
