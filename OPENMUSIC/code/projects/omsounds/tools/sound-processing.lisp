@@ -27,33 +27,47 @@
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SAVE-SOUND///////////////
 
 
-(defmethod! save-sound ((self om-sound-data) filename &optional (format :aiff))
-            :icon 107
-            :initvals '(nil nil 'aiff)
-            :indoc '("a sound or om-sound-data buffer" "output file pathname" "audio format")
-            :menuins '((2 (("AIFF" :aiff) ("WAV" :wav) ("FLAC" :flac) ("OGG Vorbis" :ogg))))
-            :doc "Saves a <self> (om-sound-data buffer) as an audio file."
-            (if (null (buffer self))
-                (om-beep-msg "Error: null sound buffer")
-              (let ((format (or format *def-snd-format*))
-                    (file (or filename (om-choose-new-file-dialog 
-                                        :directory (def-save-directory) 
-                                        :prompt (om-str "Save as...")
-                                        :types (cond ((equal format :aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
-                                                     ((equal format :wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
-                                                     ((equal format :flac) (list (format nil (om-str :file-format) "FLAC") "*.flac"))
-                                                     ((equal format :ogg) (list (format nil (om-str :file-format) "OGG Vorbis") "*.ogg"))
-                                                     (t nil)))))) 
-                (when file
-                  (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
-                  (audio-io::om-save-buffer-in-file (buffer self) (namestring file) (size self) 
-                                                    (nch self) (sr self) *audio-res* 
-                                                    (or format *def-snd-format*))
-                ;(fli:free-foreign-object buffer)
-                  (probe-file (namestring file))
-                  ))))
 
-(defmethod! save-sound ((self sound) filename &optional (format 'aiff))
+(defun get-audio-format-from-format-or-name-or-defaults (format filename)
+  (cond (format format)
+	(filename (values (intern (string-upcase (pathname-type filename)) :keyword)))
+	(t (or (get-pref (find-pref-module :audio) :audio-format) *def-snd-format*))))
+
+(defmethod! save-sound ((self om-sound-data) filename &optional format)
+  :icon 107
+  :initvals '(nil nil (get-pref (find-pref-module :audio) :audio-format))
+  :indoc '("a sound or om-sound-data buffer" "output file pathname" "audio format")
+  :menuins '((2 (("AIFF" :aiff) ("WAV" :wav) ("FLAC" :flac) ("OGG Vorbis" :ogg))))
+  :doc "Saves a <self> (om-sound-data buffer) as an audio file."
+  (if (null (buffer self))
+      (om-beep-msg "Error: null sound buffer")
+      (let* ((found-format (get-audio-format-from-name-or-defaults filename format))
+	     (file (or filename (om-choose-new-file-dialog 
+				 :directory (def-save-directory) 
+				 :prompt (om-str "Save as...")
+				 :types (cond ((equal found-format :aiff) (list (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif"))
+					      ((equal found-format :wav) (list (format nil (om-str :file-format) "WAV") "*.wav"))
+					      ((equal found-format :flac) (list (format nil (om-str :file-format) "FLAC") "*.flac"))
+					      ((equal found-format :ogg) (list (format nil (om-str :file-format) "OGG Vorbis") "*.ogg"))
+					      (t nil)))))
+	     (filename-format (values (intern (string-upcase (pathname-type file)) :keyword))))
+	(when (and format (not (eql found-format filename-format)))
+	  (om-beep-msg (format nil
+			       "Warning: extension .~A doesn't fit chosen format :~A.  Changing format to :~A to fit with filename..."
+			       (pathname-type file)
+			       found-format
+			       filename-format)))
+	(setf found-format filename-format)
+	(when file
+	  (setf *last-saved-dir* (make-pathname :directory (pathname-directory file)))
+	  (audio-io::om-save-buffer-in-file (buffer self) (namestring file) (size self) 
+					    (nch self) (sr self) *audio-res* 
+					    (or found-format *def-snd-format*))
+	  ;;(fli:free-foreign-object buffer)
+	  (probe-file (namestring file))))))
+
+
+(defmethod! save-sound ((self sound) filename &optional format)
   (save-sound (get-om-sound-data self) filename format))
 
 

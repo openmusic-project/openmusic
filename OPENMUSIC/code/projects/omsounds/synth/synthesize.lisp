@@ -39,7 +39,7 @@ Depending on the synthesis modules and libraries loaded in OM, <elements> can be
                                                                   :kr kr :tables tables :nchnls nchnls :inits inits
                                                                   :patch patch :duration duration)))))))
          (if (and run (> (length list-of-lists) 1))
-             (save-sound (reduce 'sound-mix rep :key 'get-om-sound-data) (if (pathnamep name) name (outfile (string+ name ".aiff"))))
+             (save-sound (reduce 'sound-mix rep :key 'get-om-sound-data) (if (pathnamep name) name (outfile (string+ name (format nil ".~A" *def-snd-format*)))))
            rep)
          ))
 
