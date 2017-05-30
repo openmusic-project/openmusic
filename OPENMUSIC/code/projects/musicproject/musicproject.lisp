@@ -81,6 +81,7 @@
         "analysis;scoreeditor-analysis"
         "analysis;analysis-objects"
         "analysis;kant-seg"
+        "analysis;utils"
 
         ;----------- IMPORT EXPORT --------------------------------
         "import-export;etf"           ; translate-score marche pas bien

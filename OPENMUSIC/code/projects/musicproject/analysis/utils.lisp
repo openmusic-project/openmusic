@@ -14,6 +14,7 @@
 (defmethod! get-segment-begins ((self chord-seq) &optional (n 0) (add-initial-zero? nil))
   :indoc '("chord-seq" "nth analysis")
   :doc "returns a list of offsets (ms.) for segments in analysis 'n'"
+  :icon 143
   (let* ((all-analyses (analysis self))
 	 (n-analyses (length all-analyses))
 	 (nth-an (or n 0)))
