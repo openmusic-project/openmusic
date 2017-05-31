@@ -1120,17 +1120,17 @@
      ))
 
 (defmethod time-align ((self MaquettePanel))
-   (let* ((boxlist (sort (get-actives self) '< 'offset)))
-     (loop for boxes on boxlist 
-           when (cdr boxes) do
-           (let* ((box1 (object (car boxes)))
-                  (box2 (object (cadr boxes)))
-                  (beg1 (offset box1))
-                  (beg2 (offset box2))
-                  (end1 (+ beg1 (* (extent box1) (strech-fact box1)))))
-             (if (< (- beg2 beg1) (abs (- end1 beg2)))
-                 ;;; align to begin
-                 (setf (offset box2) beg1)
+  (let* ((boxlist (sort (get-actives self) '< :key #'(lambda (box) (offset (object box))))))
+    (loop for boxes on boxlist 
+       when (cdr boxes) do
+	 (let* ((box1 (object (car boxes)))
+		(box2 (object (cadr boxes)))
+		(beg1 (offset box1))
+		(beg2 (offset box2))
+		(end1 (+ beg1 (* (extend box1) (strech-fact box1)))))
+	   (if (< (- beg2 beg1) (abs (- end1 beg2)))
+	       ;; align to begin
+	       (setf (offset box2) beg1)
                (setf (offset box2) end1))))))
                
           
