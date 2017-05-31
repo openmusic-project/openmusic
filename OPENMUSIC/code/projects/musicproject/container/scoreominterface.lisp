@@ -45,12 +45,11 @@
 
 (defmethod* concat ((s1 sequence*) (s2 sequence*) &optional s2-offset)
   :initvals '(nil nil) 
-  :indoc '("a musical sequence" "a musical sequence" "(absolute) offset, expressed in qvalue of s1")
+  :indoc '("a musical sequence" "a musical sequence" "(absolute) offset, expressed in ms.")
   :icon 230
   :doc "Concatenates two music sequences into a new one.
 
-Optional input 's2-offset' may be used to pass (absolute) offset value for s2.  s2-offset is
-expressed in terms of the qvalue of s1: if qvalue is 1000, the value equals ms.
+Optional input 's2-offset' may be used to pass an (absolute) offset value for s2.  s2-offset is expressed ms.
 
 Type of the return value :
  voice x voice   => Voice
@@ -60,18 +59,19 @@ Type of the return value :
  chord-seq x chord-seq => chord-seq
  poly x poly => poly
 " 
-  (let ((frac-min (fraction-minimale-commune s1 s2))
-        (ss1 (duplique-structure-musicale s1))
-        (ss2 (duplique-structure-musicale s2)))
+  (let* ((frac-min (fraction-minimale-commune s1 s2))
+	 (ss1 (duplique-structure-musicale s1))
+	 (ss2 (duplique-structure-musicale s2))
+	 (s2-offset-in-qv (* frac-min  (/ s2-offset 1000)))) ;expressed in qvalue
     
     (change-qvalue ss1 frac-min)
     (change-qvalue ss2 frac-min)
 
-    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (or s2-offset (extent ss1)))))
+    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (or s2-offset-in-qv (extent ss1)))))
     (mki (type-of s1) 
              :empty t
              :offset 0
-             :extent (+ (extent ss1) (extent ss2) (or s2-offset 0))
+             :extent (+ (extent ss1) (extent ss2) (or s2-offset-in-qv 0))
              :qvalue frac-min
              :inside (append (inside ss1) (inside ss2)))))
 
