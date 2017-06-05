@@ -649,6 +649,21 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 (defmethod* Objfromobjs ((Self voice) (Type poly))
     (make-instance (type-of type) :voices (list (clone self))))
 
+(defmethod! temporal-sort ((self chord-seq))
+  :indoc '("an object containing temporal events to be sorted")
+  :initvals '(nil)
+  :doc "Sorts the events in a copy of <self> in temporal order, returns the new copy"
+  :icon 915
+  (let ((out-cs (mki 'chord-seq :empty t :qvalue 1000))
+	(data (sort (mapcar #'(lambda (ons dat) (cons ons dat))
+			    (lonset self)
+			    (inside self))
+		    #'< :key #'car)))
+    (setf (inside out-cs) (mapcar #'cdr data))
+    (setf (lonset out-cs) (mapcar #'car data))
+    (adjust-extent out-cs)
+    (QNormalize out-cs)
+    out-cs))
 ;==================
 
 (defclass* multi-seq (superposition tonal-object) 

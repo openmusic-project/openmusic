@@ -141,9 +141,9 @@ The structure is similar to that of a CHORD-SEQ: each parameters are specified b
 ;;;========================
 
 (defmethod! temporal-sort ((self eventmidi-seq))
-  :indoc '("an EventMIDI-seq object")
+  :indoc '("an object containing temporal events to be sorted")
   :initvals '(nil)
-  :doc "Sorts the events in <self> in temporal order and returns a new EventMIDI-seq."
+  :doc "Sorts the events in a copy of <self> in temporal order, returns the new copy"
   :icon 915
   (let ((sorted-seq (make-instance 'eventmidi-seq)))
     (setf (name sorted-seq) (name self))
