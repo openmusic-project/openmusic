@@ -52,13 +52,13 @@
                         precis)
   :initvals '((100) 60 (4 4) 8 nil 0 0.5)
   :icon 252
-  :indoc '("durations (list)" "tempo" "list of time signature(s)" "maximum subdivision"  "list forbidden subdivisions" "grace-notes?" "precision (0.0-1.0)")
+  :indoc '("durations (list)" "tempi (number or list)" "list of time signature(s)" "maximum subdivision"  "list of forbidden subdivisions" "grace-notes?" "precision (0.0-1.0)")
   :doc "Quantizes a list of durs (1000 = 1 sec.) into a metric structure.
 The result is a rhythm tree to be connected to the <tree> input of a voice.
 
 <durs>   is a list of durations in 1/1000th of a second.
-<tempi>  is a tempo
-<measures> is a list of measure signature (e.g. ((3 4) (7 8) (1 4) ... ) )
+<tempi>  is a tempo or list of tempi (one per measure)
+<measures> is a list of measure signatures (e.g. ((3 4) (7 8) (1 4) ... ) )
 <max/>   is the maximum  subdivision of the beat (8 with beat=quarter means 32nd note)
 <forbid> is a list of forbidden subdivision of the beat
 <offset> is an offset expressed as a ratio of the beat
