@@ -62,7 +62,7 @@ Type of the return value :
   (let* ((frac-min (fraction-minimale-commune s1 s2))
 	 (ss1 (duplique-structure-musicale s1))
 	 (ss2 (duplique-structure-musicale s2))
-	 (s2-offset-in-qv (* frac-min  (/ s2-offset 1000)))) ;expressed in qvalue
+	 (s2-offset-in-qv (when s2-offset (* frac-min  (/ s2-offset 1000))))) ;expressed in qvalue
     
     (change-qvalue ss1 frac-min)
     (change-qvalue ss2 frac-min)
