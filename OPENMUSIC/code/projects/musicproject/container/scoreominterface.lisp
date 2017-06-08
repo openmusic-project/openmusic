@@ -342,7 +342,7 @@ when :
    (unless (and (>= start 0)
                 (< start end)
                 (<= end (get-obj-dur self)))   ;;; replaced extent->ms
-     (Om-Message-abort "select : Bad start/end parameters"))
+     (Om-Message-abort (format nil "select : Bad start/end parameters: start: ~A, end: ~A, objdur: ~A" start end (get-obj-dur self))))
    (let ((chords 
           (loop for onset in (Lonset self)
                 for chord in (inside self)
