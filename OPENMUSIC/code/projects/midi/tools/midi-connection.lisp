@@ -60,10 +60,21 @@
       (om-abort)
       )))
 
+(defun setup-retune-messages (approx)
+  (declare (ignore approx))				    ;for now, settle on regime for auto-tuning
+  (loop
+     for chan from 1 to 4
+     for pb from 8192 by 1024
+     collect (om-midi::make-midi-evt
+	      :type :PitchBend
+	      :date 0
+	      :chan chan
+	      :fields (list pb))))
+
 ;= Saves sequence with tempo 60
 ;= modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
  
-(defun save-midifile (name object approx tempo &optional (format nil))
+(defun save-midifile (name object approx tempo &optional (format nil) retune-channels)
   (let ((seq (sort (remove nil (flat (PrepareToPlay :midi object 0 :approx approx :voice 1)))
                    'om-midi::midi-evt-<))
         (sys (check-def-midi-file-system 'om-midi::save-midi-file-function)))
@@ -71,10 +82,12 @@
         (when seq
           (if tempo
               (setf seq (insert-tempo-info seq tempo))
-            (push (om-midi::make-midi-evt :type :Tempo :date 0 :fields (list *midi-tempo*)) seq))
-          (funcall (om-midi::save-midi-file-function sys) seq name (or format *def-midi-format*) 1000))
-      (om-abort)
-      )))
+	      (push (om-midi::make-midi-evt :type :Tempo :date 0 :fields (list *midi-tempo*)) seq))
+	  
+	  (when retune-channels
+	    (setf seq (nconc (setup-retune-messages approx) seq)))
+	  (funcall (om-midi::save-midi-file-function sys) seq name (or format *def-midi-format*) 1000))
+	(om-abort))))
 
 
 ;;; JUST SEND A MIDI EVENT (for OM MIDI Player)

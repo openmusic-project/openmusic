@@ -212,7 +212,7 @@
   (save-instance object name))
 
 (defmethod score-export ((format (eql 'midi)) object params name)
-  (midi-export object :approx (or (get-param params 'approx) 2) :name name))
+  (midi-export object :approx (or (get-param params 'approx) 2) :name name :retune-channels (get-param params 'approx)))
 
 (defmethod score-export ((format (eql 'etf)) object params name)
   (etf-export object :approx (or (get-param params 'approx) 2) :name name))
