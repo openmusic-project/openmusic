@@ -475,7 +475,7 @@
   (when (om::get-extras self "text")
     (list "<lyric default-y=\"-80\" justify=\"left\" number=\"1\">" 
           (list  "<syllabic>single</syllabic>"
-                 (format nil "<text>~S</text>" (om::thetext (car (om::get-extras self "text"))))
+                 (format nil "<text>~A</text>" (om::thetext (car (om::get-extras self "text"))))
                  "<extend type=\"start\"/>")
           "</lyric>")))
 
