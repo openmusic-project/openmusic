@@ -5186,3 +5186,62 @@
           (get-page-line-elements voice fdoc pagenum line 0)))
 
 
+;;; 
+;;; ===================================
+;;; FLIP SELECTION
+;;; ===================================
+;;; 
+;;; flip-selection: exchange vertically selected lines or measures in eligible
+;;; editors - poly, chord-seq - (here: subclasses of multiSeqPanel)
+;;; 
+
+(defun flip-measures (selection container &optional (direction :down))
+  ;; exchange selected measure with the same (nth) measure in the next voice
+  (let* ((source (get-the-voice selection))
+	 (voices (inside container))
+	 (n-voices (length voices))
+	 (idx (position source voices))
+	 (target (nth (mod (+ (if (eq direction :down) 1 -1) idx) n-voices) voices))
+	 (n (position selection (inside source))))
+    (when (< n (length (inside target)))
+      (let ((tmp (nth n (inside source))))
+	(setf (nth n (inside source)) (nth n (inside target))
+	      (nth n (inside target)) tmp)
+	;; update parents for inserted measures
+	(setf (parent (nth n (inside source))) source
+	      (parent (nth n (inside target))) target)))))
+
+
+(defun flip-staffs (selection container &optional (direction :down))
+  "exchange selected staff with it's neighbour (:up :down)"
+  (let* ((staff (inside container))
+	 (n-staff (length staff))
+	 (idx (position selection staff))
+	 (target-idx (mod (+ (if (eq direction :down) 1 -1) idx) n-staff))
+	 (target (nth target-idx staff)))
+    (setf (nth idx staff) target
+	  (nth target-idx staff) selection)))
+
+(defmethod flip-selection ((self multiSeqPanel) direction)
+  "exchange selected staff with it's neighbour (:up :down)"
+  (let ((sel (car (selection? self)))
+	(cont (object (om-view-container self))))
+    (when (>= (length (inside cont)) 2)
+      (cond ((measure-p sel) (flip-measures sel cont direction))
+	    ((voice-p sel) (flip-staffs sel cont direction))
+	    ((chord-seq-p sel) (flip-staffs sel cont direction))
+	    (t t)))
+    (update-panel self t)))
+
+;; plug #\f and #\F (flip down, up) into poly editor:
+
+(defmethod handle-key-event ((self multiSeqPanel) char)
+  (case char
+    (#\f (flip-selection self :down))
+    (#\F (flip-selection self :up)))
+  (call-next-method))
+
+(defmethod get-help-list :around ((self multiSeqPanel))
+  (let ((consed (reverse (call-next-method))))
+    (push '(("f/F") "Flip Selection Down/Up") (car consed))
+    (nreverse consed)))
