@@ -5243,5 +5243,5 @@
 
 (defmethod get-help-list :around ((self multiSeqPanel))
   (let ((consed (reverse (call-next-method))))
-    (push '(("f/F") "Flip Selection Down/Up") (car consed))
+    (push '(("f" "F") "Flip Selection Down/Up") (car consed))
     (nreverse consed)))
