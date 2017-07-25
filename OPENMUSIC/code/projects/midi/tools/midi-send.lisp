@@ -370,7 +370,7 @@ The range of volume values is 0-127.
          (let ((event (om-midi::make-midi-evt :type :Reset
                                                   :port (or port *def-midi-out*)
                                                   :chan chan
-                                                  :fields databytes)))
+                                                  :fields '(121 0))))
              (when event (midi-send-evt event))))
    nil)
 
