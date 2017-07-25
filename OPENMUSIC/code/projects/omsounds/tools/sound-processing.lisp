@@ -41,7 +41,7 @@
   :doc "Saves a <self> (om-sound-data buffer) as an audio file."
   (if (null (buffer self))
       (om-beep-msg "Error: null sound buffer")
-      (let* ((found-format (get-audio-format-from-name-or-defaults filename format))
+      (let* ((found-format (get-audio-format-from-format-or-name-or-defaults filename format))
 	     (file (or filename (om-choose-new-file-dialog 
 				 :directory (def-save-directory) 
 				 :prompt (om-str "Save as...")
