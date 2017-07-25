@@ -33,9 +33,12 @@
                          :if-does-not-exist :create :if-exists :supersede)
         (loop for x in (x-points self) 
               for y in (y-points self) do
-              (format out "~D ~D~A" x y #\Linefeed))
+              (if (integerp x) (format out "~D " x) (format out "~f " x))
+              (if (integerp y) (format out "~D" y) (format out "~f" y))
+              (format out "~A" #\Linefeed))
         )
   file)
+
 
 ;;; ((x1 y1 ... yn)(x2 y2 ... yn) ...)
 (defmethod save-params ((self list) (file pathname))
