@@ -1515,9 +1515,7 @@ Returns the list of all measure in <self>.
 ;===============
 
 (defun get-fig-from-path (father path)
-  (if (or (null path) (rest-p father))			    ;possibly?...
+  ;; no #'inside unless obj is subclass of 'container (rest, note...)
+  (if (or (null path) (not (typep father 'container)))
       father
       (get-fig-from-path  (nth (car path) (inside father)) (cdr path))))
-  
-
-
