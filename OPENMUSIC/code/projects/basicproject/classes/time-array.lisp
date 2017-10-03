@@ -76,21 +76,24 @@
 
 
 
-
+;;; no need to specialize 
+;;; + does not work for subclasses with different number or arguments
+#|
 (defmethod matrix-gen-code ((self timearraybox) (val time-array))
-   (let* ((params (decode self))
-          (fixinputs (length (fixed-slots-list val)))
-          (theval (if (connected? (first (inputs self)))
-                    `(objFromObjs ,(gen-code (first (inputs self)) nil) ,val)
-                    `(let* ((timeline ,(gen-code (second (inputs self)) nil))
-                            (err (error-test-times timeline)))
-                       (funcall 'cons-array ,val 
-                                (list nil timeline)
-                                (list ,.(cddr params)))))))
+  (let* ((params (decode self))
+         (fixinputs (length (fixed-slots-list val)))
+         (theval (if (connected? (first (inputs self)))
+                     `(objFromObjs ,(car params) ,val)
+                   `(let* ((timeline ,(cadr params))
+                           (err (error-test-times timeline)))
+                      (funcall 'cons-array ,val 
+                               (list nil timeline)
+                               (list ,.(cddr params)))))))
      `(let ((array ,theval))
         (set-data array)
         array)
      ))
+|#
 
 ;==========================
 ; EDITOR
