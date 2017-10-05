@@ -18,12 +18,12 @@
 ;;; LIB DEFINITION
 ;;;===========================
 
-(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 4) :name "lib-name" :type "lisp.tmp")))
+(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 3) :name "lib-name" :type "lisp.tmp")))
 (defparameter *lib-name* nil)
 
 (if (probe-file *lib-name-path*)
   (load *lib-name-path*)
-  (progn (print "Quitting") (quit))
+  (progn (print "Quitting (no lib to deliver...)") (quit))
 )
 
 (defparameter *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 4) 

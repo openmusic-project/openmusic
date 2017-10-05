@@ -1,0 +1,12 @@
+
+
+OM_PATH="./"
+LIBS_FOLDER="/Users/bresson/SRC/omlibraries"
+
+# #P\"${PWD}/$1/\")"
+
+echo "(setf *lib-name* #P\"$LIBS_FOLDER/$1/\")" > 'lib-name.lisp.tmp'
+
+/Applications/LispWorks\ 7.0\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-7-0-0-amd64-darwin -build $OM_PATH"/OPENMUSIC/build/build-om/pack-one-library.lisp"
+
+rm 'lib-name.lisp.tmp'
