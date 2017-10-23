@@ -1,24 +1,25 @@
-;openmusic
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
 ;
-;copyright (c) 1997, 1998, 1999, 2000 by ircam-centre georges pompidou, paris, france.
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
-;this program is free software; you can redistribute it and/or
-;modify it under the terms of the gnu general public license
-;as published by the Free Software Foundation; either version 2
-;of the license, or (at your option) any later version.
+;    This file is part of the OpenMusic environment sources
 ;
-;see file license for further informations on licensing terms.
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
 ;
-;this program is distributed in the hope that it will be useful,
-;but WITHOUT ANY WARRANTY; without even the implied warranty of
-;merchantability or fitness for a particular purpose.  see the
-;GNU General Public License for more details.
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
 ;
-;You should have received a copy of the GNU General Public License
-;along with this program; if not, write to the Free Software
-;foundation, inc., 59 temple place - suite 330, boston, ma  02111-1307, usa.
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-;authors: gerard assayag and augusto agon
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+;=========================================================================
 
 
 (in-package :om)

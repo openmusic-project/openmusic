@@ -1,7 +1,7 @@
 ;=========================================================================
 ;  OpenMusic: Visual Programming Language for Music Composition
 ;
-;  Copyright (C) 1997-2009 IRCAM-Centre Georges Pompidou, Paris, France.
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
 ;    This file is part of the OpenMusic environment sources
 ;
@@ -20,7 +20,6 @@
 ;
 ; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
 ;=========================================================================
-
 ;DocFile
 ;Preference editor is defined in this file.
 ;Last Modifications :

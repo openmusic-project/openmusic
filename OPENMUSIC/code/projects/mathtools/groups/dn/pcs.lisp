@@ -1,3 +1,4 @@
+
 ;;; -*- Mode: LISP; Syntax: Common-Lisp; Package: CL-USER -*-
 ;;;
 ;;; Copyright © 1996 Janusz Podrazik

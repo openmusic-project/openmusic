@@ -1,10 +1,10 @@
 ;=========================================================================
-; OM API
+; OM API 
 ; Multiplatform API for OpenMusic
 ; LispWorks Implementation
 ;
-;  Copyright (C) 2007-2009 IRCAM-Centre Georges Pompidou, Paris, France.
-;
+;  Copyright (C) 2007-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
 ;    This file is part of the OpenMusic environment sources
 ;
 ;    OpenMusic is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Carlos Agon, Jean Bresson
+; Authors: Jean Bresson, Carlos Agon
 ;=========================================================================
 
 ;;===========================================================================

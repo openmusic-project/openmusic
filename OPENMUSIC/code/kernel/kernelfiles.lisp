@@ -1,7 +1,7 @@
 ;=========================================================================
 ;  OpenMusic: Visual Programming Language for Music Composition
 ;
-;  Copyright (C) 1997-2009 IRCAM-Centre Georges Pompidou, Paris, France.
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
 ;    This file is part of the OpenMusic environment sources
 ;
@@ -24,8 +24,6 @@
 ;DocFile
 ;This file define the *kernel-files* global variable, which contains a list
 ;with the basic file's pathnames.
-;Last Modifications :
-;18/10/97 first date.
 ;DocFile
 
 

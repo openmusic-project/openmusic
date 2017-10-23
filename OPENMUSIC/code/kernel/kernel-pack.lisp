@@ -1,7 +1,7 @@
 ;=========================================================================
 ;  OpenMusic: Visual Programming Language for Music Composition
 ;
-;  Copyright (C) 1997-2009 IRCAM-Centre Georges Pompidou, Paris, France.
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
 ; 
 ;    This file is part of the OpenMusic environment sources
 ;
@@ -22,7 +22,7 @@
 ;=========================================================================
 
 ;DocFile
-; Setup and load the Kernel package
+; Setup the Kernel package
 ;DocFile
 
 (in-package :om)
