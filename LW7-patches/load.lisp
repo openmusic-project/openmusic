@@ -33,5 +33,7 @@
    (load-one-private-patch "ns-alerts" :cocoa)
    (load-one-private-patch "prompters-non-deprecated" :capi-cocoa)
    (load-one-private-patch "logical-font-gdip-compute-character-extents" :capi-win32)
+   (load-one-private-patch "macos-version-1012" :cocoa)
+   (load-one-private-patch "slider-orientation-cocoa" :capi-cocoa)
    ))
 
