@@ -40,7 +40,7 @@
   )
 
 (defmethod player-name ((self (eql :om-audio))) "OM inbuilt audio player")
-;(defmethod player-desc ((self (eql :om-audio))) "(based on Juce)")
+(defmethod player-desc ((self (eql :om-audio))) "")
 (enable-player :om-audio)
 (add-player-for-object 'sound :om-audio)
 

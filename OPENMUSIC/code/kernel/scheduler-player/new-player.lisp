@@ -95,7 +95,7 @@
   ;(print (list obj engine at))
   (let ((engines-available (enabled-players-for-object obj)))
     (unless (find engine engines-available)
-      (print (format nil "Warning: player engine ~s not available for ~A (will be played on ~s)." engine obj (car engines-available)))
+      ; (print (format nil "Warning: player engine ~s not available for ~A (will be played on ~s)." engine obj (car engines-available)))
       (setf engine (car engines-available))))
   (unless (find engine (engines player)) (push engine (engines player)))
   (push (list engine obj) (play-list player))

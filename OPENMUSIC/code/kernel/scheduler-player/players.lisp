@@ -82,7 +82,7 @@
 
 ;;; METHODS TO REDEFINE FOR EVERY PLAYER                   
 (defmethod player-name ((player t)) "XXX")   ;;; A short name
-(defmethod player-desc ((player t)) "undefined player")   ;;; a description
+(defmethod player-desc ((player t)) "")   ;;; a description
 (defmethod player-special-action ((player t)) nil)  ;;; an action to perform when the player is selected for an object (e.g. activate...)
 (defmethod player-params ((player t)) nil)   ;;; the default values for the player params
 (defmethod player-type ((player t)) nil)   ;;; communication protocol (:midi / :udp)
