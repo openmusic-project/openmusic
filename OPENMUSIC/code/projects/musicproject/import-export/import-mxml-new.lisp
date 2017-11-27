@@ -274,9 +274,10 @@ Constructs a POLY object from a MusicXML file.
                                          (let ((c (cdr xmlchord)))
                                            (when (and (first (car c)) ;;; not a rest
                                                       (not (fourth (car c)))) ;;; not a continuation chord
-                                             (make-instance 'chord :lmidic (mapcar 'car c))
-                                             )))))
-      
+                                             (make-instance 'chord
+							    :lmidic (mapcar 'car c)
+							    :lchan (mapcar 'fifth c) ;voice tag -> channel
+							    ))))))
         ;;; BUILD RHYTHM TREE
         (loop for xmlchord in xmlchords do
               (let* ((tup (cadr (first (car xmlchord))))
@@ -334,17 +335,19 @@ Constructs a POLY object from a MusicXML file.
     ))
 
 
-
-;;; pitch duration begtie endtie
+;;; pitch duration begtie endtie voice staff
 (defun decode-note (xmlnote) 
   (let* ((pitchtag (get-tagged-elt xmlnote 'pitch))
          (unpitch-tag (get-tagged-elt xmlnote 'unpitched))
          (pitch (decode-xml-pitch (get-tag-contents (or pitchtag unpitch-tag)) unpitch-tag))
-         (dur (get-tag-contents (get-tagged-elt xmlnote 'duration))))
+         (dur (get-tag-contents (get-tagged-elt xmlnote 'duration)))
+	 (voice (get-tag-contents (get-tagged-elt xmlnote 'voice)))
+	 (staff (get-tag-contents (get-tagged-elt xmlnote 'staff))))
     (if dur
         (list pitch dur
               (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
-              (not (null (get-tagged-elements xmlnote 'tie 'type "stop"))))
+              (not (null (get-tagged-elements xmlnote 'tie 'type "stop")))
+	      voice staff)
       (progn (when *import-error-signal* (om-message-dialog (format nil "Warning: One note could not be imported in OM.~%~%~A" xmlnote)))
         ;(setf *import-error-signal* nil)
         nil)
