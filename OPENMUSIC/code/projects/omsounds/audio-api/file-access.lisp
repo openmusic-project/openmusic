@@ -44,9 +44,11 @@
 ;;; FILE I/O
 ;;==================================
 ;;;Convert path
-(defun convert-filename-encoding (path)
-  #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
-  #-cocoa (namestring path))
+(defun convert-filename-encoding (path) (namestring path)) 
+
+;  doesn't work ? when is it used ?
+;  #+cocoa (external-format::decode-external-string (external-format::encode-lisp-string (namestring path) :utf-8) :latin-1)
+;  #-cocoa (namestring path))
 
 ;;;Acquire sound infos
 (defun om-get-sound-info (path)
