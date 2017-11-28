@@ -133,7 +133,7 @@
 
      ;(oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
      ;(init-output)
-     (print (string+ "Loading workspace: \"" (name self) "\" ..."))
+     (om-print (string+ "Loading workspace: '" (name self) "' ..."))
      (setf (elements self) (remove nil (mapcar #'(lambda (x) (ws-load-element x (incf j))) elements) :test 'equal))
      (setf *loading-ws* nil)
      (setf *skip-libs* skip-libs)
@@ -141,7 +141,7 @@
        (print "==============================================")
        (print "Some files could not be loaded in the workspace (see documentation window).")
        (om-show-output-lines (append (list "THE FOLLOWING FILES COULD NOT BE LOADED IN THE WORKSPACE:") *error-files*)))
-     (print (string+ "Workspace \"" (name self) "\" loaded."))
+     (om-print "Workspace loaded")
      
      ))
 
