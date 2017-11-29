@@ -8,6 +8,7 @@
 
 .DS_Store
 *.dmg
+*.zip
 
 # don't track auto-generated html's:
 /OPENMUSIC/resources/**/*.html
