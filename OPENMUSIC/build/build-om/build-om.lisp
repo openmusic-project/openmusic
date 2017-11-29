@@ -288,15 +288,18 @@
 (defun cl-user::start-openmusic () (start-openmusic))
 
 (defun quit-om-callback () 
-  (let ((rep (capi:prompt-for-confirmation "Quit OpenMusic?" :cancel-button nil :default-button :ok)))
-    (when rep
-      (setf rep (om-lisp::check-buffers-before-close)))
-    (when rep 
-      (oa::om-exit-funcall)
-      (om::save-before-quit)
-      #+macosx(mapcar 'oa::om-close-window (oa::om-get-all-windows 'capi::interface))
-      )
-    rep))
+  (let ((rep (oa::om-y-n-cancel-dialog (format nil "Quitting OM... ~%Do you want to save your workspace?") :default-button :yes)))
+    (if (equal rep :cancel) NIL  ;;; don't quit !
+      (progn 
+        (when rep
+          (oa::om-exit-funcall)
+          ;; (om-lisp::check-buffers-before-close)
+          (om::save-ws-contents)
+          (om::save-preferences)
+        #+macosx(mapcar 'oa::om-close-window (oa::om-get-all-windows 'capi::interface))
+        )
+        T) ;;; quit !
+      )))
 
 ;(quit-om-callback)
 ;(defun om-stop-scheduler () nil)
