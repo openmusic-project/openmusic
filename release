@@ -34,6 +34,7 @@ echo "***************************************************"
 	cd ./OPENMUSIC/build/build-om/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-intel.lisp
 	cd ../../..
+	cp "README.txt" "$APP_FOLDER"
 }
 
 # pack_app MUST have been called before..
@@ -61,13 +62,13 @@ echo "Preparing DMG distribution for $APP_FOLDER"
 echo "***************************************************"
 
 	rm -f $DMG_NAME.dmg	
-	rm -rf _DMG
-	mkdir _DMG
-	cp -R "$APP_FOLDER" _DMG
-	cp "README" _DMG
+	#rm -rf _DMG
+	#mkdir _DMG
+	#cp -R "$APP_FOLDER" _DMG
 	#ln -s /Applications/ _DMG/Applications
-	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
-	rm -rf _DMG	
+	#hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
+	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder "$APP_FOLDER" $DMG_NAME.dmg
+	#rm -rf _DMG	
 }
 
 zip_release()
@@ -103,7 +104,7 @@ elif	[ "$1" = "-zip" ];	then	zip_release
 elif	[ "$1" = "-sign" ];	then	sign_release	
 elif	[ "$1" = "-dpd" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
 elif	[ "$1" = "-dpz" ];	then	deliver_app; pack_app; set_fonts; zip_release
-elif	[ "$1" = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release
+elif	[ "$1" = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release; create_simple_dmg
 else 	
 	echo "Dont'know what to do! :("	
 	echo "Options:"

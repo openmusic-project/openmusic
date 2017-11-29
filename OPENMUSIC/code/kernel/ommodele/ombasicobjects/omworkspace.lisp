@@ -39,7 +39,7 @@
 
 ;-----------------
 ;The WorkSpace in OM
-;-----------------
+;--------------------------------------------------
 #|
 (defclass OMWorkSpace (OMPersistantFolder) 
    ((elements :initform nil :accessor elements)
@@ -253,7 +253,6 @@
    (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
    (init-output)
 
-
    ;(om-close-window *splash-screen*)
    ;(setf *splash-screen* nil)
    (ShowObjectEditor *current-workSpace*)
@@ -261,6 +260,7 @@
 
 
 ;This function load all files in the PATCHES folder.
+#|
 (defun Load-modif-patches ()
   (om-with-redefinition-warnings nil
     (om-with-compiler-warnings nil
@@ -272,7 +272,32 @@
                               (om-directory  (OMRoot "patches;") :type *om-compiled-type* :files t :directories nil)) 'string< :key 'pathname-name)))
         
         ))))
+|#
 
+(defun get-init-patches-folder () 
+  (merge-pathnames (make-pathname 
+                    :directory 
+                    (cons :relative 
+                          #-macosx(list "init")
+                          #+macosx(if (member :om-deliver *features*) 
+                                      (list (concatenate 'string "OM " *version-str* ".app") "Contents" "Init")
+                                    (list "init"))
+                          ))
+                   *om-root*))
+   
+ 
+(defun load-modif-patches ()
+  (om-with-redefinition-warnings nil
+    (om-with-compiler-warnings nil
+      (om-with-load-verbose nil
+        (check-folder (get-init-patches-folder))
+        (mapc #'(lambda (file)
+                  (load file :verbose nil))
+              (sort (append (om-directory  (get-init-patches-folder) :type "lisp" :files t :directories nil)
+                            (om-directory  (get-init-patches-folder) :type *om-compiled-type* :files t :directories nil)) 'string< :key 'pathname-name))
+        ))))
+
+; (load-modif-patches)
 
 (defun get-preferences-version (name)
   (let (rep)
@@ -344,19 +369,23 @@
 
 (defvar *libs-auto-load* nil)
 
+; (libs-autoload)
+
 (defun libs-autoload ()
-  (when *libs-auto-load* 
-    (mapc #'(lambda (lib) 
-              (let* ((libname (lib-true-name (car lib)))
-                     (omlib (exist-lib-p libname)))
-                (unless omlib
-                  (if (and (pathnamep (cadr lib)) (probe-file (cadr lib)))
-                      (add-one-lib (cadr lib) nil)
-                    (om-message-dialog (string+ "Library " (car lib) " not found."))))
-                (when (or omlib (setf omlib (exist-lib-p (car lib))))
-                  (load-om-lib omlib))))
-          *libs-auto-load*)
-    ))
+  (setf *libs-auto-load*
+        (remove 
+         nil 
+         (loop for lib in *libs-auto-load*
+               collect (let* ((libname (lib-true-name (car lib)))
+                              (omlib (exist-lib-p libname)))
+                         (if omlib
+                             (progn 
+                               (load-om-lib omlib)
+                                 lib)
+                           (progn 
+                             (om-message-dialog (string+ "Library " (car lib) " not found: will be removed from auto-load list."))
+                             nil))))
+         )))
 
 ;;;;;;;;;;;;;;;;;
 (defvar *user-init-funcs* "les fonctions qui sont chargees apres initialisation du workspace")
@@ -379,7 +408,7 @@
    t)
 
 
-(defun Save-ws-ws-params ()
+(defun save-ws-ws-params ()
   (when (and *current-workSpace* *om-workSpace-win*)
     (let ((path (om-make-pathname :directory  (mypathname *current-workSpace*) :name  "wsparams" :type "lisp")))
       (delete-file-protection path)
@@ -391,27 +420,21 @@
                                          ,(omng-save (om-view-size *om-workSpace-win*)))) out))
       )))
 
-(defun SaveWorkSpace ()
-   (when *current-workSpace*
-     (Save-ws-ws-params)
-     ;; sauve les valeurs, noms et positions des globals
-     (ws-save-globals)
-     ;; sauve juste la position du package user 
-     (ws-save-user-package)
-     ))
 
-(defun Save-before-Quit ()
-  (when (and *current-workSpace* (om-y-or-n-dialog "Do you want to save your workspace?" :default-button :yes))
+
+(defun save-ws-contents ()
+  (when *current-workspace*
     (show-message-win "Saving workspace...")
-    (SaveWorkSpace)
     (setf *save-apply-all* nil)
-    (omNG-save-ws *current-workSpace*)
+    (om-with-cursor *om-wait-cursor*
+      (Save-ws-ws-params)
+      ;; sauve les valeurs, noms et positions des globals
+      (ws-save-globals)
+      ;; sauve juste la position du package user 
+      (ws-save-user-package)
+      (omng-save-ws *current-workSpace*))
     (setf *save-apply-all* nil)
-    (save-preferences)
     (hide-message-win)))
-
-
-; (om-add-exit-cleanup-func 'Save-before-Quit)
 
 
 ;=============Generation of new WorkSpace in Disk

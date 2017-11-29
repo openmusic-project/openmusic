@@ -156,7 +156,10 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 (defvar *om-lib-dir* )
 
 (defun init-omlib-directory ()
-  (setf *om-lib-dir* (OMroot (string+ "libraries;"))))
+  ; (setf *om-lib-dir* (OMroot (string+ "libraries;")))
+  (setf *om-lib-dir* (merge-pathnames (make-pathname :directory '(:relative "OM" "Libraries")) (om-user-home)))
+  (unless (probe-file *om-lib-dir*)
+    (om-create-directory *om-lib-dir*)))
 
 (om-add-init-func 'init-omlib-directory)
 
@@ -416,11 +419,12 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 (defun reload-user-libs ()
   (let ((really-load nil))
-    (setf (subpackages *library-package*) (remove-if #'(lambda (elt) (when (member elt *user-libs* :test 'equal)
-                                                                       (if (loaded? elt)
-                                                                           (push (list (name elt) elt) really-load))
-                                                                       t)) 
-                                                     (subpackages *library-package*)))
+    (setf (subpackages *library-package*) 
+          (remove-if #'(lambda (elt) (when (member elt *user-libs* :test 'equal)
+                                       (if (loaded? elt)
+                                           (push (list (name elt) elt) really-load))
+                                       t)) 
+                     (subpackages *library-package*)))
     (load-user-libs really-load)))
 
 ;(mapcar 'name (subpackages *library-package*))
@@ -428,11 +432,11 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 (defun add-one-lib (pathname &optional (show t))
   (let* ((libname (string-until-space (car (last (pathname-directory pathname)))))
-        (initfile (om-make-pathname :directory pathname
-                                   :name libname
-                                   :type "lisp")))
+         (initfile (om-make-pathname :directory pathname
+                                     :name libname
+                                     :type "lisp")))
     (if (probe-file initfile)
-      (AddPackage2Pack (omNG-make-new-lib pathname) *library-package*)
+        (AddPackage2Pack (omNG-make-new-lib pathname) *library-package*)
       (om-message-dialog (format nil "Library ~s not valid.~%The init file ~s does not exist." 
                                  libname initfile)
                          :window-title "Error!"))

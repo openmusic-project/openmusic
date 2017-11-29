@@ -146,7 +146,6 @@
 
 
 
-
 (print "REMOVING BUILD FOLDERS ...")
 
 ;; copy the icon file in resources (for the installer)
@@ -159,7 +158,8 @@
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("build"))))
 
 (print "CLEANING RESOURCES ...")
-#+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" ))))
+
+
 #-macosx(clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")))
                        :remove-extensions '("db" "DS_STORE"))
 
@@ -177,7 +177,13 @@
 
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "lib"))))
 
-#-macos(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "mac"))))
+;;; on mac this is moved inside the .app already (in the deliver script)
+#+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" ))))
+#+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("code" ))))
+#+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("init" ))))
+
+
+#-macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "mac"))))
 #-win32(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "win"))))
 #-linux(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "linux"))))
 
@@ -191,7 +197,7 @@
 (if (equal *release* :src)
     (progn
       (print "Removing Image")
-      #+cocoa(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) 
+      #+macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) 
                                                                  (list (concatenate 'string *image-name* ".app")))))
       #+win32(delete-file (make-pathname :directory (pathname-directory *target-dir*) 
                                          :name *image-name* :type "exe"))
@@ -206,7 +212,7 @@
                      :remove-extensions '("xfasl" "nfasl" "ofasl" "lisp~" "DS_STORE"))
       )
   
-  #+cocoa
+  #+macosx
   (let ((currentimage (make-pathname :directory (append (pathname-directory *image-pathname*) '("Contents" "MacOS"))
                                      :name *image-name*))
         (target-image (make-pathname 

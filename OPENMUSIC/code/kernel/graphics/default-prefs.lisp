@@ -52,23 +52,16 @@
          :listener-on-top :no
          :listener-input nil
          :reactive nil
-         :out-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
-                                                     :host (pathname-host (mypathname *current-workspace*))
-                                                    :directory (append (pathname-directory (mypathname *current-workspace*)) 
-                                                        (list "out-files"))))
-         :tmp-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
-                                                    :host (pathname-host (mypathname *current-workspace*))
-                                                    :directory (append (pathname-directory (mypathname *current-workspace*)) 
-                                                                       (list "out-files"))))
-         :in-files-dir (check-folder (make-pathname :device (pathname-device (mypathname *current-workspace*)) 
-                                                    :host (pathname-host (mypathname *current-workspace*))
-                                                    :directory (append (pathname-directory (mypathname *current-workspace*)) 
-                                                                       (list "in-files"))))))
+         :out-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "out-files")) (mypathname *current-workspace*)))
+         :tmp-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "out-files")) (mypathname *current-workspace*)))
+         :in-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "in-files")) (mypathname *current-workspace*)))
+         ))
 
 
 ; (find-pref-module :general)
 
 (defmethod put-preferences ((iconID (eql :general)))
+
    (let ((modulepref (find-pref-module iconID)))
      (setf *msg-error-label-on* (get-pref modulepref :handle-errors))
      (when (get-pref modulepref :eval-process) 
@@ -92,16 +85,16 @@
 
      (if (probe-file (get-pref modulepref :out-files-dir))
        (setf *om-outfiles-folder* (get-pref modulepref :out-files-dir))
-       (push :out-files-dir *restore-defaults*)
-       )
+       (push :out-files-dir *restore-defaults*))
+
      (if (probe-file (get-pref modulepref :tmp-files-dir))
        (setf *om-tmpfiles-folder* (get-pref modulepref :tmp-files-dir))
-       (push :tmp-files-dir *restore-defaults*)
-       )
+       (push :tmp-files-dir *restore-defaults*))
+
      (if (probe-file (get-pref modulepref :in-files-dir))
        (setf *om-infiles-folder* (get-pref modulepref :in-files-dir))
-       (push :tmp-files-dir *restore-defaults*)
-       )    
+       (push :tmp-files-dir *restore-defaults*))
+     
      ))
 
 (defmethod save-pref-module ((iconID (eql :general)) item)
@@ -192,8 +185,16 @@
                                           :font *om-default-font1*)
                      )
 
+    (setf posy 0)
+    
     (om-add-subviews thescroll
-                     (om-make-dialog-item 'om-static-text (om-make-point l2 (setf posy 50)) (om-make-point 200 30) "Default Folders"
+                     ;(om-make-dialog-item 'om-static-text (om-make-point l2 (incf posy 50)) (om-make-point 200 30) "Init folder"
+                     ;                     :font *om-default-font2b*)
+                     ;(om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 20)) (om-make-point 360 40) 
+                     ;                     "Lisp files in this folder will be automatically loaded at startup"
+                     ;                     :font *om-default-font1*)
+
+                     (om-make-dialog-item 'om-static-text (om-make-point l2 (incf posy 50)) (om-make-point 200 30) "Default Folders"
                                           :font *om-default-font2b*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy dy)) (om-make-point 80 22) "Output Files:"
@@ -574,14 +575,21 @@
     (reload-user-libs)
     (setf *libs-auto-load* (get-pref modulepref :auto-load-libs))  
     (libs-autoload)
+    (set-pref modulepref :auto-load-libs *libs-auto-load*) ;;; in case some were not found / removed
     t))
 
+; (mapcar 'name (subpackages *library-package*))
 
 (defmethod save-pref-module ((iconID (eql :userlibs)) values)
   (list iconID `(list :auto-load-libs ,(omng-save *libs-auto-load*) :user-lib-dirs ,(omng-save (list! *user-lib-dir*))) *om-version*))
 
 (defmethod get-def-vals ((iconID (eql :userlibs)))
-  (list :auto-load-libs nil :user-lib-dirs nil))
+  (list :auto-load-libs 
+        nil 
+        :user-lib-dirs 
+        nil
+        ))
+
   
 ;;; (get-pref (get-pref-by-icon 286) :auto-load-libs)
 ;;; (setf *libs-auto-load* nil)
@@ -601,28 +609,25 @@
          libslist)
      (om-add-subviews thescroll
                       (om-make-dialog-item 'om-static-text (om-make-point 20 15) (om-make-point 200 30) "Libraries"
-                                           :font *om-default-font3b*)
-                      (om-make-dialog-item 'om-static-text  (om-make-point 20 45) (om-make-point 80 22) 
-                                           "Auto Load:" :font *controls-font*)
-                      (om-make-dialog-item 'om-static-text  (om-make-point 200 47) (om-make-point 200 22) "(Libraries to load at startup)"
-                     :font *om-default-font1*)
+                                           :font *om-default-font3b*))
+     
+     (om-add-subviews thescroll
                       
-                      (setf libslist (om-make-view 'loadlibs-view :position (om-make-point 20 75) :size (om-make-point 360 210) 
-                                    :prefobject modulepref :scrollbars :v :bg-color *om-white-color*
-                                    :field-size (om-make-point 360 (* 20 (+ 1 (round (length (get-elements *library-package*)) 2))))
-                                   ))
-                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) 45) (om-make-point 260 22) 
-                                           "External User Libs Directories:" :font *om-default-font2b*)
-                      
-                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) 65) (om-make-point (- l2 25) 55)
-                                           (format nil "~A~%~A" "Select folders where OM will look to find extra libraries."
-                                                   "The library folders should contain ONLY OM libraries and no other subfolders.")
-                                           :font *om-default-font1*))
+                      (om-make-dialog-item 'om-static-text  (om-make-point l1 45) (om-make-point 260 22) 
+                                           "Location(s)" :font *om-default-font2b*)
 
-     (let ((pos 120)
+                      (om-make-dialog-item 'om-static-text  (om-make-point l1 65) (om-make-point (- l2 50) 100)
+                                           (format nil "Libraries are searched in the default OM libraries folder:
+=> ~A~%
+You can specify here additional folders where OM will look to find other libraries. NB: These folders should contain ONLY OM libraries and no other subfolders.~%"
+                                                   *om-lib-dir*)
+                                           :font *om-default-font1*)
+                      )
+                      
+     (let ((pos 160)
            (libfolders (remove nil (list! (get-pref modulepref :user-lib-dirs)))))
        (mapcar #'(lambda (folder)  
-                   (let ((dirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) pos) (om-make-point (- l2 85)  55)
+                   (let ((dirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 20) pos) (om-make-point (- l2 85)  55)
                                                       (namestring folder)
                                                       :font *om-default-font1*
                                                       :fg-color (if (probe-file folder) *om-black-color* *om-red-color* ))))
@@ -631,7 +636,7 @@
                                       dirtxt
                                       (om-make-view 'om-icon-button 
                                                     :icon1 "folder" :icon2 "folder-pushed"
-                                                    :position (om-make-point (- ww 70) pos) :size (om-make-point 20 20) 
+                                                    :position (om-make-point (- l2 70) pos) :size (om-make-point 20 20) 
                                                     :action (om-dialog-item-act item
                                                               (let ((newfolder (om-choose-directory-dialog :directory folder)))
                                                                 (when newfolder
@@ -641,7 +646,7 @@
                                                                   (om-set-fg-color dirtxt *om-black-color*)))))
                                       (om-make-view 'om-icon-button 
                                                     :icon1 "x" :icon2 "x-pushed"
-                                                    :position (om-make-point (- ww 48) pos) :size (om-make-point 20 20) 
+                                                    :position (om-make-point (- l2 48) pos) :size (om-make-point 20 20) 
                                                     :action (om-dialog-item-act item
                                                               (om-set-dialog-item-text dirtxt "----")
                                                               (setf libfolders (remove folder libfolders))
@@ -652,14 +657,15 @@
                      ))
                libfolders)
        
-       (let ((newdirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) pos) (om-make-point (- l2 85)  55)
+                      
+       (let ((newdirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 20) pos) (om-make-point (- l2 85)  55)
                                              "----"
                                              :font *om-default-font1*)))
          (om-add-subviews thescroll 
                           newdirtxt
                           (om-make-view 'om-icon-button 
                                         :icon1 "folder" :icon2 "folder-pushed"
-                                        :position (om-make-point (- ww 70) pos) :size (om-make-point 20 20) 
+                                        :position (om-make-point (- l2 70) pos) :size (om-make-point 20 20) 
                                         :action (om-dialog-item-act item
                                                   (let ((newfolder (om-choose-directory-dialog :directory nil)))
                                                     (when newfolder
@@ -669,6 +675,21 @@
                                                       (om-set-fg-color newdirtxt *om-black-color*))))))
          (setf pos (+ pos 35))
          ))
+
+     (om-add-subviews thescroll
+     
+                      (om-make-dialog-item 'om-static-text  (om-make-point l2 45) (om-make-point 80 22) 
+                                           "Auto Load:" :font *controls-font*)
+                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 180) 47) (om-make-point 200 22) "(Libraries to load at startup)"
+                                           :font *om-default-font1*)
+                      
+                      (setf libslist (om-make-view 'loadlibs-view :position (om-make-point l2 75) :size (om-make-point 360 210) 
+                                                   :prefobject modulepref :scrollbars :v :bg-color *om-white-color*
+                                                   :field-size (om-make-point 360 (* 20 (+ 1 (round (length (get-elements *library-package*)) 2))))
+                                                   ))
+                      
+                      
+                      )
               
      thescroll))
 

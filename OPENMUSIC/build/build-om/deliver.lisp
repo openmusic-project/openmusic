@@ -21,7 +21,7 @@
 (defvar *app-name+version* "OM")
 (setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
-(defparameter *om-directory-folders* (butlast (pathname-directory (current-pathname)) 2))
+(defparameter *om-root-folders* (butlast (pathname-directory (current-pathname)) 2))
 
 ;;;==========================
 ;;; DEFAULT INTERFACE (MACOS)
@@ -182,7 +182,7 @@
 (print "==============================")
 
 
-(setf oa::*om-resources-folder* (make-pathname :directory (append *om-directory-folders* '("resources"))))
+(setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))))
 
 
 (oa::init-sub-rsrc)
@@ -228,7 +228,7 @@
 (when (save-argument-real-p)
   (compile-file-if-needed (sys:example-file  "configuration/macos-application-bundle") :load t)
   (setq *app-name*
-        (create-macos-application-bundle (make-pathname :directory *om-directory-folders*
+        (create-macos-application-bundle (make-pathname :directory *om-root-folders*
                                                        :name *app-name+version*)
                                          :document-types `(("Patch" ("omp") ,(merge-pathnames "mac/patch.icns" *load-pathname*))
                                                            ("Maquette" ("omm") ,(merge-pathnames "mac/maq.icns" *load-pathname*))
@@ -242,9 +242,9 @@
                                         )))
 
 #+win32
-(setf *app-name* (make-pathname :directory *om-directory-folders* :name *app-name+version* :type "exe"))
+(setf *app-name* (make-pathname :directory *om-root-folders* :name *app-name+version* :type "exe"))
 #+linux
-(setf *app-name* (make-pathname :directory *om-directory-folders* :name *app-name+version*))
+(setf *app-name* (make-pathname :directory *om-root-folders* :name *app-name+version*))
 
 
 (setf *debugger-hook* 'oa::om-debugger-hook)
@@ -264,8 +264,12 @@
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   (om::set-language *release-language*)
   
-  (om-lisp::init-root-definition-pathname *recorded-root* om::*om-root*)
-  
+  (om-lisp::init-root-definition-pathname 
+   *recorded-root* 
+   #-macosx om::*om-root*
+   #+macosx (make-pathname :directory (append (butlast (pathname-directory (lisp-image-name))) '("Resources")))
+   )
+
   (oa::om-init-funcall)
   
   (setf dspec::*active-finders* (append dspec::*active-finders*
@@ -302,15 +306,14 @@
 (print "==============================")
 
 #+macosx
-(let ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
-      (app-libs-folder (make-pathname 
-                        :directory (append 
-                                    *om-directory-folders* 
-                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Frameworks"))))
-      (app-resources-folder (make-pathname 
-                        :directory (append 
-                                    *om-directory-folders* 
-                                    (list (concatenate 'string *app-name+version* ".app") "Contents" "Resources")))))
+(let* ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
+       (app-contents-folder (make-pathname 
+                             :directory (append 
+                                         *om-root-folders* 
+                                         (list (concatenate 'string *app-name+version* ".app") "Contents"))))
+       (app-libs-folder (merge-pathnames (make-pathname :directory '(:relative "Frameworks")) app-contents-folder))
+      
+       (app-resources-folder (merge-pathnames (make-pathname :directory '(:relative "Resources")) app-contents-folder)))
   
   (print (format nil "COPYING LIBRARIES TO: ~A" app-libs-folder))
   (unless (string-equal (namestring libs-folder) (namestring app-libs-folder))
@@ -320,11 +323,21 @@
   (loop for item in (oa::om-directory oa::*om-resources-folder* :files t :directories t) 
         unless (string-equal "lib" (car (last (pathname-directory item)))) do
         (if (om::directoryp item)
-          (om::copy-folder item (make-pathname :device (pathname-device app-resources-folder) 
-                                               :directory (append (pathname-directory app-resources-folder) (last (pathname-directory item)))))
+            (om::copy-folder item (make-pathname :device (pathname-device app-resources-folder) 
+                                                 :directory (append (pathname-directory app-resources-folder) (last (pathname-directory item)))))
           (om::om-copy-file item (make-pathname :device (pathname-device app-resources-folder) 
-                                            :directory (pathname-directory app-resources-folder)
-                                            :name (pathname-name item) :type (pathname-type item)))))
+                                                :directory (pathname-directory app-resources-folder)
+                                                :name (pathname-name item) :type (pathname-type item)))))
+
+  (om::copy-folder  (make-pathname :device (pathname-device app-resources-folder)
+                                   :directory (append *om-root-folders* '("code")))
+                    (make-pathname :device (pathname-device app-resources-folder) 
+                                   :directory (append (pathname-directory app-resources-folder) '("code"))))
+  
+  (om::copy-folder  (make-pathname :device (pathname-device app-resources-folder)
+                                   :directory (append *om-root-folders* '("init")))
+                    (make-pathname :device (pathname-device app-contents-folder) 
+                                   :directory (append (pathname-directory app-contents-folder) '("Init"))))
   )
 
 (print "==============================")

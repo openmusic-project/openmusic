@@ -541,13 +541,6 @@ with the objects respectly associeted."))
 
 (defvar *ws-saved* nil)
 
-(defun save-ws-contents ()
-  (show-message-win "Saving workspace...")
-  (setf *save-apply-all* nil)
-  (omG-save-etat)
-  (setf *save-apply-all* nil)
-  (hide-message-win))
-
 (defmethod editor-save ((self workSpaceEditor)) 
   (setf *ws-saved* nil)
   (om-lisp::om-eval-on-process #'(lambda () 
@@ -581,14 +574,6 @@ Workspace Panels contain icons of patches, maquettes and folders
 (patch-icon-frame, maquette-icon-frame and folder-icon-frame instances).#enddoc#
 #seealso# (OmWorkspace patch-icon-frame maquette-icon-frame folder-icon-frame) #seealso#"))
  
-
-;SAVE METHOD FrOM MENU
-(defun omG-save-etat ()
-   "Save all objects in the WorkSpace."
-   (om-with-cursor *om-wait-cursor*
-                                  (SaveWorkSpace)
-                                  (omNG-save-ws *current-workSpace*)))
-
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
 
