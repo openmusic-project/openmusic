@@ -199,6 +199,7 @@
                                                         (let ((win (om-view-window item)))
 							  (setf *current-pref* (local-prefs win))
 							  (put-all-preferences)
+                                                          (save-preferences)
 							  #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
 							  #+linux (om-select-window *pref-window*))))
 
