@@ -1,3 +1,33 @@
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+;=========================================================================
+
+;=========================================================================
+;;; OpenMusic Library packaging            
+;;; this file is used by OM release scripts to load OM and build releases of 
+;;; a library locates in ../../lib-name.lisp.tmp
+;;; nb: no need to load OM here, these are just folder copies / cleanup
+;=========================================================================
+
 
 (in-package "CL-USER")
 
@@ -18,16 +48,17 @@
 ;;;===========================
 
 (defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name "lib-name" :type "lisp.tmp")))
-(defparameter *lib-name* nil)
 
-(defvar *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 3) 
-                                                              '("OM-LIBRARIES-RELEASE"))))
+;;; will be set in the file *lib-name-path*
+(defparameter *lib-name* nil) 
+
+;;; can also be set by  the file *lib-name-path*
+(defvar *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 3) '("OM-LIBRARIES-RELEASE"))))
 
 (if (probe-file *lib-name-path*)
   (load *lib-name-path*)
-  (progn (print "Quitting (no lib to deliver...)") (quit))
-)
-
+  (progn (print "Quitting (no lib to deliver...)") 
+    (quit)))
 
 (om::om-create-directory *release-dir*)
 
