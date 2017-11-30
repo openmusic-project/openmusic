@@ -222,7 +222,9 @@
 (defun init-OM-session (pathname)
    (declare (special *patch-menu-functions* *patch-menu-classes* *om-package-tree*))
    ;(setf *splash-screen* (show-kero-pict nil))
+   
 
+   
    (init-om-package)                    
    (load-om-libs)
 
@@ -231,7 +233,7 @@
    (mapcar 'player-open *enabled-players*)
    
    (workspace-from-name pathname)      ;; will set the preferences             
-   
+      
    (catch :load-prefs 
      (handler-bind 
          ((error #'(lambda (err)
@@ -243,16 +245,16 @@
        (restore-preferences)
        ))
    
-   (initWorkSpace *current-workSpace*) ;; will open the listener
+   (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
+   (init-output)
+
+   (initWorkSpace *current-workSpace*) 
    
    (libs-autoload)
 
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
    
-   (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
-   (init-output)
-
    ;(om-close-window *splash-screen*)
    ;(setf *splash-screen* nil)
    (ShowObjectEditor *current-workSpace*)

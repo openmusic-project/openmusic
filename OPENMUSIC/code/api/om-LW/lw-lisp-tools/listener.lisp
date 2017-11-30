@@ -106,6 +106,7 @@
   (or (and om-lisp::*om-listener* (capi::find-interface 'om-listener))
       (progn
         (init-listener)
+        
         (setf om-lisp::*om-listener* 
               (let* ((in 
                       (when input 
@@ -119,8 +120,8 @@
                                                           (lambda (window)
                                                             (declare (ignore window))
                                                             (capi:execute-with-interface *om-listener* (lambda () (in-package :om-lisp))))))))
-                     (out (make-instance 'om-listener-out-pane :stream *om-stream* :echo-area t :font *listener-font*))
-                     (win (make-instance 'om-listener
+                     (out (make-instance 'om-listener-out-pane :stream *om-stream* :echo-area t :font *listener-font*)))
+                (make-instance 'om-listener
                              :layout (make-instance 'capi:column-layout 
                                                     :description (if in (list in out) (list out)) 
                                                     :ratios (if in '(1 4) '(1)))
@@ -135,14 +136,16 @@
                              #+macos(lambda (window activatep) 
                                (when activatep (setf (capi::interface-menu-bar-items window)(internal-window-class-menubar window))))
                              )))
-                (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip win))) *listener-font*)
-                (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op win))) *listener-font*)
-                win))
         
-        (setf (capi::editor-pane-text  (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) "")
+        (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op om-lisp::*om-listener*))) *listener-font*)
+        
+        (when (ip om-lisp::*om-listener*)
+          (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)
+          (setf (capi::editor-pane-text  (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) ""))
         
         (setf (capi::interface-menu-bar-items om-lisp::*om-listener*)
               (internal-window-class-menubar om-lisp::*om-listener*))
+        
         ;(format *om-stream* "=======~%")
         (capi::display om-lisp::*om-listener*)
         )))
