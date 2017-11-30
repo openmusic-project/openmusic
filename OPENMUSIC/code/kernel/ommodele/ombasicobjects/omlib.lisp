@@ -157,7 +157,9 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 (defun init-omlib-directory ()
   ; (setf *om-lib-dir* (OMroot (string+ "libraries;")))
-  (setf *om-lib-dir* (merge-pathnames (make-pathname :directory '(:relative "OM" "Libraries")) (om-user-home)))
+  (setf *om-lib-dir*
+	#-linux (merge-pathnames (make-pathname :directory '(:relative "OM" "Libraries")) (om-user-home))
+	#+linux (merge-pathnames (make-pathname :directory '(:relative "OpenMusic" "libraries")) (om-user-pref-folder)))
   (unless (probe-file *om-lib-dir*)
     (om-create-directory *om-lib-dir*))
   *om-lib-dir*)

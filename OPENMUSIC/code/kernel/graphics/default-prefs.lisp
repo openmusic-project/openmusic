@@ -619,7 +619,7 @@
                       (om-make-dialog-item 'om-static-text  (om-make-point l1 65) (om-make-point (- l2 50) 100)
                                            (format nil "Libraries are searched in the default OM libraries folder:
 => ~A~%
-You can specify here additional folders where OM will look to find other libraries. NB: These folders should contain ONLY OM libraries and no other subfolders.~%"
+You can specify here additional folders where OM will look to find other libraries.~%NB: These folders should contain ONLY OM libraries and no other subfolders.~%"
                                                    *om-lib-dir*)
                                            :font *om-default-font1*)
                       )
