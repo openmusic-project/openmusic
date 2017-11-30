@@ -48,6 +48,7 @@ Other changes updates:
 - Score objects: function 'flip-selection' (bound to "f/F" keys)
 - Score analysis framework: add metrics in 'quantify-segments' 
 - Score analysis framework: other misc. fixes/improvements 
+- Support for complex numbers
 - Misc. fixes and improvements
 
 

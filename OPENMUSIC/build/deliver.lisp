@@ -381,8 +381,9 @@
          :interface :capi
 	 :keep-editor t
 	 :keep-debug-mode t
-         :keep-load-function t :keep-pretty-printer t
-         :keep-complex-numbers nil
+         :keep-load-function t 
+         :keep-pretty-printer t
+         :keep-complex-numbers t
          :keep-conditions :all
          :keep-xref-info t   ;; ??
          :editor-style :default
