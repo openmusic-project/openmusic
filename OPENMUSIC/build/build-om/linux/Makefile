@@ -72,6 +72,7 @@ dist:
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
 	find $(release)/build/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp README.LINUX $(release)/
+	cp NEWS $(release)/
 	cp Makefile.dist $(release)/Makefile
 
 tar-dist: dist

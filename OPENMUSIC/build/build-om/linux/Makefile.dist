@@ -24,7 +24,7 @@ PREFIX		= /usr
 
 bindir		= $(DESTDIR)$(PREFIX)/bin
 datadir		= $(DESTDIR)$(PREFIX)/share
-fontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/omfonts
+omfontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/omfonts
 
 INSTALL_PROGRAM	= install
 
@@ -62,11 +62,14 @@ install: $(BUILDROOT)/$(releaseappname)
 	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
 	mkdir -p $(datadir)/pixmaps/
 	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 omlogo.png $(datadir)/pixmaps/
-	mkdir -p $(fontsdir)/
-	cd $(BUILDROOT)/resources/fonts/linux && rsync $(rsyncflags) . $(datadir)/fonts/omfonts/
+	mkdir -p $(omfontsdir)/
+	cd $(BUILDROOT)/resources/fonts/linux && rsync $(rsyncflags) . $(omfontsdir)
 
 
 uninstall:
 	rm -rfv $(omroot)
 	rm -f $(bindir)/$(APPNAME)
 	rm -f $(bindir)/$(releaseappname)
+	rm -f $(datadir)/applications/OM.desktop
+	rm -f $(datadir)/pixmaps/omlogo.png
+	rm -rfv $(omfontsdir)
