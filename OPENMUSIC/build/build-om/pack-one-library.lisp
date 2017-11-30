@@ -56,7 +56,7 @@
                                                                 libname))))))
         (om::om-copy-directory libpath packedlibpath)
         (clean-svn packedlibpath)
-        (clean-sources packedlibpath)
+        (clean-sources packedlibpath '("64xfasl" "nfasl" "ofasl"))
         ))))
 
 (defmethod om::require-library (lib &optional (abort-if-not-found nil))

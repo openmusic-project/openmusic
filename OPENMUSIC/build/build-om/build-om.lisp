@@ -139,14 +139,18 @@
               
 ; (clean-svn (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("OM-FORUM-LIBRARIES" "OMChroma"))))
 
-(defun clean-sources (&optional dir)
-  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2)))))
+(defun clean-sources (&optional dir keep-fasl-types)
+  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2))))
+        (ext-list (remove-if 
+                   #'(lambda (ext) (find ext keep-fasl-types :test 'string-equal))
+                   '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~"))))
     (mapc #'(lambda (file) 
               (if (system::directory-pathname-p file)
-                  (clean-sources file)
+                  (clean-sources file keep-fasl-types)
                 (when (and (pathname-type file)
-                           (or (find (pathname-type file) '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~") :test 'string-equal)
-			       (string= (pathname-type file) *compile-type*))) ; remove compiled files
+                           (or (find (pathname-type file) ext-list :test 'string-equal)
+			       ;;; (string= (pathname-type file) *compile-type*) ; remove compiled files ; why ?
+                               )) 
                   (print (concatenate 'string "Deleting " (namestring file) " ..."))
                   (delete-file file)
                   )))
@@ -155,6 +159,7 @@
 
 
 ; (clean-sources)
+; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("omlibraries"))))
 ; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("OTHER-LIBS" "OM-SoX 1.0b7"))))
 
 ; does not count blank lines and Lisp comments
