@@ -45,7 +45,7 @@ Other changes updates:
 - Audio player: fix mono file playback
 - Audio i/o : fix output format selection (wave, aiff etc.)
 - Score objects: updated 'concat' method
-- Score objects: function 'flip-selection'
+- Score objects: function 'flip-selection' (bound to "f/F" keys)
 - Score analysis framework: add metrics in 'quantify-segments' 
 - Score analysis framework: other misc. fixes/improvements 
 - Misc. fixes and improvements
