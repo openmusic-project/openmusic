@@ -55,8 +55,8 @@ One good choice for Linux is fluidsynth with a good soundfont:
 	dnf install fluid-soundfont-gm
 
 To connect OM to your midi-synth of choice, go to the MIDI-tab in OMs
-preferences, and click the matrix-button in the left section, from
-where you can connect OM to the device of choice.
+preferences, and click the "ports"-button in the left section, from
+where you can connect OM to one or more of your chosen devices.
 
 * FORUM, BUG-REPORTS, ISSUES:
 
@@ -66,3 +66,15 @@ Theres an OpenMusic forum/wiki at
 http://forumnet.ircam.fr/user-groups/openmusic/ - where subscribed
 members can post questions, send bug reports etc.
 
+* WORKING WITH OM CODE IN LISPWORKS
+  
+  If you want to load and use OM code in LispWorks, check/download the
+  source package from the repository:
+
+	https://forge.ircam.fr/p/OM/ 
+
+  or clone the repo:
+
+       $ git clone git://git.forge.ircam.fr/OM.git
+
+      

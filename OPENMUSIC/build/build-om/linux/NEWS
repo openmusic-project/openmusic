@@ -1,0 +1,39 @@
+* OM 6.13 for Linux
+
+ - Download and updates (Linux) : https://forge.ircam.fr/p/OM/downloads/
+ - Downloads (main page) : http://forumnet.ircam.fr/shop/fr/forumnet/43-openmusic.html
+ - User Manual : http://support.ircam.fr/docs/om/om6-manual/
+ - User group and support : http://forumnet.ircam.fr/fr/user-groups/openmusic/forum/
+ - More info : http://repmus.ircam.fr/openmusic/
+
+
+* RELEASE NOTES 6.13:
+
+  Libraries are all stored in a separate folder and distributed as
+  separate packages.  The default location is :
+
+	  $(HOME)/.local/share/OpenMusic/Libraries/
+
+  Other locations can be added in the Preferences (as is previous
+  versions).
+
+  Links to various Libraries ::
+
+      - http://repmus.ircam.fr/openmusic/libraries
+      - https://forge.ircam.fr/p/omlibraries/
+
+  Other changes:
+
+    - Base Lisp environment update: LispWorks 7.1 (64-bits)
+    - Audio support update: Juce 5
+    - Audio library: fix audio device detection and preferences
+    - Audio files: support for special characters in pathnames
+    - Audio player: fix mono file playback
+    - Audio i/o : fix output format selection (wave, aiff etc.)
+    - Score objects: updated 'concat' method
+    - Score objects: function 'flip-selection' (bound to "f/F" key)
+    - Score analysis framework: add metrics in 'quantify-segments' 
+    - Score analysis framework: other misc. fixes/improvements 
+    - Misc. fixes and improvements
+
+
