@@ -11,6 +11,6 @@ LWEXEC=lispworks-7-1-0-amd64-darwin
 
 echo "(setf *lib-name* #P\"$LIBS_FOLDER/$1/\")" > 'lib-name.lisp.tmp'
 
-/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build $OM_PATH"/OPENMUSIC/build/build-om/pack-one-library.lisp"
+/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build $OM_PATH"/OPENMUSIC/build/pack-one-library.lisp"
 
 rm 'lib-name.lisp.tmp'

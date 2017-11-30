@@ -43,7 +43,7 @@
 
 (defvar *this-file* *load-pathname*)
 (defvar *om-src-directory*  
-  (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2)
+  (make-pathname :directory (butlast (pathname-directory *load-pathname*))
                  :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
 
 (defvar *compile-type* "xfasl")
@@ -124,7 +124,7 @@
 ;;; END
 
 (defun clean-svn (&optional dir)
-  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2)))))
+  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*))))))
     (mapc #'(lambda (file) 
              
               (if (system::directory-pathname-p file)
@@ -140,7 +140,7 @@
 ; (clean-svn (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("OM-FORUM-LIBRARIES" "OMChroma"))))
 
 (defun clean-sources (&optional dir keep-fasl-types)
-  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*) 2))))
+  (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*)))))
         (ext-list (remove-if 
                    #'(lambda (ext) (find ext keep-fasl-types :test 'string-equal))
                    '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~"))))
@@ -182,7 +182,7 @@
 (defun count-sources (&optional dir)
   (let ((nfiles 0)
         (nlines 0)
-        (src-root (or dir (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 2) '("code")))))
+        (src-root (or dir (make-pathname :directory (append (butlast (pathname-directory *load-pathname*)) '("code")))))
         (types '("lisp")))
     (mapc #'(lambda (file) 
               (if (system::directory-pathname-p file)
@@ -206,11 +206,8 @@
 ; zarbi : (directory dir) different avec ou sans namestring si dir = (truename "cl:")
 ; (directory (make-pathname :directory "Users"))
 
-(defparameter *om-libs* (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 2) '("libraries"))))
-(defparameter *ircam-libs* (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 4) '("omlibraries"))))
-
-; (clean-sources *om-libs*)
-; (clean-sources *ircam-libs*)
+; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*)) '("libraries"))))
+; (clean-sources (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("omlibraries"))))
 
 ;;;; LOAD OM
 

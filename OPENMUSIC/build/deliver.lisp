@@ -21,7 +21,7 @@
 (defvar *app-name+version* "OM")
 (setf *app-name+version* (concatenate 'string #-linux "OM " #+linux "OM_" *version-str*))
 
-(defparameter *om-root-folders* (butlast (pathname-directory (current-pathname)) 2))
+(defparameter *om-root-folders* (butlast (pathname-directory (current-pathname))))
 
 ;;;==========================
 ;;; DEFAULT INTERFACE (MACOS)
@@ -301,9 +301,9 @@
 ; (version-to-hex 6.020005)
 ; #x0006000200000005
 
-(print "==============================")
-(print "MOVING RESOURCES")
-(print "==============================")
+(print "================================")
+(print "MOVING RESOURCES (macOS only)")
+(print "================================")
 
 #+macosx
 (let* ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
@@ -343,6 +343,8 @@
 (print "==============================")
 (print "DELIVER")
 (print "==============================")
+
+
 (deliver 'init-om
          *app-name*
          0
@@ -365,22 +367,13 @@
          #+(or cocoa win32) :packages-to-keep #+cocoa '(:objc)  #+win32 '(:comm)
          #+win32 :icon-file #+win32 "./win/OpenMusic.ico")
 
-
-
-
-  
-;(loop for lib in (directory libs-folder :directories t)
-;        do (print (format nil "COPY: ~A => ~A" (namestring lib) (namestring app-libs-folder)))
-        
-
-
 ;  :editor-commands-to-keep :all-groups
 ;========================
 
+
+
 ;;; MAC :
 ; /Applications/LispWorks\ 5.1/LispWorks.app/Contents/MacOS/lispworks-5-1-0-macos-universal -build deliver.lisp
-; (save-universal-from-script "../../image/macos-i/OM 6.0" "deliver.lisp")
-
 
 ;;; WIN :
 ; lispworks-5-1-0-x86-win32.exe -build deliver.lisp

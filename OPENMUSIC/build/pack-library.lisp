@@ -11,23 +11,24 @@
 
 (clos::set-clos-initarg-checking nil)
 
-;;; OM IS LOADED
-(print "OM IS LOADED")
+(print "== OM IS LOADED ! ==")
 
 ;;;===========================
 ;;; LIB DEFINITION
 ;;;===========================
 
-(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 3) :name "lib-name" :type "lisp.tmp")))
+(defparameter *lib-name-path* (print (make-pathname :directory (butlast (pathname-directory (current-pathname)) 2) :name "lib-name" :type "lisp.tmp")))
 (defparameter *lib-name* nil)
+
+(defvar *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 3) 
+                                                              '("OM-LIBRARIES-RELEASE"))))
 
 (if (probe-file *lib-name-path*)
   (load *lib-name-path*)
   (progn (print "Quitting (no lib to deliver...)") (quit))
 )
 
-(defparameter *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 4) 
-                                                              '("OM-LIBRARIES-RELEASE"))))
+
 (om::om-create-directory *release-dir*)
 
 (defvar *current-lib-version* nil)
@@ -54,8 +55,10 @@
                                                               (if version
                                                                   (concatenate 'string libname " " (format nil "~D" version))
                                                                 libname))))))
+        (when (probe-file packedlibpath)
+          (om::om-delete-directory packedlibpath))
+        (print (concatenate 'string "== DELIVERING " libname " => " (namestring packedlibpath)))
         (om::om-copy-directory libpath packedlibpath)
-        (clean-svn packedlibpath)
         (clean-sources packedlibpath '("64xfasl" "nfasl" "ofasl"))
         ))))
 
@@ -79,11 +82,12 @@
         (oa::om-abort)))))
 
 
-
 (when *lib-name*
-  (print (concatenate 'string "READY TO PACK LIB " (namestring *lib-name*)))
+  (print (concatenate 'string "== READY TO PACK LIB " (namestring *lib-name*)))
   (register-lib *lib-name*)
-  (prepare-and-pack-lib *lib-name* *release-dir*))
+  (prepare-and-pack-lib *lib-name* *release-dir*)
+  (terpri))
+
 
 (quit)
 

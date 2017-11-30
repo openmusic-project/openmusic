@@ -13,6 +13,24 @@ APP_FOLDER="OM "$OM_VERSION
 DMG_NAME="OM-"$OM_VERSION"-macOS"
 
 
+get_abs_filename() {
+  # $1 : relative filename
+  filename=$1
+  parentdir=$(dirname "${filename}")
+
+  if [ -d "${filename}" ]; then
+      echo "$(cd "${filename}" && pwd)"
+  elif [ -d "${parentdir}" ]; then
+    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+  fi
+}
+
+
+LIBS_FOLDER="$(get_abs_filename "../omlibraries/")"
+LIBS_RELEASE_FOLDER="$(get_abs_filename "../OM-LIBRARIES-RELEASE/")"
+# => /Users/bresson/SRC/omlibraries/
+
+
 deliver_app()
 {
 echo "***************************************************"
@@ -20,7 +38,7 @@ echo "COMPILING STANDALONE EXE"
 echo "***************************************************"
 
 	rm -rf ./OPENMUSIC/*.app/
-	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build ./OPENMUSIC/build/build-om/deliver.lisp
+	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build ./OPENMUSIC/build/deliver.lisp
 }
 
 
@@ -31,10 +49,38 @@ echo "***************************************************"
 echo "Packing $APP_FOLDER"
 echo "***************************************************"
 
-	cd ./OPENMUSIC/build/build-om/
-	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-intel.lisp
-	cd ../../..
+	cd ./OPENMUSIC/build/
+	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-om.lisp
+	cd ../..
 	cp "README.txt" "$APP_FOLDER"
+}
+
+# deliver_app MUST have been called before..
+pack_lib()
+{
+echo "***************************************************"
+echo "Packing library: name"
+echo "***************************************************"
+
+    echo "(setf *lib-name* #P\"$LIBS_FOLDER/$1/\" *release-dir* #P\"$2/\")" > 'lib-name.lisp.tmp'
+	cd ./OPENMUSIC/build/
+	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-library.lisp
+	cd ../..
+	rm 'lib-name.lisp.tmp'
+}
+
+pack_om_libs()
+{
+	OMLIBS_RELEASE_FOLDER="$(get_abs_filename "$APP_FOLDER"/Libraries/)"
+	mkdir "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "RepMus" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Profile" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Esquisse" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "OMAlea" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "OMChaos" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Situation" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "OMClouds" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "LZ" "$OMLIBS_RELEASE_FOLDER"
 }
 
 # pack_app MUST have been called before..
@@ -96,15 +142,18 @@ sign_release()
 # MAIN SCRIPT
 #=============================
 
-if 	[ "$1" = "-d" ]; 	then 	deliver_app
-elif	[ "$1" = "-p" ];	then	pack_app; set_fonts
-elif	[ "$1" = "-dp" ];	then	deliver_app; pack_app; set_fonts
-elif	[ "$1" = "-dmg" ];	then	create_simple_dmg
-elif	[ "$1" = "-zip" ];	then	zip_release
-elif	[ "$1" = "-sign" ];	then	sign_release	
-elif	[ "$1" = "-dpd" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
-elif	[ "$1" = "-dpz" ];	then	deliver_app; pack_app; set_fonts; zip_release
-elif	[ "$1" = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release; create_simple_dmg
+if 		[ $1 = "-d" ]; 		then 	deliver_app
+elif	[ $1 = "-p" ];		then	pack_app; set_fonts
+elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts
+elif	[ $1 = "-dmg" ];	then	create_simple_dmg
+elif	[ $1 = "-zip" ];	then	zip_release
+elif	[ $1 = "-sign" ];	then	sign_release	
+elif	[ $1 = "-dpd" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
+elif	[ $1 = "-dpz" ];	then	deliver_app; pack_app; set_fonts; zip_release
+elif	[ $1 = "-lib" ];	then	pack_lib $2 $LIBS_RELEASE_FOLDER
+elif	[ $1 = "-omlibs" ];	then	pack_om_libs
+elif	[ $1 = "-om" ];		then	deliver_app; pack_app; set_fonts; sign_release; zip_release; create_simple_dmg
+elif	[ $1 = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release; pack_om_libs; create_simple_dmg
 else 	
 	echo "Dont'know what to do! :("	
 	echo "Options:"
@@ -116,6 +165,10 @@ else
 	echo "-dmg = create DMG from previously packed app"
 	echo "-dpd = deliver, pack and create DMG"
 	echo "-dpz = deliver, pack and zip"
+	echo "-lib \"LIB_NAME\" = deliver a library in the default lib-delivery folder"
+	echo "-omlibs = deliver standard OM libraries in the OM build folder"
+	echo "-om = deliver, pack, sign, zip and create DMG"
+	echo "-all = deliver, pack, sign, zip (OM only), include libraries and create DMG"
 fi
 
 exit 0
