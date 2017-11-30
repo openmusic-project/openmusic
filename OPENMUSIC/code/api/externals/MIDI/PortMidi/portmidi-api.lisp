@@ -93,16 +93,16 @@
   (portmidi-close-all-midi-ports)
   (om-stop-portmidi)
   (pm::pm-initialize)
-  (print "PortMIDI reinitialized")
+  ;; (format om-lisp::*om-stream* "  PortMIDI reinitialized~%")
   (let ((devices (list-devices)))
     (if devices 
-        (print (format nil "MIDI devices detected:~%~{~A~^~%~}" 
+        (format om-lisp::*om-stream* "  MIDI devices detected:~%~{     ~A~^~%~}~%" 
                        (mapcar #'(lambda (device) (format nil "~A [~A]" (nth 4 device) 
                                                          (cond ((and (nth 6 device) (nth 8 device)) "IN-OUT")
                                                                ((nth 6 device) "INPUT")
                                                                ((nth 8 device) "OUTPUT")
                                                                (t "-"))))
-                               devices)))
+                               devices))
       (print "No MIDI devices detected"))
     ))
 

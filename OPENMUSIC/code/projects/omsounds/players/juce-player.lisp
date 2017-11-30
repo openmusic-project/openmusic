@@ -100,32 +100,31 @@
 ;"Speaker/HP (Realtek High Definition Audio)"
 
 (defun juce-player-setup (player)
-  (om-print "")
-  (om-print "========AUDIO SETUP========")
+  (om-print "Audio Setup:")
   (let ((drivers (juce::get-audio-drivers player)))
     (unless (find *audio-driver* drivers :test 'string-equal)
-      (om-print (format nil "Warning: Device type '~A' not available.~%Will use '~A' as default..." 
+      (om-print (format nil "  Warning: Device type '~A' not available.~%Will use '~A' as default..." 
                      *audio-driver* (car drivers)))
       (setf *audio-driver* (car drivers))))
   
   (unless (string-equal (juce::getCurrentDeviceType player) *audio-driver*)
-    (om-print (format nil "Current driver: ~A" (juce::getCurrentDeviceType player)))
+    (om-print (format nil "  Current driver: ~A" (juce::getCurrentDeviceType player)))
     (juce::setDeviceType player *audio-driver*)
-    (om-print (format nil "Setting audio driver: ~A" *audio-driver*)))
-  (om-print (format nil "Audio driver: ~A" (juce::getCurrentDeviceType player)))
+    (om-print (format nil "  Setting audio driver: ~A" *audio-driver*)))
+  (om-print (format nil "  Audio driver: ~A" (juce::getCurrentDeviceType player)))
   
   (juce::getCurrentDeviceName player)
 
   (let ((out-devices (juce::audio-driver-output-devices player (juce::getCurrentDeviceType player))))
     (if (and *audio-out-device* (not (string-equal *audio-out-device* "")))
       (progn 
-        (om-print (format nil "Selected device: ~A" *audio-out-device*)) 
+        (om-print (format nil "  Selected device: ~A" *audio-out-device*)) 
         (if (find *audio-out-device* out-devices :test 'string-equal)
             (juce::setoutputdevice player (position *audio-out-device* out-devices :test 'string-equal))
-          (om-print (format nil "=> not found in available devices: ~A" out-devices)))
+          (om-print (format nil "  => not found in available devices: ~A" out-devices)))
         )
       (progn 
-        (om-print (format nil "Selecting default device: ~A" (car out-devices)))
+        (om-print (format nil "  Selecting default device: ~A" (car out-devices)))
         (setf *audio-out-device* (car out-devices))
         (juce::setoutputdevice player 0))))
   
@@ -140,11 +139,11 @@
 
   (unless (find *audio-out-n-channels* *audio-out-chan-options*)
     (setf *audio-out-n-channels* (or (car (last *audio-out-chan-options*)) 2))
-    (om-print (format nil "Restoring default output channels (~A)" *audio-out-n-channels*)))
+    (om-print (format nil "  Restoring default output channels (~A)" *audio-out-n-channels*)))
   
-  (om-print (format nil "Initializing audio channels (~Ax~A)" 0 *audio-out-n-channels*))
+  (om-print (format nil "  Initializing audio channels (~Ax~A)" 0 *audio-out-n-channels*))
   (juce::initializeaudiochannels *juce-player* 0 *audio-out-n-channels*)
-  (om-print "=========================")
+ 
   t)
  
 

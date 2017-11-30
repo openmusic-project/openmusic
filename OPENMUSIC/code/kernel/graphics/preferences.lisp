@@ -95,8 +95,9 @@
 
 ;(restore-preferences)
 (defmethod put-all-preferences ()
-   (loop for item in *current-pref* do
-         (put-preferences (car item))))
+  (om-print "APPLYING PREFERENCES...")
+  (loop for item in *current-pref* do
+        (put-preferences (car item))))
 
 
 ;;; never used

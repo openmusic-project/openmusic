@@ -21,6 +21,7 @@
   (setf *portmidi-in-ports-table* nil *portmidi-out-ports-table* nil))
 
 (defun portmidi-connect-ports (settings)
+  (format om-lisp::*om-stream* "MIDI Setup:~%")
   (portmidi-restart)
   (unless (pm-time-started) (pm-time-start))
   (let ((pm-devices (list-devices)))
@@ -33,7 +34,7 @@
                       (when device-id 
                         (setf stream (pm::pm-open-input device-id *portmidi-def-buffer-size*))
                         )))
-                  (print (format nil "PortMIDI :: INPUT port ~D => ~A" (car item) indevice))
+                  (format om-lisp::*om-stream* "  MIDI-IN port ~D => ~A~%" (car item) indevice)
                   (push (list (car item) indevice stream) *portmidi-in-ports-table*) ;;; add this port/stream pair in the table
                   )))
 
@@ -45,7 +46,7 @@
                     (let ((device-id (car (find-if #'(lambda (device) (and (string-equal (getf (cdr device) :name) outdevice) (getf (cdr device) :output))) pm-devices))))
                       (when device-id 
                         (setf stream (pm::pm-open-output device-id *portmidi-def-buffer-size* 0)))))
-                  (print (format nil "PortMIDI :: OUTPUT  port ~D => ~A" (car item) outdevice))
+                  (format om-lisp::*om-stream* "  MIDI-OUT port ~D => ~A~%" (car item) outdevice)
                   (push (list (car item) outdevice stream) *portmidi-out-ports-table*)   ;;; add this port/stream pair in the table
                   ))
           )
