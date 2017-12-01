@@ -18,7 +18,7 @@ INSTALL_PROGRAM	= install
 DISTDIR		= /tmp/OM/BUILD
 IMAGENAME	= OM_6.12
 
-path_to_omroot	= ../../..
+path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
 thisdir		= $(dir $(thisfile))
 builddir	= $(shell cd $(dir $(thisfile)) && cd $(path_to_omroot) && pwd)
@@ -61,7 +61,7 @@ all:	compile
 
 compile build-from-git: 
 	@echo building "$(buildname)" in source tree: "$(BUILDROOT)"
-	$(LISP) $(BUILDROOT)/build/build-om/deliver.lisp
+	$(LISP) $(BUILDROOT)/build/deliver.lisp
 
 clean:
 	find $(BUILDROOT) -name $(rubbish) -delete
@@ -70,7 +70,7 @@ clean:
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
-	find $(release)/build/build-om/ -not -iname '*build*' -and -not -path '*linux*' -delete
+	find $(release)/build/ -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp README.LINUX $(release)/
 	cp NEWS $(release)/
 	cp Makefile.dist $(release)/Makefile

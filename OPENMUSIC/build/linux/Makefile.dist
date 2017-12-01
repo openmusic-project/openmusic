@@ -30,7 +30,7 @@ INSTALL_PROGRAM	= install
 
 BUILDROOT	= $(shell pwd)
 APPNAME		= openmusic
-INSTALLRES	= $(BUILDROOT)/build/build-om/linux
+INSTALLRES	= $(BUILDROOT)/build/linux
 
 # these two lookup some info which might change once in a while:
 

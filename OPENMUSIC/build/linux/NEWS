@@ -35,5 +35,6 @@
     - Score analysis framework: add metrics in 'quantify-segments' 
     - Score analysis framework: other misc. fixes/improvements 
     - Misc. fixes and improvements
+    - support for complex numbers
 
 
