@@ -589,24 +589,35 @@
 ;;;===================
 ;;;; external apps 
 
+#+(or linux macosx) 
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
-  #+(or linux macosx) 
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
-  (if (and (member *om-os* '(:mac :linux))
-	   (pathnamep redirect-output))
-      ;;(let ((tempfile "~/om-log.txt"))
-      (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
-                             :if-output-exists :append :if-error-output-exists :append)
-					;(om-open-new-text-file (pathname tempfile)))
-      (progn
-	(if redirect-output
-	    (sys:call-system-showing-output str :wait wait :output-stream *om-stream* 
-					    :prefix ":: "
-					    #+win32 :current-directory #+win32 current-path)
-	    #-win32(sys:run-shell-command str :wait wait)
-	    #+win32(sys:call-system str :wait wait  :current-directory current-path)
-	    ))))
+    (if redirect-output
+        
+        (if (pathnamep redirect-output)
+            ;;; output in file
+            (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
+                                   :if-output-exists :append :if-error-output-exists :append)
+          ;;; print output
+          ;(sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: " :kill-process-on-abort t)
+          (sys:call-system str :wait t :kill-process-on-abort t)
+          ;(sys:run-shell-command str :show-window t :wait wait :output :stream  :error-output :stream  
+          ;                       :if-output-exists :append :if-error-output-exists :append)
+          )
+      
+      (sys:run-shell-command str :wait wait)
+      )
+    )
+
+#+windows
+(defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
+  (if redirect-output ; redirect to file not supported
+      (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: " :kill-process-on-abort t
+                                      :current-directory current-path)
+    (sys:call-system str :wait wait :current-directory current-path)
+    ))
+
 
 ;(sys::change-directory  (om-make-pathname :directory om::*om-midi-settings-app-path*))
 ;(hcl::get-working-directory)
