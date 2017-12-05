@@ -31,7 +31,8 @@
 (defvar *tmpparfiles* nil)
 
 (defun add-tmp-file (file)
-  (push file *tmpparfiles*))
+  (push file *tmpparfiles*)
+  file)
 
 (defun clean-tmp-files ()
   (when *tmpparfiles*
