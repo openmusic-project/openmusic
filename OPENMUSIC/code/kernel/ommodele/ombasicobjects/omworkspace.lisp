@@ -165,20 +165,25 @@
       (setf (editorFrame self) (panel *om-workSpace-win*))
          
       (om-with-delayed-update (panel *om-workSpace-win*)
+       
         (mapc #'(lambda (elem)
-                  (add-icon-finder (make-icon-from-object elem
-                                                          (om-point-h (get-icon-pos elem)) 
-                                                          (om-point-v (get-icon-pos elem))
-                                                          1
-                                                          (incf i)) 
-                                   (panel *om-workSpace-win*))
-                  )
-              (elements *current-workSpace*)))
-         
+                  (add-icon-finder
+                   (make-icon-from-object elem
+                                          (om-point-h (get-icon-pos elem)) 
+                                          (om-point-v (get-icon-pos elem))
+                                          1
+                                          (incf i))
+                   (panel *om-workSpace-win*)))
+              (sort-subframes (panel *om-workSpace-win*) 
+                              (elements *current-workSpace*)))
+        )
+
       (om-invalidate-view (editor *om-workSpace-win*))
       (set-field-size (panel *om-workSpace-win*))
       *om-workSpace-win*)))
-    
+ 
+
+
 (defmethod save-all-persistants ((self omworkspace))
    "This method is called by the WorkSpace at the end of the OM session."
    (loop for item in (elements self) do
