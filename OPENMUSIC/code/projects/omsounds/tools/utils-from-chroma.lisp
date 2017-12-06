@@ -79,10 +79,12 @@
 ; beat->secs
 
 (defun beat->secs (list MM)
-" List: list of times (markers); MM: metronome.
+" List: one or a list of times (markers); MM: metronome.
   Return the same list converted into absolute seconds.
 "  
-   (mapcar #'(lambda (x) (* x (/ 60.0 MM))) list))
+  (if (listp list)
+      (mapcar #'(lambda (x) (* x (/ 60.0 MM))) list)
+    (* list (/ 60.0 MM))))
 
 ;------------------------------------------------------------------
 ; dB->lin / lin->dB
@@ -161,6 +163,7 @@ It can send its output to another output channel if an argument is present."
 ;------------------------------------------------------------------
 
 (defun closest-pwr2 (val)
+  "Return the closest larger power of two) of val, ex. 3.4 --> 4. Useful for csound audio tables."
   (let ((size 2))
     (loop while (> val size) do
         (setf size (* size 2)))
