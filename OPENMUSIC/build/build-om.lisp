@@ -41,6 +41,7 @@
 
 (defparameter *beta-release* nil) 
 (defparameter *version-str* "")
+(defparameter *version-str-full* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
 (defparameter *release-author* "j. bresson")
@@ -56,13 +57,14 @@
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if show-beta
-		     (format nil "_beta_~d" beta)
+		     (format nil ".~d" beta)
                      "")
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
+(setf *version-str-full* (version-to-string *version* t t))
 
-(export '(*app-name* *version* *beta-release* *version-str* *release-language* *release-date* *release-author*) :cl-user)
+(export '(*app-name* *version* *beta-release* *version-str* *version-str-full* *release-language* *release-date* *release-author*) :cl-user)
 
 ;;;=======================================
 
