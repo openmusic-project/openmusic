@@ -90,7 +90,7 @@
 
 (defmethod fill-sound-info ((self internalsound))
   (when (and (filename self) (probe-file (filename self)))
-    (print (format nil "Loading sound file : ~s" (namestring (filename self))))
+    (om-print (format nil "Loading sound file info: '~A'" (namestring (filename self))))
     (multiple-value-bind (format nch sr ss size skip)
         (audio-io::om-get-sound-info (namestring (filename self)))
       (if (and format size nch (> size 0) (> nch 0))
@@ -109,7 +109,7 @@
            )
        
        (progn 
-         (print (format nil "Error loading file ~s" (filename self)))
+         (om-print (format nil "Error loading file ~s" (filename self)))
          (setf (loaded self) :error))))
     (loaded self)))
 
@@ -353,7 +353,7 @@ Press 'space' to play/stop the sound file.
     (if (probe-file name)
         (progn 
           (setf sound (make-instance 'sound :filename name))
-          (setf (player-data sound) (juce::makefilereader (namestring name)))
+          ;;; (setf (player-data sound) (juce::makefilereader (namestring name))) ;; => do it at preparetoPlay
           (build-display-array sound)
           (setf (extent sound) nil))
       ;;; (om-supported-audio-format (om-sound-format thesound)))
@@ -371,13 +371,13 @@ Press 'space' to play/stop the sound file.
 ;;; (use LIBSNDFILE and FLI)
 (defmethod om-fill-sound-display-array ((format t) path ptr channels size &optional (window 128))
   #+libsndfile
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+  (cffi:with-foreign-object (sfinfo '(:struct sf::sf_info))
     ;;;Initialisation du descripteur
-    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
+    (setf (cffi:foreign-slot-value sfinfo '(:struct sf::sf_info) 'sf::format) 0)
     (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
            (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
-           (size (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::frames) :type :int :index #+powerpc 1 #-powerpc 0))
-           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           (size (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::frames) :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
            ;;;Variables liées au calcul de waveform
            (buffer-size (* window channels))
            (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
@@ -419,7 +419,7 @@ Press 'space' to play/stop the sound file.
                                         (om-fill-sound-display-array (namestring (filename snd)) ptr ratio))
                                       (sound-get-best-pict snd)
                                       (setf (display-builder self) nil)
-                                      (print (format nil "~A Loaded..." (filename self)))) self))))
+                                      (om-print (format nil "~A Loaded..." (filename self)))) self))))
 
 
 (defmethod build-display-array ((self sound))
@@ -442,24 +442,24 @@ Press 'space' to play/stop the sound file.
                (om-fill-sound-display-array format (namestring (filename snd)) ptr channels array-width winsize))
              (sound-get-best-pict snd)
         ;(setf (display-builder self) nil)
-             (print (format nil "~A Loaded..." (filename self))))
+             (om-print (format nil "~A Loaded..." (filename self))))
          self)))))
 
 
 
 (defun om-get-sound-display-array-slice (path nsmp-out start-time end-time)
   #+libsndfile
-  (cffi:with-foreign-object (sfinfo '(:struct |libsndfile|::sf_info))
+  (cffi:with-foreign-object (sfinfo '(:struct sf::sf_info))
     ;;;Initialisation du descripteur
-    (setf (cffi:foreign-slot-value sfinfo '(:struct |libsndfile|::sf_info) 'sf::format) 0)
+    (setf (cffi:foreign-slot-value sfinfo '(:struct sf::sf_info) 'sf::format) 0)
     (let* (;;;Remplissage du descripteur et affectation aux variables temporaires
            (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
-           (sr (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::samplerate) :type :int :index #+powerpc 1 #-powerpc 0))
+           (sr (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::samplerate) :type :int :index #+powerpc 1 #-powerpc 0))
            (sr-ratio (* sr 0.001))
            (start-smp (floor (* start-time sr-ratio)))
            (end-smp (ceiling (* end-time sr-ratio)))
            (size (- end-smp start-smp))
-           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct |libsndfile|::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
+           (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
            (window (/ size nsmp-out 1.0))
            (window-adaptive (round window))
            ;;;Variables calcul de waveform

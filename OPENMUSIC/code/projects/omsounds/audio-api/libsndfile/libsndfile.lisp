@@ -25,8 +25,8 @@
 
 (in-package :cl-user)
 
-(defpackage "libsndfile"
-  (:nicknames "SF")
+(defpackage :libsndfile
+  (:nicknames :sf)
   (:use common-lisp cffi))
 
 (in-package :sf)

@@ -100,7 +100,9 @@
 ;"Speaker/HP (Realtek High Definition Audio)"
 
 (defun juce-player-setup (player)
-  (om-print "Audio Setup:")
+
+  (om-print "Audio Setup...")
+
   (let ((drivers (juce::get-audio-drivers player)))
     (unless (find *audio-driver* drivers :test 'string-equal)
       (om-print (format nil "  Warning: Device type '~A' not available.~%Will use '~A' as default..." 
@@ -171,7 +173,11 @@
 (defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
   (when (loaded object)
     (let* ((newinterval (get-internal-interval interval object at)))
-      (if (player-data object)   ;; (juce::makefilereader (namestring (om-sound-file-name object)))
+      
+      (unless (player-data object)
+        (setf (player-data object) (juce::makefilereader (namestring (om-sound-file-name object)))))
+      
+      (if (player-data object)   ;; 
             
       (when (or (null interval) newinterval) ;; the object has to be played
         (call-next-method engine player object at newinterval params)
