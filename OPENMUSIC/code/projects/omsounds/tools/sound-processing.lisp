@@ -49,7 +49,7 @@
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SAVE-SOUND///////////////
 
 
-(defun get-audio-format-from-format-or-name-or-defaults (format filename)
+(defun get-audio-format-from-format-or-name-or-defaults (filename format)
   (cond (format format)
 	(filename (values (intern (string-upcase (pathname-type filename)) :keyword)))
 	(t (or (get-pref (find-pref-module :audio) :audio-format) *def-snd-format*))))
@@ -71,7 +71,7 @@
 					      ((equal found-format :flac) (list (format nil (om-str :file-format) "FLAC") "*.flac"))
 					      ((equal found-format :ogg) (list (format nil (om-str :file-format) "OGG Vorbis") "*.ogg"))
 					      (t nil)))))
-	     (filename-format (values (intern (string-upcase (pathname-type file)) :keyword))))
+	     (filename-format (intern (string-upcase (pathname-type file)) :keyword)))
 	(when (and format (not (eql found-format filename-format)))
 	  (om-beep-msg (format nil
 			       "Warning: extension .~A doesn't fit chosen format :~A.  Changing format to :~A to fit with filename..."
@@ -222,7 +222,7 @@
 
 ;;; USE THIS AS DEFAULT NORMALIZER..
 (defmethod general-normalize ((norm (eql :om)) inpath outpath val &optional resolution)
-  (print "Warning: OM normlizer does not take into account the normalization value.")
+  (om-print "Warning: OM normlizer does not take into account the normalization value.")
   (let ((normalized (sound-normalize (get-om-sound-data inpath))))
     (audio-io::om-save-buffer-in-file (buffer normalized) (namestring outpath) 
                                      (size normalized) (nch normalized) (sr normalized) 

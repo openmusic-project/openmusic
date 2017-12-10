@@ -600,7 +600,7 @@
             (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
                                    :if-output-exists :append :if-error-output-exists :append)
           ;;; print output
-          (sys:call-system-showing-output str :wait t :output-stream *om-stream*);  :prefix ":: ")
+          (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: ")
           )
       
       (sys:run-shell-command str :wait wait)
