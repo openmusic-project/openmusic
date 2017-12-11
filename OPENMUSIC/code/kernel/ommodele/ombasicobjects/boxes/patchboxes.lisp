@@ -928,7 +928,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 (defmethod call-gen-code ((self OMBoxEditCall) numout)
    `(rep-editor ,(gen-code-call self) ,numout))
 
-
+#|
 (defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
    (let ((varname (read-from-string (gen-box-string self))))
      (if (not (member varname *let-list* :test 'equal))
@@ -942,6 +942,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
               (setf ,varname ,(gen-code-call self))
               (rep-editor ,varname ,numout ))))
        `(rep-editor ,varname ,numout ))))
+|#
 
 ;(defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
 ;   (let ((varname (read-from-string (gen-box-string self))))
@@ -954,10 +955,11 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    (let ((varname (read-from-string (gen-box-string self))))
      (if (not (member varname *let-list* :test 'equal :key 'car))
         (progn 
-          (push `(,varname ,(gen-code-call self)) *let-list*)
+          ;(push `(,varname ,(gen-code-call self)) *let-list*)
+          (push `(,varname nil) *let-list*)
           `(progn
              ;;; (*)
-             ;(setf ,varname ,(gen-code-call self))
+             (setf ,varname ,(gen-code-call self))
              (rep-editor ,varname ,numout ))
           )
        `(rep-editor ,varname ,numout))))

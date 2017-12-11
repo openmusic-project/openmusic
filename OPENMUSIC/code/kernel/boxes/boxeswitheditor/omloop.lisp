@@ -183,7 +183,7 @@
                   finally (return (values ,.final))                    
                   do (progn
                        ;;; NEED TO RESET THE EV-ONCE BOXES AT EACH ITERATION 
-                       ,.(loop for var in *let-list* collect `(setf ,(car var) ,(cadr var)))
+                       ,.(loop for var in *let-list* do `(setf ,(car var) ,(cadr var)))
                        ,body)
                   )))))
     ))
