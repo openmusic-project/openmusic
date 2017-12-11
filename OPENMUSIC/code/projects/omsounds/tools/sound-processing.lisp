@@ -271,10 +271,10 @@
                    (size (size s))
                    (size2 (* size nch))
                    (fade-in-frames (round (* in sr nch)))
-                   (fade-in-factor (/ 1.0 fade-in-frames))
+                   (fade-in-factor (and (> fade-in-frames 0) (/ 1.0 fade-in-frames)))
                    (fade-out-frames (round (* out sr nch)))
                    (fade-out-frames-start (- size2 (round (* out sr nch))))
-                   (fade-out-factor (- (/ 1.0 fade-out-frames)))
+                   (fade-out-factor (and (> fade-out-frames 0) (- (/ 1.0 fade-out-frames))))
                    (b2 (om-make-pointer size2 :type (smpl-type s) :clear t)))
 
               ;(declare (type fixnum nch sr size size2 fade-in-frames fade-out-frames fade-out-frames-start))
