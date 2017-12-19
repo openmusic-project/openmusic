@@ -35,7 +35,7 @@
 ;;; ARITHMETICS
 (defvar *arith-package* (omNG-protect-object (omNG-make-new-package "Arithmetic")))
 (AddGenFun2Pack  '(om+ om- om* om/ om// om^ om-e om-abs om-min om-max
-                   list-min list-max om-mean om-log om-round om-scale om-scale/sum reduce-tree
+                   list-min list-max om-mean om-log om-round om-scale om-scale^ om-scale/sum reduce-tree
                    interpolation factorize om-clip om-random perturbation
                    om-cos om-sin
                    ) *arith-package*)
