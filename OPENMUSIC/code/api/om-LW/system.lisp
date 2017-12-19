@@ -593,19 +593,19 @@
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
-    (if redirect-output
+  (if redirect-output
         
-        (if (pathnamep redirect-output)
-            ;;; output in file
-            (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
-                                   :if-output-exists :append :if-error-output-exists :append)
-          ;;; print output
-          (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: ")
-          )
+      (if (pathnamep redirect-output)
+          ;;; output in file
+          (sys:run-shell-command str :show-window t :wait wait :output redirect-output :error-output redirect-output 
+                                 :if-output-exists :append :if-error-output-exists :append)
+        ;;; print output
+        (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: ")
+        )
       
-      (sys:run-shell-command str :wait wait)
-      )
+    (sys:run-shell-command str :wait wait)
     )
+  )
 
 #+windows
 (defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
