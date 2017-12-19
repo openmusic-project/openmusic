@@ -1,5 +1,6 @@
 ;=====================================
 ; OM 6.13 for MacOSX
+; release update #2
 ;=====================================
 
 To install, just drag "OM 6.13.app" into your Applications/ directory.
@@ -44,11 +45,13 @@ Other changes updates:
 - Audio files: support for special characters in pathnames
 - Audio player: fix mono file playback
 - Audio i/o : fix output format selection (wave, aiff etc.)
+- Sound fade-in/fade-out fixed for fade duration = 0  
 - Score objects: updated 'concat' method
 - Score objects: function 'flip-selection' (bound to "f/F" keys)
 - Score analysis framework: add metrics in 'quantify-segments' 
 - Score analysis framework: other misc. fixes/improvements 
 - Support for complex numbers
+- Modified eval-once mode (compat for Modalys patches)
 - Misc. fixes and improvements
 
 

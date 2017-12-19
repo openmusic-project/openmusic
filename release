@@ -9,8 +9,8 @@ LWVERSION=7.1
 LWEXEC=lispworks-7-1-0-amd64-darwin
 
 OM_VERSION="6.13"
-APP_FOLDER="OM "$OM_VERSION
-DMG_NAME="OM-"$OM_VERSION"-macOS"
+APP_FOLDER="OM 6.13"
+DMG_NAME="OM-6.13.0.2-macOS"
 
 
 get_abs_filename() {
@@ -119,8 +119,8 @@ echo "***************************************************"
 
 zip_release()
 {
-	rm ./"$APP_FOLDER".zip
-	zip -r ./"$APP_FOLDER".zip ./"$APP_FOLDER"/  
+	rm ./"$DMG_NAME".zip
+	zip -r ./"$DMG_NAME".zip ./"$APP_FOLDER"/  
 }
 
 change_permission()
