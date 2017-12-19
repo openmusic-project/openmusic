@@ -99,14 +99,12 @@ this slot store a subview containing it subview if exists.#triangle#
                                     :iconView (om-make-view (get-class-icon-icon object)
                                                             :position (om-make-point 0 32) 
                                                             :size (om-make-point 32 32)
-                                                            :help-spec (string-until-cr (get-documentation object))
                                                             :iconID (get-finder-iconID object)
                                                             )))
     (om-add-subviews icon-finder (iconView icon-finder))
     (om-add-subviews icon-finder (nameView icon-finder))
     (setf (fil icon-finder) x (col icon-finder) y (bx icon-finder) bx (by icon-finder) by)  
     icon-finder))
-
 
 
 (defmethod get-finder-iconID ((self t)) (icon self))

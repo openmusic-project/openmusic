@@ -279,6 +279,11 @@
           (open-icon-scroller iconframe)))))
 
 
+(defmethod om-get-help-spec ((self pckicon-finder-icon)) 
+  (let ((obj (object (icon-finder self))))
+    (string-until-cr (get-documentation obj))))
+
+
 
 ;============================
 ;GenFun

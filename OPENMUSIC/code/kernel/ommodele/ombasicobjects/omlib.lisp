@@ -169,7 +169,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 ;----Builder
 
 (defun def-lib-doc-string (lib)
-  (format nil "Version: ~A.~%~% - Location: ~A"
+  (format nil "Version: ~A~%~% - Location: ~A"
           (or (version lib) "?")
           (namestring (om-make-pathname :directory (om-make-pathname :directory (lib-pathname lib))))))
 
