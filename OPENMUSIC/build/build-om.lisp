@@ -105,10 +105,9 @@
 
 (defun compile&load (file &optional (verbose t))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
-          (fasl-file (probe-file (make-pathname :directory (pathname-directory lisp-file)
-                                                :device (pathname-device lisp-file)
-                                                :name (pathname-name lisp-file) :type *compile-type*)))
-          (fasl-outofdate (and fasl-file
+          (fasl-file (probe-file (merge-pathnames (make-pathname :type *compile-type*) lisp-file)))
+	  (load-file (make-pathname :directory (pathname-directory file) :name (pathname-name file)))
+	  (fasl-outofdate (and fasl-file
                                (or (not (file-write-date lisp-file))
                                    (not (file-write-date fasl-file))
                                    (> (file-write-date lisp-file) (file-write-date fasl-file))))))
@@ -126,14 +125,14 @@
                                                         (progn 
                                                           (print (format nil "File ~s will be recompiled..." fasl-file))
                                                           (compile-file file :verbose verbose)
-                                                          (load file :verbose verbose))
+                                                          (load load-file :verbose verbose))
                                                       (progn 
                                                         (print (format nil "FASL error: ~s ..." fasl-file))
                                                         (when *remove-error-fasl* (delete-file fasl-file nil))
                                                         (load lisp-file :verbose verbose)))
                                                     (throw 'faslerror t)
                                                     )))
-           (load file :verbose verbose)
+           (load load-file :verbose verbose)
            )))))
 
 (export 'compile&load :cl-user)
