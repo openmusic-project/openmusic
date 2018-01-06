@@ -55,7 +55,7 @@
 ;;; READ
 ;; When opening a file for read, the format field should be set to zero before calling sf_open(). 
 (defun sndfile-get-info (path)
-  "Returns info about the soudn file (not the actual data)."
+  "Returns info about the sound file (not the actual data)."
   (cffi:with-foreign-object (sfinfo '(:struct sf::sf_info))
     (setf (cffi:foreign-slot-value sfinfo '(:struct sf::sf_info) 'sf::format) 0) ; Initialize the slots
     (let ((sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo)))
@@ -80,7 +80,7 @@
 
 
 (defun sndfile-get-sound-buffer (path &optional (datatype :float))
-  "Returns a sound data buffer + info. The soudn buffer must be freed."
+  "Returns a sound data buffer + info. The sound buffer must be freed."
   (cffi:with-foreign-object (sfinfo '(:struct sf::sf_info))
     (setf (cffi:foreign-slot-value sfinfo '(:struct sf::sf_info) 'sf::format) 0) ; Initialize the slots
     (let ((sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo)))
@@ -117,7 +117,7 @@
 ;; same function...
 ;; can we get a de-interleaved buffer with SNDfile ?
 (defun sndfile-get-2D-sound-buffer (path &optional (datatype :float))
-  "Returns a sound data buffer + info. The soudn buffer must be freed."
+  "Returns a sound data buffer + info. The sound buffer must be freed."
   (cffi:with-foreign-object (sfinfo '(:struct sf::sf_info))
     (setf (cffi:foreign-slot-value sfinfo '(:struct sf::sf_info) 'sf::format) 0) ; Initialize the slots
     (let ((sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo)))
