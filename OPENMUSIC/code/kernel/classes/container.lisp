@@ -548,7 +548,6 @@ class <below> are cloned and placed in a flat way. All offsets in millisecs."
 (defmethod omNG-copy ((self simple-container)) 
   `(copy-container ,self))
 
-;;; replaced copy-instance with copy-container
 (defmethod ot-clone ((self simple-container))
   (let ((object (copy-container self)))
     (setf (slot-value object 'parent) nil

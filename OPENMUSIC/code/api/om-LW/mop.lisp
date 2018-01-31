@@ -49,7 +49,6 @@
           method-name
           arglist
           om-remove-method-definition
-          copy-instance
           eql-specializer?
           eql-specializer-object
 

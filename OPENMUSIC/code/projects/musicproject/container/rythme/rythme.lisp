@@ -475,7 +475,6 @@
    )
 
 
-;;; remplace copy-instance par copy-container
 (defmethod tuplet-collection ((self container) &optional (running-offset 0) )
    (let ((tp (tuplet-p self)))
      (if  tp 
@@ -657,8 +656,6 @@
 ;;; GET-STRUCTURE DUPLIQUE TOUTE LA STRUCTURE SAUF LES OBJETS TERMINAUX
 ;;; ===============================================================================================
 
-
-;;; replaced copy-instance with copy-container
 (defmethod get-structure ((self container)  &optional (pere ()) )
    (let ((new-container (copy-container self))
          ;;; (tp (tuplet-p self))
@@ -952,7 +949,6 @@
 ;;; ===============================================================================================
 
 
-;;; replaced copy-instance with copy-container
 (defmethod strech ((self container) (num integer) (denom integer) &optional parent)
    (let ((temp (copy-container self)))
            (setf (extent temp)  (* (extent self) num ) )
@@ -964,7 +960,6 @@
            )
    )
 
-;;; replaced copy-instance with copy-container
 (defmethod strech ((self simple-container) (num integer) (denom integer) &optional parent )
   (let ((temp (copy-container self)))
            (setf (extent temp)  (* (extent self) num ) )
@@ -995,7 +990,6 @@
 ;;; TRANSFORMATIONS SUR LES HAUTEURS
 ;;; ===============================================================================================
 
-;;; remplace copy-instance par copy-container
 (defmethod transpose ((self simple-container) trans &optional (pere ()))
    (let ((temp-cont (copy-container self) ))
      (setf (parent temp-cont) pere )
@@ -1031,7 +1025,6 @@
     )
   )
 
-;;; remplace copy-instance par copy-container
 (defmethod quantify2 ((self simple-container) (new-qvalue integer))
   (let ((temp-cont (copy-container self)))
     (setf (offset temp-cont) (round (/ (* (offset self) new-qvalue) (qvalue self))))

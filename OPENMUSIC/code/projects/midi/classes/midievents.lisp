@@ -171,7 +171,6 @@ If a test value is NIL, the test is not performed on this attribute.
 
 ;=== converts to string the slot "fields" of a textual MidiEvent
 
-;;; replaced copy-instance with copy-container
 (defmethod! me-textinfo ((self MidiEvent))
     :indoc '("a MIDIEvent or list of MIDIEvents")
     :icon 908
