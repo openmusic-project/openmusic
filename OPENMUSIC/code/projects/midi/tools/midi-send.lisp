@@ -28,39 +28,11 @@
 
 (in-package :om)
 
-;================================
-; MIDI - Send
-;================================
-;;; THIS FUNCTION WILL PROBABLY NOT WORK
-;;; LOW-LEVEL API SHOULD HANDLE THIS TYPE OF EVENTS... OR NOT
-(defmethod* midi-o ((bytes list) &optional port)
-   :icon 912
-   :indoc '("data bytes" "output port number")
-   :initvals '((144 60 64) nil)
-   :doc "Sends <bytes> out of the port number <port>. 
-"
-   (when bytes
-     (unless port (setf port *def-midi-out*))
-     
-     (if (list-subtypep bytes 'list)
-       (if (integerp port)
-         (loop for item in bytes do
-               (midi-o item port))
-         (loop for item in bytes 
-               for item1 in port do
-               (midi-o item item1)))
-       
-       (loop for aport in (list! port) do
-             (let ((event  (om-midi::make-midi-evt :type :Stream
-                                          :port aport
-                                          :fields bytes)))
-                           (midi-send-evt event)
-                           )
-             )
-       )))
 
+;===================
+; PITCHBEND & PITCHWHEEL
+;===================
 
-;===================PITCHBEND & WHEEL
 (defmethod* mc-to-pitchwheel ((midic number) &optional (pw-range 200))
   (cond ((zerop midic) 8192)
         ((minusp midic) (round (+ 8192 (* (/ midic pw-range) 8192))))
@@ -90,9 +62,6 @@ The range of pitch wheel is between 0 and 16383 (inclusive).  8192 means no bend
            (midi-send-evt event)
            )))
 
-;(expt 2 )
-; (/ 16384 2) 
-
 (defmethod* pitchwheel ((vals number) (chans list) &optional port)
    (loop for item in chans do
          (pitchwheel vals item port)))
@@ -108,7 +77,8 @@ The range of pitch wheel is between 0 and 16383 (inclusive).  8192 means no bend
      for val in vals
      do (pitchwheel val chan port)))
 
-;==== MODIFIED FUNCTION
+
+; !! MODIFIED FUNCTION
 (defmethod* pitchbend ((val number) (chan number) &optional port)
    :icon 912
    :indoc '("pitch bend value(s)" "MIDI channel(s) (1-16)" "output port number")
@@ -148,7 +118,9 @@ The range of pitch bend is between 0 and 127. 64 means no bend.
   (- (round (* pw 400) 16383) 200))
 
 
-;===================PGCHANGE
+;===================
+; PROGRAM CHANGE
+;===================
 
 (defmethod* pgmout ((progm integer) (chans integer) &optional port) 
   :icon 912
@@ -183,7 +155,10 @@ The range of pitch bend is between 0 and 127. 64 means no bend.
            (pgmout item1 item item2))))
 
 
-;===================POLY KEY PRESSURE
+;===================
+; POLY KEY PRESSURE
+;===================
+
 (defmethod* polyKeypres ((vals integer) (pitch integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("pressure value" "target pitch" "MIDI channel (1-16)" "output port number")
@@ -238,7 +213,9 @@ Arguments can be single numbers or lists.
 
 
 
-;======================AFTER TOUCH
+;===================
+; AFTER TOUCH
+;===================
 (defmethod* aftertouch ((val integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("pressurev value"  "MIDI channel (1-16)" "output port number")
@@ -272,7 +249,9 @@ Arguments can be can be single numbers or lists.
            (aftertouch item val item2))))
 
 
-;======================CTRL CHANGE 
+;===================
+; CONTROL CHANGE 
+;===================
 
 (defmethod* ctrlchg ((ctrlnum integer) (val integer) (chans integer) &optional port) 
    :icon 912
@@ -322,11 +301,10 @@ Arguments can be can be single numbers or lists.
         (ctrlchg  ctrlnum aval item port)))
 
 
+;===================
+; VOLUME 
+;===================
 
-
-
-
-;======================VOLUME 
 (defmethod* volume ((vol integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("value" "MIDI channel (1-16)" "output port number")
@@ -351,16 +329,84 @@ The range of volume values is 0-127.
 
 (defmethod* volume ((volume list)  (chans list) &optional port)
    (if (or (null port) (integerp port))
-     (loop for item in volume
-           for val in chans do
-           (volume item val port))
+       (loop for item in volume
+             for val in chans do
+             (volume item val port))
      (loop for item in volume
            for val in chans
            for item2 in port do
            (volume item val item2))))
 
+;===================
+; ALL NOTES OFF
+;===================
+(defmethod* midi-allnotesoff (&optional port) 
+   :icon 912
+   :indoc '("output port number")
+   :initvals '(nil)
+   :doc "Turns all notes off on all channels"
+   (unless port (setf port *def-midi-out*))
+   (loop for aport in (list! port) do
+         (loop for c from 1 to 16 do
+               (let ((event (om-midi::make-midi-evt :type :CtrlChange
+                                                    :chan c
+                                                    :port aport
+                                                    :fields (list 120 0))))
+                 (when event (midi-send-evt event)))
+               )))
 
-;======================SYSTEME EXCLUSIVE
+
+;===================
+; RESET
+;===================
+
+(defmethod* midi-reset (port)
+   :icon 912
+   :indoc '("ouput MIDI port")
+   :initvals '(0)
+   :doc "Sends a MIDI Reset message on port <port>."
+   (loop for chan from 1 to 16 do 
+         (let ((event (om-midi::make-midi-evt :type :CtrlChange
+                                              :port (or port *def-midi-out*)
+                                              :chan chan
+                                              :fields '(121 0))))
+             (when event (midi-send-evt event))))
+   nil)
+
+
+;===================
+; SEND FREE BYTES
+;===================
+
+;;; THIS FUNCTION WILL PROBABLY NOT WORK
+;;; LOW-LEVEL API SHOULD HANDLE THIS TYPE OF EVENTS... OR NOT
+(defmethod* midi-o ((bytes list) &optional port)
+   :icon 912
+   :indoc '("data bytes" "output port number")
+   :initvals '((144 60 64) nil)
+   :doc "Sends <bytes> out of the port number <port>. 
+"
+   (when bytes
+     (unless port (setf port *def-midi-out*))
+     
+     (if (list-subtypep bytes 'list)
+       (if (integerp port)
+         (loop for item in bytes do
+               (midi-o item port))
+         (loop for item in bytes 
+               for item1 in port do
+               (midi-o item item1)))
+       
+       (loop for aport in (list! port) do
+             (let ((event  (om-midi::make-midi-evt :type :Stream
+                                          :port aport
+                                          :fields bytes)))
+                           (midi-send-evt event)
+                           )
+             )
+       )))
+
+
 (defmethod* sysex ((databytes list) &optional port) 
    :icon 912
    :indoc '("data bytes" "output port number")
@@ -384,22 +430,11 @@ The range of volume values is 0-127.
 
 
 
-;======================RESET
-(defmethod* midi-reset (port)
-   :icon 912
-   :indoc '("ouput MIDI port")
-   :initvals '(0)
-   :doc "Sends a MIDI Reset message on port <port>."
-   (loop for chan from 1 to 16 do 
-         (let ((event (om-midi::make-midi-evt :type :Reset
-                                                  :port (or port *def-midi-out*)
-                                                  :chan chan
-                                                  :fields '(121 0))))
-             (when event (midi-send-evt event))))
-   nil)
 
+;===================
+; SEND ONE NOTE
+;===================
 
-;======================SEND ONE NOTE
 (defmethod! send-midi-note (port chan pitch vel dur track)
    :icon 148
    :initvals '(0 1 60 100 1000 1)
