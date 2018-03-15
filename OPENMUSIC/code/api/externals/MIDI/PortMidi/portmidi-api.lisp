@@ -217,6 +217,15 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 (defun 7-msb (14bitval) (logand (ash 14bitval -7) #x7f))
 (defun 7-lsb (14bitval) (logand 14bitval #x7f))
 
+
+(defun send-bytes (bytes port)
+  (let ((out (get-output-stream-from-port port)))
+    (if out
+        (and bytes (pm::pm-write-short out 0 bytes))
+      (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" (midi-evt-port evt))))
+    ))
+
+
 (defun make-midi-bytes (type channel vals)
   ;(print (list type channel vals))
   (let ((type-ref (type-to-midi type))
@@ -225,19 +234,19 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
 
+;;; exported call
 (defun portmidi-send-evt (evt)
-  (when (midi-evt-port evt)
-    (let ((out (get-output-stream-from-port (midi-evt-port evt)))
-          (bytes (make-midi-bytes (midi-evt-type evt) 
-                                  (1- (midi-evt-chan evt)) 
-                                  (midi-evt-fields evt))))
-    ;(print (midi-evt-type evt))
-      (if (and out bytes)
-          (pm::pm-write-short out 0 bytes)
-        (unless out
-          (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" (midi-evt-port evt))) nil)
-      ))))
+  (send-bytes 
+   (make-midi-bytes (midi-evt-type evt) 
+                    (1- (midi-evt-chan evt)) 
+                    (midi-evt-fields evt))
+   (midi-evt-port evt)))
 
+;;; exported call
+(defun portmidi-send-bytes (datalist port)
+  (send-bytes 
+   (apply 'make-message datalist)
+   port))
 
 
 ;;;========================================

@@ -129,6 +129,21 @@
         )
         rep))))
 
+
+;;; SEND MIDI RAW DATA (for OM MIDI Player)
+
+(defun midi-send-bytes (bytes port)
+  (let ((sys (check-def-midi-system 'om-midi::send-midi-data-function)))
+    (when sys
+      (let ((rep (funcall (om-midi::send-midi-data-function sys) bytes port)))
+        (unless rep
+          ;(print "[MIDI send failed]")
+          ;(funcall (om-midi::midi-connect-function sys)
+          ;         (get-pref (find-pref-module :midi) :midi-setup))
+          ;(funcall (om-midi::send-midi-event-function sys) evt)
+          )
+        rep))))
+
 (defun midi-stop ()
   (let ((sys (check-def-midi-system 'om-midi::midi-stop-function)))
     (when sys (funcall (om-midi::midi-stop-function sys)))))

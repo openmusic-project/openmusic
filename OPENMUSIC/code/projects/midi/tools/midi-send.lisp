@@ -353,7 +353,8 @@ The range of volume values is 0-127.
                                                     :port aport
                                                     :fields (list 120 0))))
                  (when event (midi-send-evt event)))
-               )))
+               ))
+   t)
 
 
 ;===================
@@ -371,7 +372,7 @@ The range of volume values is 0-127.
                                               :chan chan
                                               :fields '(121 0))))
              (when event (midi-send-evt event))))
-   nil)
+   t)
 
 
 ;===================
@@ -387,31 +388,31 @@ The range of volume values is 0-127.
    :doc "Sends <bytes> out of the port number <port>. 
 "
    (when bytes
+     
      (unless port (setf port *def-midi-out*))
      
      (if (list-subtypep bytes 'list)
-       (if (integerp port)
-         (loop for item in bytes do
-               (midi-o item port))
-         (loop for item in bytes 
-               for item1 in port do
-               (midi-o item item1)))
+         ;;; bytes is a list of lists
+         (if (integerp port)
+             ;;; send all lists one by one to port
+             (loop for item in bytes do
+                   (midi-o item port))
+           ;;; send all lists, one to each port
+           (loop for item in bytes 
+                 for item1 in port do
+                 (midi-o item item1)))
        
+       ;;; send the bytes list
        (loop for aport in (list! port) do
-             (let ((event  (om-midi::make-midi-evt :type :Stream
-                                          :port aport
-                                          :fields bytes)))
-                           (midi-send-evt event)
-                           )
-             )
-       )))
-
+             (midi-send-bytes bytes aport))
+       )
+     t))
 
 (defmethod* sysex ((databytes list) &optional port) 
    :icon 912
-   :indoc '("data bytes" "output port number")
-   :initvals '((1 1 1 ) nil)
-   :doc "Sends a system exclusive MIDI message on <port> with any number of data bytes, leading $F0 and tailing $F7"
+   :indoc '("data bytes (ID data)" "output port number")
+   :initvals '((1 1) nil)
+   :doc "Sends a system exclusive MIDI message on <port> with any number of data bytes. The data will be framed between SysEx begin/end messages (F0/F7)."
    (when databytes
      (unless port (setf port *def-midi-out*))
      (if (list-subtypep databytes 'list)
@@ -422,11 +423,10 @@ The range of volume values is 0-127.
                for item1 in port do
                (sysex item item1)))
        (loop for aport in (list! port) do
-             (let ((event (om-midi::make-midi-evt :type :SysEx
-                                                  :port aport
-                                                  :fields databytes)))
-             (when event (midi-send-evt event)))
-             ))))
+             (midi-send-bytes (cons #xF0 databytes) aport)
+             (midi-send-bytes (cons #xF7 '(0 0)) aport)
+             ))
+     t))
 
 
 

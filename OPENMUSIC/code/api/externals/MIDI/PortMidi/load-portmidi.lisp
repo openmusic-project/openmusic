@@ -8,6 +8,7 @@
 (pushnew :portmidi *features*)
 
 (defmethod om-midi::send-midi-event-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-send-evt)
+(defmethod om-midi::send-midi-data-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-send-bytes)
 (defmethod om-midi::midi-stop-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-stop)
 (defmethod om-midi::midi-start-function ((midisystem (eql :portmidi))) 'om-midi::portmidi-start)
 

@@ -88,6 +88,8 @@
 
 ; args = evt 
 (defmethod send-midi-event-function (midisystem) nil)
+; args = bytes
+(defmethod send-midi-data-function (midisystem) nil)
 
 ; args = nil
 (defmethod midi-start-function (midisystem) nil)
