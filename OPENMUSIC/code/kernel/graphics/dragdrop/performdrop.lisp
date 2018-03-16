@@ -299,24 +299,31 @@
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged tempobjframe) 
                          (target patchPanel) position)
-  (cond
-   ((or (om-maquette-abs-p (reference (object dragged))) (abspatch-p (reference (object dragged))))
-    (omG-add-element target (make-frame-from-callobj 
-                              (omNG-make-new-boxcall (clone (reference (object dragged)))
-                                                    position (mk-unique-name target (name (reference (object dragged)))))))
+
+  (let ((new-position position)) 
+    ;;; would be nice to do something here to compensate the size difference between possibly-long temporal boxes and fixed-with patch boxes...
+
+    ;;; from maquette to patch, it is better to just create the box where the mouse is...
+    (cond
+     ((or (om-maquette-abs-p (reference (object dragged))) (abspatch-p (reference (object dragged))))
+      (omG-add-element target (make-frame-from-callobj 
+                               (omNG-make-new-boxcall (clone (reference (object dragged)))
+                                                    new-position (mk-unique-name target (name (reference (object dragged)))))))
+      t)
+     ((patch-p (reference (object dragged)))
+      (omG-add-element target (make-frame-from-callobj 
+                               (omNG-make-new-boxcall (reference (object dragged)) 
+                                                      new-position (mk-unique-name target (name (reference (object dragged))))))) 
     t)
-   ((patch-p (reference (object dragged)))
-    (omG-add-element target (make-frame-from-callobj 
-                              (omNG-make-new-boxcall (reference (object dragged)) 
-                                                    position (mk-unique-name target (name (reference (object dragged))))))) 
-    t)
-   ((ominstance-p (reference (object dragged)))
-    (omG-add-element target (make-frame-from-callobj 
-                             (omNG-make-new-boxcall (omNG-make-new-instance (clone (car (value (object dragged)))) 
-                                                                            (mk-unique-name target (name dragged)))
-                                                    position (mk-unique-name target (name dragged))))) 
-    t)
-   (t nil)))
+     ((ominstance-p (reference (object dragged)))
+    
+      (let ((newbox (omNG-make-new-boxcall (omNG-make-new-instance (clone (car (value (object dragged)))) 
+                                                                   (mk-unique-name target (name dragged)))
+                                           new-position (mk-unique-name target (name dragged)))))
+        (setf (edition-params (reference newbox)) (eval (copy-edition-params (object dragged))))
+        (omG-add-element target (make-frame-from-callobj newbox))
+        t))
+   (t nil))))
 
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged tempobjframe) 
@@ -799,32 +806,50 @@
 
 
 (defmethod perform-duplicate-list ((D&DHandler omdrag-drop) (targetobj OMMaquette) (target-frame t) subframes copies pos0)
-  (let (boxes rep move initialpos)
+    
+  (let ((rep ()))
+
     (copy-connections subframes copies)
-    (loop for item in (get-actives target-frame) do
-          (omG-unselect item))
-    (om-with-delayed-update target-frame
-    (mapcar #'(lambda (object)
-                (setf initialpos (om-make-big-point (slot-value object 'offset) (posy object)))
-                (setf move (om-subtract-points (drop-mouse-pos D&DHandler) (initial-mouse-pos D&DHandler)))
-                      
+    
+    (loop for item in (get-actives target-frame) do (omG-unselect item))
+    
+    (let ((symbolic-drop-pos (get-offset/posy-from-pixel target-frame (drop-mouse-pos D&DHandler)))
+          (symbolic-clic-start (pixel2point 
+                                (container-view D&DHandler) 
+                                (initial-mouse-pos D&DHandler)
+                                )))
+      
+      ;(print (list "origin clic pos" symbolic-clic-start))
+      ;(print (list "target drop pos" symbolic-drop-pos))
+      
+      (om-with-delayed-update target-frame
+        
+        (mapcar #'(lambda (object)
+                    
+                    (let* ((symbolic-initpos (om-make-point (slot-value object 'offset) (posy object)))
+                           (symbolic-delta (om-subtract-points symbolic-initpos symbolic-clic-start))
+                           (symbolic-new-pos (om-add-points symbolic-drop-pos symbolic-delta)))
 
-
-                ;(get-offset/posy-from-pixel target-frame 
-                ;                            (om-subtract-points (drop-mouse-pos D&DHandler) 
-                ;                                                (initial-mouse-pos D&DHandler))))       
-                ;(setf (slot-value object 'posy)  (+ (om-point-v initialpos) (om-point-v move)))
-                ;(setf (offset object) (+ (om-point-h initialpos) (om-point-h move)))
-
+                      ;(print (list "origin box pos" symbolic-initpos))
+                      ;(print (list "origin box delta" symbolic-delta))
+                      ;(print (list "new box pos" symbolic-new-pos))
+                    
+                      (setf (slot-value object 'posy)  (om-point-v symbolic-new-pos))
+                      (setf (offset object) (om-point-h symbolic-new-pos))
                 
-                (let ((new-frame (make-frame-from-callobj object)))
-                  (push new-frame rep)
-                  (omG-add-element target-frame new-frame)
-                  (OMGMoveObject new-frame (om-add-points (om-view-position new-frame) move))
-                  (omG-select new-frame))) copies))
-    (setf boxes (get-elements targetobj))
-    (mapc #'(lambda (box)
-              (update-graphic-connections box boxes)) rep)) t)
+                      (let ((new-frame (make-frame-from-callobj object)))
+                        (push new-frame rep)
+                        (omG-add-element target-frame new-frame)
+                        (omG-select new-frame)))
+                    )
+                copies)
+        
+        (let ((boxes (get-elements targetobj)))   
+          (mapc #'(lambda (box)
+                    (update-graphic-connections box boxes))
+                rep))
+        )
+      t)))
 
 
 (defmethod perform-duplicate-list ((D&DHandler omdrag-drop) (targetobj OMPatch) (target-frame icon-finder) subframes copies pos0)
