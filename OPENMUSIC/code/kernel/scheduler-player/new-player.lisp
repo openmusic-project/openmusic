@@ -372,6 +372,9 @@
   (list :port (get-edit-param self 'outport)
         :approx (get-edit-param self 'approx)))
 
+(defmethod additional-player-params ((self omboxinstance))
+  (list :port (get-edit-param self 'outport)
+        :approx (get-edit-param self 'approx)))
 
 ;;;=================================
 ;;; AN EDITOR ASSOCIATED WITH A PLAYER
