@@ -64,10 +64,12 @@
 (defmethod PrepareToPlay ((player (eql :midi)) (self EventMidi-seq) at &key approx port interval voice)
   (declare (ignore approx voice))
   (setf port (or port *def-midi-out*))
-  (let ((newinterval (and interval (interval-intersec interval (list at (+ at (get-obj-dur self)))))))
+  (let ((newinterval (and interval (interval-intersec 
+                                    interval 
+                                    (list at (+ at (strechDate (get-obj-dur self) (Qtempo self))))))))
     (loop for event in (evtlist self) 
           when (and (not (equal (om-midi::midi-evt-type event) :Tempo))
-                    (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
+                    (or (null interval) (and newinterval (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval)))
                     (not (equal (om-midi::midi-evt-type event) :EndTrack)))
           collect   
         (let ((newevent (om-midi::copy-midi-evt event))
