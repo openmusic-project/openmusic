@@ -347,37 +347,39 @@ Extraction methods.
 
 (defmethod (setf Lmidic) ((LMidic list) (self chord))
   (do-initialize self 
-                       :LMidic LMidic
-                       :LVel (LVel self)
-                       :LOffset (LOffset self)
-                       :LDur (LDur self)
-                       :LChan (LChan self)
-                    :LPort (LPort self)))
+                 :LMidic LMidic
+                 :LVel (LVel self)
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
 
 (defmethod (setf LChan) ((LChan list) (self chord))
   (do-initialize self 
-                       :LMidic (LMidic self)
-                       :LVel (LVel self)
-                       :LOffset (LOffset self)
-                       :LDur (LDur self)
-                       :LChan LChan
-                    :LPort (LPort self)))
+                 :LMidic (LMidic self)
+                 :LVel (LVel self)
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan LChan
+                 :LPort (LPort self)))
+
 (defmethod (setf LVel) ((LVel list) (self chord))
   (do-initialize self 
-                       :LMidic (LMidic self)
-                       :LVel LVel
-                       :LOffset (LOffset self)
-                       :LDur (LDur self)
-                       :LChan (LChan self)
-                    :LPort (LPort self)))
+                 :LMidic (LMidic self)
+                 :LVel LVel
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
+
 (defmethod (setf LOffset) ((LOffset list) (self chord))
   (do-initialize self 
-                       :LMidic (LMidic self)
-                       :LVel (LVel self)
-                       :LOffset LOffset
-                       :LDur (LDur self)
-                       :LChan (LChan self)
-                    :LPort (LPort self)))
+                 :LMidic (LMidic self)
+                 :LVel (LVel self)
+                 :LOffset LOffset
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
 
 (defmethod (setf LDur) ((Ldur list) (self chord))
   (do-initialize self 
@@ -386,7 +388,7 @@ Extraction methods.
                  :LOffset (LOffset self)
                  :LDur LDur
                  :LChan (LChan self)
-               :LPort (LPort self)))
+                 :LPort (LPort self)))
 
 (defmethod (setf LPort) ((LPort list) (self chord))
   (loop for port in LPort
@@ -412,36 +414,37 @@ Extraction methods.
   (setf (slot-value self 'LMidic) nil (slot-value self 'LVel) nil 
         (slot-value self 'LOffset) nil  (slot-value self 'LDur) nil 
         (slot-value self 'LChan) nil)
-  self
-  )
+  self)
 
 
 (defmethod do-initialize ((self chord) &key LMidic LVel Loffset LDur LChan LPort)
-    (setQValue self 1000 :recursive nil)
-    (when (find-if 'atom  (list LMidic LVel Loffset LDur LChan LPort))
-      (om-beep-msg "Error CHORD attributes must be LISTS !!")
-      (unless (listp LMidic) (setf LMidic (list LMidic)))
-      (unless (listp LVel) (setf LVel (list LVel)))
-      (unless (listp Loffset) (setf Loffset (list Loffset)))
-      (unless (listp LDur) (setf LDur (list LDur)))
-      (unless (listp LChan) (setf LChan (list LChan)))
-      (unless (listp LPort) (setf LPort (list LPort)))
-      )
-    (setf (inside self)
-          (loop while LMidic 
-                for midic = (or (pop LMidic) midic)
-                while midic
-                for vel = (or (pop LVel) vel 80)
-                for offset = (or (pop LOffset) offset 0)
-                for dur = (or (pop LDur) dur 1000)
-                for chan = (or (pop LChan) chan 1)
-                for port = (or (pop LPort) 0)   ;;; now port can be nil.. 
-                for note = (mki 'note :midic (round midic) :vel (round vel) :dur (round dur) :chan chan )
-                do (setf (offset note) (round offset))
-                (setf (port note)  port)
-                collect note ))
-    (QNormalize self)
-    self)
+
+  (setQValue self 1000 :recursive nil)
+
+  (when (find-if 'atom  (list LMidic LVel Loffset LDur LChan LPort))
+    (om-beep-msg "Error CHORD attributes must be LISTS !!")
+    (unless (listp LMidic) (setf LMidic (list LMidic)))
+    (unless (listp LVel) (setf LVel (list LVel)))
+    (unless (listp Loffset) (setf Loffset (list Loffset)))
+    (unless (listp LDur) (setf LDur (list LDur)))
+    (unless (listp LChan) (setf LChan (list LChan)))
+    (unless (listp LPort) (setf LPort (list LPort))))
+
+  (setf (inside self)
+        (loop while LMidic 
+              for midic = (or (pop LMidic) midic)
+              while midic
+              for vel = (or (pop LVel) vel 80)
+              for offset = (or (pop LOffset) offset 0)
+              for dur = (or (pop LDur) dur 1000)
+              for chan = (or (pop LChan) chan 1)
+              for port = (or (pop LPort) port 0)   ;;; now port can be nil.. 
+              for note = (mki 'note :midic (round midic) :vel (round vel) :dur (round dur) :chan chan )
+              do (setf (offset note) (round offset))
+              (setf (port note)  port)
+              collect note ))
+  (QNormalize self)
+  self)
 
 
 (defmethod* Objfromobjs ((Self note) (Type Chord)) 
@@ -577,18 +580,19 @@ Extraction methods.
                    (setf (tie to-tie) 'begin)
                    (let ((next  (next-tied-note to-tie)))
                      (if next 
-                       (if (prep-chord-p (parent next))
-                         (setf (tie next) 'continue)
-                         (setf (tie next) 'end))
+                         (if (prep-chord-p (parent next))
+                             (setf (tie next) 'continue)
+                           (setf (tie next) 'end))
                        (setf (tie to-tie) nil))))
                   ((eq (tie to-tie) 'end) 
                    (setf (tie to-tie) 'continue)
                    (let ((next (next-tied-note to-tie)))
                      (if next
-                       (if (prep-chord-p (parent next))
-                         (setf (tie next) 'continue)
-                         (setf (tie next) 'end))
+                         (if (prep-chord-p (parent next))
+                             (setf (tie next) 'continue)
+                           (setf (tie next) 'end))
                        (setf (tie to-tie) 'end))) ) ))))
+
 
 (defmethod ties ((self voice))
   (loop for chord in (real-chords self)

@@ -753,7 +753,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 ;;;=============================================
 
 ;;; !!! ça marche pas du tout !!!
-(defmethod* mk-obj-from-list ((Self list) (Type Chord-seq))
+(defmethod* mk-obj-from-list ((self list) (type chord-seq))
   (cond
    ((list-subtypep self '(chord note rest))
     (let* ((filtlist (remove nil (loop for item in self collect 
@@ -766,18 +766,22 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
                                              (t nil)))))
            (clist (sort filtlist '< :key 'offset->ms))
            (minoffset (offset->ms (car clist)))
-          offset-list onset-list midic-list vel-list dur-list chan-list
+          offset-list onset-list midic-list vel-list dur-list chan-list port-list
           chord-seq)
+      
       (loop for chord in clist do
           (pushr (- (offset->ms chord) minoffset) onset-list)
-          (pushr (loffset chord)  offset-list)
-          (pushr (ldur chord)  dur-list)
-          (pushr (lmidic chord)  midic-list)
-          (pushr (lvel chord)  vel-list)
-          (pushr (lchan chord)  chan-list)
-            )
+          (pushr (loffset chord) offset-list)
+          (pushr (ldur chord) dur-list)
+          (pushr (lmidic chord) midic-list)
+          (pushr (lvel chord) vel-list)
+          (pushr (lchan chord) chan-list)
+          (pushr (lport chord) port-list)
+          )
+      
       (setf chord-seq (make-instance (type-of type) :lonset onset-list 
-                        :lmidic midic-list :ldur dur-list :loffset offset-list :lvel vel-list :lchan chan-list))
+                        :lmidic midic-list :ldur dur-list :loffset offset-list :lvel vel-list :lchan chan-list
+                        :lport port-list))
       ;;; new tonalite
       (loop for c in clist
             for i = 0 then (+ i 1) do
@@ -787,3 +791,5 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
       
       chord-seq))    
    (t nil)))
+
+
