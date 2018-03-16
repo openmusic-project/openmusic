@@ -165,14 +165,16 @@
                 (draw-one-system system x posy width size (nth i showtempo) name (member i select)))
               (setf posy (round (+ posy (get-delta-system system size score i))))
               )
-        (setf posy (round (- posy (* size (nth (- (length line) 1) (score-system-space score))))))
-        (when (> (length line) 1)
-          (om-with-fg-color nil *om-black-color*
-            (om-with-line-size 3
-              (om-draw-line x y (+ x 4) (- y 4))
+        (let ((space (or (nth (- (length line) 1) (score-system-space score)) 0)))
+          (setf posy (round (- posy (* size space))))
+          (when (> (length line) 1)
+            (om-with-fg-color nil *om-black-color*
+              (om-with-line-size 3
+                (om-draw-line x y (+ x 4) (- y 4))
               (om-draw-line x y x posy)
               (om-draw-line x posy (+ x 4) (+ posy 4))
               )))
+          )
         ))))
 
 ;A PAGE only de staffs
@@ -225,6 +227,8 @@
               
 
 
+
+
         
     
         
@@ -243,7 +247,8 @@
 
 ;size of the system plus system-space
 (defun get-delta-system (system size score i)
-  (round (+ (get-system-size system size) (* size (nth i (score-system-space score))))))
+  ;;; added (or ... 0) because (nth i (score-system-space score)) is sometimes NIL ! (not good)
+  (round (+ (get-system-size system size) (* size (or (nth i (score-system-space score)) 0)))))
 
 ;calcule la taille d'une ligne -line est une liste of OMSystem
 (defun get-line-size (line score size)
@@ -371,6 +376,34 @@
           (extra-octave (floor (/ (+ start-list-pos demi-tons-graphiques-dans-octave) 14))))
      (+  (* (nth delta-pos  '( 0 1 2 3 4 4 5 6 7 8 9 10 11 11)) 100 ) 
          (* (+ delta-octaves start-octave extra-octave) 1200 ))))
+
+
+
+
+;===================
+; UTILS FROM OMXMULTI LIB
+; By YC
+;===================
+
+; --------------------------------------------------------------------
+;        posy-to-midic (N)
+; -YCNEW Computes a midi value using basically an y position within 
+;        the OMsystem sys, a staff-size & a upper margin (constants). 
+;        Output values are computed according to 'sys' key preferences 
+;        (G, FF, GGFF, etc.), as a single system may contain various
+;        staves.
+;        In somes cases, sys is not the only system in the score and
+;        of course, it may not be the first: use yOffset to describe
+;        the height (>=0) of the eventual previous systems.
+; --------------------------------------------------------------------
+(defmethod posy-to-midic (score-topmargin staffsize y (sys omsystem) yOffset)
+  (let* ((up (round (* score-topmargin staffsize)) )
+         (midic (delta-to-name staffsize (- (* -1 (- y up))
+                                            (- (round (* (posy (car (staff-list sys))) (/ staffsize 4))) yOffset)
+                                         )
+                               (* 100 (- (top-in-midi sys) 3)))))
+    midic)
+)
 
 
 ;======================Placing notes in a chord=============================
@@ -698,7 +731,7 @@
   (declare (ignore mode))
   (when (midic self)
    (let* ((ypos (get-graphic-pos self top linespace scale))
-          (alt-char (get-alt-char self scale (armure system)))
+          (alt-char (and system (get-alt-char self scale (armure system))))
          alteration rep)
      (when alt-char (setf alteration (get-alteration-n alt-char)))
      (setf rep (make-instance 'grap-note
@@ -2452,10 +2485,11 @@
 (defmethod grap-obj-visible ((obj grap-container) panel)
   (let ((x0 (om-h-scroll-position panel))
         (zoom (staff-zoom panel))
-        (xx (x obj)))
+        (xx (and (x obj) (max 0 (x obj))))) ;;; added max 0 because sometimes (?) (car (main-point obj)) happens to be negative...
+    
     (if (x obj)
-        (and (>= (* (x obj) zoom) x0)
-             (<= (* (x obj) zoom) (+ x0 (w panel))))
+        (and (>= (+ (* xx zoom)) x0)
+             (<= (* xx zoom) (+ x0 (w panel))))
       (and (inside obj)
            (let ((x1 (recursive-get-x (car (inside obj)) 'car))
                  (x2 (recursive-get-x (last-elem (inside obj)) 'last-elem)))
@@ -2477,16 +2511,21 @@
              (<= (* xx zoom) (+ x0 (w panel)))))))
 
 (defmethod click-in-obj ((self grap-container) type where view)
-   (if (subtypep (type-of self) type)
-     (let* ((rect (rectangle self)))
-       (when (and (grap-obj-visible self view) 
-                  (point-in-rectangle-p  where (second rect) (first rect) (fourth rect) (third rect)))
-         self))
-     (let (rep)
+  
+  (if (subtypep (type-of self) type)
+     
+      (let* ((rect (rectangle self)))
+        
+        (when (and (grap-obj-visible self view)
+                  (point-in-rectangle-p where (second rect) (first rect) (fourth rect) (third rect)))
+          self))
+    
+    (let (rep)
        (loop for item in (inside self)
              while (not rep) do
              (setf rep (click-in-obj item type where view)))
-       rep)))
+       rep)
+    ))
 
 (defmethod click-in-obj ((self grap-group) type where view)
    (if (subtypep  (type-of self) type)
@@ -2587,8 +2626,8 @@
 (defmethod click-in-obj ((self grap-chord) (type (eql 'any)) where view)
   (let (repn)
     (loop for note in (inside self)
-            while (not repn) do
-            (setf repn (click-in-obj note (grap-class-from-type "note") where view)))
+          while (not repn) do
+          (setf repn (click-in-obj note (grap-class-from-type "note") where view)))
     (or repn (click-in-obj self (grap-class-from-type "chord") where view))))
 
 

@@ -39,6 +39,8 @@
   ((play-buttons :accessor play-buttons :initform nil)
    (edit-buttons :accessor edit-buttons :initform nil)
    (mode-buttons :accessor mode-buttons :initform nil)
+   (time-view :accessor time-view :initform nil)
+   
    ))
 
 (defmethod editor ((self editor-titlebar)) (om-view-container self))
@@ -136,11 +138,17 @@
                                             (player-init newplayer)
                                             (update-player-controls editor newplayer)))))))
 
+  (setf (time-view (title-bar self)) 
+        (om-make-dialog-item 'om-static-text 
+                             (om-make-point 600 4) (om-make-point 200 26)
+                             ""))
+
   (apply 'om-add-subviews (cons (title-bar self) 
-                                (append (play-buttons (title-bar self))
-                                        (edit-buttons (title-bar self))
-                                        (mode-buttons (title-bar self))))         
-         ))
+                                (cons (time-view (title-bar self))
+                                      (append (play-buttons (title-bar self))
+                                              (edit-buttons (title-bar self))
+                                              (mode-buttons (title-bar self))))))  
+  )
 
 (defmethod update-mode-buttons ((self score-titlebar))
   (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
@@ -736,10 +744,12 @@
    t)
 
 (defmethod correct-staff ((self scorepanel) staff)
-  (let ((staff (if (member staff *chord-satff-om* :test 'equal :key 'cadr) staff
-                   (second (cadr *chord-satff-om*)))))
-    (set-edit-param (editor self) 'staff staff)
-    staff))
+  (when (listp staff) 
+    (setf staff (car staff)))
+  (unless (member staff *chord-satff-om* :test 'equal :key 'cadr) 
+    (setf staff (second (cadr *chord-satff-om*))))
+  (set-edit-param (editor self) 'staff staff)
+  staff)
 
 
 (defmethod om-invalidate-after-scroll ((self scorepanel))
@@ -952,24 +962,26 @@
                               (collect-page-all-line-elements self  grap-obj fdoc pagenum line)))
 
 (defmethod page-click-in-obj ((self scorePanel) grap-obj mode where)
-  (unless (equal mode 'contex) ;;; mmm
-  (let ((rectangles (get-rectangle-only-pages self))
-        (factor (or (score-scale self) 1))
-        pagenum currect)
-    (loop for item in rectangles
-          for i = 0 then (+ i 1)
-          while (not pagenum) do
-          (when (om-point-in-rect-p where item)
-            (setf pagenum i)
-            (setf currect item)))
-    (when pagenum
-      (setf where (point-pixel-to-page currect factor where))
-      (let* ((fdoc (score-fdoc self))
-             (elements (get-page-all-line-elements self fdoc pagenum grap-obj))
-             rep)
-        (loop for item in elements
-          while (not rep) do
-          (setf rep (click-in-obj item mode where self))) rep)))))
+  (unless (equal mode 'contex) 
+    (let ((rectangles (get-rectangle-only-pages self))
+          (factor (or (score-scale self) 1))
+          pagenum currect)
+      
+      (loop for item in rectangles
+            for i = 0 then (+ i 1)
+            while (not pagenum) do
+            (when (om-point-in-rect-p where item)
+              (setf pagenum i)
+              (setf currect item)))
+     
+      (when pagenum
+        (setf where (point-pixel-to-page currect factor where))
+        (let* ((fdoc (score-fdoc self))
+               (elements (get-page-all-line-elements self fdoc pagenum grap-obj))
+               rep)
+          (loop for item in elements
+                while (not rep) do
+                (setf rep (click-in-obj item mode where self))) rep)))))
 
 
 (defmethod om-score-click-handler ((self scorePanel) where double-click-p)
@@ -979,6 +991,7 @@
                                              (* (staff-size self) (score-top-margin self)) 
                                              (w self) (staff-size self) self where)))
         (if (and staff-selection? (not (cursor-p self)))
+
             (progn 
               (if (om-shift-key-p) 
                   (omselect-staff-with-shift self staff-selection?)
@@ -988,9 +1001,11 @@
                   ))
               (setf (edit-cursor self) nil)
               (om-invalidate-view self t))
+
           (let* ((mode-obj (grap-class-from-type  (obj-mode self)))
                  (graph-obj (get-click-in-obj self (graphic-obj self) mode-obj where))
                  (segment nil))
+            
             (cond ((in-patch-mode? self)
                    ;;; PATCH MODE
                    (cond 
@@ -1958,7 +1973,7 @@
 
 
 (defmethod editor-null-event-handler :after ((self chordseqEditor))
-     (do-editor-null-event self))
+  (do-editor-null-event self))
 
 (defmethod init-draw ((self chordseqEditor))
    (setf (grille-step (panel self)) (get-edit-param self 'grillestep))
@@ -1973,16 +1988,7 @@
 
 (defmethod show-position-ms ((self chordseqEditor) point)
    (when (and point (not (minusp point)))
-     (om-with-focused-view (panel self) 
-                           (let ((x (om-h-scroll-position (panel self)))
-                                 (y (om-v-scroll-position (panel self))))
-                             (om-with-font (om-make-font *om-score-font-face* (nth 1 *om-def-font-sizes*)) ; :style '(:bold))
-                                           (om-with-fg-color (panel self) (om-get-bg-color (panel self))
-                                             (om-fill-rect (+ x 6) (+ y (- (h (panel self)) 42)) 70 15))
-                              
-                                           (om-draw-string (+ x 8) (+ y (- (h (panel self)) 30)) (format () "t: ~D ms" point))
-)))))
-
+     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" point))))
 
 ;PANEL
 
@@ -2386,6 +2392,7 @@
        (setf (selected graph-obj) t))))
 
 
+#|
 (defmethod click-in-which-voice? ((self multiseqPanel) where)
    (when (linear? self)
      (let* ((size (staff-size self))
@@ -2414,6 +2421,8 @@
                                                        (setf posy (+ posy ysize interlinea ))))))
                                  (unless rep (setf rep (- numvoices 1)))))
         rep)))
+|#
+
 
 (defmethod click-in-which-voice? ((self multiseqPanel) where)
   (when (linear? self)
@@ -3769,12 +3778,15 @@
                )))))
 
 (defmethod open-internal-editor ((self multiseqPanel))
-   (loop for item in (real-internal-editor-list (selection? self)) do
-         (let ((int-info (obj-for-internal-editor item)))
-           (when int-info
-             (let ((win (make-editor-window (first int-info) item (second int-info) (om-view-container self))))
-               (push win  (attached-editors (om-view-container self)))
-               )))))
+  (let ((ms-editor (om-view-container self)))
+    (loop for item in (real-internal-editor-list (selection? self)) do
+          (let ((int-info (obj-for-internal-editor item)))
+            (when int-info
+              (let ((win (make-editor-window (first int-info) item (second int-info) ms-editor)))
+                (push win (attached-editors ms-editor))
+                )))
+          )
+    ))
 
 
 (defmethod handle-internal-open ((self voicePanel) type obj add-info)
@@ -3827,7 +3839,7 @@
         (let ((posnote (find-indice-new-note self (om-point-h where))))
           (progn
             (setf (LMidic thechord) (insert-in-list (LMidic thechord) midic posnote))
-            (setf extras (insert-in-list  extras nil posnote)))))
+            (setf extras (insert-in-list extras nil posnote)))))
       (loop for note in (inside thechord)
             for extra in extras do
             (loop for ex in extra do
@@ -3873,6 +3885,9 @@
          (pos (position chseq (inside (parent chseq)) :test 'equal)))
     (nth pos (staff-sys self))))
 
+
+
+
 (defmethod add-new-object ((self multiseqPanel) obj where graph-obj)
    (if (and graph-obj (chord-p (reference graph-obj)))
      (let ((system (system-from-chord self (reference graph-obj)))) 
@@ -3880,12 +3895,42 @@
              (create-edit-cursor self (reference graph-obj) (om-point-h where) (car (Lmidic (reference graph-obj))) nil 
                                  (position system (staff-sys self) :test 'equal) nil)))
      (if (or (equal obj 'grap-chord-seq) (equal obj 'grap-multiseq))
-       (let ((multi (object (om-view-container self)))
+       
+         (let ((multi (object (om-view-container self)))
              (ind (click-in-which-voice? self where)))
          (setf (inside multi) (insert-in-list (inside multi) (make-instance 'chord-seq) ind)) 
          (change-multi-inside self (inside multi))
          (update-panel self t))
-       (om-beep-msg "Open a chord-seq internal editor in order to add chords"))))
+       
+       ;;; from OMXmulti
+       (if (or (equal obj 'grap-note) (equal obj 'grap-chord))
+           (let* ((sysIndex (click-in-which-voice? self where))
+                  (multi (object (om-view-container self)))
+                  (systemsList (staff-sys self))
+                  (staffSize (staff-size self))
+                  chordseq midic new-chord (upperSystemsH 0))
+             
+             (setf chordseq (nth sysIndex (inside multi))) 
+
+             ; -YC compute the height of all upper systems -----
+             (loop for sys in (butlast (list! systemsList) (- (length (list! systemsList)) sysIndex)) 
+                   for i = 0 then (+ i 1) do
+                   (setf upperSystemsH (+ upperSystemsH (get-delta-system sys staffSize self i))))
+             ; -------------------------------------------------
+
+             ; -YC new equivalent ------------------------------
+             (setf midic (posy-to-midic (score-top-margin self) staffSize (om-point-v where) (nth sysIndex systemsList) upperSystemsH))             
+             (setf new-chord (mki 'chord  :Lmidic (list midic)))
+             (add-object-in-obj chordseq new-chord (pixel-toms self where))
+             ; -------------------------------------------------
+             (setf (edit-cursor self) 
+                 (create-edit-cursor self new-chord (om-point-h where) (car (Lmidic new-chord)) nil 0 nil))
+           (when *om-tonalite*
+             (actualise-tonalite new-chord))
+           (update-panel self t)))
+       )))
+
+
 
 
 
@@ -4879,7 +4924,9 @@
 (defmethod record-undo ((self t)) nil)
 
 (defmethod record-undo ((self scoreeditor)) 
-  (setf (undo self) (clone (object self))))
+  (if (editorview-p (ref self))
+      (record-undo (ref self))
+    (setf (undo self) (clone (object self)))))
    
 
 
@@ -4893,20 +4940,34 @@
   (when (editor self)
     (record-undo (editor self))))
 
+
+
 (defmethod do-undo ((self scoreeditor)) 
-  (when (undo self)
-    (let ((obj (clone (object self))))
+  
+  (if (editorview-p (ref self))
+      ;;; internal editor
+      (do-undo (ref self))
+
+    (when (undo self)
+      (let ((obj (clone (object self))))
       ;(setf (inside (object self)) (inside (undo self)))
-      (setf (object self) (undo self))
-      (set-value (ref self) (object self))
-      (off-selection (panel self))
-      (setf (selection? (panel self)) nil)
-      (update-panel (panel self) t)
-      (setf (undo self) obj))
-  ))
+        (setf (object self) (undo self))
+        (set-value (ref self) (object self))
+        (off-selection (panel self))
+        (setf (selection? (panel self)) nil)
+        (update-panel (panel self) t)
+        (setf (undo self) obj)
+        (mapcar 'om-close-window (attached-editors self))
+        )
+      )))
+
+
 
 (defmethod set-value ((self OMBox) val)
   (setf (value self) val))
+
+(defmethod set-value ((self TemporalBox) val)
+  (setf (value self) (list val)))
 
 (defmethod set-value ((self OMInstance) val)
   (setf (instance self) val))
