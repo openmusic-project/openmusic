@@ -1189,7 +1189,7 @@
 
 (defmethod boxestoplay ((self maquetteeditor))
   (if (and (get-actives (panel self)) (not (equal :interval (cursor-mode (panel self)))))
-      (mapcar 'object (get-actives (panel self)))
+      (remove-if 'mute (mapcar 'object (get-actives (panel self))))
     (loop for b in (boxes (object self)) when (and (boxtempobj-p b) (not (mute b))) collect b)))
   
 
