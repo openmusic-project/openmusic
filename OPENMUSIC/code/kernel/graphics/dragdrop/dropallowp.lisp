@@ -146,8 +146,10 @@
      (om-beep-msg "You can not place a maquette into itself or its elements") t))
 
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMMaquette) (target OMMaquette)) 
-  (if (maq-ancestor-p dragged target nil)
-     (om-beep-msg "You can not place a maquette into itself or its elements") t))
+  (cond ((equal dragged target) nil)
+        ((maq-ancestor-p dragged target nil)
+         (om-beep-msg "You can not place a maquette into itself or its elements"))
+        (t t)))
 
 (defmethod drop-allow-p ((D&DHandler omdrag-drop) (dragged OMPatch) (target OMMaquette)) 
   (if (maq-ancestor-p dragged target nil)

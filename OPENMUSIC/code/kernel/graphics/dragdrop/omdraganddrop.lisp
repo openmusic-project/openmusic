@@ -98,11 +98,14 @@
       (let* ((drop-pos position)
              (*receiving-in-drag* t) rep)
         
-        (setf (opt-key-p *OM-drag&drop-handler*) (equal effect :copy) ;  (om-option-key-p)
-              (target-view *OM-drag&drop-handler*) (if (eq (get-drag-object view) (dragged-view *OM-drag&drop-handler*))
-                                                        (om-view-container (get-drag-object view))
-                                                     view)
-              
+        (setf (opt-key-p *OM-drag&drop-handler*) (equal effect :copy)) ;  (om-option-key-p)
+        
+        (setf (target-view *OM-drag&drop-handler*) 
+              (if (eq (get-drag-object view) (dragged-view *OM-drag&drop-handler*))
+                  (om-view-container (get-drag-object view))
+                view))
+        
+        (setf
               ;;; wrong in the case of drag from package windows' sub-panels...
               (initial-mouse-pos *OM-drag&drop-handler*) (om-convert-coordinates (initial-mouse-pos *OM-drag&drop-handler*)
                                                                                  (dragged-view *OM-drag&drop-handler*)
@@ -110,7 +113,8 @@
              
               (true-target-view *OM-drag&drop-handler*) (view-frame view)
               (drop-mouse-pos *OM-drag&drop-handler*) (om-mouse-position (target-view  *OM-drag&drop-handler*))  ; (get-pos-in-object view drop-pos))
-                                                       )
+              )
+        
         (setf rep (finalize-drag&drop *OM-drag&drop-handler*))
         ;;; test
         (om-highlight-view (get-drag-object view) nil)
@@ -123,19 +127,19 @@
               (drag-flavor *OM-drag&drop-handler*) nil)
         rep
         ))))
-
-
-
  
 (defun in-non-visible-icon (D&DHandler)
    (or (and (icon-finder-p (true-target-view  D&DHandler)) (icon-finder-p (dragged-view  D&DHandler)))
        (and (boxframe-p  (true-target-view  D&DHandler)) (boxframe-p (dragged-view  D&DHandler)))))
+
 ;---------------------------------------------------------------------------------
 (defmethod finalize-drag&drop ((D&DHandler omdrag-drop))
+  
   ;(print (list (true-target-view D&DHandler) (icon-finder-p (true-target-view D&DHandler))))
   (cond 
    ((opt-key-p *OM-drag&drop-handler*)
     (perform-duplicate-view D&DHandler))  
+   
    (;;; D&D IN FOLDERS ETC.
     (and (icon-finder-p (true-target-view D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
          (drop-allow-p D&DHandler (object (dragged-view  D&DHandler)) (object (true-target-view D&DHandler)))
