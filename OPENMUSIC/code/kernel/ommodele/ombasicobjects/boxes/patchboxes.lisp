@@ -1524,7 +1524,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;--------------Evaluation
 (defmethod omNG-box-value ((self OMBoxInstance) &optional (numout 0))
    (declare (ignore numout))
-   (value self))
+   (setf (value self) (list (instance (reference self))))
+   (car (value self)))
 
 ;-------------Lisp Code generation
 (defmethod gen-code ((self OMBoxInstance) numout)
