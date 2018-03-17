@@ -3852,33 +3852,33 @@
 
 
 (defmethod add-new-object ((self chordseqPanel) obj where graph-obj)
-   (if (and graph-obj (chord-p (reference graph-obj)))
-     (setf (edit-cursor self) 
-           (create-edit-cursor self (reference graph-obj) (om-point-h where) (car (Lmidic (reference graph-obj))) nil 0 nil))
-     (multiple-value-bind (whattime numstaff) (pixel-toms self where)
-       (when whattime
-         (let* ((up (* (score-top-margin self) (staff-size self)) )
-                (midic (delta-to-name (staff-size self)  (- (* -1 (-  (om-point-v where) numstaff up)) 
-                                                            (round (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4))))
-  (* 100 (- (top-in-midi (staff-sys self)) 3))))
-                (chordseq (object (om-view-container self)))
-                (new-chord (mki 'chord  :Lmidic (list midic)))
-                new-chord-list)
-           (setf (offset new-chord) (pixel-toms self where))
-           (loop for item in (chords chordseq) do
-                 (setf (offset item) (offset->ms item)))
-           (setf new-chord-list (cons new-chord (chords chordseq)))
-           (setf (inside chordseq) (sort new-chord-list '< :key 'offset)) 
-           (setf (Qvalue chordseq) 1000)
-           (adjust-extent chordseq)
-           (QNormalize chordseq)
-           (setf (edit-cursor self) 
-                 (create-edit-cursor self new-chord (om-point-h where) (car (Lmidic new-chord)) nil 0 nil))
+  (if (and graph-obj (chord-p (reference graph-obj)))
+      (setf (edit-cursor self) 
+            (create-edit-cursor self (reference graph-obj) (om-point-h where) (car (Lmidic (reference graph-obj))) nil 0 nil))
+    (multiple-value-bind (whattime numstaff) (pixel-toms self where)
+      (when whattime
+        (let* ((up (* (score-top-margin self) (staff-size self)) )
+               (midic (delta-to-name (staff-size self)  (- (* -1 (-  (om-point-v where) numstaff up)) 
+                                                           (round (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4))))
+                                     (* 100 (- (top-in-midi (staff-sys self)) 3))))
+               (chordseq (object (om-view-container self)))
+               (new-chord (mki 'chord  :Lmidic (list midic)))
+               new-chord-list)
+          (setf (offset new-chord) (pixel-toms self where))
+          (loop for item in (chords chordseq) do
+                (setf (offset item) (offset->ms item)))
+          (setf new-chord-list (cons new-chord (chords chordseq)))
+          (setf (inside chordseq) (sort new-chord-list '< :key 'offset)) 
+          (setf (Qvalue chordseq) 1000)
+          (adjust-extent chordseq)
+          (QNormalize chordseq)
+          (setf (edit-cursor self) 
+                (create-edit-cursor self new-chord (om-point-h where) (car (Lmidic new-chord)) nil 0 nil))
            
-           (when *om-tonalite*
-             (actualise-tonalite new-chord))
+          (when *om-tonalite*
+            (actualise-tonalite new-chord))
 
-           (update-panel self t))))))
+          (update-panel self t))))))
 
 (defmethod system-from-chord ((self multiseqPanel) chord)
   (let* ((chseq (parent chord))
@@ -5064,15 +5064,23 @@
       (om-beep)))
 
 
-(defmethod add-obj-in-editor ((obj list) (editor chordseqeditor))
+(defmethod add-obj-in-editor ((obj-list list) (editor chordseqeditor))
   (let ((editor-obj (object editor))
-        (onset (offset (car obj))))
-    (if (clic-pos (panel editor)) (mapcar #'(lambda (chord) 
-                                              (setf (offset chord)
-                                                    (+ (max 0 (pixel-toms (panel editor) (clic-pos (panel editor))))
-                                                       (- (offset chord) onset))))
-                                          obj))
-    (setf (inside editor-obj) (append (inside editor-obj) obj))
+        (onset (offset (car obj-list))))
+    
+    (when (clic-pos (panel editor))
+      (mapcar #'(lambda (chord) 
+                  (setf (offset chord)
+                        (+ (max 0 (pixel-toms (panel editor) (clic-pos (panel editor))))
+                           (- (offset chord) onset))))
+              obj-list))
+    
+    (setf (inside editor-obj) (sort (append (inside editor-obj) obj-list) '< :key 'offset))
+    
+    (setf (Qvalue editor-obj) 1000)
+    (adjust-extent editor-obj)
+    (QNormalize editor-obj)
+    
     editor-obj))
 
 ;; paste in MULTI-SEQ editor
