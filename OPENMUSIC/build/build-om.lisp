@@ -37,7 +37,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.130002)
+(defparameter *version* 6.130100)
 
 (defparameter *beta-release* nil) 
 (defparameter *version-str* "")
