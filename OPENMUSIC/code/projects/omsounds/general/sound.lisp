@@ -56,7 +56,7 @@
 
 (defmethod om-cleanup ((self internalsound))
   ;(print (list "sound cleanup" self (player-data self)))
-  (when (player-data self) (juce::freereader (player-data self)))
+  (when (player-data self) (juce::freeAudioSource (player-data self)))
   (when (pict-sound self) (om-kill-picture (pict-sound self))))
 
 (defmethod om-sound-file-name ((self internalsound))
@@ -353,7 +353,7 @@ Press 'space' to play/stop the sound file.
     (if (probe-file name)
         (progn 
           (setf sound (make-instance 'sound :filename name))
-          ;;; (setf (player-data sound) (juce::makefilereader (namestring name))) ;; => do it at preparetoPlay
+          ;;; (setf (player-data sound) (juce::makeAudioSourceFromFile (namestring name))) ;; => do it at preparetoPlay
           (build-display-array sound)
           (setf (extent sound) nil))
       ;;; (om-supported-audio-format (om-sound-format thesound)))

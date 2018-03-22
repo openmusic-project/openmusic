@@ -29,10 +29,10 @@
 
 (compile&load (decode-local-path "libsndfile/libsndfile"))
 (compile&load (decode-local-path "libsndfile/libsndfile-api"))
-(compile&load (decode-local-path "file-access"))
 (compile&load (decode-local-path "libsamplerate/libsamplerate"))
 (compile&load (decode-local-path "libsamplerate/libsamplerate-api"))
-(compile&load (decode-local-path "omjuceaudiolib/omjuceaudiolib"))
+(compile&load (decode-local-path "omaudiolib/omaudiolib"))
+(compile&load (decode-local-path "file-access"))
 
 
 (push :audio *features*)
@@ -96,7 +96,7 @@
 
 
 
-(defparameter *juceaudiolib-pathname*
+(defparameter *omaudiolib-pathname*
   #+win32
   "/WINDOWS/system32/OMAudioLib.dll"
   #+(or darwin macos macosx)  
@@ -105,15 +105,15 @@
   )
 
 (defun load-juceaudiolib ()
-  (let ((libpath (namestring (om::om-lib-pathname *juceaudiolib-pathname*))))
+  (let ((libpath (namestring (om::om-lib-pathname *omaudiolib-pathname*))))
     (if (probe-file libpath)
 	(progn 
-	  (print (concatenate 'string "Loading Juce Audio library: " libpath))
-	  (fli:register-module "JuceAudio" 
+	  (print (concatenate 'string "Loading OM Audio library: " libpath))
+	  (fli:register-module "OMAudio" 
 			       :real-name libpath
 			       :connection-style :immediate)
 	  t)
-	(print (concatenate 'string "Juce Audio library not found: " libpath)))))
+	(print (concatenate 'string "OMAudioLib not found: " libpath)))))
 
 (om::om-add-init-func 'load-juceaudiolib)
 

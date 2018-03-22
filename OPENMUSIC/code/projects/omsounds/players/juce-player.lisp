@@ -175,7 +175,7 @@
     (let* ((newinterval (get-internal-interval interval object at)))
       
       (unless (player-data object)
-        (setf (player-data object) (juce::makefilereader (namestring (om-sound-file-name object)))))
+        (setf (player-data object) (juce::makeAudioSourceFromFile (namestring (om-sound-file-name object)))))
       
       (if (player-data object)   ;; 
             
@@ -193,19 +193,19 @@
 (defmethod player-pause ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
         (when (player-data object)
-          (juce::pausereader *juce-player* (player-data object)))))
+          (juce::pauseAudioSource *juce-player* (player-data object)))))
 
 ;;; CONTINUE
 (defmethod player-continue ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
         (when (player-data object)
-          (juce::startreader *juce-player* (player-data object)))))
+          (juce::startAudioSource *juce-player* (player-data object)))))
 
 ;;; STOP
 (defmethod player-stop ((engine (eql :om-audio)) &optional play-list)
   (loop for object in play-list do
         (when (player-data object)
-          (juce::stopreader *juce-player* (player-data object)))))
+          (juce::stopAudioSource *juce-player* (player-data object)))))
 
 
 ;;; PLAY (NOW)
@@ -214,8 +214,8 @@
   (declare (ignore params))
   (when (player-data object)
     (when interval 
-      (juce::setposreader (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
-    (juce::startreader *juce-player* (player-data object)))
+      (juce::setAudioSourcePos (player-data object) (round (* (sample-rate object) 0.001 (car interval)))))
+    (juce::startAudioSource *juce-player* (player-data object)))
   )
 
 (defmethod player-loop ((self (eql :om-audio)) player &optional play-list)
@@ -233,8 +233,8 @@
   (let ((vv (if (integerp vol) (* vol 0.01) vol)))
   (setf (slot-value object 'vol) vv)
   (when (player-data object)
-    (juce::setgainreader (player-data object) (* vv *audio-master-gain*)))
-  ;(print (juce::getgainreader (player-data object)))
+    (juce::setAudioSourceGain (player-data object) (* vv *audio-master-gain*)))
+  ;(print (juce::getAudioSourceGain (player-data object)))
   vv))
 
 (defmethod make-player-specific-controls ((self (eql :om-audio)) control-view)
