@@ -460,6 +460,10 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
 
 (defmethod Class-has-editor-p  ((self bpf-lib)) t)
 
+(defmethod export-formats ((self bpf-lib))
+  '((om "OM instance")
+    (svg "SVG")))
+
 (defmethod default-obj-box-size      ((self bpf-lib)) (om-make-point 40 60))
 (defmethod get-editor-class ((self bpf-lib)) 'bpfEditor)
 
