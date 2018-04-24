@@ -116,3 +116,5 @@ Ex. (included? '(5 6) '(4 5 6 7 8)) => T
   (subsetp lst1 lst2 :test test))
 
  
+(defmethod included? ((lst1 number) (lst2 list) &optional (test 'equal))
+  (included? (list lst1) lst2 test))

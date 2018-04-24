@@ -156,19 +156,4 @@ If <samplerate> is NIL, the OM default sample rate is used to calculate the samp
 
 
 
-;;;======== FROM OM2CSOUND ===========
 
-(defun deep-mapcar/1 (fun list? &rest args)
-  (labels ((map-structure (str accum)
-             (cond ((null str) (reverse accum))
-                   ((not (consp str))
-                    (if accum (reverse (cons (apply fun str args) accum)) (apply fun str args)))
-                   (t (map-structure (cdr str) (cons (map-structure (car str) ()) accum))))))
-    (map-structure list? nil)))
-
-(defun LLdecimals (list nbdec)
-  "Arrondit liste de profondeur quelconque avec <nbdec> decimales"
-  (let ((ndec 
-         (if (> nbdec 0 ) (float (expt 10 nbdec)) (expt 10 nbdec))))
-    (deep-mapcar/1 '/  
-                   (deep-mapcar/1 'round list (/ 1 ndec)) ndec )))

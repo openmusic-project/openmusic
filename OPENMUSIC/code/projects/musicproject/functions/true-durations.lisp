@@ -53,6 +53,8 @@
                    :lonset (lonset chrdseq)
                    :ldur newdurs)))
 
+
+
 (defmethod! true-durations ((self t)) 
   :icon 134
   :indoc '("a score object")
@@ -84,4 +86,32 @@ next note, legato=100."
                                       resultat2))))
       (if (= 2 (length onsets)) (list (car result) (second result)) result))
     )
+  )
+
+
+(om::defmethod! true-durations ((self t)) 
+  :icon 134
+  :doc "Gives the durations in milliseconds of om object including rests (rest are neg numbrs)."
+  (let* ((newcs (if (typep self 'note) 
+                           (Objfromobjs (Objfromobjs self (make-instance 'chord)) (make-instance 'chord-seq))
+                           (Objfromobjs self (make-instance 'chord-seq))))
+         (onsets (Lonset newcs))
+         (dur (Ldur newcs))
+         (newonsets (if (= 2 (length onsets)) (x->dx  onsets) (butlast (x->dx onsets))))
+         (newdurs (mapcar 'first dur))
+         (resultat1 
+          (x-append 
+          (flat
+           (list (mapcar #'(lambda (x y) (if (= 0 (- x y)) x 
+                                             (list x (- x y))))
+                         newdurs newonsets)
+                 (last newdurs)))
+          (last-elem newdurs)))
+         (resultat2 (butlast
+                     (if (= 0 (first onsets)) resultat1 (cons (* -1 (first onsets)) resultat1)))))
+    
+   (let ((result (remove nil (mapcar #'(lambda (x) (if (not (or (= x 1) (= x -1))) x ))
+          resultat2))))
+     (if (= 2 (length onsets)) (list (first result)) result))
+   )
   )

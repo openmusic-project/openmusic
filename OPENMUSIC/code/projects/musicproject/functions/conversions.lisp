@@ -79,6 +79,7 @@ Converts a (list of) midicent pitch(es) <midics> to frequencies (Hz).
   (* *diapason-freq*
      (expt 2.0 (/ (- midics? *diapason-midic*) 1200.0)) ))
 
+
 (defmethod* mc->f  ((midics? list))
   (loop for item in midics?
         collect (mc->f item)))
@@ -370,3 +371,24 @@ Converts a symbolic rhythmic beat division into the corresponding duration in mi
   (let ((b-ms (* 1000.0 (/ 60 tempo))))
     (round (* nb-beat b-ms)))
   )
+
+
+;;;=======================================
+;;; from OM2Csound
+;;;=======================================
+
+(defun deep-mapcar/1 (fun list? &rest args)
+  (labels ((map-structure (str accum)
+             (cond ((null str) (reverse accum))
+                   ((not (consp str))
+                    (if accum (reverse (cons (apply fun str args) accum)) (apply fun str args)))
+                   (t (map-structure (cdr str) (cons (map-structure (car str) ()) accum))))))
+    (map-structure list? nil)))
+
+(defun LLdecimals (list nbdec)
+  "Arrondit liste de profondeur quelconque avec <nbdec> decimales"
+  (let ((ndec 
+         (if (> nbdec 0 ) (float (expt 10 nbdec)) (expt 10 nbdec))))
+    (deep-mapcar/1 '/  
+                   (deep-mapcar/1 'round list (/ 1 ndec)) ndec )))
+

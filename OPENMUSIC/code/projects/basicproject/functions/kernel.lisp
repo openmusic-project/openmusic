@@ -686,7 +686,11 @@ If <accum> is nil, figures out what the neutral can be (works for +,*,min,max)."
 (defmethod* interpolation ((begin list) (end list) (samples integer) (curve number))
   (mat-trans (mapcar #'(lambda (item1 item2) (interpolation item1 item2 samples curve))
           begin end)))
-          
+  
+(defmethod* interpolation ((begin list) (end list) (samples integer) (curve integer))
+  (mat-trans (mapcar #'(lambda (item1 item2)  (interpolation  item1 item2 samples (float curve)))
+          begin end)))
+        
 ;(defmethod! om::interpolation ((begin list) (end list) (samples number) (curves number))
 ;  (let ((int (abc-interpolation (list! begin) (list! end) samples
 ;                               (cond 
@@ -893,7 +897,8 @@ Ex. (posn-match '(10 20 30 40 50 60 70 80 90) '(3*(0) 3_6)) => (10 10 10 40 50 6
 
 
 (defmethod* posn-match ((list list) (positions integer) )
-  (nth positions list ))
+  (nth positions list))
+
 
 (defmethod do-posn-match ((self list) (positions list))
   (cond 

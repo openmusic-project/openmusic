@@ -335,6 +335,7 @@ when :
        voice)))
 
 
+
 (defmethod* select ((self poly) (start integer) (end integer))
    (mki 'poly
         :voices (loop for voice in (inside self) 
@@ -365,6 +366,13 @@ when :
         :chord-seqs
         (loop for chord-seq in (inside self)
               collect (select chord-seq start end))))
+
+;; if no end: go until the end 
+(defmethod* select ((self chord-seq) (start number) (end t))
+  (select self start (if end end (list-max (lonset self)))))
+
+(defmethod* select ((self multi-seq) (start number) (end t))
+  (select self start (if end end (list-max (lonset self)))))
 
 
 

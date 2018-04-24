@@ -317,6 +317,7 @@ Ex. (list-modulo '(1 2 3 4 5 6 7 8 9) 3)  => ((1 4 7) (2 5 8) (3 6 9))
 "
   (when (and (> ncol 0) (< ncol (length list))) (list-part list ncol)))
 
+
 (defun list-part (list ncol)  
   (let ((vector (make-array  ncol )) res)
     (while list 
@@ -325,6 +326,7 @@ Ex. (list-modulo '(1 2 3 4 5 6 7 8 9) 3)  => ((1 4 7) (2 5 8) (3 6 9))
     (for (i 0 1 (1- ncol))
       (push (remove nil (nreverse (vref vector i))) res))
     (nreverse res)))
+
 
 ;;;-----------------INTERLOCK
 (defmethod* interlock ((lis1 list) (lis2 list) (plc1 list))

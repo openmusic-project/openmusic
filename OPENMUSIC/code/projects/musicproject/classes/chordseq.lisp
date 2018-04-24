@@ -330,7 +330,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 
-(defun mk-chord-at (t-time  pitch-list dur-list offset-list chan-list vel-list)
+(defun mk-chord-at (t-time pitch-list dur-list offset-list chan-list vel-list)
   (let ((chord (mki 'chord
                      :LMidic pitch-list 
                      :Ldur dur-list 
@@ -339,8 +339,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                      :Lvel vel-list)))
     (setf (offset chord) t-time)
     chord))
-
-
 
 
 
@@ -553,7 +551,7 @@ make-quanti
                         ))
     )
 
-(defmethod mf-info->chord-seq ((self list)  &optional deltachord)
+(defmethod mf-info->chord-seq ((self list) &optional deltachord)
   (let* ((chords (make-quanti-chords self (or deltachord *global-deltachords*)))
          (lonset (mapcar 'offset chords))
          (last-note (first (inside (first (last chords))))))
@@ -563,6 +561,8 @@ make-quanti
       :lonset lonset 
       ;:legato 100
       )))
+
+
 
 (defmethod mf-info-MC->chord-seq ((self list) &optional deltachord)
   (let* ((chords (make-quanti-chords-MC self (or deltachord *global-deltachords*)))
@@ -577,7 +577,7 @@ make-quanti
 
 
 (defmethod align-chordseq-chords ((self chord-seq))
-  (align-offsets (mf-info->chord-seq (chord-seq->mf-info self))))
+  (align-offsets (mf-info-mc->chord-seq (chord-seq->mf-info-mc self))))
 
 
 (defmethod align-offsets ((self chord-seq))
@@ -629,6 +629,9 @@ Transforms <self> so that notes falling in a small time interval are grouped int
     chseq))
 
 
+(defmethod! align-chords ((self chord-seq) (delta null)) self)
+
+
 
 (defmethod* merger ((chs1 chord-seq) (chs2 chord-seq))
   (if (and (inside chs1) (inside chs2))
@@ -639,6 +642,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
     (if (inside chs1) 
         (clone chs1) 
       (clone chs2))))
+
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
@@ -747,6 +751,13 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
   (make-instance 'multi-seq 
     :chord-seqs (loop for voice in (inside self)
                       collect (ObjFromObjs voice (make-instance 'chord-seq)))))
+
+
+(defmethod! align-chords ((self multi-seq) (delta integer))
+  (mki 'multi-seq :chord-seqs (car-mapcar 'align-chords (chord-seqs self) delta)))
+
+
+(defmethod! align-chords ((self multi-seq) (delta null)) self)
 
 
 

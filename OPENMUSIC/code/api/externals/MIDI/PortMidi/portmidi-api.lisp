@@ -222,7 +222,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
   (let ((out (get-output-stream-from-port port)))
     (if out
         (and bytes (pm::pm-write-short out 0 bytes))
-      (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" (midi-evt-port evt))))
+      (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" port)))
     ))
 
 

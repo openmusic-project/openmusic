@@ -63,69 +63,69 @@
 
 ;;; pb qd on cree l'image
 (defun transform-seq-mergeopt (maquette)
-"everythy voice or poly is transformed into a chord-seq or multiseq"
+  "everythy voice or poly is transformed into a chord-seq or multiseq"
   (let ((obj (inside maquette)))
     (remove nil (loop for i in obj collect 
-                                    (cond 
-                                               ((or (typep i 'note) (typep i 'chord) (typep i 'midifile))
-                                                (objfromobjs i (make-instance 'chord-seq)))
-                                               ((typep i 'voice)
-                                                (objfromobjs i (make-instance 'chord-seq )))
-                                               ((typep i 'poly)
-                                                (objfromobjs i (make-instance 'multi-seq)))
-                                               ((typep i 'chord-seq) i)
-                                               ((typep i 'multi-seq) i)
-                                               ((typep i 'maquette-obj) 
-                                                (merge-maquette i))
-                                               (t nil)
-                                     )
-                                    ))
+                      (cond 
+                       ((or (typep i 'note) (typep i 'chord) (typep i 'midifile))
+                        (objfromobjs i (make-instance 'chord-seq)))
+                       ((typep i 'voice)
+                        (objfromobjs i (make-instance 'chord-seq )))
+                       ((typep i 'poly)
+                        (objfromobjs i (make-instance 'multi-seq)))
+                       ((typep i 'chord-seq) i)
+                       ((typep i 'multi-seq) i)
+                       ((typep i 'maquette-obj) 
+                        (merge-maquette i))
+                       (t nil)
+                       )
+                      ))
     ))
+
 
 
 
 (defun get-offsets (maquette)
   (let ((objs (inside maquette)))
     (flat (remove nil 
-                            (loop for i in objs collect 
-                                      (cond ((or (typep i 'note )
-                                                         (typep i 'chord)
-                                                         (typep i 'chord-seq)
-                                                         (typep i 'midifile)
-                                                         (typep i 'voice)
-                                                         (typep i 'maquette-obj)) (offset i))
-                                                  ((or (typep i 'multi-seq)
-                                                         (typep i 'poly)) (repeat-n (offset i) (length (inside i))))
+                  (loop for i in objs collect 
+                        (cond ((or (typep i 'note )
+                                   (typep i 'chord)
+                                   (typep i 'chord-seq)
+                                   (typep i 'midifile)
+                                   (typep i 'voice)
+                                   (typep i 'maquette-obj)) (offset i))
+                              ((or (typep i 'multi-seq)
+                                   (typep i 'poly)) (repeat-n (offset i) (length (inside i))))
                                                   ;((typep i 'om::sound) nil)
-                                                  (t nil)
-                                                  )
+                              (t nil)
+                              )
                                
-                                      )))
+                        )))
     ))
-
 
 
 
 (defun track-mid-parser (list)
 
-(let* ((lstarg list)
-       (lstinit '())
-       (lstgc '()))
-  (progn 
-    (push (first lstarg) lstinit)
-    (pop lstarg))
+  (let* ((lstarg list)
+         (lstinit '())
+         (lstgc '()))
+    (progn 
+      (push (first lstarg) lstinit)
+      (pop lstarg))
   
-(loop
-  for i in lstarg
-  do (if (> (second i) (third (first lstinit)))
-  (progn 
-    (push i lstinit)
-    (pop lstarg))
+    (loop
+     for i in lstarg
+     do (if (> (second i) (third (first lstinit)))
+            (progn 
+              (push i lstinit)
+              (pop lstarg))
 
-  (progn 
-    (push i lstgc)
-    (pop lstarg))))
-(list (reverse lstinit) (reverse lstgc))))
+          (progn 
+            (push i lstgc)
+            (pop lstarg))))
+    (list (reverse lstinit) (reverse lstgc))))
 
 (defun parse-mid-tracks (maq-info)
   (let ((lst (sort. maq-info #'< 'second))
@@ -168,6 +168,7 @@
                 (reverse (push a lst))))))) 
 
 
+
 (defmethod! maquette2obj ((maquette maquette-obj) 
                               (mode symbol)
                               &optional
@@ -194,105 +195,105 @@ If a sub-maquette is embedded, all its contents is merged into a single voice.
 If <mode> = 'poly', he optional inputs allow to set the quantification parameters (see OMQUANTIFY)
 If <mode> = 'sound', a sound file is created by mixing the present sound files in the maquette. Other objects are ignored."
 
-(if (equal mode 'sound) (maquette2sound maquette)
-   (let* ((objs (transform-seq-mergeopt maquette))
-          (offsets ;(om* -1 (get-offsets maquette));offsets of tempobjs in main maquette
-           (get-offsets maquette))
-          (objects (flat (loop 
-                           for i in objs
-                           collect (if (typep i 'multi-seq) (inside i) i))));builds chordseqs from tempobj (if multi->n-chrdseq)
-          (durations (loop
-                       for i in objects
-                       collect (true-durations i)));total durs of chordseqs (tempobjs)
+                (if (equal mode 'sound) (maquette2sound maquette)
+                  (let* ((objs (transform-seq-mergeopt maquette))
+                         (offsets ;(om* -1 (get-offsets maquette));offsets of tempobjs in main maquette
+                          (get-offsets maquette))
+                         (objects (flat (loop 
+                                         for i in objs
+                                         collect (if (typep i 'multi-seq) (inside i) i))));builds chordseqs from tempobj (if multi->n-chrdseq)
+                         (durations (loop
+                                     for i in objects
+                                     collect (true-durations i)));total durs of chordseqs (tempobjs)
           
-          (endings (loop
-                     for dur in durations
-                     for offs in offsets
-                     collect (+ offs 
-                                (reduce '+ (om-abs dur) :initial-value 0)
+                         (endings (loop
+                                   for dur in durations
+                                   for offs in offsets
+                                   collect (+ offs 
+                                              (reduce '+ (om-abs dur) :initial-value 0)
                                ;(apply '+ (om-abs dur))
-                                )));endings off chordseqs
-          (max-end (list-max endings));max ending
+                                              )));endings off chordseqs
+                         (max-end (list-max endings));max ending
           
-          (parsed-tracks 
-           (let
-             ((pmt (parse-mid-tracks (mat-trans (list objects offsets endings durations)))))
-             (loop 
-               for tracks in pmt
-               collect (mat-trans tracks))));group chordseqs by tracks
+                         (parsed-tracks 
+                          (let
+                              ((pmt (parse-mid-tracks (mat-trans (list objects offsets endings durations)))))
+                            (loop 
+                             for tracks in pmt
+                             collect (mat-trans tracks))));group chordseqs by tracks
           
-          (treedurs
-           (loop 
-             for tracks in parsed-tracks
-             collect (let* ((chords (first tracks))
-                            (newoffs (cons (* -1 (car (second tracks))) (om- (third tracks)  (cdr (second tracks)))))
-                            (durations (mapcar 'cons newoffs (fourth tracks))))
-                       (remove 0 (flat durations)))));durations for each track for quantification
-
-          (new-durs+offs (append-last-durs treedurs));same as above with the correct offset
-
-          (treechords
-           (loop 
-             for tracks in parsed-tracks
-             collect (flat (let* ((chords (flat (first tracks))))
-                             (loop 
-                               for i in chords
-                               collect (inside i))))));sequence of chord obj for each track in order to preserve midi info
-
-          ;;;pour multiseq
-          (chrdseq-offs (let* ((chrdseqs (mapcar 'first parsed-tracks))
-                               (local-offs (loop 
-                                             for track in chrdseqs
-                                             collect (mapcar 'lonset track)))
-                               (real-offs (mapcar 'second parsed-tracks)))
-    
+                         (treedurs
                           (loop 
-                            for seqs in local-offs
-                            for offs in real-offs
-                            collect (flat (loop 
-                                            for i in seqs
-                                            for y in offs
-                                            collect (butlast (flat (om+ y i))))))
+                           for tracks in parsed-tracks
+                           collect (let* ((chords (first tracks))
+                                          (newoffs (cons (* -1 (car (second tracks))) (om- (third tracks)  (cdr (second tracks)))))
+                                          (durations (mapcar 'cons newoffs (fourth tracks))))
+                                     (remove 0 (flat durations)))));durations for each track for quantification
+
+                         (new-durs+offs (append-last-durs treedurs));same as above with the correct offset
+
+                         (treechords
+                          (loop 
+                           for tracks in parsed-tracks
+                           collect (flat (let* ((chords (flat (first tracks))))
+                                           (loop 
+                                            for i in chords
+                                            collect (inside i))))));sequence of chord obj for each track in order to preserve midi info
+
+                         ;;;pour multiseq
+                         (chrdseq-offs (let* ((chrdseqs (mapcar 'first parsed-tracks))
+                                              (local-offs (loop 
+                                                           for track in chrdseqs
+                                                           collect (mapcar 'lonset track)))
+                                              (real-offs (mapcar 'second parsed-tracks)))
+    
+                                         (loop 
+                                          for seqs in local-offs
+                                          for offs in real-offs
+                                          collect (flat (loop 
+                                                         for i in seqs
+                                                         for y in offs
+                                                         collect (butlast (flat (om+ y i))))))
                           
-                          ));gives the chord-seqs offsets for each track
+                                         ));gives the chord-seqs offsets for each track
           
 
-          (chordseqs (loop 
-                       for offs in chrdseq-offs
-                       for chords in treechords
-                       collect (make-instance 'chord-seq
-                                 :lmidic chords
-                                 :lonset offs))) ;make chord-seqs
+                         (chordseqs (loop 
+                                     for offs in chrdseq-offs
+                                     for chords in treechords
+                                     collect (make-instance 'chord-seq
+                                                            :lmidic chords
+                                                            :lonset offs))) ;make chord-seqs
           
-          (multisq (make-instance 'multi-seq :chord-seqs chordseqs));build the multiseq
+                         (multisq (make-instance 'multi-seq :chord-seqs chordseqs));build the multiseq
 
-          )
+                         )
 
-     (case mode 
+                    (case mode 
 
-  (multi-seq  multisq)
+                      (multi-seq  multisq)
 
 ;quantification
 
-  (poly 
+                      (poly 
    
-   (let* ((trees (loop 
-                   for i in (inside multisq)
-                   collect (omquantify (true-durations i) tempi measures max/  forbid offset precis)))
-       (chords (loop 
-                for i in (inside multisq)
-                collect (lmidic i)))
-       (voices (loop 
-          for i in trees
-          for a in chords
-          collect (make-instance 'voice
-                    :tree i
-                    :chords a
-                    :tempo tempi)))) 
+                       (let* ((trees (loop 
+                                      for i in (inside multisq)
+                                      collect (omquantify (true-durations i) tempi measures max/  forbid offset precis)))
+                              (chords (loop 
+                                       for i in (inside multisq)
+                                       collect (lmidic i)))
+                              (voices (loop 
+                                       for i in trees
+                                       for a in chords
+                                       collect (make-instance 'voice
+                                                              :tree i
+                                                              :chords a
+                                                              :tempo tempi)))) 
 
-(make-instance 'poly :voices voices))) 
+                         (make-instance 'poly :voices voices))) 
 
-))))
+                      ))))
 
 
 

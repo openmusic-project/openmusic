@@ -717,6 +717,7 @@
    ((not (null (pcs-prime-form-to-fn (pcs-prime-form2 set)))) (pcs-prime-form2 set))
    (t (pcs-prime-form1 set))))
 
+
 (defun PCS-PRIME-FORM3 (type set)
   (cond
    ((equal type :integer)
@@ -726,6 +727,7 @@
    ((equal type :fn) (pcs-prime-form-to-fn (pcs-prime-form-check set)))
    ((equal type :vector)
     (pcs :vector (pcs-prime-form-to-fn (pcs-prime-form-check set))))))
+
 
 (defun PCS-PRIME-FORM (type set)
   (setq set
