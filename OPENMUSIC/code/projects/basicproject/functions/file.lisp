@@ -115,7 +115,7 @@
 	   (svg::stream-out s ,scene))
 	 pathname))))
 
-(defmethod* export-svg ((self bpf) file-path &key with-points)
+(defmethod* export-svg ((self bpf) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1))
   :icon 908
   :indoc '("a BPF object" "a pathname" "draw-points")
   :initvals '(nil nil nil)
@@ -125,14 +125,16 @@ Exports <self> to SVG format.
   (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
 							    :prompt "New SVG file"
 							    :types '("SVG Files" "*.svg"))))
-	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel)))
+	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel :height h :width w)))
     (when pathname
       (with-svg-scene-to-file (pathname scene)
 	(let* ((ys (y-points self))
 	       ;; y2 and y1 switched to have the correct orientation
 	       (bpf-points (point-pairs (bpf-scale self
-						   :y1 (apply #'max ys)
-						   :y2 (apply #'min ys))))
+                                                   :x1 margins :x2 (- w margins) 
+                                                   :y2 margins :y1 (- h margins)
+						   ; :y1 (apply #'max ys) :y2 (apply #'min ys)
+                                                   )))
 	       (prev_p nil)
 	       (path (svg::make-path))
 	       (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
@@ -147,7 +149,8 @@ Exports <self> to SVG format.
 		     (svg::move-to (car pt) (cadr pt))))
 	       (setf prev_p pt))
 	  (svg::draw scene (:path :d path)
-		     :fill "none" :stroke bpfcolorstr)
+		     :fill "none" :stroke bpfcolorstr
+                     :stroke-width line-size)
 
 							    ;if points, draw points
 	  (when with-points
@@ -158,25 +161,21 @@ Exports <self> to SVG format.
 	pathname))))
   
 
-(defmethod* export-svg ((self bpf-lib) file-path &key with-points)
-  :icon 908
-  :indoc '("a BPF-LIB object" "a pathname" "draw-points")
-  :initvals '(nil nil nil)
-  :doc "
-Exports <self> to SVG format.
-"
+;;; w / h / margins are currently ignored for BPF-lib: todo ! (scale the overall bounding-box)
+(defmethod* export-svg ((self bpf-lib) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1)) 
+  
   (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
 							    :prompt "New SVG file"
 							    :types '("SVG Files" "*.svg"))))
-	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel)))
+	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel :height h :width w)))
     (when pathname
       (with-svg-scene-to-file (pathname scene)
 	(loop for bpf in (bpf-list self)
 	   do (let* ((ys (y-points bpf))
 		     ;; y2 and y1 switched to have the correct orientation
-		     (bpf-points (point-pairs (bpf-scale bpf
-							 :y1 (apply #'max ys)
-							 :y2 (apply #'min ys))))
+		     (bpf-points (point-pairs (bpf-scale bpf ;;; todo: 
+                                                         :y1 (apply #'max ys) :y2 (apply #'min ys)
+                                                   )))
 		     (prev_p nil)
 		     (path (svg::make-path))
 		     (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
@@ -192,7 +191,8 @@ Exports <self> to SVG format.
 			   (svg::move-to (car pt) (cadr pt))))
 		     (setf prev_p pt))
 		(svg::draw scene (:path :d path)
-			   :fill "none" :stroke bpfcolorstr)
+			   :fill "none" :stroke bpfcolorstr
+                           :stroke-width line-size)
 
 							    ;if points, draw points
 		(when with-points
