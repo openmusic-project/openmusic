@@ -142,9 +142,16 @@
   (cond 
     ;;; pb : sur mac ca rentre jamais et si ca rentre ca plante : (object <note>) ;;;
     ;;; ((opt-key-p *OM-drag&drop-handler*) (score-duplicate-drop D&DHandler))    
+    
+    ((opt-key-p D&DHandler) ;; score-change-view in the same view will simulate a copy
+     (score-change-view D&DHandler)
+     t)
+    
     ((eq (target-view  D&DHandler) (dragged-view  D&DHandler))
      (score-move-inside D&DHandler))
-    (t (score-change-view D&DHandler))))
+    
+    (t (score-change-view D&DHandler))
+    ))
 
 (defmethod test-receptor ((self scorepanel) where)
    (click-in-obj (graphic-obj self) 'grap-note where self))
@@ -231,12 +238,12 @@
 
 
 (defmethod do-score-reception ((self chordseqPanel) (D&DHandler omdrag-drop) 
-                                 (receptor t) (dragged chord))
-   (if (vertical-move? D&DHandler)
-     (transpose-drag self (dragged-list-objs D&DHandler) (initial-mouse-pos D&DHandler))
-     (when (translate-chords-p self)
-       (move-chords-in-x self (initial-mouse-pos D&DHandler) (drop-mouse-pos D&DHandler) 
-                         (dragged-list-objs D&DHandler) t))))
+                               (receptor t) (dragged chord))
+  (if (vertical-move? D&DHandler)
+      (transpose-drag self (dragged-list-objs D&DHandler) (initial-mouse-pos D&DHandler))
+    (when (translate-chords-p self)
+      (move-chords-in-x self (initial-mouse-pos D&DHandler) (drop-mouse-pos D&DHandler) 
+                        (dragged-list-objs D&DHandler) t))))
 
 (defmethod do-score-reception ((self chordseqPanel) (D&DHandler omdrag-drop) 
                                  (receptor t) (dragged chord-seq))
