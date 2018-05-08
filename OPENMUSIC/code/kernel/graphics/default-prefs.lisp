@@ -618,16 +618,15 @@
 
                       (om-make-dialog-item 'om-static-text  (om-make-point l1 65) (om-make-point (- l2 50) 100)
                                            (format nil "Libraries are searched in the default OM libraries folder:
-=> ~A~%
-You can specify here additional folders where OM will look to find other libraries.~%NB: These folders should contain ONLY OM libraries and no other subfolders.~%"
+=> ~A~%You can specify here additional folders where OM will look to find other libraries. NB: These folders should contain ONLY OM libraries and no other subfolders.~%"
                                                    *om-lib-dir*)
                                            :font *om-default-font1*)
                       )
                       
-     (let ((pos 160)
+     (let ((pos 140)
            (libfolders (remove nil (list! (get-pref modulepref :user-lib-dirs)))))
        (mapcar #'(lambda (folder)  
-                   (let ((dirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 20) pos) (om-make-point (- l2 85)  55)
+                   (let ((dirtxt (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 16) pos) (om-make-point (- l2 85)  55)
                                                       (namestring folder)
                                                       :font *om-default-font1*
                                                       :fg-color (if (probe-file folder) *om-black-color* *om-red-color* ))))
@@ -653,7 +652,7 @@ You can specify here additional folders where OM will look to find other librari
                                                               (set-pref modulepref :user-lib-dirs libfolders)
                                                               (om-set-fg-color dirtxt *om-black-color*)))
                                       )
-                     (setf pos (+ pos 35))
+                     (setf pos (+ pos 22))
                      ))
                libfolders)
        
