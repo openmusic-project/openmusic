@@ -110,6 +110,8 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                              (om-message-dialog (format nil "Error while loading the library ~A:~%~s" 
                                                          (name self) (om-report-condition c))
                                                 :size (om-make-point 300 200))
+                              (cl-user::clean-sources (mypathname self))
+                                     
                             (om-abort)))))
     (unless (loaded? self)
       (if (probe-file (lib-pathname self))

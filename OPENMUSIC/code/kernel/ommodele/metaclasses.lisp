@@ -349,3 +349,5 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 #loaded?# T is the LIbrary is already loaded. #loaded?#"))
 
 
+;;; actually lib-pathname is not required...
+(defmethod mypathname ((self OMLib)) (lib-pathname self))
