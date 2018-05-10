@@ -273,10 +273,10 @@
 ; Editor controls
 
 (defmethod multi-vol-convert ((self number)) 
-  (lin->db (* 0.01 self)))
+  (lin->db (* 1 self)))
 
 (defmethod multi-convert-vol ((self number)) 
-  (om-round (* 100 (db->lin self)) 5)
+  (om-round (* 1 (db->lin self)) 5)
   )
 
 (defmethod make-player-specific-controls ((self (eql :multiplayer)) control-view)
