@@ -99,6 +99,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                      :device (pathname-device (lib-pathname self))))
 
 
+(defvar *ask-for-cleanup-on-lib-error* t)
 ;;; LOADS AN OM LIB IF NOT LOADED
 ;;; LOADS LIB PICTURES
 ;;; SETS *current-lib*
@@ -107,11 +108,20 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
  (handler-bind ((error #'(lambda (c)
                            (hide-message-win)
                            (when *msg-error-label-on*
+                             
                              (om-message-dialog (format nil "Error while loading the library ~A:~%~s" 
-                                                         (name self) (om-report-condition c))
+                                                        (name self) (om-report-condition c))
                                                 :size (om-make-point 300 200))
-                              (cl-user::clean-sources (mypathname self))
-                                     
+                             
+                             (when *ask-for-cleanup-on-lib-error*
+                               (let ((rep (om-y-or-n-option-dialog 
+                                           (format nil "Cleanup lib sources ?~%~%Cleanup will delete all compiled Lisp files")
+                                           "Do not ask again")))
+                                 (setq *ask-for-cleanup-on-lib-error* (not (cadr rep)))
+                                 (when (car rep)
+                                   (cl-user::clean-sources (mypathname self))))
+                               )
+                             
                             (om-abort)))))
     (unless (loaded? self)
       (if (probe-file (lib-pathname self))
