@@ -211,7 +211,7 @@ External Libraries:
                              :bg-color backcolor
                              :size (om-add-points 
                                     (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-                                    (if credits (om-make-point 440 0) (om-make-point 0 0)))
+                                    (if credits (om-make-point 440 #-linux 0 #+linux 20) (om-make-point 0 0)))
                              :subviews (list (om-make-dialog-item 'om-static-text  
                                                                   (om-make-point 58 6) (om-make-point 400 36) 
                                                                   name
