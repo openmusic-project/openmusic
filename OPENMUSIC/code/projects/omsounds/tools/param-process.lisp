@@ -161,7 +161,7 @@ Notes:
    (ph :accessor ph :initarg :ph :initform 0.0))
   (:icon 632))
 
-(defmethod! vibrato (freqs amps &optional ph)
+(defmethod! vibrato (freqs amps &optional (ph 0.0))
    :initvals '(6.0 0.06 0.0)
    :indoc '("vibrato frequency(-ies)" "vibrato amplitude(s)" "initial phase [rad]")
    :outdoc '("vibrato effect")
@@ -173,10 +173,12 @@ Notes:
 
 (defmethod generate-function-bpfs ((fun vibrato-effect) begin end resolution)
   (let* ((freqs (list! (freq fun)))
-         (phase (or (ph fun) 0))
+         (phase (if (consp (ph fun)) (ph fun) (make-list (length freqs) :initial-element (ph fun))))
          (amps (if (consp (amp fun)) (amp fun) (make-list (length freqs) :initial-element (amp fun))))
          (res (or resolution (om-beep-msg "Warning: no resolution specified for the vibrato. Default= 1 / (4 * f)"))))
-    (loop for f in freqs for a in amps collect 
+    (loop for f in freqs 
+          for a in amps
+          for p in phase collect 
           (let* ((x-list (precise-arithm-ser begin end (or res (/ 1 (float (* 4 (if (bpf-p f) (list-max (y-points f)) f)))))))
                  (f-vals (if (bpf-p f) 
                             (let* ((fpts (point-pairs f))
@@ -190,7 +192,7 @@ Notes:
                                        (let* ((t1 (car c))
                                               (t2 (cadr c))          
                                               (n (length (band-filter x-list (list (list t1 t2)) 'pass))))
-                                         (nth 2 (multiple-value-list (om-sample 'sin n 0 (* 2 pi) 3))))))))
+                                         (nth 2 (multiple-value-list (om-sample #'(lambda (x) (sin (+ x p))) n 0 (* 2 pi) 3))))))))
                            
                  (a-vals (if (bpf-p a) 
                              (let* ((apts (point-pairs a))
@@ -204,7 +206,7 @@ Notes:
                                         for i = 0 then (+ i 1) 
                                         collect (* (if (listp a-vals) (nth i a-vals) a-vals)
                                                    (if sin-vals (nth i sin-vals)
-                                                        (sin (* 2 pi x (car (list! f-vals)))))
+                                                        (sin (+ p (* 2 pi x (car (list! f-vals))))))
                                                    ))
                                   'bpf 6)))))
 
