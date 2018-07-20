@@ -466,10 +466,13 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
            
            (when (equal (allow-lock self) "&")
              (setf (ev-once-p self) t))
+           
+           ;;; if the new value is of a new type, reinit the box's edition params
+           (unless (typep (car rep) (type-of (car (value self))))
+             (setf (edition-params self) (default-edition-params (car rep))))
+           
            (setf (value self) rep)
-           ;;;
-           (setf (edition-params self) (default-edition-params (car (value self))))
-           ;;;
+
            (when (and (editorFrame self) (EditorView-p (editorframe self)))
              (if (equal (type-of (object (editorFrame self))) (type-of (get-mus-ob self)))
                  (update-editor-after-eval (editorFrame self) (get-mus-ob self))
