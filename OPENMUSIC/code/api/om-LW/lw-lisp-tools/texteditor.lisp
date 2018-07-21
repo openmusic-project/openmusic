@@ -559,7 +559,8 @@
            (with-slots (ep) edwin
              (let ((buffer (editor-pane-buffer ep)))
                (editor::use-buffer buffer
-                 (call-editor ep (list 'EDITOR::REGEXP-FORWARD-SEARCH-COMMAND buffer string-to-search))
+                 ;(print (multiple-value-list (editor::regular-expression-search (editor:buffers-start buffer) string-to-search)))
+                 (call-editor ep (list 'EDITOR::REGEXP-FORWARD-SEARCH-COMMAND (editor:buffers-start buffer) string-to-search (editor:current-point)))
                  ))))))
     edwin))
 
