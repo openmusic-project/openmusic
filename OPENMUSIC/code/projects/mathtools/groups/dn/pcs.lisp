@@ -718,15 +718,18 @@
    (t (pcs-prime-form1 set))))
 
 
+
+;;; NOW REDEFINED IN PCS-UPDATE.LISP
+#|
 (defun PCS-PRIME-FORM3 (type set)
-  (cond
-   ((equal type :integer)
-    (pcs-prime-form1 set))
-   ((equal type :pitch)
-    (integer-to-pitch (pcs-prime-form-check set)))
-   ((equal type :fn) (pcs-prime-form-to-fn (pcs-prime-form-check set)))
-   ((equal type :vector)
-    (pcs :vector (pcs-prime-form-to-fn (pcs-prime-form-check set))))))
+  (let ((pform (pcs-prime-form-check set)))
+    (cond
+     ((equal type :integer) pform)
+     ((equal type :pitch) (integer-to-pitch pform))
+     ((equal type :fn) (pcs-prime-form-to-fn pform))
+     ((equal type :vector) (pcs :vector (pcs-prime-form-to-fn pform))))
+    ))
+|#
 
 
 (defun PCS-PRIME-FORM (type set)
@@ -743,6 +746,9 @@
    ((atom (car set)) (pcs-prime-form3 type set))
    (t (mapcar #'(lambda (x)
                   (pcs-prime-form3 type x)) set))))
+
+
+
 
 ;;; -----------------------------------------------------------------------------
 ;;; pcs-sub-power

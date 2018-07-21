@@ -47,6 +47,8 @@
                    "groups;zn;tl-zn"
 
                    "groups;dn;pcs"
+                   "groups;dn;pcs-update"
+                   
                    "groups;dn;ominterface"
 
                    "sequences;lewin1"
