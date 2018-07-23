@@ -104,16 +104,42 @@
               
               (om-make-view 'om-icon-button :position (om-make-point 442 2) :size (om-make-point 22 22)
                             :icon1 "stop" :icon2 "stop-pushed"
-                            :action #'(lambda (item) (editor-stop self)))
+                            :action #'(lambda (item) 
+                                        
+                                        (when (recording self)
+                                          (stop-recording self)
+                                          (setf (selected-p (nth 3 (play-buttons (title-bar self)))) nil)
+                                          (setf (enabled (nth 0 (play-buttons (title-bar self)))) t)
+                                          (setf (enabled (nth 1 (play-buttons (title-bar self)))) t)
+                                          (setf (enabled (nth 4 (play-buttons (title-bar self)))) t)
+                                          (om-invalidate-view (title-bar self))
+                                          )
+                                        
+                                        (editor-stop self)))
               
               (om-make-view 'om-icon-button :position (om-make-point 463 2) :size (om-make-point 22 22)
                             :icon1 "rec" :icon2 "rec-pushed"
                             :lock-push t
                             :action #'(lambda (item) 
                                         (if (recording self)
-                                            (stop-recording self)
-                                          (start-recording self))
-                                        (setf (selected-p item) (recording self))))
+                                            (let ()
+                                              (stop-recording self)
+                                              (setf (enabled (nth 0 (play-buttons (title-bar self)))) t)
+                                              (setf (enabled (nth 1 (play-buttons (title-bar self)))) t)
+                                              (setf (enabled (nth 4 (play-buttons (title-bar self)))) t)
+                                              (om-invalidate-view (title-bar self))
+                                              )
+                                          (let ()
+                                            (unless (timed-recording self)
+                                              (setf (enabled (nth 0 (play-buttons (title-bar self)))) nil)
+                                              (setf (enabled (nth 1 (play-buttons (title-bar self)))) nil)
+                                              (setf (enabled (nth 4 (play-buttons (title-bar self)))) nil)
+                                              (om-invalidate-view (title-bar self)))
+                                            (start-recording self))
+                                          )
+
+                                        (setf (selected-p item)
+                                              (recording self))))
               
               (om-make-view 'om-icon-button :position (om-make-point 484 2) :size (om-make-point 22 22)
                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
@@ -192,10 +218,11 @@
   (update-play-buttons (title-bar self)))
 
 (defmethod editor-stop ((self scoreeditor))
+  (call-next-method))
+
+(defmethod stop-editor-callback ((self scoreeditor))
   (call-next-method)
   (update-play-buttons (title-bar self)))
-
-
 
 ;===========
 ;OBJECT ORDER
@@ -826,7 +853,20 @@
           ))
         (t 
          (case char
+           
            (#\SPACE (editor-play/stop (editor self)))
+           
+           (:om-key-esc 
+            (if (selection? self)
+                (toggle-selection self)
+              (let ()
+                (editor-stop (editor self))
+                (when (recording (editor self))
+                  (stop-recording (editor self))
+                  (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)
+                  ))
+              ))
+
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
            (#\h (show-help-window (format nil "Commands for ~A Editor" 
@@ -843,7 +883,11 @@
            (:om-key-up  (move-selection self 0))
            (:om-key-down  (move-selection self 1))
            (otherwise (if (selection? self)
-                          (if (char-is-digit char) (do-subdivise self char)
+                          
+                          (if (char-is-digit char) 
+                              
+                              (do-subdivise self char)
+                            
                             (case char
                               (:om-key-left (cond ((extra-p (car (selection? self)))
                                                    (advance-extras self -1))
@@ -858,7 +902,6 @@
                               (#\C  (set-color-to-mus-obj self))
                            
                               (:om-key-delete (delete-selection self))
-                              (:om-key-esc (toggle-selection self))
                               (#\+ (do-union self))
                               (#\* (do-group self))
                               (#\- (un-group self))

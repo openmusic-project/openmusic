@@ -704,7 +704,13 @@ into the unaire-fun-view.#action#"))
                         (om-draw-string xx yy (text self)))))))
      (when (and (lock-push self) (selected-p self) (not (icon2 self)))
        (om-with-focused-view self
-         (om-draw-hilite-rect 0 0 (w self) (h self) *om-black-color*)))))
+         (om-draw-hilite-rect 0 0 (w self) (h self) *om-black-color*)))
+     
+     (when (not (enabled self))
+       (om-with-fg-color self (om-make-color-alpha .9 .9 .9 .5)
+         (om-fill-rect 0 0 (w self) (h self)))) 
+     
+     ))
 
 
 ;;;===========================================

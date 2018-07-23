@@ -45,12 +45,14 @@
 (defmethod timed-recording ((self scoreeditor)) t)
 (defmethod timed-recording ((self noteeditor)) nil)
 (defmethod timed-recording ((self chordeditor)) nil)
+(defmethod timed-recording ((self voiceeditor)) nil)
+(defmethod timed-recording ((self polyeditor)) t)
 
 
 (defmethod start-recording ((self scoreeditor))
-  (print "start MIDI recording")
+  (om-print "start MIDI recording" "OM ::")
   (if (midi-recorder-editor *midi-recorder*)
-      (om-beep-msg (format nil "ERROR: MIDI recoring is already ON in ~A" 
+      (om-beep-msg (format nil "ERROR: MIDI recoring is already ON" 
                            (om-window-title (om-view-window (midi-recorder-editor *midi-recorder*)))))
     (progn 
       (setf (recording self) t)
@@ -60,13 +62,19 @@
       (setf (midi-recorder-memory *midi-recorder*) nil)
       (setf (midi-recorder-t0 *midi-recorder*) (get-internal-real-time))
       (setf (midi-recorder-process *midi-recorder*) 
-            (midi-in-start *def-midi-in* 
+            (midi-in-start  *def-midi-in* 
                            #'(lambda (msg time) 
                                 ;; the player is "activated"
-                               (if (equal (state (player self)) :play) ; (timed-recording self)
-                                   (setf (om-midi:midi-evt-date msg) (get-player-time (player self)))
-                                 (setf (om-midi:midi-evt-date msg) (- (get-internal-real-time) (midi-recorder-t0 *midi-recorder*))))
-                               (push msg (midi-recorder-memory *midi-recorder*)))
+                                ;; (print msg)
+                               (cond 
+                                ((equal (state (player self)) :play)
+                                 (setf (om-midi:midi-evt-date msg) (get-player-time (player self)))
+                                 (push msg (midi-recorder-memory *midi-recorder*)))
+                                ((not (timed-recording self)) ;; e.g. chord, note... 
+                                 (setf (om-midi:midi-evt-date msg) (- (get-internal-real-time) (midi-recorder-t0 *midi-recorder*)))
+                                 (push msg (midi-recorder-memory *midi-recorder*)))
+                                (t nil))
+                               )
                            1 *def-midi-out*))
       )
     ))
@@ -75,8 +83,8 @@
 (defmethod stop-recording ((self scoreeditor))
   (unwind-protect
       (progn 
-        (print "stop MIDI recording")
-        (setf (recording self) nil)
+        (om-print "stop MIDI recording" "OM ::")
+        
         (let* ((midilist (midievents2midilist (reverse (midi-recorder-memory *midi-recorder*))))
                (note-list (loop for item in midilist collect 
                                 (list (nth 1 item)
@@ -91,8 +99,13 @@
     (setf (midi-recorder-editor *midi-recorder*) nil)
     (setf (midi-recorder-memory *midi-recorder*) nil)
     (midi-in-stop (midi-recorder-process *midi-recorder*))
+    (setf (recording self) nil)
     ))
                   
+
+(defmethod close-editor-before ((self scoreeditor))
+  (stop-recording self)
+  (call-next-method))
 
 
 (defmethod add-recorded-seq-to-editor ((editor t) seq)

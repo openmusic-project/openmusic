@@ -200,14 +200,18 @@
   (unschedule-all player)
   (setf (engines player) nil
         (play-list player) nil)
-  (when (stop-fun player)
-    (funcall (stop-fun player) (caller player)))
+  
   (when (callback-process player)
     (om-kill-process (callback-process player))
     (setf (callback-process player) nil))
+  
   (setf (state player) :stop
         (ref-clock-time player) (clock-time)
         (start-time player) 0)
+  
+  (when (stop-fun player)
+    (funcall (stop-fun player) (caller player)))
+  
   (when (scheduling-process player)
     (om-kill-process (scheduling-process player))
     (setf (scheduling-process player) nil))
@@ -447,7 +451,7 @@
 (defmethod get-editor-callback ((self play-editor-mixin))
   #'(lambda (editor time)
       (handler-bind ((error #'(lambda (e) 
-                                          ;(print e)
+                                ;(print e)
                                 (om-kill-process (callback-process (player self)))
                                 (abort e))))
         (play-editor-callback editor time)
@@ -477,14 +481,12 @@
   (general-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
-  ;(if (equal (state (player self)) :record)
-  ;    (editor-stop-record self))
   (general-stop (player self)))
 
 (defmethod editor-play/stop ((self play-editor-mixin))
   (if (idle-p (player self))
       (editor-play self)
-    (editor-stop self)))
+    (editor-pause self)))
 
 #|
 (defmethod editor-record ((self play-editor-mixin))
@@ -503,7 +505,9 @@
   (mapcar #'(lambda (view) (update-cursor view time))
           (cursor-panes self)))
 
-(defmethod stop-editor-callback ((self play-editor-mixin)) nil)
+(defmethod stop-editor-callback ((self play-editor-mixin)) 
+  (mapcar #'(lambda (view) (update-cursor view (start-position view)))
+          (cursor-panes self)))
 
 (defmethod close-editor-before ((self play-editor-mixin))
   (general-stop (player self))
