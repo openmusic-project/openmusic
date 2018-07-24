@@ -236,7 +236,12 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 ;;; exported call
 (defun portmidi-send-evt (evt)
+  (print 
   (send-bytes 
+   (make-midi-bytes (midi-evt-type evt) 
+                    (1- (midi-evt-chan evt)) 
+                    (midi-evt-fields evt))
+(send-bytes 
    (make-midi-bytes (midi-evt-type evt) 
                     (1- (midi-evt-chan evt)) 
                     (midi-evt-fields evt))
