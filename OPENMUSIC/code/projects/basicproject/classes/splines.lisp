@@ -154,12 +154,12 @@ B-Splines are smoothed curves where each point is computed by polynomial interpo
 Returned values :
  - The result as an object (BPF or BPC) (1st output)
  - The list of x points (2nd output)
- - The list of sample values (3rd output)
+ - The list of y points (3rd output)
 
 <resolution> is the number of points in the resulting curve
 <degree> is the degree of the polynomial interpolation. higher degrees give smoother curves
 
-Note that splines are supposed to be computed from BPFs with reltively few control points. "
+Note that splines are supposed to be computed from BPF/BPCs with reltively few control points. "
 
 
   (let* ((points (point-pairs self))

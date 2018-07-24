@@ -41,6 +41,6 @@
 
 (add-ref-section  
  '("BASIC TOOLS" (
-                  ("3D" (3DC 3DC-lib 3D-trajectory 3D-interpol 3D-sample))
+                  ("3D" (3DC 3DC-lib 3D-trajectory 3D-interpol 3D-sample 3D-spline))
                   ("Geometry" (deg->rad rad->deg car->pol pol->car xy->ad ad->xy xyz->aed aed->xyz))
                  )))

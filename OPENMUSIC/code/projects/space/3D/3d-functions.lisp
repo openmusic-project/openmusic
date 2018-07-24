@@ -27,7 +27,10 @@
 ;;; FUNCTIONS FOR 3DCs and 3D-trajectories
 ;;;=======================================
 
+;;;==============
 ;;; INTERPOLATION
+;;;==============
+
 (defmethod 3D-interpolation ((first 3DC) (second 3DC) (steps number) 
                              &optional (curve 0.0) (decimals nil) (mode 'points))
   (cond ((equal mode 'points)
@@ -93,11 +96,14 @@ Outputs
         xx yy zz 
         ))))
 
+;;;==============
 ;;; RESAMPLE
-(defmethod! 3D-sample ((self 3Dc) (samples number)  &optional decimals)
-            :icon '(910)
+;;;==============
+
+(defmethod* 3D-sample ((self 3Dc) (samples number)  &optional decimals)
+            :icon 910
             :initvals '(nil 1000 nil) ;
-            :indoc '("object (3Dc)" "number of samples" "decimals")
+            :indoc '("object (3Dc/3D-trajectory)" "number of samples" "decimals")
             :numouts 4
             :doc "samples a 3Dc"  
             (let ((x (third (multiple-value-list (om-sample (x-points self) samples))))
@@ -106,18 +112,57 @@ Outputs
               (values (3dc-from-list x y z (type-of self) (or decimals (decimals self)))
                       x y z)))
 
-(defmethod! 3D-sample ((self 3d-trajectory) (samples number)  &optional decimals)
-            :icon '(910)
-            :initvals '(nil 1000 nil) ;
-            :indoc '("object (3Dc)" "number of samples" "decimals")
-            :numouts 4
-            :doc "samples a 3Dc"  
-            (let ((x (third (multiple-value-list (om-sample (x-points self) samples))))
-                  (y (third (multiple-value-list (om-sample (y-points self) samples))))
-                  (z (third (multiple-value-list (om-sample (z-points self) samples))))
-                  (times (third (multiple-value-list (om-sample (times (get-full-trajectory self)) samples)))))
-              (values (traject-from-list x y z times (type-of self) (or decimals (decimals self)))
-                      x y z)))
+(defmethod* 3D-sample ((self 3d-trajectory) (samples number)  &optional decimals)
+  (let ((x (third (multiple-value-list (om-sample (x-points self) samples))))
+        (y (third (multiple-value-list (om-sample (y-points self) samples))))
+        (z (third (multiple-value-list (om-sample (z-points self) samples))))
+        (times (third (multiple-value-list (om-sample (times (get-full-trajectory self)) samples)))))
+    (values (traject-from-list x y z times (type-of self) (or decimals (decimals self)))
+            x y z)))
+
+;;;==============
+;;; SPLINE
+;;;==============
+
+(defmethod* 3D-spline ((self 3Dc) (resolution integer) (degree integer))
+  :icon 234
+  :initvals '(nil 100 3)
+  :indoc '("a 3DC Or 3D-Trajectory" "number of points" "interpolation degree")
+  :numouts 4
+  :doc "Computes a B-Spline curve from the control points in the 3DC.
+
+B-Splines are smoothed curves where each point is computed by polynomial interpolation from a set of control points.
+
+Returned values :
+ - The result as an object (3DC or 3D-trajectory) (1st output)
+ - The list of x points (2nd output)
+ - The list of y points (2nd output)
+ - The list of z points (2nd output)
+
+<resolution> is the number of points in the resulting curve
+<degree> is the degree of the polynomial interpolation. higher degrees give smoother curves
+
+Note that splines are supposed to be computed from reltively few control points. "
+
+  (let ((xy (multiple-value-list (om-spline (simple-bpf-from-list (x-points self) (y-points self) 'bpc (decimals self)) resolution degree)))
+        (xz (multiple-value-list (om-spline (simple-bpf-from-list (x-points self) (z-points self) 'bpc (decimals self)) resolution degree))))
+        
+    (values (3dc-from-list (nth 1 xy) (nth 2 xy) (nth 2 xz) (type-of self) (decimals self))
+            (nth 1 xy) (nth 2 xy) (nth 2 xz))
+    ))
+
+
+(defmethod* 3D-spline ((self 3d-trajectory) (resolution integer) (degree integer))
+  
+  (let ((xy (multiple-value-list (om-spline (simple-bpf-from-list (x-points self) (y-points self) 'bpc (decimals self)) resolution degree)))
+        (xz (multiple-value-list (om-spline (simple-bpf-from-list (x-points self) (z-points self) 'bpc (decimals self)) resolution degree)))
+        (times (third (multiple-value-list (om-sample (times (get-full-trajectory self)) resolution)))))
+        
+    (values (traject-from-list (nth 1 xy) (nth 2 xy) (nth 2 xz) times (type-of self) (decimals self))
+            (nth 1 xy) (nth 2 xy) (nth 2 xz))
+    ))
+
+
 
 ;;;=======================================
 ;;; REDEFINITION OF BPC FUNCTIONS FOR 3DCs and 3D-trajectories from OMPrisma
