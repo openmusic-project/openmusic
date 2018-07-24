@@ -380,7 +380,7 @@
                                      :allow-other-keys t)
                                attributes
                                ))))
-     
+    
     (when (setf layout (make-window-layout thewin bg-color))
       #+cocoa(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
       (setf (capi::pane-layout thewin) layout))
@@ -390,6 +390,10 @@
        (set-not-resizable thewin w h))
      (unless (window-dialog-p thewin)
        (internal-display thewin))
+     
+     ;; fixes geometry when x and y are out of the primary screen region
+     (om-set-view-position thewin (om-make-point x y))
+     
      thewin))
 
 (defmethod internal-display ((self t))
