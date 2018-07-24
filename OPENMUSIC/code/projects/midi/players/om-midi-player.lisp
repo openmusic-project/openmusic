@@ -76,7 +76,7 @@
 
 (defparameter *key-ons* (make-hash-table :test #'equal))
 
-(defmethod player-stop ((engine (eql :midi-player)) &optional play-list)
+(defun all-notes-off ()
   (maphash #'(lambda (k ch)
 	       (mapc #'(lambda (note)
 			 (midi-send-evt
@@ -86,9 +86,15 @@
 						 :fields (list (cadr note) 0))))
 		     ch)
 	       (remhash k *key-ons*))
-	   *key-ons*)
+	   *key-ons*))
+
+(defmethod player-stop ((engine (eql :midi-player)) &optional play-list)
+  (all-notes-off)
   (midi-stop)
   (if *midi-microplay* (microplay-reset nil engine)))
+
+(defmethod player-pause ((engine (eql :midi-player)) &optional play-list)
+  (all-notes-off))
 
 ;; (defmethod player-loop ((self (eql :midi-player)) player &optional play-list) (call-next-method))
 

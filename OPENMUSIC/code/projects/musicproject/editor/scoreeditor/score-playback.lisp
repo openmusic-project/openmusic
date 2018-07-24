@@ -30,6 +30,13 @@
   (list :port (get-edit-param self 'outport) 
         :approx (get-edit-param self 'approx)))
 
+
+(defmethod get-interval-to-play ((self scoreeditor))
+  (let ((interval (call-next-method)))
+    (if (recording self)
+        (list (or (car interval) 0) 3600000)
+      interval)))
+
 ;;;=========================
 ;;; MIDI RECORD
 ;;;=========================

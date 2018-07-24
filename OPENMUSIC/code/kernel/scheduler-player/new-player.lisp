@@ -113,9 +113,12 @@
         ))
 
 
+
 (defmethod general-play ((player omplayer)) ;;; &key (start-t 0) (end-t 3600000))
   (let ((start-t (or (car (play-interval player)) 0))
-        (end-t (or (cadr (play-interval player )) 3600000)))
+        (end-t (or 
+                (cadr (play-interval player))
+                3600000)))
   (cond ((equal (state player) :play)
          ;;; prolonge la durée de vie du player
          (setf (stop-time player) (max (stop-time player) end-t)))
@@ -468,7 +471,7 @@
                  (get-editor-callback self)))
       (mapcar #'(lambda (view) (start-cursor view)) (cursor-panes self))
       (schedule-editor-contents self)
-      (setf (play-interval (player self)) (list  (or (car interval) 0) (or (cadr interval) (get-obj-dur obj))))
+      (setf (play-interval (player self)) (list (or (car interval) 0) (or (cadr interval) (get-obj-dur obj))))
       (general-play (player self) 
                     ;:start-t (or (car interval) 0)
                     ;:end-t (or (cadr interval) (get-obj-dur obj))
