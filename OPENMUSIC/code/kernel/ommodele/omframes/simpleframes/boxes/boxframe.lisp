@@ -640,22 +640,25 @@
 
 (defmethod allowed-lock-modes ((self omboxcall)) '("x" "&" "l" "o"))
 
+(defmethod make-lock-button ((self omboxframe) mode)
+  (om-make-view 'lock-button
+                :IconID (get-icon-lock mode)
+                :size (om-make-point 10 10)
+                :position (om-make-point 0 0) ;;; (x (iconview self)) 8)
+                :action #'(lambda (item)
+                            (let* ((modes (allowed-lock-modes (object self)))
+                                   (mpos (position (mode item) modes :test 'string-equal))
+                                   (newmode (when mpos (nth (mod (1+ mpos) (length modes)) modes))))
+                              (setf (mode item) newmode (iconID item) (get-icon-lock newmode))
+                              (setf (allow-lock (object self)) newmode)
+                              (om-invalidate-view self)
+                              ))))
+  
 (defmethod add-lock-button ((self omboxframe) &optional (mode "x"))
    "Add a lock button, ff the box referenced by 'self' allow it."
    (when (allow-lock-button (object self))
-     (setf (lock-button self)  (om-make-view 'lock-button
-                                 :IconID (get-icon-lock mode)
-                                 :size (om-make-point 10 10)
-                                 :position (om-make-point 0 0) ;;; (x (iconview self)) 8)
-                                 :owner (iconview self)
-                                 :action #'(lambda (item)
-                                             (let* ((modes (allowed-lock-modes (object self)))
-                                                    (mpos (position (mode item) modes :test 'string-equal))
-                                                    (newmode (when mpos (nth (mod (1+ mpos) (length modes)) modes))))
-                                               (setf (mode item) newmode (iconID item) (get-icon-lock newmode))
-                                               (setf (allow-lock (object self)) newmode)
-                                               (om-invalidate-view self)
-                                               ))))
+     (setf (lock-button self) (make-lock-button mode))
+     (om-add-subviews (iconview self) (lock-button self))
      (om-invalidate-view self)
      (setf (allow-lock (object self)) mode)))
 

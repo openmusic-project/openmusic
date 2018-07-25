@@ -107,15 +107,14 @@
                            :size (om-subtract-points boxsize (om-make-point 0 17)))
              ))
              
-     (om-add-subviews module (print (iconview module)))
+     (om-add-subviews module (iconview module))
 
      (setf (frames self) (list module))
      (setf (frame-size self) (om-view-size module))
      (setf (name module) name)
      (add-box-resize module)
 
-     (when (showpict self)
-       (update-di-size (value self) (iconview module)))
+     (update-di-size (value self) module)
      
      (when (allow-lock self)
        (add-lock-button module (allow-lock self)))
@@ -151,9 +150,18 @@
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
    (om-make-point (max 30 (om-point-h new-pos )) (max 30 (om-point-v new-pos ))))
 
+(defmethod add-lock-button ((self DIEditorframe) &optional (mode "x"))
+   "Add a lock button, ff the box referenced by 'self' allow it."
+   (when (allow-lock-button (object self))
+     (setf (lock-button self) (make-lock-button self mode))
+     (om-set-view-position (lock-button self) (om-make-point 0 8))
+     (om-add-subviews self (lock-button self))
+     (om-invalidate-view self)
+     (setf (allow-lock (object self)) mode)))
+
 (defmethod remove-lock-button ((self DIEditorframe))
    "Do not set value to nil."
-   (om-remove-subviews (iconview self) (lock-button self))
+   (om-remove-subviews self (lock-button self))
    (om-invalidate-view self)
    (setf (lock-button self) nil)
    (setf (allow-lock (object self)) nil))
@@ -173,16 +181,15 @@
 (defmethod omG-select ((self DIEditorframe))
    (when (not (active-mode self))
      (setf (active-mode self) t)
-     ;(setf (selected-p (iconView self)) t)
-     ;(draw-only-select (iconView self))
+     (om-invalidate-view self)
      ))
 
 (defmethod omG-unselect ((self DIEditorframe))
    (when (active-mode self)
      (setf (active-mode self) nil)
-     ;(setf (selected-p (iconView self)) nil)
-     ;(draw-only-select (iconView self))
+     (om-invalidate-view self)
      ))
+
 
 ;======================EVENTS==========================
 
@@ -192,11 +199,13 @@
 (defmethod om-view-doubleclick-handler ((self di-miniview) where) nil)
 
 (defmethod draw-only-select ((self di-miniview)) (om-invalidate-view self))
-;   (om-without-interrupts 
-;     (om-invalidate-rectangle self 1 1 (w self) 2)
-;     (om-invalidate-rectangle self 1 1 2 (- (h self) 2))
-;     (om-invalidate-rectangle self 1 (- (h self) 3) (- (w self) 2) (- (h self) 2))
-;     (om-invalidate-rectangle self (- (w self) 3) 1 (- (w self) 2) (- (h self) 2))))
+
+(defmethod om-draw-contents ((self dieditorframe))
+  (call-next-method)
+  (when (and (showpict (object self)) (active-mode self))
+    (om-with-focused-view self
+      (om-with-fg-color self *om-gray-color*
+      (om-draw-rect 1 8 (- (w self) 3) (- (h self) 17) :pensize 2)))))
 
 (defmethod om-draw-contents ((self di-miniview))
   (om-with-focused-view self
@@ -218,9 +227,9 @@
         ))
     (when (show-name (object (om-view-container self)))
       (om-draw-string 4 (- (h self) 5) (name (object (om-view-container self)))))
-    (if (selected-p self)
+    (if (active-mode (om-view-container self)) ; (selected-p self)
       (om-with-fg-color self (om-make-color 0 0 0) 
-        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 2)
+        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 3)
         ))
       ))
 
@@ -230,19 +239,19 @@
   (om-remove-subviews self (iconview self))
   (setf (showpict (object self)) (not (showpict (object self))))
   
-  (if (showpict (object self))
-      (progn
-        (setf (iconview self) (value (object self)))
-        (update-di-size (value (object self)) self)
-        )
-    
-    (setf (iconview self)
+      
+  (setf (iconview self) 
+        (if (showpict (object self))
+        
+            (value (object self))
+        
           (om-make-view 'di-miniview
                         :position (om-make-point 0 8)
                         :size (om-subtract-points (om-view-size self) (om-make-point 0 17))))
-    )
+        )
   
   (om-add-subviews self (iconview self))
+  (update-di-size (value (object self)) self)
   (om-invalidate-view self))
 
 (defmethod change-boxframe-size ((view DIEditorframe) new-position)
@@ -253,12 +262,13 @@
          (update-miniview (iconview view) (value (object view)))
          (update-di-size (value (object view)) view))
        (om-invalidate-view view)
+       (om-invalidate-view (om-view-container view))
        ))
 
 (defmethod reinit-size ((self DIEditorframe)) 
    (setf (frame-size (object self)) (get-boxsize (object self)))
    (change-boxframe-size self (frame-size (object self)))
-   (update-di-size (value (object self)) (iconview self))
+   (update-di-size (value (object self)) self)
    (om-invalidate-view self))
 
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
@@ -283,8 +293,8 @@
   self)
 
 (defmethod update-di-size ((self d-i-box) container)
-  (om-set-view-position self (om-make-point 6 6))
-  (om-set-view-size self (om-make-point (- (om-width container) 12) (max 20 (- (om-height container) 16)))))
+  (om-set-view-position self (om-make-point 10 18))
+  (om-set-view-size self (om-make-point (- (om-width container) 20) (max 20 (- (om-height container) 36)))))
 
 (defmethod omng-copy ((self d-i-box))
   (let ((newitem (eval (omng-save self))))
@@ -336,8 +346,8 @@ Evaluate or connect the output to get the current contents of the box.
 
 
 (defmethod update-di-size ((self text-box) container)
-  (om-set-view-position self #+win32(om-make-point 8 8) #-win32(om-make-point 8 6))
-  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 20 14) #-win32(om-make-point 20 10))))
+  (om-set-view-position self #+win32(om-make-point 12 12) #-win32(om-make-point 12 10))
+  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 28 20))))
 
 
 
@@ -554,8 +564,8 @@ The box output will return the selected item. One (and only one) item can be sel
   (om-make-dialog-item 'single-item-list (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled" :range '("uno" "dos" "tres")))
 
 (defmethod update-di-size ((self single-item-list) container)
-  (om-set-view-position self (om-make-point 8 8))
-  (om-set-view-size self (om-subtract-points (om-view-size container) (om-make-point 16 16))))
+  (om-set-view-position self (om-make-point 12 8))
+  (om-set-view-size self (om-subtract-points (om-view-size container) (om-make-point 24 16))))
 
 
 (defmethod set-dialog-item-params ((self single-item-list) box args)
@@ -601,8 +611,8 @@ The box output will return the list of selected items, or NIL if no item is sele
   (om-make-dialog-item 'multi-item-list (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled" :range '("uno" "dos" "tres" "cuatro")))
 
 (defmethod update-di-size ((self multi-item-list) container)
-  (om-set-view-position self (om-make-point 8 8))
-  (om-set-view-size self (om-subtract-points (om-view-size container) (om-make-point 16 16))))
+  (om-set-view-position self (om-make-point 12 8))
+  (om-set-view-size self (om-subtract-points (om-view-size container) (om-make-point 24 16))))
 
 (defmethod set-dialog-item-params ((self multi-item-list) box args)
   (setf (di-data self) (car args))

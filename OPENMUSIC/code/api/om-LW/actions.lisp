@@ -95,7 +95,7 @@
           while (equal clicked self) do
           (when (om-view-contains-point-p item (om-convert-coordinates position self (vcontainer item)))
             ;(when (equal function 'om-view-click-handler)
-            ; (print (list "subview clicked" item)))
+            ;(print (list "subview clicked" item)))
             ;(print-point (om-convert-coordinates position self item)))
             (setf clicked (apply-in-item-subview item function (om-add-points (om-convert-coordinates position self item) (om-scroll-position item))))))
     (when (or (null clicked) (equal clicked self))
@@ -113,7 +113,8 @@
     (loop for item in (vsubviews self)
           while (equal clicked self) do
           
-          (when (om-view-contains-point-p item (om-convert-coordinates pos self (vcontainer item)))
+          (when (and (vcontainer item)
+                     (om-view-contains-point-p item (om-convert-coordinates pos self (vcontainer item))))
             ;(print (list self (vcontainer item) position (om-convert-coordinates position self (vcontainer item))))
             ;(print (list "sub" item))
             (setf clicked (apply-in-subview item function (om-add-points (om-convert-coordinates pos self item) (om-scroll-position item))))))
@@ -205,7 +206,6 @@
 
 (defmethod internal-motion-callback ((self om-graphic-object) pos)
   (update-view-cursor self)
-  ;; (print (list self pos *clicked-view*))
   #+cocoa(when (tooltip-key-down) (om-show-tooltip self))
   (unless (equal *last-containing-view* self)
     (when *last-containing-view*
@@ -222,7 +222,7 @@
   (when (om-view-window self)
     (om-window-mouse-moved-handler (om-view-window self) 
                                    (om-convert-coordinates pos self (om-view-window self))))
-    t)
+  t)
   
 
 ;;; OM MOUSE MOVED EVENT IS HANDLED BY THE TOP LEVEL WINDOW
@@ -245,7 +245,8 @@
 
 (defmethod update-view-cursor ((self om-item-view))
   ;(print (list "item" self (item-container self) (om-view-cursor self)))
-  (setf (capi::simple-pane-cursor (item-container self)) (om-view-cursor self)))
+  (when (item-container self)
+    (setf (capi::simple-pane-cursor (item-container self)) (om-view-cursor self))))
 
 (defmethod update-view-cursor ((self t)) nil)
 
