@@ -195,16 +195,21 @@
 			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
                             (print c)
-                            (om-abort))))
+                            (om-abort)
+                            )))
     (let* ((box (om-view-container (object self)))
            (pos (om-view-position box))
            (scroller (om-view-container box))
            (theeditor (editor (om-view-container box))))
-      (add-box-in-patch-panel str scroller pos)
-      (omG-remove-element scroller box)
-      (setf (text-view theeditor) nil)
-      (om-remove-subviews (panel theeditor) self)
-      (om-invalidate-view (panel theeditor)))))
+      
+      (unwind-protect 
+          
+          (add-box-in-patch-panel str scroller pos)
+
+        (omG-remove-element scroller box)
+        (setf (text-view theeditor) nil)
+        (om-remove-subviews (panel theeditor) self)
+        (om-invalidate-view (panel theeditor))))))
 
 
       
@@ -266,12 +271,15 @@
        
        (t (setf newbox (omNG-make-new-lispboxcall funname pos 
                                                   (mk-unique-name scroller (string funname))))
-          (when args (add-args-to-box newbox args))))
+          (when args (add-args-to-box newbox args)))
+       )
+
     (when (and newbox (box-allowed-p newbox scroller))
       (when (and (allow-rename newbox) (car args))
         (set-patch-box-name newbox text))
+      
       (omG-add-element scroller (make-frame-from-callobj newbox)))
-
+        
     newbox))  ;;; so validity of string as a new object can be tested
 
 (defmethod add-args-to-box (box args)
