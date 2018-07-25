@@ -79,6 +79,7 @@
   (po-add-subview self subview))
 
 ;;; recursively set the top-level layout for pinboard-objects
+
 (defmethod po-add-subview ((self om-item-view) (subview om-item-view))
   (setf (item-container subview) (item-container self))
   (when (item-container self)
@@ -118,6 +119,11 @@
   (setf (item-container subview) nil))
 
 
+;;; for special cases e.g. dialog-items
+(defmethod po-add-subview ((self om-item-view) (subview t)) nil)
+(defmethod po-remove-subview ((self om-item-view) (subview t)) nil)
+(defmethod item-container ((self t)) nil)
+
 
 (defmethod om-subviews ((self om-item-view)) 
   (vsubviews self))
@@ -125,7 +131,6 @@
 ;;; (capi::highlight-pinboard-object (item-container self) self t)
 (defmethod om-create-callback ((self om-item-view)) nil)
   ;(setf (initialized-p self) t)
-
 
 (defun update-po-position (self)
   (when (and (vcontainer self) (item-container self))

@@ -38,6 +38,7 @@
                                                         (om-report-condition c))
                                                :size (om-make-point 300 200))
                                (om-abort)))))
+
      (om-without-interrupts  
  
      (cond
@@ -89,25 +90,36 @@
                                 :position (frame-position self)
                                 :size  boxsize
                                 :object self))
+
      (setf (inputframes module) input-frames)
      (loop for input-f in input-frames do (om-add-subviews module input-f))
+     
      (make-outputs-from-names self (value self) module)
-     (setf miniview (om-make-view 'di-miniview ; (get-miniview-class self)
-                        :position (om-make-point 0 8)
-                        :font *om-default-font1*
-                        :help-spec (string+ "Creates a " (string-downcase (class-name (reference self))) " dialog item.")
-                        :size (om-subtract-points boxsize (om-make-point 0 17))))
-     (setf (iconview module) miniview)
-     (om-add-subviews module miniview)
+     
+     (setf (iconview module) 
+           
+           (if (showpict self)
+             
+               (value self)
+             
+             (om-make-view 'di-miniview
+                           :position (om-make-point 0 8)
+                           :size (om-subtract-points boxsize (om-make-point 0 17)))
+             ))
+             
+     (om-add-subviews module (print (iconview module)))
+
      (setf (frames self) (list module))
      (setf (frame-size self) (om-view-size module))
      (setf (name module) name)
      (add-box-resize module)
+
      (when (showpict self)
-       (om-add-subviews (iconview module) (value self))
        (update-di-size (value self) (iconview module)))
+     
      (when (allow-lock self)
        (add-lock-button module (allow-lock self)))
+     
      module))
 
 (defmethod get-frame-class ((self OMDIebox)) 'DIEditorframe)
@@ -117,11 +129,9 @@
 ;the class for the frame
 ;=======================
 
-(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame) ())
+(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame om-view-drag) ())
 
-(defclass di-miniview (general-miniview om-view) ())
-
-(defmethod get-miniview-class ((self OMDIebox)) 'di-miniview)
+(defclass di-miniview (general-miniview om-item-view) ())
 
 
 ;======================BOXFRAME=======================
@@ -151,10 +161,7 @@
 (defmethod centre-icon ((self DIEditorframe))
    (om-set-view-size 
     (iconview self) 
-    (om-subtract-points (om-view-size self) 
-                        (if (minieditor? (object self)) 
-                            (om-make-point 4 21) 
-                          (om-make-point 0 17)))))
+    (om-subtract-points (om-view-size self) (om-make-point 0 17))))
 
 (defmethod make-drag-region ((self DIEditorframe) region x0 y0 view)
   (declare (ignore view))
@@ -166,15 +173,15 @@
 (defmethod omG-select ((self DIEditorframe))
    (when (not (active-mode self))
      (setf (active-mode self) t)
-     (setf (selected-p (iconView self)) t)
-     (draw-only-select (iconView self))
+     ;(setf (selected-p (iconView self)) t)
+     ;(draw-only-select (iconView self))
      ))
 
 (defmethod omG-unselect ((self DIEditorframe))
    (when (active-mode self)
      (setf (active-mode self) nil)
-     (setf (selected-p (iconView self)) nil)
-       (draw-only-select (iconView self))
+     ;(setf (selected-p (iconView self)) nil)
+     ;(draw-only-select (iconView self))
      ))
 
 ;======================EVENTS==========================
@@ -219,16 +226,24 @@
 
 
 (defmethod change-edit-mode ((self DIEditorframe))
+
+  (om-remove-subviews self (iconview self))
+  (setf (showpict (object self)) (not (showpict (object self))))
+  
   (if (showpict (object self))
       (progn
-        (setf (showpict (object self)) nil)
-        (om-remove-subviews (iconview self) (value (object self)))
-        (om-invalidate-view self))
-      (progn
-        (setf (showpict (object self)) t)
-        (om-add-subviews (iconview self) (value (object self)))
-        (update-di-size (value (object self)) (iconview self))
-        (om-invalidate-view self))))
+        (setf (iconview self) (value (object self)))
+        (update-di-size (value (object self)) self)
+        )
+    
+    (setf (iconview self)
+          (om-make-view 'di-miniview
+                        :position (om-make-point 0 8)
+                        :size (om-subtract-points (om-view-size self) (om-make-point 0 17))))
+    )
+  
+  (om-add-subviews self (iconview self))
+  (om-invalidate-view self))
 
 (defmethod change-boxframe-size ((view DIEditorframe) new-position)
    (when (setf new-position (allow-new-size view new-position))
@@ -236,7 +251,7 @@
        (make-move-after (om-view-container view) (list view))
        (when (showpict (object view))
          (update-miniview (iconview view) (value (object view)))
-         (update-di-size (value (object view)) (iconview view)))
+         (update-di-size (value (object view)) view))
        (om-invalidate-view view)
        ))
 
@@ -269,7 +284,7 @@
 
 (defmethod update-di-size ((self d-i-box) container)
   (om-set-view-position self (om-make-point 6 6))
-  (om-set-view-size self (om-make-point (- (om-width container) 12) (max 20 (- (om-height container) 12)))))
+  (om-set-view-size self (om-make-point (- (om-width container) 12) (max 20 (- (om-height container) 16)))))
 
 (defmethod omng-copy ((self d-i-box))
   (let ((newitem (eval (omng-save self))))
@@ -278,8 +293,10 @@
 
 (defmethod spec-obj-icon-size ((self d-i-box)) '(nil nil))
 
-;========
+
+;==================
 ;BOXES
+;==================
 
 ;editable static-text
 (defclass! text-box (om-editable-text d-i-box)  ()
@@ -316,8 +333,6 @@ Evaluate or connect the output to get the current contents of the box.
   (let* ((rep nil)
         (noerror (ignore-errors (setf rep (read-from-string (om-dialog-item-text self))) t)))
     (if noerror rep (om-dialog-item-text self))))
-
-
 
 
 (defmethod update-di-size ((self text-box) container)

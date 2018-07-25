@@ -73,6 +73,7 @@
                                    ))
                                pane))
 
+
 ;;; ONLY FOR COCOA
 (defmethod om-draw-contents-callback ((self om-graphic-object) x y w h)
   (om-with-error-handle 
@@ -90,7 +91,7 @@
                 ;(gp::set-graphics-port-coordinates (om-get-view self) :left 0 :top 0)
                  ;   )
                   ))
-             (item-subviews (om-get-view self)))
+            (remove-if-not 'om-item-view-p (item-subviews (om-get-view self)) ))
     (when (highlight self) 
       (om-with-focused-view (om-get-view self)
         (om-draw-hilite-rect 0 0 (om-width self) (om-height self))))
