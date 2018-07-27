@@ -90,7 +90,8 @@
 (defmethod stop-recording ((self scoreeditor))
   (unwind-protect
       (progn 
-        (om-print "stop MIDI recording" "OM ::")
+        (when (recording self)
+          (om-print "stop MIDI recording" "OM ::"))
         
         (let* ((midilist (midievents2midilist (reverse (midi-recorder-memory *midi-recorder*))))
                (note-list (loop for item in midilist collect 
