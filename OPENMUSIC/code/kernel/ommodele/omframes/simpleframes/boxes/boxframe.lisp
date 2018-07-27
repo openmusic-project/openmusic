@@ -657,7 +657,7 @@
 (defmethod add-lock-button ((self omboxframe) &optional (mode "x"))
    "Add a lock button, ff the box referenced by 'self' allow it."
    (when (allow-lock-button (object self))
-     (setf (lock-button self) (make-lock-button mode))
+     (setf (lock-button self) (make-lock-button self mode))
      (om-add-subviews (iconview self) (lock-button self))
      (om-invalidate-view self)
      (setf (allow-lock (object self)) mode)))
