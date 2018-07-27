@@ -272,7 +272,7 @@
    (om-invalidate-view self))
 
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
-   (om-make-point (max 30 (om-point-h new-pos )) (max 50 (om-point-v new-pos ))))
+   (om-make-point (max 30 (om-point-h new-pos )) (max 40 (om-point-v new-pos ))))
 
 ;abstract class pour les instances
 (defclass! d-i-box (select-object) 
@@ -280,7 +280,7 @@
 
 (defmethod get-type-of-ed-box ((self d-i-box))  'OMDIebox)
 
-(defmethod default-obj-box-size ((self d-i-box)) (om-make-point 130 50))
+(defmethod default-obj-box-size ((self d-i-box)) (om-make-point 130 44))
 
 (defmethod get-slot-in-out-names ((self d-i-box))
    (values '("text") 
@@ -333,6 +333,8 @@ Evaluate or connect the output to get the current contents of the box.
   (om-make-dialog-item 'text-box (om-make-point 8 8) (om-make-point 40 20) " " 
                        :font *om-default-font1* 
                        ))
+
+(defmethod default-obj-box-size ((self text-box)) (om-make-point 130 40))
 
 (defmethod omng-save ((self text-box) &optional (values? nil))
   `(om-make-dialog-item 'text-box (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self)) ,(om-dialog-item-text self)
@@ -416,7 +418,7 @@ Pushing the button will automatically evaluate anything connected to the second 
 (defclass! button-box (button) ()) 
 
 (defmethod get-super-default-value ((type (eql 'button)))
-  (om-make-dialog-item 'button (om-make-point 1 1 ) (om-make-point 50 20 ) "untitled"))
+  (om-make-dialog-item 'button (om-make-point 0 4) (om-make-point 50 24) "untitled"))
 
 
 
