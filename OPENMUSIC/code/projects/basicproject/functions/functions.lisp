@@ -242,7 +242,7 @@ Returns :
 If <nbs-sr> is an integer (e.g. 100) it is interpreted as the number of samples to be returned
 If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate (or step between two samples) of the function to return
 
-<xmin> and <xmax> allow to specify the x-range to resample.
+<xmin> and <xmax> allow to specify the x-range to resample. For BPCs this is the min- indices of points.
 <dec> (decimals) is the precision of the result
 "   
       nil)
@@ -327,59 +327,82 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
                  (mapcar #'(lambda (bpf) (multiple-value-list (om-sample bpf nbs-sr xmin xmax dec))) (bpf-list self)))))  
 
 
+(subseq '(a b c d e f) nil 3)
+
 (defmethod! om-sample ((self BPC) (nbs-sr number) &optional xmin xmax dec)
  :numouts 3
- (let* ((pts (point-pairs self))
+ (let* ((pts (subseq (point-pairs self) (or xmin 0) xmax))
+        
         (seg-len (loop for i from 0 to (- (length pts) 2) collect
                        (pts-distance (car (nth i pts)) (cadr (nth i pts)) (car (nth (1+ i) pts)) (cadr (nth (1+ i) pts)))))
         (total-length (reduce '+ seg-len :initial-value 0))
-        (ratios (mapcar #'(lambda (l) (/ l total-length)) seg-len))
-        (nsamples (if (integerp nbs-sr) nbs-sr (ceiling total-length nbs-sr)))
-        (npts-per-seg (mapcar #'(lambda (r) (round (* r nsamples))) ratios))
-        (samples nil) (xylist nil))
         
-   (if (>= nsamples (length pts))
-       (setf samples (cons (car pts)
-                           (loop for p1 in pts 
-                                 for p2 in (cdr pts) 
-                                 for np in npts-per-seg append
-                                 (cond ((< np 1) nil)
-                                       ((< np 2) (list p2))
-                                       (t (let (x1 x2 y1 y2 vals) 
-                                            (if (= (car p1) (car p2)) ;; particular case
-                                                (setf x1 (cadr p1) x2 (cadr p2) y1 (car p1) y2 (car p2))
-                                              (setf x1 (car p1) x2 (car p2) y1 (cadr p1) y2 (cadr p2)))
-                                            (setf vals (multiple-value-list 
-                                                        (om-sample (linear-fun x1 y1 x2 y2) np x1 x2)))
-                                      
-                                        
-                                            (mat-trans (if (= (car p1) (car p2)) 
-                                                           (list (third vals) (second vals))
-                                                         (list (second vals) (third vals))))))))))
-     (let ((segpos (dx->x 0 seg-len))
-           (samplepos (arithm-ser 0 total-length (/ total-length nsamples) nsamples)))
-       (setf samples (loop for sp in samplepos collect
-                           (let ((po1 (position sp segpos :test '>= :from-end t))
-                                 (po2 (position sp segpos :test '<=))
+        (nsamples (if (integerp nbs-sr) nbs-sr (ceiling total-length nbs-sr)))
+        (samples nil))
+        
+   (let ((segs-pos (dx->x 0 seg-len))
+         (samples-pos (arithm-ser 0 total-length (/ total-length (1- nsamples)) (1- nsamples))))
+       
+     ;(print segs-pos)
+     ;(print samples-pos)
+     
+     (setf samples (loop for sp in samples-pos collect
+                           (let ((po1 (position sp segs-pos :test '>= :from-end t))
+                                 (po2 (position sp segs-pos :test '<=))
                                  p1 p2 pt)
+                             ; (print (list po1 po2))
                              (if po1 (setq p1 (nth po1 pts)))
                              (if po2 (setq p2 (nth po2 pts)))
                              (if (and p1 (not p2)) (setq pt (copy-list p1)))
                              (if (and p2 (not p1)) (setq pt (copy-list p2)))
-                             (if (and p1 2)
+                             (if (and p1 p2)
                                  (setq pt 
-                                       (list (linear-interpol (nth po1 segpos) (nth po2 segpos)
+                                       (list (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
                                                               (car p1) (car p2) sp)
-                                             (linear-interpol (nth po1 segpos) (nth po2 segpos)
+                                             (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
                                                               (cadr p1) (cadr p2) sp))))
-                             pt))))
-     
+                             pt)))
+
+       (setf samples (append samples (last pts)))
        )
    
-   (setq xylist (mat-trans samples))
-   (values (simple-bpf-from-list (car xylist) (cadr xylist) (type-of self) (or dec (decimals self)))
-           (car xylist) (cadr xylist) npts-per-seg)
-   ))
+   (let ((xylist (mat-trans samples)))
+     (values (simple-bpf-from-list (car xylist) (cadr xylist) (type-of self) (or dec (decimals self)))
+             (car xylist) (cadr xylist))
+     )))
+
+
+#|
+       ;;; THIS ALGORITHM KEEPS THE VERTICES AND SAMPLES IN BETWEEN (when there is a sufficient number of samples!)
+       ;;; WE DON'T DO THIS ANYMORE 
+       ;;; => USE 3D-TRAJECTORY INSTEAD
+
+       (if (>= nsamples (length pts))
+       
+       (let* ((ratios (mapcar #'(lambda (l) (/ l total-length)) seg-len))
+              (npts-per-seg (mapcar #'(lambda (r) (round (* r nsamples))) ratios)))
+         
+         (setf samples (cons (car pts)
+                             (loop for p1 in pts 
+                                   for p2 in (cdr pts) 
+                                   for np in npts-per-seg append
+                                   (cond ((< np 1) nil)
+                                         ((< np 2) (list p2))
+                                         (t (let (x1 x2 y1 y2 vals) 
+                                              (if (= (car p1) (car p2)) ;; particular case
+                                                  (setf x1 (cadr p1) x2 (cadr p2) y1 (car p1) y2 (car p2))
+                                                (setf x1 (car p1) x2 (car p2) y1 (cadr p1) y2 (cadr p2)))
+                                              (setf vals (multiple-value-list 
+                                                          (om-sample (linear-fun x1 y1 x2 y2) np x1 x2)))
+                                      
+                                        
+                                              (mat-trans (if (= (car p1) (car p2)) 
+                                                             (list (third vals) (second vals))
+                                                           (list (second vals) (third vals))))))))
+                             ))
+         )
+         )
+|#
 
 ;;;====================================
 ;;; Interpole avec profil
