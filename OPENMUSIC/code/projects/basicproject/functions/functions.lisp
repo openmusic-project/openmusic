@@ -327,49 +327,47 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
                  (mapcar #'(lambda (bpf) (multiple-value-list (om-sample bpf nbs-sr xmin xmax dec))) (bpf-list self)))))  
 
 
-(subseq '(a b c d e f) nil 3)
-
 (defmethod! om-sample ((self BPC) (nbs-sr number) &optional xmin xmax dec)
- :numouts 3
- (let* ((pts (subseq (point-pairs self) (or xmin 0) xmax))
+    :numouts 3
+    (let* ((pts (subseq (point-pairs self) (or xmin 0) xmax))
         
-        (seg-len (loop for i from 0 to (- (length pts) 2) collect
-                       (pts-distance (car (nth i pts)) (cadr (nth i pts)) (car (nth (1+ i) pts)) (cadr (nth (1+ i) pts)))))
-        (total-length (reduce '+ seg-len :initial-value 0))
+           (seg-len (loop for i from 0 to (- (length pts) 2) collect
+                          (pts-distance (car (nth i pts)) (cadr (nth i pts)) (car (nth (1+ i) pts)) (cadr (nth (1+ i) pts)))))
+           (total-length (reduce '+ seg-len :initial-value 0))
         
-        (nsamples (if (integerp nbs-sr) nbs-sr (ceiling total-length nbs-sr)))
-        (samples nil))
+           (nsamples (if (integerp nbs-sr) nbs-sr (ceiling total-length nbs-sr)))
+           (samples nil))
         
-   (let ((segs-pos (dx->x 0 seg-len))
-         (samples-pos (arithm-ser 0 total-length (/ total-length (1- nsamples)) (1- nsamples))))
+      (let ((segs-pos (dx->x 0 seg-len))
+            (samples-pos (arithm-ser 0 total-length (/ total-length (1- nsamples)) (1- nsamples))))
        
      ;(print segs-pos)
      ;(print samples-pos)
      
-     (setf samples (loop for sp in samples-pos collect
-                           (let ((po1 (position sp segs-pos :test '>= :from-end t))
-                                 (po2 (position sp segs-pos :test '<=))
-                                 p1 p2 pt)
+        (setf samples (loop for sp in samples-pos collect
+                            (let ((po1 (position sp segs-pos :test '>= :from-end t))
+                                  (po2 (position sp segs-pos :test '<=))
+                                  p1 p2 pt)
                              ; (print (list po1 po2))
-                             (if po1 (setq p1 (nth po1 pts)))
-                             (if po2 (setq p2 (nth po2 pts)))
-                             (if (and p1 (not p2)) (setq pt (copy-list p1)))
-                             (if (and p2 (not p1)) (setq pt (copy-list p2)))
-                             (if (and p1 p2)
-                                 (setq pt 
-                                       (list (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
-                                                              (car p1) (car p2) sp)
-                                             (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
-                                                              (cadr p1) (cadr p2) sp))))
-                             pt)))
+                              (if po1 (setq p1 (nth po1 pts)))
+                              (if po2 (setq p2 (nth po2 pts)))
+                              (if (and p1 (not p2)) (setq pt (copy-list p1)))
+                              (if (and p2 (not p1)) (setq pt (copy-list p2)))
+                              (if (and p1 p2)
+                                  (setq pt 
+                                        (list (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
+                                                               (car p1) (car p2) sp)
+                                              (linear-interpol (nth po1 segs-pos) (nth po2 segs-pos)
+                                                               (cadr p1) (cadr p2) sp))))
+                              pt)))
 
-       (setf samples (append samples (last pts)))
-       )
+        (setf samples (append samples (last pts)))
+        )
    
-   (let ((xylist (mat-trans samples)))
-     (values (simple-bpf-from-list (car xylist) (cadr xylist) (type-of self) (or dec (decimals self)))
-             (car xylist) (cadr xylist))
-     )))
+      (let ((xylist (mat-trans samples)))
+        (values (simple-bpf-from-list (car xylist) (cadr xylist) (type-of self) (or dec (decimals self)))
+                (car xylist) (cadr xylist))
+        )))
 
 
 #|
