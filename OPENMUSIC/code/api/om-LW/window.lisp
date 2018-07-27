@@ -305,11 +305,6 @@
 (defmethod interface-display :after ((self om-abstract-window)) 
   (update-for-subviews-changes self t))
 
-(defmethod update-for-subviews-changes ((self om-window) &optional (recursive nil))
-  (capi::execute-with-interface self (lambda () (set-layout (pane-layout self))))
-  (when recursive (mapc #'(lambda (view) (if (om-view-p view) (update-for-subviews-changes view t))) (vsubviews self)))
-  (when (pane-layout self) (mapc 'update-po-position (item-subviews (pane-layout self))))
-  )
 
 ; temp 
 ;(defmethod item-subviews ((self t)) nil)
@@ -485,6 +480,11 @@
   (om-set-view-size win (om-add-points (om-view-size win) (om-make-point 0 200)))
  t)
 
+(defmethod update-for-subviews-changes ((self om-window) &optional (recursive nil))
+  (capi::execute-with-interface self (lambda () (set-layout (pane-layout self))))
+  (when recursive (mapc #'(lambda (view) (if (om-view-p view) (update-for-subviews-changes view t))) (vsubviews self)))
+  (when (pane-layout self) (mapc 'update-po-position (item-subviews (pane-layout self))))
+  )
 
 ;;;====================
 ;;; DIALOG
