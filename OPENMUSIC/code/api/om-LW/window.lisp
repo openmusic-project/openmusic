@@ -72,7 +72,7 @@
 ;;; OM-ABSTRACT-WINDOW
 ;;; Superclass of all windows
 ;;;=============================================
-(defclass om-abstract-window (om-graphic-object capi::interface) 
+(defclass om-abstract-window (om-graphic-object) 
   ((resizable :initarg :resizable :initform t :accessor resizable)
    (fs :initarg :fs :initform nil :accessor fs))
   (:default-initargs
@@ -305,7 +305,7 @@
 (defmethod interface-display :after ((self om-abstract-window)) 
   (update-for-subviews-changes self t))
 
-(defmethod update-for-subviews-changes ((self om-abstract-window) &optional (recursive nil))
+(defmethod update-for-subviews-changes ((self om-window) &optional (recursive nil))
   (capi::execute-with-interface self (lambda () (set-layout (pane-layout self))))
   (when recursive (mapc #'(lambda (view) (if (om-view-p view) (update-for-subviews-changes view t))) (vsubviews self)))
   (when (pane-layout self) (mapc 'update-po-position (item-subviews (pane-layout self))))
@@ -477,7 +477,7 @@
 ;;; OM-WINDOW
 ;;; A simple window with a panel able to host subviews
 ;;;=============================================
-(defclass om-window (om-abstract-window) ())
+(defclass om-window (om-abstract-window capi::interface) ())
 
 (defmethod correct-win-h ((win om-window))
   ;(print (list "RESIZE!!" (om-view-size win) (om-add-points (om-view-size win) (om-make-point 0 00))))
@@ -491,7 +491,7 @@
 ;;; Pour mettre des dialog-items
 ;;; Des interfaces modales, etc.
 ;;;====================
-(defclass om-dialog (om-abstract-window) ())
+(defclass om-dialog (om-abstract-window capi::interface) ())
 
 (defclass om-textured-dialog (om-dialog) ())
 

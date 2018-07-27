@@ -48,7 +48,7 @@
 
        
 ;;; !!! created with om-make-window :
-(defclass om-text-edit-window (om-text-editor) 
+(defclass om-text-edit-window (om-text-editor om-abstract-window) 
   ((save-callback :accessor save-callback :initarg :save-callback :initform nil)
    (echoarea :accessor echoarea :initarg :echoarea :initform nil)))
 
