@@ -266,6 +266,7 @@ This is a compulsory operation before to start writing SDIF frames in the file.
   (let* ((boxes (boxes self))
          (oldletlist *let-list*)
          (*let-list* nil)
+         (oldlambdacontext *lambda-context*)
          (do-box (car (find-class-boxes boxes 'OMLoopDo)))
          (final-box (car (find-class-boxes boxes 'OMFinalDo)))
          (init-box (car (find-class-boxes boxes 'OMinitDo)))
@@ -361,6 +362,7 @@ This is a compulsory operation before to start writing SDIF frames in the file.
                 ))))
     ;(compile (intern (string (first (code self)))))
     ;(print (fdefinition (intern (string (first (code self))))))
+    (setf *lambda-context* oldlambdacontext)
     (setf *let-list* oldletlist)))
 
 ;;; REDEFINITION

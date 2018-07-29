@@ -249,8 +249,14 @@ put this code in this method."
      (mapcar #'(lambda (thein) (defval thein)) in-boxes)))
 
 
-;;; compile : une fonction a n entrees et m sortrie avec tempin = 1e entree et tempout = 1e sortie
-;;; si ils existent
+;;; this is used to know if we're in a lambda-function code-generation within the context f the current patch compilation
+;;; if this is rhe case eval-once boxes need to behave differently and initialize the value in the let statement 
+(defvar *lambda-context* nil)
+
+
+;;; generates a function of n arguments et m output values 
+;;; with tempin = 1st argument et tempout = 1st output value if they exist
+
 (defmethod compile-patch ((self OMPatch)) 
   "Generation of lisp code from the graphic boxes."
   (unless (compiled? self)
@@ -263,17 +269,21 @@ put this code in this method."
              (self-boxes (patch-has-temp-in-p self))
              (in-boxes (find-class-boxes boxes 'OMin))
              (out-symb (code self))
-             (oldletlist *let-list*) symbols body)
+             (oldletlist *let-list*) 
+             (oldlambdacontext *lambda-context*) 
+             symbols body)
         (setf out-box (list+ temp-out-box (sort out-box '< :key 'indice)))
         (setf in-boxes (list+ self-boxes (sort in-boxes '< :key 'indice)))
         (setf symbols (mapcar #'(lambda (thein) (setf (in-symbol thein) (gensym))) in-boxes))
         (setf *let-list* nil)
         (setf body `(values ,.(mapcar #'(lambda (theout)
                                           (gen-code theout 0)) out-box)))
-        (eval `(defun ,(intern (string out-symb) :om)  (,.symbols)
-                  (let* ,(reverse *let-list*) ,body)))
+        (eval (print `(defun ,(intern (string out-symb) :om)  (,.symbols)
+                  (let* ,(reverse *let-list*) ,body))))
         
-        (setf *let-list* oldletlist)))
+        (setf *let-list* oldletlist)
+        (setf *lambda-context* oldlambdacontext)
+        ))
     (setf (compiled? self) t)))
 
 

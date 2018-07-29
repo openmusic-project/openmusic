@@ -126,11 +126,13 @@
 |#
 
 
+
 (defmethod compile-patch ((self patchForLoop))
    "Code generates by Loop patches is generate by this method."
    (let* ((boxes (boxes self))
           (oldletlist *let-list*)
           (*let-list* nil)
+          (oldlambdacontext *lambda-context*)
           (do-box (car (find-class-boxes boxes 'OMLoopDo)))
           (init-box (car (find-class-boxes boxes 'OMinitDo)))
           (final-box (car (find-class-boxes boxes 'OMFinalDo)))
@@ -145,6 +147,7 @@
           (acum-inits (mapcar #'(lambda (acumm)
                                   (gen-code acumm -1)) acum-boxes))
           body init)
+     
      (setf init (gen-code init-box 0))
      (setf body (gen-code do-box 0))
      (setf final (loop for i from 0 to (1- (length (inputs final-box))) collect (gen-code final-box i)))
@@ -153,6 +156,7 @@
                           acum-declaration acum-inits init loop-code final 
                           (reverse *let-list*) 
                           body))
+     (setf *lambda-context* oldlambdacontext)
      (setf *let-list* oldletlist)))
      
 
@@ -1033,34 +1037,50 @@ See OM User Manual and the OMLOOP refernce section for more details.
                   (apply (fdefinition ',(intern (string (first (code (patch self)))) :om)) (list ,.args)))))))
 
 (defmethod curry-lambda-code ((self omloop-box) symbol)
-   "Lisp code generation for a loop box in lambda mode."
+  "Lisp code generation for a loop box in lambda mode."
   (let* ((nesymbs nil)
-         (args  (mapcar #'(lambda (input)
-                            (if (connected? input)
-                              (gen-code input 0)
-                              (let ((newsymbol (gensym)))
-                                (push newsymbol nesymbs)
-                                newsymbol))) (inputs self))))
-    (if (null nesymbs)
-      symbol
-      `#'(lambda ,(reverse nesymbs)
-                 (apply (fdefinition ',(first (code (patch self)))) (list ,.args))))))
+         (oldlambdacontext *lambda-context*))
+    
+    (setf *lambda-context* t)
+    
+    (unwind-protect
+   
+        (let ((args  (mapcar #'(lambda (input)
+                                 (if (connected? input)
+                                     (gen-code input 0)
+                                   (let ((newsymbol (gensym)))
+                                     (push newsymbol nesymbs)
+                                     newsymbol))) (inputs self))))
+          (if (null nesymbs)
+              symbol
+            `#'(lambda ,(reverse nesymbs)
+                 (apply (fdefinition ',(first (code (patch self)))) (list ,.args)))))
+       
+      (setf *lambda-context* oldlambdacontext))
+    ))
 
 ;screamer
-
 (defmethod curry-lambda-code ((self omloop-box) symbol)
-   "Lisp code generation for a loop box in lambda mode."
+  "Lisp code generation for a loop box in lambda mode."
   (let* ((nesymbs nil)
-         (args  (mapcar #'(lambda (input)
-                            (if (connected? input)
-                              (gen-code input 0)
-                              (let ((newsymbol (gensym)))
-                                (push newsymbol nesymbs)
-                                newsymbol))) (inputs self))))
-    (if (null nesymbs)
-      symbol
-      `#'(lambda ,(reverse nesymbs)
-                 (apply (fdefinition ',(intern (string (first (code (patch self)))) :om)) (list ,.args))))))
+         (oldlambdacontext *lambda-context*))
+    
+    (setf *lambda-context* t)
+    
+    (unwind-protect
+        (let ((args  (mapcar #'(lambda (input)
+                                 (if (connected? input)
+                                     (gen-code input 0)
+                                   (let ((newsymbol (gensym)))
+                                     (push newsymbol nesymbs)
+                                     newsymbol))) (inputs self))))
+          (if (null nesymbs)
+              symbol
+            `#'(lambda ,(reverse nesymbs)
+                 (apply (fdefinition ',(intern (string (first (code (patch self)))) :om)) (list ,.args)))))
+      
+      (setf *lambda-context* oldlambdacontext))
+    ))
 
 
 (defmethod special-value ((self  omloop-box) &optional (args nil))

@@ -705,6 +705,9 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
   (if objs
       (objFromObjs (first args) self)
     (apply 'make-one-instance (list+ (list self) (cdr args)))))
+
+(defmethod rep-editor ((self null) nul)
+  (error "ERROR: EVALUATION OF A NULL-INSTANCE BOX"))
   
 (defmethod rep-editor ((self t) num)
    (let ((outs (get-outs-name self)))
@@ -951,16 +954,21 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;     `(rep-editor ,varname ,numout)))
 
 ;;; removed multiple-value-list for ev-once in abstractions (?)
+
 (defmethod gen-code-for-ev-once ((self OMBoxRelatedWClass) numout)
    (let ((varname (read-from-string (gen-box-string self))))
      (if (not (member varname *let-list* :test 'equal :key 'car))
-        (progn 
-          ;(push `(,varname ,(gen-code-call self)) *let-list*)
-          (push `(,varname nil) *let-list*)
-          `(progn
-             ;;; (*)
-             (setf ,varname ,(gen-code-call self))
-             (rep-editor ,varname ,numout ))
+         (progn 
+          (if *lambda-context* 
+              (push `(,varname ,(gen-code-call self)) *let-list*)
+            (push `(,varname nil) *let-list*))
+          (if *lambda-context* 
+              `(rep-editor ,varname ,numout )
+            `(progn
+               ;;; (*)
+               (setf ,varname ,(gen-code-call self))
+               (rep-editor ,varname ,numout ))
+            )
           )
        `(rep-editor ,varname ,numout))))
 
@@ -968,6 +976,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;;; the box must not be evaluated before some other actions take place (e.g. "new")
 ;;; The let list is evaluated before anything in the patch, while the body of the macro 
 ;;; returned code evaluates following the function graph
+
+;;; update OM > 6.13 this is not done if we're in the context of a lambda-expression compilation 
+;;; because the value needs to be set at compile-time
+
 
 
 (defmethod update-if-editor ((self t)) t)
@@ -2372,51 +2384,59 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 ;;; now works with keywords ! -- jb 30/05/2015
 (defmethod curry-lambda-code ((self OMBoxcall) symbol)
    "Lisp code generetion for a box in lambda mode."
-   (let* ((nesymbs nil)
-          (args  (mapcan #'(lambda (input)
-                             (let ((a (if (connected? input)
-                                          (gen-code input 0)
-                                        (let ((newsymbol (gensym)))
-                                          (push newsymbol nesymbs)
-                                          newsymbol))))
-                               (if (keyword-input-p input) 
-                                   (list (value input) a) 
-                                 (list a))))
-                         (inputs self))))
-     `#'(lambda ,(reverse nesymbs)
-          (apply ',symbol (list ,.args)))))
+  
+   (let ((nesymbs nil)
+         (oldlambdacontext *lambda-context*))
+     (setf *lambda-context* t)
+     
+     (unwind-protect 
+         (let ((args (mapcan #'(lambda (input)
+                                 (let ((a (if (connected? input)
+                                              (gen-code input 0)
+                                            (let ((newsymbol (gensym)))
+                                              (push newsymbol nesymbs)
+                                              newsymbol))))
+                                   (if (keyword-input-p input) 
+                                       (list (value input) a) 
+                                     (list a))))
+                             (inputs self))))
+           `#'(lambda ,(reverse nesymbs)
+                (apply ',symbol (list ,.args))))
+       
+       (setf *lambda-context* oldlambdacontext)
+       
+       )))
 
 
 (defmethod curry-lambda-code ((self OMBoxEditCall) symbol)
   "Lisp code generetion for a factory in lambda mode."
   (let* ((nesymbs nil)
-         (args  (mapcar #'(lambda (input)
-                            (if (connected? input)
-                              (gen-code input 0)
-                              (let ((newsymbol (gensym)))
-                                (push newsymbol nesymbs)
-                                newsymbol))) (inputs self))))
-    (cond
-     ((connected? (first (inputs self)))
-      `#'(lambda () 
-           (objFromObjs ,(first args) (make-instance ',symbol))))
-     ((= (length nesymbs) (length args))
-      `#'(lambda ,(reverse nesymbs) 
-           (cons-new-object (make-instance ',symbol) (list ,. args) nil)))
-     (t
-      `#'(lambda ,(cdr (reverse nesymbs)) 
-           (cons-new-object (make-instance ',symbol) (list nil ,.(cdr args)) nil))))))
+         (oldlambdacontext *lambda-context*))
+     
+    (setf *lambda-context* t)
+     
+    (unwind-protect   
+        (let ((args  (mapcar #'(lambda (input)
+                                 (if (connected? input)
+                                     (gen-code input 0)
+                                   (let ((newsymbol (gensym)))
+                                     (push newsymbol nesymbs)
+                                     newsymbol))) (inputs self))))
+          (cond
+           ((connected? (first (inputs self)))
+            `#'(lambda () 
+                 (objFromObjs ,(first args) (make-instance ',symbol))))
+           ((= (length nesymbs) (length args))
+            `#'(lambda ,(reverse nesymbs) 
+                 (cons-new-object (make-instance ',symbol) (list ,. args) nil)))
+           (t
+            `#'(lambda ,(cdr (reverse nesymbs)) 
+                 (cons-new-object (make-instance ',symbol) (list nil ,.(cdr args)) nil)))))
+
+      (setf *lambda-context* oldlambdacontext))
+    ))
 
 
-
-
-
-
-
-
-
-
-   
 
 
 
