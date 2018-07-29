@@ -1829,7 +1829,14 @@
     (call-next-method)))
 
 
+(defmethod show-position-ms ((self scoreeditor) time)
+   (when (and time (not (minusp time)))
+     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" time))))
+
 (defmethod update-cursor ((self scorepanel) time &optional y1 y2)
+
+  (show-position-ms (editor self) time) 
+
   (if (score-page-mode self)
       (let ((currevent (find time *events-play-cursor* :key 'car :test '>= :from-end t)))
         (when currevent
@@ -2029,9 +2036,6 @@
   (when (om-view-contains-point-p (panel self) (om-mouse-position self))
     (show-position-ms self (pixel-toms (panel self) (om-mouse-position (panel self))))))
 
-(defmethod show-position-ms ((self chordseqEditor) point)
-   (when (and point (not (minusp point)))
-     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" point))))
 
 ;PANEL
 
@@ -2620,9 +2624,8 @@
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
 
-(defmethod show-position-ms ((self voiceEditor) point) t)
+(defmethod do-editor-null-event ((self voiceEditor)) nil)
 
-                     
 
 
 ;PANEL
@@ -2839,8 +2842,8 @@
 
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
-(defmethod show-position-ms ((self polyEditor) point) t)
 
+(defmethod do-editor-null-event ((self polyEditor)) nil)
 
 
 ;PANEL
