@@ -29,8 +29,7 @@
 ;CONTROL VIEW
 ;===========================================================
 (defclass sound-control-view (3dBorder-view) 
-  ((editor :initform nil :accessor editor :initarg :editor)    ;;; a reference to the main editor
-   ;;; a list of controls
+  (;;; a list of controls
    (play-buttons :initform nil :accessor play-buttons)
    (mode-buttons :initform nil :accessor mode-buttons)
    (vol-control :initform nil :accessor vol-control)
