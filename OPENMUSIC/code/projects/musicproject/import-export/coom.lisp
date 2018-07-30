@@ -392,7 +392,7 @@
            (WITH-OPEN-FILE (out filename :direction :output 
                                 :if-does-not-exist :create :if-exists :supersede)
              (format out "~A" str)))
-         ))))
+         filename))))
 
 
 
