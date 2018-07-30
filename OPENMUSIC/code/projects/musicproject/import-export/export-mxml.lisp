@@ -506,7 +506,7 @@
 ;;; CHORD / NOTES
 ;;;================
 
-(defmethod cons-xml-expr ((self om::chord) &key free key (approx 2))
+(defmethod cons-xml-expr ((self om::chord) &key free key (approx 2) part)
   (let* ((dur free)
          (head-and-pts (get-head-and-points dur))
          (note-head (cadr (find (car head-and-pts) *note-types* :key 'car)))
@@ -536,7 +536,9 @@
                                     (loop for i from 1 to nbpoints do (setf headstr (concatenate 'string headstr "<dot/>")))
                                     headstr)
                                   (when (find alteration *note-accidentals* :key 'car)  ;;; accidental (if any)
-                                    (format nil "<accidental>~A</accidental>" (cadr (find alteration *note-accidentals* :key 'car)))))
+                                    (format nil "<accidental>~A</accidental>" (cadr (find alteration *note-accidentals* :key 'car))))
+                                  (format nil "<instrument id=\"P~D-I~D\"/>" part (om::chan note))
+                                  )
                             (time-modifications self)
                             (makebeam self)
                             (groupnotation self)
@@ -546,7 +548,7 @@
              ))))
 
    
-(defmethod cons-xml-expr ((self om::rest) &key free key (approx 2))
+(defmethod cons-xml-expr ((self om::rest) &key free key (approx 2) part)
   (let* ((dur free)
          (head-and-pts (get-head-and-points dur))
          (note-head (cadr (find (car head-and-pts) *note-types* :key 'car)))
@@ -571,7 +573,7 @@
 ;;;===================================
 
 
-(defmethod cons-xml-expr ((self om::group) &key free key (approx 2))
+(defmethod cons-xml-expr ((self om::group) &key free key (approx 2) part)
   (let* ((inside (om::inside self))
          (durtot free)
          (cpt (if (listp free) (cadr free) 0))
@@ -585,13 +587,13 @@
       (loop for obj in inside append 
             (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
                                (/ (om::extent self) (om::qvalue self)))))
-              (cons-xml-expr obj :free (* dur-obj durtot) :approx approx))))
+              (cons-xml-expr obj :free (* dur-obj durtot) :approx approx :part part))))
      (t (loop for obj in inside 
               append
               (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
                                    (/ (om::extent self) (om::qvalue self))))
                      (dur-obj (* num operation)))                     
-                (cons-xml-expr obj :free (* dur-obj unite) :approx approx)))   ;;;; ACHTUNG !!
+                (cons-xml-expr obj :free (* dur-obj unite) :approx approx :part part)))   ;;;; ACHTUNG !!
         ))))
 
 
@@ -600,7 +602,7 @@
 ;;;sibelius ' value is 256....
 
 
-(defmethod cons-xml-expr ((self om::measure) &key free (key '(G 2)) (approx 2))
+(defmethod cons-xml-expr ((self om::measure) &key free (key '(G 2)) (approx 2) part)
   (let* ((mesnum free) 
          (inside (om::inside self))
          (tree (om::tree self))
@@ -631,19 +633,19 @@
                         append
                         (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
                                (factor (/ (* 1/4 dur-obj-noire) real-beat-val))) 
-                          (cons-xml-expr obj :free (* symb-beat-val factor) :approx approx) ;;; NOTE: KEY STOPS PROPAGATING HERE
+                          (cons-xml-expr obj :free (* symb-beat-val factor) :approx approx :part part) ;;; NOTE: KEY STOPS PROPAGATING HERE
                           )))
           "</measure>"
           "<!--=======================================================-->")))
 
 
-(defmethod cons-xml-expr ((self om::voice) &key free (key '(G 2)) (approx 2))
-  (let ((voicenum free)
+(defmethod cons-xml-expr ((self om::voice) &key free (key '(G 2)) (approx 2) part)
+  (let ((voicenum part)
         (measures (om::inside self)))
     (list (format nil "<part id=\"P~D\">" voicenum)
           (loop for mes in measures
                 for i = 1 then (+ i 1)
-                collect (cons-xml-expr mes :free i :key key :approx approx))
+                collect (cons-xml-expr mes :free i :key key :approx approx :part part))
           "<!--=======================================================-->"
           "</part>")))
 
@@ -651,7 +653,10 @@
   (list "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         "<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 1.1 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">"))
 
-(defmethod cons-xml-expr ((self om::poly) &key free (key '((G 2))) (approx 2))
+(defun get-midi-channels (voice)
+  (sort (remove-duplicates (mapcar 'om::ev-chan (om:get-midievents voice))) '<))
+
+(defmethod cons-xml-expr ((self om::poly) &key free (key '((G 2))) (approx 2) part)
   (let ((voices (om::inside self)))
     (list "<score-partwise>"
           (list "<identification>"
@@ -663,28 +668,39 @@
                 (loop for v in voices 
                       for voice-num = 1 then (+ voice-num 1)
                       append 
-                      (list (format nil "<score-part id=\"P~D\">" voice-num)
-                            (list "<part-name>MusicXML Part</part-name>")
-                            (list (format nil "<score-instrument id=\"P~D-I~D\">" voice-num voice-num)
-                                  (list "<instrument-name>Grand Piano</instrument-name>")
-                                  "</score-instrument>")
-                            (list (format nil "<midi-instrument id=\"P~D-I~D\">" voice-num voice-num)
-                                  (list "<midi-channel>1</midi-channel>"
-                                        "<midi-program>1</midi-program>")
-                                  "</midi-instrument>")
-                            "</score-part>"))
+                      (let ((channels (get-midi-channels v)))
+                        `(
+                          ,(format nil "<score-part id=\"P~D\">" voice-num)
+                          (,(format nil "<part-name>Part ~D</part-name>" voice-num))
+                          
+                          ,(loop for ch in channels append
+                                 `(
+                                   ,(format nil "<score-instrument id=\"P~D-I~D\">" voice-num ch)
+                          ;("<instrument-name>Grand Piano</instrument-name>")
+                                   "</score-instrument>"
+                                   ))
+                          ,(loop for ch in channels append
+                                 `(
+                                   ,(format nil "<midi-instrument id=\"P~D-I~D\">" voice-num ch)
+                                   ,(format nil "<midi-channel>~D</midi-channel>" ch)
+                                  ; "<midi-program>1</midi-program>")
+                                   "</midi-instrument>")
+                                 )
+                          "</score-part>")
+                        )
+                      )
                 "</part-list>")
           "<!--===================================================================-->"
           (if (= 1 (length key))
               ;;; SAME KEY FOR ALL VOICES
               (loop for v in voices
                     for i = 1 then (+ i 1) append 
-                    (cons-xml-expr v :free i :key (car key) :approx approx))
+                    (cons-xml-expr v :part i :key (car key) :approx approx))
             ;;; EACH VOICE HAS A KEY
             (loop for v in voices 
                   for i = 1 then (+ i 1)
                   for k in key append
-                  (cons-xml-expr v :free i :key k :approx approx)))
+                  (cons-xml-expr v :part i :key k :approx approx)))
           "</score-partwise>")))
   
 ;;;===================================
