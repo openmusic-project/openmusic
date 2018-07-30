@@ -34,7 +34,9 @@
    (play-buttons :initform nil :accessor play-buttons)
    (mode-buttons :initform nil :accessor mode-buttons)
    (vol-control :initform nil :accessor vol-control)
-   (pan-control :initform nil :accessor pan-control))
+   (pan-control :initform nil :accessor pan-control)
+   (time-view :accessor time-view :initform nil)
+   )
   (:default-initargs #+win32 :draw-with-buffer #+win32 t))
 
 (defmethod editor ((self sound-control-view)) (om-view-container self))
@@ -112,9 +114,15 @@
                                             (player-init newplayer)
                                             (update-player-controls (editor self) newplayer self)))))))
 
+    (setf (time-view self) 
+          (om-make-dialog-item 'om-static-text 
+                               (om-make-point 100 8) (om-make-point 100 26)
+                               ""))
+
     (apply 'om-add-subviews self
            (append (play-buttons self)
-                   (mode-buttons self)))     
+                   (mode-buttons self)
+                   (list (time-view self))))     
     )
   
 
@@ -374,23 +382,31 @@
 (defun audio-effects-menu (editor) nil)
 
 
+(defmethod show-position-ms ((self soundeditor) time)
+  (let ((timestr (if (= 1000 (timeunit self)) 
+                     (format () "t: ~4D s" (/ time 1000.0))
+                   (format () "t: ~D ms" time))))
+    (om-set-dialog-item-text (time-view (control self)) timestr))
+  )
+
+
 (defmethod editor-null-event-handler :after ((self soundEditor))
    (do-editor-null-event self))
 
 (defmethod do-editor-null-event ((self soundEditor))
-   (when (om-view-contains-point-p (panel self) (om-mouse-position self))
-     (om-with-focused-view (panel self) ;;(control self) 
-       (let* ((pixel (om-mouse-position (panel self)))
-              (point (pixel2point (panel self) pixel))
-              (timestr (if (= 1000 (timeunit self)) 
-                           (format () "t: ~4D s" (/ (om-point-h point) 1000.0))
-                         (format () "t: ~D ms" (om-point-h point)))))
-         (om-with-fg-color (panel self) (om-get-bg-color (panel self))
-           (om-fill-rect (om-h-scroll-position (panel self)) 0 80 20))
-         (om-with-font (om-make-font *om-score-font-face* (nth 1 *om-def-font-sizes*))
-                       (om-draw-string (+ 6 (om-h-scroll-position (panel self))) 12 timestr))))))
 
+  (when (om-view-contains-point-p (panel self) (om-mouse-position self))
+    
+    (let* ((pixel (om-mouse-position (panel self)))
+           (time (om-point-h (pixel2point (panel self) pixel))))
+      
+      (when (and time (not (minusp time)))
+        
+        (show-position-ms self time)
+        
+        ))))
 
+      
 ;;;================================
 ;;; play-editor-mixin methods
 ;;;================================
@@ -417,6 +433,12 @@
         (cursor-interval panel)
       (call-next-method))))
 
+
+(defmethod update-cursor ((self soundpanel) time &optional y1 y2)
+  (show-position-ms (editor self) time)
+  (call-next-method))
+
+
 #|
 (defmethod DoStopRecord ((self soundpanel))
   (let* ((soundfile (audio-record-stop (get-score-player self)))
@@ -433,6 +455,9 @@
     (setf (state (player self)) :stop)
     ))
 |#
+
+
+
 
 ;;;====================== 
 ;;; TITLE BAR / SOUND INFO
@@ -603,11 +628,15 @@
      (#\A (align-markers self))
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (:om-key-delete (delete-sound-marker self))
-     (:om-key-esc (reset-cursor self))
+     (:om-key-esc 
+      (if (equal (state (player (editor self))) :stop)  
+          (reset-cursor self))
+      (editor-stop (editor self))
+      )
      (#\SPACE (editor-play/stop (editor self)))
      (otherwise (call-next-method))))
 
-(defmethod reset-cursor ((self soundpanel))
+(defmethod reset-cursor ((self soundpanel)) (call-next-method))
   (setf (cursor-pos self) 0)
   (om-invalidate-view self))
 

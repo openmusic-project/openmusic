@@ -40,7 +40,6 @@
    (edit-buttons :accessor edit-buttons :initform nil)
    (mode-buttons :accessor mode-buttons :initform nil)
    (time-view :accessor time-view :initform nil)
-   
    ))
 
 (defmethod editor ((self editor-titlebar)) (om-view-container self))

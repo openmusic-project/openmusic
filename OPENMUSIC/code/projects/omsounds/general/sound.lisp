@@ -509,7 +509,7 @@ Press 'space' to play/stop the sound file.
            (maxnbpix (round (* timeratio (cadr (array-dimensions (display-array self))))))
            ;(start-smp (floor (* start-time sr)))
            ;(end-smp (ceiling (* end-time sr)))
-           (start (floor (* start-time sr) win))
+           (start (max 0 (floor (* start-time sr) win)))
            (end (ceiling (* end-time sr) win))
            (stoppoint (1- (cadr (array-dimensions (display-array self)))));(+ start (1- maxnbpix)))
            (maxi 0.0)
