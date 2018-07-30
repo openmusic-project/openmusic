@@ -654,7 +654,7 @@
         "<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 1.1 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">"))
 
 (defun get-midi-channels (voice)
-  (sort (remove-duplicates (mapcar 'om::ev-chan (om:get-midievents voice))) '<))
+  (sort (remove-duplicates (mapcar 'om::ev-chan (om::get-midievents voice))) '<))
 
 (defmethod cons-xml-expr ((self om::poly) &key free (key '((G 2))) (approx 2) part)
   (let ((voices (om::inside self)))
