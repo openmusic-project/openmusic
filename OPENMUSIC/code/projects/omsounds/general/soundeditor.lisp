@@ -636,9 +636,9 @@
      (#\SPACE (editor-play/stop (editor self)))
      (otherwise (call-next-method))))
 
-(defmethod reset-cursor ((self soundpanel)) (call-next-method))
-  (setf (cursor-pos self) 0)
-  (om-invalidate-view self))
+;(defmethod reset-cursor ((self soundpanel))
+;  (setf (cursor-pos self) 0)
+;  (om-invalidate-view self)
 
 
 (defmethod change-sound-pict ((self soundPanel))
