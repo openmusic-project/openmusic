@@ -165,9 +165,11 @@
          
           (newtl (om-make-tab-layout panelist :position (om-make-point 0 0)
                                   :size (get-pref-scroll-size)
-                                  :selection selec)))
+                                  :selection selec))
+          )
     (om-remove-subviews self (tabs self))
-    (om-add-subviews self (setf (tabs self) newtl))))
+    (om-add-subviews self (setf (tabs self) newtl))
+    ))
     
 
 (defun make-preference-win ()
@@ -202,7 +204,8 @@
 							  (put-all-preferences)
                                                           (save-preferences)
 							  #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-							  #+linux (om-select-window *pref-window*))))
+							  #+linux (om-select-window *pref-window*)
+                                                          )))
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 
                                            :di-action (om-dialog-item-act  item
