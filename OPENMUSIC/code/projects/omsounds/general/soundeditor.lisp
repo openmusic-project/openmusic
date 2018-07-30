@@ -434,9 +434,6 @@
       (call-next-method))))
 
 
-(defmethod update-cursor ((self soundpanel) time &optional y1 y2)
-  (show-position-ms (editor self) time)
-  (call-next-method))
 
 
 #|
@@ -544,6 +541,12 @@
   (update-subviews (om-view-container self)))
 
 (defmethod scroll-play-window ((self soundPanel)) t)
+
+
+(defmethod update-cursor ((self soundpanel) time &optional y1 y2)
+  (show-position-ms (editor self) time)
+  (call-next-method))
+
 
 ;;;==================
 ;;; MARKERS 

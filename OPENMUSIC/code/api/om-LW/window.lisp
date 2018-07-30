@@ -231,7 +231,7 @@
   (capi:screen-active-interface (capi:convert-to-screen))
   #-(or darwin macos macosx)
   ; --> ça plante (parfois)
-  (car (capi::collect-interfaces 'om-abstract-window :screen :any :sort-by :visible))
+  (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible))
 )
 
 (defun om-get-all-windows (class)
