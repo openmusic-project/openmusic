@@ -53,6 +53,8 @@
    (echoarea :accessor echoarea :initarg :echoarea :initform nil)))
 
 
+(defmethod update-for-subviews-changes ((self om-text-edit-window) &optional (recursive nil)) nil)
+
 (defmethod make-window-layout ((self om-text-edit-window) &optional color) 
   (make-instance 'simple-layout :description
                  (list (setf (om-lisp::ep self) 
