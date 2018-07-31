@@ -23,6 +23,7 @@
 
 
 (in-package :om)
+
 ;============================
 ;Dialog item boxes
 ;============================
@@ -66,45 +67,47 @@
 
 (defmethod make-frame-from-callobj ((self OMDIebox))
    "Make a simple frame for the editor factory 'self'."
-   (let* ((name (string-downcase (name self)))
-          (defsize (get-boxsize self))
-          (numouts (numouts self))
-          (numins (length (inputs self)))
-          (index 0) input-frames boxframex
-          module boxsize miniview )
-     (setf boxframex  (if (frame-size self)
-                        (om-point-h  (frame-size self))
-                        (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins)))))
-     (setf boxsize (if (frame-size self) (frame-size self) (om-make-point boxframex (om-point-v  defsize))))
-     (setf input-frames (mapcar #'(lambda (input)
-                                    (progn
-                                      (setf index (+ index 1))
-                                    (om-make-view (get-input-class-frame self)
-                                      :object input
-                                      :help-spec (string+ "<" (string-downcase (name input))
-                                                          "> " (doc-string input))
-                                      :size (om-make-point 8 8)
-                                      :position (om-make-point (- (* index  (round (om-point-h boxsize) (+ numins 1))) 4) 
-                                                                 1)))) (inputs self)))
-     (setq module (om-make-view (get-frame-class self)
-                                :position (frame-position self)
-                                :size  boxsize
-                                :object self))
+   (let ((name (string-downcase (name self)))
+         (defsize (get-boxsize self))
+         (numouts (numouts self))
+         (numins (length (inputs self)))
+         (index 0) 
+         (module (om-make-view (get-frame-class self)
+                               :position (frame-position self)
+                               :object self)))
+    
+     (unless (frame-size self) 
+       (setf (frame-size self) (om-make-point 
+                                (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
+                                (om-point-v defsize)))
+       )
 
-     (setf (inputframes module) input-frames)
-     (loop for input-f in input-frames do (om-add-subviews module input-f))
+     (setf (inputframes module) (mapcar #'(lambda (input)
+                                            
+                                            (setf index (+ index 1))
+                                            (om-make-view (get-input-class-frame self)
+                                                            :object input
+                                                            :help-spec (string+ "<" (string-downcase (name input))
+                                                                                "> " (doc-string input))
+                                                            :size (om-make-point 8 8)
+                                                            :position (om-make-point 
+                                                                       (- (* index (round (om-point-h (frame-size self)) (+ numins 1))) 4) 
+                                                                       1)
+                                                            ))
+                                        (inputs self)))
+     
+     (loop for input-f in (inputframes module) do (om-add-subviews module input-f))
      
      (make-outputs-from-names self (value self) module)
      
-     (setf (iconview module) (value self))
-                        
+     (setf (iconview module) (value self))                
      (om-add-subviews module (iconview module))
 
      (setf (frames self) (list module))
-     (setf (frame-size self) (om-view-size module))
      (setf (name module) name)
      (add-box-resize module)
-
+     
+     (om-set-view-size module (frame-size self))
      (update-di-size (value self) module)
      
      (when (allow-lock self)
@@ -116,13 +119,11 @@
 
 
 ;=======================
-;the class for the frame
+;the frame
 ;=======================
 
 (defclass DIEditorframe ( omboxframe OMSimpleFrame om-transparent-view om-view-drag ) ())
 
-;======================BOXFRAME=======================
-;;; from boxeditorframe
 
 (defmethod show-fun-code ((self DIEditorframe))
   (edit-definition (class-name (reference (object self)))))
@@ -174,8 +175,6 @@
      ))
 
 
-;======================EVENTS==========================
-
 (defmethod om-draw-contents ((self dieditorframe))
   (call-next-method)
   (when (active-mode self)
@@ -201,7 +200,14 @@
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
    (om-make-point (max 30 (om-point-h new-pos )) (max 40 (om-point-v new-pos ))))
 
-;abstract class pour les instances
+(defmethod add-subview-extra ((self DIEditorframe))
+   (update-di-size (value (object self)) self))
+
+
+;==================
+; The object
+;==================
+
 (defclass! d-i-box (select-object) 
      ((di-data :accessor di-data :initform nil)))
 
@@ -232,7 +238,11 @@
 
 
 ;==================
-;BOXES
+;SPECIFIC BOXES
+;==================
+
+;==================
+; SIMPLE TEXT
 ;==================
 
 ;editable static-text
@@ -279,8 +289,9 @@ Evaluate or connect the output to get the current contents of the box.
   (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 28 20))))
 
 
-
-;text-edit-view
+;==================
+; MULTI-LIBNE TEXT
+;==================
 (defclass! text-view (om-text-edit-view d-i-box)  ()
     (:icon 291)
     (:documentation "
@@ -313,7 +324,7 @@ Evaluate or connect the output to get the current contents of the box.
 
 (defmethod update-di-size ((self text-view) container)
   (om-set-view-position self #+win32(om-make-point 12 12) #-win32(om-make-point 12 10))
-  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 28 20))))
+  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 24 20))))
 
 
 (defmethod rep-editor ((self text-view) num) 
@@ -334,7 +345,10 @@ Evaluate or connect the output to get the current contents of the box.
 
 
 
-;button
+;==================
+;BUTTON
+;==================
+
 (defclass! button (om-button d-i-box) () 
    (:icon 292)
    (:documentation 
@@ -347,6 +361,7 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 "
 ))
+ 
 ;; compat
 (defclass! button-box (button) ()) 
 
@@ -408,12 +423,15 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 
 (defmethod update-di-size ((self button) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 12)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24))
   )
 
 
-;check-box
+;==================
+;CHECK-BOX
+;==================
+
 (defclass! check-box (om-check-box d-i-box)  ()
     (:icon 293)
     (:documentation 
@@ -446,7 +464,12 @@ The box output will return T (true) if it is checked, and NIL (false) if not.
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 12)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24)))
 
-;radio-button
+
+
+;==================
+; RADIO BUTTON
+;==================
+
 (defclass! radio-button (om-radio-button d-i-box)  ()
            (:icon 294))
 ;; compat
@@ -456,6 +479,8 @@ The box output will return T (true) if it is checked, and NIL (false) if not.
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 12)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24)))
 
+(defmethod get-super-default-value ((type (eql 'radio-button)))
+  (om-make-dialog-item 'radio-button (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled"))
 
 ;single-item-list
 (defclass! single-item-list (om-single-item-list d-i-box)  ()
@@ -482,7 +507,10 @@ The box output will return the selected item. One (and only one) item can be sel
 
 
 
-;; compat
+;==================
+; LIST (SINGLE SELECTION)
+;==================
+
 (defclass! single-item-list-box (single-item-list) ()) 
 
 (defmethod get-slot-in-out-names ((self single-item-list))
@@ -515,7 +543,11 @@ The box output will return the selected item. One (and only one) item can be sel
   (let ((i (om-get-selected-item-index self)))
     (nth i (di-data self))))
 
-;multi-item-list
+
+;==================
+; LIST (MULTI-SELECTION)
+;==================
+
 (defclass! multi-item-list (om-multi-item-list d-i-box)  ()
    (:icon 296)
    (:documentation 
@@ -529,6 +561,7 @@ The box output will return the list of selected items, or NIL if no item is sele
 [Warning: MULTI-ITEM-LIST should be locked ('b') in order to prevent the contents and selection to be overwriten by the box input data.]
 "
 ))
+
 ;; compat
 (defclass! multi-item-list-box (multi-item-list) ()) 
 
@@ -565,7 +598,10 @@ The box output will return the list of selected items, or NIL if no item is sele
      
 
 
-;pop-up-menus
+;==================
+; POP-UP CHOICE MENU
+;==================
+
 (defclass! pop-up-menu (om-pop-up-dialog-item d-i-box)  ()
    (:icon 297)
    (:documentation 
@@ -603,10 +639,10 @@ Any selection in the menu will automatically call this function or patch passing
      rep))
 
 (defmethod get-super-default-value ((type (eql 'pop-up-menu)))
-  (om-make-dialog-item 'pop-up-menu (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled" :range '("yes" "no")))
+  (om-make-dialog-item 'pop-up-menu (om-make-point 1 4) (om-make-point 50 20) "untitled" :range '("yes" "no")))
 
 (defmethod update-di-size ((self pop-up-menu) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 12)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24)))
 
 (defmethod set-dialog-item-params ((self pop-up-menu) box args)
@@ -641,7 +677,11 @@ Any selection in the menu will automatically call this function or patch passing
                                                          (funcall fun (om-get-selected-item-index x)))))))
 
 
-;slider
+
+;==================
+;SLIDER
+;==================
+
 (defclass! slider (om-slider d-i-box)  ()
    (:icon 298)
    (:documentation 
@@ -734,8 +774,6 @@ Evaluating the 5th output will also call and get the result of the function with
 (defmethod (setf value) :after ((value slider) (self omdiebox)) 
   (set-function value (omNG-box-value (fifth (inputs self))) self))
 
-
-;========
 
 
 
