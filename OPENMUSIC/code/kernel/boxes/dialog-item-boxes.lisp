@@ -119,10 +119,7 @@
 ;the class for the frame
 ;=======================
 
-(defclass DIEditorframe (omboxframe om-transparent-view OMSimpleFrame om-view-drag) ())
-
-(defclass di-miniview (general-miniview om-item-view) ())
-
+(defclass DIEditorframe ( omboxframe OMSimpleFrame om-transparent-view om-view-drag ) ())
 
 ;======================BOXFRAME=======================
 ;;; from boxeditorframe
@@ -179,20 +176,12 @@
 
 ;======================EVENTS==========================
 
-(defmethod om-view-click-handler ((self di-miniview) where)
-    (toggle-icon-active-mode (om-view-container self)))
-
-(defmethod om-view-doubleclick-handler ((self di-miniview) where) nil)
-
-(defmethod draw-only-select ((self di-miniview)) (om-invalidate-view self))
-
 (defmethod om-draw-contents ((self dieditorframe))
   (call-next-method)
   (when (active-mode self)
     (om-with-focused-view self
       (om-with-fg-color self *om-gray-color*
       (om-draw-rect 1 8 (- (w self) 3) (- (h self) 17) :pensize 2)))))
-
 
 (defmethod change-boxframe-size ((view DIEditorframe) new-size)
    (when (setf new-size (allow-new-size view new-size))
