@@ -132,7 +132,7 @@
   (om-show-reference-doc (class-name (reference (object self)))))
 
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
-   (om-make-point (max 30 (om-point-h new-pos )) (max 30 (om-point-v new-pos))))
+   (om-make-point (max 20 (om-point-h new-pos )) (max 20 (om-point-v new-pos))))
 
 (defmethod add-lock-button ((self DIEditorframe) &optional (mode "x"))
    "Add a lock button, ff the box referenced by 'self' allow it."
@@ -201,8 +201,9 @@
    (om-make-point (max 30 (om-point-h new-pos )) (max 40 (om-point-v new-pos ))))
 
 (defmethod add-subview-extra ((self DIEditorframe))
-   (update-di-size (value (object self)) self))
+  (update-di-size (value (object self)) self))
 
+(defmethod om-view-doubleclick-handler ((self DIEditorframe) pos) nil)
 
 ;==================
 ; The object
@@ -423,7 +424,7 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 
 (defmethod update-di-size ((self button) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) #+windows 12 #-windows 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24))
   )
 
@@ -708,7 +709,7 @@ Evaluating the 5th output will also call and get the result of the function with
 (defclass! slider-box (slider) ()) 
 
 (defmethod omng-save ((self slider) &optional (values? nil))
-  `(let ((rep (om-make-dialog-item 'slider (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
+  `(let ((rep (om-make-dialog-item 'slider (om-make-point 1 1) (om-make-point ,(om-width self) ,(om-height self)) "untitled"
                                    :direction ,(om-get-slider-orientation self)
                                    :range ',(om-get-slider-range self)
                                    :increment 1
