@@ -587,9 +587,25 @@ make-quanti
   self)
 
 
+(defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
+  (reduce #'merger 
+          (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
 
-;;; aligne les accords d'un chord-seq
-(defmethod! align-chords ((self chord-seq) (delta number))
+;;; POLY -> VOICE = just keeps the first voice of the poly
+(defmethod* Objfromobjs ((Self poly) (Type voice))
+    (ObjFromObjs (first (voices self)) type)) 
+
+(defmethod* Objfromobjs ((Self voice) (Type poly))
+    (make-instance (type-of type) :voices (list (clone self))))
+
+
+
+
+;;;====================================
+;;; CHORD-SEQ TOOL BOX
+;;;====================================
+
+(defmethod* align-chords ((self chord-seq) (delta number))
   :initvals (list nil 100)
   :indoc '("a chord-seq" "an integer")
   :icon 230
@@ -629,8 +645,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
     chseq))
 
 
-(defmethod! align-chords ((self chord-seq) (delta null)) self)
-
+(defmethod* align-chords ((self chord-seq) (delta null)) self)
 
 
 (defmethod* merger ((chs1 chord-seq) (chs2 chord-seq))
@@ -644,19 +659,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
       (clone chs2))))
 
 
-
-(defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
-  (reduce #'merger 
-          (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
-
-;;; POLY -> VOICE = just keeps the first voice of the poly
-(defmethod* Objfromobjs ((Self poly) (Type voice))
-    (ObjFromObjs (first (voices self)) type)) 
-
-(defmethod* Objfromobjs ((Self voice) (Type poly))
-    (make-instance (type-of type) :voices (list (clone self))))
-
-(defmethod! temporal-sort ((self chord-seq))
+(defmethod* temporal-sort ((self chord-seq))
   :indoc '("an object containing temporal events to be sorted")
   :initvals '(nil)
   :doc "Sorts the events in a copy of <self> in temporal order, returns the new copy"
@@ -671,7 +674,63 @@ Transforms <self> so that notes falling in a small time interval are grouped int
     (adjust-extent out-cs)
     (QNormalize out-cs)
     out-cs))
-;==================
+
+
+;;; by Gilbert Nouno
+(defmethod* split-voices ((self chord-seq) &optional (random nil))
+  :indoc '("a 'polyphonic' chord-seq" "random distribution strategy?")
+  :initvals '(nil nil)
+  :doc "Separates a CHORD-SEQ with overlapping notes into a list of monoponic CHORD-SEQs
+
+If <random> = T, voice distribution is chosen randomly. Otherwise the first available voice is selected."
+  :icon 915
+  
+  (let ((chords-lists nil))
+    
+    (loop for chord in (get-chords self)
+          for time in (lonset self)
+          for i = 0 then (1+ i) do
+          
+          (let ((position nil) 
+                (list-indices (arithm-ser 0 (1- (length chords-lists)) 1)))
+            (if random (setf list-indices (permut-random list-indices)))
+            (loop for n in list-indices
+                  while (not position) do 
+                  (let ((voice? (nth n chords-lists)))
+                    (when (> time (+ (car (car voice?)) (list-max (ldur (cadr (car voice?))))))
+                      (setf (nth n chords-lists) (cons (list time chord) (nth n chords-lists)))
+                      ;(setf voice? (cons (list time chord) voice?))
+                      (setf position t))))
+            
+            (unless position
+              (setf chords-lists
+                    (append chords-lists (list (list (list time chord))))))
+              
+            ))
+
+    ;;; chords-list =  
+    ;;; (((onset1 chord1) (onset2 chord2) ...)
+    ;;;  ((onset1 chord1) (onset2 chord2) ...)
+    ;;;  ...[n times]... )
+
+    (loop for list in chords-lists collect
+          (let ((chords (reverse (mapcar 'cadr list)))
+                (onsets (reverse (mapcar 'car list))))
+            (make-instance 'chord-seq
+                           :lonset onsets
+                           :lmidic (mapcar 'lmidic chords)
+                           :ldur (mapcar 'ldur chords)
+                           :lvel (mapcar 'lvel chords)
+                           :lchan (mapcar 'lchan chords))))
+    )
+ 
+)
+
+
+
+;======================================================
+; MULTI-SEQ
+;======================================================
 
 (defclass* multi-seq (superposition tonal-object) 
   ((chord-seqs :initform (list (make-instance 'chord-seq)) 
