@@ -106,15 +106,20 @@ Constructs a POLY object from a MusicXML file.
       (make-instance 'poly :voices voices))))
 
 (defun voice-from-xml (part part-info)
+
   (let* ((xmlname (get-tagged-elt part-info 'part-name))
          (name (and (string-equal (xml-attribute-value xmlname 'print-object) "yes")
                     (get-tag-contents xmlname)))
+         (midi-info (loop for instr in (get-tagged-elements part-info 'midi-instrument) collect
+                     (list (xml-attribute-value instr 'id)
+                           (get-tag-contents (get-tagged-elt instr 'midi-channel)))))
          (chords nil) (trees nil) (tempos nil)
          (last-signature '(4 4))
          (last-beat-division 240))
+    
     (loop for m in (get-tagged-elements part 'measure)
           for i = 0 then (+ i 1)
-          do (let* ((mesure-data (measure-from-xml m last-beat-division)))
+          do (let* ((mesure-data (measure-from-xml m last-beat-division midi-info)))
                (if mesure-data
                    (progn
                      (push (first mesure-data) chords)
@@ -234,7 +239,7 @@ Constructs a POLY object from a MusicXML file.
                             item)))))
 
 ;;; (chords tree newtempo? newdivision?)
-(defun measure-from-xml (xmllist current-beat-division)
+(defun measure-from-xml (xmllist current-beat-division midi-info)
   (let* ((measure-attributes (get-tagged-elt xmllist 'attributes))
          (tempo (xml-attribute-value (get-tagged-elt xmllist 'sound) 'tempo))
          (ts (get-tagged-elt measure-attributes 'time))
@@ -287,7 +292,9 @@ Constructs a POLY object from a MusicXML file.
                                                       (not (fourth (car c)))) ;;; not a continuation chord
                                              (make-instance 'chord
 							    :lmidic (mapcar 'car c)
-							    :lchan (mapcar 'fifth c) ;voice tag -> channel
+							    ;;; :lchan (mapcar 'fifth c) ;voice tag -> channel
+							    :lchan (loop for chord in c collect 
+                                                                         (instr-to-midi-chan (nth 6 chord) midi-info)) ; instrument tag -> channel
 							    ))))))
         ;;; BUILD RHYTHM TREE
         (loop for xmlchord in xmlchords do
@@ -346,19 +353,30 @@ Constructs a POLY object from a MusicXML file.
     ))
 
 
-;;; pitch duration begtie endtie voice staff
+;;; midi-info is the pair list (instr-id midi-channel decoded from the score part
+(defun instr-to-midi-chan (instr midi-info)
+  (let ((default-midi-channel (if midi-info (cadr (car midi-info)) 1)))
+    (if instr 
+        (or (cadr (find instr midi-info :key 'car :test 'string-equal))
+            default-midi-channel)
+      default-midi-channel)))
+        
+
+  
+;;; pitch duration begtie endtie voice staff instrument
 (defun decode-note (xmlnote) 
   (let* ((pitchtag (get-tagged-elt xmlnote 'pitch))
          (unpitch-tag (get-tagged-elt xmlnote 'unpitched))
          (pitch (decode-xml-pitch (get-tag-contents (or pitchtag unpitch-tag)) unpitch-tag))
          (dur (get-tag-contents (get-tagged-elt xmlnote 'duration)))
 	 (voice (get-tag-contents (get-tagged-elt xmlnote 'voice)))
-	 (staff (get-tag-contents (get-tagged-elt xmlnote 'staff))))
+	 (staff (get-tag-contents (get-tagged-elt xmlnote 'staff)))
+         (instr (get-tag-contents (get-tagged-elt xmlnote 'instrument))))
     (if dur
         (list pitch dur
               (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
               (not (null (get-tagged-elements xmlnote 'tie 'type "stop")))
-	      voice staff)
+	      voice staff instr)
       (xml-import-warning (format nil "One note could not be imported in OM: ~A" xmlnote))
       )))
 
