@@ -35,11 +35,20 @@ Constructs a POLY object from a MusicXML file.
 "
   (new-import-xml (or path (om-choose-file-dialog))))
 
-(defparameter *import-error-signal* t)
+(defparameter *import-error* nil)
+
+(defun xml-import-warning (str)
+  (om-print str "MusicXML IMPORT WARNING ::")
+  (setf *import-error* t)
+  NIL)
 
 (defun new-import-xml (file)
-  (read-xml-list 
-   (om-list-from-xml-file file)))
+  (setf *import-error* nil)
+  (unwind-protect 
+      (read-xml-list (om-list-from-xml-file file))
+    (when *import-error*
+      (om-beep-msg "THERE WERE ERRORS/WARNINGS IN MusicXML IMPORT"))
+    ))
 
   
 (defun xml-equal (a b)
@@ -61,17 +70,19 @@ Constructs a POLY object from a MusicXML file.
     (when pos (nth (1+ pos) (list! (car xml-list-elt))))))
 
 (defun get-tagged-elements (list tag &optional attribute value)
-  (let ((rep nil))
+ (when (listp list) ;; filter empty <tag/>
+   (let ((rep nil))
     (mapcar #'(lambda (elt) 
                 (when (and (xml-tag-equal elt tag) 
                            (or (not attribute)
                                (equal (xml-attribute-value elt attribute) value)))
                   (push (copy-list elt) rep)))
             list)
-    (reverse rep)))
+    (reverse rep))))
 
 (defun get-tagged-elt (list tag)
-  (find tag list :test 'xml-tag-equal))
+  (when (listp list) ;; filter empty <tag/>
+    (find tag list :test 'xml-tag-equal)))
 
 
 (defun get-tag-contents (taglist)
@@ -116,7 +127,7 @@ Constructs a POLY object from a MusicXML file.
                      (when (fourth mesure-data)
                        (setf last-beat-division (fourth mesure-data)))
                      )
-                 (om-beep-msg "Warning: Empty measure ignored in MusicXLML import"))
+                 (xml-import-warning "Empty measure ignored in MusicXLML import"))
                ))
                                   
     (make-instance 'voice :chords (remove nil (flat (reverse chords)))
@@ -348,9 +359,7 @@ Constructs a POLY object from a MusicXML file.
               (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
               (not (null (get-tagged-elements xmlnote 'tie 'type "stop")))
 	      voice staff)
-      (progn (when *import-error-signal* (om-message-dialog (format nil "Warning: One note could not be imported in OM.~%~%~A" xmlnote)))
-        ;(setf *import-error-signal* nil)
-        nil)
+      (xml-import-warning (format nil "One note could not be imported in OM: ~A" xmlnote))
       )))
 
 
