@@ -278,8 +278,9 @@ put this code in this method."
         (setf *let-list* nil)
         (setf body `(values ,.(mapcar #'(lambda (theout)
                                           (gen-code theout 0)) out-box)))
-        (eval (print `(defun ,(intern (string out-symb) :om)  (,.symbols)
-                  (let* ,(reverse *let-list*) ,body))))
+
+        (eval `(defun ,(intern (string out-symb) :om)  (,.symbols)
+                  (let* ,(reverse *let-list*) ,body)))
         
         (setf *let-list* oldletlist)
         (setf *lambda-context* oldlambdacontext)
