@@ -183,19 +183,22 @@
 (defmethod om-set-view-size ((self om-standard-dialog-item) size-point)
   (setf (vw self) (om-point-h size-point) (vh self) (om-point-v size-point))
   (when (interface-visible-p self) 
-    (apply-in-pane-process self 
-                           (lambda () 
+    (execute-with-interface-if-alive 
+     (top-level-interface self) 
+     (lambda () 
                              
-                             (set-hint-table self (list :default-width (om-point-h size-point) :defalut-height (om-point-v size-point)
-                                                        :external-min-width (om-point-h size-point) :external-min-height (om-point-v size-point)
-                                                        :external-max-width (om-point-h size-point) :external-max-height (om-point-v size-point)
-                                                        ))
-                             (setf (pinboard-pane-size self) (values (om-point-h size-point) (om-point-v size-point)))
-                             (setf (pinboard-pane-position self) (values (vx self) (vy self)))
-                             ))
+       (set-hint-table self (list :default-width (om-point-h size-point) :defalut-height (om-point-v size-point)
+                                  :external-min-width (om-point-h size-point) :external-min-height (om-point-v size-point)
+                                  :external-max-width (om-point-h size-point) :external-max-height (om-point-v size-point)
+                                  ))
+
+       (setf (pinboard-pane-size self) (values (om-point-h size-point) (om-point-v size-point)))
+       (setf (pinboard-pane-position self) (values (vx self) (vy self)))
+       (di-after-settings self)
+       ))
     ;(om-set-view-position self (om-make-point (vx self) (vy self)))
     )
-  (di-after-settings self)
+  
   )
 
 (defmethod om-create-callback ((self om-standard-dialog-item))
@@ -311,6 +314,7 @@
                        (cdr list) :initial-value "")))
 
 (defun string-until-char (string char)
+
   (let ((index (search char string)))
     (if index (values (subseq string 0 index) (subseq string (+ index 1)))
         (values string nil))))

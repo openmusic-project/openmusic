@@ -96,17 +96,8 @@
      
      (make-outputs-from-names self (value self) module)
      
-     (setf (iconview module) 
-           
-           (if (showpict self)
-             
-               (value self)
-             
-             (om-make-view 'di-miniview
-                           :position (om-make-point 0 8)
-                           :size (om-subtract-points boxsize (om-make-point 0 17)))
-             ))
-             
+     (setf (iconview module) (value self))
+                        
      (om-add-subviews module (iconview module))
 
      (setf (frames self) (list module))
@@ -142,13 +133,8 @@
 (defmethod show-big-doc ((self DIEditorframe))
   (om-show-reference-doc (class-name (reference (object self)))))
 
-(defmethod add-subview-extra ((self DIEditorframe))
-   (when (showpict (object self))
-     (init-miniview (iconview self) (value (object self)))
-     ))
-
 (defmethod allow-new-size ((self DIEditorframe) new-pos) 
-   (om-make-point (max 30 (om-point-h new-pos )) (max 30 (om-point-v new-pos ))))
+   (om-make-point (max 30 (om-point-h new-pos )) (max 30 (om-point-v new-pos))))
 
 (defmethod add-lock-button ((self DIEditorframe) &optional (mode "x"))
    "Add a lock button, ff the box referenced by 'self' allow it."
@@ -202,68 +188,20 @@
 
 (defmethod om-draw-contents ((self dieditorframe))
   (call-next-method)
-  (when (and (showpict (object self)) (active-mode self))
+  (when (active-mode self)
     (om-with-focused-view self
       (om-with-fg-color self *om-gray-color*
       (om-draw-rect 1 8 (- (w self) 3) (- (h self) 17) :pensize 2)))))
 
-(defmethod om-draw-contents ((self di-miniview))
-  (om-with-focused-view self
-    (if (showpict (object (om-view-container self)))
-        (progn
-          (om-with-fg-color self *om-light-gray-color*
-            (om-fill-rect 0 0 (w self) (h self))))
-      (let* ((icon (icon (reference (object (om-view-container self)))))
-             (sizeicn (icon-sizes icon (def-icon-size (object (om-view-container self)))))
-             (xi (car sizeicn)) (yi (cadr sizeicn))
-             (iconhdlr (second (get&corrige-icon icon)))
-             posi)
-        (om-draw-picture self (om-load-and-store-picture "diboxpict" 'kernel) 
-                         :size (om-make-point (w self) (h self)))
-        (when iconhdlr
-          (setf posi (om-make-point (- (round (w self) 2) (round xi 2)) (- (round (h self) 2) (round yi 2))))
-          (om-draw-picture self iconhdlr :pos posi :size (om-make-point xi yi)))
-        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 1)
-        ))
-    (when (show-name (object (om-view-container self)))
-      (om-draw-string 4 (- (h self) 5) (name (object (om-view-container self)))))
-    (if (active-mode (om-view-container self)) ; (selected-p self)
-      (om-with-fg-color self (om-make-color 0 0 0) 
-        (om-draw-rect 0 0 (1- (w self)) (1- (h self)) :pensize 3)
-        ))
-      ))
 
-
-(defmethod change-edit-mode ((self DIEditorframe))
-
-  (om-remove-subviews self (iconview self))
-  (setf (showpict (object self)) (not (showpict (object self))))
-  
-      
-  (setf (iconview self) 
-        (if (showpict (object self))
-        
-            (value (object self))
-        
-          (om-make-view 'di-miniview
-                        :position (om-make-point 0 8)
-                        :size (om-subtract-points (om-view-size self) (om-make-point 0 17))))
-        )
-  
-  (om-add-subviews self (iconview self))
-  (update-di-size (value (object self)) self)
-  (om-invalidate-view self))
-
-(defmethod change-boxframe-size ((view DIEditorframe) new-position)
-   (when (setf new-position (allow-new-size view new-position))
-       (om-set-view-size view new-position)
-       (make-move-after (om-view-container view) (list view))
-       (when (showpict (object view))
-         (update-miniview (iconview view) (value (object view)))
-         (update-di-size (value (object view)) view))
-       (om-invalidate-view view)
-       (om-invalidate-view (om-view-container view))
-       ))
+(defmethod change-boxframe-size ((view DIEditorframe) new-size)
+   (when (setf new-size (allow-new-size view new-size))
+     (om-set-view-size view new-size)
+     (make-move-after (om-view-container view) (list view))
+     (update-di-size (value (object view)) view)
+     (om-invalidate-view view)
+     (om-invalidate-view (om-view-container view))
+     ))
 
 (defmethod reinit-size ((self DIEditorframe)) 
    (setf (frame-size (object self)) (get-boxsize (object self)))
@@ -383,6 +321,12 @@ Evaluate or connect the output to get the current contents of the box.
 (defmethod get-super-default-value ((type (eql 'text-view)))
   (om-make-dialog-item 'text-view (om-make-point 1 1 ) (om-make-point 50 20 ) "untitled"))
 
+
+(defmethod update-di-size ((self text-view) container)
+  (om-set-view-position self #+win32(om-make-point 12 12) #-win32(om-make-point 12 10))
+  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 28 20))))
+
+
 (defmethod rep-editor ((self text-view) num) 
    (om-dialog-item-text self))
 
@@ -443,28 +387,30 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 ;;; by default button does not set a function but evaluates the patch
 (defmethod set-action ((self button) fun box) 
-  (om-set-dialog-item-action-function self #'(lambda (x) 
-                                               (when fun
-                                                 (let ((panel (get-patchpanel (editor (om-view-window self)))))
-                                                   (om-eval-enqueue 
-                                                    `(progn
-                                                       (setf (di-data ,self) 
-                                                             (if (functionp ,fun) 
-                                                                 (funcall ,fun) ;;; call it
-                                                               (omng-box-value (second (inputs ,box))) ;; reevaluate
-                                                               ))
-                                                       (setf *cur-eval-panel* ,panel)
-                                                       #+om-reactive(self-notify ,box nil)
-                                                       (clear-ev-once ,panel)
-                                                       (setf (di-data ,self) nil)
-                                                       )))))
-                                      ))
-
+  (om-set-dialog-item-action-function 
+   self 
+   #'(lambda (x) 
+       (when fun
+         (let ((panel (get-patchpanel (editor (om-view-window self)))))
+           (om-eval-enqueue 
+            `(progn
+               (setf (di-data ,self) 
+                     (if (functionp ,fun) 
+                         (funcall ,fun) ;;; call it
+                       (omng-box-value (second (inputs ,box))) ;; reevaluate
+                       ))
+               (setf *cur-eval-panel* ,panel)
+               #+om-reactive(self-notify ,box nil)
+               (clear-ev-once ,panel)
+               (setf (di-data ,self) nil)
+               )))))
+   ))
 
 
 (defmethod set-dialog-item-params ((self button) box args)
   (om-set-dialog-item-text self (format nil "~D" (car args)))
   (set-action self (cadr args) box)
+  (om-invalidate-view (om-view-container self))
   self)
 
 
@@ -474,7 +420,8 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 (defmethod update-di-size ((self button) container)
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 12)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-size self (om-make-point (- (w container) 20) 24))
+  )
 
 
 ;check-box
