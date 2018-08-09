@@ -371,7 +371,7 @@ Constructs a POLY object from a MusicXML file.
          (dur (get-tag-contents (get-tagged-elt xmlnote 'duration)))
 	 (voice (get-tag-contents (get-tagged-elt xmlnote 'voice)))
 	 (staff (get-tag-contents (get-tagged-elt xmlnote 'staff)))
-         (instr (get-tag-contents (get-tagged-elt xmlnote 'instrument))))
+         (instr (xml-attribute-value (get-tagged-elt xmlnote 'instrument) 'id)))
     (if dur
         (list pitch dur
               (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
