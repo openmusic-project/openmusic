@@ -1010,7 +1010,9 @@
    (case char
      (#\SPACE
       (editor-play/stop (editor self)))
-     (:om-key-esc (reset-cursor self))
+     (:om-key-esc 
+      (reset-cursor self) 
+      (editor-stop (editor self)))
      (#\x (mute-boxes self))
      (#\p (editor-play (editor self)))
      (#\g (setf (grille-p self) (not (grille-p self)))

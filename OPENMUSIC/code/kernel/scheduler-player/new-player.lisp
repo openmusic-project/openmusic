@@ -198,6 +198,7 @@
 
 
 (defmethod general-stop ((player omplayer))
+
   (mapcar #'player-stop (engines player)
           (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
   (unschedule-all player)
@@ -317,6 +318,7 @@
                                               :callback-tick 1.0
                                               :stop-fun 'general-player-stop
                                               ))
+
 
 (defvar *play-boxes* nil)
 
