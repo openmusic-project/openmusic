@@ -385,11 +385,13 @@ If <mode> = 'sound', a sound file is created by mixing the present sound files i
    :icon 333
    :indoc '("maquette" "pathname")
    :doc "Outputs a sound file mixing the present sound files in the maquette." 
-   (let ((sndlist (remove nil 
-                          (loop for b in (inside maquette) collect
-                                (if (subtypep (type-of b) 'sound) b nil))))
-         sndmix)
-     (setf sndmix (reduce 'sound-mix (mapcar #'(lambda (b) (sound-seq (sound-silence (offset b)) b)) sndlist)))
+   (let* ((sndlist (remove nil 
+                           (loop for b in (inside maquette) collect
+                                 (if (subtypep (type-of b) 'sound) b nil))))
+          (nch (apply 'max (mapcar 'om-sound-n-channels sndlist)))
+          (sr (apply 'max (mapcar 'om-sound-sample-rate sndlist)))
+          sndmix)
+     (setf sndmix (reduce 'sound-mix (mapcar #'(lambda (b) (sound-seq (sound-silence (offset b) nch sr) b)) sndlist)))
      (save-sound sndmix outsound)))
 
 
