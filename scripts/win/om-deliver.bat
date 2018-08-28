@@ -1,5 +1,5 @@
-cd ..\..\OPENMUSIC\build\build-om\
+cd ..\..\OPENMUSIC\build\
 
-"C:\\Program Files (x86)\\LispWorks\\lispworks-7-0-0-x86-win32.exe" -init deliver.lisp
+"C:\\Program Files (x86)\\LispWorks\\lispworks-7-1-0-x86-win32.exe" -init deliver.lisp
 
-cd ..\..\..\scripts\win\
+cd ..\..\scripts\win\
