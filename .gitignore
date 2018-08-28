@@ -16,7 +16,7 @@
 # don’t track OM releases
 *.app/
 /OM 6.*/**/*
-/OPENMUSIC/OM_6.11*
+/OPENMUSIC/OM_6.*
 /OPENMUSIC/resources/lib/linux/OMAudioLib.so
 /omaudiolib/Builds/
 codesign-om6
