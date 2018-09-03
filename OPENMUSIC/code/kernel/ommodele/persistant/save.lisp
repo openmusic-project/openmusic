@@ -1234,7 +1234,8 @@
           (prin1 inst-code out)))
       (when (create-info self) (setf (cadr (create-info self)) (om-get-date)))
       (setf *saving-patch* nil)
-      (setf *libs-to-load* nil))))
+      (setf *libs-to-load* nil)
+      t)))
 
 
 

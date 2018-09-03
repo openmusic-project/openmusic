@@ -459,6 +459,12 @@
                                                    (make-om-menu 'presentation :editor self) 
                                                    (make-om-menu 'windows :disable '("Global Variables") :editor self)))
 
+(defmethod make-new-menu ((self GlobalsfolderEditor))
+  (list (om-new-leafmenu "New Variable" #'(lambda() (omG-new-var (panel self))) "n")))
+
+
+
+
 (defmethod get-menubar ((self classtreeEditor)) 
   (list (make-om-menu 'file :disable '("Last saved" "Save" "Save As..." "Page Setup" "Print") :editor self) 
         (make-om-menu 'edit :disable '("Undo" "Cut" "Copy" "Paste" "Duplicate" "Undo") :editor self)  
@@ -479,8 +485,7 @@
    (om-new-leafmenu "New Slot" #'(lambda () (omG-make-new-icon-window (om-view-window self))) "n")
    ))
 
-(defmethod make-new-menu ((self GlobalsfolderEditor))
-  (list (om-new-leafmenu "New Variable" #'(lambda() (omG-new-var (panel self))) "n")))
+
 
 
 (defmethod get-menubar ((self PackageEditor)) 

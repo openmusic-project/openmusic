@@ -93,6 +93,7 @@ for exemple alias, ominstances of a class, a box referencing a patch, etc. #atta
    (:documentation "Changes the icon ID of 'self' with the new ID NEW-ICON,
  and update the current frames"))
 
+;;; MUST RETURN T IF SUCCESSFUL !
 (defgeneric omG-rename (self newname)  
    (:documentation "This method changes graphicly the name of 'self' with the new name 'newname',
  and updates the current frames"))
@@ -251,15 +252,23 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
   (list (om-make-point 24 24) (om-make-point 50 50) (om-make-point 500 400)))
   
 (defmethod omNG-rename ((self OMPersistantObject) name) 
+  
   "Rename 'self' but also the file saving the patch."
+
+  (call-next-method)
+  
   (when (mypathname self)
     (let* ((oldpath (mypathname self))
            (newpath (make-pathname :directory (pathname-directory oldpath)
                                    :name name
                                    :type (obj-file-extension self))))
       (rename-file oldpath newpath)
-      (setf (mypathname self) newpath)))
-  (call-next-method))
+      (setf (mypathname self) newpath)
+      
+      (omng-save self)
+      ))
+  
+  (name self))
 
 (defmethod omNG-rename :after ((self OMPersistantObject) name) 
   (mapc #'(lambda (el) (change-name el)) (attached-objs self)))
@@ -380,6 +389,7 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
 #seealso# (OMPersistantObject OMfolder OMpackage omworkspace) #seealso#"))
 |#
 
+
 (defmethod really-add ((self OMPersistantFolder)  (elem t))
   (push elem (elements self)))
 
@@ -394,7 +404,7 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
 
 
 (defmethod omNG-add-element ((self OMPersistantFolder) (elem OMPersistantObject))
-  "Add 'elem' to the persistant folder 'self'."
+  "Add 'elem' to the persistant folder 'self'." 
   (let ((rep (really-add self elem)))
      (setf (loaded? elem) nil)
      (set-path-element self elem)
@@ -437,7 +447,8 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
      (setf (name self) name)
      (setf (mypathname self) new-path)
      (mapc #'(lambda (el) (change-father-name el (mypathname self)))
-           (elements-with-path self)) t))
+           (elements-with-path self)) 
+     t))
 
 (defmethod omng-remove-element ((self OMPersistantFolder) elem)
    "Remove  'elem' from the folder 'self'."

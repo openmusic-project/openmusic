@@ -83,7 +83,6 @@ OMPackages are collections of classes and generic functions.#enddoc#
 (defmethod really-add ((self OMPackage) (elem t)) nil)
 
 (defmethod really-add ((self OMPackage) (elem OMPackage))
-  ;(print (list self elem))
   (pushr elem (subpackages self))
   (setf (father elem) self))
 

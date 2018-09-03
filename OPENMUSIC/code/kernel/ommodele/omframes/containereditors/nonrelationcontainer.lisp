@@ -710,6 +710,9 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
 (defmethod get-win-size ((self OMGlobalsFolder))
    (om-make-point 300 200))
 
+(defmethod editor-save ((self GlobalsfolderEditor))
+  (ws-save-globals))
+
 (defclass GlobalsfolderPanel (nonRelationPanel)
    ((scroll-scrap-glo :initform nil :allocation :class :accessor scroll-scrap-glo))
    (:documentation "This is the class for OMGlobalsFolder'editors. 

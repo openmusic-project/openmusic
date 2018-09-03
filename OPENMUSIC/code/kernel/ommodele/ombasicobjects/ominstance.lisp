@@ -85,22 +85,23 @@ if the instance is a list or a constant a subclass of OMInstance will be create.
 (defmethod global-p ((self OMInstance)) (mypathname self))
 
 (defmethod omNG-add-element ((self OMInstance) elem)
-   "The slot addition is made at class level not at instance level"
-   (declare (ignore elem)) nil)
+  (declare (ignore elem)) nil)
 
 (defmethod get-class-icon ((self OMInstance)) 'instance-icon-frame)
 
-(defmethod omng-remove-element ((self OMInstance) elem)
-   "Remove a slot is made at class level not at instance level"
-   (declare (ignore elem)) nil)
 
+(defmethod omng-remove-element ((self OMInstance) elem)
+  (declare (ignore elem)) nil)
+
+#|
+; now done in ompersistantobject
 (defmethod omNG-rename ((self OMInstance) name)
    "Rename an instance must also change the name of all atached-objs"
    (declare (ignore name))
    (let ((rep (call-next-method)))
-      ; now in ompersistantobject
-      ;  (mapc #'(lambda (el) (change-name el)) (attached-objs self))
+   ; (mapc #'(lambda (el) (change-name el)) (attached-objs self))
      rep))
+|#
 
 (defmethod omNG-delete ((self OMInstance))
    "Delete an instance must also update all atached-objs"

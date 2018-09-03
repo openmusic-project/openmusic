@@ -118,11 +118,9 @@
                  (setf list nil)))
          rep))))
 
-
 ;;=========THIS IS THE SPECIAL FOLDER WITH global vars===================
 
 (defvar *om-globalsfolder* nil "The globals folder in the workspace.")
-(defvar *globals-list* nil "Contains the initial global variables, loaded when you start the session.")
 
 (defclass OMglobalsFolder (OMFolder OMPackage) ()
    (:documentation "This is the special folder which contains globals variables. #enddoc#
@@ -147,6 +145,10 @@
    (or (editorframe self)
        (panel (open-new-nonrelationFrame self "Global Variables" (get-elements self)))))
 
+;;; we need to precise this because the behaviour of OMFolder and OMPackage is different!
+(defmethod really-add ((self OMglobalsFolder)  (elem t))
+  (push elem (elements self)))
+
 ;--------------------------------------------------
 ;Tools
 ;--------------------------------------------------
@@ -158,35 +160,34 @@
    (setf *om-globalsfolder* (omNG-protect-object (make-instance 'OMglobalsFolder
                                                    :Name "globals"
                                                    :icon 23
-                                                   :elements (copy-list *globals-list*)))))
+                                                   :elements (getglobalslist)))))
 
 
-(defun intiglobalslist ()
+(defun getglobalslist ()
   "Called when you start OM, this function load all globals variables saved in the current workspace."
   (declare (special *current-workspace* *instance-to-load*))
   (let ((directories (om-directory (make-pathname :directory  (append (pathname-directory (mypathname *current-workSpace*))
                                                                       (list "globals"))) 
                                    :directories nil :files t)))
-    (setf *globals-list*
-          (loop for path in directories  
-                when 
-                (and  (om-persistant-p path)
-                      (equal (file-type path) :INST))
-                collect (let (newobj wspar)
-                          (setf wspar (subseq (get-init-wsparams path) 2 5))
-                          (setf *loaading-stack* nil)
-                          (eval-non-text-file path)
-                          (setf newobj *instance-to-load*)
-                          (when newobj
-                            (setf (mypathname newobj) path)
-                            (setf *instance-to-load* nil)
-                            (update-patches-pile)
+    (loop for path in directories  
+          when 
+          (and  (om-persistant-p path)
+                (equal (file-type path) :INST))
+          collect (let (newobj wspar)
+                    (setf wspar (subseq (get-init-wsparams path) 2 5))
+                    (setf *loaading-stack* nil)
+                    (eval-non-text-file path)
+                    (setf newobj *instance-to-load*)
+                    (when newobj
+                      (setf (mypathname newobj) path)
+                      (setf *instance-to-load* nil)
+                      (update-patches-pile)
                           ;(when (mus-patch (instance newobj))
                           ;  (compat-get-old-picts (mypathname newobj) (mus-patch (instance newobj))))
-                            (setf (loaded? newobj) t)
-                            (setf (saved? newobj) t)
-                            (setf (wsparams newobj) (loop for item in wspar collect (eval item)))
-                            newobj))))))
+                      (setf (loaded? newobj) t)
+                      (setf (saved? newobj) t)
+                      (setf (wsparams newobj) (loop for item in wspar collect (eval item)))
+                      newobj)))))
 
 
 

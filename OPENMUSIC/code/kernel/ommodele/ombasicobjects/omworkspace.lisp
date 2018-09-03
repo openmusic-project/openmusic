@@ -84,18 +84,19 @@
    (declare (special *om-package-tree* *package-user*))
    (om-with-load-verbose nil
      (om-with-compiler-warnings nil
-        (intiglobalslist)
-        (init-globalsfolder)
-        (setf *current-workSpace* self)
-
-        (setf *package-user* (add-new-packages (list "User" nil nil nil nil) *om-package-tree*))
-        (init-user-pathname)
-        (load-package-from-folders)
-        (ws-load-user-pack)
-
+       
+       (init-globalsfolder)
+       
+       (setf *current-workSpace* self)
+       
+       (setf *package-user* (add-new-packages (list "User" nil nil nil nil) *om-package-tree*))
+       (init-user-pathname)
+       (load-package-from-folders)
+       (ws-load-user-pack)
+       
         (load-elements self)  ;; will also open the listener
         (setf (packages *current-workSpace*) (list *om-package-tree*))
-
+        
         (setf (mypathname *om-package-tree*) (mypathname *current-workspace*))
         (setf (mypathname *om-globalsfolder*) 
               (om-make-pathname :directory (append (pathname-directory (mypathname self)) (list "globals"))))
