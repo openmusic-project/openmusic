@@ -154,14 +154,24 @@
 
 (defmethod array-data-from-control ((controlvalue bpf) numcols)
   (when (> numcols 0)
-    (let* ((ranges (real-bpf-range controlvalue)))
-      (let ((data (list! (nth 2 (multiple-value-list (om-sample controlvalue numcols 
+    (let* ((ranges (real-bpf-range controlvalue))
+           (data (list! (nth 2 (multiple-value-list (om-sample controlvalue numcols 
                                                                 (float (/ (first ranges) (expt 10 (decimals controlvalue))))
                                                                 (float (/ (second ranges) (expt 10 (decimals controlvalue))))
                                                                 *array-precision*))))))
         (or (and (= (length data) numcols) data)
-            (append data (make-list (- numcols (length data)) :initial-element (car (last data))))))
+            (append data (make-list (- numcols (length data)) :initial-element (car (last data)))))
     )))
+
+(defmethod array-data-from-control ((controlvalue bpc) numcols)
+  (when (> numcols 0)
+    (let ((data (list! (nth 2 (multiple-value-list (om-sample controlvalue numcols
+                                                              nil nil
+                                                              *array-precision*))))))
+      (or (and (= (length data) numcols) data)
+            (append data (make-list (- numcols (length data)) :initial-element (car (last data)))))
+      )))
+
 
 (defmethod array-data-from-control ((controlvalue function) numcols)
    (loop for i from 1 to numcols
