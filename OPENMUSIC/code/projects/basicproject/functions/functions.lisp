@@ -329,6 +329,15 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
 
 (defmethod! om-sample ((self BPC) (nbs-sr number) &optional xmin xmax dec)
     :numouts 3
+
+    (when (or (and xmin (not (integerp xmin)))
+              (and xmax (not (integerp xmax))))
+ 
+      (om-beep-msg (format nil "Warning: BPC ranges for sampling (om-sample) must expressed as integers (sample indices) : rounding values ~A." (list xmin xmax)))
+      (setf xmax (and xmax (round xmax))
+            xmin (and xmin (round xmin))))
+            
+    
     (let* ((pts (subseq (point-pairs self) (or xmin 0) xmax))
         
            (seg-len (loop for i from 0 to (- (length pts) 2) collect
@@ -337,9 +346,11 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
         
            (nsamples (if (integerp nbs-sr) nbs-sr (ceiling total-length nbs-sr)))
            (samples nil))
-        
+      
       (let ((segs-pos (dx->x 0 seg-len))
-            (samples-pos (arithm-ser 0 total-length (/ total-length (1- nsamples)) (1- nsamples))))
+            (samples-pos (if (= 1 nsamples) ;; weird but why not...
+                             (list (/ total-length 2))
+                           (arithm-ser 0 total-length (/ total-length (1- nsamples)) (1- nsamples)))))
        
      ;(print segs-pos)
      ;(print samples-pos)
@@ -361,7 +372,8 @@ If <nbs-sr> is an float (e.g. 0.5, 1.0...) it is interpreted as the sample rate 
                                                                (cadr p1) (cadr p2) sp))))
                               pt)))
 
-        (setf samples (append samples (last pts)))
+        (unless (= 1 nsamples) 
+          (setf samples (append samples (last pts))))
         )
    
       (let ((xylist (mat-trans samples)))
