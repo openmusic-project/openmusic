@@ -189,12 +189,12 @@
  
 
 (defmethod exit-from-dialog ((self new-fun-enter-view) str)
-  (handler-bind ((error #'(lambda (c) ;(declare (ignore c)) 
+  (handler-bind ((error #'(lambda (err) 
                             (when (om-view-container self)
 			      (setf (text-view (editor (om-view-container self))) nil)
 			      (om-remove-subviews (panel (editor (om-view-container self))) self))
                             (om-beep)
-                            (print c)
+                            (print (format nil "An error of type ~a occurred: ~a" (type-of err) (format nil "~A" err)))
                             (om-abort)
                             )))
     (let* ((box (om-view-container (object self)))
