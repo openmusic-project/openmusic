@@ -601,7 +601,6 @@
 ;Genfun
 
 (defmethod omNG-save ((self OMBoxCall) &optional (values? nil))
-  "Save a box"
   (let* ((inputs (mapcar #'(lambda (input) (omNG-save input values?)) (inputs self)))
          (value (when (string-equal (allow-lock self) "x")
                   (saveValueinBox (value self)))))
@@ -639,7 +638,7 @@
                    :name ,(name self)
                    :icon ,(save-icon (icon self)))))
        (setf (instance copy) ,(saveValueinBox (instance self)))
-       (setf (edition-params copy) ,(save-edition-params self))  ; (corrige ,(save-alist (edition-params self))))
+       (setf (edition-params copy) ,(save-edition-params self)) 
        (setf (create-info copy) ',(create-info self))
        (setf (doc copy) (str-with-nl ,(str-without-nl (doc self))))
        copy)
@@ -654,7 +653,8 @@
 ;Patch Boxes
 (defmethod omNG-save ((self OMBoxPatch) &optional (values? nil))
   (let* ((inputs (mapcar #'(lambda (input) (omNG-save input values?)) (inputs self)))
-         (value (saveValueinBox (value self))))
+         (value (when (string-equal (allow-lock self) "x")
+                  (saveValueinBox (value self)))))
     (register-resource :abstraction (mypathname (reference self)))
     `(om-load-boxcall ',(saveBox? self) ,(name self) ',(list+ (get-relative-path (reference self)) 
                                                               (list (name (reference self))))
@@ -747,7 +747,7 @@
                        `(list 'yourobj ,(omNG-save (reference self)))))))
      (when (and (pictu self) (thepict (pictu self)))   ;;; .
        (setf pict (omng-save (pictu self))))
-     `(om-load-tempobj1 ,(name self) ',inputs ,refer ,(numouts self) ,(slot-value self 'offset) ,(extend self) 
+     `(om-load-tempobj1  ,(name self) ',inputs ,refer ,(numouts self) ,(slot-value self 'offset) ,(extend self) 
                        ,(om-save-color (colorframe self)) ,value t ,(sizey self) ,(posy self) ,(strech-fact self)
                        ,(omNG-save (free-store self)) ,(save-edition-params self) ,(allow-lock self) ,pict ,(showpict self) ,(mute self) ,(lock self)
                        ,(show-name self) ,(str-without-nl (doc self)))))
