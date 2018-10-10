@@ -740,7 +740,7 @@ Extraction methods.
   (let ((subtrees (second tree))
         (Extent (* (fullratio (first tree)) PropagateExtent))
         (nbsubunits (reduce  
-                     #'(lambda (x y) (+   (abs x) (subtree-extent y))) 
+                     #'(lambda (x y) (+  (abs x) (subtree-extent y))) 
                      (second tree)
                      :initial-value 0))
         (curr-obj nil)
