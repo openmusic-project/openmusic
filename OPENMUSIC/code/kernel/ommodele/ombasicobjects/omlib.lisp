@@ -267,7 +267,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
           (setf (icon (fdefinition ',name)) 
                 (list (icon (fdefinition ',name)) *current-lib*)))
         (setf (lib-fun-p (fdefinition ',name)) (string-until-space (name *current-lib*))))
-      themethod))
+      thegenfun))
 
  
 ;Used when you have two or more more libraries with the same name, but different version.
