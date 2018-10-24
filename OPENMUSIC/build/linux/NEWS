@@ -38,3 +38,31 @@
     - support for complex numbers
 
 
+* RELEASE NOTES 6.12
+
+  UPDATES
+
+   - 64 bit support on Linux.  Support for 32-bit discontinued
+   - Juce based audio i/o: OMAudioLib
+   - players cl-jack and mplayer not loaded by default
+   - support for jack-based players (audio/midi) discontinued
+   - loading of foreign libs relies on dlopen (ldconfig,
+     LD_LIBRARY_PATH)
+   - nicer drawings, graphics, scrolling, tabbed panes
+
+   VARIOUS MIDI:
+
+    + messages: marker, cuepoint, tempo, timesignature, keysignature,
+      textual, seqname, instrname, lyric, copyright, midiportmsg,
+      endoftrackmsg, resetallcontroller, allnotesoff
+    + support for midichans > 16 (sent to successive midiports)
+    + lchan message to note class, to allow common access in microtune-setups
+    + choices for midi micro-tuning approach
+    + add "cl" to checked pathname-types when loading user-code
+    + update and fix some MIDI tutorials, (deprecated) settings-ctrl ->
+      midi-mix-console
+
+
+   BUGFIXES
+
+   piles of bugfixes and tunings
