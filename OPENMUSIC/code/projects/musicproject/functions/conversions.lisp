@@ -97,9 +97,9 @@ Converts a (list of) midicent pitch(es) <midics> to frequencies (Hz).
      *diapason-midic*))
 
 
-(defmethod* f->mc  ((freq number) &optional (approx 100) (ref-midic 0))
+(defmethod* f->mc  ((freq number) &optional (approx 2) (ref-midic 0))
   :numouts 1 
-  :initvals '(440 100 0) 
+  :initvals '(440 2 0) 
   :indoc '("frequency (Hz)" "approximation")
   :icon 141
   :doc "Converts a frequency or list of frequencies to midicents.
