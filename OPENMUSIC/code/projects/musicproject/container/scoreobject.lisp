@@ -866,6 +866,7 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod* Objfromobjs ((Self list) (Type voice))
             (cond ((and self (list-subtypep self 'measure))
                    (let ((voice (make-instance (type-of type) :empty t)))
+                     (setf (tempo voice) 60)
                      (loop for measure in self
                            do (insert voice measure :where :atEnd)
                            finally (QNormalize voice))
