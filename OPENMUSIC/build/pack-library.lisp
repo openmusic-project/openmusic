@@ -52,7 +52,7 @@
 ;;; will be set in the file *lib-name-path*
 (defparameter *lib-name* nil) 
 
-;;; can also be set by  the file *lib-name-path*
+;;; can also be set by the file *lib-name-path*
 (defvar *release-dir* (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 3) '("OM-LIBRARIES-RELEASE"))))
 
 (if (probe-file *lib-name-path*)

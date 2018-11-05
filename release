@@ -26,7 +26,7 @@ get_abs_filename() {
 }
 
 
-LIBS_FOLDER="$(get_abs_filename "../omlibraries/")"
+LIBS_FOLDER="$(get_abs_filename "../../omlibraries/")"
 #LIBS_FOLDER="$(get_abs_filename "../om-libs-forum/")"
 LIBS_RELEASE_FOLDER="$(get_abs_filename "../OM-LIBRARIES-RELEASE/")"
 # => /Users/bresson/SRC/omlibraries/
