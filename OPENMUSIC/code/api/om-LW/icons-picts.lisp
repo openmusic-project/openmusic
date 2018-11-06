@@ -632,13 +632,13 @@
         (t nil)))
 
 (defun om-picture-values (pict)
-  (let ((w (car (capi::collect-interfaces 'om-abstract-window :screen :any :sort-by :visible)))
+  (let ((w (car (capi::collect-interfaces 'om-window :screen :any :sort-by :visible)))
         (pictarray (image-to-arraylist pict)))
     (om-select-window w)
     pictarray))
 
 (defun om-picture-array (pict)
-  (let ((w (car (capi::collect-interfaces 'om-abstract-window :screen :any :sort-by :visible)))
+  (let ((w (car (capi::collect-interfaces 'om-window :screen :any :sort-by :visible)))
         (pictarray (image-to-arrayvector pict)))
     (om-select-window w)
     pictarray))
