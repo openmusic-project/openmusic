@@ -180,7 +180,7 @@
   (om-set-view-size self size))
 
 (defmethod om-resize-callback ((self om-abstract-window) x y w h)
-  (unless (and (= w (vw self)) (= h (vh self)))
+  (unless (and (vw self) (= w (vw self)) (vh self) (= h (vh self)))
    (om-window-resized self (om-make-point w h)))
   #-linux (call-next-method))
 
@@ -332,18 +332,18 @@
 (defmethod correct-win-h ((win t)) nil)
 
 (defun om-make-window (class &rest attributes 
-			  &key (position (om-make-point 200 200)) (size (om-make-point 500 400))
+			  &key (position (om-make-point 200 200)) 
+                          size   ;(size (om-make-point 500 400))
 			  name window-title owner (font *om-default-font2*)  (bg-color *om-white-color*)
 			  (window-show t) subviews (resizable t) (close t) (minimize t) (maximize t) (topmost nil) (toolbox nil)
                           menu-items
 			  &allow-other-keys)  
   (let* ((pos position)
-         (size size)
          (winparent (or owner (capi:convert-to-screen)))
          (winname (or name (string (gensym))))
          (title (or window-title name "OM Window"))
-         (w (om-point-h size))
-         (h (om-point-v size))
+         (w (and size (om-point-h size)))
+         (h (and size (om-point-v size)))
          (x (if (equal pos :centered) (round (- (* (capi::screen-width winparent) 0.5) (* w 0.5))) (om-point-h pos)))
          (y (if (equal pos :centered) (round (- (* (capi::screen-height winparent) 0.5) (* h 0.5))) (om-point-v pos)))
          (style (append (get-window-styles-from-class class) 
@@ -362,9 +362,6 @@
                               (append 
                                (list :title title :name winname
                                      :x x :y y 
-                                     :width w :height h
-                                     ;:external-min-width w :external-min-height h
-                                     ;;; this works for Windows (on Mac : :width / :height ==> a tester)
                                      :parent winparent
                                      :internal-border nil :external-border nil
                                      :display-state (if window-show :normal :hidden)
@@ -377,9 +374,16 @@
                                      :font font
                                      :resizable resizable
                                      ;;; OM-GRAPHIC-OBJECT SLOTS
-                                     :vx x :vy y :vw w :vh h
+                                     :vx x :vy y 
                                      :menu-bar-items menu-items
                                      :allow-other-keys t)
+                               (when size 
+                                 `(:width ,(om-point-h size) :height ,(om-point-v size)
+                                   :vw ,(om-point-h size) :vh ,(om-point-v size)
+                                   ))
+                                     ;:external-min-width w :external-min-height h
+                                     ;;; this works for Windows (on Mac : :width / :height ==> a tester)
+                                     
                                attributes
                                ))))
     
@@ -388,7 +392,7 @@
       (setf (capi::pane-layout thewin) layout))
      (when subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) subviews))
      (correct-win-h thewin)
-     (when (or (not resizable) (window-dialog-p thewin))
+     (when (and size (or (not resizable) (window-dialog-p thewin)))
        (set-not-resizable thewin w h))
      (unless (window-dialog-p thewin)
        (internal-display thewin))

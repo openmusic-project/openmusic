@@ -649,6 +649,11 @@
 (defmethod om-dialog-item-enabled ((self om-button)) 
   (capi::button-enabled self))
 
+;;; for macOS 10.14 Mojave :(
+;(defmethod internal-add-subview :before ((self t) (subview om-button)) 
+;  (om-set-view-position subview (om-make-point (vx subview) (- (vy subview) 36))))
+
+
 ;--------icon-button
 
 ;(defclass om-icon-button (om-button) ()

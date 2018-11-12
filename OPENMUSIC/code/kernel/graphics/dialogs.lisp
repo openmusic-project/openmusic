@@ -385,7 +385,7 @@ External Libraries:
 (defun ws-dialog ()
   (let* ((userpref (ompref-file))
          (newuser (not (probe-file userpref)))
-         (font *om-default-font2*) ;(om-make-font "Arial" (nth 1 *om-def-font-sizes*)))
+         (font *om-default-font2*) 
          (smallfont *om-default-font1*)
          previous)
 
