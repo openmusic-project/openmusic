@@ -51,10 +51,16 @@
 
 (defun icon-string-name (icon dir)
   (let ((fileicon (and dir (find icon (om-directory dir :directories nil :files t)
-                        :test '= :key #'(lambda (file) (if (and (pathname-name file) (> (length (pathname-name file)) 0)
-                                                                (integerp (read-from-string (pathname-name file))))
-                                                           (read-from-string (pathname-name file))
-                                                         -1))))))
+                                 :test 'eq :key #'(lambda (file) 
+                                                    (let ((read-value 
+                                                           (and (pathname-name file) 
+                                                                (> (length (pathname-name file)) 0)
+                                                                (read-from-string (pathname-name file)))))
+                                                      (if (integerp read-value) 
+                                                          read-value 
+                                                        (internk read-value))))
+                                 ))))
+    
     (if fileicon (pathname-name fileicon)
       (format nil "~D" icon))))
 
@@ -77,7 +83,9 @@
     (loop for iconfile in (om-directory iconspath) do
           (unless (equal "" (pathname-name iconfile))
             (let ((icn (read-from-string (pathname-name iconfile))))
-              (if (integerp icn) (push icn icn-list)))))
+              (if (integerp icn) (push icn icn-list)
+                (push (internk (pathname-name iconfile)) icn-list)
+                ))))
     (reverse icn-list)))
 
 
@@ -86,7 +94,8 @@
 ;icon pos if the icon is already loaded
 (defun loaded-icon-p (icon)
    (declare (special *om-package-tree*))
-   (position icon (icon-resources *om-package-tree*) :test #'(lambda (x y) (= x (car y)))))
+   (position icon (icon-resources *om-package-tree*) :test #'(lambda (x y) (eq x (car y)))))
+
 
 ;get the icon handler from the loaded list
 (defun get-icon-loaded (icon)
@@ -135,7 +144,7 @@
 
 
 
-(defmethod get&corrige-icon ((icon integer))
+(defmethod get&corrige-icon ((icon t))
    (declare (special *om-package-tree*))
    (let (iconhdl)
      (unless (loaded-icon-p icon)
@@ -165,7 +174,7 @@
 
 (defun get-lib-icon (id lib)
   (let* ((icon-list (icon-resources lib))
-         (pos (position id icon-list :test '= :key 'car)))
+         (pos (position id icon-list :test 'eq :key 'car)))
     (if pos 
         (list (list id lib) (second (nth pos icon-list)))
       (list (list id lib) nil))))

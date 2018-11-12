@@ -89,9 +89,16 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 ;;; returns the folder of the library's icons
 (defmethod lib-icons-folder ((self OMLib))
-   (om-make-pathname :directory (append (pathname-directory (lib-pathname self)) (list "resources" "icon"))
-                     :host (pathname-host (lib-pathname self))
-                     :device (pathname-device (lib-pathname self))))
+   (or 
+    (probe-file 
+     (om-make-pathname :directory (append (pathname-directory (lib-pathname self)) (list "resources" "icon"))
+                       :host (pathname-host (lib-pathname self))
+                       :device (pathname-device (lib-pathname self))))
+    (om-make-pathname :directory (append (pathname-directory (lib-pathname self)) (list "resources" "icons"))
+                       :host (pathname-host (lib-pathname self))
+                       :device (pathname-device (lib-pathname self)))
+    )
+   )
 
 (defmethod lib-resources-folder ((self OMLib))
    (om-make-pathname :directory (append (pathname-directory (lib-pathname self)) (list "resources"))
