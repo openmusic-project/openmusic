@@ -43,7 +43,6 @@
           om-click-release-handler
            
           om-shift-key-p
-          om-control-key-p
           om-command-key-p
           om-option-key-p
           
@@ -127,9 +126,9 @@
 ;;;=============
 (defvar *clicked-view* nil)
 
-(defmethod om-clic-callback ((self om-graphic-object) x y type)
+(defmethod om-clic-callback ((self om-graphic-object) x y mods)
   (om-with-error-handle 
-    (set-meta-keys (eval type))
+    (set-meta-keys mods)
     (apply-in-item-subview self 'om-view-click-handler (om-make-point x y))
     ))
 
@@ -147,8 +146,8 @@
 ;;;=================
 (defmethod om-init-motion (self x y))
 
-(defmethod om-clic-motion-callback ((self om-graphic-object) x y type)
-  (set-meta-keys (eval type))
+(defmethod om-clic-motion-callback ((self om-graphic-object) x y mods)
+  (set-meta-keys mods)
   ;(print (list self x y *clicked-view*))
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
@@ -156,8 +155,8 @@
       ;(apply-in-item-subview *clicked-view* 'om-click-motion-handler (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))))
 
-(defmethod om-clic-motion-callback ((self window-layout) x y type)
-  (set-meta-keys (eval type))
+(defmethod om-clic-motion-callback ((self window-layout) x y mods)
+  (set-meta-keys mods)
   ; click in window, pos in layout
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
@@ -169,8 +168,8 @@
 ;;;==============
 ;;; RELEASE
 ;;;==============
-(defmethod om-clic-release-callback ((self om-graphic-object) x y type) 
-  (set-meta-keys (eval type))
+(defmethod om-clic-release-callback ((self om-graphic-object) x y mods) 
+  (set-meta-keys mods)
   (unless (equal *clicked-view* :abort) 
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
@@ -184,7 +183,8 @@
 ;;;=================
 ;;; DOUBLE CLIC
 ;;;=================
-(defmethod om-double-clic-callback ((self om-graphic-object) x y type)
+(defmethod om-double-clic-callback ((self om-graphic-object) x y mods)
+  (declare (ignore mods))
   (setf *clicked-view* :abort)
   (om-with-error-handle 
     (apply-in-item-subview self 'om-view-doubleclick-handler (om-make-point x y))))                         
@@ -197,8 +197,8 @@
 ;;;=================
 (defvar *last-containing-view* nil)
 
-(defmethod om-motion-callback ((self om-graphic-object) x y type)
-  (set-meta-keys (eval type))
+(defmethod om-motion-callback ((self om-graphic-object) x y mods)
+  (set-meta-keys mods)
   (apply-in-subview self 'internal-motion-callback (om-make-point x y)))
 
 (defun tooltip-key-down ()
@@ -306,32 +306,46 @@
         ((equal :kp-enter c) :om-key-enter)   
         (t nil)))
 
+
+
+(defvar *om-shift-key-p* nil)
+(defvar *om-command-key-p*  nil)
+(defvar *om-option-key-p*  nil)
+
+;;; LIST = SHIFT - CMD - ALT
+(defun set-meta-keys (list)
+  (setf *om-shift-key-p* (find :shift list))
+  (setf *om-command-key-p* (find :cmd list))
+  (setf *om-option-key-p* (find :alt list)))
+
+(defun release-meta-keys ()
+  (setf *om-shift-key-p* nil)
+  (setf *om-command-key-p*  nil)
+  (setf *om-option-key-p*  nil))
+
+(defun om-shift-key-p () *om-shift-key-p* )
+(defun om-command-key-p () *om-command-key-p*)
+(defun om-option-key-p ()  *om-option-key-p*)
+
+
+
+
 (defun get-om-spec-modifiers (mod)
-  (case mod
-    (0 '(nil nil nil))
-    (1 '(t nil nil))  ; SHIFT
-    (2 '(nil nil nil))  ; CTRL
-    (3 '(t nil nil))  ; CTRL + SHIFT ;; ??? LINUX: TODO, check various key combinations here
-    (4 '(nil nil t))  ; ALT
-    (5 '(t nil t))  ; ALT + SHIFT
-    (6 '(nil nil t))  ; ALT + CTRL
-    (7 '(t nil t))  ; ALT + SHIFT + CTRL
-    (8 '(nil t nil))  ; CMD ?
-    (9 '(t t nil))  ; CMD + SHIFT
-    (10 '(nil t nil)) ; CMD + CTRL
-    (11 '(t t nil)) ; CMD + CTRL + SHIFT
-    (12 '(nil t t)) ; CMD + ALT
-    (13 '(t t t)) ; CMD + ALT + SHIFT
-    (14 '(nil t t)) ; CMD + ALT + CTRL
-    (15 '(t t t)) ; CMD + ALT + CTRL + SHIFT
-    (otherwise '(nil nil nil))))
+  (remove nil 
+          (list (and (plusp (logand sys:gesture-spec-meta-bit mod)) :alt)
+                (and (plusp (logand sys:gesture-spec-shift-bit mod)) :shift)
+                (and (or 
+                      (plusp (logand sys:gesture-spec-control-bit mod))
+                      (plusp (logand sys:gesture-spec-hyper-bit mod)))
+                     :cmd) ;;; cmd is a special one: corresponds to command on Mac, and Control on Windows/Linux
+                )))
+       
 
 (defmethod om-char-spec-callback ((self om-abstract-window) x y spec)
-    ;(print self)
-   (let ((data (sys:gesture-spec-data spec))
+  (let ((data (sys:gesture-spec-data spec))
         (mods (sys:gesture-spec-modifiers spec)))
-    ;(print data)
-    ;(print mods)
+     ;(print data)
+     ;(print mods)
      ; ça ne marche plus...
      ;(capi::set-interface-focus self) 
      (set-meta-keys (get-om-spec-modifiers mods))
@@ -341,7 +355,6 @@
      ))
 
 (defmethod om-char-spec-callback ((self om-view) x y spec)
-  ;(print self)
   (om-char-spec-callback (om-view-window self) x y spec)
   (capi::set-pane-focus self))
 
@@ -354,27 +367,6 @@
   nil)
 
 
-(defvar *om-shift-key-p* nil)
-(defvar *om-control-key-p*  nil)
-(defvar *om-command-key-p*  nil)
-(defvar *om-option-key-p*  nil)
-
-;;; LIST = SHIFT - CMD - ALT
-(defun set-meta-keys (list)
-  (setf *om-shift-key-p* (first list))
-  (setf *om-command-key-p*  (second list) )
-  (setf *om-option-key-p*   (third list)))
-
-(defun release-meta-keys ()
-  (setf *om-shift-key-p* nil)
-  (setf *om-command-key-p*  nil)
-  (setf *om-option-key-p*  nil))
-
-(defun om-shift-key-p () *om-shift-key-p* )
-(defun om-command-key-p () *om-command-key-p*)
-(defun om-option-key-p ()  *om-option-key-p*)
-
-(defun om-control-key-p () nil)
 
 
 

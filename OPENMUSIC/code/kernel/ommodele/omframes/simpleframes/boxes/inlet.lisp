@@ -142,9 +142,7 @@
 ;;;new : text-view is on the panel
 (defmethod om-view-click-handler ((self input-funboxframe) where)
   (declare (ignore where))
-  
-  ;;; (print (list (om-command-key-p) (om-shift-key-p) (om-option-key-p) (om-control-key-p)))
-  
+    
   (let* ((panel (om-view-container (om-view-container self)))
          (container (editor panel)))
      

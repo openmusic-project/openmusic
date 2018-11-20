@@ -265,7 +265,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
 (defclass bandera (icon-box) ())
 
 (defmethod om-drag-start ((self bandera))
-  (unless (or (om-control-key-p) (om-shift-key-p))
+  (unless (or (om-command-key-p) (om-shift-key-p))
     (call-next-method)))
 
 (defmethod om-view-cursor :around ((self bandera))

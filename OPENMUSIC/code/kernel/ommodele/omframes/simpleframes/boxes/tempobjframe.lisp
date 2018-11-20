@@ -70,7 +70,6 @@
 (defmethod om-view-click-handler ((self input-tempobj-frame) where)
   (declare (ignore where))
   (cond
-   ;;;((om-control-key-p) (om-set-help t))
    ((om-command-key-p) (when (connected? (object self))
                         (disconnect-box (om-view-container self) self)))
    ((menu-input-p (object self))
@@ -464,12 +463,10 @@
 ;---------Events
 (defmethod om-view-cursor ((self tempobjframe))
   (when (om-view-container self)
-    (if (om-control-key-p)
-        *om-contex-cursor*
-      (case (cursor-mode (om-view-container self))
-        (:zoom *om-loupe-cursor*)
-        (:move *om-cross-cursor*)
-        (otherwise *om-arrow-cursor*)))))
+    (case (cursor-mode (om-view-container self))
+      (:zoom *om-loupe-cursor*)
+      (:move *om-cross-cursor*)
+      (otherwise *om-arrow-cursor*))))
   
 
 (defmethod om-drag-start ((self tempobjframe))
@@ -823,8 +820,7 @@
 
 (defmethod om-drag-selection-p ((self tempobjframe) mouse-position)
    (declare (ignore mouse-position))
-   (and (not (om-control-key-p)) 
-        (= (mode (om-view-container self)) 7)))
+   (= (mode (om-view-container self)) 7))
 
 (defmethod make-drag-region ((self tempobjframe) region x0 y0 view)
    (declare (ignore view))

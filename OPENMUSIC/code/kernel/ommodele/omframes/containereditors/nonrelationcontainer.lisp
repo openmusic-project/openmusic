@@ -511,8 +511,7 @@ with the objects respectly associeted."))
             (omG-select item))))))
 
 
-(defmethod om-view-cursor ((self nonrelationPanel))
-   (if (om-control-key-p) *om-contex-cursor* *om-arrow-cursor*))
+(defmethod om-view-cursor ((self nonrelationPanel)) *om-arrow-cursor*)
 
 
 

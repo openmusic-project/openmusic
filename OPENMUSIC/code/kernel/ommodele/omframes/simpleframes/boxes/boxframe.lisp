@@ -985,11 +985,6 @@
 (defmethod draw-after-box ((self commentboxframe))
    nil)
 
-;;;(defmethod om-view-click-handler ((self commentview) where)
-;;;  (cond ((om-command-key-p) (om-set-help t))
-;;;         (t (toggle-icon-active-mode (om-view-container self))
-;;;            (when (om-control-key-p) 
-;;;              (menu-item-context (om-view-container self) where)))))
 
 (defmethod comments-locked ((self t)) nil)
 

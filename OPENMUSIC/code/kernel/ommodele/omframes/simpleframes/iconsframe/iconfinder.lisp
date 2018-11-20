@@ -654,7 +654,7 @@ this slot store a subview containing it subview if exists.#triangle#
   (om-drag-selection-p (get-drag-object self) mouse-position))
 
 (defmethod om-drag-selection-p ((self icon-finder) mouse-position)
-  (declare (ignore mouse-position)) (not (om-control-key-p)))
+  (declare (ignore mouse-position)) t)
 
 (defmethod get-pos-in-object ((self icon-finder-name) where)
   (om-add-points (om-view-position self) where))

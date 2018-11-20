@@ -243,11 +243,6 @@ selected parameter is used to draw the icon in normal or selected mode"
                  (* *icon-size-factor* (or (cadr defsize) (min 40 (om-pict-height resource)))))))
      (list 0 0)))
    
-(defmethod om-view-cursor :around ((self icon-view))
-   (if (and (om-control-key-p) (or (boxframe-p (om-view-container self)) (icon-finder-p (om-view-container self)))) 
-       *om-contex-cursor*
-       *om-arrow-cursor*
-     ))
 
 
 ;;;============================

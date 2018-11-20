@@ -505,8 +505,6 @@
   (mapc #'(lambda (elem) (init-size&position elem self)) subviews))
 
 (defmethod om-view-cursor ((self MaquettePanel))
-   (if (om-control-key-p) 
-     *om-contex-cursor*)
    (case (cursor-mode self)
      (:zoom *om-loupe-cursor*)
      (:move *om-hand-cursor*)

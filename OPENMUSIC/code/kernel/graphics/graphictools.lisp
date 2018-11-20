@@ -451,7 +451,7 @@ i.e. inputs edition, change the name for a folder, etc.
 (defmethod om-drag-selection-p ((self om-static-text-drag) mouse-position)
    "The Drag is allowed for om-static-text-drag if the control key is not down"
    (declare (ignore mouse-position))
-   (not (om-control-key-p)))
+   (not (om-command-key-p)))
 
 
 ;;;=======================

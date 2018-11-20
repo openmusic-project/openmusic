@@ -1051,9 +1051,6 @@
             (cond ((in-patch-mode? self)
                    ;;; PATCH MODE
                    (cond 
-                    ((om-control-key-p) 
-                     (if graph-obj (menu-item-context graph-obj self)
-                       (menu-item-context (om-view-container self) where)))
                     (graph-obj
                      (if (om-shift-key-p) 
                          (omselect-with-shift self graph-obj )
@@ -1113,9 +1110,6 @@
                      ((and (grap-extra-p graph-obj) double-click-p) 
                       (open-extra-editor self graph-obj))
                      
-                 ;((om-control-key-p)
-                 ; (if graph-obj (menu-item-context graph-obj self)   ;;; !!! pas bo normalement il faut passer where
-                 ;   (menu-item-context (om-view-container self) where)))
                      ((or graph-obj segment)
                       ;;; new 
                       (if double-click-p
@@ -1217,9 +1211,6 @@
 ;((and (grap-extra-p graph-obj) double-click-p) 
 ;                  (open-extra-editor self graph-obj))
 
-;((om-control-key-p)
-;                  (if graph-obj (menu-item-context graph-obj self)   ;;; !!! pas bo normalement il faut passer where
-;                    (menu-item-context (om-view-container self) where)))
 
 (defmethod om-score-click-extra ((self scorePanel) where double-click-p)
   (let* ((extra-mode (score-get-extra-mode))

@@ -37,9 +37,8 @@
 
 ;; no copy
 (defmethod om-drag-selection-p ((self pckbrowser-icon) mouse-position)
-   (not (or (om-control-key-p)
-            (om-option-key-p)
-            (om-command-key-p))))
+  (not (or (om-option-key-p)
+           (om-command-key-p))))
 
 (defmethod open-icon-scroller ((self pckbrowser-icon-frame))
    (let* ((subpanel (panel self))

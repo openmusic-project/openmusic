@@ -42,7 +42,6 @@
 
 (defmethod om-drag-selection-p ((self general-miniview) mouse-position)
    (declare (ignore mouse-position))
-   ;(not (om-control-key-p))
    t)
 
 (defmethod get-drag-object ((self general-miniview)) (om-view-container self))
