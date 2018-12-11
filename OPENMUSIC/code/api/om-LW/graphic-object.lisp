@@ -105,7 +105,7 @@
 		  ((:button-1 :motion)  om-clic-motion-callback nil)
                    
 		  ((:button-1 :press :shift #+macosx :hyper #-macosx :control :meta) om-clic-callback (:shift :alt :cmd))
-		  ((:button-1 :press :shift #+macosx :hyper #-macosx :control) om-clic-callback '(:shift :cmd))
+		  ((:button-1 :press :shift #+macosx :hyper #-macosx :control) om-clic-callback (:shift :cmd))
 		  ((:button-1 :press :shift :meta) om-clic-callback (:shift :alt))
 		  ((:button-1 :press :meta #+macosx :hyper #-macosx :control) om-clic-callback (:alt :cmd))
 		  ((:button-1 :press :shift) om-clic-callback (:shift))
