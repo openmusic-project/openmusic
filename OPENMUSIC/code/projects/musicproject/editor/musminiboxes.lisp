@@ -325,9 +325,10 @@
   (setf staff (list! staff))
   (let ((numcs (length (inside multi)))
         (numsat (length staff))
-        (system-space (score-system-space view)))
+        (system-space (score-system-space view))
+        (def-space 2))
     (unless (= numcs (length system-space))
-      (setf system-space (make-list numcs :initial-element 1))
+      (setf system-space (make-list numcs :initial-element def-space))
       (score-system-space view system-space))
     (cond 
      ((> numcs numsat)
@@ -335,7 +336,7 @@
       (setf staff (reverse staff))
       (loop for i from 1 to (- numcs numsat) do
             (push (clone (car staff)) staff)
-            (push 1 system-space))
+            (push def-space system-space))
       (setf staff (reverse staff))
       (score-system-space view (reverse system-space)))
      ((< numcs numsat)
