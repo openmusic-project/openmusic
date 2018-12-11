@@ -42,6 +42,10 @@
                                        (om-delete-file file)))
     (setf *tmpparfiles* nil)))
   
+;;; *delete-inter-file* is set in OM prefs
+(defun maybe-clean-tmp-files ()
+  (when *delete-inter-file* (clean-tmp-files)))
+
 
 ;;; FINDS A GOOD (UNIQUE) PATH FOR NAME IN DIR
 (defun unique-pathname (dir name &optional (ext ""))
