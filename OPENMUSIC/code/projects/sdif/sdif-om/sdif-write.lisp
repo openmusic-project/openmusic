@@ -189,21 +189,45 @@
           SID-list))
 
 
-;;; SDIF-Buffer
-(defmethod! save-sdif-file ((self sdif-buffer) &key out options)
-   :icon 639
-   :indoc '("an SDIF-buffer" "format options" "output pathname")
-   :initvals '(nil nil t)
+(defmethod! save-sdif-file ((self sdif-buffer) &key out)
+  :icon 639
+   :indoc '("an SDIF-buffer" "output pathname")
+   :initvals '(nil nil)
    :doc "Saves the contents of <self> as an SDIF file in <outpath>.
-
-<self> is an SDIF-Buffer object or some other object having the SAVE-SDIF-FILE method implemented.
-<options> are specific options depending on <self>.
+   <self> is an SDIF-Buffer object or some other object having the SAVE-SDIF-FILE method implemented.
 
 If <outpath> is not specified, a pop-up dialog will open and allow to choose a destination pathname.
 "
-   (declare (ignore options))
-   (let* ((outfile (or (and out 
-                            (handle-new-file-exists out))
+  (let* ((outfile (or (and out 
+                           (handle-new-file-exists out))
+                      (om-choose-new-file-dialog)))
+         (dir (om-make-pathname :directory outfile)))
+    (when outfile 
+      (unless (probe-file dir)
+        (om-create-directory dir))
+      (let ((thefile (sdif::sdif-open-file (namestring outfile) :eWriteFile)))
+        (sdif::SdifFWriteGeneralHeader thefile)
+        (write-types-table thefile (list! (types self)))
+        (write-nvt-tables thefile (cons (default-om-NVT) (list! (NVTs self))))
+        (write-sid-table thefile (list! (SIDs self)))
+           (sdif::SdifFWriteAllASCIIChunks thefile)
+           (loop for item in (LFrames self) do
+                 (save-sdif item thefile))
+           (sdif::sdif-close-file thefile))
+      outfile)))
+
+
+(defmethod! write-sdif-file ((self list) &key outpath)
+   :icon 639
+   :indoc '("a list of SDIF-frames" "output pathname")
+   :initvals '(nil nil)
+   :doc "Saves the contents of <self> as an SDIF file in <outpath>. 
+<self> is a list of SDIFframe object or some other object having the SAVE-SDIF-FILE method implemented
+
+If <outpath> is not specified, a pop-up dialog will open and allow to choose a destination pathname.
+"
+   (let* ((outfile (or (and outpath 
+                            (handle-new-file-exists outpath))
                        (om-choose-new-file-dialog)))
           (dir (om-make-pathname :directory outfile)))
        (when outfile 
@@ -211,17 +235,11 @@ If <outpath> is not specified, a pop-up dialog will open and allow to choose a d
            (om-create-directory dir))
          (let ((thefile (sdif::sdif-open-file (namestring outfile) :eWriteFile)))
            (sdif::SdifFWriteGeneralHeader thefile)
-           (write-types-table thefile (list! (types self)))
-           (write-nvt-tables thefile (cons (default-om-NVT) (list! (NVTs self))))
-           (write-sid-table thefile (list! (SIDs self)))
            (sdif::SdifFWriteAllASCIIChunks thefile)
-           (loop for item in (LFrames self) do
+           (loop for item in self do
                  (save-sdif item thefile))
            (sdif::sdif-close-file thefile))
          outfile)))
-
-
-
 
 
 
