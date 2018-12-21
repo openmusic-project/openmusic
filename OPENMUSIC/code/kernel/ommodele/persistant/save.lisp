@@ -911,6 +911,23 @@
 
 (defmethod update-inputs ((self t) inputs) inputs)
 
+;;; for functions: in case the type f inputs has changed
+(defmethod update-inputs ((ref symbol) inputs) 
+  (when (fboundp ref) 
+    (update-inputs (fdefinition ref) inputs)
+    inputs))
+
+(defmethod update-inputs ((ref function) inputs)
+  (let ((keys (cdr (member '&key (function-lambda-list ref)))))
+    (loop for inp in inputs do
+          (when (and (find (name inp) keys :key 'string :test 'string-equal)
+                     (not (keyword-input-p inp)))
+            (change-class inp 'input-keyword)
+            (setf (def-value inp) (value inp)
+                  (value inp) (internk (name inp)))
+            ))
+    inputs))
+                      
 
 (defmethod om-load-boxcall ((class t) name reference inputs position size value lock 
                             &optional fname numouts
@@ -919,7 +936,7 @@
     (setf (frame-size newbox) (om-correct-point size))
     (setf (frame-name newbox) fname)
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
-    
+          
     (set-box-to-inputs (inputs newbox) newbox)
 
     (if (equal (reference newbox) "wooo")
