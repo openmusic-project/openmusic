@@ -533,23 +533,25 @@ Press 'space' to play/stop the sound file.
 
 
 
-(defmethod* get-sound () 
+(defmethod* get-sound (&optional path) 
    :initvals nil
    :indoc nil
-   :doc "load a Aiff file"
+   :doc "Load a sound"
    :icon 148
-  (let ((name (om-choose-file-dialog 
-               :directory (def-load-directory)
-               :prompt (om-str :choose-snd) :types (list (om-str :all-files) "*.*" 
-                                                         (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif" 
-                                                         (format nil (om-str :file-format) "WAV") "*.wav")))
-        (rep nil))
-    (when name
+   
+   (if path (load-sound-file path)
+     (let ((name (om-choose-file-dialog 
+                  :directory (def-load-directory)
+                  :prompt (om-str :choose-snd) :types (list (om-str :all-files) "*.*" 
+                                                            (format nil (om-str :file-format) "AIFF") "*.aiff;*.aif" 
+                                                            (format nil (om-str :file-format) "WAV") "*.wav")))
+           (rep nil))
+       (when name
       (setf *last-loaded-dir* (pathname-dir name))
       (setf rep (load-sound-file name)))
-    (unless rep (om-abort))
-    rep))
-
+       (unless rep (om-abort))
+       rep)))
+   
 ; (get-sound)
 
 (defmethod get-obj-from-file ((type (eql 'aiff)) filename)

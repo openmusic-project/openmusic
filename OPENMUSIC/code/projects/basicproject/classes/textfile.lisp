@@ -27,6 +27,10 @@
 ;-------------
 ;TEXTFILE CLASS
 
+;;; A common superclass: 
+;;; will ensure forward-colmpatibility with libraries developed for om7...
+;; (defclass textbuffer () ()) => add as superclass
+
 (defclass* TextFile () 
    ((ed-mode :initform "supersede" :initarg :ed-mode :accessor ed-mode)
     (eval-mode :initform "list" :initarg :eval-mode :accessor eval-mode)
