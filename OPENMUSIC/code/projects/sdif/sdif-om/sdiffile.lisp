@@ -164,7 +164,7 @@ Lock the box ('b') to keep the current file.
     (setf (filepathname rep) name)
     (when name
     (if (probe-file name)
-        (if (sdif::sdif-check-file (om-path2cmdpath name))
+        (if (sdif::sdif-check-file (namestring name))
             (let ((fileptr (sdif::sdif-open-file (namestring name) :eReadFile)))
               (om-print (string+ "Loading SDIF file : " (om-namestring name)))
               (if (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))

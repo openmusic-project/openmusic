@@ -84,8 +84,7 @@
           om-user-home 
           om-user-pref-folder
           om-get-date
-          om-path2cmdpath
-          om-cmd-line
+          om-command-line
           om-run-application
           om-run-program
           *om-open-cmd*
@@ -459,11 +458,6 @@
       (concatenate 'string (om-namestring (pathname-name path)) "." type)
       )))
 
-(defun path2unixpath (path)
-   path)
-
-(defun om-path2cmdpath (path) 
-  (namestring path))
   
 (defun corrige-path-space (name) name)
 
@@ -590,7 +584,7 @@
 ;;;; external apps 
 
 #+(or linux macosx) 
-(defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
+(defun om-command-line (str &optional (redirect-output nil) (wait t) (current-path nil))
   (when current-path 
     (setf str (concatenate 'string (format nil "cd ~s; " (namestring current-path)) str)))
   (if redirect-output
@@ -608,7 +602,7 @@
   )
 
 #+windows
-(defun om-cmd-line (str &optional (redirect-output nil) (wait t) (current-path nil))
+(defun om-command-line (str &optional (redirect-output nil) (wait t) (current-path nil))
   (if redirect-output ; redirect to file not supported
       (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: " :kill-process-on-abort t
                                       :current-directory current-path)

@@ -687,6 +687,9 @@ Returns the copy of the object."
   :doc "Sends the command line <str> (a string) to the system."
   (om-cmd-line str t))
 
+(defmethod om-cmd-line ((str string) &optional (redirect-output t redirect-output-supplied-p))
+  (om-command-line str (if redirect-output-supplied-p redirect-output *sys-console*)))
+
 
 
 

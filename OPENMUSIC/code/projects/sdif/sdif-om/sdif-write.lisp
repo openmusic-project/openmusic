@@ -352,7 +352,7 @@ This is a compulsory operation before to start writing SDIF frames in the file.
                   ,.(remove nil (loop for item in streams collect 
                                       (when (nth 1 item)
                                         (cond ((and (find :sdif *features*) (equal (nth 0 item) 'sdif))
-                                               `(setf ,(nth 4 item) (sdif::sdif-open-file (om-path2cmdpath (eval ,(nth 1 item))) 
+                                               `(setf ,(nth 4 item) (sdif::sdif-open-file (namestring (eval ,(nth 1 item))) 
                                                                                     (cond ((equal ,(nth 2 item) :input) :eReadFile)
                                                                                           ((equal ,(nth 2 item) :output) :eWriteFile)
                                                                                           (t :eReadWriteFile)))))

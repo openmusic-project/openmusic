@@ -73,7 +73,7 @@ Ex. (infile \"myfile.midi\" :subdirs '(\"folder1\" \"folder2\") ==> #P\"/Users/b
   :icon 250
   (let ((pa (make-pathname :directory (append (pathname-directory *om-infiles-folder*) (list! subdirs))
                            :host (pathname-host *om-infiles-folder*))))
-    (if unix (om-path2cmdpath pa) pa)))
+    (if unix (namestring pa) pa)))
 
 
 ;;;=== OUT FILE ==
@@ -103,13 +103,13 @@ Ex. (outfile \"myfile.midi\" :subdirs '(\"folder1\" \"folder2\") ==> #P\"/Users/
   (let ((pa (om-make-pathname :directory (append (pathname-directory *om-outfiles-folder*) (list! subdirs))
                            :host (pathname-host *om-outfiles-folder*)
                            :name (pathname-name name) :type (or type (pathname-type name)))))
-    (if unix (om-path2cmdpath pa) pa)))
+    (if unix (namestring pa) pa)))
 
 (defmethod! outfile ((name null) &key (subdirs nil) (unix nil) (type nil))
   :icon 250
   (let ((pa (om-make-pathname :directory (append (pathname-directory *om-outfiles-folder*) (list! subdirs))
                            :host (pathname-host *om-outfiles-folder*))))
-    (if unix (om-path2cmdpath pa) pa)))
+    (if unix (namestring pa) pa)))
 
 
 ;;;=== TMP FILE ==
@@ -140,13 +140,13 @@ Ex. (tmpfile \"myfile.midi\" :subdirs '(\"folder1\" \"folder2\") ==> #P\"/Users/
   (let ((pa (make-pathname :directory (append (pathname-directory *om-tmpfiles-folder*) (list! subdirs)) 
                            :host (pathname-host *om-tmpfiles-folder*)
                            :name (pathname-name name) :type (or type (pathname-type name)))))
-    (if unix (om-path2cmdpath pa) pa)))
+    (if unix (namestring pa) pa)))
 
 (defmethod! tmpfile ((path null) &key (subdirs nil) (unix nil) (type nil))
   :icon 250
   (let ((pa (make-pathname :directory (append (pathname-directory *om-tmpfiles-folder*) (list! subdirs))
                            :host (pathname-host *om-tmpfiles-folder*))))
-    (if unix (om-path2cmdpath pa) pa)))
+    (if unix (namestring pa) pa)))
 
 (defun init-user-folders ()
   (setf *om-outfiles-folder* 
