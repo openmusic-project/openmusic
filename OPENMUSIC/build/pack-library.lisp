@@ -91,6 +91,10 @@
         (print (concatenate 'string "== DELIVERING " libname " => " (namestring packedlibpath)))
         (om::om-copy-directory libpath packedlibpath)
         (clean-sources packedlibpath '("64xfasl" "nfasl" "ofasl"))
+        (om::om-delete-directory (merge-pathnames ".git/" packedlibpath))
+        (om::om-delete-file (merge-pathnames ".gitignore" packedlibpath))
+        ;(om::om-delete-directory (merge-pathnames "docs/" packedlibpath))
+        ;(om::om-delete-file (merge-pathnames "README.md" packedlibpath))
         ))))
 
 (defmethod om::require-library (lib &optional (abort-if-not-found nil))
