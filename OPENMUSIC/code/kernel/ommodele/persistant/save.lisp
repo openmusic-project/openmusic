@@ -914,13 +914,15 @@
 ;;; for functions: in case the type f inputs has changed
 (defmethod update-inputs ((ref symbol) inputs) 
   (when (fboundp ref) 
-    (update-inputs (fdefinition ref) inputs)
-    inputs))
+    (update-inputs (fdefinition ref) inputs))
+  inputs)
 
 (defmethod update-inputs ((ref function) inputs)
   (let ((keys (cdr (member '&key (function-lambda-list ref)))))
     (loop for inp in inputs do
-          (when (and (find (name inp) keys :key 'string :test 'string-equal)
+          (when (and (find (name inp) keys 
+                           :key #'(lambda (elt) (string (if (listp elt) (car elt) elt))) 
+                           :test 'string-equal)
                      (not (keyword-input-p inp)))
             (change-class inp 'input-keyword)
             (setf (def-value inp) (value inp)
