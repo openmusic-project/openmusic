@@ -18,20 +18,13 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-;=========================================================================
-;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
-;=========================================================================
-
 
 ;; ==================================================================================== 
 ;;                                musicxml export
 ;; ==================================================================================== 
 ;;
 ;;                                  
-;;                authors : Karim Haddad and Petar Klanac 
-;;                     
-;;
+;;                          author : Karim Haddad
 ;;
 ;;                           $Revision: 1.1 $
 ;;                      $Date: 2008/06/23 15:07:04 $
