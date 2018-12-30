@@ -1506,7 +1506,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                  :icon (icon theclass)
                  :inputs nil)))
      (setf (frame-position rep) (borne-position posi))
-     (setf (value rep) instance)
+     (setf (value rep) (list instance))
      (if (mypathname self)
        (push rep (attached-objs self))
        (push rep (attached-objs theclass)))
@@ -1524,7 +1524,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (setf (frame-position rep) (borne-position posi))
      ; ?
      (setf (frame-size rep) (om-make-point 45 40))
-     (setf (value rep) instance)
+     (setf (value rep) (list instance)
      (when (mypathname self)
        (push rep (attached-objs self)))
      rep))
@@ -1541,9 +1541,10 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 ;-------------Lisp Code generation
 (defmethod gen-code ((self OMBoxInstance) numout)
-   (if (omclass-p (class-of (class-of (value self))))
-     (value self)
-     (gen-code (value self) numout)))
+  (if (omclass-p (class-of (class-of (car (value self)))))
+      (car (value self))
+    (gen-code (car (value self)) numout) ;; => list
+    ))
 
 ;------------Edition
 (defmethod do-add-one-input ((self OMBoxInstance))  nil)
