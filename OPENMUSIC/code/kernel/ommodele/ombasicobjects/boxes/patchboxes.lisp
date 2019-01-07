@@ -1524,7 +1524,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (setf (frame-position rep) (borne-position posi))
      ; ?
      (setf (frame-size rep) (om-make-point 45 40))
-     (setf (value rep) (list instance)
+     (setf (value rep) (list instance))
      (when (mypathname self)
        (push rep (attached-objs self)))
      rep))
