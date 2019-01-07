@@ -28,7 +28,7 @@
 
 
 (defmethod* x->dx ((self list))
-  :initvals (list 0 1)
+  :initvals '((0 1))
   :indoc '("a list of numbers")
   :icon 192
   :doc "Computes a list of intervals from a list of points.
@@ -42,7 +42,7 @@ Ex. (x->dx '(0 1000 1200 2000 5000)) => (1000 200 800 3000)
         collect (- y x)) )
 
 (defmethod* dx->x ((start number) (list list))
-  :initvals (list 0 (list 1 1))
+  :initvals '(0 (1 1))
   :indoc '("a number" "a list of numbers")
   :icon 192
   :doc "Computes a list of points from a list of intervals and a initial point (<start>)
