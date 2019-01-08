@@ -218,7 +218,8 @@
         ))
         
 (defmethod PrepareToPlay ((player (eql :midi)) (self note) at &key  approx port interval voice)
-  (when (not (memq (tie self) '(continue end)))
+  (when (and (not (memq (tie self) '(continue end)))
+             (>= (midic self) 0)) ;; otherwise MIDI generates an error
     (setf port (or port (port self)))
     (setf approx (or approx 2))
     (let ((channel-shift (micro-channel (approx-m (midic self) approx) approx)))
