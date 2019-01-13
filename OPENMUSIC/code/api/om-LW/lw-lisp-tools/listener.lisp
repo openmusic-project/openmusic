@@ -111,7 +111,7 @@
               (let* ((in 
                       (when input 
                         (make-instance 'om-listener-in-pane
-                                       :echo-area t
+                                       ;:echo-area t
                                        :font *listener-font*
                                        :create-callback (if initial-lambda
                                                             (lambda (window) 
@@ -123,8 +123,8 @@
                      (out (make-instance 'om-listener-out-pane :stream *om-stream* :echo-area t :font *listener-font*)))
                 (make-instance 'om-listener
                              :layout (make-instance 'capi:column-layout 
-                                                    :description (if in (list in out) (list out)) 
-                                                    :ratios (if in '(1 4) '(1)))
+                                                    :description (if in (list in :divider out) (list out)) 
+                                                    :ratios (if in '(1 nil 4) '(1)))
                              :window-styles (listener-styles)
                              :ip in :op out
                              :title (or title "OM Listener")
@@ -139,9 +139,9 @@
         
         (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op om-lisp::*om-listener*))) *listener-font*)
         
-        (when (ip om-lisp::*om-listener*)
-          (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)
-          (setf (capi::editor-pane-text  (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) ""))
+        ;(when (ip om-lisp::*om-listener*)
+        ;  (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)
+        ;  (setf (capi::editor-pane-text  (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) ""))
         
         (setf (capi::interface-menu-bar-items om-lisp::*om-listener*)
               (internal-window-class-menubar om-lisp::*om-listener*))
