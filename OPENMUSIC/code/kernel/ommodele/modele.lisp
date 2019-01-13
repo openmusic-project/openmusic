@@ -265,7 +265,8 @@ Documentation for other metaobjects like omClasses are handled by MCL. #doc#
       (rename-file oldpath newpath)
       (setf (mypathname self) newpath)
       
-      (omng-save self)
+      (when (loaded? self)
+        (omng-save self))
       ))
   
   (name self))

@@ -83,22 +83,40 @@
 
 
 (defmethod omNG-copy ((self OMPatch))
+  
+  (unless (loaded? self)
+    (load-patch self))
+  
+  `(let ((copy ,(call-next-method)))
+     (loop for item in (list ,.(reverse (mapcar #'omNG-copy (boxes self)))) do
+           (omng-add-element copy item))
+     (copy-connections ',(boxes self) (boxes copy))
+
+     (set-icon-pos copy ,(om-copy-point (get-icon-pos self)))
+     (set-win-size copy ,(om-copy-point (get-win-size self)))
+     (setf (omversion copy) ,(omversion self))
+     (setf (pictu-list copy) ',(mapcar 'copy-picture (pictu-list self)))
+     (setf (lisp-exp-p copy) ,(lisp-exp-p self))
+     
+     copy))
+
+#|
+(defmethod omNG-copy ((self OMPatch))
   (let ((obj (call-next-method)))
     `(let ((copy ,obj))
-       (if ,(loaded? self)
-         (progn
-           (loop for item in (list ,.(reverse (mapcar #'omNG-copy (boxes self)))) do
-                 (omng-add-element copy item))
-           (copy-connections ',(boxes self) (boxes copy)))
-         (setf (mypathname copy) ,(mypathname self)))
+       ,(if (loaded? self)
+            `(progn
+               (loop for item in (list ,.(reverse (mapcar #'omNG-copy (boxes self)))) do
+                     (omng-add-element copy item))
+               (copy-connections ',(boxes self) (boxes copy)))
+          `(setf (mypathname copy) ,(mypathname self)))
        (set-icon-pos copy ,(om-copy-point (get-icon-pos self)))
        (set-win-size copy ,(om-copy-point (get-win-size self)))
        (setf (omversion copy) ,(omversion self))
        (setf (pictu-list copy) ',(mapcar 'copy-picture (pictu-list self)))
        (setf (lisp-exp-p copy) ,(lisp-exp-p self))
        copy)))
-
-
+|#
 
 (defmethod omNG-copy ((self OMMaquette))
   (let ((obj (call-next-method)))
