@@ -123,7 +123,6 @@
     (make-new-folder (panel editor) dir (or (find-a-position (panel editor)) (om-make-point 20 30)) name)
     ))
 
-*om-resources-folder*
 
 (defun import-tutorial-menu (editor)
   (let ((tut-folder (merge-pathnames "tutorials/" *om-resources-folder*)))

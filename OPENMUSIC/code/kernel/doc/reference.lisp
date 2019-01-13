@@ -390,9 +390,11 @@ P,UL,LI, TD {
        
 (defun set-ref-dir ()
   (setf *om-reference-dir* 
-        (make-pathname :directory (append (if *om-resources-folder* (pathname-directory *om-resources-folder*) '(:relative)) 
-                                          ;; relative is just to avoid crash, in principel ressourrce folder is always set
-                                          '("reference")))))
+        (om-make-pathname :directory (append (if *om-resources-folder* (pathname-directory *om-resources-folder*) '(:relative)) 
+                                          ;; relative is just to avoid crash, in principle the resource folder is always set
+                                          '("reference"))
+                          :device (pathname-device *om-resources-folder*)
+                          :host (pathname-host *om-resources-folder*))))
 
 (om-add-init-func 'set-ref-dir)
 

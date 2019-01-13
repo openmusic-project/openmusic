@@ -210,7 +210,9 @@
 (print "==============================")
 
 
-(setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))))
+(setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))
+                                               :device (pathname-device *om-root-folders*)
+                                               :host (pathname-host *om-root-folders*)))
 
 
 (oa::init-sub-rsrc)
@@ -237,6 +239,8 @@
 (print "==============================")
 
 (dspec::save-tags-database (make-pathname :directory (pathname-directory oa::*om-resources-folder*)
+                                          :device (pathname-device oa::*om-resources-folder*)
+                                          :host (pathname-host oa::*om-resources-folder*)
                                           :name "dspec-database" :type oa::*om-compiled-type*))
 (dspec:discard-source-info)
 

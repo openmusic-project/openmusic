@@ -101,9 +101,9 @@
 ;(om-show-reference-doc 'om+)
 
 (defmethod om-show-reference-doc ((symbol symbol) &optional dir)
-  (let ((file (make-pathname :directory (pathname-directory (or dir *om-reference-dir*))
-                             :name (special-path-check (string-downcase (string symbol)))
-                             :type "html")))
+  (let ((file (om-make-pathname :directory (or dir *om-reference-dir*)
+                                :name (special-path-check (string-downcase (string symbol)))
+                                :type "html")))
     (if (probe-file file)
         ;(om-shell (concatenate 'string "open " (namestring file)))
       (sys:open-url (namestring file))
@@ -338,8 +338,8 @@ NULL is also the name of a class (the 'class of NIL'), and can be used in OM to 
 ;;; General Documentations
 
 (defmethod help-items ((self editorview)) 
-  (let ((funref (make-pathname :directory (pathname-directory *om-reference-dir*)
-                               :name "index" :type "html"))
+  (let ((funref (om-make-pathname :directory *om-reference-dir*
+                                  :name "index" :type "html"))
         (usermanual "http://support.ircam.fr/docs/om/om6-manual/"))
     (list 
      (list 
