@@ -59,9 +59,36 @@
   (= (length (om::inside (om::parent self))) 1))
 (defmethod alone-in-group?  ((self t))  nil)
 
+(defmethod singelton-group? ((self om::group))
+  (let* ((inside (om::inside self)))
+    (and (= (length inside) 1) 
+         (or (om::chord-p (car inside))
+             (om::rest-p (car inside))))))
+
+(defmethod singelton-group? ((self t)) nil)
+
 (defmethod getratiogroup ((self om::measure))
   (list 1 1))
 
+
+(defun lst->ratio (liste)
+  (/ (car liste) (cadr liste)))
+
+;;modified version of om::find-denom
+(defun findenom (num durtot)
+  "Find the rigth denom to ratio of tuplet."
+  (if num
+  (cond
+   ((or (om::is-binaire? durtot)
+        (om::powerof2? durtot))
+    (om::get-denom 'om::bin num)) ;;;changed here from is-binaire? to powerof2?
+   ((om::is-ternaire? durtot) (om::get-denom 'om::ter num))
+   (t (om::get-denom-other durtot num))) 
+    (list 1 1)
+    ))
+
+
+#|
 (defmethod getratiogroup ((self om::group))
   (let* ((tree (om::tree self))
          (real-beat-val (/ 1 (om::fdenominator (first tree))))
@@ -78,6 +105,44 @@
          (unite (/ durtot denom))
          (sympli (/ num denom)))
     (list num denom (format nil "~A" (cadr (find unite *note-types* :key 'car))))))
+|#
+
+(defmethod getratiogroup ((self om::group))
+  (if (singelton-group? self) (list 1 1) ;;;when a group is in fact a single note ! 
+    (let* ((allparents (reverse (cdr (getdemall self))))
+           (dur (get-dur-group self))
+           (num (om::get-group-ratio self))) ;;;check definition of get-group-ratio
+      (if (not allparents) 
+          (let* ((denom (findenom num dur)))
+            (if (listp denom) denom
+              (list num (findenom num dur)))) ;;;;a voir !!!!!!!
+        (let* ((fact (get-dur-group self))
+               (ratios (loop for i in allparents
+                             do (setf fact (* fact  (lst->ratio (getratiogroup i))))));;; donne le facteur accumule des nested tup
+               (denom (findenom num fact)))
+             
+          (if (listp denom) 
+              denom
+            (list num denom)
+            )) 
+        ))))
+
+;;;ici il fait la meme chose que getratiogroup averc les ratios...
+
+(defmethod getratiodur ((self om::group))
+  (let* ((allparents (reverse (cdr (getdemall self))))
+         (dur (get-dur-group self))
+         (num (om::get-group-ratio self)))
+    (if (not allparents) 
+        dur
+      (let* ((fact (get-dur-group self))
+             (ratios (loop for i in allparents
+                           do (setf fact (* fact  (lst->ratio (getratiogroup i))))));;; donne le facteur accumule des nested tup
+             (denom (findenom num fact)))
+        fact
+        ))
+    ))
+
 
 
 (defun get-grp-level (self)
@@ -109,7 +174,77 @@
                (setf buf (om::parent buf))))
     rep))
 
+(defmethod getratiounite ((self om::group))
+  (/ (getratiodur self) (second (getratiogroup self))))
 
+(defmethod getdemall ((self om::group))
+  "For nested tuplets. Returns all group-parents to a group including the group itself" 
+  (let* ((test self)
+         (res (list self)))
+    (loop while test 
+          do (progn 
+               (push (om::parent test) res)
+               (if (om::measure-p (om::parent test)) 
+                   (setf test nil)
+                 (setf test (om::parent test)))))
+    (butlast (reverse res))))
+
+
+(defmethod get-dur-group ((self om::measure))
+"Returns the duration of measure * whole note"
+  (let* ((ext (om::extent self))
+         (qval (om::qvalue self)))
+    (/ ext (* qval 4))))
+
+(defmethod get-dur-group ((self om::group))
+"Returns the duration of measure * whole note.
+durtot etant la duree du group parent"
+  (let* ((ext (om::extent self))
+         (qval (om::qvalue self))
+         )
+    (/ ext (* qval 4))))
+
+
+(defun reduce-num-den-fig (list)
+  "Reduces binary ratios and fig dedoubles. C-a-d 
+si on a (14 8 1/16) il retourne (7 4 1/8)"
+  (if (= (car list) (second list)) list
+    (let ((res list))
+      (setf res
+            (list (/ (car res) 2)
+                  (/ (second res) 2)
+                  (* (third res) 2)))
+      (if (or (om::ratiop (car res))
+              (om::ratiop (second res)))
+          (list (* 2 (car res))
+                (* 2 (second res))
+                (/ (third res) 2))
+        (reduce-num-den-fig res)
+        ))))
+
+
+(defmethod get-group-info ((self om::group))
+  (let* ((rat (om::first-n (getratiogroup self) 2))
+         (unit (getratiounite self))
+         (reduce (reduce-num-den-fig (om::flat (list rat unit)))))
+    (list (car reduce) (second reduce) 
+          (format nil "~A" (cadr (find (third reduce) *note-types* :key 'car))))
+    ))
+
+
+
+(defmethod get-group-info ((self om::measure))
+  (list 1 1))
+
+
+
+(defun time-modifications (self)
+  (if (and (in-group? self) (not (alone-in-group? self)))
+      (let ((ratio (butlast (get-group-info (om::parent self)))))
+        (group (car ratio) (second ratio)))
+    NIL))
+
+#|
 (defun time-modifications (self)
   (if (and (in-group? self) (not (alone-in-group? self)))
       (let* ((lvl (get-grp-level self))
@@ -118,11 +253,17 @@
              (norm-note (third lvl))
              (indx (car lvl))
              (numdenom (getallgroups self))
-             (simpli (/  act-note norm-note)))
+             (simpli (/ act-note norm-note)))
         (if (not (= (/ act-note norm-note) 1))
             (group act-note norm-note)
           NIL))
     NIL))
+|#
+
+
+
+;;============================================
+
 
 (defun first-of-this-group (self grp)
        (let ((frst (car (om::collect-chords grp))))
@@ -499,12 +640,24 @@
 ;;; CHORD / NOTES
 ;;;================
 
+;;; new here in order to put the correct <duration> according to <divisions> of each measure.
+;;; for compatibility 
+
+;(defmethod get-xml-duration ((self t))
+;  (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
+
+(defmethod get-xml-duration ((self t))
+  (* (mesure-divisions (get-parent-measure self)) 
+     (/ (om::extent self) (om::qvalue self))))
+
+  
 (defmethod cons-xml-expr ((self om::chord) &key free key (approx 2) part)
-  (let* ((dur free)
+  (let* (;; (dur free) 
+         (dur (if (listp free) (car free) free))
          (head-and-pts (get-head-and-points dur))
          (note-head (cadr (find (car head-and-pts) *note-types* :key 'car)))
          (nbpoints (cadr head-and-pts))
-         (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self))))
+         (durtot (get-xml-duration self))  ;;; !!!!
          (inside (om::inside self)))
     (loop for note in inside 
            for i = 0 then (+ i 1) append 
@@ -546,7 +699,7 @@
          (head-and-pts (get-head-and-points dur))
          (note-head (cadr (find (car head-and-pts) *note-types* :key 'car)))
          (nbpoints (cadr head-and-pts))
-         (durtot (* (/ (om::extent self) 4) (/ 1 (om::qvalue self)))))
+         (durtot (get-xml-duration self)))
     (list "<note>" 
           "<rest/>"
           (remove nil
@@ -567,8 +720,7 @@
 
 
 (defmethod cons-xml-expr ((self om::group) &key free key (approx 2) part)
-  (let* ((inside (om::inside self))
-         (durtot free)
+  (let* ((durtot free)
          (cpt (if (listp free) (cadr free) 0))
          (num (or (om::get-group-ratio self) (om::extent self)))
          (denom (om::find-denom num durtot))
@@ -576,23 +728,64 @@
          (denom (if (listp denom) (cadr denom) denom))
          (unite (/ durtot denom)))
     (cond
+     
      ((not (om::get-group-ratio self))
-      (loop for obj in inside append 
+      
+      (loop for obj in (om::inside self) append 
             (let* ((dur-obj (/ (/ (om::extent obj) (om::qvalue obj)) 
                                (/ (om::extent self) (om::qvalue self)))))
               (cons-xml-expr obj :free (* dur-obj durtot) :approx approx :part part))))
-     (t (loop for obj in inside 
-              append
-              (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
-                                   (/ (om::extent self) (om::qvalue self))))
-                     (dur-obj (* num operation)))                     
-                (cons-xml-expr obj :free (* dur-obj unite) :approx approx :part part)))   ;;;; ACHTUNG !!
-        ))))
+     
+     ((= (/ num denom) 1)
+      
+      (loop for obj in (om::inside self) 
+            append
+            (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                 (/ (om::extent self) (om::qvalue self))))
+                   (dur-obj (* num operation)))                     
+              (cons-xml-expr obj :free (* dur-obj unite) :approx approx :part part)))    ;;;; ACHTUNG !!
+      )
+     
+     (t 
+      
+      (let ((depth 0) (rep nil))
+        (loop for obj in (om::inside self) do
+              (setf rep (append rep 
+                                (let* ((operation (/ (/ (om::extent obj) (om::qvalue obj)) 
+                                                     (/ (om::extent self) (om::qvalue self))))
+                                       (dur-obj (* num operation))
+                                       (tmp (multiple-value-list 
+                                             (cons-xml-expr obj :free (list (* dur-obj unite) cpt))))
+                                       (exp (car tmp)))
+                                  
+                                  (when (and (cadr tmp) (> (cadr tmp) depth))
+                                    (setf depth (cadr tmp)))
+                                  exp))))
+        (values rep (+ depth 1))
+        ))
+      
+     )))
 
 
 ;;;; <divisions> problem....
 ;;;finale's value to be tested on Sibelius.... (768)
 ;;;sibelius ' value is 256....
+
+
+(defun list-pgcd (list)
+  (let ((res (car list)))
+    (loop for deb in (cdr list)
+          do (setf res (om::pgcd res deb)))
+    res))
+
+(defmethod mesure-divisions ((self om::measure))
+  (let* ((ratios (om::tree2ratio (list '? (om::om-round (list (om::tree self))))))
+         (timesig (car (om::tree self)))
+         (num (car timesig))
+         (denom (second timesig))
+         (comp (om::x-append 1/4 ratios))    ;;;1/4 pour l'instant...1/4 etant le denom de la time signature
+         (props (om::om* (om::om/ 1 (list-pgcd ratios)) comp)))
+    (* num (car props))))
 
 
 (defmethod cons-xml-expr ((self om::measure) &key free (key '(G 2)) (approx 2) part)
@@ -605,7 +798,7 @@
     (list (format nil "<measure number=\"~D\">" mesnum)
           (append (remove nil
                           (list "<attributes>"
-                                (list (format nil "<divisions>~A</divisions>" 1/4)  ;;; (caar (dursdivisions self)))
+                                (list (format nil "<divisions>~A</divisions>" (mesure-divisions self))  ;;; (caar (dursdivisions self)))
                                       "<key>"
                                       (remove nil
                                               (list  "<fifths>0</fifths>"
@@ -743,7 +936,7 @@ Exports <self> to MusicXML format.
 "
   (xml-export self :keys keys :approx approx :path path))
 
-
+(defmethod! export-musicxml ((self poly) &optional (keys '(("G" 2))) (approx 2) (path nil)) (call-next-method))
 
 ;;;  UTILS 
 
