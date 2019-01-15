@@ -77,10 +77,10 @@ pack_om_libs()
 	pack_lib "RepMus" "$OMLIBS_RELEASE_FOLDER"
 	pack_lib "Profile" "$OMLIBS_RELEASE_FOLDER"
 	pack_lib "Esquisse" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "OMAlea" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "OMChaos" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Alea" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Chaos" "$OMLIBS_RELEASE_FOLDER"
 	pack_lib "Situation" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "OMClouds" "$OMLIBS_RELEASE_FOLDER"
+	pack_lib "Clouds" "$OMLIBS_RELEASE_FOLDER"
 	pack_lib "LZ" "$OMLIBS_RELEASE_FOLDER"
 }
 
