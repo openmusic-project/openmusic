@@ -75,7 +75,7 @@
 
     (let ((new-sr (get-pref modulepref :audio-sr)))
       (when new-sr
-        (if (and (integerp new-sr) (>= new-sr 0) (<= new-sr 1000000))
+        (if (and (integerp new-sr) (> new-sr 0) (<= new-sr 1000000))
             (setf *audio-sr* new-sr)
           (progn 
             (om-beep-msg "Bad value for AUDIO SAMPLE RATE. The default value will be restored.")
@@ -122,7 +122,7 @@
 		 #+multiplayer ,@`(:multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
 					    :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*)))
 		 :audio-device ,*audio-out-device*
-		 :audio-n-channels ,*audio-out-n-channels*
+		 :audio-n-channels ,(if (> *audio-out-n-channels* 0) *audio-out-n-channels* 2)
 		 ;;:audio-presets ',(get-audio-mixer-presets)
 		 ) *om-version*))
 
