@@ -695,7 +695,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 
    
 (defmethod cons-xml-expr ((self om::rest) &key free key (approx 2) part)
-  (let* ((dur free)
+  (let* ((dur (if (listp free) (car free) free))
          (head-and-pts (get-head-and-points dur))
          (note-head (cadr (find (car head-and-pts) *note-types* :key 'car)))
          (nbpoints (cadr head-and-pts))
@@ -727,6 +727,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
          (num (if (listp denom) (car denom) num))
          (denom (if (listp denom) (cadr denom) denom))
          (unite (/ durtot denom)))
+
     (cond
      
      ((not (om::get-group-ratio self))
@@ -746,8 +747,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
               (cons-xml-expr obj :free (* dur-obj unite) :approx approx :part part)))    ;;;; ACHTUNG !!
       )
      
-     (t 
-      
+     (t
       (let ((depth 0) (rep nil))
         (loop for obj in (om::inside self) do
               (setf rep (append rep 
