@@ -239,7 +239,8 @@
 
 ;calcule la taille d'une system -an instance of the class OMSystem
 (defun get-system-size (system size)
-  (cond ((null (remove nil (staff-list system))) 0)
+  (cond ((or (null system) 
+             (null (remove nil (staff-list system)))) 0)
         ((= 1 (length  (staff-list system))) 
          (round (* size (staff-h (car (staff-list system))))))
         (t (round (+ size (* (- (posy (car (last (staff-list system)))) 
@@ -788,7 +789,7 @@
       
       (om-draw-string realpos (+ y (y self)) str)
       
-      (write-note-points self  (+ headsizex realpos) (+ y (y self)) size) 
+      (write-note-points self (+ headsizex realpos) (+ y (y self)) size) 
 
       (when (alteration self)
         (om-with-font (get-font-to-draw 1)
