@@ -1,3 +1,11 @@
+* RELEASE NOTES 6.14.2
+
+  - lots of changes
+  - new clefs: g_8 and g^8 - the usual treble clef an octave down/up resp.
+  - 'Esc'-key works also in analysis mode of Chord-seq (and if there's a selection)
+  - #'set-port accepts a list of ports as it's second argument
+  - many bug fixes and improvements, check the git sources and logs for detail
+
 * OM 6.14 for Linux
 
  - Download and updates (Linux) : https://forge.ircam.fr/p/OM/downloads/
