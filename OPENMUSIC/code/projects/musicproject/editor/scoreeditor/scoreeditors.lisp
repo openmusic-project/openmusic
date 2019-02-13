@@ -855,7 +855,9 @@
            
            (#\SPACE (editor-play/stop (editor self)))
            
-           (:om-key-esc 
+	   (:om-key-return (editor-stop (editor self)))
+
+           (:om-key-esc
             (if (selection? self)
                 (toggle-selection self)
               (let ()
@@ -2275,14 +2277,14 @@
 (defmethod handle-key-event ((self chordseqPanel) char)
   (if (analysis-mode? self)
       (analysis-handle-key-event self char)
-  (case char
-    (#\g (set-unset-grille self))
-    (#\G (edit-step-grille self))
-    (#\a (if (equal (slots-mode self) 'dur)
-           (adjoust-grille-durs self)
-           (adjoust-grille-chords self)))
-    (#\z (set-cursor-mode (editor self)))
-    (otherwise (call-next-method)))))
+      (case char
+	(#\g (set-unset-grille self))
+	(#\G (edit-step-grille self))
+	(#\a (if (equal (slots-mode self) 'dur)
+		 (adjoust-grille-durs self)
+		 (adjoust-grille-chords self)))
+	(#\z (set-cursor-mode (editor self)))
+	(otherwise (call-next-method)))))
 
 ;(defmethod selection-to-play-? ((self chordseqPanel)) 
 ;   (and (linear? self) (cursor-p self)))
