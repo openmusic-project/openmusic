@@ -2356,7 +2356,7 @@
           (("z") "Obj/Time Selection")
           ("ud" "Transpose Selection")
           ("shift+ud" "Transpose Octave")
-          (lr "Change Offsets/Dur.")
+          ("lr" "Change Offsets/Dur.")
           (("*") "Group Chords")
           (("+") "Union Chords (Group + Offset)")
           (("c") "Show Channel Color")
