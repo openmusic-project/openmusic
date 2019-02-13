@@ -149,6 +149,7 @@
     (:om-key-esc (off-analysis-selection self) (update-panel self))
     (#\n (change-analysis-name self))
     (#\Space (play-in-analysis self))   
+    (:om-key-return (editor-stop (editor self)))
     (otherwise 
      (when (car (list! (analysis (object (editor self)))))
        (analysis-key-event (car (list! (analysis (object (editor self))))) self char)
