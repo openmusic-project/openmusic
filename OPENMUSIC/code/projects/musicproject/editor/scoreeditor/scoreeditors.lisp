@@ -855,18 +855,13 @@
            
            (#\SPACE (editor-play/stop (editor self)))
            
-	   (:om-key-return (editor-stop (editor self)))
-
            (:om-key-esc
-            (if (selection? self)
-                (toggle-selection self)
-              (let ()
-                (editor-stop (editor self))
-                (when (recording (editor self))
-                  (stop-recording (editor self))
-                  (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)
-                  ))
-              ))
+            (when (selection? self) (toggle-selection self))
+	    (let ()
+              (editor-stop (editor self))
+              (when (recording (editor self))
+                (stop-recording (editor self))
+                (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil))))
 
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
@@ -2365,7 +2360,7 @@
           (("*") "Group Chords")
           (("+") "Union Chords (Group + Offset)")
           (("c") "Show Channel Color")
-          ("space" "Play/Stop"))
+          )
         '((("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
           (("a") "Adjust Chords/Durs to Grid")
@@ -2374,7 +2369,9 @@
           (("t" "T") "Set/Remove Tonality")
           (("n") "Set Voice Name")
           (("o") "Open Internal Chord Editor")
-          )))
+          ("space" "Play/Stop")
+	  ("esc" "Stop  + Reset")
+	  )))
 
 ;==========================================================
 ; multi-seq

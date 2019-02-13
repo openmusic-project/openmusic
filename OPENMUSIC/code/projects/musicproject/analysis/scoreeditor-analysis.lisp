@@ -146,10 +146,12 @@
 (defmethod analysis-handle-key-event ((self chordseqPanel) char)
   (case char
     (:om-key-tab (change-current-analysis self))
-    (:om-key-esc (off-analysis-selection self) (update-panel self))
+    (:om-key-esc (off-analysis-selection self)
+		 (update-panel self)
+		 (setf (cursor-interval self) nil)
+		 (editor-stop (editor self)))
     (#\n (change-analysis-name self))
-    (#\Space (play-in-analysis self))   
-    (:om-key-return (editor-stop (editor self)))
+    (#\Space (play-in-analysis self))
     (otherwise 
      (when (car (list! (analysis (object (editor self)))))
        (analysis-key-event (car (list! (analysis (object (editor self))))) self char)
