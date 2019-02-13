@@ -211,8 +211,9 @@
 
 
 (setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))
-                                               :device (pathname-device *om-root-folders*)
-                                               :host (pathname-host *om-root-folders*)))
+                                               ;; :device (pathname-device *om-root-folders*)
+                                               ;; :host (pathname-host *om-root-folders*)
+					       ))
 
 
 (oa::init-sub-rsrc)
