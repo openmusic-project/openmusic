@@ -988,7 +988,8 @@ would not be restricted to variables)."
          (if pre (format nil "~A ~A" pre str)
            str)))
     (write str :stream *om-stream* :escape nil))
-  (terpri *om-stream*))
+  (terpri *om-stream*)
+  str)
 
 ;=======================
 ; bouton "add something"
