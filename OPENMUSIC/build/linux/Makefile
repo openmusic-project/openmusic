@@ -16,7 +16,7 @@ LISP		= $(HOME)/bin/lw $(LISPFLAGS)
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-IMAGENAME	= OM_6.14
+IMAGENAME	= OM_6.14.2
 
 path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
@@ -72,6 +72,7 @@ dist:
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
 	find $(release)/build/ -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp README.LINUX $(release)/
+	cp $(BUILDROOT)/../LICENSE $(release)/
 	cp NEWS $(release)/
 	cp Makefile.dist $(release)/Makefile
 

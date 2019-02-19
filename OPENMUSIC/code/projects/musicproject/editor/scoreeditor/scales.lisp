@@ -30,7 +30,7 @@
 ;================================================
 (defvar *all-satff-om*   '(f g g2 f2 gf gg ff gff ggf ggff empty))
 
-(defvar *chord-satff-om* '(("F" f) ("G" g) ("GF" gf) ("GG" gg) ("FF" ff) ("GFF" gff) ("GGF" ggf) ("GGFF" ggff) ("EMPTY" empty)))
+(defvar *chord-satff-om* '(("F" f) ("G" g) ("G_8" g_8) ("G^8" g^8)("GF" gf) ("GG" gg) ("FF" ff) ("GFF" gff) ("GGF" ggf) ("GGFF" ggff) ("EMPTY" empty)))
 (defvar *voice-satff-om* '(("F" f) ("G" g) ("F2" f2) ("G2" g2) ("EMPTY" empty)))
 (defvar *mus-font-size* '(("8" 8) ("12" 12) ("16" 16) ("20" 20) ("24" 24) ("28" 28)
                             ("36" 36) ("48" 48) ("60" 60) ("72" 72)))

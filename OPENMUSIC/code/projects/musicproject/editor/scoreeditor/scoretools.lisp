@@ -44,6 +44,8 @@
 (defvar *f-key* (make-instance 'OMkey :key #\? :keyline 4))
 (defvar *g2-key* (make-instance 'OMkey :octave '(15 -4.5)))
 (defvar *f2-key* (make-instance 'OMkey :octave '(15 4) :key #\? :keyline 4))
+(defvar *g-key-8-down* (make-instance 'OMkey :key #\%))
+(defvar *g-key-8-up* (make-instance 'OMkey :key #\'))
 
 
 ;(setf *f-key* (make-instance 'OMkey :key #\? :keyline 1))
@@ -310,7 +312,9 @@
                  (cond
                   ((equal symbol 'F) (list (make-instance 'OMstaff :key-obj  *f-key* :posy 17.5 :range '(43 57))))
                   ((equal symbol 'G) (list (make-instance 'OMstaff :key-obj  *g-key* :posy 11.5 :range'(64 77))))
-                  ((equal symbol 'G2) (list (make-instance 'OMstaff :key-obj  *g2-key*  :posy 4.5 :range'(88 101))))
+                  ((equal symbol 'G_8) (list (make-instance 'OMstaff :key-obj *g-key-8-down* :posy 15 :range'(52 65))))
+                  ((equal symbol 'G^8) (list (make-instance 'OMstaff :key-obj *g-key-8-up* :posy 8 :range'(76 89))))
+		  ((equal symbol 'G2) (list (make-instance 'OMstaff :key-obj  *g2-key*  :posy 4.5 :range'(88 101))))
                   ((equal symbol 'F2) (list (make-instance 'OMstaff  :key-obj  *f2-key* :posy 24.5 :range '(19 33))))
                   ((equal symbol 'GF) (list (make-instance 'OMstaff :key-obj  *g-key* :posy 11.5 :range'(64 77))
                                             (make-instance 'OMstaff  :key-obj  *f-key* :posy 17.5 :range '(43 57))))
@@ -731,20 +735,20 @@
 (defmethod make-graph-form-obj ((self note) x top linespace mode scale sel system stem)
   (declare (ignore mode))
   (when (midic self)
-   (let* ((ypos (get-graphic-pos self top linespace scale))
-          (alt-char (and system (get-alt-char self scale (armure system))))
-         alteration rep)
-     (when alt-char (setf alteration (get-alteration-n alt-char)))
-     (setf rep (make-instance 'grap-note
-                 :reference self
-                 :alt-char alt-char
-                 :alteration alteration
-                 :rectangle (list x (- ypos (round linespace 2)) (round (+ x linespace)) (+ ypos (round linespace 2)))
-                 :main-point (list x (- ypos (round linespace 2)))
-                 :selected (member self sel :test 'equal)
-                 :auxlines (get-aux-lines self system top scale linespace ypos)))
-     (make-graphic-extras rep)
-     rep)))
+    (let* ((ypos (get-graphic-pos self top linespace scale))
+           (alt-char (and system (get-alt-char self scale (armure system))))
+           alteration rep)
+      (when alt-char (setf alteration (get-alteration-n alt-char)))
+      (setf rep (make-instance 'grap-note
+			       :reference self
+			       :alt-char alt-char
+			       :alteration alteration
+			       :rectangle (list x (- ypos (round linespace 2)) (round (+ x linespace)) (+ ypos (round linespace 2)))
+			       :main-point (list x (- ypos (round linespace 2)))
+			       :selected (member self sel :test 'equal)
+			       :auxlines (get-aux-lines self system top scale linespace ypos)))
+      (make-graphic-extras rep)
+      rep)))
 
 (defmethod draw-rectangle ((self grap-note) system size &optional fill )
    (when (rectangle self)
