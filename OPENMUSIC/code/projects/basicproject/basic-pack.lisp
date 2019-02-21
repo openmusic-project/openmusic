@@ -65,7 +65,7 @@
                               om-spline
                               linear-fun bpf-interpol
                               reduce-points reduce-n-points
-                              bpf-offset bpf-crossfade bpf-extract bpf-scale 
+                              bpf-offset bpf-crossfade bpf-extract bpf-scale bpf-concat
                               om-rotate om-translate om-mirror
                               ) *function-package*)
 ; removed : board

@@ -695,6 +695,60 @@ Outputs
          (ylist (if (or y1 y2) (om-scale yp (or y1 (car yp)) (or y2 (last-elem yp))) yp)))
     (simple-bpf-from-list xlist ylist (type-of self) (decimals self))))
 
+(defmethod* bpf-concat ((f1 bpf) (f2 bpf) &optional f2-offset f2-transpose-y)
+  :initvals '(nil nil nil nil)
+  :indoc '("a bpf or bpc" "a bpf or bpc" "extra offset of f2 (default  nil)" "if t, transpose y-points in f2 to continue from f1")
+  :icon 213   
+  :doc "Concatenates two bpfs (or bpcs, or a bpc and a bpf) into a new one.
+
+First optional input 'f2-offset' may be used to pass a fixed
+x-offset between f1 & f2.
+
+With f2-offset = nil (the default), the distance between the last
+point-x of f1 and first point-x of f2 will be set equal to the
+distance between last two x-points of f1.
+
+Second optional input 'f2-transpose-y', if t, transposes y-points
+in f2 to continue from wherever f1 left us.
+
+Return value is an instance of the class of 'f1, with the two
+functions concatenated together inside.
+ 
+ bpf x bpf => bpf
+ bpc x bpc => bpc
+ bpc x bpf => bpc
+" 
+  (let* ((out (clone f1))
+	 (f2-extra-offset (or f2-offset
+			      (car (x->dx (last (x-points f1) 2)))))
+	 (f2-x-translation (+ f2-extra-offset
+			      (- (last-elem (x-points f1))
+				 (first (x-points f2)))))
+	 (f2-y-translation (or (and f2-transpose-y
+				    (- (first (y-points f2))
+				       (last-elem (y-points f1))))
+			       0))
+
+	 ;; if both extra-x-offset and extra-y-offset is 0, don't
+	 ;; include duplicate point:
+
+	 (pop-start-of-f2? (and f2-transpose-y f2-offset (zerop f2-offset))))
+    
+    (setf (x-points out) (append (x-points f1)
+				 (om+ f2-x-translation
+				      (if pop-start-of-f2?
+					  (cdr (x-points f2))
+					  (x-points f2))))
+	  (y-points out) (append (y-points f1)
+				 (om- (if pop-start-of-f2?
+					  (cdr (y-points f2))
+					  (y-points f2))
+				      f2-y-translation)))
+    out))
+
+(defmethod* bpf-concat (f1 f2 &optional f2-offset f2-transpose-y)
+  (om-beep-msg "error: bpf-concat takes as input two bpf's, two bpc's, or a bpc and a bpf"))
+
 
 
 ;;;=======================================
