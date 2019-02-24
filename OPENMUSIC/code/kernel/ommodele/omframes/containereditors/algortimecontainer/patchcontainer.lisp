@@ -157,9 +157,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("a") "internalize patch Abstraction")
                        (("y") "activate/switch bg picture")
                        (("E" "U") "encapsulation/de-encap.")
-                     
-                       ("space" "Play / Stop")
-                       ;; (h "Show this Help window")
+                       ("space" "Play / Pause")
+                       (("p" "s") "Play / Stop")
                        ))
 
 (defmethod get-help-list ((self t)) nil)
