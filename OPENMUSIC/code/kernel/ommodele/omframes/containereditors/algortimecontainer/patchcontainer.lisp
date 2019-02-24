@@ -131,36 +131,36 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
 
 
-(setf *patchhelp1* '(("lrud" "Move")
-                     ("shift+lrud" "Move faster")
-                     ("del" "Delete")
-                     (("v") "eVal")
+(defvar *patchhelp1* '(("lrud" "Move")
+                       ("shift+lrud" "Move faster")
+                       ("del" "Delete")
+                       (("v") "eVal")
                      
-                     (("b") "lock or change eval mode Button")
-                     ((">" "<") "add/remove Optional inputs")
-                     (("k" "K") "add/remove Keyword inputs")
+                       (("b") "lock or change eval mode Button")
+                       ((">" "<") "add/remove Optional inputs")
+                       (("k" "K") "add/remove Keyword inputs")
 
-                     (("d") "show Documentation")
-                     (("e") "Edit lisp code")
-                     (("t") "show Tutorial patch")
+                       (("d") "show Documentation")
+                       (("e") "Edit lisp code")
+                       (("t") "show Tutorial patch")
                      
-                     #+om-reactive(("r") "reactive box on/off")
-                     ))
+                       #+om-reactive(("r") "reactive box on/off")
+                       ))
 
-(setf *patchhelp2* '((("c") "Change Connection Color")
-                     (("A") "Align")
-                     (("i") "reInitialize size")
-                     (("I") "reInitialize value")
-                     (("m") "show/hide Miniview")
-                     (("M") "show/hide all Miniviews")
-                     (("n") "show/hide Name")
-                     (("a") "internalize patch Abstraction")
-                     (("y") "activate/switch bg picture")
-                     (("E" "U") "encapsulation/de-encap.")
+(defvar *patchhelp2* '((("c") "Change Connection Color")
+                       (("A") "Align")
+                       (("i") "reInitialize size")
+                       (("I") "reInitialize value")
+                       (("m") "show/hide Miniview")
+                       (("M") "show/hide all Miniviews")
+                       (("n") "show/hide Name")
+                       (("a") "internalize patch Abstraction")
+                       (("y") "activate/switch bg picture")
+                       (("E" "U") "encapsulation/de-encap.")
                      
-                     ("space" "Play / Stop")
-                     ;; (h "Show this Help window")
-                     ))
+                       ("space" "Play / Stop")
+                       ;; (h "Show this Help window")
+                       ))
 
 (defmethod get-help-list ((self t)) nil)
 
@@ -280,16 +280,18 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\E (om-encapsulate self actives))
       (#\U (om-unencapsulate self actives))
       
-      (otherwise (loop for box in activeboxes
-                           with hotbox = nil
-                           do (when (find-method #'handle-key-event '() (list (class-of box)
-                                                                              (find-class t)) nil)
-                                (setf hotbox t)  
-                                (handle-key-event box char))
-                           finally
-                           do (unless hotbox 
-                                (om-beep) ;no boxes have specialized handle-key-event methods
-                                ))))))
+      (otherwise (loop
+		    with hotbox = nil
+		    for box in activeboxes
+                           
+                    do (when (find-method #'handle-key-event '() (list (class-of box)
+                                                                       (find-class t)) nil)
+                         (setf hotbox t)  
+                         (handle-key-event box char))
+                    finally
+                    do (unless hotbox 
+                         (om-beep)			    ;no boxes have specialized handle-key-event methods
+                         ))))))
 
 
 
@@ -341,7 +343,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 (defmethod color-comments ((self patchPanel))
    "Set a new color to the selected comment boxes in 'self'."
    (let ((active-comments (loop for frame in (get-actives self)
-                                when (commentframep frame) collect frame)) newcolor)
+                             when (commentframep frame) collect frame)))
      (when active-comments
        (let ((newcolor (om-choose-color-dialog :color (textcolor (object (car active-comments))))))
          (when newcolor
@@ -349,15 +351,14 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                      (comment-new-color frame newcolor)) active-comments))))))
 
 (defmethod font-comments ((self patchPanel))
-   "Set a new font to the selected comment boxes in 'self'."
-   (let ((active-comments (loop for frame in (get-actives self)
-                                when (commentframep frame) collect frame)) 
-         newlist)
-     (when active-comments
-       (let ((newfont (om-choose-font-dialog :font (textstyle (object (car active-comments))))))
-       (when newfont
-         (mapc #'(lambda (frame) 
-                   (comment-new-style frame newfont)) active-comments))))))
+  "Set a new font to the selected comment boxes in 'self'."
+  (let ((active-comments (loop for frame in (get-actives self)
+                            when (commentframep frame) collect frame)))
+    (when active-comments
+      (let ((newfont (om-choose-font-dialog :font (textstyle (object (car active-comments))))))
+	(when newfont
+          (mapc #'(lambda (frame) 
+                    (comment-new-style frame newfont)) active-comments))))))
 
 (defmethod edit-bold ((self patcheditor))
   (let* ((container (panel self))
@@ -762,16 +763,18 @@ Elements of the list are list as (source-position source-output target-position 
 
 (defmethod editor-update-cursor ((self EditorView) where) t)
 
-(defmethod editor-update-cursor ((self patchEditor) where)
-   (if (subviews self)
-     (let ((container (panel self)))
-       (if (and container (text-view self)
-                (equal (class-name (class-of (text-view self))) 'text-enter-view)
-                (view-contains-point-p (text-view self) where))
-         (progn
-           (exit-from-dialog (text-view self) (dialog-item-text (text-view self))) nil)
-         t))
-     t))
+;;; undefined functions in om-package: dialog-item-text, subviews, view-contains-point-p
+;; 
+;; (defmethod editor-update-cursor ((self patchEditor) where)
+;;    (if (subviews self)
+;;      (let ((container (panel self)))
+;;        (if (and container (text-view self)
+;;                 (equal (class-name (class-of (text-view self))) 'text-enter-view)
+;;                 (view-contains-point-p (text-view self) where))
+;;          (progn
+;;            (exit-from-dialog (text-view self) (dialog-item-text (text-view self))) nil)
+;;          t))
+;;      t))
 ;;;===============================================
 ;;;===============================================
 ;;;===============================================
