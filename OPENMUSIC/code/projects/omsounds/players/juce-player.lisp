@@ -36,7 +36,7 @@
 (defvar *audio-driver* 
   #+macosx "CoreAudio" 
   #+linux "ALSA"
-  #+windows "DirectSound"
+  #+mswindows "DirectSound"
   )
 
 (defmethod player-name ((self (eql :om-audio))) "OM inbuilt audio player")

@@ -85,7 +85,7 @@
         (remove-duplicates (remove nil (cons (main-pinboard-object view)
                                              (append (vsubviews view) (item-subviews view))))))
   ;; this fixed the problem with dialog item box display on windows...
-  #+windows (setf (pinboard-pane-position view) (values (vx view) (vy view)))
+  #+mswindows (setf (pinboard-pane-position view) (values (vx view) (vy view)))
   )
 
 (defmethod set-layout ((view t)) nil)
