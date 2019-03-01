@@ -481,10 +481,6 @@
        )))
 
 
-
-
-
-
 ;;;==================================================
 ;; OM PREFS
 
@@ -493,11 +489,11 @@
 (defun ompref-file ()
   (let* ((userpref (om-user-pref-folder)))
     (make-pathname
-     :device (pathname-device userpref)
-     :directory (append (pathname-directory userpref) (list "OpenMusic" 
-                                                            ;(format nil "~D" (/ (round (* 100 *version*)) 100.0))
-                                                            (cl-user::version-to-string *version* nil nil)
-                                                            ))
+     :device (pathname-device userpref) :host (pathname-host userpref)
+     :directory (append (pathname-directory userpref) 
+                        (list "OpenMusic" 
+                              (cl-user::version-to-string *version* nil nil)
+                              ))
      :name "OMPrefs" :type "lisp")))
 
 (defmethod save-omprefs ()

@@ -210,10 +210,7 @@
 (print "==============================")
 
 
-(setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))
-                                               ;; :device (pathname-device *om-root-folders*)
-                                               ;; :host (pathname-host *om-root-folders*)
-					       ))
+(setf oa::*om-resources-folder* (make-pathname :directory (append *om-root-folders* '("resources"))))
 
 
 (oa::init-sub-rsrc)
