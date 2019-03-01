@@ -645,7 +645,7 @@
   (namestring path))
 
 
-;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
+;;; works for a process created with om-run-program or om-run-application
 (defun om-select-program (id)
   (system::call-system (concatenate 'string *om-open-cmd* " " (namestring id))))
 
