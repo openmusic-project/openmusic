@@ -302,14 +302,15 @@
         (mapc #'(lambda (file)
                   (load file :verbose nil))
               (sort (append (om-directory  (get-init-patches-folder) :type "lisp" :files t :directories nil)
-                            (om-directory  (get-init-patches-folder) :type *om-compiled-type* :files t :directories nil)) 'string< :key 'pathname-name))
+                            (om-directory  (get-init-patches-folder) :type *om-compiled-type* :files t :directories nil)) 
+                    'string< :key 'pathname-name))
         ))))
 
 ; (load-modif-patches)
 
 (defun get-preferences-version (name)
   (let (rep)
-    (WITH-OPEN-FILE (in (om-make-pathname :directory name :name  "preferences" :type "lisp")
+    (WITH-OPEN-FILE (in (om-make-pathname :directory name :name "preferences" :type "lisp")
                          :direction :input 
                          :if-does-not-exist nil) 
        (let ((char (read-char in)))
