@@ -286,9 +286,6 @@
 
 (defmethod get-box-frame ((self omboxframe)) self)
 
-(defmethod show-fun-code ((self boxframe))
-  (edit-definition (class-name (reference (object self)))))
-
 
 ;---------Predicats
 (defmethod boxframe-p ((self omboxframe)) t)
