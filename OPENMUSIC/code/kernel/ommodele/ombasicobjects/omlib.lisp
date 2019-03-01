@@ -387,11 +387,12 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 ;;; REGISTERS LIBS IN OM AND USER FOLDERS
 (defun load-om-libs ()
-  (let ((om-elements (om-directory *om-lib-dir*
-                                :files nil :directories t)))
+  (let ((om-elements (om-directory *om-lib-dir* :files nil :directories t)))
+    
     (mapc #'(lambda (x)
-                      (AddPackage2Pack (omNG-make-new-lib (car (last (pathname-directory x)))) *library-package*))
-           om-elements)
+              (AddPackage2Pack (omNG-make-new-lib (car (last (pathname-directory x)))) *library-package*))
+          om-elements)
+
     (load-user-libs)))
 
 (defun relocate-lib-info (lib rootpath)
@@ -412,10 +413,13 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                          (remove-if-not 
                           #'(lambda (elt)
                               (and (directoryp elt)
-                                   (find (string-until-space (car (last (pathname-directory elt)))) (om-directory elt :directories nil :files t :type "lisp")
+                                   (find (string-until-space (car (last (pathname-directory elt))))
+                                         (om-directory elt :directories nil :files t :type "lisp")
                                          :key 'pathname-name :test 'string-equal)))
                           (om-directory folder :files nil :directories t)))))))
+
     (setf *user-libs* nil)  
+
     (mapc #'(lambda (pathname)
             (let* ((newlib (omNG-make-new-lib pathname))
                    (loaded (find (name newlib) really-load :test 'string-equal :key 'car)))
@@ -430,17 +434,20 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
               (AddPackage2Pack newlib *library-package*)
               (push newlib *user-libs*)
               ))
-        user-elements)
+          user-elements)
+
   *user-libs*))
+
 
 (defmethod AddPackage2Pack ((new-Package OMLib) inPackage &key (protect t))
   (let ((subpackages (subpackages inPackage)))
-    (if (find new-Package subpackages :test #'(lambda (lib1 lib2) 
-                                                    (and (string-equal (name lib1) (name lib2))
-                                                         (cond ((and (version lib1) (version lib2))
-                                                                (= (version lib1) (version lib2)))
-                                                               ((or (version lib1) (version lib2)) t)
-                                                               (t nil)))))
+    (if (find new-Package subpackages 
+              :test #'(lambda (lib1 lib2) 
+                        (and (string-equal (name lib1) (name lib2))
+                             (cond ((and (version lib1) (version lib2))
+                                    (= (version lib1) (version lib2)))
+                                   ((or (version lib1) (version lib2)) t)
+                                   (t nil)))))
         (om-beep-msg (format nil "Library ~A~A already exists!!" (name new-Package)
                              (if (version new-Package) (format nil " (~D)" (version new-Package)) "")))
       (progn
