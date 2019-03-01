@@ -540,7 +540,6 @@
 (defun om-user-pref-folder ()
   (let* ((userhome (om-user-home)))
     (make-pathname
-     :device (pathname-device userhome)
      :host (pathname-host userhome) :device (pathname-device userhome)
      :directory 
      #+macosx(append (pathname-directory userhome) (list "Library" "Preferences"))
