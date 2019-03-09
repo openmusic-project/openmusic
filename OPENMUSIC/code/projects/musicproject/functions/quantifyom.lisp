@@ -160,7 +160,8 @@ at the beat level. Here is an example:
                         forbid
                         offset
                         precis)
-  (omquantify (true-durations self)
+  (omquantify ; (true-durations self)
+              (x->dx (lonset self))
               tempi measures max/ forbid offset precis))
 
 
