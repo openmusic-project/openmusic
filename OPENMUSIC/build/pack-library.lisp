@@ -97,14 +97,17 @@
         ;(om::om-delete-file (merge-pathnames "README.md" packedlibpath))
         ))))
 
-(defmethod om::require-library (lib &optional (abort-if-not-found nil))
+
+;;; we need a special version of this when it is called without an initialized OM session
+(defmethod om::require-library (name &optional (abort-if-not-found nil))
   (let* ((old-lib om::*current-lib*)
-         (thelib (om::find-library lib)))
+         (thelib (om::find-library name))
+         (true-name (om::lib-true-name name))) ;;; does not work !!
     (unless thelib 
       (let ((path (om::om-make-pathname :directory (append (butlast (pathname-directory (om::lib-pathname old-lib)))
-                                                           (list lib)))))
+                                                           (list true-name)))))
         (register-lib path)
-        (setf thelib (om::find-library lib))))
+        (setf thelib (om::find-library true-name))))
     (if thelib
         (progn 
           (setf om::*current-lib* thelib)
@@ -113,9 +116,8 @@
           (setf om::*current-lib* old-lib)
           t)
       (when abort-if-not-found
-        (print (om::string+ "Library " lib " not found!"))
+        (print (om::string+ "Library " name " not found!"))
         (oa::om-abort)))))
-
 
 (when *lib-name*
   (print (concatenate 'string "== READY TO PACK LIB " (namestring *lib-name*)))
