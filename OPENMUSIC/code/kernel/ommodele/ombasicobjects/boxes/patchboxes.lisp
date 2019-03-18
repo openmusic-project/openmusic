@@ -1084,6 +1084,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                 :reference self 
                 :icon (icon self)
                 :inputs inputs)))
+    (set-box-to-inputs (inputs rep) rep)
     (setf (frame-position rep) (borne-position posi))
     (push rep (attached-objs self))
     rep))

@@ -424,7 +424,7 @@ Pushing the button will automatically evaluate anything connected to the second 
 
 
 (defmethod update-di-size ((self button) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) #+windows 12 #-windows 11)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) #+mswindows 12 #-mswindows 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24))
   )
 

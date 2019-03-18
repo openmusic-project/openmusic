@@ -106,7 +106,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                      :device (pathname-device (lib-pathname self))))
 
 
-(defvar *ask-for-cleanup-on-lib-error* t)
+(defvar *ask-for-cleanup-on-lib-error* nil)
 ;;; LOADS AN OM LIB IF NOT LOADED
 ;;; LOADS LIB PICTURES
 ;;; SETS *current-lib*
@@ -122,7 +122,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                              
                              (when *ask-for-cleanup-on-lib-error*
                                (let ((rep (om-y-or-n-option-dialog 
-                                           (format nil "Cleanup lib sources ?~%~%Cleanup will delete all compiled Lisp files")
+                                           (format nil "Cleanup compiled code (will delete all .*fasl files in the sources)")
                                            "Do not ask again")))
                                  (setq *ask-for-cleanup-on-lib-error* (not (cadr rep)))
                                  (when (car rep)
@@ -335,16 +335,32 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 (defun add-lib-alias (old new)
   (push (list old new) *lib-aliases*))
 
-(defun lib-true-name (name)
-  (let ((new (find name *lib-aliases* :test 'string-equal :key 'car)))
-    (if new (cadr new) name)))
+;;; examples of a few libs known with different names...
+(add-lib-alias "Alea" "OMAlea")
+(add-lib-alias "Chaos" "OMChaos")
+(add-lib-alias "OMChroma" "chroma-classes")
 
+;(defun lib-true-name (name)
+;  (let ((new (find name *lib-aliases* :test 'string-equal :key 'car)))
+;    (if new (cadr new) name)))
+
+;; we allow several alisases and return the one that works !
+(defun lib-true-name (name)
+
+  (let ((names nil))
+    (loop for nn in *lib-aliases*
+          while (not names) do
+          (when (find name nn :test 'string-equal)
+            (setq names nn)))
+    
+    (or (find-if 'exist-lib-p names)
+        name)
+    ))
 
 
 ;Return the OMLib instance with name 'name' if there two or more call the choise-a-lib function.
 (defun exist-lib-p (name)
-  (let ((newname (lib-true-name name)) 
-        (libs))
+  (let ((libs))
      (loop for lib in (subpackages *library-package*) do
            (when (string-equal (string-until-space (name lib)) name)
              (push lib libs)))
@@ -354,7 +370,8 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
          (choise-a-lib libs name)))))
 
 (defun find-library (name)
-  (exist-lib-p name))
+  (exist-lib-p (lib-true-name name)))
+
 ;  (let ((newname (lib-true-name name)) 
 ;        (thelib nil))
 ;    (loop for lib in (subpackages *library-package*)
@@ -370,11 +387,12 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 
 ;;; REGISTERS LIBS IN OM AND USER FOLDERS
 (defun load-om-libs ()
-  (let ((om-elements (om-directory *om-lib-dir*
-                                :files nil :directories t)))
+  (let ((om-elements (om-directory *om-lib-dir* :files nil :directories t)))
+    
     (mapc #'(lambda (x)
-                      (AddPackage2Pack (omNG-make-new-lib (car (last (pathname-directory x)))) *library-package*))
-           om-elements)
+              (AddPackage2Pack (omNG-make-new-lib (car (last (pathname-directory x)))) *library-package*))
+          om-elements)
+
     (load-user-libs)))
 
 (defun relocate-lib-info (lib rootpath)
@@ -395,10 +413,13 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
                          (remove-if-not 
                           #'(lambda (elt)
                               (and (directoryp elt)
-                                   (find (string-until-space (car (last (pathname-directory elt)))) (om-directory elt :directories nil :files t :type "lisp")
+                                   (find (string-until-space (car (last (pathname-directory elt))))
+                                         (om-directory elt :directories nil :files t :type "lisp")
                                          :key 'pathname-name :test 'string-equal)))
                           (om-directory folder :files nil :directories t)))))))
+
     (setf *user-libs* nil)  
+
     (mapc #'(lambda (pathname)
             (let* ((newlib (omNG-make-new-lib pathname))
                    (loaded (find (name newlib) really-load :test 'string-equal :key 'car)))
@@ -413,17 +434,20 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
               (AddPackage2Pack newlib *library-package*)
               (push newlib *user-libs*)
               ))
-        user-elements)
+          user-elements)
+
   *user-libs*))
+
 
 (defmethod AddPackage2Pack ((new-Package OMLib) inPackage &key (protect t))
   (let ((subpackages (subpackages inPackage)))
-    (if (find new-Package subpackages :test #'(lambda (lib1 lib2) 
-                                                    (and (string-equal (name lib1) (name lib2))
-                                                         (cond ((and (version lib1) (version lib2))
-                                                                (= (version lib1) (version lib2)))
-                                                               ((or (version lib1) (version lib2)) t)
-                                                               (t nil)))))
+    (if (find new-Package subpackages 
+              :test #'(lambda (lib1 lib2) 
+                        (and (string-equal (name lib1) (name lib2))
+                             (cond ((and (version lib1) (version lib2))
+                                    (= (version lib1) (version lib2)))
+                                   ((or (version lib1) (version lib2)) t)
+                                   (t nil)))))
         (om-beep-msg (format nil "Library ~A~A already exists!!" (name new-Package)
                              (if (version new-Package) (format nil " (~D)" (version new-Package)) "")))
       (progn

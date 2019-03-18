@@ -37,7 +37,7 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 6.140100)
+(defparameter *version* 6.150000)
 
 (defparameter *beta-release* nil) 
 (defparameter *version-str* "")
@@ -107,7 +107,8 @@
 (defun compile&load (file &optional (verbose t) (force-compile nil))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
           (fasl-file (probe-file (merge-pathnames (make-pathname :type *compile-type*) lisp-file)))
-	  (load-file (make-pathname :directory (pathname-directory file) :name (pathname-name file)))
+	  (load-file (make-pathname :directory (pathname-directory file) :name (pathname-name file)
+                                    :host (pathname-host file) :device (pathname-device file)))
 	  (fasl-outofdate (and fasl-file
                                (or (not (file-write-date lisp-file))
                                    (not (file-write-date fasl-file))

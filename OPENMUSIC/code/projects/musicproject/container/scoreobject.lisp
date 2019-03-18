@@ -527,12 +527,9 @@ Extraction methods.
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
   (distribute-chords self chords)
-  ;(print (mapcar 'loffset (chords self)))
   (when (> legato 0) (normalize-chord self legato))
-  ;(print (mapcar 'loffset (chords self)))
   (set-ties self ties)
   (setf (tempo self) tempo)
-  ;(print (mapcar 'loffset (chords self)))
   self)
 
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )

@@ -855,16 +855,13 @@
            
            (#\SPACE (editor-play/stop (editor self)))
            
-           (:om-key-esc 
-            (if (selection? self)
-                (toggle-selection self)
-              (let ()
-                (editor-stop (editor self))
-                (when (recording (editor self))
-                  (stop-recording (editor self))
-                  (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)
-                  ))
-              ))
+           (:om-key-esc
+            (when (selection? self) (toggle-selection self))
+	    (let ()
+              (editor-stop (editor self))
+              (when (recording (editor self))
+                (stop-recording (editor self))
+                (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil))))
 
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
@@ -2275,14 +2272,14 @@
 (defmethod handle-key-event ((self chordseqPanel) char)
   (if (analysis-mode? self)
       (analysis-handle-key-event self char)
-  (case char
-    (#\g (set-unset-grille self))
-    (#\G (edit-step-grille self))
-    (#\a (if (equal (slots-mode self) 'dur)
-           (adjoust-grille-durs self)
-           (adjoust-grille-chords self)))
-    (#\z (set-cursor-mode (editor self)))
-    (otherwise (call-next-method)))))
+      (case char
+	(#\g (set-unset-grille self))
+	(#\G (edit-step-grille self))
+	(#\a (if (equal (slots-mode self) 'dur)
+		 (adjoust-grille-durs self)
+		 (adjoust-grille-chords self)))
+	(#\z (set-cursor-mode (editor self)))
+	(otherwise (call-next-method)))))
 
 ;(defmethod selection-to-play-? ((self chordseqPanel)) 
 ;   (and (linear? self) (cursor-p self)))
@@ -2359,11 +2356,11 @@
           (("z") "Obj/Time Selection")
           ("ud" "Transpose Selection")
           ("shift+ud" "Transpose Octave")
-          (lr "Change Offsets/Dur.")
+          ("lr" "Change Offsets/Dur.")
           (("*") "Group Chords")
           (("+") "Union Chords (Group + Offset)")
           (("c") "Show Channel Color")
-          ("space" "Play/Stop"))
+          )
         '((("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
           (("a") "Adjust Chords/Durs to Grid")
@@ -2372,7 +2369,9 @@
           (("t" "T") "Set/Remove Tonality")
           (("n") "Set Voice Name")
           (("o") "Open Internal Chord Editor")
-          )))
+          ("space" "Play/Stop")
+	  ("esc" "Stop  + Reset")
+	  )))
 
 ;==========================================================
 ; multi-seq
@@ -5352,4 +5351,5 @@
 (defmethod get-help-list :around ((self multiSeqPanel))
   (let ((consed (reverse (call-next-method))))
     (push '(("f" "F") "Flip Selection Down/Up") (car consed))
+    (setf (car consed) (append (car consed) '(("esc" "Stop  + Reset"))))
     (nreverse consed)))

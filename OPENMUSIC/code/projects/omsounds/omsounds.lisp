@@ -101,7 +101,6 @@
 
 (add-ref-section (gen-ref-entries *audiopackage*))
 
-(add-lib-alias "chroma-classes" "OMChroma")
 
 
 

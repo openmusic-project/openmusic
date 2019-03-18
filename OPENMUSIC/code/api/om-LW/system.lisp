@@ -540,7 +540,6 @@
 (defun om-user-pref-folder ()
   (let* ((userhome (om-user-home)))
     (make-pathname
-     :device (pathname-device userhome)
      :host (pathname-host userhome) :device (pathname-device userhome)
      :directory 
      #+macosx(append (pathname-directory userhome) (list "Library" "Preferences"))
@@ -601,7 +600,7 @@
     )
   )
 
-#+windows
+#+mswindows
 (defun om-command-line (str &optional (redirect-output nil) (wait t) (current-path nil))
   (if redirect-output ; redirect to file not supported
       (sys:call-system-showing-output str :wait t :output-stream *om-stream* :prefix ":: " :kill-process-on-abort t
@@ -645,6 +644,12 @@
   (namestring path))
 
 
-;;; marche pour un process créé avec la fonction om-run-program ou om-run-application
+;;; works for a process created with om-run-program or om-run-application
 (defun om-select-program (id)
   (system::call-system (concatenate 'string *om-open-cmd* " " (namestring id))))
+
+
+;;; compat with old versions of libraries
+(defun om-path2cmdpath (path) (namestring path))
+(export 'om-path2cmdpath :oa)
+
