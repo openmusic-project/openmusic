@@ -1793,7 +1793,7 @@
                                (loop for item in (inside self) 
                                     for i = 0 then (+ i 1)
                                     collect
-                                    (let ((newchord (make-graph-ryth-obj item  top staffsys linespace  scale sel new-group 
+                                    (let ((newchord (make-graph-ryth-obj item top staffsys linespace  scale sel new-group 
                                                                          (if (not group-ratio) 
                                                                            (let* ((dur-obj (/ (/ (extent item) (qvalue item)) 
                                                                                               (/ (extent self) (qvalue self)))))
