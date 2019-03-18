@@ -8,9 +8,9 @@ LWARCH=64-bit
 LWVERSION=7.1
 LWEXEC=lispworks-7-1-0-amd64-darwin
 
-OM_VERSION="6.14.1"
-APP_FOLDER="OM 6.14.1"
-DMG_NAME="OM-6.14.1-macOS"
+OM_VERSION="6.15"
+APP_FOLDER="OM 6.15"
+DMG_NAME="OM-6.15-macOS"
 
 
 get_abs_filename() {
@@ -26,7 +26,7 @@ get_abs_filename() {
 }
 
 
-LIBS_FOLDER="$(get_abs_filename "../")"
+LIBS_SOURCE_FOLDER="$(get_abs_filename "../")"
 #LIBS_FOLDER="$(get_abs_filename "../../om-libs-forum/")"
 LIBS_RELEASE_FOLDER="$(get_abs_filename "../OM-LIBRARIES-RELEASE/")"
 # => /Users/bresson/SRC/omlibraries/
@@ -63,7 +63,7 @@ echo "***************************************************"
 echo "Packing library: name"
 echo "***************************************************"
 
-    echo "(setf *lib-name* #P\"$LIBS_FOLDER/$1/\" *release-dir* #P\"$2/\")" > 'lib-name.lisp.tmp'
+    echo "(setf *lib-name* #P\"$LIBS_SOURCE_FOLDER/$1/\" *release-dir* #P\"$2/\")" > 'lib-name.lisp.tmp'
 	cd ./OPENMUSIC/build/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-library.lisp
 	cd ../..
