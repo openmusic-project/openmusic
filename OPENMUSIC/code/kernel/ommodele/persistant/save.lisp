@@ -992,7 +992,7 @@
     (let ((newbox (omNG-make-new-boxcall instance (om-correct-point position) name)))
       (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
       (set-box-to-inputs (inputs newbox) newbox)
-      (setf (value newbox) (instance instance))
+      (setf (value newbox) (list (instance instance)))
       (setf (frame-name newbox) fname)
       (when size (setf (frame-size newbox) size))
       newbox)
