@@ -60,6 +60,8 @@ Lock the box ('b') to keep the current file.
 (defmethod objfromobjs ((self sdiffile) (type textfile))
    (objfromobjs (bin2ascii self) type))
 
+(defmethod* objfromobjs ((self null) (type sdifFile))
+  (make-instance 'sdiffile))
 
 (defmethod get-name ((self sdiffile))
   (or (get-filename (filepathname self)) ""))
@@ -86,16 +88,19 @@ Lock the box ('b') to keep the current file.
 
 
 (defmethod sdif-open ((self sdifFile))
-  (when (filepathname self)
-    (sdif-open (filepathname self))))
+  (if (filepathname self)
+      (sdif-open (filepathname self))
+    (om-beep-msg "SDIFFile object has no attached file")))
        
 (defmethod sdif-open ((self pathname))
   (sdif-open (namestring self)))
 
 (defmethod sdif-open ((self string))
   (let ((fileptr (sdif::sdif-open-file self :eReadFile)))
-    (when (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))
-      fileptr)))
+    (if (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))
+      fileptr
+      (om-beep-msg "Error reading SDIF file"))
+    ))
 
 ;;; useless
 (defmethod sdif-close ((self t) ptr)
@@ -162,18 +167,17 @@ Lock the box ('b') to keep the current file.
   (let ((name (search-file-for-load path))
         (rep (make-instance 'sdifFile)))
     (setf (filepathname rep) name)
-    (when name
-    (if (probe-file name)
+    (if (and name (probe-file name))
         (if (sdif::sdif-check-file (namestring name))
             (let ((fileptr (sdif::sdif-open-file (namestring name) :eReadFile)))
               (om-print (string+ "Loading SDIF file : " (om-namestring name)))
               (if (and fileptr (not (sdif::sdif-null-ptr-p fileptr)))
                   (init-description rep name fileptr)
-                (om-beep-msg (format nil "Error at opening the file ~D" name))
+                (om-beep-msg (format nil "Error at opening the file '~A'" name))
                 ))
-          (om-beep-msg (format nil "File ~s is not an SDIF file !" name)))
-      (om-beep-msg (format nil "File ~s does not exist !" name)))
-    rep)))
+          (om-beep-msg (format nil "File '~A' is not a valid SDIF file !" name)))
+      (om-beep-msg (format nil "File '~A' does not exist !" path)))
+    rep))
 
 
 (defmethod get-obj-from-file ((type (eql 'sdif)) filename)

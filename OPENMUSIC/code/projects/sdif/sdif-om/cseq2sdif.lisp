@@ -256,8 +256,7 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
          (mrk-partials (make-hash-table)) (trc-partials (make-hash-table))
           bmat emat pmat
           (ptrfile (sdif-open self)))
-     (if (null ptrfile) 
-         (om-beep-msg (string+ "NULL POINTER FOR SDIF-FILE: " (filepathname self)))
+     (when ptrfile 
        (let (nextframe) 
          (sdif::SdifFReadGeneralHeader ptrfile)
          (sdif::SdifFReadAllASCIIChunks ptrfile)
