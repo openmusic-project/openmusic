@@ -204,6 +204,13 @@ Press 'space' to play/stop the sound file.
   (and (om-sound-file-name self)
        (get-om-sound-data (om-sound-file-name self) track)))
 
+
+(defmethod get-sound-file ((self pathname)) self)
+(defmethod get-sound-file ((self string)) (pathname self))
+(defmethod get-sound-file ((self sound)) (get-sound-file (om-sound-file-name self)))
+(defmethod get-sound-file ((self t)) nil)
+
+
 (defparameter *default-sound-player* :om-audio)
 
 (defmethod default-edition-params ((self sound))
@@ -251,6 +258,9 @@ Press 'space' to play/stop the sound file.
 (defmethod! set-channel ((self sound) chan)
   (setf (tracknum self) chan))
  
+
+
+
 #|
 (defmethod copy-container ((self sound) &optional (pere ()))
   (let ((snd (if (om-sound-file-name self) 
