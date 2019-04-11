@@ -195,7 +195,7 @@
      (draw-connection self t) t))
   
 (defmethod new-color-connection ((self c-connection))
-   (setf (ccolor self) (mod (+ (ccolor self) 1) 16))
+   (setf (ccolor self) (mod (1+ (ccolor self)) 17)) ;; 0 and [1-16] are supported
    (setf (nth 3 (connected? (object (nth (index self) (inputframes (thebox self))))))
          (ccolor self))
    (draw-connection self t))
