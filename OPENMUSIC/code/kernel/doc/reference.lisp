@@ -422,12 +422,12 @@ P,UL,LI, TD {
 ;;; USER LIBRARIES
 
 (defun lib-ref-path (lib)
-  (make-pathname :directory (append (pathname-directory (lib-pathname lib)) '("resources" "reference"))
+  (make-pathname :directory (append (pathname-directory (lib-pathname lib)) '("reference-pages"))
                  :host (pathname-host (lib-pathname lib)) :device (pathname-device (lib-pathname lib))))
   
 (defmethod lib-ref-location ((self omclass))
   (let* ((libname (lib-class-p self))
-        (lib (and libname (exist-lib-p libname))))
+         (lib (and libname (exist-lib-p libname))))
     (when lib (lib-ref-path lib))))
 
 (defmethod lib-ref-location ((self omgenericfunction))
