@@ -20,3 +20,5 @@
 /OPENMUSIC/resources/lib/linux/OMAudioLib.so
 /omaudiolib/Builds/
 codesign-om6
+
+docs/_site/*
