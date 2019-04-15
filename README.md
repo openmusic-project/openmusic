@@ -11,6 +11,6 @@ See also the main OpenMusic page: http://repmus.ircam.fr/openmusic/
 
 ---------
 
-Designed and developed by the IRCAM [Music Representation research group](repmus.ircam.fr)
+Designed and developed by the IRCAM [Music Representation research group](http://repmus.ircam.fr)
 
 © 1998 - 2018 Carlos Agon, Gérard Assayag, Jean Bresson.
