@@ -109,7 +109,6 @@
    (t (get-denom-other durtot num))))
 
 
-
 (defmethod get-denom ((type t) (num t) ))
 
 ;===Binaire

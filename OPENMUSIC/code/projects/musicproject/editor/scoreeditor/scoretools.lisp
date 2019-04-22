@@ -1301,14 +1301,12 @@
 
 
 
-
 ;=========================================
 (defclas grap-measure (grap-container) 
    ((metric :initform nil)))
 
 (defmethod grap-measure-p ((self grap-measure)) t)
 (defmethod grap-measure-p ((self t)) nil)
-
 
 (defmethod make-graph-ryth-obj ((self measure) top staffsys linespace  scale sel pere durtot &optional ryth)
    (declare (ignore ryth))
@@ -1477,7 +1475,7 @@
                              :durtot durtot
                              :headchar (first symb-info)
                              :points (second symb-info)
-                             :beams-num  beams-num
+                             :beams-num beams-num
                              :propre-group (if (listp beams) (second beams))
                              :main-point (list 0 (round (+ (car delta-y) ypos)))
                              :parent pere
@@ -1773,6 +1771,7 @@
     (chiflevel :initform nil)
     (dirgroup :initform nil)))
 
+
 ;----Main
 (defmethod make-graph-ryth-obj ((self group)   top staffsys linespace  scale sel pere durtot &optional ryth)
    (let* ((group-ratio (get-group-ratio self))
@@ -1788,31 +1787,35 @@
                        :reference self
                        :parent pere))
      
-     (setf (numdenom new-group)  (cond
-                                  ((not group-ratio) nil)
-                                  ((= sympli 1) nil)
-                                  (t  (reduce-num-den (list num denom)))))    ;;; kh 10/2016 add reduce-num-den
+     (setf (numdenom new-group) (cond
+                                 ((not group-ratio) nil)
+                                 ((= sympli 1) nil)
+                                 (t  (reduce-num-den (list num denom)))))   ;;; kh 10/2016 add reduce-num-den
      
      (setf (inside new-group) (flat ;;; FLAT or not flat ?
                                (loop for item in (inside self) 
                                     for i = 0 then (+ i 1)
                                     collect
-                                    (let ((newchord (make-graph-ryth-obj item top staffsys linespace  scale sel new-group 
-                                                                         (if (not group-ratio) 
-                                                                           (let* ((dur-obj (/ (/ (extent item) (qvalue item)) 
-                                                                                              (/ (extent self) (qvalue self)))))
-                                                                             (* dur-obj durtot))
-                                                                           (let* ((operation (/ (/ (extent item) (qvalue item)) 
-                                                                                                (/ (extent self) (qvalue self))))
-                                                                                  (dur-obj (numerator operation)))
-                                                                             (setf dur-obj (* dur-obj (/ num (denominator operation))))
-                                                                             (* dur-obj unite)))
+                                    (let ((newchord (make-graph-ryth-obj 
+                                                     item top staffsys linespace  scale sel new-group 
+                                                     (if (not group-ratio) 
+                                                                           
+                                                         (let* ((dur-obj (/ (/ (extent item) (qvalue item)) 
+                                                                            (/ (extent self) (qvalue self)))))
+                                                           (* dur-obj durtot))
+                                                                           
+                                                       (let* ((operation (/ (/ (extent item) (qvalue item)) 
+                                                                            (/ (extent self) (qvalue self))))
+                                                              (dur-obj (numerator operation)))
+                                                         (setf dur-obj (* dur-obj (/ num (denominator operation))))
+                                                         (* dur-obj unite))
+                                                       )
                                                                          
-                                                                         (list (/ (car (second ryth)) (first ryth))
-                                                                               (nth i 
-                                                                                     ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
-                                                                                    (remove 0
-                                                                                            (cadr (second ryth))))))))
+                                                     (list (/ (car (second ryth)) (first ryth))
+                                                           (nth i 
+                                                                ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
+                                                                (remove 0
+                                                                        (cadr (second ryth))))))))
                                       newchord))
                                )
            )

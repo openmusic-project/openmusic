@@ -550,7 +550,7 @@ Extraction methods.
          (setf tree (list-first-layer tree))
          (setf tree (add-ties-to-tree tree))
          ;(setf tree (normalize-tree-voice  tree))
-         (setf (slot-value self 'tree)   tree)))
+         (setf (slot-value self 'tree) tree)))
      :PropagateExtent PropagateExtent)
     (unless InternalCall
       (set-relative-offset self)
