@@ -855,14 +855,21 @@
            
            (#\SPACE (editor-play/stop (editor self)))
            
-           (:om-key-esc
-            (when (selection? self) (toggle-selection self))
-	    (let ()
-              (editor-stop (editor self))
-              (when (recording (editor self))
-                (stop-recording (editor self))
-                (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil))))
-
+           (:om-key-esc 
+            ;; not so good: the escape key serves both to stop the player and toggle notes/rests....
+            (if (and (selection? self)
+                     (idle-p (player (editor self))))
+                
+                (toggle-selection self)
+            
+              (let ()
+                (editor-stop (editor self))
+                (when (recording (editor self))
+                  (stop-recording (editor self))
+                  (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)))
+              )
+            )
+            
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
            (#\h (show-help-window (format nil "Commands for ~A Editor" 
