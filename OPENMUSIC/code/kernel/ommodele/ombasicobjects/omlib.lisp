@@ -138,6 +138,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
               (show-message-win (string+ "Loading library " (name self) (if (version self) (string+ " - v. " (number-to-string (version self)))  "")))
               (load (lib-pathname self))
               (load-lib-pictures self)
+              (ignore-errors (gen-lib-reference self))
               (hide-message-win)
               (setf (loaded? self) t)
               ))
