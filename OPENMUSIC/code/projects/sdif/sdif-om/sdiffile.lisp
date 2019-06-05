@@ -826,8 +826,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                                                         :signature (string sig)
                                                         :FTime time))
                               ;(sdif::sdif-set-pos ptrfile (fourth item))
-                              
-                              
+                          
                           (loop ;for mat in (fifth item) for mn = 0 then (+ mn 1) do
                                  for m from 0 to (1- nbmat) do
                                  (multiple-value-bind (sig nrows ncols size pos)

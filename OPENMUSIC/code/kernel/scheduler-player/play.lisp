@@ -53,7 +53,7 @@
 (defmethod* Play ((self simple-container) &key (player nil))
    (call-next-method)
    (when (play-obj? self)
-     (player-schedule  *general-player*
+     (player-schedule *general-player*
                       self 
                       (or player (car (players-for-object self))) 
                       :at (get-player-time *general-player*)))

@@ -154,7 +154,7 @@ If <x-list> and <y-list> are not of the same length, the last step in the shorte
   :icon 241 
   :doc "Sets the color of <self> with <color>.
 
-If <new?> the finction will retrun a new colored object; otherwise it will change the clor of <self>.
+If <new?> the function will retrun a new colored object; otherwise it will change the color of <self>.
 
 If <color> is :random, will choose a random color.
 "
