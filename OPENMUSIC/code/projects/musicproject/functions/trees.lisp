@@ -442,10 +442,9 @@ Converts all rests in <tree> (a rhytm tree, VOICE or POLY object) into ties (i.e
          (tempo1 
           (if (atom tempo) tempo (cadar tempo)));pour le moment...
          (tree (tietree (tree self)))
-         (verynewself (setf newself (make-instance 'voice :tree tree :chords (chords self)))))
-    (progn 
-      (change-tempo verynewself tempo1)
-      verynewself)))
+         (verynewself (setf newself (make-instance 'voice :tree tree :chords (chords self)
+                                                   :tempo tempo1))))
+    verynewself))
 
 (defmethod! tietree ((self poly))
   (let* ((voices (mapcar #'(lambda (x) (tietree x))
@@ -504,17 +503,15 @@ Converts all rests to notes.
                      (pop list))))))
 
 
-
-
+(defvar *tree-index-count* -1)
 
 (defun trans-note-index (treeobjlist)
   "puts index only on expressed notes and not on floats or rests (for filtering purposes)."
-(if (atom treeobjlist)
-  (if  (and (typep treeobjlist 'treeobj) (integerp (tvalue treeobjlist)) (plusp (tvalue treeobjlist)))
-    (setf (tindex treeobjlist) (incf n)) treeobjlist)
-    (list (first treeobjlist) (mapcar 'trans-note-index (second treeobjlist)))))
-
-
+  (if (atom treeobjlist)
+      (if (and (typep treeobjlist 'treeobj) (integerp (tvalue treeobjlist)) (plusp (tvalue treeobjlist)))
+          (setf (tindex treeobjlist) (incf *tree-index-count*)) 
+        treeobjlist)
+    (list (first treeobjlist) (mapcar #'trans-note-index (second treeobjlist)))))
 
 (defmethod! filtertree ((tree t) (places list))
    :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))) (0 1))
@@ -523,12 +520,13 @@ Converts all rests to notes.
    :doc "
 Replaces expressed notes in given positions from <places> with rests.
 "
-   (setf n -1)
+   (setf *tree-index-count* -1)
    (let* ((liste (if (typep tree 'voice) (tree tree) tree))
-          (tree2obj (trans-tree liste))
-          (tree2o (trans-note-index tree2obj))
-          (tree2objclean (remove-if 'numberp (flat tree2obj)))
-          (treeobjinverted (transform-notes-flt tree2objclean places )))
+          (tree2obj (trans-tree liste)))
+
+     (trans-note-index tree2obj)
+     (transform-notes-flt (remove-if 'numberp (flat tree2obj)) places)
+     
      (trans-obj tree2obj)))
 
 
