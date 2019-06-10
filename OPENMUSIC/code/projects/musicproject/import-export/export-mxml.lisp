@@ -107,18 +107,34 @@
     (list num denom (format nil "~A" (cadr (find unite *note-types* :key 'car))))))
 |#
 
+;;; ??
+(defmethod getnotetype ((self om::group))
+  (let* ((tree (om::tree self))
+         (real-beat-val (/ 1 (om::fdenominator (first tree))))
+         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
+         (dur-obj-noire (/ (om::extent self) (om::qvalue self)))
+         (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
+         (dur (* symb-beat-val factor))
+         (durtot (if (listp dur) (car dur) dur))
+         (num (or (om::get-group-ratio self)  (om::extent self)))
+         (denom (om::find-denom num durtot))
+         (unite (/ durtot (if (listp denom) (second denom) denom)))) 
+    (format nil "~A" (cadr (find unite *note-types* :key 'car)))
+    ))
+
+
 (defmethod getratiogroup ((self om::group))
-  (if (singelton-group? self) (list 1 1) ;;;when a group is in fact a single note ! 
+  (if (singelton-group? self) (list 1 1) ;;; when a group is in fact a single note 
     (let* ((allparents (reverse (cdr (getdemall self))))
            (dur (get-dur-group self))
-           (num (om::get-group-ratio self))) ;;;check definition of get-group-ratio
+           (num (om::get-group-ratio self))) ;;; check definition of get-group-ratio
       (if (not allparents) 
           (let* ((denom (findenom num dur)))
             (if (listp denom) denom
-              (list num (findenom num dur)))) ;;;;a voir !!!!!!!
+              (list num (findenom num dur)))) ;;; a voir !!!!!!!
         (let* ((fact (get-dur-group self))
                (ratios (loop for i in allparents
-                             do (setf fact (* fact  (lst->ratio (getratiogroup i))))));;; donne le facteur accumule des nested tup
+                             do (setf fact (* fact  (lst->ratio (getratiogroup i)))))) ;;; donne le facteur accumule des nested tup
                (denom (findenom num fact)))
              
           (if (listp denom) 
@@ -169,8 +185,9 @@
   (let* ((buf (om::parent self))
          (rep '()))
     (loop while (om::group-p buf)
-          do (progn 
-               (push (getratiogroup buf) rep)
+          do (let ((ratiogroup (getratiogroup buf)))
+               (push (list (car ratiogroup) (cadr ratiogroup) (getnotetype buf))
+                     rep)
                (setf buf (om::parent buf))))
     rep))
 
@@ -200,8 +217,7 @@
 "Returns the duration of measure * whole note.
 durtot etant la duree du group parent"
   (let* ((ext (om::extent self))
-         (qval (om::qvalue self))
-         )
+         (qval (om::qvalue self)))
     (/ ext (* qval 4))))
 
 
