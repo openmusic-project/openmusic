@@ -720,6 +720,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 
 
 (defmethod cons-xml-expr ((self om::group) &key free key (approx 2) part)
+  
   (let* ((durtot free)
          (cpt (if (listp free) (cadr free) 0))
          (num (or (om::get-group-ratio self) (om::extent self)))
@@ -755,7 +756,8 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                                      (/ (om::extent self) (om::qvalue self))))
                                        (dur-obj (* num operation))
                                        (tmp (multiple-value-list 
-                                             (cons-xml-expr obj :free (list (* dur-obj unite) cpt))))
+                                             (cons-xml-expr obj :free (list (* dur-obj unite) cpt)
+                                                            :approx approx :part part)))
                                        (exp (car tmp)))
                                   
                                   (when (and (cadr tmp) (> (cadr tmp) depth))
@@ -880,12 +882,14 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
           (if (= 1 (length key))
               ;;; SAME KEY FOR ALL VOICES
               (loop for v in voices
-                    for i = 1 then (+ i 1) append 
+                    for i = 1 then (+ i 1) 
+                    append 
                     (cons-xml-expr v :part i :key (car key) :approx approx))
             ;;; EACH VOICE HAS A KEY
             (loop for v in voices 
                   for i = 1 then (+ i 1)
-                  for k in key append
+                  for k in key 
+                  append
                   (cons-xml-expr v :part i :key k :approx approx)))
           "</score-partwise>")))
   
