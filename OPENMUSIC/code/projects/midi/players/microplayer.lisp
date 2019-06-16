@@ -261,7 +261,6 @@
 (add-external-pref-module 'microplayer)
 
 (defmethod get-external-name ((module (eql 'microplayer))) "MicroPlayer")
-(defmethod get-external-icon ((module (eql 'microplayer))) 950)
 
 (defmethod get-external-module-vals ((module (eql 'microplayer)) modulepref) (get-pref modulepref :microplay-options))
 (defmethod get-external-module-path ((module (eql 'microplayer)) modulepref) (get-pref modulepref :microplay-path))

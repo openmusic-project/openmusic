@@ -792,7 +792,6 @@
     (append rep saved)))
 
 (defmethod get-external-name ((module t)) "")
-(defmethod get-external-icon ((module t)) 642)
 
 (defmethod save-external-prefs ((module t)) nil)
 (defmethod put-external-preferences ((module t) modulepref) nil)
@@ -893,7 +892,6 @@
 										(let ((rep (show-external-prefs-dialog mod (get-external-module-vals mod modulepref))))
 										  (when rep
 										    (set-external-module-vals mod modulepref rep))))
-;;;:iconid (get-external-icon item))
                                  
 								 )))
                 
@@ -904,8 +902,6 @@
 	       ))
       thescroll))
 
-
-; (get-external-icon 'orchidee)
 
 ;(setf *p* (om-choose-file-dialog))
 ;(find-true-external *p*)

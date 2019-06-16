@@ -153,7 +153,6 @@
 (add-external-pref-module 'multiplayer)
 
 (defmethod get-external-name ((module (eql 'multiplayer))) "MultiPlayer")
-(defmethod get-external-icon ((module (eql 'multiplayer))) 950)
 
 (defmethod get-external-module-vals ((module (eql 'multiplayer)) modulepref) (get-pref modulepref :multiplayer-options))
 (defmethod get-external-module-path ((module (eql 'multiplayer)) modulepref) (get-pref modulepref :multiplayer-path))
