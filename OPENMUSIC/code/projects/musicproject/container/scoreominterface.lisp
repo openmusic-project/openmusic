@@ -342,10 +342,10 @@ when :
                       collect (select voice start end))))
 
 (defmethod* select ((self chord-seq) (start number) (end number))
-   (unless (and (>= start 0)
-                (< start end)
-                (<= end (get-obj-dur self)))   ;;; replaced extent->ms
-     (Om-Message-abort (format nil "select : Bad start/end parameters: start: ~A, end: ~A, objdur: ~A" start end (get-obj-dur self))))
+  
+  (when (> start end)
+    (om-beep-msg (format nil "select : Bad start/end parameters: start: ~A, end: ~A" start end)))
+
    (let ((chords 
           (loop for onset in (Lonset self)
                 for chord in (inside self)
