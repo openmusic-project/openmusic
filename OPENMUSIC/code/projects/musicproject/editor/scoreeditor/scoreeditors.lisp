@@ -1722,16 +1722,18 @@
                    (loop for item in (selection? self) do
                          (set-offset-ms item (value x)))
                    (update-panel self))))
-        ((and (string-equal (obj-mode self) "chord") (equal slotmode 'onset))
+        ((equal slotmode 'onset)
+	 (enable-numbox control (if (string-equal (obj-mode self) "chord") t nil))
          (setf (min-val control) 0)
          (setf (max-val control) (+ (offset->ms firstnote self) 100000))
-         (set-value control (offset->ms firstnote self))
-	 (setf (afterfun control) 
-	       #'(lambda (x)  
-		   (loop
-		      for item in (selection? self)
-		      do (set-chords-offset self item (value x)))))
-         (update-panel self))
+	 (set-value control (offset->ms firstnote self))
+	 (setf (afterfun control)
+	       (progn
+		 #'(lambda (x)
+		     (loop
+			for item in (selection? self)
+			do (set-chords-offset self item (value x)))
+		     (update-panel self)))))
 	((equal slotmode 'dyn)
          (setf (min-val control) 0)
          (setf (max-val control) 127)
