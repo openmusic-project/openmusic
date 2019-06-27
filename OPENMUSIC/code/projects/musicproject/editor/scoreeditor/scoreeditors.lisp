@@ -483,7 +483,7 @@
 
 (defmethod GET-staff-LIST ((self omcontrols-view)) *chord-satff-om*)
 (defmethod GET-slot-LIST ((self omcontrols-view)) 
-  '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port) ("offset" offset)))
+  '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port) ("offset" offset) ("onset" onset)))
 
 (defmethod GET-tone-LIST ((self omcontrols-view)) (editor-tone-list))
 
@@ -1722,7 +1722,17 @@
                    (loop for item in (selection? self) do
                          (set-offset-ms item (value x)))
                    (update-panel self))))
-        ((equal slotmode 'dyn)
+        ((and (string-equal (obj-mode self) "chord") (equal slotmode 'onset))
+         (setf (min-val control) 0)
+         (setf (max-val control) (+ (offset->ms firstnote self) 100000))
+         (set-value control (offset->ms firstnote self))
+	 (setf (afterfun control) 
+	       #'(lambda (x)  
+		   (loop
+		      for item in (selection? self)
+		      do (set-chords-offset self item (value x)))))
+         (update-panel self))
+	((equal slotmode 'dyn)
          (setf (min-val control) 0)
          (setf (max-val control) 127)
          (set-value control (vel firstnote))
