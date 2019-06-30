@@ -85,7 +85,6 @@
       (print "Please instanciate the audio mixer first"))
     bpf))
 
-(interpolate (list 0 50) (list 0 1) 5)
 
 (defmethod prepare-to-play ((self (eql :bpfplayer)) (player omplayer) (object mixer-automation) at interval params)
   (when (or (track object) (and (parameter object) (string= (string-downcase (parameter object)) "presets")))
