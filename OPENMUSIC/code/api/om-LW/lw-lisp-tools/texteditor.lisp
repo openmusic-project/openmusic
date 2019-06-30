@@ -805,7 +805,9 @@
       (call-editor ep (list 'editor::undo-command buffer)))))
 
 
-(defvar *def-text-edit-font* nil)
+(defvar *def-text-edit-font* 
+  #+linux(gp::make-font-description :family "Liberation Mono" :size 11)
+  #-linux(gp::make-font-description :family "Consolas" :size 11))
 
 (defmethod change-text-edit-font ((self om-text-editor))
   (with-slots (ep) self
