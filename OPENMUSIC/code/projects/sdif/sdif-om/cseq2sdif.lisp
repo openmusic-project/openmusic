@@ -381,14 +381,14 @@ Data is stored as a sequence of 1TRC frames containing 1TRC matrices.
      ))
 
 
-(defmethod! GetSDIFChords ((self sdiffile))
-   :indoc '("an SDIF file")
+(defmethod! GetSDIFChords ((self sdiffile) &key stream)
+   :indoc '("SDIF file" "stream ID")
    :doc "Returns a list of chords data from an sdif file (using 1MRK / 1TRC frames).
 
 Chords are formatted as a list of (pitch [Hz]  onset [s]  duration [s]  velocity [lin]).
 "
    :icon 639
-   (let ((rawdata (chord-seq-raw-data self 'all)))
+   (let ((rawdata (chord-seq-raw-data self 'all stream)))
      (mapcar #'(lambda (partial)
                  (if (consp (car partial))
                      ;;; trc
@@ -408,14 +408,14 @@ Chords are formatted as a list of (pitch [Hz]  onset [s]  duration [s]  velocity
     (GetSDIFChords self))        
 
 
-(defmethod! sdif->chord-seq ((self sdiffile))
-   :indoc '("an SDIF file")
+(defmethod! sdif->chord-seq ((self sdiffile) &key stream)
+   :indoc '("SDIF file" "stream ID")
    :doc "Generates a CHORD-SEQ instance from the 1TRC or 1MRK frame data in <self>.
 
 Internally calls and formats data from GetSDIFChords.
 "
    :icon 639
-   (let* ((rawdata (sort (GetSDIFChords self) '< :key 'cadr))
+   (let* ((rawdata (sort (GetSDIFChords self :stream stream) '< :key 'cadr))
           (chords nil) (cseqdata nil))
      (loop for note in rawdata do
            ;;; note = (pitch onset dur vel)
