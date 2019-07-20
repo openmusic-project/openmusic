@@ -98,20 +98,22 @@
 ;print in n pages
 (defvar *default-printer-port* nil)
 (defmethod om-print-document ((self om-graphic-object)) 
-  (let* ((printer (capi:print-dialog :print-pages-p nil
-                                     :print-copies-p t))
-         (printer-metrics (get-printer-metrics printer))
-         (dpi-x (printer-metrics-dpi-x printer-metrics))
-         (dpi-y (printer-metrics-dpi-y printer-metrics)))
+  (let ((printer (capi:print-dialog :print-pages-p nil
+                                    :print-copies-p t)))
     (when printer
-      (capi:with-print-job (printer-port :printer printer)
-        (multiple-value-bind
-            (page-width page-height)
-            (capi:get-page-area printer)
-          (let* ((page-count (om-compute-page-number self (om-make-point page-width page-height))))
-            (capi:with-document-pages (page 1 page-count) 
-              (let ((*default-printer-port* printer-port))
-                (om-print-view self (om-make-point page-width page-height) page page-count)))))))))
+      (let* (;; (printer-metrics (get-printer-metrics printer))
+             ;; (dpi-x (printer-metrics-dpi-x printer-metrics))
+             ;; (dpi-y (printer-metrics-dpi-y printer-metrics))
+	     )
+	(capi:with-print-job (printer-port :printer printer)
+          (multiple-value-bind
+		(page-width page-height)
+              (capi:get-page-area printer)
+            (let* ((page-count (om-compute-page-number self (om-make-point page-width page-height))))
+              (capi:with-document-pages (page 1 page-count) 
+		(let ((*default-printer-port* printer-port))
+                  (om-print-view self (om-make-point page-width page-height) page page-count))))))))))
+
 
 
 (defmethod om-compute-page-number ((view om-graphic-object) page-size )
