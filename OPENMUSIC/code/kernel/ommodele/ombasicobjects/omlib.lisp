@@ -406,6 +406,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
 (defmethod get-documentation ((self OMLib))
   (def-lib-doc-string self))
   
+
 (defun load-user-libs (&optional really-load)
   (let ((user-elements 
          (remove nil 
@@ -422,21 +423,22 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
     (setf *user-libs* nil)  
 
     (mapc #'(lambda (pathname)
-            (let* ((newlib (omNG-make-new-lib pathname))
-                   (loaded (find (name newlib) really-load :test 'string-equal :key 'car)))
-              (when loaded
-                (setf really-load (remove (name newlib) really-load :test 'string-equal :key 'car))
-                (setf newlib (cadr loaded))
-                ;; in case the lib was just moved
-                (relocate-lib-info newlib pathname)
-                (reload-om-lib newlib))
-
               
-              (AddPackage2Pack newlib *library-package*)
-              (push newlib *user-libs*)
-              ))
+              (let* ((newlib (omNG-make-new-lib pathname))
+                     (loaded (find (name newlib) really-load :test 'string-equal :key 'car)))
+                
+                (when loaded
+                  (setf really-load (remove (name newlib) really-load :test 'string-equal :key 'car))
+                  (setf newlib (cadr loaded))
+                  ;; in case the lib was just moved
+                  (relocate-lib-info newlib pathname)
+                  (reload-om-lib newlib))
+                
+                (AddPackage2Pack newlib *library-package*)
+                (push newlib *user-libs*)
+                ))
           user-elements)
-
+    
   *user-libs*))
 
 
