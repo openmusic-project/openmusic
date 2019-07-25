@@ -159,5 +159,25 @@ If <samplerate> is NIL, the OM default sample rate is used to calculate the samp
     (mapcar #'(lambda (s) (ms->sec s)) n))
 
 
+;;; SEC or MS / SECONDS
+(defmethod* to-sec ((n number))
+  :icon 'conversion
+  :initvals '(0)
+  :indoc '("seconds or milliseconds")
+  :numouts 1
+  :doc "If <n> is float, leave as it is, otherwise convert ms to seconds "
+  (if (floatp n) n (* n 0.001)))
+
+(defmethod* to-sec ((n list)) (mapcar #'(lambda (s) (to-sec s)) n))
+
+(defmethod* to-ms ((n number))
+  :icon 'conversion
+  :initvals '(0)
+  :indoc '("seconds or milliseconds")
+  :numouts 1
+  :doc "If <n> is integer, leave as it is, otherwise convert sec to ms"
+  (if (floatp n) (round (* n 1000)) n))
+
+(defmethod* to-ms ((n list)) (mapcar #'(lambda (s) (to-ms s)) n))
 
 
