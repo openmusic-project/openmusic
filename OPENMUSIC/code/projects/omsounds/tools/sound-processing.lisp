@@ -150,10 +150,10 @@
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-NORMALIZE/////////
-(defmethod! sound-normalize ((s om-sound-data) &optional (method 0))
+(defmethod! sound-normalize ((s om-sound-data) &key (level 0) (method 0))
             :icon 109
-            :initvals '(nil 0)
-            :menuins '((1 (("Peak" 0)
+            :initvals '(nil 0 0)
+            :menuins '((2 (("Peak" 0)
                            ("Peak RMS / Hard limiting" 1))))
             :indoc '("a sound" "a normalization method")
             "Normalizes a sound <s>.
@@ -179,16 +179,19 @@
               ;(declare (type single-float peak peak-rms gain x rms))
               ;(declare (type list tampon))
 
-                  (cond ((= method 0)
-                         (progn 
-                           (dotimes (i size2)
-                             (setf x (abs (fli:dereference (buffer s) :index i)))
-                             (if (> x peak) (setf peak x)))
+                  (cond 
+                   
+                   ((= method 0)
+                    (progn 
+                      (dotimes (i size2)
+                        (setf x (abs (fli:dereference (buffer s) :index i)))
+                        (if (> x peak) (setf peak x)))
                            (if (> peak 0)
                                (progn
-                                 (setf gain (/ 1.0 peak))
+                                 (setf gain (/ (if (plusp level) level (db->lin level)) peak))
                                  (dotimes (i size2)
                                    (setf (fli:dereference b2 :index i) (* gain (fli:dereference (buffer s) :index i))))))))
+                      
                         ((= method 1)
                          (progn
                            (setf indx 0)
@@ -222,8 +225,8 @@
 
 ;;; USE THIS AS DEFAULT NORMALIZER..
 (defmethod general-normalize ((norm (eql :om)) inpath outpath val &optional resolution)
-  (om-print "Warning: OM normlizer does not take into account the normalization value.")
-  (let ((normalized (sound-normalize (get-om-sound-data inpath))))
+  ;; (om-print "Warning: OM normlizer does not take into account the normalization value.")
+  (let ((normalized (sound-normalize (get-om-sound-data inpath) :level val)))
     (audio-io::om-save-buffer-in-file (buffer normalized) (namestring outpath) 
                                      (size normalized) (nch normalized) (sr normalized) 
                                      (or resolution *audio-res*) *def-snd-format*)

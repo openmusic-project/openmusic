@@ -396,7 +396,6 @@ Ex. (om-min '(4 3 2 1) '(1 2 3 4))  => (1 2 2 1)
 Ex. (list-min '(2 3 1 4))  => 1"
   (and (remove nil self) (list-min2 (remove nil self) MOST-POSITIVE-LONG-FLOAT)))
 
-
 (defmethod* list-min ((self t))
   self)
 
