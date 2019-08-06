@@ -217,7 +217,7 @@
                                  :sr (sr s))
                   )))
 
-(defmethod! sound-normalize ((s sound) &optional (method 0))
+(defmethod! sound-normalize ((s sound) &key (level 0 (method 0))
             ;(declare (type fixnum method))
             (sound-normalize (get-om-sound-data s) method))
 
