@@ -73,8 +73,8 @@
    (position (string label) (get-all-initargs-of-class class) :test 'string-equal :key 'name))
 
 
-(defmethod initialize-instance :after ((self internal-array) &rest l)
-  (declare (ignore l))
+(defmethod initialize-instance :after ((self internal-array) &rest args)
+  (declare (ignore args))
   (set-data self))
 
 (defmethod set-data ((self internal-array))

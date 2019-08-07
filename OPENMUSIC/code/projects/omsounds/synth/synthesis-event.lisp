@@ -40,6 +40,11 @@
            ((action-time :initform 0 :accessor action-time))
            (:icon 603))
 
+(defmethod initialize-instance :after ((self synthesisevt) &rest args)
+  (let ((at (getf args :action-time)))
+    (when at (setf (slot-value self 'action-time) at)))
+  (set-data self))
+
 (defmethod omng-copy ((self SynthesisEvt))
   `(let ((rep ,(call-next-method)))
      (setf (action-time rep) ,(action-time self))
