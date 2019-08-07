@@ -934,8 +934,10 @@ The modifications are immediately stored in the original array.
        self)
      (nth LineId (val-list self))))
 
-(defmethod* comp-field ((self component) (LineId string) &optional val)
-   (comp-field self (label2index self LineId) val))
+(defmethod* comp-field ((self component) (lineid string) &optional val)
+  (let ((i (label2index self LineId)))
+    (if i (comp-field self i val)
+      (error "Cannot find slot ~A in array !" lineid))))
 
 
 
