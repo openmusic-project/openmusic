@@ -45,6 +45,13 @@
     (when at (setf (slot-value self 'action-time) at)))
   (set-data self))
 
+
+(defmethod initialize-instance :after ((self synthesisevt) &rest args)
+  (let ((uf (getf args :user-fun)))
+    (when uf (setf (slot-value self 'user-fun) uf)))
+  (set-data self))
+
+
 (defmethod omng-copy ((self SynthesisEvt))
   `(let ((rep ,(call-next-method)))
      (setf (action-time rep) ,(action-time self))
