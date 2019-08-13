@@ -81,7 +81,7 @@
   (setf (data self)
         (append (mapcar #'(lambda (slot) 
                             (let ((ctrl (slot-value self (internp (name slot) (slot-package slot)))))
-                              (get-array-data self ctrl (numcols self) (thetype slot))))
+                              (get-array-data  self ctrl (numcols self) (thetype slot))))
                         (get-all-initargs-of-class (type-of self)))
                 (mapcar #'(lambda (control)
                             (let ((ctrl (cadr control)))
