@@ -257,7 +257,9 @@
                  (set-doc newfolder (or (str-with-nl (sixth wsparams)) ""))
                  (setf (omversion newfolder) (car wsparams)))
                ))
-           (setf (elements newfolder) (remove nil (mapcar #'(lambda (elt) (ws-import-element elt (mypathname newfolder))) sub-elts) :test 'equal))
+           (setf (elements newfolder) 
+                 (remove nil (mapcar #'(lambda (elt) (ws-import-element elt (mypathname newfolder))) sub-elts) 
+                         :test 'equal))
            (really-add (object self) newfolder)
            (add-object-frame newfolder self pos)
            (omNG-save-ws newfolder)
@@ -286,23 +288,24 @@
         (if (and (directoryp element) (not (systemdirectoryp element)))
             
             (let ((elements (om-directory element :files t :directories t :type '("omp" "omm" "oml" "oms"))))
-              (setf newobj (omNG-make-new-folder (name-of-directory element) (om-make-point 20 20)))
-              (setf (mypathname newobj) (make-pathname :device (pathname-device targetdir)
-                                                       :directory  (append (pathname-directory targetdir) (list (name newobj)))))
-              (om-create-directory (mypathname newobj))
-              
-              (let ((info (find "finderinfo" elements :test 'string-equal :key 'pathname-type)))
-                (when info
-                  (copy-file-in-dir info (mypathname newobj))
-                  (let ((wsparams (get-init-wsparams (mypathname newobj))))
+              (when elements 
+                (setf newobj (omNG-make-new-folder (name-of-directory element) (om-make-point 20 20)))
+                (setf (mypathname newobj) (make-pathname :device (pathname-device targetdir)
+                                                         :directory  (append (pathname-directory targetdir) (list (name newobj)))))
+                (om-create-directory (mypathname newobj))
+                
+                (let ((info (find "finderinfo" elements :test 'string-equal :key 'pathname-type)))
+                  (when info
+                    (copy-file-in-dir info (mypathname newobj))
+                    (let ((wsparams (get-init-wsparams (mypathname newobj))))
                     ;(set-finder-comment (mypathname newobj) newobj)
-                    (setf (wsparams newobj) (loop for i in (subseq wsparams 2 5) collect (eval i)))
-                    (set-doc newobj (or (str-with-nl (sixth wsparams)) ""))
-                    (setf (omversion newobj) (car wsparams)))
-                  ))
-              
+                      (setf (wsparams newobj) (loop for i in (subseq wsparams 2 5) collect (eval i)))
+                      (set-doc newobj (or (str-with-nl (sixth wsparams)) ""))
+                      (setf (omversion newobj) (car wsparams)))
+                    ))
+                
               (setf (elements newobj) (remove nil (mapcar #'(lambda (elt) (ws-import-element elt (mypathname newobj))) elements) :test 'equal)))
-          
+              )
           (when (and (stringp (pathname-name element))
                      (not (string-equal "" (pathname-name element))))
             (let ((obj (object-from-file element)))
