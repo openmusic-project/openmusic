@@ -73,15 +73,15 @@
    (position (string label) (get-all-initargs-of-class class) :test 'string-equal :key 'name))
 
 
-(defmethod initialize-instance :after ((self internal-array) &rest l)
-  (declare (ignore l))
+(defmethod initialize-instance :after ((self internal-array) &rest args)
+  (declare (ignore args))
   (set-data self))
 
 (defmethod set-data ((self internal-array))
   (setf (data self)
         (append (mapcar #'(lambda (slot) 
                             (let ((ctrl (slot-value self (internp (name slot) (slot-package slot)))))
-                              (get-array-data self ctrl (numcols self) (thetype slot))))
+                              (get-array-data  self ctrl (numcols self) (thetype slot))))
                         (get-all-initargs-of-class (type-of self)))
                 (mapcar #'(lambda (control)
                             (let ((ctrl (cadr control)))
@@ -934,8 +934,10 @@ The modifications are immediately stored in the original array.
        self)
      (nth LineId (val-list self))))
 
-(defmethod* comp-field ((self component) (LineId string) &optional val)
-   (comp-field self (label2index self LineId) val))
+(defmethod* comp-field ((self component) (lineid string) &optional val)
+  (let ((i (label2index self LineId)))
+    (if i (comp-field self i val)
+      (error "Cannot find slot ~A in array !" lineid))))
 
 
 
