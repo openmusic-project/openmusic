@@ -5267,7 +5267,7 @@
 (defmethod print-score-header ((self scorePanel) y pg-no howmany)
  (when *print-score-header*
    (let ((obj (object (editor self))))
-     (om-draw-string 0 y (format nil "OpenMusic----- page ~D/~D -----~D"  pg-no howmany (system::date-string))))))
+     (om-draw-string 0 y (format nil "OpenMusic----- page ~D/~D -----~D"  pg-no howmany (om-get-date))))))
 
 
 (defmethod om-print-view ((self scorePanel) pg-size pg-no hm )

@@ -129,24 +129,6 @@ linear values is returned."
 
 ;;;====================================
 
-;------------------------------------------------------------------
-; printdate / stringdate
-;	nicely print the current date (calling the lisp function date)
-
-(defun printdate (&optional (outchan t))
-  "Nicely print the current date (calling the lisp function get-decoded-time).
-It can send its output to another output channel if an argument is present."
-  (multiple-value-bind
-    (second minute hour date month year)
-    (get-decoded-time)
-    (format outchan "~a ~a, ~a - AT ~a:~a (~a sec)" month date year hour minute second)))
-
-(defun stringdate ()
-  "Nicely return a stream with the current date (calling the lisp function get-decoded-time)"
-  (multiple-value-bind
-    (second minute hour date month year)
-    (get-decoded-time)
-    (format () "~a ~a, ~a - AT ~a:~a (~a sec)~%"month date year hour minute second  )))
 
 ;------------------------------------------------------------------
 ; (sign a [b]) / (invert-sign a)
@@ -161,13 +143,6 @@ It can send its output to another output channel if an argument is present."
   (* -1.0 (sign num) (abs num)))
 
 ;------------------------------------------------------------------
-
-(defun closest-pwr2 (val)
-  "Return the closest larger power of two) of val, ex. 3.4 --> 4. Useful for csound audio tables."
-  (let ((size 2))
-    (loop while (> val size) do
-        (setf size (* size 2)))
-    size))
 
 
 

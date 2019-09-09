@@ -899,7 +899,6 @@ Ex. (posn-match '(10 20 30 40 50 60 70 80 90) '(3*(0) 3_6)) => (10 10 10 40 50 6
 (defmethod* posn-match ((list list) (positions integer) )
   (nth positions list))
 
-
 (defmethod do-posn-match ((self list) (positions list))
   (cond 
    ((numberp positions) (nth positions self))

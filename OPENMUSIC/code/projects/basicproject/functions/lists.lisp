@@ -109,7 +109,7 @@ Ex. (x-append '(1 2 3) 4 '(5 6 7)) => (1 2 3 4 5 6 7)
 
 (defmethod flat-once ((list list))
   (if (consp (car list))
-    (apply 'append list)  list))
+    (apply 'append list) list))
 
 (defmethod flat-one ((list list))
   (loop for item in list

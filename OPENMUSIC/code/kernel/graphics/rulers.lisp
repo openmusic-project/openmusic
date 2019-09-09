@@ -281,7 +281,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
      (cond
       ((null loop-p) (if (< i (- len 1))
                        (nth i meslist) (car (last meslist))))
-      (t  (nth (mod i len)  meslist)))))
+      (t (nth (mod i len)  meslist)))))
   
 (defmethod get-list-mes-dur ((self ruler-metric))
    (loop for mes in (meslist self)
