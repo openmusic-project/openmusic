@@ -344,9 +344,11 @@
 (defmethod get-obj-to-play ((self ombox)) (play-obj-from-value (value self) self))
 (defmethod play-obj-from-value (value box) value)
 
+(defmethod play-obj-from-value (value (box omboxinstance)) (car value))
+
 (defmethod play-boxes ((boxlist list))
   (mapcar #'(lambda (box)
-              (when (play-obj? (value box))
+              (when (play-obj? (play-obj-from-value (value box) box))
                 (player-schedule *general-player*
                                  (get-obj-to-play box)
                                  (get-edit-param box 'player) :at (get-player-time *general-player*)
@@ -363,8 +365,8 @@
 
 (defmethod stop-boxes ((boxlist list))
   (mapcar #'(lambda (box)
-              (when (play-obj? (value box))
-                (player-stop (get-edit-param box 'player) (list (value box)))
+              (when (play-obj? (play-obj-from-value (value box) box))
+                (player-stop (get-edit-param box 'player) (list (get-obj-to-play box)))
                 (setf (play-state box) nil)
                 (setf *play-boxes* (remove box *play-boxes*))
                 ))
