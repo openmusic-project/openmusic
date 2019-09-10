@@ -225,7 +225,7 @@ In this case, all internal events are sent simultaneously.
     (make-instance 'MidiEvent
                    :ev-date 0
                    :ev-ref 0
-                   :ev-type :PitchBend
+                   :ev-type :PitchWheel
                    :ev-chan (midichannel self)
                    :ev-port (midiport self)
                    :ev-fields (list (pitch-ctrl self)))
