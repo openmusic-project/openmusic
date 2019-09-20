@@ -728,7 +728,7 @@
           value refer pict)
      (cond
       ((om-maquette-abs-p (reference self))
-       (setf refer `(list 'absmaq  ',(om-save (reference self) values?)))
+       (setf refer `(list 'absmaq  ',(om-save (reference self) values?))) ;;; this should not be quoted !!
        (setf value (save-values (value self))))
       ((Maquette-p (reference self))
        (setf refer `(list 'maq  ',(list+ (get-relative-path (reference self)) 
@@ -1427,22 +1427,6 @@
        (setf (omversion newpatch) version))
      (push newpatch *loaading-stack*)
      newpatch))
-
-
-;;; from pict-compat... ??
-(defun om-load-temp-patch (name boxes connections &optional (version nil))
-   (let ((newpatch (make-instance 'OMPatchAbs :name name)))
-     (setf (boxes newpatch) nil)
-     (mapc #'(lambda (box) (omNG-add-element newpatch (eval box))) boxes)
-     (setf (boxes newpatch) (reverse (boxes newpatch)))
-     (setf (connec newpatch) (loop for i in connections collect (load-connection i)))
-     (when version
-       (setf (omversion newpatch) version))
-     (push newpatch *loaading-stack*)
-     newpatch))
-
-
-
 
 
 ;------Methods--------
