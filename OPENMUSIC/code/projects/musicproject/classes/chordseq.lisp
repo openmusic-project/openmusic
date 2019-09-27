@@ -504,7 +504,7 @@ make-quanti
                                                                    (fourth quantypar) ;bug utiliser onset
                                                                    (sixth quantypar))
                                                 :tempo (first quantypar)
-                                                :legato 0
+                                                :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq))))
                   newvoice)
               (make-instance (type-of type)
