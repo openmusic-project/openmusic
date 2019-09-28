@@ -487,7 +487,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
            (when (car (frames self))
              (update-after-evaluation (car (frames self)))
              (make-move-after (om-view-container (car (frames self))) (list (car (frames self))))
-             (when (showpict self)
+             (when (and (showpict self) (car (frames self)))
                (update-miniview (car (frames self)) (get-mus-ob self))))
            (nth num-out rep))))))
 
