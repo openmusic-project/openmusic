@@ -159,7 +159,7 @@ The range of pitch bend is between 0 and 127. 64 means no bend.
 ; POLY KEY PRESSURE
 ;===================
 
-(defmethod* polyKeypres ((vals integer) (pitch integer) (chans integer) &optional port) 
+(defmethod* polyKeypres ((val integer) (pitch integer) (chans integer) &optional port) 
    :icon 912
    :indoc '("pressure value" "target pitch" "MIDI channel (1-16)" "output port number")
    :initvals '(100 6000 1 nil)
@@ -173,7 +173,7 @@ Arguments can be single numbers or lists.
    (loop for aport in port do
          (let ((event (om-midi::make-midi-evt :type :KeyPress 
 					    :chan chans
-					    :port port
+					    :port aport
 					    :fields (list (round pitch 100) val))))
 	 (when event (midi-send-evt event)))
          ))
@@ -192,10 +192,6 @@ Arguments can be single numbers or lists.
    (loop for item in pitch
          for chan in chans do
          (polyKeypres vals item chan port)))
-
-(defmethod* polyKeypres ((vals integer) (pitch list) (chans list) &optional port)
-   (loop for val in vals do
-         (polyKeypres val pitch chans port)))
 
 (defmethod* polyKeypres ((vals list) (pitch integer) (chans list) &optional port)
    (loop for val in vals
@@ -229,7 +225,7 @@ Arguments can be can be single numbers or lists.
    (loop for aport in port do
          (let ((event (om-midi::make-midi-evt :type :ChanPress 
                                               :chan chans
-                                              :port port
+                                              :port aport
                                               :fields (list val))))
            (when event (midi-send-evt event)))
          ))
@@ -266,10 +262,6 @@ Arguments can be can be single numbers or lists.
 					      :port aport
 					      :fields (list ctrlnum val))))
            (when event (midi-send-evt event)))))
-
-(defmethod* ctrlchg ((ctrlnum integer) (val integer) (chans list) &optional port) 
-  (loop for item in chans do
-        (ctrlchg  ctrlnum val item port)))
 
 (defmethod* ctrlchg ((ctrlnum list) (val list) (chans list) &optional port) 
   (loop for ctrl in ctrlnum
