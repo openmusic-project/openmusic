@@ -319,7 +319,8 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
    )
 
 (defmethod omNG-save ((self SDIF-buffer) &optional (values? nil))
-  `(make-instance 'SDIF-buffer))
+  `(when (find-class 'SDIF-buffer nil)
+     (make-instance 'SDIF-buffer)))
   
 
 
