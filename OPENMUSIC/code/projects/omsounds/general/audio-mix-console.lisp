@@ -111,12 +111,12 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod omNG-save ((self audio-mix-console) &optional (values? nil))
   "Cons a Lisp expression that retunr a copy of self when it is valuated."
-  `(let ((rep (make-instance ',(type-of self) 
-                :nbtracks ',(nbtracks self))))
-     (setf (channels-ctrl rep) (list ,.(loop for ctrl in (channels-ctrl self) collect
-                                  (omNG-save ctrl))))
-     rep
-     ))
+  `(when (find-class ',(type-of self) nil)
+     (let ((rep (make-instance ',(type-of self) 
+                               :nbtracks ',(nbtracks self))))
+       (setf (channels-ctrl rep) (list ,.(loop for ctrl in (channels-ctrl self) collect
+                                               (omNG-save ctrl))))
+       rep)))
 
 (defmethod get-obj-dur ((self audio-mix-console)) 0)
 
