@@ -112,7 +112,7 @@ The range of pitch bend is between 0 and 127. 64 means no bend.
 (defun pitchbend-to-mc (pb)
   (- (round (* pb 400) 127) 200))
   
-;;; pb = (0-16383) 
+;;; pw = (0-16383) 
 ;;; total range = +/- 200 midicents
 (defun pitchwheel-to-mc (pw)
   (- (round (* pw 400) 16383) 200))
