@@ -37,6 +37,7 @@
   (cond ((zerop midic) 8192)
         ((minusp midic) (round (+ 8192 (* (/ midic pw-range) 8192))))
         (t (floor (+ 8192 (* (/ midic pw-range) 8191))))))
+
 ; (mc-to-pitchwheel 50)
 
 (defmethod* mc-to-pitchwheel ((midic list) &optional (pw-range 200))
