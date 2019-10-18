@@ -4,7 +4,7 @@
 /OPENMUSIC/**/*.*ufasl
 *.lisp~
 *.lisp#
-*.*~
+*~
 
 .DS_Store
 *.dmg
