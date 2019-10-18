@@ -229,7 +229,6 @@
 ;;;==========================
 ;;; SOURCE DEFINITIONS
 ;;;==========================
-; doesn't work anymore in LW 7 ?
 ;*active-finders*
 
 (print "==============================")

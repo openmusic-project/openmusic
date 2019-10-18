@@ -70,19 +70,6 @@ echo "***************************************************"
 	rm 'lib-name.lisp.tmp'
 }
 
-pack_om_libs()
-{
-	OMLIBS_RELEASE_FOLDER="$(get_abs_filename "$APP_FOLDER"/Libraries/)"
-	mkdir "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "RepMus" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Profile" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Esquisse" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Alea" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Chaos" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Situation" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "Clouds" "$OMLIBS_RELEASE_FOLDER"
-	pack_lib "LZ" "$OMLIBS_RELEASE_FOLDER"
-}
 
 # pack_app MUST have been called before..
 set_fonts()
@@ -152,9 +139,7 @@ elif	[ $1 = "-sign" ];	then	sign_release
 elif	[ $1 = "-dpd" ];	then	deliver_app; pack_app; set_fonts; create_simple_dmg
 elif	[ $1 = "-dpz" ];	then	deliver_app; pack_app; set_fonts; zip_release
 elif	[ $1 = "-lib" ];	then	pack_lib $2 $LIBS_RELEASE_FOLDER
-elif	[ $1 = "-omlibs" ];	then	pack_om_libs
-elif	[ $1 = "-om" ];		then	deliver_app; pack_app; set_fonts; sign_release; zip_release; create_simple_dmg
-elif	[ $1 = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release; pack_om_libs; create_simple_dmg
+elif	[ $1 = "-all" ];	then	deliver_app; pack_app; set_fonts; sign_release; zip_release; create_simple_dmg
 else 	
 	echo "Dont'know what to do! :("	
 	echo "Options:"
@@ -167,9 +152,7 @@ else
 	echo "-dpd = deliver, pack and create DMG"
 	echo "-dpz = deliver, pack and zip"
 	echo "-lib \"LIB_NAME\" = deliver a library in the default lib-delivery folder"
-	echo "-omlibs = deliver standard OM libraries in the OM build folder"
-	echo "-om = deliver, pack, sign, zip and create DMG"
-	echo "-all = deliver, pack, sign, zip (OM only), include libraries and create DMG"
+	echo "-all = deliver, pack, sign, zip and create DMG"
 fi
 
 exit 0
