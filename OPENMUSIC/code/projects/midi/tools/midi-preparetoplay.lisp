@@ -117,8 +117,8 @@
          (den (round (log (second (first (tree self))) 2)))
          (div 8 )   ;;; (max-div self))
          (MeasureEvent (om-midi::make-midi-evt :type :TimeSign
-                                      :ref (if voice voice 0) ;;; track shoudl maybe stay 0 always if we export to external DAWs 
-                                      :chan 0
+                                      :ref 0 ; (if voice voice 0) ;; send to 0 to read in external sequencers/DAWs (?)
+                                      :chan 0 ;;; WHANT IS THE CHANNEL OF A TIME SIGN EVENT ?
                                       :date at
                                       :fields (list num den 24 div)
                                       :port (or port *def-midi-out*))))
