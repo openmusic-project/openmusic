@@ -18,7 +18,7 @@ Designed and developed by the IRCAM [Music Representation research group](http:/
 
 ----------
 
-### Sources and Licensing
+## Sources and Licensing
 
 OpenMusic is a free software distributed under the GPLv3 license. As a Common Lisp program, the environment can be considered just as an extension of Lisp including the specific built-in features of the application. 
 
@@ -28,19 +28,52 @@ In order to contribute to the code without a LispWorks license, one must therefo
 
 ----------
 
-### Build instructions 
+## Build instructions 
 
 Creating an executable in Common Lisp means loading all the source code in the Lisp environment and build an "image" of it, i.e. another Lisp environment extended with the features defined in the code.
 It is also possible to compile and load OM source code in the Lisp environment and use it directly without saving a new image. Using OM sources therefore requires owning the adequate Lisp compiler (currently, LispWorks 7.1.2).
 
 The current OM sources can be compiled and run OM on **macOS**, **Windows** and **Linux** (see compilation instructions below) using LispWorks "Hobbyist" or "Professional" licenses.
 
-#### Loading OM in LispWorks 7.1
+### Loading OM in LispWorks 7.1
 
 - Clone OM sources from this repository
 - Launch an up-to-date LispWorks (7.1.2)
-- In LispWorks, load the file **OM 6.x/OPENMUSIC/build/build-om.lisp**    
-  Open ( _File/Open_) then load it (_File/Load_) or type in the Lisp listener: `(load [...]//OPENMUSIC/build/build-om.lisp)`     
+- In LispWorks, load the file **OPENMUSIC/build/build-om.lisp**    
+  Open ( _File/Open_) then load it (_File/Load_) or type in the Lisp listener: `(load [...]/OPENMUSIC/build/build-om.lisp)`     
   (Check on possible compilation errors on the displayed LW output)
 - Evaluate `(om::start-openmusic)`
+
+### Fonts
+
+If this is a first launch of OpenMusic, musical fonts might need to be installed in the system in order to display score objects and editors.
+
+The OM musical fonts files **omicron.ttf**, **omheads.ttf**, **omsign.ttf**, and **omextra.ttf** can be found in **OPENMUSIC/resources/fonts/**. These files must be copied in:
+* **MacOSX:** /Library/Fonts/
+* **Windows:** C:/WINDOWS/Fonts/ //
+* **Linux:** /usr/share/fonts/ 
+
+**Note:** on macOS / Windows, double-clicking the font file will open an automatic installation utility.
+
+### Dependencies
+
+#### Lisp packages
+
+Lisp-dependencies are all included in the OM source repository (**OPENMUSIC/code/api/externals/**) and do not require any particular action or installation. OM uses the following external/opensource packages:
+
+- **[lispworks-udp](https://github.com/binghe/lispworks-udp)** (by Chun Tian (binghe))
+- **[OSC](https://github.com/zzkt/osc)** (by Nik Gaffney)
+- **[S-XML](https://common-lisp.net/project/s-xml/)** (by Sven Van Caekenberghe)
+- **[CL-SVG](https://github.com/wmannis/cl-svg)** (by William S. Annis)
+- **[Yason](https://github.com/phmarek/yason/)** (Json encoding/deconding, by Hans Huebner at al.) 
+- **CL-FluidSynth**/**CL-Jack** (by Anders Vinjar)
+- An incredible blend of MIDI bindings including **[CL-MIDI](http://www.doc.gold.ac.uk/isms/lisp/midi/)** (by Robert Strandh et al.), **[CL-PortMIDI](https://github.com/chfin/cl-portmidi)** (from PortMedia/Christoph Finkensiep), and the **[CFFI-PortMidi](https://sourceforge.net/p/portmedia/code/HEAD/tree/portmidi/trunk/pm_cl/)** bindings from PortMIDI (by Heinrich Taube).
+- LispWork **OpenGL** interface
+
+#### C-libraries
+
+OM links dynamically with a number of external C libraries. The foreign function interface relies on LispWorks' FLI package, and on **[CFFI](https://common-lisp.net/project/cffi/)** (included in **OPENMUSIC/code/api/foreign-interface/**).
+
+
+
 
