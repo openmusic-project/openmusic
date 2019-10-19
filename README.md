@@ -8,10 +8,31 @@ Existing CommonLisp/CLOS code can easily be used in OM, and new code can be deve
 
 - [OpenMusic User Manual](http://support.ircam.fr/docs/om/om6-manual/)
 
-See also the [official OpenMusic page](http://repmus.ircam.fr/openmusic/).
+- [Official OpenMusic page](http://repmus.ircam.fr/openmusic/).
 
 ---------
 
 Designed and developed by the IRCAM [Music Representation research group](http://repmus.ircam.fr)
 
 © 1998 - 2018 Carlos Agon, Gérard Assayag, Jean Bresson.
+
+----------
+
+## Sources and Licensing
+
+OpenMusic is a free software distributed under the GPLv3 license. As a Common Lisp program, the environment can be considered just as an extension of Lisp including the specific built-in features of the application. 
+
+While the sources of OM7 are available under the GPL license, the application is developed with [LispWorks 7](http://www.lispworks.com/): a commercial Lisp environment providing multiplatform support and graphical/GUI toolkits. A free (limited) edition of LW6 is available on the LispWorks website, but unfortunately no free version of LW-7 exists at the moment.
+
+In order to contribute to the code without a LispWorks license, one must therefore work both with the cloned source package _and_ an up-to-date reseased version on OM (which includes a Lisp interpreter).
+
+----------
+
+### Build instructions 
+
+Creating an executable in Common Lisp means loading all the source code in the Lisp environment and build an "image" of it, i.e. another Lisp environment extended with the features defined in the code.
+It is also possible to compile and load OM source code in the Lisp environment and use it directly without saving a new image. Using OM sources therefore requires owning the adequate Lisp compiler (currently, LispWorks 7.1.2).
+
+The current OM sources can be compiled and run OM on **macOS**, **Windows** and **Linux** (see compilation instructions below) using LispWorks "Hobbyist" or "Professional" licenses.
+
+
