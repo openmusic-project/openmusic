@@ -18,7 +18,7 @@ Designed and developed by the IRCAM [Music Representation research group](http:/
 
 ----------
 
-## Sources and Licensing
+### Sources and Licensing
 
 OpenMusic is a free software distributed under the GPLv3 license. As a Common Lisp program, the environment can be considered just as an extension of Lisp including the specific built-in features of the application. 
 
@@ -35,4 +35,12 @@ It is also possible to compile and load OM source code in the Lisp environment a
 
 The current OM sources can be compiled and run OM on **macOS**, **Windows** and **Linux** (see compilation instructions below) using LispWorks "Hobbyist" or "Professional" licenses.
 
+#### Loading OM in LispWorks 7.1
+
+- Clone OM sources from this repository
+- Launch an up-to-date LispWorks (7.1.2)
+- In LispWorks, load the file **OM 6.x/OPENMUSIC/build/build-om.lisp**    
+  Open ( _File/Open_) then load it (_File/Load_) or type in the Lisp listener: `(load [...]//OPENMUSIC/build/build-om.lisp)`     
+  (Check on possible compilation errors on the displayed LW output)
+- Evaluate `(om::start-openmusic)`
 
