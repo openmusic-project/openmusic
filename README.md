@@ -50,7 +50,7 @@ If this is a first launch of OpenMusic, musical fonts might need to be installed
 
 The OM musical fonts files **omicron.ttf**, **omheads.ttf**, **omsign.ttf**, and **omextra.ttf** can be found in **OPENMUSIC/resources/fonts/**. These files must be copied in:
 * **MacOSX:** /Library/Fonts/
-* **Windows:** C:/WINDOWS/Fonts/ //
+* **Windows:** C:/WINDOWS/Fonts/
 * **Linux:** /usr/share/fonts/ 
 
 **Note:** on macOS / Windows, double-clicking the font file will open an automatic installation utility.
@@ -68,12 +68,19 @@ Lisp-dependencies are all included in the OM source repository (**OPENMUSIC/code
 - **[Yason](https://github.com/phmarek/yason/)** (Json encoding/deconding, by Hans Huebner at al.) 
 - **CL-FluidSynth**/**CL-Jack** (by Anders Vinjar)
 - An incredible blend of MIDI bindings including **[CL-MIDI](http://www.doc.gold.ac.uk/isms/lisp/midi/)** (by Robert Strandh et al.), **[CL-PortMIDI](https://github.com/chfin/cl-portmidi)** (from PortMedia/Christoph Finkensiep), and the **[CFFI-PortMidi](https://sourceforge.net/p/portmedia/code/HEAD/tree/portmidi/trunk/pm_cl/)** bindings from PortMIDI (by Heinrich Taube).
-- LispWork **OpenGL** interface
+- LispWorks **OpenGL** interface
 
 #### C-libraries
 
 OM links dynamically with a number of external C libraries. The foreign function interface relies on LispWorks' FLI package, and on **[CFFI](https://common-lisp.net/project/cffi/)** (included in **OPENMUSIC/code/api/foreign-interface/**).
 
+Binary versions of the libraries are included in this repository in **OPENMUSIC/resources/lib/[mac/win/linux]/**, but they can also be recompiled from their respective source packages if needed, as indicated below.
 
+**Note for Windows:** In order to run OM sources from LispWorks on Windows, all the external C libraries (.dll) should be copied in the LispWorks repository (**C:/Program Files/LispWorks/**)
 
+- **omaudiolib**: https://github.com/openmusic-project/omaudiolib
+- **libsndfile** : https://github.com/erikd/libsndfile / 
+- **libsamplerate** : https://github.com/erikd/libsamplerate
+- **libPortMIDI**: http://portmedia.sourceforge.net/portmidi/
+- **libSDIF**: http://sdif.sourceforge.net/ 
 
