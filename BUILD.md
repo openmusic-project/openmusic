@@ -75,11 +75,11 @@ These two phases correspond respectively to the files **deliver.lisp** and **pac
 
 The file **deliver.lisp** performs the following operations:
 
-- Load OM sources (build-om.lisp)
+- Loads OM sources (through build-om.lisp)
 - Creates an executable name using the variable **\*version\***, defined in **build-om.lisp**     
 **This variable must therefore be set, in accordance to the current tag of the sources, prior to run the deliver script.**
 - Setup and define the main application object
-- _On macOS_: setup additional associated behaviours suc as Dock-menu, system callback for double-clicks from the Finder, etc.
+- _On macOS_: setup additional associated behaviors such as Dock-menu, system callback for double-clicks from the Finder, etc.
 - Generate the HTML files of the online reference using `(om::gen-om-reference)` 
 - Takes care of some relative-path variables 
 - Saves the new Lisp executable image with startup calls.
@@ -121,4 +121,4 @@ etc.
 The file **release.bat** in this repository launches the two required load-operations (_deliver.lisp_ and _build-om.lisp_).    
 Just double-click on the .bat to execute it.
 
-- The font files must be installed in the target system: An install-maker tools might be used to perform the installation (create shortcuts, install fonts...). See for instance [Install Creator](https://www.clickteam.com/install-creator-2).
+- The font files must be installed in the target system: An install-maker tools can be used to perform the installation (create Desktop/Start menu short-cuts, install fonts...). See for instance [Install Creator](https://www.clickteam.com/install-creator-2).
