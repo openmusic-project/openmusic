@@ -46,7 +46,7 @@
                   (not (= (/ (cadr (car item)) (car (car item)))
                           (/ (cadr currtempo) (car currtempo)))))
                   (setf currtempo nil) (setf currtempo (car item))))
-    (list currtempo nil)))
+    currtempo))
 
 (defmethod object-midi-tempo ((self t)) nil)
 
