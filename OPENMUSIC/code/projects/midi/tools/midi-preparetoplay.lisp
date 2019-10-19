@@ -177,13 +177,13 @@
 ;=== Note is a leaf of the "container tree"
 
 ;;; split note on channels in case of microtonal setup (4 or 8)
-;;; tone = 0, 1/8 = 1, 1/4 = 2, 1/8 = 3
+;;; tone = 0, 1/8 = 1, 1/4 = 2, 3/8 = 3
 ;;; default bend channel 1 = 0, channel 2 = 25 mc, channel 3 = 50 mc, channel 4 = 75mc
 ;(defun micro-channel (midic &optional approx)
 ;  (let ((channel-mc-unit (/ 200 (or approx 8))))
 ;    (round (mod midic 100) channel-mc-unit)))
 
-;; t / nil / list of apprix where it must be applied
+;; t / nil / list of approx where it must be applied
 (defparameter *micro-channel-mode-on* '(4 8))
 (defparameter *micro-channel-approx* 8)
 
