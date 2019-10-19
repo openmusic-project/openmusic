@@ -54,6 +54,7 @@ Binary versions of the libraries are included in this repository in **OPENMUSIC/
 - **libPortMIDI**: http://portmedia.sourceforge.net/portmidi/
 - **libSDIF**: http://sdif.sourceforge.net/ 
 
+**Note:** the dynamic libraries must be (re)-compiled for same architecture as your LispWorks compiler (32 or 64-bits).
 
 ## Creating a redistributable exectuable
 
