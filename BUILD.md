@@ -49,7 +49,7 @@ Binary versions of the libraries are included in this repository in **OPENMUSIC/
 **Note for Windows:** In order to run OM sources from LispWorks on Windows, all the external C libraries (.dll) should be copied in the LispWorks repository (**C:/Program Files/LispWorks/**)
 
 - **omaudiolib**: https://github.com/openmusic-project/omaudiolib
-- **libsndfile** : https://github.com/erikd/libsndfile / 
+- **libsndfile** : https://github.com/erikd/libsndfile
 - **libsamplerate** : https://github.com/erikd/libsamplerate
 - **libPortMIDI**: http://portmedia.sourceforge.net/portmidi/
 - **libSDIF**: http://sdif.sourceforge.net/ 
@@ -75,23 +75,23 @@ These two phases correspond respectively to the files **deliver.lisp** and **pac
 
 The file **deliver.lisp** performs the following operations:
 
-- Loads OM sources (through build-om.lisp)
-- Creates an executable name using the variable **\*version\***, defined in **build-om.lisp**     
+- Load OM sources (through build-om.lisp)
+- Create an executable name using the variable **\*version\***, defined in **build-om.lisp**     
 **This variable must therefore be set, in accordance to the current tag of the sources, prior to run the deliver script.**
 - Setup and define the main application object
 - _On macOS_: setup additional associated behaviors such as Dock-menu, system callback for double-clicks from the Finder, etc.
 - Generate the HTML files of the online reference using `(om::gen-om-reference)` 
-- Takes care of some relative-path variables 
-- Saves the new Lisp executable image with startup calls.
-- _On macOS_: moves all the resources, source code, and external C libraries (.dylib) indisde the .app bundle (as required for macOS applications)
+- Take care of some relative-path variables 
+- Save the new Lisp executable image with startup calls.
+- _On macOS_: move all the resources, source code, and external C libraries (.dylib) indisde the .app bundle (as required for macOS applications)
 
 #### Pack
 
 The file **pack-om.lisp** performs the following operations:
 
-- Creates a clean copy of the OPENMUSIC folder named after the name of the created executable (e.g. "OM 6.x")
+- Create a clean copy of the OPENMUSIC folder named after the name of the created executable (e.g. "OM 6.x")
 Clean = removing all \*fasl files, temporary files, etc.
-- _On Windows_: also move all dlls into the root folder, next to the .exe
+- _On Windows_: also move all dlls into the root folder, next to OM 6.x.exe
 
 ### Delivering for macOS 
 
