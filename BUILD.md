@@ -35,7 +35,7 @@ Lisp-dependencies are all included in the OM source repository (**OPENMUSIC/code
 - **[OSC](https://github.com/zzkt/osc)** (by Nik Gaffney)
 - **[S-XML](https://common-lisp.net/project/s-xml/)** (by Sven Van Caekenberghe)
 - **[CL-SVG](https://github.com/wmannis/cl-svg)** (by William S. Annis)
-- **[Yason](https://github.com/phmarek/yason/)** (Json encoding/deconding, by Hans Huebner at al.) 
+- **[Yason](https://github.com/phmarek/yason/)** (by Hans Huebner at al.) 
 - **CL-FluidSynth**/**CL-Jack** (by Anders Vinjar)
 - An incredible blend of MIDI bindings including **[CL-MIDI](http://www.doc.gold.ac.uk/isms/lisp/midi/)** (by Robert Strandh et al.), **[CL-PortMIDI](https://github.com/chfin/cl-portmidi)** (from PortMedia/Christoph Finkensiep), and the **[CFFI-PortMidi](https://sourceforge.net/p/portmedia/code/HEAD/tree/portmidi/trunk/pm_cl/)** bindings from PortMIDI (by Heinrich Taube).
 - LispWorks **OpenGL** interface
