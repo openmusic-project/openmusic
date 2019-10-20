@@ -6,9 +6,9 @@ OM may be used as a general purpose functional/object/visual programming languag
 
 Existing CommonLisp/CLOS code can easily be used in OM, and new code can be developed in a visual way.
 
+- [Official OpenMusic page](http://repmus.ircam.fr/openmusic/)
 - [OpenMusic User Manual](http://support.ircam.fr/docs/om/om6-manual/)
 
-- [Official OpenMusic page](http://repmus.ircam.fr/openmusic/).
 
 ---------
 
