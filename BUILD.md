@@ -23,7 +23,7 @@ The OM musical fonts files **omicron.ttf**, **omheads.ttf**, **omsign.ttf**, and
 * **Windows:** C:/WINDOWS/Fonts/
 * **Linux:** /usr/share/fonts/ 
 
-**Note:** on macOS / Windows, double-clicking the font file will open an automatic installation utility.
+**Note:** double-clicking the font file will open an automatic installation utility.
 
 ## Dependencies
 
@@ -36,7 +36,7 @@ Lisp-dependencies are all included in the OM source repository (**OPENMUSIC/code
 - **[S-XML](https://common-lisp.net/project/s-xml/)** (by Sven Van Caekenberghe)
 - **[CL-SVG](https://github.com/wmannis/cl-svg)** (by William S. Annis)
 - **[Yason](https://github.com/phmarek/yason/)** (by Hans Huebner at al.) 
-- **CL-FluidSynth**/**CL-Jack** (by Anders Vinjar)
+- **[cl-fluidsynth](https://github.com/andersvi/cl-fluidsynth)**/**[cl-jack](https://github.com/andersvi/cl-jack)** (by Anders Vinjar)
 - An incredible blend of MIDI bindings including **[CL-MIDI](http://www.doc.gold.ac.uk/isms/lisp/midi/)** (by Robert Strandh et al.), **[CL-PortMIDI](https://github.com/chfin/cl-portmidi)** (from PortMedia/Christoph Finkensiep), and the **[CFFI-PortMidi](https://sourceforge.net/p/portmedia/code/HEAD/tree/portmidi/trunk/pm_cl/)** bindings from PortMIDI (by Heinrich Taube).
 - LispWorks **OpenGL** interface
 
@@ -69,7 +69,7 @@ These two phases correspond respectively to the files **deliver.lisp** and **pac
 ... where _[path-to-lispworks-exe]_  can be:
 - `"/Applications/LispWorks 7.1 (64-bit).app/Contents/MacOS/lispworks-7-1-0-amd64-darwin"` (macOS)
 - `"C:\\Program Files (x86)\\LispWorks\\lispworks-6-1-0-x86-win32.exe"` (Windows)
-- etc.
+- `"/usr/bin/lw", "/usr/local/bin/lw" ...` (Linux)
 
 #### Deliver
 
@@ -123,3 +123,15 @@ Just double-click on it to execute it.
 
 - The font files must still be installed in the target system.     
 An install-maker tools can be used to perform the whole installation on user machines (create Desktop/Start menu short-cuts, install fonts...). See for instance [Install Creator](https://www.clickteam.com/install-creator-2).
+
+### Delivering on Linux ###
+
+ The file `build/linux/Makefile` is set up to build and deliver an OM image from the sources according to
+ the comments above.
+
+  Most things should be straightforward.  You may need to tweak the path to your lispworks executable, and ensure the
+  resulting delivered OM-image file complies with the current version number in the sources etc.
+
+  Along with the usual Makefile targets are also `"make dist"`, `"make distclean"` and `"make tar-dist"`.  Running
+  `"make"`, then `"make dist"` will leave you with all necessary sources and image files inside $DISTDIR (usually
+  `/tmp/OM/BUILD`)
