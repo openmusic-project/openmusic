@@ -347,6 +347,21 @@ Note values are lists of (pitch date dur vel chan).
 (defmethod get-obj-from-file ((type (eql 'midi)) filename)
   (load-midifile filename))
 
+;; controllers: ((:pitchbend 1 (0 8192)) (:pitchbend 2 (0 9216))...)
+
+;; setup pitch-bend messages for specific channels found in this instance of midifile
+
+(defun setup-retune-messages-for-channels (controllers)
+  (let ((pitch-bend-messages (remove-if-not #'(lambda (c) (equal (car c) :pitchbend))
+					    controllers)))
+    (mapcar #'(lambda (m) (cons (second m) (second (third m))))
+	    pitch-bend-messages)))
+
+(defmethod additional-player-params ((self OMMidiFilebox))
+  (list :port (get-edit-param self 'outport)
+        :approx (get-edit-param self 'approx)
+	:channel-spec (controllers (value self))))
+
 ;======================================================
 ; MINIVIEW
 ;======================================================
