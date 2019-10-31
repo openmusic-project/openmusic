@@ -459,11 +459,11 @@ Extracts control events of type <ctrlname> (string) from a MIDI file or sequence
   (let ((evtList (get-midievents self #'(lambda (x) (test-type x '(:CtrlChange :Tempo :KeyPress :ChanPress :PitchBend)))))
         (controllers nil))
     (loop for ev in evtlist do
-	  (let* ((ev-value (cond 
+          (let* ((ev-value (cond 
                            ((equal (ev-type ev) :Tempo)
                             (car (ev-fields ev)))
                            ((equal (ev-type ev) :PitchBend) 
-			    (car (ev-fields ev))
+                            (second (ev-fields ev))
                            ;; (- (second (ev-fields ev)) 8192) ; 64)
                             )
                            ((equal (ev-type ev) :keypress) 

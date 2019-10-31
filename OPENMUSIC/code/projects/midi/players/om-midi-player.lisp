@@ -39,16 +39,13 @@
 
 (defmethod prepare-to-play ((engine (eql :midi-player)) (player omplayer) object at interval params)
   ;(print (format nil "~s" params))
-  (let ((approx (cond ((find :approx params) (nth (1+ (position :approx params)) params))
-		      ((caller player) (get-edit-param (caller player) 'approx))))
-	
-	(channel-retune-spec (if (find :channel-spec params)
-				 (setup-retune-messages-for-channels
-				  (nth (1+ (position :channel-spec params)) params))))
-	
-	(port (if (find :port params)
-                  (nth (1+ (position :port params)) params)
-                  (if (caller player) (get-edit-param (caller player) 'outport)))))
+  
+  (let ((approx (if (find :approx params)
+                    (nth (1+ (position :approx params)) params)
+                  (if (caller player) (get-edit-param (caller player) 'approx))))
+        (port (if (find :port params)
+                    (nth (1+ (position :port params)) params)
+                (if (caller player) (get-edit-param (caller player) 'outport)))))
     ;(print params)
     ;(print port)
     (if (equal port :default) (setf port *def-midi-out*))
@@ -62,13 +59,15 @@
                                nil)
                 )
             
-	    (append (cond ((and *midi-microplay* channel-retune-spec)
-			   (microplay-events at (get-obj-dur object) port channel-retune-spec))
-			  ((and *midi-microplay* approx (find approx '(4 8) :test '=))
-	    		   (microplay-events at (get-obj-dur object) port)))
-                    
-		    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))))
-    
+            
+            (append (and (and *midi-microplay* approx (find approx '(4 8) :test '=))
+			 ;; (let ((chan-offset (lchan object)))
+			 ;;   (microplay-events approx at (get-obj-dur object) port chan-offset))
+			 (microplay-events at (get-obj-dur object) port)
+			 )
+                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))
+                    )
+            )
     (sort-events player)
     ))
 
@@ -182,20 +181,14 @@
 	       collect (make-pitchwheel-event (+ at dur) chan port 8192)))))
 |#
 
-(defun microplay-events (at dur port &optional channel-retune-spec)
-  ;; channel-retune-spec can be used to pass explicit ((chan . bend) (chan . bend)...),
-  ;; useful for imported midifiles
+(defun microplay-events (at dur port)
   (let ((port (or port *def-midi-out*)))
-    (append (if channel-retune-spec
-		(mapcar #'(lambda (chanbend)
-			    (make-pitchwheel-event at (car chanbend) port (cdr chanbend)))
-			channel-retune-spec)
-		(list (make-pitchwheel-event at 1 port 8192) 
-		      (make-pitchwheel-event at 2 port 9216) 
-		      (make-pitchwheel-event at 3 port 10240) 
-		      (make-pitchwheel-event at 4 port 11264)))
-	    (list (make-pitchwheel-event (+ at dur) 1 port 8192) 
-		  (make-pitchwheel-event (+ at dur) 2 port 8192) 
-		  (make-pitchwheel-event (+ at dur) 3 port 8192) 
-		  (make-pitchwheel-event (+ at dur) 4 port 8192)))))
+    (list (make-pitchwheel-event at 1 port 8192) 
+          (make-pitchwheel-event at 2 port 9216) 
+          (make-pitchwheel-event at 3 port 10240) 
+          (make-pitchwheel-event at 4 port 11264) 
+          (make-pitchwheel-event (+ at dur) 1 port 8192) 
+          (make-pitchwheel-event (+ at dur) 2 port 8192) 
+          (make-pitchwheel-event (+ at dur) 3 port 8192) 
+          (make-pitchwheel-event (+ at dur) 4 port 8192))))
 
