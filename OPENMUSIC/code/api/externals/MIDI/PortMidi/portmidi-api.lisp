@@ -225,13 +225,19 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
       (print (format nil "PortMIDI ERROR: port ~A is not connected. Check MIDI preferences to connect MIDI devices ?" port)))
     ))
 
-
+(defun make-midi-pitchbend-msg (channel val)
+  ;; (print (list channel val))
+  (let ((v1 (7-lsb (car val)))
+	(v2 (7-msb (car val))))
+    (apply 'make-message* (list (type-to-midi :pitchbend) channel v1 v2))))
+  
 (defun make-midi-bytes (type channel vals)
-  ;(print (list type channel vals))
-  (let ((type-ref (type-to-midi type))
-        (v1 (if (listp vals) (car vals) (7-lsb vals)))
-        (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
-    (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
+  (cond ((equal type :pitchbend) (make-midi-pitchbend-msg channel vals))
+	;; TODO: handle other messages with 14 bit values
+	(t (let ((type-ref (type-to-midi type))
+		 (v1 (if (listp vals) (car vals) (7-lsb vals)))
+		 (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
+	     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))))
 
 
 ;;; exported call
