@@ -45,6 +45,8 @@
 ;  CONCAT
 ;--------------------
 
+
+
 (defmethod* concat ((s1 sequence*) (s2 sequence*) &optional s2-offset)
   :initvals '(nil nil) 
   :indoc '("a musical sequence" "a musical sequence" "(absolute) offset, expressed in ms.")
@@ -61,21 +63,22 @@ Type of the return value :
  chord-seq x chord-seq => chord-seq
  poly x poly => poly
 " 
-  (let* ((frac-min (fraction-minimale-commune s1 s2))
-	 (ss1 (duplique-structure-musicale s1))
-	 (ss2 (duplique-structure-musicale s2))
-	 (s2-offset-in-qv (when s2-offset (* frac-min  (/ s2-offset 1000))))) ;expressed in qvalue
-    
-    (change-qvalue ss1 frac-min)
-    (change-qvalue ss2 frac-min)
+  (let ((ss1 (duplique-structure-musicale s1))
+	(ss2 (duplique-structure-musicale s2)))
 
-    (loop for item in (inside ss2) do (setf (offset item) (+ (offset item) (or s2-offset-in-qv (extent ss1)))))
-    (mki (type-of s1) 
-             :empty t
-             :offset 0
-             :extent (+ (extent ss1) (extent ss2) (or s2-offset-in-qv 0))
-             :qvalue frac-min
-             :inside (append (inside ss1) (inside ss2)))))
+    (setqvalue ss1 1000)     ;work in ms. here
+    (setqvalue ss2 1000)
+
+    (let ((s2-offset (or s2-offset (extent ss1))))
+      (loop for item in (inside ss2) do (incf (offset item) s2-offset))
+      (let ((outseq (mki (type-of s1)
+			 :empty t
+			 :offset 0
+			 :extent (+ (extent ss1) (extent ss2) s2-offset)
+			 :qvalue 1000
+			 :inside (append (inside ss1) (inside ss2)))))
+	;; optimize qvalue for output seq:
+	(QNormalize outseq)))))
 
 (defmethod* concat ((s1 simple-container) (s2 null) &optional s2-offset)
   s1)
