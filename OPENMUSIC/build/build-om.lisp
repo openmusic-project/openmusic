@@ -167,19 +167,19 @@
               
 ; (clean-svn (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("OM-FORUM-LIBRARIES" "OMChroma"))))
 
-(defun clean-sources (&optional dir keep-fasl-types)
+(defun clean-sources (&optional dir keep-fasl-types verbose)
   (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*)))))
         (ext-list (remove-if 
                    #'(lambda (ext) (find ext keep-fasl-types :test 'string-equal))
                    '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~"))))
     (mapc #'(lambda (file) 
               (if (system::directory-pathname-p file)
-                  (clean-sources file keep-fasl-types)
+                  (clean-sources file keep-fasl-types verbose)
                 (when (and (pathname-type file)
                            (or (find (pathname-type file) ext-list :test 'string-equal)
 			       ;;; (string= (pathname-type file) *compile-type*) ; remove compiled files ; why ?
                                )) 
-                  (print (concatenate 'string "Deleting " (namestring file) " ..."))
+                  (when verbose (print (concatenate 'string "Deleting " (namestring file) " ...")))
                   (delete-file file)
                   )))
           (directory (namestring src-root) :directories t))

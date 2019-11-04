@@ -40,6 +40,8 @@ echo "***************************************************"
 
 	rm -rf ./OPENMUSIC/*.app/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build ./OPENMUSIC/build/deliver.lisp
+
+echo "=> DELIVER: DONE"
 }
 
 
@@ -53,7 +55,9 @@ echo "***************************************************"
 	cd ./OPENMUSIC/build/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-om.lisp
 	cd ../..
-	cp "README.txt" "$APP_FOLDER"
+	cp "README.md" "$APP_FOLDER"
+
+echo "=> PACK: DONE"
 }
 
 # deliver_app MUST have been called before..
@@ -86,6 +90,9 @@ echo "***************************************************"
    defaults write $(pwd)/Info.plist ATSApplicationFontsPath -string "fonts/"
    mv ./Info.plist "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist
    chmod 644 "$APP_FOLDER"/"$APP_FOLDER".app/Contents/Info.plist
+
+echo "=> FONTS: DONE"
+
 }
 
 # pack_app MUST have been called before..
@@ -102,13 +109,21 @@ echo "***************************************************"
 	#ln -s /Applications/ _DMG/Applications
 	#hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder _DMG $DMG_NAME.dmg
 	hdiutil create -fs HFS+ -volname $DMG_NAME -srcfolder "$APP_FOLDER" $DMG_NAME.dmg
-	#rm -rf _DMG	
+	#rm -rf _DMG
+
+echo "=> DMG: DONE"	
 }
 
 zip_release()
 {
+echo "***************************************************"
+echo "Preparing ZIP distribution for $APP_FOLDER"
+echo "***************************************************"
+
 	rm ./"$DMG_NAME".zip
-	zip -r ./"$DMG_NAME".zip ./"$APP_FOLDER"/  
+	zip -r -q -dg ./"$DMG_NAME".zip ./"$APP_FOLDER"/  
+
+echo "=> ZIP: DONE"
 }
 
 change_permission()
@@ -124,15 +139,22 @@ change_permission()
 
 sign_release()
 {
-	./codesign-om6
+echo "***************************************************"
+echo "Code Signature (calling external script)"
+echo "***************************************************"
+	./codesign-om
+echo "=> CODE SIGNATURE: DONE"
 }
 #=============================
 # MAIN SCRIPT
 #=============================
 
+# go to root to execute any command
+cd ../../..
+
 if 		[ $1 = "-d" ]; 		then 	deliver_app
 elif	[ $1 = "-p" ];		then	pack_app; set_fonts
-elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts
+elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts;
 elif	[ $1 = "-dmg" ];	then	create_simple_dmg
 elif	[ $1 = "-zip" ];	then	zip_release
 elif	[ $1 = "-sign" ];	then	sign_release	
@@ -154,6 +176,9 @@ else
 	echo "-lib \"LIB_NAME\" = deliver a library in the default lib-delivery folder"
 	echo "-all = deliver, pack, sign, zip and create DMG"
 fi
+
+# come back here
+cd OPENMUSIC/build/mac/
 
 exit 0
 

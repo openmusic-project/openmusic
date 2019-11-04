@@ -1,7 +1,4 @@
-/OPENMUSIC/**/*.*xfasl
-/OPENMUSIC/**/*.*ofasl
-/OPENMUSIC/**/*.*nfasl
-/OPENMUSIC/**/*.*ufasl
+/OPENMUSIC/**/*.*fasl
 *.lisp~
 *.lisp#
 *~
@@ -18,6 +15,6 @@
 /OM 6.*/**/*
 /OPENMUSIC/OM_6.*
 /omaudiolib/Builds/
-codesign-om6
+codesign-om
 
 docs/_site/*

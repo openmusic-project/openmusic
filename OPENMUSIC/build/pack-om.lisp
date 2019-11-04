@@ -64,11 +64,11 @@
                                            (namestring targetpath) "\"")))
 
 
-(defun clean-sources (&optional dir &key remove-files remove-extensions)
+(defun clean-sources (&optional dir &key remove-files remove-extensions (verbose t))
   (let ((src-root (or dir (make-pathname :directory (append (butlast (pathname-directory (current-pathname)) 2) '("code"))))))
     (mapc #'(lambda (file) 
               (if (system::directory-pathname-p file)
-                  (clean-sources file :remove-files remove-files :remove-extensions remove-extensions)
+                  (clean-sources file :remove-files remove-files :remove-extensions remove-extensions :verbose verbose)
                 (when (or 
                        (and remove-files (or 
                                           (member (pathname-name file) remove-files :test 'string-equal)
@@ -77,7 +77,7 @@
                                                        remove-files :test 'string-equal))))
                        (and remove-extensions (stringp (pathname-type file))
                             (member (pathname-type file) remove-extensions :test 'string-equal)))
-                  (print (concatenate 'string "  Deleting " (namestring file) " ..."))
+                  (when verbose (print (concatenate 'string "  Deleting " (namestring file) " ...")))
                   (delete-file file)
                   )))
           (directory (namestring src-root) :directories t))
@@ -137,36 +137,37 @@
 (copy-directory *om-root-dir* *target-dir*)
 
 
-(print "== CLEANING SOURCES ...")
+(print "--- REMOVING FASL FILES ...")
 (clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("code")))
-               :remove-extensions '("64xfasl" "xfasl" "nfasl" "ofasl" "ufasl" "lisp~" "DS_STORE"))
+                  :remove-extensions '("64xfasl" "xfasl" "nfasl" "ofasl" "ufasl" "lisp~" "DS_STORE")
+                  :verbose nil)
 
 
 
 ;; copy the icon file in resources (for the installer)
 #+win32
-(progn (print "== COPYING OM ICON...")
+(progn (print "--- COPYING OM ICON...")
   (copy-file (make-pathname :directory (append (pathname-directory *target-dir*) '("build" "win"))
                             :name "om" :type "ico")
              (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")) 
                             :name "om" :type "ico"))
   )
 
-(print "== REMOVING BUILD FOLDER ...")
+(print "--- REMOVING BUILD FOLDER ...")
                     
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("build"))))
 
 
-(print "== CLEANING RESOURCES FOLDER...")
+(print "--- CLEANING RESOURCES FOLDER...")
 
 #-macosx
 (clean-sources (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")))
-               :remove-extensions '("db" "DS_STORE"))
+               :remove-extensions '("db" "DS_STORE") :verbose nil)
 
 ;;; EXTERNAL LIBRARIES
 
 #+win32
-(progn (print "== MOVING DLLs TO ROOT FOLDER...")
+(progn (print "--- MOVING DLLs TO ROOT FOLDER...")
   (mapc #'(lambda (file) 
             (unless (system::directory-pathname-p file)
               (system::copy-file file
@@ -177,42 +178,25 @@
                                                      '("resources" "lib" "win")))))
   )
 
-(print "== MOVING BINARIES FROM RESOURCES FOLDER...")
+(print "--- MOVING BINARIES FROM RESOURCES FOLDER...")
 (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "lib"))))
 
 ;;; on mac this was moved inside the .app by the deliver script
 #+macosx
-(progn (print "== REMOVING EXTERNAL FOLDERS (resources/code/init)...")
+(progn (print "--- REMOVING EXTERNAL FOLDERS (resources/code/init)...")
   (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" ))))
   (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("code" ))))
   (remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("init" ))))
 )
 
-(print "== REMOVING PLATFORM-SPECIFIC FONTS...")
+(print "--- REMOVING PLATFORM-SPECIFIC FONTS...")
 #-macosx(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "mac"))))
 #-win32(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "win"))))
 #-linux(remove-directory (make-pathname :directory (append (pathname-directory *target-dir*) '("resources" "fonts" "linux"))))
 
-
-#+macosx
-;(let ((currentimage (make-pathname :directory (append (pathname-directory *image-pathname*) '("Contents" "MacOS"))
-;                                   :name *image-name*))
-;      (target-image (make-pathname 
-;                     :directory (append (pathname-directory *target-dir*) 
-;                                        (list (concatenate 'string *image-name* ".app") "Contents" "MacOS"))
-;                     :name *image-name*)))
-;  
-;  (print "copying new image...")
-;  (system::call-system (concatenate 'string "rm -Rf \"" (namestring target-image) "\""))
-;  (system::call-system (concatenate 'string "cp -R \"" (namestring currentimage) "\" \""
-;                                    (namestring target-image) "\""))
-;  )
-;  )
     
-(print "== CLEANING...")
-(clean-sources *target-dir* :remove-extensions '("lisp~" "DS_STORE"))
-
-(print (format nil "== DONE! ~%~%"))
+(print "--- CLEANING...")
+(clean-sources *target-dir* :remove-extensions '("lisp~" "DS_STORE") :verbose nil)
 
 (quit)
 
