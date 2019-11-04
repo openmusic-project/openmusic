@@ -147,9 +147,9 @@
 #+win32
 (progn (print "== COPYING OM ICON...")
   (copy-file (make-pathname :directory (append (pathname-directory *target-dir*) '("build" "win"))
-                            :name "OpenMusic" :type "ico")
+                            :name "om" :type "ico")
              (make-pathname :directory (append (pathname-directory *target-dir*) '("resources")) 
-                            :name "OpenMusic" :type "ico"))
+                            :name "om" :type "ico"))
   )
 
 (print "== REMOVING BUILD FOLDER ...")

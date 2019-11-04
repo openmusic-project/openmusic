@@ -395,7 +395,7 @@
          #+win32 :console #+win32 :input
          :quit-when-no-windows #+win32 t #-win32 nil
          #+(or cocoa win32) :packages-to-keep #+cocoa '(:objc)  #+win32 '(:comm)
-         #+win32 :icon-file #+win32 "./win/OpenMusic.ico")
+         #+win32 :icon-file #+win32 "./win/om.ico")
 
 ;  :editor-commands-to-keep :all-groups
 ;========================
