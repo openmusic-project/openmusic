@@ -154,7 +154,7 @@ cd ../../..
 
 if 		[ $1 = "-d" ]; 		then 	deliver_app
 elif	[ $1 = "-p" ];		then	pack_app; set_fonts
-elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts;
+elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts
 elif	[ $1 = "-dmg" ];	then	create_simple_dmg
 elif	[ $1 = "-zip" ];	then	zip_release
 elif	[ $1 = "-sign" ];	then	sign_release	
