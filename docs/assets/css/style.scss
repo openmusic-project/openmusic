@@ -1,0 +1,24 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+header a:hover, a:focus {
+  text-decoration: none;
+}
+
+body {
+	text-align: justify;	
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 20px;
+}

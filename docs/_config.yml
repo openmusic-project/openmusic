@@ -1,0 +1,17 @@
+theme: jekyll-theme-slate
+# theme: jekyll-theme-cayman
+# theme: jekyll-theme-minimal
+
+plugins_dir:
+  - jekyll-mentions
+
+title: OpenMusic
+description: Visual Programming | Computer-Aided Music Compositon
+
+zip_url: "https://github.com/openmusic-project/OM6/releases"
+
+show_downloads: false
+
+
+
+ 
