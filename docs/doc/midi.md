@@ -6,7 +6,7 @@
 
 It is possible to choose among different **players** for your score objects (chord, chord-seq, voice, etc.)  
 
-The selection of a player can be done using the _player_ button <img src="./images/player-button.png" width="25px"> {{:openmusic:midi:.png?25|}} on the tool-bar of the editors, or by right/ctrl-clicking the boxes and using the "Player" menu.
+The selection of a player can be done using the _player_ button <img src="./images/player-button.png" width="25px"> on the tool-bar of the editors, or by right/ctrl-clicking the boxes and using the "Player" menu.
 
 Select the **OM MIDI player** to render the object via MIDI
 
