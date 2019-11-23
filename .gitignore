@@ -18,3 +18,4 @@
 codesign-om
 
 docs/_site/*
+Gemfile.lock
