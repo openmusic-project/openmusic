@@ -1,6 +1,6 @@
 
 
-<img src="images/omlogo.gif" width="120px" align="right" style="margin: 0px 0px 0px 30px;">
+<img src="images/omlogo.gif" width="120px" align="left" style="margin: 0px 30px 0px 0px;">
           
 OpenMusic (OM) is a visual programming language based on [Lisp](http://www.gigamonkeys.com/book/introduction-why-lisp.html)
 . Visual programs are created by assembling and connecting icons representing functions and data structures. Most programming and operations are performed by dragging an icon from a particular place and dropping it to an other place. Built-in visual control structures (e.g. loops) are provided, that interface with Lisp ones.
@@ -36,24 +36,13 @@ Designed and developed by the [IRCAM Music Representation research group](http:/
 
 ------
 
-### Sources
-
-Source repository:       
-[https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/om7-beta/)
-
-
-------
-
 
 ### Help / Bug reports / Community
 
-- [OM forum discussion group](https://discussion.forum.ircam.fr/c/openmusic)     
+[Users discussion group](https://discussion.forum.ircam.fr/c/openmusic) on IRCAM Forum.     
 Create an account in order to post questions and replies.    
 Subscribe to group notifications using _Watching_ / _Tracking_ and other options.
 
-
-- [OpenMusic mailing list](http://listes.ircam.fr/wws/info/openmusic)     
-_**Note:** this mailing list is now deprecated and we recommend users to use the discussion forums._
 
 ------
 
@@ -61,10 +50,14 @@ _**Note:** this mailing list is now deprecated and we recommend users to use the
 
 - [Find and install external libraries](https://openmusic-project.github.io/libraries)
 
+------
+
 <img src="./images/lisp.jpg" width="90pix" margin="10px" align="right">
 
+### Sources
 
-
+Source repository:       
+[https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/om7-beta/)
 
 
 

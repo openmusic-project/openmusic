@@ -1,5 +1,5 @@
-# Downloads
 
+# Download and Installation
 
 **Get the latest OM6 release here:** [https://github.com/openmusic-project/OM6/releases](https://github.com/openmusic-project/OM6/releases)
 
