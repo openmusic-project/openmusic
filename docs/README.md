@@ -50,9 +50,11 @@ Subscribe to group notifications using _Watching_ / _Tracking_ and other options
 
 ### Sources
 
-Source repository: [https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/om7-beta/)
+Source repository: [https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/OM6/)
 
-Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr)          
+Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr).
+
+
 
 
 
