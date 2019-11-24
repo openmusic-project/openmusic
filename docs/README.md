@@ -3,20 +3,13 @@
 <img src="images/omlogo.gif" width="120px" align="left" style="margin: 0px 30px 0px 0px;">
           
 OpenMusic (OM) is a visual programming language based on [Lisp](http://www.gigamonkeys.com/book/introduction-why-lisp.html)
-. Visual programs are created by assembling and connecting icons representing functions and data structures. Most programming and operations are performed by dragging an icon from a particular place and dropping it to an other place. Built-in visual control structures (e.g. loops) are provided, that interface with Lisp ones.
+. Visual programs are created by assembling and connecting icons representing functions and data structures. Most programming and operations are performed by dragging an icon from a particular place and dropping it to an other place. Built-in visual control structures (e.g. loops) are provided, that interface with Lisp ones. Existing CommonLisp/CLOS code can easily be used in OM, and new code can be developed in a visual way.
 
 OM may be used as a general purpose functional/object/visual programming language. At a more specialized level, a set of provided classes and libraries make it a very convenient environment for music composition. Above the OpenMusic kernel, live the OpenMusic Projects. A project is a specialized set of classes and methods written in Lisp, accessible and visualisable in the OM environment. Various classes implementing musical data / behaviour are provided. They are associated with graphical editors and may be extended by the user to meet specific needs. Different representations of a musical process are handled, among which common notation, midi piano-roll, sound signal. High level in-time organisation of the music material is proposed through the concept of "maquette".
 
 <img src="images/patch2.jpg" width="300px" align="right" style="margin: 0px 0px 0px 30px;">
 
-Existing CommonLisp/CLOS code can easily be used in OM, and new code can be developed in a visual way.
-
-
-— **See also this [Overview](overview)**
-
-
-Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr)          
-(c) 1998 - 2019 Carlos Agon, Gérard Assayag, Jean Bresson.
+— **=> [OpenMusic Overview](overview)**
 
  
 ------
@@ -53,6 +46,7 @@ Subscribe to group notifications using _Watching_ / _Tracking_ and other options
 ------
 
 <img src="./images/lisp.jpg" width="90pix" margin="10px" align="right">
+Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr)          
 
 ### Sources
 
