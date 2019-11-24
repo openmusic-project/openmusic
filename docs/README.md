@@ -9,7 +9,7 @@ OM may be used as a general purpose functional/object/visual programming languag
 
 <img src="images/patch2.jpg" width="300px" align="right" style="margin: 0px 0px 0px 30px;">
 
-— **=> [OpenMusic Overview](overview)**
+**=> [OpenMusic Overview](overview)**
 
  
 ------
@@ -43,15 +43,16 @@ Subscribe to group notifications using _Watching_ / _Tracking_ and other options
 
 - [Find and install external libraries](https://openmusic-project.github.io/libraries)
 
-------
 
 <img src="./images/lisp.jpg" width="90pix" margin="10px" align="right">
-Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr)          
+
+------
 
 ### Sources
 
-Source repository:       
-[https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/om7-beta/)
+Source repository: [https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/om7-beta/)
+
+Designed and developed by the [IRCAM Music Representation research group](http://repmus.ircam.fr)          
 
 
 
