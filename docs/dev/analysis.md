@@ -212,7 +212,7 @@ It is now possible to add a segment in our segmentation by selecting a group of 
 
 #### Analysis
 
-The main method to define in order to implement our analysis process is `analyse-one-segment`. This method is supposed to set the contents of the segment's `segment-data` slot depending on the associated score data. We use the method `chord2c` from the OM _MathTools_ library in order to create our **n-cercle** object from the pitches of the segment's chords (note that chord-seqgment has a slot chord allowing to directly access the chord instances instead of retrieving them with the list of chord-ids).
+The main method to define in order to implement our analysis process is `analyse-one-segment`. This method is supposed to set the contents of the segment's `segment-data` slot depending on the associated score data. We use the method `chord2c` from the OM _MathTools_ library in order to create our **n-cercle** object from the pitches of the segment's chords (note that `chord-segment` has a slot chord allowing to directly access the chord instances instead of retrieving them with the list of chord-ids).
 
 ```cl
 (defmethod analyse-one-segment ((self pcset-analysis) (seg segment) (object t))
