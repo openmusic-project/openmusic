@@ -1,4 +1,6 @@
-## MIDI in OM (v. ≥ 6.12)
+## MIDI in OM
+
+> This information applies to OM v.6.12 and higher
 
 ### Score player selection
 
