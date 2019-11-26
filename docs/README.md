@@ -50,7 +50,7 @@ Subscribe to group notifications using _Watching_ / _Tracking_ and other options
 
 ### Sources and development
 
-- Source repository: [https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/OM6/)
+- Source repository: [https://github.com/openmusic-project/OM6/](https://github.com/openmusic-project/openmusic/)
 - [Developer resources](dev/index)
 
 ------
