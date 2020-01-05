@@ -238,7 +238,7 @@ External Libraries:
                                                         
                                              (om-make-dialog-item 'om-static-text  
                                                                   (om-make-point 58 320) (om-make-point 300 50)
-                                                                  (format nil "Release: ~,6f~%~A - ~A" *om-version* *release-author* *release-date*)
+                                                                  (format nil "Release: ~,6f - ~A" *om-version* *release-date*)
                                                                   :font mainfont
                                                                   :fg-color textcolor
                                                                   :bg-color backcolor

@@ -8,9 +8,9 @@ LWARCH=64-bit
 LWVERSION=7.1
 LWEXEC=lispworks-7-1-0-amd64-darwin
 
-OM_VERSION="6.15.1"
-APP_FOLDER="OM 6.15.1"
-DMG_NAME="OM-6.15.1-macOS"
+OM_VERSION="6.16"
+APP_FOLDER="OM 6.16"
+DMG_NAME="OM-6.16-macOS"
 
 
 get_abs_filename() {
@@ -55,7 +55,7 @@ echo "***************************************************"
 	cd ./OPENMUSIC/build/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build pack-om.lisp
 	cd ../..
-	cp "README.md" "$APP_FOLDER"
+#	cp "README.md" "$APP_FOLDER"
 
 echo "=> PACK: DONE"
 }
