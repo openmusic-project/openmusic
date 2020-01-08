@@ -101,7 +101,8 @@
   "/WINDOWS/system32/OMAudioLib.dll"
   #+(or darwin macos macosx)  
   "OM6/OPENMUSIC/resources/lib/mac/OMAudioLib.dylib"
-  #+linux "OMAudioLib.so"
+  #+linux
+  "OM6/OPENMUSIC/resources/lib/linux/OMAudioLib.so"
   )
 
 (defun load-juceaudiolib ()
