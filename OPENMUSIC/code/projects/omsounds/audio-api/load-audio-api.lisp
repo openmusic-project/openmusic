@@ -105,14 +105,29 @@
   "OM6/OPENMUSIC/resources/lib/linux/OMAudioLib.so"
   )
 
+(defvar omaudiolib-error-message
+  (format nil
+	  (concatenate
+	   'string
+	   "Something wrong calling functions from OMAudioLib.so~2%"
+	   "Check README file coming with OMAudioLibs sources: ~2%"
+	   "https://github.com/openmusic-project/omaudiolib")))
+
 (defun load-juceaudiolib ()
   (let ((libpath (namestring (om::om-lib-pathname *omaudiolib-pathname*))))
     (if (probe-file libpath)
 	(progn 
 	  (print (concatenate 'string "Loading OM Audio library: " libpath))
-	  (fli:register-module "OMAudio" 
-			       :real-name libpath
-			       :connection-style :immediate)
+	  (handler-case 
+              (fli:register-module "OMAudio" 
+				   :real-name libpath
+				   :connection-style :immediate)
+            (error (c) (format nil "could not load foreign-library ~A : " libpath c)))
+	  ;; check if ffi-functions are accessible via ffi:
+	  (when (fli::null-pointer-p
+		 (fli:make-pointer :symbol-name "openAudioManager"
+				   :errorp nil))
+	    (om-api::om-message-dialog omaudiolib-error-message))
 	  t)
 	(print (concatenate 'string "OMAudioLib not found: " libpath)))))
 
