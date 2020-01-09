@@ -338,7 +338,7 @@
 				(cond ((member (second (pathname-directory (lisp-image-name))) '("usr" "opt") :test #'string=)
 				       (make-pathname :directory (append (butlast (pathname-directory
 										   (truename (pathname-location (lisp-image-name)))))
-									 '("share" "openmusic"))))
+									 '("share" "openmusic6"))))
 				      (t (truename (pathname-location (lisp-image-name)))))))
 	    cl-user::*om-src-directory* *om-root*)
       (setf *om-root* cl-user::*om-src-directory*)))

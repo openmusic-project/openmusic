@@ -10,11 +10,11 @@
 #
 # For development-work, you want to get the sources via git:
 #
-#	git clone git://git.forge.ircam.fr/OM.git
+#	git clone git@github.com:openmusic-project/OM6.git
 # 
-# or download from the ircam forge:
+# or download the latest release from here:
 # 
-#	http://forge.ircam.fr/p/OM6/downloads/
+#	https://github.com/openmusic-project/OM6/releases
 #	
 
 SHELL		= /bin/sh
@@ -24,12 +24,12 @@ PREFIX		= /usr
 
 bindir		= $(DESTDIR)$(PREFIX)/bin
 datadir		= $(DESTDIR)$(PREFIX)/share
-omfontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/omfonts
+omfontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/om6fonts
 
 INSTALL_PROGRAM	= install
 
 BUILDROOT	= $(shell pwd)
-APPNAME		= openmusic
+APPNAME		= openmusic6
 INSTALLRES	= $(BUILDROOT)/build/linux
 
 # these two lookup some info which might change once in a while:
@@ -37,7 +37,7 @@ INSTALLRES	= $(BUILDROOT)/build/linux
 releaseappname  = $(dirname $(BUILDROOT))
 omroot		= $(datadir)/$(APPNAME)
 
-rsyncflags	= -v -rlt -z
+rsyncflags	= -v -rlt -O -z
 
 checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
 ifdef $(checkname)
@@ -59,9 +59,9 @@ install: $(BUILDROOT)/$(releaseappname)
 	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(releaseappname)
 	cd $(bindir) && ln -s -f $(releaseappname) $(APPNAME)
 	mkdir -p $(datadir)/applications/
-	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM6.desktop $(datadir)/applications/
 	mkdir -p $(datadir)/pixmaps/
-	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 omlogo.png $(datadir)/pixmaps/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 om6logo.png $(datadir)/pixmaps/
 	mkdir -p $(omfontsdir)/
 	cd $(BUILDROOT)/resources/fonts/linux && rsync $(rsyncflags) . $(omfontsdir)
 
@@ -70,6 +70,6 @@ uninstall:
 	rm -rfv $(omroot)
 	rm -f $(bindir)/$(APPNAME)
 	rm -f $(bindir)/$(releaseappname)
-	rm -f $(datadir)/applications/OM.desktop
-	rm -f $(datadir)/pixmaps/omlogo.png
+	rm -f $(datadir)/applications/OM6.desktop
+	rm -f $(datadir)/pixmaps/om6logo.png
 	rm -rfv $(omfontsdir)

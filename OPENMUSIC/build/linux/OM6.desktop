@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=OpenMusic
-GenericName=OpenMusic
-Exec=openmusic
-Icon=omlogo
+Name=OpenMusic6
+GenericName=OpenMusic6
+Exec=openmusic6
+Icon=omlogo6
 Type=Application
 Terminal=false
 Categories=Application;Development;Science;Multimedia;Audio;X-Jack;Midi;X-MIDI;

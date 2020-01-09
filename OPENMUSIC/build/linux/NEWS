@@ -19,12 +19,16 @@
 
       https://github.com/openmusic-project/omaudiolib
 
+  - various installation names now try to recognize '6' (as in
+    'openmusic6', 'om6logo.png') etc. - to allow different versions of
+    OM to be installed alongside each other
 
 * RELEASE NOTES 6.15
 
   - Download and updates: https://github.com/openmusic-project/openmusic/releases
   - Sources:		  https://github.com/openmusic-project/openmusic
   - User group and support : https://discussion.forum.ircam.fr/c/openmusic
+
 
 * RELEASE NOTES 6.14.2
 
