@@ -1,3 +1,31 @@
+* RELEASE NOTES 6.16
+
+  - The precompiled version of OMAudioLib.so included with the
+    released version of OM6.16 is now installed and looked up from
+    inside OMs resources folder.
+
+    This version of the dynamic library is compiled with GLIBC v.2.27,
+    to try to stay compatible with previous and current versions of
+    OS'es, and adding "-Wl,--as-needed" to JUCE_LDFLAGS, to not demand
+    sometimes conflicting dependencies such as libcurl/libcurl-gnutls,
+    which are never needed by OM anyhow.
+
+    The aim is to provide a minimal binary which will run on all
+    current 64-bit versions of Linux - Redhat based (Fedora) or Debian
+    based (Ubuntu).
+
+    If for some reason you need to compile your own OMAudioLib.so,
+    instructions are found together with the sources:
+
+      https://github.com/openmusic-project/omaudiolib
+
+
+* RELEASE NOTES 6.15
+
+  - Download and updates: https://github.com/openmusic-project/openmusic/releases
+  - Sources:		  https://github.com/openmusic-project/openmusic
+  - User group and support : https://discussion.forum.ircam.fr/c/openmusic
+
 * RELEASE NOTES 6.14.2
 
   - lots of changes
