@@ -107,11 +107,8 @@
 
 (defvar omaudiolib-error-message
   (format nil
-	  (concatenate
-	   'string
-	   "Something wrong calling functions from OMAudioLib.so~2%"
-	   "Check README file coming with OMAudioLibs sources: ~2%"
-	   "https://github.com/openmusic-project/omaudiolib")))
+	  "Something wrong calling functions from OMAudioLib:~2%    ~A"
+	  *omaudiolib-pathname*))
 
 (defun load-juceaudiolib ()
   (let ((libpath (namestring (om::om-lib-pathname *omaudiolib-pathname*))))
