@@ -246,7 +246,7 @@ External Libraries:
                                              
                                              (om-make-dialog-item 'om-static-text  
                                                                   (om-make-point 58 354) (om-make-point 300 36)
-                                                                  (format nil "Dedicated to the memory of G. Grisey (1946-1998)~%Artwork: A. Mohsen")
+                                                                  (format nil "Dedicated to the memory of G. Grisey (1946-1998)~%Artwork: A. Mohsen (1963-2014)")
                                                                   :font mainfont
                                                                   :fg-color textcolor
                                                                   :bg-color backcolor
