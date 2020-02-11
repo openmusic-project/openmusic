@@ -38,6 +38,9 @@
 
 (defvar *music-fontsize* 24)
 (defvar *default-satff* 'g)
+(defvar *hide-stems* nil)
+(defvar *stem-size-fact* 1)
+(defvar *chord-stem-dir* "neutral")
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID)))
@@ -46,6 +49,9 @@
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *system-color* (or (get-pref modulepref :sys-color) *om-black-color*))
      (setf *select-color* (or (get-pref modulepref :select-color) *om-gray-color*))
+     (setf *hide-stems* (get-pref modulepref :hide-stems))
+     (setf *stem-size-fact* (get-pref modulepref :stem-size-fact))
+     (setf *chord-stem-dir* (get-pref modulepref :chord-stem-dir))
      (set-dynamics-velocities (or (get-pref modulepref :dyn-list) '(20 40 55 60 85 100 115 127)))
      (when *om-tonalite* (put-tonal-prefs (get-pref modulepref :tonal-options)))
      ;(setf *current-1/2-scale*  (or (nth 8 (defvals modulepref)) *2-tone-chromatic-scale*))
@@ -55,6 +61,7 @@
      ))
 
 
+
 ;(defmethod save-pref ((iconID (eql 225)) item)
 ;   (list 225 `(list ,.(append (loop for i from 0 to 7 collect (omng-save (nth i (defvals item))))
 ;                     (list  (omng-save *current-1/2-scale*)  (omng-save *current-1/4-scale*)
@@ -62,9 +69,13 @@
 
 (defmethod get-def-vals ((iconID (eql :score)))
    (list :approx 2 :fontsize 24 :staff 'g :sys-color *om-black-color* :select-color *om-gray-color* 
+         :hide-stems nil
+         :stem-size-fact 1
+         :chord-stem-dir "neutral"
          :dyn-list '(20 40 55 60 85 100 115 127)
          :tonal-options (when *om-tonalite* (tonal-defaults))
          :diapason 440.0))
+
 
 ; *2-tone-chromatic-scale* *4-tone-chromatic-scale* *8-tone-chromatic-scale*))
 
@@ -96,7 +107,9 @@
                                  :retain-scrollbars t))
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
 	(pos 0)
-	(dy #-linux 30 #+linux 35))
+	;(dy #-linux 30 #+linux 30);peut-etre pas necessaire...
+	(dy 30)
+        )
     (om-add-subviews thescroll
 
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (setf pos 15)) (om-make-point 200 30) "Score Editors"
@@ -174,8 +187,56 @@
                                           :object  modulepref 
                                           :i :select-color)
 
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 110 20) "Hide stems"
+                                          :font *controls-font*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 2 dy))) (om-make-point 150 20) "Diapason"
+                     (om-make-dialog-item 'om-check-box (om-make-point 160 pos) (om-make-point 25 22) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :hide-stems)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :hide-stems (om-checked-p item))))
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ 20 200) pos) (om-make-point 110 20) "stems size fact."
+                                          :font *controls-font*)
+                     
+                     (om-make-dialog-item 'om-editable-text 
+                                              (om-make-point (+ 20 300) pos)
+                                              (om-make-point 60 13)
+                                              (format nil "~D" (get-pref modulepref :stem-size-fact)) 
+                                              :modify-action (om-dialog-item-act item
+                                                              (let ((text (om-dialog-item-text item))
+                                                                    number)
+                                                                (unless (string= "" text)
+                                                                  (setf number (ignore-errors (read-from-string text)))
+                                                                  (when (numberp number)
+                                                                    (set-pref modulepref :stem-size-fact number))
+                                                                  )))
+                                              :font *om-default-font2*)
+
+                     
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 130 20) "Stems Direction"
+                                          :font *controls-font*)
+                     
+                     (om-make-dialog-item  'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
+                                           ""
+                                           :range '("neutral" "up" "down")
+                                           :value (cond
+                                                   ((equal *chord-stem-dir* "up") "up")
+                                                   ((equal *chord-stem-dir* "down") "down")
+                                                   (t "neutral")
+                                                   )
+                                           :di-action (om-dialog-item-act item 
+                                                        (let ((choice (om-get-selected-item item)))
+                                                          (set-pref modulepref :chord-stem-dir
+                                                                    (cond
+                                                                     ((string-equal choice "up") "up")
+                                                                     ((string-equal choice "down") "down")
+                                                                     (t "neutral")
+                                                                     )
+                                                                    )))
+                                           :font *controls-font*)
+                     
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 150 20) "Diapason"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-editable-text 
                                               (om-make-point 160 pos)
@@ -191,7 +252,7 @@
                                                                   )))
                                               :font *om-default-font2*)
                      
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* dy 0.8))) (om-make-point 350 22) 
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* dy 1.2))) (om-make-point 350 22) 
                                               "(Frequency of the A4, used for freq-MIDI conversions)"
                                               :font *om-default-font1*)
 
@@ -210,6 +271,7 @@
                        ))
 
     thescroll))
+
 
 ;=======================================================
 ;Dynamic table
