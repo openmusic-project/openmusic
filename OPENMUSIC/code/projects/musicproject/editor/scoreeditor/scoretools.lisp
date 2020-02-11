@@ -586,52 +586,57 @@
 (defmethod make-graph-form-obj ((self chord)  x top linespace mode scale sel system stem)
   (let* ((thenotes (copy-list (inside self)))
          (thenotes (cond 
-                     ((or (= mode 3) (=  mode 4)) thenotes)
-                     ((= mode 2) (sort thenotes '> :key 'midic))
-                     (t (sort thenotes '< :key 'midic))))
-          (offsets (Loffset self))
-          (zigzag-list (make-alt-zig-zag self scale))
-          (note-head-list (make-chord-zig-zag self scale))
-          (grap-notes (loop for item in thenotes
-                            for pos in note-head-list
-                            for i = 0 then (+ i 1)
-                            collect
-                            (let (notegrap)
-                              (cond
-                               ((= mode 0)
-                                (setf notegrap (make-graph-form-obj item (round (+ x (* linespace pos))) top linespace 0 scale sel system stem))
-                                (setf (delta-head notegrap) pos)
-                                (when (natural-alt-char notegrap)
-                                  (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list)))          
-                                  )
-                                )
-                               ((= mode 4)
-                                (let* ((off (round (* (pop offsets) *onesec* 4 linespace) 1000)))
-                                  (setf notegrap (make-graph-form-obj item (+ x off) top linespace 0 scale sel system stem))
-                                  (when (natural-alt-char notegrap)
-                                    (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list))))
-                                  ))
-                               (t (setf notegrap (make-graph-form-obj item (round (+ x (* 8 linespace i))) top linespace 0 scale sel system stem))
-                                  (when (alt-char notegrap)
-                                    (setf (alteration notegrap) -1))))
+                    ((or (= mode 3) (=  mode 4)) thenotes)
+                    ((= mode 2) (sort thenotes '> :key 'midic))
+                    (t (sort thenotes '< :key 'midic))))
+         (offsets (Loffset self))
+         (zigzag-list (make-alt-zig-zag self scale))
+         (note-head-list (make-chord-zig-zag self scale))
+         (grap-notes (loop for item in thenotes
+                           for pos in note-head-list
+                           for i = 0 then (+ i 1)
+                           collect
+                           (let (notegrap)
+                             (cond
+                              ((= mode 0)
+                               (setf notegrap (make-graph-form-obj item (round (+ x (* linespace pos))) top linespace 0 scale sel system stem))
+                               (setf (delta-head notegrap) pos)
+                               (when (natural-alt-char notegrap)
+                                 (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list)))          
+                                 )
+                               )
+                              ((= mode 4)
+                               (let* ((off (round (* (pop offsets) *onesec* 4 linespace) 1000)))
+                                 (setf notegrap (make-graph-form-obj item (+ x off) top linespace 0 scale sel system stem))
+                                 (when (natural-alt-char notegrap)
+                                   (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list))))
+                                 ))
+                              (t (setf notegrap (make-graph-form-obj item (round (+ x (* 8 linespace i))) top linespace 0 scale sel system stem))
+                                 (when (alt-char notegrap)
+                                   (setf (alteration notegrap) -1))))
                               
-                              notegrap)))
-          (newchord (make-instance 'grap-chord
-                      :reference self
-                      :main-point (list x 0)
-                      :rectangle (list 0 0 0 0)
-                      :stem (if (and stem (or (= mode 0) (= mode 4)) (lmidic self)) 
-                                (if (< (list-min (lmidic self)) 
-                                       (* 100 (om-mean (range (car (staff-list system))))))
-                                    (round (* 3 linespace))
-                                  (- (round (* 3 linespace)))
-                                  ))
-                      :selected (member self sel :test 'equal)
-                      :inside grap-notes))
-          )
-     (set-parent newchord grap-notes)
-     (make-graphic-extras newchord)
-     newchord))
+                             notegrap)))
+         (newchord (make-instance 'grap-chord
+                                  :reference self
+                                  :main-point (list x 0)
+                                  :rectangle (list 0 0 0 0)
+                                  :stem (if (and stem (or (= mode 0) (= mode 4)) (lmidic self)) 
+                                            (cond 
+                                             ((equal *chord-stem-dir* "up") (round (* 3 linespace)))
+                                             ((equal *chord-stem-dir* "down") (- (round (* 3 linespace))))
+                                             (t (if (< (list-min (lmidic self)) 
+                                                       (* 100 (om-mean (range (car (staff-list system))))))
+                                                    (round (* 3 linespace))
+                                                  (- (round (* 3 linespace)))
+                                                  )))
+                                          )
+                                  :selected (member self sel :test 'equal)
+                                  :inside grap-notes))
+         )
+    (set-parent newchord grap-notes)
+    (make-graphic-extras newchord)
+    newchord))
+
 
 
 (defmethod draw-object ((self grap-chord) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
@@ -656,20 +661,24 @@
   )
 
 (defmethod draw-stem ((self grap-chord) x y sel stemsize)
-   (when (inside self)
-     (let* ((thenotes (copy-list (inside self)))
-            (thenotes (sort thenotes '< :key 'y))
-            (y-min (y (car thenotes)))
-            (y-max (y (car (last thenotes)))))
-       (if (plusp stemsize)
-           (setf y-min (- y-min stemsize))
-         (setf y-max (- y-max stemsize)))
-       #+win32 (setf x (+ x 2)) 
-      (om-with-fg-color nil (mus-color (reference self))
-                         (om-draw-line x (+ y y-min) x (+ y y-max)))
+  (if (not *hide-stems*)
+      (when (inside self)
+        (let* ((thenotes (copy-list (inside self)))
+               (thenotes (sort thenotes '< :key 'y))
+               (y-min (y (car thenotes)))
+               (y-max (y (car (last thenotes))))
+               (stemsize (* stemsize *stem-size-fact*))
+               )
+          (if (plusp stemsize)
+              (setf y-min (- y-min stemsize))
+            (setf y-max (- y-max stemsize)))
+          #+win32 (setf x (+ x 2)) 
+          (om-with-fg-color nil (mus-color (reference self))
+            (om-draw-line x (+ y y-min) x (+ y y-max)))
       
-     )
-  ))
+          )
+        )))
+
 
 
 ;-----Others
@@ -1671,7 +1680,13 @@
    (let* ((thenotes (Lmidic (reference self)))
           (thenotes (sort thenotes '<))
           (moyen (round (+ (car (last thenotes)) (car thenotes) ) 2)))
-     (if (< moyen (* staff-center 100)) "up" "dw")))
+     (cond 
+      ((equal *chord-stem-dir* "up") "up")
+      ((equal *chord-stem-dir* "down") "dw")
+      (t (if (< moyen (* staff-center 100)) "up" "dw"))
+      )
+     ))
+
   
 
 (defmethod get-edit-param ((self scorepanel) param)
@@ -1723,9 +1738,15 @@
        (draw-propre-group  xpos ystart (chif2sstr (propre-group self)) (selected self) dir size))
      (draw-stem-no-group  xpos (selected self)  ystart  yfin)
      (loop for i from 0 to (- numbeams 1) do
-           (if  (string-equal dir "up")
-             (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) (* 3/12 i size))) (beam-up) (selected self))
-             (draw-beam-string  xpos (round (- yfin (* 3/14 i size))) (beam-dwn) (selected self)))))))
+           (cond 
+            ((equal *chord-stem-dir* "up") (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) (* 3/12 i size))) (beam-up) (selected self)))
+            ((equal *chord-stem-dir* "down") (draw-beam-string  xpos (round (- yfin (* 3/14 i size))) (beam-dwn) (selected self)))
+            (t (if  (string-equal dir "up")
+                   (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) (* 3/12 i size))) (beam-up) (selected self))
+                 (draw-beam-string  xpos (round (- yfin (* 3/14 i size))) (beam-dwn) (selected self))
+                 )))
+              ))))
+
 
 
 (defun draw-propre-group (x y str sel dir size)
@@ -2065,19 +2086,22 @@
 
 ;;Direction ("up" or "dw") and start (in midic) of the group
 (defmethod calcule-dir-et-start ((self grap-group) midicenter)
-   (let ((notes (get-graph-type-obj self 'grap-note)) )
-     (if notes
-       (let ((aux 0) (max 0) (min 100000))
-         (loop for item in notes do
-               (let ((midic (round (midic (reference item)) 100)))
-                 (setf aux (+ aux midic))
-                 (setf min (min min midic))
-                 (setf max (max max midic))))
-         (setf aux (round aux (length notes)))
-         (if (< aux midicenter)
-           (list "up" max )
-           (list "dw"  min )))
-       (list "up" 60 ))))
+  (let ((notes (get-graph-type-obj self 'grap-note)) )
+    (if notes
+        (let ((aux 0) (max 0) (min 100000))
+          (loop for item in notes do
+                (let ((midic (round (midic (reference item)) 100)))
+                  (setf aux (+ aux midic))
+                  (setf min (min min midic))
+                  (setf max (max max midic))))
+          (setf aux (round aux (length notes)))
+          (cond 
+           ((equal *chord-stem-dir* "up") (list "up" max ))
+           ((equal *chord-stem-dir* "down") (list "dw"  min ))
+           (t (if (< aux midicenter)
+                  (list "up" max ) (list "dw"  min )))))
+      (list "up" 60 ))))
+
 
 #|
 ;get the start y position (in pixels) of the root group
