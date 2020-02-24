@@ -34,6 +34,9 @@
 (defmethod edition-values  ((self tempobjframe))
   (get-mini-param self 'cmnpref))
 
+(defmethod edition-values   ((self list-parameter-panel))
+  (get-mini-param self 'cmnpref))
+
 ;=======
 (defmethod get-mini-zoom    ((self t)) 0.8)
 (defmethod get-mini-zoom    ((self miniview)) 0.8)
