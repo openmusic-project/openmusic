@@ -44,7 +44,7 @@
 (defparameter *version-str-full* "")
 (defparameter *release-language* :en)
 (defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
-(defparameter *release-author* "j. bresson")
+(defparameter *release-author* "K. Haddad ")
 
 (defun version-to-string (num &optional (full nil) (show-beta nil))
   (let* ((str (format nil "~,6f" num))
