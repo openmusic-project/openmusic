@@ -122,20 +122,17 @@
 (defun om-choose-new-directory-dialog (&key (prompt "Choose location and name for the new directory") (directory nil) (defname nil))
   (let* ((dir (or directory *last-directory*))
          (def (if dir 
-                  (om-make-pathname :directory (pathname-directory dir) :name defname)
-                defname))
-         (path (prompt-for-file prompt :owner (def-dialog-owner)
-                                :filter nil :filters nil :pathname def
-                                :operation :save)))
-
+                 (om-make-pathname :directory (pathname-directory dir) :name defname)
+               defname))
+        (path (prompt-for-file prompt :owner (def-dialog-owner)
+                               :filter nil :filters nil :pathname def
+                               :operation :save)))
     (when path
       (setf *last-directory* (om-make-pathname :directory path))
       (om-make-pathname :device (pathname-device path) :host (pathname-host path)
-                        :directory 
-                        (if (pathname-type path)
-                            (append (pathname-directory path) (list (concatenate 'string (pathname-name path) "." (pathname-type path))))                                       (append (pathname-directory path) (list (pathname-name path))))
-                        )
+                        :directory (append (pathname-directory path) (list (pathname-name path))))
       )))
+
 
 ;;; YES OR NO DIALOG
 (defun om-y-or-n-dialog (message &key (size (om-make-point 300 150)) (default-button nil))
