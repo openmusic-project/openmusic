@@ -149,7 +149,7 @@
 (defmethod get-editor-class ((self OMWorkSpace)) 'WorkSpaceEditor)
 
 (defmethod def-ws-params ((self OMWorkSpace))
-  (list 1 (om-make-point 20 50) (om-make-point 280 480)))
+  (list 1 (om-make-point 20 50) (om-make-point 360 400)))
 
 (defmethod ShowObjectEditor ((self OMWorkSpace))
   (if (and *om-workSpace-win* (Editorframe self))
