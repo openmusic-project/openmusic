@@ -11,12 +11,12 @@
 SHELL		= /bin/sh
 
 LISPFLAGS	= -build
-LISP		= $(HOME)/bin/lw $(LISPFLAGS)
+LISP		= $(HOME)/bin/lw-console $(LISPFLAGS)
 
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-IMAGENAME	= OM_6.16
+IMAGENAME	= OM_6.17
 
 path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
@@ -36,7 +36,7 @@ rubbish		= *.$(faslname)
 
 compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
-exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
+exclude_fasl	= --exclude 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
 exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
