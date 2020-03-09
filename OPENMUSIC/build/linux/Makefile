@@ -36,7 +36,7 @@ rubbish		= *.$(faslname)
 
 compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
-exclude_fasl	= --exclude 'dspec-database.$(faslname)' --exclude '$(rubbish)'
+exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
 exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
