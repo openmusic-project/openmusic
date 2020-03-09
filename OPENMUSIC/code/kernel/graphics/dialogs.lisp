@@ -158,23 +158,22 @@ C. Agon, G. Assayag, J. Bresson")
 
 (defparameter *credits-2* 
   "Original design and development: 
-Carlos Agon, Gérard Assayag, Jean Bresson
+Carlos Agon, Gerard Assayag, Jean Bresson
 
 Linux support and development: Anders Vinjar
 
 Contributions and code from: 
-Emmanuel Amiot, Moreno Andreatta, Sheldon Ball, Dimitri Bouche, Olivier Delerue, Nicholas Ellis, Jérémie Garcia, Karim Haddad, Geof Holbrook, Mikael Laurson, Serge Lemouton, Gilbert Nouno, J. Podrazik, Camilo Rueda, Marlon Schumacher, Marco Stroppa, Charlotte Truchet, Frédéric Voisin
+E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, K. Haddad, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, F. Voisin
 
 Lisp libraries:  
-- CFFI/babel/alexandria by James Bielman, Luis Oliveira Nikodemus Siivola, Attila Lendvai, Marco Baringer, Robert Strandh, Tobias Rittweiler
-- PortMIDI bindings by Heinrich Taube, Christoph Finkensiep
-- cl-midi by Mathieu Chabanne, Camille Constant, Emmanuel Necibar, Stephanie Recco, Robert Strandh, David Lewis, Marcus Pearce, Christophe Rhodes 
+- CFFI/babel/alexandria by J. Bielman, L.O. N. Siivola, A, Lendvai, M. Baringer, R. Strandh, T. Rittweiler
+- PortMIDI bindings by H. Taube, C. Finkensiep
+- cl-midi by M. Chabanne, C. Constant, E. Necibar, S. Recco, R. Strandh, D. Lewis, M. Pearce, C. Rhodes 
 - LispWorks-UDP by Chun Tian (binghe)
 - CL-OSC by Nik Gaffney (Franz Inc.)
 - S-XML by Sven Van Caekenberghe (Beta Nine BVBA) 
 - CL-SVG by William S. Annis
 - Yason by Hans Huebner
-
 External Libraries:
   MIDI support: PortMidi (c) PortMedia
   Audio file I/O: LibSndFile (c) Erik de Castro Lopo
@@ -211,16 +210,16 @@ External Libraries:
                              :bg-color backcolor
                              :size (om-add-points 
                                     (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-                                    (if credits (om-make-point 440 #-linux 0 #+linux 20) (om-make-point 0 0)))
+                                    (if credits (om-make-point 320 #-linux 0 #+linux 30) (om-make-point 0 0)))
                              :subviews (list (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 6) (om-make-point 400 36) 
+                                                                  (om-make-point 110 6) (om-make-point 400 36)
                                                                   name
                                                                   :font (om-make-font "Arial" (nth 4 *om-def-font-sizes*) :style '(:bold))
                                                                   :fg-color textcolor
                                                                   :bg-color backcolor
                                                                   )
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 92 57) (om-make-point 300 18) 
+                                                                  (om-make-point 58 57) (om-make-point 300 18)
                                                                   (string+ "(c) 1995-"
                                                                            (subseq *release-date* 0 4)
                                                                            " Ircam-Centre Georges Pompidou")
@@ -229,7 +228,7 @@ External Libraries:
                                                                   :bg-color backcolor
                                                                   )
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 196 42) (om-make-point 250 20) 
+                                                                  (om-make-point 58 42) (om-make-point 250 20)
                                                                   "Music Representations Group"
                                                                   :font mainfont
                                                                   :fg-color textcolor
@@ -262,8 +261,8 @@ External Libraries:
                        ;                     :fg-color textcolor
                        ;                     :bg-color backcolor)
                        (om-make-dialog-item 'om-static-text  
-                                            (om-make-point 390 15)
-                                            (om-make-point 460 600) 
+                                            (om-make-point 390 10)
+                                            (om-make-point 342 600) ;here
                                             *credits-2*
                                             :font mainfont
                                             :fg-color textcolor
