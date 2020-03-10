@@ -313,7 +313,7 @@
    :comment-color (om-make-color 0 0 0)
    :ws-color *workspace-color* :box-fact 1 
    :boxname-font *om-default-font1*
-   :folder-pres 1
+   :folder-pres 0
    :patch-win-buttons t
    :curved-connections nil
    :mv-font-size 20
