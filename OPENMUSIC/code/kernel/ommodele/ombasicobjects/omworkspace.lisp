@@ -372,7 +372,7 @@
     ;;; new
     (user-init-funcs)
     
-    (put-all-preferences);mytest
+    (put-all-preferences);init pref. file - required when creating new workspace
   
     ))
 
