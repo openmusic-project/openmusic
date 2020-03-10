@@ -260,7 +260,7 @@
 
    (set-ompref 'prev-ws (mypathname *current-workSpace*))
    (save-omprefs)
-   
+   (save-preferences);test
    ;(om-close-window *splash-screen*)
    ;(setf *splash-screen* nil)
    (ShowObjectEditor *current-workSpace*)
@@ -372,7 +372,7 @@
     ;;; new
     (user-init-funcs)
     
-    ;;(put-all-preferences)
+    (put-all-preferences);mytest
   
     ))
 
@@ -471,7 +471,8 @@
        (WITH-OPEN-FILE (out thepath :direction :output 
                             :if-does-not-exist :create :if-exists :supersede) 
          (write-line (format nil ";~D" *om-version*) out)
-         (prin1 '(in-package :om) out))
+         (prin1 '(in-package :om) out)
+         )
        ;(setf thepath (make-pathname :directory (pathname-directory wspath) :name  "userpackage" :type "lisp"))
        ;(delete-file-protection thepath)
        ;(WITH-OPEN-FILE (out thepath :direction :output 
@@ -479,7 +480,8 @@
        ;  (prin1 '(in-package :om) out)
        ;  (prin1 '(setf *package-user* (add-new-packages (list "User" nil nil nil nil)  *om-package-tree*)) out)
        ;  (prin1 '(init-user-pathname) out))
-       )))
+       )
+     ))
 
 
 ;;;==================================================
