@@ -100,6 +100,7 @@
         (setf (mypathname *om-package-tree*) (mypathname *current-workspace*))
         (setf (mypathname *om-globalsfolder*) 
               (om-make-pathname :directory (append (pathname-directory (mypathname self)) (list "globals"))))
+        (set-presentation self 0);view mode Icons by default
         (AddPackage2Pack *om-globalsfolder* *om-package-tree*)
      )))
 
