@@ -1965,6 +1965,8 @@
 
 (defmethod get-obj-dur ((self arp-chord)) (extent self))
 
+(defmethod play-obj? ((self arp-chord)) t)
+
 (defmethod chord-obj-to-play ((self chord) mode)
   (if (find mode '(1 2 3) :test '=)     
      (let ((notes (copy-list (inside self))))
