@@ -616,7 +616,7 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
   :indoc '("a rhythm tree")
   :icon 225
   :doc "
-Returns the numbre of pulses in <tree>.
+Returns the number of pulses in <tree>.
 "
   (let (( liste (if (typep tree 'voice) (tree tree) tree)))
     (length
