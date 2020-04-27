@@ -1759,8 +1759,9 @@
          (setf (afterfun control) 
                #'(lambda (x) 
                    (loop for item in (selection? self) do
-                         (when (note-p item)
-                           (change-midic item (value x))))
+                         ;(when (note-p item)
+                        (change-midic item (value x)))
+					;);scroll edit fix
                    (update-panel self))))
         ((equal slotmode 'chord-offset)
          (setf (min-val control) 0)
