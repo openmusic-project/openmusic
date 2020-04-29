@@ -474,6 +474,7 @@
          (write-line (format nil ";~D" *om-version*) out)
          (prin1 '(in-package :om) out)
          )
+       (put-all-preferences);necessaire pour init les prefs
        ;(setf thepath (make-pathname :directory (pathname-directory wspath) :name  "userpackage" :type "lisp"))
        ;(delete-file-protection thepath)
        ;(WITH-OPEN-FILE (out thepath :direction :output 
