@@ -32,7 +32,7 @@
 
 (defvar *def-midi-out* 0 "default output port number")
 (defvar *def-midi-in* 0 "default input port number")
-(defparameter  *midi-port-modulo-channel* t "alloc consecutive ports for channels above 16")
+(defparameter  *midi-port-modulo-channel* nil "alloc consecutive ports for channels above 16")
 
 (defvar *def-midi-format* 1)
 (defvar *default-midi-system* nil)
@@ -76,7 +76,7 @@
 
 (defmethod get-def-vals ((ID (eql :midi)))
     (list :midi-out 0 :midi-in 0 
-	  :port-modulo-channel t
+	  :port-modulo-channel nil ;t
 	  :midi-system :portmidi
           :score-player :midi-player
           :force-player nil
