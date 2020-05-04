@@ -231,6 +231,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 	(v2 (7-msb (car val))))
     (apply 'make-message* (list (type-to-midi :pitchbend) channel v1 v2))))
   
+;maybe not a good idea. Reverting to old setup
+#|
 (defun make-midi-bytes (type channel vals)
   (cond ((equal type :pitchbend) (make-midi-pitchbend-msg channel vals))
 	;; TODO: handle other messages with 14 bit values
@@ -238,7 +240,14 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 		 (v1 (if (listp vals) (car vals) (7-lsb vals)))
 		 (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
 	     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))))
+|#
 
+(defun make-midi-bytes (type channel vals)
+  ;(print (list type channel vals))
+  (let ((type-ref (type-to-midi type))
+        (v1 (if (listp vals) (car vals) (7-lsb vals)))
+        (v2 (if (listp vals) (or (cadr vals) 0) (7-msb vals))))
+    (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
 ;;; exported call
 (defun portmidi-send-evt (evt)
