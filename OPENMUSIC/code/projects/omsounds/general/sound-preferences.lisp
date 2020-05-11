@@ -128,7 +128,7 @@
 
 (defmethod get-def-vals ((iconID (eql :audio)))
   (list :audio-format #+cocoa :aiff #-cocoa :wav :sys-console t :audio-sr 44100 :audio-res 16
-        :auto-rename nil :delete-tmp nil :normalize t :normalize-level 0.0 :normalizer :om
+        :auto-rename nil :delete-tmp t :normalize t :normalize-level 0.0 :normalizer :om
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
         :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
         :audio-device *audio-out-device* ;; use default
