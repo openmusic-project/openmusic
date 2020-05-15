@@ -4150,11 +4150,12 @@
   (loop for item in (selection? self) do
         (score-move-a item self (cond
                                  ((om-shift-key-p) (if (= dir 0) 1200 -1200))
-                                 ((om-command-key-p) (if (= dir 0) 700 -700))
+                                 ((#+(or cocoa win32) om-command-key-p  #+linux om-option-key-p) 
+                                  (if (= dir 0) 700 -700))
                                  (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
                                       (if (= dir 0) factor
                                         (* -1 factor)))))))
-        (update-panel self t))
+  (update-panel self t))
 
 
 ;;; new : changer la duree avec les touche R/L
