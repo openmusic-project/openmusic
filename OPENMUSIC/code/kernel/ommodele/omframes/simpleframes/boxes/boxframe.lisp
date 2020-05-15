@@ -108,7 +108,7 @@
 
 (defmethod draw-connection-drag ((self om-view) init-pos pos)
   (om-with-line-size 2
-    (om-with-line #+macosx '(2 3) #-macosx '(1 1)
+    (om-with-line '(2 3) ; #+macosx '(2 3) #-macosx '(1 1)
       (om-with-fg-color self (om-make-color-alpha 0 0 0 0.5)
         (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))))))
 
@@ -330,7 +330,7 @@
    (toggle-icon-active-mode self))
 
 
-;;; bizarre : on doit mettre les size des in/outs et lock button à la main sinon ils sont modifiés.
+;;; bizarre : on doit mettre les size des in/outs et lock button a la main sinon ils sont modifies.
 ;;; aussi pour les "lisp" icon...
 (defmethod om-set-view-size ((self omboxframe) size)
   (let* ((w (om-point-x size))
@@ -1357,7 +1357,7 @@
        (let* ((instance (omNG-make-new-instance (clone self) (mk-unique-name container (name theclass))))
               (obj (omNG-make-new-boxcall instance posi (name instance)))
               (frame (make-frame-from-callobj obj)))
-          ;; attention l'instance n'est pas forcement du même type que celle de la boite d'ou elle sort...
+          ;; attention l'instance n'est pas forcement du meme type que celle de la boite d'ou elle sort...
           (if  (and  (edition-params (object box))
                     (equal (type-of (value (object box))) (type-of (instance instance))))
               (setf (edition-params instance) (eval (copy-value-params self (object box))))
