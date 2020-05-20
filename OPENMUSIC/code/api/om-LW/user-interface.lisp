@@ -127,13 +127,16 @@
          (path (prompt-for-file prompt :owner (def-dialog-owner)
                                 :filter nil :filters nil :pathname def
                                 :operation :save)))
+    (print (append (pathname-directory path) (list (concatenate 'string (pathname-name path) ".wrk"))))
 
     (when path
       (setf *last-directory* (om-make-pathname :directory path))
       (om-make-pathname :device (pathname-device path) :host (pathname-host path)
                         :directory 
-                        (if (pathname-type path)
-                            (append (pathname-directory path) (list (concatenate 'string (pathname-name path) "." (pathname-type path))))                                       (append (pathname-directory path) (list (pathname-name path))))
+                        #+macosx (append (pathname-directory path) (list (concatenate 'string (pathname-name path) ".wrk")))
+                        #-macosx  (if (pathname-type path)
+                            (append (pathname-directory path) (list (concatenate 'string (pathname-name path) "." (pathname-type path))))                                       
+                                    (append (pathname-directory path) (list (pathname-name path))))
                         )
       )))
 
