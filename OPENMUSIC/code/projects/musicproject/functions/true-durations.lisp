@@ -60,9 +60,11 @@
   :doc "Gives the durations in milliseconds of an om object including rests (rests are negative numbers).
 IMPORTANT: chord-seqs with overlapping notes will be cropped according to
 next note, legato=100."
-  (let* ((newcs (if (typep self 'note) 
+  (let* ((newchrdseq (if (typep self 'note) 
                            (Objfromobjs (Objfromobjs self (make-instance 'chord)) (make-instance 'chord-seq))
                            (Objfromobjs self (make-instance 'chord-seq))))
+
+         (newcs (normalize-chord-seq newchrdseq))
          (onsets (Lonset newcs))
          (dur (Ldur newcs))
          (newonsets (if (= 2 (length onsets)) (x->dx  onsets) (butlast (x->dx onsets))))
@@ -80,6 +82,6 @@ next note, legato=100."
     
    (let ((result (remove nil (mapcar #'(lambda (x) (if (not (or (= x 1) (= x -1))) x ))
           resultat2))))
-     (if (= 2 (length onsets)) (list (first result)) result))
+         (if (= 2 (length onsets)) (list (car result) (second result)) result))
    )
   )
