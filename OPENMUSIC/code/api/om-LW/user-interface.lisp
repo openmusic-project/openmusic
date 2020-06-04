@@ -133,10 +133,14 @@
       (setf *last-directory* (om-make-pathname :directory path))
       (om-make-pathname :device (pathname-device path) :host (pathname-host path)
                         :directory 
-                        #+macosx (append (pathname-directory path) (list (concatenate 'string (pathname-name path) ".wrk")))
-                        #-macosx  (if (pathname-type path)
+                        #+macosx 
+                        (if (not (equal (pathname-type path) :unspecific))
                             (append (pathname-directory path) (list (concatenate 'string (pathname-name path) "." (pathname-type path))))                                       
-                                    (append (pathname-directory path) (list (pathname-name path))))
+                          (append (pathname-directory path) (list (pathname-name path))))
+                        #-macosx  
+                        (if (pathname-type path)
+                            (append (pathname-directory path) (list (concatenate 'string (pathname-name path) "." (pathname-type path)))) 
+                          (append (pathname-directory path) (list (pathname-name path))))
                         )
       )))
 
