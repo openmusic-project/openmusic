@@ -109,7 +109,7 @@
 ;-------RESOURCES--------------
 (defvar *resources-to-load* nil)
 
-;;;; allow to know abou required resources without loading the patch (for import/export)
+;;;; allow to know about required resources without loading the patch (for import/export)
 (defun write-resources (obj res-list ptr)  
   (when res-list 
     (let ((rel-resources (loop for rtype in res-list collect
