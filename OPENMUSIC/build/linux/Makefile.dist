@@ -24,12 +24,12 @@ PREFIX		= /usr
 
 bindir		= $(DESTDIR)$(PREFIX)/bin
 datadir		= $(DESTDIR)$(PREFIX)/share
-omfontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/om6fonts
+omfontsdir	= $(DESTDIR)$(PREFIX)/share/fonts/omfonts
 
 INSTALL_PROGRAM	= install
 
 BUILDROOT	= $(shell pwd)
-APPNAME		= openmusic6
+APPNAME		= openmusic
 INSTALLRES	= $(BUILDROOT)/build/linux
 
 # these two lookup some info which might change once in a while:
@@ -59,9 +59,9 @@ install: $(BUILDROOT)/$(releaseappname)
 	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(releaseappname)
 	cd $(bindir) && ln -s -f $(releaseappname) $(APPNAME)
 	mkdir -p $(datadir)/applications/
-	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM6.desktop $(datadir)/applications/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 OM.desktop $(datadir)/applications/
 	mkdir -p $(datadir)/pixmaps/
-	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 om6logo.png $(datadir)/pixmaps/
+	cd $(INSTALLRES) && $(INSTALL_PROGRAM) -D -m 0644 omlogo.png $(datadir)/pixmaps/
 	mkdir -p $(omfontsdir)/
 	cd $(BUILDROOT)/resources/fonts/linux && rsync $(rsyncflags) . $(omfontsdir)
 
@@ -70,6 +70,6 @@ uninstall:
 	rm -rfv $(omroot)
 	rm -f $(bindir)/$(APPNAME)
 	rm -f $(bindir)/$(releaseappname)
-	rm -f $(datadir)/applications/OM6.desktop
-	rm -f $(datadir)/pixmaps/om6logo.png
+	rm -f $(datadir)/applications/OM.desktop
+	rm -f $(datadir)/pixmaps/omlogo.png
 	rm -rfv $(omfontsdir)
