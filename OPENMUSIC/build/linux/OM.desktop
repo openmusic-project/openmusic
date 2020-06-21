@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=OpenMusic
+GenericName=OpenMusic
+Exec=openmusic
+Icon=omlogo
+Type=Application
+Terminal=false
+Categories=Application;Development;Science;Multimedia;Audio;X-Jack;Midi;X-MIDI;
+MimeType=text/x-omp;
