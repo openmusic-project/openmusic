@@ -14,8 +14,11 @@
 *.app/
 /OM 6.*/**/*
 /OPENMUSIC/OM_6.*
+/distrib/
 /omaudiolib/Builds/
 codesign-om
+om_prepare_package_final.sh
+Om-Entitlements.plist
 
 docs/_site/*
 Gemfile.lock
