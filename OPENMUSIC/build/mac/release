@@ -145,6 +145,19 @@ echo "***************************************************"
 	./codesign-om
 echo "=> CODE SIGNATURE: DONE"
 }
+
+om_prep_final()
+{
+echo "***************************************************"
+echo "Build dmg, Codesign, Send for Notorization"
+echo "***************************************************"
+        ./om_prepare_package_final.sh
+echo "=> DONE"
+}
+
+   
+
+
 #=============================
 # MAIN SCRIPT
 #=============================
@@ -155,6 +168,7 @@ cd ../../..
 if 		[ $1 = "-d" ]; 		then 	deliver_app
 elif	[ $1 = "-p" ];		then	pack_app; set_fonts
 elif	[ $1 = "-dp" ];		then	deliver_app; pack_app; set_fonts
+elif	[ $1 = "-n" ];		then	deliver_app; pack_app; set_fonts; om_prep_final
 elif	[ $1 = "-dmg" ];	then	create_simple_dmg
 elif	[ $1 = "-zip" ];	then	zip_release
 elif	[ $1 = "-sign" ];	then	sign_release	
@@ -168,6 +182,7 @@ else
 	echo "-d = deliver app"
 	echo "-p = pack delivered app as a separate folder (including fonts) "
 	echo "-dp = deliver and pack"
+	echo "-n = deliver, pack, create DMG, codesign and notorize"
 	echo "-sign = sign delivered package"
 	echo "-zip = create ZIP from previously packed app"
 	echo "-dmg = create DMG from previously packed app"
