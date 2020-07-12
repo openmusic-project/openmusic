@@ -39,7 +39,7 @@
 (defvar *default-midi-file-system* nil)
 (defvar *midi-setup* nil)
 
-(defparameter *midi-microplay* nil)
+;(defparameter *midi-microplay* nil)
 (defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
 (defparameter *score-players* '(:midi-player :microplayer :osc-scoreplayer))
 (defparameter *force-score-player* nil)
@@ -53,13 +53,13 @@
   (let ((modulepref (find-pref-module iconID)))
     (setf *def-midi-in* (get-pref modulepref :midi-in))
     (setf *def-midi-out* (get-pref modulepref :midi-out))
-    (setf *midi-port-modulo-channel* (get-pref modulepref :port-modulo-channel))
+    ;(setf *midi-port-modulo-channel* (get-pref modulepref :port-modulo-channel))
     (setf *default-midi-system* :portmidi)  ; (get-pref modulepref :midi-system)
     (setf *default-score-player* (get-pref modulepref :score-player))
     (setf *force-score-player* (get-pref modulepref :force-player))
-    (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
-    (setf *micro-channel-mode-on* (get-pref modulepref :channel-shift))
-    (setf *micro-channel-approx* (get-pref modulepref :channel-shift-approx))
+    ;(setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
+    ;(setf *micro-channel-mode-on* (get-pref modulepref :channel-shift))
+    ;(setf *micro-channel-approx* (get-pref modulepref :channel-shift-approx))
     (when (and (om-midi::midi-connect-function *default-midi-system*) 
                (not (equal *midi-setup* (get-pref modulepref :midi-setup))))
       (setf *midi-setup* (get-pref modulepref :midi-setup))
@@ -76,15 +76,15 @@
 
 (defmethod get-def-vals ((ID (eql :midi)))
     (list :midi-out 0 :midi-in 0 
-	  :port-modulo-channel nil ;t
+	  ;:port-modulo-channel nil ;t
 	  :midi-system :portmidi
           :score-player :midi-player
           :force-player nil
 	  :midi-file-system :cl-midi
 	  :midi-format 1
-          :channel-shift '(4 8)
-          :channel-shift-approx 8
-	  :auto-microtone-bend nil
+          ;:channel-shift '(4 8)
+          ;:channel-shift-approx 8
+	  ;:auto-microtone-bend nil
 	  :midi-setup '(((0 nil)) ((0 nil))) ;;; (in out)
 	  :midi-presets (def-midi-presets)))
 
@@ -220,13 +220,13 @@
                                                    ))))
                                            :font *om-default-font2*)
 
-		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 300 40) 
-                                           "MIDI channels above 16 go to successive out ports:" :font *controls-fonti*)
+		      ;(om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 300 40) 
+                      ;                    "MIDI channels above 16 go to successive out ports:" :font *controls-fonti*)
 
-		      (om-make-dialog-item 'om-check-box (om-make-point 330 i) (om-make-point 20 20) ""
-                                           :checked-p (get-pref modulepref :port-modulo-channel)
-                                           :di-action #'(lambda (item) 
-                                                          (set-pref modulepref :port-modulo-channel (om-checked-p item))))
+		      ;(om-make-dialog-item 'om-check-box (om-make-point 330 i) (om-make-point 20 20) ""
+                      ;                     :checked-p (get-pref modulepref :port-modulo-channel)
+                      ;                     :di-action #'(lambda (item) 
+                      ;                                    (set-pref modulepref :port-modulo-channel (om-checked-p item))))
 		      
 		      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 30)) (om-make-point 200 40) 
                                            "In case of emergency:" :font *controls-fonti*)
@@ -263,10 +263,11 @@
 
                      
 
-                      
-                      (om-make-dialog-item 'om-static-text (om-make-point 400 (setf i 30)) (om-make-point 300 30) 
-                                           "Micro-intervals (MIDI player)" :font *om-default-font2b*)
-                      
+                      ;A REMETTRE UNE FOIS LES ELEMENTS FAIT
+                      ;(om-make-dialog-item 'om-static-text (om-make-point 400 (setf i 30)) (om-make-point 300 30) 
+                      ;                     "Micro-intervals (MIDI player)" :font *om-default-font2b*)
+                     
+                      #|
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i dy)) (om-make-point 150 24)
                                            "Shift MIDI channels:" :font *controls-font*)
                       (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 580 (- i (/ dy 4))) (om-make-point 170 24) ""
@@ -313,7 +314,8 @@
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 16)) (om-make-point 360 30) 
                                            "[works only with objects using a global MIDI port]"
                                            :font *om-default-font1*)
-               
+                      |#
+
                       ;(om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 50)) (om-make-point 200 30) 
                       ;                     "System-specific:" :font *om-default-font2b*)
                       ;(om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 250 30) 
