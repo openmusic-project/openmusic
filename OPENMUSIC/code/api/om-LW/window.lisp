@@ -123,8 +123,7 @@
   (if (interface-visible-p self)
       (let ((point (capi::interface-geometry self)))
         #+win32 (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
-        #+cocoa (om-make-point (third point) (fourth point))
-	#+linux (om-make-point (third point) (fourth point)))
+        #+(or cocoa linux) (om-make-point (third point) (fourth point)))
       (om-make-point (vw self) (vh self))))
 
 
