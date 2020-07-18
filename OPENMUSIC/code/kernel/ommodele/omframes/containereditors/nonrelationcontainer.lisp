@@ -219,11 +219,11 @@ are instances of this class. (i.e. Folders, WorkSpaces, Classes, Generic functio
 
 ;-------------------Protocole------------------------------
 (defgeneric omg-remove-element (editor frame)  
-   (:documentation "Remove graphicly the subview 'frame' from the scroller 'editor' and call omng-remove-element
+   (:documentation "Remove graphically the subview 'frame' from the scroller 'editor' and call omng-remove-element
 with the objects respectly associeted."))
 
 (defgeneric omG-add-element (editor frame)  
-   (:documentation "Add graphicly the subview 'frame' to the scroller 'editor' and call omNG-add-element
+   (:documentation "Add graphically the subview 'frame' to the scroller 'editor' and call omNG-add-element
 with the objects respectly associeted."))
 
 ;-------------------------
