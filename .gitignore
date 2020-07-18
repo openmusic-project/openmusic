@@ -20,5 +20,8 @@ codesign-om
 om_prepare_package_final.sh
 Om-Entitlements.plist
 
+/OPENMUSIC/build/linux/om_prepare_deb_final.sh
+/OPENMUSIC/build/linux/control
+
 docs/_site/*
 Gemfile.lock
