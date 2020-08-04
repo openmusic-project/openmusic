@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -1208,7 +1208,7 @@
 
 (defmethod OMGMoveObject ((self boxEditorFrame) new-position)
    "If shift-key is down when drag self it do not move but it create and slot box."
-   (if (om-shift-key-p)
+   (if (or (om-shift-key-p) (shift-key-p *OM-drag&drop-handler*))
      (let* ((target (om-view-container self)) newobj)
        (when target
          (setf newobj (omNG-make-new-boxcall-slots (reference (object self))  (borne-position new-position) (mk-unique-name target "slot")))

@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -39,6 +39,7 @@
     (true-target-view :initform nil :accessor true-target-view)
     (true-dragged-view :initform nil :accessor true-dragged-view)
     (opt-key-p :accessor opt-key-p :initform nil)
+    (shift-key-p :accessor shift-key-p :initform nil)
     (initial-mouse-pos :initform nil :accessor initial-mouse-pos)
     (drop-mouse-pos :initform nil :accessor drop-mouse-pos)
     (drag-flavor :initform nil :accessor drag-flavor)))
@@ -77,6 +78,8 @@
 	     (y0 (om-point-v viewpos))
 	     (i 2)
 	     actives dragged-lisp-objects)
+        (if (om-shift-key-p) (setf (shift-key-p *OM-drag&drop-handler*) t)
+          (setf (shift-key-p *OM-drag&drop-handler*) nil))
 	(setf (dragged-view *OM-drag&drop-handler*)  theview
 	      (initial-mouse-pos *OM-drag&drop-handler*) (om-mouse-position theview)
 	      (dragged-list-objs *OM-drag&drop-handler*) (get-actives container)
@@ -139,6 +142,9 @@
   (cond 
    ((opt-key-p *OM-drag&drop-handler*)
     (perform-duplicate-view D&DHandler))  
+   
+   ((shift-key-p *OM-drag&drop-handler*)
+    (perform-make-slots-view D&DHandler))
    
    (;;; D&D IN FOLDERS ETC.
     (and (icon-finder-p (true-target-view D&DHandler)) (icon-finder-p (dragged-view  D&DHandler))
@@ -206,6 +212,28 @@
      ;  )
      some-item-used))
 
+
+;------MAKE SLOTBOX WITH SHIFT_KEY
+
+(defmethod perform-make-slots-view ((D&DHandler omdrag-drop))
+  (let ((pos0 (get-position (dragged-view D&DHandler))))
+    (print (list "perform2" (om-shift-key-p) (dragged-view D&DHandler) (opt-key-p *OM-drag&drop-handler*)))
+    (mapc #'(lambda (oneobject)
+              (OMGMoveObject oneobject
+                             (om-add-points
+                             ; (om-subtract-points (get-position oneobject) pos0) 
+                              (om-view-position oneobject)
+                              (om-subtract-points (drop-mouse-pos D&DHandler) (initial-mouse-pos D&DHandler))
+                             )
+                             )
+              )
+      (dragged-list-objs D&DHandler)) 
+    ;(print (list "d&D" (om-shift-key-p)))
+t)
+  )
+
+
+
                  
 ;------MOVE IN THE SAME WINDOW
 (defmethod perform-move-view ((D&DHandler omdrag-drop))
@@ -235,7 +263,7 @@
 
 ;----------WHEN THE TARGET AND THE SOURCES WINDOWS ARE DIFFERENTS
 
-;;; si on drop plusieurs objets sur une même cible, 
+;;; si on drop plusieurs objets sur une meme cible, 
 ;; est ce qu'on renvoie la liste (t)
 ;; ou bien on fait des drops sur chaque objet (nil) 
 (defmethod allow-drag-list ((self t)) nil)
