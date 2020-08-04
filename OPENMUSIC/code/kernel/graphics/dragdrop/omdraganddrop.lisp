@@ -78,7 +78,7 @@
 	     (y0 (om-point-v viewpos))
 	     (i 2)
 	     actives dragged-lisp-objects)
-        (if (om-shift-key-p) (setf (shift-key-p *OM-drag&drop-handler*) t)
+        (if (om-shift-key-p) (setf (shift-key-p *OM-drag&drop-handler*) t)
           (setf (shift-key-p *OM-drag&drop-handler*) nil))
 	(setf (dragged-view *OM-drag&drop-handler*)  theview
 	      (initial-mouse-pos *OM-drag&drop-handler*) (om-mouse-position theview)
@@ -213,7 +213,7 @@
      some-item-used))
 
 
-;------MAKE SLOTBOX WITH SHIFT_KEY
+;------MAKE SLOTBOX WITH SHIFT_KEY
 
 (defmethod perform-make-slots-view ((D&DHandler omdrag-drop))
   (let ((pos0 (get-position (dragged-view D&DHandler))))
