@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 
@@ -32,7 +32,8 @@
 ;======================================================
 (defclass scoreEditor (EditorView object-editor play-editor-mixin) 
   ((ctr-view :initform nil :accessor ctr-view)
-   (mode :initform nil :accessor mode)))
+   (mode :initform nil :accessor mode))
+  )
 
 ;;; SPECIAL TITLEBAR
 (defclass score-titlebar (editor-titlebar) 
@@ -424,13 +425,13 @@
 ;-------------EVENTS
 
 (defmethod update-subviews ((self scoreeditor))
-   (when (title-bar self)
-     (om-set-view-size  (title-bar self) (om-make-point (w self) *titlebars-h*)))
-   (om-set-view-size  (panel self ) (om-make-point (w self) (- (h self) (get-control-h self) *titlebars-h*)))
-   (om-set-view-position  (panel self ) (om-make-point 0 *titlebars-h*))
-   (om-set-view-size  (ctr-view self) (om-make-point (w self) (get-control-h self)))
-   (om-set-view-position (ctr-view self) (om-make-point 0 (- (h self) (get-control-h self))))
-   (om-invalidate-view self))
+  (when (title-bar self)
+    (om-set-view-size  (title-bar self) (om-make-point (w self) *titlebars-h*)))
+  (om-set-view-size  (panel self ) (om-make-point (w self) (- (h self) (get-control-h self) *titlebars-h*)))
+  (om-set-view-position  (panel self ) (om-make-point 0 *titlebars-h*))
+  (om-set-view-size  (ctr-view self) (om-make-point (w self) (get-control-h self)))
+  (om-set-view-position (ctr-view self) (om-make-point 0 (- (h self) (get-control-h self))))
+  (om-invalidate-view self))
 
 
 ;-------------UPDATES
@@ -777,7 +778,7 @@
   (set-edit-param (editor self) 'staff staff)
   staff)
 
-
+;;apparently not used:
 (defmethod om-invalidate-after-scroll ((self scorepanel))
    (om-invalidate-view self t))
 
@@ -1392,6 +1393,7 @@
                                    (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                    (slots-mode self) size (linear? self) 
                                    (staff-sys self) nil (noteaschan? self))
+                      #+linux (draw-system-only self) ;to be changed
                       (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                       (draw-edit-cursor self deltay))))))
 
@@ -2057,6 +2059,7 @@
 
 (defmethod draw-time-selection ((self chordseqpanel))
   (unless (or (system? (car (selection? self))) (extra-p (car (selection? self))))
+    ;(print "drawtime")
     (om-with-focused-view self 
       (let ((x (+ (om-h-scroll-position self) 
                   (w self) -150))
@@ -2099,17 +2102,24 @@
     (when (and (linear? self) (cursor-p self))
       (draw-interval-cursor self))
     (om-with-focused-view self 
-      (om-with-font (get-font-to-draw 0) ;(om-make-font *heads-font* size)
+      (om-with-font (get-font-to-draw 0) 
+                    ;(om-make-font *heads-font* size)
                     (draw-system-only self)
                     (when (graphic-obj self)
-                      (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
+                      (om-with-clip-rect self 
+                          (om-make-rect (+ x0 (- deltax (round size 2))) 
+                                        y0  
+                                        (+ x0 (w self)) 
+                                        (+ y0 (h self)))
+                        #+linux (draw-system-only self)
                         (scorepanel-draw-object self x0 y0 deltax deltay size)
                         (if (analysis-mode? self) (draw-analysis self))
                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                         (draw-edit-cursor self deltay)
                         )
-                      )))
-      ))
+                      )
+                    ))
+    ))
 
 (defmethod scorepanel-draw-object ((self chordseqPanel) x0 y0 deltax deltay size)
   (draw-object (graphic-obj self) self deltax 
@@ -2693,7 +2703,7 @@
                                      (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self))
-                                           
+                        #+linux (draw-system-only self)              
                         (if (analysis-mode? self) (draw-analysis self))
                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                         (draw-edit-cursor self deltay))
@@ -2900,28 +2910,29 @@
 
  
 (defmethod draw-view-contents ((self polypanel))
-   (let* ((x0  (om-h-scroll-position self))
-          (y0  (om-v-scroll-position self))
-          (size (staff-size self))
-          (deltax (get-key-space self))
-          (deltay (round (* size (score-top-margin self)))))
-     (when (and (linear? self) (cursor-p self))
-       (draw-interval-cursor self))
-     (om-with-focused-view self
-       (om-with-font (om-make-music-font *heads-font* size)
-                     (draw-system-only self)
+  (let* ((x0  (om-h-scroll-position self))
+         (y0  (om-v-scroll-position self))
+         (size (staff-size self))
+         (deltax (get-key-space self))
+         (deltay (round (* size (score-top-margin self)))))
+    (when (and (linear? self) (cursor-p self))
+      (draw-interval-cursor self))
+    (om-with-focused-view self
+      (om-with-font (om-make-music-font *heads-font* size)
+                    (draw-system-only self)
                      
-                     (when (graphic-obj self)
-                       (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
+                    (when (graphic-obj self)
+                      (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
            
-                         (draw-object (graphic-obj self) self deltax deltay 
-                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self) ) 
-                                      (slots-mode self) (staff-size self) (linear? self) (staff-sys self) 
-                                      (grille-step-p self) (noteaschan? self))
-                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
-                         (draw-edit-cursor self deltay)
-                         )
-                       )))))
+                        (draw-object (graphic-obj self) self deltax deltay 
+                                     (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self) ) 
+                                     (slots-mode self) (staff-size self) (linear? self) (staff-sys self) 
+                                     (grille-step-p self) (noteaschan? self))
+                        #+linux (draw-system-only self)
+                        (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
+                        (draw-edit-cursor self deltay)
+                        )
+                      )))))
 
 
 
@@ -4169,7 +4180,7 @@
         ;;;(adjust-extent item)
         )
   ;;; idee: utiliser adjust-extent pour mettre a jour l'extent des accords (et du chord-seq si c'est a la fin)
-  ;;; pb: ça marche pas (plantages avec pgc dans QNormalize)
+  ;;; pb: ca marche pas (plantages avec pgc dans QNormalize)
   ;;;(adjust-extent (object (editor self)))
   (update-panel self t)
   )
