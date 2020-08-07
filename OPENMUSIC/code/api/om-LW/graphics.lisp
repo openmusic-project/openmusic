@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Carlos Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -756,7 +756,7 @@
          (when *curstream*
            ;;; ça doit plus marcher ! cf. draw item-view
            ;(multiple-value-bind (x y) (capi::pinboard-pane-position ,view)
-           ;  (set-graphics-port-coordinates *curstream* :left x :top y))
+             ;(set-graphics-port-coordinates *curstream* :left x :top y))
            (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position ,view)
              ,@body
              )))
@@ -779,26 +779,34 @@
 
 
 ; TESTR AVEC CAPI::AREA-VISIBLE-P ?
+
+#+cocoa
+(defmacro om-with-clip-rect (view rect &body body)
+  `(gp::with-graphics-state ((om-get-view ,view) :mask (list (+ *pox* (om-rect-left ,rect)) (+ *poy* (om-rect-top ,rect))
+                                                             ;(- (om-rect-left ,rect) *posx*) (- (om-rect-top ,rect) *posy*) 
+                                                              (om-rect-w ,rect) (om-rect-h ,rect)))
+     ,@body))
+
+#+linux
+(defmacro om-with-clip-rect (view rect &body body)
+`(gp::with-graphics-state ((om-get-view ,view) :mask nil)
+     ,@body))
+
 #+win32
 (defmacro om-with-clip-rect (view rect &body body)
   `(let ((posx (om-h-scroll-position ,view))
          (posy (om-v-scroll-position ,view)))
-     ;(print (om-rect-left ,rect))
      (gp::with-graphics-state ((om-get-view ,view) :mask (list 
-                                                          ;(- (om-rect-left ,rect) posx) (- (om-rect-top ,rect) posy) 
+                                                         ; (- (om-rect-left ,rect) posx) (- (om-rect-top ,rect) posy) 
                                                           (om-rect-left ,rect) (om-rect-top ,rect) 
-                                                          (om-rect-w ,rect) (om-rect-h ,rect)))
+                                                          (om-rect-w ,rect) (om-rect-h ,rect)
+                                                          ))
        ,@body)))
 
-#-win32
-(defmacro om-with-clip-rect (view rect &body body)
-  `(gp::with-graphics-state ((om-get-view ,view) :mask (list (+ *pox* (om-rect-left ,rect)) (+ *poy* (om-rect-top ,rect))
-                                                               (om-rect-w ,rect) (om-rect-h ,rect)))
-     ,@body))
 
-
+;apparently not used:
 (defun om-set-clip-rect (view rect)
-  (gp::set-graphics-state (om-get-view view) :mask (list (om-rect-left rect) (om-rect-top rect)  (om-rect-bottom rect) (om-rect-right rect))))
+  (gp::set-graphics-state (om-get-view view)) :mask (list (om-rect-left rect) (om-rect-top rect)  (om-rect-bottom rect) (om-rect-right rect)))
 
 (defmacro om-with-fg-color (view color &body body)
   `(let ((port (if ,view (om-get-view ,view) *curstream*)))
