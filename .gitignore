@@ -22,9 +22,6 @@ Om-Entitlements.plist
 
 /OPENMUSIC/build/linux/om_prepare_deb_final.sh
 /OPENMUSIC/build/linux/control
-/OPENMUSIC/build/linux/LICENSE
-/OPENMUSIC/build/linux/README.LINUX
-/OPENMUSIC/build/linux/RELEASE_NOTES
 
 
 docs/_site/*
