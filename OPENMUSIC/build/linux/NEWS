@@ -1,3 +1,32 @@
+* RELEASE NOTES 6.17
+
+NEW FEATURES
+
+- Added stem control in preferences
+
+IMPROVEMENTS
+
+- Naming workspace with extension (eg. workspace.wrk)
+- Default Icon view on creation of Workspace
+- Set Preferences default (midi, audio) to what's better :
+   - default microtonal midi pref: removed. Microtones now play correctly.
+   - delete tmp audio files checked by default
+- set-port in Midi menu
+- Added audio-mix-console to Classes-> Audio menu
+- Connection styles same for all platforms (Linux)
+- omAudioLib now plays regardless of extensions (Linux)
+
+FIXES
+
+- Fixed POLY integration in CLASS-ARRAY
+- Fixed midicents settings in editors
+- Fixed sound-normalize method
+- Fixed init preferences on workspace creation
+- Fixed "slot-dragging" (Linux)
+- Fixed scrolling editing in Score classes (Linux)
+- true-durations function fixed
+
+
 * RELEASE NOTES 6.16
 
   - The precompiled version of OMAudioLib.so included with the
@@ -23,28 +52,18 @@
     'openmusic6', 'om6logo.png') etc. - to allow different versions of
     OM to be installed alongside each other
 
+
 * RELEASE NOTES 6.15
 
-  - Download and updates: https://github.com/openmusic-project/openmusic/releases
-  - Sources:		  https://github.com/openmusic-project/openmusic
-  - User group and support : https://discussion.forum.ircam.fr/c/openmusic
-
+  - changes, bug-fixes, improvements
+  - new function - #'bpf-concat
 
 * RELEASE NOTES 6.14.2
 
-  - lots of changes
   - new clefs: g_8 and g^8 - the usual treble clef an octave down/up resp.
   - 'Esc'-key works also in analysis mode of Chord-seq (and if there's a selection)
   - #'set-port accepts a list of ports as it's second argument
   - many bug fixes and improvements, check the git sources and logs for detail
-
-* OM 6.14 for Linux
-
- - Download and updates (Linux) : https://forge.ircam.fr/p/OM/downloads/
- - Downloads (main page) : http://forumnet.ircam.fr/shop/fr/forumnet/43-openmusic.html
- - User Manual : http://support.ircam.fr/docs/om/om6-manual/
- - User group and support : http://forumnet.ircam.fr/fr/user-groups/openmusic/forum/
- - More info : http://repmus.ircam.fr/openmusic/
 
 
 * RELEASE NOTES 6.13:
@@ -104,5 +123,12 @@
 
 
    BUGFIXES
+	
+    piles of bugfixes and tunings
 
-   piles of bugfixes and tunings
+ - Project main page : https://github.com/openmusic-project
+ - Download and updates : https://github.com/openmusic-project/openmusic
+ - Downloads (main page) : https://forum.ircam.fr/projects/detail/openmusic/
+ - User Manual : http://support.ircam.fr/docs/om/om6-manual/
+ - User group and support : https://discussion.forum.ircam.fr/c/openmusic
+ - More info : http://repmus.ircam.fr/openmusic/
