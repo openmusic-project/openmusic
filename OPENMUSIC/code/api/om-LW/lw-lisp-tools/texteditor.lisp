@@ -53,7 +53,7 @@
 (defvar *ae-error-log* 
   (make-pathname :name "OM Text Editor" 
                  :type "log" 
-                 #+(or win32 macozsx) :defaults #+(or win32 macozsx) (sys:get-folder-path :local-appdata)
+                 #+(or win32 macosx) :defaults #+(or win32 macosx) (sys:get-folder-path :local-appdata)
                  ))
 
 ;; this causes errors in the interface process to be displayed in a message box
