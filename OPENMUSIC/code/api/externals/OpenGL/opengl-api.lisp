@@ -949,7 +949,7 @@
   (objects self))
 
 (defmethod om-3Dobj-points ((self om-3D-object-list))
-  (apply 'append (mapcar 'om-3Dobj-points (objects self))))
+  (reduce 'append (mapcar 'om-3Dobj-points (objects self))))
 
 (defmethod draw ((self om-3D-object-list)) 
   (mapcar 'draw (objects self)))
