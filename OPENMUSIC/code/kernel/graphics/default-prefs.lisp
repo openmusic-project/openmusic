@@ -45,10 +45,13 @@
 
 (defvar *listener-input* nil)
 
+;(defvar *tooltips* t)
+
 (defmethod get-def-vals ((iconID (eql :general)))
    (list :handle-errors t 
          :user-name "Guarigocha" 
          :eval-process :on
+         :tooltips t
          :listener-on-top :no
          :listener-input nil
          :reactive nil
@@ -67,7 +70,7 @@
      (when (get-pref modulepref :eval-process) 
        (setf *eval-process* (get-pref modulepref :eval-process))
        (om-set-eval-process (equal *eval-process* :on)))
-
+     (setf oa::*helpon* (get-pref modulepref :tooltips))
      (setf *reactive-patches* (get-pref modulepref :reactive))
      
      (unless (equal *listener-input* (get-pref modulepref :listener-input))
@@ -101,6 +104,7 @@
    (list iconID `(list :handle-errors ,*msg-error-label-on* 
                        :user-name ,*composer-name* 
                        :eval-process ,*eval-process*
+                       :tooltips ,oa::*helpon*
                        :reactive ,*reactive-patches*
                        :listener-input ,*listener-input*
                        :listener-on-top ,(if om-lisp::*listener-on-top* :yes :no)
@@ -162,6 +166,14 @@
 
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Evaluate visual programs on a spearate process)"
                                           :font *om-default-font1*)
+
+                     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Tooltips" 
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :tooltips (om-checked-p item)
+                                                                 ))
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :tooltips))
+
 
                      (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Keep Listener in Front" 
                                           :di-action (om-dialog-item-act item 

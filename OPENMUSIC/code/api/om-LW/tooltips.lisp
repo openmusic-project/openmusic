@@ -60,8 +60,9 @@
 ;(defvar *ttopen* nil)
 
 (defmethod om-show-tooltip ((self om-graphic-object) &optional (remove nil) (short nil))
-  (when (om-get-view self)
-    (internal-show-tooltip self remove short)))
+  (when (and (om-get-view self) *helpon*)
+    (internal-show-tooltip self remove short))
+  nil)
 
 
 (defmethod internal-show-tooltip ((self om-graphic-object) &optional (remove nil) (short nil))
@@ -87,8 +88,9 @@
 (defmethod om-hide-tooltip ((self t)) nil)
 
 (defmethod om-hide-tooltip ((self capi::output-pane))
-  (when (om-get-view self)
-    (capi:display-tooltip (om-get-view self))))
+  (when (and (om-get-view self) *helpon*)
+    (capi:display-tooltip (om-get-view self)))
+  nil)
 
 (defmethod om-show-tooltip ((self om-standard-dialog-item) &optional remove short) nil)
 (defmethod om-hide-tooltip ((self om-standard-dialog-item)) nil)
