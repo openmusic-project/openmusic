@@ -18,11 +18,11 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 ;DocFile
 ;This File contains high level functions and macros for menubars management.
-;Last Modifications :
+;Last Modifications : 28/09/20
 ;18/10/97 first date.
 ;DocFile
 
