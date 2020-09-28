@@ -210,6 +210,8 @@
                                  ;                 (if (member "Make Alias" disable :test 'string-equal) nil t))
                                    (om-new-leafmenu "Get Info" #'(lambda () (get-info-window win)) "i" 
                                                     (if (member "Get Info" disable :test 'string-equal) nil t))
+                                   (om-new-leafmenu "Inspect" #'(lambda () (om-class-inspect win)) "y" 
+                                                    (if (member "Inspect" disable :test 'string-equal) nil t))
                                    )
                                   (list 
                                    (om-new-leafmenu "Page Setup" #'(lambda () (om-page-setup)) nil 
@@ -277,6 +279,26 @@
 ;;; FILE et EDIT sont par defaut dans le LISTENER
 (defmethod om-window-class-menubar ((self om-listener))
   (list (make-om-menu 'windows :disable '("Lisp Listener"))))
+
+;======================================
+;ACTIONS FOR MAIN MENU
+;======================================
+
+(defmethod om-class-inspect ((self editorwindow))
+  "Allows inspection from the patch menu with ctrl+y"
+  (let* ((panel (panel self))
+         (objs (get-actives panel)))
+    (if objs
+        (let ((x 100) 
+              (y 150))
+          (loop for i in objs
+                do 
+                (progn
+                  (setf x (+ 100 x))
+                  (setf y (+ 50 y))
+                  (om-inspect (value (object i)) (om-make-point x y)))))
+      )))
+
 
 ;=============================
 ; SPECIAL CLASSES/FUNCTIONS MENU
@@ -652,7 +674,8 @@
          )
         (list 
          (om-new-leafmenu  "Get Info" #'(lambda () (get-info-window (om-view-window object))))
-         (om-new-leafmenu  "Show Documentation" #'(lambda () (show-big-doc object))))
+         (om-new-leafmenu  "Show Documentation" #'(lambda () (show-big-doc object)))
+         (om-new-leafmenu "Inspect" #'(lambda () (om-inspect (value (object object))))))
         (list
          (if (lock-button object)
              (om-new-leafmenu "Unlock Eval" #'(lambda () (apply-win (om-view-window object) 'add-rem-lock-button)))
