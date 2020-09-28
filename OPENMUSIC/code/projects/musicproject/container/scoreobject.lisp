@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -1533,3 +1533,120 @@ Returns the list of all measure in <self>.
   (if (or (null path) (not (typep father 'container)))
       father
       (get-fig-from-path  (nth (car path) (inside father)) (cdr path))))
+;=========================================================================
+;k.h 28/09/20
+;----------Voice2voices
+
+
+(defun reset-offset (tree)
+  (loop for x in tree
+        collect (if (atom x)
+                  (progn 
+                    (setf (offset x) 0)
+                    x)
+                  (reset-offset x))))
+
+
+(defmethod! translate-tempo ((self voice))
+  "returns human readable list of tempo  in the form of : ((nth-meas (note-fig tempo)) .... ) 
+returns nil when measure is the same as precedent."
+  (let* ((tempo (tempo self))
+         (frsttempo (list 0 (car tempo)))
+         (cdrtempo (cadr tempo))
+         (formcdr (loop for i in cdrtempo
+                        collect (list (caar i)
+                                      (remove nil (cadr i)))))
+         (tempo1 (cons frsttempo formcdr))
+         res)
+    
+    (loop for i from 0 to (- (length (inside self)) 1)
+          do (if (equal i (caar tempo1))
+                 (progn 
+                   (push (car tempo1) res)
+                   (pop tempo1)) 
+               (push nil res)
+               ))
+    (reverse res)))
+
+(defmethod! translate-tempo ((self poly))
+            (let ((voices (inside self)))
+              (mapcar #'translate-tempo voices)))
+
+
+
+(defmethod! voice->voices ((self voice))
+   :initvals (list t) 
+   :indoc '("voice")
+   :icon 217
+   :doc "Splits down a <voice> into measures converted to voices."
+
+  (let* ((measures (reset-offset (inside (clone self))))
+         (chords (loop for i in measures
+                       collect (get-chords i)))
+         (trees (loop for i in measures
+                      collect (list '?
+                                    (list (tree i)))))
+         (temp (translate-tempo self))
+         (tempi (let ((res '()))
+                      (loop 
+                       for i in temp
+                       collect (if i (push (cadr i) res)
+                                 (push (car res) res)))
+                      (reverse res))))
+         
+    (loop for i in trees
+          for k in chords
+          for tp in tempi
+          collect (make-instance 'voice 
+                                 :tree i
+                                 :chords k
+                                 :tempo tp))))
+
+
+(defmethod! voice->voices ((self poly))
+            (let ((voices (inside self)))
+              (mapcar #'voice->voices voices)))
+;--------------
+;-----concatenate-voices.
+
+(defun concatenate-tempi (liste)
+  "<liste> is a list of voices. The function outputs a tempo list without redundency"
+  (let* ((trans (flat-once (mapcar #'translate-tempo liste)))
+         (res (list (second (car trans))))
+         (indx (list 0))
+         (cdrtempi (mapcar 'second (cdr trans)))
+         )
+    (loop for tmp in cdrtempi
+          for i from 1 to (length cdrtempi)
+          do (if (and (not (equal tmp (car res))) tmp)
+                 (progn
+                   (push tmp res)
+                   (push i indx))))
+    (let* ((temps (reverse res))
+           (index (reverse indx))
+           resultat)
+      (loop for i in (cdr index)
+            for tps in (cdr temps)
+            do (push (list (list i 0) tps nil) resultat))
+
+      (list (car temps) (reverse resultat)))
+      ))
+
+
+(defmethod! concat-voices ((liste list))
+   :initvals (list t) 
+   :indoc '("list of voices")
+   :icon 217
+   :doc "concatenates a list of voices into one voice."
+   (let* ((trees (mapcar #'tree liste))
+          (conc-tree (list '? (flat-once (flat-once (mapcar 'cdr trees)))))
+          (chords (remove 'nil (flat (mapcar 'chords liste))))
+          (tempo (concatenate-tempi liste))
+          )
+     (make-instance 'voice
+                    :tree conc-tree
+                    :chords chords
+                    :tempo tempo)
+     ))
+
+;;;;;;;;;

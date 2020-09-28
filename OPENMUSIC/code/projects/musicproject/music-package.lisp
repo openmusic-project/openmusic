@@ -62,8 +62,8 @@
 (AddGenFun2Pack '(OMquantify object-dur 
                              true-durations
                              align-chords concat get-chords get-measures 
-                             mask merger select split-voices
-                             maquette2obj) *scorefun-package*)
+                             mask merger select split-voices voice->voices
+                             concat-voices maquette2obj) *scorefun-package*)
 
 (AddPackage2Pack *scorefun-package* *scorepackage* :protect t)
 
