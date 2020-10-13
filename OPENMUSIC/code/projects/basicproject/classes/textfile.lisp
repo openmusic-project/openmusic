@@ -28,7 +28,7 @@
 ;TEXTFILE CLASS
 
 ;;; A common superclass: 
-;;; will ensure forward-colmpatibility with libraries developed for om7...
+;;; will ensure forward-colmpatibility with libraries developed for omsharp.
 ;; (defclass textbuffer () ()) => add as superclass
 
 (defclass* TextFile () 
