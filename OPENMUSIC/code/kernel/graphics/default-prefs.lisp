@@ -374,9 +374,14 @@
                                           :range '("icons" "list")
                                           :value (if (= 0 *default-folder-pres*) "icons" "list")
 					  :di-action (om-dialog-item-act item 
-                                                        (let ((choice (om-get-selected-item item)))
-                                                          (set-pref modulepref :folder-pres
-                                                              (if (string-equal choice "icons") 0 1))))
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :folder-pres
+                                                                   (if (string-equal choice "icons") 
+                                                                       (progn
+                                                                         (omG-change-presentation *om-workSpace-win* 0) 0)
+                                                                     (progn
+                                                                       (omG-change-presentation *om-workSpace-win* 1) 1)
+                                                                     ))))
 					  :font *controls-font*)
        
                      (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 90 24) "Patches"
