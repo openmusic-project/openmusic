@@ -788,7 +788,7 @@
 
 ; (corrige-preference-list 922 (defvals (get-pref-by-icon 922)) 0)
 
-; pspecial : on peut avoir des prefs qui ne sont pas par défaut initialement...
+; pspecial : on peut avoir des prefs qui ne sont pas par defaut initialement...
 (defmethod corrige-preference-list ((iconid (eql :externals)) list &optional (version 0))
   (let ((def (get-def-vals iconID))
         (saved (clone list))
