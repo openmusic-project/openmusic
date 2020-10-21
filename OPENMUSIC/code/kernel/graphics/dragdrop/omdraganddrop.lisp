@@ -217,7 +217,6 @@
 
 (defmethod perform-make-slots-view ((D&DHandler omdrag-drop))
   (let ((pos0 (get-position (dragged-view D&DHandler))))
-    (print (list "perform2" (om-shift-key-p) (dragged-view D&DHandler) (opt-key-p *OM-drag&drop-handler*)))
     (mapc #'(lambda (oneobject)
               (OMGMoveObject oneobject
                              (om-add-points
@@ -228,8 +227,7 @@
                              )
               )
       (dragged-list-objs D&DHandler)) 
-    ;(print (list "d&D" (om-shift-key-p)))
-t)
+    t)
   )
 
 
