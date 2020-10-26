@@ -27,7 +27,7 @@
 ;============================================================================
 ; File author: Karim Haddad
 ;============================================================================
-
+;;Obj info
 
 
 (in-package :om)
@@ -102,15 +102,7 @@
 
 (defmethod get-slots-info ((self continuation-chord))
   nil)
-#|
-  (let ((midic (lmidic self))
-        (vel (lvel self))
-        (dur (ldur self))
-        (chan (lchan self))
-        (off (loffset self))
-        (port (lport self)))
-    (list midic vel dur chan off port)))
-|#
+
 (defmethod get-slots-info ((self rest))
  nil)
 
@@ -180,8 +172,6 @@ nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;(defvar *info-pack* nil)
-
 (defun format-slots (selection)
   (if (= 1 (length selection))
       (let* ((sel (car selection))
@@ -228,7 +218,6 @@ nil)
                 collect
                 (get-slots-info i)))
          (fslots (format-slots (reverse slots))))
-    ;(print chords-only)
     (setf om-edit::*info-pack* (list 
                      name
                      (if (null pos)
@@ -282,7 +271,6 @@ nil)
                      (format nil "~S" (fifth fslots))
                      (format nil "~S" (sixth fslots))
                      ))
-   ; (om-edit::open-obj-info self (selection? self))
     ))
 
 
@@ -302,11 +290,10 @@ nil)
                        (format nil "~S" (fifth slots))
                        (format nil "~S" (sixth slots))
                        ))
-   ; (print om-edit::*info-pack*)
-(let ((ept (om-edit::open-note-info selection)))
+    (let ((ept (om-edit::open-note-info selection)))
       (setf (om-edit::ompanel ept) self)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
- ))
+    ))
 
 
 
@@ -342,43 +329,6 @@ nil)
     (mapcar 'first sort)))
 
 
-#|
-;orig
-(defmethod get-obj-info ((self chordseqpanel))
-  (let* ((selection (selection? self))
-         (pere (parent (car selection)))
-         (name (string-upcase (obj-mode self)))
-         (pos (if (not (or (chord-seq-p (car selection)) (note-p (car selection))))  
-                  (if (= (length selection) 1)
-                      (1+ (position (car selection) (inside pere) :test 'equal))
-                    (let ((posi (loop for i in selection
-                                      collect (1+ (position i (inside pere) :test 'equal)))))
-                      (list (last-elem posi) (car posi))))))
-              (time-selection (get-obj-selection self))
-         (slots 
-          (loop for i in selection
-                collect
-                (get-slots-info i)))
-         (fslots (format-slots (reverse slots))))
-    ;(print selection)
-    (setf *info-pack* (list 
-                     name
-                     (if (atom pos)
-                         (format nil "pos: ~S" pos)
-                       (format nil "pos: ~S - ~S " (car pos) (second pos)))
-                     (format nil "~S - ~S ms" (car time-selection) (second time-selection))
-                     (format nil "~S" (car fslots))
-                     (format nil "~S" (second fslots))
-                     (format nil "~S" (third fslots))
-                     (format nil "~S" (fourth fslots))
-                     (format nil "~S" (fifth fslots))
-                     (format nil "~S" (sixth fslots))
-                     ))
-  (open-obj-info self selection)
- ))
-|#
-
-
 (defmethod get-obj-info ((self chordseqpanel))
   (let* ((selection (selection? self))
          (pere (parent (car selection)))
@@ -396,7 +346,6 @@ nil)
                 collect
                 (get-slots-info i)))
          (fslots (format-slots (reverse slots))))
-   ; (print (list selection pos slots))
     (setf om-edit::*info-pack* (list 
                        name
                        (if (= 1 (length pos))
@@ -429,7 +378,6 @@ nil)
 
 
 (defmethod chng-obj-inf ((self note) nt vel dur chan off port)
- ; (print (list "test:" nt vel))
   (setf (midic self) nt
         (vel self) vel
         (dur self) dur
@@ -453,7 +401,6 @@ t)
          (chans  (str->list (nth 3 data)))
          (offs  (str->list (nth 4 data)))
          (ports  (str->list (nth 5 data))))
-   ; (print (list obj))
     (if (= 1 (length objs))
         (loop for i in objs
               for n in notes

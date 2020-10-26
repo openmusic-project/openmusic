@@ -95,8 +95,6 @@
                        :visible-min-height '(character 10)
                        :change-callback 'update-callback
                        ))
- ; (print (list (capi::editor-pane-buffer editor-pane))
- ; (setf (editor:buffer-major-mode (capi:editor-pane-buffer editor-pane)) "LISP")
   (setf def-buttons
         (make-instance 'capi::push-button-panel
                        :items '("Beginning Of Buffer" 
@@ -262,12 +260,9 @@ t)
 ;set button
 
 (defun report-button-action (type data interface)
- ; (print (list type data  interface))
   (with-slots (ep) interface 
-    ;(print (list (capi:editor-pane-text tree-editor-pane) tree-editor-pane interface))
     (setf *editor-text* (capi:editor-pane-text tree-editor-pane))
     (setf (sel interface) *editor-text*)
-    ;(print (list "la fonction:" (intfunc interface)))
     (apply (intfunc interface) (list (score interface) *editor-text*))
     ;(set-tree (score interface) *editor-text*)
     ))

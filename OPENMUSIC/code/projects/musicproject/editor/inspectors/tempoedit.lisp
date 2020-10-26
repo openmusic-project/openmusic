@@ -1,3 +1,33 @@
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+;=========================================================================
+;;; Music package 
+;;; authors  G. Assayag, C. Agon, K. Haddad
+;=========================================================================
+;
+;============================================================================
+; File author: Karim Haddad
+;============================================================================
+;;Tempo editor
+
 (in-package :om)
 
 
@@ -43,20 +73,16 @@
 (defun format-measures-tempo-by-meas (tempo)
   "This formats given measures' tempo on each line"
   (let (rep)
-   ; (print (list "format:" init meas))
     (loop for i in tempo
           do (setf rep (append rep (list (format nil "~S ~%" i))))) 
-    ;(setf rep (append (list rep (format nil ")) ~%"))))
     (concat-string (flat rep))
     ))
 
 (defun format-voice-tempo-by-meas (tempo)
   "This formats a voice's tempo with measures on each line"
-  (print (list "here:" tempo))
   (let* ((init (car tempo))
          (rep (list (format nil "( ~S ~% (" init)))
          (meas (cadr tempo)))
-   ; (print (list "format:" init meas))
     (loop for i in meas
           do (setf rep (append rep (list (format nil "~S ~%" i))))) 
           
@@ -114,14 +140,12 @@
          (voice (object (om-view-container self))))
     (if (voice-p selection) 
         (setf (tempo voice) (car (str->list tree)))
-      ;ici changer rectree pour les tempi de mesures
       (let* ((meas (selection? self))
              (tempo-header (car (tempo voice)))
              (change (change-nth-meas-tempo voice (str->list tree)))
              )
-       (setf (tempo voice) (list tempo-header change));(change-nth-meas-tempo voice (str->list tree)))
-       )
-       )
+       (setf (tempo voice) (list tempo-header change))
+       ))
     (do-initialize-metric-sequence voice)
     (update-panel self t)
     ))

@@ -418,10 +418,7 @@
 ;SET button
 
 (defun set-info-button (type data interface)
- 
-    (with-slots (ep) interface
-     ; (let* ((obj (object (om-view-container (ompanel interface))))
-     ;        (tree (if (voice-p obj) (tree obj))))     
+  (with-slots (ep) interface
       (setf  (nth 3 *info-pack*) (capi::text-input-pane-text pane3))
       (setf  (nth 4 *info-pack*) (capi::text-input-pane-text pane4))
       (setf  (nth 5 *info-pack*) (capi::text-input-pane-text pane5))
@@ -432,8 +429,7 @@
      ; (print (list obj tree))
       (apply (intfunc interface) (list (ompanel interface) (sel interface) (cdddr *info-pack*)))
       ;(om::set-obj-info (ompanel interface) (sel interface) (cdddr *info-pack*))
-     ; )
-    ))
+      ))
     
 
 (defun button-set-info-callback (&rest args)

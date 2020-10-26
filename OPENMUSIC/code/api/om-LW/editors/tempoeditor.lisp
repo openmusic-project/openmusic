@@ -40,10 +40,6 @@
 
 (defvar *omtempo-editor* ' om-tempo-editor)
 (defvar *tempo-editor-text* nil)
-;(defvar *tree-font* nil)
-;(defvar *def-tree-edit-font* 
-;  #+linux(gp::make-font-description :family "Courier" :size 10)
-;  #-linux(gp::make-font-description :family "Consolas" :size 11))
 
 
 (defclass  om-tempo-editor (capi::interface)
@@ -258,9 +254,7 @@ t)
 ;set button
 
 (defun tempo-report-button-action (type data interface)
- ; (print (list (car (selection? (score interface)))))
   (with-slots (ep) interface 
-    ;(print (list (capi:editor-pane-text editor-pane) editor-pane interface))
     (setf *tempo-editor-text* (capi:editor-pane-text tempo-editor-pane))
     (setf (sel interface) *tempo-editor-text*)
     (apply (intfunc interface) (list (score interface) *tempo-editor-text*))
