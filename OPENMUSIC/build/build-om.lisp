@@ -239,6 +239,7 @@
 
 ;;;; LOAD OM
 
+
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
                        :name "load-api" :type "lisp"))
 
@@ -253,7 +254,7 @@
 
 
 (defpackage "OpenMusic"
-    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP")
+    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP" "OM-EDIT")
     (:import-from "CL-USER")
     (:nicknames "OM" "OPENMUSIC"))
 

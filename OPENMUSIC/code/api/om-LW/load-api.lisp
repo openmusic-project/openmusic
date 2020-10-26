@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Carlos Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -34,9 +34,13 @@
 
 (load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("lw-lisp-tools")) :name "load-lw-lisp-tools" :type "lisp"))
 
+
+(load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("editors")) :name "load-editors" :type "lisp"))
+
+
 (defpackage "OM-API"
   (:nicknames "OA")
-  (:use "COMMON-LISP" "CL-USER" "OM-LISP" "CAPI" "LISPWORKS" "GP"))
+  (:use "COMMON-LISP" "CL-USER" "OM-LISP" "OM-EDIT" "CAPI" "LISPWORKS" "GP"))
 
 (in-package :oa)
 

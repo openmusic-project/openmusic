@@ -77,6 +77,10 @@
         "editor;scoreeditor;strandhbreak"
     
         "editor;scoreeditor;score-playback"
+
+        "editor;inspectors;treeedit"
+        "editor;inspectors;tempoedit"
+        "editor;inspectors;objinfo"
         
         "classes;extras"
 
