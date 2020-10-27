@@ -119,36 +119,44 @@
 
 ;;;set tempo
 
-(defun rep-if-car (item seq)
-    (loop for i in seq
-          collect (if (equal (car item) (car i))
-                 item i)))
-(defun replace-if-car (liste seq)
-  (let ((res seq))
-    (loop for i in liste
-          do (setf res (rep-if-car i res)))
-    res))
 
-(defun change-nth-meas-tempo (voice liste)
-  (let* ((tempo (tempo voice))
-         (meas (cadr tempo)))
-    (replace-if-car liste meas)))
-        
+(defun remove-if-car (item seq)
+(remove nil  (loop for i in seq
+        collect (if (= (caar i) item) nil i))))
 
+
+(defun sort-tempo-list (tempo)
+  (sort-list 
+   (sort-list 
+    (remove-duplicates tempo :test 'equal :key 'car) 
+    :test '< :key 'cadar) 
+   :test '< :key 'caar))
+    
+
+(defun replace-new-mes-tree (voice meas tree)
+  (let* ((pos (position meas (inside voice) :test 'equal))
+         (vxtemp (tempo voice))
+         (tempheader (car vxtemp))
+         (templst (remove-if-car pos (second vxtemp)))
+         (sort (sort-tempo-list (append tree templst)))
+         )
+    (list tempheader sort)))
+  
 (defmethod set-tree-tempo ((self voicepanel) tree)
   (let* ((selection (car (selection? self)))
-         (voice (object (om-view-container self))))
+         (voice (object (om-view-container self)))
+         (tempovoice (tempo voice)))
     (if (voice-p selection) 
         (setf (tempo voice) (car (str->list tree)))
       (let* ((meas (selection? self))
-             (tempo-header (car (tempo voice)))
-             (change (change-nth-meas-tempo voice (str->list tree)))
-             )
-       (setf (tempo voice) (list tempo-header change))
-       ))
+             (newtree (replace-new-mes-tree (parent selection) (car meas) (str->list tree))))
+        (setf (tempo voice) newtree)
+        ))
     (do-initialize-metric-sequence voice)
     (update-panel self t)
     ))
+
+      
 
 #|
 (defmethod set-tree-tempo ((self polypanel) tree)
