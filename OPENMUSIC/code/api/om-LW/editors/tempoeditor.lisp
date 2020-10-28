@@ -140,7 +140,7 @@
                                         (make-instance 'capi::menu-item
                                                        :title "Import From..."
                                                        :callback-type :interface
-                                                       :callback 'import-tree-from-file
+                                                       :callback 'import-tempo-from-file
                                                        :accelerator #\i)))
                         )))   
 
@@ -154,7 +154,7 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Undo"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-undo
+                                                             :callback 'tempo-edit-undo
                                                              :accelerator #\z
                                                              )))
                               (make-instance 'capi::menu-component
@@ -163,17 +163,17 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Cut"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-cut
+                                                             :callback 'tempo-edit-cut
                                                              :accelerator #\x)
                                               (make-instance 'capi::menu-item
                                                              :title "Copy"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-copy
+                                                             :callback 'tempo-edit-copy
                                                              :accelerator #\c)
                                               (make-instance 'capi::menu-item
                                                              :title "Paste"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-paste
+                                                             :callback 'tempo-edit-paste
                                                              :accelerator #\v)))
                               (make-instance 'capi::menu-component
                                              :items 
@@ -181,7 +181,7 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Select All"
                                                              :callback-type :interface
-                                                             :callback 'tree-select-all
+                                                             :callback 'tempo-select-all
                                                              :accelerator #\a
                                                              )))
                               (make-instance 'capi::menu-component
@@ -190,7 +190,7 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Text Font"
                                                              :callback-type :interface
-                                                             :callback 'change-tree-edit-font
+                                                             :callback 'change-tempo-edit-font
                                                              :accelerator nil
                                                              ))))))
 
@@ -286,3 +286,64 @@ t)
         ))))
 
 ;;;;
+;;import
+
+(defun import-tempo-from-file (interface &optional path)
+  (with-slots (ep) interface
+    (when-let* ((path (or path (capi:prompt-for-file "Open File:" 
+                                                     :if-does-not-exist :error 
+                                                     :filter "*.*"
+                                                     :filters '("Lisp Files" "*.lisp" "Text files" "*.txt" "All Files" "*.*"))))
+                (current (capi:editor-pane-buffer tempo-editor-pane))
+                (newbuffer (om-lisp::with-safe-file-operation interface path "open" nil 
+                             (editor:find-file-buffer path)))
+                (newtext (editor::use-buffer newbuffer
+                           (editor:points-to-string 
+                            (editor:buffers-start newbuffer) 
+                            (editor:buffers-end newbuffer)))))
+      (editor:process-character 
+       (list #'(setf capi:editor-pane-text)
+             newtext
+             tempo-editor-pane)
+       (capi:editor-window tempo-editor-pane))
+      )))
+
+
+;;;;
+
+(defun tempo-edit-paste (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
+      (capi:call-editor tempo-editor-pane (list 'editor::insert-cut-buffer-command buffer))
+    )))
+
+(defun tempo-edit-copy (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
+      (capi:call-editor tempo-editor-pane (list 'editor::copy-to-cut-buffer-command buffer))
+    )))
+
+(defun tempo-edit-cut (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
+      (capi:call-editor tempo-editor-pane (list 'editor::copy-to-cut-buffer-command buffer))
+      (capi:call-editor tree-editor-pane (list 'editor::kill-region-command buffer))
+    )))
+
+(defun tempo-select-all (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
+      (editor::use-buffer buffer
+        (capi:call-editor tempo-editor-pane (list 'editor::mark-whole-buffer-command buffer))))))
+  
+(defun tempo-edit-undo (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
+      (capi:call-editor tempo-editor-pane (list 'editor::undo-command buffer)))))
+
+
+(defun change-tempo-edit-font (interface)
+  (with-slots (ep) interface
+    (setf (capi::simple-pane-font tempo-editor-pane) 
+          (setf *def-tree-edit-font*
+                (capi::prompt-for-font "" :font (capi::simple-pane-font tempo-editor-pane))))))
