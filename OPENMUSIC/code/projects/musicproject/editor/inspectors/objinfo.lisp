@@ -205,7 +205,7 @@ nil)
                  (t (string-upcase (obj-mode self)))))
          (voice (object (om-view-container self)))
          (chords-only (get-only-chords selection))
-         (pos (if (not (voice-p selection)) 
+         (pos (if (not (voice-p (car selection))) 
                   (if (= (length selection) 1)
                       (evt-pos (car selection))
                     (let ((posi (remove nil (loop for i in selection 
