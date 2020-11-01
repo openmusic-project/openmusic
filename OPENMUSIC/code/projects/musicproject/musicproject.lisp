@@ -80,6 +80,7 @@
 
         "editor;inspectors;treeedit"
         "editor;inspectors;tempoedit"
+        "editor;inspectors;treetempoedit"
         "editor;inspectors;objinfo"
         
         "classes;extras"

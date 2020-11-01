@@ -871,6 +871,7 @@
               )
             )
            (#\r (get-score-tree self))
+           (#\R (get-tree-tempo-list self))
            (#\m (get-tempo-tree self)) 
            (#\i (get-obj-info self))
            (#\c (note-chan-color self))

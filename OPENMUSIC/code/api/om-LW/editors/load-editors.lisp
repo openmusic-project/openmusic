@@ -68,7 +68,7 @@
 (mapc #'(lambda (filename) (compile-if-needed-and-load 
                             (make-pathname :directory *lw-score-edit-directory* 
                                            :name filename))) 
-      '("treeeditor" "tempoeditor" "infoeditor"))
+      '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor"))
 
 
 
