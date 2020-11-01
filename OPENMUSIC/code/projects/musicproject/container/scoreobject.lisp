@@ -1439,10 +1439,11 @@ of all its direct subcontainers (supposed adjacent)"
            (element-list (inside self))
            (last-fig (car element-list))
            (pos (position current element-list :test 'equal))
-           (cont 0) stop) 
-     (loop for item in qtempo 
-           while (not stop) do
-            (if (>= (caar item) pos) (setf stop t)
+           (cont 0) stop)
+      (if pos
+          (loop for item in qtempo 
+                while (not stop) do
+                (if (>= (caar item) pos) (setf stop t)
                   (let* ((element (get-fig-from-path self (car item)))
                          (newtempo (second item))
                          (intervale (- (offset->ms-tempo-fixe element lasttempo self)
@@ -1451,6 +1452,7 @@ of all its direct subcontainers (supposed adjacent)"
                     (setf cont (+ cont intervale))
                     (setf lasttempo newtempo)
                     )))
+        )
      (+ (- (* 1000 (/ 60.0 lasttempo) (/ (offset current) (QValue self))) (offset->ms-tempo-fixe last-fig lasttempo self))
         cont))))
 
