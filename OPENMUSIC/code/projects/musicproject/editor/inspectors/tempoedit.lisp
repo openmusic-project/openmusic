@@ -156,15 +156,22 @@
     (update-panel self t)
     ))
 
-      
 
-#|
 (defmethod set-tree-tempo ((self polypanel) tree)
   (let* ((selection (car (selection? self)))
          (poly (object (om-view-container self))))
-    (if (voice-p selection) 
-        (setf (tree selection) (car (str->list tree)))
-      (rectree selection :obj (car (str->list tree))))
+    (cond ((voice-p selection) 
+           (setf (tempo selection) (car (str->list tree)))
+           (do-initialize-metric-sequence selection))
+          ((measure-p selection)
+           (let* ((meas (selection? self))
+                  (pere (parent selection))
+                  (newtree (replace-new-mes-tree pere (car meas) (str->list tree))))
+             (setf (tempo pere) newtree)
+             ))
+          (t))
+    ;(do-initialize-metric-sequence (car poly))
     (update-panel self t)
     ))
-|#
+
+      

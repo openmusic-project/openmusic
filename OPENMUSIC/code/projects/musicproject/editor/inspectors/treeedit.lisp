@@ -108,6 +108,13 @@
 ;--------------------------
 ;set-tree
     
+(defmethod replace-meas-tree ((self voice) (item list) (n number))
+  (let* ((tree (cadr (tree self)))
+         (repl (replace-in-list tree item n)))
+    (list '? repl)))
+         
+
+
 (defmethod set-tree ((self voicepanel) tree)
   (let* ((selection (car (selection? self)))
          (voice (object (om-view-container self)))
