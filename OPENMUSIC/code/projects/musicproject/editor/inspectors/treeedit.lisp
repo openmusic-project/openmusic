@@ -57,16 +57,6 @@
 
 ;-------------------Score utilities-------------------
 
-(defmethod change-chords ((self measure) 
-                          (chords list))
-  (let* ((pere (parent self))
-         (pos (position self (inside pere) :test 'equal))
-         (voices (voice->voices pere))
-         (measure (nth pos voices)))
-    (setf (chords measure) chords)
-     (setf (tree measure) (tree measure))
-     (car (inside measure))))    
-
 (defmethod redratiogrp ((self group))
   "gives the REAL tree of a group without the ratios as a D"
   (let* ((pere (parent self))
@@ -89,63 +79,6 @@
 
 ;-----------------------------------------------------------
 
-(defmethod rectree ((self group) &key (position nil) (obj nil))
-  (let* ((pere (parent self))
-         (pos (position self (inside pere) :test 'equal))
-         (qval (qvalue self))
-         (ext (extent self))
-         (chords (chords self))
-         )
-    (if pos
-        (if position 
-            (progn
-              ;(setf (inside self) chords)
-              (setf (nth pos (inside pere)) self)
-              ;(setf (inside self) chords)
-              (setf (qvalue self) qval)
-              (setf (extent self) ext)
-              ;(setf (inside self) chords)
-              
-            (loop for i in (inside self)
-                  for n from 0 to (length (inside self))
-                  do (rectree i :position pos))
-              (rectree pere :position pos :obj self)
-              )
-          (progn
-           ; (setf (inside self) chords)
-            (setf (tree self) obj)
-            (setf (qvalue self) qval)
-            (setf (extent self) ext)
-            (loop for i in (inside self) 
-                  for n from 0 to (length (inside self))
-                  do (rectree i :position n)) 
-            (rectree pere :position pos :obj self)
-            )
-          )
-      (om-beep-msg "Please select a GROUP"))
-    ))
-
-(defmethod rectree ((self measure) &key (position nil) (obj nil))
-  (let* ((pere (parent self))
-         (pos (position self (inside pere) :test 'equal))
-         (chords (get-chords self))
-         )
-    (if pos
-        (if position 
-            (rectree pere :position pos :obj self)
-          (progn
-            (setf (tree self) obj) 
-            (rectree pere :position pos :obj (change-chords self chords))
-            )
-          )
-      (om-beep-msg "Please select a MEASURE."))
-    ))
-
-
-(defmethod rectree ((self voice) &key (position nil) (obj nil))
-  (setf (nth position (inside self)) obj)
-  (do-initialize-metric-sequence self)
-  (setf (tree self) (tree self)))
 
 
 (defun tree-edit-pane (self tree)
@@ -172,15 +105,23 @@
           ))
     ))
 
-
+;--------------------------
+;set-tree
+    
 (defmethod set-tree ((self voicepanel) tree)
   (let* ((selection (car (selection? self)))
-         (chords (loop for item in (selection? self)
-                       append (cons-chord&rest-list item)))
-         (voice (object (om-view-container self))))
+         (voice (object (om-view-container self)))
+         )
     (if (voice-p selection) 
         (setf (tree voice) (car (str->list tree)))
-      (rectree selection :obj (car (str->list tree))))
+      
+      (let* ((pos (position selection (inside voice) :test 'equal))
+            (reptree (replace-meas-tree voice (car (str->list tree)) pos)))
+        (setf (tree voice) reptree)
+        (setf (selection? self) (list selection))
+        ;in order to keep measure selection:
+        (setf (selection? self) (list (nth pos (inside voice))))
+        ))
     (do-initialize-metric-sequence voice)
     (update-panel self t)
     ))
@@ -188,8 +129,18 @@
 (defmethod set-tree ((self polypanel) tree)
   (let* ((selection (car (selection? self)))
          (poly (object (om-view-container self))))
-    (if (voice-p selection) 
-        (setf (tree selection) (car (str->list tree)))
-      (rectree selection :obj (car (str->list tree))))
+    (cond 
+     ((voice-p selection) 
+        (setf (tree selection) (car (str->list tree))))
+     ((measure-p selection)
+      (let* ((pere (parent selection))
+             (pos (position selection (inside pere) :test 'equal))
+             (reptree (replace-meas-tree pere (car (str->list tree)) pos)))
+        (setf (tree pere) reptree)
+        (setf (selection? self) (list selection))
+        (setf (selection? self) (list (nth pos (inside pere))))
+        ))
+     (t))
     (update-panel self t)
     ))
+
