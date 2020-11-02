@@ -564,14 +564,14 @@ Replaces expressed notes in given positions from <places> with rests.
 
 
 (defun pulse (mesure) 
-  (om::flat (mapcar #'(lambda (x)
+  (flat (mapcar #'(lambda (x)
                                (give-pulse x))
                            mesure)))
 
 (defun pulses (mesures)
             "retourne le nombre de pulses (pas les pauses) d'une RTM"
   
-    (om::flat (mapcar #'(lambda (x) (pulse (list x))) mesures)))
+    (flat (mapcar #'(lambda (x) (pulse (list x))) mesures)))
 
 (defun om-pulses (tlist)
   (mapcar #'(lambda (x)
@@ -583,7 +583,7 @@ Replaces expressed notes in given positions from <places> with rests.
   (remove '()
           (mapcar #'(lambda (x y)
                       (if (floatp x) nil y ))
-                  list (om::arithm-ser 0 (length list) 1))))
+                  list (arithm-ser 0 (length list) 1))))
          
 
 (defmethod! group-pulses ((tree list))
@@ -595,19 +595,19 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
 "
   (let* ((tree2 
           (second 
-           (om::mat-trans 
-            (om::flat-once 
-             (om::mat-trans (rest (real-copy-list tree)))))))
-         (the-pulses (om::flat (om-pulses tree2)))
-         (the-pos (om::remove-dup
-                   (om::flat 
+           (mat-trans 
+            (flat-once 
+             (mat-trans (rest (real-copy-list tree)))))))
+         (the-pulses (flat (om-pulses tree2)))
+         (the-pos (remove-dup
+                   (flat 
                     (list 0 (find-po the-pulses) (length the-pulses)))
                    'eq 1)))
     
     (if (null (find-po the-pulses)) nil 
     
-    (om::group-list the-pulses
-                    (om::x->dx the-pos)
+    (group-list the-pulses
+                    (x->dx the-pos)
                     'linear))))
 
 
@@ -1136,7 +1136,7 @@ Returns the positions of the pulses in <tree>.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;GET-REST-PLACES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(om::defmethod! get-rest-places ((tree list))
+(defmethod! get-rest-places ((tree list))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
   :indoc '("a rhythm tree")
   :icon 225
@@ -1157,7 +1157,7 @@ Returns the positions of the rests in <tree>.
 
 
 
-(om::defmethod! get-rest-places ((self voice))
+(defmethod! get-rest-places ((self voice))
   (let ((tree (tree self)))
     (get-rest-places tree)))
 
