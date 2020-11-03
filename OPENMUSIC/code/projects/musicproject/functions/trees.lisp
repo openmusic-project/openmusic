@@ -1161,9 +1161,77 @@ Returns the positions of the rests in <tree>.
   (let ((tree (tree self)))
     (get-rest-places tree)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;TREE-CORRECTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;FLOAT-REST
 
 
 
+(defun fixfloatrest (list)
+  (loop for i in list
+        collect 
+        (let* ((frst (first i))
+               (rest (rest i)))
+        (if (and (minusp frst) (car rest))
+            (if (and (plusp (car rest)) (floatp (car rest)))
+                    (x-append frst (round (car rest)) (cdr rest))
+              i)
+          i))))
 
+(defun fix-tree-floats-rests (tree)
+  "Corrects a tree where floats (continuation chords) appears after rests and outputs a tree."
+  (let* ((liste (if (typep tree 'voice) (tree tree) (resolve-? tree)))
+         (grp-pulse (group-pulses liste))
+         (corrected (fixfloatrest grp-pulse))
+         (tree2obj (trans-tree liste))
+         (tree2objclean (remove-if 'numberp (flat tree2obj)))
+         (fixed (loop for objs in tree2objclean
+                      for i in (flat corrected)
+                      do (setf (tvalue objs ) i))))
+    
+    (trans-obj tree2obj)))
+
+(defmethod! fix-first-float ((self voice) &optional (mode 'rest));;;maybe put note by default
+      :initvals '(t 'rest)
+   :indoc '("self" "mode")
+   :menuins '((1 (("rest" 'rest) 
+                 ("note" 'note))))
+   :icon 134
+   :doc "if first pulse is "        
+                                 
+  (let* ((rt (rat self))
+         (frst (caadr (caadr rt)))
+         (correct (case mode
+                    (rest (if (floatp frst) (setf (caadr (caadr rt)) (* -1 frst))))
+                    (note (if (floatp frst) (setf (caadr (caadr rt)) (round frst))))))
+         (tempo (tempo self))
+         (chords (case mode
+                   (rest (chords self))
+                   (note (lmidic (objfromobjs self (make-instance 'chord-seq))))
+                   ;(note (x-append '(6000) (chords self))
+                         )))
+
+    (make-instance 'voice
+                   :tree rt
+                   :chords chords
+                   :tempo tempo)))
+
+
+
+(defmethod! fix-first-float ((self poly) &optional (mode 'rest))
+      :initvals '(t 'rest)
+   :indoc '("self" "mode")
+   :menuins '((1 (("rest" 'rest) 
+                 ("note" 'note))))
+   :icon 254
+   :doc "substi "        
+                                 
+  (let* ((voices (inside self))
+         (corr (loop for i in voices
+                     collect (fix-first-float i mode))))
+    (make-instance 'poly
+                   :voices corr)))
+
+;;;;;;;;
 
 

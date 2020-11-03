@@ -1652,3 +1652,16 @@ returns nil when measure is the same as precedent."
      ))
 
 ;;;;;;;;;
+
+
+(defmethod cont-chord->chord ((self t)) t)
+(defmethod cont-chord->chord ((self continuation-chord))
+  (make-instance 'chord
+                 :lmidic (lmidic self)
+                 :lvel (lvel self)
+                 :loffset (loffset self)
+                 :ldur (ldur self)
+                 :lchan (lchan self)
+                 ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

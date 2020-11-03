@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -179,8 +179,43 @@ Time (Onset) information is removed.
 (defmethod* get-chords ((self chord))
   (list (clone self)))
 
+;--------------------
+;  GET-ALL-CHORDS
+;--------------------
+;kh
 
+(defmethod* get-all-chords ((self poly))
+   :initvals '(nil) 
+   :indoc '("a voice or poly")
+   :icon 262
+   :doc "Returns all chords, rests and continuous-chord objects"
+(loop for i in (inside self)
+      collect (get-all-chords i)))
 
+(defmethod* get-all-chords ((self voice))
+(flat (loop for i in (inside self)
+      collect (get-all-chords i))))
+
+(defmethod* get-all-chords ((self measure))
+(loop for i in (inside self)
+      collect (get-all-chords i)))
+
+(defmethod* get-all-chords ((self group))
+(loop for i in (inside self)
+      collect (get-all-chords i)))
+
+(defmethod* get-all-chords ((self continuation-chord))
+self)
+
+(defmethod* get-all-chords ((self chord))
+self)
+
+(defmethod* get-all-chords ((self rest))
+self)
+
+(defmethod* get-all-chords ((self t))
+t)
+    
 ;--------------------
 ;  MASK
 ;--------------------
