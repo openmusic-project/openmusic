@@ -215,6 +215,17 @@ self)
 
 (defmethod* get-all-chords ((self t))
 t)
+
+(defmethod get-chords&cont-chords ((self measure))
+  (let ((chords (get-all-chords self)))
+  (remove nil (loop for i in chords
+                    collect (if (not (rest-p i)) i)))))
+
+(defmethod get-chords&cont-chords ((self voice))
+  (let ((chords (get-all-chords self)))
+  (remove nil (loop for i in chords
+                    collect (if (not (rest-p i)) i)))))
+
     
 ;--------------------
 ;  MASK
