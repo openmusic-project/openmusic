@@ -205,6 +205,39 @@
                                                              :callback 'change-tree-tempo-edit-font
                                                              :accelerator nil
                                                              ))))))
+   (setf actions-menu
+        (make-instance 'capi::menu
+                       :title "Actions"
+                       :items 
+                       (list 
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Set Rhythm Tree"
+                                                       :callback-type :data-interface
+                                                       :callback  'menu-set-tree-callback
+                                                       :accelerator #\e)))
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Set Tempo"
+                                                       :callback-type :data-interface
+                                                       :callback  'menu-set-tempo-callback
+                                                       :accelerator #\t)))
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Close"
+                                                       :callback-type :data-interface
+                                                       :callback 'menu-close-callback
+                                                      ; :callback 'button-close-callback
+                                                       :accelerator #\w)))
+                        )))
+
+   
 
    ;build menus in win
 
@@ -265,7 +298,7 @@
    ;build menus in win
    (setf (ep main-win) (list tree-win tempo-win))
    (setf  (capi::interface-menu-bar-items main-win)
-         (list file-menu edit-menu))
+         (list file-menu edit-menu actions-menu))
    
    ;;
    ;layouts
@@ -330,6 +363,49 @@
 
 
 ;menu's callbacks
+
+
+;set button
+
+;;;modified, because two panes.
+(defun set-tree-menu-action (type data interface)
+  (with-slots (ep) interface 
+    ;(print (list ep interface type tree-editor-pane))
+    (setf *editor-text* (capi:editor-pane-text tree-editor-pane))
+    (setf (sel (car ep)) *editor-text*)
+    (apply (intfunc (car ep)) (list (score (car ep)) *editor-text*))
+    ))
+
+(defun menu-set-tree-callback (&rest args)
+  (apply 'set-tree-menu-action  "set tree" args)
+  )
+
+
+(defun set-tempo-menu-action (type data interface)
+  (with-slots (ep) interface 
+    ;(print (list ep interface type tree-editor-pane))
+    (setf *tempo-editor-text* (capi:editor-pane-text tempo-editor-pane))
+    (setf (sel (second ep)) *tempo-editor-text*)
+    (apply (intfunc (second ep)) (list (score (second ep)) *tempo-editor-text*))
+    ))
+
+(defun menu-set-tempo-callback (&rest args)
+  (apply 'set-tempo-menu-action  "set tempo" args)
+  )
+
+
+;close button
+
+(defun close-menu-action (type data interface)
+  (with-slots (ep) interface 
+    (capi:quit-interface interface)  
+    ))
+
+(defun menu-close-callback (&rest args)
+  (apply 'close-menu-action "closed" args)
+  )
+
+
 
 ;;import
 

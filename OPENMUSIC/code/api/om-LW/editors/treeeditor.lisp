@@ -198,10 +198,33 @@
                                                              :callback 'change-tree-edit-font
                                                              :accelerator nil
                                                              ))))))
+   (setf actions-menu
+        (make-instance 'capi::menu
+                       :title "Actions"
+                       :items 
+                       (list 
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Set Rhythm Tree"
+                                                       :callback-type :data-interface
+                                                       :callback  'button-set-selection-callback 
+                                                       :accelerator #\e)))
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Close"
+                                                       :callback-type :data-interface
+                                                       :selection-callback 'button-close-callback
+                                                       ;:callback 'button-close-callback
+                                                       :accelerator #\w)))
+                        )))
 
    ;build menus in win
    (setf (capi::interface-menu-bar-items win)
-         (list file-menu edit-menu))
+         (list file-menu edit-menu actions-menu))
    ;layouts
    (setf editor-layout (make-instance 'capi::column-layout
                                       :description (list tree-editor-pane def-buttons)))
