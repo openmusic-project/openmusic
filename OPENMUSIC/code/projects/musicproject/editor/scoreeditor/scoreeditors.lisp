@@ -2852,6 +2852,7 @@
           (("n") "Set Voice Name")
           (("o") "Open Internal Editor")
           (("c") "Show Channel Color")
+          (("i") "Show Selection info")
           ("space" "Play/Stop")
           )))
 
@@ -3005,6 +3006,7 @@
           (("n") "Set Selected Voice Name")
           (("o") "Open Internal Editor")
           (("c") "Show Channel Color")
+          (("i") "Show Selection info")
           ("space" "Play/Stop")
           )))
 
