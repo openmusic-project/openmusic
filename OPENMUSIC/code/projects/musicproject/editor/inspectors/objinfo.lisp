@@ -390,7 +390,6 @@ t)
 (defmethod chng-obj-inf ((self continuation-chord) nt vel dur chan off port)
 t)
 
-
 (defun set-obj-info (ompanel objs data)
   (let* ((obj (car objs))
          (voice (object (om-view-container ompanel)))
@@ -420,7 +419,9 @@ t)
             for port in (car ports)
             do (chng-obj-inf i n vel dur chan off port))
       (om-beep-msg "Select only one NOTE object!")))
+    ;reopen
+    (get-obj-info ompanel)
     (if (voice-p voice) 
-       (setf (tree voice) (check-tree-for-contchord tree voice)))
+        (setf (tree voice) (check-tree-for-contchord tree voice)))
     (update-panel ompanel t)
     ))

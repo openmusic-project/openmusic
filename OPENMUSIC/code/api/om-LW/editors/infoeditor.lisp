@@ -434,6 +434,7 @@
 
 (defun button-set-info-callback (&rest args)
   (apply 'set-info-button "selected" args)
+  (apply 'close-button-info "closed" args)
   )
 
 ;RESET button
