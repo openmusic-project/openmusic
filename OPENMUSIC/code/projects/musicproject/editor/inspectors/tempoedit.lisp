@@ -86,7 +86,7 @@
     (loop for i in meas
           do (setf rep (append rep (list (format nil "~S ~%" i))))) 
           
-    (setf rep (append (list rep (format nil ")~%)"))))
+    (setf rep (append (list rep (format nil "))"))))
     (concat-string (flat rep))
     ))
 
