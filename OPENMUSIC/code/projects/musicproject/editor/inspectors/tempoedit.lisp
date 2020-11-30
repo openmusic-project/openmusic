@@ -36,7 +36,7 @@
   (let* ((tempo (tempo self))
          (format-tempo (cons (list '(0 0) (car tempo))
                              (cadr tempo)))
-         (mes (loop for i from 0 to (- (length (inside self)) 1)
+         (mes (loop for i from 0 to (length (inside self))
                                        collect (list (list i 0) nil)))
          res mem (indx 0)
          )
@@ -81,12 +81,12 @@
 (defun format-voice-tempo-by-meas (tempo)
   "This formats a voice's tempo with measures on each line"
   (let* ((init (car tempo))
-         (rep (list (format nil "( ~S ~% (" init)))
+         (rep (list (format nil "( ~S ~% (~%" init)))
          (meas (cadr tempo)))
     (loop for i in meas
           do (setf rep (append rep (list (format nil "~S ~%" i))))) 
           
-    (setf rep (append (list rep (format nil ")) ~%"))))
+    (setf rep (append (list rep (format nil ")~%)"))))
     (concat-string (flat rep))
     ))
 
