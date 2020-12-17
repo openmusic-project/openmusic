@@ -85,13 +85,13 @@
                                :visible-min-height '(character 1)
                                :visible-max-width nil)) ;selection
 
-  (setf pane3 (setf pane3 (make-instance 'capi::multi-line-text-input-pane
+  (setf pane3 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
                                :text (nth 3 *info-pack*)
                                :change-callback 'update-callback
                                :visible-min-height '(character 1)
                                :visible-max-width nil)) ;midics
-                )
+                
   (setf pane4 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
                                :text (nth 4 *info-pack*) 
