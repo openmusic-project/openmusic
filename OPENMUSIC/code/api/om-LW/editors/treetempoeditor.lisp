@@ -236,10 +236,24 @@
                                                       ; :callback 'button-close-callback
                                                        :accelerator #\w)))
                         )))
+   (setf help-menu
+        (make-instance 'capi::menu
+                       :title "Help"
+                       :items 
+                       (list 
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Shotcuts"
+                                                       :callback-type :interface
+                                                       :callback 'get-info
+                                                       :accelerator #\h)
+                                        ))
+                        
+                        )))
 
    
-
-   ;build menus in win
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;;;TEMPO EDITOR
@@ -298,7 +312,7 @@
    ;build menus in win
    (setf (ep main-win) (list tree-win tempo-win))
    (setf  (capi::interface-menu-bar-items main-win)
-         (list file-menu edit-menu actions-menu))
+         (list file-menu edit-menu actions-menu help-menu))
    
    ;;
    ;layouts
@@ -321,10 +335,9 @@
   (setf  (capi::layout-description (capi:pane-layout tempo-win)) (list tempo-editor-layout tempo-but-layout1))  
   (setf (capi::layout-description (capi:pane-layout main-win)) (list tree-win tempo-win))
   
-
-
   (capi::display main-win)
   main-win)
+
       
 (defmethod capi:interface-keys-style ((self om-tree-tempo-editor))
  #+linux :emacs
@@ -527,5 +540,129 @@
             (setf *def-tree-edit-font* settings))
       (setf (capi::simple-pane-font tempo-editor-pane) 
             (setf *def-tree-edit-font* settings)))))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;help Text info;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defvar *os_key*
+  #+cocoa "CMD"
+  #-cocoa "Ctrl")
+
+
+(defun helpinfo ()
+(with-output-to-string (s)
+  (mapcar (lambda (key line)
+            (format s "~%~A~A~VT~A~%" *os_key* key 30 line ))
+         
+          '("+E" 
+            "+T" 
+            "+S" 
+            "+SHIFT+S" 
+            "+I" 
+            "+SHIFT+I" 
+            "+W"
+            "+H")
+
+          '("Set Rhythm Tree"
+            "Set Tempo"
+            "Save Rhythm Tree As..."
+            "Save Tempo As..."
+            "Import Rhythm Tree"
+            "Import Tempo" 
+            "Close Window"
+            "This Help")
+          )))
+
+
+(setf *about* 
+      "ABOUT:
+
+This editor operates on VOICEs and POLYs in mode MEASURE or VOICE.
+It is important that all trees are well formed.
+")
+
+(setf *the_info*
+(concatenate 'string 
+             *about*
+             (format nil "~%")
+             (format nil "SHORTCUTS:~%") 
+             (helpinfo) 
+             ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;GUI;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *help-font* nil)
+(defvar *def-help-font* 
+  #+linux(gp::make-font-description :family "Courier" :size 10)
+  #-linux(gp::make-font-description :family "Consolas" :size 12))
+
+
+
+(defun open-help (help)
+  ;;main window
+  (setf win (make-instance 'capi::interface
+                           :title "INFO"
+                             :best-x 50
+                             :best-y 50
+                             :best-width '(/ :screen-width 6)
+                             :best-height 50
+                           :layout (make-instance 'capi::grid-layout
+                                                  :right-extend :bottom-extend
+                                                  :y-adjust :center
+                                                  :columns 1)
+                         ;  :name (string (gensym))
+                         ;  :parent (capi:convert-to-screen)
+                           :display-state :normal
+                           ;:transparency 4
+                          ; :external-border 50
+                            ))
+    ;panes and buttons      
+  (setf help-pane 
+              (make-instance 'capi::editor-pane
+                      ; :flag 'minimal-example
+                             :text help
+                             :font *def-help-font* 
+                             :enabled nil
+                             :buffer-name :temp 
+                             :visible-min-width '(character 65)
+                             :visible-min-height '(character 25)
+                             ))
+        (setf close-button
+              (make-instance 'capi:push-button
+                             :text "Close"
+                             :callback-type :data-interface
+                             :callback 'close-callback
+                             ))
+    
+       ;layouts
+        (setf help-layout (make-instance 'capi::column-layout
+                                         :description (list help-pane close-button)))
+        (setf (capi::layout-description (capi:pane-layout win)) (list help-layout))
+        (capi::display win)
+        win)
+
+; (open-help *the_info*)
+
+;;callbacks
+
+(defun get-info (interface)
+  (with-slots (ep) interface
+    (open-help *the_info*)))
+
+(defun close-action (type data interface)
+  (with-slots () interface 
+    (capi:quit-interface interface)  
+    ))
+
+(defun close-callback (&rest args)
+  (apply 'close-action "closed" args)
+  )
 
       
