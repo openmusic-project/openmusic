@@ -250,9 +250,17 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
    (values '("self" "thehead")
            '(nil  "Q")
            '("object" "head figure")
-           '(nil (( 1 (("whole" (head-1)) ("half" (head-1/2)) ("quarter" (head-1/4)) ("square" (head-carre))  
-                       ("diamond" (head-losange)) ("rect" (head-rect)) 
-                       ("triangle" (head-triangle)) ("circle" (head-cercle))))))))
+           '(nil (( 1 (("whole" (head-1)) ("half" (head-1/2)) ("quarter" (head-1/4)) 
+                       ("1/4harm" (head-1/4harm))
+                       ("1/2harm" (head-1/2harm))
+                       ("1/4sq" (head-1/4sq))  
+                       ("1/2sq" (head-1/2sq))
+                       ("1/4circ" (head-1/4circ))
+                       ("1/2circ" (head-1/2circ))
+                       ("1/4tri" (head-1/4tri)) 
+                       ("1/2tri" (head-1/2tri))
+                       ("cross" (head-cross))
+                       ))))))
 
 
 

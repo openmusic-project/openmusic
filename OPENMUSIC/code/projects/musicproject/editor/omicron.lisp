@@ -145,7 +145,7 @@
 (defun key-f () (code-char 63))
 (defun key-c () (code-char 66))
 
-;;;;======================head notes
+;;;;======================note heads
 
 (defun head-8 () (format nil "~D" (code-char 83)))
 (defun head-4 () (format nil "~D" (code-char 73)))
@@ -154,13 +154,34 @@
 (defun head-1/2 () (format nil "~D" (code-char 80)))
 (defun head-1/4 () (format nil "~D" (code-char 110)))
 
+
+;harmonics
+(defun head-1/4harm () (format nil "~D" (code-char 100)))
+(defun head-1/2harm () (format nil "~D" (code-char 97)))
+
+;square
+(defun head-1/4sq () (format nil "~D" (code-char 101)))
+(defun head-1/2sq () (format nil "~D" (code-char 98)))
+
+;triangle
+(defun head-1/4tri () (format nil "~D" (code-char 102)))
+(defun head-1/2tri () (format nil "~D" (code-char 103)))
+
+;circle
+(defun head-1/4circ () (format nil "~D" (code-char 105)))
+(defun head-1/2circ () (format nil "~D" (code-char 104)))
+
+;cross
+(defun head-cross () (format nil "~D" (code-char 96)))
+
+
+;For compatibility:
+
 (defun head-carre () (format nil "~D" (code-char 101)))
 (defun head-losange () (format nil "~D" (code-char 100)))
 (defun head-rect () (format nil "~D" (code-char 98)))
 (defun head-triangle () (format nil "~D" (code-char 102)))
 (defun head-cercle () (format nil "~D" (code-char 104)))
-
-
 
 ;;;;=======================rests
 (defun rest-4 () (format nil "~D" (code-char 93)))
