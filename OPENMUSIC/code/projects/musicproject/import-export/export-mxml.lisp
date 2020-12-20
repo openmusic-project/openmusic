@@ -737,7 +737,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 
 (defmethod cons-xml-expr ((self om::group) &key free key (approx 2) part)
   
-  (let* ((durtot free)
+  (let* ((durtot (if (listp free) (car free) free))
          (cpt (if (listp free) (cadr free) 0))
          (num (or (om::get-group-ratio self) (om::extent self)))
          (denom (om::find-denom num durtot))
