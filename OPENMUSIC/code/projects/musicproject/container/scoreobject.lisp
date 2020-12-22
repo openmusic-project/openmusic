@@ -683,7 +683,9 @@ Extraction methods.
 
 
 (defmethod (setf chords) ((chords list) (self voice))
-  (do-initialize self :chords chords :tempo (tempo self) :tree (tree self) :legato (legato self) :ties (ties self)))
+  (do-initialize self :chords chords :tempo (tempo self) :tree (tree self) :legato (legato self) :ties (ties self))
+  (setf (tree self) (tree self))
+  )
 
 (defmethod (setf legato) ((legato integer) (self voice))
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
