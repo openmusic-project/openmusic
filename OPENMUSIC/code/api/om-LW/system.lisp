@@ -85,6 +85,7 @@
           om-user-pref-folder
           om-get-date
           om-command-line
+          om-term-cmd
           om-run-application
           om-run-program
           *om-open-cmd*
@@ -600,6 +601,42 @@
     )
   )
 
+;new outputs command in listener and accepts multicommand &&
+#+(or linux macosx) 
+(defun om-term-cmd (str 
+                    &optional  
+                    (shell "/bin/bash")
+                    (redirect-output t) 
+                    (wait t) 
+                    (current-path nil))
+  (when current-path 
+    (setf str (concatenate 'string (format nil "cd ~s; " (namestring :current-path)) str)))
+  (if redirect-output
+        
+      (if (pathnamep redirect-output)
+          ;;; output in file
+          (sys:run-shell-command str 
+                                 :show-window t 
+                                 :wait wait 
+                                 :output redirect-output 
+                                 :error-output redirect-output 
+                                 :if-output-exists :append 
+                                 :if-error-output-exists :append)
+        ;;; print output
+        (sys:call-system-showing-output str 
+                                        :wait wait 
+                                        :shell-type shell
+                                        :output-stream *om-stream* 
+                                        :prefix " " 
+                                        :show-cmd nil
+                                        )
+        )
+    
+    (sys:run-shell-command str :wait wait)
+    )
+  )
+
+
 #+mswindows
 (defun om-command-line (str &optional (redirect-output nil) (wait t) (current-path nil))
   (if redirect-output ; redirect to file not supported
@@ -616,6 +653,19 @@
 
 ;;; doit retourner un ID !!
 ;;; path = un exe ou bien un .app dont on vet executer l'exe
+
+#+mswindows
+(defun om-term-cmd (str 
+                    &optional  
+                    (shell "/bin/bash")
+                    (redirect-output t) 
+                    (wait t) 
+                    (current-path nil))
+"for compatibility"
+(om-command-line str redirect-output wait current-path))
+
+
+
 
 (defun om-run-program (path &optional afterfun)
   (let* ((pathstr (namestring path))

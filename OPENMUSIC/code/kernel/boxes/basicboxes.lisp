@@ -692,8 +692,14 @@ Returns the copy of the object."
   (declare (ignore arg))
   (om-command-line str (if redirect-output-supplied-p redirect-output *sys-console*)))
 
-
-
+;newer
+(defmethod! om-terminal ((str string) &key (shell "/bin/bash"))                         
+  :icon 657
+  :initvals '("ls" "/bin/bash")
+  :menuins '((1 (("/bin/bash" "/bin/bash") ("/bin/zcsh" "/bin/zcsh"))))
+  :indoc '("a cmd line" "shell type")
+  :doc "Sends the command line <str> (a string) to the system."
+  (om-term-cmd str shell t t nil))
 
 ;--------------------------FOR maquettes
 

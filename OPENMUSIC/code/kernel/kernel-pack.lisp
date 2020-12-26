@@ -76,7 +76,7 @@
 
 
 (defvar *system-package* (omNG-protect-object (omNG-make-new-package "System")))
-(AddGenFun2Pack '(om-shell) *system-package*)
+(AddGenFun2Pack '(om-shell om-terminal) *system-package*)
 
 
 ;;; DI BOXES
