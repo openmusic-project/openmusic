@@ -145,9 +145,11 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("t") "show Tutorial patch")
                      
                        #+om-reactive(("r") "reactive box on/off")
+                       (("f") "add function or class")
+                       (("c") "add comment box")
                        ))
 
-(defvar *patchhelp2* '((("c") "Change Connection Color")
+(defvar *patchhelp2* '((("C") "Change Connection Color")
                        (("A") "Align")
                        (("i") "reInitialize size")
                        (("I") "reInitialize value")
@@ -204,6 +206,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
     (case char
       (:om-key-delete (delete-general self))
       ;;;(#\f (make-undefined-box self (om-mouse-position self)))
+      (#\f (make-undefined-funct-box self (om-mouse-position self)))
+      (#\c (make-comment-box self (om-mouse-position self)))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
 
@@ -386,6 +390,26 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                (push (thebox self) correct)) connections)
      (mapc #'(lambda (box) 
                (redraw-connections box)) (remove-duplicates correct :test 'equal))))
+
+
+
+(defmethod make-undefined-funct-box ((self patchPanel) pos)
+  "this is only for 'f' shortcut"
+  (let* ((thename (mk-unique-name self "undefined"))
+          (new-box (omNG-make-new-boxcall 'undefined pos thename))
+          (new-frame (make-frame-from-callobj new-box)))
+     (om-select-window (window self))
+     (omG-add-element self new-frame)
+     ))
+
+(defmethod make-comment-box ((self patchPanel) pos)
+  "this is for 'c' shortcut, for comments."
+  (let* ((newbox (omNG-make-new-boxcall 'comment pos "comment"))
+         (new-frame (make-frame-from-callobj newbox)))
+    (om-select-window (window self))
+    (omG-add-element self (make-frame-from-callobj newbox))
+    ))
+
 
 
 ;------------------------------
