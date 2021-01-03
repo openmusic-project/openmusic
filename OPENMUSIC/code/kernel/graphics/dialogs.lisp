@@ -154,16 +154,16 @@
 
 (defparameter *credits-1* 
 "Design and development: 
-C. Agon, G. Assayag, J. Bresson")
+C. Agon, G. Assayag, J. Bresson, K. Haddad")
 
 (defparameter *credits-2* 
   "Original design and development: 
-Carlos Agon, Gerard Assayag, Jean Bresson
+Carlos Agon, Gerard Assayag, Jean Bresson, Karim Haddad
 
 Linux support and development: Anders Vinjar
 
 Contributions and code from: 
-E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, K. Haddad, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, F. Voisin
+E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, F. Voisin
 
 Lisp libraries:  
 - CFFI/babel/alexandria by J. Bielman, L.O. N. Siivola, A, Lendvai, M. Baringer, R. Strandh, T. Rittweiler
