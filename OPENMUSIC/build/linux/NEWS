@@ -1,3 +1,33 @@
+* RELEASE NOTES 6.18
+
+NEW FEATURES
+
+- Info pane displaying complete info and enabling modification of chord and note objects inside SCORE editors.
+- Tempo editor enables writing and modifying tempo in VOICE and POLY editors.
+- Tree editor enables writing and modifying Rhythm Trees in VOICE and POLY editors.
+- New functions: voice->voices, concat-voices.
+- om-terminal like om-shell but outputs to listener and accepts multi-commandlines.
+
+IMPROVEMENTS
+
+- Added shortcut (ctrl+3, cmd+3) for New Lisp Function
+- om-inspect from patch and contextual menus (ctrl+Y, cmd+Y)
+- tooltips on/off in preferences (General tab)
+- Added shortcuts (f, c) for comments and functions creation in patch
+
+FIXES
+
+- Fixed presentation (icon/list) in presentation
+- Fixed 3dc-lib to load many 3dc
+- Added missing G keys in preferences
+- Fixed concat method
+- Fixed Group method in export-musicxml
+- Fixed set chords issues in voice with ties
+
+
+
+
+
 * RELEASE NOTES 6.17
 
 NEW FEATURES
