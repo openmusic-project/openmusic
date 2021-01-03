@@ -1,0 +1,225 @@
+;=====================================
+; OM 6.18
+;=====================================
+
+To install, just drag "OM 6.18.app" into your Applications/ directory.
+
+OpenMusic is a free software distributed under GNU LGPL license.
+(c) IRCAM 1997-2018
+
+- Download and updates : http://forumnet.ircam.fr/shop/fr/forumnet/43-openmusic.html
+- User Manual : support.ircam.fr/docs/om/om6-manual/
+- User group and support : http://forumnet.ircam.fr/fr/user-groups/openmusic/forum/
+- More info : http://repmus.ircam.fr/openmusic/
+
+;------------------------------------
+; RELEASE NOTES:
+;------------------------------------
+Since OM 6.13 the distribution package is modified to conform with macOS security changes
+No more ressources are accessed with relative pathnames outside the .app bundle
+
+1) Libraries are all stored in a separate folder and distributed as separate packages.
+The default location is (USER_HOME)/OM/Libraries/
+Other locations can be added in the Preferences (as is previous versions)
+2) The 'patches' folder is no more visible: you can find it as OM 6.x.app/Contents/Init,
+or simply put your Lisp code in the Workspace's "user" folder instead.
+3) The OM source code is still accessible from OM, but also now relocated 
+inside the .app bundle's resources.
+
+;------------------------------------
+; If you want to load and use OM code in LispWorks, 
+; check/download the source package from the repository: 
+; https://forge.ircam.fr/p/OM/ 
+; 
+; ...or clone it using GIT:
+; $ git clone git://git.forge.ircam.fr/OM.git
+;------------------------------------
+
+
+* RELEASE NOTES 6.18
+
+NEW FEATURES
+ 
+- Info pane displaying complete info and enabling modification of chord and note objects inside SCORE editors. 
+- Tempo editor enables writing and modifying tempo in VOICE and POLY editors.
+- Tree editor enables writing and modifying Rhythm Trees in VOICE and POLY editors.
+- New functions: voice->voices, concat-voices.
+- om-terminal like om-shell but outputs to listener and accepts multi-commandlines.
+
+IMPROVEMENTS
+
+- Added shortcut (ctrl+3, cmd+3) for New Lisp Function
+- om-inspect from patch and contextual menus (ctrl+Y, cmd+Y)
+- tooltips on/off in preferences (General tab)
+- Added shortcuts (f, c) for comments and functions creation in patch
+
+FIXES
+
+- Fixed presentation (icon/list) in presentation 
+- Fixed 3dc-lib to load many 3dc
+- Added missing G keys in preferences
+- Fixed concat method
+- Fixed Group method in export-musicxml
+- Fixed set chords issues in voice with ties
+
+
+
+* RELEASE NOTES 6.17
+
+NEW FEATURES
+
+- Added stem control in preferences
+
+IMPROVEMENTS
+
+- Naming workspace with extension (eg. workspace.wrk)
+- Default Icon view on creation of Workspace
+- Set Preferences default (midi, audio) to what's better :
+   - default microtonal midi pref: removed. Microtones now play correctly.
+   - delete tmp audio files checked by default
+- set-port in Midi menu
+- Added audio-mix-console to Classes-> Audio menu
+- Connection styles same for all platforms (Linux)
+- omAudioLib now plays regardless of extensions (Linux)
+
+FIXES
+
+- Fixed POLY integration in CLASS-ARRAY
+- Fixed midicents settings in editors
+- Fixed sound-normalize method
+- Fixed init preferences on workspace creation
+- Fixed "slot-dragging" (Linux)
+- Fixed scrolling editing in Score classes (Linux)
+- true-durations function fixed
+
+
+* RELEASE NOTES 6.16
+
+  - The precompiled version of OMAudioLib.so included with the
+    released version of OM6.16 is now installed and looked up from
+    inside OMs resources folder.
+
+    This version of the dynamic library is compiled with GLIBC v.2.27,
+    to try to stay compatible with previous and current versions of
+    OS'es, and adding "-Wl,--as-needed" to JUCE_LDFLAGS, to not demand
+    sometimes conflicting dependencies such as libcurl/libcurl-gnutls,
+    which are never needed by OM anyhow.
+
+    The aim is to provide a minimal binary which will run on all
+    current 64-bit versions of Linux - Redhat based (Fedora) or Debian
+    based (Ubuntu).
+
+    If for some reason you need to compile your own OMAudioLib.so,
+    instructions are found together with the sources:
+
+      https://github.com/openmusic-project/omaudiolib
+
+  - various installation names now try to recognize '6' (as in
+    'openmusic6', 'om6logo.png') etc. - to allow different versions of
+    OM to be installed alongside each other
+
+
+* RELEASE NOTES 6.15
+
+  - changes, bug-fixes, improvements
+  - new function - #'bpf-concat
+
+* RELEASE NOTES 6.14.2
+
+  - new clefs: g_8 and g^8 - the usual treble clef an octave down/up resp.
+  - 'Esc'-key works also in analysis mode of Chord-seq (and if there's a selection)
+  - #'set-port accepts a list of ports as it's second argument
+  - many bug fixes and improvements, check the git sources and logs for detail
+
+
+* RELEASE NOTES 6.14
+
+- Base Lisp environment update: LispWorks 7.1.1 (64-bits)
+
+- play/pause/stop controls modified (Space/Escape keys) + play-time display
+- MIDI record controls updated 
+- MusicXML: Import/Export MIDI channels
+- Function: 3D-SPLINE
+- Function: SPLIT-VOICES
+- Function: update P-FORM in MathTools
+
+Fixes
+- copy/paste in CHORD-SEQ
+- PitchBend in MIDI-MIX-CONSOLE
+- Workspace position on secondary screens
+- edition-params of TemporalBoxes
+- OM-SAMPLE with BPC
+- eval-once modes
+- MusicXML import from Max's bach library
+- multi-channel audio in MAQUETTE2SOUND
+- ...
+
+* RELEASE NOTES 6.13:
+
+  Libraries are all stored in a separate folder and distributed as
+  separate packages.  The default location is :
+
+	  $(HOME)/.local/share/OpenMusic/Libraries/
+
+  Other locations can be added in the Preferences (as in previous
+  versions).
+
+  Links to various Libraries ::
+
+      - http://repmus.ircam.fr/openmusic/libraries
+      - https://forge.ircam.fr/p/omlibraries/
+
+  Other changes:
+
+    - Base Lisp environment update: LispWorks 7.1 (64-bits)
+    - Audio support update: Juce 5
+    - Audio library: fix audio device detection and preferences
+    - Audio files: support for special characters in pathnames
+    - Audio player: fix mono file playback
+    - Audio i/o : fix output format selection (wave, aiff etc.)
+    - Score objects: updated 'concat' method
+    - Score objects: function 'flip-selection' (bound to "f/F" key)
+    - Score analysis framework: add metrics in 'quantify-segments' 
+    - Score analysis framework: other misc. fixes/improvements 
+    - Support for complex numbers
+    - Modified eval-once mode (compat for Modalys patches)
+    - Misc. fixes and improvements
+
+
+
+* RELEASE NOTES 6.12
+
+  UPDATES
+
+   - 64 bit support on Linux.  Support for 32-bit discontinued
+   - Juce based audio i/o: OMAudioLib
+   - players cl-jack and mplayer not loaded by default
+   - support for jack-based players (audio/midi) discontinued
+   - loading of foreign libs relies on dlopen (ldconfig,
+     LD_LIBRARY_PATH)
+   - nicer drawings, graphics, scrolling, tabbed panes
+
+   VARIOUS MIDI:
+
+    + messages: marker, cuepoint, tempo, timesignature, keysignature,
+      textual, seqname, instrname, lyric, copyright, midiportmsg,
+      endoftrackmsg, resetallcontroller, allnotesoff
+    + support for midichans > 16 (sent to successive midiports)
+    + lchan message to note class, to allow common access in microtune-setups
+    + choices for midi micro-tuning approach
+    + add "cl" to checked pathname-types when loading user-code
+    + update and fix some MIDI tutorials, (deprecated) settings-ctrl ->
+      midi-mix-console
+
+
+   BUGFIXES
+	
+    piles of bugfixes and tunings
+
+ - Project main page : https://github.com/openmusic-project
+ - Download and updates : https://github.com/openmusic-project/openmusic
+ - Downloads (main page) : https://forum.ircam.fr/projects/detail/openmusic/
+ - User Manual : http://support.ircam.fr/docs/om/om6-manual/
+ - User group and support : https://discussion.forum.ircam.fr/c/openmusic
+ - More info : http://repmus.ircam.fr/openmusic/
+
