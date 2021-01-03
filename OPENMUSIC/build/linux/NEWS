@@ -96,6 +96,31 @@ FIXES
   - many bug fixes and improvements, check the git sources and logs for detail
 
 
+
+* RELEASE NOTES 6.14:
+
+
+- Base Lisp environment update: LispWorks 7.1.1 (64-bits)
+
+- play/pause/stop controls modified (Space/Escape keys) + play-time display
+- MIDI record controls updated
+- MusicXML: Import/Export MIDI channels
+- Function: 3D-SPLINE
+- Function: SPLIT-VOICES
+- Function: update P-FORM in MathTools
+
+Fixes
+- copy/paste in CHORD-SEQ
+- PitchBend in MIDI-MIX-CONSOLE
+- Workspace position on secondary screens
+- edition-params of TemporalBoxes
+- OM-SAMPLE with BPC
+- eval-once modes
+- MusicXML import from Max's bach library
+- multi-channel audio in MAQUETTE2SOUND
+- ...
+
+
 * RELEASE NOTES 6.13:
 
   Libraries are all stored in a separate folder and distributed as
@@ -123,8 +148,10 @@ FIXES
     - Score objects: function 'flip-selection' (bound to "f/F" key)
     - Score analysis framework: add metrics in 'quantify-segments' 
     - Score analysis framework: other misc. fixes/improvements 
+    - Support for complex numbers
+    - Modified eval-once mode (compat for Modalys patches)
     - Misc. fixes and improvements
-    - support for complex numbers
+
 
 
 * RELEASE NOTES 6.12
