@@ -430,7 +430,9 @@
 (setf *new-menu-items*
       (list (list "New Patch" 'p "1")
             (list "New Maquette" 'm "2")
-            (list "New Lisp Function" 'l "3")))
+            #+(or linux win32)(list "New Lisp Function" 'l "3")
+            #+macosx(list "New Lisp Function" 'l "l")
+            ))
 
 (defun make-menu-item (win text symb shortcut)
   (om-new-leafmenu text #'(lambda () (omG-make-new-icon-window win symb)) shortcut))
