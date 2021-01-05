@@ -46,16 +46,23 @@
                   (not (= (/ (cadr (car item)) (car (car item)))
                           (/ (cadr currtempo) (car currtempo)))))
                   (setf currtempo nil) (setf currtempo (car item))))
-    currtempo))
+    (list currtempo nil)))
 
 (defmethod object-midi-tempo ((self t)) nil)
 
 (defmethod object-midi-tempo ((self voice)) 
   (tempo-a-la-noire (car (tempo self))))
 
+;(defmethod object-midi-tempo ((self poly)) 
+;  (let ((tempo (poly-same-tempo self)))
+;    (if tempo (tempo-a-la-noire (car tempo)) nil)))
+
+;since midifile doesnt really support polytempi:
+;that makes poly-same-tempo method useless.
+
 (defmethod object-midi-tempo ((self poly)) 
-  (let ((tempo (poly-same-tempo self)))
-    (if tempo (tempo-a-la-noire (car tempo)) nil)))
+  (let ((first-voice (car (inside self))))
+        (object-midi-tempo first-voice)))
 
 (defmethod midi-export ((self t) &key path name format approx retune-channels)
   (let ((pathname (or path (om-choose-new-file-dialog  :directory (def-save-directory) 
