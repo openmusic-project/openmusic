@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -277,6 +277,10 @@
      (setf (param-list rep) (reverse params))
      rep))
 
+
+;necessary fix 070121 KH
+;if tempo changes in voice
+
 (defmethod cons-copy-maquetteobj ((self OMMaquette) objs)
    "Cons a maquette-obj instance which contains copies of the temporal elements in the maquette 'self'."
    (let* ((maxdur 0) tempobjs rep params)
@@ -285,7 +289,12 @@
              (when (allowed-in-maq-p val-of-tempob)
                (setf (offset val-of-tempob) (slot-value tempobj 'offset))
                (unless (= 1 (strech-fact tempobj))
-                 (stretch-in-maq val-of-tempob (strech-fact tempobj)))
+                 (stretch-in-maq val-of-tempob (strech-fact tempobj))
+                 (if (or (voice-p val-of-tempob) (poly-p val-of-tempob))
+                     (progn 
+                       (setf (strech-fact tempobj) 1)
+                       (setf (extend tempobj) (get-obj-dur val-of-tempob)))
+                   ))
                (setf maxdur (max maxdur (+ (offset val-of-tempob) (extent->ms val-of-tempob))))
                (push (edition-params tempobj) params)
                (push val-of-tempob tempobjs))

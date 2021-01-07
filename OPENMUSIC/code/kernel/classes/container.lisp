@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -341,10 +341,20 @@ Is used to make 2 containers comparable w/regard to time scale."
   self)
 
 
+;(defmethod Extent->ms ((self simple-container))
+;  "Converts the extent of <self> to milliseconds"
+;  (round (* 1000 (/ 60 (Qtempo self)) (/ (extent self) (QValue self)))))
+
+;necessary fix 070121 KH
+;if tempo changes in voice
+;Note: chordseq qtempo always = 60
+
 (defmethod Extent->ms ((self simple-container))
   "Converts the extent of <self> to milliseconds"
-  (round (* 1000 (/ 60 (Qtempo self)) (/ (extent self) (QValue self)))))
-
+  (if (or (voice-p self) (poly-p self))
+      (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+        (round (* 1000 (/ (extent chrdseq) (QValue chrdseq)))))
+  (round (* 1000 (/ 60 (Qtempo self)) (/ (extent self) (QValue self))))))
 
 
 (defmethod offset->ms ((self simple-container) &optional grandparent)
@@ -591,9 +601,18 @@ class <below> are cloned and placed in a flat way. All offsets in millisecs."
 (defmethod stretch-in-maq ((self simple-container) (factor number))
   (setf (Qtempo self) (round (Qtempo self) factor)))
 
+;(defmethod stretch-in-maq ((self container) (factor number))
+;  (setf (Qtempo self) (round (Qtempo self) factor))
+;  (loop for obj in (inside self) do (stretch-in-maq obj factor)))
+
+;necessary fix 070121 KH
 (defmethod stretch-in-maq ((self container) (factor number))
-  (setf (Qtempo self) (round (Qtempo self) factor))
-  (loop for obj in (inside self) do (stretch-in-maq obj factor)))
+  (if (not (or (voice-p self) (poly-p self)))
+      (progn
+        (setf (Qtempo self) (round (Qtempo self) factor))
+        (loop for obj in (inside self) do (stretch-in-maq obj factor)))
+    ))
+
 
 (defmethod allow-strech-p ((self simple-container) (factor number))  factor)
 
