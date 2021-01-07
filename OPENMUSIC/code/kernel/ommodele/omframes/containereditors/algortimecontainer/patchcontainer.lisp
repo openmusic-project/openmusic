@@ -142,6 +142,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
+                       (("g") "ouput lisp expression in listener")
                        (("t") "show Tutorial patch")
                      
                        #+om-reactive(("r") "reactive box on/off")
@@ -213,6 +214,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
       (#\c  (patch-color self))
       (#\e (mapc 'show-fun-code actives))
+      (#\g (getdacode self))
       (#\v  (om-eval-enqueue 
              `(progn
                 (setf *cur-eval-panel* ,self)

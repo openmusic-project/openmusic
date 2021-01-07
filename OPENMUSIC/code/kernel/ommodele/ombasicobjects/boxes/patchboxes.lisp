@@ -2438,6 +2438,17 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
       (setf *lambda-context* oldlambdacontext))
     ))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;in progress
+
+(defun get-all-code (things)
+  (loop for i in things 
+        collect (gen-code (object i) 0)))
+
+(defun getdacode (self)
+  (let ((actives (get-actives self)))
+    (print (car (get-all-code actives)))
+    ))
 
 
 
