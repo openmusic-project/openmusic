@@ -650,7 +650,7 @@ Press 'space' to play/stop the sound file.
 (defmethod* sound-points ((self sound) points &optional (channel 1))
   :initvals '(nil 1000 1)
   :indoc '("a sound object" "number of points" "channel number")
-  :doc "Reurns <num> sampled points from the audio waveform of channel <channel> in <self>."
+  :doc "Returns <num> sampled points from the audio waveform of channel <channel> in <self>."
   :icon 221
   (let* ((numdat (om-sound-n-samples  self))
          (numchan (om-sound-n-channels  self))
