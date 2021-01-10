@@ -119,11 +119,10 @@
 (defmethod set-tree ((self voicepanel) tree)
   (if (selection? self)
       (let* ((selection (car (selection? self)))
-             (voice (object (om-view-container self)))
-             )
+             (voice (object (om-view-container self))))
         (if (voice-p selection) 
             (setf (tree voice) (car (str->list tree)))
-      
+          
           (let* ((pos (position selection (inside voice) :test 'equal))
                  (reptree (replace-meas-tree voice (car (str->list tree)) pos)))
             (setf (tree voice) (fix-tree-floats-rests reptree))
@@ -132,7 +131,7 @@
         ;in order to keep measure selection:
             (setf (selection? self) (list (nth pos (inside voice))))
             ))
-        (do-initialize-metric-sequence voice)
+             ; (do-initialize-metric-sequence voice)
         (update-panel self t)
         )
     (om-beep-msg "Please select a voice or a measure") 
