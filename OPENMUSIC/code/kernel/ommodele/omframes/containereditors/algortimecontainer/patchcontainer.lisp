@@ -212,7 +212,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
 
-      (#\c  (patch-color self))
+      (#\C  (patch-color self))
       (#\e (mapc 'show-fun-code actives))
       (#\g (getdacode self))
       (#\v  (om-eval-enqueue 
