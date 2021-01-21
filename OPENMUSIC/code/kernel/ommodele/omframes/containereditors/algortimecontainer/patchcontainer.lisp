@@ -150,7 +150,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("c") "add comment box")
                        ))
 
-(defvar *patchhelp2* '((("C") "Change Connection Color")
+(defvar *patchhelp2* '((("C") "Change Connection/Comment Color")
+                       (("F") "Change Font Style")
                        (("A") "Align")
                        (("i") "reInitialize size")
                        (("I") "reInitialize value")
@@ -213,6 +214,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\D (mapc 'update-doc actives))
 
       (#\C  (patch-color self))
+      (#\F (font-comments self))
       (#\e (mapc 'show-fun-code actives))
       (#\g (getdacode self))
       (#\v  (om-eval-enqueue 
