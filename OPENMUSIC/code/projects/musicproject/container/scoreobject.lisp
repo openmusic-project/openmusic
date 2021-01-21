@@ -1542,6 +1542,83 @@ Returns the list of all measure in <self>.
 ;----------Voice2voices
 
 
+(defun dbl-tempo-p (tempo)
+  "Indicates first tempo of measure exists as in:
+   ((1/4 60) (((0 0) (1/8 120 t))))"
+(let* ((cartempo (car tempo))
+       (cdrtempo (cdr tempo))
+       (frsttempopos (caaar cdrtempo))
+       (frsttemposig (butlast (cadaar cdrtempo))))
+  (if (equal frsttempopos '(0 0))
+      t nil)))
+
+(defmethod cadr-tempo ((self list))
+  "pushes init tempo in cadr tempo list if there are cadr tempo list doesnot start as ((0 0) ....)"
+  (let* ((cr (car self))
+         (dr (cadr self))
+         )
+    (if (not (dbl-tempo-p self)) 
+        (let ((frst (list '(0 0) (flat (list cr nil )))))
+          (append (list frst) dr)) dr)))
+
+(defmethod cadr-tempo ((self voice))
+  (cadr-tempo (tempo self)))
+
+;(cadr-tempo  '((1/4 60) (((1 0) (1/4 45 nil)) ((2 0) (1/8 50 nil)))))
+
+(defmethod meas-tempo ((self voice))
+  (let* ((lgt (length (inside self)))
+         (tempo (cadr-tempo self))
+         (init (second (car tempo)))
+         (indx 0)
+         res)
+
+    (loop while tempo
+          do (if  (= indx (caaar tempo))
+                 (progn 
+                    (push (car tempo) res)
+                    (setf init (cadar tempo))
+                    (pop tempo))
+              
+               (progn 
+                 (incf indx)
+                 (if (and (= indx (caaar tempo))
+                          (= 0 (cadaar tempo)))
+                     (progn
+                       (push (car tempo) res)
+                       (setf init (cadar tempo))
+                       (pop tempo))
+                   (push (list (list indx 0)  init) res)))
+               ))
+    (if (< (caaar res) (1- lgt))
+      (progn
+        (loop for i from (1+ (caaar res)) to (1- lgt)
+              do (push (list (list i 0) (cadar res)) res))
+        (reverse res))
+    (reverse  res))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+
+(defun group-tempi-by-meas (tempi)
+  (let ((clone (clone tempi))
+        (indx 0)
+        (res (list '())))
+   ; res))
+    (loop while clone
+          do (If (= indx (caaar clone))
+                 (progn
+                 (push (car clone) (car res))
+                 (pop clone))
+               (progn
+               (incf indx)
+               (push '() res))))
+    (reverse
+     (loop for i in res
+          collect (reverse i)))))
+          
+
+
 (defun reset-offset (tree)
   (loop for x in tree
         collect (if (atom x)
@@ -1550,32 +1627,37 @@ Returns the list of all measure in <self>.
                     x)
                   (reset-offset x))))
 
-
+        
 (defmethod! translate-tempo ((self voice))
-  "returns human readable list of tempo  in the form of : ((nth-meas (note-fig tempo)) .... ) 
-returns nil when measure is the same as precedent."
-  (let* ((tempo (tempo self))
-         (frsttempo (list 0 (car tempo)))
-         (cdrtempo (cadr tempo))
-         (formcdr (loop for i in cdrtempo
-                        collect (list (caar i)
-                                      (remove nil (cadr i)))))
-         (tempo1 (cons frsttempo formcdr))
-         res)
-    
-    (loop for i from 0 to (- (length (inside self)) 1)
-          do (if (equal i (caar tempo1))
-                 (progn 
-                   (push (car tempo1) res)
-                   (pop tempo1)) 
-               (push nil res)
-               ))
-    (reverse res)))
+  (let ((tempi (group-tempi-by-meas
+                 (meas-tempo self))))
 
-(defmethod! translate-tempo ((self poly))
-            (let ((voices (inside self)))
-              (mapcar #'translate-tempo voices)))
+         (loop for i in tempi
+               collect (if (= 1 (length i))
+                           (list (butlast (second (car i))) nil)
+                         (let ((cr (car i))
+                               (cd (cdr i)))
+                           (if (last-elem (second cr))
+                               (x-append (list (butlast (second cr)))
+                                         (list i))
+                           (x-append (list (butlast (second cr)))
+                                     (list cd))
+                           ))))
+                         
+         ))
 
+
+
+
+;for split
+(defun init-meas-tempo-pos (liste)
+  (let ((clone (clone liste)))
+    (loop for lst in clone
+         do  (if (second lst)
+              (loop for i in (second lst)
+                    do (setf (caar i) 0)
+                    )))
+    clone))
 
 
 (defmethod! voice->voices ((self voice))
@@ -1590,13 +1672,7 @@ returns nil when measure is the same as precedent."
          (trees (loop for i in measures
                       collect (list '?
                                     (list (tree i)))))
-         (temp (translate-tempo self))
-         (tempi (let ((res '()))
-                      (loop 
-                       for i in temp
-                       collect (if i (push (cadr i) res)
-                                 (push (car res) res)))
-                      (reverse res))))
+         (tempi (init-meas-tempo-pos (translate-tempo self))))
          
     (loop for i in trees
           for k in chords
@@ -1607,35 +1683,37 @@ returns nil when measure is the same as precedent."
                                  :tempo tp))))
 
 
-(defmethod! voice->voices ((self poly))
-            (let ((voices (inside self)))
-              (mapcar #'voice->voices voices)))
-;--------------
-;-----concatenate-voices.
+(defun set-meas-pos (meas pos)
+  (let ((clone (clone meas)))
+    (loop for i in clone
+          do (setf (caar i) (+ pos (caar i))))
+   (reverse clone)))
+
 
 (defun concatenate-tempi (liste)
-  "<liste> is a list of voices. The function outputs a tempo list without redundency"
-  (let* ((trans (flat-once (mapcar #'translate-tempo liste)))
-         (res (list (second (car trans))))
-         (indx (list 0))
-         (cdrtempi (mapcar 'second (cdr trans)))
+  "takes a list of voices- par contre attention, les voices ne sont pas necessaiements a une mesure !!!"
+  (let* ((tempi (mapcar 'tempo liste))
+         (tempos (mapcar 'cadr-tempo tempi))
+         (frst (car tempos))
+         (rst (cdr tempos))
+         (indx (caar (last-elem frst)))
+         (res (list frst))
          )
-    (loop for tmp in cdrtempi
-          for i from 1 to (length cdrtempi)
-          do (if (and (not (equal tmp (car res))) tmp)
-                 (progn
-                   (push tmp res)
-                   (push i indx))))
-    (let* ((temps (reverse res))
-           (index (reverse indx))
-           resultat)
-      (loop for i in (cdr index)
-            for tps in (cdr temps)
-            do (push (list (list i 0) tps nil) resultat))
-
-      (list (car temps) (reverse resultat)))
-      ))
-
+    (loop for i in rst
+          do (progn
+               (push (reverse (set-meas-pos i (1+ indx))) res)
+               (setf indx (+ 1 indx (caaar (last-elem res))))
+               ))
+     (setf res  (flat-once (reverse res)))
+     (let ((res1 (list (car res))))
+     (loop for i in (cdr res)
+           do (if (not (equal (second i) (second (car res1))))
+                  (push i res1)))
+    (setf res (reverse res1)))
+     (list (butlast (second (car res)))
+           (cdr res))
+    ))
+   
 
 (defmethod! concat-voices ((liste list))
    :initvals (list t) 
@@ -1652,6 +1730,7 @@ returns nil when measure is the same as precedent."
                     :chords chords
                     :tempo tempo)
      ))
+
 
 ;;;;;;;;;
 
