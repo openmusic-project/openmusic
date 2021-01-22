@@ -25,7 +25,7 @@ FIXES
 - Fixed set chords issues in voice with ties
 - Fixed Poly Midi export
 - Fixed MAQUETTE to handle Score objects (VOICE and POLY) with tempo changes
-
+- Fixed selection color for win32
 
 
 * RELEASE NOTES 6.17
