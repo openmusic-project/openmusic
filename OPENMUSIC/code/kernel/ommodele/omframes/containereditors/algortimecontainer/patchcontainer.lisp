@@ -150,7 +150,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("c") "add comment box")
                        ))
 
-(defvar *patchhelp2* '((("C") "Change Connection/Comment Color")
+(defvar *patchhelp2* '((("C") "Change Color")
                        (("F") "Change Font Style")
                        (("A") "Align")
                        (("i") "reInitialize size")
