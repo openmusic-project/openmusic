@@ -945,7 +945,7 @@
 (defvar *om-select-color* nil)
 ;(setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.3 0.45 0.5 1)))
 (setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.5 0.5 0.5 1)))
-#+win32 (setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.87058825 0.87058825 0.87058825 1)))
+;#+win32 (setf *om-select-color* (make-instance 'omcolor :c (color::make-rgb 0.87058825 0.87058825 0.87058825 1)))
 
 (defvar *om-text-select-color* nil)
 (setf *om-text-select-color* (om-make-color-alpha (/ (om-color-r *om-select-color*) 2)
