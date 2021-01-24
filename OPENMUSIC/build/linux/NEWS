@@ -2,6 +2,18 @@
 
 NEW FEATURES
 
+
+IMPROVEMENTS
+
+
+FIXES
+
+
+
+* RELEASE NOTES 6.18
+
+NEW FEATURES
+
 - Info pane displaying complete info and enabling modification of chord and note objects inside SCORE editors.
 - Tempo editor enables writing and modifying tempo in VOICE and POLY editors.
 - Tree editor enables writing and modifying Rhythm Trees in VOICE and POLY editors.

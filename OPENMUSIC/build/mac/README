@@ -1,8 +1,8 @@
 ;=====================================
-; OM 6.18
+; OM 6.19
 ;=====================================
 
-To install, just drag "OM 6.18.app" into your Applications/ directory.
+To install, just drag "OM 6.19.app" into your Applications/ directory.
 
 OpenMusic is a free software distributed under GNU LGPL license.
 (c) IRCAM 1997-2018
@@ -34,6 +34,15 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone git://git.forge.ircam.fr/OM.git
 ;------------------------------------
+
+
+* RELEASE NOTES 6.18
+
+NEW FEATURES
+
+IMPROVEMENTS
+
+FIXES
 
 
 * RELEASE NOTES 6.18
