@@ -135,7 +135,10 @@
     (when rep
       (remove-tempo-from-qtempo self)
       (set-voice-tempilist voice (remove rep (get-voice-tempilist voice) :test 'equal))
-      (make-voice-tempo-change voice (get-voice-tempilist voice)))))
+      (make-voice-tempo-change voice (get-voice-tempilist voice))
+       (setf (tempo voice) (tempo voice))
+       (do-initialize-metric-sequence voice)
+      )))
 
 (defmethod remove-tempo-from-qtempo ((self simple-container))
   (setf (qtempo self) 60)

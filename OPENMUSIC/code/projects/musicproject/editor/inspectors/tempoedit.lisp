@@ -122,6 +122,14 @@
                 (t))
           ))
     ))
+;;;remove tempo [legacy pane] wrapper
+
+(defmethod remove-tempo ((self t)) nil)
+
+(defmethod remove-tempo ((self scorepanel))
+  (let ((sel-obj (car (selection? self))))
+    (rmv-tempo-change-extra sel-obj)
+    (update-panel self)))
 
 ;;;set tempo
 
