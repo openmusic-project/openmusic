@@ -99,7 +99,7 @@
 
 (defmethod get-tempo-tree ((self scorepanel))
   (let* ((selection (selection? self)))
-        (if selection
+    (if selection
         (let ((obj selection))
           (cond ((voice-p (car obj)) 
                  (let ((ntree (format-voice-tempo-by-meas (tempo (car obj)))))
@@ -107,15 +107,21 @@
                 ((measure-p (car obj))
                  (let* ((pere (parent (car obj)))
                         (pos (sort. (loop for i in obj
-                                             collect (position i (inside pere) :test 'equal)) '>))
+                                          collect (position i (inside pere) :test 'equal)) '>))
                         (tempo (reverse (loop for i in pos 
                                               append (reverse (nth-tempo-mes (tempo-meas-changes pere) i))))))
                    
                    (tempo-edit-pane self (format-measures-tempo-by-meas tempo))
                    ))
-              (t))
+                ((or (rest-p (car obj))
+                     (chord-p (car obj)))
+                 (progn
+                   (add-tempo-change-extra (car obj))
+                   (update-panel self)
+                   ))
+                (t))
           ))
-        ))
+    ))
 
 ;;;set tempo
 
