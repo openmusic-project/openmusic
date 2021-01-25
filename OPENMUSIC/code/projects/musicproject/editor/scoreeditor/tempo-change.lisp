@@ -249,6 +249,8 @@
        (insert-tempi self thetempi tempo)
      (set-voice-tempilist self (list tempo)))
    (make-voice-tempo-change self (get-voice-tempilist self))
+   (setf (tempo self) (tempo self))
+   (do-initialize-metric-sequence self)
    self))
 
 (defun <list (a b)
