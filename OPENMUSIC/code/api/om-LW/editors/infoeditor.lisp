@@ -64,7 +64,7 @@
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
                            :display-state :normal
-                           :title "OBJ INFO" ;(format nil "~S INFO" (car *info-pack*)) 
+                           :title "Score Inpsector" ;(format nil "~S INFO" (car *info-pack*)) 
                            ))
   (setf (ep win) win)
   (setf (sel win) objs)       
