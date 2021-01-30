@@ -65,7 +65,8 @@
         "editor;musminiboxes"           
         "editor;scoreeditor;scoretools"
         "editor;scoreeditor;extraobjs"
-        "editor;scoreeditor;extrapalette"    
+        ;"editor;scoreeditor;extrapalette"
+	"editor;scoreeditor;extrapalette-editor"    
         
         "editor;scoreeditor;graces"
         "editor;scoreeditor;tempo-change"

@@ -870,6 +870,7 @@
                   (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)))
               )
             )
+           (#\x (show-extra-palette-tools self))
            (#\r (get-score-tree self))
            (#\R (get-tree-tempo-list self))
            (#\m (get-tempo-tree self)) 

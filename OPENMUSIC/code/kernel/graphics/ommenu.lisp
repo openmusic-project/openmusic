@@ -136,16 +136,21 @@
                                     ;                          (editor-has-palette-p editor)) t nil))
                                       (om-new-leafmenu "MIDI Mixer" 'show-midi-mixer-win)
                                     ;  (om-new-leafmenu "Audio Master" 'show-audio-master-win)
-                                      (when (score-tools-palettes-p editor)
-                                        (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
-                                                         (if (member "Score Inspector" disable :test 'string-equal) nil
-                                                           #'(lambda () (show-score-inspector-enabled)))
-                                                         ))
-                                      (when (score-tools-palettes-p editor)
-                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette editor))  nil 
-                                                         (if (member "Extra Edition Palette" disable :test 'string-equal) nil
-                                                           #'(lambda () (show-extra-palette-enabled))))
-                                        )
+                                     
+                                    ;;;outdated panels  
+                                    ;  (when (score-tools-palettes-p editor)
+                                    ;    (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
+                                    ;                     (if (member "Score Inspector" disable :test 'string-equal) nil
+                                    ;                       #'(lambda () (show-score-inspector-enabled)))
+                                    ;                     ))
+                                      
+                                     ; (when (score-tools-palettes-p editor)
+                                     ;   (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools editor))  nil 
+                                     ;                    (if (member "Extra Edition Palette" disable :test 'string-equal) nil
+                                     ;                      #'(lambda () ;(show-extra-palette-enabled)
+                                     ;                          (print "tututu")
+                                     ;                          )))
+                                     ;   )
                                       )
                                      (list 
                                       (om-new-leafmenu "Lisp Listener" 'show-listener-win "L" (if (member "Lisp Listener" disable :test 'string-equal) nil t))
