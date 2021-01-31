@@ -255,7 +255,8 @@
        (om-with-focused-view self
          (om-with-font (nth 0 params) 
            (om-with-fg-color self (nth 1 params) 
-             (om-draw-string 30 30 "Text")))))
+             (om-draw-string 30 30 "Text")
+             ))))
      (:graphics
        ;;; fig dash linesize color fill
        (om-with-focused-view self
@@ -576,9 +577,16 @@
          )))
 
 
+(defun make-text-extra (self &optional (deltay 3))
+  "Get text from panel, and creates a text-extra instance"
+  (let ((text (om-dialog-item-text self)))
+    (make-instance 'text-extra
+                   :deltay deltay
+                   :thetext text)))
+
 (defmethod get-extra-items ((value (eql :text))) 
   (let ((params (cadr (find value (params *extramanager*) :key 'car))))
-    (list 130 
+    (list 230 
           (om-make-dialog-item 'om-static-text (om-make-point 40 30)
                                (om-make-point 100 20) "Text Extra"
                                :fg-color *om-dark-gray-color*
@@ -599,15 +607,34 @@
                                :font *om-default-font1*)
           
           (om-make-view 'om-color-view :position (om-make-point 65 92)
-                               :size (om-make-point 70 16) 
-                               :color (nth 1 params)
-                               :after-fun #'(lambda (item)
-                                            (let ((c (color item)))
-                                              (when c 
-                                                (setf (nth 1 params) c)
-                                                (set-extra-param *extramanager* value params)
-                                                (om-invalidate-view (preview (win *extramanager*)))))))
-    )))
+                        :size (om-make-point 70 16) 
+                        :color (nth 1 params)
+                        :after-fun #'(lambda (item)
+                                       (let ((c (color item)))
+                                         (when c 
+                                           (setf (nth 1 params) c)
+                                           (set-extra-param *extramanager* value params)
+                                           (om-invalidate-view (preview (win *extramanager*)))))))
+          
+          (setf textinput (om-make-dialog-item 'om-text-edit-view
+                                               (om-make-point 15 125)
+                                               (om-make-point 120 60)
+                                               "Text"
+                                               :font *om-default-font1*
+                                               )
+                )
+          (om-make-dialog-item 'om-button (om-make-point 40 200)
+                               (om-make-point 80 20) "Set"
+                               :di-action (om-dialog-item-act item
+                                            (when (selection? (panel (current-editor *extramanager*)))
+                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                    (when (or (container-p obj) (simple-container-p obj))
+                                                      (add-extra obj (make-text-extra textinput) nil nil)))
+                                              (update-panel (panel (current-editor *extramanager*))))))
+         
+          )
+    ))
+
 
 (defmethod get-extra-items ((value (eql :figure))) 
   (let ((params (cadr (find value (params *extramanager*) :key 'car))))
