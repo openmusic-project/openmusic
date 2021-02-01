@@ -1898,6 +1898,7 @@
           (("C") "Change Color")
           (("c") "Show Channel Color")
           (("s") "Set Editor Scale")
+          (("x") "Extra Edition Palette")
           ("space" "Play/Stop"))))
 
 (defmethod panel-show-cursor-p ((self notepanel)) nil)
@@ -2019,6 +2020,7 @@
           (("i") "Show Selection info")  
           (("s") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
+          (("x") "Extra Edition Palette")
           ("space" "Play/Stop"))))
 
 ;==================================
@@ -2406,6 +2408,7 @@
           (("C") "Change Color")
           (("s") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
+          (("x") "Extra Edition Palette")
           (("n") "Set Voice Name")
           (("o") "Open Internal Chord Editor")
           ("space" "Play/Stop")
@@ -2629,6 +2632,7 @@
           (("C") "Change Color")
           (("s") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
+          (("x") "Extra Edition Palette")
           (("n") "Set Selected Voice Name")
           (("o") "Open Internal Editor")
           )))
@@ -2850,6 +2854,7 @@
           (("r") "Open RT Editor")
           (("m") "Open Tempo Editor")
           (("M") "Remove Tempo")
+          (("x") "Extra Edition Palette")
           (("s") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
           (("n") "Set Voice Name")
@@ -3005,6 +3010,7 @@
           (("r") "Open RT Editor")
           (("m") "Open Tempo Editor")
           (("M") "Remove Tempo")
+          (("x") "Extra Edition Palette")
           (("s") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
           (("n") "Set Selected Voice Name")
