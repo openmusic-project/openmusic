@@ -31,7 +31,7 @@
 
 ;;c'est mieux om-window pour avoir la main apres
 
-(defclass extra-pal-win (om-window) ;(om-dialog) 
+(defclass extra-pal-win (om-window) 
   ((extramanager :initform nil :initarg :extramanager :accessor extramanager)
    (buttons :initform nil :initarg :buttons :accessor buttons)
    (extraitems :initform nil :initarg :extraitems :accessor extraitems)
@@ -48,12 +48,12 @@
 
 
 (defmethod show-extra-palette-tools ((self t)) nil)
-(defmethod show-extra-palette-tools ((self scorepanel)) ;((self scoreeditor))
+(defmethod show-extra-palette-tools ((self scorepanel))
   (let ((win (om-make-window 'extra-pal-win :window-title "Extra Edition Palette"
                              :size (om-make-point 156 26) 
                              :resizable nil :maximize nil :minimize nil
                              :window-show nil
-                            ; :position :centered
+                             :destroy-callback #'(lambda (interface) (om-window-close-event interface))
                              )))
     (setf *extramanager* (make-instance 'extramanager))
     (om-add-subviews win 
@@ -125,58 +125,21 @@
     (setf (edit-mode *extramanager*) nil)
     (setf (current-editor *extramanager*) self)
     (om-show-window win)
-    ;(close-win-palettes (win *extramanager*) self)
     )
     )
 
 
 
 
-
-
-
-#|
-;;; automatic call on window activate
-(defmethod open-win-palettes ((pal (eql 'extrapal)) editor)
-  (unless *extramanager* (setf *extramanager* (make-instance 'extramanager)))  
-  (when (and *extramanager* (win *extramanager*))
-    (om-hide-window (win *extramanager*)))
-  (show-extra-palette-tools editor)
+(defmethod om-window-close-event :after ((self extra-pal-win))
+  (setf (winpos *extramanager*) (om-view-position self))
+  (setf (win *extramanager*) nil)
+  (setf (show *extramanager*) nil)
+  (setf (edit-mode *extramanager*) nil)
+  (setf (current-editor *extramanager*) nil)
   )
 
-;; menu call
-(defun show-extra-palette (editor) 
-  (unless *extramanager* (setf *extramanager* (make-instance 'extramanager)))
-  (setf (show *extramanager*) t)
-  (show-extra-palette-tools editor)
-  )
 
-(defmethod close-win-palettes ((pal (eql 'extrapal)) editor)
-  (when (and *extramanager* (win *extramanager*))
-    (let ((show? (show *extramanager*)))
-      (om-close-window (win *extramanager*))
-      (setf (show *extramanager*) show?))))
-
-;;; enables or not the menu
-(defun show-extra-palette-enabled ()
-  (or (not *extramanager*)
-      (not (win *extramanager*))))
-|#
-
-;need to fix this
-;;to close palette when editor is closed
-;(defmethod close-win-palettes ((pal (eql 'extrapal)) editor)
-;  (when (and *extramanager* (win *extramanager*))
-;    (let ((show? (show *extramanager*)))
-;;      (om-close-window (win *extramanager*))
-;      (print (list show? editor))
-;      (setf (show *extramanager*) show?)
-;      )))
-
-(defmethod close-win-palettes ((pal (eql 'extrapal)) editor)
-  (if (not editor)
-      (progn (list *extramanager* (win *extramanager*))
-      (om-close-window (win *extramanager*)))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
 (defun extra-pal-action (button value)
@@ -630,7 +593,11 @@
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
                                                     (when (or (container-p obj) (simple-container-p obj))
                                                       (add-extra obj (make-text-extra textinput) nil nil)))
-                                              (update-panel (panel (current-editor *extramanager*))))))
+                                              (update-panel (panel (current-editor *extramanager*)))
+                                            
+                                            )
+                                            ))
+                                               
          
           )
     ))
