@@ -124,6 +124,8 @@
     (setf (win *extramanager*) win)
     (setf (edit-mode *extramanager*) nil)
     (setf (current-editor *extramanager*) self)
+    ;;necessary to close palette when editor is closed
+    (push win (attached-editors (om-view-container (current-editor *extramanager*))))
     (om-show-window win)
     )
     )

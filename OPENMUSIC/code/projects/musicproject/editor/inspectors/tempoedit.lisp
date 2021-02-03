@@ -93,6 +93,7 @@
 (defun tempo-edit-pane (self tempo)
   (let* ((buff (setf om-edit::*tempo-editor-text* tempo))
         (ept (om-edit::open-tempo-editor self buff)))
+    (push ept (attached-editors (om-view-container self)))
     (setf (om-edit::score ept) self) 
     (setf (om-edit::intfunc ept) #'om::set-tree-tempo)
     ))

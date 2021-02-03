@@ -84,6 +84,7 @@
 (defun tree-edit-pane (self tree)
   (let* ((buff (setf om-edit::*editor-text* tree))
         (ept (om-edit::open-tree-editor self buff)))
+    (push ept (attached-editors (om-view-container self)))
     (setf (om-edit::score ept) self) 
     (setf (om-edit::intfunc ept) #'om::set-tree)
     ))

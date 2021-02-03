@@ -38,7 +38,7 @@
   (let* ((treebuff (setf om-edit::*editor-text* tree))
          (tempobuff (setf om-edit::*tempo-editor-text* tempo))
          (ept (om-edit::open-tree-tempo-editor self treebuff tempobuff)))
-    ;(print (list (om-edit::ep ept)))
+    (push ept (attached-editors (om-view-container self)))
     (setf (om-edit::score (car (om-edit::ep ept))) self) 
     (setf (om-edit::score (second (om-edit::ep ept))) self) 
     (setf (om-edit::intfunc (car (om-edit::ep ept))) #'om::set-tree)
