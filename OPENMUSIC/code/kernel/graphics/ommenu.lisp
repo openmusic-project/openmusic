@@ -136,22 +136,19 @@
                                     ;                          (editor-has-palette-p editor)) t nil))
                                       (om-new-leafmenu "MIDI Mixer" 'show-midi-mixer-win)
                                     ;  (om-new-leafmenu "Audio Master" 'show-audio-master-win)
-                                     
-                                    ;;;outdated panels  
-                                    ;  (when (score-tools-palettes-p editor)
-                                    ;    (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
-                                    ;                     (if (member "Score Inspector" disable :test 'string-equal) nil
-                                    ;                       #'(lambda () (show-score-inspector-enabled)))
-                                    ;                     ))
-                                      
+                                     )
+                                  (list 
+                                       ;;;outdated panels  
                                      ; (when (score-tools-palettes-p editor)
-                                     ;   (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools editor))  nil 
-                                     ;                    (if (member "Extra Edition Palette" disable :test 'string-equal) nil
-                                     ;                      #'(lambda () ;(show-extra-palette-enabled)
-                                     ;                          (print "tututu")
-                                     ;                          )))
-                                     ;   )
+                                     ;   (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
+                                     ;                    (if (member "Score Inspector" disable :test 'string-equal) nil
+                                     ;                      #'(lambda () (show-score-inspector-enabled)))
+                                     ;                    ))
+                                      (when (score-tools-palettes-p editor)
+                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools (panel editor))))
+                                        )
                                       )
+                                      
                                      (list 
                                       (om-new-leafmenu "Lisp Listener" 'show-listener-win "L" (if (member "Lisp Listener" disable :test 'string-equal) nil t))
                                       (om-new-leafmenu "Lisp Editor" 'om-open-new-text-editor nil (if (member "Lisp Editor" disable :test 'string-equal) nil t))
