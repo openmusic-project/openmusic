@@ -53,16 +53,16 @@
   (setf (win *scoreinspector*) nil)
   (setf (show *scoreinspector*) nil)
   (setf (current-editor *scoreinspector*) nil)
-;(when (om-front-window) (om-add-menu-to-win (om-front-window)))
   )
 
 
+#|
 (defmethod open-win-palettes ((pal (eql 'inspector)) editor)
     ;(when (and *scoreinspector* (win *scoreinspector*))
     ;  (om-hide-window (win *scoreinspector*)))
   (get-inspector editor))
 
-#|
+
 (defmethod close-win-palettes ((pal (eql 'inspector)) editor)
   (when (and *scoreinspector* (win *scoreinspector*))
     (let ((show? (show *scoreinspector*)))
@@ -85,10 +85,11 @@
 |#
 
 
+;necessaire
 (defmethod get-inspector ((self t)) t)
-(defmethod get-inspector-win ((self t)) (print "toto")) ;t) ;for test reasons
+(defmethod show-inspector ((self t)) t) ;for test reasons
 
-(defmethod get-inspector-win ((self scorepanel));((self scoreeditor))
+(defmethod show-inspector ((self scorepanel))
   (let ((win (om-make-window 'score-inspector-window :window-title "Score Inspector"
                              :inspector *scoreinspector*
                              :resizable nil :maximize nil :minimize nil
@@ -99,7 +100,13 @@
     (setf (win *scoreinspector*) win)
     (setf (current-editor *scoreinspector*) self)
     (push win (attached-editors (om-view-container (current-editor *scoreinspector*))))
+    ;(om-show-window win)
     ))
+
+(defmethod show-inspector-from-menu ((self scorepanel))
+  (show-inspector self)
+  (update-inspector (editor self) 0)
+  (om-show-window (win *scoreinspector*)))
 
 (defmethod update-selection ((self scorepanel) index)
   (let* ((selection (selection? self))
@@ -112,7 +119,7 @@
 (defmethod update-inspector ((self scoreeditor) index)
   (when (and *scoreinspector* (win *scoreinspector*))
     (let* ((panel (panel self))
-           (selection ;(selection? panel));
+           (selection 
             (if (edit-cursor panel) (list (edit-cursor panel))
               (selection? panel)))
            (controls (get-inspector-info panel (nth index selection) 
@@ -122,7 +129,6 @@
           (let ((inspectwin (om-select-window (win *scoreinspector*))))
            ; (erase-controls (win *scoreinspector*))
             (setf (inspected *scoreinspector*) controls)
-           ; (print inspectwin)
             ;;; stop les boutons fleches
             ;;;(if (> (length selection) 1)
             ;;;   (add-buttons-fleches (title-bar self)))

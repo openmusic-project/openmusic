@@ -137,16 +137,13 @@
                                       (om-new-leafmenu "MIDI Mixer" 'show-midi-mixer-win)
                                     ;  (om-new-leafmenu "Audio Master" 'show-audio-master-win)
                                      )
-                                  (list 
-                                       ;;;outdated panels  
-                                     ; (when (score-tools-palettes-p editor)
-                                     ;   (om-new-leafmenu "Score Inspector" #'(lambda () (show-score-inspector editor))  nil 
-                                     ;                    (if (member "Score Inspector" disable :test 'string-equal) nil
-                                     ;                      #'(lambda () (show-score-inspector-enabled)))
-                                     ;                    ))
+                                     (list 
+                                      ;;;old panels  
                                       (when (score-tools-palettes-p editor)
-                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools (panel editor))))
-                                        )
+                                        (om-new-leafmenu "Score Inspector"  #'(lambda () (show-inspector-from-menu (panel editor)))))
+                                                                                                               
+                                      (when (score-tools-palettes-p editor)
+                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools (panel editor)))))
                                       )
                                       
                                      (list 
