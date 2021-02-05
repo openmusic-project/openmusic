@@ -103,6 +103,16 @@
     ;(om-show-window win)
     ))
 
+(defmethod close-inspector-win ((self score-inspector-window)) 
+  (om-close-window self))
+
+(defmethod show-inspector-window ((self scorepanel))
+  (if (win *scoreinspector*)
+      (progn 
+        (close-inspector-win (win *scoreinspector*))
+        (show-inspector self))
+    (show-inspector self)))
+
 (defmethod show-inspector-from-menu ((self scorepanel))
   (show-inspector self)
   (update-inspector (editor self) 0)

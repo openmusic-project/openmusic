@@ -876,7 +876,7 @@
            (#\m (get-tempo-tree self)) 
            (#\M (remove-tempo self))
            (#\i (get-obj-info self))
-           (#\I (show-inspector (panel self)))
+           (#\I (show-inspector-window (panel self)))
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
            (#\h (show-help-window (format nil "Commands for ~A Editor" 
