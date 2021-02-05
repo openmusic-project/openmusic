@@ -36,13 +36,22 @@ inside the .app bundle's resources.
 ;------------------------------------
 
 
-* RELEASE NOTES 6.18
+* RELEASE NOTES 6.19
 
 NEW FEATURES
 
+
 IMPROVEMENTS
 
+- Editors and palettes closes with editor
+- Now 'm' also invokes legacy tempo editor for chords and rests
+- Now 'x' also invokes extra palette
+
 FIXES
+
+- fixed inspector palette (compatibilty)
+- fixed legacy tempo editor when multi tempi changes.
+- fixed extra palette (compatibilty)
 
 
 * RELEASE NOTES 6.18
