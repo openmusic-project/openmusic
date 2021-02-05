@@ -114,9 +114,17 @@
     (show-inspector self)))
 
 (defmethod show-inspector-from-menu ((self scorepanel))
-  (show-inspector self)
-  (update-inspector (editor self) 0)
-  (om-show-window (win *scoreinspector*)))
+  (if (win *scoreinspector*)
+      (progn
+        (close-inspector-win (win *scoreinspector*))
+        (show-inspector self)
+        (update-inspector (editor self) 0)
+        (om-show-window (win *scoreinspector*)))
+    (progn 
+      (show-inspector self)
+      (update-inspector (editor self) 0)
+      (om-show-window (win *scoreinspector*)))
+    ))
 
 (defmethod update-selection ((self scorepanel) index)
   (let* ((selection (selection? self))
