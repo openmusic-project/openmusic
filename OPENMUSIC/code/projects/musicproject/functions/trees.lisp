@@ -611,19 +611,22 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
                     'linear))))
 
 
-(defmethod! n-pulses ((tree t))
+(defmethod! n-pulses ((self list))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
-  :indoc '("a rhythm tree")
+  :indoc '("self")
   :icon 225
-  :doc "
-Returns the number of pulses in <tree>.
-"
-  (let (( liste (if (typep tree 'voice) (tree tree) tree)))
+  :doc "Returns the number of pulses in <self>. <self> could be a Rhythm Tree, a VOICE or a POLY,"
     (length
      (remove nil
-             (mapcar #'(lambda(x) (if (> (first x) 0) x nil)) (om::group-pulses liste))))))
+             (mapcar #'(lambda(x) (if (> (first x) 0) x nil)) (group-pulses self)))))
 
+(defmethod! n-pulses ((self voice))
+  (let ((tree (tree self)))
+    (n-pulses tree)))
 
+(defmethod! n-pulses ((self poly))
+  (let ((voices (inside self)))
+    (mapcar #'n-pulses voices)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;REVERSETREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
