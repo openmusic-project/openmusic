@@ -239,39 +239,47 @@ nil)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
     ))
 
-;todo
+
 (defmethod get-obj-info ((self polypanel))
-  (let* ((selection (car (selection? self)))
-         (pere (parent selection))
-         (name (if (rest-p selection) "REST" (string-upcase (obj-mode self))))
-         (voice (object (om-view-container self)))
-         (pos (if (not (poly-p selection))
-                  (if (= (length (selection? self)) 1)
-                      (evt-pos selection)
-                    (let ((posi (loop for i in (selection? self)
-                                      collect (evt-pos i))))
-                      (list (last-elem posi) (car posi))))
-                ))
+   (let* ((selection (selection? self))
+         (voice (get-the-voice (car selection)))
+         (name (cond
+                ((rest-p (car selection)) "REST")
+                ((cont-chord-p (car selection)) "TIE") 
+                (t (string-upcase (obj-mode self)))))
+         (chords-only (get-only-chords selection))
+         (pos (if (not (voice-p (car selection))) 
+                  (if (= (length selection) 1)
+                      (evt-pos (car selection))
+                    (let ((posi (remove nil (loop for i in selection 
+                                                  collect (evt-pos i)))))
+                      (list (last-elem posi) (car posi))))))
+
          (time-selection (get-obj-selection self))
          (slots 
-          (loop for i in (selection? self)
+          (loop for i in chords-only
                 collect
                 (get-slots-info i)))
          (fslots (format-slots (reverse slots))))
     (setf om-edit::*info-pack* (list 
-                     name
-                     (if (atom pos)
-                         (format nil "pos: ~S" pos)
-                       (format nil "pos: ~S - ~S " (car pos) (second pos)))
-                     (format nil "~S - ~S ms" (car time-selection) (second time-selection))
-                     ;(format-slots  slots)
-                     (format nil "~S" (car fslots))
-                     (format nil "~S" (second fslots))
-                     (format nil "~S" (third fslots))
-                     (format nil "~S" (fourth fslots))
-                     (format nil "~S" (fifth fslots))
-                     (format nil "~S" (sixth fslots))
-                     ))
+                                name
+                                (if (null pos)
+                                    (format nil "pos:")
+                                  (if (and pos (atom pos))
+                                      (format nil "pos: ~S" pos)
+                                    (format nil "pos: ~S - ~S " (car pos) (second pos))))
+                                (format nil "~S - ~S ms" (car time-selection) (second time-selection))
+                                (format nil "~S" (car fslots))
+                                (format nil "~S" (second fslots))
+                                (format nil "~S" (third fslots))
+                                (format nil "~S" (fourth fslots))
+                                (format nil "~S" (fifth fslots))
+                                (format nil "~S" (sixth fslots))
+                                ))
+    (let ((ept (om-edit::open-chordseq-info chords-only)))
+      (push ept (attached-editors (om-view-container self)))
+      (setf (om-edit::ompanel ept) self)
+      (setf (om-edit::intfunc ept) #'om::set-obj-info))
     ))
 
 
