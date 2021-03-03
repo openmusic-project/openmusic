@@ -147,7 +147,7 @@
 (defmethod remove-tempo-from-qtempo ((self null)) t)
 
 (defmethod remove-tempo-from-qtempo ((self simple-container))
-  (when (parent self)
+  (when (and (parent self) (poly-p (parent self)))
     (let* ((parent (parent self))
            (pos (position self (inside parent) :test 'equal)))
       (setf (qtempo parent) (or (remove-if #'(lambda (x) (equal pos (car x))) (qtempo parent)) 60))
