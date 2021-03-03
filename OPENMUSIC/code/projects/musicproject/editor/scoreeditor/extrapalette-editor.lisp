@@ -343,7 +343,12 @@
 ;note heads
 (defmethod get-extra-items ((value (eql nil)))
   (let ((params (cadr (find value (params *extramanager*) :key 'car)))
-        (heads-list (append (list (string (code-char 110)) (string (code-char 81)) (string (code-char 80)))
+        (heads-list (append (list (string (code-char 173)) 
+                                  (string (code-char 110))
+                                  (string (code-char 82)) 
+                                  (string (code-char 83)) 
+                                  (string (code-char 81)) 
+                                  (string (code-char 80)))
                                               (loop for i from 94 to 105 collect (string (code-char i))))))
     (list 180
           (om-make-dialog-item 'om-static-text (om-make-point 20 30)
@@ -373,7 +378,7 @@
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 80)
                                (om-make-point 70 20) ""
                                :range heads-list
-                               :value (string (code-char 110))
+                               :value (string (code-char 173))
                                :font (om-make-music-font *heads-font* 20)
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
