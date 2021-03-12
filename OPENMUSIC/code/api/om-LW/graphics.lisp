@@ -829,6 +829,7 @@
   (gp:draw-line *curstream* (+ x1 *pox* 0.5) (+ y1 *poy* 0.5) (+ x2 *pox* 0.5) (+ y2 *poy* 0.5)
 		#-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
                 :shape-mode :best
+                #+linux :mask #+linux nil
 		))
 
 
