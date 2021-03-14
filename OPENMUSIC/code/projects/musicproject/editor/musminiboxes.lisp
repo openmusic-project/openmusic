@@ -207,7 +207,7 @@
 
 (defmethod score-update-miniview ((self t) value)
   (when (minipict self) (om-kill-picture (minipict self)) (setf (minipict self) nil))
-  ;(setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self)))
+  (setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self)));check if works on macosx
   (om-invalidate-view self t))
 
 ;;; when drawing must fit in a given rectangle
