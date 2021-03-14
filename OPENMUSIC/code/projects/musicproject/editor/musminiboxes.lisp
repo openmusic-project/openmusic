@@ -207,7 +207,8 @@
 
 (defmethod score-update-miniview ((self t) value)
   (when (minipict self) (om-kill-picture (minipict self)) (setf (minipict self) nil))
-  (setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self)));check if works on macosx
+  (if (not (equal (type-of value) 'midifile))
+      (setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self))))
   (om-invalidate-view self t))
 
 ;;; when drawing must fit in a given rectangle
@@ -315,7 +316,7 @@
    (when (minipict self) (om-kill-picture (minipict self))
          (setf (minipict self) nil))
    (set-mini-param self 'staff (correct-staff-val value (get-mini-param self 'staff) self)) 
-   ;(setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self)))
+   (setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self)))
    (om-invalidate-view self t))
 
 
