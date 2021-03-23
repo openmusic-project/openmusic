@@ -31,7 +31,7 @@
 ;;; will ensure forward-colmpatibility with libraries developed for omsharp.
 ;; (defclass textbuffer () ()) => add as superclass
 
-(defclass* TextFile () 
+(defclass* TextFile (object-in-box)
    ((ed-mode :initform "supersede" :initarg :ed-mode :accessor ed-mode)
     (eval-mode :initform "list" :initarg :eval-mode :accessor eval-mode)
     (file-name :initform nil :accessor file-name)
@@ -69,15 +69,16 @@ As output it returns the contents of the text buffer as a list formatted accordi
 
 
 ;;; c'est trop long avec exp-list...
+#|
 (defmethod draw-obj-in-rect ((self textfile) x x1 y y1 edparams view)
-   (let ((fontsize 10) 
+   (let ((fontsize 10)
          (fontface (om-font-face (om-get-font view)))
          ; (elist (ignore-errors (exp-list self)))
          (lines (list-of-lines (buffer-text self))))
-         
+
      (when (buffer-text self)
        (om-with-focused-view view
-         (om-with-font (om-make-font fontface fontsize)  
+         (om-with-font (om-make-font fontface fontsize)
                        ;(if (and (not elist) (not (equal (om-buffer-text (buffer-text self)) "")))
                        ;    (om-draw-string 0 20 (om-buffer-text (buffer-text self)))
                          (loop for item in lines ; elist
@@ -87,6 +88,27 @@ As output it returns the contents of the text buffer as a list formatted accordi
                                )
                         ; )
          )))))
+|#
+
+(defmethod draw-obj-in-rect ((self textfile) x x1 y y1 edparams view)
+   (let ((fontsize 10)
+         (fontface (om-font-face (om-get-font view)))
+         (lines (list-of-lines (buffer-text self))))
+
+     (when (buffer-text self)
+       (om-with-focused-view view
+         (om-with-font (om-make-font fontface fontsize)
+                 (let* ((frame (associated-box self))
+                        (width (om-point-x (frame-size frame)))
+                        (charwidth (floor (/ width 5))))
+                         (loop for item in lines
+                               for i = 1 then (+ i 1)
+                               while (< (+ (* i 12) y) y1) do
+                               (om-draw-string (+ x 5) (+ (* i 12) y) item
+                                                    :end (if (> (length item) charwidth) charwidth (length item))
+                                                    )))
+                 )))))
+
 
 (defmethod get-slot-in-out-names ((self TextFile))
    (values '("self" "exp-list" "ed-mode" "eval-mode")
