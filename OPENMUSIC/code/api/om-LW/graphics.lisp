@@ -822,8 +822,12 @@
 (defun om-draw-char (x y cn)
   (gp:draw-character *curstream* cn (+ x *pox*) (+ y *poy*)))
 
-(defun om-draw-string (x y str)
-  (gp:draw-string *curstream* (substitute  #\Space #\Tab str) (+ x *pox*) (+ y *poy*) ))
+;(defun om-draw-string (x y str)
+;  (gp:draw-string *curstream* (substitute  #\Space #\Tab str) (+ x *pox*) (+ y *poy*)))
+
+
+(defmethod om-draw-string (x y str &key (end nil))
+  (gp:draw-string *curstream* (substitute  #\Space #\Tab str) (+ x *pox*) (+ y *poy*) :end end))
 
 (defun om-draw-line (x1 y1 x2 y2  &key (erasable nil))  
   (gp:draw-line *curstream* (+ x1 *pox* 0.5) (+ y1 *poy* 0.5) (+ x2 *pox* 0.5) (+ y2 *poy* 0.5)
