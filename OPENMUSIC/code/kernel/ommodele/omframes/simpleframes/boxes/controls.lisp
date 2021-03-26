@@ -80,6 +80,75 @@
 
 (defmethod text-enter-multiline-p ((self t)) nil)
 
+
+
+;;;=============================
+;;; TEXT COMPLETION
+;;;=============================
+
+(defparameter *om-box-name-completion* t)
+(defparameter *all-om-pack-symbols* nil)
+
+;;; Gets all symbol names in package
+
+(defmethod get-name ((self function)) (string-downcase (function-name self)))
+(defmethod get-name ((self class)) (string-downcase (class-name self)))
+(defmethod get-name ((self symbol)) (string-downcase (symbol-name self)))
+
+
+(defmethod get-all-symbol-names ((self OMPackage))
+  (remove nil (append (mapcar 'get-name (functions self))
+                      (mapcar 'get-name (classes self))
+         ; (special-items self)
+                      (loop for item in (subpackages self) append (get-all-symbol-names item)))))
+
+; (get-all-symbol-names *om-package-tree*)
+
+
+(defun om-set-pack-symbols ()
+  (setf *all-om-pack-symbols*
+        (sort (append
+               (get-all-symbol-names *om-package-tree*)
+               ) 'string<)))
+
+;(om-set-pack-symbols)
+
+
+;!!!!
+(defun get-lisp-func-pack (pack)
+  (let* ((pacs (flat (butlast(subpackages *om-package-tree*))))
+         (inside (remove nil (mapcar 'functions (remove nil (flat (mapcar #'subpackages pacs)))))))
+    (mapcar #'string-downcase (flat (mapcar 'name (flat inside))))
+    ))
+
+
+;(get-lisp-func-pack  *om-package-tree*) 
+
+
+(defun box-name-completion (string)
+  (if (and *om-box-name-completion* (>= (length string) 1))
+      (let ((all-str (or *all-om-pack-symbols* (om-set-pack-symbols))))
+        (remove-if #'(lambda (str) (not (equal 0 (search string str :test 'string-equal)))) all-str))
+    ;:destroy
+    ))
+
+(defmethod name-completion ((self OMBoxundefined) (string string)) (text self))
+
+
+(defmethod om-complete-text ((self ttybox))
+  (when (capi::text-input-pane-completion-function self)
+    (capi::apply-in-pane-process
+     self
+     #'capi::text-input-pane-in-place-complete self)))
+
+(defmethod capi::text-input-pane-completion-function ((self ttybox)) t)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;   PANEL
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;(text-view container) sur le panel
 (defmethod open-ttybox ((self ttybox))
   (let* ((thetext (if (text-enter-multiline-p self)
@@ -102,7 +171,15 @@
 			       :focus t
 			       :object self
 			       :container panel
-			       :font *om-default-font1*))
+			       :font *om-default-font1*
+                               :in-place-completion-function #'(lambda (item str)
+                                                                 (declare (ignore item))
+                                                                 (or (funcall 'box-name-completion str)
+                                                                     (progn (capi::beep-pane) :destroy)))
+                               :completion 'box-name-completion
+                               :complete-do-action t ;confirms completion with return
+                               :bg-color *om-light-blue-color*
+                               ))
     ))
 
 
