@@ -1434,6 +1434,7 @@
         txt def)
     (om-add-subviews win (setf txt (om-make-dialog-item 'om-static-text (om-make-point 20 10) (om-make-point 200 100)
                                               (format nil "Current editor scale is:~%~%~A"
+                                                      ;(string-downcase
                                                       (cond ((and *om-tonalite* (get-scale-from-tonality (object self)))
                                                              (string+ "  " (tonalite-to-string (tonalite (object self))) " scale"))
                                                             ((get-edit-param self 'scale)
@@ -1445,6 +1446,7 @@
                                                                str))
                                                             (t
                                                              (string+ "  Default 1/" (integer-to-string (staff-tone (panel self))) " tone scale"))))
+;)
                                               :font *controls-font*))
                      
                      (setf def (om-make-dialog-item  'om-button (om-make-point 60 110) (om-make-point 80 20)
@@ -1471,13 +1473,16 @@
                      (om-make-dialog-item  'om-button (om-make-point 150 110) (om-make-point 80 20)
                                            "Edit..."
                                            :di-action (om-dialog-item-act item
-                                                        (let ((scale (or (and *om-tonalite* (get-scale-from-tonality (object (editor self)))
-                                                                              (omng-copy (get-scale-from-tonality (object (editor self)))))
-                                                                         (get-edit-param self 'scale)
-                                                                         (let ((sc (get-new-scale (staff-tone (panel self)))))
-                                                                           (set-edit-param self 'scale sc)
-                                                                           sc))))
-                                                          (make-editor-window 'scaleeditor scale "SCALE EDITOR" self))
+                                                        (let* ((scale (or (and *om-tonalite* (get-scale-from-tonality (object (editor self)))
+                                                                               (omng-copy (get-scale-from-tonality (object (editor self)))))
+                                                                          (get-edit-param self 'scale)
+                                                                          (let ((sc (get-new-scale (staff-tone (panel self)))))
+                                                                            (set-edit-param self 'scale sc)
+                                                                            sc)))
+                                                                          (scale-editor (make-editor-window 'scaleeditor scale "SCALE EDITOR" self
+                                                                                                            :winsize (om-make-point 700 250))))
+                                                          (push scale-editor (attached-editors (om-view-container (panel self))))
+                                                          scale-editor)
                                                         (om-enable-dialog-item def t)
                                                         (om-close-window win)
                                                         (update-panel (panel self)))
@@ -1488,6 +1493,7 @@
                      ;                      :di-action (om-dialog-item-act item
                      ;                                   (om-return-from-modal-dialog win t)))
                      )
+    (push win (attached-editors (om-view-container (panel self))))
     (om-select-window win)))
 
 
