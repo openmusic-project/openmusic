@@ -88,6 +88,7 @@
 
 (defparameter *om-box-name-completion* t)
 (defparameter *all-om-pack-symbols* nil)
+(defparameter *all-cl-pack-symbols* nil)
 
 ;;; Gets all symbol names in package
 
@@ -99,16 +100,30 @@
 (defmethod get-all-symbol-names ((self OMPackage))
   (remove nil (append (mapcar 'get-name (functions self))
                       (mapcar 'get-name (classes self))
-         ; (special-items self)
                       (loop for item in (subpackages self) append (get-all-symbol-names item)))))
 
 ; (get-all-symbol-names *om-package-tree*)
 
 
+(defun get-cl-defs ()
+  (let* ((symb (let (symbols)
+                 (do-symbols (s (find-package :cl))
+                   (push s symbols))
+                 (sort symbols 'string<)))
+         (filt (remove nil
+                       (loop for i in symb
+                             collect (if (not (search "common-lisp::" (format nil "~S" i))) i)))))
+    (setf *all-cl-pack-symbols* 
+          (loop for i in filt collect (format nil "~S" i)))
+    ))
+
 (defun om-set-pack-symbols ()
+  (get-cl-defs)
   (setf *all-om-pack-symbols*
         (sort (append
                (get-all-symbol-names *om-package-tree*)
+               (list "maquette" "patch") ;add special calls
+               *all-cl-pack-symbols*
                ) 'string<)))
 
 ;(om-set-pack-symbols)
@@ -120,9 +135,8 @@
          (inside (remove nil (mapcar 'functions (remove nil (flat (mapcar #'subpackages pacs)))))))
     (mapcar #'string-downcase (flat (mapcar 'name (flat inside))))
     ))
-
-
 ;(get-lisp-func-pack  *om-package-tree*) 
+
 
 
 (defun box-name-completion (string)
