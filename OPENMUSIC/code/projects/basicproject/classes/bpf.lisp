@@ -400,7 +400,7 @@ If <color> is :random, will choose a random color.
      (cons-bpf newbpf ,(omng-copy (point-list self)))
      (setf (bpfcolor newbpf) ,(om-copy-color (bpfcolor self)))
      (setf (decimals newbpf) ,(decimals self))
-     (setf (name newbpf) ,(name self))
+     (setf (name newbpf) ,(get-name self))
      (setf (pict newbpf) ,(omng-copy (pict self)))
      newbpf))
     
@@ -433,7 +433,7 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
                                                                 (loop for point in (point-list item) 
                                                                       collect (om-point-* point factor))))))
                      (setf  (bpfcolor newbpf) (bpfcolor item))
-                     (setf  (name newbpf) (name item))
+                     (setf  (name newbpf) (get-name item))
                      newbpf)
                    (progn
                      (om-beep-msg (format nil "Error: bpf-list slot of ~A does not accept ~A objects !" (type-of self) (type-of item)))
@@ -595,3 +595,10 @@ The precision of the BPF-Lib and editor is the maximum precision (<decimals> val
     (unless (assoc 'picture params)
       (setf rep (pairlis (list 'picture) (list nil) rep)))
     rep))
+
+;;; special access
+
+(defmethod get-name ((self bpf))
+  (if (associated-box self)
+  (name (associated-box self))
+    (name self)))
