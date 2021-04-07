@@ -105,7 +105,7 @@ As output it returns the contents of the text buffer as a list formatted accordi
                                for i = 1 then (+ i 1)
                                while (< (+ (* i 12) y) y1) do
                                (om-draw-string (+ x 5) (+ (* i 12) y) item
-                                                    :end (if (> (length item) charwidth) charwidth (length item))
+                                                    :end (if (> (length item) charwidth) (- charwidth 1) (length item))
                                                     )))
                  )))))
 
