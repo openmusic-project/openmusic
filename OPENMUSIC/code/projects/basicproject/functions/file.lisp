@@ -112,7 +112,7 @@
 	 (setf *last-saved-dir* (make-pathname :directory (pathname-directory ,pathname)))
 	 ,@body
 	 (with-open-file (s ,pathname :direction :output :if-exists :supersede)
-	   (svg::stream-out s ,scene))
+	   (cl-svg::stream-out s ,scene))
 	 pathname))))
 
 (defmethod* export-svg ((self bpf) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1))
@@ -125,7 +125,7 @@ Exports <self> to SVG format.
   (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
 							    :prompt "New SVG file"
 							    :types '("SVG Files" "*.svg"))))
-	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel :height h :width w)))
+	 (scene (cl-svg::make-svg-toplevel 'cl-svg::svg-1.1-toplevel :height h :width w)))
     (when pathname
       (with-svg-scene-to-file (pathname scene)
 	(let* ((ys (y-points self))
@@ -136,26 +136,26 @@ Exports <self> to SVG format.
 						   ; :y1 (apply #'max ys) :y2 (apply #'min ys)
                                                    )))
 	       (prev_p nil)
-	       (path (svg::make-path))
+	       (path (cl-svg::make-path))
 	       (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
 				    (round (* 255 (om-color-r (bpfcolor self))))
 				    (round (* 255 (om-color-g (bpfcolor self))))
 				    (round (* 255 (om-color-b (bpfcolor self)))))))
 							    ;draw line
 	  (loop for pt in bpf-points do
-	       (svg::with-path path
+	       (cl-svg::with-path path
 		 (if prev_p
-		     (svg::line-to (car pt) (cadr pt))
-		     (svg::move-to (car pt) (cadr pt))))
+		     (cl-svg::line-to (car pt) (cadr pt))
+		     (cl-svg::move-to (car pt) (cadr pt))))
 	       (setf prev_p pt))
-	  (svg::draw scene (:path :d path)
+	  (cl-svg::draw scene (:path :d path)
 		     :fill "none" :stroke bpfcolorstr
                      :stroke-width line-size)
 
 							    ;if points, draw points
 	  (when with-points
 	    (loop for pt in bpf-points do
-		 (svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
+		 (cl-svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
 			    :stroke "rgb(0, 0, 0)"
 			    :fill bpfcolorstr))))
 	pathname))))
@@ -167,7 +167,7 @@ Exports <self> to SVG format.
   (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
 							    :prompt "New SVG file"
 							    :types '("SVG Files" "*.svg"))))
-	 (scene (svg::make-svg-toplevel 'svg::svg-1.1-toplevel :height h :width w)))
+	 (scene (cl-svg::make-svg-toplevel 'cl-svg::svg-1.1-toplevel :height h :width w)))
     (when pathname
       (with-svg-scene-to-file (pathname scene)
 	(loop for bpf in (bpf-list self)
@@ -177,7 +177,7 @@ Exports <self> to SVG format.
                                                          :y1 (apply #'max ys) :y2 (apply #'min ys)
                                                    )))
 		     (prev_p nil)
-		     (path (svg::make-path))
+		     (path (cl-svg::make-path))
 		     (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
 					  (round (* 255 (om-color-r (bpfcolor bpf))))
 					  (round (* 255 (om-color-g (bpfcolor bpf))))
@@ -185,19 +185,19 @@ Exports <self> to SVG format.
 
 							    ;draw line
 		(loop for pt in bpf-points do
-		     (svg::with-path path
+		     (cl-svg::with-path path
 		       (if prev_p
-			   (svg::line-to (car pt) (cadr pt))
-			   (svg::move-to (car pt) (cadr pt))))
+			   (cl-svg::line-to (car pt) (cadr pt))
+			   (cl-svg::move-to (car pt) (cadr pt))))
 		     (setf prev_p pt))
-		(svg::draw scene (:path :d path)
+		(cl-svg::draw scene (:path :d path)
 			   :fill "none" :stroke bpfcolorstr
                            :stroke-width line-size)
 
 							    ;if points, draw points
 		(when with-points
 		  (loop for pt in bpf-points do
-		       (svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
+		       (cl-svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
 				  :stroke "rgb(0, 0, 0)"
 				  :fill bpfcolorstr)))))))))
 

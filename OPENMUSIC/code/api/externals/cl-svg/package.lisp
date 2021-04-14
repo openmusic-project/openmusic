@@ -26,7 +26,7 @@
 
 
 (defpackage :cl-svg
-  (:nicknames :svg)
+  ;(:nicknames :svg)
   (:use :common-lisp)
   (:export #:*indent-spacing*
            #:*float-format-precision*
