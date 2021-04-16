@@ -1604,7 +1604,7 @@ Returns the list of all measure in <self>.
   (let ((clone (clone tempi))
         (indx 0)
         (res (list '())))
-   ; res))
+
     (loop while clone
           do (If (= indx (caaar clone))
                  (progn
