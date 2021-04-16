@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Completion for tty undefined box
 
 IMPROVEMENTS
 
@@ -11,9 +12,11 @@ IMPROVEMENTS
 
 FIXES
 
+- fixed svg package reference error
 - fixed inspector palette (compatibilty)
 - fixed legacy tempo editor when multi tempi changes.
 - fixed extra palette (compatibility)
+
 
 
 * RELEASE NOTES 6.18
