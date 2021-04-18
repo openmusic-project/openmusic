@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -53,7 +53,8 @@
         
         ;-----------Functions--------------------------------
         "functions;trees"
-        
+        "functions;objects-functions"
+
         ;-----------Editors--------------------------------
         "container;maquetteinterface"     
         

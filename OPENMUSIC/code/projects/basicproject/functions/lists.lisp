@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -281,6 +281,29 @@ Ex. (group-list '(1 2 3 4) '(1 2 3) 'circular)  => ((1) (2 3) (4 1 2))
     (group-list list (repeat-n segmentation (ceiling (length list) segmentation)) 'linear))
 
 
+;;;-----------------N-GROUP-LIST
+
+(defmethod* n-group-list ((tree list) (n-elem number))
+   :initvals (list '(1 2) 1)
+   :indoc '("tree" "nth-elem")
+   :icon 235
+   :doc "Groups a tree or a list into a list of lists of <n-elem> elements."
+   (let* ((lst '())
+          (clone (clone tree))
+          )
+     (loop while clone
+           do (progn 
+                (push '() lst)
+                (loop for i from 1 to n-elem
+                      do (progn
+                           (push (car clone) (car lst))
+                           (pop clone)))
+                (setf (car lst) (reverse (car lst))))
+                )
+     (reverse lst)))
+
+
+
 ;;;;-----------------Remove-dup
 (defmethod* remove-dup ((list list) (test symbol) (depth integer))
   :icon 235 
@@ -302,6 +325,8 @@ Ex. (remove-dup '((1 2) (3 2 2) 4) '= 2) => ((1 2) (3 2) 4)
 
 
 (defmethod* remove-dup ((list t) (test t) (depth integer)) list)
+
+
 
 ;;;-----------------LIST-MODULO
 
@@ -372,6 +397,43 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
 ;;         (pop posn) else collect elt)
 
 
+;;;-----------------MEMBER-POS
+
+(defmethod* member-pos ((elem t) (lst list))
+  :initvals (list 't (list 1 2)) 
+  :indoc '("elem" "list")
+  :icon 235
+  :doc "Returns all positions of <elem> in <lst>"
+
+  (remove 'nil
+          (loop
+           for i in lst
+           for n from 0 to (length lst)
+           collect (if (equal i elem) n))
+          ))
 
 
+;;;-----------------REMOVE-NTH
 
+(defmethod* remove-nth ((sequence list)
+                        (nth number))
+   :initvals (list '(0 1 2 3 4) 1 ) 
+   :indoc '("list" "pos")
+   :icon 235
+   :doc  "Removes element (or elements)  from <sequence from <nth> positions. A non destructive alternative for pop."
+  (let (res)
+    (loop for i in sequence
+          for idx from 0 to (length sequence)
+          do (if (not (= idx nth))
+                 (push i res)))
+    (reverse res)))
+
+
+(defmethod* remove-nth ((sequence list) (nth list))
+(let (res)
+    (loop for i in sequence
+          for idx from 0 to (length sequence)
+          do (if (not (member idx nth)) 
+                 (push i res))
+          )
+    (reverse res)))

@@ -27,8 +27,8 @@
 
 ; LISTS
 (defvar *list-package* (omNG-protect-object (omNG-make-new-package "List Processing")))
-(AddGenFun2Pack  '(last-elem last-n first-n x-append flat create-list expand-lst 
-                             mat-trans group-list remove-dup subs-posn interlock list-modulo
+(AddGenFun2Pack  '(last-elem last-n first-n member-pos x-append flat create-list expand-lst 
+                             mat-trans group-list n-group-list remove-dup remove-nth subs-posn interlock list-modulo
                              list-explode list-filter table-filter band-filter range-filter posn-match) *list-package*)
 (AddPackage2Pack  *list-package* *basic-package*)
 
@@ -43,7 +43,7 @@
 
 ;;; COMBINATORIAL
 (defvar *comb-package* (omNG-protect-object (omNG-make-new-package "Combinatorial")))
-(AddGenFun2Pack '(sort-list rotate nth-random permut-random posn-order permutations) *comb-package*)
+(AddGenFun2Pack '(sort-list group-cons remove-iter rotate nth-random permut-random posn-order permutations) *comb-package*)
 (AddPackage2Pack *comb-package* *basic-package*)
 
 ;;; SERIES

@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -174,3 +174,38 @@ Ex. (permutations '(a b c)) => ((a b c) (a c b) (b a c) (b c a) (c a b) (c b a))
             bag)))
 
  
+;-------GROUP-CONS---------
+
+(defmethod* group-cons ((sequence list))
+                :initvals (list '(1 2)) 
+                :indoc '("sequence")
+                :icon 176
+                :doc "constructs a list of list of elements 
+by grouping successive identical elements in <sequence>.
+example:
+(group-cons '(1 2 3 4 toto toto 5 5 5 1 2 1 1 2 3 1 1 3 3))
+OM->((1) (2) (3) (4) (toto toto) (5 5 5) (1) (2) (1 1) (2) (3) (1 1) (3 3))
+"
+  (let* ((res (list (list (car sequence))))
+         (lst (clone sequence)))
+    (pop lst)
+    (loop for i in lst
+          do (if (equal (caar res) i)
+                 (push i (car res))
+               (push (list i) res)))
+    (reverse res)))
+
+;----------REMOVE-ITER-------------------
+
+(defmethod* remove-iter ((sequence list))
+  :initvals (list '(1 2)) 
+  :indoc '("sequence")
+  :icon 176
+  :doc "Removes successive elements from list."
+            
+  (remove ()
+          (mapcar #'(lambda (x y) (if (equalp x y) () x))
+                  sequence  (rotate sequence))))
+
+
+
