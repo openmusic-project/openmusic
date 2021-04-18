@@ -293,6 +293,8 @@
 (defmethod keyword-menu ((self t)) nil) 
 
 
+
+
 (defmethod popup-keyword-input-menu ((self input-keyword) container)
    (let* ((default nil)
           (menu (om-create-menu 'pair-pop-up-menu 
@@ -306,9 +308,25 @@
                                                                  #'(lambda () (or (equal (value self) currentkey)
                                                                                   (not (member currentkey (inputs (box-ref self)) :test 'equal :key 'value))))
                                                                  ))))))
+    
      (when default (om-set-menu-default-item menu default))
      (om-open-pop-up-menu menu container)
      ))
+
+
+;;just for linux
+(defun init-val-menu (menu def)
+    (loop for i in menu
+          collect (if (equal def (second i))
+                      (list (format nil "o ~A" (second i)) (second i))
+                    (list (format nil "  ~A" (second i)) (second i)))))
+
+(defmethod popup-set-selected-val-menu ((self input-keyword))
+  (let* ((sel (def-value self))
+         (menus (val-menu self)))
+    (setf (val-menu self)  (init-val-menu menus sel))))
+;;;         
+
 
 (defmethod popup-keyword-val-menu ((self input-keyword) container)
    (let* ((default nil)
@@ -322,6 +340,7 @@
      
      (when default (om-set-menu-default-item menu default))
      (om-open-pop-up-menu menu container)
+     #+linux (popup-set-selected-val-menu self)
      ))
 
 
