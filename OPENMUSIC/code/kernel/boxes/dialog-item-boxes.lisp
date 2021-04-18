@@ -135,7 +135,7 @@
    (om-make-point (max 20 (om-point-h new-pos )) (max 20 (om-point-v new-pos))))
 
 (defmethod add-lock-button ((self DIEditorframe) &optional (mode "x"))
-   "Add a lock button, ff the box referenced by 'self' allow it."
+   "Add a lock button, if the box referenced by 'self' allow it."
    (when (allow-lock-button (object self))
      (setf (lock-button self) (make-lock-button self mode))
      (om-set-view-position (lock-button self) (om-make-point 0 8))
