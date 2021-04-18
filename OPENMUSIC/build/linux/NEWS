@@ -2,6 +2,11 @@
 
 NEW FEATURES
 
+- New functions added: 
+	- Score Functions: chord-list-filter
+	- List Processing: remove-nth, member-pos, n-group-list
+	- Combinatorial:   group-cons, remove-iter
+
 - Completion for tty undefined box
 
 IMPROVEMENTS
@@ -12,6 +17,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Popup selection display inlet (linux)
 - fixed svg package reference error
 - fixed inspector palette (compatibilty)
 - fixed legacy tempo editor when multi tempi changes.
