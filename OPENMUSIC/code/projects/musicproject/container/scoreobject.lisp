@@ -713,11 +713,50 @@ Extraction methods.
      ((numberp tempo)  (list 1/4 tempo))
      ((tempo-list-p tempo) tempo)))
 
+
+
 (defmethod get-voice-tempilist ((self voice)) 
   (second (tempo self)))
 
 (defmethod set-voice-tempilist ((self voice) list) 
   (setf (nth 1 (tempo self)) list))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;format-om-tempi
+
+(defmethod* format-omtempo ((note-fig list) 
+                             (tempi list))
+   :initvals '(1/4 t) 
+   :indoc '("list of note figure" "list of tempi")
+   :icon 134
+   :doc   "Gets a list of note-figures, a list of tempi and return a formated tempo list by measure for om VOICE object. If nil is found skips measure and repeats the former tempo"
+
+  (let* ((first-tempo (list (car note-fig) (car tempi)))
+         (restfig (cdr note-fig))
+         (resttempi (cdr tempi))
+         (restliste (remove nil       
+            (loop 
+             for i from 1 to (length resttempi)
+             for temp in resttempi
+             for fig in restfig
+             collect (if temp
+                         (list (list i 0) (list fig temp nil)))))))
+    (list first-tempo restliste)))
+
+
+(defmethod* format-omtempo ((note-fig number) 
+                            (tempi list))
+  "Gets a list of note-figures, a list of tempi and return a formated tempo list by measure for om VOICE object. If nil is found skips measure and repeats the former tempo"
+
+  (let* ((first-tempo (list note-fig (car tempi)))
+         (resttempi (cdr tempi))
+         (restliste (remove nil       
+            (loop 
+             for i from 1 to (length resttempi)
+             for temp in resttempi
+             collect (if temp
+                         (list (list i 0) (list note-fig temp nil)))))))
+    (list first-tempo restliste)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod (setf tempo) ((tempo t) (self voice))
   (let (thetempi tempolist)
