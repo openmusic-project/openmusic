@@ -437,3 +437,41 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
                  (push i res))
           )
     (reverse res)))
+
+;;;-----------------ITERATE-LIST
+
+(defmethod* repeat-until-length ((list list)
+                            (lgt number))
+            (let ((length-list (length list)))
+              (if (< lgt length-list)
+                  (first-n list lgt)
+                (let* ((ceil (ceiling (/ lgt (length list))))
+                      (rep (repeat-n list ceil)))
+                  (first-n (flat rep) lgt)))))
+
+
+
+(defmethod* repeat-last-n ((list list) (n number))
+  (let ((lgt (length list))
+        (lst (last-elem list)))
+    (if (> n lgt) (x-append list (repeat-n lst (- n lgt)))
+    (first-n list n))))
+
+
+(defmethod* iterate-list ((lst list) (length number) &key (mode 'until))
+  :initvals '('(1 2) 3 'until) 
+  :indoc '("list" "length" "mode") 
+  :icon 235
+  :menuins '((2 (("until" until) 
+                 ("last" last)
+                 ("first" first))))
+  :doc "Repeats <lst> nth times so it equals <length>. 
+mode: <until> iterates the list (default).
+      <last>  iterates the last element of list.
+      <first> iterates the first element of list."
+  (case mode
+    (until (repeat-until-length lst length))
+    (last (repeat-last-n lst length))
+    (first (if (> length (length lst)) 
+               (reverse (repeat-last-n (reverse lst) length))
+             (first-n lst length)))))

@@ -27,7 +27,7 @@
 
 ; LISTS
 (defvar *list-package* (omNG-protect-object (omNG-make-new-package "List Processing")))
-(AddGenFun2Pack  '(last-elem last-n first-n member-pos x-append flat create-list expand-lst 
+(AddGenFun2Pack  '(last-elem last-n first-n member-pos x-append flat create-list expand-lst iterate-list
                              mat-trans group-list n-group-list remove-dup remove-nth subs-posn interlock list-modulo
                              list-explode list-filter table-filter band-filter range-filter posn-match) *list-package*)
 (AddPackage2Pack  *list-package* *basic-package*)
