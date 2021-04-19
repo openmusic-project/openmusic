@@ -152,7 +152,9 @@ at the beat level. Here is an example:
     ))
 
 
+;------------------------------omquantify-methods--------------------
 
+#|
 (defmethod* omquantify ((self chord-seq) 
                         (tempi t) (measures list)
                         (max/ t)
@@ -163,8 +165,62 @@ at the beat level. Here is an example:
   (omquantify ; (true-durations self)
               (x->dx (lonset self))
               tempi measures max/ forbid offset precis))
+|#
+
+;;; CHORD-SEQ => VOICE
+
+(defmethod* omquantify ((self chord-seq) 
+                        (tempi t) (measures list)
+                        (max/ t)
+                        &optional
+                        forbid
+                        offset
+                        precis)
+  (let ((tree
+         (omquantify (true-durations self)
+                     tempi measures max/ forbid offset precis))
+        (chords (get-chords self)))
+    (make-instance 'voice
+                   :tree tree
+                   :chords chords
+                   :tempo (format-omtempo 1/4 tempi))))
 
 
+;;; VOICE => VOICE
+
+(defmethod* omquantify  ((self voice) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+
+
+   (let* ((chords (chords self))
+          (tree (purekant self tempi measures max/ forbid offset precis)))
+
+     (make-instance 'voice 
+                    :tree tree
+                    :chords chords
+                    :tempo (format-omtempo 1/4 tempi))))
+
+;;; POLY => POLY
+
+(defmethod* omquantify ((self poly) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+
+(let* ((voices (inside self))
+       (kants (loop for i in voices 
+                    collect (omquantify i tempi measures max/ forbid offset precis))))
+  (make-instance 'poly 
+                 :voices kants)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;korrected-kant: kant correction by K. Haddad
 ;;;included in omquantify 21/10/2008 in OM 6.0.4
