@@ -3,7 +3,7 @@
 NEW FEATURES
 
 - New functions added: 
-	- Score Functions: chord-list-filter
+	- Score Functions: chord-list-filter, new omquantify methods
 	- List Processing: remove-nth, member-pos, n-group-list
 	- Combinatorial:   group-cons, remove-iter
 
