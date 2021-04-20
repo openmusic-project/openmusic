@@ -179,11 +179,12 @@ at the beat level. Here is an example:
   (let ((tree
          (omquantify (true-durations self)
                      tempi measures max/ forbid offset precis))
-        (chords (get-chords self)))
+        (chords (get-chords self))
+        (tempo (if (atom tempi) (list tempi) tempi)))
     (make-instance 'voice
                    :tree tree
                    :chords chords
-                   :tempo (format-omtempo 1/4 tempi))))
+                   :tempo (format-omtempo 1/4 tempo))))
 
 
 ;;; VOICE => VOICE
@@ -197,12 +198,14 @@ at the beat level. Here is an example:
 
 
    (let* ((chords (chords self))
-          (tree (purekant self tempi measures max/ forbid offset precis)))
+          (durs (true-durations self))
+          (tree (omquantify durs tempi measures max/ forbid offset precis))
+          (tempo (if (atom tempi) (list tempi) tempi)))
 
      (make-instance 'voice 
                     :tree tree
                     :chords chords
-                    :tempo (format-omtempo 1/4 tempi))))
+                    :tempo (format-omtempo 1/4 tempo))))
 
 ;;; POLY => POLY
 
