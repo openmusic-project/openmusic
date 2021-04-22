@@ -4,7 +4,7 @@ NEW FEATURES
 
 - New functions added: 
 	- Score Functions: chord-list-filter, new omquantify methods
-	- List Processing: remove-nth, member-pos, n-group-list
+	- List Processing: remove-nth, member-pos, n-group-list, iterate-list
 	- Combinatorial:   group-cons, remove-iter
 
 - Completion for tty undefined box
