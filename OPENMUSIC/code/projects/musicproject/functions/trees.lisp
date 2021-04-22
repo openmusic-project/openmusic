@@ -277,6 +277,41 @@ The output rhythm tree is intended for the <tree> input of a 'voice' factory box
         (simple->tree rhythm (make-list nbmes :initial-element timesigns)))
   ))
 
+
+;;;;;;;;;;;Correct-floats;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun all-floats? (liste)
+  "test in a simple list if all are floats."
+  (let* ((res t) 
+         (test (if (atom liste) (setf res nil)
+                   (mapcar 'atom liste))))
+    (if (listp liste)
+    (loop 
+      for i in liste
+      while res
+          do  (if (floatp i )
+                t
+                (setf res nil))))
+    res))
+
+(defun correct-floats (tree)
+  "Corrects floats in a starting voice, and floats after a rest."
+  (let* ((grp-pulse (group-pulses tree))
+         (cartoc (if (all-floats? (car grp-pulse)) (om-round (om* -1 (car grp-pulse))) (car grp-pulse)))
+         (cdrtoc
+          (loop for i in (cdr grp-pulse)
+                collect (if (minusp (car i))
+                            (om-round (x-append (car i) (om* -1 (cdr i))))
+                          i)))
+         (corrected (cons cartoc cdrtoc))
+         (tree2obj (trans-tree tree))
+         (tree2objclean (remove-if 'numberp (flat tree2obj)))
+         (fixed (loop for objs in tree2objclean
+                      for i in (flat corrected)
+                      do (setf (tvalue objs ) i))))
+         
+    (trans-obj tree2obj)
+    ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;REDUCETREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -333,6 +368,12 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
    (let ((liste (resolve-? tree)))
      (grouper3 (grouper2 (grouper1 liste)))))
 
+
+(defmethod! reducetree ((self voice))
+   (let* ((newvoice (clone self))
+          (newtree (reducetree (tree newvoice))))
+     (setf (tree newvoice) newtree)
+     newvoice))
 
 #|
 (defmethod! reducetree ((self voice))
@@ -491,8 +532,9 @@ Converts all rests to notes.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;FILTERTREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (defun transform-notes-flt (list places)
-""
+  ""
   (loop while list
         for courant =  (pop list)
         do (if (and (and (integerp (tvalue courant)) (plusp (tvalue courant))) (member (tindex courant) places))
@@ -503,42 +545,86 @@ Converts all rests to notes.
                      (pop list))))))
 
 
+(defun transform-notes-flt1 (list places)
+""
+  (loop while list
+        for courant =  (pop list)
+        do (if (and (and (integerp (tvalue courant)) (plusp (tvalue courant))) (member (tindex courant) places))
+             (setf  (tvalue courant) (* 1.0 (tvalue courant))))))
+
+
 (defvar *tree-index-count* -1)
 
 (defun trans-note-index (treeobjlist)
   "puts index only on expressed notes and not on floats or rests (for filtering purposes)."
-  (if (atom treeobjlist)
-      (if (and (typep treeobjlist 'treeobj) (integerp (tvalue treeobjlist)) (plusp (tvalue treeobjlist)))
-          (setf (tindex treeobjlist) (incf *tree-index-count*)) 
-        treeobjlist)
-    (list (first treeobjlist) (mapcar #'trans-note-index (second treeobjlist)))))
+(if (atom treeobjlist)
+    (if  (and (typep treeobjlist 'treeobj) (integerp (tvalue treeobjlist)) (plusp (tvalue treeobjlist)))
+        (setf (tindex treeobjlist) (incf *tree-index-count*)) 
+      treeobjlist)
+    (list (first treeobjlist) (mapcar 'trans-note-index (second treeobjlist)))))
 
-(defmethod! filtertree ((tree t) (places list))
-   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))) (0 1))
-   :indoc '("a rhytm tree" "a list of indices")
+
+
+(defmethod! filtertree ((tree list) (places list) (mode symbol))
+  :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) '(0 1) 'rests)
+  :indoc '("tree" "places" "mode")
+  :menuins '((2 (("rests" 'rests)
+                 ("ties" 'ties))))
+  :icon 225
+  :doc "Replaces expressed notes in given places <places> with rests or ties following <mode>."
+
+  (setf *tree-index-count* -1)
+  (let* ((liste (if (typep tree 'voice) (tree tree) 
+                  (tree (make-instance 'voice :tree tree))))
+         (tree2obj (trans-tree liste))
+         (tree2o-index (trans-note-index tree2obj))
+         (tree2objclean (remove-if 'numberp (flat tree2obj)))
+         (treeobjinverted 
+          (case mode
+            (rests (transform-notes-flt tree2objclean places ))
+            (ties (transform-notes-flt1 tree2objclean places )))))
+    (reducetree 
+     (correct-floats
+      (trans-obj tree2obj)))))
+
+
+(defmethod! filtertree ((self voice) (places list) (mode symbol))
+                (let* ((tree (tree self))
+                       (chords (remove-nth (chords self) places))
+                       (filt-tree (filtertree tree places mode))
+                       (tempo (tempo self)))
+                  (make-instance 'voice 
+                                 :tree filt-tree
+                                 :chords chords
+                                 :tempo tempo)))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;SELECT-TREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmethod! select-tree ((tree list) (places list) &optional (mode 'rests)) 
+   :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) '(0 1) 'rests)
+   :indoc '("tree" "places" "mode")
    :icon 225
-   :doc "
-Replaces expressed notes in given positions from <places> with rests.
-"
-   (setf *tree-index-count* -1)
-   (let* ((liste (if (typep tree 'voice) (tree tree) tree))
-          (tree2obj (trans-tree liste)))
-
-     (trans-note-index tree2obj)
-     (transform-notes-flt (remove-if 'numberp (flat tree2obj)) places)
-     
-     (trans-obj tree2obj)))
-
-
-
-(defmethod! select-tree ((tree list) (places list))
-   :initvals '((2 (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1)))) (0 1))
-   :indoc '("tree" "places")
-   :icon 225
-   :doc "Selects expressed notes only in given places <places> "
+   :menuins '((2 (("rests" 'rests)
+                  ("ties" 'ties))))
+   :doc "selects expressed notes only in given places <places> "
    (let* ((pulse-places (arithm-ser 0 (n-pulses tree) 1))
           (positions (x-diff pulse-places places)))
-     (filtertree tree positions)))
+     (filtertree tree positions mode)))
+
+
+
+(defmethod! select-tree ((self voice) (places list) &optional (mode 'rests)) 
+                (let* ((tree (tree self))
+                       (notes (posn-match (chords self) places))
+                       (tempo (tempo self))
+                       (new (select-tree tree places mode)))
+                  (make-instance 'voice 
+                                 :tree new
+                                 :chords notes
+                                 :tempo tempo)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;N-PULSES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
