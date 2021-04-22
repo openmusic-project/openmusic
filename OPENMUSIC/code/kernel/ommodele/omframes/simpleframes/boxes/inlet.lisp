@@ -61,6 +61,21 @@
       (gen-code (first theinputconnect) (second theinputconnect))
       (gen-code value 0))))
 
+;;just for linux
+;;temporary
+(defun init-sel-menu (menu def)
+  (loop for i in menu
+        collect (if (or (equal def (second i)) (equal def (eval (second i))))
+                    (list (format nil "> ~A" (string-left-trim "> " (car i))) (second i))
+                  (list (format nil "  ~A" (string-left-trim "> " (car i))) (second i)))))
+
+(defmethod popup-set-selected ((self input-funbox))
+  (let* ((sel (value self))
+         (menus (thepopup self)))
+    (setf (thepopup self)  (init-sel-menu menus sel))))
+;;;;;
+
+
 (defmethod popup-input-menu ((self input-funbox) container)
    (let ((menulist (thepopup self))
            menu itemlist default)
@@ -75,6 +90,7 @@
      (setf menu (om-create-menu 'pair-pop-up-menu (reverse itemlist)))
      (when default (om-set-menu-default-item menu default))
      (om-open-pop-up-menu menu container)
+      #+linux(popup-set-selected self)
      ))
 
    
@@ -315,11 +331,12 @@
 
 
 ;;just for linux
+
 (defun init-val-menu (menu def)
-    (loop for i in menu
-          collect (if (equal def (second i))
-                      (list (format nil "o ~A" (second i)) (second i))
-                    (list (format nil "  ~A" (second i)) (second i)))))
+  (loop for i in menu
+        collect (if (equal def (second i))
+                    (list (format nil "> ~A" (string-left-trim "> " (car i))) (second i))
+                  (list (format nil "  ~A" (string-left-trim "> " (car i))) (second i)))))
 
 (defmethod popup-set-selected-val-menu ((self input-keyword))
   (let* ((sel (def-value self))
