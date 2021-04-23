@@ -229,7 +229,7 @@
                                               :device (pathname-device dir)  :host (pathname-host dir)))
       (make-new-folder container dir pos)))))
 
-(om-directory "Users/bresson/OM-SRC/OPENMUSIC/resources/sample-ws/OM-Tutorials/elements/tutorial patches/" :files t :directories t)
+;(om-directory "Users/bresson/OM-SRC/OPENMUSIC/resources/sample-ws/OM-Tutorials/elements/tutorial patches/" :files t :directories t)
 
 ;;; creates a new OM folder from an external folder
 (defun make-new-folder (self pathfile pos &optional newname)  
