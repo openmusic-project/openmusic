@@ -226,6 +226,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                       (string-upcase (class-name (class-of (object (editor self))))))
                               (get-help-list (editor self)))) 
+      (#\H (mapc 'open-helpfile actives))
       ;;; in the menu
       (#\k (mapc 'add-keywords actives))
       (#\K (mapc 'erase-keywords actives))

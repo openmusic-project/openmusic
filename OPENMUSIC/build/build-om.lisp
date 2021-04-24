@@ -286,7 +286,7 @@
 (load-om-projects '("space"))
 (load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
-
+(load-om-projects '("docproject"))
 
 (push :om *features*)
 
