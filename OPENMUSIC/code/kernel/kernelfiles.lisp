@@ -170,6 +170,7 @@
 "doc/onlinepatches"
 "doc/tutorials"
 "doc/reference"
+"doc/helpfiles"
 
 ;-------------Pack----------------------- 
 "kernel-pack"

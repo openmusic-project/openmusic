@@ -1,5 +1,36 @@
-(in-package :om)
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Karim Haddad
+;=========================================================================
 
+;DocFile
+; helpfiles patches
+; an alternative to tutorial files
+; This will import the patches in the workspace
+; making them editable
+;DocFile
+
+
+
+(in-package :om)
 
 ;;=========THIS IS THE SPECIAL FOLDER WITH help files===================
 
@@ -84,7 +115,6 @@
 (defmethod load-elements ((self OMhelpfolder))
    "Make instances for all elements in 'self', but their are not yet loaded."
    (let ((j -1)
-         ;(skip-libs *skip-libs*)
          (elements (om-directory 
                     (om-make-pathname :device (mypathname self) 
                                       :directory (pathname-directory (mypathname self))) 
@@ -103,91 +133,60 @@
    (setf *om-helpfolder* (omNG-protect-object (make-instance 'OMhelpFolder
                                                    :Name "helpfiles"
                                                    :icon 23
-                                                   ;:elements (gethelplist)
                                                    )))
    (setf (mypathname *om-helpfolder*) 
          (make-pathname :directory  (append (pathname-directory (mypathname *current-workSpace*))
                                                                   (list "helpfiles"))))
-   ;(print (elements-pathname *om-helpfolder*))
+
      (load-elements *om-helpfolder*) 
    )
 
-
- 
-  ;(om-directory (make-pathname :directory  (append (pathname-directory (mypathname *current-workSpace*)) (list "helpfiles"))) :directories nil :files t)
-
-;THIS IS NEEDED TO INIT THE FOLDER
-;(init-helpfolder)
-
-;(om-inspect *om-helpfolder*)
-;(openobjecteditor (car (elements *om-helpfolder*)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;to be found in omlily
-(defun replace-string (string part replacement &key (test #'char=))
-"Returns a new string in which all the occurences of the part 
-is replaced with replacement."
-    (with-output-to-string (out)
-      (loop with part-length = (length part)
-            for old-pos = 0 then (+ pos part-length)
-            for pos = (search part string
-                              :start2 old-pos
-                              :test test)
-            do (write-string string out
-                             :start old-pos
-                             :end (or pos (length string)))
-            when pos do (write-string replacement out)
-            while pos)))
-
-;(replace-string "om>" ">" ")") ;apparement OK
-;(replace-string "om//" "//" "-mod")
-;(replace-string "om/" "/" "-div")
-;(replace-string "om<" "<" "(") ;apparement OK
 
 
 (defun open-helpfile (patch)
   (let* ((container (editorframe  *current-workSpace*))
          (pos (om-make-point 0 0))
-         (directory (merge-pathnames (make-pathname :directory '(:relative "resources" "helpfiles")) *om-root*))
+         (directory (merge-pathnames (make-pathname :directory '(:relative "resources" "online")) *om-root*))
          (ref (reference (object patch)))
          (name (if (omclass-p ref) (name ref) ref))
+         (name (if (special-name-for-tutorial name) 
+                   (special-name-for-tutorial name) 
+                 (format nil "~S" name)))
          (file (format nil "~A.omp" name))
          (helpfile (merge-pathnames (string+ file) directory))
          (wshelp (merge-pathnames (make-pathname :directory '(:relative "helpfiles")) 
                                   (mypathname *current-workSpace*))))
    
+    ;needed to init the folder in the wskp
     (init-helpfolder)
     ;(oa::om-delete-directory wshelp)
     ;create if necesary heplfiles folder:
     (if (not (check-folder wshelp))
         (make-new-folder container folder (om-make-point 0 0)))
-
+   
     ;create and put helpfile in folder:
     (if (probe-file helpfile)
         (progn 
           (ws-import-element helpfile wshelp) 
-          
-    ;necessary to update new imported:
+          ;necessary to update new imported:
           (load-elements *current-workSpace*)
           (load-elements *om-helpfolder*)
     
     ;open patch:
           (let* ((names (mapcar #'name (get-elements *om-helpfolder*)))
-                 (poshelp (position (format nil "~S" name) names :test 'equal)))
-            ;(print (list names poshelp))
-            ;THIS OPENS THE PATCH FROM THE CURRENT WS:
+                 (poshelp (position name names :test 'equal))
+                 (ifpos (if (special-name-for-tutorial name)
+                            (special-name-for-tutorial name)))
+                 )
+          ;THIS OPENS THE PATCH FROM THE CURRENT WS:
             (openobjecteditor (nth poshelp (get-elements *om-helpfolder*)))
             ))
-      (capi::display-message "Not Available Yet..."))
+      (progn
+
+        ;(openobjecteditor (special-name-for-tutorial name))
+      (capi::display-message "Not Available Yet...")))
     ))
 
-;;(trouver subst for reserved caracters : < > / * et :)
-
-;le chemin pour les help patches (a creer)
-;(merge-pathnames (make-pathname :directory '(:relative "resources" "helpPatches")) *om-root*)
-;(merge-pathnames (make-pathname :directory '(:relative "resources" "tutorials" "OM-Tutorials")) *om-root*)
-
-;;faire une fonction pour ouvrir un patch externe en l'important dans les helpfiles qui deviennent finalement un temp file???
+ 
