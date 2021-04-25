@@ -79,8 +79,8 @@
 
 (AddGenFun2Pack  '(pulsemaker maketreegroups
                    tree2ratio mktree
-                   reducetree tietree remove-rests invert-rhythm reversetree rotatetree filtertree select-tree
-                   subst-rhythm 
+                   reducetree tietree remove-rests invert-rhythm reversetree 
+                   rotatetree rotateprops filtertree select-tree subst-rhythm 
                    group-pulses n-pulses get-signatures get-pulse-places get-rest-places
                    ) *trees-package*)
 

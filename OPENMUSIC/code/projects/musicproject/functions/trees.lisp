@@ -1079,6 +1079,113 @@ Applies a rotation of <n> positions to the pulses in <tree>.
        (rotatetreepulse tree n)
        (rotate-tree tree n)))
        
+;;;;;;;;;;;;;;;;;;;;;;;;;ROTATE-PROPORTIONS;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmethod! rotate-props ((tree t) (nth integer) 
+                                &optional (option 'reduce) (output 'optimized))
+   :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1 'reduce 'optimized)
+   :indoc '("tree" "nth" "option" "output")
+   :menuins '((2 (("reduce" 'reduce) 
+                 ("tied" 'tied)))
+             (3 (("optimized" 'optimized) 
+                 ("not-optimized" 'not-optimized))))
+   :icon 134
+   :doc "rotates tree following nth."
+
+   (setf n -1)
+   (let* ( 
+          (liste (if (typep tree 'voice) 
+                   (if (equal option 'reduce) (reducetree (tree tree)) (tree tree))
+                   (if (equal option 'reduce) (reducetree (numtree tree)) (numtree tree))))
+          (tree2obj (trans-tree-index liste))
+          (tree2objclean (get-all-treeobj tree2obj))
+          (treepermute (permtree tree2objclean nth))
+          (fixfirstfloat (if (floatp (car treepermute))
+                             (setf (tvalue (car tree2objclean))  (round (tvalue (car tree2objclean))))))
+
+          
+          )
+     
+     (case output
+       (optimized (optimize-tree (trans-obj tree2obj)))
+       (not-optimized (trans-obj tree2obj)))))
+
+
+
+
+
+(defmethod! rotate-props ((self voice) (nth integer) 
+                                &optional (option 'reduce) (output 'optimized))
+(let* ((tree (rat self))
+       (tempo (qtempo self))
+       (chords (rotate (chords self) nth))
+       (rotated (rotate-props tree nth option output)))
+  (make-instance 'voice
+                 :tree rotated
+                 :chords chords
+                 :tempo tempo)))
+
+
+
+(defmethod! krotate-tree*meas ((tree t) (nth t) 
+                                     &optional (option 'reduce) (output 'optimized))
+   :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1 'reduce 'optimized)
+   :indoc '("tree" "nth" "option" "output")
+   :menuins '((2 (("reduce" 'reduce) 
+                 ("tied" 'tied)))
+             (3 (("optimized" 'optimized) 
+                 ("not-optimized" 'not-optimized))))
+   :icon 225
+   :doc "rotates each measure in tree following a given nth. nth may be an atom in
+such case it will rotate rhythm nth for all measures, or list."
+   (let* ((listree (if (typep tree 'voice) (inside tree)
+                       (inside (make-instance 'voice :tree tree))))
+          (rotated-tree (if (listp nth)
+                          (loop 
+                            for i in listree
+                            for a in nth 
+                            collect (rotate-props (list '? (list (tree i))) a option output))
+                          (loop 
+                            for i in listree
+                            collect (rotate-props (list '? (list (tree i))) nth option output))
+                          ))
+          (removed-header (second (mat-trans rotated-tree))))
+     (list '? (mapcar 'flat-once removed-header))))
+
+
+(defmethod! krotate-tree*meas ((self voice) (nth t) 
+                                     &optional (option 'reduce) (output 'optimized))
+(let* ((tree (rat self))
+       (tempo (qtempo self))
+       (chords (chords self))
+       (rotated (krotate-tree*meas tree nth option output)))
+  (make-instance 'voice
+                 :tree rotated
+                 :chords chords
+                 :tempo tempo)))
+
+
+
+(defmethod! rotateprops ((tree t) (nth t) 
+                                &optional (mode 'all) (option 'reduce) (output 'optimized))
+   :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1 'all 'reduce 'optimized)
+   :indoc '("tree" "nth" "mode" "option" "output")
+   :menuins '((2 (("all" 'all) 
+                 ("by-measure" 'by-measure)))
+             (3 (("reduce" 'reduce) 
+                 ("tied" 'tied)))
+             (4 (("optimized" 'optimized) 
+                 ("not-optimized" 'not-optimized))))
+   :icon 225
+   :doc " Applies a rotation to the tree pulses following <nth> position.
+If <mode> is equal to 'all' this will be applied to the whole tree.
+If <mode> is equal to 'by-measure', the rotation will be applied measure by measure.
+If <nth> is an atom the rotation will be for all measures by nth beat.
+If it is a list each elemt of list will be the nth rotation in each measure."
+     (case mode
+       (all (krotate-tree tree nth option output))
+       (by-measure (krotate-tree*meas tree nth option output))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;TREE-CANON;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
