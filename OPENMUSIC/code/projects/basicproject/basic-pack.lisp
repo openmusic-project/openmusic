@@ -66,7 +66,7 @@
                               linear-fun bpf-interpol
                               reduce-points reduce-n-points
                               bpf-offset bpf-crossfade bpf-extract bpf-scale bpf-concat
-                              om-rotate om-translate om-mirror
+                              om-rotate om-translate om-mirror export-svg
                               ) *function-package*)
 ; removed : board
 (AddClass2Pack '(bpf bpf-lib bpc bpc-lib) *function-package*     

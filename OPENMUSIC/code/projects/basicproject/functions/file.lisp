@@ -116,7 +116,7 @@
 	 pathname))))
 
 (defmethod* export-svg ((self bpf) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1))
-  :icon 908
+  :icon 659
   :indoc '("a BPF object" "a pathname" "draw-points")
   :initvals '(nil nil nil)
   :doc "
