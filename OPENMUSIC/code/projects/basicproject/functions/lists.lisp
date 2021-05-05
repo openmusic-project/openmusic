@@ -396,13 +396,13 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
 ;;         if (and posn (= counter (first posn))) collect (pop val) and do 
 ;;         (pop posn) else collect elt)
 
-
+;;;List Utilities
 ;;;-----------------MEMBER-POS
 
 (defmethod* member-pos ((elem t) (lst list))
   :initvals (list 't (list 1 2)) 
   :indoc '("elem" "list")
-  :icon 235
+  :icon 660
   :doc "Returns all positions of <elem> in <lst>"
 
   (remove 'nil
@@ -413,6 +413,56 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
           ))
 
 
+
+
+(defmethod* all-atoms? ((lst list))
+  :initvals '((list 1 2)) 
+  :indoc '("list")
+  :icon 660
+  :doc "Tests if a list is an all atoms list."
+  (let* ((res t) 
+         (test (if (atom lst) (setf res nil)
+                   (mapcar 'atom lst))))
+    (if (listp lst)
+    (loop 
+      for i in lst
+      while res
+          do  (if (atom i )
+                t
+                (setf res nil))))
+    res))
+
+(defmethod* all-lists? ((lst list))
+  :initvals '((list 1 2)) 
+  :indoc '("list")
+  :icon 660
+  :doc "Tests if a list is an all list list."
+  (let* ((res t) 
+         (test (if (atom lst) (setf res nil)
+                   (mapcar 'atom lst))))
+    (if (listp lst)
+    (loop 
+      for i in lst
+      while res
+          do  (if (listp i )
+                t
+                (setf res nil))))
+    res))
+
+
+(defmethod* treedepth ((tree t))
+  :initvals '((list 1 2)) 
+  :indoc '("list")
+  :icon 660
+  :doc "Returns the depth of the tree"
+  (if (atom tree) 0 
+    (1+ (reduce #'max (mapcar #'treedepth tree)))))
+
+
+
+
+
+;;;;;;;;
 ;;;-----------------REMOVE-NTH
 
 (defmethod* remove-nth ((sequence list)

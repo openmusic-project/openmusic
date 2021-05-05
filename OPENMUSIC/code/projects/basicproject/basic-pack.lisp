@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -27,10 +27,14 @@
 
 ; LISTS
 (defvar *list-package* (omNG-protect-object (omNG-make-new-package "List Processing")))
-(AddGenFun2Pack  '(last-elem last-n first-n member-pos x-append flat create-list expand-lst iterate-list
+(AddGenFun2Pack  '(last-elem last-n first-n  x-append flat create-list expand-lst iterate-list
                              mat-trans group-list n-group-list remove-dup remove-nth subs-posn interlock list-modulo
                              list-explode list-filter table-filter band-filter range-filter posn-match) *list-package*)
 (AddPackage2Pack  *list-package* *basic-package*)
+
+(defvar *list-utils-package* (omNG-protect-object (omNG-make-new-package "Utilities")) "List utilities")
+(AddGenFun2Pack '(all-atoms? all-lists? treedepth member-pos) *list-utils-package*)
+(AddPackage2Pack *list-utils-package* *list-package*)
 
 ;;; ARITHMETICS
 (defvar *arith-package* (omNG-protect-object (omNG-make-new-package "Arithmetic")))
