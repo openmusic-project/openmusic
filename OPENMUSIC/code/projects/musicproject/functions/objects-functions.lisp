@@ -245,74 +245,57 @@
 ;=========================================================================
 ;k.h 16/04/21
 ;----------chord-filter
-;;a revoir
 
 (defmethod! chord-filter ((self note) 
+                          (chords list)
                           &key
-                          (type 'band)
-                          (mode 'pass)
-                          (min 6000) 
-                          (max 6100)
-                          (chords '(6000)))
-                         
+                          (mode 'pass))
+                                                 
   :icon 658
-  :indoc '("self" "type" "mode" "min" "max" "chords")
-  :initvals '( t 'band 'pass 6000 6100 (list 6000))
-  :menuins '((1 (("band" band) 
-                 ("selected" selected)))
-             (2 (("pass" pass) 
+  :indoc '("self" "chords" "mode")
+  :initvals '( t '(6000 6100) 'pass)
+  :menuins '((2 (("pass" pass) 
                  ("reject" reject))))
-  :doc "Filters <self> according to pitch range  <min> and <max> (inclusive).
+  :doc "Filters <self> according to pitch list  <chords>,
 <mode> by default is pass. <self> is either a chord or a chord-seq." 
 
   (let ((midic (midic self)))
-    (if (equal type 'band)
     (case mode
-        (pass (if (and (>= midic min) (<= midic max)) self))
-        (reject (if (not (and (>= midic min) (<= midic max))) self)))
-      (case mode
-        (pass (if (member midic chords :test '=) self))
-        (reject (if (not (member midic chords :test '=)) self))))))
-
+      (pass (if (member midic chords :test '=) self))
+      (reject (if (not (member midic chords :test '=)) self)))))
 
 
 (defmethod! chord-filter ((self chord) 
+                          (chords list)
                           &key
-                          (type 'band)
-                          (mode 'pass)
-                          (min 6000) 
-                          (max 6100)
-                          (chords '(6000)))
- 
+                          (mode 'pass))
+  
   (let* ((notes (inside self))
          (flt (remove nil
                       (loop for i in notes
-                            collect (chord-filter i :type type :mode mode :min min :max max :chords chords)))))
+                            collect (chord-filter i chords :mode mode)))))
     (if flt (objfromobjs flt (make-instance 'chord)))))
 
 
-(defmethod! chord-filter ((self chord-seq) 
+(defmethod! chord-filter ((self chord-seq)
+                          (chords list)
                           &key   
-                          (type 'band)
-                          (mode 'pass)
-                          (min 6000) 
-                          (max 6100)
-                          (chords '(6000)))
+                          (mode 'pass))
 
   (let* ((chrds (inside self))
          (midics (if (listp chords) chords
                    (flat (lmidic chords))))
          (flt (loop for i in chrds
-                    collect (chord-filter i :type type :mode mode :min min :max max :chords midics)))
+                    collect (chord-filter i chords :mode mode)))
          ons)
     (loop for i in flt
           for on in (lonset self)
           do (if i (push on ons)))
-   (if flt
-    (let ((chrdseq (objfromobjs (remove nil flt) 
-                                (make-instance 'chord-seq))))
-      (setf (lonset chrdseq) (reverse ons))
-      chrdseq))))
+    (if flt
+        (let ((chrdseq (objfromobjs (remove nil flt) 
+                                    (make-instance 'chord-seq))))
+          (setf (lonset chrdseq) (reverse ons))
+          chrdseq))))
        
 ;=========================================================================
 ;k.h 17/04/21
