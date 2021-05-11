@@ -85,7 +85,7 @@
 (AddGenFun2Pack '(adsr param-process vibrato jitter) *soundtoolspackage*)
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
-(addGenFun2Pack '(dB->lin lin->dB ms->sec sec->ms samples->sec sec->samples) *sndconvpackage*)
+(addGenFun2Pack '(dB->lin lin->dB ms->sec sec->ms samples->sec sec->samples snd->bpf) *sndconvpackage*)
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)

@@ -19,7 +19,7 @@
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;===========================================================================
-; Authors: G. Assayag, C. Agon, J. Bresson
+; Authors: G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;===========================================================================
 
 (in-package :om)
@@ -879,6 +879,53 @@ Press 'space' to play/stop the sound file.
   (sound-get-pict self))
 
 
-
+;;;============================================
+;;; EXPORT VERS BPC-LIB  A PARTIR DU SOUND FILE
+;;;===========================================
 
   
+(defmethod* snd->bpf ((self sound) 
+                      (num integer)
+                      &key 
+                      (mode 'env)
+                      (channel 'left))
+  :initvals '(nil 1000 'env 'left)
+  :indoc '("sound file" "num of points" "channel" "mode")
+  :menuins '((2 (("env" env)
+                 ("phase" phase)))
+             (3 (("left" left) 
+                 ("right" right))))
+  :doc "Exports the sound-points of SOUND to a bpc-lib"
+  :icon 221
+  
+  (let* ((points (if (= 1 (om-sound-n-channels self))
+                     (sound-points self num)
+                   (case channel
+                     (left (first (mat-trans (n-group-list (sound-points self num) 2))))
+                     (right (second (mat-trans (n-group-list (sound-points self num) 2))))
+                     )
+                   ))
+         
+         (env-pos (mat-trans (remove 'nil 
+                                     (loop
+                                      for i in points 
+                                      for num from 0 to (length points)
+                                      collect (if (>= i 0)
+                                                  (list i (* 10 num)))))))
+         (env-neg (mat-trans (remove 'nil 
+                                     (loop
+                                      for i in points 
+                                      for num from 0 to (length points)
+                                      collect (if (<= i 0)
+                                                  (list i (* 10 num))))))))
+    
+    (case mode 
+      (phase (simple-bpf-from-list '(0 10) points 'bpc 8))
+      (env (make-instance 'bpc-lib
+                          :bpf-list (list
+                                     (simple-bpf-from-list
+                                      (second env-pos)
+                                      (first env-pos) 'bpc 8)
+                                     (simple-bpf-from-list
+                                      (second env-neg)
+                                      (first env-neg) 'bpc 8)))))))
