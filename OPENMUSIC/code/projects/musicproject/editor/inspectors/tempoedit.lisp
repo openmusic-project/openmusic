@@ -90,6 +90,14 @@
     (concat-string (flat rep))
     ))
 
+(defun format-poly-tempo (tempo)
+  (let* ((vx-temp (mapcar #'format-voice-tempo-by-meas tempo))
+         rep)
+    (loop for i in vx-temp
+          do (setf rep (append rep (list (format nil "~A ~% ~%" i)))))
+    (concat-string (flat rep)) ))
+
+
 (defun tempo-edit-pane (self tempo)
   (let* ((buff (setf om-edit::*tempo-editor-text* tempo))
         (ept (om-edit::open-tempo-editor self buff)))
@@ -102,25 +110,30 @@
   (let* ((selection (selection? self)))
     (if selection
         (let ((obj selection))
-          (cond ((voice-p (car obj)) 
-                 (let ((ntree (format-voice-tempo-by-meas (tempo (car obj)))))
-                   (tempo-edit-pane self ntree)))
-                ((measure-p (car obj))
-                 (let* ((pere (parent (car obj)))
-                        (pos (sort. (loop for i in obj
-                                          collect (position i (inside pere) :test 'equal)) '>))
-                        (tempo (reverse (loop for i in pos 
-                                              append (reverse (nth-tempo-mes (tempo-meas-changes pere) i))))))
+          (cond 
+           ((poly-p (car obj)) 
+            (let ((tempi (format-poly-tempo 
+                          (mapcar #'tempo (inside (car obj))))))
+              (tempo-edit-pane self tempi)))
+           ((voice-p (car obj)) 
+            (let ((ntree (format-voice-tempo-by-meas (tempo (car obj)))))
+              (tempo-edit-pane self ntree)))
+           ((measure-p (car obj))
+            (let* ((pere (parent (car obj)))
+                   (pos (sort. (loop for i in obj
+                                     collect (position i (inside pere) :test 'equal)) '>))
+                   (tempo (reverse (loop for i in pos 
+                                         append (reverse (nth-tempo-mes (tempo-meas-changes pere) i))))))
                    
-                   (tempo-edit-pane self (format-measures-tempo-by-meas tempo))
-                   ))
-                ((or (rest-p (car obj))
-                     (chord-p (car obj)))
-                 (progn
-                   (add-tempo-change-extra (car obj))
-                   (update-panel self)
-                   ))
-                (t))
+              (tempo-edit-pane self (format-measures-tempo-by-meas tempo))
+              ))
+           ((or (rest-p (car obj))
+                (chord-p (car obj)))
+            (progn
+              (add-tempo-change-extra (car obj))
+              (update-panel self)
+              ))
+           (t))
           ))
     ))
 ;;;remove tempo [legacy pane] wrapper
@@ -179,20 +192,26 @@
   (if (selection? self)
       (let* ((selection (car (selection? self)))
              (poly (object (om-view-container self))))
-        (cond ((voice-p selection) 
-               (setf (tempo selection) (car (str->list tree)))
-               (do-initialize-metric-sequence selection))
-              ((measure-p selection)
-               (let* ((meas (selection? self))
-                      (pere (parent selection))
-                      (newtree (replace-new-mes-tree pere (car meas) (str->list tree))))
-                 (setf (tempo pere) newtree)
-                 ))
-              (t))
+        (cond 
+         ((poly-p selection) 
+          (let ((inside (inside selection))
+                (trees (str->list tree)))
+            (loop for i in inside
+                  for tr in trees
+                  do (setf (tempo i) tr))))
+         ((voice-p selection) 
+          (setf (tempo selection) (car (str->list tree)))
+          (do-initialize-metric-sequence selection))
+         ((measure-p selection)
+          (let* ((meas (selection? self))
+                 (pere (parent selection))
+                 (newtree (replace-new-mes-tree pere (car meas) (str->list tree))))
+            (setf (tempo pere) newtree)
+            ))
+         (t))
     ;(do-initialize-metric-sequence (car poly))
         (update-panel self t)
         )
     (om-beep-msg "Please select a voice or a measure") 
     ))
 
-      
