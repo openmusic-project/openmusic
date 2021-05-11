@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ; Contributions by Mikhail Malt, Serge Lemouton
 ;=========================================================================
 
@@ -694,6 +694,35 @@ Outputs
          (xlist (if (or x1 x2) (om-scale xp (or x1 (car xp)) (or x2 (last-elem xp))) xp))
          (ylist (if (or y1 y2) (om-scale yp (or y1 (car yp)) (or y2 (last-elem yp))) yp)))
     (simple-bpf-from-list xlist ylist (type-of self) (decimals self))))
+
+
+(defmethod! bpf-stretch ((self bpf) &key (x 1) (y 1))
+  :icon 233
+  :indoc '("a BPF" "xfact" "yfact")
+  :initvals '(nil 1 1)
+  :doc "Stretches <self> X points with factor <x> and Y points with factor <y>."
+
+  (let ((minx (reduce #'min (x-points self)))
+        (maxx (reduce #'max (x-points self)))
+        (miny (reduce #'min (y-points self)))
+        (maxy (reduce #'max (y-points self))))
+    
+    (bpf-scale self
+               :x1 (* x minx) :x2  (* x maxx) 
+               :y1 (* y miny) :y2  (* y maxy))))
+
+
+(defmethod! bpf-stretch ((self bpf-lib) &key (x 1) (y 1))
+
+  (let* ((bpfs (bpf-list self))
+         (scaled-bpfs
+          (loop for i in bpfs
+                collect (bpf-stretch i :x x :y y))))
+    (make-instance 'bpc-lib 
+                   :bpf-list scaled-bpfs);;in order to accept bpc-libs also..
+    ))
+
+
 
 (defmethod* bpf-concat ((f1 bpf) (f2 bpf) &optional f2-offset f2-transpose-y)
   :initvals '(nil nil nil nil)
