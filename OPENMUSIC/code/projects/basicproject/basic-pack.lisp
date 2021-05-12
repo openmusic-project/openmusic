@@ -71,7 +71,8 @@
                               reduce-points reduce-n-points
                               bpf-offset bpf-crossfade bpf-extract bpf-scale 
                               bpf-stretch bpf-concat
-                              om-rotate om-translate om-mirror export-svg
+                              om-rotate om-translate om-mirror 
+                              export-svg import-svg
                               ) *function-package*)
 ; removed : board
 (AddClass2Pack '(bpf bpf-lib bpc bpc-lib) *function-package*     
