@@ -101,8 +101,8 @@
 ;;;===============================================
 ;;; SVG export
 ;;;===============================================
-
-
+;moved to export-import-svg.lisp file
+#|
 (defmacro with-svg-scene-to-file ((file-path scene) &body body)
   (let ((pathname (gensym)))
     `(let* ((,pathname (or ,file-path (om-choose-new-file-dialog :directory (def-save-directory)
@@ -201,13 +201,4 @@ Exports <self> to SVG format.
 				  :stroke "rgb(0, 0, 0)"
 				  :fill bpfcolorstr)))))))))
 
-
-
-
-
-
-
-
-
-
-
+|#
