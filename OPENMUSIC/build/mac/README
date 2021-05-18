@@ -40,18 +40,34 @@ inside the .app bundle's resources.
 
 NEW FEATURES
 
+- New functions added: 
+	- Curve & Functions: bpf-stretch
+ 	- Score Functions:   chord-filter, chord-list-filter, rotateprops, 
+			     new omquantify methods
+	- List Processing:   remove-nth, member-pos, n-group-list, iterate-list
+		"Utilities": all-atoms?, all-lists?, treedepth
+	- Combinatorial:     group-cons, remove-iter
+	- Audio: snd->bpf
+	
+- Completion for tty undefined box
 
 IMPROVEMENTS
 
+- Poly's tempoedit support
+- export-svg is included in the "Curves & Functions" menu
 - Editors and palettes closes with editor
 - Now 'm' also invokes legacy tempo editor for chords and rests
 - Now 'x' also invokes extra palette
 
 FIXES
 
+- Restored helpfiles from veresion 5.x (called with t)
+- Popup selection display inlet (linux)
+- fixed svg package reference error
 - fixed inspector palette (compatibilty)
 - fixed legacy tempo editor when multi tempi changes.
-- fixed extra palette (compatibilty)
+- fixed extra palette (compatibility)
+
 
 
 * RELEASE NOTES 6.18
