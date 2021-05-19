@@ -182,7 +182,7 @@ Exports <self> to SVG format.
                                              (round (* 255 (om-color-g (bpfcolor bpf))))
                                              (round (* 255 (om-color-b (bpfcolor bpf)))))))
 
-                   (print (list (second lim) (list-min ys) (list-max ys)))
+                   ;(print (list (second lim) (list-min ys) (list-max ys)))
 
 							    ;draw line
                    (loop for pt in bpf-points do
