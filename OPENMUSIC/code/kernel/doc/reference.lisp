@@ -88,7 +88,7 @@
   (om-create-directory dir)
   (setf *credit-line* (concatenate 'string
 				   "<center><font size=-2>" "Auto doc generation by OpenMusic " *version-string*
-				   " © " (subseq cl-user::*release-date* 0 4) " IRCAM"  "</font></center>"))
+				   " &copy " (subseq cl-user::*release-date* 0 4) " IRCAM"  "</font></center>"))
   (let ((title (or title (concatenate 'string "OM " *version-string*)))
         (indexpath (make-pathname :directory (pathname-directory dir)
                                   :name "index" :type "html"))
