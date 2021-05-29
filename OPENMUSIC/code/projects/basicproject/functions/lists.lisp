@@ -420,35 +420,17 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
   :indoc '("list")
   :icon 660
   :doc "Tests if a list is an all atoms list."
-  (let* ((res t) 
-         (test (if (atom lst) (setf res nil)
-                   (mapcar 'atom lst))))
-    (if (listp lst)
-    (loop 
-      for i in lst
-      while res
-          do  (if (atom i )
-                t
-                (setf res nil))))
-    res))
+  
+  (list-subtypep lst 'atom))
+
 
 (defmethod* all-lists? ((lst list))
   :initvals '((list 1 2)) 
   :indoc '("list")
   :icon 660
   :doc "Tests if a list is an all list list."
-  (let* ((res t) 
-         (test (if (atom lst) (setf res nil)
-                   (mapcar 'atom lst))))
-    (if (listp lst)
-    (loop 
-      for i in lst
-      while res
-          do  (if (listp i )
-                t
-                (setf res nil))))
-    res))
 
+  (list-subtype lst 'list))
 
 (defmethod* treedepth ((tree t))
   :initvals '((list 1 2)) 
