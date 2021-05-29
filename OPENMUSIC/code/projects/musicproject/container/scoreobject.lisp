@@ -294,6 +294,7 @@ Extraction methods.
 (defmethod dur ((self note))
   (extent->ms self))
 
+;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
   (setQValue self 1000)
   (setf (extent self) dur)
@@ -417,15 +418,15 @@ Extraction methods.
   self)
 
 
-(defmethod do-initialize ((self chord) &key LMidic LVel Loffset LDur LChan LPort)
+(defmethod do-initialize ((self chord) &key LMidic LVel LOffset LDur LChan LPort)
 
   (setQValue self 1000 :recursive nil)
 
-  (when (find-if 'atom  (list LMidic LVel Loffset LDur LChan LPort))
+  (when (find-if 'atom  (list LMidic LVel LOffset LDur LChan LPort))
     (om-beep-msg "Error CHORD attributes must be LISTS !!")
     (unless (listp LMidic) (setf LMidic (list LMidic)))
     (unless (listp LVel) (setf LVel (list LVel)))
-    (unless (listp Loffset) (setf Loffset (list Loffset)))
+    (unless (listp LOffset) (setf LOffset (list LOffset)))
     (unless (listp LDur) (setf LDur (list LDur)))
     (unless (listp LChan) (setf LChan (list LChan)))
     (unless (listp LPort) (setf LPort (list LPort))))
