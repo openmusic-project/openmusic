@@ -1,9 +1,21 @@
+* RELEASE NOTES 6.20
+
+NEW FEATURES
+
+
+IMPROVEMENTS
+
+
+FIXES
+
+
+
 * RELEASE NOTES 6.19
 
 NEW FEATURES
 
 - New functions added: 
-	- Curve & Functions: bpf-stretch
+	- Curve & Functions: bpf-stretch, import-svg
  	- Score Functions:   chord-filter, chord-list-filter, rotateprops, 
 			     new omquantify methods
 	- List Processing:   remove-nth, member-pos, n-group-list, iterate-list
@@ -23,7 +35,7 @@ IMPROVEMENTS
 
 FIXES
 
-- Restored helpfiles from veresion 5.x (called with t)
+- Restored helpfiles from version 5.x (called with t)
 - Popup selection display inlet (linux)
 - fixed svg package reference error
 - fixed inspector palette (compatibilty)
