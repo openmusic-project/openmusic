@@ -713,7 +713,15 @@ Outputs
 
 
 (defmethod! bpf-stretch ((self bpf-lib) &key (x 1) (y 1))
+  (let* ((bpfs (bpf-list self))
+         (scaled-bpfs
+          (loop for i in bpfs
+                collect (bpf-stretch i :x x :y y))))
+    (make-instance 'bpf-lib 
+                   :bpf-list scaled-bpfs);;in order to accept bpc-libs also..
+    ))
 
+(defmethod! bpf-stretch ((self bpc-lib) &key (x 1) (y 1))
   (let* ((bpfs (bpf-list self))
          (scaled-bpfs
           (loop for i in bpfs
@@ -721,8 +729,6 @@ Outputs
     (make-instance 'bpc-lib 
                    :bpf-list scaled-bpfs);;in order to accept bpc-libs also..
     ))
-
-
 
 (defmethod* bpf-concat ((f1 bpf) (f2 bpf) &optional f2-offset f2-transpose-y)
   :initvals '(nil nil nil nil)

@@ -66,10 +66,32 @@
                 (bpf-scale i
                            :x1 (+ off-x minx) :x2  (+ off-x maxx)
                            :y1 (+ off-y miny) :y2  (+ off-y  maxy))))))
-    (make-instance 'bpc-lib 
+    (make-instance 'bpf-lib 
                    :bpf-list shift-bpfs);;in order to accept bpc-libs also..
     ))
-    
+
+
+ (defmethod* pre-process-bpf ((self bpc-lib))
+  "If necessary, this will shift coordinates in order to have only positive ones."
+  (let* ((bpfs (bpf-list self))
+         (xs (mapcar #'x-points bpfs))
+         (ys (mapcar #'y-points bpfs))
+         (min-x (reduce #'min (flat xs)))
+         (min-y (reduce #'min (flat ys)))
+         (off-x (if (minusp min-x) (abs min-x) 0))
+         (off-y (if (minusp min-y) (abs min-y) 0))
+         (shift-bpfs
+          (loop for i in bpfs collect
+                (let ((minx (reduce #'min (x-points i)))
+                      (maxx (reduce #'max (x-points i)))
+                      (miny (reduce #'min (y-points i)))
+                      (maxy (reduce #'max (y-points i))))
+                (bpf-scale i
+                           :x1 (+ off-x minx) :x2  (+ off-x maxx)
+                           :y1 (+ off-y miny) :y2  (+ off-y  maxy))))))
+    (make-instance 'bpc-lib 
+                   :bpf-list shift-bpfs);;in order to accept bpc-libs also..
+    ))   
 
 ;used to auto-calculate H and w of svg-scene.
 (defmethod bpfs-limits ((self bpf-lib))
