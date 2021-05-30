@@ -430,7 +430,7 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
   :icon 660
   :doc "Tests if a list is an all list list."
 
-  (list-subtype lst 'list))
+  (list-subtypep lst 'list))
 
 (defmethod* treedepth ((tree t))
   :initvals '((list 1 2)) 
