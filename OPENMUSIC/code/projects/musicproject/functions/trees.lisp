@@ -1117,7 +1117,7 @@ Applies a rotation of <n> positions to the pulses in <tree>.
 
 (defmethod! rotate-props ((self voice) (nth integer) 
                                 &optional (option 'reduce) (output 'optimized))
-(let* ((tree (rat self))
+(let* ((tree (tree self))
        (tempo (qtempo self))
        (chords (rotate (chords self) nth))
        (rotated (rotate-props tree nth option output)))
@@ -1128,7 +1128,7 @@ Applies a rotation of <n> positions to the pulses in <tree>.
 
 
 
-(defmethod! krotate-tree*meas ((tree t) (nth t) 
+(defmethod! rotate-tree*meas ((tree t) (nth t) 
                                      &optional (option 'reduce) (output 'optimized))
    :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) 1 'reduce 'optimized)
    :indoc '("tree" "nth" "option" "output")
@@ -1154,12 +1154,12 @@ such case it will rotate rhythm nth for all measures, or list."
      (list '? (mapcar 'flat-once removed-header))))
 
 
-(defmethod! krotate-tree*meas ((self voice) (nth t) 
+(defmethod! rotate-tree*meas ((self voice) (nth t) 
                                      &optional (option 'reduce) (output 'optimized))
-(let* ((tree (rat self))
+(let* ((tree (tree self))
        (tempo (qtempo self))
        (chords (chords self))
-       (rotated (krotate-tree*meas tree nth option output)))
+       (rotated (rotate-tree*meas tree nth option output)))
   (make-instance 'voice
                  :tree rotated
                  :chords chords
@@ -1184,8 +1184,8 @@ If <mode> is equal to 'by-measure', the rotation will be applied measure by meas
 If <nth> is an atom the rotation will be for all measures by nth beat.
 If it is a list each elemt of list will be the nth rotation in each measure."
      (case mode
-       (all (krotate-tree tree nth option output))
-       (by-measure (krotate-tree*meas tree nth option output))))
+       (all (rotate-props tree nth option output))
+       (by-measure (rotate-tree*meas tree nth option output))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;TREE-CANON;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
