@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;Score Editor import-export interface
@@ -193,7 +193,7 @@
 
 
 (defmethod score-import ((format (eql 'xml)) object)
-  (let ((name (catch-cancel (om-choose-file-dialog :types '("MusicXML file" "*.xml"))))
+  (let ((name (catch-cancel (om-choose-file-dialog :types '("MusicXML file" "*.*xml"))))
         (import-obj nil))
     (when name ; (and name (stringp (pathname-type name)))
       (setf import-obj (import-musicxml name))
