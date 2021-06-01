@@ -689,12 +689,14 @@ Outputs
   :indoc '("a BPF" "xmin" "xmax" "ymin" "ymax")
   :initvals '(nil nil nil nil nil)
   :doc "Rescales <self> betwenn the supplied X (<x1>,<x2>) and/or Y (<y1>,<y2>) values."
-  (let* ((xp (x-points self))
+  (let* ((bpf-color (bpfcolor self))
+         (xp (x-points self))
          (yp (y-points self))
          (xlist (if (or x1 x2) (om-scale xp (or x1 (car xp)) (or x2 (last-elem xp))) xp))
-         (ylist (if (or y1 y2) (om-scale yp (or y1 (car yp)) (or y2 (last-elem yp))) yp)))
-    (simple-bpf-from-list xlist ylist (type-of self) (decimals self))))
-
+         (ylist (if (or y1 y2) (om-scale yp (or y1 (car yp)) (or y2 (last-elem yp))) yp))
+         (scaled (simple-bpf-from-list xlist ylist (type-of self) (decimals self))))
+    (setf (bpfcolor scaled) bpf-color)
+    scaled))
 
 (defmethod! bpf-stretch ((self bpf) &key (x 1) (y 1))
   :icon 233
