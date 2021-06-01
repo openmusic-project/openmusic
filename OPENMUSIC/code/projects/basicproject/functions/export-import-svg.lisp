@@ -29,6 +29,36 @@
 
 (in-package :om)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;tools;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;color conversion
+(defun scalecolor (n)
+  (round (* n 255)))
+
+;(scalecolor 0.5) 
+
+(defun dec2hex (n)
+  (let ((hex (write-to-string n :base 16)))
+    (if (= 1 (length hex))
+        (format nil "0~A" hex)
+      hex)))
+
+(defun conv-color (n)
+  (dec2hex (scalecolor n)))
+
+
+(defmethod omcolor->hex ((self oa::omcolor))
+  (let ((r (conv-color (om-color-r self)))
+        (g (conv-color (om-color-g self)))
+        (b (conv-color (om-color-b self))))
+    (format nil "#~A~A~A" r g b)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;faire un  pre-process du bpf-lib:
 ;; valeurs >  0 .. Multiplier les x (bpf-scale)
 ;; pour les Ys idem.... pas de valeurs negatives.
@@ -148,10 +178,7 @@ Exports <self> to SVG format.
              (scene (cl-svg::make-svg-toplevel 'cl-svg::svg-1.1-toplevel :height h :width w))
              (prev_p nil)
              (path (cl-svg::make-path))
-             (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
-				    (round (* 255 (om-color-r (bpfcolor self))))
-				    (round (* 255 (om-color-g (bpfcolor self))))
-				    (round (* 255 (om-color-b (bpfcolor self)))))))
+             (bpfcolorstr (omcolor->hex (bpfcolor self))))
         ;draw line
         (loop for pt in bpf-points do
               (cl-svg::with-path path
@@ -199,10 +226,7 @@ Exports <self> to SVG format.
                                                             )))
                         (prev_p nil)
                         (path (cl-svg::make-path))
-                        (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
-                                             (round (* 255 (om-color-r (bpfcolor bpf))))
-                                             (round (* 255 (om-color-g (bpfcolor bpf))))
-                                             (round (* 255 (om-color-b (bpfcolor bpf)))))))
+                        (bpfcolorstr (omcolor->hex (bpfcolor bpf))))
 
                    ;(print (list (second lim) (list-min ys) (list-max ys)))
 
