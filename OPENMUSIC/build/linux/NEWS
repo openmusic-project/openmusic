@@ -5,8 +5,13 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Now export-svg exports bpf's color
 
 FIXES
+
+- import-musicxml open file shows all *.*xml types
+- fixed typo error in rotateprops 
+- fixed bug in all-list?
 
 
 
