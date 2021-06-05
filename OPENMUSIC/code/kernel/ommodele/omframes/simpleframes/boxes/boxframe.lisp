@@ -889,6 +889,11 @@
     (setf (name (object self)) new-name)
     new-name)
   
+(defmethod close-frame ((self instBoxframe))
+   "Called when you delete an instboxframe will close listeditor."
+   (if (attached-objs (object self)) 
+   (om-close-window (car (attached-objs (object self)))))
+   (setf (frames (object self)) nil))
 ;----------------------------------------
 
 (defclass slotboxFrame (boxframe) ()

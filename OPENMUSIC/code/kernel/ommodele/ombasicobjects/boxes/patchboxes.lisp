@@ -1531,7 +1531,27 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      rep))
 
 (defmethod OpenEditorframe ((self OMBoxInstance))
-  (OpenObjectEditor (reference self)) nil)
+  (let ((win (OpenObjectEditor (reference self)))) 
+    win
+  (push win (attached-objs self))
+  nil))
+
+
+(defmethod OpenObjectEditor ((self OMListInstance)) 
+   (setf (EditorFrame self) (OpenEditorframe self))
+   (when (EditorFrame self)
+     (om-select-window (window (Editorframe self)))))
+
+
+(defmethod OpenObjectEditor ((self OMInstance)) 
+  (setf (EditorFrame self) (OpenEditorframe self))
+  (when (EditorFrame self)
+    (let ((win (window (Editorframe self))))
+      (om-select-window win))
+    (if (equal (type-of self) 'ominstance)
+        (push (editorframe (object (car (frames self))))
+              (attached-editors (om-view-container (om-view-container (car (frames self))))))
+      )))
 
 
 ;--------------Evaluation
