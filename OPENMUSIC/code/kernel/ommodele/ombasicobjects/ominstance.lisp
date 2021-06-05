@@ -223,7 +223,7 @@ the only reason is that  list are draw as a tabler.#enddoc#
 #seealso# (OMInstance) #seealso#"))
 
 (defmethod propagate-changes ((self t) accse val)
-   "When you edit graphicly an instance whiwh is an slot of another one you must propagate
+   "When you edit graphicly an instance which is a slot of another one you must propagate
 these changements, this method is called for OMInstances and OMconstants"
    (eval `(setf (,accse ,(instance self)) ',val))
    ;;; ???
@@ -232,7 +232,7 @@ these changements, this method is called for OMInstances and OMconstants"
    )
 
 (defmethod propagate-changes ((self OMlistinstance) accse val)
-   "When you edit graphicly an instance whiwh is an slot of another one you must propagate
+   "When you edit graphicly an instance which is a slot of another one you must propagate
 these changements, this method is called for OMlistInstance"
    (if (listp accse)
      (setf (nth (first accse) (nth (second accse) (instance self))) val)
