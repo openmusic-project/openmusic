@@ -224,7 +224,7 @@ durtot etant la duree du group parent"
 (defun reduce-num-den-fig (list)
   "Reduces binary ratios and fig dedoubles. C-a-d 
 si on a (14 8 1/16) il retourne (7 4 1/8)"
-  (if (= (car list) (second list)) list
+  ;(if (= (car list) (second list)) list ;dans le cas de (2 2 1/4) faut-il (1 1 1/4) ?
     (let ((res list))
       (setf res
             (list (/ (car res) 2)
@@ -236,7 +236,8 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                 (* 2 (second res))
                 (/ (third res) 2))
         (reduce-num-den-fig res)
-        ))))
+        )))
+;)
 
 
 (defmethod get-group-info ((self om::group))
@@ -354,77 +355,71 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
         "</articulations>"))
 
 (defun groupnotation (self)
-  (list "<notations>"
-        (if (in-group? self)
-            (let* ((lvl (get-grp-level self))
-                   (ratio (getratiogroup (om::parent self)))
-                   (act-note (second lvl))
-                   (norm-note (third lvl))
-                   (indx (car lvl))
-                   (numdeno (getallgroups self))
-                   (numdenom (remove nil 
-                                     (loop for i in numdeno
-                                           collect (if (not (= 1 (/ (car i) (second i)))) i )   ;;; PB if group (n n) !!!
-                                           )))
-                   (simpli (/ act-note norm-note)))
-               
-              (if (not (= (/ act-note norm-note) 1))
-                  
-                  (cond 
-                   ((and (om::last-of-group? self) (om::first-of-group? self))
-                    (when (accent? self) (list (accent-notation self))))
-             
-                   ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-                    (remove nil 
-                            (append 
-                             (let ((obj self)
-                                   (indx (+ (length numdenom) 1)))
-                               (remove nil (loop for i in (reverse numdenom)           
-                                                 append (progn 
-                                                          (setf obj (om::parent obj))
-                                                          (setf indx (- indx 1))
-                                                          (when (first-of-this-group self obj)
-                                                            (firstofgroup (car i) (second i) (third i) indx))))))
-                             (list (tied-notation self)
-                                   (when (accent? self) (accent-notation self))))))
+   (list "<notations>"
+         (if (in-group? self)
+             (let* ((lvl (get-grp-level self))
+                    (ratio (getratiogroup (om::parent self)))
+                    (act-note (second lvl))
+                    (norm-note (third lvl))
+                    (indx (car lvl))
+                    (numdeno (getallgroups self))
+                    (numdenom (remove nil 
+                                      (loop for i in numdeno
+                                            collect (if (not (= 1 (/ (car i) (second i)))) i) 
+                                            )))
+                    (simpli (/ act-note norm-note)))
+
+               (if (not (= (/ (car ratio) (second ratio)) 1))
+                   (cond 
+                    ((and (om::last-of-group? self) (om::first-of-group? self))
+                     (when (accent? self) (list (accent-notation self))))
+                    ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
+                     (remove nil 
+                             (append 
+                              (let ((obj self)
+                                    (indx (+ (length numdenom) 1)))
+                                (remove nil (loop for i in (reverse numdenom)           
+                                                  append (progn 
+                                                           (setf obj (om::parent obj))
+                                                           (setf indx (- indx 1))
+                                                           (when (first-of-this-group self obj)
+                                                             (firstofgroup (car i) (second i) (third i) indx))))))
+                              (list (tied-notation self)
+                                    (when (accent? self) (accent-notation self))))))
+                    ((and (om::last-of-group? self) (not (om::first-of-group? self)))
+                     (remove nil 
+                             (append 
+                              (let ((obj self)
+                                    (indx (+ (length numdenom) 1)))
+                                (remove nil (loop for i in numdenom           
+                                                  append (progn 
+                                                           (setf obj (om::parent obj))
+                                                           (setf indx (- indx 1))
+                                                           (when (last-of-this-group self obj)
+                                                             (lastofgroup indx))))))
+                              (list (tied-notation self)
+                                    (when (accent? self) (accent-notation self))))))
                    
-                   ((and (om::last-of-group? self) (not (om::first-of-group? self)))
-                    (remove nil 
-                            (append 
-                             (let ((obj self)
-                                   (indx (+ (length numdenom) 1)))
-                               (remove nil (loop for i in numdenom           
-                                                 append (progn 
-                                                          (setf obj (om::parent obj))
-                                                          (setf indx (- indx 1))
-                                                          (when (last-of-this-group self obj)
-                                                            (lastofgroup indx))))))
-                             (list (tied-notation self)
-                                   (when (accent? self) (accent-notation self))))))
-                   
-                   (t (when (accent? self) (list (accent-notation self))))
-                   )
+                    (t (when (accent? self) (list (accent-notation self)))))
 
-                (when (or (tied? self) (accent? self))
-                  (remove nil 
-                          (list 
-                           (when (tied? self) (tied-notation self))
-                           (when (accent? self) (accent-notation self)))))
-                ))
-
-
-          (when (or (tied? self) (accent? self))
-            (remove nil 
-                    (list 
-                     (when (tied? self) (tied-notation self))
-                     (when (accent? self) (accent-notation self)))))
-          )
+                 (when (or (tied? self) (accent? self))
+                   (remove nil 
+                           (list 
+                            (when (tied? self) (tied-notation self))
+                            (when (accent? self) (accent-notation self)))))
+                 ))
+           
+           (when (or (tied? self) (accent? self))
+             (remove nil 
+                     (list 
+                      (when (tied? self) (tied-notation self))
+                      (when (accent? self) (accent-notation self)))))
+           )
         
-        ;;; VEL
-        (velocity-as-xml self)
-        
-        "</notations>"
-        ))
+         ;;; VEL
+         (velocity-as-xml self)
+         "</notations>"
+         ))
 
 
 (defun get-parent-measure (self)
@@ -626,19 +621,65 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
     (1/128 128th) (1/256 256th)
     (1/512 512th)(1/1024 1024th)))
 
-;;;-------</NOTE HEADS>--------
 
-;;;-------<MISC>--------
+;;;-------</EXTRAS>------------------
+;;;-------</EXTRA NOTE HEADS>--------
+;By courtesy of jialinliu
+
+(setf *om-head-text=>xml-head-text*    ;for finale v26  .. before dot. is the charactor for the notehead in om (see the font OMheads), after dot, is the expression of notehead in finale (engrave->export->find "notehead"). You could add items into this list..  
+      '(("`" . ">x<")
+        ("b" . " filled=\"no\">rectangle<")
+        ("e" . " filled=\"yes\">rectangle<")
+        ("d" . " filled=\"yes\">diamond<")
+        ("c" . " filled=\"no\">diamond<")
+        ("i" . " filled=\"yes\">circle<")
+        ("h" . " filled=\"no\">circle<")
+        ("f" . " filled=\"yes\">triangle<")
+        ("g" . " filled=\"no\">triangle<")
+        ))
+
+(defun head-extras-as-xml (self) 
+  (when (om::get-extras self "head")
+    (list (format nil "<notehead~A/notehead>" (cdr (assoc (om::thehead (car (om::get-extras self "head"))) *om-head-text=>xml-head-text* :test #'equal))))))
+
+;;;-------</EXTRA VELS>------------
+;By courtesy of jialinliu
+
+(setf *om-vel-text=>xml-dyn-text*    ;for finale v26  .. is the keyword for the dynamics in om (see the vel-extra), and expression of dynamics in finale (engrave->export->find "dynamics"), at the end is the velocity value. 
+      '((:fff "fff" 127)
+        (:ff "ff" 101)
+        (:f "f" 88)
+        (:mf "mf" 75)
+        (:mp "mp" 62)
+        (:p "p" 49)
+        (:pp "pp" 36)
+        (:ppp "ppp" 23)))
+
+(defun vel-extras-as-xml (self) 
+  (when (om::get-extras self "vel")
+    (let ((dyn-info (cdr (assoc (om::dynamics (car (om::get-extras self "vel"))) *om-vel-text=>xml-dyn-text*))))
+      (list "<direction placement=\"below\">"
+            "<direction-type>"
+            "<dynamics default-x=\"310\" default-y=\"-106\" halign=\"center\">"
+            (format nil "<~A/>" (car dyn-info))
+            "</dynamics>" 
+            "</direction-type>"
+            (format nil "<sound dynamics=\"~d\"/>" (cadr dyn-info))
+            "</direction>"
+            ))))
+
+;;;-------</EXTRA TEXT>------------
 
 (defun text-extras-as-xml (self) 
   (when (om::get-extras self "text")
     (list "<lyric default-y=\"-80\" justify=\"left\" number=\"1\">" 
           (list  "<syllabic>single</syllabic>"
                  (format nil "<text>~A</text>" (om::thetext (car (om::get-extras self "text"))))
-                 "<extend type=\"start\"/>")
+                 ;"<extend type=\"start\"/>"
+                 )
           "</lyric>")))
 
-
+;maybe not needed anymore (see above):
 (defmethod velocity-as-xml ((self om::chord))
   (when (om::get-extras self "vel")
     
@@ -699,10 +740,11 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                     headstr)
                                   (when (find alteration *note-accidentals* :key 'car)  ;;; accidental (if any)
                                     (format nil "<accidental>~A</accidental>" (cadr (find alteration *note-accidentals* :key 'car))))
-                                  (format nil "<instrument id=\"P~D-I~D\"/>" part (om::chan note))
+                                 ; (format nil "<instrument id=\"P~D-I~D\"/>" part (om::chan note))
                                   )
                             (time-modifications self)
-                            (makebeam self)
+                            (when (= i 0) (head-extras-as-xml self))
+                            (makebeam self) 
                             (groupnotation self)
                             (when (= i 0) (text-extras-as-xml self))
                             ))
@@ -880,7 +922,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                           ,(loop for ch in channels append
                                  `(
                                    ,(format nil "<score-instrument id=\"P~D-I~D\">" voice-num ch)
-                          ;("<instrument-name>Grand Piano</instrument-name>")
+                                   ("<instrument-name>MusicXML Default 1</instrument-name>")
                                    "</score-instrument>"
                                    ))
                           ,(loop for ch in channels append
