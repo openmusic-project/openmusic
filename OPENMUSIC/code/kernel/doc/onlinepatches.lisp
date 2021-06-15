@@ -37,7 +37,10 @@
       (unless (probe-file path) 
         (setf path (make-pathname :directory (append (pathname-directory (lib-pathname lib)) (list "online")))))
       (namestring path))
-    (make-pathname :directory (append (pathname-directory *om-root*) (list "resources" "online")))))
+    (make-pathname :directory (append (pathname-directory *om-root*) (list 
+                                                                      #+macosx(format nil "OM ~D.app" *om-version*) 
+                                                                      #+macosx "contents" 
+                                                                      "resources" "online")))))
     
 ;a verifier en LInux
 (defun open-tutorial (path)
