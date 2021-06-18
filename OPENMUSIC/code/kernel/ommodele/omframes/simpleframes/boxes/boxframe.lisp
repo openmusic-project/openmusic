@@ -1064,7 +1064,7 @@
 (defmethod om-dialog-item-action ((self edit-comment)) 
  (exit-from-dialog self (om-dialog-item-text self)))
 
-;;; remove text-viex from the panel
+;;; remove text-view from the panel
 (defmethod exit-from-dialog  ((self edit-comment) new-text-item)
 
    (let ((theeditor (editor (om-view-container self))))
