@@ -5,6 +5,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- export-nusicxml extra note heads support
+- Now all ListInstancesBoxes closes when assosiated boxes are destroyed
 - Now export-svg exports bpf's color
 
 FIXES
