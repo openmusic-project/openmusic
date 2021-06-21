@@ -219,7 +219,7 @@
    (declare (ignore where))
    (if (allow-rename (object (icon-finder self)))
      (change-name-box (icon-finder self))
-     (om-beep-msg (format nil "~A boxes can not be renamed!" (type-of (object (icon-finder self))))))
+     (om-beep-msg (format nil "~A boxes cannot be renamed!" (type-of (object (icon-finder self))))))
    t)
   
 (defmethod om-view-click-handler ((self box-dialog-name) where)
