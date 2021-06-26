@@ -43,7 +43,7 @@
               (* 2 (second res)))
       (reduce-num-den res)
       )))
-
+#|
 (defmethod get-group-ratio ((self group))
    (let* ((tree (tree self))
           (extent (car tree))
@@ -60,9 +60,23 @@
              addition
            (reduce-num-den addition)))   ;;; modif kh 10/2016
       )))
+|#
 
+;This fixes display bug on (? (((5 5) (1 1 1 1)))) tree
 
-
+(defmethod get-group-ratio ((self group))
+   (let* ((tree (tree self))
+          (extent (car tree))
+          (addition (loop for item in (second tree) sum (floor (abs (if (listp item) (car item) item))))))
+     (cond
+      ((= (round (abs addition)) 1) nil)
+      ((integerp (/ extent addition)) addition)
+      ;; never happen
+      ((and (integerp (/ extent addition)) 
+             (or (power-of-two-p (/ extent addition))
+                 (and (integerp (/ addition extent)) 
+                      (power-of-two-p (/ addition extent)))))  nil)
+      (t addition))))
 
 
 
