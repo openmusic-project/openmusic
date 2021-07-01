@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 
@@ -207,7 +207,8 @@
 
 (defmethod score-update-miniview ((self t) value)
   (when (minipict self) (om-kill-picture (minipict self)) (setf (minipict self) nil))
-  (if (not (equal (type-of value) 'midifile))
+  (if (and (not (equal (type-of value) 'midifile))
+           (not (equal (type-of value) 'eventmidi-seq)))
       (setf (minipict self)  (cons-mini-pict value self (mv-font-size value) (mv-view-size value self))))
   (om-invalidate-view self t))
 
