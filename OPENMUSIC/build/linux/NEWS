@@ -11,6 +11,8 @@ IMPROVEMENTS
 
 FIXES
 
+- fixed midievent-seq miniview
+- fixed get-group-ratio method
 - import-musicxml open file shows all *.*xml types
 - fixed typo error in rotateprops 
 - fixed bug in all-list?
