@@ -11,6 +11,8 @@ IMPROVEMENTS
 
 FIXES
 
+- enabled internal pict resources in picture dialog
+- updated MathTools tutorials
 - fixed midievent-seq miniview
 - fixed get-group-ratio method
 - import-musicxml open file shows all *.*xml types
