@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson. Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -299,7 +299,7 @@
 (defvar *boxedit-pict* "The picture used in the editor boxes")
 (defvar *graph-pres* "Presentation pict")
 (defvar *om-def-pict* nil "Default pict when picture not found")
-
+(defvar *om-logo-pict* nil "Tutorials OM logo pict")
 
 (defun init-all-pict ()
    (setf *play-controls-pict* (om-load-and-store-picture "play-controls" 'internal))
@@ -310,11 +310,29 @@
    (setf *ctrl-impulsion-pict* (om-load-and-store-picture "ctrlimpulsion" 'kernel))
    (setf *maquette-pict* (om-load-and-store-picture "maq-pal" 'internal)) 
    (setf *boxedit-pict* (om-load-and-store-picture "editorpict" 'kernel))
-   (setf *om-def-pict* (om-load-and-store-picture "def-pict" 'kernel))) 
+   (setf *om-def-pict* (om-load-and-store-picture "def-pict" 'kernel))
+   (setf *om-logo-pict* (om-load-and-store-picture "om3" 'kernel))) 
 
 (om-add-init-func 'init-all-pict)
 
 ; (init-all-pict)
+
+;try and put the tutorial picts in a separate folder.
+;declare then a sub folder in *om-pict-folder*
+(defun load-tuto-pictures ()
+  (let ((pictdir (make-pathname :directory (append (pathname-directory *om-resources-folder*)
+                                                   (list "pict")))))
+    (when (probe-file pictdir)
+      (loop for file in (om-directory pictdir) do 
+            (when (om-pict-p file)
+              (om-load-and-store-picture (pathname-name file) 'kernel)
+              ))
+      )
+  ))
+
+(om-add-init-func 'load-tuto-pictures)
+
+;(load-tuto-pictures)
 
 
 (defun load-lib-pictures (omlib)

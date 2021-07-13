@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -74,7 +74,7 @@ The same contextual menu allow to choose to save or not the contents of the pict
    :indoc nil
    :doc "load a pict file"
    :icon 148
-  (let* ((pict-info (choose-resource-dialog :pict :kernel nil :user t))
+  (let* ((pict-info (choose-resource-dialog :pict :kernel t :user t));;changed
          name)
     (when (consp pict-info)
         ;(setf name (intern (string+ (string (third pict-info)) "-" (string (first pict-info)))))
@@ -211,8 +211,9 @@ Exports as a raw bitmap (TIF format)
 
 (defmethod om-get-menu-context ((self PictboxFrame))
   (list (om-new-leafmenu  "Set as Background Picture" #'(lambda () (pict2bkg self)))
-        (pict-save-menu (object obself))))
+        (pict-save-menu (object self))))
 
+;disabled
 ;(defun pict-save-menu (box)
 ;  (om-new-leafmenu (if (get-edit-param box 'save-data) "Do Not Save Picture Data with Patch" "Save Picture Data with Patch")
 ;                   #'(lambda () (set-edit-param box 'save-data (not (get-edit-param box 'save-data)))

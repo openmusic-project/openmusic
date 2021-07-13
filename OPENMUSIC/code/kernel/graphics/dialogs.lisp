@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 
@@ -695,9 +695,12 @@ External Libraries:
       
       (setf listkernel (if (equal resource-type :icon) 
                            (om-get-all-icons-id)
-                         (om-loaded-pictures #'(lambda (type) (not (member type '(user internal di)))))))
-      (setf scrollkernel (om-make-dialog-item 'om-single-item-list 
-                                              (om-make-point 180 30) 
+                         (om-loaded-pictures #'(lambda (type) (not (member type '(user internal di)))))
+                         
+                         ))
+      
+      (setf scrollkernel (om-make-dialog-item 'om-single-item-list
+                                              (om-make-point (if user 330 190) 30) 
                                               (om-make-point 130 128) 
                                               "OM Resources"     
                                               :scrollbars :v
@@ -725,7 +728,7 @@ External Libraries:
                                               :container thedialog
                                               ))
       (setf kerneltxt (om-make-dialog-item 'om-static-text 
-                                           (om-make-point 180 6) 
+                                           (om-make-point 330 6)
                                            (om-make-point 130 20) 
                                            "OM Resources"  
                                            :font *controls-font*
@@ -741,8 +744,8 @@ External Libraries:
                            when (om-pict-p file)
                            collect (om-namestring (pathname-name file))))
       (setf scrolluser (om-make-dialog-item 'om-single-item-list 
-                                            (om-make-point (if kernel 330 190) 30) 
-                                            (om-make-point 130 110) 
+                                             (om-make-point 185 30) 
+                                             (om-make-point 130 128) 
                                             "User Resources"  
                                             :scrollbars :v
                                             :di-action (om-dialog-item-act item
@@ -765,7 +768,7 @@ External Libraries:
                                             :container thedialog
                                             ))
       (setf usertxt (om-make-dialog-item 'om-static-text 
-                                         (om-make-point (if kernel 330 190) 6) 
+                                         (om-make-point (if kernel 180 330) 6) 
                                          (om-make-point 120 16) 
                                          "User Resources"    
                                          :font *controls-font*
@@ -773,7 +776,7 @@ External Libraries:
                                          ;:bg-color *om-window-def-color*
                                          ))
       (om-add-subviews thedialog 
-                       (om-make-dialog-item 'om-button (om-make-point (if kernel 380 240) 142) (om-make-point 40 24)  "+" 
+                       (om-make-dialog-item 'om-button (om-make-point (if kernel 235 380) 162) (om-make-point 40 24)  "+" 
                                             :di-action (om-dialog-item-act item
                                                          (let ((file (om-choose-file-dialog :prompt "Select an image to import")))
                                                            (when file
@@ -805,7 +808,7 @@ External Libraries:
  Please check the original file has type/extension ~s" (if (equal resource-type :icon) *om-icon-type* *om-pict-type*)))
                                                              ))))
                                             )
-                       (om-make-dialog-item 'om-button (om-make-point (if kernel 420 280) 142) (om-make-point 40 24)  "-" 
+                       (om-make-dialog-item 'om-button (om-make-point (if kernel 275 420) 162) (om-make-point 40 24)  "-" 
                                             :di-action (om-dialog-item-act item
                                                          (when (om-get-selected-item scrolluser)
                                                            (let* ((file (om-get-resource-file (om-get-selected-item scrolluser)
