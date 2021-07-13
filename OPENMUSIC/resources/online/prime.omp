@@ -1,58 +1,6 @@
-;fileheader
-; (5.11 :patc (om-make-point 342 597) (om-make-point 3 44) (om-make-point 490 415) "non documentation" 183)
-;endfileheader
-(in-package :om)(load-lib-for 'nil)(setf *om-current-persistent* (om-load-patch1 "prime" '((om-load-boxcomment "comment3" (om-make-point 59 34) '"will return$? OM->t$" "" (om-make-point 137 297) nil (om-make-color 0 0 0) (om-make-font "Arial" 10 :family nil :style 'nil :mode '(:srcor))) (om-load-boxcall 'genfun "PRIME?" 'prime? '((om-load-inputfun 'input-funbox "number" "N" 0)) (om-make-point 142 233) nil nil nil nil 1) (om-load-boxcall 'bastype "list" 'list 'nil (om-make-point 149 194) (om-make-point 26 24) 13 "13" nil) (om-load-boxcall 'bastype "list" 'list 'nil (om-make-point 228 194) (om-make-point 26 24) 123 "123" nil) (om-load-boxcall 'genfun "PRIME?" 'prime? '((om-load-inputfun 'input-funbox "number" "N" 0)) (om-make-point 221 233) nil nil nil nil 1) (om-load-boxcomment "comment3" (om-make-point 59 34) '"will return$? OM->nil$" "" (om-make-point 215 298) nil (om-make-color 0 0 0) (om-make-font "Arial" 10 :family nil :style 'nil :mode '(:srcor))) (om-load-boxcomment "comment1" (om-make-point 268 71) '"Tests if <number> is a prime number. <number> must be smaller than 99460729." "" (om-make-point 102 135) nil (om-make-color 0 0 0) (om-make-font "Arial" 10 :family nil :style 'nil :mode '(:srcor))) (om-load-boxcomment "comment2" (om-make-point 100 27) '"prime?" "" (om-make-point 194 10) nil (om-make-color 0 0 0) (om-make-font "Arial" 14 :family nil :style '(:bold) :mode '(:srcor))) (om-load-boxcomment "comment" (om-make-point 319 69) '"INPUT$n    number$OUTPUT$returns  t if <n> is a prime number or nil if <n> is not a prime number$" "" (om-make-point 113 53) nil (om-make-color 0 0 0) (om-make-font "Arial" 10 :family nil :style 'nil :mode '(:srcor)))) '((2 0 1 0 nil 0) (3 0 4 0 nil 0)) (list (let ((newpict (make-instance 'patch-picture :name 'kernel-om3))) (setf (thepict newpict) (om-get-picture 'kernel-om3)) (setf (name newpict) 'kernel-om3) (setf (pict-pos newpict) (om-make-point 3 33)) (setf (pict-size newpict) (om-make-point 98 83)) newpict)) 5.11))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+; OM File Header - Saved 2021/07/13 17:02:35
+; (6.2 :patc (om-make-point 24 24) (om-make-point 0 0) (om-make-point 499 406) "" 183 0 nil "2021/07/13 17:02:35")
+; End File Header
+; External resources 
+; (list (list (quote :picture) "#P\"../../../../openmusic/OPENMUSIC/resources/pict/om3\""))
+(in-package :om)(load-lib-for (quote nil))(setf *om-current-persistent* (om-load-patch1 "prime" (quote ((let ((box (om-load-editor-box1 "TEXT-BOX 2" (quote text-box) (quote ((om-load-inputfun (quote input-funbox) "dialog-item text (string)" "text" "untitled"))) (om-make-point 134 299) (om-make-point 51 40) (om-make-dialog-item (quote text-box) (om-make-point 1 1) (om-make-point 23 21) "t" :font (om-make-font "Liberation Sans" 11.0D0 :family "Liberation Sans" :style (quote (:plain)) :mode (quote nil))) nil nil (pairlis (quote (winsize winpos)) (list (om-make-point 335 275) (om-make-point 10 40))) nil nil nil nil))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-editor-box1 "TEXT-BOX" (quote text-box) (quote ((om-load-inputfun (quote input-funbox) "dialog-item text (string)" "text" "untitled"))) (om-make-point 213 300) (om-make-point 51 40) (om-make-dialog-item (quote text-box) (om-make-point 1 1) (om-make-point 23 21) "nil" :font (om-make-font "Liberation Sans" 11.0D0 :family "Liberation Sans" :style (quote (:plain)) :mode (quote nil))) nil nil (pairlis (quote (winsize winpos)) (list (om-make-point 335 275) (om-make-point 10 40))) nil nil nil nil))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcall (quote genfun) "PRIME?" (quote prime?) (quote ((om-load-inputfun (quote input-funbox) "number" "N" 0))) (om-make-point 142 233) nil nil nil nil 1))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcall (quote bastype) "list" (quote list) (quote nil) (om-make-point 149 194) (om-make-point 32 30) 13 "13" nil))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcall (quote bastype) "list" (quote list) (quote nil) (om-make-point 224 194) (om-make-point 38 30) 123 "123" nil))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcall (quote genfun) "PRIME?" (quote prime?) (quote ((om-load-inputfun (quote input-funbox) "number" "N" 0))) (om-make-point 221 233) nil nil nil nil 1))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcomment "comment1" (om-make-point 279 45) (quote "Tests if <number> is a prime number. <number> must be smaller than 99460729.") "" (om-make-point 102 135) nil (om-make-color 0 0 0) (om-make-font "Arial" 12.0D0 :family "Arial" :style (quote (:plain)) :mode (quote nil))))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcomment "comment2" (om-make-point 100 27) (quote "prime?") "" (om-make-point 194 10) nil (om-make-color 0 0 0) (om-make-font "Arial" 18.666666666666665D0 :family "Arial" :style (quote (:bold)) :mode (quote nil))))) (when (fboundp (quote set-active)) (set-active box nil)) box) (let ((box (om-load-boxcomment "comment" (om-make-point 319 69) (quote "INPUT$n    number$OUTPUT$returns  t if <n> is a prime number or nil if <n> is not a prime number$") "" (om-make-point 153 53) nil (om-make-color 0 0 0) (om-make-font "Arial" 12.0D0 :family "Arial" :style (quote (:plain)) :mode (quote nil))))) (when (fboundp (quote set-active)) (set-active box nil)) box))) (quote ((2 0 0 0 nil 0) (5 0 1 0 nil 0) (3 0 2 0 nil 0) (4 0 5 0 nil 0))) (list (let ((newpict (make-instance (quote patch-picture) :name "om3" :source (quote kernel) :pict-pathname (restore-pict-path (restore-path nil)) :thepict (om-get-picture "om3" (quote kernel)) :storemode :external :draw-params (quote (p 0 0 100 100)) :extraobjs nil))) (setf (pict-pos newpict) (om-make-point 44 44)) (setf (pict-size newpict) (om-make-point 98 82)) newpict)) 6.2))
