@@ -721,7 +721,9 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
            (let* ((note-values (mc->xmlvalues (om::midic note) approx))
                   (step (nth 1 note-values))
                   (alteration (nth 2 note-values))
-                  (octave (nth 3 note-values)))
+                  (octave (nth 3 note-values))
+                  (extra-head (head-extras-as-xml note))
+                  )
                          
              (list (format nil "<note dynamics=\"~D\">" (midi-vel-to-mxml-vel (om::vel note)))
                    (unless (= i 0) "<chord/>") ;;; if this is not the first note in the chord
@@ -743,7 +745,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                  ; (format nil "<instrument id=\"P~D-I~D\"/>" part (om::chan note))
                                   )
                             (time-modifications self)
-                            (when (= i 0) (head-extras-as-xml self))
+                            (if extra-head extra-head)
                             (makebeam self) 
                             (groupnotation self)
                             (when (= i 0) (text-extras-as-xml self))
