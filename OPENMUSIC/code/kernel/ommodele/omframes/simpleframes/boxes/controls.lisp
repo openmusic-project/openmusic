@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -89,20 +89,27 @@
 (defparameter *om-box-name-completion* t)
 (defparameter *all-om-pack-symbols* nil)
 (defparameter *all-cl-pack-symbols* nil)
+(defparameter *all-oa-pack-symbols* nil)
 
 ;;; Gets all symbol names in package
 
-(defmethod get-name ((self function)) (string-downcase (function-name self)))
-(defmethod get-name ((self class)) (string-downcase (class-name self)))
-(defmethod get-name ((self symbol)) (string-downcase (symbol-name self)))
-
-
 (defmethod get-all-symbol-names ((self OMPackage))
-  (remove nil (append (mapcar 'get-name (functions self))
-                      (mapcar 'get-name (classes self))
-                      (loop for item in (subpackages self) append (get-all-symbol-names item)))))
+  (remove nil (append (mapcar 'function-name (functions self))
+                      (mapcar 'class-name (classes self))
+                        (loop for item in (subpackages self) append (get-all-symbol-names item)))))
 
-; (get-all-symbol-names *om-package-tree*)
+
+(defun prefix-symb-names (name)
+  "remove om:: prefix and adds external package prefixes"
+        (if (or (equal (find-package :om) (symbol-package name)) 
+                (equal (find-package :common-lisp) (symbol-package name))
+                (equal (find-package :oa) (symbol-package name))) 
+            (string-downcase name)
+          (let* ((pkg (string-downcase
+                       (package-name
+                        (symbol-package name)))))
+            (format nil "~A::~A" pkg name))))
+
 
 
 (defun get-cl-defs ()
@@ -117,31 +124,46 @@
           (loop for i in filt collect (format nil "~S" i)))
     ))
 
-(defun om-set-pack-symbols ()
-  (get-cl-defs)
-  (setf *all-om-pack-symbols*
-        (sort (append
-               (get-all-symbol-names *om-package-tree*)
-               (list "maquette" "patch") ;add special calls
-               *all-cl-pack-symbols*
-               ) 'string<)))
-
-;(om-set-pack-symbols)
-
-
-;!!!!
-(defun get-lisp-func-pack (pack)
-  (let* ((pacs (flat (butlast(subpackages *om-package-tree*))))
-         (inside (remove nil (mapcar 'functions (remove nil (flat (mapcar #'subpackages pacs)))))))
-    (mapcar #'string-downcase (flat (mapcar 'name (flat inside))))
+(defun get-oa-defs ()
+  "cl definitions, like mapcar, etc.."
+  (let* ((symb (let (symbols)
+                 (do-symbols (s (find-package :oa))
+                   (push s symbols))
+                 (sort symbols 'string<)))
+         (filt (remove nil
+                       (loop for i in symb
+                             collect (if (not (search "common-lisp::" (format nil "~S" i))) i)))))
+    (setf *all-oa-pack-symbols* 
+          (loop for i in filt collect (format nil "~S" i)))
     ))
-;(get-lisp-func-pack  *om-package-tree*) 
 
+(defun update-pack-symbols ()
+  (let ((formated
+         (loop for i in (get-all-symbol-names *om-package-tree*)
+               collect (prefix-symb-names i))))
+    
+;  (get-cl-defs)
+    (setf *all-om-pack-symbols*
+          (sort (append
+                 formated
+                 (list "maquette" "patch") ;add special calls
+                 *all-cl-pack-symbols* 
+                 *all-oa-pack-symbols* 
+                 ) 'string<))))
 
+;(update-pack-symbols)
+
+(defun init-all-defs ()
+  (get-cl-defs)
+  (get-oa-defs)
+  (update-pack-symbols))
+
+;load all defs
+(init-all-defs)
 
 (defun box-name-completion (string)
   (if (and *om-box-name-completion* (>= (length string) 1))
-      (let ((all-str (or *all-om-pack-symbols* (om-set-pack-symbols))))
+      (let ((all-str (or *all-om-pack-symbols* (update-pack-symbols))))
         (remove-if #'(lambda (str) (not (equal 0 (search string str :test 'string-equal)))) all-str))
     ;:destroy
     ))

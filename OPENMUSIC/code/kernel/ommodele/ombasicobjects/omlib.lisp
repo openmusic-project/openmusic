@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -140,6 +140,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
               (load-lib-pictures self)
               (ignore-errors (gen-lib-reference self))
               (hide-message-win)
+              (update-pack-symbols);here for completion
               (setf (loaded? self) t)
               ))
         (om-message-dialog (format nil "Error while loading the library ~A:~%The init file ~s does not exist." 
