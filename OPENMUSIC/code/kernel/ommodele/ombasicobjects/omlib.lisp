@@ -140,7 +140,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
               (load-lib-pictures self)
               (ignore-errors (gen-lib-reference self))
               (hide-message-win)
-              (update-pack-symbols);here for completion
+              (init-all-defs) ;refresh list for completion
               (setf (loaded? self) t)
               ))
         (om-message-dialog (format nil "Error while loading the library ~A:~%The init file ~s does not exist." 

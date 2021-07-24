@@ -121,7 +121,7 @@
                        (loop for i in symb
                              collect (if (not (search "common-lisp::" (format nil "~S" i))) i)))))
     (setf *all-cl-pack-symbols* 
-          (loop for i in filt collect (format nil "~S" i)))
+          (loop for i in filt collect (format nil "~(~S~)" i)))
     ))
 
 (defun get-oa-defs ()
@@ -130,25 +130,25 @@
                  (do-symbols (s (find-package :oa))
                    (push s symbols))
                  (sort symbols 'string<)))
-         (filt (remove nil
-                       (loop for i in symb
-                             collect (if (not (search "common-lisp::" (format nil "~S" i))) i)))))
+        ; (filt (remove nil
+        ;               (loop for i in symb
+        ;                     collect (if (not (search "common-lisp::" (format nil "~S" i))) i))))
+         )
     (setf *all-oa-pack-symbols* 
-          (loop for i in filt collect (format nil "~S" i)))
+          (loop for i in symb collect (format nil "~(~S~)" i)))
     ))
 
 (defun update-pack-symbols ()
   (let ((formated
          (loop for i in (get-all-symbol-names *om-package-tree*)
                collect (prefix-symb-names i))))
-    
-;  (get-cl-defs)
+
     (setf *all-om-pack-symbols*
           (sort (append
                  formated
                  (list "maquette" "patch") ;add special calls
-                 *all-cl-pack-symbols* 
-                 *all-oa-pack-symbols* 
+                 *all-cl-pack-symbols*  ;add cl calls
+                 *all-oa-pack-symbols* ;add om-api calls
                  ) 'string<))))
 
 ;(update-pack-symbols)
