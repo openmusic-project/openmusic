@@ -29,7 +29,7 @@
 ; LISTENER
 ;;===========================================================================
 ;; Lisp Linener for delivered LispWorks appliations
-;; J. Bresson
+;; J. Bresson, K. Haddad
 
 (in-package :om-lisp)
 
@@ -197,6 +197,10 @@
                                                                                   :callback 'listener-select-all 
                                                                                   :accelerator #\a
                                                                                   :callback-type :interface)
+                                                                   (make-instance 'capi::menu-item :title "Clear All" 
+                                                                                  :callback 'listener-clear-all 
+                                                                                  :accelerator #\z
+                                                                                  :callback-type :interface)
                                                                                
                                                                    ))
                                             
@@ -281,6 +285,15 @@
          (buffer (editor-pane-buffer pane)))
     (editor::use-buffer buffer
       (call-editor pane (list 'editor::mark-whole-buffer-command buffer)))))
+
+(defun listener-clear-all (listenerwin)
+  (let* ((pane (find-capi-pane-with-focus (pane-layout listenerwin)))
+         (buffer (editor-pane-buffer pane)))
+    (editor::use-buffer buffer
+      (call-editor pane (list 'editor::mark-whole-buffer-command buffer))
+      (call-editor pane (list 'editor::copy-to-cut-buffer-command buffer))
+      (call-editor pane (list 'editor::kill-region-command buffer))
+      )))
 
 (defun listener-end-of-buffer (listenerwin)
   (let* ((pane (op listenerwin))
