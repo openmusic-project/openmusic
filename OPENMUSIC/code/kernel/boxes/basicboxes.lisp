@@ -147,9 +147,11 @@ The arguments are automatically passed and are identical to the current method, 
   (not (dialog-message "Compiled Function REPEAT-N.")))
 
 (defmethod* repeat-n  ((self t) (n integer)) :numouts 1 :initvals '(nil 0) :indoc '("something" "times")
+  :icon 181
   :doc "Repeats <n> times the evaluation of <self> and collects the <n> results into a list.
 
-Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)" :icon 181
+Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)" 
+
   (let (rep)
     (loop for i from 1 to n do
           (push self rep))
