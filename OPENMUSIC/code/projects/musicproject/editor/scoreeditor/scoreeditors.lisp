@@ -35,6 +35,15 @@
    (mode :initform nil :accessor mode))
   )
 
+(defmethod scoreeditor-p ((self t)) nil)
+(defmethod scoreeditor-p ((self note)) t)
+(defmethod scoreeditor-p ((self chord)) t)
+(defmethod scoreeditor-p ((self chord-seq)) t)
+(defmethod scoreeditor-p ((self multi-seq)) t)
+(defmethod scoreeditor-p ((self voice)) t)  
+(defmethod scoreeditor-p ((self poly)) t)  
+
+
 ;;; SPECIAL TITLEBAR
 (defclass score-titlebar (editor-titlebar) 
   ((play-buttons :accessor play-buttons :initform nil)
