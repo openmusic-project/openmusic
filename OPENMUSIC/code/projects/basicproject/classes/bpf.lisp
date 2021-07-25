@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 
@@ -416,6 +416,8 @@ If <color> is :random, will choose a random color.
 The precision of the BPF-Lib and editor is the maximum precision (<decimals> value) of the BPFs included.
 "))
 
+(defmethod bpflib-p ((self t)) nil)
+(defmethod bpflib-p ((self bpf-lib)) t)
 
 
 (defmethod initialize-instance :after ((self bpf-lib) &key controls)
