@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -56,8 +56,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 (defmethod chord-seq-p ((self chord-seq)) t)
 (defmethod chord-seq-p ((self t)) nil) 
-
-
 
 (defmethod initialize-instance ((self chord-seq) &rest initargs  &key (Empty nil) (LPort nil))
    (declare (ignore initargs)) 
