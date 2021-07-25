@@ -259,6 +259,8 @@ Press 'space' to play/stop the sound file.
   (setf (tracknum self) chan))
  
 
+(defmethod sound-p ((self t)) nil)
+(defmethod sound-p ((self sound)) t)
 
 
 #|
