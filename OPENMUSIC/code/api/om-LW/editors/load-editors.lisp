@@ -36,6 +36,7 @@
 (defvar *lw-score-edit-directory* nil)
 (setf *lw-score-edit-directory* (pathname-directory (truename *load-pathname*)))
 
+#|
 (defun compile-if-needed-and-load (file &optional (verbose t))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
           (fasl-file (probe-file (make-pathname :directory (pathname-directory lisp-file)
@@ -64,8 +65,8 @@
            (load file :verbose verbose)
            ))
        )))
-
-(mapc #'(lambda (filename) (compile-if-needed-and-load 
+|#
+(mapc #'(lambda (filename) (om-lisp::compile-if-needed-and-load 
                             (make-pathname :directory *lw-score-edit-directory* 
                                            :name filename))) 
       '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor"))
