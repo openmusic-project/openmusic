@@ -5,12 +5,16 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- clear-all listener output ctrl-z/cmd-z
+- completion now integrates extra package prefixes and refreshed when
+libraries are loaded
 - export-nusicxml extra note heads support
 - Now all ListInstancesBoxes closes when assosiated boxes are destroyed
 - Now export-svg exports bpf's color
 
 FIXES
 
+- fixed chord extra note-heads musicxml-export 
 - enabled internal pict resources in picture dialog
 - updated MathTools tutorials
 - fixed midievent-seq miniview
