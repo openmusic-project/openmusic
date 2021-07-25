@@ -206,7 +206,8 @@ If <x-list>, <y-list> and <z-list> are not of the same length, the last coordina
 (defmethod* objFromObjs ((self 3DC) (type 3DC))
   (clone self))
 
-
+(defmethod 3dc-p ((self t)) nil)
+(defmethod 3dc-p ((self 3dc)) t)
 
 ;;;============================
 ;;; 3DC LIB
@@ -226,6 +227,10 @@ The precision of the 3DC-Lib and editor is the maximum precision (<decimals> val
 (defmethod get-initval ((self 3DC-lib))
   (make-instance (class-of self)
     :bpf-list (list (make-instance '3DC :point-list nil))))
+
+(defmethod 3dc-lib-p ((self t)) nil)
+(defmethod 3dc-lib-p ((self 3dc-lib)) t)
+
 
 (defmethod good-type-p ((self 3DC) (container 3DC-lib)) t)
 
