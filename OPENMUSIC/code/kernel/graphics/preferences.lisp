@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 ;DocFile
 ;Preference editor is defined in this file.
@@ -151,7 +151,7 @@
   ((pref-id :accessor pref-id :initarg :pref-id :initform nil)))
 
 (defun get-pref-scroll-size () 
-  (om-make-point 800 350))
+  (om-make-point 800 500));Maybe adjust later
 
 (defmethod update-pref-scroll ((self ompref-window) &optional selection)
   (let* ((selec 0)

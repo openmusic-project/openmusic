@@ -20,7 +20,7 @@
 ; along with this program; if not, write to the Free Software
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;
-; Author: Jean Bresson
+; Author: Jean Bresson, Karim Haddad
 ; with contributions by Nicholas Ellis
 ;;===========================================================================
 
@@ -28,8 +28,8 @@
 ; DocFile
 ; LISTENER
 ;;===========================================================================
-;; Lisp Linener for delivered LispWorks appliations
-;; J. Bresson, K. Haddad
+;; Lisp Listener for delivered LispWorks appliations
+;; J. Bresson. K. Haddad
 
 (in-package :om-lisp)
 
@@ -40,7 +40,10 @@
           om-make-new-listener
           om-listener-echo
           om-listener-abort
+          set-bg-listener-color
+          *om-listener*
           *om-stream*
+          *text-bg-color*
           ) :om-lisp)
 
 ;;;=============================
@@ -52,6 +55,8 @@
 (defvar *om-listener* nil)
 (defvar *om-stream* nil)
 (defvar *om-prompt* "OM > ")
+(defvar *text-bg-color* nil)
+(setf *text-bg-color* (color:make-rgb 1.0 1.0 1.0))
 
 ;; (defclass om-listener-pane (capi:listener-pane capi:collector-pane) ())
 
@@ -101,6 +106,10 @@
            ;:textured-background  
            )))
 
+(defun set-bg-listener-color (color)
+  (setf (capi::simple-pane-background (op *om-listener*)) 
+        color))
+
 ;(setf om-lisp::*om-listener* nil)
 (defun make-om-listener (&key title x y width height initial-lambda input)
   (or (and om-lisp::*om-listener* (capi::find-interface 'om-listener))
@@ -138,7 +147,8 @@
                              )))
         
         (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op om-lisp::*om-listener*))) *listener-font*)
-        
+        (set-bg-listener-color *text-bg-color*)
+        ;(setf (capi::simple-pane-background (op *om-listener*)) *text-editor-bg-color*);here
         ;(when (ip om-lisp::*om-listener*)
         ;  (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)
         ;  (setf (capi::editor-pane-text  (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) ""))
@@ -204,6 +214,7 @@
                                                                                
                                                                    ))
                                             
+                                            
                                             (make-instance 'capi::menu-item :title "Text Font" 
                                                            :callback 'change-listener-font 
                                                            :accelerator nil
@@ -237,10 +248,16 @@
                                                                              :enabled-function 'file-operations-enabled)
                                                               ))
                                               
-                                       )))
+                                       ))
+               ; (make-instance 'capi::menu :title "Clear"
+               ;                :items (list 
+               ;                        (make-instance 'menu-item
+               ;                                       :text "Clear")))
+                
+                )
           (om-window-class-menubar om-lisp::*om-listener*)))
 
-
+;ne marche pas car om-close-window est dans :oa!
 (defun close-listener ()
   (om-close-window om-lisp::*om-listener*))
 

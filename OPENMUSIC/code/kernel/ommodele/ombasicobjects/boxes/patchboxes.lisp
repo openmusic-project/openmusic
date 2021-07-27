@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, K. Haddad
 ;=========================================================================
 
 ;DocFile
@@ -1381,7 +1381,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
     (setf ttybox (om-make-dialog-item 'boxtype-iconview (om-make-point 1 1) 
                                       (om-subtract-points boxframex (om-make-point 3 11))
                                       " " 
-                                      :bg-color *om-white-color*
+                                      :bg-color *patch-bg-color* ;*om-white-color*
                                       :font *ombox-font*))
     (setf (iconview module) ttybox)
     (om-add-subviews module ttybox)

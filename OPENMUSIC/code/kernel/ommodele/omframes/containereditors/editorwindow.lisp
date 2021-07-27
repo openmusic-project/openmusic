@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -173,6 +173,22 @@
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
       #-linux(om-set-view-size editor (om-interior-size win))
+
+      (cond
+          ((scoreeditor-p object)
+           (om-set-bg-color (panel (editor win)) *score-bg-color*))
+          ((sound-p object)
+           (om-set-bg-color (panel (editor win)) *sound-bg-color*))
+          ((or (3dc-p object) (3dc-lib-p object)) t)  
+          ((or (bpf-p object) (bpflib-p object))
+           (om-set-bg-color (panel (editor win)) *bpf-bg-color*))
+          ((maquette-p object) t)
+         ;  (progn (print (maq-color (params object))) 
+         ;  (om-set-bg-color (panel (editor win)) *maq-color*)))
+           ((typep object 'ompatch)
+            (om-set-bg-color (panel (editor win)) *patch-bg-color*))
+          (t ))
+      
       win))
 
 

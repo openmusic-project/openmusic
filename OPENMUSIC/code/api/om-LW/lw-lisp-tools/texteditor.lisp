@@ -20,7 +20,7 @@
 ; along with this program; if not, write to the Free Software
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;
-; Authors: Jean Bresson, Sheldon Ball, Nicholas Ellis
+; Authors: Jean Bresson, Sheldon Ball, Nicholas Ellis, Karim Haddad
 ; Initial code from S. Ball's ANVITA editor
 ;;===========================================================================
 
@@ -29,7 +29,7 @@
 ;;;======================================
 ;;; OM TEXT EDITOR GENERAL
 ;;;======================================
-;;; J. Bresson
+;;; J. Bresson, Karim Haddad
 ;;; Initial code from S. Ball's Anvita Editor
 ;;; Contributions by N. Ellis
 
@@ -41,6 +41,8 @@
           om-open-new-text-file
           om-window-class-menubar
           om-set-window-title
+          om-set-bg-color
+          om-get-editor-panel
           om-destroy-callback
          ) :om-lisp)
 
@@ -308,6 +310,10 @@
                                )
                        )))
 
+;; used to get ep (editor panel) for bg customization in :om package
+(defmethod om-get-editor-panel ((self om-text-editor)) (ep self))
+
+
 ;; used for finding windows by name
 (defmethod capi::interface-match-p ((self om-text-editor) &rest initargs  &key name)
   (string-equal (capi::capi-object-name self) name))
@@ -508,6 +514,7 @@
                                                   :font *def-text-edit-font*
                                                   ))))
         (push win *editor-files-open*)
+        (setf (capi::simple-pane-background (ep win)) *text-bg-color*)
         (capi::display win)
         ;(capi::execute-with-interface win
         ;                              #'(lambda ()
@@ -580,8 +587,11 @@
     (open-new-text-editor path)))
 
 (defmethod om-set-window-title ((self om-text-editor) (title string))
+  (print self)
   (setf (capi::interface-title self) title))
 
+(defmethod om-set-bg-color ((self om-text-editor) color)
+  (setf (capi::simple-pane-background (ep self)) color))
 
 ;;;====================
 ;;; SAVE

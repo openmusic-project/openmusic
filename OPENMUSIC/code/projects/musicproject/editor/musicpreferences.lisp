@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -41,6 +41,7 @@
 (defvar *hide-stems* nil)
 (defvar *stem-size-fact* 1)
 (defvar *chord-stem-dir* "neutral")
+
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID)))
@@ -68,7 +69,9 @@
 ;                            (omng-save *current-1/8-scale*))))))
 
 (defmethod get-def-vals ((iconID (eql :score)))
-   (list :approx 2 :fontsize 24 :staff 'g :sys-color *om-black-color* :select-color *om-gray-color* 
+   (list :approx 2 :fontsize 24 :staff 'g 
+         :sys-color *om-black-color* 
+         :select-color *om-gray-color* 
          :hide-stems nil
          :stem-size-fact 1
          :chord-stem-dir "neutral"
@@ -103,7 +106,7 @@
                                  :size (get-pref-scroll-size)
                                  :position (om-make-point 66 0)
                                  :scrollbars :v 
-                                 :bg-color *om-light-gray-color*
+                                 :bg-color *om-gray1-color*
                                  :retain-scrollbars t))
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
 	(pos 0)
@@ -145,14 +148,14 @@
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Music Font Size"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
-                                       ""
-                                       :di-action (om-dialog-item-act item
-                                                    (set-pref modulepref :fontsize
-                                                              (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
-                                       :font *controls-font* 
-                                       :range (loop for item in *mus-font-size* collect (car item)) 
-                                       :value (integer-to-string (get-pref modulepref :fontsize))
-                                       )
+                                          ""
+                                          :di-action (om-dialog-item-act item
+                                                       (set-pref modulepref :fontsize
+                                                                 (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
+                                          :font *controls-font* 
+                                          :range (loop for item in *mus-font-size* collect (car item)) 
+                                          :value (integer-to-string (get-pref modulepref :fontsize))
+                                          )
                      
                      
                      
@@ -166,8 +169,8 @@
 					   :font *controls-font*
                                            :value (string (get-pref modulepref :staff))
                                            :di-action (om-dialog-item-act item
-                                                         (set-pref modulepref :staff 
-                                                                   (nth (om-get-selected-item-index item) *all-satff-om*)))
+                                                        (set-pref modulepref :staff 
+                                                                  (nth (om-get-selected-item-index item) *all-satff-om*)))
                                            )
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 80 20) "Staff Colors"
@@ -199,18 +202,18 @@
                                           :font *controls-font*)
                      
                      (om-make-dialog-item 'om-editable-text 
-                                              (om-make-point (+ 20 300) pos)
-                                              (om-make-point 60 13)
-                                              (format nil "~D" (get-pref modulepref :stem-size-fact)) 
-                                              :modify-action (om-dialog-item-act item
-                                                              (let ((text (om-dialog-item-text item))
-                                                                    number)
-                                                                (unless (string= "" text)
-                                                                  (setf number (ignore-errors (read-from-string text)))
-                                                                  (when (numberp number)
-                                                                    (set-pref modulepref :stem-size-fact number))
-                                                                  )))
-                                              :font *om-default-font2*)
+                                          (om-make-point (+ 20 300) pos)
+                                          (om-make-point 60 13)
+                                          (format nil "~D" (get-pref modulepref :stem-size-fact)) 
+                                          :modify-action (om-dialog-item-act item
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (when (numberp number)
+                                                                 (set-pref modulepref :stem-size-fact number))
+                                                               )))
+                                          :font *om-default-font2*)
 
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 130 20) "Stems Direction"
@@ -239,27 +242,27 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 150 20) "Diapason"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-editable-text 
-                                              (om-make-point 160 pos)
-                                              (om-make-point 60 13)
-                                              (format nil "~D" (get-pref modulepref :diapason)) 
-                                              :modify-action (om-dialog-item-act item
-                                                              (let ((text (om-dialog-item-text item))
-                                                                    number)
-                                                                (unless (string= "" text)
-                                                                  (setf number (ignore-errors (read-from-string text)))
-                                                                  (when (numberp number)
-                                                                    (set-pref modulepref :diapason number))
-                                                                  )))
-                                              :font *om-default-font2*)
+                                          (om-make-point 165 pos)
+                                          (om-make-point 60 13)
+                                          (format nil "~D" (get-pref modulepref :diapason)) 
+                                          :modify-action (om-dialog-item-act item
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (when (numberp number)
+                                                                 (set-pref modulepref :diapason number))
+                                                               )))
+                                          :font *om-default-font2*)
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* dy 1.2))) (om-make-point 350 22) 
-                                              "(Frequency of the A4, used for freq-MIDI conversions)"
-                                              :font *om-default-font1*)
+                                          "(Frequency of the A4, used for freq-MIDI conversions)"
+                                          :font *om-default-font1*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 30) 45) (om-make-point 80 20) "Dynamics"
                                           :font *controls-font*)
                      (om-make-view 'dynamics-view :position (om-make-point (+ l2 30) 70) :size (om-make-point 140 160) 
-                                          :object modulepref :bg-color *om-white-color*)
+                                   :object modulepref :bg-color *om-white-color*)
                      )
     
     (when *om-tonalite*

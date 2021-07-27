@@ -137,9 +137,12 @@
                 om-color-r
                 om-color-g
                 om-color-b
+                om-output-color
+                om-color-to-capi
                 *om-black-color* 
                 *om-dark-gray-color* 
                 *om-gray-color* 
+                *om-gray1-color* 
                 *om-light-gray-color* 
                 *om-white-color* 
                 *om-window-def-color*
@@ -184,6 +187,7 @@
 ;;;=========================
 (defun om-correct-color (color) 
   (if (om-color-p color) color *om-gray-color*))
+
 
 (defun om-correct-point (point) 
   (cond ((om-point-p point) point)
@@ -553,10 +557,26 @@
 (defmethod print-object ((self omcolor) stream)
   (format stream "color R:~D G:~D B:~D" (om-color-r self) (om-color-g self) (om-color-b self)))
 
+(defun om-output-color (color)
+  "for default-prefs bg-color."
+  (let ((r (om-color-r color))
+        (g (om-color-g color))
+        (b (om-color-b color)))
+    `(om-make-color ,r ,g ,b)))
+
+(defun om-color-to-capi (color)
+  "to com with om-lisp package"
+  (if (color::color-spec-p color)
+      color
+  (color:make-rgb (om-color-r color) 
+                  (om-color-g color) 
+                  (om-color-b color))))
+
 ;;; system colors :
 (defparameter *om-black-color* (make-instance 'omcolor :c (color::get-color-spec :black)))
 
 (defparameter *om-light-gray-color* #-win32 (om-make-color 0.9 0.9 0.9)  #+win32 (om-make-color 0.96 0.96 0.96))
+(defparameter *om-gray1-color* (om-make-color 0.85 0.85 0.85))
 (defparameter *om-gray-color* (om-make-color 0.6 0.6 0.6))
 (defparameter *om-dark-gray-color* (om-make-color 0.3 0.3 0.3))
 (defparameter *om-dark-red-color* (om-make-color 0.9 0.3 0.3))
