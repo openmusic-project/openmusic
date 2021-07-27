@@ -2,6 +2,13 @@
 
 NEW FEATURES
 
+- Appearance features: Added support for background color of:
+   - Patches
+   - text editors (listener included)
+   - score editors (Voice, Chord-seq, etc.)
+   - Bpf, 3dc, 
+   - Sound.
+
 
 IMPROVEMENTS
 

@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 
@@ -291,7 +291,7 @@ Evaluate or connect the output to get the current contents of the box.
 
 
 ;==================
-; MULTI-LIBNE TEXT
+; MULTI-LIGNE TEXT
 ;==================
 (defclass! text-view (om-text-edit-view d-i-box)  ()
     (:icon 291)
