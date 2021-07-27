@@ -238,6 +238,10 @@
    
    (init-om-package)                    
    (load-om-libs)
+   
+   
+   ;load all defs for completion
+   (init-all-defs)
 
    ;;; check if it is the right place...
    ;;; start-audio now
