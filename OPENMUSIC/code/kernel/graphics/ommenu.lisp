@@ -295,7 +295,10 @@
                 (progn
                   (setf x (+ 100 x))
                   (setf y (+ 50 y))
-                  (om-inspect (value (object i)) (om-make-point x y)))))
+                 (if (equal (type-of i) 'patch-icon-frame)
+                      (om-inspect (object i) (om-make-point x y))
+                   (om-inspect (value (object i)) (om-make-point x y)))
+                 )))
       )))
 
 
