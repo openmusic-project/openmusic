@@ -39,23 +39,46 @@ omroot		= $(datadir)/$(APPNAME)
 
 rsyncflags	= -v -rlt -O -z
 
+
+path_to_omroot	= ../..
+thisfile	= $(lastword $(MAKEFILE_LIST))
+thisdir		= $(dir $(thisfile))
+builddir	= $(shell cd $(dir $(thisfile)) && cd $(path_to_omroot) && pwd)
+BUILDROOT	= $(builddir)
+
+
 checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
-ifdef $(checkname)
+ifdef checkname
 releaseappname	= $(checkname)
 else
 releaseappname	= $(notdir $(BUILDROOT))
 endif
 
+
+notarget:
+	@echo targets: install, uninstall, all '(=install)', help
+
 help:
+	@echo Makefile: $(MAKEFILE_LIST)
 	@echo BUILDROOT:	$(BUILDROOT)
+	@echo APPNAME:		$(APPNAME)
 	@echo releaseappname:	$(releaseappname)
 	@echo targets: install, uninstall, all '(=install)', help
+	@echo omroot: $(omroot)
+	@echo bindir/appname: $(bindir)/$(APPNAME)
+	@echo bindir/releaseappname: $(bindir)/$(releaseappname)
+	@echo datadir/applications/OM.desktop: $(datadir)/applications/OM.desktop
+	@echo datadir/pixmaps/omlogo.png: $(datadir)/pixmaps/omlogo.png
+	@echo omfontsdir: $(omfontsdir)
+
 
 all:	install
 
 install: $(BUILDROOT)/$(releaseappname)
+
+
 	mkdir -p $(omroot)
-	cd $(BUILDROOT) && rsync $(rsyncflags) --exclude $(releaseappname) --exclude 'Makefile*'  . $(omroot)
+	cd $(BUILDROOT) && rsync $(rsyncflags) --recursive --exclude $(releaseappname) --exclude 'Makefile*'  ./ $(omroot)
 	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -D -m 0755 $(releaseappname) $(bindir)/$(releaseappname)
 	cd $(bindir) && ln -s -f $(releaseappname) $(APPNAME)
 	mkdir -p $(datadir)/applications/
@@ -68,8 +91,13 @@ install: $(BUILDROOT)/$(releaseappname)
 
 uninstall:
 	rm -rfv $(omroot)
-	rm -f $(bindir)/$(APPNAME)
+
+ifdef $(releaseappname)
 	rm -f $(bindir)/$(releaseappname)
+endif
+
+	rm -f $(bindir)/$(APPNAME)
 	rm -f $(datadir)/applications/OM.desktop
 	rm -f $(datadir)/pixmaps/omlogo.png
 	rm -rfv $(omfontsdir)
+
