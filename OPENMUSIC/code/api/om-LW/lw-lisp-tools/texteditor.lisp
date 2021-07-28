@@ -587,7 +587,7 @@
     (open-new-text-editor path)))
 
 (defmethod om-set-window-title ((self om-text-editor) (title string))
-  (print self)
+  ;(print self)
   (setf (capi::interface-title self) title))
 
 (defmethod om-set-bg-color ((self om-text-editor) color)
