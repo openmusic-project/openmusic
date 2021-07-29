@@ -507,3 +507,29 @@ mode: <until> iterates the list (default).
     (first (if (> length (length lst)) 
                (reverse (repeat-last-n (reverse lst) length))
              (first-n lst length)))))
+
+
+;;;-----------------APPLY-LAMBDA-SEQ
+
+(defun apply-lambda (lst function nth)
+  (let ((clone (clone lst))
+        (seq (if nth nth (arithm-ser 0 (1- (length lst)) 1))))
+    (loop for i in seq
+          do (setf (nth i clone) 
+                   (apply function (list (nth i clone)))))
+    clone
+    ))
+
+(defmethod* apply-lambda-seq ((lst list) (functions list) (nths list))
+  :initvals '('(1 2 3 4) (list 'list) (list '(0 1)))
+  :indoc '("a list" "list of test functions" "list of list of positions")
+  :icon 235
+  :doc "Applies <functions> sequentially on <nths> positions of <lst>.
+
+ex: (apply-lambda-seq '(1 2 3 4 5 6) (list #'(lambda (x) (* x 10)) '((0 2 4)))"
+
+(let ((res (clone lst)))
+  (loop for f in functions
+        for n in nths
+        do (setf res (apply-lambda res f n)))
+  res))

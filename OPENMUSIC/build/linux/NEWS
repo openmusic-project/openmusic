@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- New functions: apply-lambda-list (list processing)
 - Appearance features: Added support for background color of:
    - Patches
    - text editors (listener included)
