@@ -5375,7 +5375,7 @@
 
         
   
-  
+;;probleme ici: pas de fun combinations!  
 (defmethod! get-subsets ((list list))
   :icon 420
   (cons list (loop for i from 1 to (length list)
