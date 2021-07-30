@@ -27,9 +27,9 @@ BUILDROOT	= $(builddir)
 PREFIX		= /usr/local
 APPNAME		= openmusic
 
-# bindir		= $(DESTDIR)$(PREFIX)/bin
-# datadir		= $(DESTDIR)$(PREFIX)/share
-# omroot		= $(datadir)/$(APPNAME)
+bindir		= $(DESTDIR)$(PREFIX)/bin
+datadir		= $(DESTDIR)$(PREFIX)/share
+omroot		= $(datadir)/$(APPNAME)
 
 faslname	= 64ufasl
 rubbish		= *.$(faslname)
@@ -40,7 +40,8 @@ exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
 exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
-checkname	= $(shell ls $(BUILDROOT) | grep -e "OM_6.*")
+checkname	= $(shell basename $(shell find $(BUILDROOT) -maxdepth 1 -perm -111 -type f | grep -e "OM"))
+
 ifdef checkname
 	buildname = $(checkname)
 else
@@ -50,16 +51,17 @@ endif
 compress	= tar
 compressfile	= $(buildname).tar.bz2
 compressflags	= -cjf
-# compressfile	= $(buildname).tar.xz
-# compressflags	= -cJf
 
 
 release		= $(DISTDIR)/$(buildname)
 
-all:	compile
+notarget:
+	@echo targets: OM, clean, tar-dist, dist, install, uninstall, help
 
 
-compile build-from-git: 
+OM:	compile
+
+compile:
 	@echo building "$(buildname)" in source tree: "$(BUILDROOT)"
 	$(LISP) $(BUILDROOT)/build/deliver.lisp
 
@@ -70,33 +72,49 @@ clean:
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
-	find $(release)/build/ -not -iname '*build*' -and -not -path '*linux*' -delete
-	cp README.LINUX.md $(release)/
-	cp $(BUILDROOT)/../LICENSE $(release)/
-	cp NEWS $(release)/
+	find $(release)/build -not -iname '*build*' -and -not -path '*linux*' -delete
+	cp README.LINUX.md $(release)
+	cp $(BUILDROOT)/../LICENSE $(release)
+	cp NEWS $(release)
 	cp Makefile.dist $(release)/Makefile
 
-tar-dist: dist
+tar-dist: 
 	cd $(shell dirname $(release)) && $(compress) $(compressflags) $(compressfile) $(buildname) 
 
 distclean:
 	rm -rf $(release)
 
-# install: $(release)/$(buildname)
-# 	cd $(release) && $(INSTALL_PROGRAM) -m 0755 $(buildname) $(BINDIR)/$(APPNAME)
-# 	cd $(release) && rsync $(rsyncflags) $(exclude_fasl) --exclude 'OM_6.8*' . $(omroot)
+install: $(release)/$(buildname)
+	cd $(BUILDROOT) && $(INSTALL_PROGRAM) -m 0755 $(buildname) $(bindir)/$(IMAGENAME)
+	ln -sf $(bindir)/$(IMAGENAME) $(bindir)/openmusic
+	cd $(BUILDROOT) && rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' . $(omroot)
+	cp -p $(BUILDROOT)/build/linux/README.LINUX.md $(omroot)
+	cp -p $(BUILDROOT)/../LICENSE $(omroot)
+	cp -p $(BUILDROOT)/build/linux/NEWS $(omroot)
 
 
-# uninstall:
-# 	rm -rfv $(omroot)
-# 	rm -f $(BINDIR)/$(APPNAME)
+
+uninstall:
+ifdef IMAGENAME
+	rm -f $(bindir)/$(IMAGENAME)
+	rm -f $(bindir)/openmusic
+endif
+ifdef omroot
+	rm -rf $(omroot)
+endif
+
+
 
 help:
-	@echo bygger $(BUILDROOT)/$(buildname)
-	@echo Makefile:		$(thisfile)
-	@echo THISDIR:		$(thisdir)
+	@echo targets: all '(=install)', clean, install, uninstall, tar-dist, distclean, help
+	@echo PREFIX:		$(PREFIX)
+	@echo install bindir:	$(bindir)
+	@echo install datadir:	$(datadir)
+	@echo Installed IMAGENAME:	$(bindir)/$(IMAGENAME) - LINKED TO:	$(bindir)/$(APPNAME)
+	@echo Makefile:		$(shell pwd)/$(thisfile)
 	@echo BUILDROOT:	$(BUILDROOT)
-	@echo buildname:	$(buildname)
-	@echo IMAGENAME:	$(IMAGENAME)
 	@echo release:		$(release)
-
+	@echo checkname:	$(checkname)
+	@echo buildname:	$(buildname)
+	@echo DISTDIR:		$(DISTDIR)
+	@echo compressfile:	$(compressfile)
