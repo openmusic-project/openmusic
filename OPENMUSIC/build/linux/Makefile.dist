@@ -1,12 +1,11 @@
 # Makefile for OpenMusic	-*-Makefile-*-
-# Copyright (C) 2013 anders anders DOT vinjar AT bek DOT no
+# Copyright (C) 2013 anders AT avinjar.no
 # 
-# This makefile is located at top-level in the distributed source-tree
-# for OM.  
+# This Makefile is located at top-level in the distributed source-tree
+# for OM.
 #
-# The only targets here are install and uninstall.  'make install'
-# will install the binary in $prefix and the various source-files and
-# needed resources under $prefix/share/$(APPNAME)
+# This file is not meant to be used by any end-user, but to be
+# included in source trees used for building packages (RPM, DEB).
 #
 # For development-work, you want to get the sources via git:
 #
