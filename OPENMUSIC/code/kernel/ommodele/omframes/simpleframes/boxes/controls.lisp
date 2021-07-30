@@ -101,14 +101,16 @@
 
 (defun prefix-symb-names (name)
   "remove om:: prefix and adds external package prefixes"
-        (if (or (equal (find-package :om) (symbol-package name)) 
-                (equal (find-package :common-lisp) (symbol-package name))
-                (equal (find-package :oa) (symbol-package name))) 
-            (string-downcase name)
-          (let* ((pkg (string-downcase
-                       (package-name
-                        (symbol-package name)))))
-            (format nil "~A::~A" pkg name))))
+  (let ((name (if (symbolp name) name (read-from-string name))))
+    (if (or (equal (find-package :om) (symbol-package name)) 
+            (equal (find-package :common-lisp) (symbol-package name))
+            (equal (find-package :oa) (symbol-package name))) 
+        (string-downcase name)
+      (let* ((pkg (string-downcase
+                   (package-name
+                    (symbol-package name)))))
+        (format nil "~A::~A" pkg name)))))
+
 
 
 
@@ -142,7 +144,6 @@
   (let ((formated
          (loop for i in (get-all-symbol-names *om-package-tree*)
                collect (prefix-symb-names i))))
-
     (setf *all-om-pack-symbols*
           (sort (append
                  formated
