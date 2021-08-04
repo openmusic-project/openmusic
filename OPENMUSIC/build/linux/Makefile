@@ -40,10 +40,10 @@ exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
 exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
 
-checkname	= $(shell basename $(shell find $(BUILDROOT) -maxdepth 1 -perm -111 -type f | grep -e "OM"))
+imgfound	= $(shell find $(BUILDROOT) -maxdepth 1 -perm -111 -type f | grep -e "OM")
 
-ifdef checkname
-	buildname = $(checkname)
+ifdef $(imgfound)
+	buildname = $(shell basename $(checkname))
 else
 	buildname = $(IMAGENAME)
 endif
@@ -57,6 +57,8 @@ release		= $(DISTDIR)/$(buildname)
 
 notarget:
 	@echo targets: OM, clean, tar-dist, dist, install, uninstall, help
+	@echo BUILDDIR: $(BUILDROOT)
+	@echo checkname: $(checkname)
 
 
 OM:	compile
