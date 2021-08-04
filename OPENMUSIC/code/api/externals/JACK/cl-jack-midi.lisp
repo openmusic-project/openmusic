@@ -209,7 +209,7 @@
 	    (cerror "Set *jack-midi-output-port* to -1" "*jack-midi-output-port* for Jack not allocated - check jack-server"))
 	  port)))
 
-(provice :cl-jack-midi)
+(provide :cl-jack-midi)
 
 
 
