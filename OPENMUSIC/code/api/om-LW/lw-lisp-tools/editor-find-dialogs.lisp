@@ -28,6 +28,8 @@
 ;; Find and Replace dialogs from S. Ball's ANVITA EDITOR
 ;;;;;
 
+(in-package :om-lisp)
+
 (defun print-capitalized (keyword)
   (substitute #\space #\- (string-capitalize keyword)))
 
