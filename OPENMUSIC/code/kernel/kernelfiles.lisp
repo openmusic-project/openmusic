@@ -152,6 +152,7 @@
 "ommodele/persistant/save"
 "ommodele/persistant/import-export"   
 "ommodele/persistant/old-compat"
+"ommodele/persistant/finder"
                                                             
 ;-----------Menu----------------------------------- 
 "graphics/ommenu"
@@ -164,6 +165,9 @@
 "graphics/dragdrop/omdraganddrop"
 "graphics/dragdrop/dropallowp"    
 "graphics/dragdrop/performdrop"
+
+;-------------OM finder-------------------
+"graphics/omfinder"
 
 ;--------------Help----------------- 
 "doc/documentation"

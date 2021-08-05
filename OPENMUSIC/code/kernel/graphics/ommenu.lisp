@@ -246,6 +246,8 @@
                                           )
                                          (om-new-leafmenu "Select All" #'(lambda () (select-all win)) "a" 
                                                           (if (member "Select All" disable :test 'string-equal) nil t))
+                                         (om-new-leafmenu "Find" #'(lambda () (show-finder-win editor)) "f" 
+                                                          (if (member "Find" disable :test 'string-equal) nil t))
                                          (when (font-menu editor)
                                            (om-make-menu "Font..." 
                                                          (list
