@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- OM Finder (search patches, maquettes, in workspaces, functions, in patches, etc.)
 - New functions: apply-lambda-list (list processing)
 - Appearance features: Added support for background color of:
    - Patches
