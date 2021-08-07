@@ -272,7 +272,7 @@ Evaluate or connect the output to get the current contents of the box.
                        :font *om-default-font1* 
                        ))
 
-(defmethod default-obj-box-size ((self text-box)) (om-make-point 130 40))
+(defmethod default-obj-box-size ((self text-box)) (om-make-point 130 45))
 
 (defmethod omng-save ((self text-box) &optional (values? nil))
   `(om-make-dialog-item 'text-box (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self)) ,(om-dialog-item-text self)
