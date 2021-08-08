@@ -42,7 +42,6 @@
 (defclass omfinder-window (om-dialog)())
 
 (defun make-finder-win (editor)
-  (print editor)
   (setf *om-finder-search-name* "")
   (let* ((win (om-make-window 'omfinder-window :window-title "OM Finder" 
                               :size (om-add-points (om-make-point 500 100) (om-make-point 0 50)) 
@@ -60,7 +59,7 @@
 
                      (om-make-dialog-item 'om-editable-text (om-make-point (+ l1 100) posy)
                                           (om-make-point 300 15) *om-finder-search-name*
-                                          :after-action (om-dialog-item-act item 
+                                          :di-action (om-dialog-item-act item 
                                                           (setf *om-finder-search-name* (om-dialog-item-text item)))
                                           :font *controls-font*
                                           )
@@ -82,12 +81,12 @@
                                           :font *controls-font*
                                           :checked-p nil)
                      |#
-                     (om-make-dialog-item 'om-button (om-make-point (- 550 380) (+ 30 b-posy)) (om-make-point 80 22) "Find Next" 
+                     (om-make-dialog-item 'om-button (om-make-point (- 550 375) (+ 30 b-posy)) (om-make-point 80 22) "Find" 
                                           :di-action (om-dialog-item-act  item 
                                                        (om-finder editor (string-downcase *om-finder-search-name*))
                                                        ))
                     
-                     (om-make-dialog-item 'om-button (om-make-point (- 550 300) (+ 30 b-posy)) (om-make-point 80 22) "Cancel" 
+                     (om-make-dialog-item 'om-button (om-make-point (- 550 295) (+ 30 b-posy)) (om-make-point 80 22) "Cancel" 
                                           :di-action (om-dialog-item-act  item
                                                        (om-close-window (om-view-window item))
                                                        )))
