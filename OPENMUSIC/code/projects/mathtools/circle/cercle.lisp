@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MATHTOOLS by C. Agon, M. Andreatta et al.
@@ -163,6 +163,26 @@
 (defmethod* Objfromobjs ((Self chord) (Type n-cercle))
   (chord2c self 2))
 
+
+(defmethod* Objfromobjs ((Self n-cercle) (Type Chord))
+  (let* ((n (n self))
+         (puntos (puntos self))
+         (div (round (/ 1200 n)))
+         (ints (om* puntos div))
+         (midics (om+ 6000 ints))
+         )
+    (mki (type-of type) :LMidic (car midics))
+    ))
+
+(defmethod* Objfromobjs ((Self n-cercle) (Type chord-seq))
+  (let* ((n (n self))
+         (puntos (puntos self))
+         (div (round (/ 1200 n)))
+         (ints (om* puntos div))
+         (midics (om+ 6000 ints))
+         )
+    (mki (type-of type) :LMidic midics)
+    ))
 
 
 
