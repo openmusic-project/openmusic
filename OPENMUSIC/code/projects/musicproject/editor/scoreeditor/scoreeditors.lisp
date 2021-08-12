@@ -615,14 +615,14 @@
   (let ((pos (or (om-add-points position (om-make-point 3 2))
                  (om-make-point 100 2))))
   (om-add-subviews control 
-                   (om-make-dialog-item 'numbox pos (om-make-point 46 18) (format nil " ~D" zoom)
+                   (om-make-dialog-item 'edit-numbox pos (om-make-point 46 18) (format nil " ~D" zoom)
                                         :di-action (om-dialog-item-act item
                                                               (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
                                         :font *om-default-font1*
                                         :bg-color *om-white-color*
                                         :value zoom
                                         :afterfun #'(lambda (item)
-                                                      (change-editor-zoom-after (panel (om-view-container (om-view-container item))) (value item)))
+                                                      (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
                                         :min-val 1
                                         :max-val 1000)
                    (om-make-dialog-item 'om-static-text (om-make-point (- (om-point-h pos) 40) 4) (om-make-point 40 20) "Zoom"
@@ -1653,6 +1653,7 @@
    (set-edit-param (om-view-container self) 'show-stems  (show-stems self))
    (update-panel self))
 
+#|
 (defmethod change-editor-zoom ((self scorePanel) newzoom)
    (unless (= (staff-zoom self) newzoom)
      (setf (staff-zoom self) (/ newzoom 100))
@@ -1662,12 +1663,26 @@
      )))
 
 (defmethod change-editor-zoom-after ((self scorePanel) newzoom)
-   (unless (= (staff-zoom self) newzoom)
-     (setf (staff-zoom self) (/ newzoom 100))
-     (set-edit-param (om-view-container self) 'zoom  (/ newzoom 100))
-      (when (score-page-mode self)
-        (update-panel self )
-     )))
+  (unless (= (staff-zoom self) newzoom)
+    (setf (staff-zoom self) (/ newzoom 100))
+    (set-edit-param (om-view-container self) 'zoom  (/ newzoom 100))
+    (unless (score-page-mode self)
+      (om-redraw-view self))
+    (when (score-page-mode self)
+      (update-panel self )
+      )))
+|#
+
+(defmethod change-editor-zoom ((self scorePanel) newzoom)
+  (unless (= (staff-zoom self) newzoom)
+    (setf (staff-zoom self) (/ newzoom 100))
+    (set-edit-param (om-view-container self) 'zoom  (/ newzoom 100))
+    (unless (score-page-mode self)
+      (om-redraw-view self))
+    (when (score-page-mode self)
+      (update-panel self )
+      )))
+
 
 (defmethod change-obj-mode ((self scorePanel) val)
   (let* ((list (object-order (editor self)))

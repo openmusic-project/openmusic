@@ -341,7 +341,7 @@
    (let* ((obj (object (om-view-container self)))
           (x (- (round (w self) 2) 10) )
           (y (- (round (h self) 2) 10 )))
-          (setf (n-control self) (om-make-dialog-item 'numbox (om-make-point x y) (om-make-point 28 18) (format nil " ~D" (n obj))
+          (setf (n-control self) (om-make-dialog-item 'edit-numbox (om-make-point x y) (om-make-point 28 18) (format nil " ~D" (n obj))
                                                                                          :value (n obj)
                                                                                          :min-val 1
                                                                                          :max-val 1000000
