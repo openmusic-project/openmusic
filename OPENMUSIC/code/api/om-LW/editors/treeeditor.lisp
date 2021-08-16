@@ -42,7 +42,7 @@
 (defvar *editor-text* nil)
 (defvar *tree-font* nil)
 (defvar *def-tree-edit-font* 
-  #+linux(gp::make-font-description :family "Courier" :size 10)
+  #+linux(gp::make-font-description :family "Liberation Mono" :size 11)
   #-linux(gp::make-font-description :family "Consolas" :size 11))
 
 
