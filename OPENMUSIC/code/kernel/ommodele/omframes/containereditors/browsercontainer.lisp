@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -89,6 +89,7 @@
                        ) 
          scroll-list)))
 
+#|
 (defmethod UpDateScrollers ((self mult-scrollerEditor))
    (let* ((scroll-list (scroll-list self))
           (size (om-view-size (nth 0 scroll-list)))
@@ -97,6 +98,18 @@
                                                            *inter-panes*)
                                                         (om-point-v (om-view-size self))))
      (om-invalidate-view self)))
+|#
+
+(defmethod UpDateScrollers ((self mult-scrollerEditor))
+   (let* ((scroll-list (scroll-list self))
+          (lgt-scroll (length scroll-list))
+          (vsize (om-view-size (nth 0 scroll-list)))
+          (size (om-make-point (* lgt-scroll (om-point-h vsize)) (* lgt-scroll (om-point-h vsize)))))
+  
+     (om-set-interior-size (window self) size)
+     (om-set-view-size self size)
+     (om-invalidate-view self)
+     ))
 
 (defmethod remove-scrolls ((editor mult-scrollerEditor)) 
   (let ((delete (subseq (scroll-list editor) (+ 1 (current-scroll editor)))))
