@@ -23,6 +23,7 @@ libraries are loaded
 
 FIXES
 
+-fixed Library Package Browser display (linux)
 - fixed chord extra note-heads musicxml-export 
 - enabled internal pict resources in picture dialog
 - updated MathTools tutorials
