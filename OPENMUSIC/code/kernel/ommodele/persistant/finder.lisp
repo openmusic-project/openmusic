@@ -104,12 +104,13 @@
 
 
 (defun search-for-obj (item names)
-  (let* ((run1 (loop for i in names
+  (let* ((run (loop for i in names
                      collect (search item i)))
-         (run2 (loop for i in run1
-                     collect (if (equal 0 i) i))))
-    (remove nil (loop for i from 0 to (length run2)
-                      for rn in run2
+        ; (run2 (loop for i in run1
+        ;             collect (if (equal 0 i) i))))
+         )
+    (remove nil (loop for i from 0 to (length run)
+                      for rn in run
                       collect (if rn i)))))
 
     
