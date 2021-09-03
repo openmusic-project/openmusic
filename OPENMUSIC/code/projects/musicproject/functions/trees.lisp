@@ -587,16 +587,27 @@ Converts all rests to notes.
      (correct-floats
       (trans-obj tree2obj)))))
 
+;010921 fix for 11, 7, 5 proportions when filtered rests 
+
+(defmethod fix-floats ((self voice))
+  (let* ((tempo (tempo self))
+         (chords (chords self))
+         (btree (build-tree self)))
+    (make-instance 'voice 
+                   :tree (check-tree-for-contchord btree self)
+                   :chords chords
+                   :tempo tempo)))
 
 (defmethod! filtertree ((self voice) (places list) (mode symbol))
                 (let* ((tree (tree self))
                        (chords (remove-nth (chords self) places))
                        (filt-tree (filtertree tree places mode))
                        (tempo (tempo self)))
-                  (make-instance 'voice 
-                                 :tree filt-tree
-                                 :chords chords
-                                 :tempo tempo)))
+
+                       (fix-floats (make-instance 'voice
+                                                  :tree filt-tree
+                                                  :chords chords
+                                                  :tempo tempo))))
 
 
 
@@ -621,10 +632,10 @@ Converts all rests to notes.
                        (notes (posn-match (chords self) places))
                        (tempo (tempo self))
                        (new (select-tree tree places mode)))
-                  (make-instance 'voice 
-                                 :tree new
-                                 :chords notes
-                                 :tempo tempo)))
+                  (fix-floats (make-instance 'voice 
+                                             :tree new
+                                             :chords notes
+                                             :tempo tempo))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;N-PULSES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1395,7 +1406,7 @@ Returns the positions of the rests in <tree>.
    :icon 134
    :doc "if first pulse is "        
                                  
-  (let* ((rt (rat self))
+  (let* ((rt (tree self));uses rat
          (frst (caadr (caadr rt)))
          (correct (case mode
                     (rest (if (floatp frst) (setf (caadr (caadr rt)) (* -1 frst))))
