@@ -48,17 +48,33 @@
   (if (equal frsttempopos '(0 0))
       t nil)))
 
+(defmethod fix-frst-tempo ((self voice))
+  "fixes first measure, when it has tempo changes.Should be fixed at the source of the factory!"
+  (let* ((tempo (tempo self))
+         (head (car tempo))
+         (other (cadr tempo))
+         (fix (if other
+                  (loop for i in other
+                        collect 
+                        (let ((tete (car i))
+                              (queue (second i)))
+                           (if (= 2 (length queue))        
+                        (list (car i) (flat (list (second i) nil)))
+                             i)))
+                ))
+         )
+    (list head fix)))
+
 (defmethod cadr-tempo ((self list))
   "pushes init tempo in cadr tempo list if there are cadr tempo list doesnot start as ((0 0) ....)"
   (let* ((cr (car self))
-         (dr (cadr self))
-         )
+         (dr (cadr self)))
     (if (not (dbl-tempo-p self)) 
         (let ((frst (list '(0 0) (flat (list cr nil )))))
           (append (list frst) dr)) dr)))
 
 (defmethod cadr-tempo ((self voice))
-  (cadr-tempo (tempo self)))
+  (cadr-tempo (fix-frst-tempo self)))
 
 ;(cadr-tempo  '((1/4 60) (((1 0) (1/4 45 nil)) ((2 0) (1/8 50 nil)))))
 
@@ -115,13 +131,13 @@
           
 
 
-(defun reset-offset (tree)
+(defun reset-offsets (tree)
   (loop for x in tree
         collect (if (atom x)
                   (progn 
                     (setf (offset x) 0)
                     x)
-                  (reset-offset x))))
+                  (reset-offsets x))))
 
         
 (defmethod! translate-tempo ((self voice))
@@ -131,21 +147,23 @@
          (loop for i in tempi
                collect (if (= 1 (length i))
                            (list (butlast (second (car i))) nil)
-                         (let ((cr (car i))
-                               (cd (cdr i)))
-                           (if (last-elem (second cr))
-                               (x-append (list (butlast (second cr)))
-                                         (list i))
-                           (x-append (list (butlast (second cr)))
-                                     (list cd))
+                         (let* ((cr (car i))
+                                (head (butlast (second cr)))
+                                (cd (cdr i))
+                                (tail (loop for i in cd
+                                            collect (cons 
+                                                     (list 0 (second (car i)))
+                                                     (cdr i)))))
+                           
+                           (list head tail)
                            ))))
                          
-         ))
+         )
 
 
 
 
-;for split
+;for split (not used ?)
 (defun init-meas-tempo-pos (liste)
   (let ((clone (clone liste)))
     (loop for lst in clone
@@ -162,7 +180,7 @@
    :icon 217
    :doc "Splits down a <voice> into measures converted to voices."
 
-  (let* ((measures (reset-offset (inside (clone self))))
+  (let* ((measures (reset-offsets (inside (clone self))))
          (chords (loop for i in measures
                        collect (get-chords i)))
          (trees (loop for i in measures
@@ -177,6 +195,11 @@
                                  :tree i
                                  :chords k
                                  :tempo tp))))
+
+
+(defmethod! voice->voices ((self poly))
+            (let ((voices (inside self)))
+              (mapcar #'voice->voices voices)))
 
 
 (defun set-meas-pos (meas pos)
