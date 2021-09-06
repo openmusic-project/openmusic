@@ -565,7 +565,7 @@ Converts all rests to notes.
 
 
 
-(defmethod! filtertree ((tree list) (places list) (mode symbol))
+(defmethod! filtertree ((tree list) (places list) &optional (mode 'rests))
   :initvals '('(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) '(0 1) 'rests)
   :indoc '("tree" "places" "mode")
   :menuins '((2 (("rests" 'rests)
@@ -598,7 +598,7 @@ Converts all rests to notes.
                    :chords chords
                    :tempo tempo)))
 
-(defmethod! filtertree ((self voice) (places list) (mode symbol))
+(defmethod! filtertree ((self voice) (places list) &optional (mode 'rests))
                 (let* ((tree (tree self))
                        (chords (remove-nth (chords self) places))
                        (filt-tree (filtertree tree places mode))
