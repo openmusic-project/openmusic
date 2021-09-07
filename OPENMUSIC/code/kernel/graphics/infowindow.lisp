@@ -751,23 +751,23 @@
 
 
 (defmethod get-info-components ((self TemporalBox))
-   (list (om-make-point 255 320)
-                  (om-make-dialog-item 'om-editable-text (om-make-point 10 130) (om-make-point 230 90) 
-                              (get-box-doc self)
-                              :font *controls-font*)
-          (om-make-dialog-item 'om-static-text (om-make-point 10 12) (om-make-point 70 20) "Name : " 
-                                                     :font *om-default-font2*)
+  (list (om-make-point 255 360)
+        (om-make-dialog-item 'om-editable-text (om-make-point 10 130) (om-make-point 230 90) 
+                             (get-box-doc self)
+                             :font *controls-font*)
+        (om-make-dialog-item 'om-static-text (om-make-point 10 12) (om-make-point 70 20) "Name : " 
+                             :font *om-default-font2*)
           
-          (om-make-dialog-item 'om-static-text (om-make-point 10 42) (om-make-point 60 20) "Type : " 
-                                                    :font *om-default-font2*)
-          (om-make-dialog-item 'om-static-text (om-make-point 70 42) (om-make-point 140 20) (get-object-insp-name self) 
-                               :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 10 42) (om-make-point 60 20) "Type : " 
+                             :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 70 42) (om-make-point 140 20) (get-object-insp-name self) 
+                             :font *om-default-font2*)
           
-          (om-make-dialog-item 'om-static-text (om-make-point 10 72) (om-make-point 80 20) "Reference : " 
-                                                    :font *om-default-font2*)
-          (om-make-dialog-item 'om-static-text (om-make-point 90 72) (om-make-point 140 20) (get-object-insp-name (reference self))
-                               :font *om-default-font2*)
-          (om-make-view 'bar-item :position (om-make-point 5 105) :size (om-make-point 235 2)
+        (om-make-dialog-item 'om-static-text (om-make-point 10 72) (om-make-point 80 20) "Reference : " 
+                             :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 90 72) (om-make-point 140 20) (get-object-insp-name (reference self))
+                             :font *om-default-font2*)
+        (om-make-view 'bar-item :position (om-make-point 5 105) :size (om-make-point 235 2)
                       :fg-color *om-gray-color*)
          
           ;(om-make-dialog-item 'om-static-text (om-make-point 10 78) (om-make-point 230 60) 
@@ -776,18 +776,23 @@
           ;(om-make-view 'bar-item :position (om-make-point 5 132) :size (om-make-point 235 2)
           ;            :fg-color *om-gray-color*)
 
-          (om-make-dialog-item 'om-static-text (om-make-point 10 110) (om-make-point 130 20) "Comments:" 
-                                                    :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 10 110) (om-make-point 130 20) "Comments:" 
+                             :font *om-default-font2*)
           
-          (om-make-view 'bar-item :position (om-make-point 5 238) :size (om-make-point 235 2)
+        (om-make-view 'bar-item :position (om-make-point 5 238) :size (om-make-point 235 2)
                       :fg-color *om-gray-color*)
           
-          (om-make-dialog-item 'om-static-text (om-make-point 10 250) (om-make-point 45 20) "Offset" :font *om-default-font2*)
-          (om-make-dialog-item 'om-static-text (om-make-point 130 250) (om-make-point 45 20) "Dur."  :font *om-default-font2*)
-          (om-make-dialog-item 'om-static-text (om-make-point 10 275) (om-make-point 45 20) "Pos. Y" :font *om-default-font2*)
-          (om-make-dialog-item 'om-static-text (om-make-point 130 275) (om-make-point 70 20) "Size Y" :font *om-default-font2*)
-         
-         ))
+        (om-make-dialog-item 'om-static-text (om-make-point 10 250) (om-make-point 45 20) "Offset" :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 130 250) (om-make-point 45 20) "Dur."  :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 10 275) (om-make-point 45 20) "Pos. Y" :font *om-default-font2*)
+        (om-make-dialog-item 'om-static-text (om-make-point 130 275) (om-make-point 70 20) "Size Y" :font *om-default-font2*)
+        (om-make-view 'bar-item :position (om-make-point 5 300) :size (om-make-point 235 2)
+                      :fg-color *om-gray-color*)
+        (om-make-dialog-item 'om-button  (om-make-point 180 305) (om-make-point 45 10) "Set" 
+                             :di-action (om-dialog-item-act  item
+                                          (update-close self (infowin self))
+                                          ))
+        ))
 
 
 
