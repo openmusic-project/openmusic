@@ -14,6 +14,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Now in Maquette tempobj info can be set without closing it
 - clear-all listener output ctrl-z/cmd-z
 - completion now integrates extra package prefixes and refreshed when
 libraries are loaded
