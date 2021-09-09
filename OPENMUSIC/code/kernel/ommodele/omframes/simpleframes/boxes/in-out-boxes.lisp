@@ -807,7 +807,7 @@
 (defun set-input-dialog (theinput)
   (let* ((dialog (make-editor-window 'inputEditor theinput (or (frame-name theinput) (name theinput)) nil
                                      :winpos :centered
-                                     :winsize (om-make-point 220 158)
+                                     :winsize (om-make-point 210 #+linux 190 #+(or macosx win32)175)
                                      :resize nil))
          (doc-scroller (om-make-dialog-item 'om-text-edit-view
                                             (om-make-point 107 50) (om-make-point 100 75)
@@ -865,7 +865,7 @@
                                           
                                           :font *om-default-font3b* 
                                           :bg-color *azulito*)
-                     (om-make-dialog-item 'om-button (om-make-point 10 126) (om-make-point 80 18) "Apply"
+                     (om-make-dialog-item 'om-button (om-make-point 70 135) (om-make-point 80 18) "Apply"
                                           :di-action (om-dialog-item-act item 
                                                        (editor-set-help-action (editor dialog) (om-dialog-item-text doc-scroller))
                                                        (editor-set-defval-action (editor dialog)
