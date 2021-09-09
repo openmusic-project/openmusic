@@ -788,7 +788,7 @@
         (om-make-dialog-item 'om-static-text (om-make-point 130 275) (om-make-point 70 20) "Size Y" :font *om-default-font2*)
         (om-make-view 'bar-item :position (om-make-point 5 300) :size (om-make-point 235 2)
                       :fg-color *om-gray-color*)
-        (om-make-dialog-item 'om-button  (om-make-point 180 305) (om-make-point 45 10) "Set" 
+        (om-make-dialog-item 'om-button  (om-make-point 180 305) (om-make-point 60 10) "Set" 
                              :di-action (om-dialog-item-act  item
                                           (update-close self (infowin self))
                                           ))
