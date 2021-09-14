@@ -19,11 +19,12 @@ IMPROVEMENTS
 - completion now integrates extra package prefixes and refreshed when
 libraries are loaded
 - export-nusicxml extra note heads support
-- Now all ListInstancesBoxes closes when assosiated boxes are destroyed
+- Now all ListInstancesBoxes closes when associated boxes are destroyed
 - Now export-svg exports bpf's color
 
 FIXES
 
+- fixed input info display (linux)
 - voice->voices tempo fix
 - fixed Library Package Browser display (linux)
 - fixed chord extra note-heads musicxml-export 
