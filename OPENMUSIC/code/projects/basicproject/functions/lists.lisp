@@ -472,22 +472,45 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
 
 ;;;-----------------ITERATE-LIST
 
-(defmethod* repeat-until-length ((list list)
-                            (lgt number))
-            (let ((length-list (length list)))
-              (if (< lgt length-list)
-                  (first-n list lgt)
-                (let* ((ceil (ceiling (/ lgt (length list))))
-                      (rep (repeat-n list ceil)))
-                  (first-n (flat rep) lgt)))))
+
+(defmethod* iter-last-n ((lst list) (lgt number))
+  :doc "iterates last element so length of <lst> is equal to <lgt>"   
+  (if (< (length lst) lgt)
+      (let ((res (reverse lst)))
+        (loop while (not (>= (length res) lgt))
+              do (push (car res) res))
+        (reverse res))
+    lst))
+
+;(iter-last-n '(1 2 5 3) 10)
 
 
+(defmethod* iter-first-n ((lst list) (lgt number))
+  :doc "iterates first element so length of <lst> is equal to <lgt>"   
+  (if (< (length lst) lgt)
+      (let ((res lst))
+        (loop while (not (>= (length res) lgt))
+              do (push (car res) res))
+        res)
+    lst))
 
-(defmethod* repeat-last-n ((list list) (n number))
-  (let ((lgt (length list))
-        (lst (last-elem list)))
-    (if (> n lgt) (x-append list (repeat-n lst (- n lgt)))
-    (first-n list n))))
+;(iter-first-n '(1 2 5 3) 10)
+
+
+(defmethod* iter-until-n ((lst list) (lgt number))
+  :doc "iterates all elements of <lst> so length of <lst> is equal to <lgt>"   
+  (if (< (length lst) lgt)
+      (let ((res (reverse lst))
+            (n 0))
+        (loop while (not (>= (length res) lgt))
+              do (progn
+                   (push (nth n  (reverse res)) res)
+                   (incf n)))
+        (reverse res))
+    lst))
+
+;(iter-until-n '(1 2 5 3) 3)
+
 
 
 (defmethod* iterate-list ((lst list) (length number) &key (mode 'until))
@@ -502,11 +525,9 @@ mode: <until> iterates the list (default).
       <last>  iterates the last element of list.
       <first> iterates the first element of list."
   (case mode
-    (until (repeat-until-length lst length))
-    (last (repeat-last-n lst length))
-    (first (if (> length (length lst)) 
-               (reverse (repeat-last-n (reverse lst) length))
-             (first-n lst length)))))
+    (until (iter-until-n lst length))
+    (last (iter-last-n lst length))
+    (first (iter-first-n lst length))))
 
 
 ;;;-----------------APPLY-LAMBDA-SEQ
