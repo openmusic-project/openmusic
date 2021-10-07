@@ -371,7 +371,9 @@ Press 'space' to play/stop the sound file.
       ;;; (om-supported-audio-format (om-sound-format thesound)))
       (progn 
         (setf sound (make-instance 'sound))
-        (om-message-dialog (format nil (om-str :file-not-found) (namestring name)))))
+        ;(om-message-dialog (format nil (om-str :file-not-found) (namestring name)))
+        (om-beep-msg (format nil "File '~a' not found." (namestring name)))
+        ))
     sound))
 
 
