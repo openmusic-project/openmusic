@@ -900,7 +900,19 @@ sequentially by elements from <elem>."
        (not-optimized (trans-obj tree2obj)))))
 
 
-
+(defmethod! subst-rhythm ((tree voice) 
+                          (pos list)
+                          (elem list)
+                          &optional 
+                          (option 'reduce)
+                          (output 'optimized))
+  (setf n -1)
+  (let* ((rt (tree tree))
+         (subst(subst-rhythm rt pos elem option output)))
+    (make-instance 'voice
+                   :tree subst
+                   :tempo (tempo tree)
+                   :chords (chords tree))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;INVERT-RHYTHM;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

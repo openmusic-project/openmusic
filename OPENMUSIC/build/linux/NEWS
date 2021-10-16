@@ -14,6 +14,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- subst-rhythm method for voice
 - Annoying modal dialog when soundfiles are missing transformed as listener output
 - Now in Maquette tempobj info can be set without closing it
 - clear-all listener output ctrl-z/cmd-z

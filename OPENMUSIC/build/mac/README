@@ -1,5 +1,5 @@
 ;=====================================
-; OM 6.19
+; OM 6.20
 ;=====================================
 
 To install, just drag "OM 6.19.app" into your Applications/ directory.
@@ -34,6 +34,45 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone git://git.forge.ircam.fr/OM.git
 ;------------------------------------
+* RELEASE NOTES 6.20
+
+NEW FEATURES
+
+- OM Finder (search patches, maquettes, in workspaces, functions, in patches, etc.)
+- New functions: apply-lambda-list (list processing)
+- Appearance features: Added support for background color of:
+   - Patches
+   - text editors (listener included)
+   - score editors (Voice, Chord-seq, etc.)
+   - Bpf, 3dc, 
+   - Sound.
+
+
+IMPROVEMENTS
+
+- subst-rhythm method for voice
+- Annoying modal dialog when soundfiles are missing transformed as listener output
+- Now in Maquette tempobj info can be set without closing it
+- clear-all listener output ctrl-z/cmd-z
+- completion now integrates extra package prefixes and refreshed when
+libraries are loaded
+- export-nusicxml extra note heads support
+- Now all ListInstancesBoxes closes when associated boxes are destroyed
+- Now export-svg exports bpf's color
+
+FIXES
+
+- fixed input info display (linux)
+- voice->voices tempo fix
+- fixed Library Package Browser display (linux)
+- fixed chord extra note-heads musicxml-export 
+- enabled internal pict resources in picture dialog
+- updated MathTools tutorials
+- fixed midievent-seq miniview
+- fixed get-group-ratio method
+- import-musicxml open file shows all *.*xml types
+- fixed typo error in rotateprops 
+- fixed bug in all-list?
 
 
 * RELEASE NOTES 6.19

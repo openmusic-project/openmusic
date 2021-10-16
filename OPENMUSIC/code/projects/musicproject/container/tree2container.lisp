@@ -30,7 +30,7 @@
 ;TOOLS
 ;=====================================
 
-; T is l is not a tree but a list of ratios (numbers)
+; T if l is not a tree but a list of ratios (numbers)
 (defun ratios-tree-p (l) (list-subtypep l '(ratio number)))
 
 ;'((4 4) ((1 (1 1 1)))) = T
