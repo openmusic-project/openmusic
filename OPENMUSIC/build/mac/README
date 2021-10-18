@@ -62,6 +62,7 @@ libraries are loaded
 
 FIXES
 
+- fixed obj-mode selection in Score objects
 - fixed input info display (linux)
 - voice->voices tempo fix
 - fixed Library Package Browser display (linux)
