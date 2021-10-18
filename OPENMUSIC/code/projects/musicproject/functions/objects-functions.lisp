@@ -31,6 +31,38 @@
 (in-package :om)
 
 
+;==========================================================================
+;   Tools
+;==========================================================================
+
+
+(defmethod get-obj-parent ((self chord))
+  "Returns the root father of object, or object itself if it is not a child"
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
+(defmethod get-obj-parent ((self measure))
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
+(defmethod get-obj-parent ((self voice))
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
+(defmethod get-obj-parent ((self poly))
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
+(defmethod get-obj-parent ((self chord-seq))
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
+(defmethod get-obj-parent ((self t)) nil)
 
 
 ;=========================================================================
