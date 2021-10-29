@@ -354,7 +354,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
         (list "<accent default-x=\"-1\" default-y=\"-61\" placement=\"below\"/>")
         "</articulations>"))
 
-(defun groupnotation (self)
+(defun groupnotation (self)  
    (list "<notations>"
          (if (in-group? self)
              (let* ((lvl (get-grp-level self))
@@ -368,24 +368,30 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                             collect (if (not (= 1 (/ (car i) (second i)))) i) 
                                             )))
                     (simpli (/ act-note norm-note)))
+               (print (list "ratio:" ratio))
 
                (if (not (= (/ (car ratio) (second ratio)) 1))
                    (cond 
                     ((and (om::last-of-group? self) (om::first-of-group? self))
                      (when (accent? self) (list (accent-notation self))))
                     ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-                     (remove nil 
-                             (append 
-                              (let ((obj self)
-                                    (indx (+ (length numdenom) 1)))
-                                (remove nil (loop for i in (reverse numdenom)           
-                                                  append (progn 
-                                                           (setf obj (om::parent obj))
-                                                           (setf indx (- indx 1))
-                                                           (when (first-of-this-group self obj)
-                                                             (firstofgroup (car i) (second i) (third i) indx))))))
-                              (list (tied-notation self)
-                                    (when (accent? self) (accent-notation self))))))
+                     (progn 
+                       (print (list self ratio))
+                       (remove nil 
+                               (append 
+                                (let ((obj self)
+                                      (indx (+ (length numdenom) 1)))
+                               
+                                  (remove nil (loop for i in (reverse numdenom)           
+                                                    append (progn 
+                                                             (setf obj (om::parent obj))
+                                                             (setf indx (- indx 1))
+                                                             (when (first-of-this-group self obj)
+                                                               (firstofgroup (car i) (second i) (third i) indx))))))
+                                (list (tied-notation self)
+                                      (when (accent? self) (accent-notation self)))))
+                       )
+                     )
                     ((and (om::last-of-group? self) (not (om::first-of-group? self)))
                      (remove nil 
                              (append 
@@ -401,13 +407,42 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                     (when (accent? self) (accent-notation self))))))
                    
                     (t (when (accent? self) (list (accent-notation self)))))
+                 
+                 (if (and ratio (= (/ (car ratio) (second ratio)) 1))
+                     (cond 
+                      ((and (om::last-of-group? self) (om::first-of-group? self))
+                       (when (accent? self) (list (accent-notation self))))
+                      ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
+                       (progn 
+                         (print (list self ratio))
+                         (remove nil 
+                                 (append 
+                                  (let ((obj self)
+                                        (indx (+ (length numdenom) 1)))
+                               
+                                    (remove nil (loop for i in (reverse numdenom)           
+                                                      append (progn 
+                                                               (setf obj (om::parent obj))
+                                                               (setf indx (- indx 1))
+                                                               (when (first-of-this-group self obj)
+                                                                 (firstofgroup (car i) (second i) (third i) indx))))))
+                                  (list (tied-notation self)
+                                        (when (accent? self) (accent-notation self)))))
+                         )
+                       )
+                      (t (when (accent? self) (list (accent-notation self)))))
+                 
+                   (when (or (tied? self) (accent? self))
+                     (remove nil 
+                             (list 
+                              (when (tied? self) (tied-notation self))
+                              (when (accent? self) (accent-notation self)))))
 
-                 (when (or (tied? self) (accent? self))
-                   (remove nil 
-                           (list 
-                            (when (tied? self) (tied-notation self))
-                            (when (accent? self) (accent-notation self)))))
-                 ))
+
+                 
+                   )
+                 )
+               )
            
            (when (or (tied? self) (accent? self))
              (remove nil 
