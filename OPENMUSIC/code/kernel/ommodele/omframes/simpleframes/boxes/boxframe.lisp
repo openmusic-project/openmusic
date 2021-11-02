@@ -455,7 +455,7 @@
     ))
 
 (defmethod add-all-inputs ((self omboxframe)) 
-   "Add an optional inputframe to 'self'."
+   "Add all optional inputframe to 'self'."
    (if (do-add-all-inputs (object self))
     (progn (box-draw-connections self nil)
       (omG-select (redraw-frame self)))
@@ -468,6 +468,15 @@
     (box-draw-connections self nil)
     (omG-select (redraw-frame (car (frames (object self)))))
     ))
+
+(defmethod delete-all-inputs ((self omboxframe))
+  (let* ((obj (object self))
+         (init (min-inp-number (reference obj)))
+         (curr (length (inputs obj))))
+    (loop while (not (= init curr))
+          do (progn 
+               (delete-one-input self)
+               (setf curr (length (inputs obj)))))))
 
 (defmethod add-keywords ((self omboxframe)) 
    "Add a keyword inputframe to 'self'."

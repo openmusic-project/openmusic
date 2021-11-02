@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -137,7 +137,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("v") "eVal")
                      
                        (("b") "lock or change eval mode Button")
-                       ((">" "<") "add/remove Optional inputs")
+                       ((">" "<") "add/remove One optional input")
+                       ("alt+lr" "add/remove All optional inputs")
                        (("k" "K") "add/remove Keyword inputs")
 
                        (("d") "show Documentation")
@@ -147,10 +148,10 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                      
                        #+om-reactive(("r") "reactive box on/off")
                        (("f") "add function or class")
-                       (("c") "add comment box")
                        ))
 
-(defvar *patchhelp2* '((("C") "Change Color")
+(defvar *patchhelp2* '((("c") "add comment box")
+                       (("C") "Change Color")
                        (("F") "Change Font Style")
                        (("A") "Align")
                        (("i") "reInitialize size")
@@ -225,7 +226,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
              ))
       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                       (string-upcase (class-name (class-of (object (editor self))))))
-                              (get-help-list (editor self)))) 
+                              (get-help-list (editor self)) 410)) 
       (#\H (mapc 'open-helpfile actives))
       ;;; in the menu
       (#\k (mapc 'add-keywords actives))
@@ -265,7 +266,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
        (make-move-after self actives))
       (:om-key-left
        (if (om-option-key-p)
-           (mapc #'(lambda (item) (delete-one-input item) t) actives)
+           (mapc #'(lambda (item) (delete-all-inputs item) t) actives)
          (progn
            (mapc #'(lambda (item) (move-frame-delta item 3)) actives)
            (make-move-after self actives)
@@ -273,12 +274,12 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
          ))
       (:om-key-right 
        (if (om-option-key-p)
-           (mapc #'(lambda (item) (add-one-input item)) actives)
+           (mapc #'(lambda (item) (add-all-inputs item)) actives)
          (progn (mapc #'(lambda (item) (move-frame-delta item 2)) actives)
            (make-move-after self actives))))
 
       (#\< (mapc #'(lambda (item) (delete-one-input item)) actives))
-      (#\> (mapc #'(lambda (item) (add-all-inputs item)) actives))
+      (#\> (mapc #'(lambda (item) (add-one-input item)) actives))
       
       (#\r #+om-reactive(mapc #'(lambda (boxframe) 
                                   (set-active (object boxframe) (not (active (object boxframe))))
