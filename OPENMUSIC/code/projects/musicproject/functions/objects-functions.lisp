@@ -266,6 +266,7 @@
     ))
    
 
+#|
 (defmethod! concat-voices ((liste list))
    :initvals (list t) 
    :indoc '("list of voices")
@@ -281,7 +282,24 @@
                     :chords chords
                     :tempo tempo)
      ))
+|#
 
+(defmethod! concat-voices ((liste list))
+   :initvals (list t) 
+   :indoc '("list of voices")
+   :icon 217
+   :doc "concatenates a list of voices into one voice."
+   (let* ((voices (flat (mapcar #'voice->voices liste)));;important if a voice contains more than one measure.
+          (trees (mapcar #'tree voices))
+          (conc-tree (list '? (flat-once (flat-once (mapcar 'cdr trees)))))
+          (chords (remove 'nil (flat (mapcar 'chords voices))))
+          (tempo (concatenate-tempi voices))
+          )
+     (make-instance 'voice
+                    :tree conc-tree
+                    :chords chords
+                    :tempo tempo)
+     ))
 
 ;;;;;;;;;
 
