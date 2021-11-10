@@ -2154,7 +2154,7 @@
         (om-with-font (om-make-font *om-score-font-face* (nth 1 *om-def-font-sizes*))
                       (om-draw-string x (+ y 2) 
                                       (if (selection? self)
-                                          (str-check (string+ (om-str :selection) ": " (format () "~D - ~D ms" b e)))
+                                          (str-check (string+ (om-str :selection) ": " (format () "~D - ~D ms ~%Duration: ~D ms" b e (- e b))))
                                         (str-check (string+ (om-str :duration) ": " (format () "~D ms" e)))))
                       )))))
 
