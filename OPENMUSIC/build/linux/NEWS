@@ -14,6 +14,9 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Duration display in selection mode in SCORE editors
+- get-time-sig replaces get-signatures with list/ratio optional output
+- voice->voices, concat-voices now also handles poly
 - Now > and < shortcuts add and remove only one input, 
   while alt+right or left arrows add and remove all inputs
 - subst-rhythm method for voice
