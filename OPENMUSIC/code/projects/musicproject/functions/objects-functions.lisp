@@ -210,7 +210,7 @@
    :initvals (list t) 
    :indoc '("voice")
    :icon 217
-   :doc "Splits down a <voice> into measures converted to voices."
+   :doc "Splits down a <self>, a VOICE or a POLY  into measures converted to a list of VOICES or POLYS."
 
   (let* ((measures (reset-offsets (inside (clone self))))
          (chords (loop for i in measures
@@ -229,9 +229,19 @@
                                  :tempo tp))))
 
 
+;(defmethod! voice->voices ((self poly))
+;            (let ((voices (inside self)))
+;              (mapcar #'voice->voices voices)))
+
+
+
 (defmethod! voice->voices ((self poly))
-            (let ((voices (inside self)))
-              (mapcar #'voice->voices voices)))
+(let* ((voices (inside self))
+      (split (loop for i in voices
+                   collect (voice->voices i))))
+  (loop for i in (mat-trans split)
+        collect (make-instance 'poly
+                               :voices (remove 'nil i)))))
 
 
 (defun set-meas-pos (meas pos)
@@ -284,11 +294,7 @@
      ))
 |#
 
-(defmethod! concat-voices ((liste list))
-   :initvals (list t) 
-   :indoc '("list of voices")
-   :icon 217
-   :doc "concatenates a list of voices into one voice."
+(defmethod concatenate-voices ((liste list))
    (let* ((voices (flat (mapcar #'voice->voices liste)));;important if a voice contains more than one measure.
           (trees (mapcar #'tree voices))
           (conc-tree (list '? (flat-once (flat-once (mapcar 'cdr trees)))))
@@ -300,6 +306,25 @@
                     :chords chords
                     :tempo tempo)
      ))
+
+(defmethod concatenate-polys ((liste list))
+  (let* ((voices (mat-trans (loop for i in liste
+                                  collect (inside i))))
+         (concate (loop for i in voices  
+                        collect (concatenate-voices (remove 'nil i)))))
+    (make-instance 'poly 
+                   :voices concate)))
+
+
+(defmethod! concat-voices ((liste list))
+   :initvals (list t) 
+   :indoc '("list of voices")
+   :icon 217
+   :doc "concatenates a list of voices or a list of poly  into one voice or poly."
+   (if (voice-p (car liste)) 
+       (concatenate-voices liste)
+     (concatenate-polys liste)))
+
 
 ;;;;;;;;;
 

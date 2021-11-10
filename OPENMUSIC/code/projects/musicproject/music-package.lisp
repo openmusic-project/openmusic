@@ -81,7 +81,7 @@
                    tree2ratio mktree
                    reducetree tietree remove-rests invert-rhythm reversetree 
                    rotatetree rotateprops filtertree select-tree subst-rhythm 
-                   group-pulses n-pulses get-signatures get-pulse-places get-rest-places
+                   group-pulses n-pulses get-time-sig get-pulse-places get-rest-places
                    ) *trees-package*)
 
 

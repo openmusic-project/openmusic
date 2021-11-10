@@ -1301,7 +1301,7 @@ An inconsistent index (> than the length of <figures>) will produce a rest.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;GET-SIGNATURES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;;depreciated
 (defmethod! get-signatures ((tree list))
    :icon 225
    :indoc '("a rhythm tree, voice or poly")
@@ -1319,6 +1319,46 @@ Returns the list of time signatures in the rhythm tree (<tree>).
    (let* ((voices (inside self)))
      (loop for i in voices
      collect (get-signatures i))))
+
+
+
+
+
+;---------------------get-time-sig------------------------
+
+
+(defun list2ratio (list)
+(/ (car list) (second list)))
+
+(defun ratio2list (elem)
+    (list (numerator elem)
+          (denominator elem)))
+
+
+(defmethod! get-time-sig ((self list) &optional (mode 'list))
+   :icon 217
+   :indoc '("self" "mode")
+   :initvals (list t 'list)
+   :menuins '((1 (("list" 'list)
+                  ("ratio" 'ratio))))
+   :doc "Returns a list of measures contained in <self>. <mode> returns time signatures as a list (default) or ratio."
+(case mode 
+  (list (mapcar #'first (cadr self)))
+  (ratio (mapcar #'list2ratio (mapcar #'first (cadr self))))))
+
+
+(defmethod! get-time-sig ((self voice) &optional (mode 'list))
+   (let* ((tree (tree self)))
+     (case mode 
+       (list (mapcar #'first (cadr tree)))
+       (ratio (mapcar #'list2ratio (mapcar #'first (cadr tree)))))))
+
+
+
+(defmethod!  get-time-sig ((self poly) &optional (mode 'list)) 
+   (let* ((voices (inside self)))
+     (loop for i in voices
+           collect (get-time-sig i mode))))
 
 
 
