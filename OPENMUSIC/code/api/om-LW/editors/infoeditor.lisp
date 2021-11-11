@@ -63,6 +63,7 @@
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
+                           :background (color:make-rgb  0.772 0.855 0.788) ;*azulito*
                            :display-state :normal
                            :title "Score Inpsector" ;(format nil "~S INFO" (car *info-pack*)) 
                            ))
@@ -84,37 +85,42 @@
                                :text (nth 2 *info-pack*)
                                :visible-min-height '(character 1)
                                :visible-max-width nil)) ;selection
+  (setf pane2b (make-instance 'capi::display-pane
+                               :font *def-objinfo-font*
+                               :text (nth 3 *info-pack*)
+                               :visible-min-height '(character 1)
+                               :visible-max-width nil)) ;duration
 
   (setf pane3 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 3 *info-pack*)
+                               :text (nth 4 *info-pack*)
                                :change-callback 'update-callback
                                :visible-min-height '(character 1)
                                :visible-max-width nil)) ;midics
                 
   (setf pane4 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 4 *info-pack*) 
+                               :text (nth 5 *info-pack*) 
                                :visible-min-height '(character 1)
                                :visible-max-width nil)) ;vels
   (setf pane5 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 5 *info-pack*)
+                               :text (nth 6 *info-pack*)
                                :visible-min-height '(character 1)
                                :visible-max-width nil));durs
   (setf pane6 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 6 *info-pack*)
+                               :text (nth 7 *info-pack*)
                                :visible-min-height '(character 1)
                                :visible-max-width nil));chans
   (setf pane7 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 7 *info-pack*)
+                               :text (nth 8 *info-pack*)
                                :visible-min-height '(character 1)
                                :visible-max-width nil));offs
   (setf pane8 (make-instance 'capi::multi-line-text-input-pane
                                :font *def-objinfo-font*
-                               :text (nth 8 *info-pack*)
+                               :text (nth 9 *info-pack*)
                                :visible-min-height '(character 1)
                                :visible-max-width nil));ports
   (setf button1 (make-instance 'capi::push-button
@@ -148,7 +154,8 @@
   (setf row2 (make-instance 'capi::grid-layout
                          :y-adjust :center
                          :columns 2
-                         :description (list "SELECTION:" pane2)))
+                         :description (list "SELECTION:" pane2
+                                            "DURATION:" pane2b)))
   (setf row3 (make-instance 'capi::grid-layout
                          :y-adjust :center
                          :columns 2
@@ -193,6 +200,7 @@
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
+                           :background (color:make-rgb  0.772 0.855 0.788) ;*azulito*
                            :display-state :normal
                            :title "OBJ INFO" ;(format nil "~S INFO" (car *info-pack*))  
                            ))
@@ -318,6 +326,7 @@
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
+                           :background (color:make-rgb  0.772 0.855 0.788) ;*azulito*
                            :display-state :normal
                            :title "OBJ INFO" ;(format nil "~S INFO" (car *info-pack*))  
                            ))
