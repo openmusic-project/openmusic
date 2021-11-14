@@ -43,15 +43,10 @@ path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
 thisdir		= $(dir $(thisfile))
 builddir	= $(shell cd $(dir $(thisfile)) && cd $(path_to_omroot) && pwd)
-BUILDROOT	= $(builddir)
 
 
 checkname	= $(shell ls $(BUILDROOT) | grep "OM_")
-ifdef checkname
 releaseappname	= $(checkname)
-else
-releaseappname	= $(notdir $(BUILDROOT))
-endif
 
 
 notarget:

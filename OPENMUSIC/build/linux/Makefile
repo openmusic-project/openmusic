@@ -75,10 +75,10 @@ dist:
 	rm -rf $(release) && mkdir -p $(release)
 	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
 	find $(release)/build -not -iname '*build*' -and -not -path '*linux*' -delete
-	cp README.LINUX.md $(release)
+	cp $(release)/build/linux/README.LINUX.md $(release)
 	cp $(BUILDROOT)/../LICENSE $(release)
-	cp NEWS $(release)
-	cp Makefile.dist $(release)/Makefile
+	cp $(release)/build/linux/NEWS $(release)
+	cp $(release)/build/linux/Makefile.dist $(release)/Makefile
 
 tar-dist: 
 	cd $(shell dirname $(release)) && $(compress) $(compressflags) $(compressfile) $(buildname) 
