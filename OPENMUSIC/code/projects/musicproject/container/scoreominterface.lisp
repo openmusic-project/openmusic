@@ -103,7 +103,7 @@ Type of the return value :
     (setqvalue ss1 1000)     ;work in ms. here
     (setqvalue ss2 1000)
 
-    (let ((s2-offset (or s2-offset (extent s1))))
+    (let ((s2-offset (or s2-offset (extent ss1))))
       (loop for item in (inside ss2) do (incf (offset item) s2-offset))
       (let ((outseq (mki (type-of s1)
 			 :empty t
