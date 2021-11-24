@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -175,7 +175,7 @@
      (setf (frame-name rep) fname)
      (setf (name rep) name)
      (setf (inputs rep) (mapcar #'(lambda (input) (eval input)) inputs))
-     (set-box-to-inputs (inputs newbox) newbox)
+     (set-box-to-inputs (inputs rep) rep)
      rep))
 
 
