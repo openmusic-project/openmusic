@@ -767,7 +767,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
   (loop for c in (inside self) collect 
         (let ((c2 (clone c)))
           (setqvalue c2 1)
-          (setf (extent c2) (real-dur c2))
+         ; (setf (extent c2) (real-dur c2));;;gives errounous extent.
           (qnormalize c2)
           c2)))
 
