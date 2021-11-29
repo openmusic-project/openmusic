@@ -18,13 +18,14 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
 ;Classes for omloop are defined in this file.
 ;Last Modifications :
 ;18/10/97 first date.
+;28/11/21 second date
 ;DocFile
 
 (in-package :om)
@@ -46,6 +47,26 @@
 (defmethod OpenEditorframe ((self patchForLoop))
    (or (editorframe self)
        (panel (open-new-RelationFrame  self (string+ "OM Loop - "(name self)) (get-elements self)))))
+
+(defmethod omng-remove-element ((self patchForLoop) (box OMIn))
+  "When you remove an input from omloop 'self' (when copied from another one) you must update the loop boxe attached to 'self'."
+  (call-next-method)
+  (setf *input-to-erase* (indice box))
+  (loop for item in (attached-objs self) do
+        (update-from-reference item))
+  (setf *input-to-erase* nil)
+  ;needed since no attached-objs in omloop copy:
+  (if (editorframe self) ;opened panel check
+      (om-view-doubleclick-handler (iconview (car (frames (box self)))) (frame-position (box self)))
+    ))
+
+
+(defmethod omNG-add-element ((self patchforloop) (elem OMIn))
+  (call-next-method)
+  (if (editorframe self) ;opened panel check
+      (om-view-doubleclick-handler (iconview (car (frames (box self)))) (frame-position (box self)))
+    ))
+
 
 (defparameter *loop-count-check* t)
 (defparameter *loop-count-limit* 500000)
@@ -979,7 +1000,9 @@ See OM User Manual and the OMLOOP refernce section for more details.
     ))
 
 (defmethod openeditorframe ((self omloop-box))
-   (openobjecteditor (patch self)) nil)
+   (openobjecteditor (patch self)) 
+   (update-from-reference self)
+   nil)
 
 (defmethod get-patch-editor-class ((self omloop-box))
    "'patchForLoop' is the class of the Patch associated to 'self'."
