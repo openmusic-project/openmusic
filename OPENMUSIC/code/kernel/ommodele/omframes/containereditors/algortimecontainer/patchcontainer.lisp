@@ -413,7 +413,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   (let* ((newbox (omNG-make-new-boxcall 'comment pos "comment"))
          (new-frame (make-frame-from-callobj newbox)))
     (om-select-window (window self))
-    (omG-add-element self (make-frame-from-callobj newbox))
+    (omG-add-element self newframe)
     ))
 
 
