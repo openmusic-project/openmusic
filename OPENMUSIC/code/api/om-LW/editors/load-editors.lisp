@@ -36,40 +36,11 @@
 (defvar *lw-score-edit-directory* nil)
 (setf *lw-score-edit-directory* (pathname-directory (truename *load-pathname*)))
 
-#|
-(defun compile-if-needed-and-load (file &optional (verbose t))
-   (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
-          (fasl-file (probe-file (make-pathname :directory (pathname-directory lisp-file)
-                                                :device (pathname-device lisp-file)
-                                                :name (pathname-name lisp-file) :type (pathname-type (cl-user::compile-file-pathname "")))))
-          (fasl-outofdate (and fasl-file
-                               (or (not (file-write-date lisp-file))
-                                   (not (file-write-date fasl-file))
-                                   (> (file-write-date lisp-file) (file-write-date fasl-file))))))
-     (when (and (fboundp 'compile-file)
-                (or (not fasl-file) fasl-outofdate))
-       (compile-file file :verbose verbose)
-       (setf fasl-outofdate nil))
-     (if fasl-outofdate
-         (progn (print (format nil "WARNING: File ~A is older than the LISP source file. File ~A will be loaded instead."
-                               fasl-file lisp-file))
-           (load lisp-file :verbose verbose))
-       (catch 'faslerror
-         (handler-bind ((conditions::fasl-error #'(lambda (c) 
-                                                    (when (and (fboundp 'compile-file) fasl-file)
-                                                      (print (format nil "File ~s will be recompiled..." fasl-file))
-                                                      (compile-file file :verbose verbose)
-                                                      (load file :verbose verbose)
-                                                      (throw 'faslerror t)
-                                                      ))))
-           (load file :verbose verbose)
-           ))
-       )))
-|#
+
 (mapc #'(lambda (filename) (om-lisp::compile-if-needed-and-load 
                             (make-pathname :directory *lw-score-edit-directory* 
                                            :name filename))) 
-      '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor"))
+      '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor" "commenteditor"))
 
 
 

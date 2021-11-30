@@ -150,7 +150,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("f") "add function or class")
                        ))
 
-(defvar *patchhelp2* '((("c") "add comment box")
+(defvar *patchhelp2* '((("c" "o") "add / edit comment box")
                        (("C") "Change Color")
                        (("F") "Change Font Style")
                        (("A") "Align")
@@ -211,6 +211,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       ;;;(#\f (make-undefined-box self (om-mouse-position self)))
       (#\f (make-undefined-funct-box self (om-mouse-position self)))
       (#\c (make-comment-box self (om-mouse-position self)))
+      (#\o (edit-comment-box actives))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
 
@@ -408,6 +409,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
      (omG-add-element self new-frame)
      ))
 
+#|
 (defmethod make-comment-box ((self patchPanel) pos)
   "this is for 'c' shortcut, for comments."
   (let* ((newbox (omNG-make-new-boxcall 'comment pos "comment"))
@@ -415,8 +417,36 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
     (om-select-window (window self))
     (omG-add-element self new-frame)
     ))
+|#
+
+(defun setfref (newbox text)
+  (print (list newbox (om-view-container  newbox)))
+  (setf (reference (object (om-view-container newbox))) text)
+  )
 
 
+(defmethod make-comment-box ((self patchPanel) pos)
+  "this is for 'c' shortcut, for comments editor."
+  (let* ((thename (mk-unique-name self "comment"))
+         (newbox (omNG-make-new-boxcall 'comment pos thename))
+         (new-frame (make-frame-from-callobj newbox))
+         (init (setf om-edit::*comment-text* ""))
+         (ept (om-edit::open-comment-editor-pane (iconview new-frame))))
+    (omG-add-element self new-frame)
+    (setf (om-edit::intfunc ept) #'om::setfref)
+    ept))
+
+;No multiple method, because we can only edit comments one by one for the moment
+(defmethod edit-comment-box ((self t)) 
+  "this is for 'o' shortcut, for editing comments."
+  (if (commentframep (car self)) 
+      (let* ((obj (object (car self)))
+            (text (reference obj))
+            (init (setf  om-edit::*comment-text* text))
+            (view (iconview (car (frames obj))))
+            (ept (om-edit::open-comment-editor-pane view)))
+        (setf (om-edit::intfunc ept) #'om::setfref)
+        ept)))
 
 ;------------------------------
 

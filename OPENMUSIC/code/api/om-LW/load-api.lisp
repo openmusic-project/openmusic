@@ -35,12 +35,9 @@
 (load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("lw-lisp-tools")) :name "load-lw-lisp-tools" :type "lisp"))
 
 
-(load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("editors")) :name "load-editors" :type "lisp"))
-
-
 (defpackage "OM-API"
   (:nicknames "OA")
-  (:use "COMMON-LISP" "CL-USER" "OM-LISP" "OM-EDIT" "CAPI" "LISPWORKS" "GP"))
+  (:use "COMMON-LISP" "CL-USER" "OM-LISP" "CAPI" "LISPWORKS" "GP"))
 
 (in-package :oa)
 
@@ -79,4 +76,6 @@
 
 
 (pushnew :om-api *features*)
+
+(load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("editors")) :name "load-editors" :type "lisp"))
 
