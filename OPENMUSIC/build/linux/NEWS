@@ -1,9 +1,19 @@
 * RELEASE NOTES 6.21
 
+NEW FEATURES
+
+
 FIXES
 
 - now omloop copies input creatin/deletion are refreshed
 - fix extent issue of chordseqs multiseq output
+
+
+IMPROVEMENTS
+
+- comments now have an editor. Shorcuts:
+   -'c' opens a comment window 
+   -'o' if comment is selected, opens the window comment for editing 
 
 
 
