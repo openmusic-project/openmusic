@@ -113,7 +113,14 @@
                        :callback-type :data-interface
                        :callback 'button-set-comment-callback ;selection-callback
                        ))
-
+  
+  (setf edit-button 
+        (make-instance 'capi::push-button
+                       :text "Edit"
+                       :data *comment-text* ;:push-button
+                       :callback-type :data-interface
+                       :callback 'button-edit-comment-callback ;selection-callback
+                       ))
   
   (setf close-button
         (make-instance 'capi:push-button
@@ -210,6 +217,14 @@
                                                        :title "Set Comment Text..."
                                                        :callback-type :data-interface
                                                        :callback  'button-set-comment-callback 
+                                                       :accelerator #\q)))
+                        (make-instance 'capi::menu-component
+                                       :items 
+                                       (list
+                                        (make-instance 'capi::menu-item
+                                                       :title "Edit Comment Text..."
+                                                       :callback-type :data-interface
+                                                       :callback  'button-edit-comment-callback 
                                                        :accelerator #\e)))
                         (make-instance 'capi::menu-component
                                        :items 
@@ -233,7 +248,7 @@
 
     (setf but-layout1 (make-instance 'capi::row-layout
                                    :y-adjust :center
-                                   :description  (list set-button close-button)))
+                                   :description  (list set-button edit-button close-button)))
 
   (setf  (capi::layout-description (capi:pane-layout win)) (list editor-layout but-layout1))
    (capi::display win)
@@ -264,8 +279,13 @@
     ;(om-invalidate-view (oa::vcontainer (panel interface)))
     ))
 
+(defun button-edit-comment-callback (&rest args)
+  (apply 'comment-button-action  "edit comment" args))
+
 (defun button-set-comment-callback (&rest args)
-  (apply 'comment-button-action  "set comment" args))
+  (apply 'comment-button-action  "set comment" args)
+  (apply 'close-button-action "closed" args)
+  )
 
 ;menu's callbacks
 
