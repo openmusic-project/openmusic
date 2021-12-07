@@ -368,7 +368,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                             collect (if (not (= 1 (/ (car i) (second i)))) i) 
                                             )))
                     (simpli (/ act-note norm-note)))
-               (print (list "ratio:" ratio))
+               ;(print (list "ratio:" ratio))
 
                (if (not (= (/ (car ratio) (second ratio)) 1))
                    (cond 
@@ -376,7 +376,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                      (when (accent? self) (list (accent-notation self))))
                     ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
                      (progn 
-                       (print (list self ratio))
+                       ;(print (list self ratio))
                        (remove nil 
                                (append 
                                 (let ((obj self)
@@ -414,7 +414,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                        (when (accent? self) (list (accent-notation self))))
                       ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
                        (progn 
-                         (print (list self ratio))
+                         ;(print (list self ratio))
                          (remove nil 
                                  (append 
                                   (let ((obj self)
