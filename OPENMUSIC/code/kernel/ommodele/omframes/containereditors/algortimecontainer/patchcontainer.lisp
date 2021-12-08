@@ -420,9 +420,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 |#
 
 (defun setfref (newbox text)
-  (print (list newbox (om-view-container  newbox)))
-  (setf (reference (object (om-view-container newbox))) text)
-  )
+  (setf (reference (object (om-view-container newbox))) text))
 
 
 (defmethod make-comment-box ((self patchPanel) pos)
