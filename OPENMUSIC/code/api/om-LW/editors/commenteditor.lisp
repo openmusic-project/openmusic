@@ -166,7 +166,7 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Undo"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-undo
+                                                             :callback 'comment-edit-undo
                                                              :accelerator #\z
                                                              )))
                               (make-instance 'capi::menu-component
@@ -175,17 +175,17 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Cut"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-cut
+                                                             :callback 'comment-edit-cut
                                                              :accelerator #\x)
                                               (make-instance 'capi::menu-item
                                                              :title "Copy"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-copy
+                                                             :callback 'comment-edit-copy
                                                              :accelerator #\c)
                                               (make-instance 'capi::menu-item
                                                              :title "Paste"
                                                              :callback-type :interface
-                                                             :callback 'tree-edit-paste
+                                                             :callback 'comment-edit-paste
                                                              :accelerator #\v)))
                               (make-instance 'capi::menu-component
                                              :items 
@@ -193,7 +193,7 @@
                                               (make-instance 'capi::menu-item
                                                              :title "Select All"
                                                              :callback-type :interface
-                                                             :callback 'tree-select-all
+                                                             :callback 'comment-select-all
                                                              :accelerator #\a
                                                              )))
                               (make-instance 'capi::menu-component
@@ -337,6 +337,41 @@
   (with-slots (ep) interface
     (setf (capi::simple-pane-font comment-editor-pane) 
           (setf *def-comment-edit-font*
-                (capi::prompt-for-font "" :font (capi::simple-pane-font comment-editor-pane))))))
+                (capi::prompt-for-font "" :font (capi::simple-pane-font comment-editor-pane))))
+    ))
+
+
+;;;;
+
+
+(defun comment-edit-paste (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer comment-editor-pane)))
+      (capi:call-editor comment-editor-pane (list 'editor::insert-cut-buffer-command buffer))
+    )))
+
+(defun comment-edit-copy (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer comment-editor-pane)))
+      (capi:call-editor comment-editor-pane (list 'editor::copy-to-cut-buffer-command buffer))
+    )))
+
+(defun comment-edit-cut (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer comment-editor-pane)))
+      (capi:call-editor comment-editor-pane (list 'editor::copy-to-cut-buffer-command buffer))
+      (capi:call-editor comment-editor-pane (list 'editor::kill-region-command buffer))
+    )))
+
+(defun comment-select-all (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer comment-editor-pane)))
+      (editor::use-buffer buffer
+        (capi:call-editor comment-editor-pane (list 'editor::mark-whole-buffer-command buffer))))))
+  
+(defun comment-edit-undo (interface)
+  (with-slots (ep) interface
+    (let ((buffer (capi:editor-pane-buffer comment-editor-pane)))
+      (capi:call-editor comment-editor-pane (list 'editor::undo-command buffer)))))
 
 
