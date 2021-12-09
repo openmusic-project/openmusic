@@ -447,11 +447,13 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   "this is for 'o' shortcut, for editing comments."
   (if (commentframep (car self)) 
       (let* ((obj (object (car self)))
-            (text (reference obj))
-            (init (setf  om-edit::*comment-text* text))
-            (view (iconview (car (frames obj))))
-            (ept (om-edit::open-comment-editor-pane view)))
+             (text (reference obj))
+             (init (setf  om-edit::*comment-text* text))
+             (view (iconview (car (frames obj))))
+             (ept (om-edit::open-comment-editor-pane view)))
         (setf (om-edit::intfunc ept) #'om::setfref)
+        (setf (om-edit::fontfunc ept)  #'om::setcomfontstyle)
+        (setf (om-edit::fontcolfunc ept)  #'om::setcomfontcolor)
         ept)))
 
 ;------------------------------
