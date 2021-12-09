@@ -422,6 +422,12 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 (defun setfref (newbox text)
   (setf (reference (object (om-view-container newbox))) text))
 
+(defun setcomfontstyle (newbox font)
+  (comment-new-style (om-view-container newbox) font))
+
+(defun setcomfontcolor (newbox color)
+  (comment-new-color (om-view-container newbox) 
+                     (make-instance 'oa::omcolor :c color)))
 
 (defmethod make-comment-box ((self patchPanel) pos)
   "this is for 'c' shortcut, for comments editor."
@@ -432,6 +438,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
          (ept (om-edit::open-comment-editor-pane (iconview new-frame))))
     (omG-add-element self new-frame)
     (setf (om-edit::intfunc ept) #'om::setfref)
+    (setf (om-edit::fontfunc ept)  #'om::setcomfontstyle)
+    (setf (om-edit::fontcolfunc ept)  #'om::setcomfontcolor)
     ept))
 
 ;No multiple method, because we can only edit comments one by one for the moment

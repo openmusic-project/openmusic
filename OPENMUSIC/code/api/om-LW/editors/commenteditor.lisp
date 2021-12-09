@@ -40,7 +40,7 @@
 (defvar *def-comment-edit-font* 
   #+linux(gp::make-font-description :family "Liberation Mono" :size 9)
   #-linux(gp::make-font-description :family "Consolas" :size 11))
-
+(defvar *comment-color* (color:make-rgb 1 1 1))
 (defvar *comment-text*
     "no comment")
 
@@ -49,7 +49,9 @@
   ((ep :initform nil :accessor ep)
    (panel :initform t :accessor panel)
    (mycomment :initform *comment-text* :accessor mycomment)
-   (intfunc :initform t :accessor intfunc))
+   (intfunc :initform t :accessor intfunc)
+   (fontfunc :initform t :accessor fontfunc)
+   (fontcolfunc :initform t :accessor fontcolfunc))
   (:default-initargs
    :title "Comment Editor"
    :buffer-modes '("Lisp")
@@ -86,6 +88,7 @@
                       ; :flag 'minimal-example
                        :text *comment-text*
                        :font *def-comment-edit-font* 
+                       :foreground *comment-color*
                        :background :yellow1 ;:whitesmoke
                        :enabled t
                        :buffer-name :temp 
@@ -203,7 +206,13 @@
                                                              :title "Text Font"
                                                              :callback-type :interface
                                                              :callback 'change-comment-edit-font
-                                                             :accelerator nil
+                                                             :accelerator #\f
+                                                             )
+                                             (make-instance 'capi::menu-item
+                                                             :title "Text Color"
+                                                             :callback-type :interface
+                                                             :callback 'change-comment-font-color
+                                                             :accelerator #\C
                                                              ))))))
    (setf actions-menu
         (make-instance 'capi::menu
@@ -276,7 +285,8 @@
     (setf (mycomment interface) *comment-text*)
     (oa::om-set-dialog-item-text (panel interface)  *comment-text*)
     (apply (intfunc interface) (list (panel interface) *comment-text*))
-    ;(om-invalidate-view (oa::vcontainer (panel interface)))
+    (apply (fontfunc interface) (list (panel interface) *def-comment-edit-font*))
+    (apply (fontcolfunc interface) (list (panel interface) *comment-color*))
     ))
 
 (defun button-edit-comment-callback (&rest args)
@@ -337,10 +347,16 @@
   (with-slots (ep) interface
     (setf (capi::simple-pane-font comment-editor-pane) 
           (setf *def-comment-edit-font*
-                (capi::prompt-for-font "" :font (capi::simple-pane-font comment-editor-pane))))
+                 (gp::font-description 
+                  (capi::prompt-for-font "" :font (capi::simple-pane-font comment-editor-pane)))))
     ))
 
-
+(defun change-comment-font-color (interface)
+  (with-slots (ep) interface
+    (setf (capi::simple-pane-foreground comment-editor-pane) 
+          (setf *comment-color*
+                (capi::prompt-for-color "Choose a color" :color (capi::simple-pane-foreground comment-editor-pane))))
+    ))
 ;;;;
 
 
