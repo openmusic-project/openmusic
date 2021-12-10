@@ -216,7 +216,7 @@ Time (Onset) information is removed.
 ;--------------------
 ;  GET-ALL-CHORDS
 ;--------------------
-;kh
+;kh debugging utilities
 
 (defmethod* get-all-chords ((self poly))
    :initvals '(nil) 
@@ -260,7 +260,61 @@ t)
   (remove nil (loop for i in chords
                     collect (if (not (rest-p i)) i)))))
 
-    
+;--------------------
+;  GET-GROUP-OBJS
+;--------------------
+;kh 
+
+(defmethod get-group-objs ((self voice))
+   :icon 134
+   :indoc '("self")
+   :initvals (list t)
+   :doc "Returns list of groups as objects contained in <self>."
+(mapcar #'(lambda (x) (get-group-objs x))
+          (inside self)))
+
+(defmethod get-group-objs ((self measure))
+(mapcar #'(lambda (x) (get-group-objs x))
+          (inside self)))
+
+(defmethod get-group-objs ((self group))
+(remove nil (list self (remove nil (mapcar #'(lambda (x) (get-group-objs x))
+          (inside self))) (second (absolute-props (tree self))))))
+
+
+(defmethod get-group-objs ((self group))
+(remove nil (list self (remove nil (mapcar #'(lambda (x) (get-group-objs x))
+          (inside self))))))
+
+(defmethod get-group-objs ((self continuation-chord))
+())
+
+(defmethod get-group-objs ((self chord))
+())
+
+(defmethod get-group-objs ((self rest))
+())
+
+
+;;;;
+(defmethod get-chord-groups ((self chord))
+  "Returns all groups that self belongs to"
+  (let* ((parent (if (group-p (parent self)) (parent self) nil))
+         res
+         (switch t))
+    (loop while switch
+          do 
+          (if (group-p parent)
+              (progn 
+                (setf switch t)
+                (push parent res)
+                (setf parent (parent parent))
+                )
+            (setf switch nil)))
+    (reverse res)))
+
+(defmethod get-chord-groups ((self t)) nil)    
+
 ;--------------------
 ;  MASK
 ;--------------------
