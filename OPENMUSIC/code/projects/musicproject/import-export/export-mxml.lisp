@@ -30,6 +30,9 @@
 ;;                      $Date: 2008/06/23 15:07:04 $
 ;;                           $Revision: 2 $
 ;;                      $Date: 2015/10/05 Jean Bresson $
+;;                           $Revision: 3.0 $
+;;                      $Date: 2021/12/10 Karim Haddad $
+
 ;;
 
 
@@ -88,26 +91,9 @@
     ))
 
 
-#|
-(defmethod getratiogroup ((self om::group))
-  (let* ((tree (om::tree self))
-         (real-beat-val (/ 1 (om::fdenominator (first tree))))
-         (symb-beat-val (/ 1 (om::find-beat-symbol (om::fdenominator (first tree)))))
-         (dur-obj-noire (/ (om::extent self) (om::qvalue self)))
-         (factor (/ (* 1/4 dur-obj-noire) real-beat-val))
-         (dur (* symb-beat-val factor))
-         (durtot (if (listp dur) (car dur) dur))
-         (cpt (if (listp dur) (cadr dur) 0))
-         (num (or (om::get-group-ratio self)  (om::extent self)))
-         (denom (om::find-denom num durtot))
-         (num (if (listp denom) (car denom) num))
-         (denom (if (listp denom) (second denom) denom))
-         (unite (/ durtot denom))
-         (sympli (/ num denom)))
-    (list num denom (format nil "~A" (cadr (find unite *note-types* :key 'car))))))
-|#
 
-;;; ??
+;;; 
+#|
 (defmethod getnotetype ((self om::group))
   (let* ((tree (om::tree self))
          (real-beat-val (/ 1 (om::fdenominator (first tree))))
@@ -119,6 +105,13 @@
          (num (or (om::get-group-ratio self)  (om::extent self)))
          (denom (om::find-denom num durtot))
          (unite (/ durtot (if (listp denom) (second denom) denom)))) 
+    (format nil "~A" (cadr (find unite *note-types* :key 'car)))
+    ))
+|#
+
+(defmethod getnotetype ((self om::group))
+  "Returns unit type (note figure) of tuplet. required in <tuplet-type>" 
+  (let ((unite (getratiounite self)))
     (format nil "~A" (cadr (find unite *note-types* :key 'car)))
     ))
 
@@ -255,13 +248,15 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 
 
 
+
+#|
 (defun time-modifications (self)
   (if (and (in-group? self) (not (alone-in-group? self)))
       (let ((ratio (butlast (get-group-info (om::parent self)))))
         (group (car ratio) (second ratio)))
     NIL))
 
-#|
+
 (defun time-modifications (self)
   (if (and (in-group? self) (not (alone-in-group? self)))
       (let* ((lvl (get-grp-level self))
@@ -277,6 +272,19 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
     NIL))
 |#
 
+(defun time-mod-val (obj)
+  (let* ((info (getallgroups obj))
+        (ratios (reverse (mapcar 'butlast info)))
+        (clone (om::clone ratios)))
+    (om::while (and clone (equal (first (car clone)) (second (car clone))))
+          (pop clone))
+    (car clone)))
+
+(defun time-modifications (self)
+  (let ((ratio (time-mod-val self)))
+  (if ratio 
+      (group (car ratio) (second ratio))
+  nil)))
 
 
 ;;============================================
@@ -354,107 +362,74 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
         (list "<accent default-x=\"-1\" default-y=\"-61\" placement=\"below\"/>")
         "</articulations>"))
 
-(defun groupnotation (self)  
-   (list "<notations>"
-         (if (in-group? self)
-             (let* ((lvl (get-grp-level self))
-                    (ratio (getratiogroup (om::parent self)))
-                    (act-note (second lvl))
-                    (norm-note (third lvl))
-                    (indx (car lvl))
-                    (numdeno (getallgroups self))
-                    (numdenom (remove nil 
-                                      (loop for i in numdeno
-                                            collect (if (not (= 1 (/ (car i) (second i)))) i) 
-                                            )))
-                    (simpli (/ act-note norm-note)))
-               ;(print (list "ratio:" ratio))
+(defun groupnotation (self)
+  (list "<notations>"
+        (if (in-group? self)
+            (let* ((lvl (get-grp-level self))
+                   (ratio (getratiogroup (om::parent self)))
+                   (act-note (second lvl))
+                   (norm-note (third lvl))
+                   (indx (car lvl))
+                   (numdeno (getallgroups self))
+                   (numdenom (remove nil 
+                                     (loop for i in numdeno
+                                           collect (if (not (= 1 (/ (car i) (second i)))) i) 
+                                           )))
+                   (simpli (/ act-note norm-note)))
 
-               (if (not (= (/ (car ratio) (second ratio)) 1))
-                   (cond 
-                    ((and (om::last-of-group? self) (om::first-of-group? self))
-                     (when (accent? self) (list (accent-notation self))))
-                    ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-                     (progn 
-                       ;(print (list self ratio))
-                       (remove nil 
-                               (append 
-                                (let ((obj self)
-                                      (indx (+ (length numdenom) 1)))
-                               
-                                  (remove nil (loop for i in (reverse numdenom)           
-                                                    append (progn 
-                                                             (setf obj (om::parent obj))
-                                                             (setf indx (- indx 1))
-                                                             (when (first-of-this-group self obj)
-                                                               (firstofgroup (car i) (second i) (third i) indx))))))
-                                (list (tied-notation self)
-                                      (when (accent? self) (accent-notation self)))))
-                       )
-                     )
-                    ((and (om::last-of-group? self) (not (om::first-of-group? self)))
-                     (remove nil 
-                             (append 
-                              (let ((obj self)
-                                    (indx (+ (length numdenom) 1)))
-                                (remove nil (loop for i in numdenom           
-                                                  append (progn 
-                                                           (setf obj (om::parent obj))
-                                                           (setf indx (- indx 1))
-                                                           (when (last-of-this-group self obj)
-                                                             (lastofgroup indx))))))
-                              (list (tied-notation self)
-                                    (when (accent? self) (accent-notation self))))))
-                   
-                    (t (when (accent? self) (list (accent-notation self)))))
-                 
-                 (if (and ratio (= (/ (car ratio) (second ratio)) 1))
-                     (cond 
-                      ((and (om::last-of-group? self) (om::first-of-group? self))
-                       (when (accent? self) (list (accent-notation self))))
-                      ((and (om::first-of-group? self)  (not (om::last-of-group? self)))
-                       (progn 
-                         ;(print (list self ratio))
-                         (remove nil 
-                                 (append 
-                                  (let ((obj self)
-                                        (indx (+ (length numdenom) 1)))
-                               
-                                    (remove nil (loop for i in (reverse numdenom)           
-                                                      append (progn 
-                                                               (setf obj (om::parent obj))
-                                                               (setf indx (- indx 1))
-                                                               (when (first-of-this-group self obj)
-                                                                 (firstofgroup (car i) (second i) (third i) indx))))))
-                                  (list (tied-notation self)
-                                        (when (accent? self) (accent-notation self)))))
-                         )
-                       )
-                      (t (when (accent? self) (list (accent-notation self)))))
-                 
-                   (when (or (tied? self) (accent? self))
-                     (remove nil 
-                             (list 
-                              (when (tied? self) (tied-notation self))
-                              (when (accent? self) (accent-notation self)))))
+              (cond 
+               ((and (om::last-of-group? self) (om::first-of-group? self));singelton
+                (list (tied-notation self)
+                      (when (accent? self) (list (accent-notation self)))))
+               
+               ((and (om::first-of-group? self) (not (om::last-of-group? self)))
+                (progn 
+                  (remove nil 
+                          (append 
+                           (let ((obj self)
+                                 (indx (+ (length numdenom) 1)))
+                                  
+                             (remove nil (loop for i in (reverse numdenom)           
+                                               append (progn 
+                                                        (setf obj (om::parent obj))
+                                                        (setf indx (- indx 1))
+                                                        (when (and (first-of-this-group self obj) (om::real-tuplet-p self))
+                                                          (firstofgroup (car i) (second i) (third i) indx))))))
+                           (list (tied-notation self)
+                                 (when (accent? self) (accent-notation self)))))
+                  )
+                )
 
-
-                 
-                   )
-                 )
-               )
+               ((and (om::last-of-group? self) (not (om::first-of-group? self)));ici
+                (remove nil 
+                       
+                        (append 
+                         (let ((obj self)
+                               (indx (+ (length numdenom) 1)))
+                           (remove nil (loop for i in numdenom           
+                                             append (progn 
+                                                      (setf obj (om::parent obj))
+                                                      (setf indx (- indx 1))
+                                                      (when (and (last-of-this-group self obj) t);(time-mod-val obj))
+                                                        (lastofgroup indx))))))
+                         (list (tied-notation self)
+                               (when (accent? self) (accent-notation self)))))
+                        )
+                
+               (t ())))
+             
            
-           (when (or (tied? self) (accent? self))
-             (remove nil 
-                     (list 
-                      (when (tied? self) (tied-notation self))
-                      (when (accent? self) (accent-notation self)))))
-           )
+          (when (or (tied? self) (accent? self))
+            (remove nil 
+                    (list 
+                     (when (tied? self) (tied-notation self))
+                     (when (accent? self) (accent-notation self)))))
+          )
         
-         ;;; VEL
-         (velocity-as-xml self)
-         "</notations>"
-         ))
+        ;;; VEL
+        (velocity-as-xml self)
+        "</notations>"
+        ))
 
 
 (defun get-parent-measure (self)

@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -191,3 +191,47 @@
     self
     )
   )
+
+;------------------------------Om-mxml----------------------------
+
+(defmethod real-d-val ((obj measure)) 1)
+
+(defmethod real-d-val ((obj group))
+  (* 1/4 (/ (extent obj) (qvalue obj))))
+
+(defmethod symb-d-val ((self measure))
+  1)
+  
+
+(defmethod symb-d-val ((self group))
+  (let* ((parent (parent self))
+        (d-valp (symb-d-val parent))
+        (d-valself (real-d-val self)))
+    (if (= d-valp d-valself) d-valself
+      (* d-valself (/ 1 d-valp)))))
+
+
+(defmethod num-denom-val ((self group))
+" Returns num/denum (ratio) of <self>"
+  (let* ((symb-val (symb-d-val self))
+         (num (get-group-ratio self)))
+    (if num
+        (let* ((denom (find-denom num symb-val))
+              (den (if (listp denom) (list2ratio denom) denom)))
+        (/ num den)) 1)))
+
+
+
+(defmethod real-tuplet-p ((self group))
+  (let ((ratio (num-denom-val self)))
+    (if (= 1 ratio) nil ratio)))
+
+(defmethod real-tuplet-p ((self chord))
+  (let ((parent (parent self)))
+    (when parent 
+      (real-tuplet-p parent))))
+
+(defmethod real-tuplet-p ((self rest))
+  (let ((parent (parent self)))
+    (when parent 
+      (real-tuplet-p parent))))
