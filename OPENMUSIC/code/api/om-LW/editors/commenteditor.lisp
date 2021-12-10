@@ -36,11 +36,16 @@
 
 (defvar *om-comment-editor* 'om-comment-editor)
 (setf *om-comment-editor* 'om-comment-editor)
-(defvar *comment-font* nil)
+
+;(defvar *comment-font* nil)
+
 (defvar *def-comment-edit-font* 
   #+linux(gp::make-font-description :family "Liberation Mono" :size 9)
   #-linux(gp::make-font-description :family "Consolas" :size 11))
-(defvar *comment-color* (color:make-rgb 1 1 1))
+
+(defvar *comment-color* nil)
+(setf *comment-color* (color:make-rgb 0 0 0))
+
 (defvar *comment-text*
     "no comment")
 

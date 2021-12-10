@@ -448,7 +448,10 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   (if (commentframep (car self)) 
       (let* ((obj (object (car self)))
              (text (reference obj))
-             (init (setf  om-edit::*comment-text* text))
+             (color (textcolor obj))
+             (init (progn 
+                     (setf om-edit::*comment-text* text)
+                     (setf om-edit::*comment-color* (om-color-to-capi color))))
              (view (iconview (car (frames obj))))
              (ept (om-edit::open-comment-editor-pane view)))
         (setf (om-edit::intfunc ept) #'om::setfref)
