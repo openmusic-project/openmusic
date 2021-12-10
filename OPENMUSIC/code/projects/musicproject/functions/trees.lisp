@@ -369,13 +369,14 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
      (grouper3 (grouper2 (grouper1 liste)))))
 
 
+#|
 (defmethod! reducetree ((self voice))
    (let* ((newvoice (clone self))
           (newtree (reducetree (tree newvoice))))
      (setf (tree newvoice) newtree)
      newvoice))
 
-#|
+
 (defmethod! reducetree ((self voice))
    :initvals '(t)
    :indoc '("voice")
@@ -386,8 +387,6 @@ into a single correct note"
           (newtree (reducetree (tree newvoice))))
      (setf (tree newvoice) newtree)
      newvoice))
-
-|#
 
 
 (defmethod! reducetree ((tree list))
@@ -404,6 +403,39 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
        (setf tree liste)
        (setf liste (reduced-tree liste)))
      (remove nil liste)))
+|#
+
+;-------
+;improved version based on absolute-prop
+
+(defun abs-props (liste)
+(if (null liste)
+       liste
+       (let* ((first (car liste))
+              (rest (rest liste))
+              )
+         (if (numberp first)
+           (cons (+ first (loop while  (floatp (first rest))
+                                sum (round (pop rest))))
+                 (abs-props rest))
+           (cons (abs-props first) (abs-props rest))))))
+
+(defmethod! reducetree ((tree list))
+   :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
+   :indoc '("tree")
+   :icon 225
+   :doc "
+Reduces and simplifies a tree by concatenating consecutive rests and floats.
+" 
+   (let* ((liste (resolve-? tree)))
+     (abs-props liste)
+     ))
+
+(defmethod! reducetree ((self voice))
+   (let* ((newvoice (clone self))
+          (newtree (reducetree (tree newvoice))))
+     (setf (tree newvoice) newtree)
+     newvoice))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;PULSEMAKER;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
