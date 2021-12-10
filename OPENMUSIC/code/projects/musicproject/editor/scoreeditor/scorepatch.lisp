@@ -99,6 +99,7 @@
 
 (defmethod centre-icon  ((self scoreboxframe)) t) 
 
+#|
 (defmethod draw-before-box ((self scoreboxframe))
   (box-revise-references self (om-view-container self))
   (om-with-focused-view self
@@ -109,6 +110,20 @@
                        :mode :xor)
            (om-fill-rect 0 0 (w self) (h self)))
        (om-draw-rect 0 0 (w self) (h self))))))
+|#
+
+(defmethod draw-before-box ((self scoreboxframe))
+  (let* ((panel (om-view-container self))
+         (object (object (om-view-container panel)))
+         (pere (get-root-parent object))
+         (newref (get-obj-from-container-path pere (reverse (cons-container-path (reference (object self))))))
+         )
+    (box-revise-references self (om-view-container self)) 
+    (om-with-focused-view self
+      (om-with-fg-color nil (om-make-color 1.0 0 0) 
+        (if (active-mode self) 
+            (om-draw-rect 0 0 (w self) (h self) :pensize 3)
+          (om-draw-rect 0 0 (w self) (h self)))))))
 
 
 (defmethod omG-select ((self scoreboxframe))
@@ -222,6 +237,39 @@
        (om-set-view-size  self (om-make-point (+ (* 2 size) (- (third rec) (first rec))) 
                                        (+  16 (* 2 size) (- (fourth rec) (second rec))))))))
 
+
+(defmethod om-set-view-position ((self scoreboxframe) pos-point) 
+  (setf (oa::vx self) (om-point-h pos-point)
+        (oa::vy self) (om-point-v pos-point))  
+  (update-box-po-position self)
+  ;;(when (item-container self) (om-invalidate-view (item-container self)))
+  )
+
+(defun update-box-po-position (self)
+  (when (and (oa::vcontainer self) (oa::item-container self))
+    (capi::apply-in-pane-process (oa::item-container self)
+                                 (lambda ()
+                                   (let ((abs-pos (om-convert-coordinates (om-view-position self) (oa::vcontainer self) (oa::item-container self))))
+                                     (setf (oa::item-x self) (om-point-h abs-pos)
+				     	   (oa::item-y self) (om-point-v abs-pos))
+                                     ;(setf (capi::static-layout-child-position self) 
+				    ; 	   (values (oa::item-x self) (oa::item-y self))) ;;ze probleme!!!!!!
+                                     (capi::set-hint-table self (list :x (om-point-h abs-pos) :y (om-point-v abs-pos)
+                                                                      :visible-min-width (oa::vw self) :visible-min-height (oa::vh self)
+                                                                      :visible-max-width t :visible-max-height t))
+                                     (mapc 'update-box-po-position (oa::vsubviews self)) 
+                                     ))
+                                 )))
+
+
+(defmethod om-set-view-size  ((self scoreboxframe) size-point) 
+  (let ((abs-pos (om-convert-coordinates (om-view-position self) (oa::vcontainer self) (oa::item-container self))))
+    (setf (oa::vw self) (oa::om-point-h size-point))
+    (setf (oa::vh self) (oa::om-point-v size-point))
+    (capi::set-hint-table self (list :x (om-point-h abs-pos) :y (om-point-v abs-pos)
+                                     :visible-min-width (oa::vw self) :visible-min-height (oa::vh self)
+                                     :visible-max-width t :visible-max-height t))
+    ))
 ;--------------
 
 (defmethod revise-references ((self scorePanel))

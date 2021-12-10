@@ -1333,7 +1333,7 @@
         (draw-panel-pages self)
       (om-with-focused-view self
         (when (in-patch-mode? self)
-          (om-with-fg-color self *scorepatch-color*
+          (om-with-fg-color self (om-make-color 1.0 0 0) ;*scorepatch-color*
             (om-with-line-size 6
               (om-draw-rect (om-h-scroll-position self) (om-v-scroll-position self) 
                             (- (om-point-h (om-view-size self)) 16) (- (om-point-v (om-view-size self)) 16)))))
