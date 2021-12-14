@@ -40,7 +40,7 @@
 ;(defvar *comment-font* nil)
 
 (defvar *def-comment-edit-font* 
-  #+linux(gp::make-font-description :family "Liberation Mono" :size 9)
+  #+linux(gp::make-font-description :family "Liberation Sans" :size 9)
   #-linux(gp::make-font-description :family "Consolas" :size 11))
 
 (defvar *comment-color* nil)
