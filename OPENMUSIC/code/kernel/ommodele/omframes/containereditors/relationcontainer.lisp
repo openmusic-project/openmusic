@@ -372,9 +372,11 @@ this method set the select flag of the connection to T and return a list with th
     (om-with-delayed-redraw 
 	(mapc #'(lambda (oneobject)
 		  (redraw-connections oneobject)
-		  (mapc #'(lambda (source)
-			    (when (is-connected? (object oneobject) (object source))
-			      (redraw-connections source))) rest-frame)
+		  (if rest-frame
+                      (mapc #'(lambda (source)
+                                (when (is-connected? (object oneobject) (object source))
+                                  (redraw-connections source))) rest-frame)
+                    )
 		  (om-invalidate-view oneobject)
 		  ) dragged)
       ;;(om-invalidate-view self)
