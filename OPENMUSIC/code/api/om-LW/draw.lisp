@@ -110,7 +110,7 @@
   )
 
 (defun draw-po (pane po)
-   (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position po)
+   (multiple-value-bind (*pox* *poy*) (capi::static-layout-child-position po)
     (let ((fff (or (if (gp::font-description-p (om-get-font po))
 		       (gp::find-best-font pane (om-get-font po))
 		       (om-get-font po))

@@ -161,7 +161,7 @@
   #+win32
   (if (capi::interface-visible-p (capi::pane-layout self))
       (multiple-value-bind (w h)
-          (capi::pinboard-pane-size (capi::pane-layout self))
+          (capi::static-layout-child-size (capi::pane-layout self))
         (om-make-point w h))
     (om-view-size self))
   #+linux(om-subtract-points (om-view-size self) (om-make-point 0 30))
@@ -171,7 +171,7 @@
 
 (defmethod om-interior-size ((self om-abstract-window))
   (multiple-value-bind (w h)
-          (capi::pinboard-pane-size (capi::pane-layout self))
+          (capi::static-layout-child-size (capi::pane-layout self))
         (om-make-point w h)))
 	
 

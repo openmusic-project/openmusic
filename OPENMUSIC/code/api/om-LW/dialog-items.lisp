@@ -163,20 +163,20 @@
 
 (defmethod om-view-position ((self om-standard-dialog-item)) 
    (if  (interface-visible-p self) 
-       (let ((point (multiple-value-list (pinboard-pane-position self))))
+       (let ((point (multiple-value-list (static-layout-child-position self))))
          (om-make-point (first point) (second point)))
     (om-make-point (vx self) (vy self))))
 
 (defmethod om-set-view-position ((self om-standard-dialog-item) pos-point) 
   (apply-in-pane-process self 
                          (lambda () 
-                           (setf (pinboard-pane-position self) (values (om-point-h pos-point) (om-point-v pos-point)))
+                           (setf (static-layout-child-position self) (values (om-point-h pos-point) (om-point-v pos-point)))
                            ))
   (setf (vx self) (om-point-h pos-point) (vy self) (om-point-v pos-point)))
 
 (defmethod om-view-size ((self om-standard-dialog-item))
   (if  (interface-visible-p self) 
-      (let ((point (multiple-value-list (pinboard-pane-size self))))
+      (let ((point (multiple-value-list (static-layout-child-size self))))
         (om-make-point (first point) (second point)))
     (om-make-point (vw self) (vh self))))
 
@@ -192,8 +192,8 @@
                                   :external-max-width (om-point-h size-point) :external-max-height (om-point-v size-point)
                                   ))
 
-       (setf (pinboard-pane-size self) (values (om-point-h size-point) (om-point-v size-point)))
-       (setf (pinboard-pane-position self) (values (vx self) (vy self)))
+       (setf (static-layout-child-size self) (values (om-point-h size-point) (om-point-v size-point)))
+       (setf (static-layout-child-position self) (values (vx self) (vy self)))
        (di-after-settings self)
        ))
     ;(om-set-view-position self (om-make-point (vx self) (vy self)))

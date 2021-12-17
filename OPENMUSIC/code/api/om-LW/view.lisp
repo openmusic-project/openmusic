@@ -85,7 +85,7 @@
         (remove-duplicates (remove nil (cons (main-pinboard-object view)
                                              (append (vsubviews view) (item-subviews view))))))
   ;; this fixed the problem with dialog item box display on windows...
-  ;; #+mswindows (setf (pinboard-pane-position view) (values (vx view) (vy view)))
+  ;; #+mswindows (setf (static-layout-child-position view) (values (vx view) (vy view)))
   )
 
 (defmethod set-layout ((view t)) nil)
@@ -128,7 +128,7 @@
      (when (om-view-p view) 
        #+(or win32 linux) (unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
        #+(or win32 linux) (setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
-       #+(or win32 linux) (setf (capi::pinboard-pane-size (main-pinboard-object view)) (values w h))
+       #+(or win32 linux) (setf (capi::static-layout-child-size (main-pinboard-object view)) (values w h))
        #+cocoa (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
        )
      (when (scroller-p view) 
@@ -145,7 +145,7 @@
 (defmethod om-set-view-position ((self om-graphic-object) pos-point) 
   (capi:apply-in-pane-process 
    self #'(lambda ()
-            (setf (pinboard-pane-position self) 
+            (setf (static-layout-child-position self) 
                   (values (om-point-h pos-point) (om-point-v pos-point)))))
   ;(set-hint-table self (list :default-x (om-point-h pos-point) :default-x (om-point-v pos-point))))
   (setf (vx self) (om-point-h pos-point)
@@ -154,7 +154,7 @@
 (defmethod om-view-position ((self om-graphic-object))
   (if (capi::interface-visible-p self)
       (capi:apply-in-pane-process self #'(lambda ()
-             (multiple-value-bind (x y) (pinboard-pane-position self)
+             (multiple-value-bind (x y) (static-layout-child-position self)
                (setf (vx self) x) (setf (vy self) y)))))
   (om-make-point (vx self) (vy self)))
 
@@ -163,8 +163,8 @@
         (h (or (om-point-v size-point) (vh self))))
     (capi:apply-in-pane-process self 
                                 #'(lambda ()                                  
-                                    (setf (pinboard-pane-size self) (values  w h))
-                                    #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values w h))
+                                    (setf (static-layout-child-size self) (values  w h))
+                                    #+win32(setf (static-layout-child-size (main-pinboard-object self)) (values w h))
                                     
                                     (set-hint-table self (list :default-width (om-point-h size-point) 
                                                                :default-height (om-point-v size-point)))
@@ -175,7 +175,7 @@
 (defmethod om-view-size ((self om-graphic-object)) 
   (if (interface-visible-p self)
       (capi:apply-in-pane-process self #'(lambda ()
-                (multiple-value-bind (w h) (pinboard-pane-size self)
+                (multiple-value-bind (w h) (static-layout-child-size self)
                   (setf (vw self) w)
                   (setf (vh self) h)))))
     (om-make-point (vw self) (vh self)))
@@ -229,18 +229,18 @@
        (let ((x (om-h-scroll-position self))
              (y (om-v-scroll-position self)))
          (om-invalidate-rectangle self x y (vw self) (vh self))
-         #+(or linux win32) (setf (pinboard-pane-position (main-pinboard-object self)) 
+         #+(or linux win32) (setf (static-layout-child-position (main-pinboard-object self)) 
 				  (values x y))
          ))
      (om-view-scrolled self (car pos-list) (cadr pos-list)))
     #+(or win32 linux) (:step
-			(setf (pinboard-pane-position (main-pinboard-object self)) 
+			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (om-h-scroll-position self) (om-h-scroll-position self))
 			;;(om-invalidate-view self)
 			)
     #+(or win32 linux) (otherwise ;; :drag
-			(setf (pinboard-pane-position (main-pinboard-object self)) 
+			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (car pos-list) (cadr pos-list))
 			;;(om-invalidate-view self)
@@ -254,9 +254,9 @@
 
 (defmethod om-set-view-size ((self om-scroller) size-point) 
   (capi:apply-in-pane-process self  #'(lambda ()
-       (setf (pinboard-pane-size self) (values (om-point-h size-point) (om-point-v size-point)))
+       (setf (static-layout-child-size self) (values (om-point-h size-point) (om-point-v size-point)))
        ;; pas la peine ??
-       #+win32(setf (pinboard-pane-size (main-pinboard-object self)) (values (om-point-h size-point) (om-point-v size-point)))
+       #+win32(setf (static-layout-child-size (main-pinboard-object self)) (values (om-point-h size-point) (om-point-v size-point)))
        ))
   (setf (vw self) (om-point-h size-point))
   (setf (vh self) (om-point-v size-point)))

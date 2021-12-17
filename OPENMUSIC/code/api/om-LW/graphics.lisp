@@ -775,9 +775,9 @@
        (let ((*curstream* (om-get-view ,view)))
          (when *curstream*
            ;;; ça doit plus marcher ! cf. draw item-view
-           ;(multiple-value-bind (x y) (capi::pinboard-pane-position ,view)
+           ;(multiple-value-bind (x y) (capi::static-layout-child-position ,view)
              ;(set-graphics-port-coordinates *curstream* :left x :top y))
-           (multiple-value-bind (*pox* *poy*) (capi::pinboard-pane-position ,view)
+           (multiple-value-bind (*pox* *poy*) (capi::static-layout-child-position ,view)
              ,@body
              )))
      (let ((*curstream* (om-get-view ,view)))
