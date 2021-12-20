@@ -299,7 +299,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                          (setf hotbox t)  
                          (handle-key-event box char))
                     finally
-                    do (unless hotbox 
+                    ;do 
+                    (unless hotbox 
                          (om-beep)			    ;no boxes have specialized handle-key-event methods
                          ))))))
 
