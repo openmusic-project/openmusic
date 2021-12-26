@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -132,6 +132,7 @@
      (setf *curfocus* po) 
      (om-with-focused-view po
        (om-draw-contents po))
+     ;switching to this will only display frames without icons and fonts (for testing purposes).
      ;(om-with-focused-view po
      ;  (om-draw-rect 0 0 (- (om-width po) 1) (- (om-height po) 1)))
      (when (highlight po) 

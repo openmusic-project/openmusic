@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -128,7 +128,8 @@
 
 (defmethod om-clic-callback ((self om-graphic-object) x y mods)
   (om-with-error-handle 
-    (set-meta-keys mods)
+   (set-meta-keys mods)
+   (capi::update-drawing-with-cached-display self x y)
     (apply-in-item-subview self 'om-view-click-handler (om-make-point x y))
     ))
 
