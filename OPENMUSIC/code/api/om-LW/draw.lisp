@@ -199,7 +199,9 @@
      (om-get-view self) 
      'gp::invalidate-rectangle 
      (om-get-view self) x y w h
-     )))
+     )
+    (capi::update-drawing-with-cached-display self x y)
+    ))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
   (when (item-container self)
