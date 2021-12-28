@@ -200,7 +200,7 @@
      'gp::invalidate-rectangle 
      (om-get-view self) x y w h
      )
-    (capi::update-drawing-with-cached-display self x y)
+    (capi::update-drawing-with-cached-display self x y w h)
     ))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
@@ -209,7 +209,9 @@
                               (+ (item-x self) x) 
                               (+ (item-y self) y)
                               (+ (item-x self) w)
-                              (+ (item-y self) h))))
+                              (+ (item-y self) h))
+    (capi::update-drawing-with-cached-display self x y w h)
+    ))
 
 
 (defmacro om-with-delayed-redraw (view &body body)
