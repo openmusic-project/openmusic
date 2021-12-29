@@ -1494,8 +1494,8 @@
     (let ((average-pos (loop for box in boxes
                              sum (om-point-h (frame-position box)) into hsum
                              sum (om-point-v (frame-position box)) into vsum
-                             finally return (om-make-point (floor (/ hsum (length boxes)))
-                                                           (floor (/ vsum (length boxes)))))))    ;;; should reuse average-position
+                             finally (return (om-make-point (floor (/ hsum (length boxes)))
+                                                           (floor (/ vsum (length boxes))))))))    ;;; should reuse average-position
       (loop for box in boxes
             do (setf (frame-position box)
                      (om-add-points (om-subtract-points (frame-position box)
