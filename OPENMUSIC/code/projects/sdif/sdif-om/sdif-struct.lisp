@@ -300,7 +300,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
                collect item into nvts
                when (subtypep (type-of item) 'sdifsid)
                collect item into sids
-               finally return (list nvts sids))))
+               finally (return (list nvts sids)))))
     (setf (nvts self) (car sorted-tables)
           (sids self) (cadr sorted-tables))
     ))
