@@ -247,6 +247,7 @@
 (defmethod set-obj-mode ((self scoreeditor) n)
   (let* ((obj (object self))
          (parent (get-obj-parent obj)))
+    
     (if (equal obj parent)
         (progn
           (setf (obj-mode (panel self)) (nth n (object-order self)))
@@ -254,7 +255,9 @@
       (progn
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
-        (set-obj-mode (editorframe (associated-box parent)) n)))))
+        (if parent
+        (set-obj-mode (editorframe (associated-box parent)) n)
+        )))))
 
 
 (defun grap-class-from-type (str)
