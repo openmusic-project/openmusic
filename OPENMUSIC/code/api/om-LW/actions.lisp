@@ -204,7 +204,10 @@
 
 (defmethod om-motion-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
-  (apply-in-subview self 'internal-motion-callback (om-make-point x y)))
+  (apply-in-subview self 'internal-motion-callback (om-make-point x y))
+      #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self) ; not good for linux
+      #+(and cocoa lispworks8) (capi::redisplay-element self)
+  )
 
 (defun tooltip-key-down ()
   (om-command-key-p))
