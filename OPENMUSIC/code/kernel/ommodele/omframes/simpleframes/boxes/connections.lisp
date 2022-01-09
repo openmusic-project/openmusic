@@ -84,11 +84,12 @@
      (list minx maxx miny maxy)))
         
 (defmethod select-connection ((self c-connection))
-  (draw-connection self nil)
+  #-(and cocoa lispworks8) (draw-connection self nil)
   (cond ((om-shift-key-p) (setf (selected? self) (not (deactivate-connect self))))
         (t (unless (selected? self)
              (setf (selected? self ) t))))
-  (draw-connection self t))
+  #-(and cocoa lispworks8)(draw-connection self t)
+  )
 
 
 (defvar *con-offset-click* nil)
@@ -187,12 +188,13 @@
 
 
 (defmethod deactivate-connect ((self c-connection))
-   (when (selected? self)
-     (draw-connection self nil)
-     (setf (point-sel self) nil)
-     (setf (selected? self ) nil)
-     (invalidate-connection-region self (connection-container (thebox self)))
-     (draw-connection self t) t))
+  (when (selected? self)
+    (draw-connection self nil)
+    (setf (point-sel self) nil)
+    (setf (selected? self ) nil)
+    (invalidate-connection-region self (connection-container (thebox self)))
+    #-(and cocoa lispworks8)(draw-connection self t) t)
+  )
   
 (defmethod new-color-connection ((self c-connection))
    (setf (ccolor self) (mod (1+ (ccolor self)) 17)) ;; 0 and [1-16] are supported
@@ -243,27 +245,31 @@
 	(om-with-line-size (if sel? 2 1)
           (if val
               (loop while thepoints do
-		   (om-draw-line (om-point-h prim) (om-point-v prim) 
-                                 (om-point-h (car thepoints)) (om-point-v (car thepoints))
-                                 :erasable (equal val 'redraw))
-		   (setf prim (pop thepoints))
-		   (when thepoints
-		     (if (member prim (point-sel self))
-			 (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
-			 (when (and sel? (not *curved-connections*))
-			   (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
-			 ))
-		   )
-	      (loop while thepoints do
-		   (om-erase-line (om-point-h  prim) (om-point-v  prim) (om-point-h (car thepoints)) (om-point-v (car thepoints)))
-		   (setf prim (pop thepoints))
-		   (when thepoints
-		     (if (member prim (point-sel self))
-			 (om-erase-rect-content (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4)
-			 (when sel?
-			   (om-erase-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4))
-			 ))
-		   )))))))
+                    (om-draw-line (om-point-h prim) (om-point-v prim) 
+                                  (om-point-h (car thepoints)) (om-point-v (car thepoints))
+                                  :erasable (equal val 'redraw))
+                    (setf prim (pop thepoints))
+                    (when thepoints
+                      (if (member prim (point-sel self))
+                          (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
+                        (when (and sel? (not *curved-connections*))
+                          (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
+                        ))
+                    )
+            #-(and cocoa lispworks8)(loop while thepoints do
+                                          (om-erase-line (om-point-h  prim) 
+                                                         (om-point-v  prim) 
+                                                         (om-point-h (car thepoints)) 
+                                                         (om-point-v (car thepoints)))
+                                          (setf prim (pop thepoints))
+                                          (when thepoints
+                                            (if (member prim (point-sel self))
+                                                (om-erase-rect-content (- (om-point-h  prim) 2) 
+                                                                       (- (om-point-v  prim) 2) 4 4)
+                                              (when sel?
+                                                (om-erase-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4))
+                                              )))
+            ))))))
 
 
 (defmethod redraw-connections ((self omboxframe))
