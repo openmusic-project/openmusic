@@ -200,7 +200,8 @@
    (setf (ccolor self) (mod (1+ (ccolor self)) 17)) ;; 0 and [1-16] are supported
    (setf (nth 3 (connected? (object (nth (index self) (inputframes (thebox self))))))
          (ccolor self))
-   (draw-connection self t))
+    #-(and cocoa lispworks8)(draw-connection self t)
+    )
 
 (defmethod change-position ((self c-connection))
   (let ((new-points (get-connection-lines (thebox self) (index self)))) 

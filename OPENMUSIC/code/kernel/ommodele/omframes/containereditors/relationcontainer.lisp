@@ -329,7 +329,7 @@ this method set the select flag of the connection to T and return a list with th
                        (let* ((where-click (point-in-connection oneconnection self where)))
                      (cond
                       ((numberp where-click)
-                       (draw-connection oneconnection nil)
+                        #-(and cocoa lispworks8)(draw-connection oneconnection nil)
                        (unless (selected? oneconnection)
                          (unless (om-shift-key-p)
                            (mapc #'(lambda (control) 
@@ -348,7 +348,7 @@ this method set the select flag of the connection to T and return a list with th
                         (t (unless (member (nth where-click (points oneconnection)) (point-sel oneconnection))
                              (setf (point-sel oneconnection)  (list (nth where-click (points oneconnection)))))
                            (scroll-points oneconnection)))
-                       (draw-connection oneconnection t)
+                        #-(and cocoa lispworks8)(draw-connection oneconnection t)
                        (setf rep t))
                       (where-click
                        (select-connection oneconnection)
