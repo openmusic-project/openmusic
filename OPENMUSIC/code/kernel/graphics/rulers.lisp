@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -737,7 +737,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    (let* ((rulerx (rulerx self))
           (rulery (rulery self))
           (system-etat (get-system-etat self)))
-     (om-with-fg-color self *om-gray-color*
+     (om-with-fg-color self *om-red-color*
        (om-with-line '(2 2)
          (ruler-print-draw-grille rulery 'y offx offy system-etat)
          (ruler-print-draw-grille rulerx 'x offx offy system-etat)))))
