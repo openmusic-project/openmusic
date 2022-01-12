@@ -631,7 +631,7 @@
 
 (defmethod draw-cursor-line ((self cursor-play-view-mixin) position size)
   (om-with-line-size 1
-    (om-with-fg-color self (om-make-color 0.6 0.2 0.2)
+    (om-with-fg-color self *om-blue-color* ;(om-make-color 0.6 0.2 0.2)
       (om-draw-line (om-point-x position) (om-point-y position)
                     (om-point-x position)
                     (+ (om-point-y position) (om-point-y size))))))
