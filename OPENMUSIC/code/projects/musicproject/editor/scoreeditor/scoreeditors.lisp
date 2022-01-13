@@ -174,15 +174,10 @@
                                             (update-player-controls editor newplayer)))))))
 
   (setf (time-view (title-bar self)) 
-        #-(and cocoa lispworks8)(om-make-dialog-item 'om-static-text 
+        (om-make-dialog-item 'om-static-text 
                                                     (om-make-point 600 5) 
                                                     (om-make-point 200 15)
-                                                    "")
-        #+(and cocoa lispworks8)(om-make-dialog-item 'om-text-view 
-                                                    (om-make-point 600 5) 
-                                                    (om-make-point 200 15)
-                                                    ""
-                                                    :bg-color *controls-color*))
+                                                    ""))
 
   (apply 'om-add-subviews (cons (title-bar self) 
                                 (cons (time-view (title-bar self))

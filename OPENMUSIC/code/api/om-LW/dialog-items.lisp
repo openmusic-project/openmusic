@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -355,9 +355,19 @@
 
 ; (defmethod om-subviews ((self om-static-text)) nil)
 
+;(defmethod om-set-dialog-item-text ((self om-static-text) text)
+;  (setf (text self) text)
+;  (update-text self))
+
 (defmethod om-set-dialog-item-text ((self om-static-text) text)
   (setf (text self) text)
-  (update-text self))
+  #-(and cocoa lispworks8) (update-text self)
+  #+(and cocoa lispworks8) 
+  (apply-in-pane-process self 
+                         (lambda (pane) (progn
+                                          (update-text pane)
+                                          (gp:invalidate-rectangle pane))) self)
+  )
 
 ;; with column layout...
 (defmethod update-contents ((self om-static-text))
@@ -384,7 +394,7 @@
         (setf (wrapped-text self) (text-wrap-pix text font (vw self)))
       (setf (wrapped-text self) (text-wrap-pix text font (vw self))))
     (capi::redraw-pinboard-object self)
-    #+(and cocoa lispworks8) (capi::redisplay-element self)
+   ; #+(and cocoa lispworks8) (capi::redisplay-element self)
     ))
 
 (defmethod om-set-view-size ((self om-static-text) size-point)
