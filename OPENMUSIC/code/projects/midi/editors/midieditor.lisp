@@ -305,7 +305,8 @@
 
 
 (defmethod editor-null-event-handler :after ((self MidiEditor))
-  (do-editor-null-event self))
+  #+(and cocoa lispworks8) nil
+  #-(and cocoa lispworks8) (do-editor-null-event self))
 
 (defmethod set-split-tracks ((self midieditor) t-or-nil)
   (setf (split-tracks self) t-or-nil)
