@@ -129,7 +129,7 @@
 (defmethod om-clic-callback ((self om-graphic-object) x y mods)
   (om-with-error-handle 
    (set-meta-keys mods)
-   (capi::update-drawing-with-cached-display self x y)
+  ; #+lispworks8(capi::update-drawing-with-cached-display self x y)
     (apply-in-item-subview self 'om-view-click-handler (om-make-point x y))
     ))
 
@@ -162,7 +162,7 @@
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
-      (capi::update-drawing-with-cached-display self x y)
+     ; #+lispworks8 (capi::update-drawing-with-cached-display self x y)
       ))
    
 (defmethod om-click-motion-handler (self pos) t)
@@ -174,11 +174,12 @@
 (defmethod om-clic-release-callback ((self om-graphic-object) x y mods) 
   (set-meta-keys mods)
   (unless (equal *clicked-view* :abort) 
+    #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self x y) ; not good for linux
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
-    #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self x y) ; not good for linux
-    ))
+     #+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box
+     ))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
 
@@ -205,7 +206,8 @@
 (defmethod om-motion-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
   (apply-in-subview self 'internal-motion-callback (om-make-point x y))
-      #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self) ; not good for linux
+  ; not good for linux but necessary for cocoa in select drag motion callback
+      #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self) 
       #+(and cocoa lispworks8) (capi::redisplay-element self)
   )
 
