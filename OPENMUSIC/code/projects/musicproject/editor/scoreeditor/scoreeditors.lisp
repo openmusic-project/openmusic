@@ -254,10 +254,12 @@
           (setf (obj-mode (panel self)) (nth n (object-order self)))
           (set-edit-param self 'obj-mode n))
       (progn
+        (print (list n (associated-box parent) self parent))
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
-        (if parent
+        (if (and parent (associated-box parent))
         (set-obj-mode (editorframe (associated-box parent)) n)
+         ; (set-obj-mode parent n) ;fix in progress
         )))))
 
 
