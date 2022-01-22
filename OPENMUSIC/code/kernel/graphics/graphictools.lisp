@@ -297,7 +297,7 @@
                                                  (h (+ (- (om-point-y p2) (om-point-y p1)) (om-point-y dp))))
                                               (om-with-fg-color view (om-make-color-alpha 0 0 0 0.1)
                                                 (om-fill-rect x y w h)) 
-                                              (om-with-fg-color view (om-make-color-alpha 0.5 0.5 0.5 0.7)
+                                              (om-with-fg-color view *om-red-color* ;(om-make-color-alpha 0.5 0.5 0.5 0.7)
                                                 (om-with-line '(2 2) (om-draw-rect x y w h :pensize 2)))))
                          :draw-pane panel :display-mode nil
                          :release-action #'(lambda (view pp1 pp2)
