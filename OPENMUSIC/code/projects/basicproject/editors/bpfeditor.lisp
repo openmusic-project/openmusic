@@ -61,8 +61,9 @@
                                                      (let ((pane (panel (om-view-container (om-view-container item)))))
                                                        (setf (grille-p pane) (om-checked-p item))
                                                        (if (grille-p pane)
-                                                           (draw-grille pane)
-                                                         (om-invalidate-view pane))
+                                                           #-(and cocoa lispworks8)(draw-grille pane)
+                                                         #+(and cocoa lispworks8) (om-invalidate-view pane)
+                                                          (om-invalidate-view pane))
                                                        ))
                                         :font *om-default-font1*
                                         :checked-p nil
