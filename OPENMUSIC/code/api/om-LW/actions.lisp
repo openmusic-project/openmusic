@@ -162,7 +162,7 @@
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
-     ; #+lispworks8 (capi::update-drawing-with-cached-display self x y)
+    ;  #+lispworks8 (capi::update-drawing-with-cached-display self x y)
       ))
    
 (defmethod om-click-motion-handler (self pos) t)
@@ -206,9 +206,8 @@
 (defmethod om-motion-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
   (apply-in-subview self 'internal-motion-callback (om-make-point x y))
-  ; not good for linux but necessary for cocoa in select drag motion callback
-      #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self) 
-      #+(and cocoa lispworks8) (capi::redisplay-element self)
+      #+lispworks8 (capi::update-drawing-with-cached-display self) 
+      #+lispworks8 (capi::redisplay-element self)
   )
 
 (defun tooltip-key-down ()
