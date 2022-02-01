@@ -444,6 +444,7 @@
   (case (mode (editor self))
     (:interval
      (new-interval-cursor self where)
+     #+lispworks8(capi::update-drawing-with-cached-display self)
      (om-invalidate-view self)
      (om-invalidate-view (preview (editor self))))
     (:move
