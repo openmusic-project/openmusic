@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;;===========================================================================
 
 ;;===========================================================================
@@ -102,12 +102,12 @@
   #+(or darwin macos macosx)  
   "OM6/OPENMUSIC/resources/lib/mac/OMAudioLib.dylib"
   #+linux
-  "OM6/OPENMUSIC/resources/lib/linux/OMAudioLib.so"
+  "OM6/OPENMUSIC/resources/lib/linux/omaudiolib.so"
   )
 
 (defvar omaudiolib-error-message
   (format nil
-	  "Something wrong calling functions from OMAudioLib:~2%    ~A"
+	  "Something wrong calling functions from omaudiolib:~2%    ~A"
 	  *omaudiolib-pathname*))
 
 (defun load-juceaudiolib ()
@@ -116,7 +116,7 @@
 	(progn 
 	  (print (concatenate 'string "Loading OM Audio library: " libpath))
 	  (handler-case 
-              (fli:register-module "OMAudio" 
+              (fli:register-module "omaudio" 
 				   :real-name libpath
 				   :connection-style :immediate)
             (error (c) (format nil "could not load foreign-library ~A : " libpath c)))
@@ -126,7 +126,7 @@
 				   :errorp nil))
 	    (om-api::om-message-dialog omaudiolib-error-message))
 	  t)
-	(print (concatenate 'string "OMAudioLib not found: " libpath)))))
+	(print (concatenate 'string "omaudiolib not found: " libpath)))))
 
 (om::om-add-init-func 'load-juceaudiolib)
 
