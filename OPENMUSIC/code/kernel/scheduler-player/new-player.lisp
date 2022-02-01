@@ -523,7 +523,9 @@
 (defmethod update-player-interval (editor interval) nil)
 (defmethod update-player-interval ((editor play-editor-mixin) interval)
   (unless (cadr interval) (setf (cadr interval) (get-obj-dur (object editor))))
-  (setf (play-interval (player editor)) interval))
+  (setf (play-interval (player editor)) interval)
+  #+lispworks8(oa::update-for-subviews-changes editor t)
+  )
 
 
 ;;;===================================
