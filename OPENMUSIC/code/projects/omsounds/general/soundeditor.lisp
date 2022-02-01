@@ -653,7 +653,9 @@
     (if (equal (cursor-mode self) :interval)
         (progn 
           (setf (selection? self) nil)
-          (new-interval-cursor self where))
+          (new-interval-cursor self where)
+          #+lispworks8(capi::update-drawing-with-cached-display self)
+          )
       (let* ((graph-obj (click-in-sound-marker-p self where)))
         (setf (cursor-pos self) 0)
         (if graph-obj
