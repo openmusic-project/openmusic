@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -2725,6 +2725,13 @@
            append (select-grap-objs item type objlist)))))
 
 (defmethod select-grap-objs ((self grap-group) (type (eql 'grap-group)) objlist)
+   (if (member (reference self) objlist :test 'equal)
+     (list self)
+     (loop for item in (inside self)
+           when (equal (type-of item) type) append (select-grap-objs item type objlist))))
+
+;missing:
+(defmethod select-grap-objs ((self grap-chord) (type (eql 'grap-chord)) objlist)
    (if (member (reference self) objlist :test 'equal)
      (list self)
      (loop for item in (inside self)
