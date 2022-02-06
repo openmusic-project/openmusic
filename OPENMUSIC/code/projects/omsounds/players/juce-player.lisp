@@ -56,39 +56,42 @@
             (let ()
                ;;; try with the recorded device
                (om-print (format nil "AUDIO PLAYER SETUP: ~A x ~A, ~AHz" *audio-out-device* *audio-out-n-channels* *audio-sr*))
-               (juce::setdevices player 
-                        "" 0 
-                        *audio-out-device* *audio-out-n-channels*
-                        *audio-sr* *audio-buffsize*)
                
-               (unless (string-equal *audio-out-device* (juce::getCurrentDeviceName player))
-                 (om-beep-msg (format nil "Selected audio device: '~A' not available.~%Restoring default: '~A'" 
-                                      *audio-out-device* (juce::getCurrentDeviceName player)))
-                 (setf *audio-out-device* (juce::getCurrentDeviceName player)))
-          
-               (setf *audio-out-chan-options* (juce::getoutputchannelslist player))
-               (setf *audio-sr-options* (juce::getsamplerates player))
-              
-               (let ((nch-ok (find *audio-out-n-channels* *audio-out-chan-options*))
-                     (sr-ok (find *audio-sr* *audio-sr-options*)))
-                 (unless nch-ok
-                   (setf *audio-out-n-channels* (or (car (last *audio-out-chan-options*)) 2)))
-                 (unless sr-ok
-                   (setf *audio-sr* (or (car *audio-sr-options*) 44100)))
-                 (unless (and nch-ok sr-ok)
-                   (if nch-ok
-                       (juce::setsamplerate player *audio-sr*)
+               (let* ((device-names (juce::audio-driver-output-devices player *audio-driver*))
+                      (out-device-index (position *audio-out-device* device-names)))
+                 
+                 (if out-device-index
                      
-                     (progn ;; try a reset 
-                       (om-print (format nil "AUDIO PLAYER SETUP (CORRECTED PARAMS): ~A x ~A, ~AHz" 
-                                      *audio-out-device* *audio-out-n-channels* *audio-sr*))
-                       (juce::setdevices  player 
-                                          "" 0 
-                                          *audio-out-device* *audio-out-n-channels*
-                                          *audio-sr* *audio-buffsize*)
-                       ))
-                   ))
-               t)
+                     (juce::setoutputdevice player out-device-index)
+                   
+                   (progn 
+                     (om-beep-msg (format nil "Selected audio device: '~A' not available.~%Restoring default: '~A'" 
+                                          *audio-out-device* (juce::getCurrentDeviceName player)))
+                     (setf *audio-out-device* (juce::getCurrentDeviceName player)))))
+
+               ;;; Channels
+               (setf *audio-out-chan-options* (juce::getoutputchannelslist player))
+
+               (unless (find *audio-out-n-channels* *audio-out-chan-options*)
+                 (setf *audio-out-n-channels* (or (car (last *audio-out-chan-options*)) 2))
+                 (om-print (format nil "Corrected num channels: ~A" *audio-out-n-channels*)))
+
+               (juce::initializeaudiochannels player 0 *audio-out-n-channels*)
+               
+               ;;; Sample rate
+               (setf *audio-sr-options* (juce::getsamplerates player))
+               
+               (unless (find *audio-sr* *audio-sr-options*)
+                 (setf *audio-sr* (or (car *audio-sr-options*) 44100))
+                 (om-print (format nil "Corrected sample rate: ~A" *audio-sr*)))
+               
+               (juce::setsamplerate player *audio-sr*)
+               
+               ;;; Buffer size 
+               (when (find *audio-buffsize* (juce::getbuffersizes player))
+                 (juce::setbuffersize player *audio-buffsize*))
+               )
+          
           (om-beep-msg (format nil "ERROR OPENING AUDIO: No audio device found with driver '~A'." *audio-driver*)))
         )
     (om-beep-msg "ERROR OPENING AUDIO: Could not find any audio driver.")
