@@ -22,7 +22,7 @@
 ; Authors: G. Assayag, C. Agon, J. Bresson
 ;===========================================================================
 
-; interface fopr MultiPlayer - M. Schumacher, J. Bresson
+; interface for MultiPlayer - M. Schumacher, J. Bresson
 
 (in-package :om)
 
@@ -124,11 +124,11 @@
   ;(print "multiplayer play")
   (when *multiplayer-file-to-play*
     (progn 
+      ;(om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/ambisonics/decode" (get-edit-param (editor control-view) :ambi-decode)))
       (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/gain" (multi-vol-convert (vol (print object)))))
       (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 1)))))
 
 (defmethod player-stop ((engine (eql :multiplayer)) &optional play-list)
-  ;(print "multiplayer stop")
   (when *multiplayer-file-to-play*
      (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 0))
      (setf *multiplayer-file-to-play* nil)))
