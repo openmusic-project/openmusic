@@ -98,9 +98,9 @@
 
 (defparameter *omaudiolib-pathname*
   #+win32
-  "/WINDOWS/system32/OMAudioLib.dll"
+  "/WINDOWS/system32/omaudiolib.dll"
   #+(or darwin macos macosx)  
-  "OM6/OPENMUSIC/resources/lib/mac/OMAudioLib.dylib"
+  "OM6/OPENMUSIC/resources/lib/mac/omaudiolib.dylib"
   #+linux
   "OM6/OPENMUSIC/resources/lib/linux/omaudiolib.so"
   )
