@@ -8,9 +8,9 @@ LWARCH=64-bit
 LWVERSION=7.1
 LWEXEC=lispworks-7-1-0-amd64-darwin
 
-OM_VERSION="6.21"
-APP_FOLDER="OM 6.21"
-DMG_NAME="OM-6.21-macOS"
+OM_VERSION="7.0"
+APP_FOLDER="OM 7.0"
+DMG_NAME="OM-7.0-macOS"
 
 
 get_abs_filename() {
