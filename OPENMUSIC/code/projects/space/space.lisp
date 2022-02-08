@@ -29,7 +29,6 @@
     "3D;traject"    
     "3D;3d-tools"
     "3D;3d-functions"
-    #+(and cocoa lispworks8) "lw_opengl_cocoa"
     #+om-opengl-api "3D;3deditor"
     #+om-opengl-api "3D;traject-editor"
     "space-pack"

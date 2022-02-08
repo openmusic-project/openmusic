@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.7.1.1 2014/05/27 20:56:56 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.8.2.2 2021/11/22 20:35:11 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2021 LispWorks Ltd. All rights reserved.
 
 ;; Support for OpenGL with CAPI/Cocoa.
 ;; Symbols in the CAPI-COCOA-LIB package are not part of a supported API.
@@ -69,6 +69,40 @@
   (when context
     (let ((nscontext (cocoa-context-context context)))
       (objc:invoke nscontext "update"))))
+
+;;; By returning NIL, this method blocks any redisplay calls, which 
+;;; otherwise wil lproduce errors.
+(defmethod capi-cocoa-lib::output-pane-representation-draws-p 
+            ((pane opengl-pane) representation &optional force-p)
+   nil)
+
+(defun cocoa-full-gl-viewport-bounds (rep)
+  ;; This assumes all view transformations are translations.
+  (let* ((view (opengl-pane-representation-view rep))
+         (frame (objc:invoke view "frame"))
+         (dx (aref frame 0))
+         (dy (aref frame 1)))
+    (let ((superview view))
+      (loop (setq superview (objc:invoke superview "superview"))
+            (when (objc:null-objc-pointer-p superview) (return))
+            (let ((bounds (objc:invoke superview "bounds")))
+              (decf dx (aref bounds 0))
+              (decf dy (aref bounds 1)))))
+    (values (min 0 (floor dx))
+            (min 0 (floor dy))
+            (floor (aref frame 2))
+            (floor (aref frame 3)))))
+
+(defmethod %update-opengl-pane-after-scrolling ((rep capi-cocoa-lib::output-pane-representation)
+                                                context)
+  (when context
+    (let ((nscontext (cocoa-context-context context)))
+      (objc:invoke nscontext "update")))
+  (multiple-value-bind (x y width height)
+      (cocoa-full-gl-viewport-bounds rep)
+    (opengl:gl-viewport x y width height)
+    (opengl:gl-matrix-mode opengl:*gl-projection*)
+    (opengl:gl-load-identity)))
 
 (defmethod %describe-configuration ((rep capi-cocoa-lib::output-pane-representation)
                                     context &optional (stream *standard-output*) collectp)
@@ -139,6 +173,7 @@
    Configuration is a plist with the following allowed
    indicators: 
       :double-buffer, :double-buffered, - synonyms, value T or NIL."
+  (declare (ignorable view))
   (fli:with-dynamic-foreign-objects ()
     (let* ((attributes-list
             (nconc (and (or (getf configuration :double-buffer)
@@ -178,3 +213,4 @@
                        pixel-format
                        ns-open-gl-pfa-depth-size)
         ))
+
