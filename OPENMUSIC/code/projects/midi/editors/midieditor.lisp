@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -137,6 +137,7 @@
     (loop for i = 0 then (+ i 1) while (< i (nb-tracks self)) do
           (om-draw-picture self (thepal self) :pos (om-make-point 0 (* i h)) :size (om-make-point (w self) h)))))
 
+#-(and cocoa lispworks8)
 (defmethod om-view-click-handler ((self piano-roll-view) where)
    (om-with-focused-view (panel (om-view-container self))
      (om-with-line 'dash 
@@ -146,6 +147,26 @@
                                             (declare (ignore p1 p2))
                                             (om-invalidate-view (panel (om-view-container view))))))
 
+
+
+#+(and cocoa lispworks8)
+(defmethod om-view-click-handler ((self piano-roll-view) where)
+  (let ((panel (panel (om-view-container self))))
+  (om-invalidate-view panel)
+  (om-init-motion-click panel where 
+                        :motion-draw
+                        #'(lambda (view p1 p2) (om-with-focused-view view
+                                                 (om-with-line 'dash 
+                                                   (om-draw-line 0 (om-point-v where) (w view) (om-point-v where))))
+                            (om-invalidate-view view)
+                           
+                            
+                            )
+                        :release-action #'(lambda (view p1 p2) 
+                                            (declare (ignore p1 p2))
+                                            (om-invalidate-view view)
+                                            (capi:output-pane-free-cached-display panel)
+                                            ))))
 
 
 (defmethod piano-release ((self piano-roll-view) pos)
