@@ -178,8 +178,8 @@
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
-     ;#+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box
-     ))
+    #+lispworks8 (update-for-subviews-changes self t) ;updates some widgets eg. text-box
+    ))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
 
