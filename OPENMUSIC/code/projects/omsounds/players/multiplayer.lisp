@@ -22,7 +22,7 @@
 ; Authors: G. Assayag, C. Agon, J. Bresson
 ;===========================================================================
 
-; interface fopr MultiPlayer - M. Schumacher, J. Bresson
+; interface for MultiPlayer - M. Schumacher, J. Bresson
 
 (in-package :om)
 
@@ -124,11 +124,11 @@
   ;(print "multiplayer play")
   (when *multiplayer-file-to-play*
     (progn 
+      ;(om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/ambisonics/decode" (get-edit-param (editor control-view) :ambi-decode)))
       (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/gain" (multi-vol-convert (vol (print object)))))
       (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 1)))))
 
 (defmethod player-stop ((engine (eql :multiplayer)) &optional play-list)
-  ;(print "multiplayer stop")
   (when *multiplayer-file-to-play*
      (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/play" 0))
      (setf *multiplayer-file-to-play* nil)))
@@ -283,13 +283,13 @@
    ; ------------------------------------------
     (list 
      (om-make-dialog-item 'om-static-text 
-                          (om-make-point 145 8)
+                          (om-make-point 400 8)
                           (om-make-point 40 20) "Gain" ;level
                           :font *om-default-font1*)
      
      (om-make-dialog-item 'edit-numBox
-                          (om-make-point 110 8)
-                          (om-make-point 35 18) (format nil " ~4f" (om-round (multi-vol-convert (vol snd)) 3))
+                          (om-make-point 360 8)
+                          (om-make-point 40 20) (format nil " ~4f" (om-round (multi-vol-convert (vol snd)) 3))
                           :min-val -76 :max-val 12
                          ;:incr 0.01
                           :font *om-default-font1*
@@ -299,8 +299,26 @@
                                         (setf (vol snd) (multi-convert-vol (value item)))
                                         (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/fileplayer/gain" (value item))))
                                         )
-     ; to add: Decoding Options
+
+     (om-make-dialog-item 'om-check-box (om-make-point 430 8)
+                         (om-make-point 100 8) "Ambisonics"
+                         :font *om-default-font1*
+                         :di-action
+                         #'(lambda (item)
+                             (let* ((editor (editor control-view))
+                                    (thesound (object editor)))
+                               (if (om-checked-p item)
+                                   (progn
+                                   (set-edit-param (editor control-view) :ambi-decode (om-checked-p item))
+                                   (om-invalidate-view (panel editor))
+                                   (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/ambisonics/decode" 1)))
+                                 (om-send-osc-message *multiplayer-out-port* *multiplayer-host*  (list "/ambisonics/decode" 0))
+                                 )
+                               ))
+                         :checked-p (get-edit-param (editor control-view) :ambi-decode)
+                         )
+
      )
-    ))
+  ))
 
 (pushnew :multiplayer *features*)
