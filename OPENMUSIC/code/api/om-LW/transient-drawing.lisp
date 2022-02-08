@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 
@@ -175,6 +175,7 @@
 ;;; typically called in a click-handler
 (defmethod om-init-motion-click ((self om-graphic-object) position &key motion-draw draw-pane motion-action release-action display-mode)
   ;(print (list "start" self))
+   #+(and cocoa lispworks8)(capi:output-pane-free-cached-display self)
   (setf *click-motion-view* self)
   (setf *click-motion-action* t)
   (when (or motion-action release-action)

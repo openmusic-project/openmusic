@@ -174,11 +174,11 @@
 (defmethod om-clic-release-callback ((self om-graphic-object) x y mods) 
   (set-meta-keys mods)
   (unless (equal *clicked-view* :abort) 
-    #+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self x y) ; not good for linux
+    ;#+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self x y) ; not good for linux
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
-     #+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box
+     ;#+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box
      ))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
