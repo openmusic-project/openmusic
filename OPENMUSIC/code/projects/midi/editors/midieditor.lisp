@@ -152,20 +152,18 @@
 #+(and cocoa lispworks8)
 (defmethod om-view-click-handler ((self piano-roll-view) where)
   (let ((panel (panel (om-view-container self))))
-  (om-invalidate-view panel)
+  ;(om-invalidate-view panel)
   (om-init-motion-click panel where 
                         :motion-draw
                         #'(lambda (view p1 p2) (om-with-focused-view view
                                                  (om-with-line 'dash 
-                                                   (om-draw-line 0 (om-point-v where) (w view) (om-point-v where))))
-                            (om-invalidate-view view)
-                           
-                            
+                                                   (om-draw-line 0 (om-point-v where) 
+                                                                 (w view) (om-point-v where))))
+                            ;(om-invalidate-view view)
                             )
                         :release-action #'(lambda (view p1 p2) 
                                             (declare (ignore p1 p2))
                                             (om-invalidate-view view)
-                                            (capi:output-pane-free-cached-display panel)
                                             ))))
 
 
