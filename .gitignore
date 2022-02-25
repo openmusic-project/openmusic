@@ -13,7 +13,9 @@
 # don’t track OM releases
 *.app/
 /OM 6.*/**/*
+/OM 7.*/**/*
 /OPENMUSIC/OM_6.*
+/OPENMUSIC/OM_7.*
 /distrib/
 /omaudiolib/Builds/
 codesign-om
