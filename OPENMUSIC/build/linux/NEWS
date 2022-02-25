@@ -1,6 +1,8 @@
-* RELEASE NOTES 6.21
+* RELEASE NOTES 7.0
 
 NEW FEATURES
+
+- OM's image is built with LispWorks 8.0
 
 
 IMPROVEMENTS
@@ -14,7 +16,6 @@ IMPROVEMENTS
 
 FIXES
 
--
 - mxml export debugging
 - Now patch mode in score is really saved 
 - Now omloop copies input creatin/deletion are refreshed
