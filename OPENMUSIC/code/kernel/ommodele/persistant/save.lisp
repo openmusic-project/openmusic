@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -790,8 +790,24 @@
        `(let ((newbox (omNG-make-new-boxcall 'dead ,(om-save-point (frame-position self)) ,(name self))))
           (setf (mesage newbox) "This box is dead forever")
           newbox)))
-   
-;-----------------------load---------------------------
+
+(defmethod omNG-save ((self OMSend) &optional (values? nil))
+  (let* ((inputs (mapcar #'(lambda (input) (omNG-save input values?)) (inputs self))))
+    `(om-load-boxsend ,(name self) ,(indice self)  ,(om-save-point (frame-position self))  ,(docu self)
+                      ',inputs ,(frame-name self) ,(omng-save (eval (defval self)) t)
+                      ,(om-save-point (frame-size self)) ,(keyname self))))
+
+
+(defmethod omNG-save ((self OMReceive) &optional (values? nil))
+ ; (push_in_db self (keyref self))
+  (declare (ignore values?))
+  `(om-load-boxreceive ,(name self) ,(indice self)  
+                       ,(om-save-point (frame-position self))  ,(docu self) ;,(in-symbol self) 
+                  ,(frame-name self) ,(omng-save (eval (defval self)) t)
+                  ,(om-save-point (frame-size self))
+                  ,(keyref self)))
+
+   ;-----------------------load---------------------------
   
 (defmethod correct-box-inputs (class inputs) inputs)
 
@@ -1097,6 +1113,35 @@
       (when pict (setf (pictu newtempob) pict))   ;;; .
       (setf (edition-params newtempob) (corrige-edition-params (car (value newtempob)) params))
       newtempob)))
+
+
+(defun om-load-boxsend (name indice position docu inputs &optional fname val fsize keyname)
+  (let ((newbox (make-new-send name indice (om-correct-point position) nil)))
+    (setf (docu newbox) docu)
+    (when val
+      (setf (defval newbox) (put-quote val)))
+    (setf (keyname newbox) keyname);get key from patch
+    (setf (frame-name newbox) fname)
+    (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
+    (set-box-to-inputs (inputs newbox) newbox)
+    (when fsize
+      (setf (frame-size newbox) (om-correct-point fsize)))
+    (push_in_db newbox);put newbox in *send-db*
+    newbox))
+
+
+(defun om-load-boxreceive (name indice position docu &optional fname val fsize keyref)
+  (let ((newbox (make-new-receive name indice (om-correct-point position))))
+    (setf (docu newbox) docu)
+    (when val
+      (setf (defval newbox) (put-quote val)))
+    (setf (frame-name newbox) fname)
+    (when fsize
+      (setf (frame-size newbox) (om-correct-point fsize)))
+    (when keyref 
+      (setf (keyref newbox) keyref))
+    (push_in_db newbox keyref);put newbox in *receive-db*
+    newbox))
 
 ;---------------------------------------------
 

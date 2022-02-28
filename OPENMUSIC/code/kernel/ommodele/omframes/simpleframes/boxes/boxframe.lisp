@@ -129,7 +129,12 @@
         (push (new-connection boxtarget (position ctrl (inputframes boxtarget) :test 'equal))
               (connections boxtarget))
         (redraw-connections boxtarget)
-        (modify-patch (panel boxtarget)))
+        (modify-patch (panel boxtarget))
+        (if (equal (type-of boxtarget) 'sendframe)
+            (progn
+              (setf (value (object boxtarget)) 
+                    (car (omng-box-value (object boxtarget))));stores value in omsend once connected
+              )))
       (om-beep-msg "Impossible to connect, this would create a cycle."))))
 
     

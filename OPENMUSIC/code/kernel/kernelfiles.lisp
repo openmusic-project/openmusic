@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -111,6 +111,7 @@
 "ommodele/omframes/simpleframes/boxes/controls" 
 "ommodele/omframes/simpleframes/boxes/boxframe"  
 "ommodele/omframes/simpleframes/boxes/in-out-boxes"
+"ommodele/omframes/simpleframes/boxes/send-receive"
 "ommodele/omframes/simpleframes/boxes/connections"
 "ommodele/omframes/simpleframes/boxes/tempobjframe"
 "ommodele/omframes/simpleframes/boxes/maq-in-out"

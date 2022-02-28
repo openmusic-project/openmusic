@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -176,6 +176,38 @@
      (setf (frame-size copy) ,(om-copy-point (frame-size self)))
      copy))
 
+;OMSend
+
+(defmethod omNG-copy ((self OMsend))
+  `(let ((copy (make-new-send ,(name self) ,(indice self) ,(om-copy-point (frame-position self)) t
+                             ; ,(docu self)
+                                ,(copy-icon (icon self))',(class-name (class-of self)))))
+     (setf (frame-name copy) ,(frame-name self))
+     (setf (frame-size copy) ,(om-copy-point (frame-size self)))
+     (setf (docu copy) ,(docu self))
+     (setf (defval copy) (put-quote ,(clone (defval self))))
+     copy))
+
+
+
+
+;OMReceive
+
+(defmethod omNG-copy ((self OMreceive))
+  `(let ((copy (make-instance ',(class-name (class-of self))
+                 :name ,(name self)
+                 :icon ,(copy-icon (icon self))
+                 :reference nil
+                 :indice ,(indice self))))
+     (setf (frame-position copy) ,(om-copy-point (frame-position self)))
+     (setf (frame-size copy) ,(om-copy-point (frame-size self)))
+     (setf (frame-name copy) ,(frame-name self))
+     (setf (docu copy) ,(docu self))
+     (setf (defval copy) (put-quote ,(clone (defval self))))
+     (setf (keyref copy) ,(keyref self))
+      ; (push_in_db copy (keyref copy));;here push receive in its db
+       copy
+       ))
 
 ;NORMAL-INPUT without connections
 (defmethod omNG-copy ((self input-funbox))
