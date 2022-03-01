@@ -52,7 +52,7 @@
 #indice# Used in order to sort all outputs in a patch. #indice#"))
 
 
-(defmethod OpenEditorframe ((self OMSend)) (or (editorframe self) (set-input-dialog self)))
+(defmethod OpenEditorframe ((self OMSend)) (or (editorframe self) (set-send-dialog self)))
 (defmethod allow-lock ((self OMsend)))
 (defmethod allow-lock-button ((self OMsend)) nil)
 (defmethod get-frame-name ((self OMsend)) (or (frame-name self) (name self)))
@@ -100,7 +100,7 @@
 
 (defmethod omNG-add-element ((self OMPatch) (elem OMsend))
    "When you add a new output to the patch 'self' you must update all ompatchboxes attached to 'self'."
-   ;(print (list "add send in patch" elem (keyname elem)))
+   (setf (defval elem) (mypathname self))
    (setf (gethash (keyname elem) *send-db*) elem)
    (setf (mycontainer elem) self)
    (push elem (boxes self))
@@ -242,6 +242,7 @@
      (setf (frame-name copy) ,(frame-name self))
      (setf (frame-size copy) ,(om-copy-point (frame-size self)))
      (setf (frame-position copy) ,(borne-position posi))
+     (setf (defval copy) ,(defval self))
      (setf (keyref copy) ,(keyname self))
      copy))
 
@@ -279,8 +280,7 @@
 #indice# Used in order to sort all inputs in a patch. #indice#"))
 
 
-(defmethod OpenEditorframe ((self OMReceive)) (or (editorframe self) (set-input-dialog self)))
-;(defmethod OpenEditorframe ((self OMReceive))  (not (dialog-message "Outputs have no editor")))
+(defmethod OpenEditorframe ((self OMReceive)) (or (editorframe self) (set-send-dialog self)))
 (defmethod numouts ((self OMReceive)) 1)
 (defmethod get-frame-class ((self OMReceive)) 'receiveFrame)
 (defmethod get-frame-name ((self OMReceive)) (or (frame-name self) (name self)))
@@ -455,3 +455,79 @@
 ;(print-send-db)
 ;(print-receive-db)
 
+
+
+;==================================
+; SEND/RECEIVE PANEL
+;==================================
+;opens a dialog enabling activation (opening) 
+;of related send/receives patch locations
+
+#|
+(defparameter *wrkspc-elems* (pathname 
+                              (string+ 
+                               (namestring 
+                                (mypathname  *current-workspace*)) "elements/")))
+|#
+
+(defun get-elem-folder (current-workspace)
+  (pathname 
+   (string+ 
+    (namestring 
+     (mypathname current-workspace)) "elements/")))
+
+(defun set-send-dialog (theinput)
+  (let* ((path (if (defval theinput) (namestring (relative-pathname (defval theinput) (get-elem-folder *current-workspace*)))))
+         (dialog (make-editor-window 'inputEditor theinput (or (frame-name theinput) (name theinput)) nil
+                                     :winpos :centered
+                                     :winsize (om-make-point 410 #+linux 150 #+(or macosx win32) 135)
+                                     :resize t))
+         (defvalitem (make-instance 'om-text-edit-view :object theinput))
+         (defval-scroller (om-make-dialog-item 'om-text-edit-view ;'defval-editbox
+                                               (om-make-point 3 50) (om-make-point 400 35) 
+                                               (format () "~A" path) ;(namestring (relative-pathname (defval theinput) *wrkspc-elems*)))  
+                                               :item defvalitem
+                                               :scrollbars :v
+                                               :font *om-default-font2*
+                                               ;:allow-returns t
+                                               :help-spec "double click to edit initform <command> to see"
+                                               ))
+         (theindex (indice theinput)))
+    (let ((v (eval (defval theinput))))
+      (when (omclass-p (class-of (class-of v)))
+        (setf (instance-p defvalitem) t)
+        )
+      )
+
+    (om-set-bg-color (editor dialog) *azulito*)
+    (om-set-bg-color dialog *azulito*)
+    
+    (om-add-subviews (editor dialog) defval-scroller 
+                     (om-make-dialog-item 'om-static-text (om-make-point 3 30) (om-make-point 80 25) 
+                                          "Path to send:" 
+                                          :bg-color *azulito*
+                                          :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point 5 2) (om-make-point 200 22)
+                                          (format () "~D: ~D" theindex (or (frame-name theinput) (name theinput))) 
+                                          
+                                          :font *om-default-font3b* 
+                                          :bg-color *azulito*)
+                     
+                     (om-make-dialog-item 'om-button (om-make-point 5 90) (om-make-point 80 18) "Open"
+                                          :di-action (om-dialog-item-act item
+                                                       (if (equal (type-of theinput) 'omreceive) 
+                                                           (let* ((key (keyref theinput)) 
+                                                                  (thesend (gethash key *send-db*)))
+                                                             (if thesend
+                                                                 (openobjecteditor (mycontainer thesend))
+                                                               (om-beep-msg "no send to this receive or not loaded!")))
+                                                         
+                                                         (let* ((key (keyname theinput)) 
+                                                                (receives (gethash key *receive-db*))
+                                                                (patches (loop for i in receives
+                                                                               collect (mycontainer i))))
+                                                           (when patches
+                                                           (loop for i in patches
+                                                                 do (openobjecteditor i))))
+                                                         ))))
+    dialog))
