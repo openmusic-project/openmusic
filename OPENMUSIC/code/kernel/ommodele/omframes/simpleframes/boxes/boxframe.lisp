@@ -905,8 +905,8 @@
   
 (defmethod close-frame ((self instBoxframe))
    "Called when you delete an instboxframe will close listeditor."
-   (if (attached-objs (object self)) 
-   (om-close-window (car (attached-objs (object self)))))
+   (when (attached-objs (object self)) 
+   (mapcar #'om-close-window (attached-objs (object self))))
    (setf (frames (object self)) nil))
 ;----------------------------------------
 
