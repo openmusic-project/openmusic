@@ -254,7 +254,7 @@
           (setf (obj-mode (panel self)) (nth n (object-order self)))
           (set-edit-param self 'obj-mode n))
       (progn
-        (print (list n (associated-box parent) self parent))
+       ;(print (list n (associated-box parent) self parent))
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
         (if (and parent (associated-box parent))
