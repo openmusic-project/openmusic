@@ -109,6 +109,7 @@
         "container;scoreominterface"   
         "functions;true-durations"      
         "functions;quantifyom"      
+         "functions;gkant"      
         "functions;maquette2obj"    
         "functions;conversions"       
         

@@ -59,7 +59,7 @@
 
 (defvar *scorefun-package*  (omNG-protect-object (omNG-make-new-package "Score Functions")))
 
-(AddGenFun2Pack '(OMquantify object-dur 
+(AddGenFun2Pack '(OMquantify gkant object-dur 
                              true-durations
                              align-chords concat get-chords get-measures 
                              mask merger select chord-filter chord-band-filter split-voices 
