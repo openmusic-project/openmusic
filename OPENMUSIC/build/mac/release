@@ -4,9 +4,14 @@
 # LWARCH=32-bit
 # LWEXEC=lispworks-7-0-0-x86-darwin
 
+# LWARCH=64-bit
+# LWVERSION=7.1
+# LWEXEC=lispworks-7-1-0-amd64-darwin
+
 LWARCH=64-bit
-LWVERSION=7.1
-LWEXEC=lispworks-7-1-0-amd64-darwin
+LWVERSION=8.0
+LWEXEC=lispworks-8-0-0-macos64-universal
+
 
 OM_VERSION="7.0"
 APP_FOLDER="OM 7.0"
