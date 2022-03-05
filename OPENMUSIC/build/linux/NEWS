@@ -18,6 +18,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Now SOUND object opens after sound not found reloading 
 - mxml export debugging
 - Now patch mode in score is really saved 
 - Now omloop copies input creatin/deletion are refreshed

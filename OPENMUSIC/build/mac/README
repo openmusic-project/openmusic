@@ -1,8 +1,8 @@
 ;=====================================
-; OM 6.21
+; OM 7.0
 ;=====================================
 
-To install, just drag "OM 6.xx.app" into your Applications/ directory.
+To install, just drag "OM 7.x.app" into your Applications/ directory.
 
 OpenMusic is a free software distributed under GNU LGPL license.
 (c) IRCAM 1997-2018
@@ -34,6 +34,36 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone git://git.forge.ircam.fr/OM.git
 ;------------------------------------
+
+* RELEASE NOTES 7.0
+
+NEW FEATURES
+
+
+- OM's image is built with LispWorks 8.0
+- Send And Receive in/out
+- gkant, experimental rhythm quantifier based on omquantify managing gracenotes.
+
+IMPROVEMENTS
+
+- reducetree recursive version.
+- Comments now have an editor. Shorcuts:
+   -'c' opens a comment window 
+   -'o' if comment is selected, opens the window comment for editing 
+
+
+
+FIXES
+
+- Now SOUND object opens after sound not found reloading 
+- mxml export debugging
+- Now patch mode in score is really saved 
+- Now omloop copies input creatin/deletion are refreshed
+- Fix extent issue of chordseqs multiseq output
+
+
+
+
 * RELEASE NOTES 6.20
 
 NEW FEATURES
