@@ -176,11 +176,16 @@
   "rename send and all receives"
   (setf (name (object self)) new-name) 
   (let* ((key (keyname (object self)))
-         (receives (gethash key *receive-db*)))
+         (receives (gethash key *receive-db*))
+         (panels (loop for i in receives
+                       collect (mycontainer i))))
     (when receives
       (loop for i in receives 
-              do (omg-rename (car (frames i)) new-name)))
+            for p in panels
+            do (progn (openeditorframe p)
+                 (omg-rename (car (frames i)) new-name))))
   (call-next-method)))
+
 
 (pushr 'send *spec-new-boxes-types*)
 
