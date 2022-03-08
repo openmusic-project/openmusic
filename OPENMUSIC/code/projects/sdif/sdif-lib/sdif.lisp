@@ -63,7 +63,7 @@
 
 (defcfun  ("SdifPrintVersion" SdifPrintVersion) :void )
 
-(defcfun  ("SdifenableErrorOutput" SdifenableErrorOutput) :void )
+(defcfun  ("SdifEnableErrorOutput" SdifEnableErrorOutput) :void )
 
 (defcfun  ("SdifDisableErrorOutput" SdifDisableErrorOutput) :void )
 
