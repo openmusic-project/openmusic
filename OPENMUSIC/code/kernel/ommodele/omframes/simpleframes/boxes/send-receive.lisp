@@ -89,7 +89,12 @@
        (gen-code (first theinput) (second theinput)) 'nil)))
 
 (defmethod omNG-box-value ((self OMsend) &optional (numout 0))
-   (declare (ignore numout))
+  (declare (ignore numout))
+    (let* ((key (keyname self)) 
+           (receives (gethash key *receive-db*)))
+           (when receives
+               (loop for i in receives
+                       do (setf (value i) (car (mapcar 'omng-box-value (inputs self)))))))
    (setf (value self) (mapcar 'omng-box-value (inputs self))))
 
 
@@ -118,17 +123,18 @@
   (setf *send-to-delete* (indice box))
   (let* ((key (keyname box))
         (receives (gethash key *receive-db*))
-        (patchpanels (loop for i in receives
-                            collect (om-view-container (car (frames i))))))
+        ;(patchpanels (loop for i in receives
+        ;                    collect (om-view-container (car (frames i)))))
+        )
     (when receives
       (loop for i in receives
           do
           (progn
             (setf (indice i) nil)
             (setf (icon i) 190) ;skull (needs refreshing)
-            (omng-remove-element (object (om-view-container (car (frames i)))) i);(needs refreshing)
-            (om-invalidate-view (car (frames i)) t)
-            (om-invalidate-view (om-view-container (car (frames i))) t)
+            ;(omng-remove-element (object (om-view-container (car (frames i)))) i);(needs refreshing)
+            ;(om-invalidate-view (car (frames i)) t)
+           ; (om-invalidate-view (om-view-container (car (frames i))) t)
           ;  (load-patch (object (om-view-container (car (frames i))))) ;marche pas.
             ))
       ))
@@ -276,7 +282,9 @@
     (defval :initform nil :accessor defval)
     (in-symbol :initform nil :accessor in-symbol)
     (indice :initform t :initarg :indice :accessor indice)
-    (keyref :initform nil :initarg :keyref :accessor keyref))
+    (keyref :initform nil :initarg :keyref :accessor keyref)
+    (value :initform nil :accessor value)
+    )
    (:documentation "Input boxes in a patch are instance of this class. #enddoc#
 #seealso# (omboxcall ompatch inFrame) #seealso#
 #docu# Store the documentation of the input. #docu#
@@ -326,21 +334,32 @@
          (update-from-reference item))
    (setf *receive-to-erase* nil))
 
+;(defmethod gen-code ((self OMReceive) numout)
+;   (declare (ignore numout))
+;   (if *compiling-macro-boite* (defval self) (in-symbol self)))
+
+
+
+;ICI:
 (defmethod gen-code ((self OMReceive) numout)
-   (declare (ignore numout))
-   (if *compiling-macro-boite* (defval self) (in-symbol self)))
+  (declare (ignore numout))
+   (setf (value self)
+         (car (omng-box-value (gethash (keyref self) *send-db*))))
+   `(value ,self))
 
 
 (defmethod omNG-box-value ((self OMReceive) &optional (numout nil))
-   (let ((send (gethash (keyref self) *send-db*))) 
-     (when send
-       (car (omng-box-value send)))))
+   (let ((thesend (gethash (keyref self) *send-db*))) 
+     (when thesend
+       (setf (value self)
+       (car (omng-box-value thesend))))))
      
      
  
 
 ;;; does not store values (?)
-(defmethod current-box-value ((self OMReceive) &optional (numout nil)) )
+;(defmethod current-box-value ((self OMReceive) &optional (numout nil)) (list (eval (defval self))) )
+(defmethod current-box-value ((self OMReceive) &optional (numout nil)))
 
 (defmethod get-default-input-val ((self OMReceive)) nil) 
 (defmethod do-add-one-input ((self OMReceive))  nil)
@@ -490,7 +509,7 @@
          (defvalitem (make-instance 'om-text-edit-view :object theinput))
          (defval-scroller (om-make-dialog-item 'om-text-edit-view ;'defval-editbox
                                                (om-make-point 3 50) (om-make-point 400 35) 
-                                               (format () "~A" path) ;(namestring (relative-pathname (defval theinput) *wrkspc-elems*)))  
+                                               (format () "~A" path)
                                                :item defvalitem
                                                :scrollbars :v
                                                :font *om-default-font2*
@@ -524,15 +543,45 @@
                                                            (let* ((key (keyref theinput)) 
                                                                   (thesend (gethash key *send-db*)))
                                                              (if thesend
+                                                                 (progn 
+                                                                  ; (load (defval theinput))
+                                                                  ; (print (list (defval theinput) (mycontainer thesend)))
+                                                                   
+                                                                  (when (defval theinput)
+                                                                    (load (defval theinput))
+                                                                    ;(load-patch (mycontainer thesend))
+                                                                    ;(openeditorframe (mycontainer thesend))
+                                                                    ;(openobjecteditor (mycontainer thesend))
+                                                                   ; (om-inspect (mycontainer thesend))
+                                                                    )
+                                                                  
+                                                                  ; (openeditorframe (mycontainer thesend))
                                                                  (openobjecteditor (mycontainer thesend))
-                                                               (om-beep-msg "no send to this receive or not loaded!")))
+                                                                 )
+                                                               (progn 
+                                                                 ;(load (defval theinput))
+                                                                 (om-beep-msg "no send to this receive or not loaded!")
+                                                                 )
+                                                               ))
                                                          
                                                          (let* ((key (keyname theinput)) 
                                                                 (receives (gethash key *receive-db*))
                                                                 (patches (loop for i in receives
                                                                                collect (mycontainer i))))
                                                            (when patches
-                                                           (loop for i in patches
-                                                                 do (openobjecteditor i))))
+                                                             ;(print (list "patches!" patches))
+                                                             (loop for i in patches
+                                                                   for r in receives
+                                                                   do (progn
+                                                                        (setf (value r) (car (omng-box-value theinput))) 
+                                                                      ;(print (list theinput (omng-box-value theinput) (value theinput) (value r)))
+                                                                        (openobjecteditor i)
+                                                                      ;(om-invalidate-view (editorframe i))
+                                                                     ; (capi:set-pane-focus (editorframe i))
+                                                                        )
+                                                                      )
+                                                             
+                                                             ))
                                                          ))))
     dialog))
+
