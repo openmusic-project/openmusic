@@ -94,7 +94,7 @@
                        :text *comment-text*
                        :font *def-comment-edit-font* 
                        :foreground *comment-color*
-                       :background (color:make-rgb 1 1 1) ;:whitesmoke ; :yellow1
+                       :background :yellow1 ;(color:make-rgb 1 1 1) ;:whitesmoke 
                        :enabled t
                        :buffer-name :temp 
                        :echo-area-pane echo-area
