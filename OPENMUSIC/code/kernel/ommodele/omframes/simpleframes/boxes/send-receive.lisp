@@ -238,7 +238,6 @@
             (newsend (make-new-send (mk-unique-name self "send") i pos t))
             )
        (omG-add-element self (make-frame-from-callobj newsend))
-       (print (list "add-send" newsend (keyname newsend)))
        (set-field-size self)
        )))
 
@@ -509,7 +508,7 @@
          (defvalitem (make-instance 'om-text-edit-view :object theinput))
          (defval-scroller (om-make-dialog-item 'om-text-edit-view ;'defval-editbox
                                                (om-make-point 3 50) (om-make-point 400 35) 
-                                               (format () "~A" path)
+                                               (format () "~A" path) 
                                                :item defvalitem
                                                :scrollbars :v
                                                :font *om-default-font2*
@@ -544,24 +543,15 @@
                                                                   (thesend (gethash key *send-db*)))
                                                              (if thesend
                                                                  (progn 
-                                                                  ; (load (defval theinput))
-                                                                  ; (print (list (defval theinput) (mycontainer thesend)))
-                                                                   
-                                                                  (when (defval theinput)
-                                                                    (load (defval theinput))
-                                                                    ;(load-patch (mycontainer thesend))
-                                                                    ;(openeditorframe (mycontainer thesend))
-                                                                    ;(openobjecteditor (mycontainer thesend))
-                                                                   ; (om-inspect (mycontainer thesend))
-                                                                    )
-                                                                  
-                                                                  ; (openeditorframe (mycontainer thesend))
-                                                                 (openobjecteditor (mycontainer thesend))
-                                                                 )
+                                                                 ;  (when (defval theinput)
+                                                                 ;   (load (defval theinput))
+                                                                 ;   )
+                                                                   (openobjecteditor (mycontainer thesend))
+                                                                   )
                                                                (progn 
                                                                  ;(load (defval theinput))
-                                                                 (om-beep-msg "no send to this receive or not loaded!")
-                                                                 )
+                                                               (om-beep-msg "no send to this receive or not loaded!")
+                                                               )
                                                                ))
                                                          
                                                          (let* ((key (keyname theinput)) 
@@ -569,19 +559,15 @@
                                                                 (patches (loop for i in receives
                                                                                collect (mycontainer i))))
                                                            (when patches
-                                                             ;(print (list "patches!" patches))
                                                              (loop for i in patches
                                                                    for r in receives
                                                                    do (progn
                                                                         (setf (value r) (car (omng-box-value theinput))) 
-                                                                      ;(print (list theinput (omng-box-value theinput) (value theinput) (value r)))
                                                                         (openobjecteditor i)
-                                                                      ;(om-invalidate-view (editorframe i))
-                                                                     ; (capi:set-pane-focus (editorframe i))
                                                                         )
-                                                                      )
-                                                             
-                                                             ))
-                                                         ))))
+                                                                      )))
+                                                         )
+                                                       (om-close-window (editor dialog))
+                                                       )))
     dialog))
 
