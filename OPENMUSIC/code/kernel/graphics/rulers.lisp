@@ -63,7 +63,7 @@ for exemple 0.01 implic that the centieme is the smallest sub division of the un
     (om-with-pen (self :size 1)
       (call-next-method)
       (om-with-focused-view self
-        (om-with-fg-color self *om-blue-color* ;*om-dark-gray-color*
+        (om-with-fg-color self *om-dark-blue-color* ;*om-dark-gray-color*
           
              (om-draw-view-outline self 1)
              (let* ((axe (axe self))
