@@ -38,7 +38,7 @@ compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
 exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
-exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/win/'
+exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/m1/' --exclude 'resources/lib/win/'
 
 imgfound	= $(shell find $(BUILDROOT) -maxdepth 1 -perm -111 -type f | grep -e "OM")
 
