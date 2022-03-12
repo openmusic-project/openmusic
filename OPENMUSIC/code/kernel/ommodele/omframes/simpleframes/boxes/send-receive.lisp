@@ -357,8 +357,9 @@
  
 
 ;;; does not store values (?)
-;(defmethod current-box-value ((self OMReceive) &optional (numout nil)) (list (eval (defval self))) )
-(defmethod current-box-value ((self OMReceive) &optional (numout nil)))
+;(defmethod current-box-value ((self OMReceive) &optional (numout nil)))
+(defmethod current-box-value ((self OMReceive) &optional (numout nil))
+    (list (value self)))
 
 (defmethod get-default-input-val ((self OMReceive)) nil) 
 (defmethod do-add-one-input ((self OMReceive))  nil)
