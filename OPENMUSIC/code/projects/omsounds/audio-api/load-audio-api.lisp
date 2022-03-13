@@ -100,9 +100,9 @@
   #+win32
   "/WINDOWS/system32/omaudiolib.dll"
   #+(or darwin macos macosx)  
-  "OM6/OPENMUSIC/resources/lib/mac/omaudiolib.dylib"
+  "openmusic/OPENMUSIC/resources/lib/mac/omaudiolib.dylib"
   #+linux
-  "OM6/OPENMUSIC/resources/lib/linux/omaudiolib.so"
+  "/usr/share/openmusic/resources/lib/linux/omaudiolib.so"
   )
 
 (defvar omaudiolib-error-message
