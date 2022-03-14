@@ -40,9 +40,9 @@ inside the .app bundle's resources.
 NEW FEATURES
 
 
-- OM's image is built with LispWorks 8.0
+- OM image built with LispWorks 8.0
 - Send And Receive in/out
-- gkant, experimental rhythm quantifier based on omquantify managing gracenotes.
+- gkant, experimental rhythm quantifier based on omquantify managing grace-notes.
 
 IMPROVEMENTS
 
@@ -55,11 +55,12 @@ IMPROVEMENTS
 
 FIXES
 
-- Now SOUND object opens after sound not found reloading 
+- SOUND object reloads new sound after sound not found message 
 - mxml export debugging
-- Now patch mode in score is really saved 
-- Now omloop copies input creatin/deletion are refreshed
+- patch mode in score is really saved 
+- omloop copies input creation/deletion are refreshed
 - Fix extent issue of chordseqs multiseq output
+
 
 
 
