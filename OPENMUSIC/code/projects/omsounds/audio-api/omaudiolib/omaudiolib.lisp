@@ -21,6 +21,9 @@
 
 (in-package :juce)
 
+
+(cffi:defcfun ("versionString" versionString) :string)
+
 ;;;==============================================
 ;;  PLAYER
 ;;;==============================================
@@ -114,8 +117,8 @@
 (cffi:defcfun ("startAudioSource" startAudioSource) :void (player :pointer) (source :pointer))
 (cffi:defcfun ("pauseAudioSource" pauseAudioSource) :void (player :pointer) (source :pointer))
 (cffi:defcfun ("stopAudioSource" stopAudioSource) :void (player :pointer) (source :pointer))
-(cffi:defcfun ("setAudioSourcePos" setAudioSourcePos) :void (source :pointer) (pos :long))
-(cffi:defcfun ("getAudioSourcePos" getAudioSourcePos) :long (source :pointer))
+(cffi:defcfun ("setAudioSourcePos" setAudioSourcePos) :void (source :pointer) (pos :long-long))
+(cffi:defcfun ("getAudioSourcePos" getAudioSourcePos) :long-long (source :pointer))
 (cffi:defcfun ("getAudioSourceGain" getAudioSourceGain) :float (source :pointer))
 (cffi:defcfun ("setAudioSourceGain" setAudioSourceGain) :void (source :pointer) (gain :float))
 
@@ -127,7 +130,7 @@
 (cffi:defcfun ("freeAudioFileReader" freeAudioFileReader) :void (handler :pointer))
 
 (cffi:defcfun ("getAudioFileNumChannels" getAudioFileNumChannels) :int (handler :pointer))
-(cffi:defcfun ("getAudioFileNumSamples" getAudioFileNumSamples) :long (handler :pointer))
+(cffi:defcfun ("getAudioFileNumSamples" getAudioFileNumSamples) :long-long (handler :pointer))
 (cffi:defcfun ("getAudioFileSampleRate" getAudioFileSampleRate) :double (handler :pointer))
 (cffi:defcfun ("getAudioFileSampleSize" getAudioFileSampleSize) :int (handler :pointer))
 (cffi:defcfun ("getAudioFileFloatFormat" getAudioFileFloatFormat) :boolean (handler :pointer))
