@@ -376,6 +376,7 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
      (setf (tree newvoice) newtree)
      newvoice))
 
+|#
 
 (defmethod! reducetree ((self voice))
    :initvals '(t)
@@ -403,10 +404,12 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
        (setf tree liste)
        (setf liste (reduced-tree liste)))
      (remove nil liste)))
-|#
 
+
+#|
 ;-------
 ;improved version based on absolute-prop
+;A REVOIR
 
 (defun abs-props (liste)
 (if (null liste)
@@ -436,7 +439,7 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
           (newtree (reducetree (tree newvoice))))
      (setf (tree newvoice) newtree)
      newvoice))
-
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;PULSEMAKER;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
