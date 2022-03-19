@@ -341,11 +341,18 @@
 
 
 ;ICI:
+#|
 (defmethod gen-code ((self OMReceive) numout)
   (declare (ignore numout))
   ; (setf (value ,self)
   ;       (car (omng-box-value (gethash (keyref ,self) *send-db*))))
    `(value ,self))
+|#
+
+
+(defmethod gen-code ((self OMReceive) numout)
+  (declare (ignore numout))
+    `(car (omng-box-value (gethash (keyref ,self) *send-db*))))
 
 
 (defmethod omNG-box-value ((self OMReceive) &optional (numout nil))
