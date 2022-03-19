@@ -282,7 +282,7 @@
     (in-symbol :initform nil :accessor in-symbol)
     (indice :initform t :initarg :indice :accessor indice)
     (keyref :initform nil :initarg :keyref :accessor keyref)
-    (value :initform nil :accessor value)
+    (value :initform nil :initarg :value :accessor value)
     )
    (:documentation "Input boxes in a patch are instance of this class. #enddoc#
 #seealso# (omboxcall ompatch inFrame) #seealso#
@@ -333,17 +333,18 @@
          (update-from-reference item))
    (setf *receive-to-erase* nil))
 
-;(defmethod gen-code ((self OMReceive) numout)
-;   (declare (ignore numout))
-;   (if *compiling-macro-boite* (defval self) (in-symbol self)))
-
+#|
+(defmethod gen-code ((self OMReceive) numout)
+   (declare (ignore numout))
+   (if *compiling-macro-boite* (value ,self) (in-symbol ,self)))
+|#
 
 
 ;ICI:
 (defmethod gen-code ((self OMReceive) numout)
   (declare (ignore numout))
-   (setf (value self)
-         (car (omng-box-value (gethash (keyref self) *send-db*))))
+  ; (setf (value ,self)
+  ;       (car (omng-box-value (gethash (keyref ,self) *send-db*))))
    `(value ,self))
 
 
