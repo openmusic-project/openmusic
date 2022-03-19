@@ -85,6 +85,10 @@
 
 (defmethod get-box-tut-name ((self OMBoxlispCall)) "lisptut")
 
+(defmethod get-box-tut-name ((self omsend)) "send")
+
+(defmethod get-box-tut-name ((self omreceive)) "send")
+
 ;KARIM TUTORIALS
 
 (defmethod special-name-for-tutorial ((self t)) nil)
