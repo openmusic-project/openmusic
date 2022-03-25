@@ -23,7 +23,7 @@ OpenMusic is a free software distributed under the GPLv3 license. As a Common Li
 
 While the sources of OM are available under the GPL license, the application is developed with [LispWorks 7](http://www.lispworks.com/): a commercial Lisp environment providing multiplatform support and graphical/GUI toolkits. Also available a free (limited) edition of LW7 on the LispWorks website.
 
-See the [Build Instructions](./BUILD.md) for how to compile, load and deliver OM using LispWorks 7.1. 
+See the [Build Instructions](./BUILD.md) for how to compile, load and deliver OM using LispWorks 7.1 or 8. 
 
 In order to contribute to the code without a LispWorks license, one must therefore work both with the cloned source package _and_ an up-to-date reseased version on OM (which includes a Lisp interpreter).
 
