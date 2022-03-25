@@ -615,8 +615,14 @@ Extraction methods.
   self)
     
 
-(defmethod do-initialize ((self measure) &key )
-  (distribute-chords self (list (mki 'chord)))
+;(defmethod do-initialize ((self measure) &key )
+;  (distribute-chords self (list (mki 'chord)))
+;  self)
+
+;to be tested!
+(defmethod do-initialize ((self measure) &key chords)
+  (distribute-chords self chords)
+  (normalize-chord self 100)
   self)
 
 (defmethod initialize-instance ((self group)
