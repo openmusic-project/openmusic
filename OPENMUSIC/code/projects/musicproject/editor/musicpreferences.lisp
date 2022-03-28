@@ -424,7 +424,7 @@
                                  :size (get-pref-scroll-size)
                                  :position (om-make-point 66 0)
                                  :scrollbars :v 
-                                 :bg-color *om-light-gray-color*
+                                 :bg-color *om-gray1-color* ;*om-light-gray-color*
                                  :retain-scrollbars t))
         (i 0))
     (om-add-subviews thescroll

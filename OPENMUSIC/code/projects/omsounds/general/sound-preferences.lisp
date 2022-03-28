@@ -150,7 +150,8 @@
                                  :position (om-make-point 66 0)
                                  :scrollbars :v 
                                  :retain-scrollbars t
-                                 :bg-color *om-light-gray-color*))
+                                 :bg-color *om-gray1-color* ;*om-light-gray-color*
+                                 ))
         
         (audio-devices (player-get-devices :om-audio))        
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))

@@ -96,7 +96,8 @@
                                   :position (om-make-point 66 0)
                                   :font *controls-font* 
                                   :scrollbars :v :retain-scrollbars t
-                                  :bg-color *om-light-gray-color*))
+                                  :bg-color *om-gray1-color* ;*om-light-gray-color*
+                                  ))
          (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2)) (i 0)
 	 (dy #-linux 30 #+linux 33))
      (om-add-subviews thescroll
