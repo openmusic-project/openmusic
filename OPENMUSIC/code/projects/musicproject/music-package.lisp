@@ -62,7 +62,8 @@
 (AddGenFun2Pack '(OMquantify gkant object-dur 
                              true-durations
                              align-chords concat get-chords get-measures 
-                             mask merger select chord-filter chord-band-filter split-voices 
+                             ;mask 
+                             merger select chord-filter chord-band-filter split-voices 
                              voice->voices concat-voices maquette2obj) 
                 *scorefun-package*)
 
