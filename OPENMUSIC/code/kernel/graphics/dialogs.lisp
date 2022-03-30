@@ -384,7 +384,7 @@ External Libraries:
 (defun ws-dialog ()
   (let* ((userpref (ompref-file))
          (newuser (not (probe-file userpref)))
-         (font *om-default-font2*) 
+         (font *om-default-font2b*) 
          (smallfont *om-default-font1*)
          previous)
 
@@ -439,6 +439,7 @@ External Libraries:
                                                          " Open previous workspace"
                                                          :checked-p (and prev-ok (not newuser))
                                                          :enable prev-ok
+                                                         :fg-color *om-dark-gray-color*
                                                          :font font
                                                          :radio-button-cluster 'proj
                                                          ))
@@ -455,6 +456,7 @@ External Libraries:
                        (setf exist (om-make-dialog-item 'om-radio-button (om-make-point 20 i) (om-make-point 200 20)
                                                         " Open a workspace"
                                                         :checked-p (or (not previous) newuser)
+                                                        :fg-color *om-dark-gray-color*
                                                         :font font
                                                         :radio-button-cluster 'proj
                                                         ))
@@ -469,6 +471,7 @@ External Libraries:
                        (setf new (om-make-dialog-item 'om-radio-button (om-make-point 20 i) (om-make-point 200 20)
                                                       " Create a new workspace"
                                                       :checked-p nil
+                                                      :fg-color *om-dark-gray-color*
                                                       :font font
                                                       :radio-button-cluster 'proj
                                                       ))
