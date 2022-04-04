@@ -376,6 +376,7 @@
                              :bg-color *om-window-def-color* :window-title title))
         (text (om-make-dialog-item 'om-static-text (om-make-point 20 20) (om-make-point 270 (- size 70))
                                    message
+                                   :bg-color *om-white-color*
                                    :font *controls-font*
                                    ))
         (box (om-make-dialog-item 'om-check-box (om-make-point 20 (- size 40)) (om-make-point 270 20)
