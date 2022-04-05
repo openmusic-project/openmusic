@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -131,7 +131,9 @@ in this case this slot keeps the lambda expression.#lisp-exp-p#
       (setf *libs-to-load* nil))
       
       (when (and (mypathname self) (probe-file (mypathname self)))
-        (when (editorframe self) (om-set-window-title (window (editorframe self)) (name self)))
+        (when (editorframe self) 
+          (capi::apply-in-pane-process (window (editorframe self))  
+                                       'om-set-window-title (window (editorframe self)) (name self)))
         (om-delete-file tempfile)
         (om-print (string+ (namestring (mypathname self)) " saved")))
       t)))
