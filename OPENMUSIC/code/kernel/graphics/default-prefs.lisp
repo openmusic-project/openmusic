@@ -126,7 +126,7 @@
                                  :font *controls-font* 
                                  ;:scrollbars :v 
                                  ;:retain-scrollbars t
-                                 :bg-color *om-gray1-color*
+                                 :bg-color *om-light-gray-color*
                                  ))
         (l1 20)
 	(l2 (round (om-point-h (get-pref-scroll-size)) 2))
@@ -372,7 +372,7 @@
                                  :position (om-make-point 0 0)
                                  :scrollbars nil 
                                  :retain-scrollbars t
-                                 :bg-color *om-gray1-color*
+                                 :bg-color *om-light-gray-color*
                                  ))
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         (posy 0)
@@ -771,7 +771,7 @@
                                   :scrollbars nil 
                                   :name "Libraries"
                                   :retain-scrollbars t
-                                  :bg-color *om-gray1-color*
+                                  :bg-color *om-light-gray-color*
                                   ))
          (ww (om-point-h (get-pref-scroll-size)))
          (l1 20) (l2 (round ww 2))
@@ -989,7 +989,7 @@
                                   :position (om-make-point 66 0)
                                   :scrollbars :v 
                                   :retain-scrollbars t
-                                  :bg-color *om-gray1-color*
+                                  :bg-color *om-light-gray-color*
                                   ))
          (pos 40) (xpos 20))
      
