@@ -378,7 +378,7 @@
         (posy 0)
         (dy #-linux 30 #+linux 35)
         test-wscolor test-comment boxfont)
-     (print (list "modulepref" modulepref))
+    ;(print (list "modulepref" modulepref))
      (om-add-subviews thescroll       
                       
                       (om-make-dialog-item 'om-static-text (om-make-point l1 (setf posy 20)) (om-make-point 200 30) "Workspace / Folders"
