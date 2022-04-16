@@ -248,19 +248,19 @@
 (defmethod set-obj-mode ((self scoreeditor) n)
   (let* ((obj (object self))
          (parent (get-obj-parent obj)))
-    
     (if (equal obj parent)
         (progn
           (setf (obj-mode (panel self)) (nth n (object-order self)))
           (set-edit-param self 'obj-mode n))
       (progn
-       ;(print (list n (associated-box parent) self parent))
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
+        (update-mode-buttons (title-bar (editor (panel self))))        
+        (update-panel (panel self))
         (if (and parent (associated-box parent))
         (set-obj-mode (editorframe (associated-box parent)) n)
-         ; (set-obj-mode parent n) ;fix in progress
-        )))))
+          (set-obj-mode (ref (editor (panel self))) n)
+          )))))
 
 
 (defun grap-class-from-type (str)
@@ -1731,7 +1731,9 @@
       (progn
         (setf (obj-mode self) (nth newval list))
         (set-edit-param (om-view-container self) 'obj-mode newval)
-        (set-obj-mode (editorframe (associated-box parent)) newval)
+        (if (associated-box parent)
+            (set-obj-mode (editorframe (associated-box parent)) newval)
+          (set-obj-mode (ref (editor self)) newval))
         (make-unselect self)
         (update-mode-buttons (title-bar (om-view-container self)))
         (update-panel self)))
