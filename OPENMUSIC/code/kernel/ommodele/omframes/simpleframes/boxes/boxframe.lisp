@@ -911,13 +911,21 @@
 |#
 
 (defmethod close-frame ((self instBoxframe))
-   "Called when you delete an instboxframe will close listeditor."
-   (when (attached-objs (object self)) 
-     (let ((obj (car (flat (attached-objs (object self))))))
-       (if obj 
-           (om-close-window (window obj))
-         (om-close-window (editorframe (reference (object self)))))))
-   (setf (frames (object self)) nil))
+  "Called when you delete an instboxframe will close listeditor."
+  (let ((objs (attached-objs (object self))))
+  (when (car objs)   
+    (if (and (editorframe (reference (object self)))
+             (atom (car objs)))
+        (loop for i in (om-subviews (editorframe (reference (object self))))
+              do (if (editorframe (object i))
+                     (om-close-window (window (editorframe (object i))))    
+                   (om-close-window (editorframe (reference (object self)))) ))
+      (let ((obj (car (flat objs))))
+        (if obj 
+            (om-close-window (window obj))
+          (om-close-window (editorframe (reference (object self))))))))
+   (om-close-window (editorframe (reference (object self))))
+   (setf (frames (object self)) nil)))
 
 ;----------------------------------------
 

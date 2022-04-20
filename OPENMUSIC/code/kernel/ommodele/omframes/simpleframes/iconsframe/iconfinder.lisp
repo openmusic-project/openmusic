@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -692,6 +692,9 @@ this slot store a subview containing it subview if exists.#triangle#
 (defclass instance-icon-frame (icon-finder) ()
    (:documentation "The class of simple frames for OMInstance meta objects.#enddoc#
 #seealso# (OMInstance) #seealso#"))
+
+(defmethod instance-icon-frame-p ((self instance-icon-frame)) t)
+(defmethod instance-icon-frame-p ((self t)) nil)
 
 (defmethod initialize-instance :after ((self instance-icon-frame) &key controls)
    (declare (ignore controls))
