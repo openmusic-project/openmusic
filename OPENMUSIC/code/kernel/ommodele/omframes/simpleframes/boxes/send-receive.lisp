@@ -45,7 +45,8 @@
     (defval :initform nil :accessor defval)
     (in-symbol :initform nil :accessor in-symbol)
     (indice :initform t :initarg :indice :accessor indice)
-    (keyname :initform nil :initarg :keyname :accessor keyname)
+    (keyref :initform nil :initarg :keyref :accessor keyref)
+    (id :initform nil :initarg :id :accessor id)
     (value :initform nil :initarg :value :accessor value))
    (:documentation "Output boxes in a patch are instance of this class. #enddoc#
 #seealso# (omboxcall ompatch outFrame) #seealso#
@@ -60,12 +61,14 @@
 (defmethod numouts ((self OMsend)) 0)
 (defmethod show-info-window ((self OMsend) &optional (i 0)) (om-beep-msg "No info for out boxes"))
 (defmethod get-icon-box-class ((self OMsend)) 'inout-icon-box)
+(defmethod omsend-p ((self omsend)) t)
+(defmethod omsend-p ((self t )) nil )
 
 
 (defun make-new-send (name indice posi key-p &optional (icon 856) (class 'OMsend))
   (let* ((thesend (make-instance class
                                  :name "send"
-                                 :keyname (string (gensym))
+                                 :keyref (string (gensym))
                                  :icon icon
                                  :reference nil
                                  :indice indice
@@ -79,6 +82,7 @@
                                                 :value nil 
                                                 :box-ref thesend
                                                 :doc-string nil)))
+    (setf (id thesend) (concatenate 'string "s" (keyref thesend)))
     thesend))
      
 
@@ -90,7 +94,7 @@
 
 (defmethod omNG-box-value ((self OMsend) &optional (numout 0))
   (declare (ignore numout))
-    (let* ((key (keyname self)) 
+    (let* ((key (keyref self)) 
            (receives (gethash key *receive-db*)))
            (when receives
                (loop for i in receives
@@ -106,7 +110,7 @@
 (defmethod omNG-add-element ((self OMPatch) (elem OMsend))
    "When you add a new output to the patch 'self' you must update all ompatchboxes attached to 'self'."
    (setf (defval elem) (mypathname self))
-   (setf (gethash (keyname elem) *send-db*) elem)
+   (setf (gethash (keyref elem) *send-db*) elem)
    (setf (mycontainer elem) self)
    (push elem (boxes self))
    (loop for item in (attached-objs self) do ;don't know if necessary???
@@ -121,7 +125,7 @@
   "When you remove an output from the patch 'self' you must update all ompatchboxes attached to 'self'."
   (call-next-method)
   (setf *send-to-delete* (indice box))
-  (let* ((key (keyname box))
+  (let* ((key (keyref box))
         (receives (gethash key *receive-db*))
         ;(patchpanels (loop for i in receives
         ;                    collect (om-view-container (car (frames i)))))
@@ -181,7 +185,7 @@
 (defmethod omG-rename ((self sendFrame) new-name)
   "rename send and all receives"
   (setf (name (object self)) new-name) 
-  (let* ((key (keyname (object self)))
+  (let* ((key (keyref (object self)))
          (receives (gethash key *receive-db*))
          (panels (loop for i in receives
                        collect (mycontainer i))))
@@ -253,7 +257,7 @@
      (setf (frame-size copy) ,(om-copy-point (frame-size self)))
      (setf (frame-position copy) ,(borne-position posi))
      (setf (defval copy) ,(defval self))
-     (setf (keyref copy) ,(keyname self))
+     (setf (keyref copy) ,(keyref self))
      copy))
 
 
@@ -300,6 +304,9 @@
 (defmethod get-documentation ((self OMReceive)) "Input ~D~%" (indice self) (docu self))
 (defmethod get-object-insp-name ((self OMReceive)) "Normal input")
 (defmethod get-icon-box-class ((self OMReceive)) 'inout-icon-box)
+(defmethod omreceive-p ((self omreceive)) t)
+(defmethod omreceive-p ((self t )) nil )
+
 
 (defun make-new-receive (name indice posi &optional (icon 857) (class 'OMReceive))
    (let* ((theinput (make-instance class
@@ -450,7 +457,7 @@
 ;==================================
 ;;SEND DB
 (defmethod push_in_db ((self omsend) &optional (key nil))
-  (let ((genkey (keyname self)))
+  (let ((genkey (keyref self)))
     (setf (gethash genkey *send-db*) self)))
 
 (defmethod push_in_db ((self omreceive) &optional (key nil))
@@ -460,7 +467,7 @@
   (push self (gethash key *receive-db*))))
 
 (defmethod pop_db ((self omsend))
-  (let ((key (keyname self)))
+  (let ((key (keyref self)))
     (remhash key *send-db*)
     (remhash key *receive-db*)
     ))
@@ -563,7 +570,7 @@
                                                                )
                                                                ))
                                                          
-                                                         (let* ((key (keyname theinput)) 
+                                                         (let* ((key (keyref theinput)) 
                                                                 (receives (gethash key *receive-db*))
                                                                 (patches (loop for i in receives
                                                                                collect (mycontainer i))))

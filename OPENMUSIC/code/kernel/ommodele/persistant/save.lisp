@@ -795,7 +795,7 @@
   (let* ((inputs (mapcar #'(lambda (input) (omNG-save input values?)) (inputs self))))
     `(om-load-boxsend ,(name self) ,(indice self)  ,(om-save-point (frame-position self))  ,(docu self)
                       ',inputs ,(frame-name self) ,(omng-save (eval (defval self)) t)
-                      ,(om-save-point (frame-size self)) ,(keyname self))))
+                      ,(om-save-point (frame-size self)) ,(keyref self) ,(id self))))
 
 
 (defmethod omNG-save ((self OMReceive) &optional (values? nil))
@@ -1115,12 +1115,12 @@
       newtempob)))
 
 
-(defun om-load-boxsend (name indice position docu inputs &optional fname val fsize keyname)
+(defun om-load-boxsend (name indice position docu inputs &optional fname val fsize keyref)
   (let ((newbox (make-new-send name indice (om-correct-point position) nil)))
     (setf (docu newbox) docu)
     (when val
       (setf (defval newbox) (put-quote val)))
-    (setf (keyname newbox) keyname);get key from patch
+    (setf (keyref newbox) keyref);get key from patch
     (setf (frame-name newbox) fname)
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
     (set-box-to-inputs (inputs newbox) newbox)

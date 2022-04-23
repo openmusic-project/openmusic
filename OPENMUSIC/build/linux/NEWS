@@ -1,3 +1,14 @@
+* RELEASE NOTES 7.1
+
+NEW FEATURES
+
+IMPROVEMENTS
+
+FIXES
+
+- Fixed closing instances (automatic closing of editors when instances are deleted)
+- set-obj-mode fix (internal chord)
+
 * RELEASE NOTES 7.0
 
 NEW FEATURES
