@@ -248,20 +248,21 @@
 (defmethod set-obj-mode ((self scoreeditor) n)
   (let* ((obj (object self))
          (parent (get-obj-parent obj)))
-    (if (equal obj parent)
+    (if (or (not parent) 
+         (equal obj parent))
         (progn
           (setf (obj-mode (panel self)) (nth n (object-order self)))
-          (set-edit-param self 'obj-mode n))
+          (set-edit-param self 'obj-mode n)
+          )
       (progn
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
         (update-mode-buttons (title-bar (editor (panel self))))        
         (update-panel (panel self))
-        (if (and parent (associated-box parent))
-        (set-obj-mode (editorframe (associated-box parent)) n)
-          (set-obj-mode (ref (editor (panel self))) n)
-          )))))
-
+        (when (associated-box parent)
+            (set-obj-mode (ref (editor (panel self))) n))
+          )
+          )))
 
 (defun grap-class-from-type (str)
    (cond
@@ -1715,13 +1716,14 @@
     ))
 |#
 
-(defmethod change-obj-mode ((self scorePanel) val)
+ (defmethod change-obj-mode ((self scorePanel) val)
   (let* ((list (object-order (editor self)))
          (oldval (position (obj-mode self) list :test 'string-equal))
          (newval (mod (+ val (position (obj-mode self) list :test 'string-equal)) (length list)))
          (obj (object (editor self)))
          (parent (get-obj-parent obj)))
-    (if (equal obj parent)
+    (if (or (not parent) 
+         (equal obj parent))
         (progn
           (setf (obj-mode self) (nth newval list))
           (set-edit-param (om-view-container self) 'obj-mode newval)
@@ -1731,14 +1733,13 @@
       (progn
         (setf (obj-mode self) (nth newval list))
         (set-edit-param (om-view-container self) 'obj-mode newval)
-        (if (associated-box parent)
-            (set-obj-mode (editorframe (associated-box parent)) newval)
+          (when (associated-box parent)
           (set-obj-mode (ref (editor self)) newval))
-        (make-unselect self)
+          (make-unselect self)
         (update-mode-buttons (title-bar (om-view-container self)))
         (update-panel self)))
     ))
-   
+  
 (defmethod change-slot-edit ((self scorePanel) slotedit)
    (setf (slots-mode self) slotedit)
    (update-slot-edit self) t)
