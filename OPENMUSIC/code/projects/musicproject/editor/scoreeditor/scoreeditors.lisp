@@ -819,6 +819,25 @@
     (setf *redraw-diamonds* t)
     (set-panel-boxes self)))
 
+;;; for send-receive
+
+(defmethod send-receive-p ((self ScorePanel))
+  "returns boxes if omsend or omreceive is found in the patch"
+    (let ((boxes (boxes (object self)))) 
+     (or (member-if #'omsend-p boxes)
+      (member-if #'omreceive-p boxes))))
+
+
+(defmethod send-receive-keys ((self ScorePanel))
+  (let ((sr (remove nil(flat (send-receive-p self)))))
+    (when sr
+      (remove nil
+      (loop for i in sr
+              collect (if (or (omsend-p i) (omreceive-p i))
+                          (concatenate 'string "s" (keyref i))))))))
+
+;;;
+
 
 (defmethod cursor-panes ((self scoreeditor))
   (list (panel self)))

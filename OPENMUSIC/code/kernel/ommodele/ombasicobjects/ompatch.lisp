@@ -203,17 +203,53 @@ put this code in this method."
                  (om-abort)))))))
      self)
 
+;;; for send-receive
+
+
+(defmethod send-receive-p ((self t)) nil)
+
+(defmethod send-receive-p ((self OMPatch))
+  "returns boxes if omsend or omreceive is found in the patch"
+  (let* ((boxes (boxes self))
+        (refs (mapcar #'reference boxes))
+        (editor(editorframe self))
+        (path (mypathname self)))
+    (or (member-if #'omsend-p boxes)
+        (member-if #'omreceive-p boxes)
+        (mapcar #'send-receive-p boxes)
+        (mapcar #'send-receive-p refs))
+    ))
+;;;
 
 (defmethod OpenEditorframe ((self OMPatch))
-   "Open the patch editor, this method open too all persistantes objects referenced into the patch."
+  "Open the patch editor, this method open too all persistantes objects referenced into the patch."
+  (declare (special *om-current-persistent*))
+  (load-patch self)  
+  (loop for i in (send-receive-keys self) 
+        do (open-all-keys i))
+  (or (editorframe self)
+      (if (lisp-exp-p self)
+          (edit-existing-lambda-expression self)
+        (panel (open-new-relationframe self (if (saved? self) (name self) 
+                                              (string+ "^" (name self))) (get-elements self)
+                                       )))))
+
+
+
+
+(defmethod OpenSrEditorframe ((self OMPatch))
+   "Special method: open the patch editor, where omsend is found."
    (declare (special *om-current-persistent*))
    (load-patch self)  
+   (om-select-window (open-new-relationframe self (if (saved? self) (name self) 
+                                                 (string+ "^" (name self))) (get-elements self)))
    (or (editorframe self)
        (if (lisp-exp-p self)
          (edit-existing-lambda-expression self)
          (panel (open-new-relationframe self (if (saved? self) (name self) 
                                                  (string+ "^" (name self))) (get-elements self)
                                         )))))
+
 
 (defmethod set-doc ((self OMPatch) newdoc)
    "Patch doc is limited to 149 chars"
@@ -475,10 +511,38 @@ So abstractions or red patches can not be sharing.#enddoc#
 (defmethod set-win-position ((self OMPatchAbs) newpos) 
   (setf (w-pos self) newpos))
 
+;;; for send-receive
+#|
+(defmethod send-receive-p ((self OMPatchAbs))
+  "returns boxes if omsend or omreceive is found in the patch"
+  (let ((boxes (boxes self))
+         (or (member-if #'omsend-p boxes)
+             (member-if #'omreceive-p boxes)))))
+|#
+;;;
+
 (defmethod OpenEditorframe ((self OMPatchAbs))
    "Open the patch editor, this method open too all persistantes objects referenced into the patch."
    (declare (special *om-current-persistent*))
    (load-patch self)
+   (or (editorframe self)
+       (if (lisp-exp-p self)
+         (edit-existing-lambda-expression self)
+         (panel (open-new-relationframe  self (if (saved? self) (name self) 
+                                                 (string+ "^" (name self))) (get-elements self)
+                                         nil
+                                         (w-pos self) (w-size self)
+                                         )))))
+
+(defmethod OpenSrEditorframe ((self OMPatchAbs))
+  "Special method: open the patch editor, where omsend is found."
+   (declare (special *om-current-persistent*))
+   (load-patch self)
+   (om-select-window 
+    (open-new-relationframe 
+     self 
+     (if (saved? self) (name self) 
+       (string+ "^" (name self))) (get-elements self)))
    (or (editorframe self)
        (if (lisp-exp-p self)
          (edit-existing-lambda-expression self)

@@ -1115,12 +1115,13 @@
       newtempob)))
 
 
-(defun om-load-boxsend (name indice position docu inputs &optional fname val fsize keyref)
+(defun om-load-boxsend (name indice position docu inputs &optional fname val fsize keyref id)
   (let ((newbox (make-new-send name indice (om-correct-point position) nil)))
     (setf (docu newbox) docu)
     (when val
       (setf (defval newbox) (put-quote val)))
     (setf (keyref newbox) keyref);get key from patch
+    (setf (id newbox) id)
     (setf (frame-name newbox) fname)
     (setf (inputs newbox) (mapcar #'(lambda (input) (eval input)) inputs))
     (set-box-to-inputs (inputs newbox) newbox)

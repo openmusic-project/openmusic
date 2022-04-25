@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -170,6 +170,17 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
        (add-lock-button module (allow-lock self)))
      (add-box-resize module)
      module))
+
+;;; for send-receive
+
+(defmethod send-receive-p ((self TemporalBox))
+  "returns boxes if omsend or omreceive is found in the patch"
+  (let* ((ref (reference self))
+         (boxes (boxes ref)))
+    (or (member-if #'omsend-p boxes)
+      (member-if #'omreceive-p boxes))))
+
+;;;
 
 #|
 (defmethod OpenEditorframe ((self TemporalBox)) 

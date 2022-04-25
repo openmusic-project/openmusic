@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, K. Haddad
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -1833,6 +1833,16 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
            (nth num-out rep))))))
 
 ;---------------Edition
+
+;;; for send-receive
+
+(defmethod send-receive-p ((self OMBoxPatch))
+  "returns boxes if omsend or omreceive is found in the patch"
+  (let* ((ref (reference self))
+           (boxes (boxes ref)))
+    (or (member-if #'omsend-p boxes)
+      (member-if #'omreceive-p boxes))))
+;;;
 
 (defmethod OpenEditorframe ((self OMBoxPatch))
    (OpenObjectEditor (reference self)))

@@ -100,6 +100,9 @@
         (setf (mypathname *om-package-tree*) (mypathname *current-workspace*))
         (setf (mypathname *om-globalsfolder*) 
               (om-make-pathname :directory (append (pathname-directory (mypathname self)) (list "globals"))))
+        (setf *all-files* (loop for i in (all-ws-files *current-workspace*)
+                                collect (mypathname i))) ;;;loads all elements/files in variable (for send/receive probe)
+
         (set-presentation self 0);view mode Icons by default
         
         (setf *om-white-color* *gen-bg-color*)

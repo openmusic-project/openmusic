@@ -64,7 +64,6 @@
 (defmethod omsend-p ((self omsend)) t)
 (defmethod omsend-p ((self t )) nil )
 
-
 (defun make-new-send (name indice posi key-p &optional (icon 856) (class 'OMsend))
   (let* ((thesend (make-instance class
                                  :name "send"
@@ -493,6 +492,79 @@
 
 ;(print-send-db)
 ;(print-receive-db)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; KEY PROBE 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod flatten ((tree null))
+  "Tree is empty list."
+  ())
+(defmethod flatten ((tree list))
+  "Tree is a list."
+  (append (flatten (car tree))
+          (flatten (cdr tree))))
+(defmethod flatten (tree)
+  "Tree is something else (atom?)."
+  (list tree))
+
+;all patches, maquettes etc.. in a workspace
+(defun get-all-file-elts (elt)
+  (cond ((and (atom elt) (not (folder-p elt)))
+         elt)
+        ((and (atom elt) (folder-p elt))
+         (loop for i in (elements elt)
+                 collect (get-all-file-elts i)))
+         (t
+          (loop for i in elt
+                collect (get-all-file-elts i)))))
+
+(defmethod all-ws-files ((self omworkspace))
+  (flatten (get-all-file-elts (elements self))))
+      
+;(all-ws-files *current-workspace*)
+
+
+(defun read-file (infile)
+  (with-open-file (instream infile :direction :input :if-does-not-exist nil)
+    (when instream 
+      (let ((string (make-string (file-length instream))))
+        (read-sequence string instream)
+        string))))
+
+
+(defun search-files-for-strg (string files)
+  "Searches for a string <string> in a collection of files <files>, and returns files.
+<string> is case sensitive. <files> is a list of patches, lispfunctions and maquette files in a given workspace."
+  (remove nil
+          (loop for i in files
+                collect (if (search string (read-file i))
+                            i))))
+
+(defun search-patches-for-string (string)
+  (let ((paths (loop for i in (all-ws-files *current-workspace*)
+                     collect (mypathname i))))
+    (search-files-for-strg string paths)))
+
+
+(defun open-all-keys (key)
+  (let ((allfiles (all-ws-files *current-workspace*)))
+    (loop for i in allfiles
+          do (if (search key (read-file (mypathname i)))
+                 (if (not (loaded? i))
+                 (OpenSrEditorFrame i))))))
+
+
+;for ompatch.lisp
+
+(defmethod send-receive-keys ((self OMPatch))
+  (let ((sr (remove nil(flat (send-receive-p self)))))
+    (when sr
+      (remove nil
+      (loop for i in sr
+              collect (if (or (omsend-p i) (omreceive-p i))
+                          (concatenate 'string "s" (keyref i))))))))
 
 
 

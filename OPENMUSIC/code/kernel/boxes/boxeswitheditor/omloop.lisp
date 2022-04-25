@@ -999,6 +999,17 @@ See OM User Manual and the OMLOOP refernce section for more details.
     self
     ))
 
+;;; for send-receive
+
+(defmethod send-receive-p ((self omloop-box))
+  "returns boxes if omsend or omreceive is found in the patch"
+  (let* ((patch (patch self))
+         (boxes (boxes patch)))
+    (or (member-if #'omsend-p boxes)
+      (member-if #'omreceive-p boxes))))
+
+;;;
+ 
 (defmethod openeditorframe ((self omloop-box))
    (openobjecteditor (patch self)) 
    (update-from-reference self)

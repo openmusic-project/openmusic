@@ -289,17 +289,16 @@
 
 ;=================
 
-(defmethod set-panel-boxes ((self scorePanel))
+(defmethod set-panel-boxes ((self ScorePanel))
    (let ((elements (boxes (object self)))) 
+     (loop for i in (send-receive-keys self) 
+         do (open-all-keys i))
      (mapc #'(lambda (elem)
                (let ((newframe (make-frame-from-callobj elem)))
-                     
                  (om-add-subviews self newframe)
-                 
                  (add-subview-extra newframe))) elements)
      (mapc #'(lambda (elem)
                (update-graphic-connections elem elements)) (get-subframes self))))
-
 
 (defmethod remove-panel-boxes ((self scorePanel))
    (mapc #'(lambda (elem)
