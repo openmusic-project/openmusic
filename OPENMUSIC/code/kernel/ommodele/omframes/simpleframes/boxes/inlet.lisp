@@ -163,6 +163,12 @@
          (container (editor panel)))
      
      (cond
+      ((and (om-command-key-p) (om-option-key-p)) ; for autoconnection
+      (progn
+        (setf *target-in* self)
+        (connect-box *target-out* *target-in*)
+       ; (setf *target-out* nil) ; a voir...
+        (setf *target-in* nil)))
       ((om-command-key-p) (when (connected? (object self))
                         (disconnect-box (om-view-container self) self)))
       

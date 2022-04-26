@@ -47,11 +47,16 @@
 
 ;------------EVENTS
 
+; for autoconnections:
+(defparameter *target-out* nil)
+(defparameter *target-in* nil)
+
 
 (defmethod om-view-click-handler ((self outfleche) where)
   (setf *make-connection* nil)
   (cond 
-    ((and (om-command-key-p) (om-shift-key-p))
+   ((and (om-command-key-p) (om-option-key-p)) (setf *target-out* self)) ; for autoconnections 
+   ((and (om-command-key-p) (om-shift-key-p))
      (om-with-cursor *om-wait-cursor*
        (om-eval-enqueue `(let (rep)
 			   (setf *cur-eval-panel* ,(panel (om-view-container self)))

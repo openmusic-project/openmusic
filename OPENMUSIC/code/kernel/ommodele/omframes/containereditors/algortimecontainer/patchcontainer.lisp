@@ -140,7 +140,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ((">" "<") "add/remove One optional input")
                        ("alt+lr" "add/remove All optional inputs")
                        (("k" "K") "add/remove Keyword inputs")
-
+                       (;#+(or linux win32)("ctrl+alt") 
+                        ;#+cocoa ("ctrl+alt") 
+                        "ctrl+alt" "auto-connect outputs/inputs")
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
                        (("g") "ouput lisp expression in listener")

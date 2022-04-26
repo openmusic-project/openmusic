@@ -439,7 +439,7 @@ it redraw the connections involving in the deleying operation."
         (mapc #'(lambda (control) 
                   (deactivate-connect control)) (get-connections view)))
       (cond 
-       ((om-command-key-p) 
+       ((and (om-command-key-p) (not (om-option-key-p))) ;to avoid auto-connect
         (make-undefined-box view where))
        (t (call-next-method))))))
 
