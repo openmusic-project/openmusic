@@ -162,57 +162,58 @@
   (let* ((panel (om-view-container (om-view-container self)))
          (container (editor panel)))
      
-     (cond
-      ((and (om-command-key-p) (om-option-key-p)) ; for autoconnection
-      (progn
-        (setf *target-in* self)
-        (connect-box *target-out* *target-in*)
-       ; (setf *target-out* nil) ; a voir...
-        (setf *target-in* nil)))
-      ((om-command-key-p) (when (connected? (object self))
-                        (disconnect-box (om-view-container self) self)))
+    (cond
+     ((and (om-command-key-p) (om-option-key-p)) ; for autoconnection
+      (when *target-out*
+        (progn
+          (setf *target-in* self)
+          (when (equal (om-view-container (om-view-container *target-out*)) panel) ;to prevent cross patch connection
+            (connect-box *target-out* *target-in*)
+            (setf *target-in* nil)))))
+     ((om-command-key-p) (when (connected? (object self))
+                           (disconnect-box (om-view-container self) self)))
       
-      ((and (om-shift-key-p) (keyword-input-p (object self)) (val-menu (object self)))
-       (popup-keyword-val-menu (object self) panel))
+     ((and (om-shift-key-p) (keyword-input-p (object self)) (val-menu (object self)))
+      (popup-keyword-val-menu (object self) panel))
       
-      ((and (om-shift-key-p) (not (maquette-p (object container)))) 
-            (let* ((new-obj (omNG-make-new-boxcall (car *Basic-Lisp-Types*)
-                                                   (om-make-point (+ (x (om-view-container self)) (x self))
-                                                                  (- (y (om-view-container self)) 30))
-                                                   (mk-unique-name panel "aux")))
-                   new-frame)
-              (setf (value new-obj) (get-input-value (object self)))
-              (setf (thestring new-obj) (format () "~S" (value new-obj)))
-              (setf (frame-size new-obj) (om-make-point (get-name-size (thestring new-obj)) 28))
-              (setf new-frame (make-frame-from-callobj new-obj))
-              (omG-add-element (om-view-container (om-view-container self)) new-frame)
-              (connect-box (car (outframes new-frame)) self)
+     ((and (om-shift-key-p) (not (maquette-p (object container)))) 
+      (let* ((new-obj (omNG-make-new-boxcall (car *Basic-Lisp-Types*)
+                                             (om-make-point (+ (x (om-view-container self)) (x self))
+                                                            (- (y (om-view-container self)) 30))
+                                             (mk-unique-name panel "aux")))
+             new-frame)
+        (setf (value new-obj) (get-input-value (object self)))
+        (setf (thestring new-obj) (format () "~S" (value new-obj)))
+        (setf (frame-size new-obj) (om-make-point (get-name-size (thestring new-obj)) 28))
+        (setf new-frame (make-frame-from-callobj new-obj))
+        (omG-add-element (om-view-container (om-view-container self)) new-frame)
+        (connect-box (car (outframes new-frame)) self)
      
-              (open-ttybox (iconview new-frame))))
+        (open-ttybox (iconview new-frame))))
 
-      ((menu-input-p (object self))
-       (popup-input-menu (object self) panel))
+     ((menu-input-p (object self))
+      (popup-input-menu (object self) panel))
       
-      ((and (keyword-input-p (object self)) (keyword-menu (object self)))
-       (popup-keyword-input-menu (object self) panel)
-       (om-view-set-help self (string+ "<" (string-downcase (name (object self))) "> ")))
+     ((and (keyword-input-p (object self)) (keyword-menu (object self)))
+      (popup-keyword-input-menu (object self) panel)
+      (om-view-set-help self (string+ "<" (string-downcase (name (object self))) "> ")))
 
-      (t (unless (and (connected? (object self)) (not (keyword-input-p (object self))))
-            (when (text-view container)
-              (om-remove-subviews panel (text-view container))
-              (setf (text-view container) nil))
-            (let ((thetext (format () "~S" (value (object self)))))
-              (setf (text-view container) (om-make-dialog-item 'input-text-enter-view
-                                                               (om-add-points (om-view-position (om-view-container self))
-                                                                                                (om-make-point (x self) -26))
-                                                               (om-make-point (get-name-size thetext) 16)
-                                                               thetext
-                                                               :allow-returns nil
-                                                               :di-selected-p t
-                                                               :focus t
-                                                               :object self
-                                                               :container panel
-                                                               :font *om-default-font1*))))))))
+     (t (unless (and (connected? (object self)) (not (keyword-input-p (object self))))
+          (when (text-view container)
+            (om-remove-subviews panel (text-view container))
+            (setf (text-view container) nil))
+          (let ((thetext (format () "~S" (value (object self)))))
+            (setf (text-view container) (om-make-dialog-item 'input-text-enter-view
+                                                             (om-add-points (om-view-position (om-view-container self))
+                                                                            (om-make-point (x self) -26))
+                                                             (om-make-point (get-name-size thetext) 16)
+                                                             thetext
+                                                             :allow-returns nil
+                                                             :di-selected-p t
+                                                             :focus t
+                                                             :object self
+                                                             :container panel
+                                                             :font *om-default-font1*))))))))
   
 ;-------
 
