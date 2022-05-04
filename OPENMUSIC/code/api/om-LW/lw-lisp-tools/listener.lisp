@@ -82,7 +82,9 @@
 
 (defclass om-listener (capi::interface) 
   ((ip :accessor ip :initarg :ip)
-   (op :accessor op :initarg :op)))
+   (op :accessor op :initarg :op))
+  (:default-initargs 
+   :color-mode :aqua))
 
 
 (defclass om-listener-in-pane (capi::listener-pane) ())

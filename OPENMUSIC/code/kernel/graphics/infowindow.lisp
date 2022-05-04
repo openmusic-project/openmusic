@@ -53,9 +53,12 @@
 ;==============================================
 
 (defclass info-window (om-dialog)
-   ((sujet :initform nil :initarg :sujet :accessor sujet)
-    (doc-item :initform nil :initarg :doc-item :accessor doc-item)
-    (cp-item :initform nil :accessor cp-item)))
+  ((sujet :initform nil :initarg :sujet :accessor sujet)
+   (doc-item :initform nil :initarg :doc-item :accessor doc-item)
+   (cp-item :initform nil :accessor cp-item))
+  (:default-initargs 
+   :color-mode :aqua
+   ))
 
 (defmethod om-window-class-menubar ((self info-window))
   (list (om-make-menu "File"
@@ -92,7 +95,7 @@
                                    :size (car info)
                                    :resizable nil :minimize nil :maximize nil
                                    :window-title (string+ (string-upcase (name self)) " Info")
-                                   :font *om-default-font2*
+                                   :font *om-default-font2* 
                                    )))
       (eval `(om-add-subviews ,dialog ,.(cdr info)))
       (setf (doc-item dialog) (nth 1 info))
@@ -136,7 +139,8 @@
         
         (om-make-dialog-item 'om-static-text (om-make-point 80 5) (om-make-point 225 20) 
                              "Name:"
-                             :font *om-default-font2*)
+                             :font *om-default-font2* 
+                             )
         (om-make-dialog-item 'om-static-text (om-make-point 140 5) (om-make-point 300 20)
                              (name self)
                              :font *om-default-font2b*)

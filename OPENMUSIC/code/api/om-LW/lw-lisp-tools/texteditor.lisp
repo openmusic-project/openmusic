@@ -134,6 +134,7 @@
    :best-y (+ (aref *om-text-editor-initial-xy* 1) (* 15 (mod *om-text-editor-count* 10)))
    :best-height 400
    :best-width 500
+   :color-mode :aqua
    :external-min-width 150 :external-min-height 150
    :layout (make-instance 'capi:simple-layout)
    :message-area t  
