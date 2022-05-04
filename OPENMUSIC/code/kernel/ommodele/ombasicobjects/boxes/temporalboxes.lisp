@@ -173,10 +173,15 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
 
 ;;; for send-receive
 
+(defmethod getmaqboxes ((self ompatchabs))
+  (boxes self))
+(defmethod getmaqboxes ((self t)) nil)
+
+
 (defmethod send-receive-p ((self TemporalBox))
   "returns boxes if omsend or omreceive is found in the patch"
   (let* ((ref (reference self))
-         (boxes (boxes ref)))
+         (boxes (getmaqboxes ref)))
     (or (member-if #'omsend-p boxes)
       (member-if #'omreceive-p boxes))))
 
