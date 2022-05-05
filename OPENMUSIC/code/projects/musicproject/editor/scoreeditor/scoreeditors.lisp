@@ -1715,9 +1715,9 @@
   (unless (= (staff-zoom self) newzoom)
     (setf (staff-zoom self) (/ newzoom 100))
     (set-edit-param (om-view-container self) 'zoom  (/ newzoom 100))
-    (unless (score-page-mode self)
+    (unless (or (score-page-mode self) (in-patch-mode? self))
       (om-redraw-view self))
-    (when (score-page-mode self)
+    (when (or (score-page-mode self) (in-patch-mode? self))
       (update-panel self )
       )))
 
