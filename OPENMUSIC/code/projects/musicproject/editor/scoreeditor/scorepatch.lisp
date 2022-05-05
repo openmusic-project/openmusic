@@ -25,7 +25,8 @@
 
 (in-package :om)
 
-
+;keep default connection behavior
+#|
 (defmethod get-panel-connections-lines ((self omboxframe) (panel scorepanel) in connection boxsource possource sizesource)
   (let ((x-self (x self))
         (y-self (y self))
@@ -38,7 +39,7 @@
     (setq yi y-self)
     (get-line-connection x1 y1 xi yi)
     ))
-
+|#
 
 
 ;--------------------------------------------------
