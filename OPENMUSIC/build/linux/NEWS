@@ -4,10 +4,15 @@ NEW FEATURES
 
 IMPROVEMENTS
 
-- auto connect output/input
+- scorepatch :
+	- connection standard display
+	- zoom display
+- OK button on portmidi setup panel
+- auto connect output/input using cmd+alt (ctrl+alt)
 
 FIXES
 
+- Dark mode support (aqua display) for mac
 - Fixed closing instances (automatic closing of editors when instances are deleted)
 - set-obj-mode fix (internal chord)
 
