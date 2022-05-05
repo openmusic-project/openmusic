@@ -212,9 +212,15 @@
                            ;                                        (set-portmidi-connection-view outv dd)
                            ;                                        ))
                                                   
-                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 680 230) (oa::om-make-point 100 20) "Apply"
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 575 230) (oa::om-make-point 100 20) "Apply"
                                                     :di-action #'(lambda (item) (when action (funcall action (settings dd))))
                                                     )
+                           (oa::om-make-dialog-item 'oa::om-button  (oa::om-make-point 680 230) (oa::om-make-point 80 22) "OK" 
+                                           :di-action #'(lambda (item) (progn 
+                                                                         (when action (funcall action (settings dd)))
+                                                                         (oa::om-close-window (oa::om-view-window item))))
+
+                                           )
                            )
       
       (setf *portmidi-setup-window* dd)
