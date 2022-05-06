@@ -145,9 +145,7 @@
 
 (defclass ompref-window (om-dialog)
   ((tabs :accessor tabs :initarg :tabs :initform nil)
-   (local-prefs :accessor local-prefs :initarg :local-prefs :initform nil))
-  (:default-initargs 
-   :color-mode :aqua))
+   (local-prefs :accessor local-prefs :initarg :local-prefs :initform nil)))
 
 (defclass preference-pane (om-view)
   ((pref-id :accessor pref-id :initarg :pref-id :initform nil)))

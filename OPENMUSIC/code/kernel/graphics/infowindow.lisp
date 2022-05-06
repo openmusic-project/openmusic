@@ -55,10 +55,7 @@
 (defclass info-window (om-dialog)
   ((sujet :initform nil :initarg :sujet :accessor sujet)
    (doc-item :initform nil :initarg :doc-item :accessor doc-item)
-   (cp-item :initform nil :accessor cp-item))
-  (:default-initargs 
-   :color-mode :aqua
-   ))
+   (cp-item :initform nil :accessor cp-item)))
 
 (defmethod om-window-class-menubar ((self info-window))
   (list (om-make-menu "File"
