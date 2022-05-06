@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -89,6 +89,7 @@
    (temp-data :initform nil :accessor temp-data)
    (images :initarg :images :accessor images :initform nil))
   (:default-initargs 
+   :color-mode :aqua
    :create-callback 'om-create-callback
    :geometry-change-callback 'om-resize-callback
    :destroy-callback 'om-destroy-callback
