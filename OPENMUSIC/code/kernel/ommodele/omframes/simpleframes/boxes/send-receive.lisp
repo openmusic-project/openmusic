@@ -526,20 +526,13 @@
 ;(all-ws-files *current-workspace*)
 
 
-(defun read-file (infile)
-  (with-open-file (instream infile :direction :input :if-does-not-exist nil)
-    (when instream 
-      (let ((string (make-string (file-length instream))))
-        (read-sequence string instream)
-        string))))
-
 
 (defun search-files-for-strg (string files)
   "Searches for a string <string> in a collection of files <files>, and returns files.
 <string> is case sensitive. <files> is a list of patches, lispfunctions and maquette files in a given workspace."
   (remove nil
           (loop for i in files
-                collect (if (search string (read-file i))
+                collect (if (search string (om-read-file i))
                             i))))
 
 (defun search-patches-for-string (string)
@@ -551,7 +544,7 @@
 (defun open-all-keys (key)
   (let ((allfiles (all-ws-files *current-workspace*)))
     (loop for i in allfiles
-          do (if (search key (read-file (mypathname i)))
+          do (if (search key (om-read-file (mypathname i)))
                  (if (not (loaded? i))
                  (OpenSrEditorFrame i))))))
 

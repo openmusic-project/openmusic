@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -76,6 +76,7 @@
           om-load-file
           om-directory
           om-read-line
+          om-read-file
           om-correct-line
           om-namestring
           *om-root*
@@ -519,6 +520,12 @@
         line)
     line))
 
+(defun om-read-file (file)
+  (with-open-file (instream file :direction :input :if-does-not-exist nil)
+    (when instream 
+      (let ((string (make-string (file-length instream))))
+        (read-sequence string instream)
+        string))))
                  
 
 (defun stream-eofp (s)
