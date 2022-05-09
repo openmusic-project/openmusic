@@ -54,6 +54,7 @@
    :buffer-modes '("Lisp")
    :echo-area t
    :auto-menus nil
+   :color-mode :aqua
    :layout (make-instance 'capi::grid-layout
                           :right-extend :bottom-extend
                           :y-adjust :center

@@ -42,6 +42,7 @@
   (:default-initargs
    :title "Self info"
    :best-width 300
+   :color-mode :aqua
    :layout (make-instance 'capi:grid-layout
                           :right-extend :bottom-extend
                           :y-adjust :center
