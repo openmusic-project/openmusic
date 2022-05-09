@@ -8,7 +8,7 @@ IMPROVEMENTS
 	- connection standard display
 	- zoom display
 - OK button on portmidi setup panel
-- auto connect output/input using cmd+alt (ctrl+alt)
+- auto connect output/input using option+cmd (ctrl+alt)
 
 FIXES
 
