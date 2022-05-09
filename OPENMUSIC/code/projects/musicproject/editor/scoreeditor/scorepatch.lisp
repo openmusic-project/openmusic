@@ -132,7 +132,9 @@
       (om-with-fg-color nil (om-make-color 1.0 0 0) 
         (if (active-mode self) 
             (om-draw-rect 0 0 (w self) (h self) :pensize 3)
-          (om-draw-rect 0 0 (w self) (h self)))))))
+         #+(or linux wi32) (om-draw-rect 0 0 (w self) (h self))
+         #+cocoa (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1) :pensize 2)
+          )))))
 
 
 (defmethod omG-select ((self scoreboxframe))
