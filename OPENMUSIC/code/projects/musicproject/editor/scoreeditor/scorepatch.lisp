@@ -307,7 +307,9 @@
                  (om-add-subviews self newframe)
                  (add-subview-extra newframe))) elements)
      (mapc #'(lambda (elem)
-               (update-graphic-connections elem elements)) (get-subframes self))))
+               (update-graphic-connections elem elements)) (get-subframes self))
+     (revise-references self)
+     ))
 
 (defmethod remove-panel-boxes ((self scorePanel))
    (mapc #'(lambda (elem)
