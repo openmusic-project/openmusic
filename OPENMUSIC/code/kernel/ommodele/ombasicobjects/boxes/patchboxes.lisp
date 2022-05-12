@@ -1132,7 +1132,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
       ((and (equal (allow-lock self) "o")) (reference self))
       (t (if (not (connected? (first (inputs self))))
            (progn
-             (om-beep-msg "The first paremeter in a slot box should always be connected")
+             (om-beep-msg "The first parameter in a slot box should always be connected")
              nil)
            (let ((theobj (omNG-box-value (first (inputs self)))))
              (mapc #'(lambda (input)
