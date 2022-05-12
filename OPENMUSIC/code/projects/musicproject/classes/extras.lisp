@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -35,6 +35,7 @@
 
 ;Una lista de posiciones del objecto en su container mayor
 (defun cons-container-path (obj)
+  (when obj
    (if (not (parent obj))
      nil
      (let ((parent (parent obj))
@@ -43,7 +44,7 @@
              (push (position current (inside parent) :test 'equal) rep)
              (setf current parent
                    parent (parent current)))
-       (reverse rep))))
+       (reverse rep)))))
 
 (defun get-obj-from-container-path (obj path)
    (let ((rep obj))
