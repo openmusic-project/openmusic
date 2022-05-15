@@ -216,7 +216,7 @@
                                :completion 'box-name-completion
                                :complete-do-action t ;confirms completion with return
                                :bg-color *om-light-blue-color*
-                               :fg-color #+macosx *om-black-color* #-macosx nil ;*om-white-color* 
+                               :fg-color #+macosx *om-black-color* #-macosx nil ;*om-black-color* 
                                ))
     ))
 
