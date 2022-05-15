@@ -1239,19 +1239,33 @@
 
 
 (defmethod do-select-items-in-rect ((self scorePanel) rect) 
-  (let ((mode-obj (grap-class-from-type  (obj-mode self))))
-    (setf *score-lock* t)
-    (loop for item in (get-graph-type-obj (graphic-obj self) mode-obj) do
-          (when (and (grap-obj-visible item self)
-                     (rect-intersect (rectangle item)
-                                     (list (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect)))))
-            (push-select-note self item)
-            ))
-    (setf *score-lock* nil)
-    (when (selection? self) 
-      (om-invalidate-view self t)
-      (update-slot-edit self))
-    ))
+  (if (= 0 (score-mode self))
+
+    ;;in normal mode      
+    (let ((mode-obj (grap-class-from-type  (obj-mode self))))
+      (setf *score-lock* t)
+      (loop for item in (get-graph-type-obj (graphic-obj self) mode-obj) 
+            do
+              (when (and (grap-obj-visible item self)
+                         (rect-intersect (rectangle item)
+                                         (list (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect)))))
+                (push-select-note self item)
+                ))
+      (setf *score-lock* nil)
+      (when (selection? self) 
+        (om-invalidate-view self t)
+        (update-slot-edit self)))      
+
+    ;;in scorepatch mode
+      (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
+    (when rect
+      (setf user-rect (om-make-rect (first rect) (second rect) (+ (first rect) (third rect)) (+ (second rect) (fourth rect))))
+       (dolist (item (get-subframes self))
+              (setf i-rect (om-pts-to-rect (om-view-position item) 
+                                           (om-add-points (om-view-position item) (om-view-size item))))
+              (setf scratch-rect-i (om-sect-rect user-rect i-rect))
+              (unless (om-rect-empty scratch-rect-i) 
+                (omG-select item)))))))
 
 
                                       
