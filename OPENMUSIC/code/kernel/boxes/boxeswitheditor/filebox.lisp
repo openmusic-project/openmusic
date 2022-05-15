@@ -429,7 +429,7 @@ See OM User Manual for more details."
 
    (let ((dialog (make-editor-window 'streameditor streambox (name streambox) nil
                                      :winpos :centered
-                                     :winsize (om-make-point 280 130)
+                                     :winsize (om-make-point 280 165)
                                      :resize nil
                                      ))
          ifexists ifextext)
