@@ -1,4 +1,4 @@
-========================================================================
+;========================================================================
 ;  OpenMusic: Visual Programming Language for Music Composition
 ;
 ;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
