@@ -106,7 +106,8 @@
         
         
         ;-------------------OM Interface to Musical Objects----
-        "container;scoreominterface"   
+        "container;scoreominterface"  
+        "container;scoreslots"
         "functions;true-durations"      
         "functions;quantifyom"      
          "functions;gkant"      

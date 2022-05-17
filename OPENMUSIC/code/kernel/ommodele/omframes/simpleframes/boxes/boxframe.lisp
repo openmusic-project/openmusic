@@ -945,6 +945,31 @@
    (setf (lock-button self) nil)
    (setf (allow-lock (object self)) nil))
 
+;;Callable slotsframe:
+(defclass slotsFrame (boxframe) ()
+   (:documentation "Simple frame for OMOut boxes. #enddoc#
+#seealso# (OMIN) #seealso#")
+   (:default-initargs :view-font (list *signs-font* 18)))
+
+;peut-etre pas besoin
+(defmethod omg-remove-element ((self methodpanel) (box slotsFrame))
+   "Remove only for the generic function definition."
+   (if (equal (win-mod (editor self)) :abs)
+     (call-next-method)
+     (om-beep-msg "You can not modify the outputs of a function already defined")))
+
+(defmethod omg-remove-element ((self patchPanel) (box slotsFrame))
+   "When you remove 'box' from 'self' you must update all omboxpatch instances having 'self' as reference."
+   (call-next-method))
+
+(defmethod omG-rename ((self slotsFrame) new-name)
+  "rename send and all receives"
+  (setf (name (object self)) new-name) 
+  (call-next-method))
+
+(defmethod show-big-doc ((self slotsFrame)) nil)
+(defmethod allow-rename ((self OMSlotsBox)) nil)
+
 ;----------------------------------------
 ;Comments draw + edition
 ;----------------------------------------

@@ -545,6 +545,20 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
        (set-field-size self)
        )))
 
+;for calling objects slots modifiers
+(defmethod add-slots-enabled ((self patchpanel) type) t)
+
+#|
+;standby
+(defmethod add-slots ((self patchpanel) position)
+   (when (add-slots-enabled self 'note-slots)
+     (let* ((pos (or position (om-make-point (+ 5 (* i 50)) 240)))
+            (newslots (make-note-slots pos))
+            )
+       (omG-add-element self (make-frame-from-callobj newslots))
+       (set-field-size self)
+       )))
+|#
 
 ;--------------------------------
 ;Tools

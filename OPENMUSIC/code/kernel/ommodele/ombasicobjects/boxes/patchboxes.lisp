@@ -1174,6 +1174,27 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
        (box-draw-connections (car (frames self)) nil)
        (redraw-frame (car (frames self))))))
 
+;;added so they can be called from menus or by alias
+
+(defmethod omNG-add-element ((self OMPatch) (elem OMSlotsBox))
+   "When you add a new output to the patch 'self' you must update all ompatchboxes attached to 'self'."
+   (setf (mycontainer elem) self)
+   (push elem (boxes self))
+   (loop for item in (attached-objs self) do ;don't know if necessary???
+         (update-from-reference item)))
+
+(defmethod omng-remove-element ((self OMPatch) (box OMSlotsBox))
+  "When you remove an output from the patch 'self' you must update all ompatchboxes attached to 'self'."
+  (call-next-method)
+  (loop for item in (attached-objs self) 
+        do (update-from-reference item)))
+
+(defmethod do-add-one-input ((self OMSlotsBox)) nil)
+(defmethod do-delete-one-input ((self  OMSlotsBox)) nil)
+(defmethod do-add-all-inputs ((self  OMSlotsBox)) nil)
+(defmethod do-add-one-keyword ((self OMSlotsBox) &optional (input-key nil))  nil)
+(defmethod do-delete-one-keyword ((self OMSlotsBox)) nil)
+
 
 ;---------------------------------------------------------
 ;Lisp Functions Calls
