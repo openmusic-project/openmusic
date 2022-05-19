@@ -257,7 +257,7 @@
      (when grap-ref
        (setf rec (rectangle grap-ref))
        (om-set-view-position self (om-make-point (- (first rec) size) (- (second rec) size 8)))
-       (om-set-view-size  self (om-make-point (+ (* 2 size) (- (third rec) (first rec))) 
+       (om-set-view-size  self (om-make-point (abs (+ (* 2 size) (- (third rec) (first rec))))
                                        (+  16 (* 2 size) (- (fourth rec) (second rec))))))))
 
 
