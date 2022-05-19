@@ -71,8 +71,8 @@
           (input (car (inputs self)))
           thenewout inputf)
      (setf thenewout (om-make-view (get-out-class self)
-                       :position (om-make-point (- (round (om-point-h (frame-size self)) 2) 4) 
-                                                  (+ (h module) 6))
+                       :position (om-make-point (- (round (om-point-h (frame-size self)) 2) 3) 
+                                                  (+ (h module) 10))
                        :size (om-make-point 8 8)
                        :help-spec "option-click to evalue or drag for connections"
                        :index 0))
@@ -103,10 +103,22 @@
 
 (defmethod centre-icon  ((self scoreboxframe)) t) 
 
-
+#|
 (defmethod center-outfleche-sboxframe ((self scoreboxframe) (out outfleche))
   (setf (oa::vx out) (round (+ (- (oa::vx self) (oa::item-x self)) (- (/ (oa::vw self) 2) 6)))))
 
+(defmethod center-outfleche-sboxframe ((self scoreboxframe) (out outfleche))
+  (let* ((obj (object self))
+        (position (om-make-point (- (round (om-point-h (frame-size obj)) 2) 3) 
+                                 (+ (h self) 2))))
+    (setf (oa::vx out)  (oa::om-point-x position))
+    (setf (oa::vy out) (oa::om-point-y position))
+    ))
+|#
+(defmethod center-outfleche-sboxframe ((self scoreboxframe) (out outfleche))
+    (setf (oa::vx out) (- (round (w self) 2) 3))
+    (setf (oa::vy out) (+ (h self) 2))
+    )
 
 #|
 (defmethod draw-before-box ((self scoreboxframe))
