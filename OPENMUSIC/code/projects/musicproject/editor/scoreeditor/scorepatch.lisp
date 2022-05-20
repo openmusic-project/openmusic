@@ -25,22 +25,17 @@
 
 (in-package :om)
 
-;keep default connection behavior
-#|
-(defmethod get-panel-connections-lines ((self omboxframe) (panel scorepanel) in connection boxsource possource sizesource)
+(defmethod get-panel-connections-lines ((self omboxframe) (scorepanel t) in connection boxsource possource sizesource)
   (let ((x-self (x self))
         (y-self (y self))
         (in-xs (x in))
         x1 y1 xi yi)
-    (setq x1 (round (+ (om-point-h possource)  
-                       (- (* (+ (second connection) 1) (/ (om-point-h sizesource) (+ (numouts boxsource) 1))) 2))))
-    (setq y1 (- (+ (om-point-v possource) (h (car (frames boxsource)))) 2))
+    (setq x1 (+ (om-point-h possource)
+                (- (* (+ (second connection) 1) (round (om-point-h sizesource) (+ (numouts boxsource) 1))) 2)))
+    (setq y1 (+ (+ (om-point-v possource) (om-point-v sizesource)) 8)) 
     (setq xi (+ x-self in-xs 4))
-    (setq yi y-self)
-    (get-line-connection x1 y1 xi yi)
-    ))
-|#
-
+    (setq yi  y-self)
+    (get-rect-connection x1 y1 xi yi)))
 
 ;--------------------------------------------------
 ;BOXes in the score
@@ -71,7 +66,7 @@
           (input (car (inputs self)))
           thenewout inputf)
      (setf thenewout (om-make-view (get-out-class self)
-                       :position (om-make-point (- (round (om-point-h (frame-size self)) 2) 3) 
+                       :position (om-make-point (- (round (om-point-h (frame-size self)) 2) 4) 
                                                   (+ (h module) 10))
                        :size (om-make-point 8 8)
                        :help-spec "option-click to evalue or drag for connections"
@@ -116,7 +111,7 @@
     ))
 |#
 (defmethod center-outfleche-sboxframe ((self scoreboxframe) (out outfleche))
-    (setf (oa::vx out) (- (round (w self) 2) 3))
+    (setf (oa::vx out) (- (round (w self) 2) 4))
     (setf (oa::vy out) (+ (h self) 2))
     )
 
