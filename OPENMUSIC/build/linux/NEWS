@@ -4,14 +4,16 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- slotboxes are callable just as any ombox
 - scorepatch :
 	- connection standard display
-	- zoom display
+	- fixed zoom display
 - OK button on portmidi setup panel
 - auto connect output/input using option+cmd (ctrl+alt)
 
 FIXES
 
+- omaudiolib fix for windows
 - Dark mode support (aqua display) for mac
 - Fixed closing instances (automatic closing of editors when instances are deleted)
 - set-obj-mode fix (internal chord)
