@@ -154,7 +154,6 @@
 
 
 (defmethod get-panel-connections-lines ((self omboxframe) (panel scorepanel) in connection boxsource possource sizesource)
-  (print (list self panel in connection boxsource))
   (let ((x-self (x self))
         (y-self (y self))
         (in-xs (x in))
