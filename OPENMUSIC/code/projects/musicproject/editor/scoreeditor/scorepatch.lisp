@@ -25,17 +25,7 @@
 
 (in-package :om)
 
-(defmethod get-panel-connections-lines ((self omboxframe) (scorepanel t) in connection boxsource possource sizesource)
-  (let ((x-self (x self))
-        (y-self (y self))
-        (in-xs (x in))
-        x1 y1 xi yi)
-    (setq x1 (+ (om-point-h possource)
-                (- (* (+ (second connection) 1) (round (om-point-h sizesource) (+ (numouts boxsource) 1))) 2)))
-    (setq y1 (+ (+ (om-point-v possource) (om-point-v sizesource)) 8)) 
-    (setq xi (+ x-self in-xs 4))
-    (setq yi  y-self)
-    (get-rect-connection x1 y1 xi yi)))
+
 
 ;--------------------------------------------------
 ;BOXes in the score
@@ -86,7 +76,8 @@
    (om-beep-msg "Type mistmach!") (abort) )
 
 (defmethod get-frame-class ((self score-box)) 'scoreboxframe)
-
+(defmethod scorebox-p ((self score-box)) t)
+(defmethod scorebox-p ((self t)) nil)
 
 ;================================================
 (defclass scoreboxframe (boxframe) ())
@@ -162,7 +153,20 @@
 
 
 
-
+(defmethod get-panel-connections-lines ((self omboxframe) (panel scorepanel) in connection boxsource possource sizesource)
+  (print (list self panel in connection boxsource))
+  (let ((x-self (x self))
+        (y-self (y self))
+        (in-xs (x in))
+        x1 y1 xi yi)
+    (setq x1 (+ (om-point-h possource)
+                (- (* (+ (second connection) 1) (round (om-point-h sizesource) (+ (numouts boxsource) 1))) 2)))
+    (if (scorebox-p boxsource)
+        (setq y1 (+ (+ (om-point-v possource) (om-point-v sizesource)) 8))
+      (setq y1 (- (+ (om-point-v possource) (om-point-v sizesource)) 2)))
+    (setq xi (+ x-self in-xs 4))
+    (setq yi  y-self)
+    (get-rect-connection x1 y1 xi yi)))
 
 ;========================
 
