@@ -361,8 +361,8 @@
 
 (defmethod om-set-dialog-item-text ((self om-static-text) text)
   (setf (text self) text)
-  #-(and cocoa lispworks8) (update-text self)
-  #+(and cocoa lispworks8) 
+ ; #-(and cocoa lispworks8) (update-text self)
+ ; #+(and cocoa lispworks8) 
   (apply-in-pane-process self 
                          (lambda (pane) (progn
                                           (update-text pane)
