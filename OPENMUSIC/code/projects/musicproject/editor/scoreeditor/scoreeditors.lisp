@@ -869,11 +869,19 @@
 
 (defmethod temporal-get-notes ((self simple-score-element)) (list self))
 
+                          
+(defmethod toggle-normal-mode ((self scorePanel))
+  (change-score-mode self 0))
+
+(defmethod toggle-patch-mode ((self scorePanel))
+  (change-score-mode self 1))
+
 
 (defmethod handle-key-event ((self scorePanel) char)
   (cond ((in-patch-mode? self)
          (case char
            (#\t (mk-musobj-box self))
+           (#\s (toggle-normal-mode self))
            (t (call-next-method))))
         ((edit-cursor self)
          (cond 
@@ -917,6 +925,7 @@
                   (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)))
               )
             )
+           (#\s (toggle-patch-mode self))
            (#\x (show-extra-palette-tools self))
            (#\r (get-score-tree self))
            (#\R (get-tree-tempo-list self))
