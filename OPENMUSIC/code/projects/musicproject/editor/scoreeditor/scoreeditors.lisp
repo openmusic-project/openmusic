@@ -881,7 +881,12 @@
   (cond ((in-patch-mode? self)
          (case char
            (#\t (mk-musobj-box self))
-           (#\s (toggle-normal-mode self))
+           (#\s (if (om-command-key-p) 
+                    (omng-save (mycontainer(associated-box (object (editor self)))))
+                  (toggle-normal-mode self)))
+           (#\SPACE (editor-play/stop (editor self)))
+           (:om-key-tab (change-obj-mode self 1))
+          ; (#\r (get-score-tree self)) ;;wait for score-box distribution fix 
            (t (call-next-method))))
         ((edit-cursor self)
          (cond 
@@ -925,7 +930,9 @@
                   (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)))
               )
             )
-           (#\s (toggle-patch-mode self))
+           (#\s (if (om-command-key-p) 
+                    (omng-save (mycontainer(associated-box (object (editor self)))))
+                  (toggle-patch-mode self)))
            (#\x (show-extra-palette-tools self))
            (#\r (get-score-tree self))
            (#\R (get-tree-tempo-list self))
