@@ -184,8 +184,8 @@
 
 (defmethod om-add-subviews ((self om-graphic-object) &rest subviews)
   "Adds subviews to a graphicbject"
-  (loop for item in subviews do (internal-add-subview self item))
-  (maybe-call-update self))
+   (loop for item in subviews do (internal-add-subview self item))
+   (maybe-call-update self))
 
 (defmethod internal-add-subview ((self om-graphic-object) (subview om-graphic-object))
   (setf (vcontainer subview) self)

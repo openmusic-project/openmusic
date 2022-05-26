@@ -798,6 +798,15 @@
 (defmethod set-field-size ((self scorepanel)) 
    t)
 
+(defmethod om-add-subviews ((self scorepanel) &rest subviews)
+  "Adds subviews to a graphicbject"
+  (capi::apply-in-pane-process 
+   (oa::om-get-view self) 
+   #'(lambda ()
+       (loop for item in subviews do (oa::internal-add-subview self item))
+       (oa::maybe-call-update self))))
+
+
 (defmethod correct-staff ((self scorepanel) staff)
   (when (listp staff) 
     (setf staff (car staff)))
@@ -1254,6 +1263,8 @@
        (<= (max (nth 1 rect1) (nth 1 rect2)) (min (nth 3 rect1) (nth 3 rect2)))))
 
 
+
+
 (defmethod do-select-items-in-rect ((self scorePanel) rect) 
   (if (= 0 (score-mode self))
 
@@ -1579,6 +1590,33 @@
 
 (defvar *redraw-diamonds* nil)
 
+#|
+(defmethod update-panel ((self scorePanel) &optional (updateref nil))
+ (set-editor-tonality self)
+ (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
+       (linespace (/ (staff-size self) 4)))
+   (setf (graphic-obj self) 
+         (if (score-page-mode self)
+           (make-pages-form-obj self (objectfromeditor self) 0
+                                120 linespace 
+                                (staff-mode self)
+                                (get-approx-scale self)
+                                (selection? self) (staff-sys self) (show-stems self) )
+           (make-graph-form-obj (objectfromeditor self) 0
+                                120 linespace 
+                                (staff-mode self)
+                                (get-approx-scale self)
+                                (selection? self) (staff-sys self) (show-stems self))))
+ 
+   (when (and (graphic-obj self) (not (score-page-mode self)))
+     (space-objects (graphic-obj self) (* 4 linespace))
+     (set-graph-rectangles (graphic-obj self))
+     (cons-the-bpf-time self (graphic-obj self)))
+   (when (and (editor self) updateref)
+     (report-modifications (editor self)))
+   (setf *redraw-diamonds* t)
+   (om-invalidate-view self)))
+|#
 
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
