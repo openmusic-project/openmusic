@@ -787,15 +787,24 @@
 (defun om-get-current-port ()
   *curstream*)
 
-
+#+(or cocoa win32)
 (defmacro om-with-font (font &rest body)
   `(gp::with-graphics-state (*curstream* :font (if (gp::font-description-p ,font)
                                                    (gp::find-best-font *curstream* ,font)
                                                  ,font)
-                                         
+
                                          )
      ,@body))
 
+
+#+linux
+(defmacro om-with-font (font &rest body)
+  `(gp::with-graphics-state (*curstream* :font (if (gp::font-description-p ,font)
+                                                   (gp::find-best-font *curstream* ,font)
+                                                 ,font)
+                                         :mask nil
+                                         )
+     ,@body))
 
 
 ; TESTR AVEC CAPI::AREA-VISIBLE-P ?
