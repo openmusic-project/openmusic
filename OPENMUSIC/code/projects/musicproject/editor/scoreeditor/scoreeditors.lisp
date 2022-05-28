@@ -1487,7 +1487,7 @@
                                    (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                    (slots-mode self) size (linear? self) 
                                    (staff-sys self) nil (noteaschan? self))
-                      #+linux (draw-system-only self) ;to be changed
+                      ;#+linux (draw-system-only self) ;to be changed
                       (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                       (draw-edit-cursor self deltay))))))
 
@@ -2287,7 +2287,7 @@
                                         y0  
                                         (+ x0 (w self)) 
                                         (+ y0 (h self)))
-                        #+linux (draw-system-only self)
+                        ;#+linux (draw-system-only self)
                         (scorepanel-draw-object self x0 y0 deltax deltay size)
                         (if (analysis-mode? self) (draw-analysis self))
                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
@@ -2883,7 +2883,7 @@
                                      (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self))
-                        #+linux (draw-system-only self)              
+                        ;#+linux (draw-system-only self)              
                         (if (analysis-mode? self) (draw-analysis self))
                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                         (draw-edit-cursor self deltay))
@@ -3115,7 +3115,7 @@
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self) ) 
                                      (slots-mode self) (staff-size self) (linear? self) (staff-sys self) 
                                      (grille-step-p self) (noteaschan? self))
-                        #+linux (draw-system-only self)
+                        ;#+linux (draw-system-only self)
                         (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
                         (draw-edit-cursor self deltay)
                         )
