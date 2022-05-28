@@ -565,8 +565,6 @@
 (defmethod om-set-dialog-item-text ((self om-editable-text) text)
  (setf (capi::text-input-pane-text self) text))
 
-
-
 (defmethod om-enable-dialog-item ((self om-editable-text) t-or-nil)
   (setf (capi::text-input-pane-enabled self) t-or-nil))
 
