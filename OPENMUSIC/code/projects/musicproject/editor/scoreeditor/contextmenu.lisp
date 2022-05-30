@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -55,20 +55,54 @@
   (remove nil (append 
                (list  
                 (list 
-               (om-new-menu "Mode"
-                            (om-new-leafmenu "Normal" #'(lambda () (change-score-mode (panel object) 0)))
-                            (om-new-leafmenu "Segmentation" #'(lambda () (change-score-mode (panel object) 3)))
-                            (om-new-leafmenu "Page" #'(lambda () (change-score-mode (panel object) 2)))
-                            (om-new-leafmenu "Patch" #'(lambda () (change-score-mode (panel object) 1)))
-                            )
-                (if (analysis-mode? (panel object))
-                    (analysis-menu-items object)
-                  (list 
-                   (list 
-                    (om-new-leafmenu "Set Score Margins"
-                                     #'(lambda () (editor-page-setup (panel object)))))
-                   (om-new-leafmenu "Eval"
-                                #'(lambda () (eval-score (panel object)))))))))))
+                 (om-new-menu "Mode"
+                              (om-new-leafmenu "Normal" #'(lambda () (change-score-mode (panel object) 0)))
+                              (om-new-leafmenu "Segmentation" #'(lambda () (change-score-mode (panel object) 3)))
+                              (om-new-leafmenu "Page" #'(lambda () (change-score-mode (panel object) 2)))
+                              (om-new-leafmenu "Patch" #'(lambda () (change-score-mode (panel object) 1)))
+                              )
+
+                 (cond ((analysis-mode? (panel object))
+                        (analysis-menu-items object))
+                       ((in-patch-mode? (panel object))
+                        (scorepatch-menu-items object))
+                       (t (list 
+                           (list 
+                            (om-new-leafmenu "Set Score Margins"
+                                             #'(lambda () (editor-page-setup (panel object)))))
+                           (om-new-leafmenu "Eval"
+                                            #'(lambda () (eval-score (panel object))))))))))))
+
+(defmethod scorepatch-menu-items ((self scoreeditor))
+  (let ((posi (om-mouse-position self))
+        (panel (panel self)))
+    (list 
+     (om-new-leafmenu "Comment" #'(lambda () 
+                                    (let ((newbox (omNG-make-new-boxcall 'comment posi "comment")))
+                                      (when newbox
+                                        (omG-add-element (panel self) (make-frame-from-callobj newbox))
+                                        ))))
+     (list 
+      (om-package-fun2menu *om-package-tree* nil #'(lambda (f) (add-box-from-menu f posi)))
+      (om-package-classes2menu *om-package-tree* nil #'(lambda (c) (add-box-from-menu c posi)))
+      )
+     (list 
+      (om-new-menu "Internal..." 
+                   (om-new-leafmenu "Patch" #'(lambda () (omG-add-element panel (make-frame-from-callobj 
+                                                                                 (omNG-make-new-boxcall 
+                                                                                  (make-instance 'OMPatchAbs :name "mypatch" :icon 210)
+                                                                                  posi (mk-unique-name panel "mypatch"))))))
+                   (om-new-leafmenu "Maquette" #'(lambda () (omG-add-element panel (make-frame-from-callobj 
+                                                                                    (omNG-make-new-boxcall 
+                                                                                     (make-instance 'OMMaqAbs :name "mymaquette" :icon 265)
+                                                                                     posi (mk-unique-name panel "mymaquette"))))))
+                   (om-new-leafmenu "Loop" #'(lambda () (add-box-from-menu (fdefinition 'omloop) posi)))
+                   (om-new-leafmenu "Lisp Function" #'(lambda () (omG-add-element panel 
+                                                                                  (make-frame-from-callobj 
+                                                                                   (omNG-make-new-boxcall 
+                                                                                    (make-instance 'OMLispPatchAbs :name "lispfunction" :icon 123)
+         
+                                                                                    posi (mk-unique-name panel "lispfunction")))))))))))
 
 
 (defmethod om-get-menu-context ((self scorepanel))
