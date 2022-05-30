@@ -196,7 +196,8 @@
     (when (text-view container)
       (om-remove-subviews panel (text-view container))
       (setf (text-view container) nil))
-    (setf (text-view container) 
+    (setf (text-view container)
+          #+(or macosx win32)
 	  (om-make-dialog-item (open-ttybox-class self)
 			       (om-add-points (om-subtract-points 
 					       (om-view-position self)
@@ -218,7 +219,29 @@
                                :bg-color *om-light-blue-color*
                                ;:fg-color #+macosx *om-black-color* #-macosx *om-black-color* 
                                :fg-color *om-black-color*
-                               ))
+                               )
+          #+linux
+          (om-make-dialog-item (open-ttybox-class self)
+			       (om-add-points (om-subtract-points 
+					       (om-view-position self)
+					       #-win32 (om-make-point 2 2) #+win32 (om-make-point 0 0)) 
+					      (om-view-position (om-view-container self)))
+			       (om-view-size self)
+			       thetext
+			       :allow-returns (text-enter-multiline-p self)
+			       :focus t
+			       :object self
+			       :container panel
+			       :font *om-default-font1*
+                               :in-place-completion-function #'(lambda (item str)
+                                                                 (declare (ignore item))
+                                                                 (or (funcall 'box-name-completion str)
+                                                                     (progn (capi::beep-pane) :destroy)))
+                               :completion 'box-name-completion
+                               :complete-do-action t ;confirms completion with return
+                               )
+          
+          )
     ))
 
 
