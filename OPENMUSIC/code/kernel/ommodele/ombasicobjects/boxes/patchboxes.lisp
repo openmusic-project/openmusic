@@ -447,6 +447,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 (defmethod do-add-one-input-extra ((self OMBoxcall))
    "Add an optional input to 'self'" t)
 
+(defmethod do-delete-all-inputs ((self t)) nil)
+
 (defmethod get-keywords-from-box ((self OMBoxCall))
    "Return a list of the keywords of the generic function associated to 'self'."
   (get-keywords-fun (reference self)))
@@ -1060,6 +1062,9 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
                                               (update-controls-view (editorframe self)))
                                             )))))
     ))
+
+
+(defmethod do-delete-all-inputs ((self omboxeditcall)) t)
 
 ;-----------------------------------------------------------------
 ;SLOT BOXES
@@ -1884,6 +1889,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod do-add-one-keyword ((self OMBoxPatch) &optional (input-key nil))  nil)
 (defmethod do-delete-one-keyword ((self OMBoxPatch)) nil)
+(defmethod do-delete-all-inputs ((self omboxpatch)) t)
 
 (defmethod update-from-reference ((self OMBoxPatch) &optional (udt? t))
    "Called when occurs changes in the patch reference of 'self'."

@@ -478,7 +478,7 @@
     (box-draw-connections self nil)
     (omG-select (redraw-frame (car (frames (object self)))))
     ))
-
+#|
 (defmethod delete-all-inputs ((self omboxframe))
   (let* ((obj (object self))
          (init (min-inp-number (reference obj)))
@@ -487,6 +487,19 @@
           do (progn 
                (delete-one-input self)
                (setf curr (length (inputs obj)))))))
+|#
+
+(defmethod delete-all-inputs ((self omboxframe)) 
+  (if (do-delete-all-inputs (object self))
+      (do-delete-one-input (object self)) 
+    (let* ((obj (object self))
+           (init (min-inp-number (reference obj)))
+           (curr (length (inputs obj))))
+      (loop while (not (= init curr))
+            do (progn 
+                 (delete-one-input self)
+                 (setf curr (length (inputs obj))))))))
+
 
 (defmethod add-keywords ((self omboxframe)) 
    "Add a keyword inputframe to 'self'."

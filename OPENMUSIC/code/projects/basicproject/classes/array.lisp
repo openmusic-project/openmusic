@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 
@@ -547,6 +547,13 @@ The matrix \"components\" can be accessed and modified using the functions get-c
     (if (> (length usedkeywords) 0)
         (setf (inputs self) (remove (car (last usedkeywords)) (inputs self) :test 'equal))
       (om-beep-msg "No more erasable input."))))
+
+(defmethod do-delete-all-inputs ((self arraybox))
+  (let* ((usedkeywords (find-class-boxes (inputs self) 'editor-keyword)))
+    (loop for i from 1 to (length usedkeywords) 
+          do (delete-one-input (car (frames self))))
+    t))
+
 
 (defmethod eval-not-connected ((self editor-keyword))
    (let ((slot (find-if #'(lambda (x) (string-equal (name x) (string (value self)))) 

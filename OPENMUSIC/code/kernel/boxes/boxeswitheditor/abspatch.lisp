@@ -46,6 +46,10 @@
 (defmethod update-close ((self OMBoxAbsPatch) win)
   (set-doc (reference self) (om-dialog-item-text (doc-item win))))
 
+;;preventing error
+(defmethod do-delete-all-inputs ((self omboxabspatch)) t)
+
+
 ;=====SAVE
 
 (defmethod omNG-save ((self OMBoxAbsPatch) &optional (values? nil))
