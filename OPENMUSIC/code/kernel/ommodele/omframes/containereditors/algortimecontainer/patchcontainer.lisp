@@ -260,25 +260,39 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\n (mapc 'set-show-box-name actives))
       (#\M (change-edit-mode-all (get-subframes self)))
            
-      (:om-key-up 
-       (mapc #'(lambda (item) (move-frame-delta item 0)) actives)
-       (make-move-after self actives))
-      (:om-key-down 
-       (mapc #'(lambda (item) (move-frame-delta item 1)) actives)
-       (make-move-after self actives))
-      (:om-key-left
-       (if (om-option-key-p)
-           (mapc #'(lambda (item) (delete-all-inputs item) t) actives)
+       (:om-key-up 
+       (if (and (om-command-key-p) (om-shift-key-p))
+           (mapc 'box-resize-y-minus actives)
          (progn
+           (mapc #'(lambda (item) (move-frame-delta item 0)) actives)
+           (make-move-after self actives))))
+      (:om-key-down 
+       (if (and (om-command-key-p) (om-shift-key-p))
+           (mapc 'box-resize-y-plus actives)
+         (progn
+           (mapc #'(lambda (item) (move-frame-delta item 1)) actives)
+           (make-move-after self actives))))
+      (:om-key-left
+       (cond 
+        ((om-option-key-p)
+           (mapc #'(lambda (item) (delete-all-inputs item) t) actives))
+        ((and (om-command-key-p) (om-shift-key-p))
+         (mapc 'box-resize-x-minus actives))
+         (t
+           (progn
            (mapc #'(lambda (item) (move-frame-delta item 3)) actives)
            (make-move-after self actives)
-           )
+           ))
          ))
       (:om-key-right 
-       (if (om-option-key-p)
-           (mapc #'(lambda (item) (add-all-inputs item)) actives)
+       (cond 
+        ((om-option-key-p)
+           (mapc #'(lambda (item) (add-all-inputs item)) actives))
+        ((and (om-command-key-p) (om-shift-key-p))
+         (mapc 'box-resize-x-plus actives))
+        (t
          (progn (mapc #'(lambda (item) (move-frame-delta item 2)) actives)
-           (make-move-after self actives))))
+           (make-move-after self actives)))))
 
       (#\< (mapc #'(lambda (item) (delete-one-input item)) actives))
       (#\> (mapc #'(lambda (item) (add-one-input item)) actives))

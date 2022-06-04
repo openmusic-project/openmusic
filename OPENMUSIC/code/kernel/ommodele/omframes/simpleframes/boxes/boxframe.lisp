@@ -450,6 +450,53 @@
      ;(setf (frame-size (object box)) (om-view-size box))
      ))
 
+(defmethod box-resize-x-plus  ((box omboxframe))
+   "Enlarge box horizontally with increment of 10pt."
+     (let* ((size (om-view-size box))
+           (x (om-point-h size))
+           (y (om-point-v size)))
+     (setf (frame-size (object box)) (om-make-point (+ x 10) y))
+     (box-draw-connections box nil)
+     (omG-select (redraw-frame box))   
+     ))
+
+
+(defmethod box-resize-y-plus ((box omboxframe))
+  "Enlarge box vertically with increment of 10pt."
+     (let* ((size (om-view-size box))
+           (x (om-point-h size))
+           (y (om-point-v size)))
+      (setf (frame-size (object box)) (om-make-point x (+ y 10)))
+     (box-draw-connections box nil)
+     (omG-select (redraw-frame box))   
+     ))
+
+(defmethod box-resize-x-minus ((box omboxframe))
+  "Decrease size of self horizontally."
+  (let* ((size (om-view-size box))
+         (x (om-point-h size))
+         (y (om-point-v size)))
+    (if (>= x 40);30
+        (progn
+          (setf (frame-size (object box)) (om-make-point (- x 10) y))
+          (box-draw-connections box nil)
+          (omG-select (redraw-frame box))) 
+      (om-beep-msg "Minimum size reached!"))))
+
+
+(defmethod box-resize-y-minus ((box omboxframe))
+  "Decrease size of self vertically."
+  (let* ((size (om-view-size box))
+         (x (om-point-h size))
+         (y (om-point-v size)))
+     (if (>= y 60)
+        (progn
+          (setf (frame-size (object box)) (om-make-point x (- y 10)))
+          (box-draw-connections box nil)
+          (omG-select (redraw-frame box)))
+      (om-beep-msg "Minimum size reached!"))))
+
+
 (defmethod reinit-contents ((box omboxframe))
    "Set the contents of box to the initial value"
    nil)
