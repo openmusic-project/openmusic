@@ -262,6 +262,40 @@ Press 'space' to play/stop the sound file.
 (defmethod sound-p ((self t)) nil)
 (defmethod sound-p ((self sound)) t)
 
+;alternative sound info
+
+(defmethod sf-type ((self sound))
+  (audio-format self))
+
+(defmethod sf-chan ((self sound))
+  (number-of-channels self))
+
+(defmethod sf-sr ((self sound))
+  (sample-rate self))
+
+(defmethod sf-res ((self sound))
+  (sample-size self))
+
+(defmethod sf-samples ((self sound))
+  (number-of-samples self))
+
+(defmethod sf-data-pos ((self sound))
+  (data-position self))
+
+(defmethod! sound-info ((self sound))
+  :numouts 5
+  :icon 221
+  :initvals '(nil)
+  :indoc '("a sound object")
+  :doc "Returns pathname, channels, sr, res and nsamples."
+  (let* ((path (namestring (filename self)))
+         (chan (sf-chan self))
+         (sr (sf-sr self))
+         (res (sf-res self))
+         (samp (sf-samples self)))    
+    (values-list (list path chan sr res samp))))
+
+
 
 #|
 (defmethod copy-container ((self sound) &optional (pere ()))
