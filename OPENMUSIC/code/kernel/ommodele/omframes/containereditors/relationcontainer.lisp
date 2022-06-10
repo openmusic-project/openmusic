@@ -329,7 +329,7 @@ this method set the select flag of the connection to T and return a list with th
                        (let* ((where-click (point-in-connection oneconnection self where)))
                      (cond
                       ((numberp where-click)
-                        #-(and cocoa lispworks8)(draw-connection oneconnection nil)
+                       ; #-(and cocoa lispworks8)(draw-connection oneconnection nil)
                        (unless (selected? oneconnection)
                          (unless (om-shift-key-p)
                            (mapc #'(lambda (control) 
@@ -348,7 +348,7 @@ this method set the select flag of the connection to T and return a list with th
                         (t (unless (member (nth where-click (points oneconnection)) (point-sel oneconnection))
                              (setf (point-sel oneconnection)  (list (nth where-click (points oneconnection)))))
                            (scroll-points oneconnection)))
-                        #-(and cocoa lispworks8)(draw-connection oneconnection t)
+                       ; #-(and cocoa lispworks8)(draw-connection oneconnection t)
                        (setf rep t))
                       (where-click
                        (select-connection oneconnection)
@@ -428,6 +428,7 @@ it redraw the connections involving in the deleying operation."
         (call-next-method))))
 
 ;;;;Click on the scroller not in a subview.
+#|
 (defmethod control-actives ((view relationPanel) where)
   (close-enter-dialog (editor view)) 
   (if (click-in-connection view where)
@@ -442,6 +443,22 @@ it redraw the connections involving in the deleying operation."
        ((and (om-command-key-p) (not (om-option-key-p))) ;to avoid auto-connect
         (make-undefined-box view where))
        (t (call-next-method))))))
+|#
+
+;deactivated ctr/cmd+ click make0undefined-box
+;reserved for evaluation
+ 
+(defmethod control-actives ((view relationPanel) where)
+  (close-enter-dialog (editor view)) 
+  (if (click-in-connection view where)
+      (mapc #'(lambda (control) 
+                (omG-unselect control)) (get-actives  view))
+    
+    (let* ((float (om-subtract-points (om-mouse-position view) where)))
+      (unless (om-shift-key-p)
+        (mapc #'(lambda (control) 
+                  (deactivate-connect control)) (get-connections view)))))
+  (call-next-method))
 
 (defmethod do-select-items-in-rect ((self relationPanel) rect) 
  (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
