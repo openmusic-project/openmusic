@@ -175,7 +175,8 @@
 ;;; typically called in a click-handler
 (defmethod om-init-motion-click ((self om-graphic-object) position &key motion-draw draw-pane motion-action release-action display-mode)
   ;(print (list "start" self))
-   #+(and cocoa lispworks8)(capi:output-pane-free-cached-display self)
+  ;#+(and cocoa lispworks8)(capi:output-pane-free-cached-display self)
+  #+lispworks8(capi:output-pane-free-cached-display self) ;a voir
   (setf *click-motion-view* self)
   (setf *click-motion-action* t)
   (when (or motion-action release-action)
