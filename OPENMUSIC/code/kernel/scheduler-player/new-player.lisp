@@ -184,7 +184,7 @@
   (setf (ref-clock-time player) (clock-time)
         (state player) :play
         ))
-
+#|
 (defmethod general-loop ((player omplayer))
        ;(print "general loop")
   ;(setf (stop-time player) (cadr (play-interval player)))
@@ -195,6 +195,14 @@
           (engines player)
           (mapcar #'(lambda (engine) (get-my-play-list engine (play-list player))) (engines player)))
   )
+|#
+
+(defmethod general-loop ((player omplayer))
+  (let* ((engines (mapcar 'car (play-list player))))
+    (setf (start-time player) (or (car (play-interval player)) 0)
+        (ref-clock-time player) (clock-time))
+  ;;; ask every engine to reschedule their play-list
+  (player-loop engines player (play-list player))))
 
 
 (defmethod general-stop ((player omplayer))
@@ -291,13 +299,21 @@
 
 
 ;;; an engine can choose its own strategy to reschedule it's contents on loops
+#|
 (defmethod player-loop ((engine t) player &optional play-list)
  (declare (ignore player)) 
  ;(print (format nil "~A : loop" engine))
  (loop for obj in play-list do
        (prepare-to-play engine player obj 0 (play-interval player) nil)))
+|#
 
-
+(defmethod player-loop ((engine t) player &optional play-list)
+  (let* ((objs (mapcar 'second (play-list player)))
+         (offs (mapcar 'offset objs)))
+    (loop for e in engine
+          for obj in objs
+          for off in offs 
+          do (prepare-to-play e player obj off (play-interval player) nil))))
 
 #|
 (defmethod player-record ((engine t))

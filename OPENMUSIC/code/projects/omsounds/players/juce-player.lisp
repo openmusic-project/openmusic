@@ -173,6 +173,7 @@
 (defun get-internal-interval (interval sound at)
   (om- (interval-intersec interval (list at (+ at (real-dur sound)))) at))
 
+#|
 (defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
   (when (loaded object)
     (let* ((newinterval (get-internal-interval interval object at)))
@@ -187,6 +188,22 @@
         ;; => will schedule a player-play-object at <at>
         )
         (om-print "SOUND NOT LOADED" "juce-player =>")))))
+|#
+
+(defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
+  (when (loaded object)
+    (let* ((off (if (equal (type-of (caller player)) 'soundeditor) 0 at))
+           (newinterval  (get-internal-interval interval object off)))
+      (unless (player-data object)
+        (setf (player-data object) (juce::makeAudioSourceFromFile (namestring (om-sound-file-name object)))))
+      (if (player-data object)   ;; 
+          (when (or (null interval) newinterval) ;; the object has to be played
+        (call-next-method engine player object off newinterval 
+                          params)
+        ;; => will schedule a player-play-object at <at>
+        )
+        (om-print "SOUND NOT LOADED" "juce-player =>")))))
+
 
 ;;; do nothing 
 (defmethod player-start ((engine (eql :om-audio)) &optional play-list)
