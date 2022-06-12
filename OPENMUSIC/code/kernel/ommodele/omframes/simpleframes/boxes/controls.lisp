@@ -29,7 +29,7 @@
 
 (in-package :om)
 
-
+(defvar *spec-new-boxes-types* nil)
 ;==============
 ;   TTYBOX 
 ;==============
@@ -143,10 +143,14 @@
 (defun update-pack-symbols ()
   (let ((formated
          (loop for i in (get-all-symbol-names *om-package-tree*)
-               collect (prefix-symb-names i))))
+               collect (prefix-symb-names i)))
+        (specs (loop for i in  *spec-new-boxes-types*
+                     collect (prefix-symb-names i)))
+        )
     (setf *all-om-pack-symbols*
           (sort (append
                  formated
+                 specs
                  (list "maquette" "patch") ;add special calls
                  *all-cl-pack-symbols*  ;add cl calls
                  *all-oa-pack-symbols* ;add om-api calls
@@ -309,7 +313,7 @@
 (defmethod text-enter-multiline-p ((self undef-ttybox)) nil)
 
 ;;;self on panel
-(defvar *spec-new-boxes-types* nil)
+;(defvar *spec-new-boxes-types* nil)
 (defmethod get-new-box-from-type ((type t) position container) nil)
 
 (defun decode-input-arguments (text)
