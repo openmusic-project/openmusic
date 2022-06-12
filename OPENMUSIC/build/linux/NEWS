@@ -4,6 +4,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- box resize shortcut (ctrl/cmd+shift+arrows)
 - slotboxes are callable just as any ombox
 - scorepatch :
 	- connection standard display
@@ -13,6 +14,7 @@ IMPROVEMENTS
 
 FIXES
 
+- MAQUETTE loop play mode fixed
 - omaudiolib fix for windows
 - Dark mode support (aqua display) for mac
 - Fixed closing instances (automatic closing of editors when instances are deleted)
