@@ -1254,8 +1254,9 @@
           (om-invalidate-view self))
         )
       ))
-    (call-next-method)
-    )
+  (om-invalidate-view self)
+  (call-next-method)
+  )
 
 
 (defun rect-intersect (rect1 rect2)
