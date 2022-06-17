@@ -35,7 +35,7 @@
 (defvar *lisp-package* (omNG-make-new-package "Lisp" :doc "Basic functions defined in the Lisp programming language."))
 (setf (classes *lisp-package*) (copy-list *Basic-Lisp-Types*))
 (AddLispFun2Pack '(first second third nth rest nthcdr butlast reverse length
-                   list  remove  cons  append  apply  funcall  mapcar mapcan) *lisp-package*)
+                   list  remove  cons  append  apply  funcall  mapcar mapcan reduce) *lisp-package*)
 
 (defvar *control-package* nil "Sub-package CONTROL of KERNEL package.")
 (setf *control-package* (omNG-protect-object (omNG-make-new-package "Control")))
