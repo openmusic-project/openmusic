@@ -140,7 +140,7 @@ POLY is a polyphonic object made of a superimposition of VOICE objects.
 An OM object representing a group in a rhythm.
 "))
 (defclass* measure (metric-sequence)  
-  ((tree :initform '(4//4 (1 1 1 1))  :initarg :tree :type list)) 
+  ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)) 
   (:icon 228)
 (:documentation "
 An OM object representing a measure in a rhythm.
