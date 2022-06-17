@@ -80,7 +80,10 @@
 (defmethod scorebox-p ((self t)) nil)
 
 ;================================================
-(defclass scoreboxframe (boxframe) ())
+;(defclass scoreboxframe (boxframe) ())
+(defclass scoreboxframe (boxframe)
+  ((obj :initform t :accessor obj)
+   (type :initform t :accessor type)))
 
 (defmethod frame-in-score-p ((self scoreboxframe)) t)
 (defmethod scoreboxframe-p ((self scoreboxframe)) t)
@@ -125,7 +128,7 @@
          (pere (get-root-parent object))
          (newref (get-obj-from-container-path pere (reverse (cons-container-path (reference (object self))))))
          )
-    (box-revise-references self (om-view-container self)) 
+    (box-revise-references self panel) 
     (om-with-focused-view self
       (om-with-fg-color nil (om-make-color 1.0 0 0) 
         (if (active-mode self) 
