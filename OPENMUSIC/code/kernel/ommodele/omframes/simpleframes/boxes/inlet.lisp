@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -188,8 +188,9 @@
         (setf new-frame (make-frame-from-callobj new-obj))
         (omG-add-element (om-view-container (om-view-container self)) new-frame)
         (connect-box (car (outframes new-frame)) self)
-     
-        (open-ttybox (iconview new-frame))))
+        (open-ttybox (iconview new-frame))
+        #+linux(capi:redisplay-element (om-view-container (om-view-container self)))
+        ))
 
      ((menu-input-p (object self))
       (popup-input-menu (object self) panel))

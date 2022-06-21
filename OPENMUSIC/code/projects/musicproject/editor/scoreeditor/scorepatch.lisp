@@ -239,8 +239,8 @@
 (defmethod init-music-patch ((self scorePanel))
    (let ((object (object (editor self))))
      (unless (mus-patch object)
-       (setf (mus-patch object) (make-instance 'OMPatchAbs :name "patch" :icon 210)))
-     (setf (object self) (mus-patch object))))
+       (setf (mus-patch object) (make-instance 'OMPatchAbs :name "patch" :icon 210))
+   (setf (object self) (mus-patch object))))
 
 ;=================
 

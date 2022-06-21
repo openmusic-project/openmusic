@@ -191,7 +191,7 @@
 ;;;=================
 (defmethod om-double-clic-callback ((self om-graphic-object) x y mods)
   (declare (ignore mods))
-  (setf *clicked-view* :abort)
+  #-linux(setf *clicked-view* :abort)
   (om-with-error-handle 
     (apply-in-item-subview self 'om-view-doubleclick-handler (om-make-point x y))))                         
 
