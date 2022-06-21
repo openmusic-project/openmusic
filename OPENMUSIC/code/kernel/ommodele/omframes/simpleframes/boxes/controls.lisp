@@ -219,9 +219,9 @@
                                                                      (progn (capi::beep-pane) :destroy)))
                                :completion 'box-name-completion
                                :complete-do-action t ;confirms completion with return
-                               :bg-color *om-light-blue-color*
-                               ;:fg-color #+macosx *om-black-color* #-macosx *om-black-color* 
-                               :fg-color *om-black-color*
+                               ;:bg-color *om-light-blue-color*
+                               ;;:fg-color #+macosx *om-black-color* #-macosx *om-black-color* 
+                               ;:fg-color *om-black-color*
                                ))
     #+linux(capi:redisplay-element container)
     ))
