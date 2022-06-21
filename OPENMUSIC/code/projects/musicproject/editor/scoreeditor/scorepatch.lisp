@@ -83,7 +83,7 @@
 ;(defclass scoreboxframe (boxframe) ())
 (defclass scoreboxframe (boxframe)
   ((obj :initform t :accessor obj)
-   (type :initform t :accessor type)))
+   (objtype :initform t :accessor objtype)))
 
 (defmethod frame-in-score-p ((self scoreboxframe)) t)
 (defmethod scoreboxframe-p ((self scoreboxframe)) t)
@@ -239,7 +239,7 @@
 (defmethod init-music-patch ((self scorePanel))
    (let ((object (object (editor self))))
      (unless (mus-patch object)
-       (setf (mus-patch object) (make-instance 'OMPatchAbs :name "patch" :icon 210))
+       (setf (mus-patch object) (make-instance 'OMPatchAbs :name "patch" :icon 210)))
    (setf (object self) (mus-patch object))))
 
 ;=================
