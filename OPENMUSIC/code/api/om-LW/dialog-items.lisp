@@ -552,6 +552,7 @@
  
 (defun text-edit-changed-action (text self win position)
   ;(print (list "changed" position text))
+  (format *terminal-io* "~A ~%" text)
   (when (di-action self)
     (funcall (di-action self) self))
   (unless (or (string-equal text "")
