@@ -224,7 +224,7 @@
                                ;:fg-color *om-black-color*
                                ))
     (format *terminal-io* "typing: ~%") ; it seems this fixes the problem...?
-    #+linux(capi:redisplay-element container)
+    (capi:redisplay-element container)
     ))
 
 
