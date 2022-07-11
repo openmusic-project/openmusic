@@ -35,6 +35,30 @@ inside the .app bundle's resources.
 ; $ git clone git://git.forge.ircam.fr/OM.git
 ;------------------------------------
 
+* RELEASE NOTES 7.1
+
+NEW FEATURES
+
+IMPROVEMENTS
+
+- box resize shortcut (ctrl/cmd+shift+arrows)
+- slotboxes are callable just as any ombox
+- scorepatch :
+	- connection standard display
+	- fixed zoom display
+- OK button on portmidi setup panel
+- auto connect output/input using option+cmd (ctrl+alt)
+
+FIXES
+
+- MAQUETTE loop play mode fixed
+- omaudiolib fix for windows
+- Dark mode support (aqua display) for mac
+- Fixed closing instances (automatic closing of editors when instances are deleted)
+- set-obj-mode fix (internal chord)
+
+
+
 * RELEASE NOTES 7.0
 
 NEW FEATURES
