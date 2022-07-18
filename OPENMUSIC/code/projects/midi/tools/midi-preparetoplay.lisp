@@ -198,7 +198,7 @@
 (defun micro-channel (midic &optional approx)
   (if (micro-channel-on approx)
       (let ((mod (/ 200 (or *micro-channel-approx* approx))))
-        (round (approx-m (mod midic 100) mod) mod))
+        (round (approx-m (mod midic 100) approx) mod))
     0))
 
 
