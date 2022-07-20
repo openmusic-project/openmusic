@@ -47,6 +47,7 @@
 
 (defparameter *audio-sr* 44100)
 (defparameter *audio-out-n-channels* 2)
+(defparameter *audio-driver* nil)
 (defparameter *audio-out-device* nil)
 
 ;;; these values depend on the selected device

@@ -33,7 +33,7 @@
 (defconstant *audio-buffsize* 512)
 
 (defvar *juce-player* nil)
-(defvar *audio-driver* 
+(setf *audio-driver* 
   #+macosx "CoreAudio" 
   #+linux "ALSA"
   #+mswindows "DirectSound"
