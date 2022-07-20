@@ -118,8 +118,6 @@
     (om-print (format nil "  Setting audio driver: ~A" *audio-driver*)))
   (om-print (format nil "  Audio driver: ~A" (juce::getCurrentDeviceType player)))
   
-  (juce::getCurrentDeviceName player)
-
   (let ((out-devices (juce::audio-driver-output-devices player (juce::getCurrentDeviceType player))))
     (if (and *audio-out-device* (not (string-equal *audio-out-device* "")))
       (progn 
@@ -153,6 +151,9 @@
  
 
 ;; called from preferences
+(defmethod player-get-drivers ((player (eql :om-audio)))
+  (when *juce-player* (juce::get-audio-drivers *juce-player*)))
+
 (defmethod player-get-devices ((player (eql :om-audio)))
   (when *juce-player* (juce::audio-driver-output-devices *juce-player* *audio-driver*)))
  
