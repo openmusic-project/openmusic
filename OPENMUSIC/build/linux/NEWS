@@ -14,6 +14,7 @@ IMPROVEMENTS
 
 FIXES
 
+- micro-channel approx fix (16th tones)
 - MAQUETTE loop play mode fixed
 - omaudiolib fix for windows
 - Dark mode support (aqua display) for mac
