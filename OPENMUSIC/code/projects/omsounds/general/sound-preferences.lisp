@@ -167,6 +167,21 @@
 					  :font *om-default-font3b*)
                      
                      (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
+                                          "Driver"
+                                          :font *controls-font*)
+		     
+		     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
+                                          (om-make-point 160 20)
+                                          ""
+                                          :di-action (om-dialog-item-act item
+						       (set-pref modulepref :audio-driver
+								 (om-get-selected-item item)))
+                                          :font *controls-font* 
+                                          :range audio-drivers
+                                          :value (get-pref modulepref :audio-driver)
+                                          )
+		     
+		     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
                                           "Device"
                                           :font *controls-font*)
 
