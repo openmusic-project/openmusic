@@ -522,6 +522,15 @@
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged instboxframe) 
                          (target MaquettePanel) position)
+  ;for score instances
+  (when (allowed-in-maq-p (car (value (object dragged))))
+    (let* ((omins (omNG-make-new-instance (clone (car (value (object dragged)))) (name (object dragged))))
+           (maqpos (get-offset/posy-from-pixel target position))
+           (new-call (omNG-make-tempobj omins maqpos (name (object dragged)))))
+      (setf (edition-params new-call) (eval (copy-value-params (car (value (object dragged))) (object dragged))))
+      (omG-add-element target (make-frame-from-callobj new-call))
+      t))
+  ;;;
   (if (allowed-in-maq-p (value (object dragged)))
       (let ((maqpos (get-offset/posy-from-pixel target position))
             (newcall nil))
@@ -534,7 +543,8 @@
       (setf (edition-params new-call) (eval (copy-value-params (value (object dragged)) (object dragged))))
       (omG-add-element target (make-frame-from-callobj new-call))
       t)
-    (om-beep-msg "I can not put this into the maquette")))
+    (unless (allowed-in-maq-p (car (value (object dragged))))
+    (om-beep-msg "I can not put this into the maquette"))))
 
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged class-icon-frame) 
