@@ -14,6 +14,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Drag&drop score instances in maquette now works
 - micro-channel approx fix (16th tones)
 - MAQUETTE loop play mode fixed
 - omaudiolib fix for windows
