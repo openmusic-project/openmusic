@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;; ====================================================================
@@ -978,7 +978,10 @@
 (defun describe-score (score event-list) 
   (let (token index staff measure dur pitch token2 follow tie
               ;;; GA 170996 because of unconsistencies in MCL 3.9 type system
-              (number-type (list (type-of 1) (type-of 1/4))))
+              ;(number-type (list (type-of 1) (type-of 1/4)))
+              ;;;KH in LW8 type-of returns more specific types! 
+              (number-type (list (type-of -1) (type-of 1/4)))
+              )
     (loop
       (unless (setf token  (pop event-list)) (return))
       (unless (keywordp token)
