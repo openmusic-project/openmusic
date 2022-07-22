@@ -545,13 +545,17 @@
     (funcall (dialog-item-after-fun self) self)
     ))
 
+;variable needed for editing
+(defvar *edited-self* nil)
 
 (defun text-edited-action (self action)
   ;(print (list "edited" action))
+  #+(or linux win32)(setf *edited-self* self)
   (if (equal action :end) (om-dialog-item-after-action self)))
  
 (defun text-edit-changed-action (text self win position)
   ;(print (list "changed" position text))
+  #+cocoa(setf *edited-self* self)
   (format *terminal-io* "~A ~%" text)
   (when (di-action self)
     (funcall (di-action self) self))

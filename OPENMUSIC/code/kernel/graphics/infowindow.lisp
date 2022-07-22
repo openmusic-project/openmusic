@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -669,7 +669,65 @@
 
 (defclass info+offset-window (info-window)
   ((posx :initform nil :initarg :posx :accessor posx)
-   (changes :initform nil  :accessor changes)))
+   (changes :initform nil  :accessor changes)
+   (name-info :initform nil  :accessor name-info)
+   (offset-info :initform nil  :accessor offset-info)
+   (posy-info :initform nil  :accessor posy-info)
+   (dur-info :initform nil  :accessor dur-info)
+   (sizey-info :initform nil  :accessor sizey-info)))
+
+;editing shortcuts
+
+(defmethod cut ((self info-window)) 
+(cond 
+   ((equal (name-info self) oa::*edited-self*)
+    (om-cut-command (name-info self)))
+   ((equal (offset-info self) oa::*edited-self*)
+    (om-cut-command (offset-info self)))
+   ((equal (posy-info self) oa::*edited-self*)
+    (om-cut-command (posy-info self)))
+   ((equal (dur-info self) oa::*edited-self*)
+    (om-cut-command (dur-info self)))
+   ((equal (sizey-info self) oa::*edited-self*)
+    (om-cut-command (sizey-info self)))
+   ((equal (cp-item self) oa::*edited-self*)
+    (om-cut-command (cp-item self)))
+   (t (om-beep))))
+
+
+(defmethod copy ((self info-window)) 
+(cond 
+   ((equal (name-info self) oa::*edited-self*)
+    (om-copy-command (name-info self)))
+   ((equal (offset-info self) oa::*edited-self*)
+    (om-copy-command (offset-info self)))
+   ((equal (posy-info self) oa::*edited-self*)
+    (om-copy-command (posy-info self)))
+   ((equal (dur-info self) oa::*edited-self*)
+    (om-copy-command (dur-info self)))
+   ((equal (sizey-info self) oa::*edited-self*)
+    (om-copy-command (sizey-info self)))
+   ((equal (cp-item self) oa::*edited-self*)
+    (om-copy-command (cp-item self)))
+   (t (om-beep))))
+
+
+(defmethod paste ((self info+offset-window)) 
+(cond 
+   ((equal (name-info self) oa::*edited-self*)
+    (om-paste-command (name-info self)))
+   ((equal (offset-info self) oa::*edited-self*)
+    (om-paste-command (offset-info self)))
+   ((equal (posy-info self) oa::*edited-self*)
+    (om-paste-command (posy-info self)))
+   ((equal (dur-info self) oa::*edited-self*)
+    (om-paste-command (dur-info self)))
+   ((equal (sizey-info self) oa::*edited-self*)
+    (om-paste-command (sizey-info self)))
+   ((equal (cp-item self) oa::*edited-self*)
+    (om-paste-command (cp-item self)))
+   (t (om-beep))))
+
 
 (defmethod update-close ((self TemporalBox) win)
   (call-next-method)
@@ -744,6 +802,12 @@
                     )))
       (eval `(om-add-subviews ,dialog ,.(cdr info) ,.(posx dialog)))
       (setf (doc-item dialog) (cadr info))
+      (setf (name-info dialog) (nth 20 info))
+      (setf (offset-info dialog) (nth 16 info))
+      (setf (posy-info dialog) (nth 17 info))
+      (setf (dur-info dialog) (nth 18 info))
+      (setf (sizey-info dialog) (nth 19 info))
+      (setf (cp-item dialog)  (cadr info));doc
       (setf (infowin self) dialog)
       (om-add-menu-to-win dialog)
       (om-select-window dialog)
