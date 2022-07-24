@@ -85,6 +85,19 @@
       )))
 
 
+#+cocoa
+(defmethod close-all-inspectors ((self inspect-dialog))
+  (mapc 'om-close-window (om-get-all-windows 'inspect-dialog)))             
+
+#+cocoa
+(defmethod internal-window-class-menubar ((self inspect-dialog)) 
+  (append (list (make-instance 'capi::menu :title "Window"
+                               :items 
+                               (append (list (make-instance 'capi::menu-item :title "Close all inspector windows"
+                                                            :callback-type :interface
+                                                            :callback 'close-all-inspectors
+                                                            :accelerator #\w)))))))
+
 (defun om-inspect (object &optional position)
   (let* ((pos (or position (om-make-point 200 200)))
          (win (om-make-window 'inspect-dialog 
@@ -93,7 +106,7 @@
                               :window-title (format nil "Inspecting ~A" object)
                               :resizable t
                               :menu-items (list (om-make-menu
-                                                 "File"
+                                                 "Window"
                                                  (list (om-new-leafmenu
                                                         "Close all inspector windows"
                                                         #'(lambda () (mapc 'om-close-window (om-get-all-windows 'inspect-dialog)))
@@ -150,6 +163,9 @@
     (set-inspector-panel (list2 win) (selected win))
     (om-add-subviews win (list1 win) (list2 win))
     (setf (list1 win) (list1 win) (list2 win) (list2 win))
+    #+cocoa(setf (capi::interface-menu-bar-items win)
+                 (internal-window-class-menubar win))
+
     (om-select-window win)))
 
 ; (om-inspect (make-instance 'om::chord-seq))
