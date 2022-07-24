@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -37,7 +37,7 @@
 ; INSPECTOR
 ;=======================
 
-(defclass inspect-dialog (om-dialog)
+(defclass inspect-dialog (om-window)
   ((list1 :initarg :list1 :initform nil :accessor list1)
    (list2 :initarg :list2 :initform nil :accessor list2)
    (selected :initarg :selected :initform nil :accessor selected)))
@@ -74,61 +74,82 @@
                                        (format nil ":   ~A"  (cadr elt)))
                         (format nil "~A"  elt)))))
 
+(defmethod om-resize-callback ((self inspect-dialog) x y w h)
+  (call-next-method)
+  (let ((diff (abs (- w 500))))
+    (when (list1 self)
+      (om-set-view-size (list1 self) (om-make-point (+ (round (/ diff 2)) 230) (- h 40))))
+    (when (list2 self)
+      (om-set-view-size (list2 self) (om-make-point (+ (round (/ diff 2)) 230) (- h 40)))
+      (om-set-view-position (list2 self) (om-make-point (abs (- (- w 250) (round (/ diff 2))))  10))
+      )))
 
 
 (defun om-inspect (object &optional position)
   (let* ((pos (or position (om-make-point 200 200)))
-         (win (om-make-window 'inspect-dialog :size (om-make-point 500 300)
-                             :position pos
-                             :window-title (format nil "Inspecting ~A" object))))
+         (win (om-make-window 'inspect-dialog 
+                              :size (om-make-point 450 300)
+                              :position pos
+                              :window-title (format nil "Inspecting ~A" object)
+                              :resizable t
+                              :menu-items (list (om-make-menu
+                                                 "File"
+                                                 (list (om-new-leafmenu
+                                                        "Close all inspector windows"
+                                                        #'(lambda () (mapc 'om-close-window (om-get-all-windows 'inspect-dialog)))
+                                                        "w"
+                                                        ))))
+                              )))
     (setf (list1 win) (om-make-dialog-item 'om-single-item-list
-                         (om-make-point 10 10)
-                         (om-make-point 200 260)
-                         ""
-                         :focus nil
-                         :scrollbars :v
-                         :callback-type '(:collection)
-                         :test-function 'string-equal
-                         :range nil
-                         :action-callback #'(lambda (list)
-                                              (let ((sel (cadr (nth (capi::choice-selection list) 
-                                                                    (decompose-object object)))))
-                                                (when (consp (car (decompose-object sel)))
-                                                  (om-inspect sel (om-add-points (om-view-position win) (om-make-point 20 20))))
-                                                ))
-                         :selection-callback #'(lambda (list)
-                                                 (setf (selected win)
-                                                       (cadr (nth (capi::choice-selection list) 
-                                                                  (decompose-object object))))
-                                                 (set-inspector-panel (list2 win) (selected win)))
-                         ))
+                                           (om-make-point 10 10)
+                                           (om-make-point 200 260)
+                                           ""
+                                           :focus nil
+                                           :resizable t
+                                           :scrollbars :v
+                                           :callback-type '(:collection)
+                                           :test-function 'string-equal
+                                           :range nil
+                                           :action-callback #'(lambda (list)
+                                                                (let ((sel (cadr (nth (capi::choice-selection list) 
+                                                                                      (decompose-object object)))))
+                                                                  (when (consp (car (decompose-object sel)))
+                                                                    (om-inspect sel (om-add-points (om-view-position win) (om-make-point 20 20))))
+                                                                  ))
+                                           :selection-callback #'(lambda (list)
+                                                                   (setf (selected win)
+                                                                         (cadr (nth (capi::choice-selection list) 
+                                                                                    (decompose-object object))))
+                                                                   (set-inspector-panel (list2 win) (selected win)))
+                                           ))
 
     (setf (list2 win) (om-make-dialog-item 'om-single-item-list
-                         (om-make-point 230 10)
-                         (om-make-point 200 260)
-                         ""
-                         :focus nil
-                         :scrollbars :v
-                         :callback-type '(:collection)
-                         :test-function 'string-equal
-                         :range nil
-                         :action-callback #'(lambda (list)
-                                              (when (consp (nth (capi::choice-selection list) 
-                                                                (decompose-object (selected win))))
-                                                (let ((new (cadr (nth (capi::choice-selection list) 
-                                                                      (decompose-object (selected win))))))
-                                                  (when (consp (car (decompose-object new)))
-                                                    (om-inspect new (om-add-points (om-view-position win) (om-make-point 20 20)))))
-                                                ))
+                                           (om-make-point 230 10)
+                                           (om-make-point 200 260)
+                                           ""
+                                           :focus nil
+                                           :resizable t
+                                           :scrollbars :v
+                                           :callback-type '(:collection)
+                                           :test-function 'string-equal
+                                           :range nil
+                                           :action-callback #'(lambda (list)
+                                                                (when (consp (nth (capi::choice-selection list) 
+                                                                                  (decompose-object (selected win))))
+                                                                  (let ((new (cadr (nth (capi::choice-selection list) 
+                                                                                        (decompose-object (selected win))))))
+                                                                    (when (consp (car (decompose-object new)))
+                                                                      (om-inspect new (om-add-points (om-view-position win) (om-make-point 20 20)))))
+                                                                  ))
                          
-                         ))
+                                           ))
     
     (set-inspector-panel (list1 win) object)
     (om-set-selected-item-index (list1 win) 0)
     (setf (selected win) (cadr (car (decompose-object object))))
     (set-inspector-panel (list2 win) (selected win))
-    
     (om-add-subviews win (list1 win) (list2 win))
+    (setf (list1 win) (list1 win) (list2 win) (list2 win))
     (om-select-window win)))
 
 ; (om-inspect (make-instance 'om::chord-seq))
