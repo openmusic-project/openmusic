@@ -60,9 +60,13 @@
 (defmethod om-window-class-menubar ((self info-window))
   (list (om-make-menu "File"
                       (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")))
-        (om-make-menu "Edit" (list (om-new-leafmenu "Cut" #'(lambda () (cut self)) "x")
-                                   (om-new-leafmenu "Copy" #'(lambda () (copy self)) "c") 
-                                   (om-new-leafmenu "Paste" #'(lambda () (paste self)) "v")))
+        (om-make-menu "Edit" (list 
+                              (list (om-new-leafmenu "Cut" #'(lambda () (cut self)) "x")
+                                    (om-new-leafmenu "Copy" #'(lambda () (copy self)) "c") 
+                                    (om-new-leafmenu "Paste" #'(lambda () (paste self)) "v"))
+                              (list (om-new-leafmenu "Set" #'(lambda () (update-close (sujet self) self)) "s"))
+                                   
+                                   ))
         (make-om-menu 'windows :editor self)))
 
 (defmethod om-window-close-event :after ((self info-window))
