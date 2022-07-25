@@ -107,6 +107,8 @@
                               :position pos
                               :window-title (format nil "Inspecting ~A" object)
                               :resizable t
+                              :external-min-width 500
+                              :external-min-height 300 
                               :menu-items (list (om-make-menu
                                                  "Window"
                                                  (list (om-new-leafmenu
@@ -117,7 +119,7 @@
                               )))
     (setf (list1 win) (om-make-dialog-item 'om-single-item-list
                                            (om-make-point 10 10)
-                                           (om-make-point 200 260)
+                                           (om-make-point 230 260)
                                            ""
                                            :focus nil
                                            :resizable t
@@ -139,8 +141,8 @@
                                            ))
 
     (setf (list2 win) (om-make-dialog-item 'om-single-item-list
-                                           (om-make-point 230 10)
-                                           (om-make-point 200 260)
+                                           (om-make-point 250 10)
+                                           (om-make-point 230 260)
                                            ""
                                            :focus nil
                                            :resizable t
