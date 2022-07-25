@@ -138,7 +138,7 @@
     (funcall (di-action self) self)))
 
 (defmethod om-set-dialog-item-action-function ((self om-standard-dialog-item) action)
-   (setf (di-action self) action))
+  (setf (di-action self) action))
 
 (defmethod om-dialog-item-action-function ((self om-standard-dialog-item))
    (di-action self))
@@ -159,7 +159,7 @@
   (capi::item-text self))
 
 (defmethod om-set-dialog-item-text ((self om-standard-dialog-item) text)
-  (setf (capi::item-text self) text))
+  (apply-in-pane-process self #'(lambda ()  (setf (capi::item-text self) text))))
 
 (defmethod om-view-position ((self om-standard-dialog-item)) 
    (if  (interface-visible-p self) 
@@ -359,6 +359,7 @@
 ;  (setf (text self) text)
 ;  (update-text self))
 
+#|
 (defmethod om-set-dialog-item-text ((self om-static-text) text)
   (setf (text self) text)
  ; #-(and cocoa lispworks8) (update-text self)
@@ -366,8 +367,17 @@
   (apply-in-pane-process self 
                          (lambda (pane) (progn
                                           (update-text pane)
-                                          (gp:invalidate-rectangle pane))) self)
-  )
+                                          (gp:invalidate-rectangle pane))) self))
+|#
+
+(defmethod om-set-dialog-item-text ((self om-static-text) text)
+  (apply-in-pane-process self 
+                         (lambda (pane) (progn
+                                          (setf (text self) text)
+                                          (update-text pane)
+                                          #-cocoa(gp:invalidate-rectangle pane)
+                                          )) self))
+
 
 ;; with column layout...
 (defmethod update-contents ((self om-static-text))
