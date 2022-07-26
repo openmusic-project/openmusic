@@ -375,7 +375,7 @@
                          (lambda (pane) (progn
                                           (setf (text self) text)
                                           (update-text pane)
-                                          #-cocoa(gp:invalidate-rectangle pane)
+                                          (gp:invalidate-rectangle pane)
                                           )) self))
 
 
