@@ -103,7 +103,7 @@
         (setf *all-files* (loop for i in (all-ws-files *current-workspace*)
                                 collect (mypathname i))) ;;;loads all elements/files in variable (for send/receive probe)
 
-        (set-presentation self 0);view mode Icons by default
+       ; (set-presentation self 0);view mode Icons by default
         
         (setf *om-white-color* *gen-bg-color*)
         (AddPackage2Pack *om-globalsfolder* *om-package-tree*)
