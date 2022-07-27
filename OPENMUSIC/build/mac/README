@@ -41,6 +41,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- om-inspect improved: resizable and close all inspect windows
+- cut/copy/paste in temporal box info
 - box resize shortcut (ctrl/cmd+shift+arrows)
 - slotboxes are callable just as any ombox
 - scorepatch :
@@ -51,6 +53,9 @@ IMPROVEMENTS
 
 FIXES
 
+- Fixed list presentation of workspace at startup
+- Drag&drop score instances in maquette now works
+- micro-channel approx fix (16th tones)
 - MAQUETTE loop play mode fixed
 - omaudiolib fix for windows
 - Dark mode support (aqua display) for mac

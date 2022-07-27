@@ -16,6 +16,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Fixed list presentation of workspace at startup
 - Drag&drop score instances in maquette now works
 - micro-channel approx fix (16th tones)
 - MAQUETTE loop play mode fixed
