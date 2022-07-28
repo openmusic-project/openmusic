@@ -80,7 +80,22 @@
   ((portlines :accessor portlines :initform nil :initarg :portlines)
    (direction :accessor direction :initform nil :initarg :direction)))
 
-
+(defmethod oa::om-resize-callback ((self portmidi-ports-dialog) x y w h)
+  (call-next-method)
+  (let ((buttons (reverse (oa:om-subviews self)))
+        (panel1 (car (portviews self)))
+        (panel2 (second (portviews self))))
+    (when (car buttons) 
+      (oa::om-set-view-position (car buttons) (oa::om-make-point 680 (abs (- (- h  20) 20))))
+      )
+    (when (second buttons) 
+      (oa::om-set-view-position (second buttons) (oa::om-make-point 575 (abs (- (- h  20) 20))))
+      )
+    
+    (when panel1
+      (oa::om-set-view-size panel1 (oa::om-make-point 380 (- h 90))))
+    (when panel2
+      (oa::om-set-view-size panel2 (oa::om-make-point 380 (- h 90))))))
 
 (defmethod set-portmidi-connection-view ((self portmidi-ports-view) dialog)
   (let* ((devices (remove nil (loop for ref in (list-devices) 
@@ -145,7 +160,10 @@
                                    :window-title "PortMIDI Setup"
                                    :bg-color oa::*om-light-gray-color*
                                    :size (oa::om-make-point 800 270)
-                                   :resizable nil
+                                   :resizable t
+                                   :external-min-width 800
+                                   :external-max-width 800
+                                   :external-min-height 270 
                                    :settings settings
                                    ))
         
