@@ -4,7 +4,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
-- om-inspect improved: resizable and close all inspect windows
+- PortMidi setup's height is resizable (preferences) 
+- om-inspect improved: resizable and closes all inspectors windows
 - cut/copy/paste in temporal box info
 - box resize shortcut (ctrl/cmd+shift+arrows)
 - slotboxes are callable just as any ombox
