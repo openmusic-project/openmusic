@@ -59,7 +59,8 @@
 
 (defmethod om-window-class-menubar ((self info-window))
   (list (om-make-menu "File"
-                      (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")))
+                      (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")
+                            (om-new-leafmenu "Close All" #'(lambda () (close-all-info self)) "z")))
         (om-make-menu "Edit" (list 
                               (list (om-new-leafmenu "Cut" #'(lambda () (cut self)) "x")
                                     (om-new-leafmenu "Copy" #'(lambda () (copy self)) "c") 
@@ -72,6 +73,9 @@
 (defmethod om-window-close-event :after ((self info-window))
   (update-close (sujet self) self)
   (setf (infowin (sujet self)) nil))
+
+(defmethod close-all-info ((self info-window))
+  (mapc 'om-close-window (om-get-all-windows 'info-window)))
 
 (defmethod cut ((self info-window)) 
   (if (cp-item self) (om-cut-command (cp-item self)) (om-beep)))

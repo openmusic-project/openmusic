@@ -653,6 +653,7 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
     (t (om-beep-msg "Incorrect extend value"))))
 
 (defmethod (setf posy) (posy (self TemporalBox))
+  (let ((off (offset self)))
    (cond
     ((integerp posy)
      (if (car (frames self))
@@ -661,7 +662,9 @@ A TemporalBox is supposed to yield a musical result to integrate in a temporal c
               (new-pos (point2pixel container  (om-make-big-point (slot-value self 'offset) posy) sys-etat)))
          (OMGMoveObject (car (frames self)) new-pos)))
      (setf (slot-value self 'posy) posy))
-    (t (om-beep-msg "Incorrect posy value"))))
+    (t (om-beep-msg "Incorrect posy value")))
+   (setf (offset self) off)
+   ))
 
 (defmethod (setf sizey) (sizey (self TemporalBox))
    (cond
