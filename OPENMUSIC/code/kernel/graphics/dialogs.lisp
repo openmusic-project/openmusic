@@ -314,7 +314,7 @@ External Libraries:
                                                      :bg-color *om-window-def-color*)))
   (om-add-subviews (pane newwindow)
                    (setf (label newwindow)
-                         (om-make-dialog-item 'om-text-edit-view ;'om-static-text 
+                         (om-make-dialog-item 'om-static-text ;'om-text-edit-view 
                                               (om-make-point 10 30) (om-make-point 180 70)
                                               "..."
                                               :font *om-default-font2*)))

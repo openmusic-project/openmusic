@@ -404,7 +404,7 @@
         (setf (wrapped-text self) (text-wrap-pix text font (vw self)))
       (setf (wrapped-text self) (text-wrap-pix text font (vw self))))
     (capi::redraw-pinboard-object self)
-   ; #+(and cocoa lispworks8) (capi::redisplay-element self)
+    #+(and cocoa lispworks8) (capi::redisplay-element self);a voir
     ))
 
 (defmethod om-set-view-size ((self om-static-text) size-point)
