@@ -462,7 +462,7 @@
 (defmethod default-obj-box-size      ((self chord))        (om-make-point 60 90))
 (defmethod default-obj-box-size      ((self voice))        (om-make-point 130 70))
 (defmethod default-obj-box-size      ((self chord-seq))    (om-make-point 130 70))
-(defmethod default-obj-box-size      ((self multi-seq))    (om-make-point 130 90))
-(defmethod default-obj-box-size      ((self poly))         (om-make-point 130 90))
+(defmethod default-obj-box-size      ((self multi-seq))    (om-make-point 100 70))
+(defmethod default-obj-box-size      ((self poly))         (om-make-point 100 70))
 
 
