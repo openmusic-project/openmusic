@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -288,7 +288,7 @@
                   (draw-carre self t))
                  (t
                   (om-with-fg-color self (colorframe (object self))
-                    (draw-frame self (object self) 0 0  durinx (h self)))
+                    (draw-frame self (object self) 0 0  (w self) (h self)))
                   (if (active-mode self)
                       (draw-carre self t)
                     (draw-frame-shadows self))))
