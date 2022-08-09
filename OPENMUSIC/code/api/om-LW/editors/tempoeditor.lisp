@@ -352,7 +352,7 @@ t)
   (with-slots (ep) interface
     (let ((buffer (capi:editor-pane-buffer tempo-editor-pane)))
       (capi:call-editor tempo-editor-pane (list 'editor::copy-to-cut-buffer-command buffer))
-      (capi:call-editor tree-editor-pane (list 'editor::kill-region-command buffer))
+      (capi:call-editor tempo-editor-pane (list 'editor::kill-region-command buffer))
     )))
 
 (defun tempo-select-all (interface)
