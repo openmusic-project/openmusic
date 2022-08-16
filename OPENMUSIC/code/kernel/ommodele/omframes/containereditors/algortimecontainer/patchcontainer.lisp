@@ -146,7 +146,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        #+macosx("shift+cmd+lrud" "resize box")
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
-                       (("g") "ouput lisp expression in listener")
+                       (("g") "output lisp expression in listener")
                        (("t") "show Tutorial patch")
                      
                        #+om-reactive(("r") "reactive box on/off")
