@@ -30,7 +30,6 @@ FIXES
 
 NEW FEATURES
 
-
 - OM image built with LispWorks 8.0
 - Send And Receive in/out
 - gkant, experimental rhythm quantifier based on omquantify managing grace-notes.
