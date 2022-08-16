@@ -44,28 +44,40 @@
 
 
 (defun decompose-object (obj)
-  (when (not (equal (type-of obj) '(unsigned-byte 16)))
-    (when (not (equal (type-of obj) '(unsigned-byte 8))) ;necessary, lw8 type-of is more specific
-      (cond ((consp obj) 
-             (if (listp (cdr obj))
-                 (loop for item in obj
-                       for i = 0 then (+ i 1)
-                       collect (list i item))
-               (list (list "car" (car obj)) (list "cdr" (cdr obj)))))
-            ((arrayp obj)
+  (cond 
+   ((consp obj) 
+    (if (listp (cdr obj))
+        (loop for item in obj
+              for i = 0 then (+ i 1)
+              collect (list i item))
+      (list (list "car" (car obj)) (list "cdr" (cdr obj)))))
+   ((or
+     (arrayp obj)
+     (equal (type-of obj) '(unsigned-byte 32))
+     (equal (type-of obj) '(unsigned-byte 16))
+     (equal (type-of obj) '(unsigned-byte 8))      
+     (equal (type-of obj) '(unsigned-byte 4))
+     (equal (type-of obj) '(unsigned-byte 2)))
+    (list obj))
+   
+   #|
+   ((arrayp obj) 
              (loop for i = 0 then (+ i 1) while (< i (length obj))
                    collect (list i (aref obj i))))
-            ((structurep obj)
-             (loop for sl in (structure::structure-class-slot-names (find-class (type-of obj) nil))
-                   collect (list sl (slot-value obj sl))))
-            ((and (find-class (type-of obj) nil) (hcl::class-slots (find-class (type-of obj))))
-             (loop for slot in (hcl::class-slots (find-class (type-of obj))) 
-                   collect (list (hcl::slot-definition-name slot) 
-                                 (if (hcl::slot-boundp obj (hcl::slot-definition-name slot))
-                                     (slot-value obj (hcl::slot-definition-name slot))
-                                   :unbound))))
-            ((atom obj) (list obj))
-            (t nil)))))
+   |#
+         
+   ((structurep obj) 
+    (loop for sl in (structure::structure-class-slot-names (find-class (type-of obj) nil))
+          collect (list sl (slot-value obj sl))))
+            
+   ((and (find-class (type-of obj) nil) (hcl::class-slots (find-class (type-of obj)))) 
+    (loop for slot in (hcl::class-slots (find-class (type-of obj) nil)) 
+          collect (list (hcl::slot-definition-name slot) 
+                        (if (hcl::slot-boundp obj (hcl::slot-definition-name slot))
+                            (slot-value obj (hcl::slot-definition-name slot))
+                          :unbound))))
+   ((atom obj) (list obj))
+   (t nil)))
 
 (defun set-inspector-panel (item-list object)
   (setf (capi::collection-items item-list)
