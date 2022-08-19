@@ -60,7 +60,7 @@
 (defvar *maquette-package* nil "Sub-package MAQUETTE of KERNEL package.")
 (setf *maquette-package* (omNG-protect-object (omNG-make-new-package "Maquette")))
 (AddClass2Pack 'TemporalBox *maquette-package*)
-(AddGenFun2Pack '(TemporalBoxes addBox2Maquette removeTemporalBox removeAllTemporalBoxes get-maquette set-eval-func) *maquette-package*)
+(AddGenFun2Pack '(TemporalBoxes temporalboxes-offsets addBox2Maquette removeTemporalBox removeAllTemporalBoxes get-maquette set-eval-func) *maquette-package*)
 
 (defvar *player-package* nil "Player tools and functions.")
 (setf *player-package* (omNG-protect-object (omNG-make-new-package "Player")))

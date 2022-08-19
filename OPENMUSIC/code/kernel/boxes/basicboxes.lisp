@@ -705,6 +705,29 @@ Returns the copy of the object."
 
 ;--------------------------FOR maquettes
 
+(defun get-maquettes-in-patch ()
+  (let* ((cur *cur-eval-panel*)
+         (cont (om-view-container cur))
+         (obj (object cont))
+         (name (name obj))
+         (path (mypathname obj))
+         (boxes (boxes obj))
+         maqboxes)
+    (loop for i in boxes
+          do (when (or (equal (type-of i) 'omboxmaquette)
+                       (equal (type-of i) 'omboxabsmaq))
+               (push i maqboxes)))
+    (loop for i in maqboxes 
+          collect (list 
+                   (car (value i))
+                   (reference i)))))
+
+
+(defmethod* get-itself ((self maquette-obj))
+  (let* ((maqs (get-maquettes-in-patch)))
+    (second (find self maqs :test 'equal :key 'car ))))
+
+
 (defmethod* TemporalBoxes ((self OMMaquette))
    :icon 326
    :indoc '("a maquette")
@@ -712,6 +735,26 @@ Returns the copy of the object."
    (loop for item in (boxes self)
          when (boxtempobj-p item)
          collect item))
+
+(defmethod* TemporalBoxes ((self maquette-obj))
+   :icon 326
+   :indoc '("a maquette")
+   "Returns de temporal boxes contained in the maquette <self>." 
+   (let ((maq (get-itself self)))
+   (temporalboxes maq)))
+
+
+(defmethod* temporalboxes-offsets ((self OMMaquette))
+   :icon 333
+   :indoc '("a maquette")
+   :doc "Returns all offsets of temporalboxes in maquette." 
+    (sort. (mapcar 'offset (temporalboxes self)) '<))
+
+
+(defmethod* temporalboxes-offsets ((self maquette-obj))
+  (let ((maq (get-itself self)))
+    (temporalboxes-offsets maq)))
+
 
 (defmethod* addBox2Maquette ((self temporalbox) (maquette ommaquette))
    :icon 328
@@ -731,6 +774,15 @@ In order to remove the previous TemporalBoxes, consider using the functions Remo
 (defmethod* addBox2Maquette ((self list) (maquette ommaquette))
    (loop for item in self 
          collect (addBox2Maquette item maquette)))
+
+(defmethod* addBox2Maquette ((self temporalbox) (maquette maquette-obj))
+  (let ((maq (get-itself maquette)))
+    (addBox2Maquette self maq)))
+
+(defmethod* addBox2Maquette ((self list) (maquette maquette-obj))
+  (let ((maq (get-itself maquette)))
+    (addBox2Maquette self maq)))
+
 
 (defmethod* removeTemporalBox ((self temporalbox))
    :icon 327
@@ -760,6 +812,10 @@ In order to remove the previous TemporalBoxes, consider using the functions Remo
    :indoc '("a maquette")
    :doc "Removes all TemporalBoxes in <self>."
    (removeTemporalBox (TemporalBoxes self)))
+
+(defmethod* removeAllTemporalBoxes ((self maquette-obj))
+     (let ((maq (get-itself self)))
+       (removeAllTemporalBoxes maq)))
 
 ;;;;=====================================
 (defmethod! set-eval-func ((self OMMaquette) (func OMMaquette))

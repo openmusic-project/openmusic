@@ -2507,7 +2507,11 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
     (print (car (get-all-code actives)))
     ))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmethod* get-itself ((self t))
+  "emulates the itself mode of <self>"
+  )
 
 
 
