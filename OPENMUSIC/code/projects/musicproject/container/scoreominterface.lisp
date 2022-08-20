@@ -46,7 +46,7 @@
 ;--------------------
 
 #|
-;leagacy!
+;legacy!
 (defmethod* concat ((s1 sequence*) (s2 sequence*) &optional s2-offset)
   :initvals '(nil nil) 
   :indoc '("a musical sequence" "a musical sequence" "(absolute) offset, expressed in ms.")
@@ -534,4 +534,688 @@ when :
        :legato ,(legato self)
        :ties ',(ties self))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;       TOOLS     ;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod update-obj ((self t)) t)
+
+(defmethod update-obj ((self chord))
+  "when <self>'s panel is openned, updates graphic contents"
+(let ((box (associated-box self))) 
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+  
+(defmethod update-obj ((self chord-seq))
+(let ((box (associated-box self)))
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+
+
+(defmethod update-obj ((self multi-seq))
+(let ((box (associated-box self)))
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+
+(defmethod update-obj ((self voice))
+  (let ((box (associated-box self))) 
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+
+(defmethod update-obj ((self poly))
+  (let ((box (associated-box self))) 
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;  SET-OBJ-TEMPO      ;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun qtempo->tempo (qtempo)
+  (cond ((atom qtempo) 
+         (list (list 1/4 qtempo) nil))
+        ((listp (caar qtempo))
+         (let* ((frst (second (car qtempo)))
+                (newfrst (list 1/4 frst))
+                (rst (cdr qtempo))
+                (indx (mapcar 'caar rst))
+                (tempi (mapcar 'second rst))
+                (newrst (loop for i in tempi
+                              for n in indx
+                              collect (list (list n 0) (list 1/4 i nil)))))
+           (cons newfrst (list newrst))))
+        (t qtempo)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! set-obj-tempo ((self voice) tempo &key (mode 'clone))
+  :initvals '(t '((1/4 60) nil) 'clone)
+  :indoc '("voice or poly" "tempo" "mode")
+  :menuins '((2 (("clone" clone) 
+                 ("destructive" destructive))))
+  :icon 147
+  :doc "Changes tempo of <self>. 
+If <mode> is clone, this will output a new voice (default).
+If <mode> is destructive, tempo of <self> will be destructively changed." 
+  (let ((tempo (qtempo->tempo tempo))) 
+    (if (equal mode 'destructive)
+        (progn 
+          (setf (tempo self) tempo)
+          (update-obj self))
+      (let ((new (clone self)))
+        (setf (tempo new) tempo)
+        new))))
+
+
+(defmethod! set-obj-tempo ((self poly) tempo  &key (mode 'clone))
+  (if (equal mode 'clone)
+      (make-instance 'poly
+                     :voices  (loop for i in (inside self)
+                                    for tp in tempo 
+                                    collect (set-obj-tempo i tp :mode 'clone)))
+    (progn
+      (loop for i in (inside self)
+            for tp in tempo
+            do (set-obj-tempo i tp :mode 'destructive))
+      (update-obj self))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;      SET-OBJ-VEL     ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! set-obj-vel ((self note) 
+                          (vel number)
+                          &key (mode 'clone) (n nil))
+  :initvals '(t 64 nil 'clone) 
+  :indoc '("self" "chan" "n")
+  :menuins '((2 (("clone" 'clone) 
+                 ("destructive" 'destructive))))
+  :icon 355
+  :doc  "Changes midi channels in a voice or poly object. If it is a poly object
+you can specify which voice will be changed by openning the optional input <n>.
+Further more, in voice method, if list inputed, it will change all notes according to the list."
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (setf (vel clone) vel)
+        clone)
+    (setf (vel self) vel)))
+
+
+(defmethod! set-obj-vel ((self chord) 
+                          (vel number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              do (set-obj-vel i vel :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in (inside self)
+            do (set-obj-vel i vel :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self chord) 
+                          (vel list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              for vl in vel
+              do (set-obj-vel i vl :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in (inside self)
+            for vl in vel
+            do (set-obj-vel i vl :mode 'destructive))
+      (update-obj self))))
+    
+(defmethod! set-obj-vel ((self chord-seq) 
+                          (vel number)
+                          &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+      (let* ((clone (clone self))
+             (objs (inside clone)))
+        (loop for ob in objs
+              do (set-obj-vel ob vel :mode 'destructive))
+        clone)
+    (progn
+      (loop for ob in (inside self)
+            do (set-obj-vel ob vel :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self chord-seq) 
+                          (vel list)
+                          &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+      (let* ((clone (clone self))
+             (objs (inside clone)))
+        (loop for i in vel
+              for ob in objs
+              do (set-obj-vel ob i :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in vel
+            for ob in (inside self)
+            do (set-obj-vel ob i :mode 'destructive))
+      (update-obj self))))
+
+
+(defmethod! set-obj-vel ((self multi-seq) (vel number) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for vx in n 
+                    do (set-obj-vel (nth vx voices) vel :mode 'destructive))
+              clone)
+          (progn
+            (loop for vx in (inside clone)
+                  do (set-obj-vel vx vel :mode 'destructive))
+            clone)))
+    (progn
+      (if n
+          (let ((voices (inside self)))
+            (loop for vx in n 
+                  do (set-obj-vel (nth vx voices) vel :mode 'destructive)))
+        (loop for vx in (inside self)
+              do (set-obj-vel vx vel :mode 'destructive)))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self multi-seq) (vel list) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for i in vel
+                    for vx in n 
+                    do (set-obj-vel (nth vx voices) i :mode 'destructive))
+              clone)
+          (progn
+            (loop for i in vel
+                  for vx in (inside clone)
+                  do (set-obj-vel vx i :mode 'destructive))
+            clone)))
+    (progn
+      (if n
+          (let ((voices (inside self)))
+            (loop for i in vel
+                  for vx in n 
+                  do (set-obj-vel (nth vx voices) i :mode 'destructive)))
+        (loop for i in vel
+              for vx in (inside self)
+              do (set-obj-vel vx i :mode 'destructive)))
+      (update-obj self))))
+  
+
+
+(defmethod! set-obj-vel ((self voice)
+                          (vel number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+        (set-obj-vel chrdseq vel :mode 'destructive)
+        (setf (chords clone) (inside chrdseq))
+        clone)
+      
+    (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+      (set-obj-vel chrdseq vel :mode 'destructive)
+      (setf (chords self) (inside chrdseq))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self voice)
+                          (vel list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+        (set-obj-vel chrdseq vel :mode 'destructive)
+        (setf (chords clone) (inside chrdseq))
+        clone)
+      
+    (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+      (set-obj-vel chrdseq vel :mode 'destructive)
+      (setf (chords self) (inside chrdseq))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self poly)
+                          (vel number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-vel multiseq vel :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-vel multiseq vel :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
+
+(defmethod! set-obj-vel ((self poly)
+                         (vel list)
+                         &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-vel multiseq vel :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-vel multiseq vel :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;      SET-OBJ-CHAN     ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! set-obj-chan ((self note) 
+                          (chan number)
+                          &key (mode 'clone) (n nil))
+  :initvals '(t 1 nil 'clone) 
+  :indoc '("self" "chan" "n")
+  :menuins '((2 (("clone" 'clone) 
+                 ("destructive" 'destructive))))
+  :icon 355
+  :doc  "Changes midi channels in a voice or poly object. If it is a poly object
+you can specify which voice will be changed by openning the optional input <n>.
+Further more, in voice method, if list inputed, it will change all notes according to the list."
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (setf (chan clone) chan)
+        clone)
+    (setf (chan self) chan)))
+
+
+(defmethod! set-obj-chan ((self chord) 
+                          (chan number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              do (set-obj-chan i chan :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in (inside self)
+            do (set-obj-chan i chan :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self chord) 
+                          (chan list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              for ch in chan
+              do (set-obj-chan i ch :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in (inside self)
+            for ch in chan
+            do (set-obj-chan i ch :mode 'destructive))
+      (update-obj self))))
+    
+(defmethod! set-obj-chan ((self chord-seq) 
+                          (chan number)
+                          &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+      (let* ((clone (clone self))
+             (objs (inside clone)))
+        (loop for ob in objs
+              do (set-obj-chan ob chan :mode 'destructive))
+        clone)
+    (progn
+      (loop for ob in (inside self)
+            do (set-obj-chan ob chan :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self chord-seq) 
+                          (chan list)
+                          &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+      (let* ((clone (clone self))
+             (objs (inside clone)))
+        (loop for i in chan
+              for ob in objs
+              do (set-obj-chan ob i :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in chan
+            for ob in (inside self)
+            do (set-obj-chan ob i :mode 'destructive))
+      (update-obj self))))
+
+
+(defmethod! set-obj-chan ((self multi-seq) (chan number) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for vx in n 
+                    do (set-obj-chan (nth vx voices) chan :mode 'destructive))
+              clone)
+          (progn
+            (loop for vx in (inside clone)
+                  do (set-obj-chan vx chan :mode 'destructive))
+            clone)))
+    (progn
+      (if n
+          (let ((voices (inside self)))
+            (loop for vx in n 
+                  do (set-obj-chan (nth vx voices) chan :mode 'destructive)))
+        (loop for vx in (inside self)
+              do (set-obj-chan vx chan :mode 'destructive)))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self multi-seq) (chan list) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for i in chan
+                    for vx in n 
+                    do (set-obj-chan (nth vx voices) i :mode 'destructive))
+              clone)
+          (progn
+            (loop for i in chan
+                  for vx in (inside clone)
+                  do (set-obj-chan vx i :mode 'destructive))
+            clone)))
+    (progn
+      (if n
+          (let ((voices (inside self)))
+            (loop for i in chan
+                  for vx in n 
+                  do (set-obj-chan (nth vx voices) i :mode 'destructive)))
+        (loop for i in chan
+              for vx in (inside self)
+              do (set-obj-chan vx i :mode 'destructive)))
+      (update-obj self))))
+  
+
+
+(defmethod! set-obj-chan ((self voice)
+                          (chan number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+        (set-obj-chan chrdseq chan :mode 'destructive)
+        (setf (chords clone) (inside chrdseq))
+        clone)
+      
+    (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+      (set-obj-chan chrdseq chan :mode 'destructive)
+      (setf (chords self) (inside chrdseq))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self voice)
+                          (chan list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+        (set-obj-chan chrdseq chan :mode 'destructive)
+        (setf (chords clone) (inside chrdseq))
+        clone)
+      
+    (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+      (set-obj-chan chrdseq chan :mode 'destructive)
+      (setf (chords self) (inside chrdseq))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self poly)
+                          (chan number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-chan multiseq chan :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-chan multiseq chan :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
+
+(defmethod! set-obj-chan ((self poly)
+                          (chan list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-chan multiseq chan :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-chan multiseq chan :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;      SET-OBJ-PORT     ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmethod! set-obj-port ((self note) 
+                        (port number)
+                        &key (mode 'clone) (n nil))
+  :initvals '(t 0 nil 'clone) 
+  :indoc '("self" "port" "n")
+  :menuins '((2 (("clone" 'clone) 
+                 ("destructive" 'destructive))))
+  :icon 355
+  :doc  "Changes midi port in a voice or poly object. If it is a poly object
+you can specify which voice will be changed by openning the optional input <n>.
+Further more, in voice method, if list inputed, it will change all notes according to the list."
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (setf (port clone) port)
+        clone)
+    (setf (port self) port)))
+
+(defmethod! set-obj-port ((self chord) 
+                          (port number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              do (set-obj-port i port :mode 'destructive))
+        clone)
+    (progn
+      (loop for i in (inside self)
+            do (set-obj-port i port :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-port ((self chord) 
+                          (port list)
+                          &key (mode 'clone) (n nil))
+    (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (loop for i in (inside clone)
+              for p in port
+              do (set-obj-port i p :mode 'destructive))
+        clone)
+      (progn
+        (loop for i in (inside self)
+              for p in port
+              do (set-obj-port i p :mode 'destructive))
+        (update-obj self))))
+    
+(defmethod! set-obj-port ((self chord-seq) 
+                        (port number)
+                        &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+       (let* ((clone (clone self))
+              (objs (inside clone)))
+         (loop for ob in objs
+               do (set-obj-port ob port :mode 'destructive))
+         clone)
+    (progn
+      (loop for ob in (inside self)
+            do (set-obj-port ob port :mode 'destructive))
+      (update-obj self))))
+
+(defmethod! set-obj-port ((self chord-seq) 
+                        (port list)
+                        &key (mode 'clone) (n nil))
+  (if (equal  mode 'clone)
+       (let* ((clone (clone self))
+              (objs (inside clone)))
+         (loop for i in port
+               for ob in objs
+               do (set-obj-port ob i :mode 'destructive))
+         clone)
+    (progn
+    (loop for i in port
+          for ob in (inside self)
+          do (set-obj-port ob i :mode 'destructive))
+    (update-obj self))))
+
+(defmethod! set-obj-port ((self multi-seq) (port number) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for vx in n 
+                    do (set-obj-port (nth vx voices) port :mode 'destructive))
+              clone)
+          (progn
+            (loop for vx in (inside clone)
+                  do (set-obj-port vx port :mode 'destructive))
+            clone)))
+    (progn
+      (if n
+          (let ((voices (inside self)))
+            (loop for vx in n 
+                  do (set-obj-port (nth vx voices) port :mode 'destructive)))
+        (loop for vx in (inside self)
+              do (set-obj-port vx port :mode 'destructive)))
+      (update-obj self))))
+
+
+(defmethod! set-obj-port ((self multi-seq) (port list) &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let ((clone (clone self)))
+        (if n
+            (let ((voices (inside clone)))
+              (loop for i in port
+                    for vx in n 
+                    do (set-obj-port (nth vx voices) i :mode 'destructive))
+              clone)
+          (progn
+            (loop for i in port
+                  for vx in (inside clone)
+                  do (set-obj-port vx i :mode 'destructive))
+            clone)))
+    (progn
+    (if n
+        (let ((voices (inside self)))
+          (loop for i in port
+                for vx in n 
+                do (set-obj-port (nth vx voices) i :mode 'destructive)))
+        (loop for i in port
+              for vx in (inside self)
+              do (set-obj-port vx i :mode 'destructive))
+        )
+    (update-obj self))))
+  
+
+
+(defmethod! set-obj-port ((self voice)
+                        (port number)
+                        &key (mode 'clone) (n nil))
+    (if (equal mode 'clone)
+        (let* ((clone (clone self))
+               (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+          (set-obj-port chrdseq port :mode 'destructive)
+          (setf (chords clone) (inside chrdseq))
+          clone)
+      
+      (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+        (set-obj-port chrdseq port :mode 'destructive)
+        (setf (chords self) (inside chrdseq))
+        (update-obj self))))
+
+(defmethod! set-obj-port ((self voice)
+                          (port list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
+        (set-obj-port chrdseq port :mode 'destructive)
+        (setf (chords clone) (inside chrdseq))
+        clone)
+      
+    (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
+      (set-obj-port chrdseq port :mode 'destructive)
+      (setf (chords self) (inside chrdseq))
+      (update-obj self))))
+
+(defmethod! set-obj-port ((self poly)
+                          (port number)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-port multiseq port :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-port multiseq port :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
+
+(defmethod! set-obj-port ((self poly)
+                          (port list)
+                          &key (mode 'clone) (n nil))
+  (if (equal mode 'clone)
+      (let* ((clone (clone self))
+             (multiseq (objfromobjs clone (make-instance 'multi-seq))))
+        (set-obj-port multiseq port :mode 'destructive)
+        (loop for i in (inside clone)
+              for chrds in (inside multiseq)
+              do (setf (chords i) (inside chrds)))
+        clone)
+    (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
+      (set-obj-port multiseq port :mode 'destructive)
+      (loop for i in (inside self)
+            for chrds in (inside multiseq)
+            do (setf (chords i) (inside chrds)))
+      (update-obj self))))
 

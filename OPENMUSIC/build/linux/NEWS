@@ -2,6 +2,10 @@
 
 NEW FEATURES
 
+- New score functions:
+	-set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
+
+
 IMPROVEMENTS
 
 - PortMidi setup's height is resizable (preferences) 
