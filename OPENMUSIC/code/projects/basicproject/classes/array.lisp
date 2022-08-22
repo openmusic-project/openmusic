@@ -461,7 +461,7 @@ The matrix \"components\" can be accessed and modified using the functions get-c
 (defmethod call-gen-code ((self arraybox) numout)
    `(rep-editor ,(gen-code-call self) ,(numout2label-num self numout)))
 
-(defmethod gen-code-call ((self arrayBox))
+(defmethod gen-code-call ((self arrayBox) &optional args)
   (matrix-gen-code self (value self)))
   
 (defmethod matrix-gen-code ((self arrayBox) (val class-array))

@@ -69,7 +69,7 @@ The different outputs correspond to each of the inputs. To get the result of the
 (defmethod call-gen-code ((self box-seq-call) numout)
    `(sequence ,.(decode self) , numout))
 
-(defmethod gen-code-call ((self box-seq-call))
+(defmethod gen-code-call ((self box-seq-call) &optional args)
    `(values ,.(decode self)))
 
 (defmethod special-value ((self  box-seq-call) &optional (args nil))
@@ -173,7 +173,7 @@ Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)"
      (setf *repeat-ev-once-list* nil)
      rep))
 
-(defmethod gen-code-call ((self box-repeat-n-call))
+(defmethod gen-code-call ((self box-repeat-n-call) &optional args)
    (call-gen-code self 0))
   
 (defmethod special-value ((self  box-repeat-n-call) &optional (args nil))
@@ -217,7 +217,7 @@ Ex. (omif (= 4 5) 'A)  ==>  NIL
         ,(gen-code (second (inputs self)) 0) 
       ,(gen-code (third (inputs self)) 0)))
 
-(defmethod gen-code-call ((self OMBoxif))
+(defmethod gen-code-call ((self OMBoxif) &optional args)
    (call-gen-code self 0))
  
 (defmethod omNG-box-value ((self OMBoxif) &optional (numout 0))
@@ -268,7 +268,7 @@ This function is equaivalent to a logical OR."
    (declare (ignore numout))
    `(or ,.(decode self)))
 
-(defmethod gen-code-call ((self OMBoxcond))
+(defmethod gen-code-call ((self OMBoxcond) &optional args)
    (call-gen-code self 0))
  
 (defmethod omNG-box-value ((self OMBoxcond) &optional (numout 0))
@@ -402,7 +402,7 @@ OMOR can be used to compose conditions as input to an OMIF"
    (declare (ignore numout))
    `(or ,.(decode self)))
 
-(defmethod gen-code-call ((self ORboxCall))
+(defmethod gen-code-call ((self ORboxCall) &optional args)
    (call-gen-code self 0))
   
 
@@ -456,7 +456,7 @@ OMAND can be used to compose conditions as input to an OMIF"
    (declare (ignore numout))
    `(and ,.(decode self)))
 
-(defmethod gen-code-call ((self ANDboxCall))
+(defmethod gen-code-call ((self ANDboxCall) &optional args)
    (call-gen-code self 0))
   
 

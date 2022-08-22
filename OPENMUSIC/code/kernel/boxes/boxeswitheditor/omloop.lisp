@@ -1032,12 +1032,12 @@ See OM User Manual and the OMLOOP refernce section for more details.
        `(,(intern (string (first (code (patch self)))) :om) ,.in-list)
        `(nth ,numout (multiple-value-list (,(intern (string (first (code (patch self)))) :om) ,.in-list))))))
 
-(defmethod gen-code-call ((self omloop-box))
+(defmethod gen-code-call ((self omloop-box) &optional args)
    (let ((in-list (mapcar #'(lambda (thein) (gen-code thein 0)) (inputs self))))
      `(,(first (code (patch self))) ,.in-list)))
 
 ;screamer
-(defmethod gen-code-call ((self omloop-box))
+(defmethod gen-code-call ((self omloop-box) &optional args)
    (let ((in-list (mapcar #'(lambda (thein) (gen-code thein 0)) (inputs self))))
      `(,(intern (string (first (code (patch self)))) :om) ,.in-list)))
 

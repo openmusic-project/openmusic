@@ -291,7 +291,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
      (gen-code-call self)
      `(nth ,numout (multiple-value-list ,(gen-code-call self)))))
 
-(defmethod gen-code-call ((self OMBoxcall))
+(defmethod gen-code-call ((self OMBoxcall) &optional args)
    `(,(reference self) ,.(decode self)))
 
 ;Sintax of keywords parameters is still different.
@@ -923,7 +923,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 ;-------------- Code Lisp generation
 
-(defmethod gen-code-call ((self OMBoxEditCall))
+(defmethod gen-code-call ((self OMBoxEditCall) &optional args)
    (if (connected? (first (inputs self)))
        `(objFromObjs ,(gen-code (first (connected? (first (inputs self)))) (second (connected? (first (inputs self)))))
                      ;;;; ,(gen-code (first (inputs self)) (second (inputs self))) ;; ERREUR ??
@@ -1100,7 +1100,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 ;---------Code Lisp generation
 
-(defmethod gen-code-call ((self OMSlotsBox))
+(defmethod gen-code-call ((self OMSlotsBox) &optional args)
    (if (not (connected? (first (inputs self))))
      (progn
        (om-beep-msg "Compilation Error : the first inlet in a slot box should always be connected")

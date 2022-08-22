@@ -61,7 +61,7 @@
      )
      ))
 
-(defmethod gen-code-call ((self OMDIebox))
+(defmethod gen-code-call ((self OMDIebox) &optional args)
    `(apply 'set-dialog-item-params (list ,(value self) ,self (list ,.(decode self)))))
 
 

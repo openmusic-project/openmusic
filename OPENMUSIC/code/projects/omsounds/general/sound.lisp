@@ -828,7 +828,7 @@ Press 'space' to play/stop the sound file.
 
 (defclass OMaiffFilebox (OMBoxEditCall) ())
 
-(defmethod gen-code-call ((self OMaiffFilebox))
+(defmethod gen-code-call ((self OMaiffFilebox) &optional args)
    (if (connected? (first (inputs self)))
        `(let ((snd (objFromObjs ,(gen-code (first (inputs self)) (second (inputs self))) ,(value self))))
                 (when ,(cadr (decode self)) (setf (tracknum snd) ,(cadr (decode self))))

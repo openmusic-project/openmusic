@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -384,7 +384,7 @@ See OM User Manual for more details."
    ;'stream
    )
 
-(defmethod gen-code-call ((self Streambox))
+(defmethod gen-code-call ((self Streambox) &optional args)
    (call-gen-code self 0))
   
 (defmethod special-value ((self  Streambox) &optional (args nil))
