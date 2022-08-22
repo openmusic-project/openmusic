@@ -1,11 +1,11 @@
 # Build instructions 
 
 Creating an executable in Common Lisp means loading all the source code in the Lisp environment and build an "image" of it, i.e. another Lisp environment extended with the features defined in the code.
-It is also possible to compile and load OM source code in the Lisp environment and use it directly without saving a new image. Using OM sources therefore requires owning the adequate Lisp compiler (currently, LispWorks 7.1.2).
+It is also possible to compile and load OM source code in the Lisp environment and use it directly without saving a new image. Using OM sources therefore requires owning the adequate Lisp compiler (currently, LispWorks 8.0.1).
 
 The current OM sources can be compiled and run OM on **macOS**, **Windows** and **Linux** (see compilation instructions below) using LispWorks "Hobbyist" or "Professional" licenses.
 
-## Loading OM in LispWorks 7.1
+## Loading OM in LispWorks 8.0.1
 
 - Clone OM sources from this repository
 - Launch an up-to-date LispWorks (7.1.2)
@@ -44,7 +44,9 @@ Lisp-dependencies are all included in the OM source repository (**OPENMUSIC/code
 
 OM links dynamically with a number of external C libraries. The foreign function interface relies on LispWorks' FLI package, and on **[CFFI](https://common-lisp.net/project/cffi/)** (included in **OPENMUSIC/code/api/foreign-interface/**).
 
-Binary versions of the libraries are included in this repository in **OPENMUSIC/resources/lib/[mac/win/linux]/**, but they can also be recompiled from their respective source packages if needed, as indicated below.
+Binary versions of the libraries are included in this repository in **OPENMUSIC/resources/lib/[m1/mac/win/linux]/**, but they can also be recompiled from their respective source packages if needed, as indicated below. 
+
+**Note for Mac M1 processors:** Before loading OM's sources rename the **OPENMUSIC/resources/lib/m1** as **OPENMUSIC/resources/lib/mac** after deleting the original **mac** folder. For Intel processors, please ignore this procedure. 
 
 **Note for Windows:** In order to run OM sources from LispWorks on Windows, all the external C libraries (.dll) should be copied in the LispWorks repository (**C:/Program Files/LispWorks/**)
 
