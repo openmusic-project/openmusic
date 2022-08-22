@@ -8,7 +8,7 @@ The current OM sources can be compiled and run OM on **macOS**, **Windows** and 
 ## Loading OM in LispWorks 8.0.1
 
 - Clone OM sources from this repository
-- Launch an up-to-date LispWorks (7.1.2)
+- Launch an up-to-date LispWorks (8.0.1)
 - In LispWorks, load the file **OPENMUSIC/build/build-om.lisp**    
   Open ( _File/Open_) then load it (_File/Load_) or type in the Lisp listener: `(load [...]/OPENMUSIC/build/build-om.lisp)`     
   (Check on possible compilation errors on the displayed LW output)
