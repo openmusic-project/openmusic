@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -317,7 +317,8 @@ major third down 6m-1, returns -400 in midicents ."
 
 
 (om::defmethod! mc->n ((midics? list) &optional (middle-C 3))
-  :initvals '((6000)) 
+  :initvals '((6000) 3) 
+  :menuins '((1 (("middle-C = 3" 3) ("middle-C = 4" 4))))
   :indoc '("pitch or pitch list (midicents)")
   :icon 141
   :doc  "
@@ -336,7 +337,7 @@ Gradations smaller than a quartertone are expressed as the closest  quartertone 
   (mc->n1 midic (car *ascii-note-scales*) middle-C))
 
 (om::defmethod! n->mc ((strs list) &optional (middle-C 3))
-  :initvals '(("C3") ) 
+  :initvals '(("C3") 3) 
   :indoc '("note name or list of note names" "octave of middle C")
   :menuins '((1 (("middle-C = 3" 3) ("middle-C = 4" 4))))
   :icon 141
