@@ -31,6 +31,13 @@
 
 (in-package :om-edit)
 
+
+(defparameter info-x 375)
+(defparameter info-y 325)
+(defparameter info-width 415)
+(defparameter info-height 315)
+
+
 (defclass om-obj-info (capi::interface)
   ((ep :initform nil :accessor ep)
    (panes :initform nil :accessor panes)
@@ -41,7 +48,10 @@
    )
   (:default-initargs
    :title "Self info"
-   :best-width 300
+   :best-x info-x
+   :best-y info-y
+   :best-width info-width
+   :best-height info-height
    :color-mode :aqua
    :layout (make-instance 'capi:grid-layout
                           :right-extend :bottom-extend
@@ -61,6 +71,8 @@
 
 ;chord-seq
 (defun open-chordseq-info (objs)
+ (setf info-x (+ info-x 15)
+       info-y (+ info-y 15))
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
@@ -198,6 +210,8 @@
 
 ;chord
 (defun open-chord-info (objs)
+  (setf info-x (+ info-x 15)
+        info-y (+ info-y 15))
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
@@ -324,6 +338,8 @@
 
 ;note
 (defun open-note-info (objs)
+(setf info-x (+ info-x 15)
+        info-y (+ info-y 15))       
   (setf win (make-instance *obj-info*
                            :name (string (gensym))
                            :parent (capi:convert-to-screen)
@@ -437,6 +453,8 @@
       (setf  (nth 8 *info-pack*) (capi::text-input-pane-text pane8))
    ; (print (list (selection interface) (cdddr *info-pack*)))
      ; (print (list obj tree))
+      (multiple-value-setq (info-x info-y info-width info-height)
+        (capi:top-level-interface-geometry interface))
       (apply (intfunc interface) (list (ompanel interface) (sel interface) (cdddr *info-pack*)))
       ;(om::set-obj-info (ompanel interface) (sel interface) (cdddr *info-pack*))
       ))
@@ -467,6 +485,8 @@
 
 (defun close-button-info (type data interface)
   (with-slots (ep) interface 
+    (multiple-value-setq (info-x info-y info-width info-height)
+        (capi:top-level-interface-geometry interface)) 
     (capi:quit-interface ep)  
     ))
 
