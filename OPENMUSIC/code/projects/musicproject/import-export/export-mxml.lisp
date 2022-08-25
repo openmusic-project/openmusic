@@ -173,6 +173,15 @@
            (setf denom (* denom (second (getratiogroup buf))))))
     (list index num denom (butlast (reverse nums)) (butlast (reverse denoms)))))
 
+(defun getgroupmod (self)
+  (let* ((buf (om::parent self))
+         (rep '()))
+    (loop while (om::group-p buf)
+          do (let ((ratiogroup (getratiogroup buf)))
+               (push (list (car ratiogroup) (cadr ratiogroup) (getnotetype buf))
+                     rep)
+               (setf buf (om::parent buf))))
+    rep))
 
 (defun getallgroups (self)
 "self is a chord/rest/..."
@@ -270,7 +279,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 |#
 
 (defun time-mod-val (obj)
-  (let* ((info (getallgroups obj))
+  (let* ((info (getgroupmod obj))
         (ratios (reverse (mapcar 'butlast info)))
         (clone (om::clone ratios)))
     (om::while (and clone (equal (first (car clone)) (second (car clone))))
@@ -395,7 +404,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                   )
                 )
 
-               ((om::last-of-group? self);ici
+               ((om::last-of-group? self);ici 
                 (remove nil 
                         (append 
                          (let ((obj self)

@@ -254,18 +254,37 @@
   (let ((parent (parent self)))
     (if (first-of-group? self) parent)))
 
+
+
+(defmethod first-last-of-group-p ((self t))
+  nil)
+
+(defmethod first-last-of-group-p ((self group))
+  (let ((parent (parent self)))
+    (if (or (last-of-group? self) (first-of-group? self)) parent)))
+
+(defmethod first-last-of-group-p ((self chord))
+  (let ((parent (parent self)))
+    (if (or (last-of-group? self) (first-of-group? self)) parent)))
+
+(defmethod first-last-of-group-p ((self rest))
+  (let ((parent (parent self)))
+    (if (or (last-of-group? self) (first-of-group? self)) parent)))
+
+
+
 (defmethod get-all-groups ((self chord))
   "returns all groups of a chord which is first-of his-group"
-  (let ((res (list (first-of-group-p self)))) 
+  (let ((res (list (first-last-of-group-p self)))) 
     (loop while (car res)
-           do (push (first-of-group-p (car (inside (parent (car res))))) res))
+           do (push (first-last-of-group-p (car (inside (parent (car res))))) res))
     (remove nil (reverse res))))
 
 (defmethod get-all-groups ((self rest))
   "returns all groups of a chord which is first-of his-group"
-  (let ((res (list (first-of-group-p self))))
+  (let ((res (list (first-last-of-group-p self))))
     (loop while (car res)
-          do (push (first-of-group-p (car (inside (parent (car res))))) res))
+          do (push (first-last-of-group-p (car (inside (parent (car res))))) res))
     (remove nil (reverse res))))
 
 (defmethod real-group-p ((self t)) nil)
@@ -279,13 +298,16 @@
 (defmethod get-real-groups ((self chord))
   (let ((groups (get-all-groups self)))
     (remove nil (loop for i in groups
-            collect (if (and (equal self (car (flat (get-all-chords i))))
+            collect (if (and (or (equal self (car (flat (get-all-chords i))))
+                                 (equal self (last-elem (flat (get-all-chords i)))))
                              (real-group-p i))
                              i)))))
 
 (defmethod get-real-groups ((self rest))
   (let ((groups (get-all-groups self)))
     (remove nil (loop for i in groups
-            collect (if (and (equal self (car (flat (get-all-chords i))))
+            collect (if (and (or (equal self (car (flat (get-all-chords i))))
+                                 (equal self (last-elem (flat (get-all-chords i)))))
                              (real-group-p i))
                              i)))))
+
