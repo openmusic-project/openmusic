@@ -175,14 +175,11 @@
 
 
 (defun getallgroups (self)
-  (let* ((buf (om::parent self))
-         (rep '()))
-    (loop while (om::group-p buf)
-          do (let ((ratiogroup (getratiogroup buf)))
-               (push (list (car ratiogroup) (cadr ratiogroup) (getnotetype buf))
-                     rep)
-               (setf buf (om::parent buf))))
-    rep))
+"self is a chord/rest/..."
+(let ((grps (om::get-real-groups self)))
+  (loop for i in grps 
+          collect (let ((ratiogroup (getratiogroup i)))
+                    (list (car ratiogroup) (cadr ratiogroup) (getnotetype i))))))
 
 (defmethod getratiounite ((self om::group))
   (/ (getratiodur self) (second (getratiogroup self))))
@@ -376,13 +373,11 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                            collect (if (not (= 1 (/ (car i) (second i)))) i) 
                                            )))
                    (simpli (/ act-note norm-note)))
-
               (cond 
                ((and (om::last-of-group? self) (om::first-of-group? self));singelton
                 (list (tied-notation self)
                       (when (accent? self) (list (accent-notation self)))))
-               
-               ((and (om::first-of-group? self) (not (om::last-of-group? self)))
+               ((om::first-of-group? self) 
                 (progn 
                   (remove nil 
                           (append 
@@ -393,16 +388,15 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                                append (progn 
                                                         (setf obj (om::parent obj))
                                                         (setf indx (- indx 1))
-                                                        (when (and (first-of-this-group self obj) (om::real-tuplet-p self))
-                                                          (firstofgroup (car i) (second i) (third i) indx))))))
+                                                        (firstofgroup (car i) (second i) (third i) indx)
+                                                        ))))
                            (list (tied-notation self)
                                  (when (accent? self) (accent-notation self)))))
                   )
                 )
 
-               ((and (om::last-of-group? self) (not (om::first-of-group? self)));ici
+               ((om::last-of-group? self);ici
                 (remove nil 
-                       
                         (append 
                          (let ((obj self)
                                (indx (+ (length numdenom) 1)))
@@ -410,8 +404,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                              append (progn 
                                                       (setf obj (om::parent obj))
                                                       (setf indx (- indx 1))
-                                                      (when (and (last-of-this-group self obj) t);(time-mod-val obj))
-                                                        (lastofgroup indx))))))
+                                                      (lastofgroup indx)))))
                          (list (tied-notation self)
                                (when (accent? self) (accent-notation self)))))
                         )

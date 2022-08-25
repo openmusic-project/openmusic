@@ -221,6 +221,7 @@
         (/ num den)) 1)))
 
 
+(defmethod real-tuplet-p ((self t)) nil)
 
 (defmethod real-tuplet-p ((self group))
   (let ((ratio (num-denom-val self)))
@@ -235,3 +236,56 @@
   (let ((parent (parent self)))
     (when parent 
       (real-tuplet-p parent))))
+
+
+
+(defmethod first-of-group-p ((self t))
+  nil)
+
+(defmethod first-of-group-p ((self group))
+  (let ((parent (parent self)))
+    (if (first-of-group? self) parent)))
+
+(defmethod first-of-group-p ((self chord))
+  (let ((parent (parent self)))
+    (if (first-of-group? self) parent)))
+
+(defmethod first-of-group-p ((self rest))
+  (let ((parent (parent self)))
+    (if (first-of-group? self) parent)))
+
+(defmethod get-all-groups ((self chord))
+  "returns all groups of a chord which is first-of his-group"
+  (let ((res (list (first-of-group-p self)))) 
+    (loop while (car res)
+           do (push (first-of-group-p (car (inside (parent (car res))))) res))
+    (remove nil (reverse res))))
+
+(defmethod get-all-groups ((self rest))
+  "returns all groups of a chord which is first-of his-group"
+  (let ((res (list (first-of-group-p self))))
+    (loop while (car res)
+          do (push (first-of-group-p (car (inside (parent (car res))))) res))
+    (remove nil (reverse res))))
+
+(defmethod real-group-p ((self t)) nil)
+(defmethod real-group-p ((self group))
+"returns true if the group is an irrational"
+  (let ((ratio (get-group-ratio self)))
+    (if (= 1 ratio) nil ratio)))
+
+(defmethod get-real-groups ((self t)) nil)
+
+(defmethod get-real-groups ((self chord))
+  (let ((groups (get-all-groups self)))
+    (remove nil (loop for i in groups
+            collect (if (and (equal self (car (flat (get-all-chords i))))
+                             (real-group-p i))
+                             i)))))
+
+(defmethod get-real-groups ((self rest))
+  (let ((groups (get-all-groups self)))
+    (remove nil (loop for i in groups
+            collect (if (and (equal self (car (flat (get-all-chords i))))
+                             (real-group-p i))
+                             i)))))
