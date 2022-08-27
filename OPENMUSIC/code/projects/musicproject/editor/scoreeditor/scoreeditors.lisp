@@ -2598,9 +2598,8 @@
           (("+") "Union Chords (Group + Offset)")
           (("c") "Show Channel Color")
           (("i") "Show Selection info")
-          )
-        '((("g") "Show/Hide Grid")
-          (("G") "Edit Grid Step")
+          (("g") "Show/Hide Grid"))
+        '((("G") "Edit Grid Step")
           (("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
@@ -2609,7 +2608,9 @@
           (("n") "Set Voice Name")
           (("o") "Open Internal Chord Editor")
           ("space" "Play/Stop")
-	  ("esc" "Stop  + Reset")
+          (("q") "Start Midi Record")
+          (("w") "Stop Midi Record")
+          ("esc" "Stop  + Reset")
 	  )))
 
 ;==========================================================
@@ -2822,16 +2823,19 @@
           (("+") "Union Voices")
           (("c") "Show Channel Color")
           (("i") "Show Selection info")
-          ("space" "Play/Stop"))
-        '((("g") "Show/Hide Grid")
+          (("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
-          (("a") "Adjust Chords/Durs to Grid")
+          )
+        '((("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
           (("x") "Extra Edition Palette")
           (("n") "Set Selected Voice Name")
           (("o") "Open Internal Editor")
+          ("space" "Play/Stop")
+          (("q") "Start Midi Record")
+          (("w") "Stop Midi Record")
           )))
 
 
@@ -3046,10 +3050,11 @@
           (("=") "Tie Selection")
           (("/") "Untie Selection")
           (("C") "Change Color")
+          (("r") "Open RT Editor")
           ;(.)
           )
         '(
-          (("r") "Open RT Editor")
+         
           (("m") "Open Tempo Editor")
           (("M") "Remove Tempo")
           (("x") "Extra Edition Palette")
@@ -3061,6 +3066,9 @@
           (("c") "Show Channel Color")
           (("i") "Show Selection info")
           ("space" "Play/Stop")
+          (("q") "Start Midi Record")
+          (("w") "Stop Midi Record")
+          ("esc" "Stop  + Reset")
           )))
 
 ;==============================================
@@ -3204,12 +3212,11 @@
           (("=") "Tie Selection")
           (("/") "Untie Selection")
           (("C") "Change Color")
-          ;(.)
-          )
-        '(
           (("r") "Open RT Editor")
           (("m") "Open Tempo Editor")
-          (("M") "Remove Tempo")
+          ;(.)
+          )
+        '((("M") "Remove Tempo")
           (("x") "Extra Edition Palette")
           (("s") "Toggle Normal/Patch Mode ")
           (("S") "Set Editor Scale")
@@ -3219,6 +3226,8 @@
           (("c") "Show Channel Color")
           (("i") "Show Selection info")
           ("space" "Play/Stop")
+          (("q") "Start Midi Record")
+          (("w") "Stop Midi Record")
           )))
 
 
