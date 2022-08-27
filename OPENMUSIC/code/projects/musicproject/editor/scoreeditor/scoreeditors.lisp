@@ -85,7 +85,7 @@
   "sets the button with name <name> (a string) to pushed (t) or initial unpushed"
 (let ((button (car (get-icon-button self name))))
     (setf (selected-p button) action)
-    (om-invalidate-view (title-bar self))))
+    (om-invalidate-view self)))
 ;;
 
 (defmethod init-titlebar ((self scoreeditor))
@@ -981,11 +981,9 @@
                   (score-remove-tonalite self)
                   ))
            (#\q (progn 
-                  (get-icon-button (editor self) "rec")
                   (set-pushed (editor self) "rec" t)
                   (start-recording (editor self))))
-           (#\w (progn 
-                  (get-icon-button (editor self) "rec")
+           (#\w (progn
                   (set-pushed (editor self) "rec" nil)
                   (stop-recording (editor self)))) 
            (#\S (create-editor-scale (editor self)))
