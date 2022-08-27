@@ -8,6 +8,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- key shortcuts for recording midi (q and w)
+- infoeditor remembers size and position
 - PortMidi setup's height is resizable (preferences) 
 - om-inspect improved: resizable and closes all inspectors windows
 - cut/copy/paste in temporal box info
@@ -21,6 +23,8 @@ IMPROVEMENTS
 
 FIXES
 
+- record chord-seq restaured with new recording modes
+- tuplets optimization in mxml (bugfix)
 - Fixed list presentation of workspace at startup
 - Drag&drop score instances in maquette now works
 - micro-channel approx fix (16th tones)

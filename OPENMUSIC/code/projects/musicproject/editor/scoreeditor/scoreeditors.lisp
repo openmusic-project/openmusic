@@ -67,6 +67,26 @@
 ;    (om-with-font *om-default-font1*
 ;                  (om-draw-string (- (w self) (om-string-size str *om-default-font1*) 8) 17 str)))))
 
+;;;button tools
+
+
+(defmethod get-icon-button ((self scoreeditor) name) 
+  "Returns the title-bar of <self> having a name <namwe>.
+   usage: (get-icon-button self name) where name is a string like play"
+  (let* ((views (om-subviews self))
+         (titlebar (car (remove-if-not #'(lambda (x) (equal (type-of x) 'score-titlebar)) views)))
+         (buttons (remove-if-not #'(lambda (x) (equal (type-of x) 'om-icon-button)) 
+                                 (om-subviews titlebar))))
+    (remove-if-not #'(lambda (x) (equal (icon1 x) name)) 
+                                 buttons)))
+
+
+(defmethod set-pushed ((self scoreeditor) (name string) &optional (action t))
+  "sets the button with name <name> (a string) to pushed (t) or initial unpushed"
+(let ((button (car (get-icon-button self name))))
+    (setf (selected-p button) action)
+    (om-invalidate-view (title-bar self))))
+;;
 
 (defmethod init-titlebar ((self scoreeditor))
   (call-next-method)
@@ -959,7 +979,15 @@
                   )) 
            (#\T (when *om-tonalite*
                   (score-remove-tonalite self)
-                  )) 
+                  ))
+           (#\q (progn 
+                  (get-icon-button (editor self) "rec")
+                  (set-pushed (editor self) "rec" t)
+                  (start-recording (editor self))))
+           (#\w (progn 
+                  (get-icon-button (editor self) "rec")
+                  (set-pushed (editor self) "rec" nil)
+                  (stop-recording (editor self)))) 
            (#\S (create-editor-scale (editor self)))
            (:om-key-tab (change-obj-mode self 1))
            (:om-key-up  (move-selection self 0))

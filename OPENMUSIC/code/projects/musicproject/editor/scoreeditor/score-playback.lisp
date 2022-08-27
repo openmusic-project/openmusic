@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 
@@ -52,6 +52,7 @@
 (defmethod timed-recording ((self scoreeditor)) t)
 (defmethod timed-recording ((self noteeditor)) nil)
 (defmethod timed-recording ((self chordeditor)) nil)
+(defmethod timed-recording ((self chordseqeditor)) nil)
 (defmethod timed-recording ((self voiceeditor)) nil)
 (defmethod timed-recording ((self polyeditor)) t)
 
@@ -151,14 +152,31 @@
            list)
    *global-deltachords*))
 
-(defmethod record2obj ((editor chordseqeditor) list)
-   (let* ((obj (object editor)))
-     (when list
+;when cursor-mode = :interval, records starting from the interval's offset
+;when obj-mode = chord-seq, records starting from the end of duration of last-chord 
+;when obj-mode = note, appends recording from begining
+;when obj-mode = chord, erases everything and record anew
+;note that obj-mode is a string "chord", "chord-seq" etc...
+ 
+(defmethod record2obj ((editor chordseqeditor) list) 
+  (let* ((obj (object editor))
+         (panel (panel editor))
+         (cursormode (cursor-mode panel))
+         (objmode (obj-mode panel)))
+    (when list
        (close-attached-editors editor)
        (let ((chords (chords-from-list list)))
          (loop for item in chords do
-               ;(setf (offset item) (- (offset item) (offset (car chords))))
-               (setf (parent item) obj))
+                 (cond
+                  ((equal cursormode :interval) 
+                   (let ((off (cursor-pos panel)))
+                   (setf (offset item) (+ off (offset item)))))
+                  ((equal objmode "chord-seq") 
+                   (let ((off (+ (offset (last-elem (chords obj))) (car (ldur (last-elem (chords obj)))))))
+                     (setf (offset item) (+ off (offset item)))))
+                  ((equal objmode "chord") (setf (inside obj) nil))
+                  (t ))
+                 (setf (parent item) obj))
          (loop for item in (chords obj) do
                (setf (offset item) (offset->ms item)))
          (setQValue obj 1000 :recursive nil)
