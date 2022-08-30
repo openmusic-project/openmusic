@@ -604,7 +604,7 @@ when :
   :indoc '("voice or poly" "tempo" "mode")
   :menuins '((2 (("clone" clone) 
                  ("destructive" destructive))))
-  :icon 147
+  :icon 355
   :doc "Changes tempo of <self>. 
 If <mode> is clone, this will output a new voice (default).
 If <mode> is destructive, tempo of <self> will be destructively changed." 
@@ -622,12 +622,12 @@ If <mode> is destructive, tempo of <self> will be destructively changed."
   (if (equal mode 'clone)
       (make-instance 'poly
                      :voices  (loop for i in (inside self)
-                                    for tp in tempo 
-                                    collect (set-obj-tempo i tp :mode 'clone)))
+                                   ; for tp in temp
+                                    collect (set-obj-tempo i tempo :mode 'clone)))
     (progn
       (loop for i in (inside self)
-            for tp in tempo
-            do (set-obj-tempo i tp :mode 'destructive))
+           ; for tp in temp
+            do (set-obj-tempo i tempo :mode 'destructive))
       (update-obj self))))
 
 
