@@ -142,7 +142,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;only for mac
 
-(defparameter *macdylibfolder* "mac")
+(defparameter *macdylibfolder* "mac/")
 
 #+cocoa
 (let ((mac-arch
@@ -154,8 +154,8 @@
          (with-open-stream (out out)
            (values (read-line out) )))))
   (if (equal mac-arch "arm")
-      (setf *macdylibfolder* "m1")
-    (setf *macdylibfolder* "mac")))
+      (setf *macdylibfolder* "m1/")
+    (setf *macdylibfolder* "mac/")))
 
 (export '*macdylibfolder* :cl-user)
 
