@@ -19,7 +19,7 @@
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;===========================================================================
-; Authors: G. Assayag, C. Agon, J. Bresson
+; Authors: G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;===========================================================================
 
 
@@ -47,6 +47,7 @@
 
 (defparameter *audio-sr* 44100)
 (defparameter *audio-out-n-channels* 2)
+(defparameter *audio-driver* nil)
 (defparameter *audio-out-device* nil)
 
 ;;; these values depend on the selected device
@@ -91,15 +92,16 @@
             (set-pref modulepref :audio-res 16)
             ))))
 
+    (setf *audio-driver* (get-pref modulepref :audio-driver))
     (setf *audio-out-device* (get-pref modulepref :audio-device))
     (setf *audio-out-n-channels* (get-pref modulepref :audio-n-channels))
     
     (player-apply-setup :om-audio)
     
     ;;; after setup these parameters might have been force-changed
+    (set-pref modulepref :audio-device *audio-out-device*)
     (set-pref modulepref :audio-n-channels  *audio-out-n-channels*)
     (set-pref modulepref :audio-sr *audio-sr*)
-                               
     
     (setf *multiplayer-out-port* (get-pref modulepref :multi-out))
     (setf *multiplayer-in-port* (get-pref modulepref :multi-in))
@@ -121,6 +123,7 @@
 		 :normalizer ,*normalizer*
 		 #+multiplayer ,@`(:multi-out ,*multiplayer-out-port* :multi-in ,*multiplayer-in-port*
 					    :multip-path ,(when *multiplayer-path* (om-save-pathname *multiplayer-path*)))
+		 :audio-driver ,*audio-driver*
 		 :audio-device ,*audio-out-device*
 		 :audio-n-channels ,(if (> *audio-out-n-channels* 0) *audio-out-n-channels* 2)
 		 ;;:audio-presets ',(get-audio-mixer-presets)
@@ -131,7 +134,8 @@
         :auto-rename nil :delete-tmp t :normalize t :normalize-level 0.0 :normalizer :om
         :multi-out 7071 :multi-in 7072 :multi-host "127.0.0.1" 
         :multip-path (when (and (boundp '*multiplayer-path*) *multiplayer-path*) (probe-file *multiplayer-path*))
-        :audio-device *audio-out-device* ;; use default
+        :audio-driver *audio-driver*
+	:audio-device *audio-out-device* ;; use default
 	:audio-n-channels 2
         ))
 
@@ -153,8 +157,9 @@
                                  :bg-color *om-light-gray-color*
                                  ))
         
-        (audio-devices (player-get-devices :om-audio))        
-        (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
+        (audio-drivers (player-get-drivers :om-audio))
+	(audio-devices (player-get-devices :om-audio))
+	(l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         normtext normval useval usetext
         noutlist srlist
         (pos 0)
@@ -166,6 +171,21 @@
 					  :font *om-default-font3b*)
                      
                      (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
+                                          "Driver"
+                                          :font *controls-font*)
+		     
+		     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 190 pos) 
+                                          (om-make-point 160 20)
+                                          ""
+                                          :di-action (om-dialog-item-act item
+						       (set-pref modulepref :audio-driver
+								 (om-get-selected-item item)))
+                                          :font *controls-font* 
+                                          :range audio-drivers
+                                          :value (get-pref modulepref :audio-driver)
+                                          )
+		     
+		     (om-make-dialog-item 'om-static-text (om-make-point (+ 20 0) (incf pos dy)) (om-make-point 170 dy) 
                                           "Device"
                                           :font *controls-font*)
 
@@ -177,7 +197,7 @@
                                                                  (om-get-selected-item item))
                                                        )
                                           :font *controls-font* 
-                                          :range audio-devices 
+                                          :range audio-devices
                                           :value (get-pref modulepref :audio-device)
                                           )
                      

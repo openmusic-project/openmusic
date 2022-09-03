@@ -141,7 +141,7 @@
 ;=================================================
 
 (defvar *pref-window* nil)
-
+(defparameter *pref-position* (om-make-point 100 50))
 
 (defclass ompref-window (om-dialog)
   ((tabs :accessor tabs :initarg :tabs :initform nil)
@@ -170,7 +170,40 @@
     (om-remove-subviews self (tabs self))
     (om-add-subviews self (setf (tabs self) newtl))
     ))
-    
+
+#+linux    
+(defmethod om-select-window ((self ompref-window))
+   (when (and (oa::window-dialog-p self) (not (oa::initialized-p self)))
+    (capi::display self))
+  (when (oa::initialized-p self)
+  ;  #+cocoa(capi::raise-interface self)
+  ;  #-cocoa
+    (capi::find-interface (type-of self) :name (capi::capi-object-name self))
+    )
+  (om-set-view-position self *pref-position*)
+  self)
+
+(defmethod update-pref-to-apply ((self ompref-window) &optional selection)
+  (let* ((selec 0)
+         (panelist (loop for item in (local-prefs self) 
+                         for i = 0 then (+ i 1) do
+                         (when (and selection (equal selection (car item)))
+                           (setf selec i))
+                         collect 
+                         (make-new-pref-scroll (car item) item)
+                         ))
+         
+          (newtl (om-make-tab-layout panelist :position (om-make-point 0 0)
+                                  :size (get-pref-scroll-size)
+                                  :selection selec
+                                  ))
+          )
+    (setf *pref-position* (om-view-position self))
+    (om-remove-subviews self (tabs self))
+    (om-add-subviews self (setf (tabs self) newtl))
+    (om-close-window *pref-window*)
+    (om-select-window *pref-window*)
+    ))
 
 (defun make-preference-win ()
    (let* ((prefs (sort-pref-items (clone *current-pref*)))
@@ -178,13 +211,15 @@
                                 (make-new-pref-scroll (car item) item))
                             prefs))
           (tl (om-make-tab-layout panelist :position (om-make-point 0 0)
-                                  :size (get-pref-scroll-size )))
+                                  :size (get-pref-scroll-size )
+                                  ))
           (b-posy (+ (om-point-v (get-pref-scroll-size)) 5))
           (newwindow (om-make-window 'ompref-window :window-title "OpenMusic Preferences" 
                                      :size (om-add-points (get-pref-scroll-size) (om-make-point 0 50)) 
-                                     :position (om-make-point 100 50) :close t :resizable nil
+                                     :position *pref-position* ;(om-make-point 100 50)
+                                     :close t :resizable nil
                                      :local-prefs prefs)))
-     
+
      (om-add-subviews newwindow (setf (tabs newwindow) tl))
      (om-add-subviews newwindow              
                       (om-make-dialog-item 'om-button (om-make-point 25 b-posy) (om-make-point 100 22) "Restore..." 
@@ -203,8 +238,8 @@
 							  (setf *current-pref* (local-prefs win))
 							  (put-all-preferences)
                                                           (save-preferences)
-							  #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-							  #+linux (om-select-window *pref-window*)
+                                                          #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
+                                                          #+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
                                                           )))
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 
