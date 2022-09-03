@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Jack support for linux (V. Anders)
 - New score functions:
 	-set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
 
