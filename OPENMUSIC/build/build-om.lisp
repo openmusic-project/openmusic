@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;=========================================================================
@@ -138,6 +138,29 @@
            )))))
 
 (export 'compile&load :cl-user)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;only for mac
+
+(defparameter *macdylibfolder* "mac")
+
+#+cocoa
+(let ((mac-arch
+       (multiple-value-bind (out pid)
+           (sys:run-shell-command "bash -l -c 'uname -p'"
+                                  :wait nil
+                                  :output :stream
+                                  :error-output nil)
+         (with-open-stream (out out)
+           (values (read-line out) )))))
+  (if (equal mac-arch "arm")
+      (setf *macdylibfolder* "m1")
+    (setf *macdylibfolder* "mac")))
+
+(export '*macdylibfolder* :cl-user)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 ;;; TEMP -- BUG LISPWORKS

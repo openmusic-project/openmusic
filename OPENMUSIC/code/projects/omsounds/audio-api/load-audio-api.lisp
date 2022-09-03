@@ -100,7 +100,9 @@
   #+win32
   "/WINDOWS/system32/omaudiolib.dll"
   #+(or darwin macos macosx)  
-  "openmusic/OPENMUSIC/resources/lib/mac/omaudiolib.dylib"
+  (apply #'concatenate 'string 
+         (list "openmusic/OPENMUSIC/resources/lib/"
+               *macdylibfolder* "/omaudiolib.dylib"))
   #+linux
   "/usr/share/openmusic/resources/lib/linux/omaudiolib.so"
   )

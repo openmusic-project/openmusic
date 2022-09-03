@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;=========================================================================
@@ -339,7 +339,8 @@
 (print "================================")
 
 #+macosx
-(let* ((libs-folder (merge-pathnames "lib/mac/" oa::*om-resources-folder*))
+(let* ((libfold (concatenate 'string "lib/" *macdylibfolder*))
+       (libs-folder (merge-pathnames libfold oa::*om-resources-folder*))
        (app-contents-folder (make-pathname 
                              :directory (append 
                                          *om-root-folders* 

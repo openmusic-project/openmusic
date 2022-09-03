@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -141,7 +141,7 @@
   #+macosx(make-pathname :directory (append (pathname-directory *om-root*) 
                                             (if (member :om-deliver *features*)
                                                 (list (concatenate 'string "OM " *version-str* ".app") "Contents" "Frameworks")
-                                              (list "resources" "lib" "mac"))
+                                              (list "resources" "lib" *macdylibfolder*))
                                             )
                  :host (pathname-host *om-root*) :device (pathname-device *om-root*))
   #+linux(make-pathname :directory (append (pathname-directory *om-root*) '("resources" "lib" "linux"))
