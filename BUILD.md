@@ -46,7 +46,6 @@ OM links dynamically with a number of external C libraries. The foreign function
 
 Binary versions of the libraries are included in this repository in **OPENMUSIC/resources/lib/[m1/mac/win/linux]/**, but they can also be recompiled from their respective source packages if needed, as indicated below. 
 
-**Note for Mac M1 processors:** Before loading OM's sources rename the **OPENMUSIC/resources/lib/m1** as **OPENMUSIC/resources/lib/mac** after deleting the original **mac** folder. For Intel processors, please ignore this procedure. 
 
 **Note for Windows:** In order to run OM sources from LispWorks on Windows, all the external C libraries (.dll) should be copied in the LispWorks repository (**C:/Program Files/LispWorks/**)
 

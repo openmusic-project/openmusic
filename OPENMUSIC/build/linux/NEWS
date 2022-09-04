@@ -24,8 +24,8 @@ IMPROVEMENTS
 
 FIXES
 
-- record chord-seq restaured with new recording modes
-- tuplets optimization in mxml (bugfix)
+- Record chord-seq restaured with new recording modes
+- Tuplets optimization in mxml (bugfix)
 - Fixed list presentation of workspace at startup
 - Drag&drop score instances in maquette now works
 - micro-channel approx fix (16th tones)
