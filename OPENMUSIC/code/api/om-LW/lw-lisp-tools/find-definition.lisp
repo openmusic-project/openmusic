@@ -20,7 +20,7 @@
 ; along with this program; if not, write to the Free Software
 ; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ;
-; Author: Jean Bresson
+; Author: Jean Bresson, Karim Haddad
 ;;===========================================================================
 
 ;=======================
@@ -52,8 +52,8 @@
                              :resizable t
                              ;:window-styles nil
                              )))
-    (set-hint-table win (list :external-min-width w :external-max-width w 
-                              :external-min-height h :external-max-height h))
+    ;(set-hint-table win (list :external-min-width w :external-max-width w 
+    ;                          :external-min-height h :external-max-height h))
     (setf (pane-layout win) (make-instance 'pinboard-layout :internal-border nil :visible-border nil 
                                               #+cocoa :background #+cocoa :transparent))
     (apply-in-pane-process (pane-layout win)
@@ -62,6 +62,12 @@
                                               (make-instance 'capi::list-panel
                                                              :x 10 :y 10
                                                              :width 370 :height 160
+                                                             :automatic-resize '(:x-align :left 
+                                                                                 :x-ratio 0.04 
+                                                                                 :y-align :top 
+                                                                                 :y-ratio 0.02
+                                                                                 :width-ratio 0.92 
+                                                                                 :height-ratio 0.92)
                                                              :interaction :single-selection
                                                              :retract-callback nil
                                                              :focus nil
