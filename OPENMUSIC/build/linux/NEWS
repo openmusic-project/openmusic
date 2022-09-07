@@ -9,6 +9,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- info definition (inspection of code) is now resizable 
 - key shortcuts for recording midi (q and w)
 - infoeditor remembers size and position
 - PortMidi setup's height is resizable (preferences) 
