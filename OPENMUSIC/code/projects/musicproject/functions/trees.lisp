@@ -358,6 +358,20 @@ The output rhythm tree is intended for the <tree> input of a 'voice' factory box
       (list (first liste)
             (mapcar 'grouper3 (second liste))))))
 
+
+(defun int-all-rest (liste)
+  "This is in case some users puts rest in floats. This will false all result of reducetree.!!!!"
+  (if (atom  liste)
+      (if (and 
+           (minusp liste) 
+           (floatp liste))
+          (round liste)
+        liste)
+    (list (car liste)
+          (mapcar 'int-all-rest (second liste)))))
+
+
+
 (defmethod! reduced-tree ((tree list))
    :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
    :indoc '("a rhythm tree")
@@ -365,7 +379,7 @@ The output rhythm tree is intended for the <tree> input of a 'voice' factory box
    :doc "
 Reduces and simplifies a tree by concatenating consecutive rests and floats.
 "
-   (let ((liste (resolve-? tree)))
+   (let ((liste (int-all-rest (resolve-? tree)))) ;a voir si pas de consequences
      (grouper3 (grouper2 (grouper1 liste)))))
 
 
@@ -377,6 +391,7 @@ Reduces and simplifies a tree by concatenating consecutive rests and floats.
      newvoice))
 
 |#
+
 
 (defmethod! reducetree ((self voice))
    :initvals '(t)
@@ -1458,8 +1473,7 @@ Returns the positions of the rests in <tree>.
 ;;;;;;;;;;;;;;;;;;;;;;;;;TREE-CORRECTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;FLOAT-REST
-
-
+;;;maybe use the latest below...
 
 (defun fixfloatrest (list)
   (loop for i in list
@@ -1527,5 +1541,157 @@ Returns the positions of the rests in <tree>.
                    :voices corr)))
 
 ;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;fix-singelton-tree;;;;;;;;;;;;;;;;;;;;;
+
+(defun tree-singelton-p (tree)
+  (if (listp tree)
+      (let* ((d (car tree))
+             (s (cadr tree)))
+        (if 
+            (and (atom d) 
+                 (= 1 (length s))
+                 (all-atoms? s))
+            t))))
+
+
+(defun remove-tree-singelton (tree)
+ "transforms all tree-singelton in the form of '(1 (1)) into 1"
+  (cond ((atom tree) tree)
+        ((tree-singelton-p tree) (car tree))
+        (t (list (car tree)
+                    (mapcar 'remove-tree-singelton (second tree))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;abs-proportions;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun abs-props (liste)
+(if (null liste)
+       liste
+       (let* ((first (car liste))
+              (rest (rest liste))
+              )
+         (if (numberp first)
+           (cons (+ first (loop while  (floatp (first rest))
+                                sum (round (pop rest))))
+                 (abs-props rest))
+           (cons (abs-props first) (abs-props rest))))))
+
+(defmethod! absolute-props ((tree list))
+   :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
+   :indoc '("tree")
+   :icon 134
+   :doc "groups any propo such as 4 1.0 into 5
+and 8 1.0 into 9 for absolute proportional
+manipulation like for instance in recursive tree proportion rotations.
+-reducetree has the same effect-"
+
+   (let* ((liste (resolve-? tree)))
+     (abs-props liste)
+     ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! rat ((tree list))
+   :initvals '(? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1))))
+   :indoc '("tree")
+   :icon 160
+   :doc "R.A.T is for reduce all tree!"
+   (let ((liste (reducetree tree)))
+     (loop
+       while (not (equal liste tree))
+       do 
+       (setf tree liste)
+       (setf liste (correct-floats-after-rests (reducetree liste))))
+     (remove-tree-singelton (absolute-props liste))))
+
+
+
+
+(defmethod! rat ((self voice))
+   (rat (tree self)))
+
+(defmethod! rat ((self measure))
+   (rat (tree self)))
+
+(defmethod! rat ((self poly))
+     (mapcar #'rat (inside self)))
+
+
+
+(defun correctdafunk (list)
+  (loop for i in list
+        collect 
+        (let* ((frst (first i))
+               (rest (rest i)))
+        (if (and (minusp frst) (car rest))
+            (if (and (plusp (car rest)) (floatp (car rest)))
+                    (x-append frst (* -1 (car rest)) (cdr rest));changed from round to *-1
+              i)
+          i))))
+
+(defun correct-floats-after-rests (tree)
+  
+  (let* ((liste (if (typep tree 'voice) (tree tree) (resolve-? tree)))
+         (grp-pulse (group-pulses liste))
+         (corrected (correctdafunk grp-pulse))
+         (tree2obj (trans-tree liste))
+         (tree2objclean (remove-if 'numberp (flat tree2obj)))
+         (fixed (loop for objs in tree2objclean
+                      for i in (flat corrected)
+                      do (setf (tvalue objs ) i))))
+    
+    (trans-obj tree2obj)))
+
+
+
+
+;;;added on 050513
+;;;corrected on 070922
+(defmethod! fix-tree-floats ((self voice) &optional (mode 'rest));;;maybe put note by default
+      :initvals '(t 'rest)
+   :indoc '("self" "mode")
+   :menuins '((1 (("rest" 'rest) 
+                 ("note" 'note))))
+   :icon 134
+   :doc "if first pulse is "        
+                                 
+  (let* ((rt (rat self));rat is essential here
+         (frst (caadr (caadr rt)))
+         (correct (case mode
+                    (rest (if (floatp frst) (setf (caadr (caadr rt)) (* -1 frst))))
+                    (note (if (floatp frst) (setf (caadr (caadr rt)) (round frst))))))
+         (tempo (tempo self))
+         (chords (case mode
+                   (rest (chords self))
+                   (note (lmidic (objfromobjs self (make-instance 'chord-seq))))
+                   ;(note (x-append '(6000) (chords self))
+                         )))
+
+    (make-instance 'voice
+                   :tree rt
+                   :chords chords
+                   :tempo tempo)))
+
+
+
+(defmethod! fix-tree-floats ((self poly) &optional (mode 'rest))
+      :initvals '(t 'rest)
+   :indoc '("self" "mode")
+   :menuins '((1 (("rest" 'rest) 
+                 ("note" 'note))))
+   :icon 134
+   :doc "substi "        
+                                 
+  (let* ((voices (inside self))
+         (corr (loop for i in voices
+                     collect (fix-tree-floats i mode))))
+    (make-instance 'poly
+                   :voices corr)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
