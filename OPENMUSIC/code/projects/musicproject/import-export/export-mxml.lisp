@@ -276,7 +276,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
             (group act-note norm-note)
           NIL))
     NIL))
-|#
+
 
 (defun time-mod-val (obj)
   (let* ((info (getgroupmod obj))
@@ -285,6 +285,18 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
     (om::while (and clone (equal (first (car clone)) (second (car clone))))
           (pop clone))
     (car clone)))
+|#
+
+
+(defun mult-rat (liste)
+  (let ((trans (om::mat-trans liste)))
+    (loop for i in trans
+        collect (apply '* i))))
+
+(defun time-mod-val (obj)
+  (let* ((info (getgroupmod obj))
+        (ratios (reverse (mapcar 'butlast info))))
+    (mult-rat ratios)))
 
 (defun time-modifications (self)
   (let ((ratio (time-mod-val self)))
