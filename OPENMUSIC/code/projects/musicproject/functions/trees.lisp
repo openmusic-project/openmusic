@@ -618,7 +618,7 @@ Replaces reducetree because more efficient."
 
 
 (defmethod! fix-tree-floats ((self voice) &optional (mode 'rest))                                 
-  (let* ((rt (fix-tree-floats (reduce-rt self)))
+  (let* ((rt (fix-tree-floats (tree self)))
          (tempo (tempo self))
          (chords (case mode
                    (rest (chords self))
