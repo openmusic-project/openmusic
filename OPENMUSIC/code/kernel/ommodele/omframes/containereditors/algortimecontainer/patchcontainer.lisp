@@ -452,7 +452,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   (let* ((thename (mk-unique-name self "comment"))
          (newbox (omNG-make-new-boxcall 'comment pos thename))
          (new-frame (make-frame-from-callobj newbox))
-         (init (setf om-edit::*comment-text* ""))
+         (init (progn (setf om-edit::*comment-text* "")
+                   (setf om-edit::*def-comment-edit-font* *comment-style*)
+                   (setf om-edit::*comment-color* (oa::om-color-to-capi *comment-color*))))
          (ept (om-edit::open-comment-editor-pane (iconview new-frame))))
     (omG-add-element self new-frame)
     (setf (om-edit::intfunc ept) #'om::setfref)
@@ -469,6 +471,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
              (color (textcolor obj))
              (init (progn 
                      (setf om-edit::*comment-text* text)
+                     (setf (om-edit::fontfunc ept)  #'om::setcomfontstyle)
                      (setf om-edit::*comment-color* (om-color-to-capi color))))
              (view (iconview (car (frames obj))))
              (ept (om-edit::open-comment-editor-pane view)))
