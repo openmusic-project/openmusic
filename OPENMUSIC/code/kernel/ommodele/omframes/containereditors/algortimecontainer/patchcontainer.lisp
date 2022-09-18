@@ -96,33 +96,38 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
-   
-  (if *adding-a-box*
-      ;;; a box is being added ...
-    (progn
-      (when (equal (window view) (second *adding-a-box*))
-        (let* ((window (second *adding-a-box*))
-               (item (first *adding-a-box*))
-               (thepatch (get-patchpanel (editor window)))
-               (newbox (omNG-make-new-boxcall item (om-make-point 22 22) (mk-unique-name thepatch (name item))))
-               pospanel pos)
-          (if *new-obj-initial-pos*
-              ;;; CASE 1 : a box is added from context-menu 
-              (progn
-                (setf (frame-position newbox) *new-obj-initial-pos*)
-                (omG-add-element thepatch (make-frame-from-callobj newbox))
-                )
-            ;;; CASE 2 : a box is added from window menu 
-            (progn (setf pospanel (om-mouse-position thepatch)
-                         pos (om-mouse-position window))
-              (when (om-point-in-rect-p pos (om-pts-to-rect (om-make-point 0 0) (om-view-size window)))
-                (setf (frame-position newbox) (borne-position pospanel))
-                (omG-add-element thepatch (make-frame-from-callobj newbox)))
-              ))))
-      (setf *adding-a-box* nil)
-      (setf *new-obj-initial-pos* nil)
-      )
-    (call-next-method))))
+    (when (om-shift-key-p) 
+      (let* ((actives (get-actives view))
+             (inputs (loop for i in actives
+                           collect (car (inputframes i)))))
+        (loop for i in inputs
+              do (connect-box *target-out* i))))
+    (if *adding-a-box*
+        ;;; a box is being added ...
+        (progn
+          (when (equal (window view) (second *adding-a-box*))
+            (let* ((window (second *adding-a-box*))
+                   (item (first *adding-a-box*))
+                   (thepatch (get-patchpanel (editor window)))
+                   (newbox (omNG-make-new-boxcall item (om-make-point 22 22) (mk-unique-name thepatch (name item))))
+                   pospanel pos)
+              (if *new-obj-initial-pos*
+                  ;;; CASE 1 : a box is added from context-menu 
+                  (progn
+                    (setf (frame-position newbox) *new-obj-initial-pos*)
+                    (omG-add-element thepatch (make-frame-from-callobj newbox))
+                    )
+                ;;; CASE 2 : a box is added from window menu 
+                (progn (setf pospanel (om-mouse-position thepatch)
+                             pos (om-mouse-position window))
+                  (when (om-point-in-rect-p pos (om-pts-to-rect (om-make-point 0 0) (om-view-size window)))
+                    (setf (frame-position newbox) (borne-position pospanel))
+                    (omG-add-element thepatch (make-frame-from-callobj newbox)))
+                  ))))
+          (setf *adding-a-box* nil)
+          (setf *new-obj-initial-pos* nil)
+          )
+      (call-next-method))))
 
 (defmethod om-view-doubleclick-handler ((Self patchPanel) Where)
   (when (equal self (call-next-method))

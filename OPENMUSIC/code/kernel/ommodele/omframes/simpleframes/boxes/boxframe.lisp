@@ -149,12 +149,21 @@
 ;==================================================
 (defclass icon-box (icon-view om-view-drag) ())
 ;-------------EVENTS (command-key-p)
-(defmethod om-view-click-handler ((self icon-box) where)
+
+(defmethod om-view-click-handler ((self icon-box) where) 
   ;(call-next-method))
   ;(when (equal (call-next-method) self)  ;;; new for click in lock-button
-    (toggle-icon-active-mode (om-view-container self))
+  (cond 
+   ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p)) 
+    (loop for i in (inputframes (om-view-container self))
+          do (connect-box *target-out* i)))
+   ((and (om-option-key-p) (om-shift-key-p))
+    (loop for i in (inputframes (om-view-container self))
+          do (disconnect-box (om-view-container self) i)))
+   (t ))
+  (toggle-icon-active-mode (om-view-container self))
    ;)
-)
+  )
 
 (defmethod om-view-doubleclick-handler ((self icon-box) where)
    (declare (ignore where))
@@ -325,6 +334,14 @@
 
 (defmethod om-view-click-handler ((self omboxframe) where)
   (do-click-inbox self where)
+  (cond 
+   ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p)) 
+    (loop for i in (inputframes self)
+          do (connect-box *target-out* i)))
+   ((and (om-option-key-p) (om-shift-key-p))
+    (loop for i in (inputframes self)
+          do (disconnect-box self i)))
+   (t ))
   self)
 
 (defmethod om-view-doubleclick-handler ((self omboxframe) where)
