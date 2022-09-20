@@ -46,6 +46,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- comment boxes are resized correctly
 - info definition (inspection of code) is now resizable 
 - key shortcuts for recording midi (q and w)
 - infoeditor remembers size and position
@@ -58,7 +59,7 @@ IMPROVEMENTS
 	- connection standard display
 	- fixed zoom display
 - OK button on portmidi setup panel
-- auto connect output/input using option+cmd (ctrl+alt)
+- auto connect output/input using option+cmd (ctrl+alt) and more
 
 FIXES
 
