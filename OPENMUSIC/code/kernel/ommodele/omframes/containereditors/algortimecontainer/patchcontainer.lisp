@@ -142,6 +142,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ((">" "<") "add/remove One optional input")
                        ("alt+lr" "add/remove All optional inputs")
                        (("k" "K") "add/remove Keyword inputs")
+                       #+(or linux win32)("ctrl+alt" "auto-connect outputs/inputs")
+                       #+macosx("alt+cmd" "auto-connect outputs/inputs")
                        ("alt+clic" "connect output of selected box")
                        ("1-9" "connect/disconnect nth input of selected box")
                        #+(or linux win32)("ctrl+alt" "auto-connect outputs/inputs")
@@ -410,7 +412,8 @@ because digit-char-p will not accept backspace and special om keys!"
       (let ((newfont (om-choose-font-dialog :font (textstyle (object (car active-comments))))))
 	(when newfont
           (mapc #'(lambda (frame) 
-                    (comment-new-style frame newfont)) active-comments))))))
+                    (comment-new-style frame newfont)
+                    (reinit-size frame)) active-comments))))))
 
 (defmethod edit-bold ((self patcheditor))
   (let* ((container (panel self))
@@ -484,12 +487,14 @@ because digit-char-p will not accept backspace and special om keys!"
     (setf (om-edit::intfunc ept) #'om::setfref)
     (setf (om-edit::fontfunc ept)  #'om::setcomfontstyle)
     (setf (om-edit::fontcolfunc ept)  #'om::setcomfontcolor)
+    (setf om-edit::*comment-frame* new-frame)
+    (setf (om-edit::resizefunc ept) #'om::reinit-size)
     ept))
 
 ;No multiple method, because we can only edit comments one by one for the moment
 (defmethod edit-comment-box ((self t)) 
   "this is for 'o' shortcut, for editing comments."
-  (if (commentframep (car self)) 
+  (when (commentframep (car self)) 
       (let* ((obj (object (car self)))
              (text (reference obj))
              (color (textcolor obj))
@@ -502,7 +507,9 @@ because digit-char-p will not accept backspace and special om keys!"
         (setf (om-edit::intfunc ept) #'om::setfref)
         (setf (om-edit::fontfunc ept)  #'om::setcomfontstyle)
         (setf (om-edit::fontcolfunc ept)  #'om::setcomfontcolor)
-        ept)))
+      (setf om-edit::*comment-frame* (car self))
+      (setf (om-edit::resizefunc ept) #'om::reinit-size)
+      ept)))
 
 ;------------------------------
 
@@ -842,7 +849,7 @@ Elements of the list are list as (source-position source-output target-position 
                                       (let ((newbox (omNG-make-new-boxcall 'comment posi "comment")))
                                         (when newbox
                                           (omG-add-element self (make-frame-from-callobj newbox))
-                                          ))))
+                                          (reinit-size (car (frames  newbox)))))))
        (om-new-leafmenu "Picture" #'(lambda () 
                                       (make-bg-pict self posi)))
        (list 

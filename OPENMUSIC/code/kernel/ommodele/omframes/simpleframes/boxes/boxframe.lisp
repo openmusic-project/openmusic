@@ -1238,6 +1238,7 @@
      (om-add-subviews (object self) (iconView (object self)))
      (setf (reference (object (object self))) (om-dialog-item-text (iconView (object self)))) 
      (setf (text-view theeditor) nil)
+     (reinit-size (object self))
      (om-remove-subviews (panel theeditor) self)
      (om-invalidate-view (panel theeditor))
      (setf (selected-p (iconView (object self))) nil)

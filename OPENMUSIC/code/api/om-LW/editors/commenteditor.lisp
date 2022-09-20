@@ -49,6 +49,7 @@
 (defvar *comment-text*
     "no comment")
 
+(defvar *comment-frame* nil)
 
 (defclass om-comment-editor (capi::interface)
   ((ep :initform nil :accessor ep)
@@ -56,7 +57,8 @@
    (mycomment :initform *comment-text* :accessor mycomment)
    (intfunc :initform t :accessor intfunc)
    (fontfunc :initform t :accessor fontfunc)
-   (fontcolfunc :initform t :accessor fontcolfunc))
+   (fontcolfunc :initform t :accessor fontcolfunc)
+   (resizefunc :initform t :accessor resizefunc))
   (:default-initargs
    :title "Comment Editor"
    :buffer-modes '("Lisp")
@@ -292,6 +294,7 @@
     (apply (intfunc interface) (list (panel interface) *comment-text*))
     (apply (fontfunc interface) (list (panel interface) *def-comment-edit-font*))
     (apply (fontcolfunc interface) (list (panel interface) *comment-color*))
+    (apply (resizefunc interface) (list *comment-frame*))
     ))
 
 (defun button-edit-comment-callback (&rest args)
