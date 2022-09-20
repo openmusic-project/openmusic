@@ -96,12 +96,6 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
   
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
-    (when (om-shift-key-p) 
-      (let* ((actives (get-actives view))
-             (inputs (loop for i in actives
-                           collect (car (inputframes i)))))
-        (loop for i in inputs
-              do (connect-box *target-out* i))))
     (if *adding-a-box*
         ;;; a box is being added ...
         (progn
@@ -142,37 +136,44 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("v") "eVal")
                      
                        (("b") "lock or change eval mode Button")
+                       (("l") "Lambda mode")
+                       (("o") "eval-Once mode")
+                       (("i") "Itself mode")
                        ((">" "<") "add/remove One optional input")
                        ("alt+lr" "add/remove All optional inputs")
                        (("k" "K") "add/remove Keyword inputs")
+                       ("alt+clic" "connect output of selected box")
+                       ("1-9" "connect/disconnect nth input of selected box")
                        #+(or linux win32)("ctrl+alt" "auto-connect outputs/inputs")
                        #+macosx("alt+cmd" "auto-connect outputs/inputs")
+                       ("shift+alt" "auto-connect all inputs")
+                       ("shift+ctrl+alt" "disconnect all inputs")
                        #+(or linux win32)("shift+ctrl+lrud" "resize box")
                        #+macosx("shift+cmd+lrud" "resize box")
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
-                       (("g") "output lisp expression in listener")
-                       (("t") "show Tutorial patch")
-                     
-                       #+om-reactive(("r") "reactive box on/off")
                        ))
 
-(defvar *patchhelp2* '((("f") "add function or class")
-                       (("c" "o") "add / edit comment box")
-                       (("C") "Change Color")
-                       (("F") "Change Font Style")
-                       (("A") "Align")
-                       (("i") "reInitialize size")
-                       (("I") "reInitialize value")
-                       (("m") "show/hide Miniview")
-                       (("M") "show/hide all Miniviews")
-                       (("n") "show/hide Name")
-                       (("a") "internalize patch Abstraction")
-                       (("y") "activate/switch bg picture")
-                       (("E" "U") "encapsulation/de-encap.")
-                       ("space" "Play / Pause")
-                       (("p" "s") "Play / Stop")
-                       ))
+(defvar *patchhelp2* '((("g") "output lisp expression in listener")
+                     (("t") "show Tutorial patch")
+                     #+om-reactive(("r") "reactive box on/off")
+                     (("f") "add function or class")
+                     (("c") "add / edit comment box")
+                     (("C") "Change comment/connections Color")
+                     (("F") "change Font style")
+                     (("A") "Align")
+                     (("I") "reInitialize size/connection")
+                     (("R") "Reinitialize value")
+                     (("m") "show/hide Miniview")
+                     (("M") "show/hide all Miniviews")
+                     (("n") "show/hide Name")
+                     (("a") "internalize patch Abstraction")
+                     (("y") "activate/switch bg picture")
+                     (("E" "U") "Encapsulation/de-encap.")
+                     ("space" "Play / Pause")
+                     (("p" "s") "Play / Stop")
+                     ))
+
 
 (defmethod get-help-list ((self t)) nil)
 
@@ -208,21 +209,40 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
           ))
    (call-next-method)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;HANDLE-KEY-EVENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun char-num-p (char)
+"Same as char-is-figure in scoreeditors.lisp necessary 
+because digit-char-p will not accept backspace and special om keys!"
+   (or (equal char #\1) (equal char #\2) (equal char #\3) (equal char #\4) (equal char #\5)
+       (equal char #\6) (equal char #\7) (equal char #\0)))
+
 (defvar *cur-eval-panel* nil)
 
 (defmethod handle-key-event ((self patchPanel) char) 
   (modify-patch self)
   (let* ((actives (get-actives self))
          (activeboxes (mapcar 'object actives)))
+    
+    (when (and (char-num-p char) actives (not (equal char #\0)))
+      (let ((boxes
+             (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
+        (loop for i in boxes
+              do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
+                   (when input
+                     (if (connected? (object input))
+                         (disconnect-box i input)
+                       (connect-box *target-out* input))))) 
+        ))
+    
     (case char
       (:om-key-delete (delete-general self))
-      ;;;(#\f (make-undefined-box self (om-mouse-position self)))
       (#\f (make-undefined-funct-box self (om-mouse-position self)))
-      (#\c (make-comment-box self (om-mouse-position self)))
-      (#\o (edit-comment-box actives))
+      (#\c (if actives (edit-comment-box actives)
+             (make-comment-box self (om-mouse-position self))))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
-
       (#\C  (patch-color self))
       (#\F (font-comments self))
       (#\e (mapc 'show-fun-code actives))
@@ -240,16 +260,15 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       ;;; in the menu
       (#\k (mapc 'add-keywords actives))
       (#\K (mapc 'erase-keywords actives))
-      (#\i (mapc 'reinit-size actives) 
+      (#\I (mapc 'reinit-size actives) 
            (reinit-connections self)
            (reinit-bg-picts self))
-      (#\I (mapc 'reinit-contents actives))
+      (#\R (mapc 'reinit-contents actives))
       
       (#\b (mapc 'add-rem-lock-button actives))
-      
       (#\l (mapc 'add-rem-lambda-button actives))
-      (#\1 (mapc 'add-rem-evonce-button actives))
-
+      (#\o (mapc 'add-rem-evonce-button actives))
+      (#\i (mapc 'add-rem-itself-button actives))
       (#\a (mapc 'internalize-patch actives))
       (#\A (mapc 'align-one-boxframe actives)
            (make-move-after self actives))
@@ -267,7 +286,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (#\n (mapc 'set-show-box-name actives))
       (#\M (change-edit-mode-all (get-subframes self)))
            
-       (:om-key-up 
+      (:om-key-up 
        (if (and (om-command-key-p) (om-shift-key-p))
            (mapc 'box-resize-y-minus actives)
          (progn
@@ -282,19 +301,19 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
       (:om-key-left
        (cond 
         ((om-option-key-p)
-           (mapc #'(lambda (item) (delete-all-inputs item) t) actives))
+         (mapc #'(lambda (item) (delete-all-inputs item) t) actives))
         ((and (om-command-key-p) (om-shift-key-p))
          (mapc 'box-resize-x-minus actives))
-         (t
-           (progn
+        (t
+         (progn
            (mapc #'(lambda (item) (move-frame-delta item 3)) actives)
            (make-move-after self actives)
            ))
-         ))
+        ))
       (:om-key-right 
        (cond 
         ((om-option-key-p)
-           (mapc #'(lambda (item) (add-all-inputs item)) actives))
+         (mapc #'(lambda (item) (add-all-inputs item)) actives))
         ((and (om-command-key-p) (om-shift-key-p))
          (mapc 'box-resize-x-plus actives))
         (t
@@ -322,9 +341,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                          (handle-key-event box char))
                     finally
                     ;do 
-                    (unless hotbox 
-                         (om-beep)			    ;no boxes have specialized handle-key-event methods
-                         ))))))
+                      (unless hotbox 
+                        (om-beep)			    ;no boxes have specialized handle-key-event methods
+                        ))))))
 
 
 

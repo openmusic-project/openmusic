@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -56,7 +56,18 @@
 ;====================== EVENTS==========================
 
 (defmethod om-view-click-handler ((self miniview) where)
-  (toggle-icon-active-mode (om-view-container self)))
+  (let ((box (om-view-container self))) 
+    (cond 
+     ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p)) 
+      (loop for i in (inputframes box)
+            do (disconnect-box box i)))
+     ((and (om-option-key-p) (om-shift-key-p))
+      (loop for i in (inputframes box)
+            do (connect-box *target-out* i)))
+     ((om-option-key-p) (setf *target-out* (car (reverse (outframes box)))))
+     ;((om-command-key-p) (connect-box *target-out* (1st-not-con-input box))) 
+     (t ))
+    (toggle-icon-active-mode box)))
 
 
 (defmethod om-view-doubleclick-handler ((self miniview) where)

@@ -153,17 +153,20 @@
 (defmethod om-view-click-handler ((self icon-box) where) 
   ;(call-next-method))
   ;(when (equal (call-next-method) self)  ;;; new for click in lock-button
-  (cond 
-   ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p)) 
-    (loop for i in (inputframes (om-view-container self))
-          do (connect-box *target-out* i)))
-   ((and (om-option-key-p) (om-shift-key-p))
-    (loop for i in (inputframes (om-view-container self))
-          do (disconnect-box (om-view-container self) i)))
-   (t ))
-  (toggle-icon-active-mode (om-view-container self))
+  (let ((box (om-view-container self)))
+    (cond 
+     ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p))
+      (loop for i in (inputframes box)
+            do (disconnect-box box i)))
+     ((and (om-option-key-p) (om-shift-key-p))
+      (loop for i in (inputframes box)
+            do (connect-box *target-out* i)))
+     ((om-option-key-p) (setf *target-out* (car (outframes box))))
+     ;((om-command-key-p) (connect-box *target-out* (1st-not-con-input box)))
+     (t ))
+    (toggle-icon-active-mode (om-view-container self))
    ;)
-  )
+    ))
 
 (defmethod om-view-doubleclick-handler ((self icon-box) where)
    (declare (ignore where))
@@ -332,15 +335,27 @@
     
 (defmethod draw-after-box ((self omboxframe)) nil)
 
-(defmethod om-view-click-handler ((self omboxframe) where)
+(defmethod 1st-not-con-input ((self omboxframe))
+  (let* ((ins (inputframes self))
+         (objs (mapcar 'object ins))
+         (con? (mapcar 'connected? objs))
+         (lst (mapcar 'list con? ins)))
+    (loop for i in lst
+          when (not (car i))
+            return (second i))))
+
+(defmethod om-view-click-handler ((self omboxframe) where) ;(om-inspect self)
+  ;(print (first-not-connected-input self))
   (do-click-inbox self where)
   (cond 
    ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p)) 
     (loop for i in (inputframes self)
-          do (connect-box *target-out* i)))
+          do (disconnect-box self i)))
    ((and (om-option-key-p) (om-shift-key-p))
     (loop for i in (inputframes self)
-          do (disconnect-box self i)))
+          do (connect-box *target-out* i)))
+   ((om-option-key-p) (setf *target-out* (car (outframes self))))
+   ;((om-command-key-p) (connect-box *target-out* (1st-not-con-input self)))
    (t ))
   self)
 
@@ -730,6 +745,15 @@
           (remove-lock-button self)
           (add-lock-button self "&"))
          (t (add-lock-button self "&"))))
+
+(defmethod add-rem-itself-button ((self omboxframe))
+   (cond ((and (lock-button self) (string-equal (allow-lock (object self)) "o")
+               (mode-allowed-p (object self) "o"))
+          (remove-lock-button self))
+         ((and (lock-button self) (mode-allowed-p (object self) "o"))
+          (remove-lock-button self)
+          (add-lock-button self "o"))
+         (t (add-lock-button self "o"))))
 
 (defun mode-allowed-p (box mode)
   (find mode (allowed-lock-modes box) :test 'string-equal))
@@ -1228,6 +1252,9 @@
    (:documentation "Simple frame for OMBoxEditCall meta objects. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
 
+(defmethod boxeditorframe-p ((self boxeditorframe)) t)
+(defmethod boxeditorframe-p ((self t)) nil)
+
 (defmethod show-fun-code ((self boxEditorFrame))
   (edit-definition (class-name (reference (object self)))))
 
@@ -1396,7 +1423,14 @@
        (om-invalidate-view self))))
      
 
-
+(defmethod 1st-not-con-input ((self boxeditorframe))
+  (let* ((ins (inputframes self))
+         (objs (mapcar 'object ins))
+         (con? (mapcar 'connected? objs))
+         (lst (mapcar 'list con? ins)))
+    (loop for i in lst
+          when (not (car i))
+            return (second i))))
 
 ;----------------------------------------
 
