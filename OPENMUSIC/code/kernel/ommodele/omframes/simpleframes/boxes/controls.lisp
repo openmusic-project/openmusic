@@ -401,7 +401,8 @@
         (set-patch-box-name newbox text))
       
       (omG-add-element scroller (make-frame-from-callobj newbox)))
-        
+      (when (equal funname 'comment)
+        (reinit-size (car (frames newbox))))  
     newbox))  ;;; so validity of string as a new object can be tested
 
 (defmethod add-args-to-box (box args)
