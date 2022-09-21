@@ -49,9 +49,12 @@
 ;;;   (cond
 ;;;    ((om-command-key-p) (om-set-help (not (help-on?))))
 ;;;    (t (toggle-icon-active-mode (om-view-container self)))))
-(defmethod om-view-click-handler ((self ttybox) where)
+(defmethod om-view-click-handler ((self ttybox) where) 
    (declare (ignore where))
-   (toggle-icon-active-mode (om-view-container self)))
+   (let ((box (om-view-container self)))
+     (when (om-option-key-p) 
+       (setf *target-out* (car (outframes box))))
+     (toggle-icon-active-mode box)))
 
 ;;;(defmethod om-view-doubleclick-handler ((self ttybox) where)
 ;;;   (declare (ignore where))
