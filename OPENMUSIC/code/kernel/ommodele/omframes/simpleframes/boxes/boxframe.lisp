@@ -164,7 +164,7 @@
      ((om-option-key-p) (setf *target-out* (car (outframes box))))
      ;((om-command-key-p) (connect-box *target-out* (1st-not-con-input box)))
      (t ))
-    (toggle-icon-active-mode (om-view-container self))
+    (toggle-icon-active-mode box)
    ;)
     ))
 
@@ -244,9 +244,22 @@
      (om-beep-msg (format nil "~A boxes cannot be renamed!" (type-of (object (icon-finder self))))))
    t)
   
-(defmethod om-view-click-handler ((self box-dialog-name) where)
+(defmethod om-view-click-handler ((self box-dialog-name) where) 
    (declare (ignore where))
-   (toggle-icon-active-mode (om-view-container self)))
+(let ((box (om-view-container self)))
+    (cond 
+     ((and (om-command-key-p) (om-option-key-p) (om-shift-key-p))
+      (loop for i in (inputframes box)
+            do (disconnect-box box i)))
+     ((and (om-option-key-p) (om-shift-key-p))
+      (loop for i in (inputframes box)
+            do (connect-box *target-out* i)))
+     ((om-option-key-p) (setf *target-out* (car (outframes box))))
+     ;((om-command-key-p) (connect-box *target-out* (1st-not-con-input box)))
+     (t ))
+    (toggle-icon-active-mode box)
+   ;)
+    ))
   
   
 (defmethod om-view-key-handler ((self edit-boxframe-name) char) 
