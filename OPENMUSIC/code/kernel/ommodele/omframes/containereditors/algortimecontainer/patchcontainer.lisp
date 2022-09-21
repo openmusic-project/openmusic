@@ -234,7 +234,8 @@ because digit-char-p will not accept backspace and special om keys!"
               do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
                    (when input
                      (if (connected? (object input))
-                         (disconnect-box i input)
+                         (unless (member *target-out* (outframes i))
+                           (disconnect-box i input))
                        (connect-box *target-out* input))))) 
         ))
     
