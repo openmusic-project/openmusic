@@ -672,9 +672,13 @@ Extraction methods.
   (initialize-instance self :tree tree ))
 
 (defmethod (setf tree) ((tree list) (self voice))
-  (let ((chords (chords self)) (ties (ties self)))
+  (let* ((chords (chords self)) (ties (ties self))
+         (box (associated-box self))
+         (editor (editorframe box)))
     (do-initialize-metric-sequence self :tree tree )
     (do-initialize self :chords chords :tempo (tempo self) :tree tree :legato (legato self) :ties ties)
+    (when editor
+      (update-panel (panel editor)))
     self))
 
 
