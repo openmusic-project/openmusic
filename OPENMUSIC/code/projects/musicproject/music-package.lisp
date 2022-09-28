@@ -62,10 +62,10 @@
 (AddGenFun2Pack '(OMquantify gkant object-dur 
                              true-durations
                              align-chords concat get-chords get-measures 
-                             set-obj-vel set-obj-chan set-obj-port set-obj-tempo
+                             set-obj-pitch set-obj-vel set-obj-chan set-obj-port set-obj-tempo
                              ;mask 
                              merger select chord-filter chord-band-filter split-voices 
-                             voice->voices concat-voices maquette2obj) 
+                             voice->voices concat-score-objs maquette2obj) 
                 *scorefun-package*)
 
 (AddPackage2Pack *scorefun-package* *scorepackage* :protect t)

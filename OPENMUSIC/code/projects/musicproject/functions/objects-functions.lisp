@@ -315,7 +315,7 @@
     (make-instance 'poly 
                    :voices concate)))
 
-
+;kept for compatibility.
 (defmethod! concat-voices ((liste list))
    :initvals (list t) 
    :indoc '("list of voices")
@@ -325,6 +325,32 @@
        (concatenate-voices liste)
      (concatenate-polys liste)))
 
+(defmethod! concat-chord-seq ((liste list))
+  (let ((res (car liste)))
+    (loop for i in (cdr liste)
+            do (setf res (concat res i)))
+    res))
+
+(defmethod! concat-multi-seq ((liste list))
+  (let ((res (car liste)))
+    (loop for i in (cdr liste)
+            do (setf res (concat res i)))
+    res))
+
+(defmethod! concat-score-objs ((liste list))
+   :initvals (list t) 
+   :indoc '("list of voices")
+   :icon 217
+   :doc "concatenates a list of voices or a list of poly  into one voice or poly."
+   (cond ((voice-p (car liste)) 
+          (concatenate-voices liste))
+         ((poly-p (car liste))
+          (concatenate-polys liste))
+         ((chord-seq-p (car liste))
+          (concat-chord-seq liste))
+         ((multi-seq-p (car liste))
+          (concat-multi-seq liste))
+         (t (om-beep-msg "No applicable method for elements in this list"))))
 
 ;;;;;;;;;
 

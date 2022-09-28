@@ -622,12 +622,12 @@ If <mode> is destructive, tempo of <self> will be destructively changed."
   (if (equal mode 'clone)
       (make-instance 'poly
                      :voices  (loop for i in (inside self)
-                                   ; for tp in temp
-                                    collect (set-obj-tempo i tempo :mode 'clone)))
+                                    for tp in tempo
+                                    collect (set-obj-tempo i tp :mode 'clone)))
     (progn
       (loop for i in (inside self)
-           ; for tp in temp
-            do (set-obj-tempo i tempo :mode 'destructive))
+            for tp in tempo
+            do (set-obj-tempo i tp :mode 'destructive))
       (update-obj self))))
 
 
@@ -1219,3 +1219,139 @@ Further more, in voice method, if list inputed, it will change all notes accordi
             do (setf (chords i) (inside chrds)))
       (update-obj self))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;      SET-OBJ-PITCH    ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! set-obj-pitch ((self voice) 
+                           (newpitch list) 
+                           &key 
+                           (mode 'clone)
+                           (nth nil)) 
+  :initvals '(t '(6000 6100) 'clone nil) 
+  :indoc '("self" "newpitch" "mode" "nth")
+  :menuins '((2 (("clone" clone) 
+                 ("destructive" destructive))))
+  :icon 355
+  :doc  "Changes pitches in a voice or poly object. 
+<mode> keyword can be clone, <self> isunchanged. If :mode = destructive, <self> will be mnodified.
+If <self> is a poly object
+if key <nth> is specified, nth voices will be changed. 
+If <nth> is nil (default), the pitches will be distributed vertically in the poly."
+
+  (if (equal mode 'clone)
+      (make-instance 'voice 
+                     :tree (tree self) 
+                     :chords newpitch
+                     :tempo (tempo self))
+    (setf (chords self) newpitch)))
+    
+
+(defmethod! set-obj-pitch ((self voice) 
+                           (newpitch number) 
+                           &key 
+                           (mode 'clone) 
+                           (nth nil))
+   (let* ((npuls (n-pulses (tree self)))
+          (pitch (repeat-n newpitch npuls)))
+     (if (equal mode 'clone)
+     (make-instance 'voice 
+                    :tree (tree self) 
+                    :chords pitch
+                    :tempo (tempo self))
+
+     (setf (chords self) pitch))))
+
+
+(defmethod! set-obj-pitch ((self voice) 
+                           (newpitch chord-seq) 
+                           &key 
+                           (mode 'clone) 
+                           (nth nil))
+  (let ((chords (inside newpitch)))
+  (if (equal mode 'clone)
+      (make-instance 'voice 
+                     :tree (tree self) 
+                     :chords chords
+                     :tempo (tempo self))
+
+    (setf (chords self) chords))))
+
+
+(defmethod! set-obj-pitch ((self poly) 
+                           (newpitch list)
+                           &key 
+                           (mode 'clone)
+                           (nth nil))
+  (if (equal mode 'clone)
+      (let* ((newself (clone self)))
+        (if nth
+            (progn
+              (mapcar #'(lambda (nth-voices pitches) 
+                          (setf (nth nth-voices (inside newself))
+                                (set-obj-pitch (nth nth-voices (inside newself)) pitches)))
+                      nth newpitch)
+              newself)
+        (verticalize-pitch newself newpitch)))
+        (if nth
+            (mapcar #'(lambda (nth-voices pitches) 
+                (setf (nth nth-voices (inside self))
+                      (set-obj-pitch (nth nth-voices (inside self)) pitches)))
+            nth newpitch)
+          (verticalize-pitch self newpitch))
+        ))
+
+(defmethod! verticalize-pitch ((self poly) (pitch list))
+   :initvals (list t '(6000 6100)) 
+   :indoc '("poly" "pitches")
+   :icon 355
+   :doc "In first input a poly object.
+In the second object a simple list of pitches. The method will return
+a poly object with the same rythm but with new pitches. These 
+will occur as a melodic line, i.e the same order given in <pitch> but 
+distributed in each voice according to their offsets. Meaning that the
+melodic line will be distributed in all voices. It is important to know 
+the total pitches needed throughout the poly i.e in all voices. "
+  (let* ((voices (inside self))
+         (tempi (mapcar #'tempo (inside self)))
+         (vox->chrdsq (mapcar #'(lambda (x) (Objfromobjs x (make-instance 'chord-seq)))
+                              voices))
+         (voxoffsets (mapcar #'(lambda (x) (butlast (lonset x)))
+                             vox->chrdsq))
+         (voxnum  (loop for i from 0 to (- (length voices) 1)
+                        for vx in voices 
+                        collect (repeat-n i (length (chords vx)))))
+          
+         (listdata  (mapcar #'(lambda (onsets pitch) (mat-trans (list onsets pitch)))
+                            voxoffsets
+                            voxnum))
+         
+         (sortedata (sort. (flat-once listdata) '< 'first))
+         (index (mapcar 'second sortedata))
+         (resultat (repeat-n '() (length (inside self))))
+         (parsednotes (loop 
+                       for i in pitch 
+                       for indx in index
+                       do (push i (nth indx resultat))))
+         (ordered (loop for i in resultat
+                        collect (reverse i)))
+         (trees (loop for i in (inside self)
+                      collect (tree i))))
+
+   
+    (make-instance 'poly 
+                   :voices (loop for i in trees
+                                 for chrd in ordered
+                                 for tmp in tempi
+                                 collect (make-instance 'voice
+                                                        :tree i
+                                                        :chords chrd
+                                                        :tempo tmp )))
+
+
+
+    ))
+
+(defmethod! verticalize-pitch ((self poly) (chord-seq chord-seq))
+  (let ((pitch (inside chord-seq)))
+    (verticalize-pitch self pitch)))

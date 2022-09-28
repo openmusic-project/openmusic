@@ -957,7 +957,10 @@ of all its direct subcontainers (supposed adjacent)"
   (do-initialize self :voices voices))
 
 
-
+;;a voir si cela ne pose pas de probleme.
+(defmethod tempo ((self poly))
+  (let ((inside (inside self)))
+    (mapcar #'tempo inside)))
 
 
 ;=====================================

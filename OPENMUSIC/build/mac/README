@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.0
+; OM 7.1
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -39,13 +39,13 @@ inside the .app bundle's resources.
 
 NEW FEATURES
 
-- Jack support for linux (V. Anders)
 - New score functions:
-	-set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
-
+	set-obj-pitch, set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
+- Jack support for linux (V. Anders)
 
 IMPROVEMENTS
 
+- concat-score-objs now replaces concat-voices and covers list of chord-seqs or multi-seqs or voices or polys
 - comment boxes are resized correctly
 - info definition (inspection of code) is now resizable 
 - key shortcuts for recording midi (q and w)
