@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -356,6 +356,34 @@
 
 (defun get-line-connection (x1 y1 xi yi)
   (list (om-make-point x1 y1) (om-make-point xi yi)))
+
+
+(defmethod get-min-xy ((self c-connection))
+  (let* ((points (points self))
+         (x  (list-min (loop for i in points
+          collect (om-point-x i))))
+         (y  (list-min (loop for i in points
+          collect (om-point-y i)))))
+    (list x y)))
+
+(defmethod get-max-xy ((self c-connection))
+  (let* ((points (points self))
+         (x  (list-max (loop for i in points
+          collect (om-point-x i))))
+         (y  (list-max (loop for i in points
+          collect (om-point-y i)))))
+    (list x y)))
+
+(defmethod om-view-position ((self c-connection))
+  (let ((pts (get-min-xy self)))
+    (om-make-point (car pts) (last-elem pts))))
+
+(defmethod om-view-size ((self c-connection))
+  (let* ((min (get-min-xy self))
+         (max (get-max-xy self))
+         (x (- (car max) (car min)))
+         (y (- (second max) (second min))))
+    (om-make-point x  y )))
 
 
 ;=======Maquettes
