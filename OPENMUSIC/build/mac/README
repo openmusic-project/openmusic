@@ -45,6 +45,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- alt+selection selects also connections
 - concat-score-objs now replaces concat-voices and covers list of chord-seqs or multi-seqs or voices or polys
 - comment boxes are resized correctly
 - info definition (inspection of code) is now resizable 
