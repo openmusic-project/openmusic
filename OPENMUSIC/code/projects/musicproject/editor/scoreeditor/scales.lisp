@@ -448,7 +448,7 @@
   (setf (obj-mode (panel self)) 'note)
   (change-editor-tone (panel self) (approx2tone (approx-factor (object self))))
   (change-editor-mode (panel self) 3)
-  ;(update-panel (panel self))
+  (update-panel (panel self))
   )
 
 (defmethod change-editor-tone ((self scalepanel) tone)

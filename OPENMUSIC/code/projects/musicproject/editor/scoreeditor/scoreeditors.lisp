@@ -4570,7 +4570,7 @@
        (when alteration
         (om-with-fg-color self *om-gray-color*
           (om-with-font (om-make-music-font *micron-font* size)
-                        (om-draw-char (- x (round size 3)) (- pitch-pix (round size 8)) alteration) )))
+                        (om-draw-char (- x (round size 3)) (- pitch-pix (round size 8)) (coerce alteration 'character)))))
        (when auxlines
          (om-with-fg-color self  *system-color* 
            (let ((dir (car auxlines))
