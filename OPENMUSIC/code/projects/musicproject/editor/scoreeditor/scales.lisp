@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 
@@ -465,27 +465,33 @@
   (om-with-compiler-warnings nil
     (setf (object self) val)
     (change-editor-tone (panel self) (approx2tone (approx-factor (object self))))
-    (update-panel (panel self))))
+    ;(update-panel (panel self))
+    ))
 
 (defmethod update-chord ((self scaleeditor))
   (setf (ref-chord self) (make-instance 'chord :lmidic (arithm-ser 6000 (- 7200 (approx-factor (object self)))  
                                                                    (approx-factor (object self))))))
 
-(defmethod report-modifications ((self scaleeditor))
-  (let ((refscale (get-current-scale (get-edit-param self 'approx))))
+(defmethod report-modifications ((self scaleeditor)) ;(om-inspect self)
+  (let ((refscale (object self))) ;(get-current-scale (get-edit-param self 'approx))))
     (setf (approx-factor (object self)) (/ 200 (get-edit-param self 'approx)))
     (setf (alteration-list (object self)) (copy-list (alteration-list refscale)))
-    (setf (lines-list (object self)) (copy-list (lines-list (get-current-scale refscale))))
-  (loop for note in (inside (ref-chord self))
-        for i = 0 then (+ i 1) do
-        (when (tonalite note)
-          (setf (nth i (lines-list (object self))) (+ (nth i (lines-list refscale)) 
-                                                           (line-diff (nth i (alteration-list refscale))
-                                                                 (alt-2-str (tonalt (tonalite note))))))
-          (setf (nth i (alteration-list (object self))) (string (alt-2-str (tonalt (tonalite note))))))
-        )
-  (when (and (ref self) (subtypep (type-of (ref self)) 'scoreeditor))
-    (update-panel (panel (ref self))))))
+    (setf (lines-list (object self)) (copy-list (lines-list refscale)))
+    (print (lines-list (object self)))
+    (loop for note in (inside (ref-chord self))
+          for i = 0 then (+ i 1) do
+            (when (tonalite note)
+              (setf (nth i (lines-list (object self))) (+ (nth i (lines-list refscale)) 
+                                                          (line-diff (nth i (alteration-list refscale))
+                                                                     (alt-2-str (tonalt (tonalite note))))))
+              (setf (nth i (alteration-list (object self))) (string (alt-2-str (tonalt (tonalite note))))))
+            )
+    (when (and (ref self) (subtypep (type-of (ref self)) 'scoreeditor))
+      (update-panel (panel (ref self))))
+    (when (not (subtypep (type-of (ref self)) 'scoreeditor))
+      (setf *default-editor-scale* (list (alteration-list (object self)) (lines-list (object self)) (approx-factor (object self))))
+      (save-preferences))
+    ))
 
 
 (defun line-diff (ref-alt new-alt)
@@ -511,9 +517,17 @@
           (t 0)))
         (t 0)))
         
-        
-                             
-
+#|        
+(defmethod handle-key-event ((self scalepanel) key) 
+  (case key
+    (#\s (progn 
+           (print (list "Saved!"))
+           (save-preferences)
+           (om-close-window *pref-window*)
+           (om-window-close-event  (om-view-container self))
+           ))
+           ))
+|#
 (defmethod handle-key-event ((self scalepanel) key) nil)
 
 (defmethod om-get-menu-context ((self scaleeditor)) nil)
@@ -532,7 +546,9 @@
          (graph-obj (get-click-in-obj self (graphic-obj self) mode-obj where)))
     (when graph-obj 
       (om-popup-menu-context self))
-     (report-modifications (om-view-container self))))
+     (report-modifications (om-view-container self))
+     (update-panel self)
+     ))
 
 
 

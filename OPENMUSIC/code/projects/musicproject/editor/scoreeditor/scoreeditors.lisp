@@ -1542,6 +1542,86 @@
 ;;;;============================
 ;;; SCORE EDITOR / SCALE INTERFACE
 
+(defmethod open-editor-scale (scale)
+  "Scale editor for preference panel. <scale> here is a list of list"
+  (let* ((win (om-make-window 'om-dialog :window-title "Editor Scale"
+                             :size (om-make-point 250 160) :resize nil))
+        (cseq (make-instance 'chord-seq))
+        (alt (car scale))
+        (lines (second scale))
+        (approx (third scale))
+        (scale-obj (make-instance 'scale
+                                  :alteration-list alt
+                                  :lines-list lines
+                                  :approx-factor approx))
+        txt def)
+    (om-add-subviews win (setf txt (om-make-dialog-item 'om-static-text 
+                                                        (om-make-point 20 10) 
+                                                        (om-make-point 200 100)
+                                                        (format nil "Current editor scale is:~%~%~A" 
+                                                                  (if (and scale-obj (alteration-list scale-obj)) 
+                                                                      (let ((sca scale-obj)
+                                                                            (str ""))
+                                                                        (loop for line in (lines-list sca)
+                                                                              for alt in (alteration-list sca) do
+                                                                                (setf str (string+ str "(" (integer-to-string line) " " (string alt) ") ")))
+                                                                        str)
+                                                                    (string+ "  Default 1/" (integer-to-string *global-midi-approx*) " tone scale")))
+                                                        :font *controls-font*))
+                     
+                     (setf def (om-make-dialog-item  'om-button 
+                                                     (om-make-point 20 110) 
+                                                     (om-make-point 60 20)
+                                                     "Default"
+                                                     :di-action (om-dialog-item-act item
+                                                                  (setf scale-obj nil)
+                                                                  ;(setf *default-editor-scale* (get-scale-from-tonality cseq))
+                                                                  (setf *default-editor-scale* nil)
+                                                                  (save-preferences)
+                                                                  (om-set-dialog-item-text txt 
+                                                                                           (format nil "Current editor scale is:~%~%~A"
+                                                                                                   (cond ((and *om-tonalite* (get-scale-from-tonality cseq))
+                                                                                                          (setf *default-editor-scale* nil)
+                                                                                                          (string+ "  Default 1/" (integer-to-string *global-midi-approx*) "tone scale"))
+                                                                                                         (scale-obj
+                                                                                                          (let ((sca scale-obj)
+                                                                                                                (str ""))
+                                                                                                            (loop for line in (lines-list sca)
+                                                                                                                  for alt in (alteration-list sca) do
+                                                                                                                    (setf str (string+ str "(" (integer-to-string line) " " (string alt) ") ")))
+                                                                                                            str))
+                                                                                                         (t
+                                                                                                          (progn 
+                                                                                                            (setf *default-editor-scale* nil)
+                                                                                                            (string+ "  Default 1/" (integer-to-string *global-midi-approx*) " tone scale"))))))
+                                                                   (setf *default-editor-scale* nil)
+                                                                   (save-preferences)
+                                                                  (om-enable-dialog-item item nil))
+                                                                  
+                                                     ))
+                     (om-make-dialog-item  'om-button (om-make-point 90 110) (om-make-point 60 20)
+                                           "Edit..."
+                                           :di-action (om-dialog-item-act item
+                                                        (let* ((scale (if (and scale-obj (alteration-list scale-obj)) 
+                                                                          scale-obj
+                                                                        (get-new-scale 2))) 
+                                                               (scale-editor (make-editor-window 'scaleeditor scale "SCALE EDITOR" nil
+                                                                                                 :winsize (om-make-point 700 250))))
+                                                          scale-editor
+                                                          (om-enable-dialog-item def nil)
+                                                          (push scale-editor *related-wins*))))
+                     (om-make-dialog-item  'om-button (om-make-point 160 110) (om-make-point 60 20)
+                                           "Apply"
+                                           :di-action (om-dialog-item-act item
+                                                        (set-pref (find-pref-module :score) :scale *default-editor-scale*)
+                                                        (close-all-related-win)
+                                                        (om-close-window *pref-window*)
+                                                        (om-return-from-modal-dialog win t)))
+                     )
+    (push win *related-wins*)
+    (om-select-window win)
+    ))
+
 (defmethod create-editor-scale ((self scoreeditor))
   ;(print (editor-params-edition self)))
   (let ((win (om-make-window 'om-dialog :window-title "Editor Scale"
@@ -1884,6 +1964,12 @@
 
 ;-------------
 
+(defun make-scale (list)
+  (make-instance 'scale 
+                 :alteration-list (car list)
+                 :lines-list (second list)
+                 :approx-factor (third list)))
+
 (defmethod update-slot-edit ((self scorePanel))
   (unless (score-page-mode self)
     (let ((control (slotedit (ctr-view (om-view-container self))))
@@ -1979,8 +2065,11 @@
          (setf (min-val control) 0)
          (setf (max-val control) 0)
          (setf (afterfun control) 
-               #'(lambda (x) (declare (ignore x)) (om-beep)))))
-             )
+               #'(lambda (x) (declare (ignore x)) (om-beep))))))             
+      (when (and (car *default-editor-scale*) 
+                 (null (get-edit-param (editor self) 'scale))
+                 (= 2 (get-edit-param (editor self) 'approx)))
+        (set-edit-param (editor self) 'scale (make-scale *default-editor-scale*)))
      (om-invalidate-view self t))))
 
 ;===================================================================

@@ -31,6 +31,7 @@
 ;Kept for compatibility
 (defvar *current-pref* nil)
 (defvar *saved-pref* nil)
+(defvar *related-wins* nil)
 
 (defun find-pref-module (name &optional preflist)
    (unless preflist
@@ -244,6 +245,8 @@
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 
                                            :di-action (om-dialog-item-act  item
+                                                        (close-all-related-win) 
+                                                        (setf *related-wins* nil)
                                                         (om-close-window (om-view-window item))
                                                         ))
                     
@@ -252,8 +255,16 @@
                                                         (setf *current-pref* (local-prefs (om-view-window item)))
                                                         (put-all-preferences)
                                                         (save-preferences)
+                                                        (close-all-related-win) 
+                                                        (setf *related-wins* nil)
                                                         (om-close-window (om-view-window item)))))
      newwindow))
+
+
+(defun close-all-related-win ()
+  "closes all openned panels related to preferences"
+  (when *related-wins*
+    (mapcar #'om-close-window *related-wins*)))
 
 (defun omG-make-preference-dialog ()
    (if (and *pref-window* (om-window-open-p *pref-window*))

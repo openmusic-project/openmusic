@@ -41,10 +41,17 @@
 (defvar *hide-stems* nil)
 (defvar *stem-size-fact* 1)
 (defvar *chord-stem-dir* "neutral")
+;(defvar *default-editor-scale* (list (alteration-list *2-tone-chromatic-scale*)
+;                                     (lines-list *2-tone-chromatic-scale*)
+;                                     (approx-factor *2-tone-chromatic-scale*)))
+(defvar *default-editor-scale* nil)
+
+
 
 
 (defmethod put-preferences ((id (eql :score)))
-   (let ((modulepref (find-pref-module ID)))
+   (let ((modulepref (find-pref-module ID))
+         (defpref (get-def-vals id))) 
      (setf *global-midi-approx* (get-pref modulepref :approx))
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
@@ -59,6 +66,7 @@
      ;(setf *current-1/4-scale* (or (nth 9 (defvals modulepref)) *4-tone-chromatic-scale*) )     
      ;(setf *current-1/8-scale* (or (nth 10 (defvals modulepref)) *8-tone-chromatic-scale*)  ) 
      (setf *diapason-freq* (get-pref modulepref :diapason))
+     (setf *default-editor-scale* (get-pref modulepref :scale))
      ))
 
 
@@ -68,16 +76,49 @@
 ;                     (list  (omng-save *current-1/2-scale*)  (omng-save *current-1/4-scale*)
 ;                            (omng-save *current-1/8-scale*))))))
 
+
+
+(defmethod save-pref-module ((iconID (eql :score)) values)
+  (list iconID `(list
+                 ':approx ,*global-midi-approx*
+                 ':font-size ,*music-fontsize*
+                 ':staff ',*default-satff*
+                 ':sys-color ,(cons `om-make-color (list (om-color-r *system-color*)
+                            (om-color-g *system-color*)
+                            (om-color-b *system-color*)
+                            ))
+                 ':select-color ,(cons `om-make-color (list (om-color-r *select-color*)
+                            (om-color-g *select-color*)
+                            (om-color-b *select-color*)
+                            ))
+                 ':hide-stems ,*hide-stems*
+                 ':stem-size-fact ,*stem-size-fact*
+                 ':chord-stem-dir ,*chord-stem-dir*
+                 ':dyn-list ,(cons `list (mapcar 'caddr *dynamics-symbols-list*))
+                 ':tonal-options (when *om-tonalite* (tonal-defaults))
+                 ':diapason ,*diapason-freq*
+                 ':scale (list ,(cons `list(car *default-editor-scale*)) 
+                              ,(cons `list(second *default-editor-scale*)) 
+                              ,(third *default-editor-scale*))
+		 ) *om-version*))
+
+
+
 (defmethod get-def-vals ((iconID (eql :score)))
-   (list :approx 2 :fontsize 24 :staff 'g 
-         :sys-color *om-black-color* 
-         :select-color *om-gray-color* 
-         :hide-stems nil
-         :stem-size-fact 1
-         :chord-stem-dir "neutral"
-         :dyn-list '(20 40 55 60 85 100 115 127)
-         :tonal-options (when *om-tonalite* (tonal-defaults))
-         :diapason 440.0))
+  (list :approx 2 :fontsize 24 :staff 'g 
+        :sys-color *om-black-color* 
+        :select-color *om-gray-color* 
+        :hide-stems nil
+        :stem-size-fact 1
+        :chord-stem-dir "neutral"
+        :dyn-list '(20 40 55 60 85 100 115 127)
+        :tonal-options (when *om-tonalite* (tonal-defaults))
+        :diapason 440.0
+       ; :scale (list (alteration-list *2-tone-chromatic-scale*)
+       ;                              (lines-list *2-tone-chromatic-scale*)
+       ;                              (approx-factor *2-tone-chromatic-scale*));(list (list nil) (list nil) (list nil))
+        :scale nil
+        ))
 
 
 ; *2-tone-chromatic-scale* *4-tone-chromatic-scale* *8-tone-chromatic-scale*))
@@ -271,7 +312,17 @@
                                             :font *controls-font*)
                        (om-make-view 'tonaloptions-view :position (om-make-point (+ l2 190) 70) :size (om-make-point 150 140) 
                                      :object modulepref)
-                       ))
+                       (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 190) 230) (om-make-point 120 20) "Scale Display"
+                                            :font *controls-font*)
+                       (om-make-dialog-item 'om-button (om-make-point (+ l2 190) 255) (om-make-point 120 30) 
+                                            "Open editor" :font *om-default-font1*
+                                            :di-action #'(lambda (item) (declare (ignore item))
+                                                           (set-pref modulepref :scale *default-editor-scale*)
+                                                          (open-editor-scale *default-editor-scale*))
+                                            
+                                            )) 
+                                                         
+                       )
 
     thescroll))
 
