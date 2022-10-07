@@ -154,6 +154,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        #+macosx("shift+alt+cmd" "disconnect all inputs")
                        #+(or linux win32)("shift+ctrl+lrud" "resize box")
                        #+macosx("shift+cmd+lrud" "resize box")
+                       (("I") "reInitialize size/connection") 
                        ))
 
 (defvar *patchhelp2* '((("d") "show Documentation")
@@ -166,7 +167,6 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("C") "Change comment/connections Color")
                        (("F") "change Font style")
                        (("A") "Align")
-                       (("I") "reInitialize size/connection")
                        (("R") "Reinitialize value")
                        (("m") "show/hide Miniview")
                        (("M") "show/hide all Miniviews")
