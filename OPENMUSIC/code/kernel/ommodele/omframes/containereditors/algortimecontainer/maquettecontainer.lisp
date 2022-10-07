@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -1040,8 +1040,10 @@
 
 (defmethod get-help-list ((self maquettepanel))
   (list '(("space" "Play / Stop")
-          ("cmd+box" "Create Temporal Patch")
-          ("cmd+shift+box" "Create Internal Maq.")
+          #+cocoa ("cmd+box" "Create Temporal Patch")
+          #+cocoa("cmd+shift+box" "Create Internal Maq.")
+          #+(or linux win32)("ctrl+box" "Create Temporal Patch")
+          #+(or linux win32)("ctrl+shift+box" "Create Internal Maq.")
           ("lrud" "Move")
           ("shift+lrud" "Move faster")
           ("del" "Delete")

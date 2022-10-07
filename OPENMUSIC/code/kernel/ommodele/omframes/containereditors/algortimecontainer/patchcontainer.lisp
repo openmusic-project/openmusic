@@ -157,7 +157,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("I") "reInitialize size/connection") 
                        ))
 
-(defvar *patchhelp2* '((("d") "show Documentation")
+(defvar *patchhelp2* '(("alt+box" "box and connection selection")
+                       (("d") "show Documentation")
                        (("e") "Edit lisp code")
                        (("g") "output lisp expression in listener")
                        (("t") "show Tutorial patch")
