@@ -13,9 +13,9 @@ LWVERSION=8.0
 LWEXEC=lispworks-8-0-0-macos64-universal
 
 
-OM_VERSION="7.1"
-APP_FOLDER="OM 7.1"
-DMG_NAME="OM-7.1-macOS"
+OM_VERSION="7.2"
+APP_FOLDER="OM 7.2"
+DMG_NAME="OM-7.2-macOS"
 
 
 get_abs_filename() {
