@@ -119,8 +119,8 @@
 
 (defmethod make-new-pref-scroll  ((num (eql :general)) modulepref)
   (let ((thescroll (om-make-view 'preference-pane
-                                  :pref-id num
-                                  :name "General"
+                                 :pref-id num
+                                 :name "General"
                                  :size (get-pref-scroll-size)
                                  :position (om-make-point 0 0)
                                  :font *controls-font* 
@@ -216,18 +216,18 @@
                                           :font *controls-font*)
                      (setf outtxt (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 25)) (om-make-point 320 45)
                                                        (om-namestring (get-pref modulepref :out-files-dir))
-                                          :font *om-default-font1*))
+                                                       :font *om-default-font1*))
                      
                      (om-make-view 'om-icon-button 
-                                                      :icon1 "folder" :icon2 "folder-pushed"
-                                                      :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
-                                                      :action (om-dialog-item-act item
-                                                                         (declare (ignore item))
-                                                                         (let ((newfolder (om-choose-directory-dialog :directory
-                                                                                                                      (get-pref modulepref :out-files-dir))))
-                                                                           (when newfolder
-                                                                             (om-set-dialog-item-text outtxt (om-namestring newfolder))
-                                                                             (set-pref modulepref :out-files-dir newfolder)))))
+                                   :icon1 "folder" :icon2 "folder-pushed"
+                                   :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
+                                   :action (om-dialog-item-act item
+                                             (declare (ignore item))
+                                             (let ((newfolder (om-choose-directory-dialog :directory
+                                                                                          (get-pref modulepref :out-files-dir))))
+                                               (when newfolder
+                                                 (om-set-dialog-item-text outtxt (om-namestring newfolder))
+                                                 (set-pref modulepref :out-files-dir newfolder)))))
                      
                       
                      (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 40)) (om-make-point 80 22) "Input Files:" :font *controls-font*)
@@ -249,17 +249,45 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 40)) (om-make-point 80 22) "Temp Files:" :font *controls-font*)
                      (setf tmptxt (om-make-dialog-item 'om-static-text  (om-make-point l2 (incf posy 25)) (om-make-point 320 45)
                                                        (om-namestring (get-pref modulepref :tmp-files-dir))
-                                          :font *om-default-font1*))
+                                                       :font *om-default-font1*))
                      
                      (om-make-view 'om-icon-button 
                                    :icon1 "folder" :icon2 "folder-pushed"
                                    :position (om-make-point l3 (- posy 5)) :size (om-make-point 26 25) 
                                    :action (om-dialog-item-act item
-                                                       (declare (ignore item))
-                                                       (let ((newfolder (om-choose-directory-dialog :directory (get-pref modulepref :tmp-files-dir))))
-                                                         (when newfolder
-                                                           (om-set-dialog-item-text tmptxt (om-namestring newfolder))
-                                                          (set-pref modulepref :tmp-files-dir newfolder)))))
+                                             (declare (ignore item))
+                                             (let ((newfolder (om-choose-directory-dialog :directory (get-pref modulepref :tmp-files-dir))))
+                                               (when newfolder
+                                                 (om-set-dialog-item-text tmptxt (om-namestring newfolder))
+                                                 (set-pref modulepref :tmp-files-dir newfolder)))))
+                     (om-make-dialog-item 'om-static-text (om-make-point (incf l2 220) (incf posy 65)) (om-make-point 280 22) "Restore paths:"
+                                          :font *controls-font*)
+
+                     (om-make-view 'om-icon-button 
+                                   :icon1 "stop" :icon2 "stop-pushed"
+                                   :position (om-make-point (+ l2 120)  (- posy 5)) :size (om-make-point 26 25)
+                                   :action (om-dialog-item-act item
+                                             ;(declare (ignore item))
+                                             (progn 
+                                               (set-pref modulepref :out-files-dir (check-folder 
+                                                                                    (merge-pathnames 
+                                                                                     (make-pathname :directory '(:relative "out-files")) 
+                                                                                     (mypathname *current-workspace*))))
+                                               (set-pref modulepref :tmp-files-dir (check-folder 
+                                                                                    (merge-pathnames 
+                                                                                     (make-pathname :directory '(:relative "out-files")) 
+                                                                                     (mypathname *current-workspace*))))
+                                               (set-pref modulepref :in-files-dir (check-folder 
+                                                                                   (merge-pathnames 
+                                                                                    (make-pathname :directory '(:relative "in-files")) 
+                                                                                    (mypathname *current-workspace*))))
+                                               #-linux (update-pref-scroll *pref-window*)
+                                               #+linux(update-pref-to-apply *pref-window*)
+                                               (setf *current-pref* (local-prefs (om-view-window item)))
+                                               (put-all-preferences)
+                                               (save-preferences)
+                                               )))
+                     
                      )
           
     thescroll))
