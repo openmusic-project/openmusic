@@ -674,7 +674,7 @@ Extraction methods.
 (defmethod (setf tree) ((tree list) (self voice))
   (let* ((chords (chords self)) (ties (ties self))
          (box (associated-box self))
-         (editor (editorframe box)))
+         (editor (if box (editorframe box))))
     (do-initialize-metric-sequence self :tree tree )
     (do-initialize self :chords chords :tempo (tempo self) :tree tree :legato (legato self) :ties ties)
     (when editor
