@@ -309,7 +309,7 @@
 (load-om-projects '("space"))
 (load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
-
+(load-om-projects '("fluid"))
 
 (push :om *features*)
 

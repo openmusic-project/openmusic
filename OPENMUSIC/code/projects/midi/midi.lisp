@@ -64,7 +64,7 @@
 
         "players;om-midi-player"  
         #+midishare "players;midishare-player"  
-       	;;#+cl-fluidsynth "players;fluid-player"
+       	;;#+cl-fluidsynth "players;fluid-midi-player"
 	#+(and linux cl-jack-midi) "players;jack-midi-player"
 
         ;;; MISC (OSC)
