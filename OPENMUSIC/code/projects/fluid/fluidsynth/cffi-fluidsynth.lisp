@@ -16,6 +16,44 @@
 
 (in-package :cl-fluidsynth)
 
+(defvar *fluidsynth-pathname* 
+  #+win32 "/WINDOWS/system32/fluidsynth.dll"
+  #+(or darwin macos macosx) "libfluidsynth.dylib"
+  #+linux "libfluidsynth.so"
+  )
+
+(defvar *fluidsynth-library* nil)
+(defvar *fluidsynth-initialized-p* nil)
+
+
+(defun load-fluidsynth-library ()
+  (let ((libpath (om::om-lib-pathname cl-fluid::*fluidsynth-pathname*)))
+    
+    (eval-when (:compile-toplevel :load-toplevel :execute)
+      (cffi:define-foreign-library fluidsynth 
+        (namestring libpath)
+        )
+      (unless (cffi:foreign-library-loaded-p 'fluidsynth)
+        (cffi:use-foreign-library fluidsynth)))
+    
+    (if (probe-file libpath)
+	(progn (print (concatenate 'string "Loading fluidsynth library: " (namestring libpath)))
+          (setf *fluidsynth-library*
+                (handler-case 
+                    (progn
+                      (fli:register-module "FLUIDSYNTH" 
+                                           :real-name (namestring libpath)
+                                           :connection-style :immediate)
+                      t)
+                  (error () (progn 
+                              (om::om-message-dialog (format nil "Could not load FLUIDSYNTH foreign-library.~%~A" (namestring libpath)))
+                              nil)))))
+      (om::om-message-dialog (format nil "FLUIDSYNTH library not found: ~A" (namestring libpath)))))
+  (setf *fluidsynth-initialized-p* nil))
+
+(load-fluidsynth-library)
+
+#|
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (cffi:define-foreign-library fluidsynth
     ;(:darwin "libfluidsynth.dylib")
@@ -26,6 +64,8 @@
 
   (unless (cffi:foreign-library-loaded-p 'fluidsynth)
     (cffi:use-foreign-library fluidsynth)))
+|#
+
 
 (defun version ()
   (cffi:with-foreign-objects ((major :int) (minor :int) (micro :int))

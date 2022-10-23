@@ -309,7 +309,7 @@
 (load-om-projects '("space"))
 (load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
-#+linux(load-om-projects '("fluid"))
+;#+linux(load-om-projects '("fluid"))
 
 (push :om *features*)
 
@@ -335,7 +335,8 @@
     
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   (om::show-workspaces-dialog)
-  #+macosx(load-om-projects '("fluid"))
+ ; #+macosx(load-om-projects '("fluid"))
+  (load-om-projects '("fluid"))
   (when om::*om-workspace-win* (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om))))
   (setf om::*om-startup* nil)
   )

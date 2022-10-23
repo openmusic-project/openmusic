@@ -28,9 +28,11 @@
 (defvar *soundfont-dir* (or (probe-file "/usr/share/soundfonts/")
 			    (probe-file "/usr/share/sounds/sf2/")))
 
-(defvar *soundfont* (namestring
-		     (make-pathname :directory (if *soundfont-dir* (pathname-directory *soundfont-dir*))
-				    :name "FluidR3_GM.sf2")))
+(defvar *soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/FluidR3_GS.sf2"))
+#|
+  (namestring
+   (make-pathname :directory (if *soundfont-dir* (pathname-directory *soundfont-dir*))
+|#                  :name "FluidR3_GM.sf2")))
 
 (defvar *fluid-midi-driver-settings* nil)
 
