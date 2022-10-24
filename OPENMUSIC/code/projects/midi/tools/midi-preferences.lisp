@@ -125,7 +125,16 @@
                                                     (cons "..." *score-players*))
                                            :value (or (and *default-score-player* (get-pref modulepref :score-player)) "---")
                                            :di-action (om-dialog-item-act item
-                                                        (set-pref modulepref :score-player (om-get-selected-item item)))
+                                                        (set-pref modulepref :score-player (om-get-selected-item item))
+                                                        (let ((merde (format nil "~A" (om-get-selected-item item))))
+                                                          (if (string-equal  merde "fluidsynth")
+                                                              (print "toto fuCK YOU ALL!")
+                                                            (print (list "alors?" (om-get-selected-item item)
+                                                                         merde)
+                                                                       
+                                                                       ))
+                                                        
+                                                        ))
                                            :font *controls-font*)
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
                                            "Applies to all new score boxes" :font *om-default-font1*)

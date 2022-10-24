@@ -28,13 +28,18 @@
 (defvar *soundfont-dir* (or (probe-file "/usr/share/soundfonts/")
 			    (probe-file "/usr/share/sounds/sf2/")))
 
-(defvar *soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/FluidR3_GS.sf2"))
-#|
-  (namestring
-   (make-pathname :directory (if *soundfont-dir* (pathname-directory *soundfont-dir*))
-|#                  :name "FluidR3_GM.sf2")))
+(defvar *soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/merlin.sf2"))
+
+;  (namestring
+;   (make-pathname :directory (if *soundfont-dir* (pathname-directory *soundfont-dir*))
+;                  :name "FluidR3_GM.sf2")))
+
+
 
 (defvar *fluid-midi-driver-settings* nil)
+
+
+(defparameter *fluidsynths-loaded-p* nil)
 
 (define-condition not-a-soundfont (error)
   ((soundfont :initarg :soundfont-name :reader soundfont-name)
@@ -137,8 +142,12 @@
       )
     )
 
+
+
+
 (defun load-all-fl-synths (num)
   "<num> stands for n created synths by port" 
+  (setf *fluidsynths-loaded-p* 't)
   (setf *fl-synths*
       (let ((variables
              (let ((vars
@@ -153,7 +162,9 @@
               for v in variables
               collect (cons i v))))
   (loop for i from 1 to num
-        do (setup-fluid-synths i)))
+        do (setup-fluid-synths i))
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
