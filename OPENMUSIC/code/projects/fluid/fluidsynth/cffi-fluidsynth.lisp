@@ -274,8 +274,8 @@
 (cffi:defcfun ("new_fluid_synth" new-fluid-synth) :pointer
   (settings :pointer))
 
-(cffi:defcfun ("delete_fluid_synth" delete-fluid-synth) :int
-  (synth :pointer))
+;(cffi:defcfun ("delete_fluid_synth" delete-fluid-synth) :int
+;  (synth :pointer))
 
 (cffi:defcfun ("fluid_synth_get_settings" get-settings) :pointer
   (synth synth))
@@ -290,11 +290,13 @@
 (defun delete (synth)
   (declare (type synth synth))
   (unless (cffi:null-pointer-p (synth-ptr synth))
-    (let ((res (delete-fluid-synth (synth-ptr synth))))
+    (let ((res (delete_fluid_synth (synth-ptr synth))))
       (cancel-finalization synth)
       (setf (synth-ptr synth) (cffi:null-pointer))
       (zerop res))))
 |#
+
+
 ;;; MIDI channel messages
 
 (cffi:defcfun ("fluid_synth_noteon" noteon) :int

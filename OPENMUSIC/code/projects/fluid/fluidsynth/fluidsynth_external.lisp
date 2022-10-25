@@ -27,12 +27,12 @@
 (defparameter *fluid-synth-cmd* nil)
 
 ;(defparameter *fluid-soundfont* "/usr/share/soundfonts/default.sf2")
-(defparameter *fluid-soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/merlin.sf2"))
+;(defparameter *fluid-soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/merlin.sf2"))
 
 
 (defvar *fluidsynth-cmd* 
-  #+linux(format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *fluid-soundfont*)
-  #+darwin(format nil "fluidsynth -a coreaudio -m coremidi -g 2.0 -o midi.coremidi.id='OM_fluid' ~A" *fluid-soundfont*))
+  #+linux(format nil "fluidsynth -j -m jack -g 2.0 -o midi.jack.id='OM_fluid' ~A" *soundfont*)
+  #+darwin(format nil "fluidsynth -a coreaudio -m coremidi -g 2.0 -o midi.coremidi.id='OM_fluid' ~A" *soundfont*))
 
 
 (defun fluidsynth-launch ()

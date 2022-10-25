@@ -145,7 +145,7 @@
 
 (defmethod* fluid-pgmout ((progm integer) (chans integer) &optional port) 
   :icon 912
-  :indoc '("program number" "MIDI channel(s)")
+  :indoc '("program number" "MIDI channel(s)" "port")
   :initvals '(2 1 nil)
   :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
 
@@ -170,7 +170,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod* fluid-pitchwheel ((vals integer) (chans integer) &optional port) 
-  "1/16th tonw = 512
+  :icon 912
+  :indoc '("pitchwheel value" "MIDI channel(s)" "port")
+  :initvals '(2 1 nil)
+  :doc "Sends a pitchwheel message
+   1/16th tonw = 512
    1/8th tone = 1024
    1/4th tone = 2048"
   (let ((port (if port port 0)))
@@ -180,13 +184,13 @@
 
 (defmethod* fluid-pitchwheel ((vals integer) (chans list) &optional port) 
   (loop for item in chans do
-          (fluid-pitchwheel vals item)))
+          (fluid-pitchwheel vals item port)))
 
 (defmethod* fluid-pitchwheel ((vals list) (chans list) &optional port) 
   (loop for item in chans 
         for item1 in vals
         do
-          (fluid-pitchwheel item1 item)))
+          (fluid-pitchwheel item1 item port)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod! fluid-reverb-on ((switch number) &optional port)
@@ -206,8 +210,8 @@
                           &optional port
                           )
   :icon 912
-  :indoc '("roomsize" "damping" "width" "level")
-  :initvals '(2.0 0.0 0.5 2.9)
+  :indoc '("roomsize" "damping" "width" "level" "port")
+  :initvals '(2.0 0.0 0.5 2.9 0)
   :doc "Sends reverb settings to fluidsynth.:"
   (fluid-reverb-on 1)
   (cl-fluidsynth::fluid_synth_set_reverb 
@@ -222,9 +226,11 @@
 (defmethod* fluid-volume ((vals integer)
                           (chans integer) &optional port)
   :icon 912
-  :indoc '("vals" "chans")
-  :initvals '(100 1)
+  :indoc '("vals" "chans" "port")
+  :initvals '(100 1 0)
   :doc "Sends volume control change settings to fluidsynth.:"
-  (fluid_synth_cc
-   (cassq (1+ port) cl-fluidsynth::*fl-synths*)
+  (cl-fluid::fluid_synth_cc
+   (cassq (1+ port) cl-fluid::*fl-synths*)
    (1- chans) 7 vals))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

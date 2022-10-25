@@ -28,8 +28,8 @@
 (defvar *soundfont-dir* (or (probe-file "/usr/share/soundfonts/")
 			    (probe-file "/usr/share/sounds/sf2/")))
 
-(defvar *soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/merlin.sf2"))
-
+;(defvar *soundfont* (concatenate 'string (namestring om::*om-resources-folder*) "online/in-files/merlin.sf2"))
+(defvar *soundfont* (namestring om::*fluid-sf2*))
 ;  (namestring
 ;   (make-pathname :directory (if *soundfont-dir* (pathname-directory *soundfont-dir*))
 ;                  :name "FluidR3_GM.sf2")))
@@ -218,3 +218,8 @@
 				   (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
 				   "OM_fluidsynth:midi")
   )
+
+
+;;
+(defun om::load-all-fsynths (num)
+  (cl-fluid::load-all-fl-synths num))       
