@@ -78,26 +78,16 @@
 (defparameter *key-ons* (make-hash-table :test #'equal))
 
 (defun all-notes-off ()
-  (loop for syn from 0 to 15
+  ;(print (list "dafaker" (cl-fluidsynth::synthptr (nth 0 cl-fluidsynth::*fl-synths*))))
+  (loop for syn from 0 to (1- (length cl-fluidsynth::*fl-synths*))
           do
-          (let ((synth (cassq (1+ syn) cl-fluidsynth::*fl-synths*)))
+          (let ((synth (nth syn cl-fluidsynth::*fl-synths*)))
           (loop for i from 0 to 15
                 do (cl-fluidsynth::fluid_synth_all_notes_off 
-                    synth
-                    i))))
-  )
-#|
-          (maphash #'(lambda (k ch)
-	       (mapc #'(lambda (note)
-			 (midi-send-evt
-			  (om-midi:make-midi-evt :type :keyOff
-						 :chan (car (last note))
-						 :date 0 :ref 0 :port (car note)
-						 :fields (list (cadr note) 0))))
-		     ch)
-	       (remhash k *key-ons*))
-	   *key-ons*))
-|#
+                    (cl-fluidsynth::getsptr synth)
+                    i)))))
+
+
 (defmethod player-stop ((engine (eql :fluidsynth)) &optional play-list)
   (all-notes-off)
  ; (loop for i from 0 to 15
@@ -113,8 +103,6 @@
 
 (defmethod player-play-object ((engine (eql :fluidsynth)) (object om-midi::midi-evt) &key interval params)
   (declare (ignore interval params))
-  ;(print (format nil "~A : play ~A - ~A" engine object interval))
-  ;(om-inspect object)
   (let* ((chan (om-midi::midi-evt-chan object))
 	 (key-index (1- chan))
 	 (port (om-midi::midi-evt-port object))
@@ -127,14 +115,14 @@
 ;	    (om-midi::midi-evt-chan object) (mod chan 16)))
     (cond ((or (equal (om-midi::midi-evt-type object) :keyOff)
 	       (and (equal (om-midi::midi-evt-type object) :keyOn) (= 0 (cadr (om-midi::midi-evt-fields object)))))
-           (cl-fluidsynth::fluid_synth_noteoff (cassq (1+ port) cl-fluidsynth::*fl-synths*) (1- chan) midip)
+           (cl-fluidsynth::fluid_synth_noteoff (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*)) (1- chan) midip)
 	   (setf (gethash key-index *key-ons*)
 		 (delete (list port (car (om-midi::midi-evt-fields object)) chan)
 			 (gethash key-index *key-ons*)
 			 :test 'equal)))
 	  ((equal (om-midi::midi-evt-type object) :keyOn)
             ;(print (list "info" chan ))
-           (cl-fluidsynth::fluid_synth_noteon (cassq (1+ port) cl-fluidsynth::*fl-synths*) (1- chan) midip vel)
+           (cl-fluidsynth::fluid_synth_noteon (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*)) (1- chan) midip vel)
 	   (pushnew (list port (car (om-midi::midi-evt-fields object)) chan)
 		    (gethash key-index *key-ons*) :test 'equal)))
     ;(midi-send-evt object) ;for midi player
@@ -151,7 +139,7 @@
 
 <progm> and <chans> can be single numbers or lists."
   (cl-fluidsynth::fluid_synth_program_change 
-   (cassq (1+ port) cl-fluidsynth::*fl-synths*) (1- chans) progm ))
+   (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*)) (1- chans) progm ))
 
 (defmethod* fluid-pgmout ((progm number) (chans list) &optional port)
   (loop for item in chans do
@@ -179,7 +167,7 @@
    1/4th tone = 2048"
   (let ((port (if port port 0)))
   (cl-fluidsynth::fluid_synth_pitch_bend
-   (cassq (1+ port) cl-fluidsynth::*fl-synths*)
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (1- chans) (+ 8192 vals))))
 
 (defmethod* fluid-pitchwheel ((vals integer) (chans list) &optional port) 
@@ -200,7 +188,7 @@
   :icon 912
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_reverb_on 
-     (cassq (1+ port) cl-fluidsynth::*fl-synths*)
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
      switch))
 
 (defmethod* fluid-reverb ((roomsize number)
@@ -215,7 +203,7 @@
   :doc "Sends reverb settings to fluidsynth.:"
   (fluid-reverb-on 1)
   (cl-fluidsynth::fluid_synth_set_reverb 
-   cl-fluidsynth::*fluidsynth*
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (coerce roomsize 'double-float)
    (coerce damping 'double-float)
    (coerce width 'double-float)
@@ -230,7 +218,7 @@
   :initvals '(100 1 0)
   :doc "Sends volume control change settings to fluidsynth.:"
   (cl-fluid::fluid_synth_cc
-   (cassq (1+ port) cl-fluid::*fl-synths*)
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (1- chans) 7 vals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

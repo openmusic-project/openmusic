@@ -19,6 +19,18 @@
 
 (defmacro flassq (item list) `(cdr (assoc ,item ,list :test #'eq)))
 
+(defclass fl-synth ()
+  ((index :accessor index :initarg :index :initform nil)
+   (synthname :accessor synthname :initarg :synthname :initform nil)
+   (settings :accessor settings :initarg :settings :initform nil)
+   (synthptr :accessor synthptr :initarg :synthptr :initform nil)
+   (audioptr :accessor audioptr :initarg :audioptr :initform nil)
+   (sf2ptr :accessor sf2ptr :initarg :sf2ptr :initform nil)))
+
+;necessaire
+(defmethod getsptr ((self t)) nil)
+(defmethod getsptr ((self fl-synth)) (synthptr self))
+
 (defvar *fl-synths* nil)
 (defvar *fluidsynth* nil)
 (defvar *fluidsynth-settings* nil)
@@ -74,7 +86,7 @@
       t)))
 
 
-
+#|
 
 (defun fluid-synth-setup ()
   (unless *fluidsynth*
@@ -165,6 +177,73 @@
         do (setup-fluid-synths i))
   )
 
+(defun om::load-all-fsynths (num)
+  (cl-fluid::load-all-fl-synths num))       
+
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;Load an create N fluid synths 
+
+(defmethod create-fl-synt (indx)
+  (let* ((synth (make-instance 'fl-synth :index indx))
+         (name (format nil "OM_fluidsynth_~A" indx))
+         ;(fluidsettings (new_fluid_settings))
+         )
+    
+          (progn
+            (setf *fluidsynth-settings* (new_fluid_settings))
+      #+linux(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
+                                        #+cl-jack "jack"
+                                        #+(and linux (not cl-jack)) "alsa"
+                                        #+(and cocoa (not cl-jack)) "coreaudio"
+                                        #+cocoa "coreaudio")
+          #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
+                                         #+cl-jack "jack"
+                                         #+cocoa "coreaudio")
+          #+cl-jack (progn
+                      (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+                      (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx)))
+          #+(and (or linux darwin) (not cl-jack)) (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default"))
+    
+    (setf (synthname synth) name)
+    (setf (settings synth) *fluidsynth-settings*)
+    (setf (synthptr synth) (new_fluid_synth *fluidsynth-settings*))
+    (setf (audioptr synth) (new_fluid_audio_driver (settings synth) (synthptr synth)))
+    ;(fluid-load-new-soundfont (synthptr synth) *soundfont*)
+    synth))
+
+
+(defun add-n-fsynths (n)
+  (loop for i from 1 to n
+          do (push (create-fl-synt i) *fl-synths*))
+  (setf *fl-synths* (reverse *fl-synths*)))
+
+;(add-n-fsynths 1)
+
+;needed because cl-fluid package is loaded AFTER midi package
+(defun om::load-all-fsynths (num)
+  (cl-fluid::add-n-fsynths num))
+
+;;;
+
+(defun delete-all-audio-drivers ()
+  (when cl-fluidsynth::*fl-synths*
+  (loop for i from 1 to (length *fl-synths*)
+          do (delete_fluid_audio_driver 
+              (audioptr (nth (1- i)  *fl-synths*))))
+  (setf *fl-synths* nil)))
+
+;(delete-all-audio-drivers)
+
+(defun load-sf-to-all (path)
+(when *fl-synths*
+  (loop for i from 1 to (length *fl-synths*)
+          do (fluid_synth_sfload
+              (synthptr (nth (1- i)  *fl-synths*)) path 1))))
+
+;(load-sf-to-all "/home/karim/Work/DEV/deploy/openmusic/OPENMUSIC/resources/online/in-files/merlin.sf2")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -221,5 +300,3 @@
 
 
 ;;
-(defun om::load-all-fsynths (num)
-  (cl-fluid::load-all-fl-synths num))       
