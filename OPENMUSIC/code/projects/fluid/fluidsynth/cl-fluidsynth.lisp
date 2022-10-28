@@ -243,6 +243,10 @@
           do (fluid_synth_sfload
               (synthptr (nth (1- i)  *fl-synths*)) path 1))))
 
+(defun om::load-sf-to-all ()
+  (let ((newpath (namestring om::*fluid-sf2*))); avoir pour avoir plusieurs sf2 pour chaque port
+  (cl-fluid::load-sf-to-all newpath)))
+
 ;(load-sf-to-all "/home/karim/Work/DEV/deploy/openmusic/OPENMUSIC/resources/online/in-files/merlin.sf2")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -294,7 +294,8 @@
                                                                                    (get-pref modulepref :fluid-sf2))))
                                                 (when newsf2
                                                   (om-set-dialog-item-text sf2txt (om-namestring newsf2))
-                                                  (set-pref modulepref :fluid-sf2 newfolder))
+                                                  (setf *fluid-sf2* (om-namestring newsf2))
+                                                  (set-pref modulepref :fluid-sf2 newsf2))
                                                 )))
                       
                       
@@ -336,6 +337,7 @@
                                               (declare (ignore item))
                                               (progn 
                                                 (load-all-fsynths *n-fsynth*)
+                                                (load-sf-to-all)
                                                 (if (= 1 *n-fsynth*)
                                                     (print "Loaded one instance!")
                                                   (print (format nil "Loaded ~D fluid instances!" *n-fsynth*)))
