@@ -61,7 +61,7 @@
     (setf *default-score-player* (get-pref modulepref :score-player))
     (setf *force-score-player* (get-pref modulepref :force-player))
     (if (probe-file (get-pref modulepref :fluid-sf2))
-        (setf *om-outfiles-folder* (get-pref modulepref :fluid-sf2))
+        (setf *fluid-sf2* (get-pref modulepref :fluid-sf2))
       (push :fluid-sf2 *restore-defaults*))
     (setf *n-fsynth* (get-pref modulepref :n-fsynth))
     (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
