@@ -74,7 +74,7 @@
       (setf *current-pref* (append *current-pref* (list prlist))))
     *current-pref*))
 
-(defparameter *pref-order* '(:general :appearance :userlibs :score :conversion :midi :audio :externals))
+(defparameter *pref-order* '(:general :appearance :userlibs :score :conversion :midi :fluid :audio :externals))
 
 (defun sort-pref-items (list)
   (sort list #'(lambda (elt1 elt2) 

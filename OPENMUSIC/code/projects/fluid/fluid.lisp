@@ -42,7 +42,7 @@
       
         ;;; OM MENUS ETC.  
        ; "midipackages"
-
+        "player;fluid-preferences"
         ))
 
 
