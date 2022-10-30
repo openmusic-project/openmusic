@@ -44,8 +44,8 @@
        ; (port (if (find :port params)
        ;             (nth (1+ (position :port params)) params)
        ;         (if (caller player) (get-edit-param (caller player) 'outport))))
-        (port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
-        
+        ;(port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
+        ;;Pas besoin de port ici...
         )
     ;(print (list "params" port player (caller player) ))
     ;(print port)
@@ -66,7 +66,7 @@
 			 ;;   (microplay-events approx at (get-obj-dur object) port chan-offset))
 			 (microplay-events at (get-obj-dur object) port)
 			 )
-                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port port)))
+                    (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port nil)))
                     )
             )
     (sort-events player)
