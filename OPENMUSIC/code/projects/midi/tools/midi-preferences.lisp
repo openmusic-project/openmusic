@@ -43,13 +43,6 @@
 (defparameter *default-score-player* :midi-player)   ; :midi-player :midishare :osc-scoreplayer :microplayer
 (defparameter *score-players* '(:midi-player :microplayer :osc-scoreplayer :fluidsynth))
 (defparameter *force-score-player* nil)
-(defparameter *n-fsynth* 8)
-(defparameter *fluid-sf2* (pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
-;(setf *fluid-sf2* (pathname (concatenate 'string (namestring "/home/karim/Work/DEV/deploy/openmusic/OPENMUSIC/resources/") "online/in-files/merlin.sf2")))
-
-;(defparameter *fluid-sf2* (pathname (concatenate 'string (namestring oa::*om-resources-folder*) "online/in-files/merlin.sf2")))
-
-;(print (list "TTTEEEEEESSSSSSTT" cl-user::*om-src-directory*))
 ;;;==============================================
 
 (defmethod put-preferences ((iconID (eql :midi)))
@@ -60,10 +53,6 @@
     (setf *default-midi-system* :portmidi)  ; (get-pref modulepref :midi-system)
     (setf *default-score-player* (get-pref modulepref :score-player))
     (setf *force-score-player* (get-pref modulepref :force-player))
-    (if (probe-file (get-pref modulepref :fluid-sf2))
-        (setf *fluid-sf2* (get-pref modulepref :fluid-sf2))
-      (push :fluid-sf2 *restore-defaults*))
-    (setf *n-fsynth* (get-pref modulepref :n-fsynth))
     (setf *midi-microplay* (get-pref modulepref :auto-microtone-bend))
     (setf *micro-channel-mode-on* (get-pref modulepref :channel-shift))
     (setf *micro-channel-approx* (get-pref modulepref :channel-shift-approx))
@@ -87,8 +76,6 @@
 	  :midi-system :portmidi
           :score-player :midi-player
           :force-player nil
-          :fluid-sf2 (concatenate 'string (namestring *om-resources-folder*) "online/in-files/merlin.sf2")
-          :n-fsynth 8
           :midi-file-system :cl-midi
 	  :midi-format 1
           :channel-shift '(4 8)
@@ -134,16 +121,7 @@
                                                     (cons "..." *score-players*))
                                            :value (or (and *default-score-player* (get-pref modulepref :score-player)) "---")
                                            :di-action (om-dialog-item-act item
-                                                        (set-pref modulepref :score-player (om-get-selected-item item))
-                                                        (let ((merde (format nil "~A" (om-get-selected-item item))))
-                                                          (if (string-equal  merde "fluidsynth")
-                                                              (print "toto!")
-                                                            (print (list "alors?" (om-get-selected-item item)
-                                                                         merde)
-                                                                       
-                                                                       ))
-                                                        
-                                                        ))
+                                                        (set-pref modulepref :score-player (om-get-selected-item item)))
                                            :font *controls-font*)
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 25)) (om-make-point 400 30) 
                                            "Applies to all new score boxes" :font *om-default-font1*)
@@ -275,73 +253,6 @@
                       ;                                  (set-pref modulepref :midi-format (om-get-selected-item-index item)))
                       ;                     )
 
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 54)) (om-make-point 200 30) 
-                                           "FluidSynth" :font *om-default-font2b*)
-
-                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 54)) (om-make-point 80 22) "Sf2 File:"
-                                           :font *controls-font*)
-                      
-                      (setf sf2txt (om-make-dialog-item 'om-static-text  (om-make-point 80 i) (om-make-point 320 45)
-                                                        (om-namestring (get-pref modulepref :fluid-sf2))
-                                                        :font *om-default-font1*))
-                      
-                      (om-make-view 'om-icon-button 
-                                    :icon1 "folder" :icon2 "folder-pushed"
-                                    :position (om-make-point 400 (- i 5)) :size (om-make-point 26 25) 
-                                    :action (om-dialog-item-act item
-                                              (declare (ignore item))
-                                              (let ((newsf2 (om-choose-file-dialog :directory
-                                                                                   (get-pref modulepref :fluid-sf2))))
-                                                (when newsf2
-                                                  (om-set-dialog-item-text sf2txt (om-namestring newsf2))
-                                                  (setf *fluid-sf2* (om-namestring newsf2))
-                                                  (set-pref modulepref :fluid-sf2 newsf2))
-                                                )))
-                      
-                      
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
-                                           "Number of Synths:" :font *controls-font*)
-                      (om-make-dialog-item 'om-editable-text (om-make-point 210 i) (om-make-point 30 13)
-                                           (format nil "~D" (get-pref modulepref :n-fsynth))
-                                           :after-action 
-                                           (om-dialog-item-act item
-                                             (let ((text (om-dialog-item-text item))
-                                                   number)
-                                               (unless (string= "" text)
-                                                 (setf number (read-from-string text))
-                                                 (if (and (integerp number) (>= number 0) (<= number 255))
-                                                     (set-pref modulepref :n-fsynth number)
-                                                   (progn 
-                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                     (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :n-fsynth))))
-                                                   ))))
-                                           :di-action 
-                                           (om-dialog-item-act item
-                                             (let ((text (om-dialog-item-text item))
-                                                   number)
-                                               (unless (string= "" text)
-                                                 (setf number (read-from-string text))
-                                                 (if (and (integerp number) (>= number 0) (<= number 255))
-                                                     (set-pref modulepref :n-fsynth number)
-                                                   (progn 
-                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
-                                                     (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :n-fsynth))))
-                                                   ))))
-                                           :font *om-default-font2*)
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
-                                           "Load Synths:" :font *controls-font*)
-                      (om-make-view 'om-icon-button 
-                                    :icon1 "stop" :icon2 "stop-pushed"
-                                    :position (om-make-point 210 (- i 5)) :size (om-make-point 26 25)
-                                    :action (om-dialog-item-act item
-                                              (declare (ignore item))
-                                              (progn 
-                                                (load-all-fsynths *n-fsynth*)
-                                                (load-sf-to-all)
-                                                (if (= 1 *n-fsynth*)
-                                                    (print "Loaded one instance!")
-                                                  (print (format nil "Loaded ~D fluid instances!" *n-fsynth*)))
-                                                )))
   
                       )
      

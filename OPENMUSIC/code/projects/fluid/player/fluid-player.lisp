@@ -77,8 +77,7 @@
 
 (defparameter *key-ons* (make-hash-table :test #'equal))
 
-(defun all-notes-off ()
-  ;(print (list "dafaker" (cl-fluidsynth::synthptr (nth 0 cl-fluidsynth::*fl-synths*))))
+(defun fluid-all-notes-off ()
   (loop for syn from 0 to (1- (length cl-fluidsynth::*fl-synths*))
           do
           (let ((synth (nth syn cl-fluidsynth::*fl-synths*)))
@@ -89,14 +88,14 @@
 
 
 (defmethod player-stop ((engine (eql :fluidsynth)) &optional play-list)
-  (all-notes-off)
+  (fluid-all-notes-off)
  ; (loop for i from 0 to 15
  ;       do (cl-fluidsynth::fluid_synth_all_notes_off cl-fluidsynth::*fluidsynth* i))
   (midi-stop)
   (if *midi-microplay* (microplay-reset nil engine)))
 
 (defmethod player-pause ((engine (eql :fluidsynth)) &optional play-list)
-  (all-notes-off))
+  (fluid-all-notes-off))
 
 ;; (defmethod player-loop ((self (eql :fluidsynth)) player &optional play-list) (call-next-method))
 

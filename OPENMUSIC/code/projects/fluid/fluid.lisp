@@ -43,6 +43,7 @@
         ;;; OM MENUS ETC.  
        ; "midipackages"
         "player;fluid-preferences"
+        "player;fluid-sf2-setup"
         ))
 
 
