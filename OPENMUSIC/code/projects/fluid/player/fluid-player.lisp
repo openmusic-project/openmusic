@@ -25,6 +25,8 @@
 
 (add-player-for-object 'score-element '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
 (add-player-for-object 'simple-score-element '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
+(add-player-for-object 'midifile :fluidsynth)
+
 
 (enable-player :fluidsynth)
 
@@ -129,7 +131,7 @@
     ))
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;PGMOUT
 
 (defmethod* fluid-pgmout ((progm integer) (chans integer) &optional port) 
   :icon 912
@@ -156,6 +158,7 @@
           do (fluid-pgmout item1 item item2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;PITCHWHEEL
 
 (defmethod* fluid-pitchwheel ((vals integer) (chans integer) &optional port) 
   :icon 912
@@ -180,38 +183,9 @@
         do
           (fluid-pitchwheel item1 item port)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;VOLUME
 
-(defmethod! fluid-reverb-on ((switch number) &optional port)
-  :menuins '((0 (("off" 0) ("on" 1))))
-  :initvals '(0)
-  :outdoc '("on/off reverb")
-  :icon 912
-  :doc "Turns on/off fluidsynth's reverb"
-    (cl-fluidsynth::fluid_synth_set_reverb_on 
-     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-     switch))
-
-(defmethod* fluid-reverb ((roomsize number)
-                          (damping number)
-                          (width number)
-                          (level number)
-                          &optional port
-                          )
-  :icon 912
-  :indoc '("roomsize" "damping" "width" "level" "port")
-  :initvals '(2.0 0.0 0.5 2.9 0)
-  :doc "Sends reverb settings to fluidsynth.:"
-  (fluid-reverb-on 1)
-  (cl-fluidsynth::fluid_synth_set_reverb 
-   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-   (coerce roomsize 'double-float)
-   (coerce damping 'double-float)
-   (coerce width 'double-float)
-   (coerce level 'double-float)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod* fluid-volume ((vals integer)
+(defmethod! fluid-volume ((vals integer)
                           (chans integer) &optional port)
   :icon 912
   :indoc '("vals" "chans" "port")
@@ -222,3 +196,67 @@
    (1- chans) 7 vals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;REVERB
+
+
+(defmethod! fluid-reverb-on ((switch number) &optional port)
+  :menuins '((0 (("off" 0) ("on" 1))))
+  :initvals '(0)
+  :outdoc '("on/off reverb")
+  :icon 912
+  :doc "Turns on/off fluidsynth's reverb"
+    (cl-fluidsynth::fluid_synth_set_reverb_on 
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+     switch)) 
+
+(defmethod! fluid-reverb ((roomsize number)
+                          (damping number)
+                          (width number)
+                          (level number)
+                          &optional port
+                          )
+  :icon 912
+  :indoc '("roomsize" "damping" "width" "level" "port")
+  :initvals '(2.0 0.0 0.5 2.9 0)
+  :doc "Sends reverb settings to fluidsynth.:"
+  (fluid-reverb-on 1 port)
+  (cl-fluidsynth::fluid_synth_set_reverb 
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+   (coerce roomsize 'double-float)
+   (coerce damping 'double-float)
+   (coerce width 'double-float)
+   (coerce level 'double-float)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;CHORUS
+
+(defmethod! fluid-chorus-on ((switch number) &optional port)
+  :menuins '((0 (("off" 0) ("on" 1))))
+  :initvals '(0)
+  :outdoc '("on/off reverb")
+  :icon 912
+  :doc "Turns on/off fluidsynth's reverb"
+    (cl-fluidsynth::fluid_synth_set_chorus_on 
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+     switch))
+
+(defmethod! fluid-chorus ((nr number)
+                          (level number)
+                          (speed number)
+                          (depth number)
+                          (type number)
+                          &optional port
+                          )
+  :icon 912
+  :indoc '("roomsize" "damping" "width" "level" "port")
+  :initvals '(3 2.0 0.3 8.0 0 0)
+  :doc "Sends reverb settings to fluidsynth.:"
+  (fluid-chorus 1 port)
+  (cl-fluid::fluid_synth_set_chorus
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+   nr
+   (coerce level 'double-float)
+   (coerce speed 'double-float)
+   (coerce depth 'double-float)
+   type))
