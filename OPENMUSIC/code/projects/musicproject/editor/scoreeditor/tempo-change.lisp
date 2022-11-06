@@ -303,6 +303,12 @@
   (setf (slot-value self 'tempo)
         (list (car (tempo self)) (remove tempi (second (tempo self)) :test 'equal))))
 
+(defmethod correct-dyn-tempo ((self voice))
+  (let* ((qtempo (qtempo self))
+         (clean (remove-duplicates qtempo :test 'equal :key 'car))
+         (sort (sort-list clean :test '< :key 'caar)))
+    (setf (qtempo self) sort)))
+
 (defmethod make-voice-tempo-change ((self voice) tempi)
   (let* ((list tempi)
          (start (caar list))
@@ -328,7 +334,9 @@
                  (setf list (cdr list)))))
     (when *dynamic-tempo-list*
       (loop for list in (reverse *dynamic-tempo-list*) do
-            (compute-dynamic-tempi list)))))
+            (compute-dynamic-tempi list))
+      (correct-dyn-tempo self)
+      )))
 
 
 ;==========================
