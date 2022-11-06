@@ -2,6 +2,20 @@
 
 NEW FEATURES
 
+- fluidsynth player
+
+IMPROVEMENTS
+
+
+FIXES
+
+- Dynamic tempo change works.
+
+
+* RELEASE NOTES 7.1
+
+NEW FEATURES
+
 - New score functions:
 	set-obj-pitch, set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
 - Jack support for linux (V. Anders)
