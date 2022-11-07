@@ -31,7 +31,8 @@
 ;=================================================
 
 (defparameter *n-fsynth* 8)
-(defparameter *fluid-sf2* (pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
+(defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*))
+;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
 
 ;;;==============================================
 
@@ -46,7 +47,7 @@
 
 (defmethod get-def-vals ((ID (eql :fluid)))
     (list 
-          :fluid-sf2 (concatenate 'string (namestring *om-resources-folder*) "online/in-files/merlin.sf2")
+          :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
           :n-fsynth 8
           ;:midi-presets (def-midi-presets)
           ))
@@ -54,7 +55,7 @@
 
 (defmethod save-pref-module ((iconID (eql :fluid)) item)
    (list iconID `(list 
-                  :fluid-sf2 ,*fluid-sf2*
+                  :fluid-sf2 ,(om-save-pathname *fluid-sf2*)
                   :n-fsynth ,*n-fsynth* 
                        ) *om-version*))
 

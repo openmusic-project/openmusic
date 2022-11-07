@@ -25,7 +25,7 @@
 (defvar *fluidsynth-library* nil)
 (defvar *fluidsynth-initialized-p* nil)
 
-
+#| ;;a voir si besoin
 (defun load-fluidsynth-library ()
   (let ((libpath (om::om-lib-pathname cl-fluid::*fluidsynth-pathname*)))
     
@@ -52,6 +52,8 @@
   (setf *fluidsynth-initialized-p* nil))
 
 (load-fluidsynth-library)
+|#
+
 
 #|
 (eval-when (:compile-toplevel :load-toplevel :execute)
