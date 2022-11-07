@@ -291,7 +291,8 @@
 (defmethod real-group-p ((self group))
 "returns true if the group is an irrational"
   (let ((ratio (get-group-ratio self)))
-    (if (= 1 ratio) nil ratio)))
+    (when ratio
+    (if (= 1 ratio) nil ratio))))
 
 (defmethod get-real-groups ((self t)) nil)
 
