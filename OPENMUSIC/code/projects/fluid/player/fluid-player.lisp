@@ -130,6 +130,18 @@
     ;(midi-send-evt object) ;for midi player
     ))
  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;choose sf2 font
+
+(defmethod* fluid-choose-sf ((path t) &optional port) 
+
+(fluid_synth_sfload 
+(cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+soundfont 1))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PGMOUT
 
@@ -182,6 +194,21 @@
         for item1 in vals
         do
           (fluid-pitchwheel item1 item port)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;GAIN
+
+(defmethod! fluid-gain ((vals number) &optional port)
+  :icon 912
+  :indoc '("vals" "nth-synth")
+  :initvals '(0.8 0)
+  :doc "Sends gain (0 - 1.0) settings to fluidsynth.:"
+  (cl-fluid::fluid_synth_set_gain
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+   vals))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;VOLUME
 
