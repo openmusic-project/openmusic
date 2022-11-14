@@ -1,4 +1,4 @@
-* RELEASE NOTES 7.1
+* RELEASE NOTES 7.2
 
 NEW FEATURES
 
@@ -9,7 +9,7 @@ IMPROVEMENTS
 
 FIXES
 
-- Dynamic tempo change works.
+- Dynamic tempo now works.
 
 
 * RELEASE NOTES 7.1

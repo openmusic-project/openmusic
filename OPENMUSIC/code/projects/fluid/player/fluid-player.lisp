@@ -132,15 +132,31 @@
  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;choose sf2 font
+;SOUDFONTS MANAGMENT
 
-(defmethod* fluid-choose-sf ((path t) &optional port) 
+;;load sf2
 
-(fluid_synth_sfload 
-(cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-soundfont 1))
+(defmethod* fluid-load-sf2 ((nth-synth number) &optional (path nil)) 
+  :icon 912
+  :indoc '("nth" "path")
+  :initvals '(0 nil)
+  :doc "Loads a soundFont file to the given <nth-synth> intance."
+  (let ((synth (nth nth-synth cl-fluidsynth::*fl-synths*))
+         (pathname (or path (om-choose-file-dialog))))
+    (if (= 1 (cl-fluid::fluid_is_soundfont (namestring pathname)))
+        (progn
+          (setf (cl-fluid::sf2path synth) (namestring pathname))
+        (cl-fluid::fluid_synth_sfload 
+         (cl-fluid::getsptr  synth)
+         (namestring pathname)
+         1))
+      (om-message-dialog (format nil "WARNING: ~A  is not a SoundFont!" (namestring pathname)))
+      )))
 
 
+(defmethod print-sf2-pgms (&optional (path nil))
+  (let ((pathname (or path (om-choose-file-dialog))))
+    (om-terminal (format nil "echo \"inst 1\" | fluidsynth -q ~A" (namestring pathname)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PGMOUT
@@ -202,7 +218,7 @@ soundfont 1))
   :icon 912
   :indoc '("vals" "nth-synth")
   :initvals '(0.8 0)
-  :doc "Sends gain (0 - 1.0) settings to fluidsynth.:"
+  :doc "Sends gain (0 - 1.0) settings to fluidsynth."
   (cl-fluid::fluid_synth_set_gain
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    vals))
@@ -217,7 +233,7 @@ soundfont 1))
   :icon 912
   :indoc '("vals" "chans" "port")
   :initvals '(100 1 0)
-  :doc "Sends volume control change settings to fluidsynth.:"
+  :doc "Sends volume control change settings to channel <chans>."
   (cl-fluid::fluid_synth_cc
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (1- chans) 7 vals))

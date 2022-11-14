@@ -25,7 +25,7 @@
    (settings :accessor settings :initarg :settings :initform nil)
    (synthptr :accessor synthptr :initarg :synthptr :initform nil)
    (audioptr :accessor audioptr :initarg :audioptr :initform nil)
-   (sf2ptr :accessor sf2ptr :initarg :sf2ptr :initform nil)))
+   (sf2path :accessor sf2path :initarg :sf2path :initform nil)))
 
 ;necessaire
 (defmethod getsptr ((self t)) nil)
@@ -249,8 +249,11 @@
 (defun load-sf-to-all (path)
 (when *fl-synths*
   (loop for i from 1 to (length *fl-synths*)
-          do (fluid_synth_sfload
-              (synthptr (nth (1- i)  *fl-synths*)) path 1))))
+          do 
+          (let ((synth (nth (1- i)  *fl-synths*)))
+            (setf (sf2path synth) path)
+             (fluid_synth_sfload
+              (synthptr synth) path 1)))))
 
 (defun om::load-sf-to-all ()
   (let ((newpath (namestring om::*fluid-sf2*))); avoir pour avoir plusieurs sf2 pour chaque port
