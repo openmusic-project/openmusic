@@ -62,6 +62,18 @@
           collect (subseq string i j)
           while j))
 
+(defun split-by-dash (string)
+    "Returns a list of substrings of string
+    divided by ONE space each.
+    Note: Two consecutive spaces will be seen as
+    if there were an empty string between them."
+    (loop for i = 0 then (1+ j)
+          as j = (position #\- string :start i)
+          collect (subseq string i j)
+          while j))
+
+;(mapcar #'read-from-string (split-by-dash "000-016"))
+
 (defun join-string-list (string-list)
     "Concatenates a list of strings
 and puts spaces between the elements."
@@ -81,8 +93,10 @@ and puts spaces between the elements."
 (defun format-pgms (strg)
   (let* ((eof (split-by-eof strg))
          (sep (mapcar #'split-by-one-space eof)))
-    (loop for i in sep
-            collect (list (car i) (join-string-list (cdr i))))
+    (loop for i in (butlast sep)
+          collect (x-append
+                   (mapcar #'read-from-string (split-by-dash (car i)))
+                   (join-string-list (cdr i))))
     ))
 
 (defmethod print-sf2-pgms (&optional (path nil))
@@ -110,7 +124,7 @@ and puts spaces between the elements."
     ))
 
 
-(defmethod* get-fsynht-info ((nth-synth number))
+(defmethod* get-fsynth-info ((nth-synth number))
   :icon 912
   :indoc '("nth")
   :initvals '(0)

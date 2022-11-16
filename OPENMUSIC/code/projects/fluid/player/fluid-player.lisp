@@ -146,12 +146,25 @@
     (if (= 1 (cl-fluid::fluid_is_soundfont (namestring pathname)))
         (progn
           (setf (cl-fluid::sf2path synth) (namestring pathname))
-        (cl-fluid::fluid_synth_sfload 
-         (cl-fluid::getsptr  synth)
-         (namestring pathname)
-         1))
+          (push (cl-fluid::sf2path synth) (cl-fluid::sf2stack synth))
+          (cl-fluid::fluid_synth_sfload 
+           (cl-fluid::getsptr  synth)
+           (namestring pathname)
+           1))
       (om-message-dialog (format nil "WARNING: ~A  is not a SoundFont!" (namestring pathname)))
       )))
+
+
+(defmethod remove-all-sf2 ((synth cl-fluid::fl-synth))
+  "removes all loaded soundfonts in <synth>"
+  (let ((paths (cl-fluid::sf2stack synth)))
+    (loop for i in paths
+            do (cl-fluid::fluid_synth_remove_sfont
+                 (cl-fluid::getsptr synth)
+                 (cl-fluid::fluid_synth_get_sfont_by_name
+                  (cl-fluid::getsptr synth)
+                  i)))
+    (setf (cl-fluid::sf2stack synth) nil)))
 
 
 (defmethod print-sf2-pgms (&optional (path nil))
@@ -184,6 +197,23 @@
           for item1 in progm 
           for item2 in port
           do (fluid-pgmout item1 item item2))))
+
+;;;use this instead:
+
+
+(defmethod* fluid-pgm-change ((progm integer) (chans integer) &key (port 0) (bank 0)) 
+  :icon 912
+  :indoc '("program number" "MIDI channel(s)" "port" "bank")
+  :initvals '(2 1 0 0)
+  :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
+<progm> and <chans> can be single numbers or lists.
+<port> port 0 = 1st instance of fsynth."
+  (let ((synth (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*))))
+    (cl-fluid::fluid_synth_bank_select
+    synth (1- chans) bank)     
+  (cl-fluidsynth::fluid_synth_program_change 
+   synth (1- chans) progm )))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PITCHWHEEL

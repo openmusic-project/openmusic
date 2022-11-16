@@ -25,7 +25,9 @@
    (settings :accessor settings :initarg :settings :initform nil)
    (synthptr :accessor synthptr :initarg :synthptr :initform nil)
    (audioptr :accessor audioptr :initarg :audioptr :initform nil)
-   (sf2path :accessor sf2path :initarg :sf2path :initform nil)))
+   (sf2path :accessor sf2path :initarg :sf2path :initform nil)
+   (sf2stack :accessor sf2stack :initarg :sf2stack :initform '())
+   ))
 
 ;necessaire
 (defmethod getsptr ((self t)) nil)
@@ -252,6 +254,7 @@
           do 
           (let ((synth (nth (1- i)  *fl-synths*)))
             (setf (sf2path synth) path)
+            (push (sf2path synth) (sf2stack synth))
              (fluid_synth_sfload
               (synthptr synth) path 1)))))
 
