@@ -12,10 +12,10 @@
     (show-sf2-dialog info action)))
 
 
-(defun get-input-stream-from-port (port)
-   (when port
-      (let ((device (find port *portmidi-in-ports-table* :key 'car :test '=)))
-        (values (nth 2 device) (nth 1 device)))))
+;(defun get-input-stream-from-port (port)
+;   (when port
+;      (let ((device (find port *portmidi-in-ports-table* :key 'car :test '=)))
+;        (values (nth 2 device) (nth 1 device)))))
 
 
 (defparameter *sf2-setup-window* nil)
