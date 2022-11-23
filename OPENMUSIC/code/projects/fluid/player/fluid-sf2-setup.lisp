@@ -50,7 +50,7 @@
  
     ))
 
-(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
+;(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
 
 
 (defmethod set-sf2-directory-view ((self sf2-ports-view) dialog) 

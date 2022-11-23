@@ -116,7 +116,8 @@ and puts spaces between the elements."
           (let ((progs (car (loop for i in (list (om-read-file (pathname tempfile)))
                                   collect (format nil "~A" i)))))
             (prog1
-                (butlast (format-pgms progs))
+                ;(butlast (format-pgms progs))
+              (format-pgms progs)
               (om-delete-file tempfile))
             )
           )

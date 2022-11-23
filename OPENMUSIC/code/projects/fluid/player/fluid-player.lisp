@@ -166,11 +166,11 @@
                   i)))
     (setf (cl-fluid::sf2stack synth) nil)))
 
-
+#|
 (defmethod print-sf2-pgms (&optional (path nil))
   (let ((pathname (or path (om-choose-file-dialog))))
     (om-terminal (format nil "echo \"inst 1\" | fluidsynth -q ~A" (namestring pathname)))))
-
+|#
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PGMOUT
 
