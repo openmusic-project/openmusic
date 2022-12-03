@@ -57,3 +57,10 @@
         *fluid-files*))
 
 ;(push :midi-project *features*)
+
+;;;================= FLUID PACKAGES ================
+
+(defvar *fluidpackage* (omNG-protect-object (omNG-make-new-package "Fluid")))
+(addPackage2Pack *fluidpackage* *audiopackage*)
+
+(AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pitchwheel fluid-reverb fluid-chorus) *fluidpackage*)
