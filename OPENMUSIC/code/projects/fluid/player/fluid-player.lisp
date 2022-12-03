@@ -274,8 +274,8 @@
 
 (defmethod! fluid-reverb-on ((switch number) &optional port)
   :menuins '((0 (("off" 0) ("on" 1))))
-  :initvals '(0)
-  :outdoc '("on/off reverb")
+  :initvals '(0 0)
+  :outdoc '("on/off reverb" "port")
   :icon 912
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_reverb_on 
@@ -306,8 +306,8 @@
 
 (defmethod! fluid-chorus-on ((switch number) &optional port)
   :menuins '((0 (("off" 0) ("on" 1))))
-  :initvals '(0)
-  :outdoc '("on/off reverb")
+  :initvals '(0 0)
+  :outdoc '("on/off reverb" "port")
   :icon 912
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_chorus_on 
@@ -322,9 +322,9 @@
                           &optional port
                           )
   :icon 912
-  :indoc '("roomsize" "damping" "width" "level" "port")
+  :indoc '("nr" "level" "speed" "depth" "type" "port")
   :initvals '(3 2.0 0.3 8.0 0 0)
-  :doc "Sends reverb settings to fluidsynth.:"
+  :doc "Sends chorus settings to fluidsynth.:"
   (fluid-chorus 1 port)
   (cl-fluid::fluid_synth_set_chorus
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
