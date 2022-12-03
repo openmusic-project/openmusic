@@ -45,6 +45,8 @@
         "player;fluid-preferences"
         "player;fluid-info"
         "player;fluid-sf2-setup"
+
+        "tools;fluid-send"
         ))
 
 
