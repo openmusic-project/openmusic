@@ -145,8 +145,7 @@
                      (format s "fill=\"none\" stroke=~S stroke-width=\"1\">~%" 
                              (omcolor->hex (car (rotate *16-color-list* n))))
                      (format s "</polyline>~%")
-                     (format s "</g>~%")
-                     (format s "<svg>"))
+                     )
                    )
            ;les points
           (loop for i in points
@@ -158,7 +157,8 @@
                              (if n (omcolor->hex (car (rotate *16-color-list* (1+ n)))) "none"))
                              
                      ))
-         
+          (format s "</g>~%")
+          (format s "</svg>")
           ))
       pathname
       )))
