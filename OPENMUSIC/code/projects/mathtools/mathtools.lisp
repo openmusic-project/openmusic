@@ -34,7 +34,7 @@
 (setf *Zn-files* '(
                    "circle;cercle"
                    "circle;cercle-analysis"
-
+                   "circle;cercle-export"
                    "sieves;cribles"
 
 

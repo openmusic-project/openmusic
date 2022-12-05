@@ -278,7 +278,9 @@
           (("c") "Complement")
           (("i") "Inverse")
           (("r") "Set Rotation Mode")
-          (("m") "Set MIDI Interval"))))
+          (("m") "Set MIDI Interval")
+          (("x") "eXport to SVG file")
+          )))
 
 (defmethod handle-key-event ((self cerclePanel) char)
   (case char
@@ -291,6 +293,7 @@
     (#\r (set-rotation-mode self))
     (#\i (inversion-cercle self))
     (#\m (change-interval-cercle self))
+    (#\x (cercle->svg self))
     (otherwise (om-beep))))
 
 
