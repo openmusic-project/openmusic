@@ -119,11 +119,20 @@
   :indoc '("vals" "nth-synth")
   :initvals '(0.8 0)
   :doc "Sends gain (0 - 1.0) settings to fluidsynth."
-  (cl-fluid::fluid_synth_set_gain
-   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-   vals))
+  (if (atom port)
+      (cl-fluid::fluid_synth_set_gain
+       (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+       vals)
+    (loop for i in port
+          do (cl-fluid::fluid_synth_set_gain
+              (cl-fluid::getsptr  (nth i cl-fluidsynth::*fl-synths*))
+              vals)
+             )))
 
-
+(defmethod! fluid-gain ((vals list) &optional port)
+  (loop for i in vals
+        for p in port
+        do (fluid-gain i p)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;VOLUME
