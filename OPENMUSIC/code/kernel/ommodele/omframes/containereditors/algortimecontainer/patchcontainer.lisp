@@ -165,7 +165,8 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("t") "show Tutorial patch")
                        #+om-reactive(("r") "reactive box on/off")
                        (("f") "add function or class")
-                       (("c") "add / edit comment box")
+                       (("c") "add / edit comment box editor")
+                       (("x") "add a comment box")
                        (("C") "Change comment/connections Color")
                        (("F") "change Font style")
                        (("A") "Align")
@@ -248,6 +249,7 @@ because digit-char-p will not accept backspace and special om keys!"
       (#\f (make-undefined-funct-box self (om-mouse-position self)))
       (#\c (if actives (edit-comment-box actives)
              (make-comment-box self (om-mouse-position self))))
+      (#\x (create-comment-box self (om-mouse-position self)))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
       (#\C  (patch-color self))
@@ -462,15 +464,15 @@ because digit-char-p will not accept backspace and special om keys!"
      (omG-add-element self new-frame)
      ))
 
-#|
-(defmethod make-comment-box ((self patchPanel) pos)
-  "this is for 'c' shortcut, for comments."
+
+(defmethod create-comment-box ((self patchPanel) pos)
+  "this is for 'x' shortcut, for comments."
   (let* ((newbox (omNG-make-new-boxcall 'comment pos "comment"))
          (new-frame (make-frame-from-callobj newbox)))
     (om-select-window (window self))
     (omG-add-element self new-frame)
     ))
-|#
+
 
 (defun setfref (newbox text)
   (setf (reference (object (om-view-container newbox))) text))

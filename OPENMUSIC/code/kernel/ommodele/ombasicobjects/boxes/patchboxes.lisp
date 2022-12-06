@@ -1643,7 +1643,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod make-frame-from-callobj ((self OMBoxcomment))
    "Cons a simple frame for the comment box 'self'."
-  (let* ((sizemodule (if (frame-size self) (frame-size self) (om-make-point 100 60)))
+  (let* ((sizemodule (if (frame-size self) (frame-size self) (om-make-point 80 28)))
           (module
            (om-make-view 'commentboxframe 
              :position (frame-position self) 
