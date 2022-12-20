@@ -468,6 +468,24 @@
   (synth :pointer)
   (on :int))
 
+
+(cffi:defcfun ("fluid_synth_set_reverb_roomsize" fluid_synth_set_reverb_roomsize) :void
+  (synth :pointer)
+  (roomsize :double))
+
+(cffi:defcfun ("fluid_synth_set_reverb_damp" fluid_synth_set_reverb_damp) :void
+  (synth :pointer)
+  (damping :double))
+
+(cffi:defcfun ("fluid_synth_set_reverb_width" fluid_synth_set_reverb_width) :void
+  (synth :pointer)
+  (width :double))
+
+(cffi:defcfun ("fluid_synth_set_reverb_level" fluid_synth_set_reverb_level) :void
+  (synth :pointer)
+  (level :double))
+
+
 (cffi:defcfun ("fluid_synth_get_reverb_roomsize" fluid_synth_get_reverb_roomsize) :double
   (synth :pointer))
 
@@ -503,6 +521,27 @@
 (cffi:defcfun ("fluid_synth_set_chorus_on" fluid_synth_set_chorus_on) :void
   (synth :pointer)
   (on :int))
+
+(cffi:defcfun ("fluid_synth_set_chorus_nr" fluid_synth_set_chorus_nr) :void
+  (synth :pointer)
+  (nr :int))
+
+(cffi:defcfun ("fluid_synth_set_chorus_level" fluid_synth_set_chorus_level) :void
+  (synth :pointer)
+  (level :double))
+
+(cffi:defcfun ("fluid_synth_set_chorus_speed" fluid_synth_set_chorus_speed) :void
+  (synth :pointer)
+  (speed :double))
+
+(cffi:defcfun ("fluid_synth_set_chorus_depth" fluid_synth_set_chorus_depth) :void
+  (synth :pointer)
+  (depth_ms :double))
+
+(cffi:defcfun ("fluid_synth_set_chorus_type" fluid_synth_set_chorus_type) :void
+  (synth :pointer)
+  (type :int))
+
 
 (cffi:defcfun ("fluid_synth_get_chorus_nr" fluid_synth_get_chorus_nr) :int
   (synth :pointer))
