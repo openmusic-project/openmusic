@@ -47,6 +47,7 @@
         "player;fluid-sf2-setup"
 
         "tools;fluid-send"
+        "tools;fluid-console"
         ))
 
 
@@ -64,3 +65,4 @@
 (addPackage2Pack *fluidpackage* *audiopackage*)
 
 (AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pitchwheel fluid-reverb fluid-chorus) *fluidpackage*)
+(AddClass2Pack '(fluid-mix-console) *audiopackage*)

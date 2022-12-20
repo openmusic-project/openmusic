@@ -213,7 +213,7 @@
 (defmethod! fluid-chorus-on ((switch number) &optional (port 0))
   :menuins '((0 (("off" 0) ("on" 1))))
   :initvals '(0 0)
-  :outdoc '("on/off reverb" "port")
+  :outdoc '("on/off chorus" "port")
   :icon 912
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_chorus_on 
