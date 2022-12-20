@@ -44,21 +44,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PGMOUT
 
-(defmethod* fluid-pgmout ((progm integer) (chans integer) &optional port) 
+(defmethod* fluid-pgmout ((progm integer) (chans integer) &optional (port 0)) 
   :icon 912
   :indoc '("program number" "MIDI channel(s)" "port")
-  :initvals '(2 1 nil)
+  :initvals '(2 1 0)
   :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
 
 <progm> and <chans> can be single numbers or lists."
   (cl-fluidsynth::fluid_synth_program_change 
    (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*)) (1- chans) progm ))
 
-(defmethod* fluid-pgmout ((progm number) (chans list) &optional port)
+(defmethod* fluid-pgmout ((progm number) (chans list) &optional (port 0))
   (loop for item in chans do
         (fluid-pgmout progm item port)))
 
-(defmethod* fluid-pgmout ((progm list) (chans list) &optional port)
+(defmethod* fluid-pgmout ((progm list) (chans list) &optional (port 0))
   (if (or (null port) (integerp port))
       (loop for item in chans 
             for item1 in progm do
@@ -84,6 +84,14 @@
   (cl-fluidsynth::fluid_synth_program_change 
    synth (1- chans) progm )))
 
+(defmethod* fluid-pgm-change ((progm integer) (chans list) &key (port 0) (bank 0)) 
+  (loop for i in chans
+        do (fluid-pgm-change progm i :port port :bank bank)))
+
+(defmethod* fluid-pgm-change ((progm list) (chans list) &key (port 0) (bank 0)) 
+  (loop for pg in progm
+        for ch in chans
+        do (fluid-pgm-change pg ch :port port :bank bank)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PITCHWHEEL
@@ -138,7 +146,7 @@
 ;;;VOLUME
 
 (defmethod! fluid-volume ((vals integer)
-                          (chans integer) &optional port)
+                          (chans integer) &optional (port 0))
   :icon 912
   :indoc '("vals" "chans" "port")
   :initvals '(100 1 0)
@@ -147,11 +155,30 @@
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (1- chans) 7 vals))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;PAN
+
+(defmethod! fluid-pan ((vals integer)
+                       (chans integer) &optional (port 0))
+  :icon 912
+  :indoc '("vals" "chans" "port")
+  :initvals '(64 1 0)
+  :doc "Sends volume control change settings to channel <chans>."
+  (cl-fluid::fluid_synth_cc
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+   (1- chans) 10 vals))
+
+(defmethod! fluid-pan ((vals integer)
+                       (chans list) &optional (port 0))
+  (loop for i in chans
+        do (fluid-pan vals i port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;REVERB
 
 
-(defmethod! fluid-reverb-on ((switch number) &optional port)
+(defmethod! fluid-reverb-on ((switch number) &optional (port 0))
   :menuins '((0 (("off" 0) ("on" 1))))
   :initvals '(0 0)
   :outdoc '("on/off reverb" "port")
@@ -165,13 +192,13 @@
                           (damping number)
                           (width number)
                           (level number)
-                          &optional port
+                          &optional (port 0)
                           )
   :icon 912
   :indoc '("roomsize" "damping" "width" "level" "port")
   :initvals '(2.0 0.0 0.5 2.9 0)
   :doc "Sends reverb settings to fluidsynth.:"
-  (fluid-reverb-on 1 port)
+  ;(fluid-reverb-on 1 port)
   (cl-fluidsynth::fluid_synth_set_reverb 
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (coerce roomsize 'double-float)
@@ -183,7 +210,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;CHORUS
 
-(defmethod! fluid-chorus-on ((switch number) &optional port)
+(defmethod! fluid-chorus-on ((switch number) &optional (port 0))
   :menuins '((0 (("off" 0) ("on" 1))))
   :initvals '(0 0)
   :outdoc '("on/off reverb" "port")
@@ -198,13 +225,13 @@
                           (speed number)
                           (depth number)
                           (type number)
-                          &optional port
+                          &optional (port 0)
                           )
   :icon 912
   :indoc '("nr" "level" "speed" "depth" "type" "port")
   :initvals '(3 2.0 0.3 8.0 0 0)
   :doc "Sends chorus settings to fluidsynth.:"
-  (fluid-chorus 1 port)
+  ;(fluid-chorus-on 1 port)
   (cl-fluid::fluid_synth_set_chorus
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    nr
