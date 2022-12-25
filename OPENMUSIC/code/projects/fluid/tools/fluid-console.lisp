@@ -58,7 +58,7 @@
             (clevel-ctrl :initform 20 :initarg :clevel-ctrl  :accessor clevel-ctrl :type integer)
             (speed-ctrl :initform 20 :initarg :speed-ctrl  :accessor speed-ctrl :type integer)
             (depth-ctrl :initform 20 :initarg :depth-ctrl  :accessor depth-ctrl :type integer)
-            (ch-type-ctrl :initform 20 :initarg :ch-type-ctrl  :accessor ch-type-ctrl :type integer)
+            (ch-type-ctrl :initform 0 :initarg :ch-type-ctrl  :accessor ch-type-ctrl :type integer)
             ))
   
 
@@ -475,7 +475,7 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod do-initialize-channel ((self fluidPanel))
-  (let* ((progList *midi-programs*)
+  (let* ((progList (fluid-make-presets (1- (midichannel (channelctr self)))))
          (ctrlList *midi-controllers*) bar1 bar2 bar3 bar4
          (pos 0)
          (bgcolor *om-light-gray-color*)
@@ -1237,9 +1237,9 @@ In this case, all internal events are sent simultaneously.
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-rev-values self)))
   (setf (room-ctrl (channelctr self)) value)
-  (cl-fluidsynth::fluid_synth_set_reverb 
+  (cl-fluidsynth::fluid_synth_set_reverb_roomsize 
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-   (car vals) (second vals) (third vals) (fourth vals))
+   (car vals))
   (when (send-rt (editor self))
     (channel-send-pan (channelctr self))) ;;to send value
   (let* ((target (roomVal self))
@@ -1253,9 +1253,9 @@ In this case, all internal events are sent simultaneously.
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-rev-values self)))
     (setf (damp-ctrl (channelctr self)) value)
-    (cl-fluidsynth::fluid_synth_set_reverb 
+    (cl-fluidsynth::fluid_synth_set_reverb_damp 
      (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-     (car vals) (second vals) (third vals) (fourth vals))
+     (second vals))
 
     (when (send-rt (editor self))
       (channel-send-pan (channelctr self))) ;;to send value
@@ -1270,9 +1270,9 @@ In this case, all internal events are sent simultaneously.
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-rev-values self)))
     (setf (width-ctrl (channelctr self)) value)    
-    (cl-fluidsynth::fluid_synth_set_reverb 
+    (cl-fluidsynth::fluid_synth_set_reverb_width 
      (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-     (car vals) (second vals) (third vals) (fourth vals))
+     (third vals))
     (when (send-rt (editor self))
     (channel-send-pan (channelctr self))) ;;to send value
   (let* ((target (widthVal self))
@@ -1286,9 +1286,9 @@ In this case, all internal events are sent simultaneously.
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-rev-values self)))
     (setf (rlevel-ctrl (channelctr self)) value)    
-    (cl-fluidsynth::fluid_synth_set_reverb 
+    (cl-fluidsynth::fluid_synth_set_reverb_level 
      (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-     (car vals) (second vals) (third vals) (fourth vals))
+     (fourth vals))
     (when (send-rt (editor self))
     (channel-send-pan (channelctr self))) ;;to send value
   (let* ((target (rlevelVal self))
@@ -1321,9 +1321,9 @@ In this case, all internal events are sent simultaneously.
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-chorus-values self)))
   (setf (nr-ctrl (channelctr self)) value)
-  (cl-fluid::fluid_synth_set_chorus
+  (cl-fluid::fluid_synth_set_chorus_nr
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-   (car vals) (second vals) (third vals) (fourth vals) (fifth vals))
+   (car vals))
   (when (send-rt (editor self))
     (channel-send-pan (channelctr self))) ;;to send value
   (let* ((target (cnrVal self))
@@ -1334,46 +1334,61 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self)))
 
 (defmethod change-clevel ((self fluidPanel) value)
-  (setf (clevel-ctrl (channelctr self)) value)
-  (when (send-rt (editor self))
-    (channel-send-pan (channelctr self))) ;;to send value
-  (let* ((target (clevelVal self))
-         (new-str (integer-to-string value)))
-    (unless (string= new-str (om-dialog-item-text target))
-      (om-set-dialog-item-text target new-str)
-      (om-redraw-view target)))
-  (report-modifications self))
+  (let ((port (1- (midichannel (channelctr self))))
+        (vals (get-chorus-values self)))
+    (setf (clevel-ctrl (channelctr self)) value)
+    (cl-fluid::fluid_synth_set_chorus_level
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+     (second vals))
+    (when (send-rt (editor self))
+      (channel-send-pan (channelctr self))) ;;to send value
+    (let* ((target (clevelVal self))
+           (new-str (integer-to-string value)))
+      (unless (string= new-str (om-dialog-item-text target))
+        (om-set-dialog-item-text target new-str)
+        (om-redraw-view target)))
+    (report-modifications self)))
 
 (defmethod change-speed ((self fluidPanel) value)
-  (setf (speed-ctrl (channelctr self)) value)
-  (when (send-rt (editor self))
-    (channel-send-pan (channelctr self))) ;;to send value
-  (let* ((target (cspeedVal self))
-         (new-str (integer-to-string value)))
-    (unless (string= new-str (om-dialog-item-text target))
-      (om-set-dialog-item-text target new-str)
-      (om-redraw-view target)))
-  (report-modifications self))
+  (let ((port (1- (midichannel (channelctr self))))
+        (vals (get-chorus-values self)))
+    (setf (speed-ctrl (channelctr self)) value)
+    (cl-fluid::fluid_synth_set_chorus_speed
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+     (third vals))
+    (when (send-rt (editor self))
+      (channel-send-pan (channelctr self))) ;;to send value
+    (let* ((target (cspeedVal self))
+           (new-str (integer-to-string value)))
+      (unless (string= new-str (om-dialog-item-text target))
+        (om-set-dialog-item-text target new-str)
+        (om-redraw-view target)))
+    (report-modifications self)))
 
 (defmethod change-depth ((self fluidPanel) value)
-  (setf (depth-ctrl (channelctr self)) value)
-  (when (send-rt (editor self))
-    (channel-send-pan (channelctr self))) ;;to send value
-  (let* ((target (cdepthVal self))
-         (new-str (integer-to-string value)))
-    (unless (string= new-str (om-dialog-item-text target))
-      (om-set-dialog-item-text target new-str)
-      (om-redraw-view target)))
-  (report-modifications self))
+  (let ((port (1- (midichannel (channelctr self))))
+        (vals (get-chorus-values self)))
+    (setf (depth-ctrl (channelctr self)) value)
+    (cl-fluid::fluid_synth_set_chorus_depth
+     (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+     (fourth vals))
+    (when (send-rt (editor self))
+      (channel-send-pan (channelctr self))) ;;to send value
+    (let* ((target (cdepthVal self))
+           (new-str (integer-to-string value)))
+      (unless (string= new-str (om-dialog-item-text target))
+        (om-set-dialog-item-text target new-str)
+        (om-redraw-view target)))
+    (report-modifications self)))
 
 
 (defmethod change-ctype ((self fluidPanel) value)
   (let ((port (1- (midichannel (channelctr self))))
         (vals (get-chorus-values self)))
   (setf (ch-type-ctrl (channelctr self)) value)
-  (cl-fluid::fluid_synth_set_chorus
+  (cl-fluid::fluid_synth_set_chorus_type
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
-   (car vals) (second vals) (third vals) (fourth vals) (fifth vals))))
+   (fifth vals))))
 
 ;;;
 

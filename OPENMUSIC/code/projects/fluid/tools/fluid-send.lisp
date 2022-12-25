@@ -1,5 +1,34 @@
-(in-package :om)
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
+;=========================================================================
 
+;;; FLUID package
+; Author: Karim Haddad
+;==============================
+; FLUID TOOLS
+;
+;==============================
+
+(in-package :om)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;SOUDFONTS MANAGMENT
@@ -41,6 +70,24 @@
   (let ((pathname (or path (om-choose-file-dialog))))
     (om-terminal (format nil "echo \"inst 1\" | fluidsynth -q ~A" (namestring pathname)))))
 |#
+
+(defmethod! fluid-make-presets ((port number))
+"Returns the presets of a sfont loaded in a fsynth with port number <port> for console.
+The format is a list of list where the car of each is the string name of the preset followed by the number program."
+(let ((sf2
+       (cl-fluid::fluid_synth_get_sfont 
+        (cl-fluid::getsptr  (nth port cl-fluid::*fl-synths*))
+        0)))
+  (if (cffi:null-pointer-p sf2)
+      (om-beep-msg "no soundfont loaded in this synth")
+    (remove nil
+    (loop for i from 0 to 127
+        collect (let ((pt (cl-fluid::fluid_sfont_get_preset sf2 0 i)))
+                  (unless (cffi:null-pointer-p pt)
+                    (list (cl-fluid::fluid_preset_get_name pt) i))))))))
+
+;(fluid-make-presets 0)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;PGMOUT
 
@@ -79,10 +126,12 @@
 <progm> and <chans> can be single numbers or lists.
 <port> port 0 = 1st instance of fsynth."
   (let ((synth (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*))))
+    (cl-fluidsynth::fluid_synth_program_change 
+     synth (1- chans) progm)
     (cl-fluid::fluid_synth_bank_select
-    synth (1- chans) bank)     
-  (cl-fluidsynth::fluid_synth_program_change 
-   synth (1- chans) progm )))
+     synth (1- chans) bank)
+    (cl-fluid::fluid_synth_program_reset synth)
+    ))
 
 (defmethod* fluid-pgm-change ((progm integer) (chans list) &key (port 0) (bank 0)) 
   (loop for i in chans

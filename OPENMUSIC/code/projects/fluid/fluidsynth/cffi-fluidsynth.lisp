@@ -1,18 +1,32 @@
-;;; Copyright (c) 2015-2021 Tito Latini
-;;;
-;;; This library is free software; you can redistribute it and/or
-;;; modify it under the terms of the GNU Lesser General Public
-;;; License as published by the Free Software Foundation; either
-;;; version 2.1 of the License, or (at your option) any later version.
-;;;
-;;; This library is distributed in the hope that it will be useful,
-;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;; Lesser General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU Lesser General Public
-;;; License along with this library; if not, write to the Free Software
-;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
+;=========================================================================
+
+;;; FLUID package
+; Author: Karim Haddad
+;==============================
+; FluidSynth API for Common Lisp/CFFI
+; 
+;==============================
 
 (in-package :cl-fluidsynth)
 
@@ -476,6 +490,22 @@
 (cffi:defcfun ("fluid_synth_get_sfont_by_name" get-sfont-by-name) :pointer
   (synth synth)
   (name :string))
+
+;returns sfont name
+(cffi:defcfun ("fluid_sfont_get_name" fluid_sfont_get_name) :string
+  (fluid_sfont_t :pointer))
+
+
+;returns preset as a pointer.
+(cffi:defcfun ("fluid_sfont_get_preset" fluid_sfont_get_preset) :pointer
+  (fluid_sfont_t :pointer)
+  (bank :int)
+  (prenum :int))
+
+;returns sfont preset.
+(cffi:defcfun ("fluid_preset_get_name" fluid_preset_get_name) :string
+  (fluid_preset_t :pointer))
+
 
 (cffi:defcfun ("fluid_synth_set_bank_offset" set-bank-offset) :int
   (synth synth)
