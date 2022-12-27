@@ -39,7 +39,8 @@
 (defvar *fluidsynth-library* nil)
 (defvar *fluidsynth-initialized-p* nil)
 
-#| ;;a voir si besoin
+ ;;a voir si besoin
+#+macosx
 (defun load-fluidsynth-library ()
   (let ((libpath (om::om-lib-pathname cl-fluid::*fluidsynth-pathname*)))
     
@@ -65,8 +66,9 @@
       (om::om-message-dialog (format nil "FLUIDSYNTH library not found: ~A" (namestring libpath)))))
   (setf *fluidsynth-initialized-p* nil))
 
-(load-fluidsynth-library)
-|#
+;(load-fluidsynth-library)
+#+macosx(oa:om-add-init-func 'load-fluidsynth-library)
+
 
 
 #|
