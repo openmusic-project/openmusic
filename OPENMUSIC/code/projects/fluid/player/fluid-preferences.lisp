@@ -30,7 +30,7 @@
 ;FLUID PREFERENCES MODULE
 ;=================================================
 
-(defparameter *n-fsynth* 8)
+(defparameter *n-fsynth* 4)
 (defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*))
 ;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
 
@@ -48,7 +48,7 @@
 (defmethod get-def-vals ((ID (eql :fluid)))
     (list 
           :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
-          :n-fsynth 8
+          :n-fsynth 4
           ;:midi-presets (def-midi-presets)
           ))
 

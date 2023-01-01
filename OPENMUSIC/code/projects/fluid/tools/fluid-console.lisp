@@ -35,7 +35,7 @@
 ;=== a single synth controller 
 ;================================================
 (defclass* Fluid-Ctrl () 
-           ((midiport :initform nil :initarg :midiport :accessor midiport :type integer)
+           ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer)
             (midichannel :initform 1 :initarg :midichannel :accessor midichannel :type integer)
             (program :initform 0 :initarg :program :accessor program :type integer)
             (pan-ctrl :initform 64 :initarg :pan-ctrl  :accessor pan-ctrl :type integer)
@@ -43,7 +43,7 @@
             (control2-num :initform 2 :initarg :control2-num :accessor control2-num :type integer)
             (control1-val :initform 0 :initarg :control1-val :accessor control1-val :type integer)
             (control2-val :initform 0 :initarg :control2-val :accessor control2-val :type integer)
-            (vol-ctrl :initform 100 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
+            (vol-ctrl :initform 32 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
             (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)
             (tuning :initform 2 :initarg :tuning :accessor tuning :type integer)
             ;;reverb
@@ -489,7 +489,9 @@ In this case, all internal events are sent simultaneously.
                                (om-make-point 76 12)
                                ""
                                :di-action (om-dialog-item-act item
-                                            (change-program self (second (nth (om-get-selected-item-index item) progList))))
+                                            (change-all-pgm self (second (nth (om-get-selected-item-index item) progList)))
+                                            ;(change-program self (second (nth (om-get-selected-item-index item) progList)))
+                                            )
                                :font *om-default-font1*
                                :range (loop for item in progList collect (first item))
                                :value (first (nth (program (channelctr self)) progList))
@@ -590,7 +592,9 @@ In this case, all internal events are sent simultaneously.
                                                                                          ))))
                                                                  (progn 
                                                                    (setf (tuning (channelctr self)) newtone)
-                                                                   (change-tuning self newtone))
+                                                                   (change-tuning self newtone)
+                                                                   ;(print (list "voir" (program (channelctr self))))
+                                                                   )
                                                                  ))
                                        :font *om-default-font1*
                                        :range (loop for item in (editor-tone-list)  collect (car item)) 
@@ -1110,13 +1114,17 @@ In this case, all internal events are sent simultaneously.
   (setf (midichannel (channelctr self)) value)
   (report-modifications self))
 
-(defmethod change-program ((self fluidPanel) value)
+(defmethod change-all-pgm ((self fluidPanel) value) (print "HERE")
   (let ((port (1- (midichannel (channelctr self)))))
   (setf (program (channelctr self)) value)
-  (fluid-pgm-change value 1 :port port)
-  (when (send-rt (editor self))
-    (channel-send-prog (channelctr self)))
+  (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
   (report-modifications self)))
+
+(defmethod change-program ((self fluidPanel) value)
+  (let ((port (1- (midichannel (channelctr self)))))
+    (setf (program (channelctr self)) value)
+    (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+    (report-modifications self)))
 
 (defmethod change-volume ((self fluidPanel) value)
   (let ((port (1- (midichannel (channelctr self)))))
@@ -1194,16 +1202,17 @@ In this case, all internal events are sent simultaneously.
       (om-redraw-view target)))
   (report-modifications self))
 
-(defmethod change-tuning ((self fluidPanel) value)
+(defmethod change-tuning ((self fluidPanel) value) 
   (let ((port (1- (midichannel (channelctr self)))))
-  (cond 
-   ((= 2 value)
-    (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
-   ((= 4 value)
-         (fluid-pitchwheel '(0 2040 0 2040 0 2040 0 2048) '(1 3 2 4 5 7 6 8) port))
-   ((= 8 value)
-         (fluid-pitchwheel '(0 1024 2040 3057 0 1024 2040 3057) '(1 2 3 4 5 6 7 8) port))
-   (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))))
+    (cond 
+     ((= 2 value)
+      (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
+     ((= 4 value)
+      (fluid-pitchwheel '(0 2040 0 2040 0 2040 0 2048) '(1 3 2 4 5 7 6 8) port))
+     ((= 8 value)
+      (fluid-pitchwheel '(0 1024 2040 3057 0 1024 2040 3057) '(1 2 3 4 5 6 7 8) port))
+     (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))
+    ))
 
 (defmethod change-tuning ((self fluid-ctrl) value)
   (let ((port (1- (midichannel self))))
@@ -1397,14 +1406,14 @@ In this case, all internal events are sent simultaneously.
   (om-set-selected-item-index (programMenu self) 0)
   (change-pan self 64)
   (set-value (panSlider self) 64)
-  (change-volume self 100)
-  (om-set-slider-value (volumeSlider self) 100)
+  (change-volume self 32)
+  (om-set-slider-value (volumeSlider self) 32)
   ;(change-pitchbend self 8192)
   ;(om-set-slider-value (pitchSlider self) 8192)
-  (change-ctrl1-val self 0)
-  (om-set-slider-value (ctrl1Slider self) 0)
-  (change-ctrl2-val self 0)
-  (om-set-slider-value (ctrl2Slider self) 0)
+ ; (change-ctrl1-val self 0)
+ ; (om-set-slider-value (ctrl1Slider self) 0)
+ ; (change-ctrl2-val self 0)
+ ; (om-set-slider-value (ctrl2Slider self) 0)
 )
   
  

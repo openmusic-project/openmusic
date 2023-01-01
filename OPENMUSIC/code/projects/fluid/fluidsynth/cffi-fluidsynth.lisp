@@ -509,6 +509,9 @@
   (fluid_preset_t :pointer))
 
 
+(cffi:defcfun ("fluid_preset_get_num" fluid_preset_get_num) :int
+  (fluid_preset_t :pointer))
+
 (cffi:defcfun ("fluid_synth_set_bank_offset" set-bank-offset) :int
   (synth synth)
   (sfont_id :int)

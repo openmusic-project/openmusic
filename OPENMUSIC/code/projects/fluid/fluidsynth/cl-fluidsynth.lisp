@@ -222,7 +222,7 @@
           do (push (create-fl-synt i) *fl-synths*))
   (setf *fl-synths* (reverse *fl-synths*))
   (loop for i in *fl-synths*
-  do (fluid_synth_set_gain (synthptr i) 0.8))
+  do (fluid_synth_set_gain (synthptr i) 0.25))
   )
 
 ;(add-n-fsynths 1)
