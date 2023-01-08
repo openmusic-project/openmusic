@@ -36,13 +36,15 @@
 ;================================================
 (defclass* Fluid-Ctrl () 
            ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer)
-            (midichannel :initform 1 :initarg :midichannel :accessor midichannel :type integer)
-            (program :initform 0 :initarg :program :accessor program :type integer)
+            (midichannel :initform '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) :initarg :midichannel :accessor midichannel :type list)
+            (program :initform '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) :initarg :program :accessor program :type list)
+            (prg-main :initform t :initarg :prg-main  :accessor prg-main :type nil)
             (pan-ctrl :initform 64 :initarg :pan-ctrl  :accessor pan-ctrl :type integer)
             (control1-num :initform 1 :initarg :control1-num :accessor control1-num :type integer)
             (control2-num :initform 2 :initarg :control2-num :accessor control2-num :type integer)
             (control1-val :initform 0 :initarg :control1-val :accessor control1-val :type integer)
             (control2-val :initform 0 :initarg :control2-val :accessor control2-val :type integer)
+            (gain-ctrl :initform 32 :initarg :gain-ctrl :accessor gain-ctrl :type integer)
             (vol-ctrl :initform 32 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
             (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)
             (tuning :initform 2 :initarg :tuning :accessor tuning :type integer)
@@ -59,6 +61,8 @@
             (speed-ctrl :initform 20 :initarg :speed-ctrl  :accessor speed-ctrl :type integer)
             (depth-ctrl :initform 20 :initarg :depth-ctrl  :accessor depth-ctrl :type integer)
             (ch-type-ctrl :initform 0 :initarg :ch-type-ctrl  :accessor ch-type-ctrl :type integer)
+            ;;individual channel settings
+            (i-chans :initform nil :initarg :i-chans  :accessor i-chans :type nil)
             ))
   
 
@@ -70,7 +74,7 @@
 ;=== SETTINGS CONTROLLER          ===
 ;=== a set of synth controllers ===
 ;====================================
-(defclass* fluid-settings-ctrl (midi-score-element); a modifier!
+(defclass* fluid-settings-ctrl (simple-score-element)
    ((midiport :initform nil :initarg :midiport :accessor midiport :type integer :documentation "output port number")
     (miditrack :initform 0 :accessor miditrack)
     (nbtracks :initform (length cl-fluid::*fl-synths*) :initarg :nbtracks :accessor nbtracks :type integer :documentation "number of tracks")
@@ -113,9 +117,9 @@
    (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
 
    (setf (channels-ctrl self) 
-         (loop for i from 1 to (nbtracks self) collect (make-instance (get-fluid-ctrl-class self)
-                                                         :midiport (midiport self)
-                                                         :midichannel i)))
+         (loop for i from 0 to (1- (nbtracks self))
+               collect (make-instance (get-fluid-ctrl-class self)
+                                      :midiport i)))
    )
 
 ;===========================
@@ -194,6 +198,7 @@ In this case, all internal events are sent simultaneously.
      rep
      ))
 
+
 ;;;===============================
 ;;; FOR PLAY OR SAVE AS MIDI
 ;;;===============================
@@ -213,10 +218,10 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod* send-all-to-fluids ((self fluid-ctrl))
-  (let* ((port (1- (midichannel self)))
+  (let* ((port (midiport self))
          (pgm (program self))
          (pan (pan-ctrl self))
-         (vol (vol-ctrl self))
+         (vol (gain-ctrl self))
          (tuning (tuning self)))
     (progn 
       (fluid-pgm-change pgm '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
@@ -424,9 +429,9 @@ In this case, all internal events are sent simultaneously.
                                              :owner (panel self)
                                              :bg-color *om-light-gray-color*
                                              :position (om-make-point (* i *fl-channel-w*) 0) 
-                                             :size (om-make-point *fl-channel-w* (- (h self) 15)))))
+                                             :size (om-make-point *fl-channel-w* (- (h self) 15))))))
   
-)
+
 
 
 (defmethod simple-controls-only ((self fluidpanel)) nil)
@@ -438,27 +443,15 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod make-channel-title-items ((self fluidpanel)) 
   (setf (channelText self) (om-make-dialog-item 'om-static-text
-                                                        (om-make-point 8 5) 
-                                                        (om-make-point 76 20) "FLUIDSYNTH" 
-                                                        :font *om-default-font2b*))
+                                                (om-make-point 8 5) 
+                                                (om-make-point 76 20) "FLUIDSYNTH" 
+                                                :font *om-default-font2b*))
 
   (setf (channelBox self) 
-        #|
-        (om-make-dialog-item 'numBox (om-make-point 26 25) (om-make-point 28 18) 
-                                                       (format nil " ~D" (midichannel (channelctr self)))
-                                                       :min-val 1
-                                                       :max-val 16
-                                                       :value (midichannel (channelctr self))
-                                                       :afterfun #'(lambda (item)
-                                                                     (change-channel self (value item)))
-                                                       :font *om-default-font2b*
-                                                       )
-        |#
         (om-make-dialog-item 'om-static-text (om-make-point 26 25) (om-make-point 28 18) 
-                             (format nil " ~D" (midichannel (channelctr self)))
-                             :font *om-default-font2b*)
-        )
-    
+                             (format nil " ~D" (1+ (midiport (channelctr self))))
+                             :font *om-default-font2b*))
+  
   (om-set-bg-color (channelBox self) *om-white-color*)
   (list  (channelText self) (channelBox self))
   )
@@ -474,8 +467,8 @@ In this case, all internal events are sent simultaneously.
 (car (cassq val *tuning-table*)))
 
 
-(defmethod do-initialize-channel ((self fluidPanel))
-  (let* ((progList (fluid-make-presets (1- (midichannel (channelctr self)))))
+(defmethod do-initialize-channel ((self fluidPanel)) 
+  (let* ((progList (fluid-make-presets (midiport (channelctr self))))
          (ctrlList *midi-controllers*) bar1 bar2 bar3 bar4
          (pos 0)
          (bgcolor *om-light-gray-color*)
@@ -489,15 +482,21 @@ In this case, all internal events are sent simultaneously.
                                (om-make-point 76 12)
                                ""
                                :di-action (om-dialog-item-act item
-                                            (change-all-pgm self (second (nth (om-get-selected-item-index item) progList)))
-                                            ;(change-program self (second (nth (om-get-selected-item-index item) progList)))
-                                            )
+                                            (change-all-pgm self (second (nth (om-get-selected-item-index item) progList))))
                                :font *om-default-font1*
                                :range (loop for item in progList collect (first item))
-                               :value (first (nth (program (channelctr self)) progList))
+                               :value (first (nth (car (program (channelctr self))) progList))
                                )
           )
     
+    (setf resetprg (om-make-view 'om-icon-button 
+                                 :icon1 "stop" :icon2 "stop-pushed"
+                                 :position (om-make-point 90 pos) :size (om-make-point 26 25) 
+                                 :action (om-dialog-item-act item
+                                           (declare (ignore item))
+                                           (propagate-pgm-change self (car (program (channelctr self))))
+                                           ;(change-all-pgm self (car (program (channelctr self))))
+                                           )))
     (setf pos (+ pos 30))
 
     (setf (panText self) (om-make-dialog-item 'om-static-text
@@ -546,7 +545,7 @@ In this case, all internal events are sent simultaneously.
     (setf (volumeVal self) (om-make-dialog-item 'om-static-text 
                                                 (om-make-point 50 pos) 
                                                 (om-make-point 30 16)
-                                                (format nil "~D" (vol-ctrl (channelctr self)) )
+                                                (format nil "~D" (gain-ctrl (channelctr self)) )
                                                 :font *om-default-font2*
                                                 ))
     
@@ -558,7 +557,7 @@ In this case, all internal events are sent simultaneously.
                                                                 (change-volume self (om-slider-value item)))
                                                    :increment 1
                                                    :range '(0 127)
-                                                   :value (vol-ctrl (channelctr self))
+                                                   :value (gain-ctrl (channelctr self))
                                                    :direction :vertical
                                                    :tick-side :none
                                                    ))
@@ -593,7 +592,6 @@ In this case, all internal events are sent simultaneously.
                                                                  (progn 
                                                                    (setf (tuning (channelctr self)) newtone)
                                                                    (change-tuning self newtone)
-                                                                   ;(print (list "voir" (program (channelctr self))))
                                                                    )
                                                                  ))
                                        :font *om-default-font1*
@@ -705,11 +703,11 @@ In this case, all internal events are sent simultaneously.
                                              (progn
                                                (setf (revbutton self) t)
                                                (set-rev self t)
-                                               (fluid-reverb-on 1 (1- (midichannel (channelctr self))))) 
+                                               (fluid-reverb-on 1 (midiport (channelctr self))))
                                            (progn
                                              (setf (revbutton self) nil)
                                              (set-rev self nil)
-                                             (fluid-reverb-on 0 (1- (midichannel (channelctr self)))))
+                                             (fluid-reverb-on 0 (midiport (channelctr self))))
                                            ))
                                            
                                        :font *controls-font*
@@ -842,11 +840,11 @@ In this case, all internal events are sent simultaneously.
                                                 (progn
                                                   (setf (cbutton self) t)
                                                   (set-chorus self t)
-                                                  (fluid-chorus-on 1 (1- (midichannel (channelctr self))))) 
+                                                  (fluid-chorus-on 1 (midiport (channelctr self))))
                                               (progn
                                                 (setf (cbutton self) nil)
                                                 (set-chorus self nil)
-                                                (fluid-chorus-on 0 (1- (midichannel (channelctr self)))))
+                                                (fluid-chorus-on 0 (midiport (channelctr self))))
                                               ))
                                           :font *controls-font*
                                           :checked-p (ch-on (channelctr self))
@@ -1013,7 +1011,8 @@ In this case, all internal events are sent simultaneously.
                                                  (om-make-point 70 50)
                                                  "Channels"
                                                  :di-action (om-dialog-item-act item
-                                                              (show-midi-mixer-win))
+                                                              (let ((port (midiport (channelctr self))))
+                                                                (show-fluid-mixer-win port (channelctr self))))
                                                  :font *controls-font*))
       
       
@@ -1023,6 +1022,7 @@ In this case, all internal events are sent simultaneously.
     
     (om-add-subviews self  
                      (programMenu self) 
+                     resetprg
                      bar1 
                      (volumeSlider self) 
                      (volumeText self) 
@@ -1114,21 +1114,29 @@ In this case, all internal events are sent simultaneously.
   (setf (midichannel (channelctr self)) value)
   (report-modifications self))
 
-(defmethod change-all-pgm ((self fluidPanel) value) (print "HERE")
-  (let ((port (1- (midichannel (channelctr self)))))
-  (setf (program (channelctr self)) value)
+(defmethod change-all-pgm ((self fluidPanel) value)
+  (let ((port (midiport (channelctr self))))
+  (setf (program (channelctr self)) (repeat-n value 16))
   (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
   (report-modifications self)))
 
+(defmethod propagate-pgm-change ((self fluidPanel) value)
+  (let ((port (midiport (channelctr self))))
+    (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+
+    (loop for i in (channels-ctrl (i-chans (channelctr self)))
+          do (setf (program i) value))))
+       
+
 (defmethod change-program ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self)))))
+  (let ((port (midiport (channelctr self))))
     (setf (program (channelctr self)) value)
     (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
     (report-modifications self)))
 
 (defmethod change-volume ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self)))))
-  (setf (vol-ctrl (channelctr self)) value)
+  (let ((port (midiport (channelctr self))))
+  (setf (gain-ctrl (channelctr self)) value)
   (fluid-gain (/ value 127.0) port)
   (when (send-rt (editor self))
     (channel-send-vol (channelctr self))
@@ -1149,7 +1157,7 @@ In this case, all internal events are sent simultaneously.
     new-str))
 
 (defmethod change-pan ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self)))))
+  (let ((port (midiport (channelctr self))))
   (setf (pan-ctrl (channelctr self)) value)
   (fluid-pan value *all-chans* port)
   (when (send-rt (editor self))
@@ -1203,7 +1211,7 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self))
 
 (defmethod change-tuning ((self fluidPanel) value) 
-  (let ((port (1- (midichannel (channelctr self)))))
+  (let ((port (midiport (channelctr self))))
     (cond 
      ((= 2 value)
       (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
@@ -1215,7 +1223,7 @@ In this case, all internal events are sent simultaneously.
     ))
 
 (defmethod change-tuning ((self fluid-ctrl) value)
-  (let ((port (1- (midichannel self))))
+  (let ((port (midiport self)))
   (cond 
    ((= 2 value)
     (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
@@ -1243,7 +1251,7 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod change-room ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-rev-values self)))
   (setf (room-ctrl (channelctr self)) value)
   (cl-fluidsynth::fluid_synth_set_reverb_roomsize 
@@ -1259,7 +1267,7 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self)))
 
 (defmethod change-damp ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-rev-values self)))
     (setf (damp-ctrl (channelctr self)) value)
     (cl-fluidsynth::fluid_synth_set_reverb_damp 
@@ -1276,7 +1284,7 @@ In this case, all internal events are sent simultaneously.
     (report-modifications self)))
 
 (defmethod change-width ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-rev-values self)))
     (setf (width-ctrl (channelctr self)) value)    
     (cl-fluidsynth::fluid_synth_set_reverb_width 
@@ -1292,7 +1300,7 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self)))
 
 (defmethod change-rlevel ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-rev-values self)))
     (setf (rlevel-ctrl (channelctr self)) value)    
     (cl-fluidsynth::fluid_synth_set_reverb_level 
@@ -1327,7 +1335,7 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod change-nr ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-chorus-values self)))
   (setf (nr-ctrl (channelctr self)) value)
   (cl-fluid::fluid_synth_set_chorus_nr
@@ -1343,7 +1351,7 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self)))
 
 (defmethod change-clevel ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-chorus-values self)))
     (setf (clevel-ctrl (channelctr self)) value)
     (cl-fluid::fluid_synth_set_chorus_level
@@ -1359,7 +1367,7 @@ In this case, all internal events are sent simultaneously.
     (report-modifications self)))
 
 (defmethod change-speed ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-chorus-values self)))
     (setf (speed-ctrl (channelctr self)) value)
     (cl-fluid::fluid_synth_set_chorus_speed
@@ -1375,7 +1383,7 @@ In this case, all internal events are sent simultaneously.
     (report-modifications self)))
 
 (defmethod change-depth ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-chorus-values self)))
     (setf (depth-ctrl (channelctr self)) value)
     (cl-fluid::fluid_synth_set_chorus_depth
@@ -1392,7 +1400,7 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod change-ctype ((self fluidPanel) value)
-  (let ((port (1- (midichannel (channelctr self))))
+  (let ((port (midiport (channelctr self)))
         (vals (get-chorus-values self)))
   (setf (ch-type-ctrl (channelctr self)) value)
   (cl-fluid::fluid_synth_set_chorus_type

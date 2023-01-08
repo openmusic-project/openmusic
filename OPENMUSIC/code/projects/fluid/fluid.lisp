@@ -48,6 +48,7 @@
 
         "tools;fluid-send"
         "tools;fluid-console"
+        "tools;fluid-mixer"
         ))
 
 
