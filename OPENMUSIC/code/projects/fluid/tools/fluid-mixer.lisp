@@ -243,11 +243,12 @@ In this case, all internal events are sent simultaneously.
 
 (defun def-fluid-presets () '(("-----" nil)))
 
+#|
 (defun put-fluid-mixer-values ()
   (let ((vals (get-pref (find-pref-module :midi) :midi-presets)))
     (unless (and *fluid-mixer* (equal (presets *fluid-mixer*) vals))
       (print "FLUID: Restoring state from preferences...")
-      (init-fluid-mixer 0 vals)
+      ;(init-fluid-mixer 0 vals)
       (when *fluid-mixer* 
         (set-preset *fluid-mixer* (cadr (car vals)))))))
 
@@ -255,8 +256,10 @@ In this case, all internal events are sent simultaneously.
 (defun save-fluid-presets-in-preferences (mixer) nil)
 ;  (set-pref (find-pref-module :midi) :midi-presets (presets mixer))
 ;  (save-preferences))
+|#
 
-(om-add-init-func 'init-fluid-mixer)
+;this will not work!
+;(om-add-init-func 'init-fluid-mixer)
 
 ;;;==================================
 ;;; EDITOR
