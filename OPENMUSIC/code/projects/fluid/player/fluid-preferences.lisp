@@ -30,9 +30,10 @@
 ;FLUID PREFERENCES MODULE
 ;=================================================
 
-(defparameter *n-fsynth* 4)
+(defparameter *n-fsynth* 1)
 (defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*))
 ;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
+(defparameter *fluid-loaded* "Unloaded...")
 
 ;;;==============================================
 
@@ -48,7 +49,7 @@
 (defmethod get-def-vals ((ID (eql :fluid)))
     (list 
           :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
-          :n-fsynth 4
+          :n-fsynth 1
           ;:midi-presets (def-midi-presets)
           ))
 
@@ -140,12 +141,22 @@
                                               (progn 
                                                 (load-all-fsynths *n-fsynth*)
                                                 (load-sf-to-all)
+                                                (setf *fluid-loaded* "Loaded!")
+                                                (om-set-dialog-item-text fsynthtxt *fluid-loaded*)
+                                                (om-set-fg-color fsynthtxt *om-black-color*)
                                                 (if (= 1 *n-fsynth*)
                                                     (print "Loaded one instance!")
                                                   (print (format nil "Loaded ~D fluid instances!" *n-fsynth*)))
                                                 )))
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
-                                           "Delete Synths:" :font *controls-font*)
+                                           "Delete Synths:" 
+                                           :font *controls-font*)
+                       (setf fsynthtxt (om-make-dialog-item 'om-static-text (om-make-point 250 (- i 43)) (om-make-point 76 18) 
+                                           *fluid-loaded*
+                                           :bg-color *om-white-color*
+                                          ; :fg-color (if cl-fluid::*fl-synths* *om-black-color* *om-red-color*)
+                                          ; :font *om-default-font2b*
+                                           ))
                       (om-make-view 'om-icon-button 
                                     :icon1 "stop" :icon2 "stop-pushed"
                                     :position (om-make-point 210 (- i 5)) :size (om-make-point 26 25)
@@ -154,7 +165,11 @@
                                               (progn 
                                                 (cl-fluid::delete-all-audio-drivers)
                                                 (print (format nil "Deleted ~D fluid instances!" *n-fsynth*))
+                                                (setf *fluid-loaded* "Unloaded...")
+                                                (om-set-dialog-item-text fsynthtxt *fluid-loaded*)
+                                                (om-set-fg-color fsynthtxt *om-red-color*)
                                                 )))
+                      
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 54)) (om-make-point 200 30) 
                                            "SF2 Libs" :font *om-default-font2b*)
                       (om-make-dialog-item 'om-button (om-make-point 200 (- i 2)) (om-make-point 120 30) 

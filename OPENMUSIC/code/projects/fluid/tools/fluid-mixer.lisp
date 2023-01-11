@@ -270,8 +270,8 @@ In this case, all internal events are sent simultaneously.
       (let ((mixer (make-editor-window 'FLUIDMixerEditor (i-chans fsynth)
                                      "FLUID Channels Control"
                                      nil
-                                     :winsize (om-make-point (* *channel-w* 16) 580) ;600 
-                                     :resize nil
+                                     :winsize (om-make-point (* *channel-w* 8) 580) ;(om-make-point (* *channel-w* 16) 600)
+                                     :resize t ;nil
                                      :close-p t
                                      :winshow t
                                      )))
@@ -282,8 +282,8 @@ In this case, all internal events are sent simultaneously.
     (let ((mixer (make-editor-window 'FLUIDMixerEditor (init-fluid-mixer port)
                                      "FLUID Channels Control"
                                      nil
-                                     :winsize (om-make-point (* *channel-w* 16) 580)
-                                     :resize nil
+                                     :winsize (om-make-point (* *channel-w* 8) 580)
+                                     :resize t ;nil
                                      :close-p t
                                      :winshow nil ; first time double click
                                      )))
@@ -382,18 +382,21 @@ In this case, all internal events are sent simultaneously.
 
 ;=== The Editor will be a scrollable editor with fixed size 
 ;(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (+ 6 (min (* *fl-channel-w* 6) (* *fl-channel-w* (nbtracks self)))) 560))
-(defmethod get-win-ed-size ((self fluid-ch-settings-ctrl)) (om-make-point (min (* *fl-channel-w* 4) (* *fl-channel-w* (nbtracks self))) 580)) ;760 ;860 height c'est la!
+(defmethod get-win-ed-size ((self fluid-ch-settings-ctrl)) (om-make-point (min (* *channel-w* 4) (* *channel-w* (nbtracks self))) 580)) ;760 ;860 height c'est la!
 
 (defmethod default-edition-params ((self fluid-ch-settings-ctrl))
   (pairlis '(winsize winpos) 
            (list (get-win-ed-size self) (om-make-point 300 20))))
 
-(defmethod make-editor-window ((class (eql 'FluidChannelConsoleEditor)) object name ref &key 
-                                 winsize winpos (close-p t) (winshow nil) 
-                                 (resize nil) (maximize nil))
-   (let ((win (call-next-method class object name ref :winsize (get-win-ed-size object) :winpos winpos :resize t ;nil ;ICI!!
-                                                      :close-p t :winshow t
-                                                      ))) 
+(defmethod make-editor-window ((class (eql 'FluidChannelConsoleEditor)) object name ref 
+                               &key winsize winpos (close-p t) (winshow nil) 
+                                 (resize nil) (maximize nil)) 
+   (let ((win (call-next-method class object name ref 
+                                :winsize (get-win-ed-size object) 
+                                :winpos winpos 
+                                :resize t ;nil ;ICI!!
+                                :close-p t :winshow t
+                                ))) 
     win))
 
 
@@ -448,7 +451,7 @@ In this case, all internal events are sent simultaneously.
                                                    ;   :horizontal-scroll t
                                                    ;  :scrollbars (first (metaobj-scrollbars-params self))
                                                    ;  :retain-scrollbars (second (metaobj-scrollbars-params self))
-                                                     :field-size  (om-make-point (* *fl-channel-w* (nbtracks (object self))) 540);540
+                                                     :field-size  (om-make-point (* *channel-w* (nbtracks (object self))) 540);540
                                                      ;;;:size (om-make-point (w self) (- (h self) 15)))
                                                      :size (om-make-point (w self) (h self)))
       )
@@ -462,13 +465,13 @@ In this case, all internal events are sent simultaneously.
                 (om-make-view (get-channelpanel-class (panel self))
                  :channelctr chctrl
                  :bg-color *om-light-gray-color*
-                 :position (om-make-point (+ (delta-tracks self) (* i *fl-channel-w*)) (delta-tracks self)) 
-                 :size (om-make-point (- *fl-channel-w* (* 1 (delta-tracks self))) ;750 ;ici j'ai change!
+                 :position (om-make-point (+ (delta-tracks self) (* i *channel-w*)) (delta-tracks self)) 
+                 :size (om-make-point (- *channel-w* (* 1 (delta-tracks self))) ;750 ;ici j'ai change!
                                       (+ 200 (- (h self) 
                                                 (if (presets-view self) (+ (h (presets-view self)) (delta-tracks self)) 0)
                                                
                                                 (* 2 (delta-tracks self)))
-                                         );;;a adapter plus tard
+                                          );;;a adapter plus tard
                                       ))))
    
    (apply 'om-add-subviews (cons (panel self) 
@@ -602,7 +605,6 @@ In this case, all internal events are sent simultaneously.
                                                    (om-make-point 30 pos) 
                                                    (om-make-point 20 100) ""
                                                    :di-action (om-dialog-item-act item
-                                                                
                                                                 (change-volume self (om-slider-value item)))
                                                    :increment 1
                                                    :range '(0 127)
@@ -894,8 +896,12 @@ In this case, all internal events are sent simultaneously.
 
 
 ;;;;;VOLUME CHANGE
+
 (defmethod change-volume ((self FluidchannelPanel) value)
-  (setf (vol-ctrl (channelctr self)) value)
+(let* ((port (midiport (channelctr self)))
+       (chan (midichannel (channelctr self))))
+  (setf (vol-ctrl (channelctr self)) value) 
+  (fluid-volume value chan port)
 ;  (when (send-rt (editor self))
 ;    (channel-send-vol (channelctr self)))
   (let ((new-str (integer-to-string value))
@@ -904,7 +910,8 @@ In this case, all internal events are sent simultaneously.
       (om-set-dialog-item-text target new-str)
       (om-redraw-view target)
       ))
-  (report-modifications self))
+  (report-modifications self)))
+
 
 (defun pan2str (panvalue)
   (let* ((value (- panvalue 64))
@@ -914,7 +921,10 @@ In this case, all internal events are sent simultaneously.
     new-str))
 
 (defmethod change-pan ((self FluidchannelPanel) value)
+(let* ((port (midiport (channelctr self)))
+       (chan (midichannel (channelctr self))))
   (setf (pan-ctrl (channelctr self)) value)
+  (fluid-pan value chan port)
   ;(when (send-rt (editor self))
   ;  (channel-send-pan (channelctr self)))
   (let* ((target (panVal self))
@@ -922,7 +932,7 @@ In this case, all internal events are sent simultaneously.
     (unless (string= new-str (om-dialog-item-text target))
       (om-set-dialog-item-text target new-str)
       (om-redraw-view target)))
-  (report-modifications self))
+  (report-modifications self)))
 
 (defmethod change-ctrl1-val ((self FluidchannelPanel) value)
   (setf (control1-val (channelctr self)) value)

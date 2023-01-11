@@ -1123,9 +1123,9 @@ In this case, all internal events are sent simultaneously.
 (defmethod propagate-pgm-change ((self fluidPanel) value)
   (let ((port (midiport (channelctr self))))
     (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
-
+    (when (i-chans (channelctr self))
     (loop for i in (channels-ctrl (i-chans (channelctr self)))
-          do (setf (program i) value))))
+          do (setf (program i) value)))))
        
 
 (defmethod change-program ((self fluidPanel) value)
