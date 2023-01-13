@@ -123,7 +123,8 @@
 (defmethod get-titlebar-class ((self arrayeditor)) 'array-titlebar)
 
 (defmethod editor-null-event-handler :after ((self arrayeditor))
-  (do-editor-null-event self))
+  #+(and cocoa lispworks8) nil
+  #-(and cocoa lispworks8) (do-editor-null-event self))
 
 (defmethod metaobj-scrollbars-params ((self arrayeditor))  '(:v nil))
 
