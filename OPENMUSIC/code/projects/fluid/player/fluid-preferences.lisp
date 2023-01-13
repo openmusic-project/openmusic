@@ -154,7 +154,7 @@
                        (setf fsynthtxt (om-make-dialog-item 'om-static-text (om-make-point 250 (- i 43)) (om-make-point 76 18) 
                                            *fluid-loaded*
                                            :bg-color *om-white-color*
-                                          ; :fg-color (if cl-fluid::*fl-synths* *om-black-color* *om-red-color*)
+                                           :fg-color (if cl-fluid::*fl-synths* *om-black-color* *om-red-color*)
                                           ; :font *om-default-font2b*
                                            ))
                       (om-make-view 'om-icon-button 

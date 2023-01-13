@@ -797,7 +797,7 @@ In this case, all internal events are sent simultaneously.
                         :di-action (om-dialog-item-act item
                                      (change-width self (value item)))
                         :font *om-default-font2*
-                        :value (pan-ctrl (channelctr self))
+                        :value (width-ctrl (channelctr self))
                         :min-val 0
                         :max-val 100))
     (setf (revlevel self) 
@@ -809,7 +809,7 @@ In this case, all internal events are sent simultaneously.
                         :di-action (om-dialog-item-act item
                                      (change-rlevel self (value item)))
                         :font *om-default-font2*
-                        :value (pan-ctrl (channelctr self))
+                        :value (rlevel-ctrl (channelctr self))
                         :min-val 0
                         :max-val 100))
      (setf pos (+ pos 20))
