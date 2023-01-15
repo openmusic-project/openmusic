@@ -39,13 +39,13 @@
             (midichannel :initform '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) :initarg :midichannel :accessor midichannel :type list)
             (program :initform '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) :initarg :program :accessor program :type list)
             (prg-main :initform t :initarg :prg-main  :accessor prg-main :type nil)
-            (pan-ctrl :initform 64 :initarg :pan-ctrl  :accessor pan-ctrl :type integer)
+            (pan-ctrl :initform '(64 64 64 64 64 64 64 64 64 64 64 64 64 64 64 64) :initarg :pan-ctrl  :accessor pan-ctrl :type list)
             (control1-num :initform 1 :initarg :control1-num :accessor control1-num :type integer)
             (control2-num :initform 2 :initarg :control2-num :accessor control2-num :type integer)
             (control1-val :initform 0 :initarg :control1-val :accessor control1-val :type integer)
             (control2-val :initform 0 :initarg :control2-val :accessor control2-val :type integer)
             (gain-ctrl :initform 32 :initarg :gain-ctrl :accessor gain-ctrl :type integer)
-            (vol-ctrl :initform 32 :initarg :vol-ctrl :accessor vol-ctrl :type integer)
+            (vol-ctrl :initform '(64 64 64 64 64 64 64 64 64 64 64 64 64 64 64 64) :initarg :vol-ctrl :accessor vol-ctrl :type list)
             (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)
             (tuning :initform 2 :initarg :tuning :accessor tuning :type integer)
             ;;reverb
@@ -227,7 +227,7 @@ In this case, all internal events are sent simultaneously.
       (fluid-pgm-change pgm '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
       (fluid-gain (/ vol 127.0) port)
       (change-tuning self tuning)
-      (fluid-pan pan *all-chans* port)
+      (fluid-pan (car pan) *all-chans* port)
       )
   ))
 
@@ -508,8 +508,8 @@ In this case, all internal events are sent simultaneously.
     
     (setf (panVal self) (om-make-dialog-item 'om-static-text
                                              (om-make-point 53 pos) 
-                                             (om-make-point 30 16)
-                                             (pan2str (pan-ctrl (channelctr self)))
+                                             (om-make-point 30 16) 
+                                             (pan2str (car (pan-ctrl (channelctr self))))
                                              :font *om-default-font2*
                                              ))
     
@@ -521,11 +521,13 @@ In this case, all internal events are sent simultaneously.
                         :nbpict 65
                         :pict-size (om-make-point 24 24)
                         :di-action (om-dialog-item-act item
-                                     (change-pan self (value item)))
+                                     (change-pan self (value item))
+                                     )
                         :font *om-default-font2*
-                        :value (pan-ctrl (channelctr self))
+                        :value (car (pan-ctrl (channelctr self)))
                         :min-val 0
                         :max-val 127))
+    
     
     ;;Volume
     (setf pos (+ pos 26))

@@ -294,8 +294,12 @@ In this case, all internal events are sent simultaneously.
        (let ((fmixer (obj mixer)))
             (loop for i in (channels-ctrl fmixer)
                   for n from 0 to 15
-                  do (setf (program i) (nth n (program (nfsynth i)))))
-            )
+                  do (progn
+                       (setf (program i) (nth n (program (nfsynth i))))
+                       (setf (pan-ctrl i) (nth n (pan-ctrl (nfsynth i))))
+                       (setf (vol-ctrl i) (nth n (vol-ctrl (nfsynth i))))
+                       )))
+            
        (show-fluid-mixer-win port fsynth);attention recursivity!
 )))
 
@@ -900,10 +904,9 @@ In this case, all internal events are sent simultaneously.
 (defmethod change-volume ((self FluidchannelPanel) value)
 (let* ((port (midiport (channelctr self)))
        (chan (midichannel (channelctr self))))
-  (setf (vol-ctrl (channelctr self)) value) 
+  (setf (vol-ctrl (channelctr self)) value)
+  (setf (nth (1- chan) (vol-ctrl (nfsynth (channelctr self)))) value)
   (fluid-volume value chan port)
-;  (when (send-rt (editor self))
-;    (channel-send-vol (channelctr self)))
   (let ((new-str (integer-to-string value))
         (target (volumeVal self)))
     (unless (string= new-str (om-dialog-item-text target))
@@ -921,18 +924,19 @@ In this case, all internal events are sent simultaneously.
     new-str))
 
 (defmethod change-pan ((self FluidchannelPanel) value)
-(let* ((port (midiport (channelctr self)))
-       (chan (midichannel (channelctr self))))
-  (setf (pan-ctrl (channelctr self)) value)
-  (fluid-pan value chan port)
-  ;(when (send-rt (editor self))
-  ;  (channel-send-pan (channelctr self)))
-  (let* ((target (panVal self))
+  (let* ((port (midiport (channelctr self)))
+         (chan (midichannel (channelctr self))))
+    (setf (pan-ctrl (channelctr self)) value)
+    (setf (nth (1- chan) (pan-ctrl (nfsynth (channelctr self)))) value)
+    (fluid-pan value chan port)
+      (let* ((target (panVal self))
          (new-str (pan2str value)))
     (unless (string= new-str (om-dialog-item-text target))
       (om-set-dialog-item-text target new-str)
       (om-redraw-view target)))
   (report-modifications self)))
+
+
 
 (defmethod change-ctrl1-val ((self FluidchannelPanel) value)
   (setf (control1-val (channelctr self)) value)
