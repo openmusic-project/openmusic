@@ -90,3 +90,10 @@ next note, legato=100."
          (if (= 2 (length onsets)) (list (car result) (second result)) result))
    )
   )
+
+
+;in case voice is empty:
+(om::defmethod! true-durations ((self voice)) 
+  (if (= (n-pulses self) 0)
+      (list (* (get-obj-dur self) -1))
+    (true-durations (Objfromobjs self (make-instance 'chord-seq)))))
