@@ -1035,7 +1035,19 @@ Recursively reverses <tree>.
        (reversedtree (reversedties tree))))
 
 
+(defmethod! reversetree ((self voice))
+  (let* ((rev-tree (reversetree (tree self)))
+         (elements (reverse (chords self))))
+    (make-instance 'voice
+                   :tree rev-tree
+                   :chords elements
+                   :tempo (tempo self))))
 
+(defmethod! reversetree ((self poly))
+  (make-instance 'poly
+                 :voices (loop 
+                            for i in (inside self)
+                            collect (reversetree i))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;SUBST-RHYTHM;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
