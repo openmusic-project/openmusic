@@ -126,7 +126,8 @@
           
           (let* ((pos (position selection (inside voice) :test 'equal))
                  (reptree (replace-meas-tree voice (car (str->list tree)) pos)))
-            (setf (tree voice) (fix-tree-floats-rests reptree))
+            ;(setf (tree voice) (fix-tree-floats-rests reptree))
+             (setf (tree voice) (fix-tree-floats reptree))
             (setf (chords voice) (get-chords&cont-chords voice))
             (setf (selection? self) (list selection))
         ;in order to keep measure selection:
@@ -149,7 +150,8 @@
           (let* ((pere (parent selection))
                  (pos (position selection (inside pere) :test 'equal))
                  (reptree (replace-meas-tree pere (car (str->list tree)) pos)))
-            (setf (tree pere) (fix-tree-floats-rests reptree))
+            ;(setf (tree pere) (fix-tree-floats-rests reptree)); a voir!
+             (setf (tree pere) (fix-tree-floats reptree))
             (setf (chords pere) (get-chords&cont-chords pere))
             (setf (selection? self) (list selection))
             (setf (selection? self) (list (nth pos (inside pere))))
