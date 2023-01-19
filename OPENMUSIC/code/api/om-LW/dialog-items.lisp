@@ -502,6 +502,7 @@
    #-linux :navigation-callback #-linux 'text-edit-special-action
    :change-callback 'text-edit-changed-action
    :editing-callback 'text-edited-action
+   :gesture-callbacks '((#\Tab . text-input-pane-complete-text))
    ))
 
 ;;; :allows-newline-p
