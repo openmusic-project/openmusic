@@ -11,7 +11,8 @@ IMPROVEMENTS
 FIXES
 
 - Dynamic tempo now works.
-
+- graphicports array-class (cocoa fix)
+- graphicports maquette lock (cocoa fix)
 
 * RELEASE NOTES 7.1
 
