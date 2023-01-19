@@ -720,7 +720,8 @@
                                                            (setf (mode item) newmode
                                                                  (iconID item) (get-icon-lock newmode))
                                                            (setf (allow-lock (object self)) newmode)
-                                                           (om-draw-contents item)))
+                                                           ;(om-draw-contents item)
+                                                           ))
                                              ))
      (om-invalidate-view self)
      (setf (allow-lock (object self)) mode)))
