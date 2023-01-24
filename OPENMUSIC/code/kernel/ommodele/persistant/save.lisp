@@ -1752,7 +1752,7 @@
 
 ;(defun look-for-lib2load () nil)
 
-;;; les sauvegardes dans les packages sont tenus à jour automatiquement
+;;; les sauvegardes dans les packages sont tenus Ã  jour automatiquement
 
 (defun ws-save-user-package ()
 ;  (let* ((thepath (make-pathname :directory (pathname-directory (mypathname *current-workSpace*))

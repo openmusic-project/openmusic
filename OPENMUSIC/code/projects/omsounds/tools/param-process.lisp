@@ -166,7 +166,7 @@ Notes:
    :indoc '("vibrato frequency(-ies)" "vibrato amplitude(s)" "initial phase [rad]")
    :outdoc '("vibrato effect")
    :icon 632
-   :doc "Generates a VIBRATO effect (sinusoïdal modulation) to be connected to PARAM-PROCESS in order to modulate an input value.
+   :doc "Generates a VIBRATO effect (sinusoÃ¯dal modulation) to be connected to PARAM-PROCESS in order to modulate an input value.
 
 <freqs> and <amps> can be single values or lists of values, <ph> is the initial phase."
    (make-instance 'vibrato-effect :freq freqs :amp amps :ph ph))

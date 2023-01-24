@@ -1079,7 +1079,7 @@ marks the index of events."
 ;pour eviter les tree avec '?'
 ;ATTENTION!! numtree transforme les 5  en (4 1.0) etc...
 ;ceci pourrait fausser les transformations
-; toutefois il est utlis pour regler l'histoire de ?
+; toutefois il est utlisÂ pour regler l'histoire de ?
 (defun numtree (tree)
   (let* ((newvoice (make-instance 'voice :tree tree)))
     (tree newvoice)))

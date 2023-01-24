@@ -206,7 +206,7 @@
         ))))
 
 (defmethod om-fullscreen-window ((self om-abstract-window))
-  ;;; pour l'instant, maximize... à faire en fullscreen
+  ;;; pour l'instant, maximize... Ã  faire en fullscreen
   (setf (fs self) t)
   ;(execute-with-interface self 
   ;                        'set-top-level-interface-geometry 
@@ -229,7 +229,7 @@
   #+(or darwin macos macosx)
   (capi:screen-active-interface (capi:convert-to-screen))
   #-(or darwin macos macosx)
-  ; --> ça plante (parfois)
+  ; --> Ã§a plante (parfois)
   (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible))
 )
 
@@ -276,7 +276,7 @@
 (defmethod om-window-close-event ((self t)) nil)
 
 
-;;; appelé à la création de la fenetre
+;;; appelÃ© Ã  la crÃ©ation de la fenetre
 ;;; (pas a l'apparition)
 (defmethod om-create-callback ((self om-abstract-window))
   ;; (set-hint-table self (list :default-x (vx self) :default-y (vy self) :default-width (vw self) :default-height (vh self)))

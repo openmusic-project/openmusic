@@ -34,7 +34,7 @@
 
 
 ;;; MATRIX
-;;; Attention entre OMArray et SDIF Matrix les ROWs-COLS siont inversés
+;;; Attention entre OMArray et SDIF Matrix les ROWs-COLS siont inversÃ©s
 
 (defun calc-pad (n)
   (if (zerop (mod n 8)) n

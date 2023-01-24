@@ -152,7 +152,7 @@
               
 
 
-;;;======= TONALITE =======;;; recupre la tonalite d'un objet.
+;;;======= TONALITE =======;;; recupÂre la tonalite d'un objet.
 ;;; si nil -> la tonalite de son container
 
 (defmethod get-tonalite ((self t)) nil)
@@ -225,7 +225,7 @@
 
 
 ;;;======== ACTUALISE =======
-;;; ça veut pas dire qu'on change la tonalite mais juste
+;;; Ã§a veut pas dire qu'on change la tonalite mais juste
 ;;; qu'on met a jour les valeurs de tonal-values (degre, etc...)
 
 (defun init-tonal-values (tonal-prop)

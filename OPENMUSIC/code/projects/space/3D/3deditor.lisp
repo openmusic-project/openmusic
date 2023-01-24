@@ -725,8 +725,8 @@
   (unless (bpf-p (object self))
     (setf (multibpf? self) t))
  
-  ;compatibilité versions précédentes.. 
-  ;à enlever si get-parameter retourne valeur par defaut au lieu de nil
+  ;compatibilitÃ© versions prÃ©cÃ©dentes.. 
+  ;Ã  enlever si get-parameter retourne valeur par defaut au lieu de nil
   ;(unless (param-room-size self)
   ;  (param-room-size self *OM-DEFAULT-ROOM-SIZE*))
   ;(unless (param-show-room self)

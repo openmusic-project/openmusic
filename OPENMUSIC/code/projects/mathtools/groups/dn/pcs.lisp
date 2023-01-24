@@ -1,8 +1,8 @@
 
 ;;; -*- Mode: LISP; Syntax: Common-Lisp; Package: CL-USER -*-
 ;;;
-;;; Copyright © 1996 Janusz Podrazik
-;;; Copyright © 2001 MRaC Publishing Limited
+;;; Copyright Â© 1996 Janusz Podrazik
+;;; Copyright Â© 2001 MRaC Publishing Limited
 ;;; All rights reserved.
 ;;;
 ;;; File: pitch-class-set.lisp 

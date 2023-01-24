@@ -68,7 +68,7 @@
 (defmethod! card ((n integer) (k integer))
   :initvals '(12 6) :indoc '("Zn" "elments")
   :doc "Nombre de structures intervallaires ayant k elements a une transposition pres
-Par exemple il y a 66 gammes de sept notes a l'intÂrieur du total chromatique a une transposition pres."
+Par exemple il y a 66 gammes de sept notes a l'intÃ‚Ârieur du total chromatique a une transposition pres."
    :icon 420 
   (let ((pgcd (pgcd n k)))
     (* (/ 1 n) (loop for item in (divisors pgcd)
@@ -91,37 +91,37 @@ Par exemple il y a 66 gammes de sept notes a l'intÂrieur du total chromatique a
   :initvals '(12 "tac" 6 5) :indoc '("Zn" "familly" "number of elements" "howmany answers")
   :menuins '( ( 1 ( ("tac" "tac") ("tai" "tai") ("tic" "tic") ("ttl" "ttl")
                    ("tp" "tp") ("tid" "tid"))))
-  :doc "Ensembles de  structures intervallaires ayant k éléments à une transposition près appartenant a une famille donnée.
+  :doc "Ensembles de  structures intervallaires ayant k Ã©lÃ©ments Ã  une transposition prÃ¨s appartenant a une famille donnÃ©e.
 
 
 Tac
-Structures intervallaires auto- complémentaires. 
-Les éléments du total chromatique qui n'appartiennent pas à la gamme (ou accord) déterminée par une structure auto- complémentaire, forment la même structure intervallaire.
+Structures intervallaires auto- complÃ©mentaires. 
+Les Ã©lÃ©ments du total chromatique qui n'appartiennent pas Ã  la gamme (ou accord) dÃ©terminÃ©e par une structure auto- complÃ©mentaire, forment la mÃªme structure intervallaire.
 Par exemple, (2 2 2 2 2 2) avec n = 12.
 
 Tai
 Structures intervallaires auto-inverses. 
-N'importe quelle inversion conduit à une gamme (ou accord) ayant la même structure intervallaire.
+N'importe quelle inversion conduit Ã  une gamme (ou accord) ayant la mÃªme structure intervallaire.
 Par exemple le bicord (8 4) avec n =12.
 
 Tic
-Structure intervallaires inverses- complémentaires.
- Le passage au complémentaire de n'importe quelle inversion d'une telle structure ne change pas la structure intervallaire. 
+Structure intervallaires inverses- complÃ©mentaires.
+ Le passage au complÃ©mentaire de n'importe quelle inversion d'une telle structure ne change pas la structure intervallaire. 
 Par exemple, (2 2 3 2 2 1), (7 1 1 1 1 1) et (2 5 2 1 1 1) pour n =12.
 
 Ttl
-Structures intervallaires à transposition limitée. 
-Une structure  ayant les mêmes notes de certaines de ses transpositions.
+Structures intervallaires Ã  transposition limitÃ©e. 
+Une structure  ayant les mÃªmes notes de certaines de ses transpositions.
 Par exemple la structure (2 3 1 2 3 1) et son inverse (3 2 1 3 2 1)  pour n=12.
 
 Tp
 Structures intervallaires partitionnantes. 
-Une telle structure génère le total chromatique dans le sens que ce dernier est une union disjointe de transpositions dÕaccords ayant la même classe intervallaire.
+Une telle structure gÃ©nÃ¨re le total chromatique dans le sens que ce dernier est une union disjointe de transpositions dÃ•accords ayant la mÃªme classe intervallaire.
 Par exemple pour (3 3 3 3) Les transpositions seront  1 ,2 et 3.
 
 Tid
 Structures intervallaires idempotentes. 
-Une telle structure est telle que composée avec elle même  elle reste invariée.  
+Une telle structure est telle que composÃ©e avec elle mÃªme  elle reste invariÃ©e.  
 Par exemple, (2 2 2 2 2 2) dans n=12 avec k = 6
 " 
   :icon 420 

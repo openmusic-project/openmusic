@@ -426,9 +426,9 @@ Press 'space' to play/stop the sound file.
            (sndfile-handle (sf::sf_open path sf::SFM_READ sfinfo))
            (size (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::frames) :type :int :index #+powerpc 1 #-powerpc 0))
            (channels (fli::dereference (cffi:foreign-slot-pointer sfinfo '(:struct sf::sf_info) 'sf::channels) :type :int :index #+powerpc 1 #-powerpc 0))
-           ;;;Variables liées au calcul de waveform
+           ;;;Variables liÃ©es au calcul de waveform
            (buffer-size (* window channels))
-           (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;Fenêtrage du son
+           (buffer (fli::allocate-foreign-object :type :float :nelems buffer-size))   ;FenÃªtrage du son
            ;(MaxArray (make-array (list channels (ceiling size window)) :element-type 'single-float :initial-element 0.0))   ;Tableau pour stocker les max
            (indxmax (1- (ceiling size window)))
            (frames-read 0)
@@ -453,8 +453,8 @@ Press 'space' to play/stop the sound file.
          (channels (om-sound-n-channels self))
          ;(array-width (ceiling size ratio))
          )
-;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
-;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
+;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un Ã©cran environ
+;Bien pour les petits fichiers mais mauvais dÃ¨s que trop grand car bascule trop vite sur la lecture fichier
     (setf (display-ratio self) ratio
           (display-builder self) (om-run-process 
                                   "DisplayArrayBuilder" 
@@ -476,8 +476,8 @@ Press 'space' to play/stop the sound file.
         (channels (om-sound-n-channels self)))
     (when (and format channels)
       (let ((array-width (ceiling (om-sound-n-samples self) winsize)))
-;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un écran environ
-;Bien pour les petits fichiers mais mauvais dès que trop grand car bascule trop vite sur la lecture fichier
+;(ratio (round (om-sound-n-samples self) 2000)))) pour un ratio variable. 2000 car nbpix d'un Ã©cran environ
+;Bien pour les petits fichiers mais mauvais dÃ¨s que trop grand car bascule trop vite sur la lecture fichier
         (setf (display-ratio self) winsize)
       ;"DisplayArrayBuilder" 
         (funcall 

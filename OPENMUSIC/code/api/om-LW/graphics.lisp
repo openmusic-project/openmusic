@@ -390,7 +390,7 @@
    (elements :initform nil :initarg :elements :accessor elements)))
 
 ;;;====================================
-;;; 2 MANIERES DE DEFINIR DES REGIONS... peut être à unifier...
+;;; 2 MANIERES DE DEFINIR DES REGIONS... peut Ãªtre Ã  unifier...
 
 ;;; ====================================
 ;;; ouvrir la region, ajouter des elements, et fermer (close retourne la region) :
@@ -774,7 +774,7 @@
   `(if (and (om-item-view-p ,view) (not (equal *curfocus* ,view)))
        (let ((*curstream* (om-get-view ,view)))
          (when *curstream*
-           ;;; ça doit plus marcher ! cf. draw item-view
+           ;;; Ã§a doit plus marcher ! cf. draw item-view
            ;(multiple-value-bind (x y) (capi::static-layout-child-position ,view)
              ;(set-graphics-port-coordinates *curstream* :left x :top y))
            (multiple-value-bind (*pox* *poy*) (capi::static-layout-child-position ,view)

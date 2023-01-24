@@ -27,7 +27,7 @@
 ;;;
 ;;;      OM2FINALE 3.0 v1.0
 ;;;
-;;;      © 2000 IRCAM - Gerard Assayag ,Carlos Agon & Karim Haddad
+;;;      Â© 2000 IRCAM - Gerard Assayag ,Carlos Agon & Karim Haddad
 ;;;
 ;;; ====================================================================
 
@@ -39,7 +39,7 @@
 ;;;
 ;;;      CLENI: Common Lisp to Enigma Interface 3.0
 ;;;
-;;;      © 2000 IRCAM - Gerard Assayag & karim Haddad
+;;;      Â© 2000 IRCAM - Gerard Assayag & karim Haddad
 ;;;
 ;;; ====================================================================
 
@@ -606,7 +606,7 @@
                 (setf cnext (if (cdr lnote) (rank (cadr lnote)) 0))  
                 (translate-event-to-enigma (car lnote) prev next cprev cnext )
                 (setf prev 0 next 0 cprev (rank (car lnote))) )
-            (note-list (car levent)))) ;---> Ici le prob commence: pour les chords. C'est la classe pitch qui n'aime pas hŽriter des chords
+            (note-list (car levent)))) ;---> Ici le prob commence: pour les chords. C'est la classe pitch qui n'aime pas hÂŽriter des chords
          (setf prev (rank (car levent))))
      (event-list self)) ))
 
