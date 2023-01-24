@@ -17,6 +17,11 @@
 
 ;; (oa::om-cmd-line "opera /usr/share/doc/fluidsynth-devel-1.1.6/html/index.html &")
 
+(defun fluidsynthlib-p ()
+  #+linux *fluidsynth-loaded*
+  #+macosx *fluidsynth-library*
+  #+win32 t)
+
 (defmacro flassq (item list) `(cdr (assoc ,item ,list :test #'eq)))
 
 (defclass fl-synth ()

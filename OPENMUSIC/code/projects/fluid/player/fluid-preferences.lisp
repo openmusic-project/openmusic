@@ -77,10 +77,15 @@
     
      (om-add-subviews thescroll                  
                       
-                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 20)) (om-make-point 200 30) 
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 20)) (om-make-point 280 30) 
+                                           (if (cl-fluid::fluidsynthlib-p)
                                            (concatenate 'string "FluidSynth"  " " " " "v." (cl-fluid::fluid_version_str)) 
+                                             "No Fluidsynth installed on this computer!")
                                            :font *om-default-font2b*)
-
+                      )
+     
+     (when (cl-fluid::fluidsynthlib-p)
+         (om-add-subviews thescroll 
                       (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 30)) (om-make-point 80 22) "Sf2 File:"
                                            :font *controls-font*)
                       
@@ -239,6 +244,7 @@
 
                       
                       )|#
+         )
     thescroll))
 
 
