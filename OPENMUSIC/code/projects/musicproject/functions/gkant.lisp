@@ -344,6 +344,22 @@ For more info, see omquantify help."
          (chords (if chords chords (chords self))))
      (gkant durs chords tempi measures max/ forbid offset precis)))
 
+(defmethod! gkant  ((self poly) 
+                    (chords list)
+                    (tempi t) 
+                    (measures list)
+                    (max/ t)
+                    &optional
+                    forbid
+                    offset
+                    precis)
+
+            (let* ((voices (inside self))
+                  (kants (loop for i in voices
+                               collect (gkant i chords tempi measures max/ forbid offset precis))))
+              (make-instance 'poly
+                             :voices kants)))
+
 (defmethod! gkant  ((self chord-seq)
                     (chords list)
                      (tempi t) 
