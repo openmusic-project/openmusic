@@ -5476,7 +5476,7 @@ t)
   :doc "It provides a text file describing for each period d between min and max the 0-1 polynomials corresponding to the rhythmic patterns and entries of voices of a tiling canon of period d. It also gives, for each inner rhythm, the corresponding cyclotomic factors which generate it by polynomial multiplications. For example, for period d=8 the solution (((1 1 0 0 1 1) (1 0 1) (2 8))) means that the rhythmic pattern (1 1 0 0 1 1) is given by the product of the second and the eigth cyclotomic polynomials and it generates a tiling canon in three voices with entries (1 0 1).    "
   :icon 425
   (let ((path (om-choose-new-file-dialog)))
-    (with-open-file (out path :direction :output :if-exists :supersede)
+    (with-open-file (out path :direction :output :if-exists :supersede :external-format :utf-8)
       (loop for i from low to high do
             (unless (prime? i)
               (write-canons out i))))

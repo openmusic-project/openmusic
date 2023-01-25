@@ -389,7 +389,7 @@
                                                       :prompt "New Export file"
                                                       :types '("OM/NAPro exchange format" "*.om")))))
          (when filename 
-           (WITH-OPEN-FILE (out filename :direction :output 
+           (WITH-OPEN-FILE (out filename :direction :output  :external-format :utf-8
                                 :if-does-not-exist :create :if-exists :supersede)
              (format out "~A" str)))
          filename))))

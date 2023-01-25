@@ -391,7 +391,8 @@
 
 
 (defun om-create-file (pathname)
-  (with-open-file (file pathname :direction :output :if-does-not-exist :create)))
+  (with-open-file (file pathname :direction :output :if-does-not-exist :create
+			:external-format :utf-8)))
 
 (defun om-create-directory (pathname &key (if-exists nil))
    (ENSURE-DIRECTORIES-EXIST pathname))

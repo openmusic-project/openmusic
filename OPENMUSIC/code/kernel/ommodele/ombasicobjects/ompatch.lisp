@@ -107,7 +107,8 @@ in this case this slot keeps the lambda expression.#lisp-exp-p#
       (setf *resources-to-load* nil)
       ;(setf (cadr (create-info self)) (om-get-date))
       (with-open-file (out (mypathname self) :direction :output  
-			   :if-does-not-exist :create :if-exists :supersede)
+			   :if-does-not-exist :create :if-exists :supersede
+			   :external-format :utf-8)
         (handler-bind 
             ((error #'(lambda (err)
                         (capi::display-message "An error of type ~a occurred: ~a~%~%File ~s could not be saved." 

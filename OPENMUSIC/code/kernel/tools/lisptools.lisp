@@ -342,7 +342,7 @@
           (loop while (not (equal line :eof)) do 
                 (setf linelist (append linelist (list line)))
                 (setf line (read-line file nil :eof)))))
-      (with-open-file (file pathname :direction :output :if-exists :supersede)
+      (with-open-file (file pathname :direction :output :if-exists :supersede :external-format :utf-8)
         (setf line (pop linelist))
         (loop while (and line (not (equal line :eof))) do
               (write-line (str-check line) file)

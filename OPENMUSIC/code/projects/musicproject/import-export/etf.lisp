@@ -929,7 +929,9 @@
   (let ((fvar (gensym)))
     `(with-open-file (,fvar ,filename
                             :direction :output :if-exists ,(or if-exists :overwrite)
-                            :if-does-not-exist :create)
+                            :if-does-not-exist :create
+			    :external-format :utf-8
+			    )
        (let ((*standard-output* ,fvar) (*load-verbose* nil) )
          ,. forms ))))
 

@@ -370,7 +370,8 @@ External Libraries:
 (defun set-ws-user-pref (file)
   (om-create-directory (make-pathname :directory (pathname-directory file)))
   (om-create-file file)
-  (with-open-file (out file :direction :output 
+  (with-open-file (out file :direction :output
+		       :external-format :utf-8
                        :if-does-not-exist :create :if-exists :supersede) 
     (write-line (format nil ";~D" *om-version*) out)
     (prin1 '(in-package :om) out)
