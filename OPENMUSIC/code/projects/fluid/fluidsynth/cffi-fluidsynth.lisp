@@ -61,7 +61,7 @@
                                            :connection-style :immediate)
                       t)
                   (error () (progn 
-                              (om::om-message-dialog (format nil "Could not load FLUIDSYNTH foreign-library.~%~A" (namestring libpath)))
+                              ;(om::om-message-dialog (format nil "Could not load FLUIDSYNTH foreign-library.~%~A" (namestring libpath)))
                               nil)))))
       ;(om::om-message-dialog (format nil "FLUIDSYNTH library not found: ~A" (namestring libpath)))
       ))
