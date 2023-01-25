@@ -67,7 +67,6 @@
 (export '(*app-name* *version* *beta-release* *version-str* *version-str-full* *release-language* *release-date* *release-author*) :cl-user)
 
 
-
 ;;;=======================================
 
 ;;; MAKE UTF-8 DEFAULT I/O
