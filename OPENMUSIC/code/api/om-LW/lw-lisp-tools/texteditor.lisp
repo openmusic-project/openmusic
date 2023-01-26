@@ -666,6 +666,7 @@
 ;;; SAVE AS : the current buffer to a new file
 ;;; any buffer ok, always works
 ;;; do not change current buffer
+#|
 (defmethod save-as-text-file ((self om-text-editor))
   (with-slots (ep) self
     (let ((current (editor-pane-buffer ep)))
@@ -695,9 +696,25 @@
       ;                     (editor:buffers-end current))
       ;                    path self)))
       ;    t))))
-
+|#
 
        
+(defmethod save-as-text-file ((self om-text-editor))
+  (with-slots (ep) self
+    (let ((path (prompt-for-file "Save file as:"
+                                   :pathname (editor-file self)
+                                   :if-does-not-exist :ok
+                                   :filter "*.*"
+                                   :if-exists :prompt
+                                   :operation :save))
+          (buffer (editor-pane-buffer ep)))
+      (with-open-file (s path :direction :output :if-exists :supersede)
+      (write-string (editor::points-to-string 
+                     (editor::buffers-start buffer) 
+                     (editor::buffers-end buffer)) 
+                    s))
+      )))
+
 
 
 ;;; REVERT : put the file contents back in the editor
