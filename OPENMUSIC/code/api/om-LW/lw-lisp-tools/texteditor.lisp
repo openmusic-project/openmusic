@@ -63,6 +63,7 @@
    (display-message "Error ~S in OM Text Editor Process" cc)
    (with-open-file (log *ae-error-log* 
                         :direction :output 
+                        :external-format :utf-8
                         :if-exists :append 
                         :if-does-not-exist :create)
      (dbg:output-backtrace :verbose :stream log))
@@ -72,7 +73,8 @@
 (defun report-ae-editor-error (cc)
    (display-message "Editor Error ~S in OM Text Editor Process" cc)
    (with-open-file (log *ae-error-log* 
-                        :direction :output 
+                        :direction :output
+                        :external-format :utf-8
                         :if-exists :append 
                         :if-does-not-exist :create)
      (dbg:output-backtrace :verbose :stream log))
@@ -626,7 +628,9 @@
 )
 
 (defun save-to-file (text path win)
-    (with-open-file (ss path :direction :output :if-exists :supersede)
+    (with-open-file (ss path :direction :output 
+                        :external-format :utf-8 
+                        :if-exists :supersede)
       (write-string text ss))
     (set-hfs-codes path *om-text-editor-type-code* *om-text-editor-creator-code*))
 
@@ -666,6 +670,7 @@
 ;;; SAVE AS : the current buffer to a new file
 ;;; any buffer ok, always works
 ;;; do not change current buffer
+#|
 (defmethod save-as-text-file ((self om-text-editor))
   (with-slots (ep) self
     (let ((current (editor-pane-buffer ep)))
@@ -682,7 +687,7 @@
         (editor::kill-buffer-no-confirm current)
         (open-new-file self path)
         (setf (buffer (editor-buffer self)) (capi::editor-pane-buffer ep))
-        (setf (editor-file self) path)
+        (setf (editor-file self) path) (redisplay-element ep)
         ))))
 
       ;  (if (string-equal (namestring path) (namestring (editor-file self)))
@@ -695,7 +700,23 @@
       ;                     (editor:buffers-end current))
       ;                    path self)))
       ;    t))))
+|#
 
+(defmethod save-as-text-file ((self om-text-editor))
+  (with-slots (ep) self
+    (let ((path (prompt-for-file "Save file as:"
+                                   :pathname (editor-file self)
+                                   :if-does-not-exist :ok
+                                   :filter "*.*"
+                                   :if-exists :prompt
+                                   :operation :save))
+          (buffer (editor-pane-buffer ep)))
+      (with-open-file (s path :direction :output :if-exists :supersede)
+      (write-string (editor::points-to-string 
+                     (editor::buffers-start buffer) 
+                     (editor::buffers-end buffer)) 
+                    s))
+      )))
 
        
 

@@ -326,7 +326,7 @@
 ;;; ecrit le contenu du buffer dans un fichier 
 (defun om-buffer-write-file (ombuffer path &key (if-exists :supersede))
   (let ((buffer (buffer ombuffer)))
-    (with-open-file (s path :direction :output :if-exists if-exists)
+    (with-open-file (s path :direction :output :external-format :utf-8 :if-exists if-exists)
       (write-string (editor::points-to-string 
                      (editor::buffers-start buffer) 
                      (editor::buffers-end buffer)) 
