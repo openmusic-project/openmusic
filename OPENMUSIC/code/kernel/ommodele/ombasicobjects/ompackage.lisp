@@ -376,13 +376,15 @@ belongs to a protected generic function." (name elem)))
                                                                  (list (name self)))
                                               
                                               :name (string+ (name self) ".lib"))
-                               :direction :output ) 
+                               :direction :output
+			       :external-format :utf-8) 
             (prin1 '(in-package :om) out)
             (prin1 `(load-om ,(string+ (car (last (pathname-directory *om-lib-dir*))) ";" (name self) ";sources;" (name self)) out)))
           (WITH-OPEN-FILE (out  (om-make-pathname :device *om-lib-dir*   :directory (pathname-directory
                                                           (OMRoot (string+ (car (last (pathname-directory *om-lib-dir*))) ";" (name self) ";sources;")))
                                               :name (string+ (name self) ".lisp"))
-                               :direction :output ) 
+                               :direction :output
+			       :external-format :utf-8) 
             (prin1 '(in-package :om) out)
             (prin1 `(let* ((classes ',(mapcar #'(lambda (elem) (om-save-class (find-class (interne elem)))) ordered-list))
                            (methods ',(loop for met in method-list  collect (om-save-methods met)))

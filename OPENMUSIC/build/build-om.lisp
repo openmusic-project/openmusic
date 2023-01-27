@@ -66,6 +66,13 @@
 
 (export '(*app-name* *version* *beta-release* *version-str* *version-str-full* *release-language* *release-date* *release-author*) :cl-user)
 
+;;; encode all new files in :utf-8.  But support reading older files encoded in latin-1,
+;;; check the various ":external-format :utf-8" output specs
+
+(lw::set-default-character-element-type 'character)
+(setf system:*specific-valid-file-encodings* '(:utf-8 :latin-1))
+
+
 ;;;=======================================
 
 (defvar *this-file* *load-pathname*)

@@ -461,7 +461,7 @@ Internally calls and formats data from GetSDIFChords.
           (pushr (list (* (nth 2 partial) 1000.0) (incf ind) (nth 3 partial) (/ (db->lin (+ 90 (nth 4 partial)))) 32767.0) chorddata)
           (pushr (list (* (nth 5 partial) 1000.0) ind) enddata)
           ))
-    ;;; mettre tous les end simulatnes dans une mme frame
+    ;;; mettre tous les end simulatnes dans une mÂme frame
     (setf enddata (sort enddata '< :key 'car))
     (setf chorddata (sort chorddata '< :key 'car))
     (loop for end in enddata do

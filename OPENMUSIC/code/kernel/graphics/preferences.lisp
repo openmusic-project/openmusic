@@ -113,7 +113,8 @@
 (defmethod save-preferences ()
   (let ((path (preferences-file)))
     (delete-file-protection path)
-    (WITH-OPEN-FILE (out path :direction :output 
+    (WITH-OPEN-FILE (out path :direction :output
+			 :external-format :utf-8
                          :if-does-not-exist :create :if-exists :supersede) 
       (write-line (format nil "; OM Preferences - Saved ~D - OpenMusic ~D" (om-get-date) *version-string*) out)
       (prin1 '(in-package :om) out)

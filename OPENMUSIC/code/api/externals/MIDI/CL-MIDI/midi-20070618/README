@@ -1,6 +1,6 @@
 This library for reading and writing MIDI files, and for representing
 MIDI events, was originally written by students of Robert Strandh at
-Université Bordeaux I.  It was then included in the Gsharp score
+UniversitÃ© Bordeaux I.  It was then included in the Gsharp score
 editor[1], and was also posted to the alt.music.midi and
 comp.lang.lisp newsgroups[2].  Subsequently, workers at Goldsmiths
 College included it in their own projects, and took over the

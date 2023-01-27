@@ -391,7 +391,8 @@
 
 
 (defun om-create-file (pathname)
-  (with-open-file (file pathname :direction :output :if-does-not-exist :create)))
+  (with-open-file (file pathname :direction :output :if-does-not-exist :create
+			:external-format :utf-8)))
 
 (defun om-create-directory (pathname &key (if-exists nil))
    (ENSURE-DIRECTORIES-EXIST pathname))
@@ -508,7 +509,7 @@
 (defun om-read-line (file)
   (read-line file nil 'eof))
 
-; enleve les mauvais caracteres à la fin
+; enleve les mauvais caracteres Ã  la fin
 (defun om-correct-line (line &optional stream) 
   (if (stringp line)
       (if (> (length line) 0)
@@ -521,7 +522,7 @@
     line))
 
 (defun om-read-file (file)
-  (with-open-file (instream file :direction :input :if-does-not-exist nil)
+  (with-open-file (instream file :direction :input :external-format :utf-8 :if-does-not-exist nil)
     (when instream 
       (let ((string (make-string (file-length instream))))
         (read-sequence string instream)

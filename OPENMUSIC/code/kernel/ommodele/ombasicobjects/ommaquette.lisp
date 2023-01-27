@@ -155,7 +155,8 @@
       (setf *saving-patch* nil)
       (delete-file-protection (mypathname self))
       (WITH-OPEN-FILE (out (mypathname self) :direction :output  
-                           :if-does-not-exist :create :if-exists :supersede ) 
+                           :if-does-not-exist :create :if-exists :supersede
+			   :external-format :utf-8) 
         (handler-bind 
             ((error #'(lambda (err)
                         (capi::display-message "An error of type ~a occurred: ~a~%~%File ~s could not be saved." 

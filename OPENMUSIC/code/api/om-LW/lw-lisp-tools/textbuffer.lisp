@@ -56,7 +56,7 @@
 
 
 ;;; buffer : un editor::buffer
-;;; window : un editeur sur laquelle le buffer est utilisé (ne pas effacer)
+;;; window : un editeur sur laquelle le buffer est utilisÃ© (ne pas effacer)
 ;;; killed? (plus utilise) un flag pour voir si le buffer est deja detruit (t)
 ;;;         ou en attente si il est encore sur un editeur (:flagged)
 (defclass ombuffer () 
@@ -326,7 +326,7 @@
 ;;; ecrit le contenu du buffer dans un fichier 
 (defun om-buffer-write-file (ombuffer path &key (if-exists :supersede))
   (let ((buffer (buffer ombuffer)))
-    (with-open-file (s path :direction :output :if-exists if-exists)
+    (with-open-file (s path :direction :output :external-format :utf-8 :if-exists if-exists)
       (write-string (editor::points-to-string 
                      (editor::buffers-start buffer) 
                      (editor::buffers-end buffer)) 

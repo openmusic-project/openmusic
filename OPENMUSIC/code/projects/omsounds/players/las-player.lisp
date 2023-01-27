@@ -181,13 +181,13 @@
     
     ;pointeur LAS fixe (son d'origine au cas ou)
     (sndlasptr :accessor sndlasptr :initarg :sndlasptr :initform nil)
-    ;;;pointeur LAS evolutif (son actuel suite à toutes les modifications)
+    ;;;pointeur LAS evolutif (son actuel suite Ã  toutes les modifications)
     (sndlasptr-current :accessor sndlasptr-current :initarg :sndlasptr-current :initform nil)
     (sndlasptr-current-save :accessor sndlasptr-current-save :initarg :sndlasptr-current-save :initform nil)
     (current-is-original :accessor current-is-original :initarg :current-is-original :initform -1)
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-current :accessor number-of-samples-current :initform nil)
-    ;;;pointeur LAS envoye a� la lecture (derive de current)
+    ;;;pointeur LAS envoye a  la lecture (derive de current)
     (sndlasptr-to-play :accessor sndlasptr-to-play :initform nil)
     ;;;Nombre de samples dans le pointeur courant
     (number-of-samples-to-play :accessor number-of-samples-to-play :initform nil)

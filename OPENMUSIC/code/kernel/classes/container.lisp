@@ -147,7 +147,7 @@ a container whose type is in <type>"
 
 
 ; (defmethod previous-simple-container  ((self simple-container))
-; recherche dans une structure le simple-container précédent (de type note, silence ou accord)
+; recherche dans une structure le simple-container prÃ©cÃ©dent (de type note, silence ou accord)
 
 ; (defmethod next-simple-container ((self simple-container))
 ; recherche dans une structure le simple-container suivant (de type note, silence ou accord)
@@ -155,7 +155,7 @@ a container whose type is in <type>"
 ; (defmethod first-simple-container ((self simple-container)) self )
 ; (defmethod first-simple-container ((self chord )) self )
 ; (defmethod first-simple-container ((self container))
-;;; premiere feuille d'une structure hiérarchique
+;;; premiere feuille d'une structure hiÃ©rarchique
 
 ; (defmethod last-simple-container ((self container ))
 ; (defmethod last-simple-container ((self simple-container)) self )
@@ -164,7 +164,7 @@ a container whose type is in <type>"
 
 ; (defmethod replace-simple-container ((object simple-container) (destination simple-container))
 ; remplace une structure <destiantion> par une autre <object>
-; <object> est redimensionnée a la taille intiale de <destination> par un strech )
+; <object> est redimensionnÃ©e a la taille intiale de <destination> par un strech )
 
 
 
@@ -502,7 +502,7 @@ if (:reverse T), the browsing order is reversed. See also next-container."
 
 
 
-;; remplace une structure par une autre (l'autre est redimensionnée a la taille de la premiere par un strech )
+;; remplace une structure par une autre (l'autre est redimensionnÃ©e a la taille de la premiere par un strech )
 (defmethod replace-simple-container ((object simple-container) (destination simple-container))
    (if (parent destination )
      (let ((strech-divisor (gcd (* (qvalue object) (extent destination)) (* (qvalue destination) (extent object)) )))

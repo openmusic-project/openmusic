@@ -94,7 +94,7 @@ The resulting function can be connected for example to SAMPLEFUN."
 
 ;(x-around 70 '((0 0) (41 3) (50 6) (69 5) (100 8)))
  
-; changé des > / < pour >= / <= ..
+; changÃ© des > / < pour >= / <= ..
 (defun y-around (y paires)
   "trouve les paires en dessous et au dessus de y"
   (let ((lst '()))

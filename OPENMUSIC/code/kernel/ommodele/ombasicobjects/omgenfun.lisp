@@ -83,7 +83,7 @@
 
 (defmethod get-editor-class ((self OMGenericFunction)) 'GenericFunEditor)
 
-;;; ajouté 60 au winsize...
+;;; ajoutÃ© 60 au winsize...
 (defmethod make-show-methods-win ((self OMGenericFunction))
    (let* ((themethods (get-elements  self))
           (thewindow (make-editor-window 'GenericFunEditor self (string+ "OM Generic Function - " (name self)) nil

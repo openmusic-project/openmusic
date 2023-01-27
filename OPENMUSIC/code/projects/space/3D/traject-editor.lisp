@@ -195,7 +195,7 @@
 (defmethod initialize-instance :after ((self traject-editor) &rest l)
   (declare (ignore l))
   
-  ;pour compatibilité
+  ;pour compatibilitÃ©
   ;(unless (param-color-mode self)
   ;  (param-color-mode self *OM-TRAJ-COLOR-MODE*))
   

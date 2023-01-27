@@ -126,7 +126,8 @@ This class is a OMClass a diferencia of OMClass.#enddoc#
         (Initial-Code (list (class-name self) (save-init-met-class self))))
     (delete-file-protection newpath)
     (with-open-file (out newpath :direction :output :if-does-not-exist :create 
-                         :if-exists :supersede)  ;;;; :external-format :CLAS)
+                         :if-exists :supersede
+			 :external-format :utf-8)  ;;;; :external-format :CLAS)
       (write-header self out)
       (write-resources self *resources-to-load* out)
       (prin1 '(in-package :om) out)

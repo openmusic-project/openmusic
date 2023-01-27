@@ -110,12 +110,12 @@
 ;MICROPLAYER PROTOCOL
 
 (defun micro-reset ()
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/reset")))
   (setf *microosc-packets* nil))
 
 ;================
 (defun micro-start ()
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start"))))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/start"))))
 
 ;================
 ;(defun sort-micro-events ()
@@ -136,7 +136,7 @@
             (setf (microplay-note-date event) (- (microplay-note-date event) (microplay-note-date (nth (- *index-packets* 1) *microosc-packets*)))))
           (setf *index-packets* (+ *index-packets* 1))
           (om-send-osc-bundle *microplayer-out-port* *microplayer-host* 
-                              (list (list "/play.µt/fifos" 
+                              (list (list "/play.Âµt/fifos" 
                                           (microplay-note-date event)
                                           (microplay-note-pitch event)
                                           (microplay-note-vel event)
@@ -234,20 +234,20 @@
    (micro-reset))
 
 (defmethod player-continue ((self (eql :microplayer)) &optional play-list)
-    (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/continue"))))
+    (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/continue"))))
 
 (defmethod player-pause ((self (eql :microplayer)) &optional play-list)
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/pause"))))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/pause"))))
 
 
 
 
 (defmethod player-loop ((self (eql :microplayer)) player &optional play-list)
   (declare (ignore player))
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/reset")))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/reset")))
   (setf *index-packets* 0)
   (send-200)
-  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.µt/start")))
+  (om-send-osc-bundle *microplayer-out-port* *microplayer-host*  '(("/play.Âµt/start")))
   )
 
 

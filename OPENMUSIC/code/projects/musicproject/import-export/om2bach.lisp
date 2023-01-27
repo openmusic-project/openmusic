@@ -42,7 +42,7 @@
                         collect `g))
         (channels (loop for item in (voices self) 
                         for i = 1 then (+ i 1) collect 1)))
-    (WITH-OPEN-FILE (out path :direction :output  
+    (WITH-OPEN-FILE (out path :direction :output  :external-format :utf-8
                        :if-does-not-exist :create :if-exists :supersede) 
       (format out "score (clefs ~{ ~D ~}) ~%" clefs)
       (format out "(midichannels ~{ ~D ~}) ~%" channels)
@@ -57,7 +57,7 @@
                         collect `g))
         (channels (loop for item in (chord-seqs self) 
                         for i = 1 then (+ i 1)  collect i)))
-    (WITH-OPEN-FILE (out path :direction :output  
+    (WITH-OPEN-FILE (out path :direction :output   :external-format :utf-8
                        :if-does-not-exist :create :if-exists :supersede) 
       (format out "roll (clefs ~{ ~D ~}) ~%" clefs)
       (format out "(midichannels ~{ ~D ~}) ~%" channels)
