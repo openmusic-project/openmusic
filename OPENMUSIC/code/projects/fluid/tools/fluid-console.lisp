@@ -393,7 +393,7 @@ In this case, all internal events are sent simultaneously.
                                                      :size (om-make-point (w self) (h self)))
       )
    
-   (setf (presets-view self) (make-preset-view self))
+   #+(or linux macosx)(setf (presets-view self) (make-preset-view self))
    
    
    (setf (ch-panels self) 
