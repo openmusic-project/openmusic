@@ -11,7 +11,6 @@ OpenMusic is a free software distributed under GNU LGPL license.
 - User Manual : support.ircam.fr/docs/om/om6-manual/
 - User group and support : http://forumnet.ircam.fr/fr/user-groups/openmusic/forum/
 - More info : http://repmus.ircam.fr/openmusic/
-
 ;------------------------------------
 ; RELEASE NOTES:
 ;------------------------------------
@@ -29,11 +28,40 @@ inside the .app bundle's resources.
 ;------------------------------------
 ; If you want to load and use OM code in LispWorks, 
 ; check/download the source package from the repository: 
-; https://forge.ircam.fr/p/OM/ 
-; 
+; https://github.com/openmusic-project/openmusic
+
 ; ...or clone it using GIT:
-; $ git clone git://git.forge.ircam.fr/OM.git
+; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+
+
+* RELEASE NOTES 7.2
+
+NEW FEATURES
+
+- Svg export of n-cercle objects
+- fluidsynth player
+
+IMPROVEMENTS
+
+- tab completion (J. Jakes-Schauer)
+- utf8 support (V. Anders) 
+
+FIXES
+
+- Dynamic tempo now works.
+- graphicports array-class (cocoa fix)
+- graphicports maquette lock (cocoa fix)
+- Now "Save as" works in the textfile inteface
+
+* RELEASE NOTES 7.1
+
+NEW FEATURES
+
+- New score functions:
+	set-obj-pitch, set-obj-vel, set-obj-chan, set-obj-port, set-obj-tempo
+- Jack support for linux (V. Anders)
+
 
 * RELEASE NOTES 7.1
 

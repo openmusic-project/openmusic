@@ -7,12 +7,15 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- tab completion (J. Jakes-Schauer)
+- utf8 support (V. Anders) 
 
 FIXES
 
 - Dynamic tempo now works.
 - graphicports array-class (cocoa fix)
 - graphicports maquette lock (cocoa fix)
+- Now "Save as" works in the textfile inteface
 
 * RELEASE NOTES 7.1
 
