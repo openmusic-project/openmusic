@@ -52,7 +52,7 @@
                                     collect (second ref)))) ;unused!
          (pos-in-settings 0)
          (settings-list (nth pos-in-settings (settings dialog)))
-         (dy #-linux 25 #+linux 35)) (print (list "devices" devices settings-list))
+         (dy 35)) (print (list "devices" devices settings-list))
     (oa::om-with-delayed-update self
       (apply 'oa::om-remove-subviews (cons self (portlines self)))
       (oa::om-set-field-size self (oa::om-make-point (oa::om-point-x (oa::om-view-size self)) 
