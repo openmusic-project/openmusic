@@ -457,7 +457,7 @@ make-quanti
         if (<= (- (second (first note-list)) base-time) delta)
         do 
         (push (* 100 (first note)) pitch-list)
-        ;;; (push (first note) pitch-list) pour gÃ©rer les MC
+        ;;; (push (first note) pitch-list) pour gérer les MC
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
@@ -820,7 +820,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 ;;;=============================================
 
-;;; !!! Ã§a marche pas du tout !!!
+;;; !!! ça marche pas du tout !!!
 (defmethod* mk-obj-from-list ((self list) (type chord-seq))
   (cond
    ((list-subtypep self '(chord note rest))

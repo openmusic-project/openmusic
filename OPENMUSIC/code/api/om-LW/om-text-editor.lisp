@@ -112,7 +112,7 @@
      ;;; detruit le buffer precedent
     (when kill (editor::kill-buffer-no-confirm rec))))
 
-;;; garde le mÃªme buffer mais change le contenu
+;;; garde le même buffer mais change le contenu
 (defmethod om-set-text ((self om-text-edit-window) (text string)) 
   (om-buffer-delete (om-lisp::editor-buffer self))
   (om-buffer-insert (om-lisp::editor-buffer self) text))

@@ -31,9 +31,7 @@
 
 (defmethod save-params ((self bpf) (file pathname))
   (with-open-file (out file :direction :output 
-                         :if-does-not-exist :create :if-exists :supersede
-			 :external-format :utf-8
-			 )
+                         :if-does-not-exist :create :if-exists :supersede)
         (loop for x in (x-points self) 
               for y in (y-points self) do
               (if (integerp x) (format out "~D " x) (format out "~f " x))
@@ -46,8 +44,7 @@
 ;;; ((x1 y1 ... yn)(x2 y2 ... yn) ...)
 (defmethod save-params ((self list) (file pathname))
   (with-open-file (out file :direction :output 
-                       :if-does-not-exist :create :if-exists :supersede
-		       :external-format :utf-8)
+                       :if-does-not-exist :create :if-exists :supersede)
     (loop for elt in self do
           (loop for p in elt do (if (integerp p) (format out "~d " p) (format out "~f " p)))
           (format out "~A" #\Linefeed))
@@ -59,25 +56,20 @@
   (cond ((string-equal (eval-mode self) "text")
          (let ((parlist (list-of-lines (buffer-text self))))
            (with-open-file (out file :direction :output 
-                                :if-does-not-exist :create :if-exists :supersede
-				:external-format :utf-8
-				)
+                                :if-does-not-exist :create :if-exists :supersede)
              (loop for line in parlist do
                    (format out "~A~%" line)))))
         ((string-equal (eval-mode self) "data")
          (let ((parlist (list-of-data (buffer-text self))))
            (with-open-file (out file :direction :output 
-                                :if-does-not-exist :create :if-exists :supersede
-				:external-format :utf-8)
+                                :if-does-not-exist :create :if-exists :supersede)
              (loop for line in parlist do
                    (loop for p in line do (format out "~D " p))
                    (format out "~A" #\Newline)))))
         ((string-equal (eval-mode self) "list")
          (let ((parlist (data-from-line (om-buffer-text (buffer-text self)))))
            (with-open-file (out file :direction :output 
-                                :if-does-not-exist :create :if-exists :supersede
-				:external-format :utf-8
-				)
+                                :if-does-not-exist :create :if-exists :supersede)
              (loop for line in parlist do
                    (loop for p in line do (format out "~D " p))
                    (format out "~A" #\Newline)))))
@@ -119,7 +111,7 @@
        (when ,pathname
 	 (setf *last-saved-dir* (make-pathname :directory (pathname-directory ,pathname)))
 	 ,@body
-	 (with-open-file (s ,pathname :direction :output :if-exists :supersede :external-format :utf-8)
+	 (with-open-file (s ,pathname :direction :output :if-exists :supersede)
 	   (cl-svg::stream-out s ,scene))
 	 pathname))))
 

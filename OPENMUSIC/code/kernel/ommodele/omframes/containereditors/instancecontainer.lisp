@@ -179,7 +179,7 @@ Elements of these editors are instance-icon-frame instances.#enddoc#
 
 (defmethod panel-position ((self listEditor)) (om-make-point 0 20))
 
-;;; enlevÃ© les 15 du scroller
+;;; enlevé les 15 du scroller
 (defmethod panel-size ((self listEditor)) 
    ;(om-make-point (- (w self) 15) (- (h self) 35))
    (om-make-point (w self) (- (h self) 20))

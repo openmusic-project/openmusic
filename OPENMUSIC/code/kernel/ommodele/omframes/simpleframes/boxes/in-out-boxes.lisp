@@ -375,7 +375,7 @@
     (setf (defval tempin) (car (attached-objs patch)))))
 
 ;;; on fait ca au moment ou on ajoute le selfinframe
-;;; i.e. quand on ouvre le patch ou quand on la crÂŽe manuellement ("tempin")
+;;; i.e. quand on ouvre le patch ou quand on la crŽe manuellement ("tempin")
 (defmethod add-subview-extra ((self selfInFrame))
   (call-next-method)
   (let ((patch (object (om-view-container self))))
@@ -567,7 +567,7 @@
 #seealso# (OMIN) #seealso#")
    (:default-initargs :view-font (list *signs-font* 18)))
 
-;;;le numero sur la fleche : transfÃ©rÃ© dans inout-icon-box
+;;;le numero sur la fleche : transféré dans inout-icon-box
 ;;;(defmethod om-draw-contents ((self outFrame))
 ;;;   (call-next-method)
 ;;;   (with-font-focused-view self

@@ -990,7 +990,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
     (format stream "~A~A~%" (string+ (make-sequence 'string level :initial-element #\Tab)) text)))
     
 (defun write-xml-file (list path)
-  (WITH-OPEN-FILE (out path :direction :output  :external-format :utf-8
+  (WITH-OPEN-FILE (out path :direction :output 
                        :if-does-not-exist :create :if-exists :supersede)
     (loop for line in (mxml::mxml-header) do (format out "~A~%" line))
     (recursive-write-xml out list -1)))

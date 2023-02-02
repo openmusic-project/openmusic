@@ -128,7 +128,7 @@
                                                collect (inter-pts i n))))
              (pt-colors (frst-non-nil points-color))
              )
-        (with-open-file (s pathname :direction :output :if-exists :supersede :external-format :utf-8)
+        (with-open-file (s pathname :direction :output :if-exists :supersede)
           (format s "<svg width=\"~D\" height=\"~D\" version=\"1.1\">~%" (* 2 centrex) (* 2 centrey))
           (format s   "<path d=\"\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>~%")
           (format s "<g>~%")

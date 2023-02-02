@@ -154,7 +154,7 @@
        (when ,pathname
 	 (setf *last-saved-dir* (make-pathname :directory (pathname-directory ,pathname)))
 	 ,@body
-	 (with-open-file (s ,pathname :direction :output :if-exists :supersede :external-format :utf-8)
+	 (with-open-file (s ,pathname :direction :output :if-exists :supersede)
 	   (cl-svg::stream-out s ,scene))
 	 pathname))))
 
@@ -196,7 +196,7 @@ Exports <self> to SVG format.
                            :stroke "rgb(0, 0, 0)"
                            :fill bpfcolorstr)))
 
-        (with-open-file (s pathname :direction :output :if-exists :supersede :external-format :utf-8)
+        (with-open-file (s pathname :direction :output :if-exists :supersede)
           (cl-svg::stream-out s scene)))
       pathname
       )))

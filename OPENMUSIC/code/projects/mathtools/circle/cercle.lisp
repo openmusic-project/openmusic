@@ -439,7 +439,7 @@
   ;(om-midi-set-player *midiplayer* (om-midi-new-seq) 1000)
   (setf *microosc-packets* 
         (loop for item in (nth  (current-list self) (midifs-from-cercle (object (om-view-container self))))
-              collect (list "/play.Âµt/fifos" 0  item 100  1000 1)))
+              collect (list "/play.µt/fifos" 0  item 100  1000 1)))
   (setf *index-packets* 0) 
   (send-200) 
   (micro-start))

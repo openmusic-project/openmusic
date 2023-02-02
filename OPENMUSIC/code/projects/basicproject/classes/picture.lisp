@@ -375,7 +375,7 @@ Exports as a raw bitmap (TIF format)
                 ;(setf (cadr *draw-text*) (concatenate 'string (cadr *draw-text*) (string #\Newline)))
                 (finish-text-extra self)
                 (report-modifications (editor self)))
-               ((characterp key) ;;; + eviter les caractÃ¨res spÃ©ciaux !!
+               ((characterp key) ;;; + eviter les caractères spéciaux !!
                 (setf (cadr *draw-text*) (concatenate 'string (cadr *draw-text*) (string key)))
                 (report-modifications (editor self)))
                (t nil)))

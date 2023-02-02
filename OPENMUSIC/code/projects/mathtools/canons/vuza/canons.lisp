@@ -157,10 +157,10 @@ a un pattern rythmique qui qui genere par des translations temporelles, un canon
 
 (defmethod! decompo ((n integer))
   :initvals '(72) :indoc '("periode")
-  :doc "Etant donne un n correspondent Â la periode dÃun pattern rythmique  qui genere  par des translations temporelles, 
+  :doc "Etant donne un n correspondent  la periode dÕun pattern rythmique  qui genere  par des translations temporelles, 
 un canon regulier de categorie maximale, cette fonction le decompose dans un produit de cinq nombres (p1, p2, n1, n2, n3).
-attaches Â un canon ayant comme nombre des voix le produit de n1 et n2 et 
-comme nombre dÃattaques du pattern rythmique de base le produit des trois nombres restants." 
+attaches  un canon ayant comme nombre des voix le produit de n1 et n2 et 
+comme nombre dÕattaques du pattern rythmique de base le produit des trois nombres restants." 
    :icon 420 
   (let* ((prime-facts (prime-factors n))
          (Q (mapcar 'car prime-facts)) rep)
@@ -266,7 +266,7 @@ sign = la signature."
 (defmethod! Infocanons ((n integer))
      :initvals '(72) :indoc '("periode")
    :icon 420
-   "Donne une liste ayant comme arguments le nombre de voix du canon et le nombre dÃattaques du pattern rythmique de base Â lÃinterieur dÃun periode."
+   "Donne une liste ayant comme arguments le nombre de voix du canon et le nombre dÕattaques du pattern rythmique de base  lÕinterieur dÕun periode."
    (if (good-n-p n)
      (let* ((decompo (decompo n)) rep)
        

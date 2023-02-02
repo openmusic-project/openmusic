@@ -336,7 +336,7 @@
     )
 
 ;;; pour faire appaitre les scrollbars
-;;; !!! plus appelÃ©
+;;; !!! plus appelé
 (defmethod om-draw-contents-callback :before ((self om-scroller) x y w h)
   (unless (displayed-p self)
     (om-window-resized (om-view-window self) (om-view-size (om-view-window self)))

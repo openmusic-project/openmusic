@@ -146,7 +146,7 @@ See http://sdif.sourceforge.net/ for more inforamtion about SDIF.
 ;;;=========================
 ;;; SDIF STREAM
 ;;;=========================
-;;; Ensemble de Frames constituant un flux de donnÃ©es SDIF 
+;;; Ensemble de Frames constituant un flux de données SDIF 
 (defclass! sdifstream ()
    ((Id :initform 0 :initarg :Id :accessor Id :documentation "integer")
     (LFrames :initform nil :initarg :LFrames :accessor LFrames :documentation "List of SDIFFrames"))

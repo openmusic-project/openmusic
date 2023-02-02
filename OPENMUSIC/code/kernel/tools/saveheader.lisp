@@ -62,9 +62,7 @@
   "Creates an empty file named pathname and its documentation file, and returns the truename of the created file"
   (when (directoryp pathname)
     (setq pathname (om-make-pathname :directory pathname :name ".finderinfo")))
-  (with-open-file (file pathname :direction :output  :if-does-not-exist :create :if-exists :supersede
-			:external-format :utf-8
-			) ;;; :external-format file-type )
+  (with-open-file (file pathname :direction :output :if-does-not-exist :create :if-exists :supersede) ;;; :external-format file-type )
     (write-header self file))
   (truename pathname))
 
@@ -79,8 +77,7 @@
       (if (directoryp pathname)
         (let ((folder-info-path (om-make-pathname :directory pathname :name  ".finderinfo")))
           (unless (probe-file folder-info-path)
-            (with-open-file (file folder-info-path :direction :output :if-does-not-exist :create
-				  :external-format :utf-8) ;;; :external-format file-type )
+            (with-open-file (file folder-info-path :direction :output :if-does-not-exist :create) ;;; :external-format file-type )
               (write-line (string+ "; OM File Header - Created " (om-get-date)) file)
               (write-line (header-comment-from-obj (make-instance 'omfolder :icon 186)) file)
               (write-line "; End File Header" file)))
@@ -134,9 +131,7 @@
                 (unless (equal line "") (setf linelist (append linelist (list line))))
                 (setf line (read-line file nil :eof))))
         (delete-file-protection pathname))
-        (with-open-file (file pathname :direction :output :if-exists :supersede
-			      :external-format :utf-8
-			      )
+        (with-open-file (file pathname :direction :output :if-exists :supersede)
           (write-header self file)
           (when rsrc 
             (write-line "; External resources " file)
@@ -182,7 +177,7 @@
             (setq line (read-line file nil :eof))))
     (setf data (reverse data))
     (delete-file-protection pathname)
-    (with-open-file (file pathname :direction :output :if-exists :supersede :external-format :utf-8)
+    (with-open-file (file pathname :direction :output :if-exists :supersede)
       (write-line ";fileheader" file)
       (write-line (format nil "; (~D :~D ~D ~D ~D ~S ~D)" (first params) (second params)
                           (om-save-point (third params)) (om-save-point (fourth params)) (om-save-point (fifth params))

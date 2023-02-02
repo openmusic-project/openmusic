@@ -29,8 +29,8 @@
 
 ;;; Notes :
 
-;;; - ccl::window-close-nicely definition commentÃ©e
-;;; - drag-receive-dropped-flavor definition commentÃ©e
+;;; - ccl::window-close-nicely definition commentée
+;;; - drag-receive-dropped-flavor definition commentée
 
 (in-package :om)
 

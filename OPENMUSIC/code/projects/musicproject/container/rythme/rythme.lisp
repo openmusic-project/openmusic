@@ -129,7 +129,7 @@
 ;;; ===============================================================================================
 
 
-;;; c'est la plus longue des deux structures qui est gardÃ©e 
+;;; c'est la plus longue des deux structures qui est gardée 
 
 
 (defmethod om-merge ((v1 voice) (v2 voice))
@@ -164,7 +164,7 @@
 
 
 ;;; v1 est la voix originale et v2 est le masque. 
-;;; le resultat est la voix v1 masquÂŽe par v2.
+;;; le resultat est la voix v1 masquŽe par v2.
 ;;; masque et demasque
 
 (defmethod om-masque ((v1 voice) (v2 voice)  &key (mode 'masque))

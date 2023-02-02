@@ -106,8 +106,7 @@ Class methods are the init-instance method and slot reader and writer. #class-me
     ;                                   :type (pathname-type newpath))))
     (delete-file-protection newpath)
     (WITH-OPEN-FILE (out newpath :direction :output :if-does-not-exist :create 
-                         :if-exists :supersede
-			 :external-format :utf-8) ;;;        :external-format :METH)
+                         :if-exists :supersede ) ;;;        :external-format :METH)
       (write-header self  out)
       (write-resources self *resources-to-load* out)
       (prin1 '(in-package :om) out)

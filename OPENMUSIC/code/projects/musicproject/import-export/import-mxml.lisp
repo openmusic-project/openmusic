@@ -858,7 +858,7 @@ Constructs a poly object from a MusicXML file.
       ;LA LISTE DE DURATION (DURPILE)
       ;LA LISTE DE TIE (TIEPILE)
 
-;;tiepile : nil au dÃ©part
+;;tiepile : nil au départ
 (defun make-unbalanced-chord (durchordpile chordpile)
   (let* ( (assoclist  (pairlis durchordpile chordpile))
           (pivot 0) 

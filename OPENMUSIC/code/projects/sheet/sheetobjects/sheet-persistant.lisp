@@ -137,7 +137,7 @@
       (setf *libs-to-load* nil)
       (setf *resources-to-load* nil)
 
-      (with-open-file (out (mypathname self) :direction :output :external-format :utf-8
+      (with-open-file (out (mypathname self) :direction :output 
                            :if-does-not-exist :create :if-exists :supersede) ;;;; :external-format :PATC)
         (handler-bind 
             ((error #'(lambda (err)

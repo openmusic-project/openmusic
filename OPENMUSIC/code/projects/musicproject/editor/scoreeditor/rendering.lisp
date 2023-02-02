@@ -1272,7 +1272,7 @@
    (declare (ignore linear? maxy slot staff miny minx maxx))
    (let* ((realpos (round (+ x  (* zoom (x self)))))
           (str (headchar self))
-          (line (case (elt str 0) (#\Â·  (round size 4)) (#\Ã® 0)))
+          (line (case (elt str 0) (#\·  (round size 4)) (#\î 0)))
           (strsizex (get-name-size str (om-make-font *music-font* size)))
           delta-y delta-h )
      (if (group-p (reference (parent self)))

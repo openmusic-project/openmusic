@@ -120,7 +120,7 @@
                 (cadr (play-interval player))
                 3600000)))
   (cond ((equal (state player) :play)
-         ;;; prolonge la durÃ©e de vie du player
+         ;;; prolonge la durée de vie du player
          (setf (stop-time player) (max (stop-time player) end-t)))
         
         (t 
@@ -442,7 +442,7 @@
 (defmethod get-duration ((self play-editor-mixin)) 
   (get-obj-dur (get-obj-to-play self)))  ;;; = 0 if obj = NIL
 
-;; prioritÃ© sur le mode
+;; priorité sur le mode
 (defmethod play-selection-first ((self t)) nil)
 
 (defmethod get-interval-to-play ((self play-editor-mixin))

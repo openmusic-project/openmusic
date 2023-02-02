@@ -251,7 +251,7 @@
                                                                    (om-color-b *om-select-color*)
                                                                    0.1))
          ;; :operation 5
-        ;;; crÃ©er un PIXMAP (depth=1) pour dessiner un masque transparent...
+        ;;; créer un PIXMAP (depth=1) pour dessiner un masque transparent...
         #+win32
         (om-with-focused-view view
           (om-draw-hilite-icon (om-point-h pos) (om-point-v pos) 
@@ -472,7 +472,7 @@
 
 (om-api-add-init-func 'om-init-cursors)
 
-;; Ã§a marche pas
+;; ça marche pas
 (defmacro om-with-cursor (cursor &body body)
   `(let ()
      ;((view (om-find-view-containing-point (om-front-window) (om-mouse-position (om-front-window)))))

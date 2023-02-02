@@ -158,7 +158,7 @@
 
 (defcfun  ("SdifFCurrID" SdifFCurrID) :unsigned-int  (SdifF :pointer))
 
-;;; !!! en vrai Ã§a retourne pas un int mais SdifDataTypeET ...
+;;; !!! en vrai ça retourne pas un int mais SdifDataTypeET ...
 (defcfun  ("SdifFCurrDataType" SdifFCurrDataType)  :unsigned-int  (SdifF :pointer))
 
 (defcfun  ("SdifFCurrNbMatrix" SdifFCurrNbMatrix)  :unsigned-int  (SdifF :pointer))

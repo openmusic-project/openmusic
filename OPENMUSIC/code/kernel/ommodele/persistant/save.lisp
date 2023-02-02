@@ -1290,9 +1290,7 @@
       (delete-file-protection (mypathname self))
       (setf (cadr (create-info self)) (om-get-date))
       (WITH-OPEN-FILE (out (mypathname self) :direction :output  
-                           :if-does-not-exist :create :if-exists :supersede
-			   :external-format :utf-8
-			   ) ;;;;; :external-format :INST)
+                           :if-does-not-exist :create :if-exists :supersede) ;;;;; :external-format :INST)
         (write-header self out)
         (prin1 '(in-package :om) out)
         (let ((*package* (find-package :om))
@@ -1323,7 +1321,7 @@
       (when name
         (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
         (delete-file-protection name)
-        (WITH-OPEN-FILE (out name :direction :output  :external-format :utf-8
+        (WITH-OPEN-FILE (out name :direction :output  
                              :if-does-not-exist :create :if-exists :supersede )
           (write-header-inst out)
           (prin1 '(in-package :om) out)
@@ -1754,7 +1752,7 @@
 
 ;(defun look-for-lib2load () nil)
 
-;;; les sauvegardes dans les packages sont tenus Ã  jour automatiquement
+;;; les sauvegardes dans les packages sont tenus à jour automatiquement
 
 (defun ws-save-user-package ()
 ;  (let* ((thepath (make-pathname :directory (pathname-directory (mypathname *current-workSpace*))
@@ -1767,7 +1765,7 @@
 ;      (setf *libs-to-load* (look-for-lib2load))
 ;      (omng-save *package-user* (mypathname *package-user*)))
 ;    (delete-file-protection thepath)
-;    (with-open-file (out thepath :direction :output  :external-format :utf-8
+;    (with-open-file (out thepath :direction :output 
 ;                         :if-does-not-exist :create :if-exists :supersede) 
 ;      (let ((*package* (find-package :om)))
 ;        (prin1 '(in-package :om) out)

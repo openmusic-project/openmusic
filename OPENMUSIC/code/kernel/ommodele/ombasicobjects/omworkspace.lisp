@@ -342,8 +342,7 @@
     (unless (probe-file (om-make-pathname :directory name :name  "preferences" :type "lisp"))
       (WITH-OPEN-FILE (out (om-make-pathname :directory name :name  "preferences" :type "lisp")
                            :direction :output 
-                           :if-does-not-exist :create :if-exists :supersede
-			   :external-format :utf-8) 
+                           :if-does-not-exist :create :if-exists :supersede) 
         (write-line (format nil ";~D" *om-version*) out)
         (prin1 '(in-package :om) out)))
     (unless (probe-file (om-make-pathname :device name :directory (append (pathname-directory name) (list "elements"))))
@@ -364,8 +363,7 @@
     (unless (get-preferences-version name)
       (WITH-OPEN-FILE (out preffile
                            :direction :output 
-                           :if-does-not-exist :create :if-exists :supersede
-			   :external-format :utf-8) 
+                           :if-does-not-exist :create :if-exists :supersede) 
         (write-line (format nil ";~D" *om-version*) out)
         (prin1 '(in-package :om) out)))
     (handler-bind 
@@ -435,7 +433,7 @@
   (when (and *current-workSpace* *om-workSpace-win*)
     (let ((path (om-make-pathname :directory  (mypathname *current-workSpace*) :name  "wsparams" :type "lisp")))
       (delete-file-protection path)
-      (WITH-OPEN-FILE (out path :direction :output  :external-format :utf-8
+      (WITH-OPEN-FILE (out path :direction :output 
                            :if-does-not-exist :create :if-exists :supersede) 
         (prin1 '(in-package :om) out)
         (prin1 `(setf *ws-params* (list ,(omng-save (presentation *current-workSpace*))
@@ -482,7 +480,7 @@
      ;;; ---
      (let ((thepath (om-make-pathname :directory wspath :name  "preferences" :type "lisp")))
        (delete-file-protection thepath)
-       (WITH-OPEN-FILE (out thepath :direction :output :external-format :utf-8
+       (WITH-OPEN-FILE (out thepath :direction :output 
                             :if-does-not-exist :create :if-exists :supersede) 
          (write-line (format nil ";~D" *om-version*) out)
          (prin1 '(in-package :om) out)
@@ -490,7 +488,7 @@
        (put-all-preferences);necessaire pour init les prefs
        ;(setf thepath (make-pathname :directory (pathname-directory wspath) :name  "userpackage" :type "lisp"))
        ;(delete-file-protection thepath)
-       ;(WITH-OPEN-FILE (out thepath :direction :output  :external-format :utf-8
+       ;(WITH-OPEN-FILE (out thepath :direction :output 
        ;                     :if-does-not-exist :create :if-exists :supersede) 
        ;  (prin1 '(in-package :om) out)
        ;  (prin1 '(setf *package-user* (add-new-packages (list "User" nil nil nil nil)  *om-package-tree*)) out)
@@ -518,7 +516,7 @@
   (let ((path (ompref-file)))
     (delete-file-protection path)
     (om-create-directory (om-make-pathname :directory path) :if-exists nil)
-    (WITH-OPEN-FILE (out path :direction :output  :external-format :utf-8
+    (WITH-OPEN-FILE (out path :direction :output 
                          :if-does-not-exist :create :if-exists :supersede) 
       (write-line (format nil ";~D" *om-version*) out)
       (prin1 '(in-package :om) out)

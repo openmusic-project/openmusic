@@ -592,7 +592,7 @@
     (opengl:gl-tex-envi opengl:*gl-texture-env* opengl:*gl-texture-env-mode* opengl:*gl-modulate*)
     (opengl:gl-enable opengl:*gl-texture-2d*)))
 
-;;; camera in canvas Ã  la place de interface
+;;; camera in canvas à la place de interface
 (defun opengl-resize-canvas (canvas x y width height)
   x y
   (when #+Win32 (win32:is-window-visible (win32:pane-hwnd (capi-internals:representation canvas)))

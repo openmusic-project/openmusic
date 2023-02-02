@@ -780,7 +780,7 @@ current-atimes) list tmin beat-dur)
 
 ;;;; jean
 ;;;  a faire sur un chord-seq avant que le quantifier 
-;;;  met ds un meme accord les accords simultanÃ©s ouy sÃ©parÃ©s de - de delta
+;;;  met ds un meme accord les accords simultanés ouy séparés de - de delta
 (defmethod merge-chords ((self chord-seq) &optional (delta 0))
   (let ((len (length (inside self)))
         tmpchord tmplist)

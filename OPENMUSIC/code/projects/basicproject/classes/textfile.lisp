@@ -367,7 +367,7 @@ As output it returns the contents of the text buffer as a list formatted accordi
         (let ((inp 
                (if (and (nth i inputs) (string-equal (name input) (name (nth i inputs))))
                    (nth i inputs) input)))
-          ;;; ici : mettre Ã  jour les items (thepopup) pour les input-funmenu
+          ;;; ici : mettre à jour les items (thepopup) pour les input-funmenu
           inp)))
 
 
