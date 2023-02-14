@@ -1,0 +1,28 @@
+This dir is included only in the UTF8-branch of openmusic
+
+Here are som test patches.  Please fill in with new test-cases:
+
+	README
+
+	patch-w-LATIN1 accents.omp	- LATIN1 patch with accents
+	patch-w-UTF8 characters.omp	- same patch in UTF8
+
+	test_ezra.omp
+	UTF8-LATIN1-test-WS
+
+	gong1_Shift-JIS.omp		- Japanese encoding
+	gong1_UTF8.omp			- UTF8 version of the japanese
+	
+
+And a workspace: "UTF8-LATIN1-test-WS" to test importing various
+Latin-1 encoded patches.
+
+Check breaks upon import or wrong display of characteres.
+
+Aim is to have all LATIN1-encoded patches imported without errors, and
+displayed correctly in OM.
+
+Any imported LATIN1 patches, when saved with the WS or exported, are
+expected to be saved w. UTF8-encoding.
+
+-anders
