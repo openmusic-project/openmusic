@@ -70,7 +70,7 @@
 ;;; check the various ":external-format :utf-8" output specs
 
 (lw::set-default-character-element-type 'character)
-;; (setf system:*specific-valid-file-encodings* '(:utf-8 :latin-1))
+(setf system:*specific-valid-file-encodings* '(:utf-8 :latin-1))
 
 
 ;;;=======================================
