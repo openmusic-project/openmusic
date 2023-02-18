@@ -1218,9 +1218,11 @@ In this case, all internal events are sent simultaneously.
      ((= 2 value)
       (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
      ((= 4 value)
-      (fluid-pitchwheel '(0 2040 0 2040 0 2040 0 2048) '(1 3 2 4 5 7 6 8) port))
+      (fluid-pitchwheel '(0 2048 0 2048 0 2048 0 2048) '(1 3 2 4 5 7 6 8) port))
      ((= 8 value)
-      (fluid-pitchwheel '(0 1024 2040 3057 0 1024 2040 3057) '(1 2 3 4 5 6 7 8) port))
+      (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2040 3072) '(1 2 3 4 5 6 7 8) port))
+     ((= 16 value)
+      (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
      (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))
     ))
 
@@ -1230,9 +1232,11 @@ In this case, all internal events are sent simultaneously.
    ((= 2 value)
     (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
    ((= 4 value)
-         (fluid-pitchwheel '(0 2040 0 2040 0 2040 0 2048) '(1 3 2 4 5 7 6 8) port))
+         (fluid-pitchwheel '(0 2048 0 2048 0 2048 0 2048) '(1 3 2 4 5 7 6 8) port))
    ((= 8 value)
-         (fluid-pitchwheel '(0 1024 2040 3057 0 1024 2040 3057) '(1 2 3 4 5 6 7 8) port))
+         (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2048 3057) '(1 2 3 4 5 6 7 8) port))
+   ((= 16 value)
+      (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
    (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))))
 
 ;;reverb
