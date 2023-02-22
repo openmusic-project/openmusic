@@ -149,6 +149,9 @@ In this case, all internal events are sent simultaneously.
 (defmethod get-impulsion-pict ((self fluid-mix-console)) 
   (om-load-and-store-picture "audiotrack-bg" 'internal))
 
+(defmethod Class-has-editor-p  ((self fluid-mix-console)) t )
+(defmethod get-editor-class ((self fluid-mix-console)) 'FluidConsoleEditor)
+
 (defmethod draw-mini-view  ((self t) (value fluid-mix-console)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
@@ -189,14 +192,15 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod omNG-save ((self fluid-mix-console) &optional (values? nil))
   "Cons a Lisp expression that retuns a copy of self when it is evaluated."
-  `(let ((rep (make-instance ',(type-of self) 
-                :midiport ,(midiport self) 
-                :nbtracks ,(nbtracks self))))
-     (setf (channels-ctrl rep) (list ,.(loop for ctrl in (channels-ctrl self) collect
-                                             (omNG-save ctrl))))
-     (setf (miditrack rep) ',(miditrack self))
-     rep
-     ))
+  `(when (find-class ',(type-of self) nil)
+     (let ((rep (make-instance ',(type-of self) 
+                               :midiport ,(midiport self) 
+                               :nbtracks ,(nbtracks self))))
+       (setf (channels-ctrl rep) (list ,.(loop for ctrl in (channels-ctrl self) collect
+                                                 (omNG-save ctrl))))
+       (setf (miditrack rep) ',(miditrack self))
+       rep
+       )))
 
 
 ;;;===============================
