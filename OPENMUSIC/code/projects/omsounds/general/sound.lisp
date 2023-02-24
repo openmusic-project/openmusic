@@ -850,11 +850,17 @@ Press 'space' to play/stop the sound file.
 (defclass boxsoundframe (boxEditorFrame) ())
 
 (defmethod om-get-menu-context ((self boxsoundframe))
-  (append 
-   (boxframe-default-list self)
-   (player-menu-item (object self))
-   (object-box-specific-menu (value (object self)) (object self))))
-
+  (remove nil 
+          (list+  (list (list 
+                         (import-menu (object self))
+                         (export-menu (object self))
+                         ))
+                  (boxframe-default-list self)
+                  (player-menu-item (object self))
+                  (object-box-specific-menu (value (object self)) (object self)) 
+                  (when (scorepanel-p (om-view-container self))
+                    (list (list (om-new-leafmenu "Score action"
+                                                 #'(lambda () (edit-score-action self)))))))))
 (defmethod object-box-specific-menu ((self sound) box)
   (declare (ignore box))
   (list (om-new-leafmenu "Open with external editor..."

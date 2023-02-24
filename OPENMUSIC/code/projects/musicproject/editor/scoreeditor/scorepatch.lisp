@@ -581,16 +581,20 @@
 
 ;Execute Show and Hide Boxes in the score
 (defmethod play-boxes-in-score ((self scorePanel))
-  (let* ((boxes (score-action-boxes self))
+  (let* ((player (player (om-view-container self)))
+         (boxes (score-action-boxes self))
          (port (if (score-page-mode self) (or (om-get-current-port) self) self)))
     ;(start 
      (loop for item in boxes do
            (loop for act in (score-action (car item)) do
                  (cond ((string-equal (car act) "exec")
                         ;(dfuncall (second act) 'play-score-box (car item))
+                        #|
                         (schedule-task (player (editor self))
                                        #'(lambda () (play-score-box (car item)))
                                        (second act))
+                        |#
+                        (player-schedule player (value (car item)) (get-edit-param (car item) 'player) :at (second act))
                         )
                        ((string-equal (car act) "app")
                         ;(dfuncall  (second act) 'draw-action-score-box (car item) 
