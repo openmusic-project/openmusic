@@ -615,7 +615,7 @@
     (setf pict-list (omng-save (ed-pictu-list self)))                                
     `(om-load-editor-box1 ,(name self) ',(save-reference self) ',inputs ,(om-save-point (frame-position self)) 
                       ,(om-save-point (frame-size self)) ,value ,(allow-lock self) ,(frame-name self) ,(save-edition-params self)
-                      ,(showpict self) ,(minieditor? self) ,pict-list ,(show-name self))))
+                      ,(showpict self) ,(minieditor? self) ,pict-list ,(show-name self) ',(score-action self))))
 
 ;Types
 (defmethod omNG-save ((self OMBoxTypeCall) &optional (values? nil))
@@ -814,7 +814,7 @@
 (defmethod upgrade-editor-box (value class name position) nil)
 
 (defun om-load-editor-box1 (name reference inputs position size value lock 
-                                 &optional fname editparams spict meditor pictlist show-name 
+                                 &optional fname editparams spict meditor pictlist show-name score-action
                                  &rest rest)   ;;; au cas ou..
   (or (upgrade-editor-box value reference name position) 
       (let ((dead? (not (find-class reference nil))) newbox)
@@ -825,6 +825,7 @@
         (setf (frame-name newbox) fname)
         (setf (name newbox) name)
         (setf (show-name newbox) show-name)
+        (setf (score-action newbox) score-action)
         (when (box-has-pict-editors newbox)
           (setf (ed-pictu-list newbox) pictlist))
         (setf (inputs newbox) (correct-box-inputs reference (mapcar #'(lambda (input) (eval input)) inputs)))
