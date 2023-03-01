@@ -20,11 +20,12 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
 
+;;;;IMPORTANT: NOT USED ANYMORE! MOSTLY IN scoretools.lisp
 ;============================================
 ; (1) GLOBALS
 ;============================================
