@@ -7,10 +7,13 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Selection in POLY of VOICES.
+- SOUND objects have score-actions and plays in scorepatches
 - tab completion (J. Jakes-Schauer)
 
 FIXES
 
+- score-actions now are saved in scorepatch
 - Dynamic tempo now works.
 - graphicports array-class (cocoa fix)
 - graphicports maquette lock (cocoa fix)
