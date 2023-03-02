@@ -925,17 +925,17 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self FluidchannelPanel) value)
   (let* ((port (midiport (channelctr self)))
-         (chan (midichannel (channelctr self))))
+         (chan (midichannel (channelctr self)))
+         (pan-lst (pan-ctrl (nfsynth (channelctr self)))))
     (setf (pan-ctrl (channelctr self)) value)
-    (setf (nth (1- chan) (pan-ctrl (nfsynth (channelctr self)))) value)
+    (setf (nth (1- chan) pan-lst) value)
     (fluid-pan value chan port)
-      (let* ((target (panVal self))
-         (new-str (pan2str value)))
-    (unless (string= new-str (om-dialog-item-text target))
-      (om-set-dialog-item-text target new-str)
-      (om-redraw-view target)))
-  (report-modifications self)))
-
+    (let* ((target (panVal self))
+           (new-str (pan2str value)))
+      (unless (string= new-str (om-dialog-item-text target))
+        (om-set-dialog-item-text target new-str)
+        (om-redraw-view target)))
+    (report-modifications self)))
 
 
 (defmethod change-ctrl1-val ((self FluidchannelPanel) value)

@@ -223,6 +223,12 @@ The format is a list of list where the car of each is the string name of the pre
   (loop for i in chans
         do (fluid-pan vals i port)))
 
+(defmethod! fluid-pan ((vals list)
+                       (chans list) &optional (port 0))
+  (loop for i in chans
+        for val in vals
+        do (fluid-pan val i port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;REVERB
 

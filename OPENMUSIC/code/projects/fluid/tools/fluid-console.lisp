@@ -1164,8 +1164,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self fluidPanel) value)
   (let ((port (midiport (channelctr self))))
-  (setf (pan-ctrl (channelctr self)) value)
-  (fluid-pan value *all-chans* port)
+  (setf (pan-ctrl (channelctr self)) (repeat-n value 16))
+  (fluid-pan (repeat-n value 16) *all-chans* port)
   (when (send-rt (editor self))
     (channel-send-pan (channelctr self)))
   (let* ((target (panVal self))
