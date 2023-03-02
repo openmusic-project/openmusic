@@ -66,11 +66,26 @@
 
 (export '(*app-name* *version* *beta-release* *version-str* *version-str-full* *release-language* *release-date* *release-author*) :cl-user)
 
-;;; encode all new files in :utf-8.  But support reading older files encoded in latin-1,
-;;; check the various ":external-format :utf-8" output specs
+
+
+;;;=======================================
+
+;;; MAKE UTF-8 DEFAULT I/O
 
 (lw::set-default-character-element-type 'character)
-(setf system:*specific-valid-file-encodings* '(:utf-8 :latin-1))
+
+(defun utf-8-file-encoding (pathname ef-spec buffer length)
+  (declare (ignore pathname buffer length))
+  (system:merge-ef-specs ef-spec :utf-8))
+
+(setq system:*file-encoding-detection-algorithm*
+      (substitute 'utf-8-file-encoding
+                  'system:locale-file-encoding
+                  system:*file-encoding-detection-algorithm*))
+
+;;
+;; Macro to safe-load latin-1 files is in code/kernel/tools/utf-8-backwards-compatibility.lisp
+;; 
 
 
 ;;;=======================================
