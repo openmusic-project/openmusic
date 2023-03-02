@@ -337,7 +337,7 @@
 (defun repair-old-file (pathname)
   (when (probe-file pathname)
     (let ((linelist nil))
-      (with-open-file (file pathname :direction :input)
+      (with-safe-open-file (file pathname :direction :input)
         (let ((line (read-line file nil :eof)))
           (loop while (not (equal line :eof)) do 
                 (setf linelist (append linelist (list line)))

@@ -522,7 +522,7 @@
     line))
 
 (defun om-read-file (file)
-  (with-open-file (instream file :direction :input :external-format :utf-8 :if-does-not-exist nil)
+  (with-safe-open-file (instream file :direction :input :if-does-not-exist nil)
     (when instream 
       (let ((string (make-string (file-length instream))))
         (read-sequence string instream)

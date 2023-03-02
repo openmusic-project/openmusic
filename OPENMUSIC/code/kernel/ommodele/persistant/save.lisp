@@ -133,7 +133,7 @@
 (defmethod get-resources (filename)
   (when (om-persistant-p filename)
     (let (line testc)
-      (with-open-file (file filename :direction :input :if-does-not-exist nil)
+      (with-safe-open-file (file filename :direction :input :if-does-not-exist nil)
         (loop for i from 1 to 3
               while (not (equal 'oa::eof (om-read-line file))))
         (unless (stream-eofp file)

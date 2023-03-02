@@ -35,7 +35,7 @@
 (defun get-pathname-wsparams (pathname)
   "Return a keyword indicating the type of pathname"
   (let (line)
-    (with-open-file (file pathname :direction :input :if-does-not-exist nil)
+    (with-safe-open-file (file pathname :direction :input :if-does-not-exist nil)
         (unless (equal 'oa::eof (om-read-line file))
           ;; 2nd line
           (setf line (read-from-string (subseq (om-read-line file) 1))))
@@ -122,7 +122,7 @@
         (setq pathname (om-make-pathname :directory pathname :name ".finderinfo")))
       (when (probe-file pathname)
         (setf rsrc (get-resources pathname))
-        (with-open-file (file pathname :direction :input)
+        (with-safe-open-file (file pathname :direction :input)
           ; skip comments
           (loop while (and (not (equal line :eof))
                            (is-a-comment line))
@@ -153,7 +153,7 @@
 
 (defun file-has-comments (path)
   (let (rep)
-    (with-open-file (in path :direction :input)
+    (with-safe-open-file (in path :direction :input)
       (let ((char (read-char in nil :eof)))
         (when (and (not (eq char :eof)) (equal char #\;))
           (setf rep t))))
@@ -162,7 +162,7 @@
 
 (defun file-has-old-comments (path)
   (let (rep)
-    (with-open-file (in path :direction :input  )
+    (with-safe-open-file (in path :direction :input  )
       (let ((char (read-char in nil :eof)))
         (setf char (read-char in nil :eof))
         (setf char (read-char in nil :eof))
@@ -174,7 +174,7 @@
 (defun remove-old-comments (pathname params)
   (let ((data nil)
         oldheader line)
-    (with-open-file (file pathname :direction :input)
+    (with-safe-open-file (file pathname :direction :input)
       (loop for i from 1 to 7 do (read-line file nil :eof))
       (setq line (read-line file nil :eof))
       (loop while (not (eq line :eof)) do
@@ -195,7 +195,7 @@
 
 (defun read-old-type (pathname)
   (let (line)
-    (with-open-file (file pathname :direction :input)
+    (with-safe-open-file (file pathname :direction :input)
       (read-line file)
       (read-line file)
       (setq line (read-from-string (subseq (read-line file) 2))))

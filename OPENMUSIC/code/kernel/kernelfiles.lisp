@@ -33,6 +33,11 @@
 
 (setf *kernel-files* '(
                        
+
+;-----------UTF-8 - safe handling Latin-1 files---
+
+"tools/utf-8-backwards-compatibility"
+
 ;-----------Tools--------------------------------- 
 "tools/lisptools"    
 "tools/saveheader"   
