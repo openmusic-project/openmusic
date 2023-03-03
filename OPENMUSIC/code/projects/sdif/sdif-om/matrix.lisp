@@ -83,7 +83,7 @@
     "Frequency  : Frequency of the resonant filter.
  Amplitude  : Lineary amplitude of the Filter.
  BandWidth  : Bandwidth of the Filter >0. (Hz).
- Saliance   : percentage of error of the parameters 0.Â 100.
+ Saliance   : percentage of error of the parameters 0. á 100.
  Correction : automatic correction of the amplitude compared to other parameters 0. to 1.")) 
 
 

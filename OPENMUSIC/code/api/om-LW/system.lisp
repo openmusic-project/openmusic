@@ -509,7 +509,7 @@
 (defun om-read-line (file)
   (read-line file nil 'eof))
 
-; enleve les mauvais caracteres Ã  la fin
+; enleve les mauvais caracteres à la fin
 (defun om-correct-line (line &optional stream) 
   (if (stringp line)
       (if (> (length line) 0)

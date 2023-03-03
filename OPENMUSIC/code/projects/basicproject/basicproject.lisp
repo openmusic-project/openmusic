@@ -54,7 +54,7 @@
     "editors;bpfeditor" 
     "editors;bpceditor" 
     "editors;splineseditor" 
-    "editors;arrayeditor"       ; !! open-intern-editor et show-controls Ã  faire  
+    "editors;arrayeditor"       ; !! open-intern-editor et show-controls à faire  
 
     ; advanced time array
     "classes;time-array" 

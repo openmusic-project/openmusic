@@ -68,7 +68,7 @@
 (defmethod! card ((n integer) (k integer))
   :initvals '(12 6) :indoc '("Zn" "elments")
   :doc "Nombre de structures intervallaires ayant k elements a une transposition pres
-Par exemple il y a 66 gammes de sept notes a l'intÂrieur du total chromatique a une transposition pres."
+Par exemple il y a 66 gammes de sept notes a l'intérieur du total chromatique a une transposition pres."
    :icon 420 
   (let ((pgcd (pgcd n k)))
     (* (/ 1 n) (loop for item in (divisors pgcd)
@@ -116,7 +116,7 @@ Par exemple la structure (2 3 1 2 3 1) et son inverse (3 2 1 3 2 1)  pour n=12.
 
 Tp
 Structures intervallaires partitionnantes. 
-Une telle structure génère le total chromatique dans le sens que ce dernier est une union disjointe de transpositions dÕaccords ayant la même classe intervallaire.
+Une telle structure génère le total chromatique dans le sens que ce dernier est une union disjointe de transpositions d'accords ayant la même classe intervallaire.
 Par exemple pour (3 3 3 3) Les transpositions seront  1 ,2 et 3.
 
 Tid

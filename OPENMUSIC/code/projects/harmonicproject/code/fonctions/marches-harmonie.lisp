@@ -127,7 +127,7 @@
 ;; interv est un intervalle musical, 1 pour unisson, 2 pour seconde, 2 pour tierce etc
 ;; nombreoctaves est le nombre d'octaves (positif ou negatif)
 ;; ascendant vaut vrai si on monte, faux si on descend
-;; attention, si 'lobject n'est pas tonal on transpose d'un nombre de demi tons (donn par interv)
+;; attention, si 'lobject n'est pas tonal on transpose d'un nombre de demi tons (donné par interv)
 
 (defmethod newtranspose-tonal ((self note) interv nombreoctaves ascendant?)
   (let* ((tonalite (or (get-tonalite self)
@@ -440,7 +440,7 @@
                                collect (transpose-modulant el (transposetonalite tself (* 100 i intdeg))))))
            (chord-list (append accords nouveauxaccords)))
       (setf new-cseq (objfromobjs chord-list (make-instance 'chord-seq)))
-      ;; ici : la tonalit pour le nouveau chord-seq
+      ;; ici : la tonalité pour le nouveau chord-seq
       (set-tonalite new-cseq (tonalite self))
       new-cseq)
 

@@ -152,7 +152,7 @@
               
 
 
-;;;======= TONALITE =======;;; recupre la tonalite d'un objet.
+;;;======= TONALITE =======;;; récupére la tonalite d'un objet.
 ;;; si nil -> la tonalite de son container
 
 (defmethod get-tonalite ((self t)) nil)

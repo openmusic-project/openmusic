@@ -375,7 +375,7 @@
     (setf (defval tempin) (car (attached-objs patch)))))
 
 ;;; on fait ca au moment ou on ajoute le selfinframe
-;;; i.e. quand on ouvre le patch ou quand on la cre manuellement ("tempin")
+;;; i.e. quand on ouvre le patch ou quand on la crée manuellement ("tempin")
 (defmethod add-subview-extra ((self selfInFrame))
   (call-next-method)
   (let ((patch (object (om-view-container self))))

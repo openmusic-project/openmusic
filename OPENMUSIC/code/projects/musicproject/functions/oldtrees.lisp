@@ -470,7 +470,7 @@ marks the index of events."
 ;pour eviter les tree avec '?'
 ;ATTENTION!! numtree transforme les 5  en (4 1.0) etc...
 ;ceci pourrait fausser les transformations
-; toutefois il est utlis pour regler l'histoire de ?
+; toutefois il est utlisé pour regler l'histoire de ?
 (defun numtree (tree)
   (let* ((newvoice (make-instance 'voice :tree tree)))
     (tree newvoice)))
@@ -591,25 +591,27 @@ rest becomes a note."
 ;;;from jean bresson
 
 (defun tree-to-ratios (list)
-Ê (loop for mesure in (cadr list) collect
-Ê Ê Ê Ê (let* ((signature (car mesure))
-ÊÊ Ê Ê Ê Ê Ê Ê (values (cadr mesure))
-ÊÊ Ê Ê Ê Ê Ê Ê (ratios (mesure-ratios values)))
-Ê Ê Ê Ê Ê (om/Ê
-ÊÊ Ê Ê Ê Ê (om* ratios (car signature))Ê
-ÊÊ Ê Ê Ê Ê (cadr signature)))))
+  (loop for mesure in (cadr list)
+	collect
+	(let* ((signature (car mesure))
+	       (values (cadr mesure))
+	       (ratios (mesure-ratios values)))
+	  (om/ 
+	   (om* ratios (car signature)) 
+	   (cadr signature)))))
 
 
 
 
 
 (defun mesure-ratios (list)
-Ê (let ((div (round (loop for elt in list sum (abs (if (listp elt) (car elt) elt))))))
+  (let ((div (round (loop for elt in list sum (abs (if (listp elt) (car elt) elt))))))
     ;(print div)
-Ê   (flat (loop for elt in list collect (if (listp elt)
-Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê   (om* (/ (round (car elt)) div) (mesure-ratios (cadr elt)))
-Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê Ê   (/ (round elt) div)))
-Ê Ê Ê Ê )))
+    (flat (loop for elt in list
+		collect (if (listp elt)
+                            (om* (/ (round (car elt)) div) (mesure-ratios (cadr elt)))
+                            (/ (round elt) div)))
+        )))
 
 
 

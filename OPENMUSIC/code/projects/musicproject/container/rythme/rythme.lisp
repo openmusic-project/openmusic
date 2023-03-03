@@ -164,7 +164,7 @@
 
 
 ;;; v1 est la voix originale et v2 est le masque. 
-;;; le resultat est la voix v1 masque par v2.
+;;; le resultat est la voix v1 masquée par v2.
 ;;; masque et demasque
 
 (defmethod om-masque ((v1 voice) (v2 voice)  &key (mode 'masque))

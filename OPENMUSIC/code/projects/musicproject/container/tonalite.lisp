@@ -25,7 +25,7 @@
 
 (in-package :om)
 
-;;; soit comme ca soit en faisant deux classes diffrentes.. --> ?
+;;; soit comme ca soit en faisant deux classes différentes.. --> ?
 (defclass tonal-object ()
   ((tonalite :accessor tonalite :initarg :tonalite :initform nil)
    (tonal-values :accessor tonal-values :initarg :tonal-values :initform nil)))

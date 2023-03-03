@@ -139,13 +139,13 @@
   )
 
 (defmethod durees-compatibles ((c1 simple-container) (c2 simple-container))
-   "Rend vrai si c1 et c2 ont des durÂes que l'ont peut regrouper"
+   "Rend vrai si c1 et c2 ont des durées que l'ont peut regrouper"
   ;;(or (power-of-two-p (gcd (extent c1) (extent c2))) (eq (extent c1) (extent c2)))
    t
   )
 
 
-;; get-smalest-duration ou gsd : recherche la durÂe de l'objet le plus court dans une 
+;; get-smalest-duration ou gsd : recherche la durée de l'objet le plus court dans une 
 ;; structure. Sa taille donne un tactus maximal pour effectuer une quantification sans
 ;; perte. 
 
