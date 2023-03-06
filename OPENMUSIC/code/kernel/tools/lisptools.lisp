@@ -706,7 +706,7 @@ If subfolder is active, look for the files in all the subfolders as well.
              (load-files els mytype subfolder?))
            (when (equal (pathname-type els) mytype)
              (print (string+ ".. " (pathname-name els) " .."))
-             (load els)))))
+             (om-load-file els)))))
 
 ;;;=========================
 ;;; SOURCES LOADING UTILS

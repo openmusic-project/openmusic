@@ -136,7 +136,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
             (let ((*current-lib* self))
               (def-icon-var self (lib-icons-folder self))
               (show-message-win (string+ "Loading library " (name self) (if (version self) (string+ " - v. " (number-to-string (version self)))  "")))
-              (load (lib-pathname self))
+              (om-load-file (lib-pathname self))
               (load-lib-pictures self)
               (ignore-errors (gen-lib-reference self))
               (hide-message-win)
@@ -164,7 +164,7 @@ One OMlib is a collection of classes and generic functions loaded dinamiclly.#en
     (om-with-cursor *om-wait-cursor* 
       (let ((*current-lib* self))
         (def-icon-var self (lib-icons-folder self))
-        (load (lib-pathname self))
+        (om-load-file (lib-pathname self))
         (setf (loaded? self) t)))))
 
 (defmethod omlib-p ((self OMLib)) t)

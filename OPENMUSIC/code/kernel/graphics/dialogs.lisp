@@ -395,7 +395,7 @@ External Libraries:
     (handler-bind 
         ((error #'(lambda (err)
                     (delete-file userpref nil))))
-      (load userpref)
+      (om-load-file userpref)
       (setf previous (get-ompref 'prev-ws)))
   
     (let ((win (om-make-window 'om-dialog :size (om-make-point 420 330)

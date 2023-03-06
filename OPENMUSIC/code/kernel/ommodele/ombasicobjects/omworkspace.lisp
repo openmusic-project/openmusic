@@ -287,7 +287,7 @@
       (om-with-load-verbose nil
         (when (probe-file (OMRoot "patches;"))
           (mapc #'(lambda (file)
-                    (load file :verbose nil)) 
+                    (om-load-file file :verbose nil)) 
                 (sort (append (om-directory  (OMRoot "patches;") :type "lisp" :files t :directories nil)
                               (om-directory  (OMRoot "patches;") :type *om-compiled-type* :files t :directories nil)) 'string< :key 'pathname-name)))
         
@@ -312,7 +312,7 @@
       (om-with-load-verbose nil
         (check-folder (get-init-patches-folder))
         (mapc #'(lambda (file)
-                  (load file :verbose nil))
+                  (om-load-file file :verbose nil))
               (sort (append (om-directory  (get-init-patches-folder) :type "lisp" :files t :directories nil)
                             (om-directory  (get-init-patches-folder) :type *om-compiled-type* :files t :directories nil)) 
                     'string< :key 'pathname-name))
@@ -336,7 +336,7 @@
 (defun workspace-from-name (name)
   (let ((preffile (om-make-pathname :directory  name :name  "preferences" :type "lisp")))
     (when (probe-file (om-make-pathname :directory name :name  "modifs" :type "lisp"))
-      (load (om-make-pathname :directory name :name  "modifs" :type "lisp")))
+      (om-load-file (om-make-pathname :directory name :name  "modifs" :type "lisp")))
     (unless (probe-file (om-make-pathname :directory name))
       (om-create-directory (om-make-pathname :directory name) :if-exists nil))
     (unless (probe-file (om-make-pathname :directory name :name  "preferences" :type "lisp"))
@@ -372,13 +372,13 @@
         ((error #'(lambda (err)
                     (om-message-dialog (format nil "Warning: An error occurred while loading the workspace preferences.~%=> ~A" err))
                     (delete-file preffile nil))))
-      (load preffile))  
+      (om-load-file preffile))  
     
     
     (setf  *current-workSpace* (make-new-WorkSpace name))
   
     (when (probe-file (om-make-pathname :directory name :name  "wsparams" :type "lisp"))
-      (load (om-make-pathname :directory  name :name  "wsparams" :type "lisp")))
+      (om-load-file (om-make-pathname :directory  name :name  "wsparams" :type "lisp")))
 
     (when *ws-params*
       (setf (wsparams *current-workSpace*) *ws-params*))

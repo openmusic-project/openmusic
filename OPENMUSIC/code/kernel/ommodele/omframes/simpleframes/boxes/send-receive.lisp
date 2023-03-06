@@ -625,12 +625,12 @@
                                                              (if thesend
                                                                  (progn 
                                                                  ;  (when (defval theinput)
-                                                                 ;   (load (defval theinput))
+                                                                 ;   (om-load-file (defval theinput))
                                                                  ;   )
                                                                    (openobjecteditor (mycontainer thesend))
                                                                    )
                                                                (progn 
-                                                                 ;(load (defval theinput))
+                                                                 ;(om-load-file (defval theinput))
                                                                (om-beep-msg "no send to this receive or not loaded!")
                                                                )
                                                                ))

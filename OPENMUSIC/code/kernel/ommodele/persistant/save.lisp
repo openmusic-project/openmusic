@@ -1805,7 +1805,7 @@
                               (throw 'om-read-error nil))))
       ;;; NEW : load lisp files
       (if (member (pathname-type path) (list "lisp" "lsp" "cl" cl-user::*compile-type*) :test 'string-equal)
-          (load path)
+          (om-load-file path)
         (when (om-persistant-p path)
           (if (directoryp path)
               (let ((new-pack (make-instance 'OMPackage :name (name-of-directory path) :icon 22)))
