@@ -439,26 +439,6 @@
 
 ;------
 
-;; 
-;; handle external-format-errors from 'load
-;; 
-
-;(defun om-load-file (path)
-;  (cl-user::extended-time (cl-user::profile (load path))))
-
-;; (defun om-load-file (path)
-;;   (load path))
-
-(defun om-load-file (path)
-  (handler-case (load path)
-    (sys::external-format-error ()
-      (progn
-	(print "external-format-error: trying once more using :external-format :latin-1")
-	(load path :external-format :latin-1)))))
-
-
-;------
-
 (defvar *volume-sys* nil)
 
 (defun init-volume-var ()

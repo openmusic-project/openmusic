@@ -48,7 +48,7 @@
                                    (> (file-write-date lisp-file) (file-write-date fasl-file))))))
      (when (and (fboundp 'compile-file)
                 (or (not fasl-file) fasl-outofdate))
-       (compile-file file :verbose verbose)
+       (om-compile-file file :verbose verbose)
        (setf fasl-outofdate nil))
      (if fasl-outofdate
          (progn (print (format nil "WARNING: File ~A is older than the LISP source file. File ~A will be loaded instead."
@@ -58,7 +58,7 @@
          (handler-bind ((conditions::fasl-error #'(lambda (c) 
                                                     (when (and (fboundp 'compile-file) fasl-file)
                                                       (print (format nil "File ~s will be recompiled..." fasl-file))
-                                                      (compile-file file :verbose verbose)
+                                                      (om-compile-file file :verbose verbose)
                                                       (load file :verbose verbose)
                                                       (throw 'faslerror t)
                                                       ))))

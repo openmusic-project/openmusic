@@ -82,10 +82,6 @@
                   'system:locale-file-encoding
                   system:*file-encoding-detection-algorithm*))
 
-;;
-;; Macro to safe-load latin-1 files is in code/kernel/tools/utf-8-backwards-compatibility.lisp
-;; 
-
 
 ;;;=======================================
 
@@ -125,6 +121,34 @@
        :name (car (last decoded-path))))))
 
 
+;; safe open, load & compile of some still used latin-1 files:
+
+(defmacro om-load-file (path &rest rest)
+  `(handler-case (load ,path ,@rest)
+    (sys::external-format-error ()
+     (progn
+       (print "om-load-file: external-format-error: trying once more using :external-format :latin-1")
+       (load ,path ,@rest :external-format :latin-1)))))
+
+(defmacro om-compile-file (path &rest rest)
+  `(handler-case (compile-file, path ,@rest)
+     (sys::external-format-error ()
+       (progn
+	 (print "om-compile-file external-format-error: trying once more using :external-format :latin-1")
+	 (compile-file ,path ,@rest :external-format :latin-1)))))
+
+(defmacro with-safe-open-file (args &body body)
+  (let ((default-format :utf-8)
+        (backup-format :latin-1))
+    `(handler-case (with-open-file ,(append args (list :external-format default-format))
+		     ,@body)
+       (sys::external-format-error ()
+         (progn (print (format nil "with-safe-open-file: external-format-error using ~a. Trying again using ~a"
+			       ,default-format ,backup-format))
+		(with-open-file ,(append args (list :external-format backup-format))
+                  ,@body))))))
+
+
 (defun compile&load (file &optional (verbose t) (force-compile nil))
    (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
           (fasl-file (probe-file (merge-pathnames (make-pathname :type *compile-type*) lisp-file)))
@@ -136,29 +160,29 @@
                                    (> (file-write-date lisp-file) (file-write-date fasl-file))))))
      (when (and (not (member :om-deliver *features*))
                 (or force-compile (not fasl-file) fasl-outofdate))
-       (compile-file file :verbose verbose)
+       (om-compile-file  file :verbose verbose)
        (setf fasl-outofdate nil))
      (if fasl-outofdate
          (progn (print (format nil "WARNING: File ~A is older than the LISP source file. File ~A will be loaded instead."
                                fasl-file lisp-file))
-           (load lisp-file :verbose verbose))
+           (om-load-file lisp-file :verbose verbose))
        (catch 'faslerror
          (handler-bind ((conditions::fasl-error #'(lambda (c) 
                                                     (if (and nil (fboundp 'compile-file) fasl-file)
                                                         (progn 
                                                           (print (format nil "File ~s will be recompiled..." fasl-file))
-                                                          (compile-file file :verbose verbose)
-                                                          (load load-file :verbose verbose))
+                                                          (om-compile-file file :verbose verbose)
+                                                          (om-load-file load-file :verbose verbose))
                                                       (progn 
                                                         (print (format nil "FASL error: ~s ..." fasl-file))
                                                         (when *remove-error-fasl* (delete-file fasl-file nil))
-                                                        (load lisp-file :verbose verbose)))
+                                                        (om-load-file lisp-file :verbose verbose)))
                                                     (throw 'faslerror t)
                                                     )))
-           (load load-file :verbose verbose)
+           (om-load-file load-file :verbose verbose)
            )))))
 
-(export 'compile&load :cl-user)
+(export '(compile&load om-load-file om-compile-file with-safe-open-file) :cl-user)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;only for mac
@@ -306,16 +330,16 @@
 (in-package :om)
 
 (defun load-om-kernel ()
-  (load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*) '("code" "kernel"))
-                       :name "kernelfiles" :type "lisp")))
+  (cl-user::load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*) '("code" "kernel"))
+			       :name "kernelfiles" :type "lisp")))
 
 (defun load-om-projects (&optional projects)
   (let ((project-dir (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*) '("code" "projects"))))
         (projects-list (if projects projects (oa::om-directory project-dir
-                                              :files nil :directories t))))
+							       :files nil :directories t))))
     (mapc #'(lambda (x) 
               (let ((file (if (numberp (read-from-string (subseq x 0 2))) (subseq x 3) x))) 
-                (load (make-pathname :directory (append (pathname-directory project-dir) (list x)) :name file :type "lisp") :if-does-not-exist nil)))
+                (cl-user::load (make-pathname :directory (append (pathname-directory project-dir) (list x)) :name file :type "lisp") :if-does-not-exist nil)))
           projects-list)))
 
 
