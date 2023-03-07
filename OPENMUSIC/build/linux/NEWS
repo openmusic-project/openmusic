@@ -7,7 +7,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
-- Selection in POLY of VOICES.
+- Markers info window offset settings
+- Selection in POLY of VOICES
 - SOUND objects have score-actions and plays in scorepatches
 - tab completion (J. Jakes-Schauer)
 
