@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -114,6 +114,7 @@
         (t (setf (selected-mark-lines self) (list rep))))
        (draw-mark-lines self)
        )
+     (om-invalidate-view self)
      rep))
 
 
