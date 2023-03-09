@@ -873,50 +873,52 @@
 ;;; MARKER 
 
 (defmethod get-info-components ((self temp-marker))
-   (list (om-make-point 255 310)
-         (om-make-dialog-item 'om-editable-text (om-make-point 10 170) (om-make-point 230 60) 
-                              (get-box-doc self)
-                              :font *controls-font*)
+  (let ((off (om-make-dialog-item 'om-editable-text (om-make-point 60 250) (om-make-point 90 20) 
+                                  (format () "~D" (offset self))
+                                  :modify-action (om-dialog-item-act item
+                                                   (push 0 (changes (om-view-container item)))) 
+                                  :font *controls-font*)))
+    (list (om-make-point 255 310)
+          (om-make-dialog-item 'om-editable-text (om-make-point 10 170) (om-make-point 230 60) 
+                               (get-box-doc self)
+                               :font *controls-font*)
           (om-make-dialog-item 'om-static-text (om-make-point 10 16) (om-make-point 70 20) "Name : " 
-                                                     :font *om-default-font2*)
+                               :font *om-default-font2*)
           
           (om-make-dialog-item 'om-static-text (om-make-point 10 45) (om-make-point 60 20) "Type : " 
-                                                    :font *om-default-font2*)
+                               :font *om-default-font2*)
           (om-make-dialog-item 'om-static-text (om-make-point 70 45) (om-make-point 140 20) "Marker" 
                                :font *om-default-font2*
                                )
           
           (om-make-view 'bar-item :position (om-make-point 5 80) :size (om-make-point 235 2)
-                      :fg-color *om-gray-color*)
+                        :fg-color *om-gray-color*)
          
           (om-make-dialog-item 'om-static-text (om-make-point 10 86) (om-make-point 230 60) 
-                           "You can connect this marker (SHIFT + Drag) to the end or the offset of a temporal box"
-                                                    :font *om-default-font2*)
+                               "You can connect this marker (SHIFT + Drag) to the end or the offset of a temporal box"
+                               :font *om-default-font2*)
           
           (om-make-view 'bar-item :position (om-make-point 5 140) :size (om-make-point 235 2)
-                      :fg-color *om-gray-color*)
+                        :fg-color *om-gray-color*)
 
           (om-make-dialog-item 'om-static-text (om-make-point 10 145) (om-make-point 130 20) "Comments:" 
-                                                    :font *om-default-font2*)
+                               :font *om-default-font2*)
           
           (om-make-view 'bar-item :position (om-make-point 5 235) :size (om-make-point 235 2)
-                      :fg-color *om-gray-color*)
+                        :fg-color *om-gray-color*)
 
           (om-make-dialog-item 'om-static-text (om-make-point 10 250) (om-make-point 45 20) "Offset : " 
                                :font *om-default-font2*)
-         (setf off (om-make-dialog-item 'om-editable-text (om-make-point 60 250) (om-make-point 90 20) 
-                               (format () "~D" (offset self))
-                               :modify-action (om-dialog-item-act item
-                                                (push 0 (changes (om-view-container item)))) 
-                               :font *controls-font*))
+          off
          
           (om-make-dialog-item 'om-button (om-make-point 160 248) (om-make-point 70 15) "Set" ;(om-str :ok)
-                                          :di-action (om-dialog-item-act item 
-                                                       (change-offset self  (parse-integer (om-dialog-item-text off)))
-                                                       (update-close self (infowin self)))
-                                         ;:focus t
-                                          :default-button t)
-                                          ))
+                               :di-action (om-dialog-item-act item 
+                                            (change-offset self  (parse-integer (om-dialog-item-text off)))
+                                            (update-close self (infowin self))
+                                            )
+                                         ; :focus t
+                                          :default-button t
+                               ))))
 
 (defmethod show-info-window ((self temp-marker) &optional (i 0))
   (if (infowin self)
