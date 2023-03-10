@@ -51,6 +51,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Now tempobj has the correct and same offset as the marker attached to
 - score-actions now are saved in scorepatch
 - Dynamic tempo now works.
 - graphicports array-class (cocoa fix)
