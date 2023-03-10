@@ -56,7 +56,9 @@
                     (om-set-view-size frame (om-make-point (- (x item) (x frame)) (h frame)))
                     (om-invalidate-view frame))
                    ((= 0 (first box))
-                    (update-movement frame (om-make-point (x item) (y frame))))))
+                    ;(update-movement frame (om-make-point (x item) (y frame)))
+                    (update-movement-mark frame (om-make-point (x item) (y frame)))
+                    )))
                 ))
     (om-invalidate-view self)))
                  

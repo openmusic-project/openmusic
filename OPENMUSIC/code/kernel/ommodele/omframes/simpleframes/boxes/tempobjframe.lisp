@@ -656,6 +656,45 @@
          )))
    (om-invalidate-view self t))
 
+;;;;only for tempobj connected to markers
+;;;;in order to get the REAL offset!
+
+(defmethod fix-offset-from-marker ((self tempobjframe) mark-list new-position)
+  (let* ((x (loop for i in mark-list
+          collect (list (oa::vx i) (offset (object i)))))
+         (pos (position (om-point-x new-position) x :test 'eq :key 'car)))
+         ;(setf (offset (object self)) (second (nth pos x)))
+    (second (nth pos x))))
+    
+(defmethod MoveTempObjectByMark ((self tempobjframe) new-position) 
+   (let (maqpos
+         (mark-list (get-maquette-markers (om-view-container self))))
+     (mapc #'(lambda (conection)
+               (draw-connection conection nil)) (connections self))
+     (om-set-view-position self new-position)
+     (setf maqpos (get-offset/posy-from-pixel (om-view-container self) new-position))
+     (setf (slot-value (object self) 'offset) (fix-offset-from-marker self mark-list new-position))
+     (setf (slot-value (object self) 'posy)  (om-point-v maqpos))
+     (om-set-view-position self (get-offset/posy-in-pixel self (om-view-container self)))))
+
+
+(defmethod update-movement-mark ((self tempobjframe) new-position)
+   (let* ((container (om-view-container self))
+          (mark-list (get-maquette-markers container))
+          (finmarker (is-marketed (object self) 1 mark-list)))
+     (if (and finmarker (not (allow-strech-p (soft-get-mus-ob (object self)) 0)))
+       (om-beep-msg "Sorry i can not strech this object")
+       (unless (and finmarker (>= (om-point-h new-position) (x+w self)))
+         (MoveTempObjectByMark self new-position)
+         (when finmarker 
+           (setf (slot-value (object self) 'strech-fact)
+                 (/ (- (x (car (frames finmarker))) (x self)) (norme2pixel container 'x (extend (object self)))))
+           (om-set-view-size self (om-make-point (- (x (car (frames finmarker))) (x self)) (h self))))
+         (when (patch-temp-p (reference (object self)))
+           (setf (mode self) 'changed))
+         )))
+   (om-invalidate-view self t))
+
 
 ;--------------------------------
 ;Size and position update
@@ -1034,7 +1073,8 @@
            (progn
              (when finmarker
                (del-mark boxsource finmarker 1))
-             (MoveTempObject framesource  (om-make-point (+ (x framesource) (- (x self) (x+w framesource))) (y framesource))) 
+             ;(MoveTempObject framesource  (om-make-point (+ (x framesource) (- (x self) (x+w framesource))) (y framesource)))
+             (MoveTempObjectByMark framesource  (om-make-point (+ (x framesource) (- (x self) (x+w framesource))) (y framesource)))
              (add-mark boxsource (object self) 1))
            (progn
              (setf allow-mark nil)
