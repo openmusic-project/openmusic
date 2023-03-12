@@ -83,13 +83,13 @@
 (defmethod update-miniview ((self t) (value fluid-ch-settings-ctrl)) 
   (om-invalidate-view self t))
 
-(defmethod draw-obj-in-rect ((self fluid-ch-settings-ctrl) x x1 y y1 edparams view)
+(defmethod draw-obj-in-rect ((self fluid-ch-settings-ctrl) x x1 y y1 edparams view) 
   (let ((pw (round (w view) (nbtracks self)))
         (pic (om-load-and-store-picture "audiotrack-bg" 'internal)))
     (loop
        for i from 0 to (nbtracks self)
        do (om-draw-picture view pic :pos (om-make-point (* i pw) 0)
-			   :size (om-make-point pw (h view))))))
+			   :size (om-make-point pw (h view) )))))
 
 ;;; SOME SUBCLASSES MAY USE DIFFERENT CHANNEL CONTROLLERS
 (defmethod get-fluid-ch-ctrl-class ((self t)) 'fluid-ch-ctrl)
@@ -97,7 +97,7 @@
 
 
 
-(defmethod initialize-instance :after ((self fluid-ch-settings-ctrl) &rest l)
+(defmethod initialize-instance :after ((self fluid-ch-settings-ctrl) &rest l) 
    (declare (ignore l))
    (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
    (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
@@ -129,7 +129,7 @@ In this case, all internal events are sent simultaneously.
 "
             ))
 
-(defmethod initialize-instance :after ((self fluid-ch-mix-console) &rest l)
+(defmethod initialize-instance :after ((self fluid-ch-mix-console) &rest l) 
   (declare (ignore l))
   (setf (midiport self) (port self))
   (loop for i in (channels-ctrl self)
@@ -270,20 +270,22 @@ In this case, all internal events are sent simultaneously.
       (let ((mixer (make-editor-window 'FLUIDMixerEditor (i-chans fsynth)
                                      "FLUID Channels Control"
                                      nil
-                                     :winsize (om-make-point (* *channel-w* 8) 580) ;(om-make-point (* *channel-w* 16) 600)
-                                     :resize t ;nil
+                                     :winsize (om-make-point (* *channel-w* 16) 580) ;(om-make-point (* *channel-w* 8) 580) 
+                                     :resize nil ;t
                                      :close-p t
                                      :winshow t
                                      )))
         (loop for i in (channels-ctrl (obj mixer))
-              do (send-all-to-fluids-ch i))
+              do (send-all-to-fluids-ch i)) 
+        ;(om-set-view-size mixer (om-make-point (* *channel-w* 8) 598));size of major window!
+        (om-set-view-size mixer (om-make-point (* *channel-w* 16) 598));size of major window!
         )
     
     (let ((mixer (make-editor-window 'FLUIDMixerEditor (init-fluid-mixer port)
                                      "FLUID Channels Control"
                                      nil
-                                     :winsize (om-make-point (* *channel-w* 8) 580)
-                                     :resize t ;nil
+                                     :winsize (om-make-point (* *channel-w* 16) 580) ;(om-make-point (* *channel-w* 8) 580)
+                                     :resize nil ;t
                                      :close-p t
                                      :winshow nil ; first time double click
                                      )))
@@ -299,8 +301,10 @@ In this case, all internal events are sent simultaneously.
                        (setf (pan-ctrl i) (nth n (pan-ctrl (nfsynth i))))
                        (setf (vol-ctrl i) (nth n (vol-ctrl (nfsynth i))))
                        )))
-            
+     
        (show-fluid-mixer-win port fsynth);attention recursivity!
+       ;(om-set-view-size mixer (om-make-point (* *channel-w* 8) 598))
+       (om-set-view-size mixer (om-make-point (* *channel-w* 16) 598))
 )))
 
 
@@ -400,7 +404,7 @@ In this case, all internal events are sent simultaneously.
                                 :winpos winpos 
                                 :resize t ;nil ;ICI!!
                                 :close-p t :winshow t
-                                ))) 
+                                )))   
     win))
 
 
@@ -433,7 +437,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod window ((self FluidChannelConsoleEditor)) 
   (play (object self))
-  (om-view-window self))
+ (om-view-window self))
 
 (defmethod metaobj-scrollbars-params ((self FluidChannelConsoleEditor))  '(:h t))
 
@@ -441,27 +445,16 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod initialize-instance :after ((self FluidChannelConsoleEditor) &rest l)
    (declare (ignore l))
+   
    (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
                                                      :bg-color (om-make-color 0.5 0.5 0.5)
-                                                   ;  :default-width (h self)
-                                                   ;  :visible-min-width (h self)
-                                                    
-                                                   ;  :external-max-width 800
-                                                   ;  :external-min-height 270 
                                                      :scrollbars t
-                                                   ;  :retain-scrollbars t
-                                                   ;   :horizontal-scroll t
-                                                   ;  :scrollbars (first (metaobj-scrollbars-params self))
-                                                   ;  :retain-scrollbars (second (metaobj-scrollbars-params self))
                                                      :field-size  (om-make-point (* *channel-w* (nbtracks (object self))) 540);540
-                                                     ;;;:size (om-make-point (w self) (- (h self) 15)))
-                                                     :size (om-make-point (w self) (h self)))
-      )
+                                                     :size (om-make-point (w self) (h self))))
    
    (setf (presets-view self) (make-preset-view self))
-   
    
    (setf (ch-panels self) 
       (loop for chctrl in (channels-ctrl (object self))
@@ -470,20 +463,15 @@ In this case, all internal events are sent simultaneously.
                  :channelctr chctrl
                  :bg-color *om-light-gray-color*
                  :position (om-make-point (+ (delta-tracks self) (* i *channel-w*)) (delta-tracks self)) 
-                 :size (om-make-point (- *channel-w* (* 1 (delta-tracks self))) ;750 ;ici j'ai change!
-                                      (+ 200 (- (h self) 
-                                                (if (presets-view self) (+ (h (presets-view self)) (delta-tracks self)) 0)
-                                               
-                                                (* 2 (delta-tracks self)))
-                                          );;;a adapter plus tard
-                                      ))))
+                 :size (om-make-point (- *channel-w* (* 1 (delta-tracks self))) 535))))
    
-   (apply 'om-add-subviews (cons (panel self) 
-                                 (ch-panels self))) 
-   (when (presets-view self) (om-add-subviews self (presets-view self))))
-
-
-
+   (if (presets-view self) ;ICI !!!
+   (apply 'om-add-subviews (x-append (panel self) 
+                                 (ch-panels self)
+                                 (presets-view self)
+                                 )) 
+     (apply 'om-add-subviews (cons (panel self) 
+                                 (ch-panels self)))))
 
 
 (defmethod update-editor-after-eval ((self FluidChannelConsoleEditor) val)
@@ -491,6 +479,8 @@ In this case, all internal events are sent simultaneously.
   (om-set-view-size (window self) (get-win-ed-size (object self)))
   (om-set-view-size self (get-win-ed-size (object self)))
   (om-set-field-size (panel self) (om-make-point (* *channel-w* (nbtracks (object self))) 540))
+
+
   (loop for chpan in (ch-panels self) do 
         (om-remove-subviews (panel self) chpan))
   (setf (ch-panels self) 
@@ -501,7 +491,8 @@ In this case, all internal events are sent simultaneously.
                                              :owner (panel self)
                                              :bg-color *om-light-gray-color*
                                              :position (om-make-point (* i *channel-w*) 0) 
-                                             :size (om-make-point *channel-w* (- (h self) 15))))))
+                                             :size (om-make-point *channel-w* (- (h self) 15)
+                                                                  )))))
   
 
 (defmethod simple-controls-only ((self Fluidchannelpanel)) nil)
@@ -762,8 +753,7 @@ In this case, all internal events are sent simultaneously.
                                                     :font *controls-font*)  
             
             )   ;;; fin unless simple-controls-only
-      
-      
+          
       )
     
     (apply 'om-add-subviews self title-items)
@@ -1064,7 +1054,8 @@ In this case, all internal events are sent simultaneously.
               (control2-num chan-ctrl)
               (control2-val chan-ctrl)
               )))
-;(show-fluid-mixer-win)
+
+
 (defmethod make-preset-view ((self FLUIDMixerEditor))
   (let* ((preset-view (om-make-view 'om-view 
                                    :position (om-make-point (delta-tracks self) (- (h self) (delta-tracks self) 45)) 
@@ -1072,9 +1063,8 @@ In this case, all internal events are sent simultaneously.
                                    :retain-scrollbars nil
                                    :field-size  (om-make-point (- (* *channel-w* 16) 5) 45)
                                    :size (om-make-point (- (* *channel-w* 16) (* 2 (delta-tracks self))) 45)
-                                   :bg-color *om-dark-gray-color*
-                                   ))
-         
+                                   :bg-color (om-make-color 0.7 0.7 0.7)
+                                   :accepts-focus-p t))
          (title (om-make-dialog-item 'om-static-text
                                      (om-make-point 10 13)
                                      (om-make-point 130 20) "PRESETS :"
@@ -1083,7 +1073,8 @@ In this case, all internal events are sent simultaneously.
                                      ))
              
          (preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                    (om-make-point 75 12) 
+                                           #+linux(om-make-point 75 8) 
+                                           #+macosx(om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""
                                     :di-action #'(lambda (item)
@@ -1098,7 +1089,7 @@ In this case, all internal events are sent simultaneously.
                                     :value (car (nth (current-preset (object self)) (presets (object self))))))
 
          (save-preset (om-make-dialog-item 'om-button
-                                           (om-make-point 260 10)
+                                           (om-make-point 260 8)
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
@@ -1112,7 +1103,7 @@ In this case, all internal events are sent simultaneously.
                                            :font *om-default-font1*))
          
          (new-preset (om-make-dialog-item 'om-button
-                                          (om-make-point 335 10)
+                                          (om-make-point 335 8)
                                           (om-make-point 75 12)
                                           "NEW"
                                           :di-action (om-dialog-item-act item 
@@ -1131,7 +1122,7 @@ In this case, all internal events are sent simultaneously.
                                           :font *om-default-font1*))
 
          (delete-preset (om-make-dialog-item 'om-button
-                                             (om-make-point 410 10)
+                                             (om-make-point 410 8)
                                              (om-make-point 75 12)
                                              "DELETE"
                                              :di-action (om-dialog-item-act item
@@ -1146,20 +1137,8 @@ In this case, all internal events are sent simultaneously.
                                                                 (save-midi-presets-in-preferences (object self)))
                                                             (om-beep))
                                                           )
-                                             :font *om-default-font1*))
-
-         )
-
+                                             :font *om-default-font1*)))
     (if (<= (length (presets (object self))) 1) (om-enable-dialog-item preset-list nil))
     (om-add-subviews preset-view title preset-list save-preset new-preset delete-preset)    
 
     preset-view))
-    
-
-    
-
-    
-    
-    
-
-

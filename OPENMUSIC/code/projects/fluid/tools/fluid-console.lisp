@@ -381,7 +381,7 @@ In this case, all internal events are sent simultaneously.
    (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
-                                                     :bg-color (om-make-color 0.5 0.5 0.5)
+                                                     :bg-color *om-light-gray-color* ;(om-make-color 0.5 0.5 0.5)
                                                    ;  :default-width (h self)
                                                    ;  :visible-min-width (h self)
                                                     
