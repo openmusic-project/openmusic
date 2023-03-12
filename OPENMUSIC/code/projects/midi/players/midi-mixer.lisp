@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -158,16 +158,19 @@
                                    :retain-scrollbars nil
                                    :field-size  (om-make-point (- (* *channel-w* 16) 5) 45)
                                    :size (om-make-point (- (* *channel-w* 16) (* 2 (delta-tracks self))) 45)
-                                   :bg-color *om-dark-gray-color*))
+                                   :bg-color (om-make-color 0.7 0.7 0.7) ;*om-dark-gray-color*
+                                   ))
          
          (title (om-make-dialog-item 'om-static-text
-                                     (om-make-point 10 13)
+                                     #+linux(om-make-point 10 6)
+                                     #+macosx(om-make-point 10 13)
                                      (om-make-point 130 20) "PRESETS :"
                                      :font *om-default-font1*
                                      :fg-color *om-white-color*))
              
          (preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                    (om-make-point 75 12) 
+                                    #+linux(om-make-point 75 2) 
+                                    #+macosx(om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""
                                     :di-action #'(lambda (item)
@@ -182,7 +185,8 @@
                                     :value (car (nth (current-preset (object self)) (presets (object self))))))
 
          (save-preset (om-make-dialog-item 'om-button
-                                           (om-make-point 260 10)
+                                           #+linux(om-make-point 260 4)
+                                           #+macosx(om-make-point 260 10)
                                            (om-make-point 75 12)
                                            "SAVE"
                                            :di-action (om-dialog-item-act item 
@@ -196,7 +200,8 @@
                                            :font *om-default-font1*))
          
          (new-preset (om-make-dialog-item 'om-button
-                                          (om-make-point 335 10)
+                                          #+linux(om-make-point 335 4)
+                                          #+macosx(om-make-point 335 10)
                                           (om-make-point 75 12)
                                           "NEW"
                                           :di-action (om-dialog-item-act item 
@@ -215,7 +220,8 @@
                                           :font *om-default-font1*))
 
          (delete-preset (om-make-dialog-item 'om-button
-                                             (om-make-point 410 10)
+                                             #+linux(om-make-point 410 4)
+                                             #+macosx(om-make-point 410 10)
                                              (om-make-point 75 12)
                                              "DELETE"
                                              :di-action (om-dialog-item-act item

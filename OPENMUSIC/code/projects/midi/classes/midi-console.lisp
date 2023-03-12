@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -440,7 +440,7 @@ In this case, all internal events are sent simultaneously.
    (setf (panel self) (om-make-view (get-panel-class self) 
                                                      :owner self
                                                      :position (om-make-point 0 0) 
-                                                     :bg-color (om-make-color 0.7 0.5 0.5)
+                                                     :bg-color (om-make-color 0.5 0.5 0.5)
                                                      :scrollbars (first (metaobj-scrollbars-params self))
                                                      :retain-scrollbars (second (metaobj-scrollbars-params self))
                                                      :field-size  (om-make-point (* *channel-w* (nbtracks (object self))) 540)
@@ -463,13 +463,13 @@ In this case, all internal events are sent simultaneously.
                                          (if (presets-view self) (+ (h (presets-view self)) (delta-tracks self)) 0)
                                          (* 2 (delta-tracks self)))))))
    
+   (if (presets-view self)
+       (apply 'om-add-subviews (x-append (panel self) 
+                                 (ch-panels self)
+                                 (presets-view self)
+                                 ))
    (apply 'om-add-subviews (cons (panel self) 
-                                 (ch-panels self)))
-   (when (presets-view self) (om-add-subviews self (presets-view self)))
-
-
-)
-
+                                 (ch-panels self)))))
 
 
 
