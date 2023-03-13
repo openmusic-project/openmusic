@@ -1025,6 +1025,19 @@
     (draw-extras self view size staff)))
 
 
+(defmethod draw-rectangle ((self grap-chord-seq) system size &optional fill) 
+  (let* ((rec (rectangle self))
+         (mesrect (rectangle (car (inside self))))
+         (rect
+          (list (- (car rec) 4) 
+                (- (second mesrect) 4)
+                (+ (third rec) 4) 
+                (+ (fourth rec) 4) 
+                )))
+    (draw-h-rectangle rect 
+                      :fill fill
+                      :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
+                      )))
 
 ;=========================================
 (defclas grap-multiseq (grap-container) ())
