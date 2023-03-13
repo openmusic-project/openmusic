@@ -2251,7 +2251,7 @@
 (defclass arp-chord ()
   ((notes :initform nil :initarg :notes :accessor notes)))
 
-(add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer))
+(add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
 
 (defmethod extent ((self arp-chord))
    (* (length (notes self)) 500))
