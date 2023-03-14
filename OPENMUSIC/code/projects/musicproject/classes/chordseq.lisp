@@ -328,13 +328,14 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 
-(defun mk-chord-at (t-time pitch-list dur-list offset-list chan-list vel-list)
+(defun mk-chord-at (t-time pitch-list dur-list offset-list chan-list vel-list port-list)
   (let ((chord (mki 'chord
                      :LMidic pitch-list 
                      :Ldur dur-list 
                      :LOffset offset-list
                      :Lchan chan-list
-                     :Lvel vel-list)))
+                     :Lvel vel-list
+                     :Lport port-list)))
     (setf (offset chord) t-time)
     chord))
 
@@ -406,11 +407,10 @@ make-quanti
 (midic date dur)
 |#
 
-
 (defun make-quanti-chords (note-list delta)
   (loop while note-list
         for note = (car note-list)
-        with pitch-list and dur-list  and offset-list and chan-list and vel-list
+        with pitch-list and dur-list  and offset-list and chan-list and vel-list and port-list
         with base-time = (second (first note-list))
         if (<= (- (second (first note-list)) base-time) delta)
         do 
@@ -419,17 +419,19 @@ make-quanti
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
+        (push (fifth note) port-list)
         (push (- (second note) base-time) offset-list)
         (pop note-list)
         else
-        collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list) into result
+        collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list) into result
         and do (setf base-time (second note) pitch-list () dur-list ()   offset-list () chan-list () vel-list ())
-        finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list ))))))
+        finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list))))))
+
 
 (defun make-quanti-chords-MC (note-list delta)
   (loop while note-list
         for note = (car note-list)
-        with pitch-list and dur-list  and offset-list and chan-list and vel-list
+        with pitch-list and dur-list  and offset-list and chan-list and vel-list and port-list
         with base-time = (second (first note-list))
         if (<= (- (second (first note-list)) base-time) delta)
         do 
@@ -438,12 +440,14 @@ make-quanti
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
+        (push (fifth note) port-list)
         (push (- (second note) base-time) offset-list)
         (pop note-list)
         else
-        collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list) into result
-        and do (setf base-time (second note) pitch-list () dur-list ()   offset-list () chan-list () vel-list ())
-        finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list ))))))
+        collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list) into result
+        and do (setf base-time (second note) pitch-list () dur-list ()   offset-list () chan-list () vel-list () port-list ())
+        finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list))))))
+
 
 ;=== Redefinition of make-quanti-chords and mk-chord-at functions
 ;=== with complete midi notes descrption : note = (pitch date dur vel chan track port)
@@ -622,7 +626,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
       (setf chord-list
             (loop while note-list
                   for note = (car note-list)
-                  with pitch-list and dur-list  and offset-list and chan-list and vel-list
+                  with pitch-list and dur-list  and offset-list and chan-list and vel-list and port-list
                   with base-time = (offset (first note-list))
                   if (<= (- (offset (first note-list)) base-time) delta)
                   do 
@@ -630,18 +634,18 @@ Transforms <self> so that notes falling in a small time interval are grouped int
                   (push (extent note) dur-list)
                   (push (chan note) chan-list)
                   (push (vel note) vel-list)
+                  (push (port note) port-list)
                   (push 
                  ;(- (offset note) base-time) this if wanna keep note offsets 
                    0 offset-list)
                   (pop note-list)
                   else
-                  collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list) into result
+                  collect (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list) into result
                   and do (setf base-time (offset note) pitch-list () dur-list ()   offset-list () chan-list () vel-list ())
-                  finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list ))))))
+                  finally (return (append result (list  (mk-chord-at base-time  pitch-list dur-list offset-list chan-list vel-list port-list ))))))
       (setf (inside chseq) chord-list)
       (adjust-extent chseq))
     chseq))
-
 
 (defmethod* align-chords ((self chord-seq) (delta null)) self)
 
