@@ -127,7 +127,7 @@
 ; (TODO: REMOVE SETTINGS-CTRL SUPERCLASS?)
 ;===========================
 
-(defclass* fluid-mix-console (fluid-settings-ctrl) ()
+(defclass* fluid-console (fluid-settings-ctrl) ()
   (:icon 918)
 (:documentation "
    MIDI-MIX-CONSOLE represents a set of control events (volume, pan, program change, etc.) on <nbtracks> channels.
@@ -140,26 +140,26 @@ In this case, all internal events are sent simultaneously.
 "
  ))
 
-(add-player-for-object 'fluid-mix-console '(:fluidsynth))
+(add-player-for-object 'fluid-console '(:fluidsynth))
 
-(defmethod default-edition-params ((self fluid-mix-console))
+(defmethod default-edition-params ((self fluid-console))
   (pairlis '(player)
            '(:midi-player)))
 
-(defmethod get-impulsion-pict ((self fluid-mix-console)) 
+(defmethod get-impulsion-pict ((self fluid-console)) 
   (om-load-and-store-picture "audiotrack-bg" 'internal))
 
-(defmethod Class-has-editor-p  ((self fluid-mix-console)) t )
-(defmethod get-editor-class ((self fluid-mix-console)) 'FluidConsoleEditor)
+(defmethod Class-has-editor-p  ((self fluid-console)) t )
+(defmethod get-editor-class ((self fluid-console)) 'FluidConsoleEditor)
 
-(defmethod draw-mini-view  ((self t) (value fluid-mix-console)) 
+(defmethod draw-mini-view  ((self t) (value fluid-console)) 
    (draw-obj-in-rect value 0 (w self) 0 (h self) (view-get-ed-params self) self))
 
-(defmethod update-miniview ((self t) (value fluid-mix-console)) 
+(defmethod update-miniview ((self t) (value fluid-console)) 
    (om-invalidate-view self t))
 
 
-(defmethod draw-obj-in-rect ((self fluid-mix-console) x x1 y y1 edparams view)
+(defmethod draw-obj-in-rect ((self fluid-console) x x1 y y1 edparams view)
   (let ((pw (round (w view) (nbtracks self)))
         (pic (om-load-and-store-picture "audiotrack-bg" 'internal)))
     (loop for i from 0 to (nbtracks self) do
@@ -168,7 +168,7 @@ In this case, all internal events are sent simultaneously.
                            ))))
 
 
-(defmethod omNG-copy ((self fluid-mix-console))
+(defmethod omNG-copy ((self fluid-console))
   "Cons a Lisp expression that return a copy of self when it is valuated."
   `(let ((rep (make-instance ',(type-of self)
                 :midiport ,(midiport self)
@@ -179,7 +179,7 @@ In this case, all internal events are sent simultaneously.
      rep
      ))
 
-(defmethod copy-container  ((self fluid-mix-console) &optional (pere nil))
+(defmethod copy-container  ((self fluid-console) &optional (pere nil))
   "Cons a Lisp expression that returns a copy of self when it is evaluated."
   (let ((rep (make-instance (type-of self)
                 :midiport (midiport self)
@@ -190,7 +190,7 @@ In this case, all internal events are sent simultaneously.
     rep
     ))
 
-(defmethod omNG-save ((self fluid-mix-console) &optional (values? nil))
+(defmethod omNG-save ((self fluid-console) &optional (values? nil))
   "Cons a Lisp expression that retuns a copy of self when it is evaluated."
   `(when (find-class ',(type-of self) nil)
      (let ((rep (make-instance ',(type-of self) 
@@ -207,7 +207,7 @@ In this case, all internal events are sent simultaneously.
 ;;; FOR PLAY OR SAVE AS MIDI
 ;;;===============================
 
-(defmethod* Play ((self fluid-mix-console) &key (player t))
+(defmethod* Play ((self fluid-console) &key (player t))
    :initvals '(nil nil 2 nil nil) 
    :indoc '("object" "a player designator") 
    :icon 207
@@ -1439,10 +1439,10 @@ In this case, all internal events are sent simultaneously.
 ;;; SIMPLE SYNTH MIXER
 ;;;;;====================
 
-(defclass* simple-fluid-mix-console (fluid-mix-console) ()
+(defclass* simple-fluid-console (fluid-console) ()
   (:icon 918))
 
-(defmethod get-synth-ctrl-class ((self simple-fluid-mix-console)) 'simple-fluid-ctrl)
+(defmethod get-synth-ctrl-class ((self simple-fluid-console)) 'simple-fluid-ctrl)
 
 (defclass* simple-Fluid-Ctrl (fluid-ctrl) ())
 
@@ -1483,7 +1483,7 @@ In this case, all internal events are sent simultaneously.
 
 ;;;=== EDITOR ===
 
-(defmethod get-win-ed-size ((self simple-fluid-mix-console)) (om-make-point (+ 6 (min (* *fl-channel-w* 6) (* 140 (nbtracks self)))) 340))
+(defmethod get-win-ed-size ((self simple-fluid-console)) (om-make-point (+ 6 (min (* *fl-channel-w* 6) (* 140 (nbtracks self)))) 340))
 
 (defmethod make-editor-window ((class (eql 'simpleFluidConsoleEditor)) object name ref &key 
                                  winsize winpos (close-p t) (winshow nil) 
@@ -1497,7 +1497,7 @@ In this case, all internal events are sent simultaneously.
 (defclass simplefluidcontrollerPanel (fluidcontrollerPanel) ())
 (defclass simplefluidpanel (fluidpanel om-item-view) ())
 
-(defmethod get-editor-class ((self simple-fluid-mix-console)) 'simpleFluidConsoleEditor)
+(defmethod get-editor-class ((self simple-fluid-console)) 'simpleFluidConsoleEditor)
 (defmethod get-panel-class ((Self simpleFluidConsoleEditor)) 'simplefluidcontrollerPanel)
 (defmethod get-channelpanel-class ((self simplefluidcontrollerPanel)) 'simplefluidpanel)
 
