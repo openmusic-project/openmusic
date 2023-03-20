@@ -260,7 +260,7 @@
                                                (when newfolder
                                                  (om-set-dialog-item-text tmptxt (om-namestring newfolder))
                                                  (set-pref modulepref :tmp-files-dir newfolder)))))
-                     (om-make-dialog-item 'om-static-text (om-make-point (incf l2 220) (incf posy 65)) (om-make-point 280 22) "Restore paths:"
+                     (om-make-dialog-item 'om-static-text (om-make-point (incf l2 220) (incf posy 65)) (om-make-point 280 22) "Reset paths:"
                                           :font *controls-font*)
 
                      (om-make-view 'om-icon-button 
