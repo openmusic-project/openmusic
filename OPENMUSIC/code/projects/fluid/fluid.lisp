@@ -49,6 +49,7 @@
         "tools;fluid-send"
         "tools;fluid-console"
         "tools;fluid-mixer"
+        "tools;fluid-channels"
         ))
 
 
@@ -66,4 +67,4 @@
 (addPackage2Pack *fluidpackage* *audiopackage*)
 
 (AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pitchwheel fluid-reverb fluid-chorus) *fluidpackage*)
-(AddClass2Pack '(fluid-synth-console) *audiopackage*)
+(AddClass2Pack '(fluid-synth-console fluid-mix-console) *audiopackage*)
