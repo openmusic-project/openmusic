@@ -66,5 +66,5 @@
 (defvar *fluidpackage* (omNG-protect-object (omNG-make-new-package "Fluid")))
 (addPackage2Pack *fluidpackage* *audiopackage*)
 
-(AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pitchwheel fluid-reverb fluid-chorus) *fluidpackage*)
+(AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pgm-change fluid-pitchwheel fluid-volume fluid-pan fluid-reverb fluid-chorus) *fluidpackage*)
 (AddClass2Pack '(fluid-synth-console fluid-mix-console) *audiopackage*)
