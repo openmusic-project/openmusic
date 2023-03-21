@@ -452,11 +452,11 @@ In this case, all internal events are sent simultaneously.
                                                 :font *om-default-font2b*))
 
   (setf (channelBox self) 
-        (om-make-dialog-item 'om-static-text (om-make-point 26 25) (om-make-point 28 18) 
+        (om-make-dialog-item 'om-static-text (om-make-point 36 25) (om-make-point 28 18) 
                              (format nil " ~D" (1+ (midiport (channelctr self))))
                              :font *om-default-font2b*))
   
-  (om-set-bg-color (channelBox self) *om-white-color*)
+  ;(om-set-bg-color (channelBox self) *om-white-color*)
   (list  (channelText self) (channelBox self))
   )
 
