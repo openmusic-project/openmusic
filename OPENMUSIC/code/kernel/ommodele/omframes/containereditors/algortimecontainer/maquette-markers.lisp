@@ -195,7 +195,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
        (let* ((container (om-view-container (car (frames self))))
               (sys-etat (get-system-etat container))
               (new-pos (point2pixel container  (om-make-big-point offset 0) sys-etat)))
-         (OMGMoveObject (car (frames self)) new-pos)
+         (OMGMoveOffsetObject (car (frames self)) new-pos)
          (setf (offset self) offset))
        (setf (offset self) offset))
      (om-beep-msg "incorrect offset value")))
@@ -385,6 +385,29 @@ boxes attached to the flag, the car of each element say if the box is attached a
          (om-set-view-position self new-position)
          (setf (frame-position (object self)) (borne-position new-position))
          (setf (offset (object self)) (om-point-h (pixel2point (om-view-container self) (om-make-point (x self) 0))))
+         (update-after-mark (om-view-container self))
+         ;;(draw-mark-lines (om-view-container self))
+         ;; ***
+         ;(om-invalidate-view (om-view-container self))
+         ))))
+
+(defmethod OMGMoveOffsetObject ((self markerframe) new-position offset)
+   "Move 'self' to 'new-position'"
+   (if (< (om-point-h new-position) 0)
+     (om-beep-msg "Object must start after 0"))
+   (let ((cantmove? (can-move-marker? self new-position)))
+     (if cantmove?
+       (progn
+         (om-beep-msg "The selected temporal object does not allow this movement")
+         (omg-select (car (frames cantmove?))))
+       (progn
+         ;(mapc #'(lambda (conection)
+         ;          (draw-connection conection nil)) (connections self))
+         ;(draw-mark-lines (om-view-container self) nil)
+         (setf new-position (om-make-point (om-point-h new-position) (- (h (om-view-container self)) 10)))
+         (om-set-view-position self new-position)
+         (setf (frame-position (object self)) (borne-position new-position))
+         (setf (offset (object self)) offset)
          (update-after-mark (om-view-container self))
          ;;(draw-mark-lines (om-view-container self))
          ;; ***
