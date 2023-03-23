@@ -80,7 +80,8 @@
                                                                       :position (om-make-point 60 3) :size (om-make-point 26 25) 
                                                                       :action (om-dialog-item-act item
                                                                                 (let* ((newsf2 (om-choose-file-dialog :directory 
-                                                                                                                      (pathname (cl-fluid::sf2path synth))
+                                                                                                                      ;(pathname (cl-fluid::sf2path synth))
+                                                                                                                      oa::*last-directory*
                                                                                                                       ))
                                                                                        (pos (position (om-view-container item) 
                                                                                                       (om-subviews (om-view-container (om-view-container item)))))
