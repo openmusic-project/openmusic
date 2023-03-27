@@ -1,5 +1,30 @@
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
+;=========================================================================
+
+;;; Fluidsynth package
+
 ;;;==============================
-;;; PORTMIDI PORTS SETUP TOOL
+;;; SF2 LOADING SETUP TOOL
 ;;;==============================
 
 (in-package :om)
@@ -31,18 +56,15 @@
         (panel1 (car (portviews self)))
         (panel2 (second (portviews self)))
         )
-    (when (car buttons) 
+    (when buttons ;(car buttons) 
       (oa::om-set-view-position (car buttons) (oa::om-make-point (abs (- 680 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
+      (oa::om-set-view-position (second buttons) (oa::om-make-point (abs (- 780 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
+      (oa::om-set-view-position (third buttons) (oa::om-make-point (abs (- 880 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
       )
-    ;(when (second buttons) 
-    ;  (oa::om-set-view-position (second buttons) (oa::om-make-point 575 (abs (- (- h  20) 20))))
-    ;  )
-    
     (when panel1
       (oa::om-set-view-size panel1 (oa::om-make-point  (abs (- 680 (abs ( - 120 (+ 770 w))))) ;770 
                                                       (- h 90))))
- 
-    ))
+     ))
 
 ;(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
 
@@ -131,9 +153,18 @@
       (set-sf2-directory-view inv dd)
   
       (oa::om-add-subviews dd 
-                          ; (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 575 230) (oa::om-make-point 100 20) "Apply"
-                          ;                          :di-action #'(lambda (item) (when action (funcall action (settings dd))))
-                          ;                          )
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 230) (oa::om-make-point 100 20) "Load"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (load-sf2-settings inv))
+                                                    )
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 580 230) (oa::om-make-point 100 20) "Save"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (save-sf2-settings inv))
+                                                                   
+                                                                   ;(when action (funcall action (settings dd))))
+                                                    )
                            (oa::om-make-dialog-item 'oa::om-button  (oa::om-make-point 680 230) (oa::om-make-point 80 22) "OK" 
                                                     :di-action #'(lambda (item) (progn 
                                                                                   (when action (funcall action (settings dd)))
@@ -147,7 +178,39 @@
       )))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;SAVING SF2 LOAD SETTINGS INTO A TXT FILE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun save-sf2-settings (settings)
+  (let* ((pathname (om-choose-new-file-dialog))
+         (outfile (make-pathname :directory (pathname-directory pathname) :name (pathname-name pathname)))
+         (views (om-subviews settings))
+         (paths (loop for i in views
+                      collect (om-dialog-item-text (car (om-subviews i))))))
+    (WITH-OPEN-FILE (out pathname :direction :output  :if-does-not-exist :create :if-exists :supersede)
+      (loop for elt in paths 
+            do (format out "~A~%" elt)))
+    pathname))
 
 
+(defun read-sf2-settings (&optional path)
+  (let ((pathname (or path (om-choose-file-dialog)))
+        sf2)
+    (with-open-file (stream pathname)
+      (loop for line = (read-line stream nil)
+            while line
+            collect (push line sf2)))
+   (reverse sf2)))
 
+(defun load-sf2-settings (settings &optional path)
+  (let ((sf2 (read-sf2-settings))
+        (views (om-subviews settings)))
+   ; (om-inspect settings)
+    (loop for i in views
+          for txt in sf2
+          do (om-set-dialog-item-text (car (om-subviews i)) txt))
+    (loop for i from 0 to (1- *n-fsynth*)
+          for sf in sf2 do (fluid-load-sf2 i sf))
+    ))
 
