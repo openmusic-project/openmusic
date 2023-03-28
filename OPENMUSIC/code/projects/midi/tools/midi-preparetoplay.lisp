@@ -212,7 +212,6 @@
           (let ((modulo (mod (approx-m midic 4) 100)))
             (if (= 0 modulo) 0 2))
       (let ((mod (if (= approx 4) 2 (/ 200 (or *micro-channel-approx* approx)))))
-        (print (list "toto" mod (round (approx-m (mod midic 100) approx) mod)))
         (round (approx-m (mod midic 100) approx) mod)))
     0))
 
