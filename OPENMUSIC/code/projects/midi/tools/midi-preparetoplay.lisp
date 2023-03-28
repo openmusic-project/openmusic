@@ -194,13 +194,27 @@
        (find approx *micro-channel-mode-on* :test '=)
      *micro-channel-mode-on*)))
 
-
+#|
 (defun micro-channel (midic &optional approx)
   (if (micro-channel-on approx)
       (let ((mod (/ 200 (or *micro-channel-approx* approx))))
         (round (approx-m (mod midic 100) approx) mod))
     0))
+|#
 
+;fix 290323
+;when channel-shift = always and channel-shift-approx is nil (depending on approx)
+;1/4 tones are no2 corrected.
+
+(defun micro-channel (midic &optional approx)
+  (if (micro-channel-on approx)
+      (if (= approx 4)
+          (let ((modulo (mod (approx-m midic 4) 100)))
+            (if (= 0 modulo) 0 2))
+      (let ((mod (if (= approx 4) 2 (/ 200 (or *micro-channel-approx* approx)))))
+        (print (list "toto" mod (round (approx-m (mod midic 100) approx) mod)))
+        (round (approx-m (mod midic 100) approx) mod)))
+    0))
 
 (defun note-events (port chan pitch vel dur date track)
   (list (om-midi::make-midi-evt :type :KeyOn
