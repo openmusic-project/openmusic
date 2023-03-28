@@ -50,7 +50,7 @@
         ;(port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
         ;;Pas besoin de port ici...
         )
-    ;(print (list "params" port player (caller player) ))
+    ;(print (list "params"  player (caller player) approx (get-edit-param (caller player) 'approx) ))
     ;(print port)
    ; (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
