@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -51,9 +51,15 @@ Lock the box ('b') in order to keep the current pointer and not reinitialize the
 
 (add-player-for-object 'midifile :midi-player)
 
+#|
 (defmethod default-edition-params ((self midifile))
   (pairlis '(outport player)
            (list *def-midi-out* :midi-player)))
+|#
+
+(defmethod default-edition-params ((self midifile))
+  (get-default-score-params self))
+
 
 (defmethod make-one-instance ((self midifile) &rest slots-vals)
    (get-midifile))
