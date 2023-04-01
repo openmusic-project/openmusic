@@ -48,79 +48,91 @@
 (defmethod editor ((self midi-control)) (om-view-container self))
 
 (defmethod initialize-instance :after ((self Midi-control) &rest l)
-   (declare (ignore l))
-   (additional-port-menu self :pos (om-make-point 120 0) :in nil)
-   (om-add-subviews self 
-                    (om-make-dialog-item 'om-check-box (om-make-point 40 2) (om-make-point 160 20)
-                                         "  Separate MIDI tracks  "
-                                         :di-action (om-dialog-item-act item 
-                                                      (set-split-tracks (om-view-container self) (om-checked-p item)))))
+  (declare (ignore l))
+  (additional-port-menu self :pos (om-make-point 120 0) :in nil)
+  (om-add-subviews self 
+                   (om-make-dialog-item 'om-check-box (om-make-point 40 2) (om-make-point 160 20)
+                                        "  Separate MIDI tracks  "
+                                        :di-action (om-dialog-item-act item 
+                                                     (set-split-tracks (om-view-container self) (om-checked-p item)))))
 
 
-   (setf (play-buttons self)
-         (list (om-make-view 'om-icon-button :position (om-make-point 250 2) :size (om-make-point 22 22)
-                             :icon1 "play" :icon2 "play-pushed"
-                             :lock-push t
-                             :action #'(lambda (item) (editor-play (om-view-container self))))
+  (setf (play-buttons self)
+        (list (om-make-view 'om-icon-button :position (om-make-point 250 2) :size (om-make-point 22 22)
+                            :icon1 "play" :icon2 "play-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-play (om-view-container self))))
               
-               (om-make-view 'om-icon-button :position (om-make-point 271 2) :size (om-make-point 22 22)
-                             :icon1 "pause" :icon2 "pause-pushed"
-                             :lock-push t
-                             :action #'(lambda (item) (editor-pause (om-view-container self))))
+              (om-make-view 'om-icon-button :position (om-make-point 271 2) :size (om-make-point 22 22)
+                            :icon1 "pause" :icon2 "pause-pushed"
+                            :lock-push t
+                            :action #'(lambda (item) (editor-pause (om-view-container self))))
               
-               (om-make-view 'om-icon-button :position (om-make-point 292 2) :size (om-make-point 22 22)
-                             :icon1 "stop" :icon2 "stop-pushed"
-                             :action #'(lambda (item) (editor-stop (om-view-container self))))
+              (om-make-view 'om-icon-button :position (om-make-point 292 2) :size (om-make-point 22 22)
+                            :icon1 "stop" :icon2 "stop-pushed"
+                            :action #'(lambda (item) (editor-stop (om-view-container self))))
                
-               (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
-                             :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
+              (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
+                            :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
               
-               (om-make-view 'om-icon-button :position (om-make-point 323 2) :size (om-make-point 22 22)
-                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
-                             :lock-push t
-                             :selected-p (loop-play (om-view-container self))
-                             :action #'(lambda (item) 
-                                         (setf (loop-play (om-view-container self))
-                                               (not (loop-play (om-view-container self))))
-                                         (setf (selected-p item) (loop-play (om-view-container self)))
-                                         ))
-              
-               ))
+              (om-make-view 'om-icon-button :position (om-make-point 323 2) :size (om-make-point 22 22)
+                            :icon1 "loopbutton" :icon2 "loopbutton-pushed"
+                            :lock-push t
+                            :selected-p (loop-play (om-view-container self))
+                            :action #'(lambda (item) 
+                                        (setf (loop-play (om-view-container self))
+                                              (not (loop-play (om-view-container self))))
+                                        (setf (selected-p item) (loop-play (om-view-container self)))
+                                        ))
+              ))
    
-   (setf (mode-buttons self)
-         (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
-                             :icon1 "beamcursor" :icon2 "beamcursor-pushed"
-                             :lock-push t
-                             :selected-p (and (editor self) 
-                                              (equal :interval (mode (editor self))))
-                             :action #'(lambda (item) 
-                                         (setf (mode (editor self)) :interval)
-                                         (setf (selected-p item) t
-                                               (selected-p (cadr (mode-buttons self))) nil)
-                                         (om-invalidate-view self)))
+  (setf (mode-buttons self)
+        (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
+                            :icon1 "beamcursor" :icon2 "beamcursor-pushed"
+                            :lock-push t
+                            :selected-p (and (editor self) 
+                                             (equal :interval (mode (editor self))))
+                            :action #'(lambda (item) 
+                                        (setf (mode (editor self)) :interval)
+                                        (setf (selected-p item) t
+                                              (selected-p (cadr (mode-buttons self))) nil)
+                                        (om-invalidate-view self)))
                
-               (om-make-view 'om-icon-button :position (om-make-point 421 2) :size (om-make-point 22 22)
-                             :icon1 "handcursor" :icon2 "handcursor-pushed"
-                             :lock-push t
-                             :selected-p (and (editor self)
-                                              (equal :move (mode (editor self))))
-                             :action #'(lambda (item) 
-                                         (setf (mode (editor self)) :move)
-                                         (setf (selected-p item) t
-                                               (selected-p (car (mode-buttons self))) nil)
-                                         (om-invalidate-view self)))
-               ))
+              (om-make-view 'om-icon-button :position (om-make-point 421 2) :size (om-make-point 22 22)
+                            :icon1 "handcursor" :icon2 "handcursor-pushed"
+                            :lock-push t
+                            :selected-p (and (editor self)
+                                             (equal :move (mode (editor self))))
+                            :action #'(lambda (item) 
+                                        (setf (mode (editor self)) :move)
+                                        (setf (selected-p item) t
+                                              (selected-p (car (mode-buttons self))) nil)
+                                        (om-invalidate-view self)))
+              
+              (om-make-view 'om-icon-button :position (om-make-point 524 2) :size (om-make-point 22 22)
+                            :icon1 "player" :icon2 "player-pushed"
+                            :bg-color *editor-bar-color*
+                            :action #'(lambda (item) 
+                                        (let* ((editor (om-view-container self))
+                                               (previousplayer (get-edit-param editor 'player))
+                                               (newplayer (select-player editor)))
+                                          (when (and newplayer (not (equal previousplayer newplayer)))
+                                                     ;(om-set-dialog-item-text playertext (player-name newplayer))
+                                            (player-special-action newplayer)
+                                            (player-init newplayer)
+                                            (update-player-controls editor newplayer)))))
+              ))
 
 
-   (apply 'om-add-subviews (cons self
-                                 (append (play-buttons self)
-                                         (mode-buttons self)
-                                         (list 
-                                          (om-make-view 'om-icon-button :position (om-make-point 463 2) :size (om-make-point 22 22)
-                                                        :id :resize
-                                                        :icon1 "resize" :icon2 "resize-pushed"
-                                                        :lock-push nil
-                                                        :action #'(lambda (item) (init-coor-system (panel (editor self)))))))))    
+  (apply 'om-add-subviews (cons self
+                                (append (play-buttons self)
+                                        (mode-buttons self)
+                                        (list 
+                                         (om-make-view 'om-icon-button :position (om-make-point 463 2) :size (om-make-point 22 22)
+                                                       :id :resize
+                                                       :icon1 "resize" :icon2 "resize-pushed"
+                                                       :lock-push nil
+                                                       :action #'(lambda (item) (init-coor-system (panel (editor self)))))))))    
   )
           
 
