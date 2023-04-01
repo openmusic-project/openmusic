@@ -26,7 +26,7 @@
 (add-player-for-object 'score-element '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
 (add-player-for-object 'simple-score-element '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
 (add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
-(add-player-for-object 'midifile :fluidsynth)
+(add-player-for-object 'midifile '(:midi-plater :fluidsynth))
 
 
 (enable-player :fluidsynth)
