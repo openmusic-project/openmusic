@@ -419,7 +419,7 @@ make-quanti
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
-        (push (fifth note) port-list)
+        (push (sixth note) port-list)
         (push (- (second note) base-time) offset-list)
         (pop note-list)
         else
@@ -440,7 +440,7 @@ make-quanti
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
-        (push (fifth note) port-list)
+        (push (sixth note) port-list)
         (push (- (second note) base-time) offset-list)
         (pop note-list)
         else
@@ -525,14 +525,16 @@ make-quanti
           for lvel in (lvel self)
           for loffset in (loffset self)
           for lchan in (lchan self)
+          for lport in (lport self)
           append  (loop for pitch in lpitch
                         for dur in ldur
                         for vel in lvel
                         for offset in loffset
                         for chan in lchan
+                        for port in lport
                         collect 
                         ;(list pitch (+ onset offset) dur vel chan)   
-                        (list (round pitch 100) (+ onset offset) dur vel chan)
+                        (list (round pitch 100) (+ onset offset) dur vel chan port)
                         ))
     )
 
@@ -543,13 +545,15 @@ make-quanti
           for lvel in (lvel self)
           for loffset in (loffset self)
           for lchan in (lchan self)
+          for lport in (lport self)
           append  (loop for pitch in lpitch
                         for dur in ldur
                         for vel in lvel
                         for offset in loffset
                         for chan in lchan
+                        for port in lport
                         collect 
-                        (list pitch (+ onset offset) dur vel chan)
+                        (list pitch (+ onset offset) dur vel chan port)
                         ))
     )
 
