@@ -283,7 +283,7 @@
                                                                                     (mypathname *current-workspace*))))
                                                #-linux (update-pref-scroll *pref-window*)
                                                #+linux(update-pref-to-apply *pref-window*)
-                                               (setf *current-pref* (local-prefs (om-view-window item)))
+                                               (setf *current-pref* (local-prefs *pref-window*))
                                                (put-all-preferences)
                                                (save-preferences)
                                                )))
