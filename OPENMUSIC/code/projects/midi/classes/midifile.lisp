@@ -41,7 +41,7 @@
 A MIDI file on your computer disk.
 
 MidiFile is a pointer to an existing file. 
-I can be initialized with a pathname connected to <self> or simply by evaluating the box and choosing a file.
+It can be initialized with a pathname connected to <self> or simply by evaluating the box and choosing a file.
 
 Midifile factories can also be obtained by dragging a MIDI file from the finder to a patch window. 
 
