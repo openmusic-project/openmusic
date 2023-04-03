@@ -191,6 +191,21 @@ The format is a list of list where the car of each is the string name of the pre
         for p in port
         do (fluid-gain i p)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;CONTROL CHANGE
+
+(defmethod! fluid-ctrlchg ((ctrlnum integer) (vals integer)
+                          (chans integer) &optional (port 0))
+  :icon 912
+  :indoc '("ctrlnum" "vals" "chans" "port")
+  :initvals '(7 100 1 0)
+  :doc "Sends a control change settings to channel <chans>."
+  (cl-fluid::fluid_synth_cc
+   (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+   (1- chans) ctrlnum vals))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;VOLUME
 
