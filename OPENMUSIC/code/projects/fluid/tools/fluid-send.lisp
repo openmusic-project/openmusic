@@ -36,7 +36,7 @@
 ;;load sf2
 
 (defmethod* fluid-load-sf2 ((nth-synth number) &optional (path nil)) 
-  :icon 912
+  :icon 924
   :indoc '("nth" "path")
   :initvals '(0 nil)
   :doc "Loads a soundFont file to the given <nth-synth> intance."
@@ -92,7 +92,7 @@ The format is a list of list where the car of each is the string name of the pre
 ;;;PGMOUT
 
 (defmethod* fluid-pgmout ((progm integer) (chans integer) &optional (port 0)) 
-  :icon 912
+  :icon 924
   :indoc '("program number" "MIDI channel(s)" "port")
   :initvals '(2 1 0)
   :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
@@ -119,7 +119,7 @@ The format is a list of list where the car of each is the string name of the pre
 
 
 (defmethod* fluid-pgm-change ((progm integer) (chans integer) &key (port 0) (bank 0)) 
-  :icon 912
+  :icon 924
   :indoc '("program number" "MIDI channel(s)" "port" "bank")
   :initvals '(2 1 0 0)
   :doc "Sends a program change event with program number <progm> to channel(s) <chans>.
@@ -146,7 +146,7 @@ The format is a list of list where the car of each is the string name of the pre
 ;;;PITCHWHEEL
 
 (defmethod* fluid-pitchwheel ((vals integer) (chans integer) &optional port) 
-  :icon 912
+  :icon 924
   :indoc '("pitchwheel value" "MIDI channel(s)" "port")
   :initvals '(2 1 nil)
   :doc "Sends a pitchwheel message
@@ -172,7 +172,7 @@ The format is a list of list where the car of each is the string name of the pre
 ;;;GAIN
 
 (defmethod! fluid-gain ((vals number) &optional port)
-  :icon 912
+  :icon 924
   :indoc '("vals" "nth-synth")
   :initvals '(0.8 0)
   :doc "Sends gain (0 - 1.0) settings to fluidsynth."
@@ -197,7 +197,7 @@ The format is a list of list where the car of each is the string name of the pre
 
 (defmethod! fluid-ctrlchg ((ctrlnum integer) (vals integer)
                           (chans integer) &optional (port 0))
-  :icon 912
+  :icon 924
   :indoc '("ctrlnum" "vals" "chans" "port")
   :initvals '(7 100 1 0)
   :doc "Sends a control change settings to channel <chans>."
@@ -211,7 +211,7 @@ The format is a list of list where the car of each is the string name of the pre
 
 (defmethod! fluid-volume ((vals integer)
                           (chans integer) &optional (port 0))
-  :icon 912
+  :icon 924
   :indoc '("vals" "chans" "port")
   :initvals '(100 1 0)
   :doc "Sends volume control change settings to channel <chans>."
@@ -225,7 +225,7 @@ The format is a list of list where the car of each is the string name of the pre
 
 (defmethod! fluid-pan ((vals integer)
                        (chans integer) &optional (port 0))
-  :icon 912
+  :icon 924
   :indoc '("vals" "chans" "port")
   :initvals '(64 1 0)
   :doc "Sends volume control change settings to channel <chans>."
@@ -252,7 +252,7 @@ The format is a list of list where the car of each is the string name of the pre
   :menuins '((0 (("off" 0) ("on" 1))))
   :initvals '(0 0)
   :outdoc '("on/off reverb" "port")
-  :icon 912
+  :icon 924
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_reverb_on 
      (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
@@ -264,7 +264,7 @@ The format is a list of list where the car of each is the string name of the pre
                           (level number)
                           &optional (port 0)
                           )
-  :icon 912
+  :icon 924
   :indoc '("roomsize" "damping" "width" "level" "port")
   :initvals '(2.0 0.0 0.5 2.9 0)
   :doc "Sends reverb settings to fluidsynth.:"
@@ -284,7 +284,7 @@ The format is a list of list where the car of each is the string name of the pre
   :menuins '((0 (("off" 0) ("on" 1))))
   :initvals '(0 0)
   :outdoc '("on/off chorus" "port")
-  :icon 912
+  :icon 924
   :doc "Turns on/off fluidsynth's reverb"
     (cl-fluidsynth::fluid_synth_set_chorus_on 
      (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
@@ -297,7 +297,7 @@ The format is a list of list where the car of each is the string name of the pre
                           (type number)
                           &optional (port 0)
                           )
-  :icon 912
+  :icon 924
   :indoc '("nr" "level" "speed" "depth" "type" "port")
   :initvals '(3 2.0 0.3 8.0 0 0)
   :doc "Sends chorus settings to fluidsynth.:"

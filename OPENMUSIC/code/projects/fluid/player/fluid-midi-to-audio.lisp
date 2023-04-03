@@ -27,7 +27,7 @@
 
 
 (defmethod* objfromobjs ((self midifile) (type sound))
-  (objfromobjs (midiaudio self) type))
+  (objfromobjs (midi-to-audio self) type))
 
 ;For later
 #|
@@ -36,7 +36,7 @@
                        (namestring *om-outfiles-folder*)))
          (midifile (save-as-midi self file)))
     (prog1
-        (objfromobjs (midiaudio file) type)
+        (objfromobjs (midi-to-audio file) type)
       (oa::om-delete-file (pathname file)))))
 
 (defmethod* objfromobjs ((self voice) (type sound))
@@ -44,7 +44,7 @@
                        (namestring *om-outfiles-folder*)))
          (midifile (save-as-midi self file)))
     (prog1
-        (objfromobjs (midiaudio file) type)
+        (objfromobjs (midi-to-audio file) type)
       (oa::om-delete-file (pathname file)))))
 |#
 
@@ -52,7 +52,11 @@
 
 ;let's keep sf2 also optional if someone wants to play around!
 
-(defmethod om::midiaudio ((self om::midifile) &optional (sf2 nil) (path nil))
+(om::defmethod! om::midi-to-audio ((self om::midifile) &optional (sf2 nil) (path nil))
+  :icon 924
+  :indoc '("midifile" "sf2 path" "output path")
+  :initvals '(t nil nil)
+  :doc "Exports midi data in audio format."
   (let* ((pathname (or path (om::om-choose-new-file-dialog :directory (om::def-save-directory))))
          (midifilename (namestring (om::midifilename self)))
          (fl-synths *fl-synths*)
@@ -91,7 +95,7 @@
 
 ;For later
 #|
-(defmethod om::midiaudio ((self string) &optional (sf2 nil) (path nil))
+(om::defmethod! om::midi-to-audio ((self string) &optional (sf2 nil) (path nil))
   (let* ((pathname (or path (om::om-choose-new-file-dialog :directory (om::def-save-directory))))
          (fl-synths *fl-synths*)
          (loadedsf2 (sf2path (car *fl-synths*)));here we take only the first synth and return its sf2
@@ -130,7 +134,7 @@
    pathname))
 
 
-(defmethod om::midiaudio ((self om::chord-seq) &optional (sf2 nil) (path nil))
+(om::defmethod! om::midi-to-audio ((self om::chord-seq) &optional (sf2 nil) (path nil))
   (let* ((pathname (or path (om::om-choose-new-file-dialog :directory (om::def-save-directory))))
          (file (format nil "~Atemp.mid"
                        (namestring om::*om-outfiles-folder*)))
