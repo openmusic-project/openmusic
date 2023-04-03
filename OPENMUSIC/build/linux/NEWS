@@ -2,8 +2,9 @@
 
 NEW FEATURES
 
-- Svg export of n-cercle objects
 - fluidsynth player
+- asscii->string, string->ascii
+- Svg export of n-cercle objects
 
 IMPROVEMENTS
 
