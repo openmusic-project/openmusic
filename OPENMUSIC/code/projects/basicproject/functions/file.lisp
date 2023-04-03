@@ -18,11 +18,46 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 
 (in-package :om)
+
+
+;;;=================================================================================================
+;;; TEXT UTILITIES
+;;;=================================================================================================
+
+
+
+(defmethod! string->ascii ((text t))
+
+   :initvals '("toto")
+   :indoc '("A Textfile" )
+   :icon '(141) 
+   :doc  "Translates strings into equivalent ascii integers"
+
+(let ((char-text (coerce text 'list)))
+  (mapcar #'(lambda (x) (char-code (character x)))
+          char-text)))
+
+
+
+
+(defmethod! ascii->string ((asciilist list))
+   :initvals '( '(112))
+   :indoc '("list of ascii numbers" )
+   :icon '(141) 
+   :doc  "Translates ascii integers into equivalent strings"
+  (let ((aString (make-string  (length asciilist))))
+    (loop for ascii in asciilist
+          for index from 0 do
+          (setf (elt aString index) (code-char ascii)))
+    astring))
+
+
+
 
 ;;;=================================================================================================
 ;;; WRITE FILE TOOLS
@@ -98,107 +133,3 @@
       out)))
 
 
-;;;===============================================
-;;; SVG export
-;;;===============================================
-;moved to export-import-svg.lisp file
-#|
-(defmacro with-svg-scene-to-file ((file-path scene) &body body)
-  (let ((pathname (gensym)))
-    `(let* ((,pathname (or ,file-path (om-choose-new-file-dialog :directory (def-save-directory)
-								 :prompt "New SVG file"
-								 :types '("SVG Files" "*.svg")))))
-       (when ,pathname
-	 (setf *last-saved-dir* (make-pathname :directory (pathname-directory ,pathname)))
-	 ,@body
-	 (with-open-file (s ,pathname :direction :output :if-exists :supersede)
-	   (cl-svg::stream-out s ,scene))
-	 pathname))))
-
-(defmethod* export-svg ((self bpf) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1))
-  :icon 659
-  :indoc '("a BPF object" "a pathname" "draw-points")
-  :initvals '(nil nil nil)
-  :doc "
-Exports <self> to SVG format.
-"
-  (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
-							    :prompt "New SVG file"
-							    :types '("SVG Files" "*.svg"))))
-	 (scene (cl-svg::make-svg-toplevel 'cl-svg::svg-1.1-toplevel :height h :width w)))
-    (when pathname
-      (with-svg-scene-to-file (pathname scene)
-	(let* ((ys (y-points self))
-	       ;; y2 and y1 switched to have the correct orientation
-	       (bpf-points (point-pairs (bpf-scale self
-                                                   :x1 margins :x2 (- w margins) 
-                                                   :y2 margins :y1 (- h margins)
-						   ; :y1 (apply #'max ys) :y2 (apply #'min ys)
-                                                   )))
-	       (prev_p nil)
-	       (path (cl-svg::make-path))
-	       (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
-				    (round (* 255 (om-color-r (bpfcolor self))))
-				    (round (* 255 (om-color-g (bpfcolor self))))
-				    (round (* 255 (om-color-b (bpfcolor self)))))))
-							    ;draw line
-	  (loop for pt in bpf-points do
-	       (cl-svg::with-path path
-		 (if prev_p
-		     (cl-svg::line-to (car pt) (cadr pt))
-		     (cl-svg::move-to (car pt) (cadr pt))))
-	       (setf prev_p pt))
-	  (cl-svg::draw scene (:path :d path)
-		     :fill "none" :stroke bpfcolorstr
-                     :stroke-width line-size)
-
-							    ;if points, draw points
-	  (when with-points
-	    (loop for pt in bpf-points do
-		 (cl-svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
-			    :stroke "rgb(0, 0, 0)"
-			    :fill bpfcolorstr))))
-	pathname))))
-  
-
-;;; w / h / margins are currently ignored for BPF-lib: todo ! (scale the overall bounding-box)
-(defmethod* export-svg ((self bpf-lib) file-path &key with-points (w 300) (h 300) (margins 20) (line-size 1)) 
-  
-  (let* ((pathname (or file-path (om-choose-new-file-dialog :directory (def-save-directory)
-							    :prompt "New SVG file"
-							    :types '("SVG Files" "*.svg"))))
-	 (scene (cl-svg::make-svg-toplevel 'cl-svg::svg-1.1-toplevel :height h :width w)))
-    (when pathname
-      (with-svg-scene-to-file (pathname scene)
-	(loop for bpf in (bpf-list self)
-	   do (let* ((ys (y-points bpf))
-		     ;; y2 and y1 switched to have the correct orientation
-		     (bpf-points (point-pairs (bpf-scale bpf ;;; todo: 
-                                                         :y1 (apply #'max ys) :y2 (apply #'min ys)
-                                                   )))
-		     (prev_p nil)
-		     (path (cl-svg::make-path))
-		     (bpfcolorstr (format nil "rgb(~D, ~D, ~D)"
-					  (round (* 255 (om-color-r (bpfcolor bpf))))
-					  (round (* 255 (om-color-g (bpfcolor bpf))))
-					  (round (* 255 (om-color-b (bpfcolor bpf)))))))
-
-							    ;draw line
-		(loop for pt in bpf-points do
-		     (cl-svg::with-path path
-		       (if prev_p
-			   (cl-svg::line-to (car pt) (cadr pt))
-			   (cl-svg::move-to (car pt) (cadr pt))))
-		     (setf prev_p pt))
-		(cl-svg::draw scene (:path :d path)
-			   :fill "none" :stroke bpfcolorstr
-                           :stroke-width line-size)
-
-							    ;if points, draw points
-		(when with-points
-		  (loop for pt in bpf-points do
-		       (cl-svg::draw scene (:circle :cx (car pt) :cy (cadr pt) :r (if (numberp with-points) with-points 2))
-				  :stroke "rgb(0, 0, 0)"
-				  :fill bpfcolorstr)))))))))
-
-|#

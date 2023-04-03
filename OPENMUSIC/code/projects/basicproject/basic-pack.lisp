@@ -90,7 +90,7 @@
 (defvar *file-package* (omNG-protect-object (omNG-make-new-package "Text")))
 (addpackage2pack *file-package* *basic-package*)
 (AddClass2Pack '(TextFile) *file-package*)
-(addgenfun2pack '(eval-textfile save-data) *file-package*)
+(addgenfun2pack '(string->ascii ascii->string eval-textfile save-data) *file-package*)
 
 
 
