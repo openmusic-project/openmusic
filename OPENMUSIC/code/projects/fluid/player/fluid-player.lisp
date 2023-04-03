@@ -1,26 +1,31 @@
-;;; ===========================================================================
-;;; FluidSynth Player class for OM.
-;;; 
-;;; This program is free software; you can redistribute it and/or modify
-;;; it under the terms of the GNU Lesser General Public License as published by
-;;; the Free Software Foundation; either version 2.1 of the License, or
-;;; (at your option) any later version.
-;;;   
-;;; This program is distributed in the hope that it will be useful,
-;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU Lesser General Public License for more details.
-;;;   
-;;; You should have received a copy of the GNU Lesser General Public License
-;;; along with this program; if not, write to the Free Software 
-;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;; 
+;=========================================================================
+;  OpenMusic: Visual Programming Language for Music Composition
+;
+;  Copyright (c) 1997-... IRCAM-Centre Georges Pompidou, Paris, France.
+; 
+;    This file is part of the OpenMusic environment sources
+;
+;    OpenMusic is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    OpenMusic is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
+;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
+;=========================================================================
+
 ;;; Authors: Anders Vinjar, Karim Haddad
 
 (in-package :om)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;from scoreobjects.lisp
 
 
 (add-player-for-object 'score-element '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
@@ -124,11 +129,32 @@
 			 (gethash key-index *key-ons*)
 			 :test 'equal)))
 	  ((equal (om-midi::midi-evt-type object) :keyOn)
-            ;(print (list "info" chan ))
            (cl-fluidsynth::fluid_synth_noteon (cl-fluid::getsptr (nth port cl-fluidsynth::*fl-synths*)) (1- chan) midip vel)
 	   (pushnew (list port (car (om-midi::midi-evt-fields object)) chan)
-		    (gethash key-index *key-ons*) :test 'equal)))
-    ;(midi-send-evt object) ;for midi player
+		    (gethash key-index *key-ons*) :test 'equal))
+          ((equal (om-midi::midi-evt-type object) :progchange)
+           (fluid-pgm-change (car (om-midi::midi-evt-fields object)) 
+                             (om-midi::midi-evt-chan object)
+                             :port port))
+          ((equal (om-midi::midi-evt-type object) :ctrlchange)
+           (cl-fluid::fluid_synth_cc
+            (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+            (1- (om-midi::midi-evt-chan object)) (car (om-midi::midi-evt-fields object))
+            (second (om-midi::midi-evt-fields object))
+            ))
+          ((equal (om-midi::midi-evt-type object) :pitchbend)
+           (cl-fluid::fluid_synth_pitch_bend
+            (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
+            (1- (om-midi::midi-evt-chan object)) 
+            (car (om-midi::midi-evt-fields object))
+            ))
+          ((equal (om-midi::midi-evt-type object) :lyric)
+           (unless (or (= 10 (car (om-midi::midi-evt-fields object)))
+                       (= 13 (car (om-midi::midi-evt-fields object))))
+             (print (ascii->string (om-midi::midi-evt-fields object))))
+           )
+          )
     ))
+
  
 
