@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.1
+; OM 7.2
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -39,8 +39,9 @@ inside the .app bundle's resources.
 
 NEW FEATURES
 
-- Svg export of n-cercle objects
 - fluidsynth player
+- ascii->string, string->ascii
+- Svg export of n-cercle objects
 
 IMPROVEMENTS
 

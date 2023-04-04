@@ -3,7 +3,7 @@
 NEW FEATURES
 
 - fluidsynth player
-- asscii->string, string->ascii
+- ascii->string, string->ascii
 - Svg export of n-cercle objects
 
 IMPROVEMENTS
