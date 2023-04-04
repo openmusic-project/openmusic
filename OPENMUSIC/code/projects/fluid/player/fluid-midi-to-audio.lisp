@@ -70,7 +70,10 @@
 ;create synth
       (setf *temp-synth* (new_fluid_synth *fluidsynth-settings*))
 ; load sf2 into synth
-      (fluid-load-new-soundfont *temp-synth* (if sf2 sf2 loadedsf2))
+      (fluid-load-new-soundfont *temp-synth* 
+                                (if sf2 (if (pathnamep sf2)
+                                            (namestring sf2) sf2)
+                                  loadedsf2))
 ;create player
       (setf *player* (new_fluid_player *temp-synth*))
       (fluid_player_add *player* midifilename)
