@@ -32,7 +32,7 @@
 (setf *fluid-files*
       '(
         ;;; JACK
-        #+linux"jack;cl-jack-load"
+       ; #+linux"jack;cl-jack-load"
         
         ;;; FLUIDSYNTH
         "fluidsynth;load-fluidsynth"
