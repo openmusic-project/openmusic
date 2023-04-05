@@ -33,7 +33,7 @@
       '(
         ;;; JACK
        ; #+linux"jack;cl-jack-load"
-        
+        #+linux"fluidsynth;cl-jack-package"        
         ;;; FLUIDSYNTH
         "fluidsynth;load-fluidsynth"
         

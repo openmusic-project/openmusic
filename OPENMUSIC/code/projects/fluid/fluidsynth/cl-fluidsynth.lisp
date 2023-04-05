@@ -296,7 +296,7 @@
       #+cl-jack (progn (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
 		       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))))
 
-#|
+
 (defun cl-fluid-setup-fluidsynth ()
 
   (fluid-synth-setup)
@@ -321,6 +321,6 @@
 				   (cl-jack::jack-port-name cl-jack::*jack-midi-output-port*)
 				   "OM_fluidsynth:midi")
   )
-|#
+
 
 ;;

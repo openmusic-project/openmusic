@@ -13,7 +13,7 @@
 			      "cl-jack-audio"
 			      "cl-jackplay-interleaved"))
 
-#|
+
 (dolist (file cl-jack-files)
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
@@ -34,7 +34,7 @@
 
 ;;(cl-jack-init-everything)
 (oa::om-add-init-func 'cl-jack-init-everything)
-|#
+
 
 (pushnew :cl-jack *features*)
 (provide :cl-jack)
