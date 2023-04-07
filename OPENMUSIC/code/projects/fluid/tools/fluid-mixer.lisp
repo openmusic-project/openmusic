@@ -1073,7 +1073,7 @@ In this case, all internal events are sent simultaneously.
                                      ))
              
          (preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                           #+linux(om-make-point 75 8) 
+                                           #+(or linux win32) (om-make-point 75 8) 
                                            #+macosx(om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""

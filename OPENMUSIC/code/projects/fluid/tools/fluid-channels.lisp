@@ -840,7 +840,7 @@ In this case, all internal events are sent simultaneously.
                                      ))
              
          (preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                           #+linux(om-make-point 75 8) 
+                                           #+(or linux win32)(om-make-point 75 8) 
                                            #+macosx(om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""
@@ -909,5 +909,5 @@ In this case, all internal events are sent simultaneously.
     (om-add-subviews preset-view title preset-list save-preset new-preset delete-preset)    
     
     (om-set-view-size (om-view-container self) (om-make-point 1284 605))
-    (om-set-view-size self (om-make-point 1284 605)) ;1290 611
+    #+(or linux macosx)(om-set-view-size self (om-make-point 1284 605)) ;1290 611
     preset-view))

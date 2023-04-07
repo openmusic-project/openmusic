@@ -162,14 +162,14 @@
                                    ))
          
          (title (om-make-dialog-item 'om-static-text
-                                     #+linux(om-make-point 10 6)
+                                     #+(or linux win32)(om-make-point 10 6)
                                      #+macosx(om-make-point 10 13)
                                      (om-make-point 130 20) "PRESETS :"
                                      :font *om-default-font1*
                                      :fg-color *om-white-color*))
              
          (preset-list (om-make-dialog-item 'om-pop-up-dialog-item 
-                                    #+linux(om-make-point 75 2) 
+                                    #+(or linux win32)(om-make-point 75 2) 
                                     #+macosx(om-make-point 75 12) 
                                     (om-make-point 120 12)
                                     ""
@@ -185,7 +185,7 @@
                                     :value (car (nth (current-preset (object self)) (presets (object self))))))
 
          (save-preset (om-make-dialog-item 'om-button
-                                           #+linux(om-make-point 260 4)
+                                           #+(or linux win32)(om-make-point 260 4)
                                            #+macosx(om-make-point 260 10)
                                            (om-make-point 75 12)
                                            "SAVE"
@@ -200,7 +200,7 @@
                                            :font *om-default-font1*))
          
          (new-preset (om-make-dialog-item 'om-button
-                                          #+linux(om-make-point 335 4)
+                                          #+(or linux win32)(om-make-point 335 4)
                                           #+macosx(om-make-point 335 10)
                                           (om-make-point 75 12)
                                           "NEW"
@@ -220,7 +220,7 @@
                                           :font *om-default-font1*))
 
          (delete-preset (om-make-dialog-item 'om-button
-                                             #+linux(om-make-point 410 4)
+                                             #+(or linux win32)(om-make-point 410 4)
                                              #+macosx(om-make-point 410 10)
                                              (om-make-point 75 12)
                                              "DELETE"
