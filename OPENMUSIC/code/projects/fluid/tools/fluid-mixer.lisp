@@ -450,7 +450,7 @@ In this case, all internal events are sent simultaneously.
                                                      :owner self
                                                      :position (om-make-point 0 0) 
                                                      :bg-color (om-make-color 0.5 0.5 0.5)
-                                                     :scrollbars t
+                                                     :scrollbars (first (metaobj-scrollbars-params self)) ;t
                                                      :field-size  (om-make-point (* *channel-w* (nbtracks (object self))) 540);540
                                                      :size (om-make-point (w self) (h self))))
    

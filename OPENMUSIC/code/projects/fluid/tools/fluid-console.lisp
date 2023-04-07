@@ -387,7 +387,7 @@ In this case, all internal events are sent simultaneously.
                                                     
                                                    ;  :external-max-width 800
                                                    ;  :external-min-height 270 
-                                                     :scrollbars t
+                                                     :scrollbars (first (metaobj-scrollbars-params self)) ;t
                                                    ;  :retain-scrollbars t
                                                    ;   :horizontal-scroll t
                                                    ;  :scrollbars (first (metaobj-scrollbars-params self))
@@ -449,7 +449,9 @@ In this case, all internal events are sent simultaneously.
   (setf (channelText self) (om-make-dialog-item 'om-static-text
                                                 (om-make-point 8 5) 
                                                 (om-make-point 76 20) "FLUIDSYNTH" 
-                                                :font *om-default-font2b*))
+                                                :font #+(or linux macosx)*om-default-font2b*
+                                                      #+win32 *om-default-font1b*
+                                                ))
 
   (setf (channelBox self) 
         (om-make-dialog-item 'om-static-text (om-make-point 36 25) (om-make-point 28 18) 
