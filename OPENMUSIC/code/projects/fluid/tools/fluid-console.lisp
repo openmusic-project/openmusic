@@ -449,8 +449,10 @@ In this case, all internal events are sent simultaneously.
   (setf (channelText self) (om-make-dialog-item 'om-static-text
                                                 (om-make-point 8 5) 
                                                 (om-make-point 76 20) "FLUIDSYNTH" 
-                                                :font #+(or linux macosx)*om-default-font2b*
-                                                      #+win32 *om-default-font1b*
+                                                :font 
+                                                #+linux *om-default-font2b*
+                                                #+macosx (om-make-font oa::*om-def-bold-font-face* 10 :style '(:bold))
+                                                #+win32 *om-default-font1b*
                                                 ))
 
   (setf (channelBox self) 
