@@ -205,6 +205,15 @@ The format is a list of list where the car of each is the string name of the pre
    (cl-fluid::getsptr  (nth port cl-fluidsynth::*fl-synths*))
    (1- chans) ctrlnum vals))
 
+(defmethod! fluid-ctrlchg ((ctrlnum integer) (vals list)
+                          (chans list) &optional (port 0))
+  :icon 924
+  :indoc '("ctrlnum" "vals" "chans" "port")
+  :initvals '(7 100 1 0)
+  :doc "Sends a control change settings to channel <chans>."
+  (loop for i in vals
+        for c in chans
+        do (fluid-ctrlchg ctrlnum i c port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;VOLUME
