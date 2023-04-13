@@ -498,14 +498,14 @@
 ; KEY PROBE 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod flatten ((tree null))
+(defmethod om-flatten ((tree null))
   "Tree is empty list."
   ())
-(defmethod flatten ((tree list))
+(defmethod om-flatten ((tree list))
   "Tree is a list."
-  (append (flatten (car tree))
-          (flatten (cdr tree))))
-(defmethod flatten (tree)
+  (append (om-flatten (car tree))
+          (om-flatten (cdr tree))))
+(defmethod om-flatten (tree)
   "Tree is something else (atom?)."
   (list tree))
 
@@ -521,7 +521,7 @@
                 collect (get-all-file-elts i)))))
 
 (defmethod all-ws-files ((self omworkspace))
-  (flatten (get-all-file-elts (elements self))))
+  (om-flatten (get-all-file-elts (elements self))))
       
 ;(all-ws-files *current-workspace*)
 
