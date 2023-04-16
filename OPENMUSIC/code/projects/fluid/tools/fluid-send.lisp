@@ -150,7 +150,7 @@ The format is a list of list where the car of each is the string name of the pre
   :indoc '("pitchwheel value" "MIDI channel(s)" "port")
   :initvals '(2 1 nil)
   :doc "Sends a pitchwheel message
-   1/16th tonw = 512
+   1/16th tone = 512
    1/8th tone = 1024
    1/4th tone = 2048"
   (let ((port (if port port 0)))
