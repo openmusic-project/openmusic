@@ -462,11 +462,21 @@ In this case, all internal events are sent simultaneously.
                                                   "Pitch"
                                                   :font *om-default-font2*
                                                   ))
-      
-      (setf (pitchVal self) (om-make-dialog-item 'om-static-text 
+     
+      (setf (pitchVal self) (om-make-dialog-item 'edit-numbox 
                                                  (om-make-point 40 pos) 
-                                                 (om-make-point 40 16)
+                                                 (om-make-point 32 18)
                                                  (format nil "~D" (pitchwheel-to-mc (pitch-ctrl (channelctr self))))
+                                                 :min-val -200
+                                                 :max-val 200
+                                                 :di-action (om-dialog-item-act item
+                                                              (let ((text (om-dialog-item-text item)))
+                                                                (om-set-slider-value (pitchSlider self) (mc-to-pitchwheel (read-from-string text)))))
+                                                 :afterfun #'(lambda (item)
+                                                               (let ((text (om-dialog-item-text item)))
+                                                                 (om-set-slider-value (pitchSlider self) (mc-to-pitchwheel (read-from-string text)))))
+                                                 :visible-border nil
+                                                 :bg-color bgcolor
                                                  :font *om-default-font2*
                                                  ))
       
@@ -476,7 +486,7 @@ In this case, all internal events are sent simultaneously.
                                                     (om-make-point 70 20)
                                                     ""
                                                     :di-action (om-dialog-item-act item
-                                                                 (change-pitchbend self (om-slider-value item)))
+                                                                 (change-pitchwheel self (om-slider-value item)))
                                                     :increment 1
                                                     :range '(0 16383)
                                                     :value (pitch-ctrl (channelctr self))
@@ -742,6 +752,18 @@ In this case, all internal events are sent simultaneously.
   (setf (control2-num (channelctr self)) value)
   (report-modifications self))
 
+(defmethod change-pitchwheel ((self Fluidchanpanel) value)
+  (let* ((port (midiport (channelctr self)))
+         (chan (midichannel (channelctr self))))
+    (setf (pitch-ctrl (channelctr self)) value)
+    (fluid-pitchwheel (- value 8192)  chan port)
+    (let ((new-str (integer-to-string (pitchwheel-to-mc value)))
+          (target (pitchVal self)))
+      (unless (string= new-str (om-dialog-item-text target))
+        (om-set-dialog-item-text target new-str)
+        (om-redraw-view target)))
+    (report-modifications self)))
+
 (defmethod change-pitchbend ((self Fluidchanpanel) value)
   (setf (pitch-ctrl (channelctr self)) value)
   ;(when (send-rt (editor self)) 
@@ -760,7 +782,7 @@ In this case, all internal events are sent simultaneously.
   (change-pan self 64)
   (set-value (panSlider self) 64)
   (change-volume self 100)
-  (om-set-slider-value (volumeSlider self) 100)
+  (om-set-slider-value (volumeSlider self) 32)
   (change-pitchbend self 8192)
   (om-set-slider-value (pitchSlider self) 8192)
   (change-ctrl1-val self 0)
