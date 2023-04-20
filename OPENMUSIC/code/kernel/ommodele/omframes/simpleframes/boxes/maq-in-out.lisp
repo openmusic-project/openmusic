@@ -151,6 +151,7 @@
 
 (defmethod eval+redraw ((self maqinoutframe)) nil)
 
+(defmethod is-marketed ((self t) typesource marklist) nil); a voir
 (defmethod is-marketed ((self maqinout) typesource marklist) nil)
  
 (defmethod init-size&position ((self maqinoutframe) container)
