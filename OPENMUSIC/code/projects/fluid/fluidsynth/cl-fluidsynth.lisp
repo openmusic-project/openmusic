@@ -323,4 +323,21 @@
   )
 
 
-;;
+;;;;;;autoload fluid from prefs
+
+(defun autoload-fluid-synths ()
+  (let* ((modulepref (om::find-pref-module :fluid om::*saved-pref*))
+         (auto (om::get-pref modulepref :fluid-autoload))
+         (nsynths (om::get-pref modulepref :n-fsynth)))
+    (if
+        (and 
+         (fluidsynthlib-p)
+         (not *fl-synths*)
+         auto
+         )
+        (progn
+          (om::load-all-fsynths nsynths)
+          (om::load-sf-to-all)
+          ))
+    ))
+

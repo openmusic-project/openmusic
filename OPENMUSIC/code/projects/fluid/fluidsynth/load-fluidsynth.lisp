@@ -24,10 +24,7 @@
   (compile?-and-load (make-pathname :directory (pathname-directory *load-pathname*) :name file)))
 
 (defun cl-fluid-init-fluidsynth ()
-  (cl-fluid-init-fluidsynth-ffi)
-;  (cl-fluid-setup-fluidsynth)
-  ;;(fluid_version_str)
-  )
+  (cl-fluid-init-fluidsynth-ffi))
 
 
 (oa::om-add-init-func 'cl-fluid-init-fluidsynth)

@@ -29,10 +29,11 @@
 
 (in-package :om)
 
-(defmethod sf2-setup (settings &optional action)
-  (let* ((inf (reverse (cadr settings)))
-         (def-path (third inf))
-         (info (loop for i from 0 to (1- (car inf))
+(defmethod sf2-setup (settings &optional action) 
+  (let* ((modulepref (om::find-pref-module :fluid om::*current-pref*))
+         (nsynths (om::get-pref modulepref :n-fsynth))
+         (def-path (om::get-pref modulepref :fluid-sf2))
+         (info (loop for i from 0 to (1- nsynths)
                      collect (list (list i) (list def-path)))))
     (show-sf2-dialog info action)))
 

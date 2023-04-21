@@ -34,7 +34,7 @@
 (defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*))
 ;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
 (defparameter *fluid-loaded* "Unloaded...")
-
+(defparameter *fluid-autoload* nil)
 ;;;==============================================
 
 (defmethod put-preferences ((iconID (eql :fluid)))
@@ -43,14 +43,14 @@
         (setf *fluid-sf2* (get-pref modulepref :fluid-sf2))
       (push :fluid-sf2 *restore-defaults*))
     (setf *n-fsynth* (get-pref modulepref :n-fsynth))
-    ;(put-midi-mixer-values)
-    ))
+    (setf *fluid-autoload* (get-pref modulepref :fluid-autoload))
+    t))
 
 (defmethod get-def-vals ((ID (eql :fluid)))
     (list 
           :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
           :n-fsynth 1
-          ;:midi-presets (def-midi-presets)
+          :fluid-autoload nil 
           ))
 
 
@@ -58,6 +58,7 @@
    (list iconID `(list 
                   :fluid-sf2 ,(om-save-pathname *fluid-sf2*)
                   :n-fsynth ,*n-fsynth* 
+                  :fluid-autoload ,*fluid-autoload*
                        ) *om-version*))
 
 (defmethod make-new-pref-scroll ((num (eql :fluid)) modulepref)
@@ -120,7 +121,7 @@
                                                  (if (and (integerp number) (>= number 0) (<= number 255))
                                                      (set-pref modulepref :n-fsynth number)
                                                    (progn 
-                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
+                                                     (om-beep-msg "Fluid port must be an integer between 0 and 255.")
                                                      (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :n-fsynth))))
                                                    ))))
                                            :di-action 
@@ -132,7 +133,7 @@
                                                  (if (and (integerp number) (>= number 0) (<= number 255))
                                                      (set-pref modulepref :n-fsynth number)
                                                    (progn 
-                                                     (om-beep-msg "Midi port must be an integer between 0 and 255.")
+                                                     (om-beep-msg "Fluid port must be an integer between 0 and 255.")
                                                      (om-set-dialog-item-text item (format nil "~D" (get-pref modulepref :n-fsynth))))
                                                    ))))
                                            :font *om-default-font2*)
@@ -175,6 +176,15 @@
                                                 (om-set-fg-color fsynthtxt *om-red-color*)
                                                 )))
                       
+                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
+                                           "Autoload Synths:" 
+                                           :font *controls-font*)
+                      (om-make-dialog-item 'om-check-box (om-make-point 210 (- i 5)) (om-make-point 20 20) ""
+                                           :font *controls-font*
+                                           :checked-p (get-pref modulepref :fluid-autoload)
+                                           :di-action (om-dialog-item-act item 
+                                                        (set-pref modulepref :fluid-autoload (om-checked-p item))
+                                                        ))
                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 54)) (om-make-point 200 30) 
                                            "SF2 Libs" :font *om-default-font2b*)
                       (om-make-dialog-item 'om-button (om-make-point 200 (- i 2)) (om-make-point 120 30) 
@@ -253,6 +263,9 @@
 
 (progn
 (add-fluid-preferences)
-(add-init-user-func 'add-fluid-preferences))
+(add-init-user-func 'add-fluid-preferences)
+;(put-all-preferences)
+(add-init-user-func 'cl-fluid::autoload-fluid-synths)
+)
 
 
