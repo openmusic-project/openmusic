@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -241,10 +241,11 @@
 
 (defmethod om-select-window ((self om-abstract-window))
   (when (and (window-dialog-p self) (not (initialized-p self)))
-    (capi::display self))
+    (capi:display self))
   (when (initialized-p self)
-    #+cocoa(capi::raise-interface self)
-    #-cocoa(capi::find-interface (type-of self) :name (capi::capi-object-name self))
+    ;#+cocoa(capi::raise-interface self)
+    ;#-cocoa
+    (capi:find-interface (type-of self) :name (capi:capi-object-name self))
     )
   ;(om-activate-callback self t)
   self)
