@@ -29,12 +29,15 @@
 
 (in-package :om)
 
+;(defparameter *sf2-setup-list* nil)
+
 (defmethod sf2-setup (settings &optional action) 
   (let* ((modulepref (om::find-pref-module :fluid om::*current-pref*))
          (nsynths (om::get-pref modulepref :n-fsynth))
          (def-path (om::get-pref modulepref :fluid-sf2))
          (info (loop for i from 0 to (1- nsynths)
                      collect (list (list i) (list def-path)))))
+    (print (list "setup" info))
     (show-sf2-dialog info action)))
 
 
@@ -68,6 +71,18 @@
      ))
 
 ;(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
+
+
+(defun get-latest-sf2-list (self)
+  "output latest sf2 port settings for preferences"
+  (let* ((views (om-subviews self))
+         (paths (loop for i in views
+                      collect 
+                        (om-save-pathname
+                        (pathname 
+                               (om-dialog-item-text (car (om-subviews i))))))))
+    (cons `list paths)))
+
 
 
 (defmethod set-sf2-directory-view ((self sf2-ports-view) dialog) 
@@ -112,7 +127,9 @@
                                                                                   (om-set-dialog-item-text sf2txt (om-namestring newsf2))
                                                                                   (fluid-load-sf2 pos (om-namestring newsf2))
                                                                                   (setf (cl-fluid::sf2path snt) (om-namestring newsf2))
-                                                                                  (push newsf2 (cl-fluid::sf2stack snt))))))
+                                                                                  (push newsf2 (cl-fluid::sf2stack snt))
+                                                                                  (setf *sf2-setup-list* (get-latest-sf2-list self))
+                                                                                  ))))
                                    vv))))))))
 
 
@@ -169,6 +186,7 @@
                            (oa::om-make-dialog-item 'oa::om-button  (oa::om-make-point 680 230) (oa::om-make-point 80 22) "OK" 
                                                     :di-action #'(lambda (item) (progn 
                                                                                   (when action (funcall action (settings dd)))
+                                                                                 ; (get-latest-sf2-list settings)
                                                                                   (oa::om-close-window (oa::om-view-window item))))
 
                                                     )
@@ -177,6 +195,8 @@
       (setf *sf2-setup-window* dd)
       (oa:om-show-window dd)
       )))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

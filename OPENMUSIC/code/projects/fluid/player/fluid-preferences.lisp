@@ -35,6 +35,7 @@
 ;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
 (defparameter *fluid-loaded* "Unloaded...")
 (defparameter *fluid-autoload* nil)
+(defparameter *sf2-setup-list* nil)
 ;;;==============================================
 
 (defmethod put-preferences ((iconID (eql :fluid)))
@@ -44,6 +45,13 @@
       (push :fluid-sf2 *restore-defaults*))
     (setf *n-fsynth* (get-pref modulepref :n-fsynth))
     (setf *fluid-autoload* (get-pref modulepref :fluid-autoload))
+    #|
+    (setf *sf2-setup-list* 
+          (loop for i in 
+                  (get-pref modulepref :sf2-setup-list) 
+             collect (om-save-pathname i)))
+    |#
+;don't put it !
     t))
 
 (defmethod get-def-vals ((ID (eql :fluid)))
@@ -51,6 +59,7 @@
           :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
           :n-fsynth 1
           :fluid-autoload nil 
+          :sf2-setup-list nil
           ))
 
 
@@ -59,6 +68,7 @@
                   :fluid-sf2 ,(om-save-pathname *fluid-sf2*)
                   :n-fsynth ,*n-fsynth* 
                   :fluid-autoload ,*fluid-autoload*
+                  :sf2-setup-list ,*sf2-setup-list*
                        ) *om-version*))
 
 (defmethod make-new-pref-scroll ((num (eql :fluid)) modulepref)
@@ -265,7 +275,7 @@
 (add-fluid-preferences)
 (add-init-user-func 'add-fluid-preferences)
 ;(put-all-preferences)
-(add-init-user-func 'cl-fluid::autoload-fluid-synths)
+(add-init-user-func 'autoload-fluid-synths)
 )
 
 

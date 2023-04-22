@@ -324,20 +324,49 @@
 
 
 ;;;;;;autoload fluid from prefs
+(in-package :om)
 
 (defun autoload-fluid-synths ()
   (let* ((modulepref (om::find-pref-module :fluid om::*saved-pref*))
          (auto (om::get-pref modulepref :fluid-autoload))
-         (nsynths (om::get-pref modulepref :n-fsynth)))
+         (nsynths (om::get-pref modulepref :n-fsynth))
+         (playlist (om::get-pref modulepref :sf2-setup-list))
+         (paths (if playlist 
+                    (loop for i in (cdr playlist)
+                          collect (namestring (eval i))))))
     (if
         (and 
-         (fluidsynthlib-p)
-         (not *fl-synths*)
+         (cl-fluid::fluidsynthlib-p)
+         (not cl-fluid::*fl-synths*)
          auto
          )
         (progn
-          (om::load-all-fsynths nsynths)
-          (om::load-sf-to-all)
+          (load-all-fsynths nsynths)
+          (if paths
+              (load-all-sf paths)
+            (load-sf-to-all))
+          (setf *sf2-setup-list* playlist); avoir quand on quite et on ne fait rien au niveau prefs...
           ))
     ))
 
+; a finir:
+(defun load-all-sf (paths)
+  (when cl-fluid::*fl-synths*
+    (let* ((pt paths)
+           (der (last-elem pt))) (print (list "fucko" pt der))
+      (loop for i from 1 to (length cl-fluid::*fl-synths*)
+            do 
+              (let ((synth (nth (1- i)  cl-fluid::*fl-synths*)))
+                (if pt
+                    (progn
+                      (setf (cl-fluid::sf2path synth) (car pt))
+                      (push (cl-fluid::sf2path synth) (cl-fluid::sf2stack synth))
+                      (cl-fluid::fluid_synth_sfload
+                       (cl-fluid::synthptr synth) (car pt) 1)
+                      (pop pt))
+                  (progn
+                    (setf (cl-fluid::sf2path synth) der)
+                    (push (cl-fluid::sf2path synth) (cl-fluid::sf2stack synth))
+                    (cl-fluid::fluid_synth_sfload
+                     (cl-fluid::synthptr synth) der 1)))
+                )))))
