@@ -353,7 +353,7 @@
 (defun load-all-sf (paths)
   (when cl-fluid::*fl-synths*
     (let* ((pt paths)
-           (der (last-elem pt))) (print (list "fucko" pt der))
+           (der (last-elem pt)))
       (loop for i from 1 to (length cl-fluid::*fl-synths*)
             do 
               (let ((synth (nth (1- i)  cl-fluid::*fl-synths*)))

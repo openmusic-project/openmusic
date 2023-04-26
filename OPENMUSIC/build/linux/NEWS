@@ -1,3 +1,17 @@
+* RELEASE NOTES 7.3
+
+NEW FEATURES
+
+
+IMPROVEMENTS
+
+- fluidsynth autoload at workspace startup
+
+FIXES
+
+- Mac OS Ventura window issue (api)
+
+
 * RELEASE NOTES 7.2
 
 NEW FEATURES
