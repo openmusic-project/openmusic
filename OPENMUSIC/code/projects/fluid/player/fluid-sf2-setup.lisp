@@ -171,12 +171,17 @@
       (set-sf2-directory-view inv dd)
   
       (oa::om-add-subviews dd 
-                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 480 230) (oa::om-make-point 100 20) "Load"
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 420 230) (oa::om-make-point 80 20) "Reset"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (reset-sf2-settings inv))
+                                                    )
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 500 230) (oa::om-make-point 80 20) "Load"
                                                     :di-action #'(lambda (item) 
                                                                    (declare (ignore item))
                                                                    (load-sf2-settings inv))
                                                     )
-                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 580 230) (oa::om-make-point 100 20) "Save"
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 580 230) (oa::om-make-point 80 20) "Save"
                                                     :di-action #'(lambda (item) 
                                                                    (declare (ignore item))
                                                                    (save-sf2-settings inv))
@@ -235,3 +240,10 @@
           for sf in sf2 do (fluid-load-sf2 i sf))
     ))
 
+(defun reset-sf2-settings (settings)
+    (let ((views (om-subviews settings)))
+      (loop for i in views
+            do (om-set-dialog-item-text (car (om-subviews i)) *fluid-sf2*))
+      (loop for i from 0 to (1- *n-fsynth*)
+            do (fluid-load-sf2 i *fluid-sf2*))))
+            
