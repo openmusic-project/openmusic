@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;;===========================
@@ -92,11 +92,12 @@
 (defmethod default-segment-class ((self abstract-analysis)) nil)
 
 ;;; called after attach analysis to a score object
-(defmethod analysis-init ((self abstract-analysis) object) 
-  (loop for seg in (analysis-segments self) do 
-        (setf (container-analysis seg) self)
-        (segment-init seg)
-        (analysis-init-segment self seg)))
+(defmethod analysis-init ((self abstract-analysis) object)
+  (loop for seg in (remove nil (analysis-segments self)) do 
+          (setf (container-analysis seg) self)
+       ; (segment-init seg)
+          (segment-update seg object)
+          (analysis-init-segment self seg)))
 
 (defmethod analysis-init-segment ((analysis t) segment) nil)
 
@@ -205,7 +206,7 @@
 (defmethod segment-init ((self segment)) 
   (setf (tb self) (segment-begin self)
         (te self) (segment-end self))
-  nil)
+  self);nil
 
 ;;; called when the object changed
 ;;; if NIL: the segments will be removed

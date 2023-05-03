@@ -94,6 +94,7 @@
         "analysis;scoreeditor-analysis"
         "analysis;analysis-objects"
         "analysis;kant-seg"
+        "analysis;kant-interface"
         "analysis;utils"
 
         ;----------- IMPORT EXPORT --------------------------------

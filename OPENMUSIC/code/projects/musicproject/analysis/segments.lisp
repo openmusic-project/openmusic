@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;;============================
@@ -36,6 +36,10 @@
 (defclass! time-segment (segment)
   ((t1 :accessor t1 :initarg :t1 :initform 0 :documentation "start time (ms)")
    (t2 :accessor t2 :initarg :t2 :initform 0 :documentation "end time (ms)")))
+
+
+(defmethod time-segment-p ((self time-segment)) t)
+(defmethod time-segment-p ((self t)) nil)
 
 (defmethod segment-begin ((self time-segment)) (t1 self))
 (defmethod segment-end ((self time-segment)) (t2 self))
@@ -148,6 +152,10 @@
 (defclass! chord-segment (segment)
   ((chords :accessor chords :initform nil :documentation "list of the chords in this segment")
    (chord-ids :accessor chord-ids :initarg :chord-ids :initform nil :documentation "list of the chord numbers in this segment")))
+
+(defmethod chord-segment-p ((self chord-segment)) t)
+(defmethod chord-segment-p ((self t)) nil)
+
 
 (defmethod segment-init ((self chord-segment)) 
   (unless (chords self)
