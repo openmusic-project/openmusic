@@ -93,6 +93,42 @@
          (time-seg (make-instance 'time-segment :t1 (car int) :t2 (second int))))
     (add-in-analysis anal time-seg)))
 
+
+(defmethod get-chords-in-selection ((self chordseqpanel))
+  (let* ((int (cursor-interval self))
+         (obj (object (om-view-container self)))
+         (chords (inside obj))
+         (onsets (lonset obj))
+         (pos 
+          (remove-dup
+          (remove nil (list
+                       (position-if #'(lambda (x) (and (>= x (car int)) (<= x (second int)))) onsets)
+                       (position-if #'(lambda (x) (and (>= x (car int)) (<= x (second int)))) onsets :from-end 't))) '= 1))
+         (onset (when pos (nth (car pos) onsets)))
+         (offset (when pos (nth (1+ (last-elem pos)) onsets)))
+         )
+    (list  onset offset (car pos))))
+
+(defmethod make-chord-markers ((self chordseqpanel))
+  (let* ((obj (object (om-view-container self)))
+         (data (get-chords-in-selection self))
+         (marker (when (second data) 
+                   (make-instance 'chord-marker 
+                                  :tb (car data)
+                                  :te (second data)
+                                  :chord-id (third data)
+                                  ))))
+    marker))
+
+
+(defmethod add-chord-mark ((self chordseqpanel) (anal abstract-analysis))
+  (let ((marker (make-chord-markers self)))
+    (progn
+      (add-in-analysis anal marker)
+      (update-panel self)
+      (om-invalidate-view (title-bar (om-view-container self)))))) 
+
+; peut-etre enlever!
 (defun get-cursormode (self)
   (let* ((ed (editorframe (associated-box self)))
          )
@@ -179,7 +215,7 @@
   )
 
 (defmethod handle-add-click-analysis ((self scorepanel) where) 
-  (if (and (equal (cursor-mode panel) :interval) (om-shift-key-p))
+  (if (and (equal (cursor-mode self) :interval) (om-shift-key-p))
       (let ((time (cursor-interval self))
             (time-seg (make-instance 'time-segment :t1 (car time) :t2 (second time))))
         (add-in-analysis (analysis (object self)) time-seg))))
@@ -191,7 +227,7 @@
              (pixels-to-time self (om-point-h where))
              (analysis (object (editor self)))))
 |#
- 
+
 #|
   (unless (analysis (object (editor self)))
     (setf (analysis (object (editor self)))
@@ -256,9 +292,21 @@
 ;(om-option-key-p)
 
 
+
+
 (defmethod handle-segment-click ((self abstract-analysis) segment panel pos) 
   (cond 
-   ;((om-shift-key-p) (segment-data-window segment))
+   ((om-shift-key-p) 
+    (progn
+    (print (list "resize" segment pos panel))
+    (om-click-motion-handler segment pos)
+    (om-click-release-handler segment pos)
+    (print (list "x-range" 
+                 (om-mouse-position
+                 (panel (editorframe
+                 (associated-box
+                 (analysis-object self)))))))
+    ))
    ((om-command-key-p) (print (list self segment pos)))
    ((om-option-key-p) (segment-info segment)); faire cela avec 'i' comme info
     (t (print "nothin'"))))
@@ -311,6 +359,7 @@
   (setf (voice (segment-data data)) nil))
 
 
+
 ;from scoreeditor-analysis
 (defmethod analysis-handle-key-event ((self chordseqPanel) char)
   (let* ((obj (object (om-view-container self)))
@@ -334,6 +383,9 @@
       (#\t (if (equal (cursor-mode self) :interval)
                (add-time-seg self (car anal))
              (add-time-segment (car anal))))
+      (#\c (if (equal (cursor-mode self) :interval)
+               (add-chord-mark self (car anal))
+             (om-beep "use interval selection mode")))
          
       (#\d (remove-object-analysis obj (car anal)))
       (#\a 

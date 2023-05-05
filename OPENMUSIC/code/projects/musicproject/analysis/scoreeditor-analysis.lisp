@@ -143,6 +143,7 @@
 ;;;====================
 ;;; KEYBOARD
 
+#|
 (defmethod analysis-handle-key-event ((self chordseqPanel) char)
   (case char
     (:om-key-tab (change-current-analysis self))
@@ -157,7 +158,7 @@
        (analysis-key-event (car (list! (analysis (object (editor self))))) self char)
        (om-invalidate-view (title-bar (editor self)))
        (update-panel self)))))
-
+|#
 
 ;;;====================
 ;;; MENUS
