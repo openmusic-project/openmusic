@@ -238,7 +238,8 @@
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 
 (defmethod get-help-list ((self soundeditor))
-  (list '(("alt+clic" "Add Marker")
+  (list '(#+macosx("cmd+clic" "Add Marker")
+          #+(or linux win32)("ctrl+clic" "Add Marker")
           ("del" "Delete Selected Markers")
           (("g") "Show/Hide Grid")
           (("A") "Align Selected Markers to Grid")
