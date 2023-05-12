@@ -72,6 +72,7 @@
          )
 (time-krop l1 l2 onsets offsets)))
     
+(defmethod create-kant-seg-analysis ((self t)) nil)
 
 (defmethod create-kant-seg-analysis ((self chord-seq))
   (let ((anal (make-instance 'kant-seg)))
@@ -361,7 +362,7 @@
 
 
 ;from scoreeditor-analysis
-(defmethod analysis-handle-key-event ((self chordseqPanel) char)
+(defmethod analysis-handle-key-event ((self ScorePanel) char)
   (let* ((obj (object (om-view-container self)))
          (anal (if (analysis obj)
                    (analysis obj)
