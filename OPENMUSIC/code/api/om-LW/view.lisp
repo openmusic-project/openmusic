@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 
@@ -42,6 +42,7 @@
           om-set-scroll-position
           om-h-scroll-position
           om-v-scroll-position
+          om-set-h-scroll-position
           om-view-scrolled
           om-view-contains-point-p
           om-find-view-containing-point
@@ -313,11 +314,15 @@
 (defmethod om-v-scroll-position ((self om-scroller))
   (or (capi::get-vertical-scroll-parameters self :slug-position) 0))
 
+(defmethod om-set-h-scroll-position ((self om-scroller) pos) 
+  (capi::set-horizontal-scroll-parameters self :slug-position pos))
+
 ;;; au cas ou...
 (defmethod om-h-scroll-position ((self om-graphic-object)) 0)
 (defmethod om-v-scroll-position ((self om-graphic-object)) 0)
 (defmethod om-scroll-position ((self om-graphic-object)) (om-make-point 0 0))
 
+(defmethod om-set-h-scroll-position ((self om-graphic-object) pos) t)
 
 (defmethod update-for-subviews-changes ((self om-scroller) &optional (recursive nil)) 
   (if (initialized-p self)

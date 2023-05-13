@@ -549,6 +549,7 @@
          (di-font *controls-font*)
          (l1 230)
          (l2 380)
+         (l3 500)
          (c1 2)
          (c2 *second-row-y*)
 
@@ -631,11 +632,21 @@
                                        :range (loop for item in (GET-tone-LIST self) collect (car item)) 
                                        :value tone
                                        ))
+           ;;; measure
+         (measureitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 10) (+ c1 2)) (om-make-point 60 20) "Measure"
+                                         :font *om-default-font1*
+                                         :bg-color *controls-color*))
+         (meas-num (om-make-dialog-item 'edit-numbox (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18) " "
+                                      :value nil
+                                      :font *om-default-font1*
+                                      :bg-color *om-white-color*
+                                      :help-spec ""
+                                      ))
          )
          
     
     (setf (slotedit self) minied)
-    (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied  sizebut)
+    (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut measureitem meas-num)
                             
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
