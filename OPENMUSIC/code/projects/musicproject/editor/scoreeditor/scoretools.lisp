@@ -342,7 +342,7 @@
 
 
 
-;======================CONVERTIONS=============================
+;======================CONVERSIONS=============================
 (defvar *onesec* 3 "one sec = 3 times de font size")
 
 (defun line2pixel (line top linespace) 
