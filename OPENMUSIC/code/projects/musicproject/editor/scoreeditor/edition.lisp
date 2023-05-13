@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -34,23 +34,23 @@
 
 (defmethod get-default-score-params ((self t))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
-             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  nil nil *default-score-player*
-                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 :normal t nil)))
+                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 :normal t nil 0 1)))
 
 (defmethod get-default-score-params ((self chord))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
-             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  nil nil *default-score-player*
-                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 0 :normal t nil)))
+                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 0 :normal t nil nil nil)))
 
 (defmethod get-default-score-params ((self note))
   (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
-             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale) 
+             zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
            (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil nil *default-score-player*
-                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil)))
+                 1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil nil nil)))
 
 ;(defmethod set-edition-params ((self simple-container) box)
 ;   (setf (edition-params box) (get-default-score-params self)))
@@ -83,6 +83,10 @@
       (setf rep (pairlis (list 'show-stems) (list t) rep)))
     (unless (assoc 'scale params)
       (setf rep (pairlis (list 'scale) (list nil) rep)))
+    (unless (assoc 'onset params)
+      (setf rep (pairlis (list 'onset) (list nil) rep)))
+    (unless (assoc 'measure params)
+      (setf rep (pairlis (list 'measure) (list nil) rep)))
     (rplacd (assoc 'deltapict rep) (om-correct-point (cdr (assoc 'deltapict  rep))))
     rep))
 
