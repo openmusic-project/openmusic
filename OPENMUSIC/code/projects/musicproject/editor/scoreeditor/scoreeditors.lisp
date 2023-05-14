@@ -644,16 +644,16 @@
                                         :di-action (om-dialog-item-act item
                                                      (progn
                                                      (change-editor-onset (panel (om-view-container (om-view-container item))) (value item))
-                                                     ;(capi:redisplay-element (panel (om-view-container (om-view-container item))))
                                                      ))
                                         
                                         :min-val 0
                                         :font *om-default-font1*
                                         :bg-color *om-white-color*
                                         :afterfun #'(lambda (item)
-                                                      (change-editor-onset (panel (om-view-container (om-view-container item))) (value item)))
-                                      ;                ;(capi:redisplay-element (panel (om-view-container (om-view-container item)))))
-                                      ;  :help-spec ""
+                                                      (progn
+                                                      (change-editor-onset (panel (om-view-container (om-view-container item))) (value item))
+                                                      (update-for-subviews-changes (panel (om-view-container (om-view-container self))) t)))
+                                     ;  :help-spec ""
                                         :value onsetval
                                         ))
            ;;; measure
@@ -679,18 +679,13 @@
                                         :afterfun #'(lambda (item)
                                                     (progn
                                                      (change-editor-measure (panel (om-view-container (om-view-container self))) (value item))
-                                                     ;(om-inspect self)
-                                                     (update-panel (panel (om-view-container (om-view-container self))))
-                                                     (capi:redisplay-element (panel (om-view-container (om-view-container self)))))
-                                                     )
+                                                     (update-for-subviews-changes (panel (om-view-container (om-view-container self))) t)))
                                         :min-val 1
                                         ))
          )
          
     
     (setf (slotedit self) minied)
-  ;  (setf (onsetsel self) onsetval)
-  ;  (setf (measuresel self) measnumval)
     (cond 
      ((or (voice-p obj) (poly-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num))
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms))

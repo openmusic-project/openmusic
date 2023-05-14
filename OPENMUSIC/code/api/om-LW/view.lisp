@@ -44,6 +44,7 @@
           om-v-scroll-position
           om-set-h-scroll-position
           om-view-scrolled
+          update-for-subviews-changes
           om-view-contains-point-p
           om-find-view-containing-point
           om-convert-coordinates
