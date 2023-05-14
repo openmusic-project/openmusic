@@ -639,7 +639,8 @@
          (onsetitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) "Onset"
                                          :font *om-default-font1*
                                          :bg-color *controls-color*))
-         (onset-ms (om-make-dialog-item 'edit-numbox (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18) " "
+         (onset-ms (om-make-dialog-item 'edit-numbox (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18) 
+                                        (format nil " ~D" onsetval) ;needed for init. A simple string doesn't work!
                                         :di-action (om-dialog-item-act item
                                                      (progn
                                                      (change-editor-onset (panel (om-view-container (om-view-container item))) (value item))
@@ -663,7 +664,7 @@
                                          :bg-color *controls-color*))
          (meas-num (om-make-dialog-item 'edit-numbox (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18)
                                         ;(om-make-point (+ l3 45)  (+ c2 2)) (om-make-point 46 18) 
-                                        " "
+                                        (format nil " ~D" measnumval)
                                         :di-action (om-dialog-item-act item
                                                      (progn
                                                      (change-editor-measure (panel (om-view-container (om-view-container self))) (value item))
