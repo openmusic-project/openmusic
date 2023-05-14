@@ -2,9 +2,11 @@
 
 NEW FEATURES
 
+- New view selection in Scoreeditors (measure and onset) 
 
 IMPROVEMENTS
 
+- Segmentation mode works for quantification
 - fluidsynth autoload at workspace startup
 
 FIXES
