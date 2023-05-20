@@ -40,7 +40,7 @@
 (defvar *fluidsynth-initialized-p* nil)
 
  ;;a voir si besoin
-#+macosx
+#+(or macosx win32)
 (defun load-fluidsynth-library ()
   (let ((libpath (om::om-lib-pathname cl-fluid::*fluidsynth-pathname*)))
     
