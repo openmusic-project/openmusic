@@ -265,7 +265,8 @@
    
    (oa::om-make-new-listener :initial-lambda #'(lambda () (in-package :om)) :input *listener-input*)
    (init-output)
-
+   #+macosx (unless *current-workSpace*
+              (setf *current-workSpace* (make-new-WorkSpace "Untitled.wrk")));a voir
    (initWorkSpace *current-workSpace*) 
    
    (libs-autoload)
