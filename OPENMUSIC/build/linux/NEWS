@@ -2,6 +2,8 @@
 
 NEW FEATURES
 
+- Multi-seq: merging selected chords
+- Fluidsynth: midi-to-audio
 - New view selection in Scoreeditors (measure and onset) 
 
 IMPROVEMENTS
