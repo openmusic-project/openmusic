@@ -299,14 +299,16 @@ External Libraries:
    (label :initarg :label :accessor label :initform nil)))
 
 (defun init-message-win ()
-  (let ((newwindow (om-make-window 'om-message-win :size (om-make-point 200 100) :position :centered 
-                                      :window-show t
-                                      :window-title ""
-                                      :bg-color *om-window-def-color*
-                                      :resizable nil
-                                      :minimize nil :maximize nil
-                                      :topmost t
-                                      )))
+  (let ((newwindow (om-make-window 'om-message-win 
+                                   :size (om-make-point 200 100) 
+                                   :position :centered 
+                                   :window-show t
+                                   :window-title ""
+                                   :bg-color *om-window-def-color*
+                                   :resizable nil
+                                   :minimize nil :maximize nil
+                                      ;:topmost t
+                                   )))
   
   (om-add-subviews newwindow (setf (pane newwindow)
                                        (om-make-view 'om-view :size (om-make-point 200 100)
@@ -397,9 +399,9 @@ External Libraries:
       (load userpref)
       (setf previous (get-ompref 'prev-ws)))
   
-    (let ((win (om-make-window 'om-dialog :size (om-make-point 420 330)
+    (let ((win (om-make-window 'om-dialog :size (om-make-point 420 330) :position :centered
                                :resizable nil :maximize nil :minimize nil
-                               :window-title "OpenMusic - Workspaces"
+                               :window-title "OpenMusic - Workspaces" 
                                :owner nil
                                ))
           (view (om-make-view 'om-view :size (om-make-point 370 250) 
