@@ -5792,7 +5792,8 @@
 (defmethod handle-key-event ((self multiSeqPanel) char)
   (case char
     (#\f (flip-selection self :down))
-    (#\F (flip-selection self :up)))
+    (#\F (flip-selection self :up))
+    (#\1 (merge-in-frst-chrdseq self)))
   (call-next-method))
 
 (defmethod get-help-list :around ((self multiSeqPanel))
