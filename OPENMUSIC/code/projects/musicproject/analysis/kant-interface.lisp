@@ -31,7 +31,7 @@
 
 ;;;============================
 ;;; KANT
-;;; Segments = note marker, untel next one (TO DO)
+;;; Segments = note marker, until next one (TO DO)
 ;;; Segment-data = a VOICE
 
 
@@ -82,11 +82,17 @@
     (setf (analysis self) (list anal))))) 
 
 
-(defun add-time-segment (self) ;((self abstract-analysis)) 
+
+(defun add-time-segment (self)         
+"self is the  abstract-analysis"
   (when self
-  (let ((time-seg (make-instance 'time-segment :t1 0 :t2 1000)))
+  (let ((time-seg (make-instance 'time-segment :t1 0 :t2 1000))
+        (panel (panel (editorframe
+                       (associated-box (analysis-object self))))))
     (ts-data-window time-seg)
-    (add-in-analysis self time-seg))))
+    (add-in-analysis self time-seg)
+     (update-panel panel t)
+     )))
  
 
 (defmethod add-time-seg ((self chordseqpanel) (anal abstract-analysis))
@@ -150,9 +156,12 @@
                             :size (om-make-point 400 180)
                             :position (om-make-point 10 10)
                             :bg-color *om-white-color*))
+        (panel (editorframe
+                (associated-box
+                 (analysis-object (container-analysis kdata)))))
         (i 0)
         tbtxt tetxt)
-    
+    (print (list "check" (t1 kdata)))
     (om-add-subviews 
      pane
      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
@@ -161,14 +170,40 @@
                           :font *om-default-font2b*)
      (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Begin time"
                           :font *om-default-font1*)
-     (setf tbtxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
+     (setf tbtxt (om-make-dialog-item 'edit-numbox 
+                                      (om-make-point 140 i)  
+                                      (om-make-point 46 18)
                                       (format nil "~D" (t1 kdata)) 
-                                      :font *om-default-font1*))
+                                      :font *om-default-font1*
+                                      :min-val (t1 kdata)
+                                      :di-action (om-dialog-item-act item
+                                                  (setf (min-val item) 0);necessaire
+                                                   (setf (t1 kdata) (value item))
+                                                   (update-panel panel t)
+                                                   )
+                                      :afterfun #'(lambda (item)
+                                                    (progn
+                                                      
+                                                      (setf (t1 kdata) (value item))
+                                                      (update-for-subviews-changes panel t)))
+                                      ))
      (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "End time"
                           :font *om-default-font1*)
-     (setf tetxt (om-make-dialog-item 'om-editable-text (om-make-point 140 i)  (om-make-point 37 13)
+     (setf tetxt (om-make-dialog-item 'edit-numbox 
+                                      (om-make-point 140 i)  
+                                      (om-make-point 46 18)
                                       (format nil "~D" (t2 kdata))
-                                      :font *om-default-font1*))
+                                      :font *om-default-font1*
+                                      :min-val (t2 kdata)
+                                      :di-action (om-dialog-item-act item
+                                                   (setf (min-val item) 0);necessaire
+                                                   (setf (t2 kdata) (value item))
+                                                   (update-panel panel t))
+                                      :afterfun #'(lambda (item)
+                                                    (progn
+                                                      (setf (t2 kdata) (value item))
+                                                      (update-for-subviews-changes panel t)))
+                                      ))
      (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Crop"
                           :font *om-default-font1*)
      
@@ -183,10 +218,7 @@
                                (om-set-dialog-item-text tetxt (write-to-string(second vals)))    
                                (setf (t1 kdata) (car vals)
                                      (t2 kdata) (second vals))
-                               (update-panel 
-                                (editorframe
-                                 (associated-box
-                                  (analysis-object (container-analysis kdata)))))
+                               (update-panel panel t)
                                )))
 
 
