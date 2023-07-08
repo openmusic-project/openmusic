@@ -92,7 +92,8 @@
 (defmethod add-time-seg ((self chordseqpanel) (anal abstract-analysis))
   (let* ((int (cursor-interval self))
          (time-seg (make-instance 'time-segment :t1 (car int) :t2 (second int))))
-    (add-in-analysis anal time-seg)))
+    (add-in-analysis anal time-seg)
+    (update-panel self t)))
 
 
 (defmethod get-chords-in-selection ((self chordseqpanel))
@@ -217,7 +218,7 @@
 
 (defmethod handle-add-click-analysis ((self scorepanel) where) 
   (if (and (equal (cursor-mode self) :interval) (om-shift-key-p))
-      (let ((time (cursor-interval self))
+      (let* ((time (cursor-interval self))
             (time-seg (make-instance 'time-segment :t1 (car time) :t2 (second time))))
         (add-in-analysis (analysis (object self)) time-seg))))
             
