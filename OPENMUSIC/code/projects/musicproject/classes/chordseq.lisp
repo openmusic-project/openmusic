@@ -826,28 +826,6 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 
-(defmethod merge-chord-in-chrdseq ((self chord-seq) (obj list))
-  (let* ((chords (x-append (inside self) obj))
-        (sorted (sort-list chords :test '< :key #'offset)))
-    (setf (inside self) sorted) 
-    ))
-
-
-(defmethod merge-in-frst-chrdseq ((self multiseqpanel))
-     (let* ((selection (selection? self))
-            (clone (clone selection))
-            (obj (object (om-view-container self)))
-            (chrdseq (car (inside obj))))
-       (print (string-equal (obj-mode self) "chord"))
-       (if (string-equal (obj-mode self) "chord")
-      (progn
-       (merge-chord-in-chrdseq chrdseq clone)
-       (delete-selection self)
-       (update-panel self t))
-         (om-beep-msg "In order to merge, you must be in chord mode selection!")
-         )
-       ))
-
 
 ;;;=============================================
 
