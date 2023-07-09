@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;;===========================
@@ -157,7 +157,10 @@
 
 (defmethod! concatenate-kant-voices ((self chord-seq) &optional n)
    :icon 252
-   (reduce 'concat (kant-voices self n)))
+   (let ((voices (remove 'nil (kant-voices self))))
+   (if voices
+   (reduce 'concat voices);(kant-voices self n))
+     (om-beep-msg "NO KANT-SEG IN CHORD-SEQ OR NO ANALYSIS DONE YET!"))))
    
                           
 (defmethod kant-data-window ((kdata kant-data))

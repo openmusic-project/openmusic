@@ -1252,6 +1252,8 @@
                    (t
                     (if (analysis-mode? self) 
                       (progn
+                        (when (om-shift-key-p)
+                          (handle-add-kant-click self))
                         (off-analysis-selection self)
                         (setf segment (click-in-segment self where))
                         ;;; segment = (analysis segment)

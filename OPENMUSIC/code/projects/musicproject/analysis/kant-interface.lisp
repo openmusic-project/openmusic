@@ -149,9 +149,13 @@
 
 
 
+
 (defmethod ts-data-window ((kdata time-segment))
-  (let ((win (om-make-window 'om-dialog :position :centered 
-                             :size (om-make-point 430 200)))
+  (let ((win (om-make-window 'om-window 
+                             :position :centered 
+                             :size (om-make-point 430 200)
+                             :resizable nil
+                             ))
         (pane (om-make-view 'om-view
                             :size (om-make-point 400 180)
                             :position (om-make-point 10 10)
@@ -161,7 +165,7 @@
                  (analysis-object (container-analysis kdata)))))
         (i 0)
         tbtxt tetxt)
-    (print (list "check" (t1 kdata)))
+
     (om-add-subviews 
      pane
      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
@@ -224,7 +228,8 @@
 
      (om-make-dialog-item 'om-button (om-make-point 200 (incf i 35)) (om-make-point 80 20) "Cancel"
                           :di-action (om-dialog-item-act item 
-                                       (om-return-from-modal-dialog win nil)))
+                                       ;(om-return-from-modal-dialog win nil)
+                                       (om-close-window (om-view-window item))))
      (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20) "OK"
                            :di-action (om-dialog-item-act item 
                                         (let ((timebeg (ignore-errors (read-from-string (om-dialog-item-text tbtxt))))
@@ -232,11 +237,14 @@
                                           (setf (t1 kdata) timebeg
                                                 (t2 kdata) timeend)
                                           ;(setf (updateflag kdata) nil)
-                                          (om-return-from-modal-dialog win t))))
+                                          (om-close-window (om-view-window item))
+                                          ;(om-return-from-modal-dialog win t)
+                                          )))
      )
     (om-add-subviews win pane)
-    (om-modal-dialog win)))
-
+    ;(om-modal-dialog win)
+    win
+    ))
 
 
 
@@ -254,6 +262,8 @@
             (time-seg (make-instance 'time-segment :t1 (car time) :t2 (second time))))
         (add-in-analysis (analysis (object self)) time-seg))))
             
+
+
 
 
 #|
@@ -275,6 +285,28 @@
   (om-invalidate-view (title-bar (editor self)))
   (update-panel self))
 |#
+
+
+
+;;;For sequential kant-segements using shift+clic
+
+(defmethod om-click-release-handler ((self time-segment) pos) nil)
+
+(defmethod handle-add-kant-click ((self t)) nil)
+
+(defmethod handle-add-kant-click ((self chordseqpanel)) 
+  (let* ((ms (pixel-toms self (om-mouse-position self)))
+         (last (loop for i in (analysis (object (om-view-container self)))
+                    collect (when i
+                              (mapcar #'t2 (analysis-segments i))))))
+    (if last
+        (let ((time-seg (make-instance 'time-segment :t1 (+ (last-elem (car last)) 1) :t2 ms)))
+          (add-in-analysis (car (analysis (object (om-view-container self)))) time-seg))
+
+      (let* ((time-seg (make-instance 'time-segment :t1 0 :t2 ms))
+             (kantseg (make-instance 'kant-seg :analysis-segments (list time-seg))))
+        (set-object-analysis (object (om-view-container self)) kantseg)
+        ))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
