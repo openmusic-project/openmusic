@@ -401,6 +401,8 @@
                     (("d") "Delete Analysis")
                     (("i") "Get Info of selected segment")
                     (("t") "Create Time segment")
+                    #+(or linux win32)("ctrl+shift+clic" "Add sequential Time segments")
+                    #+macosx("cmd+shift+clic" "Add sequential Time segments")
                     (("c") "Show Channel Color")
                     (("C") "Change Selection Color")
                     (("o") "Open Selection Internal Editor")

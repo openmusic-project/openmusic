@@ -101,7 +101,7 @@
 (defmethod analyse-one-segment ((self KANT-seg) (seg segment) (object t))
   (let* ((tmpcseq (select object (segment-begin seg) (min (segment-end seg) (get-obj-dur object))))
          ;; (durs (x->dx (lonset tmpcseq)))
-         (durs (true-durations tmpcseq))
+         (durs (true-durations tmpcseq));to do if segment is empty, true-durations returns an error.
          (kant-data (or (segment-data seg) 
                         (setf (segment-data seg) (make-instance 'kant-data)))))
     (setf (voice kant-data) (make-instance 'voice 

@@ -1252,7 +1252,7 @@
                    (t
                     (if (analysis-mode? self) 
                       (progn
-                        (when (om-shift-key-p)
+                        (when (and (om-shift-key-p) (om-command-key-p))
                           (handle-add-kant-click self))
                         (off-analysis-selection self)
                         (setf segment (click-in-segment self where))
