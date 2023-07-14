@@ -445,7 +445,7 @@
        (editor-stop (editor self)))
       (#\h (show-help-window (format nil "Commands for ~A Editor [analysis mode]" 
                                      (string-upcase (class-name (class-of (object (editor self)))))) 
-                             (analysis-help-list self)))
+                             (analysis-help-list self) #+macosx 360))
       (#\n (change-analysis-name self))
       (#\i (segment-info (car selected)))
       (#\t (if (equal (cursor-mode self) :interval)
