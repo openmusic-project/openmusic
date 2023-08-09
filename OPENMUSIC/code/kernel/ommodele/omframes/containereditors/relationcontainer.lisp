@@ -236,10 +236,10 @@ maquettes and hierarchical class editors.#enddoc#
   (let ((fpx (om-point-h (frame-position self)))
         (fpy (om-point-v (frame-position self))))
     
-    (when (or (> fpx (- (w view) 20)) (> fpy (- (h view) 20)))
-      (setf fpx (- fpx (w view)) ; (om-point-h (om-mouse-position view))
-            fpy (- fpy (h view)) ; (om-point-v (om-mouse-position view))
-            ))
+  ;  (when (or (> fpx (- (w view) 20)) (> fpy (- (h view) 20)))
+  ;    (setf fpx (- fpx (w view)) ; (om-point-h (om-mouse-position view))
+  ;          fpy (- fpy (h view)) ; (om-point-v (om-mouse-position view))
+  ;          ))
     (om-add-points (om-make-point 
                     (max 0 fpx)
                     (max 0 fpy))
