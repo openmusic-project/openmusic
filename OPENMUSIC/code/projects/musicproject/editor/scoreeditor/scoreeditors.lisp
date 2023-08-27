@@ -546,16 +546,20 @@
   (declare (ignore l))
   (setf onsetval 0)
   (setf measnumval 1)
+  
  ; (setf (staff-meas (panel (om-view-container self))) measnumval)
-  (let* ((obj (object (om-view-container self)))
+  (let* ((editor (om-view-container self))
+         (obj (object editor))
+         (panel (panel editor))
          (bgcol *controls-color*)
          (di-font *controls-font*)
          (l1 230)
          (l2 380)
          (l3 500)
+         (l4 620)
          (c1 2)
          (c2 *second-row-y*)
-
+         
          ;;; Slot
          (minied (om-make-dialog-item 'edit-numbox (om-make-point 96 (+ c1 2)) (om-make-point 50 18) " "
                                       :value nil
@@ -682,19 +686,23 @@
                                                      (update-for-subviews-changes (panel (om-view-container (om-view-container self))) t)))
                                         :min-val 1
                                         ))
+
+         ;;;selection
+         (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 80) 
+                                        ""
+                                         :font *om-default-font1*
+                                         :bg-color *controls-color*))
          )
          
-    
     (setf (slotedit self) minied)
     (cond 
-     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num))
-     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms))
+     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num duration))
+     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms duration))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     
     (om-set-bg-color self *controls-color*)
-    
     )
 )
 
@@ -1476,7 +1484,7 @@
 
 
 (defmethod om-draw-contents ((self scorePanel))
-  (call-next-method) 
+  (call-next-method)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
     (if (score-page-mode self)
         (draw-panel-pages self)
@@ -1493,7 +1501,8 @@
           (revise-references self)
           (setf *redraw-diamonds* nil))
         (draw-editors-in-editor self)
-        (draw-time-selection self)
+       ; (draw-time-selection self) ;old style, displayed in the panel
+        (display-time-selection self)
         ))))
 
 
@@ -1545,8 +1554,8 @@
                         (page-draw-score-selection item (selection? self) rect factor)
                        )))))))
 
-(defmethod draw-time-selection ((self scorepanel)) nil)
-
+;(defmethod draw-time-selection ((self scorepanel)) nil)
+(defmethod display-time-selection ((self scorepanel)) nil)
 
 (defmethod get-mini-param ((self scorePanel) param)
   (cdr (assoc param (default-edition-params (make-instance 'note)))))
@@ -2413,7 +2422,7 @@
     (clic-pos :initform nil :accessor clic-pos)
     ))
 
-
+#|
 (defmethod draw-time-selection ((self chordseqpanel))
   (unless (or (system? (car (selection? self))) (extra-p (car (selection? self))))
     ;(print "drawtime")
@@ -2441,6 +2450,41 @@
                                           (str-check (string+ (om-str :selection) ": " (format () "~D - ~D ms ~%Duration: ~D ms" b e (- e b))))
                                         (str-check (string+ (om-str :duration) ": " (format () "~D ms" e)))))
                       )))))
+|#
+
+(defmethod display-time-selection ((self chordseqpanel)) ;bizzare: if scorepanel chord doesn't work
+  (let* ((e (get-obj-dur (object (editor self))))
+         (b 0))
+    (if (and (linear? self) (cursor-p self) (cursor-interval self) (not (= (car (cursor-interval self)) (cadr (cursor-interval self)))))
+        (setf b (car (cursor-interval self))
+              e (cadr (cursor-interval self)))
+        ;nil
+      (when (selection? self) 
+        (setf b e) (setf e 0)
+        (loop for item in (selection? self) do
+                (unless (or (system? item) (extra-p item))
+                  (when (< (offset->ms item (object (editor self))) b) (setf b (offset->ms item (object (editor self)))))
+                  (when (> (+ (offset->ms item (object (editor self))) (get-obj-dur item)) e) (setf e (+ (offset->ms item (object (editor self))) (get-obj-dur item))))
+                  ))))
+ 
+    (if (and (linear? self) (cursor-p self) (cursor-interval self) (not (= (car (cursor-interval self)) (cadr (cursor-interval self)))))
+        (setf b (car (cursor-interval self))
+              e (cadr (cursor-interval self)))
+        ;nil
+      (when (selection? self) 
+        (setf b e) (setf e 0)
+        (loop for item in (selection? self) do
+                (unless (or (system? item) (extra-p item))
+                  (when (< (offset->ms item (object (editor self))) b) (setf b (offset->ms item (object (editor self)))))
+                  (when (> (+ (offset->ms item (object (editor self))) (get-obj-dur item)) e) (setf e (+ (offset->ms item (object (editor self))) (get-obj-dur item))))
+                  ))) )
+    (om-set-dialog-item-text (nth 10 (om-subviews (ctr-view (editor self)))) 
+                             (if (selection? self)
+                                 (str-check (string+ (om-str :selection) ": " (format () "~D - ~D ms ~%Duration: ~D ms" b e (- e b))))
+                               (str-check (string+ (om-str :duration) ": " (format () "~D ms" e))))
+                             )
+))
+
 
 (defvar *interpage-pixels* 10)
 
