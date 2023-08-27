@@ -8,6 +8,8 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- In Scoreeditors, duration/selection is displayed now in the control panel 
+  instead in the panel itself
 - Segmentation mode works for quantification
 - fluidsynth autoload at workspace startup
 
