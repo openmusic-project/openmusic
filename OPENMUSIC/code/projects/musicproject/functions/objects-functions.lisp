@@ -69,7 +69,7 @@
 ;k.h 28/09/20
 ;----------Voice2voices
 
-
+#|
 (defun dbl-tempo-p (tempo)
   "Indicates first tempo of measure exists as in:
    ((1/4 60) (((0 0) (1/8 120 t))))"
@@ -79,6 +79,41 @@
        (frsttemposig (butlast (cadaar cdrtempo))))
   (if (equal frsttempopos '(0 0))
       t nil)))
+|#
+
+(defun dbl-tempo-p (tempo)
+  "Indicates first tempo of measure exists as in:
+   ((1/4 60) (((0 0) (1/8 120 t))))"
+(let* ((cartempo (car tempo))
+       (cdrtempo (cdr tempo))
+       (allfrst (mapcar #'car (car cdrtempo)))
+       (frsttempopos (caaar cdrtempo))
+       (frsttemposig (butlast (cadaar cdrtempo))))
+  (if (member '(0 0) allfrst :test 'equal)
+      t nil)))
+
+;;;;;ordered cadr tempo
+
+(defun list< (a b)
+  (cond ((null a) (not (null b)))
+        ((null b) nil)
+        ((= (first a) (first b)) (list< (rest a) (rest b)))
+        (t (< (first a) (first b))) ))
+
+
+;(sort (copy-seq '(((119 0) (1/4 96 nil)) ((0 0) (1/4 160 nil)) ((0 1) (1/4 160 nil)))) 
+;     #'(lambda (x y) (list< (car x) (car y))))
+
+(defmethod ordered-cadr-tempo ((self list))
+  (sort self #'(lambda (x y) (list< (car x) (car y)))))
+
+;(ordered-cadr-tempo '(((119 0) (1/4 96 nil)) ((10 1 2) (1/4 160 nil)) ((0 0) (1/4 160 nil)) ((0 1) (1/4 160 nil))))
+
+
+
+
+
+
 
 (defmethod fix-frst-tempo ((self voice))
   "fixes first measure, when it has tempo changes.Should be fixed at the source of the factory!"
@@ -100,7 +135,8 @@
 (defmethod cadr-tempo ((self list))
   "pushes init tempo in cadr tempo list if there are cadr tempo list doesnot start as ((0 0) ....)"
   (let* ((cr (car self))
-         (dr (cadr self)))
+         (dr (cadr self))
+         (ordered-dr (ordered-cadr-tempo dr)))
     (if (not (dbl-tempo-p self)) 
         (let ((frst (list '(0 0) (flat (list cr nil )))))
           (append (list frst) dr)) dr)))
