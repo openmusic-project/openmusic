@@ -260,6 +260,19 @@ t)
   (remove nil (loop for i in chords
                     collect (if (not (rest-p i)) i)))))
 
+
+
+(defmethod get-chords&rests ((self measure))
+  (let ((chords (get-all-chords self)))
+  (remove nil (loop for i in chords
+                    collect (if (not (cont-chord-p i)) i)))))
+
+(defmethod get-chords&rests ((self voice))
+  (let ((chords (get-all-chords self)))
+  (remove nil (loop for i in chords
+                    collect (if (not (cont-chord-p i)) i)))))
+
+
 ;--------------------
 ;  GET-GROUP-OBJS
 ;--------------------
