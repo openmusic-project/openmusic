@@ -4099,10 +4099,19 @@
 
 
 ;---------VOICE
-     
+#|     
 (defmethod toggle ((self rest))
    (change-class self 'chord)
    (setf (inside self) (list (make-instance 'note)))
+   self)
+|#
+
+;fix when previous is a group in previous measure 
+(defmethod toggle ((self rest)) 
+   (change-class self 'chord)
+   (setf (inside self) (list (make-instance 'note)))
+   (loop for i in (inside (previous-real-chord self))
+           do (setf (tie i) nil))
    self)
 
 (defmethod toggle ((self chord))
