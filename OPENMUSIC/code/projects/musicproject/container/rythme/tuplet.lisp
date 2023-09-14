@@ -176,7 +176,8 @@
         (loop for item in (inside self) thereis (contains-tuplet-p item) )
         )
    )
-        
+
+#|        
 (defmethod power-of-two-p (( self integer))
   (if (or (eq self 1) (eq self 2))
     t
@@ -184,13 +185,30 @@
     )
   )
 
-
 (defmethod reduce-pow-two ( ( self integer ) ) 
   (if (eq (mod self 2 ) 0) 
     (reduce-pow-two (/ self 2 ))
     self
     )
   )
+
+
+|#
+
+;fix when zero (anders)
+
+(defmethod power-of-two-p (( self integer))
+  (cond ((zerop self) nil)
+	((or (eq self 1) (eq self 2)) t)
+	((zerop (mod self 2)) (power-of-two-p (/ self 2)) )
+	(t nil)))
+
+
+
+(defmethod reduce-pow-two ( ( self integer ) ) 
+  (cond ((zerop self) 0)
+	((eq (mod self 2 ) 0) (reduce-pow-two (/ self 2 )))
+	(t self)))
 
 ;------------------------------Om-mxml----------------------------
 
