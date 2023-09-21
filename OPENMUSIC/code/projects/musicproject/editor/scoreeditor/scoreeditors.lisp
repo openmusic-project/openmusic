@@ -4110,8 +4110,9 @@
 (defmethod toggle ((self rest)) 
    (change-class self 'chord)
    (setf (inside self) (list (make-instance 'note)))
+   (when (previous-real-chord self)
    (loop for i in (inside (previous-real-chord self))
-           do (setf (tie i) nil))
+           do (setf (tie i) nil)))
    self)
 
 (defmethod toggle ((self chord))
