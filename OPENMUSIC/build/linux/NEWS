@@ -15,6 +15,9 @@ IMPROVEMENTS
 
 FIXES
 
+- power-of-two fix when zero
+- rest editing fix
+- tempo sort fix
 - copy/paste fix
 - Mac OS Ventura window issue (api)
 
