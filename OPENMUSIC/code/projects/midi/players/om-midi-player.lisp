@@ -53,8 +53,9 @@
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
                 (schedule-task player 
                                #'(lambda () 
-                                   ;(print evt)
-                                   (player-play-object engine evt :interval interval))
+                                   (unless (eq (om-midi::midi-evt-type  evt) :timesign)
+				     ;;(print evt)
+                                     (player-play-object engine evt :interval interval)))
                                (+ (or (car interval) 0) (om-midi::midi-evt-date evt))
                                nil)
                 )
