@@ -121,12 +121,12 @@
   (let ((sys (check-def-midi-system 'om-midi::send-midi-event-function)))
     (when sys
       (let ((rep (funcall (om-midi::send-midi-event-function sys) evt)))
-        (unless rep
-          ;(print "[MIDI send failed]")
-          ;(funcall (om-midi::midi-connect-function sys)
-          ;         (get-pref (find-pref-module :midi) :midi-setup))
-          ;(funcall (om-midi::send-midi-event-function sys) evt)
-        )
+        ;; (unless rep
+        ;;   (print "[MIDI send failed]")
+        ;;   (funcall (om-midi::midi-connect-function sys)
+        ;;           (get-pref (find-pref-module :midi) :midi-setup))
+        ;;   (funcall (om-midi::send-midi-event-function sys) evt)
+        ;; )
         rep))))
 
 
