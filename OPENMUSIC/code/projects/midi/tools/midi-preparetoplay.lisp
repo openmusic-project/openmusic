@@ -49,6 +49,8 @@
     (loop for event in (fileseq self) 
           when (and (or (not interval) newinterval)
                     (not (equal (om-midi::midi-evt-type event) :Tempo))
+                    (not (equal (om-midi::midi-evt-type event) :timesign))
+                    (not (equal (om-midi::midi-evt-type event) :pitchbend))
                     (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
                     (not (equal (om-midi::midi-evt-type event) :EndTrack)))
           collect   
