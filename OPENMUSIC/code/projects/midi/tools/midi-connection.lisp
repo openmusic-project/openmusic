@@ -85,16 +85,44 @@
       (om-abort)
       )))
 
-(defun setup-retune-messages (approx)
-  (declare (ignore approx))				    ;for now, settle on regime for auto-tuning
+
+(defun send-1/8-midi-evt ()
   (loop
-     for chan from 1 to 4
-     for pb from 8192 by 1024
-     collect (om-midi::make-midi-evt
-	      :type :PitchBend
-	      :date 0
-	      :chan chan
-	      :fields (list pb))))
+       for chan in '(1 2 3 4 5 6 7 8 11 12 13 14)
+       for pb in '(8192 9215 10239 11263 8192 9215 10239 11263)
+       collect (om-midi::make-midi-evt
+                :type :PitchBend
+                :date 0
+                :chan chan
+                :fields (list pb))))
+
+(defun send-1/4-midi-evt ()
+  (loop
+       for chan in '(1 3 2 4 5 7 6 8 9 11 12 14 13 15)
+       for pb in '(8192 10239 8192 10239 8192 10239 8192 10239 8192 10239 8192 10239 8192 10239)
+       collect (om-midi::make-midi-evt
+                :type :PitchBend
+                :date 0
+                :chan chan
+                :fields (list pb))))
+
+(defun setup-retune-messages (approx)
+  (cond 
+   ((= approx 16)
+    (loop
+       for chan from 1 to 8
+       for pb from 8192 by 512
+       collect (om-midi::make-midi-evt
+                :type :PitchBend
+                :date 0
+                :chan chan
+                :fields (list pb))))
+   ((= approx 8)
+    (send-1/8-midi-evt))
+   ((= approx 4)
+    (send-1/4-midi-evt))
+   (t nil)))
+
 
 ;= Saves sequence with tempo 60
 ;= modif  --->  clicks = 1000 so that 1 click = 1ms at tempo 60
