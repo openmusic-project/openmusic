@@ -47,7 +47,7 @@
 
 (defmethod editor ((self midi-control)) (om-view-container self))
 
-(defmethod initialize-instance :after ((self Midi-control) &rest l)
+(defmethod initialize-instance :after ((self Midi-control) &rest l) 
   (declare (ignore l))
   (additional-port-menu self :pos (om-make-point 120 0) :in nil)
   (om-add-subviews self 
@@ -72,10 +72,11 @@
                             :icon1 "stop" :icon2 "stop-pushed"
                             :action #'(lambda (item) (editor-stop (om-view-container self))))
                
-              (om-make-view 'om-icon-button :position (om-make-point -10 -10) :size (om-make-point 1 1)
-                            :icon1 "rec" :icon2 "rec-pushed") ;; dummy rec
+              (om-make-view 'om-icon-button :position (om-make-point 313 2) :size (om-make-point 22 22)
+                            :icon1 "stop-reset" :icon2 "stop-reset-pushed"
+                             :action #'(lambda (item) (editor-stop-reset (om-view-container self)))) 
               
-              (om-make-view 'om-icon-button :position (om-make-point 323 2) :size (om-make-point 22 22)
+              (om-make-view 'om-icon-button :position (om-make-point 334 2) :size (om-make-point 22 22)
                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
                             :lock-push t
                             :selected-p (loop-play (om-view-container self))
@@ -299,6 +300,12 @@
 
 (defmethod editor-stop ((self midieditor))
   (call-next-method)
+  (update-play-buttons (control self)))
+
+(defmethod editor-stop-reset ((self midieditor)) 
+   (editor-stop self)
+   (reset-cursor (panel self))
+   (update-cursor (panel self) 0)
   (update-play-buttons (control self)))
 
 
