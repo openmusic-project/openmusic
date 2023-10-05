@@ -8,13 +8,14 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- stop/reset button in MIDIFILE
 - In Scoreeditors, duration/selection is displayed now in the control panel 
-  instead in the panel itself
 - Segmentation mode works for quantification
 - fluidsynth autoload at workspace startup
 
 FIXES
 
+- prepare-to-play major fix (linux)
 - power-of-two fix when zero
 - rest editing fix
 - tempo sort fix
