@@ -49,6 +49,8 @@
     (loop for event in (fileseq self) 
           when (and (or (not interval) newinterval)
                     (not (equal (om-midi::midi-evt-type event) :Tempo))
+                    (not (equal (om-midi::midi-evt-type event) :timesign))
+                    (not (equal (om-midi::midi-evt-type event) :pitchbend))
                     (or (null interval) (point-in-interval (+ (om-midi::midi-evt-date event) at) newinterval))
                     (not (equal (om-midi::midi-evt-type event) :EndTrack)))
           collect   
@@ -118,11 +120,12 @@
          (div 8 )   ;;; (max-div self))
          (MeasureEvent (om-midi::make-midi-evt :type :TimeSign
                                       :ref 0 ; (if voice voice 0) ;; send to 0 to read in external sequencers/DAWs (?)
-                                      :chan 0 ;;; WHANT IS THE CHANNEL OF A TIME SIGN EVENT ?
+                                    ;  :chan 1 ;;; WHANT IS THE CHANNEL OF A TIME SIGN EVENT ?
                                       :date at
                                       :fields (list num den 24 div)
                                       :port (or port *def-midi-out*))))
 
+    ;; (cerror "forsett" "stopp")
     (cons MeasureEvent
           (remove nil
                   (loop for sub in (inside self) collect
