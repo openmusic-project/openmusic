@@ -66,6 +66,40 @@
 
 
 ;=========================================================================
+
+
+(defmethod get-obj-offset ((self t)) nil)
+(defmethod get-obj-offset ((self poly)) 0)
+(defmethod get-obj-offset ((self voice)) 0)
+
+ 
+(defmethod get-obj-offset ((self measure))
+  "Returns the offset of <self> starting from Score objects."
+ (let ((parent (parent self)))
+    (if parent
+        (+ (get-obj-offset parent) (offset->ms self))
+      (offset->ms self))))
+ 
+(defmethod get-obj-offset ((self group)) 
+ (let ((parent (parent self)))
+    (if parent
+        (+ (get-obj-offset parent) (offset->ms self))
+      (offset->ms self))))
+ 
+(defmethod get-obj-offset ((self chord)) (parent self)
+  (let ((parent (parent self)))
+    (if parent
+        (+ (get-obj-offset parent) (offset->ms self))
+      (offset->ms self))))
+
+(defmethod get-obj-offset ((self rest)) (parent self)
+  (let ((parent (parent self)))
+    (if parent
+        (+ (get-obj-offset parent) (offset->ms self))
+      (offset->ms self))))
+
+
+;=========================================================================
 ;k.h 28/09/20
 ;----------Voice2voices
 
