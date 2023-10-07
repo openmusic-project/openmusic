@@ -369,7 +369,7 @@
                                :size (round lengthfinal nch)
                                :nch nch
                                :sr sr))))
-
+;probleme...
 (defmethod! sound-cut ((s om-sound-data) (beg integer) (end integer))
     (sound-cut s (* beg 0.001) (* end 0.001))) 
 

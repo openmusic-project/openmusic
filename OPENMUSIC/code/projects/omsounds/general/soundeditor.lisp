@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; authors G. Assayag, C. Agon, J. Bresson
+; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;;===========================================================================
 
 (in-package :om) 
@@ -91,8 +91,11 @@
                             :icon1 "rec" :icon2 "rec-pushed"
                             :lock-push t
                             :action #'(lambda (item) (editor-record (editor self))))
-              
               (om-make-view 'om-icon-button :position (om-make-point 263 7) :size (om-make-point 22 22)
+                            :icon1 "stop-reset" :icon2 "stop-reset-pushed"
+                            :action #'(lambda (item) (editor-stop-reset (om-view-container self)))) 
+
+              (om-make-view 'om-icon-button :position (om-make-point 284 7) :size (om-make-point 22 22)
                             :icon1 "loopbutton" :icon2 "loopbutton-pushed"
                             :lock-push t
                             :selected-p (loop-play (editor self))
@@ -240,7 +243,10 @@
 (defmethod get-help-list ((self soundeditor))
   (list '(#+macosx("cmd+clic" "Add Marker")
           #+(or linux win32)("ctrl+clic" "Add Marker")
+          (("M") "Add Marker dialog")
           ("del" "Delete Selected Markers")
+          (("s") "Snap Selection to Markers")
+          (("e") "Extract Selection")
           (("g") "Show/Hide Grid")
           (("A") "Align Selected Markers to Grid")
           ("esc" "Reset cursor")
@@ -427,6 +433,13 @@
   (call-next-method)
   (update-play-buttons (control self)))
 
+
+(defmethod editor-stop-reset ((self soundeditor))
+   (editor-stop self)
+   (reset-cursor (panel self))
+   (update-cursor (panel self) 0)
+  (update-play-buttons (control self)))
+
 (defmethod get-interval-to-play ((self soundEditor))
   (let ((panel (panel self)))
     (if (and (equal :normal (cursor-mode panel)) (cursor-interval panel))
@@ -574,6 +587,40 @@
           (when (and (< m a) (>= m t-s)) (setf a m)))
     a))
  
+(defmethod add-new-marker-dialog ((Self soundPanel)) 
+  (let* ((thesound (object (om-view-container self)))
+         (dur (/ (om-sound-n-samples  thesound) (om-sound-sample-rate  thesound)))
+         (dec 6)
+         (Xsize 80)
+         (Mydialog (om-make-window 'om-dialog
+                                   :size (om-make-point (+ xsize 110) 80)
+                                   :window-title "Marker Onset"
+                                   :maximize nil :minimize nil :resizable nil
+                                   :bg-color *om-window-def-color*
+                                   :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
+         (Xed (om-make-dialog-item 'om-editable-text (om-make-point 10 30)  (om-make-point (- xsize 25) 16)
+                                   ;(format nil "~F" (nth point (markers thesound)));;
+                                   (format nil "0.0" )
+                                   :font *controls-font*)))
+    (om-add-subviews mydialog 
+                     xed
+                     (om-make-dialog-item 'om-static-text (om-make-point 14 8) (om-make-point 50 16) "t (s)"
+                                          :font *om-default-font2b*)
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 8) (om-make-point 70 15) "Cancel"
+                                          :di-action (om-dialog-item-act item 
+                                                       (declare (ignore item))
+                                                       (om-return-from-modal-dialog mydialog ()))
+                                          :focus nil
+                                          :default-button nil)
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 34) (om-make-point 70 15) "OK"
+                                          :di-action (om-dialog-item-act item 
+                                                       (declare (ignore item))
+                                                       (let ((val (read-from-string (om-dialog-item-text xed))))
+                                                         (add-new-sound-marker self val)
+                                                         (om-return-from-modal-dialog mydialog ())))
+                                          :default-button t))
+    (om-modal-dialog mydialog)))
+
 (defmethod special-move-marker ((Self soundPanel) Point)
   (let* ((thesound (object (om-view-container self)))
          (dur (/ (om-sound-n-samples  thesound) (om-sound-sample-rate  thesound)))
@@ -597,7 +644,8 @@
                                                        (declare (ignore item))
                                                        (om-return-from-modal-dialog mydialog ()))
                                           :focus nil
-                                          :default-button nil)
+                                          :default-button nil
+                                          )
                      (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 34) (om-make-point 70 15) "OK"
                                           :di-action (om-dialog-item-act item 
                                                        (declare (ignore item))
@@ -630,6 +678,9 @@
      (#\g (grille-on-off self))
      (#\A (align-markers self))
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
+     (#\M (add-new-marker-dialog self))
+     (#\s (snap-to-markers self))
+     (#\e (extract-sound-selection self)) 
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc 
       (if (equal (state (player (editor self))) :stop)  
@@ -737,6 +788,18 @@
     (om-invalidate-view self t)
     (report-modifications (editor self))))
 
+(defmethod add-new-sound-marker ((Self soundPanel) pt-in-sec) 
+  (let* ((thesound (object (om-view-container self)))
+         (dur (sound-dur thesound)))
+    (if (<= pt-in-sec dur)
+        (progn
+          (setf (markers thesound) (remove-duplicates (sort (cons pt-in-sec (markers thesound)) '<)))
+          (setf (selection? self) (list (position pt-in-sec (markers thesound))))
+          (om-invalidate-view self t)
+          (report-modifications (editor self)))
+      (om-message-dialog (format nil "~F sec. is out of range" pt-in-sec)) 
+      )))
+
 (defmethod delete-sound-marker ((Self soundPanel))
   (let* ((thesound (object (om-view-container self)))
          (copy (copy-list (markers thesound))))
@@ -754,7 +817,17 @@
                 for k = 0 then (+ k 1) collect k))
     (om-invalidate-view self t)))
 
-
+(defmethod snap-to-markers ((self soundpanel))
+  (when  (selection? self) 
+    (when (> (length (selection? self)) 1)
+      (let* ((thesound (object (om-view-container self)))
+             (markers (remove-duplicates (sort (markers thesound) '<)))
+             (selected (remove-duplicates (sort (selection? self) '<)))
+             (first (* 1000 (nth (car selected) markers)))
+             (lst (* 1000 (nth (last-elem selected) markers))))
+        (setf (cursor-interval self) (list first lst))
+        (om-invalidate-view self t)
+        ))))
 
 ;===================
 ;DRAW
@@ -946,7 +1019,9 @@
     (when file 
       (setf *last-saved-dir* (om-make-pathname :directory file))
       (save-sound 
-       (sound-cut (object (editor self)) (car (cursor-interval self)) (cadr (cursor-interval self))) 
+       (sound-cut (object (editor self)) 
+                  (round (car (cursor-interval self))) 
+                  (round (cadr (cursor-interval self)))) 
        file))
     ))
 
