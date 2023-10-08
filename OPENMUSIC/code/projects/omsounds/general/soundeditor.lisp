@@ -244,7 +244,9 @@
   (list '(#+macosx("cmd+clic" "Add Marker")
           #+(or linux win32)("ctrl+clic" "Add Marker")
           (("M") "Add Marker dialog")
+          (("w") "Make Marker from selection")
           ("del" "Delete Selected Markers")
+          (("d") "Delete all Markers")
           (("s") "Snap Selection to Markers")
           (("e") "Extract Selection")
           (("g") "Show/Hide Grid")
@@ -680,7 +682,9 @@
      (#\h (show-help-window "Commands for SOUND Editor" (get-help-list (editor self))))
      (#\M (add-new-marker-dialog self))
      (#\s (snap-to-markers self))
-     (#\e (extract-sound-selection self)) 
+     (#\w (make-markers-from-selection self))
+     (#\e (extract-sound-selection self))
+     (#\d (delete-all-markers self))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc 
       (if (equal (state (player (editor self))) :stop)  
@@ -736,7 +740,8 @@
             (setf (cursor-interval self) (list (round (* t1 1000)) (round (* t2 1000))))
             (setf (cursor-pos self) (car (cursor-interval self)))
             )))
-      (om-invalidate-view self t)
+      #+(or macosx win32) (om-invalidate-view self t)
+      #+linux (capi::update-drawing-with-cached-display self)
       )))
 
 (defmethod control-actives ((self soundPanel) where)
@@ -829,6 +834,20 @@
         (om-invalidate-view self t)
         ))))
 
+(defmethod make-markers-from-selection ((self soundpanel)) 
+  (let* ((snd (object (om-view-container self)))
+         (interval (cursor-interval self)))
+    (when interval
+      (let ((beg (car interval))
+            (end (second interval)))
+        (add-new-sound-marker self (* beg 0.001))
+        (add-new-sound-marker self (* end 0.001))
+        (om-invalidate-view self t)))))
+
+(defmethod delete-all-markers ((self soundpanel))
+  (let ((thesound (object (om-view-container self))))
+    (setf (markers thesound) nil)
+    (om-invalidate-view self t)))
 ;===================
 ;DRAW
 ;===================
