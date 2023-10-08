@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Markers in SOUND object: Create, select and save
 - Multi-seq: merging selected chords
 - Fluidsynth: midi-to-audio
 - New view selection in Scoreeditors (measure and onset) 
