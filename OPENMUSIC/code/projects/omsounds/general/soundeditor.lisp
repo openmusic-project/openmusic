@@ -740,8 +740,8 @@
             (setf (cursor-interval self) (list (round (* t1 1000)) (round (* t2 1000))))
             (setf (cursor-pos self) (car (cursor-interval self)))
             )))
-      #+(or macosx win32) (om-invalidate-view self t)
-      #+linux (capi::update-drawing-with-cached-display self)
+      (om-invalidate-view self t)
+      (capi::update-drawing-with-cached-display self)
       )))
 
 (defmethod control-actives ((self soundPanel) where)
