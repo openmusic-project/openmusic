@@ -64,10 +64,24 @@
 ;;; TOOLS
 ;;;===============
 
+#|
 (defun internal-mouse-position (view)
   (or (ignore-errors 
         (multiple-value-bind (x y)
             (if view (capi::current-pointer-position :relative-to view :pane-relative-p t)
+              (capi::current-pointer-position))
+          (om-make-point x y)))
+      (om-make-point 0 0)))
+|#
+
+(defun internal-mouse-position (view)
+  (or (ignore-errors 
+        (multiple-value-bind (x y)
+            (if view (capi::current-pointer-position 
+                      :relative-to view 
+                      #+(or linux win32):pane-relative-p #+(or linux win32) nil
+                      #+cocoa :pane-relative-p #+cocoa t
+                      )
               (capi::current-pointer-position))
           (om-make-point x y)))
       (om-make-point 0 0)))
@@ -209,8 +223,8 @@
 (defmethod om-motion-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
   (apply-in-subview self 'internal-motion-callback (om-make-point x y))
-      #+lispworks8 (capi::update-drawing-with-cached-display self) 
-      ;#+lispworks8 (capi::redisplay-element self)
+     #+lispworks8 (capi::update-drawing-with-cached-display self) ;a voir
+    ; #+lispworks8 (capi::redisplay-element self)
   )
 
 (defun tooltip-key-down ()

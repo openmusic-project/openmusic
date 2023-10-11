@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 
@@ -160,13 +160,23 @@
 	 ;;      (setf *last-pinboard-under-mouse* dropview))
 	 ;;     ;(print (capi:drop-object-provides-format drop-object :om-object))
 	 ;;    ))
+         
 	 (set-effect-for-operation drop-object))
 	(:drop
-	 (multiple-value-bind (x y) (capi::current-pointer-position :relative-to self :pane-relative-p t)
-	   (capi::current-pointer-position :relative-to self :pane-relative-p t)
+	 (multiple-value-bind (x y) (capi::current-pointer-position 
+                                     :relative-to self 
+                                     #+(or linux win32):pane-relative-p #+(or linux win32) nil
+                                     #+cocoa :pane-relative-p #+cocoa t
+                                     )
+	   (capi::current-pointer-position 
+            :relative-to self 
+            #+(or linux win32):pane-relative-p #+(or linux win32) nil
+            #+cocoa :pane-relative-p #+cocoa t
+            )
 	   (let ((dropview (or (om-get-real-view (capi::pinboard-object-at-position self x y))
                                self)))
 	     (setf *last-pinboard-under-mouse* nil)
+            
 	     (if (or 
 		  (and (capi:drop-object-provides-format drop-object :filename-list)
 		       (om-import-files-in-app self (capi:drop-object-get-object drop-object self :filename-list)))
@@ -175,6 +185,7 @@
 		 (set-effect-for-operation drop-object)
 		 (let ((dragged-view (capi:drop-object-get-object drop-object self :om-object)))
 		   (set-effect-for-operation drop-object)
+                   
 		   (when dragged-view
 		     (unless (om-drag-receive
 			      dropview dragged-view
