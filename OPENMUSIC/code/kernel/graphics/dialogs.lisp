@@ -924,7 +924,9 @@ External Libraries:
     )
   (om-add-subviews self (om-make-dialog-item 'om-static-text 
                                              (om-make-point textl 2) (om-make-point (- (w self) textl) 20) (text self)
-                                             :font *om-default-font2b* :bg-color (om-make-color 0.9 0.9 0.9)))
+                                             :font *om-default-font2b* 
+                                             :bg-color *om-white-color* ;(om-make-color 0.9 0.9 0.9)
+                                             ))
   ))
 
 
@@ -980,7 +982,8 @@ External Libraries:
 	(loop for h in helplist for i = 0 then (+ i 1) do
 	     (let ((v (om-make-view 'om-view :size (om-make-point panew (+ 4 (* 30 maxl))) 
 				    :position (om-make-point (+ (* i (+ 4 panew)) 4) 4)
-				    :bg-color (om-make-color 0.9 0.9 0.9))))
+				    :bg-color (om-make-color 0.5 0.5 0.5) ;(om-make-color 0.9 0.9 0.9)
+                                    )))
 	       (om-add-subviews *help-window* v)
 	       (om-with-delayed-update v
 		 (loop for elt in h for j = 0 then (+ j 1) do 
@@ -988,7 +991,7 @@ External Libraries:
 						       :size (om-make-point (- panew 8) 26) 
 						       :position (om-make-point 4 (+ 4 (* j 30)))
 						       :pict  (car elt) :text (cadr elt)
-						       :bg-color (om-make-color 0.9 0.9 0.9)
+						       :bg-color *om-white-color* ;(om-make-color 0.9 0.9 0.9)
 						       )))))
 	     )))
     #-linux (om-add-menu-to-win *help-window*)
