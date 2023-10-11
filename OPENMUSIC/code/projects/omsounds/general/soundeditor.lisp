@@ -247,6 +247,7 @@
           (("w") "Make Marker from selection")
           ("del" "Delete Selected Markers")
           (("d") "Delete all Markers")
+          ("lr" "Move selected Marker")
           (("s") "Snap Selection to Markers")
           (("e") "Extract Selection")
           (("g") "Show/Hide Grid")
@@ -276,7 +277,7 @@
                                    :scrollbars :h
                                    :position (om-make-point 0 *titlebars-h*) 
                                    :size (om-make-point (w self) (- (h self) (+ 25 *titlebars-h* (get-control-h self))))
-                                   :cursor-mode :interval
+                                   :cursor-mode :normal ;:interval
                                    :rangex (list 0 (get-obj-dur (object self)))
                                    :bounds-x (list 0 (get-obj-dur (object self)))
                                    ))
@@ -685,6 +686,8 @@
      (#\w (make-markers-from-selection self))
      (#\e (extract-sound-selection self))
      (#\d (delete-all-markers self))
+     (:om-key-right (move-r-sound-marker self))
+     (:om-key-left (move-l-sound-marker self))
      (:om-key-delete (delete-sound-marker self))
      (:om-key-esc 
       (if (equal (state (player (editor self))) :stop)  
@@ -821,6 +824,31 @@
           (loop for item in  (markers thesound)
                 for k = 0 then (+ k 1) collect k))
     (om-invalidate-view self t)))
+
+(defmethod move-r-sound-marker ((Self soundPanel))
+    (let* ((thesound (object (om-view-container self)))
+           (dur (sound-dur thesound))
+           (markers (markers thesound)))
+      (when (selection? self)
+        (let* ((sec (nth (car (selection? self)) markers)))
+          (if (om-shift-key-p)
+              (setf (nth (car (selection? self)) markers) (+ 0.1 sec))
+            (setf (nth (car (selection? self)) markers) (+ 0.01 sec)))
+          (om-invalidate-view self t)
+          (report-modifications (editor self))))))
+
+(defmethod move-l-sound-marker ((Self soundPanel))
+    (let* ((thesound (object (om-view-container self)))
+           (dur (sound-dur thesound))
+           (markers (markers thesound)))
+      (when (selection? self)
+        (let* ((sec (nth (car (selection? self)) markers)))
+          (if (om-shift-key-p)
+              (setf (nth (car (selection? self)) markers) (- sec 0.1))
+            (setf (nth (car (selection? self)) markers) (- sec 0.01)))
+          (om-invalidate-view self t)
+          (report-modifications (editor self))))))
+
 
 (defmethod snap-to-markers ((self soundpanel))
   (when  (selection? self) 
@@ -999,7 +1027,7 @@
     (cond ((and m (numberp m))
            (let ((pos (om-point-h (point2pixel self (om-make-big-point (round (* (nth m marks) 1000)) 0) (get-system-etat self)))))
              (om-with-fg-color nil (om-make-color-alpha 0.5 0.5 0.5 0.5)
-               (om-fill-rect (- pos 2) 0 4 (h self))
+               (om-fill-rect (- pos 2) 0 2 (h self))
                )))
           ((cursor-interval self)
            (let ((pos1 (om-point-h (point2pixel self (om-make-big-point (car (cursor-interval self)) 0) (get-system-etat self))))
@@ -1032,19 +1060,6 @@
       )))
   
 
-(defmethod extract-sound-selection ((self soundpanel) &optional filename)
-  (let ((file (or filename (om-choose-new-file-dialog :prompt "Choose a New File" 
-                                                      :directory *om-outfiles-folder*))))
-    (when file 
-      (setf *last-saved-dir* (om-make-pathname :directory file))
-      (save-sound 
-       (sound-cut (object (editor self)) 
-                  (round (car (cursor-interval self))) 
-                  (round (cadr (cursor-interval self)))) 
-       file))
-    ))
-
-
 (defmethod om-drag-receive ((target soundpanel) (dragged-ref t) position &optional (effect nil))
   (let ((dragged (dragged-view *OM-drag&drop-handler*)))
     (if (equal dragged target)
@@ -1057,6 +1072,20 @@
           (report-modifications (editor target))
           t))
       )))
+
+(defmethod extract-sound-selection ((self soundpanel) &optional filename)
+  (if (and (cursor-interval self) (not (equal '(0 0) (cursor-interval self))))
+      (let ((file (or filename (om-choose-new-file-dialog :prompt "Choose a New File" 
+                                                          :directory *om-outfiles-folder*)))) 
+        (when (and file (cursor-interval self)) 
+          (setf *last-saved-dir* (om-make-pathname :directory file))
+          (save-sound 
+           (sound-cut (object (editor self)) 
+                      (round (car (cursor-interval self))) 
+                      (round (cadr (cursor-interval self)))) 
+           file)))
+    (om-message-dialog "No selection to be found")
+    ))
 
 ;;;============================
 ;;; SPECIAL AUDIO EDITOR TO PATCHPANEL
