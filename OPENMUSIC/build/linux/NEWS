@@ -2,7 +2,7 @@
 
 NEW FEATURES
 
-- Markers in SOUND object: Create, select and save
+- Markers in SOUND object: Create, select, move and save
 - Multi-seq: merging selected chords
 - Fluidsynth: midi-to-audio
 - New view selection in Scoreeditors (measure and onset) 
@@ -16,6 +16,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Sound Markers move (linux) 
 - prepare-to-play major fix (linux)
 - power-of-two fix when zero
 - rest editing fix

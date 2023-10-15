@@ -64,7 +64,7 @@
 ;;; TOOLS
 ;;;===============
 
-#|
+
 (defun internal-mouse-position (view)
   (or (ignore-errors 
         (multiple-value-bind (x y)
@@ -72,19 +72,7 @@
               (capi::current-pointer-position))
           (om-make-point x y)))
       (om-make-point 0 0)))
-|#
 
-(defun internal-mouse-position (view)
-  (or (ignore-errors 
-        (multiple-value-bind (x y)
-            (if view (capi::current-pointer-position 
-                      :relative-to view 
-                      #+(or linux win32):pane-relative-p #+(or linux win32) nil
-                      #+cocoa :pane-relative-p #+cocoa t
-                      )
-              (capi::current-pointer-position))
-          (om-make-point x y)))
-      (om-make-point 0 0)))
 
 (defmethod om-mouse-position ((view null))
   (internal-mouse-position nil))
@@ -143,7 +131,7 @@
 (defmethod om-clic-callback ((self om-graphic-object) x y mods)
   (om-with-error-handle 
    (set-meta-keys mods)
-  ; #+lispworks8(capi::update-drawing-with-cached-display self x y)
+   ;#+lispworks8(capi::update-drawing-with-cached-display self x y)
     (apply-in-item-subview self 'om-view-click-handler (om-make-point x y))
     ))
 

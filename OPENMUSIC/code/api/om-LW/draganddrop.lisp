@@ -165,13 +165,11 @@
 	(:drop
 	 (multiple-value-bind (x y) (capi::current-pointer-position 
                                      :relative-to self 
-                                     #+(or linux win32):pane-relative-p #+(or linux win32) nil
-                                     #+cocoa :pane-relative-p #+cocoa t
+                                     :pane-relative-p t
                                      )
 	   (capi::current-pointer-position 
             :relative-to self 
-            #+(or linux win32):pane-relative-p #+(or linux win32) nil
-            #+cocoa :pane-relative-p #+cocoa t
+            :pane-relative-p t
             )
 	   (let ((dropview (or (om-get-real-view (capi::pinboard-object-at-position self x y))
                                self)))
