@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.2
+; OM 7.3
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -33,6 +33,31 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+* RELEASE NOTES 7.3
+
+NEW FEATURES
+
+- Markers in SOUND object: Create, select, move and save
+- Multi-seq: merging selected chords
+- Fluidsynth: midi-to-audio
+- New view selection in Scoreeditors (measure and onset) 
+
+IMPROVEMENTS
+
+- stop/reset button in MIDIFILE
+- In Scoreeditors, duration/selection is displayed now in the control panel 
+- Segmentation mode works for quantification
+- fluidsynth autoload at workspace startup
+
+FIXES
+
+- Sound Markers move (linux) 
+- prepare-to-play major fix (linux)
+- power-of-two fix when zero
+- rest editing fix
+- tempo sort fix
+- copy/paste fix
+
 
 
 * RELEASE NOTES 7.2
