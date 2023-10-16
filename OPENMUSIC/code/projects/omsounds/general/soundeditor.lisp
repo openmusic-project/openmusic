@@ -1009,6 +1009,78 @@
 ;;; DRAG SOUND
 ;;;==============
 
+;;methods
+(defun sound-internal-mouse-position (view)
+  (or (ignore-errors 
+        (multiple-value-bind (x y)
+            (if view (capi::current-pointer-position 
+                      :relative-to view 
+                      #+(or linux win32):pane-relative-p #+(or linux win32) nil
+                      #+cocoa :pane-relative-p #+cocoa t
+                      )
+              (capi::current-pointer-position))
+          (om-make-point x y)))
+      (om-make-point 0 0)))
+
+(defmethod om-mouse-position ((view soundpanel))
+  (sound-internal-mouse-position view))
+
+
+(defmethod om-drop-callback ((self om::soundpanel) drop-object stage)
+  (handler-bind ((error #'abort))
+    (flet ((set-effect-for-operation (drop-object)
+	     ;; In a real application, this would be clever about which effects to allow.
+             (dolist (effect '(:move :copy))
+	       (when (capi:drop-object-allows-drop-effect-p drop-object effect)
+               	 (setf (capi:drop-object-drop-effect drop-object) effect)
+		 (return t)))))
+      (case stage
+	(:formats
+	 (capi:set-drop-object-supported-formats drop-object '(:string :value :om-object :filename-list)))
+	(:enter
+	 (set-effect-for-operation drop-object))
+	(:leave
+	 (set-effect-for-operation drop-object))
+	(:drag        
+	 (set-effect-for-operation drop-object))
+	(:drop
+	 (multiple-value-bind (x y) 
+             (capi::current-pointer-position 
+              :relative-to self 
+              #+(or linux win32):pane-relative-p #+(or linux win32) nil
+              #+cocoa :pane-relative-p #+cocoa t
+              )
+	   (capi::current-pointer-position 
+            :relative-to self 
+            #+(or linux win32):pane-relative-p #+(or linux win32) nil
+            #+cocoa :pane-relative-p #+cocoa t
+            )
+	   (let ((dropview (or (oa::om-get-real-view (capi::pinboard-object-at-position self x y))
+                               self)))
+	     (setf oa::*last-pinboard-under-mouse* nil)
+             (if (or 
+		  (and (capi:drop-object-provides-format drop-object :filename-list)
+		       (om-import-files-in-app self (capi:drop-object-get-object drop-object self :filename-list)))
+		  (and (capi:drop-object-provides-format drop-object :string)
+		       (oa::om-drag-string-in-app self (capi:drop-object-get-object drop-object self :string))))
+		 (set-effect-for-operation drop-object)
+               (let ((dragged-view (capi:drop-object-get-object drop-object self :om-object)))
+                 (set-effect-for-operation drop-object)
+                 (when dragged-view
+                   (unless (om-drag-receive
+                            dropview dragged-view
+                            (om-make-point (- (capi::drop-object-pane-x drop-object) 
+                                              (oa::om-point-x (oa::om-drag-view-cursor-pos dragged-view)))
+                                           (- (capi::drop-object-pane-y drop-object)
+                                              (oa::om-point-y (oa::om-drag-view-cursor-pos dragged-view))))
+                            (capi:drop-object-drop-effect drop-object))
+                     (setf (capi:drop-object-drop-effect drop-object) nil)))
+                 )))))
+        ))))
+
+;;;;;
+
+
 (defmethod om-drag-selection-p ((self soundpanel) position) 
   (and (equal (cursor-mode self) :normal)
        (not (om-shift-key-p))

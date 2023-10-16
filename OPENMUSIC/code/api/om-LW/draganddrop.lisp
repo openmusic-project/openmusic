@@ -43,7 +43,7 @@
           om-draw-contents-for-drag
           om-import-files-in-app
           om-drag-string-in-app
-          
+          om-drop-callback
           ) :om-api)
 
 
@@ -120,7 +120,7 @@
 
 (defvar *last-pinboard-under-mouse* nil)
 
-(defun om-drop-callback (self drop-object stage)
+(defmethod om-drop-callback ((self t) drop-object stage)
   (handler-bind ((error #'abort))
     (flet ((set-effect-for-operation (drop-object)
 	     ;; In a real application, this would be clever about which effects to allow.
