@@ -241,9 +241,27 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 
 ;generate code for list
+#|
 (defmethod gen-code ((self list) numout) 
    (declare (ignore numout))
    (if *compiling-macro-boite* (omNG-save self) `',self))
+|#
+
+;this converts (quote 1 2 3) into (list 1 2 3) - a voir
+
+(defmethod gen-code ((self list) numout)
+  (declare (ignore numout))
+  (let ((sizelimit 2047))
+    (if (> (length self) sizelimit)
+        (let* ((tmp (copy-list self))
+               (split (loop while tmp collect
+                            (loop for n from 1 to sizelimit
+                                  while tmp
+                                  collect (pop tmp)))))
+          `(append ,.(mapcar #'(lambda (x) (gen-code x nil)) split)))
+      `(list ,.(mapcar #'(lambda (x) (gen-code x nil)) self))
+      )))
+
 
 (defmethod gen-code ((self null) numout) 
    (declare (ignore numout)) nil)
