@@ -31,7 +31,7 @@
 ;=================================================
 
 (defparameter *n-fsynth* 1)
-(defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*))
+(defparameter *fluid-sf2* (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") *om-root*))
 ;(pathname (concatenate 'string (namestring cl-user::*om-src-directory*) "resources/online/in-files/merlin.sf2")))
 (defparameter *fluid-loaded* "Unloaded...")
 (defparameter *fluid-autoload* nil)
@@ -56,7 +56,7 @@
 
 (defmethod get-def-vals ((ID (eql :fluid)))
     (list 
-          :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") cl-user::*om-src-directory*)
+          :fluid-sf2 (merge-pathnames (make-pathname :directory '(:relative "resources/online/in-files") :name "merlin.sf2") *om-root*)
           :n-fsynth 1
           :fluid-autoload nil 
           :sf2-setup-list nil
