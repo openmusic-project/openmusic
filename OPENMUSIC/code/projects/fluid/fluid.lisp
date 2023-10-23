@@ -42,9 +42,10 @@
       
         ;;; OM MENUS ETC.  
        ; "midipackages"
-        "player;fluid-preferences"
+        ;"player;fluid-preferences"
         "player;fluid-info"
         "player;fluid-sf2-setup"
+        "player;fluid-preferences"
         "player;fluid-midi-to-audio"
 
         "tools;fluid-send"

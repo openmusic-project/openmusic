@@ -25,7 +25,8 @@
 
 (in-package :om)
 
-
+;needs it to set the sf2 dir
+(oa::om-root-init)
 ;=================================================
 ;FLUID PREFERENCES MODULE
 ;=================================================
