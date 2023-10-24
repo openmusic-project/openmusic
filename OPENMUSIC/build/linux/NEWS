@@ -1,3 +1,16 @@
+* RELEASE NOTES 7.4
+
+NEW FEATURES
+
+
+IMPROVEMENTS
+
+FIXES
+
+- Fixed play SOUND when in :normal mode
+- Fixed root path for fluid sf2 loading
+
+
 * RELEASE NOTES 7.3
 
 NEW FEATURES
