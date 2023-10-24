@@ -443,12 +443,16 @@
    (update-cursor (panel self) 0)
   (update-play-buttons (control self)))
 
+#|
 (defmethod get-interval-to-play ((self soundEditor))
   (let ((panel (panel self)))
     (if (and (equal :normal (cursor-mode panel)) (cursor-interval panel))
         (cursor-interval panel)
       (call-next-method))))
+|#
 
+(defmethod get-interval-to-play ((self soundEditor))
+  (call-next-method))
 
 
 
