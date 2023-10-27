@@ -294,7 +294,7 @@
 					   :font *controls-font*
                                            )
                       (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 25)) (om-make-point 340 40) 
-                                           "Ditpatches notes on different MIDI channels when the pitch is not a semi-tone" :font *om-default-font1*)
+                                           "Dispatches notes on different MIDI channels when the pitch is not a semi-tone" :font *om-default-font1*)
 
                      (om-make-dialog-item 'om-static-text (om-make-point 400 (incf i 40)) (om-make-point 260 24)
                                            "Number of channels:" :font *controls-font*)
