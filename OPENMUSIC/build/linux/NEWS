@@ -5,6 +5,9 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Fluid alsa/jack driver option (linux)
+
+
 FIXES
 
 - Fixed play SOUND when in :normal mode
