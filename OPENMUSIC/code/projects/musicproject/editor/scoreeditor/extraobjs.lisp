@@ -569,7 +569,8 @@ If <dynamics>
                                                      (- (om-point-v item)  (om-point-v diff-point))))))
     (setf (nth *which-point* *pixpoints*) pos))
   (setf *comp-last-click* pos)
-  (om-update-points-geometry self *pixpoints*))
+  ;(om-update-points-geometry self *pixpoints*)
+  )
 
 (defmethod release-points-geometry ((self scorepanel) initpos pos) 
   (let* ((gobj (gobject (graphic-frame *which-extra*)))
@@ -1209,7 +1210,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                                         (- (om-point-v (nth 2 *pixpoints*))  (om-point-v diff-point)))))
         (t (setf (nth *which-point* *pixpoints*) pos)))
   (setf *comp-last-click* pos)
-  (om-update-points-geometry self *pixpoints*)))
+  ;(om-update-points-geometry self *pixpoints*)
+))
 
 (defmethod release-points-slur ((self scorepanel) pos) 
   (let* ((gobj (gobject (graphic-frame *which-slur*)))
