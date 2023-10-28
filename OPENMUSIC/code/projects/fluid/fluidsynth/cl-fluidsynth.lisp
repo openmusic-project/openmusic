@@ -92,105 +92,11 @@
       t)))
 
 
-#|
-
-(defun fluid-synth-setup ()
-  (unless *fluidsynth*
-    (progn
-      (setf *fluidsynth-settings* (new_fluid_settings))
-      #+linux(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-			     #+cl-jack "jack"
-			     #+(and linux (not cl-jack)) "alsa"
-			     #+(and cocoa (not cl-jack)) "coreaudio"
-                             #+cocoa "coreaudio")
-      #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-			     #+cl-jack "jack"
-                             #+cocoa "coreaudio")
-      #+cl-jack (progn
-		  (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
-		  (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" "OM_fluidsynth"))
-      #+(and (or linux darwin) (not cl-jack)) (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default") ;plughw:0, hw:0,0...
-      (setf *fluidsynth* (new_fluid_synth *fluidsynth-settings*))
-      (setf *fluidplayer* (new_fluid_player *fluidsynth*))
-      (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* *fluidsynth*))
-      (fluid-load-new-soundfont *fluidsynth* *soundfont*)
-      (fluid_synth_set_gain *fluidsynth* 0.6)
-
-      ;(fluid_synth_set_chorus_on *fluidsynth* choruson)
-     ;(fluid_synth_set_chorus *fluidsynth* 1 0.0d0 0.5d0 3.9d0) ;voir les valeurs
-
-      ;(fluid_synth_set_reverb_on *fluidsynth* revon)
-      ;(fluid_synth_set_reverb *fluidsynth* 2.0d0 0.0d0 0.5d0 2.9d0)
-
-      (let ((running? (fluid_player_get_status *fluidplayer*)))
-	(or (and (= running? (cffi:foreign-enum-value 'fluid_player_status :FLUID_PLAYER_READY)) running?)
-	    (warn "fluid-synth-setup: could not start fluidplayer"))))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;Load an create N fluid synths 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defun setup-fluid-synths (indx)
-  (progn
-      (setf *fluidsynth-settings* (new_fluid_settings))
-      #+linux(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-			     #+cl-jack "jack"
-			     #+(and linux (not cl-jack)) "alsa"
-			     #+(and cocoa (not cl-jack)) "coreaudio"
-                             #+cocoa "coreaudio")
-      #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-			     #+cl-jack "jack"
-                             #+cocoa "coreaudio")
-      #+cl-jack (progn
-		  (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
-		  (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx)))
-      #+(and (or linux darwin) (not cl-jack)) (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default") ;plughw:0, hw:0,0...
-      (setf (flassq indx *fl-synths*) (new_fluid_synth *fluidsynth-settings*))
-      (setf *fluidplayer* (new_fluid_player (flassq indx *fl-synths*)))
-      (setf *fluidadriver* (new_fluid_audio_driver *fluidsynth-settings* (flassq indx *fl-synths*)))
-      (fluid-load-new-soundfont (flassq indx *fl-synths*) *soundfont*)
-      (fluid_synth_set_gain (flassq indx *fl-synths*) 0.6)
-
-      ;(let ((running? (fluid_player_get_status *fluidplayer*)))
-	;(or (and (= running? (cffi:foreign-enum-value 'fluid_player_status :FLUID_PLAYER_READY)) running?)
-	 ;   (warn "fluid-synth-setup: could not start fluidplayer")))
-      )
-    )
-
-
-
-
-(defun load-all-fl-synths (num)
-  "<num> stands for n created synths by port" 
-  (setf *fluidsynths-loaded-p* 't)
-  (setf *fl-synths*
-      (let ((variables
-             (let ((vars
-                    (loop for i from 1 to num
-                          collect (read-from-string 
-                                   (format nil "*OM_fluidsynth_~D*" i)))))
-               (mapcar 'eval
-                       (loop for i from 1 to num
-                             for par in vars
-                             collect `(defparameter ,par ,i))))))
-        (loop for i from 1 to num
-              for v in variables
-              collect (cons i v))))
-  (loop for i from 1 to num
-        do (setup-fluid-synths i))
-  )
-
-(defun om::load-all-fsynths (num)
-  (cl-fluid::load-all-fl-synths num))       
-
-|#
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;Load an create N fluid synths 
+
 
 (defmethod create-fl-synt (indx)
   (let* ((synth (make-instance 'fl-synth :index indx))
@@ -198,26 +104,24 @@
          ;(fluidsettings (new_fluid_settings))
          )
     
-          (progn
-            (setf *fluidsynth-settings* (new_fluid_settings))
-      #+linux(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-                                        #+cl-jack "jack"
-                                        #+(and linux (not cl-jack)) "alsa"
-                                        #+(and cocoa (not cl-jack)) "coreaudio"
-                                        #+cocoa "coreaudio")
-          #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
-                                         #+cl-jack "jack"
-                                         #+cocoa "coreaudio")
-          #+cl-jack (progn
-                      (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
-                      (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx)))
-          #+(and (or linux darwin) (not cl-jack)) (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default"))
+    (progn
+      (setf *fluidsynth-settings* (new_fluid_settings))
+      #+linux(if (equal om::*jack-alsa* "alsa")
+                 (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default")
+               (progn  
+                 (fluid_settings_setstr *fluidsynth-settings* "audio.driver" "jack" )
+                 (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+                 (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx))))
+    ;  #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
+    ;                                 #+cl-jack "jack"
+    ;                                 #+cocoa "coreaudio")
+      #+cocoa(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
+                                    "coreaudio"))
     
     (setf (synthname synth) name)
     (setf (settings synth) *fluidsynth-settings*)
     (setf (synthptr synth) (new_fluid_synth *fluidsynth-settings*))
     (setf (audioptr synth) (new_fluid_audio_driver (settings synth) (synthptr synth)))
-    ;(fluid-load-new-soundfont (synthptr synth) *soundfont*)
     synth))
 
 
@@ -287,7 +191,7 @@
     (fluid-synth-setup)))
 
 ;;(fluid_player_get_status *fluidplayer*)
-
+;used below
 (defun fluid-midi-setup ()
   (unless *fluid-midi-driver-settings*
     (progn
@@ -295,7 +199,7 @@
       #+cl-jack (progn (fluid_settings_setstr *fluid-midi-driver-settings* "midi.driver" "jack")
 		       (fluid_settings_setstr *fluid-midi-driver-settings* "midi.jack.id" "OM_fluidsynth")))))
 
-
+;apparently not used
 (defun cl-fluid-setup-fluidsynth ()
 
   (fluid-synth-setup)
