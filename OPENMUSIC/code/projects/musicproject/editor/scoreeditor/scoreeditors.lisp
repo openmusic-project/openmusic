@@ -696,8 +696,8 @@
          
     (setf (slotedit self) minied)
     (cond 
-     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num duration))
-     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms duration))
+     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num ));duration must comes first in order to setf the duration-time
+     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
@@ -2478,7 +2478,7 @@
                   (when (< (offset->ms item (object (editor self))) b) (setf b (offset->ms item (object (editor self)))))
                   (when (> (+ (offset->ms item (object (editor self))) (get-obj-dur item)) e) (setf e (+ (offset->ms item (object (editor self))) (get-obj-dur item))))
                   ))) )
-    (om-set-dialog-item-text (nth 10 (om-subviews (ctr-view (editor self)))) 
+    (om-set-dialog-item-text (nth 0 (om-subviews (ctr-view (editor self)))) 
                              (if (selection? self)
                                  (str-check (string+ (om-str :selection) ": " (format () "~D - ~D ms ~%Duration: ~D ms" b e (- e b))))
                                (str-check (string+ (om-str :duration) ": " (format () "~D ms" e))))
