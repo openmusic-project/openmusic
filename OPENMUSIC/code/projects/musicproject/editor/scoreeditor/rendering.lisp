@@ -544,7 +544,7 @@
         (om-draw-string altpos (+ y (y self)) altstr))
       (setf (rectangle self) (list altpos (+ y (- (y self) (round size 8)))
                                    (+ realpos (round size 3)) (+ y (round size 8) (y self))))
-      (draw-note-liason note self size realpos zoom y))
+      (draw-note-liason note self size realpos zoom y staff))
     (draw-note-aux-lines self size realpos headsizex y)
     (write-note-slot self realpos (+ y (y self)) slot size zoom)
     (draw-extras self size staff)))
@@ -614,10 +614,10 @@
                   (setf topy (- topy (round size 4))))))))))
 
 ;-------drawing ties
-(defun draw-note-liason (note self size realpos zoom y)
+(defun draw-note-liason (note self size realpos zoom y staff)
   (let ((tie (tie note)))
     (when tie
-      (let* ((direction (get-tie-direction self))
+      (let* ((direction (get-tie-direction self staff))
              (toptie (if (string-equal direction "down") (+ y (y self)) (- (+ y (y self)) (round size 3))))
              (bottie (if (string-equal direction "down") (+ y (y self) (round size 3)) (+ y (y self))))
              othernote)

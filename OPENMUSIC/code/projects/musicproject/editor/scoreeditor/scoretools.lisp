@@ -817,7 +817,7 @@
       
       (setf tie (tie (reference self))) 
       (when tie
-        (let* ((direction (get-tie-direction self))
+	(let* ((direction (get-tie-direction self staff))
                (toptie (if (string-equal direction "down") (+ y (y self)) (- (+ y (y self)) (round size 3))))
                (bottie (if (string-equal direction "down") (+ y (y self) (round size 3)) (+ y (y self))))
                othernote)
@@ -859,12 +859,16 @@
                                 (+  headsizex  realpos) topy)
                   (setf topy (- topy (round size 4))))))))))
 
-(defmethod get-tie-direction ((self grap-note))
-   (let* ((note (midic (reference self)))
-          (list (sort (lmidic (parent (reference self))) '<)))
-     (if (>= (position note list :test 'equal) (ceiling (/ (length list) 2)))
-       "up" "down")))
 
+(defmethod get-tie-direction ((self grap-note) staff)
+  (let* ((note (midic (reference self)))
+         (center-note-staff (* (midicenter staff) 100))
+	 (list (sort (lmidic (parent (reference self))) '<))
+	 (note-pos (position note list :test 'equal)))
+    (cond ((= (length list) 1) (if (> note center-note-staff) "up" "down"))
+	  ((if (>= note-pos (/ (length list) 2))
+	       "up" "down" ; not quite right: if odd number of notes, then "majority away from stem"
+	       )))))
 
 (defun write-note-points (self x y  size)
   (loop for i from 1 to (points self) do
