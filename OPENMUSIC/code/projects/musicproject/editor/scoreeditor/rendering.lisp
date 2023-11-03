@@ -653,14 +653,6 @@
                           (round (- right left) 2) (round (- bot top) 2) 180 major-angle 90)))
 
 
-
-
-(defmethod get-tie-direction ((self grap-note))
-   (let* ((note (midic (reference self)))
-          (list (sort (lmidic (parent (reference self))) '<)))
-     (if (>= (position note list :test 'equal) (ceiling (/ (length list) 2)))
-       "up" "down")))
-
 ;--------drawing points for rhythmic notes
 (defun write-note-points (self  x y  size )
   (om-with-font (om-make-font *om-def-font-face*  size)
