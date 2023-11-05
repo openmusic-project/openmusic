@@ -544,7 +544,7 @@
         (om-draw-string altpos (+ y (y self)) altstr))
       (setf (rectangle self) (list altpos (+ y (- (y self) (round size 8)))
                                    (+ realpos (round size 3)) (+ y (round size 8) (y self))))
-      (draw-note-liason note self size realpos zoom y))
+      (draw-note-liason note self size realpos zoom y staff))
     (draw-note-aux-lines self size realpos headsizex y)
     (write-note-slot self realpos (+ y (y self)) slot size zoom)
     (draw-extras self size staff)))
@@ -614,10 +614,10 @@
                   (setf topy (- topy (round size 4))))))))))
 
 ;-------drawing ties
-(defun draw-note-liason (note self size realpos zoom y)
+(defun draw-note-liason (note self size realpos zoom y staff)
   (let ((tie (tie note)))
     (when tie
-      (let* ((direction (get-tie-direction self))
+      (let* ((direction (get-tie-direction self staff))
              (toptie (if (string-equal direction "down") (+ y (y self)) (- (+ y (y self)) (round size 3))))
              (bottie (if (string-equal direction "down") (+ y (y self) (round size 3)) (+ y (y self))))
              othernote)
@@ -652,14 +652,6 @@
     (om-draw-ellipse-arc (om-make-point (+ left (round (- right left) 2)) (+ top (round (- bot top) 2)))
                           (round (- right left) 2) (round (- bot top) 2) 180 major-angle 90)))
 
-
-
-
-(defmethod get-tie-direction ((self grap-note))
-   (let* ((note (midic (reference self)))
-          (list (sort (lmidic (parent (reference self))) '<)))
-     (if (>= (position note list :test 'equal) (ceiling (/ (length list) 2)))
-       "up" "down")))
 
 ;--------drawing points for rhythmic notes
 (defun write-note-points (self  x y  size )
