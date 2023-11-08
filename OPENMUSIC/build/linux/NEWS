@@ -3,7 +3,7 @@
 NEW FEATURES
 
 -New methods:
-	- Sound/Markers: set-sound-markers, remove-sound-markers, add-sound-markers
+	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
 	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
 
 IMPROVEMENTS
