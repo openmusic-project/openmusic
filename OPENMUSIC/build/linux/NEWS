@@ -2,9 +2,13 @@
 
 NEW FEATURES
 
+-New methods:
+	- Sound/Markers: set-sound-markers, remove-sound-markers, add-sound-markers
+	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
 
 IMPROVEMENTS
 
+- Quantification has its own menu in Functions->Score
 - Fluid alsa/jack driver option (linux)
 
 
