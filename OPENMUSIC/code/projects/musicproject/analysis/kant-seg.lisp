@@ -147,13 +147,15 @@
 
 
 (defmethod! kant-voices ((self chord-seq) &optional n)
-   :icon 252
-   (let* ((kant-analyses (remove nil (loop for an in (analysis self) 
-                                          when (equal (type-of an) 'kant-seg)
-                                          collect an))))
-     (when (and (> (length kant-analyses) 1) (null n))
-       (om-beep-msg "More than 1 kant-analyses found: taking 1st found occurence. Use optional input 'n' to select another one."))
-     (get-kant-voices (nth (or n 0) kant-analyses))))
+  :icon 252
+  (if  (analysis self)
+      (let* ((kant-analyses (remove nil (loop for an in (analysis self) 
+                                              when (equal (type-of an) 'kant-seg)
+                                                collect an))))
+        (when (and (> (length kant-analyses) 1) (null n))
+          (om-beep-msg "More than 1 kant-analyses found: taking 1st found occurence. Use optional input 'n' to select another one."))
+        (get-kant-voices (nth (or n 0) kant-analyses)))
+    (om-beep-msg "No analysis found!")))
 
 (defmethod! concatenate-kant-voices ((self chord-seq) &optional n)
    :icon 252

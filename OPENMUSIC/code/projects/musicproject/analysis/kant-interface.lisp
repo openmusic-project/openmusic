@@ -298,7 +298,7 @@
   (let* ((ms (pixel-toms self (om-mouse-position self)))
          (last (loop for i in (analysis (object (om-view-container self)))
                     collect (when i
-                              (mapcar #'t2 (analysis-segments i))))))
+                              (mapcar #'segment-end (analysis-segments i))))))
     (if last
         (let ((time-seg (make-instance 'time-segment :t1 (+ (last-elem (car last)) 1) :t2 ms)))
           (add-in-analysis (car (analysis (object (om-view-container self)))) time-seg))
