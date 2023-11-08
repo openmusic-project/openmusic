@@ -19,7 +19,7 @@
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;===========================================================================
-; Authors: G. Assayag, C. Agon, J. Bresson
+; Authors: G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;===========================================================================
 
 
@@ -179,5 +179,57 @@ If <samplerate> is NIL, the OM default sample rate is used to calculate the samp
   (if (floatp n) (round (* n 1000)) n))
 
 (defmethod* to-ms ((n list)) (mapcar #'(lambda (s) (to-ms s)) n))
+
+
+;;;========================
+;;; MARKERS
+
+
+(defmethod* set-sound-markers ((self sound) (markers list))
+  :initvals '(nil '(0.0 1.0))
+  :indoc '("a sound object" "a list of markers")
+  :doc "Sets and replaces markers of <self>. <markers> are in seconds."
+  :icon 221
+  (let* ((max (sound-dur self))
+         (fmax (find max markers :test #'<)))
+    (if fmax
+        (format nil "~D sec. is out of range" fmax)
+      (setf (markers self) markers))))
+
+(defmethod* remove-sound-markers ((self sound))
+  :initvals '(nil)
+  :indoc '("a sound object")
+  :doc "Deletes sound  markers from <self>."
+  :icon 221
+  (setf (markers self) nil))
+
+(defmethod* add-sound-markers ((self sound) (markers number))
+  :initvals '(nil 1.0)
+  :indoc '("a sound object" "a marker or a list of markers")
+  :doc "Adds a marker or a list of markers to <self>. <markers> are in seconds."
+  :icon 221
+  (let ((max (sound-dur self)))
+    (if (<= markers max)
+        (if (markers self)
+            (let ((marks (markers self)))
+              (push markers marks) 
+              (setf (markers self) marks))
+          (setf (markers self) (list markers)))
+      (format nil "~D sec. is out of range" markers)
+      )))
+
+
+(defmethod* add-sound-markers ((self sound) (markers list))
+  (let* ((max (sound-dur self))
+         (fmax (find max markers :test #'<)))
+    (if fmax
+        (format nil "~D sec. is out of range" fmax)
+        (if (markers self)
+            (let* ((marks (markers self))
+                   (newmarks (remove-duplicates (x-append markers marks))))
+              (setf (markers self) newmarks))
+          (setf (markers self) markers)))))
+
+
 
 

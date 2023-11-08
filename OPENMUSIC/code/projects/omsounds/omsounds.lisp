@@ -78,6 +78,9 @@
 (defvar *analysispackage* (omNG-protect-object (omNG-make-new-package "Inspect")))
 (addPackage2Pack *analysispackage* *soundtoolspackage*)
 
+(defvar *soundmarkerspackage* (omNG-protect-object (omNG-make-new-package "Markers")))
+(addPackage2Pack *soundmarkerspackage* *soundtoolspackage*)
+
 (defvar *synthpackage* (omNG-protect-object (omNG-make-new-package "Sound Synthesis")))
 (addPackage2Pack *synthpackage* *audiopackage*)
 
@@ -86,6 +89,7 @@
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
 (addGenFun2Pack '(dB->lin lin->dB ms->sec sec->ms samples->sec sec->samples snd->bpf) *sndconvpackage*)
+(addGenFun2Pack '(set-sound-markers remove-sound-markers add-sound-markers) *soundmarkerspackage*)
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
