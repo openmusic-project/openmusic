@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -53,3 +53,4 @@
 	  (if (and (> (car offsets) 0) add-initial-zero?)
 	      (cons 0 offsets)
 	      offsets)))))
+

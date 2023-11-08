@@ -59,18 +59,30 @@
 
 (defvar *scorefun-package*  (omNG-protect-object (omNG-make-new-package "Score Functions")))
 
-(AddGenFun2Pack '(OMquantify gkant object-dur 
-                             true-durations
-                             align-chords concat get-chords get-measures 
-                             set-obj-pitch set-obj-vel set-obj-chan set-obj-port set-obj-tempo
+(AddGenFun2Pack '(object-dur 
+                  true-durations
+                  align-chords concat get-chords get-measures 
+                  set-obj-pitch set-obj-vel set-obj-chan set-obj-port set-obj-tempo
                              ;mask 
-                             merger select chord-filter chord-band-filter split-voices 
-                             voice->voices concat-score-objs maquette2obj) 
+                  merger select chord-filter chord-band-filter split-voices 
+                  voice->voices concat-score-objs maquette2obj) 
                 *scorefun-package*)
 
 (AddPackage2Pack *scorefun-package* *scorepackage* :protect t)
 
+;-------------------
+;QUANTIFICATION & ANALYSIS
+;-------------------
 
+(defvar *quantification-package* (omNG-protect-object (omNG-make-new-package "Quantification")))
+(AddPackage2Pack *quantification-package* *scorepackage* :protect t)
+
+(AddGenFun2Pack '(OMquantify 
+                  gkant 
+                  set-kant-analysis-segs
+                  kant-voices
+                  concatenate-kant-voices
+                  remove-analysis ) *quantification-package*)
 
 ;-------------------
 ;TREES

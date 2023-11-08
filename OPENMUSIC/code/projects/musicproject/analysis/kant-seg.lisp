@@ -312,6 +312,41 @@
 
 
 
+;;;============================
+;;; TOOLS
+;;;============================        
+
+
+(defmethod* remove-analysis ((self chord-seq))
+  :initvals '(nil)
+  :indoc '("a chord-seq")
+  :doc "Deletes analysis segments form <self>."
+  :icon 252 
+    (when (analysis self)
+    (remove-object-analysis self (analysis self))
+    (set-object-analysis self nil))
+    (when (editorframe (associated-box self))
+      (update-panel (panel (editorframe (associated-box self))))))
+
+(defmethod* set-kant-analysis-segs ((self chord-seq) (segs list))
+  :initvals '(nil '(0 1000))
+  :indoc '("a chord-seq" "a list of segments")
+  :doc "Replaces Kant analysis segments of <self>. <sgs> are in milliseconds."
+  :icon 252
+  ;remove existing analysis
+  (when (analysis self)
+    (remove-object-analysis self (analysis self)))
+  ;add contigious segments
+  (let* ((tsegs
+          (loop for beg in segs
+                for end in (cdr segs)
+                collect (make-instance 'time-segment :t1 beg :t2 end)))
+         (kantseg (make-instance 'kant-seg :analysis-segments tsegs)))
+    (set-object-analysis self kantseg))
+  ;updatae panel if openned
+    (when (editorframe (associated-box self))
+      (update-panel (panel (editorframe (associated-box self))))))
+
 
         
 
