@@ -829,18 +829,6 @@
                 for k = 0 then (+ k 1) collect k))
     (om-invalidate-view self t)))
 
-(defmethod move-r-sound-marker ((Self soundPanel))
-    (let* ((thesound (object (om-view-container self)))
-           (dur (sound-dur thesound))
-           (markers (markers thesound)))
-      (when (selection? self)
-        (let* ((sec (nth (car (selection? self)) markers)))
-          (if (om-shift-key-p)
-              (setf (nth (car (selection? self)) markers) (+ 0.1 sec))
-            (setf (nth (car (selection? self)) markers) (+ 0.01 sec)))
-          (om-invalidate-view self t)
-          (report-modifications (editor self))))))
-
 (defmethod move-l-sound-marker ((Self soundPanel))
     (let* ((thesound (object (om-view-container self)))
            (dur (sound-dur thesound))
@@ -852,7 +840,6 @@
             (setf (nth (car (selection? self)) markers) (- sec 0.01)))
           (om-invalidate-view self t)
           (report-modifications (editor self))))))
-
 
 (defmethod snap-to-markers ((self soundpanel))
   (when  (selection? self) 

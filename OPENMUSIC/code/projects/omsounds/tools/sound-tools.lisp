@@ -185,6 +185,14 @@ If <samplerate> is NIL, the OM default sample rate is used to calculate the samp
 ;;; MARKERS
 
 
+(defmethod* get-sound-markers ((self sound))
+  :initvals '(nil)
+  :indoc '("a sound object")
+  :doc "Returns <self> markers in seconds."
+  :icon 221
+ (markers self))
+
+
 (defmethod* set-sound-markers ((self sound) (markers list))
   :initvals '(nil '(0.0 1.0))
   :indoc '("a sound object" "a list of markers")

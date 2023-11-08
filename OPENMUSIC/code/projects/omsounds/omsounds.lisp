@@ -89,7 +89,7 @@
 (AddGenFun2Pack '(sound-points sound-dur sound-dur-ms) *analysispackage*)
 (AddGenFun2Pack '(synthesize) *synthpackage*)
 (addGenFun2Pack '(dB->lin lin->dB ms->sec sec->ms samples->sec sec->samples snd->bpf) *sndconvpackage*)
-(addGenFun2Pack '(set-sound-markers remove-sound-markers add-sound-markers) *soundmarkerspackage*)
+(addGenFun2Pack '(get-sound-markers set-sound-markers remove-sound-markers add-sound-markers) *soundmarkerspackage*)
 
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
