@@ -63,8 +63,8 @@
 (defparameter *def-kant-tempo* 60)
 (defparameter *def-kant-signature* '(4 4))
 (defparameter *def-kant-maxdiv* 8)
-(defparameter *def-kant-forbid* 0.5)
-(defparameter *def-kant-precision* 60)
+(defparameter *def-kant-forbid* nil)
+(defparameter *def-kant-precision* 0.5)
 
 (defun set-default-kant-params 
        (&key (tempo *def-kant-tempo* tempo-p)
