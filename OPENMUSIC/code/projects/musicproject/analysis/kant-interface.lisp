@@ -375,7 +375,7 @@
     ))
    ((om-command-key-p) (print (list self segment pos)))
    ((om-option-key-p) (segment-info segment)); faire cela avec 'i' comme info
-    (t (print "nothin'"))))
+    (t nil)))
 
 #|
   (segment-data-window segment)
