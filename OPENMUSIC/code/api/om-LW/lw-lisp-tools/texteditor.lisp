@@ -383,7 +383,8 @@
       (echo-string interface "")
       )))
 
-(defvar *last-open-directory* nil)
+;already defined in listener.lisp
+;(defvar *last-open-directory* nil)
 
 ;;; OPEN A FILE given or prompted
 ;;; Previous buffer is not killed
@@ -932,7 +933,7 @@
         (echo-string self (concatenate 'string "This buffer is not attached to a file."))))))
 
 
-(defvar *fasl-extension* (pathname-type (cl-user::compile-file-pathname "")))
+;(defvar *fasl-extension* (pathname-type (cl-user::compile-file-pathname "")))
 
 ;;; LOAD ANOTHER FILE
 (defmethod load-a-lisp-file ((self om-text-editor))
