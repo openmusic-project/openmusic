@@ -109,19 +109,8 @@
     (setf (oa::vy out) (+ (h self) 2))
     )
 
-#|
-(defmethod draw-before-box ((self scoreboxframe))
-  (box-revise-references self (om-view-container self))
-  (om-with-focused-view self
-     (om-with-fg-color nil *scorepatch-color*
-       (if (active-mode self) 
-         (om-with-pen (self 
-                       ;:pattern *om-gray-pattern* 
-                       :mode :xor)
-           (om-fill-rect 0 0 (w self) (h self)))
-       (om-draw-rect 0 0 (w self) (h self))))))
-|#
 
+#|
 (defmethod draw-before-box ((self scoreboxframe))
   (let* ((panel (om-view-container self))
          (object (object (om-view-container panel)))
@@ -135,13 +124,50 @@
             (om-draw-rect 0 0 (w self) (h self) :pensize #+(or linux win32) 3 #+cocoa 5)
           (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1) #+cocoa :pensize #+cocoa 2)
           )))))
+|#
 
+(defmethod draw-before-box ((self scoreboxframe)) 
+    (box-revise-references self (om-view-container self)) 
+    (if (active-mode self)
+        (om-with-focused-view self
+          (om-with-fg-color nil *editor-bar-color--* 
+            (om-draw-rect 0 0 (w self) (h self) :pensize 5)))
+      (om-with-focused-view self
+        (om-with-fg-color nil (om-make-color 1.0 0 0) 
+          (om-draw-rect 0 0 (- (w self) 1) (- (h self) 1) #+cocoa :pensize #+cocoa 2)))
+      ))
+
+(defmethod om-view-click-handler ((self scoreboxframe) pos)
+  (call-next-method)
+    (om-view-container self))
+
+(defun class-from-type (self mode)
+  (cond
+   ((and (string-equal mode "note") (note-p self)) t)
+   ((and (string-equal mode "chord") (chord-p self)) t)
+   ((and (string-equal mode "chord-seq") (chord-seq-p self)) t)
+   ((and (string-equal mode "group") (group-p self)) t)
+   ((and (string-equal mode "measure") (measure-p self)) t)
+   ((and (string-equal mode "voice") (voice-p self)) t)
+   ((and (string-equal mode "poly") (poly-p self)) t)
+   ((and (string-equal mode "multi-seq") (multi-seq-p self)) t)
+   (t nil)))
 
 (defmethod omG-select ((self scoreboxframe))
-   "Set the frame SELF and the object pointed for frame in selected mode"
-   (when (not (active-mode self)) 
-     (setf (active-mode self) t)
-     (om-invalidate-view self t)))
+   "Set the frame SELF and the object pointed for frame in selected mode according to obj-mode, 
+unless option key."
+   (let* ((obj (object self))
+          (ref (reference obj))
+          (panel (om-view-container self))
+          (mode (obj-mode panel)))
+     (if (om-option-key-p)
+         (when (not (active-mode self))
+           (setf (active-mode self) t)
+           (om-invalidate-view self t))  
+     (when (and (not (active-mode self)) (class-from-type ref mode))
+       (setf (active-mode self) t)
+       (om-invalidate-view self t)))))
+
 
 (defmethod omG-unselect ((self scoreboxframe))
    "Set the frame SELF and the object pointed for frame in unselected mode"
