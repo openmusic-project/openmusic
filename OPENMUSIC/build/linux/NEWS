@@ -14,6 +14,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Fixed appearance of method icon when < 100%
 - score-boxes select/delete/edit fix
 - Fixed play SOUND when in :normal mode
 - Fixed root path for fluid sf2 loading
