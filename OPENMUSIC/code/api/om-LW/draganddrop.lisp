@@ -97,7 +97,7 @@
 	   
 	   (values (gp:make-image-from-port pp) 
 	   	   (om-point-x posi) 
-	   	   (om-point-y posi))
+	   	   (round (om-point-y posi)))
 	   )
       (gp:destroy-pixmap-port pp)
       )))
