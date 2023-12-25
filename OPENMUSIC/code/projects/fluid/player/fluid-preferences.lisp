@@ -47,6 +47,11 @@
       (push :fluid-sf2 *restore-defaults*))
     (setf *n-fsynth* (get-pref modulepref :n-fsynth))
     (setf *fluid-autoload* (get-pref modulepref :fluid-autoload))
+    (when *fluid-autoload*
+      (unless cl-fluid::*fl-synths*
+        (load-all-fsynths *n-fsynth*)
+        (load-sf-to-all))
+      (setf *fluid-loaded* "Loaded!"))
     (setf *jack-alsa* (get-pref modulepref :jack-alsa))
     #|
     (setf *sf2-setup-list* 
