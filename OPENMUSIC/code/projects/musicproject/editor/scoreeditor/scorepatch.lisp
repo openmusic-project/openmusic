@@ -49,23 +49,27 @@
 
 (defmethod make-frame-from-callobj ((self score-box))
    (let* ((module (om-make-view (get-frame-class self) 
-                    :position (frame-position self)
+                                :position (frame-position self)
                     :help-spec (get-documentation self)
                     :size  (frame-size self)
                     :object self))
           (input (car (inputs self)))
           thenewout inputf)
      (setf thenewout (om-make-view (get-out-class self)
-                       :position (om-make-point (- (round (om-point-h (frame-size self)) 2) 4) 
-                                                  (+ (h module) 10))
-                       :size (om-make-point 8 8)
-                       :help-spec "option-click to evalue or drag for connections"
-                       :index 0))
+                                   :position 
+                                   #+(or linux win32)(om-make-point (- (round (om-point-h (frame-size self)) 2) 4) 
+                                                                    (+ (h module) 10))
+                                   #+macosx(om-make-point (- (round (om-point-h (frame-size self)) 2) 4) 
+                                                          (+ (h module) 2))
+                                   :size (om-make-point 8 8)
+                                   :help-spec "option-click to evalue or drag for connections"
+                                   :index 0))
      (push thenewout (outframes module))
      (om-add-subviews module thenewout )
      (setf (name module) (frame-name self))
-     (setf (frames self) (list module))
-     module))
+     (setf (frames self) (list module)) 
+     module
+     ))
 
 (defmethod OpenEditorframe ((self score-box)) nil)
 
@@ -371,12 +375,16 @@ unless option key."
 ;CONSTRAINTS
 
 (defmethod get-posi-score-box (item size)
-   (om-make-point (- (first (rectangle item)) size) 
-               (+ (- (second (rectangle item)) size) 8)))
+  #+(or linux win32)(om-make-point (- (first (rectangle item)) size) 
+                                   (+ (- (second (rectangle item)) size) 8))
+   #+macosx(om-make-point (- (first (rectangle item)) size) 
+                          (- (- (second (rectangle item)) size) 8)))
 
 (defmethod get-size-score-box (item size)
-   (om-make-point (+ (* 2 size) (- (third (rectangle item)) (first (rectangle item))))
-               (+ 8 (* 2 size) (- (fourth (rectangle item)) (second (rectangle item))))))
+  #+(or linux win32)(om-make-point (+ (* 2 size) (- (third (rectangle item)) (first (rectangle item))))
+               (+ 8 (* 2 size) (- (fourth (rectangle item)) (second (rectangle item)))))
+  #+macosx(om-make-point (+ (* 2 size) (- (third (rectangle item)) (first (rectangle item))))
+               (+ 16 (* 2 size) (- (fourth (rectangle item)) (second (rectangle item))))))
 
 (defmethod mk-musobj-box ((self scorePanel))
    (let* ((mode-obj (grap-class-from-type  (obj-mode self)))
