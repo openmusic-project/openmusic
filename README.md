@@ -25,6 +25,6 @@ While the sources of OM are available under the GPL license, the application is 
 
 See the [Build Instructions](./BUILD.md) for how to compile, load and deliver OM using LispWorks 7 or 8. 
 
-In order to contribute to the code without a LispWorks license, one must therefore work both with the cloned source package _and_ an up-to-date reseased version on OM (which includes a Lisp interpreter).
+In order to contribute to the code without a LispWorks license, one must therefore work both with the cloned source package _and_ an up-to-date released version on OM (which includes a Lisp interpreter).
 
 
