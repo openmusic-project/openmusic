@@ -118,7 +118,6 @@
         "editor;scoreeditor;pagination"
         "editor;musicpreferences"
 
-
         "music-package"  
         ))
 

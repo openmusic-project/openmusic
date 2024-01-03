@@ -614,7 +614,7 @@
          
          (staffbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c1) 
-                                       (om-make-point 80 22)
+                                       (om-make-point 90 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
@@ -631,7 +631,7 @@
          
          (tonebut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c2)
-                                       (om-make-point 80 22) ""
+                                       (om-make-point 90 22) ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newtone (cadr (nth (om-get-selected-item-index item) (GET-tone-LIST self)))))
                                                                  (change-editor-tone (panel (om-view-container self)) newtone)))

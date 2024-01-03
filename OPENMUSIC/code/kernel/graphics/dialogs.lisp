@@ -163,7 +163,7 @@ Carlos Agon, Gerard Assayag, Jean Bresson, Karim Haddad
 Linux support and development: Anders Vinjar
 
 Contributions and code from: 
-E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, M. Stroppa, C. Truchet, F. Voisin
+E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, S. Socha, M. Stroppa, C. Truchet, F. Voisin
 
 Lisp libraries:  
 - CFFI/babel/alexandria by J. Bielman, L.O. N. Siivola, A, Lendvai, M. Baringer, R. Strandh, T. Rittweiler
