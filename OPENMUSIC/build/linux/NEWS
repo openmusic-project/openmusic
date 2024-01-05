@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- New C1, C3, C4 keys in editors
 - New EDO standard notation alterations
 - New methods:
 	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
