@@ -311,46 +311,22 @@
              5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6)
       :approx-factor 200/16))
 
-;-------17_EDO
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;-------EDO alternate (standard) notation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defvar *72-EDO_#*
+;=====7 EDO=====
+
+(defvar *7-EDO*
     (make-instance 'scale
       :alteration-list
-  (list nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f))
-      :lines-list (list 0 0 0 0 0 0 0 0 0 1 1 1 
-			1 1 1 1 1 1 1 1 1 2 2 2 
-			2 2 2 2 3 3 3 3 3 3 3 3 
-			3 3 3 4 4 4 4 4 4 4 4 4 
-			4 4 4 5 5 5 5 5 5 5 5 5 
-			5 5 5 6 6 6 6 6 6 6 7 7)
-      :approx-factor 200/12))
+  (list nil nil nil nil nil nil nil)
+      :lines-list (list 0 1 2 3 4 5 6)
+      :approx-factor 1200/7))
 
 
-(defvar *72-EDO_b*
-    (make-instance 'scale
-      :alteration-list
-  (list nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
-	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f))
-      :lines-list (list 0 0 0 0 1 1 1 1 1 1 1 1
-			1 1 1 1 2 2 2 2 2 2 2 2
-			2 2 2 2 3 3 3 3 3 3 4 4
-			4 4 4 4 4 4 4 4 4 4 5 5
-			5 5 5 5 5 5 5 5 5 5 6 6
-			6 6 6 6 6 6 6 6 6 6 0 0)
-      :approx-factor 200/12))
-
+;=====17 EDO=====
 
 (defvar *17-EDO_#*
     (make-instance 'scale
@@ -369,6 +345,7 @@
 			5 5 5 
 			6)
       :approx-factor 1200/17))
+
 
 (defvar *17-EDO_b*
     (make-instance 'scale
@@ -409,6 +386,133 @@
 			6)
       :approx-factor 1200/17))
 
+
+;=====19 EDO=====
+
+(defvar *19-EDO*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-6/12s) (t-3/12f) 
+	nil (t-6/12s) (t-3/12f) 
+	nil (t-6/12s) 
+	nil (t-6/12s) (t-3/12f) 
+	nil (t-6/12s) (t-3/12f) 
+	nil (t-6/12s) (t-3/12f) 
+	nil (t-6/12s))
+      :lines-list (list 0 0 1 
+			1 1 2 
+			2 2 
+			3 3 4 
+			4 4 5 
+			5 5 6 
+			6 6)
+      :approx-factor 1200/19))
+
+
+;=====22 EDO=====
+
+(defvar *22-EDO_#*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-1/12s) (t-5/12s) (t-6/12s) 
+	nil (t-1/12s) (t-5/12s) (t-6/12s) 
+	nil 
+	nil (t-1/12s) (t-5/12s) (t-6/12s) 
+	nil (t-1/12s) (t-5/12s) (t-6/12s) 
+	nil (t-1/12s) (t-5/12s) (t-6/12s) 
+	nil)
+      :lines-list (list 0 0 0 0 
+			1 1 1 1 
+			2 
+			3 3 3 3 
+			4 4 4 4 
+			5 5 5 5 
+			6)
+      :approx-factor 1200/22))
+
+
+(defvar *22-EDO_b*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-3/12f) (t-4/12f) (t-8/12f) 
+	nil (t-3/12f) (t-4/12f) (t-8/12f) 
+	nil 
+	nil (t-3/12f) (t-4/12f) (t-8/12f) 
+	nil (t-3/12f) (t-4/12f) (t-8/12f) 
+	nil (t-3/12f) (t-4/12f) (t-8/12f) 
+	nil)
+      :lines-list (list 0 1 1 1 
+			1 2 2 2 
+			2 
+			3 4 4 4 
+			4 5 5 5 
+			5 6 6 6 
+			6)
+      :approx-factor 1200/22))
+
+
+;=====31 EDO=====
+
+(defvar *31-EDO*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-3/12s) (t-6/12s) (t-3/12f) (t-6/12f) 
+	nil (t-3/12s) (t-6/12s) (t-3/12f) (t-6/12f) 
+	nil (t-3/12s) (t-6/12s) 
+	nil (t-3/12s) (t-6/12s) (t-3/12f) (t-6/12f) 
+	nil (t-3/12s) (t-6/12s) (t-3/12f) (t-6/12f) 
+	nil (t-3/12s) (t-6/12s) (t-3/12f) (t-6/12f) 
+	nil (t-3/12s) (t-6/12s))
+      :lines-list (list 0 0 0 1 1 
+			1 1 1 2 2 
+			2 2 2 
+			3 3 3 4 4 
+			4 4 4 5 5 
+			5 5 5 6 6 
+			6 6 6)
+      :approx-factor 1200/31))
+
+
+;=====72 EDO=====
+
+(defvar *72-EDO_#*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-4/12s) (t-5/12s) (t-6/12s) (t-7/12s) (t-8/12s) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f))
+      :lines-list (list 0 0 0 0 0 0 0 0 0 1 1 1 
+			1 1 1 1 1 1 1 1 1 2 2 2 
+			2 2 2 2 3 3 3 3 3 3 3 3 
+			3 3 3 4 4 4 4 4 4 4 4 4 
+			4 4 4 5 5 5 5 5 5 5 5 5 
+			5 5 5 6 6 6 6 6 6 6 7 7)
+      :approx-factor 1200/72))
+
+(defvar *72-EDO_b*
+    (make-instance 'scale
+      :alteration-list
+  (list nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-1/12f) (t-2/12f) (t-3/12f) (t-4/12f) (t-5/12f) (t-6/12f) (t-7/12f) (t-8/12f) 
+	nil (t-1/12s) (t-2/12s) (t-3/12s) (t-7/12f) (t-8/12f))
+      :lines-list (list 0 0 0 0 1 1 1 1 1 1 1 1
+			1 1 1 1 2 2 2 2 2 2 2 2
+			2 2 2 2 3 3 3 3 3 3 4 4
+			4 4 4 4 4 4 4 4 4 4 5 5
+			5 5 5 5 5 5 5 5 5 5 6 6
+			6 6 6 6 6 6 6 6 6 6 0 0)
+      :approx-factor 1200/72))
+
+
+
 ;----------------
 
 (defvar *current-1/2-scale*  *2-tone-chromatic-scale*)
@@ -431,28 +535,33 @@
 |#
 
 (defparameter *scales-list* (list 
-                     (list 1   *1-tone-chromatic-scale*  "1")
-                     (list 1.0 *1#-tone-chromatic-scale* "1#")
-                     (list 2   *current-1/2-scale* "1/2")
-                     (list 3   *3-tone-chromatic-scale* "1/3")
-                     (list 3.0 *3#-tone-chromatic-scale* "1/3#")
-                     (list 4   *current-1/4-scale* "1/4")
-                     (list 5   *5-tone-chromatic-scale* "1/5")
-                     (list 5.0 *5#-tone-chromatic-scale* "1/5#")
-                     (list 6   *6-tone-chromatic-scale*  "1/6")
-                     (list 7   *7-tone-chromatic-scale*  "1/7")
-                     (list 7.0 *7#-tone-chromatic-scale* "1/7#")
-                     (list 8   *current-1/8-scale* "1/8")
-                     (list 10   *10-tone-chromatic-scale* "1/10")
-                     (list 12   *12-tone-chromatic-scale*  "1/12")
-                     (list 14   *14-tone-chromatic-scale*  "1/14")
-                     (list 16   *16-tone-chromatic-scale* "1/16")
-                     (list 17   *17-EDO_#* "17 EDO#")
-                     (list 18   *17-EDO_b* "17 EDOb")
-                     (list 19   *17-EDO_pyth* "17 EDO py")
-                     (list 20   *72-EDO_#* "72 EDO#")
-                     (list 21   *72-EDO_b* "72 EDOb")
-                     ))
+                             (list 1   *1-tone-chromatic-scale*  "1")
+                             (list 1.0 *1#-tone-chromatic-scale* "1#")
+                             (list 2   *current-1/2-scale* "1/2")
+                             (list 3   *3-tone-chromatic-scale* "1/3")
+                             (list 3.0 *3#-tone-chromatic-scale* "1/3#")
+                             (list 4   *current-1/4-scale* "1/4")
+                             (list 5   *5-tone-chromatic-scale* "1/5")
+                             (list 5.0 *5#-tone-chromatic-scale* "1/5#")
+                             (list 6   *6-tone-chromatic-scale*  "1/6")
+                             (list 7   *7-tone-chromatic-scale*  "1/7")
+                             (list 7.0 *7#-tone-chromatic-scale* "1/7#")
+                             (list 8   *current-1/8-scale* "1/8")
+                             (list 10   *10-tone-chromatic-scale* "1/10")
+                             (list 12   *12-tone-chromatic-scale*  "1/12")
+                             (list 14   *14-tone-chromatic-scale*  "1/14")
+                             (list 16   *16-tone-chromatic-scale* "1/16")
+                             (list 17   *7-EDO* "7 EDO")
+                             (list 18   *17-EDO_#* "17 EDO_#")
+                             (list 19   *17-EDO_b* "17 EDO_b")
+                             (list 20   *17-EDO_pyth* "17 EDO_pyth")
+                             (list 21   *19-EDO* "19 EDO")
+                             (list 22   *22-EDO_#* "22 EDO_#")
+                             (list 23   *22-EDO_b* "22 EDO_b")
+                             (list 24   *31-EDO* "31 EDO")
+                             (list 25   *72-EDO_#* "72 EDO_#")
+                             (list 26   *72-EDO_b* "72 EDO_b")
+                             ))
 
 
 (defun get-current-scale (tone)
