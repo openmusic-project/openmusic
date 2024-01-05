@@ -2,7 +2,8 @@
 
 NEW FEATURES
 
--New methods:
+- New EDO standard notation alterations
+- New methods:
 	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
 	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
 
