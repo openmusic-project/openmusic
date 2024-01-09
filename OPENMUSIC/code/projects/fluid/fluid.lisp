@@ -52,6 +52,7 @@
         "tools;fluid-console"
         "tools;fluid-mixer"
         "tools;fluid-channels"
+        "tools;fluid-interface-boxes"
         ))
 
 
@@ -70,4 +71,4 @@
 
 (AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pgm-change fluid-pitchwheel fluid-ctrlchg fluid-volume 
                              fluid-pan fluid-reverb fluid-chorus midi-to-audio) *fluidpackage*)
-(AddClass2Pack '(fluid-synth-console fluid-mix-console) *audiopackage*)
+(AddClass2Pack '(fluid-synth-console fluid-mix-console fluid-microtune) *audiopackage*)

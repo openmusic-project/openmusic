@@ -1220,32 +1220,53 @@ In this case, all internal events are sent simultaneously.
       (om-redraw-view target)))
   (report-modifications self))
 
-(defmethod change-tuning ((self fluidPanel) value) 
-  (let ((port (midiport (channelctr self))))
+;;;CHANGE-TUNING
+
+(defmethod change-tuning ((self number) (value number))
+  (let ((port self))
     (cond 
      ((= 2 value)
       (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
+     ((= 3 value)
+      (fluid-pitchwheel '(0 2730 5461 0 2730 5461 0 2730 5461 0 2730 5461) '(1 2 3 4 5 6 7 8 9 11 12 13) port))
      ((= 4 value)
       (fluid-pitchwheel '(0 2048 0 2048 0 2048 0 2048) '(1 3 2 4 5 7 6 8) port))
+     ((= 5 value)
+      (fluid-pitchwheel '(0 1638 3276 819 2457 0 1638 3276 819 2457) '(1 2 3 4 5 6 7 8 9 11) port))
+     ((= 6 value)
+      (fluid-pitchwheel '(0 1365 2730) '(1 2 3) port))
+     ((= 7 value)
+      (fluid-pitchwheel '(0 1170 2340 3510 585 1755 2925)
+                        '(1 2 3 4 5 6 7) port))
      ((= 8 value)
-      (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2040 3072) '(1 2 3 4 5 6 7 8) port))
+      (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2040 3072  0 1024 2040 3072) 
+                        '(1 2 3 4 5 6 7 8 11 12 13 14) port))
+     ((= 10 value)
+      (fluid-pitchwheel '(0 819 1638 2457 3276) 
+                        '(1 2 3 4 5) port))
+     ((= 12 value)
+      (fluid-pitchwheel '(0 682 1365 2048 2730 3413) '(1 2 3 4 5 6) port))
+    ; ((= 13 value)
+    ;  (fluid-pitchwheel '(0 682 1365 2048 2730 3413) '(1 2 3 4 5 6 7 8) port))
+     ((= 14 value)
+      (fluid-pitchwheel '(0 585 1170 1755 2340 2925 3510) '(1 2 3 4 5 6 7) port))
      ((= 16 value)
       (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
-     (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))
-    ))
+     (t (fluid-pitchwheel (repeat-n 0 15) '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) port)))))
 
+(defmethod change-tuning ((self number) (value string))
+  (let ((port self)
+        (val (car (find value *scales-list* :test 'equal :key 'third))))
+    (change-tuning port val)))
+
+(defmethod change-tuning ((self fluidPanel) value)
+  (let ((port (midiport (channelctr self))))
+    (change-tuning port value)))
+    
 (defmethod change-tuning ((self fluid-ctrl) value)
   (let ((port (midiport self)))
-  (cond 
-   ((= 2 value)
-    (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
-   ((= 4 value)
-         (fluid-pitchwheel '(0 2048 0 2048 0 2048 0 2048) '(1 3 2 4 5 7 6 8) port))
-   ((= 8 value)
-         (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2048 3057) '(1 2 3 4 5 6 7 8) port))
-   ((= 16 value)
-      (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
-   (t (fluid-pitchwheel (repeat-n 0 8) '(1 2 3 4 5 6 7 8) port)))))
+    (change-tuning port value)))
+
 
 ;;reverb
 
@@ -1484,6 +1505,45 @@ In this case, all internal events are sent simultaneously.
     (setf evtlist (list progevt volevt panevt))
 
     evtList))
+
+;;;=== sStrange tools ===
+
+
+;utilities (pas parfait!)
+(defmethod! micro-calc ((div number))
+  :numouts 4
+  (let* ((midicstep (round (/ 200 div)))
+        (tunning (round (/ 8192 div)))
+        (scale1 (arithm-ser 6000 6200 midicstep))
+        (scale2 (arithm-ser 0 8192 tunning)))
+    (values midicstep scale1 tunning scale2)))
+
+
+(defun get-midic-div (div)
+  (let* ((arit (arithm-ser 6000 7200 (/ 200 div)))
+         (mod1 (om-floor (om-mod arit 1200)))
+         (md (if (modulo3-p div) 200 100))
+         (mod2 (om-mod mod1 md))
+         (res (list (car mod2))))
+    (pop mod2)
+    (loop  while (not (= (car mod2) 0))
+           do (prog1 
+                  (push (car mod2) res)
+                (pop mod2)))
+    (reverse res)))
+
+
+(defun get-pbend-div (div)
+  (let* ((arit (arithm-ser 0 8192 (/ 8192 div)))
+         (md (if (modulo3-p div) 8192 4096))
+         (mod1 (om-floor (om-mod arit md)))
+         (res (list (car mod1))))
+    (pop mod1)
+    (loop  while (not (= (car mod1) 0))
+           do (prog1 
+                  (push (car mod1) res)
+                (pop mod1)))
+    (reverse res)))
 
 ;;;=== EDITOR ===
 
