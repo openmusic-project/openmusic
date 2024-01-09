@@ -209,6 +209,7 @@
 ;when channel-shift = always and channel-shift-approx is nil (depending on approx)
 ;1/4 tones are no2 corrected.
 
+#|
 (defun micro-channel (midic &optional approx)
   (if (micro-channel-on approx)
       (if (= approx 4)
@@ -217,6 +218,53 @@
       (let ((mod (if (= approx 4) 2 (/ 200 (or *micro-channel-approx* approx)))))
         (round (approx-m (mod midic 100) approx) mod)))
     0))
+|#
+
+;; to finish (fullying up the other unused chans)
+
+(defun micro-channel (midic &optional approx)
+  (if (micro-channel-on approx)
+      (cond
+       ((= approx 4)
+        (let ((modulo (mod (approx-m midic 4) 100)))
+          (if (= 0 modulo) 0 2)))
+       ((= approx 3)
+        (let ((modulo (mod (approx-m midic 3) 100)))
+          (cond ((= 33 modulo) 1) ((= 133 modulo) 2) (t 0))))
+       ((= approx 5)
+        (let ((modulo (mod (approx-m midic 5) 100)))
+          (cond ((= 40 modulo) 1) ((= 80 modulo) 2) ((= 20 modulo) 3) ((= 60 modulo) 4)(t 0))
+          ))
+       ((= approx 6)
+        (let ((modulo (mod (approx-m midic 6) 100)))
+          (cond ((= 33 modulo) 1) ((= 67 modulo) 2) (t 0))
+          ))
+       ((= approx 7)
+        (let ((modulo (mod (approx-m midic 7) 100)))
+          (cond ((= 29 modulo) 1) ((= 57 modulo) 2) ((= 86 modulo) 3) 
+                ((= 14 modulo) 4) ((= 43 modulo) 5) ((= 71 modulo) 6)(t 0))
+          ))
+       ((= approx 10)
+        (let ((modulo (mod (approx-m midic 10) 100)))
+          (cond ((= 20 modulo) 1) ((= 40 modulo) 2) ((= 60 modulo) 3)((= 80 modulo) 4)(t 0))
+          ))
+       ((= approx 12)
+        (let ((modulo (mod (approx-m midic 12) 100)))
+          (cond ((= 17 modulo) 1) ((= 33 modulo) 2) 
+                ((= 50 modulo) 3) ((= 67 modulo) 4)
+                ((= 83 modulo) 5) (t 0))
+          ))
+       ((= approx 14)
+        (let ((modulo (mod (approx-m midic 14) 100)))
+          (print (list "mod" modulo))
+          (cond ((= 14 modulo) 1) ((= 29 modulo) 2) ((= 43 modulo) 3)((= 57 modulo) 4)
+                ((= 71 modulo) 5)((= 86 modulo) 6) (t 0))
+          ))
+       (t (let ((mod (if (= approx 4) 2 (/ 200 (or *micro-channel-approx* approx)))))
+        (round (approx-m (mod midic 100) approx) mod)
+        )))))
+
+
 
 (defun note-events (port chan pitch vel dur date track)
   (list (om-midi::make-midi-evt :type :KeyOn
