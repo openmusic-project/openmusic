@@ -944,3 +944,46 @@ Ex. (posn-match '(10 20 30 40 50 60 70 80 90) '(3*(0) 3_6)) => (10 10 10 40 50 6
    "Find the greats common divisor bethween 2 rational."
    (pgcd (rational a) (rational b)))
 
+;==========================================================================
+;;;OLD Compat stuff (PW)
+
+
+
+
+(defmethod arith-tree-mapcar ((fun function) (arg1 number) (arg2 number) &optional accumulator)
+  (if accumulator (reverse (cons (funcall fun arg1 arg2) accumulator)) (funcall fun arg1 arg2)))
+
+(defmethod arith-tree-mapcar ((fun function) (arg1 cons) (arg2 number) &optional accumulator)
+  (arith-tree-mapcar fun (cdr arg1) arg2 (cons (arith-tree-mapcar fun (car arg1) arg2) accumulator)))
+
+(defmethod arith-tree-mapcar ((fun function) (arg1 null) arg2 &optional accumulator)
+  (declare (ignore arg1 arg2)) (reverse accumulator))
+
+(defmethod arith-tree-mapcar ((fun function) (arg1 number) (arg2 cons) &optional accumulator)
+  (arith-tree-mapcar fun arg1 (cdr arg2) (cons (arith-tree-mapcar fun arg1 (car arg2)) accumulator)))
+
+(defmethod arith-tree-mapcar ((fun function) arg1 (arg2 null) &optional accumulator)
+   (declare (ignore arg1 arg2 )) (reverse accumulator))
+
+(defmethod arith-tree-mapcar ((fun function) (arg1 cons) (arg2 cons) &optional accumulator)
+  (arith-tree-mapcar fun (cdr arg1) (cdr arg2)
+                     (cons (arith-tree-mapcar fun (car arg1) (car arg2)) accumulator)))
+
+
+;maybe should typify the methods!
+
+(defmethod! om-mod ((numbers t) (mod number))
+  :initvals '('(10 11 12) 3)
+  :indoc '( "numbers" "mod")
+  :icon 209
+  :doc  "Calculates the number that is congruent modulo mod to numbers, or the remainder
+of an integer division (Euclidean division between two numbers numbers and mod). "
+  (arith-tree-mapcar (function mod) numbers mod))
+
+
+(defmethod! om-floor ((numbers t) &optional (div 1))
+  :initvals '( 52.71 1)
+  :indoc '( "numbers" "div")
+  :icon 209
+  :doc    "Truncation of number or tree. Rounded to the larger integer. "
+  (deep-mapcar/1 'floor numbers div))
