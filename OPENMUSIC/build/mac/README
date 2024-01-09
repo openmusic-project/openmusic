@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.3
+; OM 7.4
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -33,6 +33,33 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+* RELEASE NOTES 7.4
+
+NEW FEATURES
+
+- fluid auto-microtune
+- New C1, C3, C4 keys in editors
+- New EDO standard notation alterations
+- New methods:
+	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
+	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
+- sound markers move using arrow keys
+
+
+IMPROVEMENTS
+
+- Quantification has its own menu in Functions->Score
+- Fluid alsa/jack driver option (linux)
+
+
+FIXES
+
+- Fixed appearance of method icon when < 100%
+- score-boxes select/delete/edit fix
+- Fixed play SOUND when in :normal mode
+- Fixed root path for fluid sf2 loading
+
+
 * RELEASE NOTES 7.3
 
 NEW FEATURES
