@@ -52,6 +52,7 @@
         "tools;fluid-console"
         "tools;fluid-mixer"
         "tools;fluid-channels"
+        "tools;fluid-ibox"
         "tools;fluid-interface-boxes"
         ))
 
@@ -69,6 +70,6 @@
 (defvar *fluidpackage* (omNG-protect-object (omNG-make-new-package "Fluid")))
 (addPackage2Pack *fluidpackage* *audiopackage*)
 
-(AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pgm-change fluid-pitchwheel fluid-ctrlchg fluid-volume 
-                             fluid-pan fluid-reverb fluid-chorus midi-to-audio) *fluidpackage*)
-(AddClass2Pack '(fluid-synth-console fluid-mix-console fluid-microtune) *audiopackage*)
+(AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pgm-change fluid-set-chan-type fluid-pitchwheel fluid-ctrlchg  
+                  fluid-volume fluid-pan fluid-reverb fluid-chorus midi-to-audio) *fluidpackage*)
+(AddClass2Pack '(fluid-synth-console fluid-mix-console fluid-microtune fluid-pgm) *audiopackage*)

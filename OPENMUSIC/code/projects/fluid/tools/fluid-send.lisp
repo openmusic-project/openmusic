@@ -318,3 +318,30 @@ The format is a list of list where the car of each is the string name of the pre
    (coerce speed 'double-float)
    (coerce depth 'double-float)
    type))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; fluid-set-chan-type
+;;; Channel type = 0 -> Melodic type
+;;; Channel type = 1 -> Drumm type.
+
+(defmethod* fluid-set-chan-type ((synth number) (chan number) (type number))
+  :icon 924
+  :indoc '("synth number" "MIDI channel(s)" "type")
+  :initvals '(0 10 0)
+  :doc "Sets the channel type of <chan> of the corresponding <synth> (which is allocated to the port having the same number).
+Channel type = 0 -> Melodic type
+Channel type = 1 -> Drumm type.
+This allows the use of channel 10 as an instrumental channel rather of a percussive one. Useful for microtonal settings."
+  (let ((channel (om- chan 1)))
+    (cl-fluid::fluid_synth_set_channel_type 
+     (cl-fluid::getsptr (nth synth cl-fluid::*fl-synths*))
+     channel
+     type)
+    (fluid-pgm-change 1 chan :port synth)))
+
+(defmethod* fluid-set-chan-type ((synth number) (chan list) (type list))
+  (loop for c in (om - chan 1)
+        for tp in type
+        do (fluid-set-chan-type synth c tp)))
+
+
