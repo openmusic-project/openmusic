@@ -306,10 +306,11 @@
 (load-om-projects '("sdif"))
 (load-om-projects '("mathtools"))
 (load-om-projects '("omsounds"))
+(load-om-projects '("fluid"))
 (load-om-projects '("space"))
 (load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
-(load-om-projects '("fluid"))
+;(load-om-projects '("fluid"))
 
 
 (push :om *features*)
