@@ -113,9 +113,18 @@
                                                       (change-tuning port tuning)
                                                     (change-tuning 0 tuning)
                                                     )))))
+#|
+(defmethod* Play ((self fluid-microtune) &key (player t))
+   :initvals '(nil nil) 
+   :indoc '("object" "a player designator") 
+   :icon 207
+   :doc "Plays any OM Musical object.
 
-
-
+<player> designates a particular player (t = dispatch automatically) 
+"
+   (print "HELLLLLLLLLLLLLLLLLLIO!")
+   )
+|#
 ;=========================
 ; FLUID PGM
 ;========================
@@ -132,7 +141,7 @@
 
 (defmethod get-slot-in-out-names ((self fluid-pgm))
   (let ((pgms (mapcar 'car (fluid-make-presets 0))))
-    (print (list "getslot" pgms))
+    ;(print (list "getslot" pgms))
     (values '("items" "channel" "port") 
             '(pgms nil nil)
             '("PGM" "Channel" "Port")
@@ -147,7 +156,7 @@
 
 (defmethod get-super-default-value ((type (eql 'fluid-pgm)))
   (let ((pgms (mapcar 'car (fluid-make-presets 0))))
-    (print pgms)
+   ;(print pgms)
     (om-make-dialog-item 'fluid-pgm (om-make-point 1 4) (om-make-point 50 20) "untitled" 
                        :range pgms
                        )))
@@ -162,7 +171,7 @@
     (funcall (oa::di-action self) self)))
 
 
-(defmethod set-dialog-item-params ((self fluid-pgm) box args) (print (list "set-dia" self))
+(defmethod set-dialog-item-params ((self fluid-pgm) box args)
   (let* ((boxframe (om-view-container self))
          (newpop (om-make-dialog-item 'fluid-pgm (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
                                       "untitled" 
@@ -173,11 +182,11 @@
       (om-remove-subviews boxframe self)
       (om-add-subviews boxframe newpop)
       (om-set-dialog-item-action-function newpop #'(lambda (x) 
-                                                     (let ((tuning (om-get-selected-item newpop))
-                                                           (port (omNG-box-value (second (inputs self)))))
+                                                     (let ((prg (om-get-selected-item-index value))
+                                                           (port (omNG-box-value (third (inputs self)))))
                                                        (if port
-                                                           (print (list "aaaaa"  port tuning))
-                                                           (print (list "aaaaa"  port tuning))
+                                                           (propagate-pgm-change port prg)
+                                                         (propagate-pgm-change 0 prg)
                                                          ))))
       (update-di-size newpop boxframe)) 
     newpop))
@@ -201,6 +210,3 @@
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
     (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
 
-(defmethod change-program ((self number) value) ;self -> port
-    (setf (program (channelctr self)) value)
-    (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))

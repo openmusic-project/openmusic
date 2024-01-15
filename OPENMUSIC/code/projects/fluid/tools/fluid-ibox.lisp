@@ -64,6 +64,7 @@
                   (setf (value self) rep)
                   (rep-editor (value self) numout)
                   )))))
+     (om-dialog-item-action (value self))
      )
      ))
 
@@ -117,7 +118,7 @@
                                                                        1)
                                                             ))
                                         (inputs self)))
-      (setf title (om-make-dialog-item 'om-static-text (om-make-point 5 8) (om-make-point 90 24) (name module) ;"User Name"
+      (setf title (om-make-dialog-item 'om-static-text (om-make-point 5 8) (om-make-point 90 24) (name module)
                            :font *controls-font*)) 
      (loop for input-f in (inputframes module) do (om-add-subviews module input-f))
 
