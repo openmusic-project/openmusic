@@ -72,5 +72,5 @@
 
 (AddGenFun2Pack '(fluid-gain fluid-pgmout fluid-pgm-change fluid-set-chan-type fluid-pitchwheel fluid-ctrlchg  
                   fluid-volume fluid-pan fluid-reverb fluid-chorus midi-to-audio) *fluidpackage*)
-(AddClass2Pack '(fluid-synth-console fluid-mix-console fluid-microtune fluid-pgm) *fluidpackage*)
+(AddClass2Pack '(fluid-synth-console fluid-mix-console fluid-microtune fluid-pgm fl-gain) *fluidpackage*)
 (addPackage2Pack *fluidpackage* *om-package-tree*)

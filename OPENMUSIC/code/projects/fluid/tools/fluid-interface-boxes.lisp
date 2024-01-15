@@ -210,3 +210,99 @@
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
     (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
 
+
+;==================
+;FLUID-GAIN
+;==================
+
+(defclass! fl-gain (om-slider fluid-i-box)  
+           ((name :initform "fl-gain" :accessor name))
+           (:icon 298)
+           (:documentation 
+            "port is the fifth input"
+            ))
+
+;; compat
+(defclass! fl-gain-box (fl-gain) ()) 
+
+(defmethod omng-save ((self fl-gain) &optional (values? nil))
+  `(let ((rep (om-make-dialog-item 'fl-gain (om-make-point 1 1) (om-make-point ,(om-width self) ,(om-height self)) "untitled"
+                                   :direction ,(om-get-slider-orientation self)
+                                   :range ',(om-get-slider-range self)
+                                   :increment 1
+                                   :value ,(om-slider-value self))))
+     rep))
+
+
+(defmethod get-slot-in-out-names ((self fl-gain))
+   (values '("direction" "range" "increment" "value" "port") 
+           '(:horizontal '(0 127) 1 64 nil)
+           '("vertical or horizontal" "min and max values" "step" "fl-gain value" "port number")
+           '(((0 (("horizontal" :horizontal) ("vertical" :vertical)))) nil nil nil nil)))
+
+(defmethod get-super-default-value ((type (eql 'fl-gain)))
+  (om-make-dialog-item 'fl-gain (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled" :range '(0 127) :increment 1 :value 64))
+
+
+(defmethod update-di-size ((self fl-gain) container)
+   (if (equal (om-get-slider-orientation self) :horizontal)
+       (progn
+         (om-set-view-position self (om-make-point 8 (- (round (h container) 2) 12)))
+         (om-set-view-size self (om-make-point (- (w container) 16) 24)))
+     (progn
+         (om-set-view-position self (om-make-point (- (round (w container) 2) 12) 8))
+         (om-set-view-size self (om-make-point 24 (- (h container) 16))))))
+
+
+
+(defmethod set-dialog-item-params ((self fl-gain) box args)
+  (let* ((boxframe (om-view-container self))
+         (newslider (om-make-dialog-item 
+                     'fl-gain 
+                     (if (equal (car args) :horizontal)
+                         (om-make-point 8 (if boxframe (- (round (h boxframe) 2) 12) 20))
+                       (om-make-point (if boxframe (- (round (w boxframe) 2) 12) 20) 8))
+                     (if (equal (car args) :horizontal)
+                         (om-make-point (if boxframe (- (w boxframe) 16) 60) 24)
+                       (om-make-point 24 (if boxframe (- (h boxframe) 16) 60)))
+                     "untitled"
+                     :di-action (om-dialog-item-act item
+                                  (let ((val (port (omNG-box-value (fifth (inputs self))))))
+                                    (if val
+                                        (change-volume val (om-slider-value x))
+                                      (change-volume 0 (om-slider-value x))
+                                      )))
+                     :direction (car args) :range (second args) 
+                     :increment (third args) :value (fourth args))))
+    
+    (when boxframe
+      (om-remove-subviews boxframe self)
+      (om-add-subviews boxframe newslider)
+      (update-di-size newslider boxframe)
+      )
+    newslider))
+
+(defmethod rep-editor ((self fl-gain) num)
+  (cond
+   ((= num 0) (om-get-slider-orientation self))
+   ((= num 1) (om-get-slider-range self))
+   ((= num 2) (om-slider-increment self))
+   ((= num 3) (om-slider-value self))
+   (t  (om-dialog-item-action self))))
+
+(defmethod (setf value) :after ((value fl-gain) (self FLDIntbox)) 
+  (let ((val (omNG-box-value (fifth (inputs self)))))
+    (om-set-dialog-item-action-function value #'(lambda (x) 
+                                                  (if val
+                                                      (change-volume val (om-slider-value value))
+                                                    (change-volume 0 (om-slider-value value))
+                                                    )))))
+
+
+
+(defmethod change-volume ((self number) value)
+  (let ((port self))
+  (fluid-gain (/ value 127.0) port)
+))
+
+
