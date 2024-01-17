@@ -223,7 +223,7 @@
 ;; to finish (fullying up the other unused chans)
 
 (defun micro-channel (midic &optional approx)
-  (if (micro-channel-on approx)
+ ; (if (micro-channel-on approx)
       (cond
        ((= approx 4)
         (let ((modulo (mod (approx-m midic 4) 100)))
@@ -256,13 +256,13 @@
           ))
        ((= approx 14)
         (let ((modulo (mod (approx-m midic 14) 100)))
-          (print (list "mod" modulo))
           (cond ((= 14 modulo) 1) ((= 29 modulo) 2) ((= 43 modulo) 3)((= 57 modulo) 4)
                 ((= 71 modulo) 5)((= 86 modulo) 6) (t 0))
           ))
        (t (let ((mod (if (= approx 4) 2 (/ 200 (or *micro-channel-approx* approx)))))
         (round (approx-m (mod midic 100) approx) mod)
-        )))))
+        ))))
+;)
 
 
 
