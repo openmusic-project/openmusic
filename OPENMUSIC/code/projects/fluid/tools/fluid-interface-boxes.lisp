@@ -181,13 +181,16 @@
     (when (om-view-container self)
       (om-remove-subviews boxframe self)
       (om-add-subviews boxframe newpop)
-      (om-set-dialog-item-action-function newpop #'(lambda (x) 
+      (om-set-dialog-item-action-function newpop #'(lambda (x)
                                                      (let ((prg (om-get-selected-item-index value))
+                                                           (chan (omNG-box-value (second (inputs self))))
                                                            (port (omNG-box-value (third (inputs self)))))
-                                                       (if port
-                                                           (propagate-pgm-change port prg)
-                                                         (propagate-pgm-change 0 prg)
-                                                         ))))
+                                                       (if chan
+                                                           (fluid-pgm-change prg chan :port port)
+                                                         (if port
+                                                             (propagate-pgm-change port prg)
+                                                           (propagate-pgm-change 0 prg)
+                                                           )))))
       (update-di-size newpop boxframe)) 
     newpop))
 
@@ -200,11 +203,14 @@
 (defmethod (setf value) :after ((value fluid-pgm) (self FLDIntbox))
   (om-set-dialog-item-action-function value #'(lambda (x) 
                                                 (let ((prg (om-get-selected-item-index value))
+                                                      (chan (omNG-box-value (second (inputs self))))
                                                       (port (omNG-box-value (third (inputs self)))))
-                                                  (if port
-                                                      (propagate-pgm-change port prg)
-                                                    (propagate-pgm-change 0 prg)
-                                                    )))))
+                                                  (if chan
+                                                      (fluid-pgm-change prg chan :port port)
+                                                    (if port
+                                                        (propagate-pgm-change port prg)
+                                                      (propagate-pgm-change 0 prg)
+                                                      ))))))
 
 
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
