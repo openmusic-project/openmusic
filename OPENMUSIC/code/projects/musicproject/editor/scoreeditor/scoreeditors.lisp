@@ -854,7 +854,6 @@
 (defmethod in-patch-mode? ((self scorepanel)) (= (score-mode self) 1))
 (defmethod in-page-mode? ((self scorepanel)) (= (score-mode self) 2))
 
-
 (defmethod cursor-by-obj-mode ((self scorePanel))
    (cond
     ((string-equal (obj-mode self) "note") *c-nota*)
@@ -966,13 +965,15 @@
 (defmethod toggle-patch-mode ((self scorePanel))
   (change-score-mode self 1))
 
+(defmethod toggle-analysis-mode ((self scorePanel))
+  (change-score-mode self 3))
 
 (defmethod handle-key-event ((self scorePanel) char)
   (cond ((in-patch-mode? self)
          (case char
            (#\t (mk-musobj-box self))
            (#\s (if (om-command-key-p) 
-                    (omng-save (mycontainer(associated-box (object (editor self)))))
+                    (omng-save (mycontainer (associated-box (object (editor self)))))
                   (toggle-normal-mode self)))
            (#\SPACE (editor-play/stop (editor self)))
            (:om-key-tab (change-obj-mode self 1))
@@ -1001,6 +1002,7 @@
           ;;; MARCHE PAS
           ((equal char #\.) (point-edit-cursor self))
           ))
+        
         (t 
          (case char
            
