@@ -174,8 +174,11 @@
                                  (make-pathname :directory (pathname-directory *target-dir*)
                                                 :name (pathname-name file)
                                                 :type (pathname-type file)))))
-        (directory (make-pathname :directory (append (pathname-directory *image-pathname*)
-                                                     '("resources" "lib" "win")))))
+        #+x86(directory (make-pathname :directory (append (pathname-directory *image-pathname*)
+                                                          '("resources" "lib" "win"))))
+        #+x64(directory (make-pathname :directory (append (pathname-directory *image-pathname*)
+                                                          '("resources" "lib" "win64"))))
+        )
   )
 
 (print "--- MOVING BINARIES FROM RESOURCES FOLDER...")
