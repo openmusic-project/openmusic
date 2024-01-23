@@ -1043,16 +1043,16 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self note) 
                         (port number)
-                        &key (mode 'clone) (n nil))
+                        &key (mode :clone) (n nil))
   :initvals '(t 0 nil 'clone) 
   :indoc '("self" "port" "n")
-  :menuins '((2 (("clone" 'clone) 
-                 ("destructive" 'destructive))))
+  :menuins '((2 (("clone" :clone) 
+                 ("destructive" :destructive))))
   :icon 355
   :doc  "Changes midi port in a voice or poly object. If it is a poly object
 you can specify which voice will be changed by openning the optional input <n>.
 Further more, in voice method, if list inputed, it will change all notes according to the list."
-  (if (equal mode 'clone)
+  (if (equal mode :clone)
       (let ((clone (clone self)))
         (setf (port clone) port)
         clone)
@@ -1060,30 +1060,30 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self chord) 
                           (port number)
-                          &key (mode 'clone) (n nil))
-  (if (equal mode 'clone)
+                          &key (mode :clone) (n nil))
+  (if (equal mode :clone)
       (let ((clone (clone self)))
         (loop for i in (inside clone)
-              do (set-obj-port i port :mode 'destructive))
+              do (set-obj-port i port :mode :destructive))
         clone)
     (progn
       (loop for i in (inside self)
-            do (set-obj-port i port :mode 'destructive))
+            do (set-obj-port i port :mode :destructive))
       (update-obj self))))
 
 (defmethod! set-obj-port ((self chord) 
                           (port list)
-                          &key (mode 'clone) (n nil))
-    (if (equal mode 'clone)
+                          &key (mode :clone) (n nil))
+    (if (equal mode :clone)
       (let ((clone (clone self)))
         (loop for i in (inside clone)
               for p in port
-              do (set-obj-port i p :mode 'destructive))
+              do (set-obj-port i p :mode :destructive))
         clone)
       (progn
         (loop for i in (inside self)
               for p in port
-              do (set-obj-port i p :mode 'destructive))
+              do (set-obj-port i p :mode :destructive))
         (update-obj self))))
     
 (defmethod! set-obj-port ((self chord-seq) 
@@ -1093,74 +1093,74 @@ Further more, in voice method, if list inputed, it will change all notes accordi
        (let* ((clone (clone self))
               (objs (inside clone)))
          (loop for ob in objs
-               do (set-obj-port ob port :mode 'destructive))
+               do (set-obj-port ob port :mode :destructive))
          clone)
     (progn
       (loop for ob in (inside self)
-            do (set-obj-port ob port :mode 'destructive))
+            do (set-obj-port ob port :mode :destructive))
       (update-obj self))))
 
 (defmethod! set-obj-port ((self chord-seq) 
                         (port list)
-                        &key (mode 'clone) (n nil))
-  (if (equal  mode 'clone)
+                        &key (mode :clone) (n nil))
+  (if (equal  mode :clone)
        (let* ((clone (clone self))
               (objs (inside clone)))
          (loop for i in port
                for ob in objs
-               do (set-obj-port ob i :mode 'destructive))
+               do (set-obj-port ob i :mode :destructive))
          clone)
     (progn
     (loop for i in port
           for ob in (inside self)
-          do (set-obj-port ob i :mode 'destructive))
+          do (set-obj-port ob i :mode :destructive))
     (update-obj self))))
 
-(defmethod! set-obj-port ((self multi-seq) (port number) &key (mode 'clone) (n nil))
-  (if (equal mode 'clone)
+(defmethod! set-obj-port ((self multi-seq) (port number) &key (mode :clone) (n nil))
+  (if (equal mode :clone)
       (let ((clone (clone self)))
         (if n
             (let ((voices (inside clone)))
               (loop for vx in n 
-                    do (set-obj-port (nth vx voices) port :mode 'destructive))
+                    do (set-obj-port (nth vx voices) port :mode :destructive))
               clone)
           (progn
             (loop for vx in (inside clone)
-                  do (set-obj-port vx port :mode 'destructive))
+                  do (set-obj-port vx port :mode :destructive))
             clone)))
     (progn
       (if n
           (let ((voices (inside self)))
             (loop for vx in n 
-                  do (set-obj-port (nth vx voices) port :mode 'destructive)))
+                  do (set-obj-port (nth vx voices) port :mode :destructive)))
         (loop for vx in (inside self)
-              do (set-obj-port vx port :mode 'destructive)))
+              do (set-obj-port vx port :mode :destructive)))
       (update-obj self))))
 
 
-(defmethod! set-obj-port ((self multi-seq) (port list) &key (mode 'clone) (n nil))
-  (if (equal mode 'clone)
+(defmethod! set-obj-port ((self multi-seq) (port list) &key (mode :clone) (n nil))
+  (if (equal mode :clone)
       (let ((clone (clone self)))
         (if n
             (let ((voices (inside clone)))
               (loop for i in port
                     for vx in n 
-                    do (set-obj-port (nth vx voices) i :mode 'destructive))
+                    do (set-obj-port (nth vx voices) i :mode :destructive))
               clone)
           (progn
             (loop for i in port
                   for vx in (inside clone)
-                  do (set-obj-port vx i :mode 'destructive))
+                  do (set-obj-port vx i :mode :destructive))
             clone)))
     (progn
     (if n
         (let ((voices (inside self)))
           (loop for i in port
                 for vx in n 
-                do (set-obj-port (nth vx voices) i :mode 'destructive)))
+                do (set-obj-port (nth vx voices) i :mode :destructive)))
         (loop for i in port
               for vx in (inside self)
-              do (set-obj-port vx i :mode 'destructive))
+              do (set-obj-port vx i :mode :destructive))
         )
     (update-obj self))))
   
@@ -1168,8 +1168,8 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self voice)
                         (port number)
-                        &key (mode 'clone) (n nil))
-    (if (equal mode 'clone)
+                        &key (mode :clone) (n nil))
+    (if (equal mode :clone)
         (let* ((clone (clone self))
                (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
           (set-obj-port chrdseq port :mode 'destructive)
@@ -1183,8 +1183,8 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self voice)
                           (port list)
-                          &key (mode 'clone) (n nil))
-  (if (equal mode 'clone)
+                          &key (mode :clone) (n nil))
+  (if (equal mode :clone)
       (let* ((clone (clone self))
              (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
         (set-obj-port chrdseq port :mode 'destructive)
@@ -1198,17 +1198,17 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self poly)
                           (port number)
-                          &key (mode 'clone) (n nil))
-  (if (equal mode 'clone)
+                          &key (mode :clone) (n nil))
+  (if (equal mode :clone)
       (let* ((clone (clone self))
              (multiseq (objfromobjs clone (make-instance 'multi-seq))))
-        (set-obj-port multiseq port :mode 'destructive)
+        (set-obj-port multiseq port :mode :destructive)
         (loop for i in (inside clone)
               for chrds in (inside multiseq)
               do (setf (chords i) (inside chrds)))
         clone)
     (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
-      (set-obj-port multiseq port :mode 'destructive)
+      (set-obj-port multiseq port :mode :destructive)
       (loop for i in (inside self)
             for chrds in (inside multiseq)
             do (setf (chords i) (inside chrds)))
@@ -1216,17 +1216,17 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 
 (defmethod! set-obj-port ((self poly)
                           (port list)
-                          &key (mode 'clone) (n nil))
+                          &key (mode :clone) (n nil))
   (if (equal mode 'clone)
       (let* ((clone (clone self))
              (multiseq (objfromobjs clone (make-instance 'multi-seq))))
-        (set-obj-port multiseq port :mode 'destructive)
+        (set-obj-port multiseq port :mode :destructive)
         (loop for i in (inside clone)
               for chrds in (inside multiseq)
               do (setf (chords i) (inside chrds)))
         clone)
     (let ((multiseq (objfromobjs self (make-instance 'multi-seq))))
-      (set-obj-port multiseq port :mode 'destructive)
+      (set-obj-port multiseq port :mode :destructive)
       (loop for i in (inside self)
             for chrds in (inside multiseq)
             do (setf (chords i) (inside chrds)))
