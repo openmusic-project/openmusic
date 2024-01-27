@@ -47,7 +47,7 @@
                                (om-abort)))))
 
      (om-without-interrupts  
- 
+       (om-dialog-item-action (value self))
      (cond
         ((or (equal (allow-lock self) "l")  (equal (allow-lock self) "o") 
              (and (equal (allow-lock self) "x") (value self))
@@ -64,7 +64,7 @@
                   (setf (value self) rep)
                   (rep-editor (value self) numout)
                   )))))
-     (om-dialog-item-action (value self))
+     ;(om-dialog-item-action (value self)) ;si activee outputs retournent plus que des nil 
      )
      ))
 
