@@ -113,18 +113,8 @@
                                                       (change-tuning port tuning)
                                                     (change-tuning 0 tuning)
                                                     )))))
-#|
-(defmethod* Play ((self fluid-microtune) &key (player t))
-   :initvals '(nil nil) 
-   :indoc '("object" "a player designator") 
-   :icon 207
-   :doc "Plays any OM Musical object.
 
-<player> designates a particular player (t = dispatch automatically) 
-"
-   (print "HELLLLLLLLLLLLLLLLLLIO!")
-   )
-|#
+
 ;=========================
 ; FLUID PGM
 ;========================
@@ -141,7 +131,6 @@
 
 (defmethod get-slot-in-out-names ((self fluid-pgm))
   (let ((pgms (mapcar 'car (fluid-make-presets 0))))
-    ;(print (list "getslot" pgms))
     (values '("items" "channel" "port") 
             '(pgms nil nil)
             '("PGM" "Channel" "Port")
@@ -304,11 +293,107 @@
                                                     (change-volume 0 (om-slider-value value))
                                                     )))))
 
-
-
 (defmethod change-volume ((self number) value)
   (let ((port self))
   (fluid-gain (/ value 127.0) port)
 ))
+
+;==================
+;FLUID-PAN
+;==================
+
+(defclass! fl-pan (om-slider fluid-i-box)  
+           ((name :initform "fl-pan" :accessor name))
+           (:icon 298)
+           (:documentation 
+            "port is the fifth input"
+            ))
+
+;; compat
+(defclass! fl-pan-box (fl-pan) ()) 
+
+(defmethod omng-save ((self fl-pan) &optional (values? nil))
+  `(let ((rep (om-make-dialog-item 'fl-pan (om-make-point 1 1) (om-make-point ,(om-width self) ,(om-height self)) "untitled"
+                                   :direction ,(om-get-slider-orientation self)
+                                   :range ',(om-get-slider-range self)
+                                   :increment 1
+                                   :value ,(om-slider-value self))))
+     rep))
+
+
+(defmethod get-slot-in-out-names ((self fl-pan))
+   (values '("direction" "range" "increment" "value" "channel" "port") 
+           '(:horizontal '(0 127) 1 64 nil nil)
+           '("vertical or horizontal" "min and max values" "step" "fl-pan value" "channel(s)" "port number")
+           '(((0 (("horizontal" :horizontal) ("vertical" :vertical)))) nil nil nil nil nil)))
+
+(defmethod get-super-default-value ((type (eql 'fl-pan)))
+  (om-make-dialog-item 'fl-pan (om-make-point 1 4 ) (om-make-point 50 20 ) "untitled" :range '(0 127) :increment 1 :value 64))
+
+
+(defmethod update-di-size ((self fl-pan) container)
+   (if (equal (om-get-slider-orientation self) :horizontal)
+       (progn
+         (om-set-view-position self (om-make-point 8 (- (round (h container) 2) 12)))
+         (om-set-view-size self (om-make-point (- (w container) 16) 24)))
+     (progn
+         (om-set-view-position self (om-make-point (- (round (w container) 2) 12) 8))
+         (om-set-view-size self (om-make-point 24 (- (h container) 16))))))
+
+
+
+(defmethod set-dialog-item-params ((self fl-pan) box args)  
+  (let* ((boxframe (om-view-container self))
+         (newslider (om-make-dialog-item 
+                     'fl-pan 
+                     (if (equal (car args) :horizontal)
+                         (om-make-point 8 (if boxframe (- (round (h boxframe) 2) 12) 20))
+                       (om-make-point (if boxframe (- (round (w boxframe) 2) 12) 20) 8))
+                     (if (equal (car args) :horizontal)
+                         (om-make-point (if boxframe (- (w boxframe) 16) 60) 24)
+                       (om-make-point 24 (if boxframe (- (h boxframe) 16) 60)))
+                     "untitled"
+                     :di-action (om-dialog-item-act item
+                                  (let ((chan (omNG-box-value (fifth (inputs self))))
+                                        (port (omNG-box-value (sixth (inputs self)))))
+                                    ;(show-data box (om-slider-value value))
+                                   
+                                    (if port
+                                        (change-pan-val val (om-slider-value value) chan port)
+                                      (change-pan-val (om-slider-value value) chan 0)
+                                      )))
+                     :direction (car args) :range (second args) 
+                     :increment (third args) :value (fourth args))))
+    ;
+    (when boxframe 
+      (om-remove-subviews boxframe self)
+      (om-add-subviews boxframe newslider)
+      (update-di-size newslider boxframe)
+      )
+    newslider))
+
+(defmethod rep-editor ((self fl-pan) num) 
+  (cond
+   ((= num 0) (om-get-slider-orientation self))
+   ((= num 1) (om-get-slider-range self))
+   ((= num 2) (om-slider-increment self))
+   ((= num 3) (om-slider-value self))
+   (t  (om-dialog-item-action self))))
+
+(defmethod (setf value) :after ((value fl-pan) (self FLDIntbox)) 
+  (let ((chan (omNG-box-value (fifth (inputs self))))
+        (port (omNG-box-value (sixth (inputs self)))))
+    ;(show-data self (om-slider-value value))
+    (om-set-dialog-item-action-function value #'(lambda (x) 
+                                                  (if port
+                                                      (change-pan-val (om-slider-value value) chan port)
+                                                    (change-pan-val (om-slider-value value) chan 0)
+                                                    )))))
+
+(defmethod change-pan-val ((val number) channels port)
+  (if channels
+  (fluid-pan val channels port)
+    (fluid-pan val *all-chans* port)))
+
 
 
