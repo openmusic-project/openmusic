@@ -145,6 +145,42 @@
 (defun d-5/7 () (code-char 64))
 (defun d-6/7 () (code-char 37)) 
 
+
+(defun t-F12 () (code-char 94))
+(defun t-F11 () (code-char 181))
+(defun t-F10 () (code-char 171))
+(defun t-F9 () (code-char 161))
+(defun t-F8 () (code-char 98))
+(defun t-F7 () (code-char 166))
+(defun t-F6 () (code-char 176))
+(defun t-F5 () (code-char 186))
+(defun t-F4 () (code-char 96))
+(defun t-F3 () (code-char 182))
+(defun t-F2 () (code-char 172))
+(defun t-F1 () (code-char 162))
+
+
+(defun t-S1 () (code-char 167))
+(defun t-S2 () (code-char 177))
+(defun t-S3 () (code-char 187))
+(defun t-S4 () (code-char 43))
+(defun t-S5 () (code-char 183))
+(defun t-S6 () (code-char 192))
+(defun t-S7 () (code-char 163))
+(defun t-S8 () (code-char 35))
+(defun t-S9 () (code-char 168))
+(defun t-S10 () (code-char 178))
+(defun t-S11 () (code-char 188))
+(defun t-S12 () (code-char 48))
+
+(defun t-F1sc () (code-char 190))
+(defun t-S1sc () (code-char 191))
+
+(defun t-Fa () (code-char 225))
+(defun t-Sa () (code-char 224))
+
+
+
 ;;;=============dynamics
 (defun dyn-ppp () (code-char 82))
 (defun dyn-pp () (code-char 81))
