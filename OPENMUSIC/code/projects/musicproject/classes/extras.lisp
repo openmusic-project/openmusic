@@ -371,3 +371,155 @@ Removes all EXTRA objects from <self>.
 
 ;;;;=====================
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;TOOLS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;put-text-extra;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! mkstring ((liste list))
+            "transforms a list into a list of strings"
+            (loop for i in liste
+                  collect (format nil "~S" i)))
+
+
+(defmethod! put-extra-text ((self voice) 
+                            (liste list) 
+                            &key
+                            (deltay 'up)
+                            (positions nil))
+  :initvals (list t '(0 1) 'up nil) 
+  :indoc '("voice" "list-of-extras" "delta y" "position")
+  :menuins '((2 (("up" up) 
+                 ("down" down))))
+  :icon 162
+  :doc "The text list must be a list of strings. If not use mksrting before."
+
+  (let* ((chords (collect-chords self))
+         (flt-chrds 
+          (remove nil
+                  (loop for i in chords
+                        collect (if 
+                                    (and (chord-p i)
+                                         (not (cont-chord-p i)))
+                                    i))))
+         (posn-chrds (if positions (remove nil (posn-match flt-chrds positions))
+                       flt-chrds))
+         (extras (loop for i in liste
+                       collect (make-instance 'text-extra
+                                              :deltay (if (equal 'up deltay) -8 3)
+                                              :thetext i))))
+    (loop for chrd in posn-chrds
+          for ext in extras
+          do (add-extra-list chrd ext "exact" nil))))
+
+
+
+(defmethod! put-extra-text ((self poly) 
+                            (liste list) 
+                            &key
+                            (deltay 'up)
+                            (positions nil))
+(let* ((clone (clone self))
+       (voices (inside clone))
+       (put (loop for i in voices 
+                  for lst in liste
+                  do (put-extra-text i lst deltay positions))))
+  (make-instance 'poly
+                 :voices voices)))
+
+
+(defmethod! put-extra-text ((self chord-seq) 
+                            (liste list) 
+                            &key
+                            (deltay 'up)
+                            (positions nil))
+            :initvals (list t '(0 1) 'up nil) 
+            :indoc '("voice" "list-of-extras" "delta y" "positions")
+            :icon 162
+            :doc "The text list must be a list of strings. If not use mksrting before."
+
+            (let* ((chords (collect-chords self))
+                   (flt-chrds 
+                    (remove nil
+                            (loop for i in chords
+                                  collect (if 
+                                              (and (chord-p i)
+                                                   (not (cont-chord-p i)))
+                                              i))))
+                   (posn-chrds (if positions (remove nil (posn-match flt-chrds positions))
+                                 flt-chrds))
+                   (extras (loop for i in liste
+                                 collect (make-instance 'text-extra
+                                                        :deltay (if (equal 'up deltay) -8 3)
+                                                        :thetext i))))
+              (loop for chrd in posn-chrds
+                    for ext in extras
+                    do (add-extra-list chrd ext "exact" nil))))
+
+
+
+
+
+(defun massq1 (item list)
+(cdr (assoc item list  :test 'equal)))
+
+(setf *my-dynamics* 
+      '(("ffff" . "i") ("fff" . "h") ("ff" . "g")("f" . "f") ("mf" . "F") ("sfz" . "e")
+      ("mp" . "P") ("p" . "p")("pp" . "Q") ("ppp" . "R") ("pppp" . "S")))
+
+;(massq1  "fff" *my-dynamics* )
+;(loop for i in (mkstring '(f mp ff)) collect (massq1 i *my-dynamics*))
+
+
+
+(defmethod! put-extra-dyn ((self voice) 
+                           (liste list) &optional
+                           (positions nil))
+            :initvals (list t '(p f) nil) 
+            :indoc '("voice" "list-of-extras" "plc-in-voice")
+            :icon 162
+            :doc "The dynamics are to be entered as a simple list as so : '(f mf p ppp)"
+            
+            (let* ((dyn (loop for i in (mkstring liste)
+                              collect (massq1 i *my-dynamics*)))
+                   (chords (collect-chords self))
+                   (flt-chrds 
+                    (remove nil
+                            (loop for i in chords
+                                  collect (if 
+                                              (and (chord-p i)
+                                                   (not (cont-chord-p i)))
+                                              i))))
+                   (posn-chrds (if positions (remove nil (posn-match flt-chrds positions))
+                                 flt-chrds))
+                   (extras (loop for i in dyn
+                                 collect (make-instance 'vel-extra
+                                                        :deltay 2
+                                                        :thechar i))))
+              (loop for chrd in posn-chrds
+                    for ext in extras
+                    do (add-extra-list chrd ext "exact" nil))))
+
+
+;;;;;;;;;;;;;;;other utils;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod! index-voice-pulses ((self voice) &optional (onset number))
+            :initvals (list t 0) 
+            :indoc '("voice" "onset")
+            :icon 162
+            :doc "Put text extras as indexes for all pulses in voice"
+
+(let* ((npuls (n-pulses self))
+       (strings (mkstring (arithm-ser onset (- (+ onset npuls) 1) 1))))
+  (put-extra-text self strings nil)))
+            
+
+
+(defmethod! index-voice-pulses ((self chord-seq) &optional (onset number))
+(let* ((npuls (length (lmidic self)))
+       (strings (mkstring (arithm-ser onset (- (+ onset npuls) 1) 1))))
+  (put-extra-text self strings nil)))
+            
