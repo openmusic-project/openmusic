@@ -1675,3 +1675,59 @@ Returns the positions of the rests in <tree>.
     (get-rest-places tree)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;REMOVE-PULSE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun indextree (tree)
+  (if (atom tree)
+      (if (not (numberp tree))
+          (progn 
+            (setf (tindex tree) (incf *n-tindex*))
+            tree )
+        tree)
+    (mapcar 'indextree tree)))
+
+
+
+(defun filtindextree (tree pos)
+  (if (atom tree)
+      (cond
+       ((numberp tree) tree)
+       ((not (member (tindex tree) pos)) tree)
+       (t nil))
+    (loop for i in tree collect (filtindextree i pos))))
+
+
+
+(defun remove-all (predic seq &optional res)
+  (if (null seq)
+      (reverse res)
+      (cond ((and (not (null (car seq))) (listp (car seq)))
+             (remove-all predic (cdr seq)
+                         (cons (remove-all predic (car seq)) res)))
+            ((funcall predic (car seq))
+             (remove-all predic (cdr seq) res))
+            (t (remove-all predic (cdr seq) (cons (car seq) res))))))
+
+
+(defun remall (tree)
+  (if (atom tree)
+      tree
+    (if (and (= 1 (length tree)) (atom (car tree))) 
+        (car tree)
+      (remove nil (mapcar 'remall tree)))))
+
+
+(defmethod! remove-pulse ((tree list) (pos list))
+  :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) '(0 1))
+  :indoc '("a rhythm tree" "positions")
+  :icon 225
+  :doc "Removes pulses or rests from given position <pos>"
+  (setf *n-tindex* -1)
+  (let* ((rtree (reduce-rt tree))
+         (objs (trans-tree rtree))
+         (index (indextree objs))
+         (filt-tree (filtindextree index pos)))
+    (remall
+     (remove-all #'(lambda (x) (and (listp x) (null (cdr x))))
+                 (remove-all #'null (trans-obj filt-tree))
+                 ))))
