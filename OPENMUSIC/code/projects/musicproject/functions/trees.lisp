@@ -1686,7 +1686,18 @@ Returns the positions of the rests in <tree>.
         tree)
     (mapcar 'indextree tree)))
 
-
+(defun pulseindextree (tree)
+  (if (atom tree)
+      (if (not (numberp tree))
+          (if (plusp (tvalue tree))
+              (progn 
+                (setf (tindex tree) (incf *n-tindex*))
+                tree )
+            (progn
+              (setf (tindex tree) nil)
+            tree))
+    tree)
+    (mapcar 'pulseindextree tree)))
 
 (defun filtindextree (tree pos)
   (if (atom tree)
@@ -1717,15 +1728,19 @@ Returns the positions of the rests in <tree>.
       (remove nil (mapcar 'remall tree)))))
 
 
-(defmethod! remove-pulse ((tree list) (pos list))
-  :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) '(0 1))
-  :indoc '("a rhythm tree" "positions")
+(defmethod! remove-pulses ((tree list) (pos list) &optional (mode :pulses))
+  :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) '(0 1) :pulses)
+  :indoc '("a rhythm tree" "positions" "mode")
+  :menuins '((2 (("pulses" :pulses) 
+                 ("all" :all))))
   :icon 225
-  :doc "Removes pulses or rests from given position <pos>"
+  :doc "Removes pulses from given position <pos>. if mode = all pulses and rests."
   (setf *n-tindex* -1)
   (let* ((rtree (reduce-rt tree))
          (objs (trans-tree rtree))
-         (index (indextree objs))
+         (index (if (equal mode :pulses)
+                    (pulseindextree objs)
+                  (indextree objs)))
          (filt-tree (filtindextree index pos)))
     (remall
      (remove-all #'(lambda (x) (and (listp x) (null (cdr x))))
