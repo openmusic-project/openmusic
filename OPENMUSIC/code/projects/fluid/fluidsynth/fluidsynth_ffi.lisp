@@ -12,7 +12,9 @@
 
 (defun cl-fluid-init-fluidsynth-ffi ()
   (define-foreign-library fluidsynth
-    (t (:default "libfluidsynth")))
+    (t #-win32(:default "libfluidsynth")
+       #+win32(:default "libfluidsynth-3")
+       ))
   (setf *fluidsynth-loaded*
 	(handler-case (progn (use-foreign-library fluidsynth) t)
 	  (error () (progn (print (format nil "could not load foreign-library fluidsynth"))

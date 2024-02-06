@@ -31,8 +31,8 @@
 (in-package :cl-fluidsynth)
 
 (defvar *fluidsynth-pathname* 
-  #+(and win32 x86) "/WINDOWS/system32/fluidsynth.dll"
-  #+(and win32 x64) "/WINDOWS/system/fluidsynth.dll"
+  #+(and win32 x86) "/WINDOWS/system32/libfluidsynth.dll"
+  #+(and win32 x64) "/WINDOWS/system/libfluidsynth.dll"
   #+(or darwin macos macosx) "libfluidsynth.dylib"
   #+linux "libfluidsynth.so"
   )

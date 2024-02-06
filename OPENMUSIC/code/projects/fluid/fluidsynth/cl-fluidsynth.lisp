@@ -19,7 +19,8 @@
 
 (defun fluidsynthlib-p ()
   #+linux *fluidsynth-loaded*
-  #+(or macosx win32) *fluidsynth-library*)
+  #+(or macosx win32) *fluidsynth-library*
+  #+win32 t)
 
 (defmacro flassq (item list) `(cdr (assoc ,item ,list :test #'eq)))
 
