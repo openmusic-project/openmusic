@@ -723,7 +723,7 @@
 |#
 
 (defparameter *scales-list* (list (list 0 "-" "-")
-                                  (list 2   *current-1/2-scale*  "Omicron Scales")
+                                  (list 0   *current-1/2-scale*  "Omicron Scales")
                                   (list 1   *1-tone-chromatic-scale*  "1")
                                   (list 1.0 *1#-tone-chromatic-scale* "1#")
                                   (list 2   *current-1/2-scale* "1/2")
