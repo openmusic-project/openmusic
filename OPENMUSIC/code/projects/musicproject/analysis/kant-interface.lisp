@@ -98,7 +98,9 @@
 (defmethod add-time-seg ((self chordseqpanel) (anal abstract-analysis))
   (let* ((int (cursor-interval self))
          (time-seg (make-instance 'time-segment :t1 (car int) :t2 (second int))))
-    (add-in-analysis anal time-seg)
+    (if int 
+        (add-in-analysis anal time-seg)
+      (om-message-dialog "Please select a region."))
     (update-panel self t)))
 
 
@@ -159,92 +161,96 @@
         (pane (om-make-view 'om-view
                             :size (om-make-point 400 180)
                             :position (om-make-point 10 10)
-                            :bg-color *om-white-color*))
-        (panel (editorframe
-                (associated-box
-                 (analysis-object (container-analysis kdata)))))
-        (i 0)
-        tbtxt tetxt)
+                            :bg-color *om-white-color*)))
 
-    (om-add-subviews 
-     pane
-     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
-                          (om-make-point 380 40)
-                          "Set time for selected segment:"
-                          :font *om-default-font2b*)
-     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Begin time"
-                          :font *om-default-font1*)
-     (setf tbtxt (om-make-dialog-item 'edit-numbox 
-                                      (om-make-point 140 i)  
-                                      (om-make-point 46 18)
-                                      (format nil "~D" (t1 kdata)) 
-                                      :font *om-default-font1*
-                                      :min-val (t1 kdata)
-                                      :di-action (om-dialog-item-act item
-                                                  (setf (min-val item) 0);necessaire
-                                                   (setf (t1 kdata) (value item))
-                                                   (update-panel panel t)
-                                                   )
-                                      :afterfun #'(lambda (item)
-                                                    (progn
+    (handler-bind ((error #'(lambda (e)
+                              (om-close-window win)
+                              (om-message-dialog "In arrow mode, please CTRL+SHIFT click.")
+                              (om-abort))))      
+
+      (let* ((panel (editorframe
+                     (associated-box
+                      (analysis-object (container-analysis kdata))))) ; --> (container-analysis kdata) could be nil!
+             (i 0)
+             tbtxt tetxt)
+
+        (om-add-subviews 
+         pane
+         (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 16))
+                              (om-make-point 380 40)
+                              "Set time for selected segment:"
+                              :font *om-default-font2b*)
+         (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Begin time"
+                              :font *om-default-font1*)
+         (setf tbtxt (om-make-dialog-item 'edit-numbox 
+                                          (om-make-point 140 i)  
+                                          (om-make-point 46 18)
+                                          (format nil "~D" (t1 kdata)) 
+                                          :font *om-default-font1*
+                                          :min-val (t1 kdata)
+                                          :di-action (om-dialog-item-act item
+                                                       (setf (min-val item) 0);necessaire
+                                                       (setf (t1 kdata) (value item))
+                                                       (update-panel panel t)
+                                                       )
+                                          :afterfun #'(lambda (item)
+                                                        (progn
                                                       
-                                                      (setf (t1 kdata) (value item))
-                                                      (update-for-subviews-changes panel t)))
-                                      ))
-     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "End time"
-                          :font *om-default-font1*)
-     (setf tetxt (om-make-dialog-item 'edit-numbox 
-                                      (om-make-point 140 i)  
-                                      (om-make-point 46 18)
-                                      (format nil "~D" (t2 kdata))
-                                      :font *om-default-font1*
-                                      :min-val (t2 kdata)
-                                      :di-action (om-dialog-item-act item
-                                                   (setf (min-val item) 0);necessaire
-                                                   (setf (t2 kdata) (value item))
-                                                   (update-panel panel t))
-                                      :afterfun #'(lambda (item)
-                                                    (progn
-                                                      (setf (t2 kdata) (value item))
-                                                      (update-for-subviews-changes panel t)))
-                                      ))
-     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Crop"
-                          :font *om-default-font1*)
+                                                          (setf (t1 kdata) (value item))
+                                                          (update-for-subviews-changes panel t)))
+                                          ))
+         (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "End time"
+                              :font *om-default-font1*)
+         (setf tetxt (om-make-dialog-item 'edit-numbox 
+                                          (om-make-point 140 i)  
+                                          (om-make-point 46 18)
+                                          (format nil "~D" (t2 kdata))
+                                          :font *om-default-font1*
+                                          :min-val (t2 kdata)
+                                          :di-action (om-dialog-item-act item
+                                                       (setf (min-val item) 0);necessaire
+                                                       (setf (t2 kdata) (value item))
+                                                       (update-panel panel t))
+                                          :afterfun #'(lambda (item)
+                                                        (progn
+                                                          (setf (t2 kdata) (value item))
+                                                          (update-for-subviews-changes panel t)))
+                                          ))
+         (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 26)) (om-make-point 120 20) "Crop"
+                              :font *om-default-font1*)
      
-     (om-make-view 'om-icon-button 
-                   :icon1 "stop" :icon2 "stop-pushed"
-                   :position (om-make-point 140 i) :size (om-make-point 26 25)
-                   :action (om-dialog-item-act item
-                             (declare (ignore item))
-                             (let ((vals (crop-segment kdata)))
-                               (print (list "vals" vals))
-                               (om-set-dialog-item-text tbtxt (write-to-string (car vals)))
-                               (om-set-dialog-item-text tetxt (write-to-string(second vals)))    
-                               (setf (t1 kdata) (car vals)
-                                     (t2 kdata) (second vals))
-                               (update-panel panel t)
-                               )))
+         (om-make-view 'om-icon-button 
+                       :icon1 "stop" :icon2 "stop-pushed"
+                       :position (om-make-point 140 i) :size (om-make-point 26 25)
+                       :action (om-dialog-item-act item
+                                 (declare (ignore item))
+                                 (let ((vals (crop-segment kdata)))
+                                   (print (list "vals" vals))
+                                   (om-set-dialog-item-text tbtxt (write-to-string (car vals)))
+                                   (om-set-dialog-item-text tetxt (write-to-string(second vals)))    
+                                   (setf (t1 kdata) (car vals)
+                                         (t2 kdata) (second vals))
+                                   (update-panel panel t)
+                                   )))
 
 
-     (om-make-dialog-item 'om-button (om-make-point 200 (incf i 35)) (om-make-point 80 20) "Cancel"
-                          :di-action (om-dialog-item-act item 
+         (om-make-dialog-item 'om-button (om-make-point 200 (incf i 35)) (om-make-point 80 20) "Cancel"
+                              :di-action (om-dialog-item-act item 
                                        ;(om-return-from-modal-dialog win nil)
-                                       (om-close-window (om-view-window item))))
-     (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20) "OK"
-                           :di-action (om-dialog-item-act item 
-                                        (let ((timebeg (ignore-errors (read-from-string (om-dialog-item-text tbtxt))))
-                                              (timeend (ignore-errors (read-from-string (om-dialog-item-text tetxt)))))
-                                          (setf (t1 kdata) timebeg
-                                                (t2 kdata) timeend)
+                                           (om-close-window (om-view-window item))))
+         (om-make-dialog-item  'om-button (om-make-point 300 i) (om-make-point 80 20) "OK"
+                               :di-action (om-dialog-item-act item 
+                                            (let ((timebeg (ignore-errors (read-from-string (om-dialog-item-text tbtxt))))
+                                                  (timeend (ignore-errors (read-from-string (om-dialog-item-text tetxt)))))
+                                              (setf (t1 kdata) timebeg
+                                                    (t2 kdata) timeend)
                                           ;(setf (updateflag kdata) nil)
-                                          (om-close-window (om-view-window item))
+                                              (om-close-window (om-view-window item))
                                           ;(om-return-from-modal-dialog win t)
-                                          )))
-     )
-    (om-add-subviews win pane)
-    ;(om-modal-dialog win)
-    win
-    ))
+                                              )))
+         )
+        (om-add-subviews win pane)
+        win))))
 
 
 

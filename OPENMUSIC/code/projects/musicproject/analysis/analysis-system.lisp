@@ -345,8 +345,16 @@
        self)
      (om-beep-msg (format nil "~A does not apply to ~A objects!" (type-of analyse) (type-of self)))))
 
-(defmethod remove-object-analysis ((self analyse-object) analysis)
-  (setf (analysis self) (remove analysis (analysis self))))
+;(defmethod remove-object-analysis ((self analyse-object) analysis)
+;  (setf (analysis self) (remove analysis (analysis self))))
+
+(defmethod remove-object-analysis ((self analyse-object) analysis) ;(om-inspect self)
+  (if
+      (om-y-or-n-dialog "Are you sure you want to delete All the Kant Analysis?" :default-button :yes)
+      (progn
+        (setf (analysis self) (remove analysis (analysis self)))
+       (update-panel (panel (editorframe (associated-box self))) t))
+        ))
 
 (defmethod run-analysis ((self analyse-object))
   (when (analysis self)
