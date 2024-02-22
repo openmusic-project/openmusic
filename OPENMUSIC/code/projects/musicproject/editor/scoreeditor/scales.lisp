@@ -722,7 +722,26 @@
      :approx-factor 50))
 |#
 
-(defparameter *scales-list* (list (list 0 "-" "-")
+(defparameter *scales-list* (list 
+                             (list 1   *1-tone-chromatic-scale*  "1")
+                             (list 1.0 *1#-tone-chromatic-scale* "1#")
+                             (list 2   *current-1/2-scale* "1/2")
+                             (list 3   *3-tone-chromatic-scale* "1/3")
+                             (list 3.0 *3#-tone-chromatic-scale* "1/3#")
+                             (list 4   *current-1/4-scale* "1/4")
+                             (list 5   *5-tone-chromatic-scale* "1/5")
+                             (list 5.0 *5#-tone-chromatic-scale* "1/5#")
+                             (list 6   *6-tone-chromatic-scale*  "1/6")
+                             (list 7   *7-tone-chromatic-scale*  "1/7")
+                             (list 7.0 *7#-tone-chromatic-scale* "1/7#")
+                             (list 8   *current-1/8-scale* "1/8")
+                             (list 10   *10-tone-chromatic-scale* "1/10")
+                             (list 12   *12-tone-chromatic-scale*  "1/12")
+                             (list 14   *14-tone-chromatic-scale*  "1/14")
+                             (list 16   *16-tone-chromatic-scale* "1/16")
+                             ))
+
+(defparameter *omicron-scales-list* (list (list 0 "-" "-")
                                   (list 0   *current-1/2-scale*  "Omicron Scales")
                                   (list 1   *1-tone-chromatic-scale*  "1")
                                   (list 1.0 *1#-tone-chromatic-scale* "1#")
