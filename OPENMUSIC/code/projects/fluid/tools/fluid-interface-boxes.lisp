@@ -35,7 +35,7 @@
 ; FLUID MICRO TUNE
 ;========================
 
-(defclass! fluid-microtune (om-pop-up-dialog-item fluid-i-box) 
+(defclass! fl-microtune (om-pop-up-dialog-item fluid-i-box) 
            ((name :initform "fl-microtune" :accessor name)) 
 
    (:icon 297)
@@ -43,9 +43,9 @@
 ))
 
 ;; compat
-(defclass! fluid-microtune-box (fluid-microtune) ()) 
+(defclass! fl-microtune-box (fl-microtune) ()) 
 
-(defmethod get-slot-in-out-names ((self fluid-microtune))
+(defmethod get-slot-in-out-names ((self fl-microtune))
   (values '("items" "port") 
           '(("1" "1#" "1/2" "1/3" 
              "1/3#" "1/4" "1/5" "1/5#"
@@ -54,33 +54,33 @@
           '("Tunings" "Port")
           '(nil nil)))
 
-(defmethod omng-save ((self fluid-microtune) &optional (values? nil))
-  `(let ((rep (om-make-dialog-item 'fluid-microtune (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
+(defmethod omng-save ((self fl-microtune) &optional (values? nil))
+  `(let ((rep (om-make-dialog-item 'fl-microtune (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
                                    :range ',(om-get-item-list self))))
      (oa::om-set-selected-item-index rep ',(om-get-selected-item-index self))
      rep))
 
 
-(defmethod get-super-default-value ((type (eql 'fluid-microtune)))
-  (om-make-dialog-item 'fluid-microtune (om-make-point 1 4) (om-make-point 50 20) "untitled" 
+(defmethod get-super-default-value ((type (eql 'fl-microtune)))
+  (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point 50 20) "untitled" 
                        :range '("1" "1#" "1/2" "1/3" 
                                 "1/3#" "1/4" "1/5" "1/5#"
                                 "1/6" "1/7" "1/7#" "1/8" 
                                 "1/10" "1/12" "1/14" "1/16")))
 
-(defmethod update-di-size ((self fluid-microtune) container) 
+(defmethod update-di-size ((self fl-microtune) container) 
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24)))
 
 
-(defmethod om-dialog-item-action ((self fluid-microtune)) 
+(defmethod om-dialog-item-action ((self fl-microtune)) 
   (when (oa::di-action self)
     (funcall (oa::di-action self) self)))
 
 
-(defmethod set-dialog-item-params ((self fluid-microtune) box args) 
+(defmethod set-dialog-item-params ((self fl-microtune) box args) 
   (let* ((boxframe (om-view-container self))
-         (newpop (om-make-dialog-item 'fluid-microtune (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
+         (newpop (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
                                       "untitled" 
                                       :range (if (and (pathnamep (car args)) (directoryp (car args)))
                                                  (om-directory (car args))
@@ -99,13 +99,13 @@
       (update-di-size newpop boxframe)) 
     newpop))
 
-(defmethod rep-editor ((self fluid-microtune) num) 
+(defmethod rep-editor ((self fl-microtune) num) 
   (cond
    ((= num 0) (om-get-selected-item-index self))
    ((= num 1) (om-get-selected-item self))
    (t nil)))
 
-(defmethod (setf value) :after ((value fluid-microtune) (self FLDIntbox)) ; (self OMBoxEditCall)) 
+(defmethod (setf value) :after ((value fl-microtune) (self FLDIntbox)) ; (self OMBoxEditCall)) 
   (om-set-dialog-item-action-function value #'(lambda (x) 
                                                 (let ((tuning (om-get-selected-item value))
                                                       (port (omNG-box-value (second (inputs self)))))
@@ -119,50 +119,50 @@
 ; FLUID PGM
 ;========================
 
-(defclass! fluid-pgm (om-pop-up-dialog-item fluid-i-box) 
+(defclass! fl-pgm (om-pop-up-dialog-item fluid-i-box) 
            ((name :initform "fl-pgm" :accessor name))
    (:icon 297)
    (:documentation " Allocate program change to all channels of a fluidsynth instance. Third input is the Port input."
 ))
 
 ;; compat
-(defclass! fluid-pgm-box (fluid-pgm) ()) 
+(defclass! fl-pgm-box (fl-pgm) ()) 
 
 
-(defmethod get-slot-in-out-names ((self fluid-pgm))
+(defmethod get-slot-in-out-names ((self fl-pgm))
   (let ((pgms (mapcar 'car (fluid-make-presets 0))))
     (values '("items" "channel" "port") 
             '(pgms nil nil)
             '("PGM" "Channel" "Port")
             '(nil nil nil))))
 
-(defmethod omng-save ((self fluid-pgm) &optional (values? nil))
-  `(let ((rep (om-make-dialog-item 'fluid-pgm (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
+(defmethod omng-save ((self fl-pgm) &optional (values? nil))
+  `(let ((rep (om-make-dialog-item 'fl-pgm (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
                                    :range ',(om-get-item-list self))))
      (oa::om-set-selected-item-index rep ',(om-get-selected-item-index self))
      rep))
 
 
-(defmethod get-super-default-value ((type (eql 'fluid-pgm)))
+(defmethod get-super-default-value ((type (eql 'fl-pgm)))
   (let ((pgms (mapcar 'car (fluid-make-presets 0))))
    ;(print pgms)
-    (om-make-dialog-item 'fluid-pgm (om-make-point 1 4) (om-make-point 50 20) "untitled" 
+    (om-make-dialog-item 'fl-pgm (om-make-point 1 4) (om-make-point 50 20) "untitled" 
                        :range pgms
                        )))
 
-(defmethod update-di-size ((self fluid-pgm) container) 
+(defmethod update-di-size ((self fl-pgm) container) 
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
   (om-set-view-size self (om-make-point (- (w container) 20) 24)))
 
 
-(defmethod om-dialog-item-action ((self fluid-pgm)) 
+(defmethod om-dialog-item-action ((self fl-pgm)) 
   (when (oa::di-action self)
     (funcall (oa::di-action self) self)))
 
 
-(defmethod set-dialog-item-params ((self fluid-pgm) box args)
+(defmethod set-dialog-item-params ((self fl-pgm) box args)
   (let* ((boxframe (om-view-container self))
-         (newpop (om-make-dialog-item 'fluid-pgm (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
+         (newpop (om-make-dialog-item 'fl-pgm (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
                                       "untitled" 
                                       :range (mapcar 'car (fluid-make-presets 0))
                                       ))) 
@@ -175,7 +175,7 @@
                                                            (chan (omNG-box-value (second (inputs self))))
                                                            (port (omNG-box-value (third (inputs self)))))
                                                        (if chan
-                                                           (fluid-pgm-change prg chan :port port)
+                                                           (fl-pgm-change prg chan :port port)
                                                          (if port
                                                              (propagate-pgm-change port prg)
                                                            (propagate-pgm-change 0 prg)
@@ -183,19 +183,19 @@
       (update-di-size newpop boxframe)) 
     newpop))
 
-(defmethod rep-editor ((self fluid-pgm) num) 
+(defmethod rep-editor ((self fl-pgm) num) 
   (cond
    ((= num 0) (om-get-selected-item-index self))
    ((= num 1) (om-get-selected-item self))
    (t nil)))
 
-(defmethod (setf value) :after ((value fluid-pgm) (self FLDIntbox))
+(defmethod (setf value) :after ((value fl-pgm) (self FLDIntbox))
   (om-set-dialog-item-action-function value #'(lambda (x) 
                                                 (let ((prg (om-get-selected-item-index value))
                                                       (chan (omNG-box-value (second (inputs self))))
                                                       (port (omNG-box-value (third (inputs self)))))
                                                   (if chan
-                                                      (fluid-pgm-change prg chan :port port)
+                                                      (fl-pgm-change prg chan :port port)
                                                     (if port
                                                         (propagate-pgm-change port prg)
                                                       (propagate-pgm-change 0 prg)
@@ -203,7 +203,7 @@
 
 
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
-    (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
+    (fl-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
 
 
 ;==================
