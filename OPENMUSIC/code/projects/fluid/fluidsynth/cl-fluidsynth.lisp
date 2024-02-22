@@ -131,6 +131,8 @@
           do (push (create-fl-synt i) *fl-synths*))
   (setf *fl-synths* (reverse *fl-synths*))
   (loop for i in *fl-synths*
+  do (fluid_synth_set_gain (synthptr i) 0.0));to be on the safe side
+  (loop for i in *fl-synths*
   do (fluid_synth_set_gain (synthptr i) 0.25))
   )
 
