@@ -37,9 +37,9 @@ inside the .app bundle's resources.
 
 NEW FEATURES
 
+- fluid new interface boxes: fl-microtune, fl-pgm, fl-gain and fl-pan
 - fluid auto-microtune
 - New C1, C3, C4 keys in editors
-- New EDO standard notation alterations
 - New methods:
 	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
 	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
@@ -49,6 +49,7 @@ NEW FEATURES
 IMPROVEMENTS
 
 - Quantification has its own menu in Functions->Score
+- Fluid has its own menus in Classes and Functions
 - Fluid alsa/jack driver option (linux)
 
 
