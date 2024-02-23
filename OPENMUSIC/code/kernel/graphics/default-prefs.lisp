@@ -44,6 +44,8 @@
 
 (defvar *reactive-patches* nil)
 
+(defvar *pprint-patches* nil)
+
 (defvar *listener-input* nil)
 
 ;(defvar *tooltips* t)
@@ -57,6 +59,7 @@
          :listener-on-top :no
          :listener-input nil
          :reactive nil
+         :pprint-patches nil
          :out-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "out-files")) (mypathname *current-workspace*)))
          :tmp-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "out-files")) (mypathname *current-workspace*)))
          :in-files-dir (check-folder (merge-pathnames (make-pathname :directory '(:relative "in-files")) (mypathname *current-workspace*)))
@@ -74,6 +77,8 @@
       (om-set-eval-process (equal *eval-process* :on)))
     (setf oa::*helpon* (get-pref modulepref :tooltips))
     (setf *reactive-patches* (get-pref modulepref :reactive))
+
+    (setf *pprint-patches* (get-pref modulepref :pprint-patches))
      
     (unless (equal *listener-input* (get-pref modulepref :listener-input))
       (setf *listener-input* (get-pref modulepref :listener-input))
@@ -108,6 +113,7 @@
                        :eval-process ,*eval-process*
                        :tooltips ,oa::*helpon*
                        :reactive ,*reactive-patches*
+                       :pprint-patches ,*pprint-patches*
                        :listener-input ,*listener-input*
                        :listener-on-top ,(if om-lisp::*listener-on-top* :yes :no)
                        :out-files-dir ,(om-save-pathname *om-outfiles-folder*)
@@ -157,7 +163,7 @@
                                           :font *controls-font*
                                           :checked-p (get-pref modulepref :handle-errors))
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Catch Lisp erros and display a simple message window)"
+                     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(Catch Lisp errors and display a simple message window)"
                                           :font *om-default-font1*)
                      
                      (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Enable Evaluation Process" 
@@ -197,6 +203,16 @@
 
                      (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(push 'r' to set boxes active/unactive)"
                                           :font *om-default-font1*)
+
+		     (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) "Save readable patches" 
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :pprint-patches (om-checked-p item)))
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :pprint-patches))
+
+		     (om-make-dialog-item 'om-static-text  (om-make-point l1 (incf posy 20)) (om-make-point 330 40) "(for easier editing, results in larger files)"
+                                          :font *om-default-font1*)
+
                      
                      )
 
