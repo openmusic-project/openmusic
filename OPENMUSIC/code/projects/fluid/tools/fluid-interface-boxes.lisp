@@ -175,7 +175,7 @@
                                                            (chan (omNG-box-value (second (inputs self))))
                                                            (port (omNG-box-value (third (inputs self)))))
                                                        (if chan
-                                                           (fl-pgm-change prg chan :port port)
+                                                           (fluid-pgm-change prg chan :port port)
                                                          (if port
                                                              (propagate-pgm-change port prg)
                                                            (propagate-pgm-change 0 prg)
@@ -195,7 +195,7 @@
                                                       (chan (omNG-box-value (second (inputs self))))
                                                       (port (omNG-box-value (third (inputs self)))))
                                                   (if chan
-                                                      (fl-pgm-change prg chan :port port)
+                                                      (fluid-pgm-change prg chan :port port)
                                                     (if port
                                                         (propagate-pgm-change port prg)
                                                       (propagate-pgm-change 0 prg)
@@ -203,7 +203,7 @@
 
 
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
-    (fl-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
+    (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port self))
 
 
 ;==================
