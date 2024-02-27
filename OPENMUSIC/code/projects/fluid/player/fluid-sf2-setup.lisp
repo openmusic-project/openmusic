@@ -243,7 +243,7 @@
 (defun reset-sf2-settings (settings)
     (let ((views (om-subviews settings)))
       (loop for i in views
-            do (om-set-dialog-item-text (car (om-subviews i)) *fluid-sf2*))
+            do (om-set-dialog-item-text (car (om-subviews i)) (namestring *fluid-sf2*)))
       (loop for i from 0 to (1- *n-fsynth*)
             do (fluid-load-sf2 i *fluid-sf2*))))
             
