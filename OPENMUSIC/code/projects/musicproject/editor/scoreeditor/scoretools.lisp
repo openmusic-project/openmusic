@@ -2751,6 +2751,7 @@
 
 ;==================
 ;get the list of selected graphic objects
+#|
 (defmethod select-grap-objs ((self grap-container) type objlist)
    (if (subtypep (type-of self) type) (list self)
    (if (subtypep (type-of (car (inside self))) type)
@@ -2758,6 +2759,13 @@
            when (member (reference item) objlist :test 'equal) collect item)
      (loop for item in (inside self)
            append (select-grap-objs item type objlist)))))
+|#
+
+(defmethod select-grap-objs ((self grap-container) type objlist) 
+   (if (subtypep (type-of self) type) 
+       (list self)
+     (loop for item in (inside self)
+           append (select-grap-objs item type objlist))))
 
 (defmethod select-grap-objs ((self grap-group) (type (eql 'grap-group)) objlist)
    (if (member (reference self) objlist :test 'equal)
