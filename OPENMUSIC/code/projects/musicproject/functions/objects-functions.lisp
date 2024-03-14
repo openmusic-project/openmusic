@@ -42,6 +42,11 @@
     (get-obj-parent (parent self))
     self))
 
+(defmethod get-obj-parent ((self group))
+  (if (parent self)
+    (get-obj-parent (parent self))
+    self))
+
 (defmethod get-obj-parent ((self measure))
   (if (parent self)
     (get-obj-parent (parent self))
