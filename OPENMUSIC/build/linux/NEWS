@@ -2,6 +2,21 @@
 
 NEW FEATURES
 
+
+IMPROVEMENTS
+
+- soundeditor selection shortcut (TAB)
+
+
+FIXES
+
+- Group selection
+
+
+* RELEASE NOTES 7.4
+
+NEW FEATURES
+
 - fluid new interface boxes: fl-microtune, fl-pgm, fl-gain and fl-pan
 - fluid auto-microtune
 - New C1, C3, C4 keys in editors
