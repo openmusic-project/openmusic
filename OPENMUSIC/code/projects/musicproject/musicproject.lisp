@@ -58,8 +58,10 @@
         ;-----------Editors--------------------------------
         "container;maquetteinterface"     
         
-        "editor;scoreeditor;rythtools"      
+        "editor;scoreeditor;rythtools"    
         "editor;scoreeditor;scoreeditors" 
+        "editor;scoreeditor;omicron-contents" 
+        "editor;scoreeditor;omicron-dialog" 
         "editor;scoreeditor;edition"
         "editor;scoreeditor;scorepatch"       
        ; "editor;scoreeditor;inspectorpalette"    

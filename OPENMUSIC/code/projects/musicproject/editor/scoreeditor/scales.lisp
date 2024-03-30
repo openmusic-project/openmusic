@@ -722,6 +722,7 @@
      :approx-factor 50))
 |#
 
+#|
 (defparameter *scales-list* (list 
                              (list 1   *1-tone-chromatic-scale*  "1")
                              (list 1.0 *1#-tone-chromatic-scale* "1#")
@@ -740,9 +741,10 @@
                              (list 14   *14-tone-chromatic-scale*  "1/14")
                              (list 16   *16-tone-chromatic-scale* "1/16")
                              ))
+|#
 
 ;for EDO scales
-(defparameter *omicron-scales-list* (list (list 0 "-" "-")
+(defparameter *scales-list* (list (list 0 "-" "-")
                                   (list 0   *current-1/2-scale*  "Omicron Scales")
                                   (list 1   *1-tone-chromatic-scale*  "1")
                                   (list 1.0 *1#-tone-chromatic-scale* "1#")

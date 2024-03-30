@@ -553,6 +553,7 @@
          (panel (panel editor))
          (bgcol *controls-color*)
          (di-font *controls-font*)
+         (edoname "Tunings")
          (l1 230)
          (l2 380)
          (l3 500)
@@ -639,6 +640,19 @@
                                        :range (loop for item in (GET-tone-LIST self) collect (car item)) 
                                        :value tone
                                        ))
+          ;;;  EDO
+         (edobut (om-make-dialog-item 'om-button
+                                     #+linux(om-make-point (- l3 10) c2)
+                                     #+macosx(om-make-point (- l3 12) (- c2 5))
+                                     #+linux(om-make-point 100 25)
+                                     #+macosx(om-make-point 110 30)
+                                      "Tunings" ;edoname
+                                      :font *om-default-font1*
+                                      :di-action (om-dialog-item-act item
+                                                   (declare (ignore item))
+                                                   (om-micron *omicron-data* self)
+                                                   )))
+         
            ;;; onset
          (onsetitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) "Onset"
                                          :font *om-default-font1*
@@ -696,8 +710,8 @@
          
     (setf (slotedit self) minied)
     (cond 
-     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num ));duration must comes first in order to setf the duration-time
-     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms))
+     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
+     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms edobut))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
