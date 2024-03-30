@@ -879,7 +879,7 @@
                       (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 180) 47) (om-make-point 200 22) "(Libraries to load at startup)"
                                            :font *om-default-font1*)
                       
-                      (setf libslist (om-make-view 'loadlibs-view :position (om-make-point l2 75) :size (om-make-point 360 210) 
+                      (setf libslist (om-make-view 'loadlibs-view :position (om-make-point l2 75) :size (om-make-point 360 386) 
                                                    :prefobject modulepref :scrollbars :v :bg-color *om-white-color*
                                                    :field-size (om-make-point 360 (* 20 (+ 1 (round (length (get-elements *library-package*)) 2))))
                                                    ))
