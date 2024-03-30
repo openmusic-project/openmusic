@@ -162,6 +162,8 @@ Carlos Agon, Gerard Assayag, Jean Bresson, Karim Haddad
 
 Linux support and development: Anders Vinjar
 
+Documentation: K. Haddad, C. Diatkin, J. Jakes-Schauer
+
 Contributions and code from: 
 E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, S. Socha, M. Stroppa, C. Truchet, F. Voisin
 
@@ -210,16 +212,24 @@ External Libraries:
                              :bg-color backcolor
                              :size (om-add-points 
                                     (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-                                    (if credits (om-make-point 320 #-linux 0 #+linux 30) (om-make-point 0 0)))
+                                    (if credits (om-make-point 320 #-linux 0 #+linux 0) (om-make-point 0 0)))
                              :subviews (list (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 110 6) (om-make-point 400 36)
+                                                                  (om-make-point 60 6) (om-make-point 400 56)
                                                                   name
-                                                                  :font (om-make-font "Arial" (nth 4 *om-def-font-sizes*) :style '(:bold))
+                                                                  :font (om-make-font "Arial" 32 ;(nth 4 *om-def-font-sizes*)
+                                                                                      :style '(:bold))
                                                                   :fg-color textcolor
                                                                   :bg-color backcolor
                                                                   )
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 57) (om-make-point 300 18)
+                                                                  (om-make-point 58 62) (om-make-point 250 20)
+                                                                  "Music Representations Group"
+                                                                  :font mainfont
+                                                                  :fg-color textcolor
+                                                                  :bg-color backcolor
+                                                                  )
+                                             (om-make-dialog-item 'om-static-text  
+                                                                  (om-make-point 58 77) (om-make-point 300 18)
                                                                   (string+ "(c) 1995-"
                                                                            (subseq *release-date* 0 4)
                                                                            " Ircam-Centre Georges Pompidou")
@@ -227,16 +237,10 @@ External Libraries:
                                                                   :fg-color textcolor
                                                                   :bg-color backcolor
                                                                   )
-                                             (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 42) (om-make-point 250 20)
-                                                                  "Music Representations Group"
-                                                                  :font mainfont
-                                                                  :fg-color textcolor
-                                                                  :bg-color backcolor
-                                                                  )
+
                                                         
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 320) (om-make-point 300 50)
+                                                                  (om-make-point 58 385) (om-make-point 300 50)
                                                                   (format nil "Release: ~,6f~%~A - ~A" *om-version* *release-author* *release-date*)
                                                                   :font mainfont
                                                                   :fg-color textcolor
@@ -244,7 +248,7 @@ External Libraries:
                                                                   )
                                              
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 354) (om-make-point 300 36)
+                                                                  (om-make-point 58 419) (om-make-point 300 36)
                                                                   (format nil "Dedicated to the memory of G. Grisey (1946-1998)~%Artwork: A. Mohsen (1963-2014)")
                                                                   :font mainfont
                                                                   :fg-color textcolor
