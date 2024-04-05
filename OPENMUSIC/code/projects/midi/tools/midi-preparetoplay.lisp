@@ -286,7 +286,7 @@
              (>= (midic self) 0)) ;; otherwise MIDI generates an error
     (setf port (or port (port self)))
     (setf approx (or approx 2))
-    (let ((channel-shift (micro-channel (approx-m (midic self) approx) approx)))
+    (let ((channel-shift (micro-channel (approx-m (midic self) (round approx)) approx)))
       (let ((chan (+ (chan self) channel-shift))
             (pitch (truncate (approx-scale (get-current-scale approx) (midic self)) 100))
             (vel (vel self))
