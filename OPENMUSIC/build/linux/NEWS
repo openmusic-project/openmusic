@@ -1,10 +1,13 @@
-* RELEASE NOTES 7.4
+* RELEASE NOTES 7.5
 
 NEW FEATURES
 
+- EDO scales
+- "Tunings" display in scoreeditors
 
 IMPROVEMENTS
 
+- Added accidentals (omicron.ttf)
 - soundeditor selection shortcut (TAB)
 
 
