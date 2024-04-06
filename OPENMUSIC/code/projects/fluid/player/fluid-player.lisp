@@ -43,21 +43,25 @@
 (defmethod player-type ((player (eql :fluidsynth))) :midi)   ;;; communication protocol (:midi / :udp)
 
 
+(defun get-gen-port (self)
+  (let ((ports (remove-duplicates  (flat (get-port self)))))
+    (if (= 1 (length ports)) (car ports))))
+
+
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)
-  ;(print (format nil "~s" params))
-  
   (let ((approx (if (find :approx params)
                     (nth (1+ (position :approx params)) params)
                   (if (caller player) (get-edit-param (caller player) 'approx))))
-       ; (port (if (find :port params)
-       ;             (nth (1+ (position :port params)) params)
-       ;         (if (caller player) (get-edit-param (caller player) 'outport))))
+        ;(port (if (find :port params)
+        ;            (nth (1+ (position :port params)) params)
+        ;        (if (caller player) (get-edit-param (caller player) 'outport))))
         ;(port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
-        ;;Pas besoin de port ici...
+        (port (get-gen-port (object (caller player))))
         )
-    ;(print (list "params"  player (caller player) approx (get-edit-param (caller player) 'approx) ))
-    ;(print port)
-   ; (if (equal port :default) (setf port *def-midi-out*))
+    ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
+    (when (and port *fluid-auto-microtune*)
+      (change-tuning port approx))
+    ; (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
                 (schedule-task player 
@@ -65,18 +69,14 @@
                                    ;(print evt)
                                    (player-play-object engine evt :interval interval))
                                (+ (or (car interval) 0) (om-midi::midi-evt-date evt))
-                               nil)
-                )
-            
-            
+                               nil))
             (append (and (and *midi-microplay* approx (find approx '(4 8) :test '=))
 			 ;; (let ((chan-offset (lchan object)))
 			 ;;   (microplay-events approx at (get-obj-dur object) port chan-offset))
 			 (microplay-events at (get-obj-dur object) port)
 			 )
                     (remove nil (flat (PrepareToPlay :midi object at :interval interval :approx approx :port nil)))
-                    )
-            )
+                    ))
     (sort-events player)
     ))
 
