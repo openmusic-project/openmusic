@@ -1274,7 +1274,6 @@ In this case, all internal events are sent simultaneously.
      ((or (= 16 value) (= 960.0 value) (= 960.1 value))
       (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
      ((or (= 220 value) (= 220.0 value) (= 220.1 value))
-      (print "yes")
       (fluid-pitchwheel '(0 2253 369 2621 737 2990 1106 3359 1475 3727 1843) 
                         '(1 2 3 4 5 6 7 8 9 11 12) port))
      ((or (= 300.0 value) (= 300.1 value))

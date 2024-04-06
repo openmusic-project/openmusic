@@ -222,7 +222,7 @@
 
 ;; to finish (fullying up the other unused chans)
 
-(defun micro-channel (midic &optional approx) ;(print (list "approx" approx))
+(defun micro-channel (midic &optional approx)
  ; (if (micro-channel-on approx)
       (cond
        ((or (= approx 4) (= approx 224.0) (= approx 224.1))
@@ -330,7 +330,6 @@
                 (t 0))))
        ((or (= 220 approx) (= 220.1 approx) (= 200.0 approx))
         (let ((modulo (mod midic 100)))
-         ; (print (list "aaa" modulo))
           (cond ((= modulo 55) 1)
                 ((= modulo 9) 2)
                 ((= modulo 64) 3)

@@ -172,7 +172,6 @@
                               ))
 
          )
-    (print (list "indexes" indx1 indx2))
     (when controls
     (setf (obj win) controls))
     (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 80 50) "Tuning system"))
