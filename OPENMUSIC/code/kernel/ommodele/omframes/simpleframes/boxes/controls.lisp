@@ -226,7 +226,7 @@
                                ;;:fg-color #+macosx *om-black-color* #-macosx *om-black-color* 
                                ;:fg-color *om-black-color*
                                ))
-    #+linux(format *terminal-io* "typing: ~%") ; it seems this fixes the problem...?
+    ;#+linux(format *terminal-io* "typing: ~%") ; it seems this fixes the problem...?
     (capi:redisplay-element container)
     ))
 
