@@ -159,12 +159,12 @@
 
 (defmethod omG-select ((self scoreboxframe))
    "Set the frame SELF and the object pointed for frame in selected mode according to obj-mode, 
-unless option key."
+unless option+shift keys."
    (let* ((obj (object self))
           (ref (reference obj))
           (panel (om-view-container self))
           (mode (obj-mode panel)))
-     (if (om-option-key-p)
+     (if (and (om-option-key-p) (om-shift-key-p))
          (when (not (active-mode self))
            (setf (active-mode self) t)
            (om-invalidate-view self t))  

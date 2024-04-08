@@ -2767,6 +2767,20 @@
      (loop for item in (inside self)
            append (select-grap-objs item type objlist))))
 
+
+(defmethod select-grap-objs ((self grap-voice) (type (eql 'grap-voice)) objlist)
+   (if (member (reference self) objlist :test 'equal)
+     (list self)
+     (loop for item in (inside self)
+           when (equal (type-of item) type) append (select-grap-objs item type objlist))))
+
+(defmethod select-grap-objs ((self grap-measure) (type (eql 'grap-measure)) objlist)
+   (if (member (reference self) objlist :test 'equal)
+     (list self)
+     (loop for item in (inside self)
+           when (equal (type-of item) type) append (select-grap-objs item type objlist))))
+
+
 (defmethod select-grap-objs ((self grap-group) (type (eql 'grap-group)) objlist)
    (if (member (reference self) objlist :test 'equal)
      (list self)
