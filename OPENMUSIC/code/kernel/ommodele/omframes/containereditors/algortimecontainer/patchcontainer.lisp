@@ -93,10 +93,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 (defmethod get-patchpanel ((self t)) (panel self))
 
 (defmethod om-view-click-handler ((view patchPanel) where)
-  
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
-    (if *adding-a-box*
+    (cond (*adding-a-box*
         ;;; a box is being added ...
         (progn
           (when (equal (window view) (second *adding-a-box*))
@@ -120,8 +119,13 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                   ))))
           (setf *adding-a-box* nil)
           (setf *new-obj-initial-pos* nil)
-          )
-      (call-next-method))))
+          ))
+          ;;; adding "list box" with autoconnect selected boxes
+          ((om-shift-key-p) 
+           (let ((selected (get-actives view)))
+             (create-list-box view selected where)))
+          (t (call-next-method)))))
+
 
 (defmethod om-view-doubleclick-handler ((Self patchPanel) Where)
   (when (equal self (call-next-method))
@@ -523,6 +527,23 @@ because digit-char-p will not accept backspace and special om keys!"
       (setf (om-edit::resizefunc ept) #'om::reinit-size)
       ept)))
 
+;shortcut for selected boxes connexion with a list box
+(defmethod create-list-box ((self patchPanel) boxes pos)
+  "Select boxes, then shift+click to connect them to a list object"
+  (when boxes
+    (let* ((newbox (omNG-make-new-lispboxcall 'list pos "list")) 
+           (new-frame (make-frame-from-callobj newbox)))   
+      (om-select-window (window self))
+      (omG-add-element self new-frame)
+
+      (loop for i from 1 to (length boxes)
+            do (add-one-input new-frame))
+      (let ((inputs (reverse (first-n (om-subviews (car (frames newbox))) (length boxes)))))
+        (loop for i in boxes
+              for n in inputs 
+              do (connect-box (car (outframes i)) n)))
+      (mapcar 'omg-unselect boxes)
+      )))
 ;------------------------------
 
 (defmethod clear-ev-once ((self patchPanel))
