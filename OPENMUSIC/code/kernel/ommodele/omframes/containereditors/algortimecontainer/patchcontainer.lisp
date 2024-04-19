@@ -121,7 +121,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
           (setf *new-obj-initial-pos* nil)
           ))
           ;;; adding "list box" with autoconnect selected boxes
-          ((om-shift-key-p) 
+          ((and (om-shift-key-p) (om-command-key-p))
            (let ((selected (get-actives view)))
              (create-list-box view selected where)))
           (t (call-next-method)))))
@@ -528,6 +528,7 @@ because digit-char-p will not accept backspace and special om keys!"
       ept)))
 
 ;shortcut for selected boxes connexion with a list box
+#|
 (defmethod create-list-box ((self patchPanel) boxes pos)
   "Select boxes, then shift+click to connect them to a list object"
   (when boxes
@@ -541,9 +542,39 @@ because digit-char-p will not accept backspace and special om keys!"
       (let ((inputs (reverse (first-n (om-subviews (car (frames newbox))) (length boxes)))))
         (loop for i in boxes
               for n in inputs 
-              do (connect-box (car (outframes i)) n)))
+              do (if (boxeditorframe-p i)
+                       (connect-box (last-elem (outframes i)) n)
+                   (connect-box (car (outframes i)) n)))
       (mapcar 'omg-unselect boxes)
-      )))
+      ))))
+|#
+
+(defmethod create-list-box ((self patchPanel) boxes pos)
+  "Select boxes, then shift+click to connect them to a list object.
+The order of listed boxes is spatial, ie. from left to right."
+  (when boxes
+    (let* ((newbox (omNG-make-new-lispboxcall 'list pos "list")) 
+           (new-frame (make-frame-from-callobj newbox))
+           (order (mapcar 'second 
+                          (sort-list 
+                           (loop for i in boxes 
+                                 collect 
+                                   (list (oa::vx i) i))
+                           :test '< :key 'car))))  
+      (om-select-window (window self))
+      (omG-add-element self new-frame)
+      (loop for i from 1 to (length boxes)
+            do (add-one-input new-frame))
+      (let ((inputs (first-n (om-subviews (car (frames newbox))) (length boxes))))
+        (loop for i in order 
+              for n in inputs 
+              do (if (boxeditorframe-p i)
+                       (connect-box (last-elem (outframes i)) n)
+                   (connect-box (car (outframes i)) n)))
+        (mapcar 'omg-unselect boxes)
+        ))))
+
+
 ;------------------------------
 
 (defmethod clear-ev-once ((self patchPanel))
