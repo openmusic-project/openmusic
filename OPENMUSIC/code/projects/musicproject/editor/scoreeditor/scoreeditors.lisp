@@ -642,9 +642,9 @@
                                        ))
           ;;;  EDO
          (edobut (om-make-dialog-item 'om-button
-                                     #+linux(om-make-point (- l3 10) c2)
+                                     #+(or linux win32)(om-make-point (- l3 10) c2)
                                      #+macosx(om-make-point (- l3 12) (- c2 5))
-                                     #+linux(om-make-point 100 25)
+                                     #+(or linux win32) (om-make-point 100 25)
                                      #+macosx(om-make-point 110 30)
                                       "Tunings" ;edoname
                                       :font *om-default-font1*
