@@ -165,7 +165,7 @@ Linux support and development: Anders Vinjar
 Documentation: K. Haddad, C. Diatkin, J. Jakes-Schauer
 
 Contributions and code from: 
-E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, S. Socha, M. Stroppa, C. Truchet, F. Voisin
+E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, M. Malt, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, S. Socha, M. Stroppa, C. Truchet, F. Voisin
 
 Lisp libraries:  
 - CFFI/babel/alexandria by J. Bielman, L.O. N. Siivola, A, Lendvai, M. Baringer, R. Strandh, T. Rittweiler
@@ -191,7 +191,7 @@ External Libraries:
   ((thepict :initform nil :initarg :thepict :accessor thepict)))
     
 (defmethod om-draw-contents ((self splash-screen)) 
-  (om-draw-picture self (thepict self))
+  (om-draw-picture self (thepict self) :pos (om-make-point 0 50))
   (call-next-method))
 
 (defclass about-window (om-window) ())
@@ -212,7 +212,7 @@ External Libraries:
                              :bg-color backcolor
                              :size (om-add-points 
                                     (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-                                    (if credits (om-make-point 320 #-linux 0 #+linux 0) (om-make-point 0 0)))
+                                    (if credits (om-make-point 320 #-linux 80 #+linux 80) (om-make-point 0 0)))
                              :subviews (list (om-make-dialog-item 'om-static-text  
                                                                   (om-make-point 60 6) (om-make-point 400 56)
                                                                   name
@@ -229,7 +229,7 @@ External Libraries:
                                                                   :bg-color backcolor
                                                                   )
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 77) (om-make-point 300 18)
+                                                                  (om-make-point 58 80) (om-make-point 300 18)
                                                                   (string+ "(c) 1995-"
                                                                            (subseq *release-date* 0 4)
                                                                            " Ircam-Centre Georges Pompidou")
@@ -265,7 +265,7 @@ External Libraries:
                        ;                     :fg-color textcolor
                        ;                     :bg-color backcolor)
                        (om-make-dialog-item 'om-static-text  
-                                            (om-make-point 390 10)
+                                            (om-make-point 390 20)
                                             (om-make-point 342 600) ;here
                                             *credits-2*
                                             :font mainfont
