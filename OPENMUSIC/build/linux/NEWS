@@ -2,12 +2,14 @@
 
 NEW FEATURES
 
+- get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
 - EDO scales
 - "Tunings" display in scoreeditors
 
 IMPROVEMENTS
 
+- save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
 - soundeditor selection shortcut (TAB)
 
