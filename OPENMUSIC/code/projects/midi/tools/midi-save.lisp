@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -103,7 +103,36 @@ For POLY objects: If all voice have same tempo, this tempo is saved in MidiFile.
 	       :retune-channels retune-channels))
 
 
+;;;MAQUETTE METHOD
 
+(defmethod* save-as-midi ((object maquette-obj) &optional filename &key (approx 2) (format nil) retune-channels) 
+  (let ((patch oa::*last-containing-view*))
+    (let* ((cont 
+            (if (patchpanel-p patch)
+                (car (get-actives patch))
+              (om-view-container patch)))
+           (input (car (inputs (object cont))))
+           (connected-obj (car (connected? input)))
+           (maqframe (car (frames connected-obj)))
+           )
+      (if (lock-button maqframe)
+          (progn
+            (add-rem-lock-button maqframe)
+            (midi-export 
+             (maquette2obj object 'multi-seq) ;the multiseq
+             :path filename
+             :name (if filename (pathname-name filename) "midi-out")
+             :approx approx
+             :format format
+             :retune-channels retune-channels)
+            (add-rem-lock-button maqframe))
+        (midi-export 
+         (maquette2obj object 'multi-seq) ;the multiseq
+         :path filename
+         :name (if filename (pathname-name filename) "midi-out")
+         :approx approx
+         :format format
+         :retune-channels retune-channels)))))
 
 
 
