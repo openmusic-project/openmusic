@@ -105,14 +105,22 @@ and puts spaces between the elements."
                                (format nil "~S.txt" (gensym)))))
     (if (soundfont-p pathname)                      
         (progn
-          (sys:call-system-showing-output 
-           (format nil "sh -c 'echo -n  \"inst 1\"| fluidsynth -q ~A |head -n -1|tail -n +4 > ~A'" 
-                   (namestring pathname) tempfile)
-           :wait t
+          #+linux (sys:call-system-showing-output 
+                   (format nil "sh -c 'echo -n  \"inst 1\"| fluidsynth -q ~A |head -n -1|tail -n +4 > ~A'" 
+                           (namestring pathname) tempfile)
+                   :wait t
          ; :shell-type shell
-           :output-stream nil ;*om-stream* 
-           :prefix " " 
-           :show-cmd nil)
+                   :output-stream nil ;*om-stream* 
+                   :prefix " " 
+                   :show-cmd nil)
+          #+macosx(sys:call-system-showing-output 
+                  (format nil "zsh -l -c  'echo -n  \"inst 1\"| fluidsynth -q ~A |tail -n +4 > ~A'" 
+                          (namestring pathname) tempfile)
+                  :wait t
+         ; :shell-type shell
+                  :output-stream nil ;*om-stream* 
+                  :prefix " " 
+                  :show-cmd nil)
           (let ((progs (car (loop for i in (list (om-read-file (pathname tempfile)))
                                   collect (format nil "~A" i)))))
             (prog1
