@@ -27,6 +27,7 @@
 
 (in-package :om)
 
+#|
 (defun get-online-dir (self)
   (if (and (symbolp (reference self)) (fboundp (reference self)) 
            (omgenfun-p (fdefinition (reference self)))
@@ -41,6 +42,28 @@
                                                                       #+macosx(format nil "OM ~D.app" *om-version*) 
                                                                       #+macosx "contents" 
                                                                       "resources" "online")))))
+|#
+
+(defun get-online-dir (self)
+  (if (and (symbolp (reference self)) (fboundp (reference self))
+           (omgenfun-p (fdefinition (reference self)))
+           (lib-fun-p (fdefinition (reference self))))
+      (let ((lib (lib-fun-p (fdefinition (reference self)))) path)
+        (setf lib (find-library lib))
+        (setf path (make-pathname :directory (append (pathname-directory (lib-pathname lib)) (list "resources" "online"))))
+        (unless (probe-file path)
+          (setf path (make-pathname :directory (append (pathname-directory (lib-pathname lib)) (list "online")))))
+        (namestring path))
+    #+macosx(make-pathname :directory (append (pathname-directory *om-root*) 
+                                              (if (string-equal (namestring *om-root*) "/Applications/")
+                                                  (list 
+                                                   (format nil "OM ~D.app" *version-str*)
+                                                   "contents" "resources" "online")
+                                                (list "resources" "online")
+                                                )))
+    #+(or linux win32)(make-pathname :directory (append (pathname-directory *om-root*) 
+                                                        (list "resources" "online")))
+    ))
     
 ;a verifier en LInux
 (defun open-tutorial (path)
