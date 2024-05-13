@@ -1552,7 +1552,8 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod! get-port ((self container))
    (loop for item in (inside self) collect (get-port item)))
 
-(defmethod! get-port ((self voice)) nil)
+;not good:?
+;(defmethod! get-port ((self voice)) nil)
 (defmethod! get-port ((self t) ) nil)
 
 (defmethod load-port-info ((self note) port)
