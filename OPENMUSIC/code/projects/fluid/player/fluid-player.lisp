@@ -56,7 +56,7 @@
         ;            (nth (1+ (position :port params)) params)
         ;        (if (caller player) (get-edit-param (caller player) 'outport))))
         ;(port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
-        (port (get-gen-port (object (caller player))))
+        (port (get-gen-port object))
         )
     ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
     (when (and port *fluid-auto-microtune*)
