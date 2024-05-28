@@ -150,7 +150,8 @@
 
 (defun om-micron (object controls &optional position)
   (let* ((pos (or position (om-make-point 200 200)))
-         (approx (get-edit-param (om-view-container controls) 'approx))
+         ;(approx (get-edit-param (om-view-container controls) 'approx))
+         (approx (staff-tone (panel (om-view-container controls))))
          (index (find-indx approx))
          (indx1 (car index))
          (indx2 (second index))
