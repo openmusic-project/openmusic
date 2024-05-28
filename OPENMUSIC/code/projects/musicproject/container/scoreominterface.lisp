@@ -1172,12 +1172,12 @@ Further more, in voice method, if list inputed, it will change all notes accordi
     (if (equal mode :clone)
         (let* ((clone (clone self))
                (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
-          (set-obj-port chrdseq port :mode 'destructive)
+          (set-obj-port chrdseq port :mode :destructive)
           (setf (chords clone) (inside chrdseq))
           clone)
       
       (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
-        (set-obj-port chrdseq port :mode 'destructive)
+        (set-obj-port chrdseq port :mode :destructive)
         (setf (chords self) (inside chrdseq))
         (update-obj self))))
 
@@ -1187,12 +1187,12 @@ Further more, in voice method, if list inputed, it will change all notes accordi
   (if (equal mode :clone)
       (let* ((clone (clone self))
              (chrdseq (objfromobjs clone (make-instance 'chord-seq))))
-        (set-obj-port chrdseq port :mode 'destructive)
+        (set-obj-port chrdseq port :mode :destructive)
         (setf (chords clone) (inside chrdseq))
         clone)
       
     (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
-      (set-obj-port chrdseq port :mode 'destructive)
+      (set-obj-port chrdseq port :mode :destructive)
       (setf (chords self) (inside chrdseq))
       (update-obj self))))
 
