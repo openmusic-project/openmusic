@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- TRACKS Score object for multi microton fluidsynth playback
 - get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
 - EDO scales
