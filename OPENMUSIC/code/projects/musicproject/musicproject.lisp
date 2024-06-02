@@ -62,6 +62,7 @@
         "editor;scoreeditor;scoreeditors" 
         "editor;scoreeditor;omicron-contents" 
         "editor;scoreeditor;omicron-dialog" 
+        "editor;scoreeditor;scoretracks" 
         "editor;scoreeditor;edition"
         "editor;scoreeditor;scorepatch"       
        ; "editor;scoreeditor;inspectorpalette"    
@@ -113,7 +114,7 @@
         "container;scoreslots"
         "functions;true-durations"      
         "functions;quantifyom"      
-         "functions;gkant"      
+        "functions;gkant"      
         "functions;maquette2obj"    
         "functions;conversions"       
         
