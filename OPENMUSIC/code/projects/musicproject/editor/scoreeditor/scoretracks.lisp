@@ -274,7 +274,10 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
    (deltay :initform *size-h-min* :accessor deltay)
    (groups :initform nil :accessor groups)
    (cur-group-ind :initform 0 :accessor cur-group-ind))
-  (:default-initargs :scrollbars :v :retain-scrollbars t))
+  (:default-initargs 
+   :scrollbars :v 
+   :scroll-bar-type :always-visible
+   :retain-scrollbars t))
 
 
 
