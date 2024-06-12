@@ -208,6 +208,8 @@
                                             :checked-p (get-pref modulepref :fluid-autoload)
                                             :di-action (om-dialog-item-act item 
                                                          (set-pref modulepref :fluid-autoload (om-checked-p item))
+                                                         (if (om-checked-p item)
+                                                             (autoload-fluid-synths))
                                                          ))
                        (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
                                             "Auto Microtune:" 
@@ -245,11 +247,14 @@
 (defun add-fluid-preferences ()
   (push-pref-module (list :fluid (get-def-vals :fluid))))
 
+(add-init-user-func 'add-fluid-preferences)
+
+#|
 (progn
 (add-fluid-preferences)
 (add-init-user-func 'add-fluid-preferences)
 ;(put-all-preferences)
 (add-init-user-func 'autoload-fluid-synths)
 )
-
+|#
 
