@@ -201,6 +201,8 @@
 (defmethod om-view-doubleclick-handler ((self om-graphic-object) pos) self)
 
 (defmethod om-view-doubleclick-handler :before ((self om-graphic-object) pos)
+  (setf *click-motion-view* nil) ;to be tested
+  (setf *click-motion-action* nil) ;to be tested
   (setf *clicked-view* nil))
 
 ;;;=================
