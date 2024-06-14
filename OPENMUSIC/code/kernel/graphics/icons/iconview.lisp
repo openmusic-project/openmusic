@@ -35,7 +35,7 @@
 (defvar *om-icon-folder* nil)
 (defvar *om-di-folder* nil)
 
-(defvar *om-icon-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp"))
+(defvar *om-icon-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp" "svg"))
 
 (defun init-icon-folder () 
    (setf *om-icon-folder* (make-pathname :device (pathname-device oa::*om-resources-folder*) 
