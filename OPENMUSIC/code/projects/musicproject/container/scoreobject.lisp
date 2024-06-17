@@ -533,6 +533,10 @@ Extraction methods.
   (setf (tempo self) tempo)
   self)
 
+;170624 KH fixes restfloat after float!
+;such as  (? (((4 4) (2 (1 (1 -5)) -1)))) -> ((4 4) (2 (1 (1 -4 -1.0)) -1)) 
+; should be -> ((4 4) (2 (1 (1 -4 -1)) -1))
+
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
   (cond
    ((and tree (not empty))
@@ -551,13 +555,15 @@ Extraction methods.
          (setf tree (list-first-layer tree))
          (setf tree (add-ties-to-tree tree))
          ;(setf tree (normalize-tree-voice  tree))
-         (setf (slot-value self 'tree) tree)))
+         ;(setf (slot-value self 'tree) tree)
+         (setf (slot-value self 'tree) (normalize-tree (reducetree tree))))) ;!!!!
      :PropagateExtent PropagateExtent)
     (unless InternalCall
       (set-relative-offset self)
       (integerize self)
       (QNormalize self)))
    (t (setf (slot-value self 'tree) nil))))
+
 
 
 (defmethod set-ties ((self voice) ties) 
