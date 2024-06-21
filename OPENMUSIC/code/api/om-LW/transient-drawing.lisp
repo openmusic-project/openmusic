@@ -216,7 +216,8 @@
   ;(print (list self position *click-motion-view*))
   (if *click-motion-action*
     (let* ((view *click-motion-view*)
-           (motion-info (temp-data view))
+           ;(motion-info (temp-data view))
+           (motion-info (if view (temp-data view)))
            (x (om-point-x position)) (y (om-point-y position))
            (pane view))
       (when motion-info
@@ -232,7 +233,7 @@
                     x (om-point-x pp)
                     y (om-point-y pp))))
           ))
-      (let ((dragging-info (capi:output-pane-cached-display-user-info pane)))
+      (let ((dragging-info (if pane (capi:output-pane-cached-display-user-info pane))))
         (when dragging-info
           (destructuring-bind (mode x0 y0 old-x old-y)
               dragging-info 
@@ -251,7 +252,9 @@
   ;(print (list self *click-motion-action* *click-motion-view*))
   (when *click-motion-action* ; (equal *click-motion-view* self) 
     (let* ((view *click-motion-view*)
-           (motion-info (temp-data view)))
+           ;(motion-info (temp-data view))
+           (motion-info (if view (temp-data view)))
+           )
       (setf *click-motion-action* nil)
       (when motion-info
         (destructuring-bind (motion-action release-action x0 y0 old-x old-y draw-pane)
@@ -263,5 +266,24 @@
             (capi::apply-in-pane-process (om-get-view view) release-action view (om-make-point x0 y0) (om-convert-coordinates pos self view))
             )))
       ;(setf *click-motion-action* nil)
-      (setf (temp-data view) nil))))
+      (when view
+      (setf (temp-data view) nil))
+      )))
 
+
+;In draganddrop api
+
+
+(defmethod om-click-motion-handler :before ((self om-drag-view) pos) 
+  (unless *click-motion-action* ;; cf. transient-drawing.lisp
+    (print (list "drag" self *click-motion-action*))
+    (setf (om-drag-view-cursor-pos self) pos)
+    (internal-drag-start self)))
+
+
+(defmethod om-click-motion-handler :before ((self om::scorepanel) pos) (print (list "drag" self)))
+#|
+  (unless *click-motion-action* ;; cf. transient-drawing.lisp
+    (setf (om-drag-view-cursor-pos self) pos)
+    (internal-drag-start self)))
+|#
