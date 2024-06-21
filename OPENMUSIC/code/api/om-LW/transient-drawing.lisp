@@ -269,21 +269,3 @@
       (when view
       (setf (temp-data view) nil))
       )))
-
-
-;In draganddrop api
-
-
-(defmethod om-click-motion-handler :before ((self om-drag-view) pos) 
-  (unless *click-motion-action* ;; cf. transient-drawing.lisp
-    (print (list "drag" self *click-motion-action*))
-    (setf (om-drag-view-cursor-pos self) pos)
-    (internal-drag-start self)))
-
-
-(defmethod om-click-motion-handler :before ((self om::scorepanel) pos) (print (list "drag" self)))
-#|
-  (unless *click-motion-action* ;; cf. transient-drawing.lisp
-    (setf (om-drag-view-cursor-pos self) pos)
-    (internal-drag-start self)))
-|#
