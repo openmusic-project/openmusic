@@ -553,10 +553,12 @@ Extraction methods.
          (setf tree (resolve-? tree))
          (setf tree (singleton tree))
          (setf tree (list-first-layer tree))
+         (setf (slot-value self 'tree) (normalize-tree (reducetree tree)))
          (setf tree (add-ties-to-tree tree))
          ;(setf tree (normalize-tree-voice  tree))
-         ;(setf (slot-value self 'tree) tree)
-         (setf (slot-value self 'tree) (normalize-tree (reducetree tree))))) ;!!!!
+         (setf (slot-value self 'tree) tree)
+         ;(setf (slot-value self 'tree) (normalize-tree (reducetree tree)))
+         )) ;!!!!
      :PropagateExtent PropagateExtent)
     (unless InternalCall
       (set-relative-offset self)
