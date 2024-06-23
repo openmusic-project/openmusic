@@ -105,7 +105,7 @@
 (defun internal-drag-start (self)
   (and (om-drag-start self)
        *click-motion-view* ;to be tested
-       *clicked-view* ;to be tested
+       ;*clicked-view* ;to be tested
        (capi:drag-pane-object  
         ;(om-get-view self)  
         (capi::pane-layout (capi::top-level-interface self))
