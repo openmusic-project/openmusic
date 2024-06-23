@@ -2,7 +2,7 @@
 
 NEW FEATURES
 
-- TRACKS Score object for multi microton fluidsynth playback
+- TRACKS Score object for multi microtone fluidsynth playback
 - get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
 - EDO scales
@@ -10,6 +10,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- dragging selected elements in Score objects doesn't affect pitch change
 - save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
 - soundeditor selection shortcut (TAB)
