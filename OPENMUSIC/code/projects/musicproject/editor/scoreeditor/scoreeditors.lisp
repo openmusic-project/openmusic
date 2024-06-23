@@ -1154,6 +1154,11 @@
    (when (equal (om-score-click-handler self where t) :call-next-method)
      (call-next-method)))
 
+(defmethod om-click-motion-handler :around ((self scorepanel) pos) 
+  "Prevents moving pitches with mouse move"
+  (declare (ignore pos))
+  (unless (in-patch-mode? self)
+    (setf oa::*click-motion-action* nil)))
 
 (defun click-in-key? (self system x y width size score where)
   (let ((posy y) rep)
