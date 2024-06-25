@@ -506,7 +506,7 @@ Removes all EXTRA objects from <self>.
 
 ;;;;;;;;;;;;;;;other utils;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod! index-voice-pulses ((self voice) &optional (onset number))
+(defmethod! index-voice-pulses ((self voice) &optional (onset 0))
             :initvals (list t 0) 
             :indoc '("voice" "onset")
             :icon 162
@@ -514,12 +514,12 @@ Removes all EXTRA objects from <self>.
 
 (let* ((npuls (n-pulses self))
        (strings (mkstring (arithm-ser onset (- (+ onset npuls) 1) 1))))
-  (put-extra-text self strings nil)))
+  (put-extra-text self strings :deltay 'down)))
             
 
 
-(defmethod! index-voice-pulses ((self chord-seq) &optional (onset number))
+(defmethod! index-voice-pulses ((self chord-seq) &optional (onset 0))
 (let* ((npuls (length (lmidic self)))
        (strings (mkstring (arithm-ser onset (- (+ onset npuls) 1) 1))))
-  (put-extra-text self strings nil)))
+  (put-extra-text self strings :deltay 'down)))
             
