@@ -63,6 +63,7 @@
 
 (defvar *score-drag-click* (om-make-point 0 0))
 (defvar *score-drag-object* nil)
+(defvar *drag-pitch* nil)
 
 ;(defmethod om-drag-selection-p2 ((self scorePanel) where) 
 ;  (when (not (score-get-extra-mode))
@@ -112,6 +113,8 @@
 
 
 (defmethod om-drag-start ((view scorePanel))
+  (when (om-option-key-p)
+    (setf *drag-pitch* t))
   (let ((theview (get-drag-object view)))
     (when (om-drag-score-selection-p view (om-mouse-position view))
       (om-invalidate-view view t)
@@ -134,7 +137,8 @@
                (setf (opt-key-p *OM-drag&drop-handler*) (om-option-key-p)
                      (target-view  *OM-drag&drop-handler*) (get-drag-object view)
                      (drop-mouse-pos *OM-drag&drop-handler*) drop-pos)
-               (score-drag&drop *OM-drag&drop-handler*)))
+               (score-drag&drop *OM-drag&drop-handler*)
+               (setf *drag-pitch* nil)))
             (t (call-next-method)))
     (call-next-method)))
 
@@ -147,7 +151,7 @@
      (score-change-view D&DHandler)
      t)
     
-    ((eq (target-view  D&DHandler) (dragged-view  D&DHandler))
+    ((and (eq (target-view  D&DHandler) (dragged-view  D&DHandler)) *drag-pitch*)
      (score-move-inside D&DHandler))
     
     (t (score-change-view D&DHandler))
