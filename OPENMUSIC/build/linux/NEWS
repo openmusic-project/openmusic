@@ -2,15 +2,17 @@
 
 NEW FEATURES
 
-- TRACKS Score object for multi microtone fluidsynth playback
-- get-fsynth-info
+- New Classes: 
+	-TRACKS Score object for multi microtone fluidsynth playback
+- New Methods:
+	-Fluid: get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
 - EDO scales
 - "Tunings" display in scoreeditors
 
 IMPROVEMENTS
 
-- dragging selected elements in Score objects doesn't affect pitch change
+- dragging selected elements in Score objects affects pitch change only with option key
 - save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
 - soundeditor selection shortcut (TAB)
@@ -30,6 +32,7 @@ NEW FEATURES
 - New C1, C3, C4 keys in editors
 - New methods:
 	- Sound/Markers: get-sound-markers, set-sound-markers, remove-sound-markers, add-sound-markers
+	- Score/extras: put-extra-text, put-extra-dyn, index-voice-pulses	
 	- Quantification: set-kant-analysis-segs, kant-voices, concatenate-kant-voices, remove-analysis
 - sound markers move using arrow keys
 
