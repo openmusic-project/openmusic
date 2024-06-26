@@ -138,24 +138,28 @@
                      (target-view  *OM-drag&drop-handler*) (get-drag-object view)
                      (drop-mouse-pos *OM-drag&drop-handler*) drop-pos)
                (score-drag&drop *OM-drag&drop-handler*)
-               (setf *drag-pitch* nil)))
+               ;(setf *drag-pitch* nil)
+               ))
             (t (call-next-method)))
     (call-next-method)))
 
 (defmethod score-drag&drop ((D&DHandler omdrag-drop))
   (cond 
-    ;;; pb : sur mac ca rentre jamais et si ca rentre ca plante : (object <note>) ;;;
-    ;;; ((opt-key-p *OM-drag&drop-handler*) (score-duplicate-drop D&DHandler))    
+   ;;; pb : sur mac ca rentre jamais et si ca rentre ca plante : (object <note>) ;;;
+   ;;; ((opt-key-p *OM-drag&drop-handler*) (score-duplicate-drop D&DHandler))    
     
-    ((opt-key-p D&DHandler) ;; score-change-view in the same view will simulate a copy
-     (score-change-view D&DHandler)
-     t)
+   ((and (eq (target-view  D&DHandler) (dragged-view  D&DHandler)) *drag-pitch*)
+    (score-move-inside D&DHandler)
+    (setf *drag-pitch* nil))
+
+   ((opt-key-p D&DHandler) ;; score-change-view in the same view will simulate a copy
+    (score-change-view D&DHandler)
+    t)
     
-    ((and (eq (target-view  D&DHandler) (dragged-view  D&DHandler)) *drag-pitch*)
-     (score-move-inside D&DHandler))
     
-    (t (score-change-view D&DHandler))
-    ))
+    
+   (t (score-change-view D&DHandler))
+   ))
 
 (defmethod test-receptor ((self scorepanel) where)
    (click-in-obj (graphic-obj self) 'grap-note where self))
