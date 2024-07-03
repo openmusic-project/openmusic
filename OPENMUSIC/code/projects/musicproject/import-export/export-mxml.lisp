@@ -300,7 +300,7 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
 
 (defun time-modifications (self)
   (let ((ratio (time-mod-val self)))
-  (if ratio 
+  (if (and ratio (not (= (car ratio) (second ratio))))
       (group (car ratio) (second ratio))
   nil)))
 
