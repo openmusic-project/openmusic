@@ -158,7 +158,7 @@
          (win (om-make-window 'omicron-dialog 
                               :size (om-make-point 740 400)
                               :position pos
-                              :window-title "om-micron"
+                              :window-title "Tuning and notation"
                               :resizable t
                               :external-min-width 740
                               :external-min-height 400 
@@ -175,7 +175,7 @@
          )
     (when controls
     (setf (obj win) controls))
-    (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 80 50) "Tuning system"))
+    (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 150 50) "Tuning system"))
     (setf (list1 win) (om-make-dialog-item 'om-single-item-list
                                            (om-make-point 10 30)
                                            (om-make-point 230 280)
@@ -203,7 +203,7 @@
     
 
 
-    (setf (title2 win) (om-make-dialog-item 'om-static-text (om-make-point 300 8) (om-make-point 80 50) "Notation system"))
+    (setf (title2 win) (om-make-dialog-item 'om-static-text (om-make-point 300 8) (om-make-point 150 50) "Notation system"))
     (setf (list2 win) (om-make-dialog-item 'om-single-item-list
                                            (om-make-point 250 30)
                                            (om-make-point 230 280)
