@@ -241,7 +241,8 @@
    (list (list 50.1 *5-EDO_#* "5#")
          (list 50.0 *5-EDO_b* "5b"))
    (list
-    (list 60 *6-EDO_b* "6b"))
+    (list 60.1 *6-EDO_#* "6#")
+    (list 60.0 *6-EDO_b* "6b"))
    (list
     (list 70   *7-EDO* "7"))
    (list
@@ -254,7 +255,7 @@
     (list 100.1 *10-EDO_#* "10#")
     (list 100.0 *10-EDO_b* "10b"))
    (list
-    (list 120.0 *12-tone-chromatic-scale* "12#")
+    (list 120.1 *12-EDO_#* "12#")
     (list 120.0 *12-EDO_b* "12b"))
    (list
     (list 140.1 *14-EDO_^* "14^")

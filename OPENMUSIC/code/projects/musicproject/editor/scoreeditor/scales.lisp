@@ -334,6 +334,11 @@
 
 ;=====6 EDO=====
 
+(defvar *6-EDO_#*
+    (make-instance 'scale
+      :alteration-list (list  (diese)  (diese) nil  nil  nil  nil)
+      :lines-list (list  0 1 3 4 5 6 )
+      :approx-factor 200))
 
 (defvar *6-EDO_b*
 (make-instance 'scale
@@ -404,6 +409,14 @@
 
 
 ;=====12 EDO=====
+
+(defvar *12-EDO_#*
+   (make-instance 'scale
+     :alteration-list
+     (list  nil (diese) nil (diese) nil nil (diese) nil (diese) nil (diese) nil)
+     :lines-list
+     (list  0 0 1 1 2 3 3 4 4 5 5 6)
+     :approx-factor 100))
 
 (defvar *12-EDO_b*
 (make-instance 'scale
@@ -766,7 +779,8 @@
                                   (list 2   *current-1/2-scale* "EDO Scales")
                                   (list 50.1 *5-EDO_#* "5#")
                                   (list 50.0 *5-EDO_b* "5b")
-                                  (list 60 *6-EDO_b* "6b")
+                                  (list 60.1 *6-EDO_#* "6#")
+                                  (list 60.0 *6-EDO_b* "6b")
                                   (list 70   *7-EDO* "7")
                                   (list 80.1 *8-EDO_#* "8#")
                                   (list 80.0 *8-EDO_b* "8b")
@@ -774,6 +788,7 @@
                                   (list 90.0 *9-EDO_b* "9b")
                                   (list 100.1 *10-EDO_#* "10#")
                                   (list 100.0 *10-EDO_b* "10b")
+                                  (list 120.1 *12-EDO_#* "12b")
                                   (list 120.0 *12-EDO_b* "12b")
                                   (list 140.1 *14-EDO_^* "14^")
                                   (list 140.0 *14-EDO_v* "14v")
