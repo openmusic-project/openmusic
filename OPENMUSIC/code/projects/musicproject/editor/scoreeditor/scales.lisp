@@ -757,8 +757,8 @@
 |#
 
 ;for EDO scales
-(defparameter *scales-list* (list (list 0 "-" "-")
-                                  (list 0   *current-1/2-scale*  "Omicron Scales")
+(defparameter *scales-list* (list ;(list 0 "-" "-")
+                                  ;(list 0   *current-1/2-scale*  "Omicron Scales")
                                   (list 1   *1-tone-chromatic-scale*  "1")
                                   (list 1.0 *1#-tone-chromatic-scale* "1#")
                                   (list 2   *current-1/2-scale* "1/2")
@@ -775,8 +775,8 @@
                                   (list 12   *12-tone-chromatic-scale*  "1/12")
                                   (list 14   *14-tone-chromatic-scale*  "1/14")
                                   (list 16   *16-tone-chromatic-scale* "1/16")
-                                  (list 0 "-" "-")
-                                  (list 2   *current-1/2-scale* "EDO Scales")
+                                  ;(list 0 "-" "-")
+                                  ;(list 2   *current-1/2-scale* "EDO Scales")
                                   (list 50.1 *5-EDO_#* "5#")
                                   (list 50.0 *5-EDO_b* "5b")
                                   (list 60.1 *6-EDO_#* "6#")

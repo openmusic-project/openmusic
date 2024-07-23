@@ -143,7 +143,15 @@
            (loop for i in *scales-list*
                  for n from 0 to (length *scales-list*)
                  collect (if (member approx i) n)))))
+;(give-index-off-approx 120.0)
 
+;(nth 2 *scales-list*)
+
+(defun give-symbol-of-approx (approx)
+  (print (list "hey where are you approx?" approx))
+  (last-elem (nth (give-index-off-approx approx) *scales-list*)))
+
+;(give-symbol-of-approx 2)
 
 ;;;
 
@@ -259,8 +267,9 @@
                                                         ;                          (third (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (set-edit-param (om-view-container controls) 'approx
                                                                          (car (nth indx2 (nth indx1 *omicron-scales-list*))))
-                                                         (om-set-selected-item-index (nth 6 (om-subviews controls)) 
-                                                                                     (give-index-off-approx (car (nth indx2 (nth indx1 *omicron-scales-list*))))) ;approx popup
+                                                         (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name
+                                                         
+                                                         (print (list "exam" (nth 11 (om-subviews controls))))
                                                          (change-editor-tone (panel (om-view-container controls))
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (om-close-window win)

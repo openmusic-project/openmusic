@@ -280,6 +280,7 @@
     (list 220.1 *22-EDO_#* "22#")
     (list 220.0 *22-EDO_b* "22b"))
    (list
+    (list 240.1 *current-1/4-scale* "24#")
     (list 240.0 *24-EDO_b* "24b"))
    (list
     (list 300.1 *30-EDO_#* "30#")

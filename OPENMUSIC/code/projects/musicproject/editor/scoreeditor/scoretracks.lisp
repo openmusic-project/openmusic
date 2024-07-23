@@ -354,7 +354,8 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
   (let* ((editor (om-view-container self))
          (tracksobj (object editor))
          (voices (voices tracksobj)))
-        
+
+       
     (setf (groups self) 
           (loop for i from 1 to (length voices)
                                 collect (list i t)))
@@ -365,19 +366,29 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
            (posy 5))
       ;(setf (tunings self) (loop for i in vx collect (get-approx i)))
       (setf (tunings self) (approx tracksobj))
+       (print (list "fuck tunings" (tunings self)))
+       (loop for v in vx
+               collect (print (list "ant" (get-editor-class v) self v (om::ref (editor self))
+                               ) ))
+       (print "0")
       (loop for v in vx
             do
               (progn
-                (push 
-                 (om-make-view 'hide-bar :owner self :object v :ref (om::ref (editor self))
+                
+                (push (om-make-view 'hide-bar :owner self :object v :ref (om::ref (editor self))
                                :position (om-make-point 0 posy) :size (om-make-point 1100 15)
-                               :bg-color *azulote*) (hide-buts self))
+                               :bg-color *azulote*)
+                      (hide-buts self))
                 (incf posy 15)
-                (push
-                 (om-make-view (get-editor-class v) :owner  self :object v :ref (om::ref (editor self))
-                               :position (om-make-point 0 posy) :size (om-make-point 1100 300)) (editors self))
+                
+                 (let ((panel (om-make-view (get-editor-class v) :owner  self :object v :ref (om::ref (editor self))
+                               :position (om-make-point 0 posy) :size (om-make-point 1100 300))))
+                   (print (list "panel" panel))
+                   (push panel
+                         (editors self)))
                 (incf posy dy)
                 ))
+      (print "1")
       (push 
        (om-make-view 'hide-bar :owner self :object (last-elem vx) :ref (om::ref (editor self))
                      :position (om-make-point 0 posy) :size (om-make-point 1100 15) :bg-color *azulote*) (hide-buts self))
@@ -388,7 +399,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
       (loop for h in (reverse (hide-buts self))
             for i from 0 to (length (hide-buts self))
               do (setf (index h) i))
-
+      (print "2")
       ;attach editors to hide-bars
       (loop for h in (reverse (cons nil (hide-buts self)))
             for v in (reverse (cons nil (editors self)))
@@ -396,21 +407,24 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
             do (setf (at-editor h) v)
                (setf (bef-editor h) b)
             )
-      
+      (print "3")
       ;set tunnings for panel
       (let ((approx-pos (loop for i in (tunings self)
                               collect (position i *scales-list* :key #'car))))
-    
+        (print (list "all approx" approx-pos (tunings self)))
     ;set approx and tunings in ctrl-panel
         (loop for v in (reverse (editors self))
               for i in approx-pos
               for tun in (tunings self)
               do (set-edit-param v 'approx tun)
                  (set-edit-param v 'approx i) ;tun
-                 (om-select-item-index (nth 6 (om-subviews  (ctr-view v))) i)
+                 (print (list "yoyo" i tun))
+                 ;(om-set-dialog-item-text (nth 10 (om-subviews  (ctr-view v))) i)
+                 ;(om-set-dialog-item-text (nth 10 (om-subviews  (ctr-view v))) (give-symbol-of-approx tun))
+                 ;(om-select-item-index (nth 10 (om-subviews  (ctr-view v))) (give-symbol-of-approx i))
                  (update-panel (panel v)))
         
-  
+        (print "4")
          ;set scales according to approx to panels        
         (loop for i in (reverse (editors self))
               for a in approx-pos
