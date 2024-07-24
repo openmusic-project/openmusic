@@ -135,7 +135,7 @@
        (lst2 (position-if-not #'null (nth lst1 res))))
   (list lst1 lst2)))
 
-;(find-indx 150.1)
+;(find-indx 6)
 
 (defun give-index-off-approx (approx)
   (car 
@@ -143,9 +143,9 @@
            (loop for i in *scales-list*
                  for n from 0 to (length *scales-list*)
                  collect (if (member approx i) n)))))
-;(give-index-off-approx 120.0)
+;(give-index-off-approx 2)
 
-;(nth 2 *scales-list*)
+;(nth 12 *scales-list*)
 
 (defun give-symbol-of-approx (approx)
   (print (list "hey where are you approx?" approx))
@@ -181,6 +181,7 @@
                               ))
 
          )
+    ;(print (list "pttt" index indx1 indx2 approx))
     (when controls
     (setf (obj win) controls))
     (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 150 50) "Tuning system"))
@@ -204,6 +205,7 @@
                                                                      ;(print (list "selection" (capi::choice-selection list) "indx:" indx1))
                                                                      (set-omicron-panel (list2 win) 
                                                                                         (second (nth (capi::choice-selection list) *omicron-data*)))
+                                                                     (setf indx2 0);init choix 2
                                                                      (om-set-dialog-item-text (list3 win) 
                                                                                               (car (third (nth (capi::choice-selection list)  *omicron-data*))))
                                                                      )
@@ -247,8 +249,13 @@
                                                        (om-set-selected-item-index (list2 win) 0)
                                                        (set-edit-param (om-view-container controls) 'approx
                                                                        (car (nth 0 (nth 1 *omicron-scales-list*))))
+                                                       #|
                                                        (om-set-selected-item-index (nth 6 (om-subviews controls)) 
                                                                                    (give-index-off-approx (car (nth 0 (nth 1 *omicron-scales-list*)))))
+                                                       |#
+                                                       (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx 
+                                                                                                                 (car (nth 0 (nth 6 *omicron-scales-list*)))
+                                                                                                                 ))
                                                        (change-editor-tone (panel (om-view-container controls))
                                                                            (car (nth 0 (nth 1 *omicron-scales-list*))))
                                                        (om-close-window win)
@@ -267,9 +274,12 @@
                                                         ;                          (third (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (set-edit-param (om-view-container controls) 'approx
                                                                          (car (nth indx2 (nth indx1 *omicron-scales-list*))))
+                                                         (print (list "apply" (car (nth indx2 (nth indx1 *omicron-scales-list*)))
+                                                                      (nth indx1 *omicron-scales-list*)
+                                                                      ))
                                                          (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name
                                                          
-                                                         (print (list "exam" (nth 11 (om-subviews controls))))
+                                                         ;(print (list "exam" (nth 11 (om-subviews controls))))
                                                          (change-editor-tone (panel (om-view-container controls))
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (om-close-window win)
@@ -286,7 +296,8 @@
     ;(setf (list1 win) (list1 win) (list2 win) (list2 win) (list3 win) (list3 win))
     #+cocoa(setf (capi::interface-menu-bar-items win)
                  (internal-window-class-menubar win))
-   
+   (print (list "res" 
+                indx1 indx2))
     (om-select-window win)))
 
 ;(om-micron *omicron-data* nil)
