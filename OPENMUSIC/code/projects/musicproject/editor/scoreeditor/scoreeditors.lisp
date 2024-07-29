@@ -615,7 +615,8 @@
          
          (staffbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c1) 
-                                       (om-make-point 90 22)
+                                       #+(or linux win32)(om-make-point 90 22)
+                                       #+macosx(om-make-point 102 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
@@ -633,13 +634,12 @@
          
          ;;;  EDO
          (edobut (om-make-dialog-item 'om-button
-                                      (om-make-point l2 c2)
-                                  ;   #+(or linux win32)(om-make-point (- l3 10) c2)
-                                  ;   #+macosx(om-make-point (- l3 12) (- c2 5))
-                                     #+(or linux win32) (om-make-point 90 25)
-                                     #+macosx(om-make-point 110 30)
-                                     (format nil "~A" (give-symbol-of-approx approx)) ;edoname
-                                     :font *om-default-font1*
+                                       #+(or linux win32)(om-make-point l2 c2)
+                                       #+macosx(om-make-point (- l2 5) (- c2 5))
+                                       #+(or linux win32) (om-make-point 90 25)
+                                       #+macosx(om-make-point 110 30)
+                                       (format nil "~A" (give-symbol-of-approx approx)) ;edoname
+                                       :font *om-default-font1*
                                      :di-action (om-dialog-item-act item
                                                   (declare (ignore item))
                                                   (om-micron *omicron-data* self)
