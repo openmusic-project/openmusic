@@ -927,7 +927,7 @@
     (setf (approx-factor (object self)) (/ 200 (get-edit-param self 'approx)))
     (setf (alteration-list (object self)) (copy-list (alteration-list refscale)))
     (setf (lines-list (object self)) (copy-list (lines-list refscale)))
-    (print (lines-list (object self)))
+    ;(print (lines-list (object self)))
     (loop for note in (inside (ref-chord self))
           for i = 0 then (+ i 1) do
             (when (tonalite note)

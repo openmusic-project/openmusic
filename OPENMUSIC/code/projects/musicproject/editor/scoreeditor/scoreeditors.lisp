@@ -3022,7 +3022,7 @@
             (clone (clone selection))
             (obj (object (om-view-container self)))
             (chrdseq (car (inside obj))))
-       (print (string-equal (obj-mode self) "chord"))
+       ;(print (string-equal (obj-mode self) "chord"))
        (if (string-equal (obj-mode self) "chord")
       (progn
        (merge-chord-in-chrdseq chrdseq clone)

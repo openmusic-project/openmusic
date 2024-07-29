@@ -148,7 +148,6 @@
 ;(nth 12 *scales-list*)
 
 (defun give-symbol-of-approx (approx)
-  (print (list "hey where are you approx?" approx))
   (last-elem (nth (give-index-off-approx approx) *scales-list*)))
 
 ;(give-symbol-of-approx 2)
@@ -181,7 +180,7 @@
                               ))
 
          )
-    ;(print (list "pttt" index indx1 indx2 approx))
+
     (when controls
     (setf (obj win) controls))
     (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 150 50) "Tuning system"))
@@ -274,12 +273,7 @@
                                                         ;                          (third (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (set-edit-param (om-view-container controls) 'approx
                                                                          (car (nth indx2 (nth indx1 *omicron-scales-list*))))
-                                                         (print (list "apply" (car (nth indx2 (nth indx1 *omicron-scales-list*)))
-                                                                      (nth indx1 *omicron-scales-list*)
-                                                                      ))
                                                          (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name
-                                                         
-                                                         ;(print (list "exam" (nth 11 (om-subviews controls))))
                                                          (change-editor-tone (panel (om-view-container controls))
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
                                                          (om-close-window win)
@@ -296,8 +290,6 @@
     ;(setf (list1 win) (list1 win) (list2 win) (list2 win) (list3 win) (list3 win))
     #+cocoa(setf (capi::interface-menu-bar-items win)
                  (internal-window-class-menubar win))
-   (print (list "res" 
-                indx1 indx2))
     (om-select-window win)))
 
 ;(om-micron *omicron-data* nil)
