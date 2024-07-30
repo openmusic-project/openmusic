@@ -546,13 +546,13 @@
   (declare (ignore l))
   (setf onsetval 0)
   (setf measnumval 1)
-  
- ; (setf (staff-meas (panel (om-view-container self))) measnumval)
   (let* ((editor (om-view-container self))
          (obj (object editor))
          (panel (panel editor))
          (bgcol *controls-color*)
          (di-font *controls-font*)
+         (approx (staff-tone (panel (om-view-container self))))
+         (approx (if (listp approx) (car approx) approx)) ;for tracks obj
          (edoname "Tunings")
          (l1 230)
          (l2 380)
@@ -615,7 +615,8 @@
          
          (staffbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point l2 c1) 
-                                       (om-make-point 90 22)
+                                       #+(or linux win32)(om-make-point 90 22)
+                                       #+macosx(om-make-point 102 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                                (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
@@ -626,32 +627,23 @@
                                        :value (car (find (get-edit-param (editor (om-view-container self)) 'staff) (GET-staff-LIST self) :key 'cadr :test 'equal))
                                        ))   
          ;;; approx
+         
          (toneitem (om-make-dialog-item 'om-static-text (om-make-point (- l2 50) (+ c2 2)) (om-make-point 52 20) "Approx"
                                         :font *om-default-font1*
-                                        :bg-color *controls-color*))
+                                        :bg-color *controls-color*)) 
          
-         (tonebut (om-make-dialog-item 'om-pop-up-dialog-item 
-                                       (om-make-point l2 c2)
-                                       (om-make-point 90 22) ""
-                                       :di-action (om-dialog-item-act item
-                                                               (let ((newtone (cadr (nth (om-get-selected-item-index item) (GET-tone-LIST self)))))
-                                                                 (change-editor-tone (panel (om-view-container self)) newtone)))
-                                       :font di-font
-                                       :range (loop for item in (GET-tone-LIST self) collect (car item)) 
-                                       :value tone
-                                       ))
-          ;;;  EDO
+         ;;;  EDO
          (edobut (om-make-dialog-item 'om-button
-                                     #+(or linux win32)(om-make-point (- l3 10) c2)
-                                     #+macosx(om-make-point (- l3 12) (- c2 5))
-                                     #+(or linux win32) (om-make-point 100 25)
-                                     #+macosx(om-make-point 110 30)
-                                      "Tunings" ;edoname
-                                      :font *om-default-font1*
-                                      :di-action (om-dialog-item-act item
-                                                   (declare (ignore item))
-                                                   (om-micron *omicron-data* self)
-                                                   )))
+                                       #+(or linux win32)(om-make-point l2 c2)
+                                       #+macosx(om-make-point (- l2 5) (- c2 5))
+                                       #+(or linux win32) (om-make-point 90 25)
+                                       #+macosx(om-make-point 110 30)
+                                       (format nil "~A" (give-symbol-of-approx approx)) ;edoname
+                                       :font *om-default-font1*
+                                     :di-action (om-dialog-item-act item
+                                                  (declare (ignore item))
+                                                  (om-micron *omicron-data* self)
+                                                  )))
          
            ;;; onset
          (onsetitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) "Onset"
@@ -710,9 +702,12 @@
          
     (setf (slotedit self) minied)
     (cond 
-     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
-     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut onsetitem onset-ms edobut))
-     (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem tonebut minied sizebut)))
+     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
+                                                       minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
+     ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
+                                                                minied sizebut onsetitem onset-ms edobut))
+     (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem 
+                         minied sizebut)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     
@@ -3027,7 +3022,7 @@
             (clone (clone selection))
             (obj (object (om-view-container self)))
             (chrdseq (car (inside obj))))
-       (print (string-equal (obj-mode self) "chord"))
+       ;(print (string-equal (obj-mode self) "chord"))
        (if (string-equal (obj-mode self) "chord")
       (progn
        (merge-chord-in-chrdseq chrdseq clone)
