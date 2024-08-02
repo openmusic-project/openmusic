@@ -49,7 +49,7 @@
    "22 EDO"
    "24 EDO (1/4 tones)"
    "30 EDO"
-   "31 EDO"
+   "31 EDO (1/5 tones)"
    "36 EDO (1/6 tones)"
    "42 EDO (1/7 tones)"
    "48 EDO (1/8 tones)"
@@ -79,7 +79,7 @@
   (list "Subset of 60 EDO, sharps only" "Subset of 60 EDO, flats only" "OM legacy" "OM legacy (transposed up a semitone)")
   (list "Chain of fifths")
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")
-  (list "Chain of fifths, sharps only" "Chain of fifths, flats only" "OM legacy")
+  (list "Chain of fifths, sharps only" "Chain of fifths, flats only" "OM legacy" "OM legacy (transposed up a semitone)")
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")  
@@ -92,8 +92,8 @@
    (list (format nil "5 equal divisions of the octave~%~%Step size = 240 cents~%~%Notated as a subset of 60 EDO. Sharps only.~%~%Example chromatic sequence: C D^^ Fv G^ A#vv C")
          (format nil "5 equal divisions of the octave~%~%Step size = 240 cents~%~%Notated as a subset of 60 EDO. Flats only.~%~%Example chromatic sequence: C D^^ Fv G^ Bbvv C"))
    (list (format nil "6 equal divisions of the octave~%~%Step size = 200 cents~%~%Notated as a subset of 12 EDO. Sharps only.~%~%Example chromatic sequence: C D E F# G# A# C")
-         (format nil "6 equal divisions of the octave~%~%Step size = 200 cents~%~%Notated as a subset of 12 EDO. Flats only.~%~%Example chromatic sequence: C D E Gb Ab Bb C")
-         (format nil "Step size = 200 cents~%~%Notated as a subset of 12 EDO. Sharps only.~%~%Example chromatic sequence: C# D# F G A B C#"))
+         (format nil "6 equal divisions of the octave~%~%Step size = 200 cents~%~%Notated as a subset of 12 EDO. Flats only~%~%Example chromatic sequence: C D E Gb Ab Bb C")
+         (format nil "6 equal divisions of the octave~%~%Step size = 200 cents~%~%Notated as a subset of 12 EDO. Sharps only..~%~%Pitches are transposed up one semitone.~%~%Example chromatic sequence: C# D# F G A B C#"))
    (list (format nil "7 equal divisions of the octave~%~%Step size = 171 cents~%~%Fifth size = 686 cents~%~%Notated as a chain of ascending fifths from F to B.~%~%Example chromatic sequence: C D E F G A B C"))
    (list (format nil "8 equal divisions of the octave~%~%Step size = 150 cents~%~%Notated as a subset of 24 EDO. Sharps only.")
          (format nil "8 equal divisions of the octave~%~%Step size = 150 cents~%~%Notated as a subset of 24 EDO. Flats only."))
@@ -114,7 +114,7 @@
    (list (format nil "18 equal divisions of the octave~%~%Step size = 67 cents~%~%Notated as a subset of 36 EDO. Sharps only.")
          (format nil "18 equal divisions of the octave~%~%Step size = 67 cents~%~%Notated as a subset of 36 EDO. Flats only.")
          (format nil "18 equal divisions of the octave~%~%Step size = 67 cents~%~%Notated using OpenMusic's legacy accidentals")
-         (format nil "18 equal divisions of the octave~%~%Step size = 67 cents~%~%Notated using OpenMusic's legacy accidentals"))
+         (format nil "18 equal divisions of the octave~%~%Step size = 67 cents~%~%Pitches are transposed up one semitone.~%~%Notated using OpenMusic's legacy accidentals"))
    
    (list (format nil "19 equal divisions of the octave~%~%Step size = 63 cents~%~%Fifth size = 695 cents~%~%Notated as a chain of ascending fifths from Gb to B#.~%~%Example chromatic sequence: C C# Db D D# Eb E E# F...etc."))
    (list (format nil "22 equal divisions of the octave~%~%Step size = 55 cents~%~%Fifth size = 709 cents~%~%Notated as a chain of ascending fifths from Gb.~%~%Pitches beyond A# in the chain are respelled with arrow-attached accidentals (e.g. E# = F#v).~%~%Arrows lower the pitch by 1 step (55 cents).~%~%Example chromatic sequence: C Db C#v C# D Eb D#v D# E F...etc.")
@@ -129,7 +129,7 @@
          (format nil "30 equal divisions of the octave~%~%Step size = 40 cents~%~%Notated using OpenMusic's legacy accidentals")
          (format nil "30 equal divisions of the octave~%~%Step size = 40 cents~%~%Pitches are transposed up one semitone~%~%Notated using OpenMusic's legacy accidentals"))
    
-   (list (format nil "flats are respelled using half sharps and half flats (e.g. Fx = Gd)~%~%Half sharps raise the pitch by 1 step.~%~%Half flats lower the pitch by 1 step.~%~%Example chromatic sequence: C C+ C# Db Dd D D+ D# Eb Ed E E+ E# F...etc."))
+(list (format nil "31 equal divisions of the octave~%~%Step size = 39 cents~%Fifth size = 697 cents~%~%Notated as a chain of fifths. Double sharps and double flats are respelled using half sharps and half flats (e.g. Fx = Gd)~%~%Half sharps raise the pitch by 1 step.~%Half flats lower the pitch by 1 step.~%~%Example chromatic sequence: C C+ C# Db Dd D D+ D# Eb Ed E E+ E# F...etc."))
 
    (list (format nil "36 equal divisions of the octave~%~%Step size = 33 cents~%~%Fifth size = 700 cents~%~%Notated as three interlocking sets of 12 EDO offset by 1 step of 36 EDO (33 cents).~%~%Arrows raise/lower the pitch by 1 step.~%~%Example chromatic sequence: C C^ C#v C# C#^ Dv D...etc.")
          (format nil "36 equal divisions of the octave~%~%Step size = 33 cents~%~%Fifth size = 700 cents~%~%Notated as three interlocking sets of 12 EDO offset by 1 step of 36 EDO (33 cents).~%~%Arrows raise/lower the pitch by 1 step.~%~%Example chromatic sequence: C C^ Dbv Db Db^ Dv D...etc.")
