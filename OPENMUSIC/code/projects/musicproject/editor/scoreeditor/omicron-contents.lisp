@@ -172,8 +172,8 @@
 
 (defparameter *omicron-scales-list*
   (list
-   (list (list 50.1 *5-EDO_#* "5 EDO_#")
-         (list 50.0 *5-EDO_b* "5 EDO_b"))
+   (list (list 50.0 *5-EDO_#* "5 EDO_#")
+         (list 50.1 *5-EDO_b* "5 EDO_b"))
    (list
     (list 1 *1-tone-chromatic-scale* "6 EDO_#")
     (list 60.1 *6-EDO_b* "6 EDO_b")
