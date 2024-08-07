@@ -225,7 +225,7 @@
 (defun micro-channel (midic &optional approx)
  ; (if (micro-channel-on approx)
       (cond
-       ((or (= approx 4) (= approx 224.1))
+       ((or (= approx 4) (= approx 240.1))
         (let ((modulo (mod (approx-m midic 4) 100)))
           (if (= 0 modulo) 0 2)))
        ((or (= 3 approx) (= 180.0 approx) (= 180.1 approx))
