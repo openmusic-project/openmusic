@@ -156,15 +156,8 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 
 
-(defmethod OpenObjectEditor :after ((self s-polybox)) 
-  "To focus on the selected segment, measure and poly in the three panels when opening the editor"
-  #|
-  (let ((m-editor (editorframe self)))
-    (rq::update-scroll (rq::poly-editor quant-editor))
-    (rq::focus-view (rq::chord-seq-editor quant-editor) (rq::current-poly (rq::wp (object quant-editor))))
-    (rq::focus-view (rq::voice-editor quant-editor) (rq::current-poly (rq::wp (object quant-editor)))))
-  |#
-)
+(defmethod OpenObjectEditor :after ((self s-polybox)) nil)
+
 
 
 (defmethod omNG-save ((self tracks) &optional (values? nil)) 
