@@ -52,6 +52,7 @@
         "tools;fluid-console"
         "tools;fluid-mixer"
         "tools;fluid-channels"
+        "tools;fluid-tuning"
         "tools;fluid-ibox"
         "tools;fluid-interface-boxes"
         ))
