@@ -1927,7 +1927,8 @@
        (set-mini-ed-page (editor self) nil)
        (remove-panel-boxes self))
       )
-    (update-panel self)
+    #-macosx(update-panel self)
+    (om-invalidate-view self t); check if necessary
     ))
 
 (defmethod change-editor-mode ((self scorePanel) newmode)
