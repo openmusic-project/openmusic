@@ -20,6 +20,8 @@ IMPROVEMENTS
 
 FIXES
 
+- Page mode fixed
+- Fix GraphicDisplay error on mac (icon/list view)
 - Group selection
 
 

@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.4
+; OM 7.5
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -33,6 +33,37 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+
+
+* RELEASE NOTES 7.5
+
+NEW FEATURES
+
+- New Classes: 
+	-TRACKS Score object for multi microtone fluidsynth playback
+- New Methods:
+	-Fluid: get-fsynth-info
+- Shortcut: selected boxes -> connected to a list (shift+click)
+- EDO scales
+- "Tunings" display in scoreeditors
+
+IMPROVEMENTS
+
+- dragging selected elements in Score objects affects pitch change only with option key
+- save-as-midi for maquette object
+- Added accidentals (omicron.ttf)
+- soundeditor selection shortcut (TAB)
+
+
+FIXES
+
+- Page mode fixed
+- Fix GraphicDisplay error on mac (icon/list view)
+- Group selection
+
+
+
+
 * RELEASE NOTES 7.4
 
 NEW FEATURES
