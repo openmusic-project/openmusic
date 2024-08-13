@@ -789,23 +789,25 @@
 (defmethod set-mini-ed-page ((self scoreeditor) page?)
   (let ((control-view (ctr-view self)))  
   (when (slotedit control-view)
-    (om-remove-subviews control-view (slotedit control-view))
+    ;(om-remove-subviews control-view (slotedit control-view))
     (setf (slotedit control-view) nil))
   (let* ((bgcol *controls-color*)
          (l1 230)
          (l2 380)
          minied)
     (if page?
-      (setf minied (om-make-dialog-item 'om-pop-up-dialog-item
-                                        (om-make-point 96 5) (om-make-point 70 18) " "
-                                        :di-action (om-dialog-item-act item
-                                                     (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-page-factors*))))
-                                                       (change-editor-scale (panel self) newsize)))
+        (setf minied (om-make-dialog-item 'om-pop-up-dialog-item
+                                          #+(or linux win32)(om-make-point 96 35) 
+                                          #+macosx(om-make-point 92 26) 
+                                          (om-make-point 70 18) " "
+                                          :di-action (om-dialog-item-act item
+                                                       (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-page-factors*))))
+                                                         (change-editor-scale (panel self) newsize)))
 
-                                        :font *om-default-font1*
-                                        :range (loop for item in *mus-page-factors* collect (car item))
-                                        :value "100%"
-                                        ))
+                                          :font *om-default-font1*
+                                          :range (loop for item in *mus-page-factors* collect (car item))
+                                          :value "100%"
+                                          ))
       (setf minied (om-make-dialog-item 'edit-numbox (om-make-point 96 3) (om-make-point 50 18) " "
                                       :value nil
                                       :font *om-default-font1*
@@ -813,7 +815,10 @@
                                       :help-spec ""
                                       )) )
     (setf (slotedit control-view) minied)
-    (om-add-subviews control-view minied))))
+    (om-add-subviews control-view minied))
+))
+
+
 ;===========================================================
 ;default music panel
 ;===========================================================
@@ -1495,6 +1500,7 @@
 
 
 (defmethod om-draw-contents ((self scorePanel))
+  #+macosx(update-alt-panel self)
   (call-next-method)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
     (if (score-page-mode self)
@@ -1514,7 +1520,8 @@
         (draw-editors-in-editor self)
        ; (draw-time-selection self) ;old style, displayed in the panel
         (display-time-selection self)
-        ))))
+        ))
+    ))
 
 
 (defmethod draw-panel-pages ((self scorePanel))
@@ -1770,7 +1777,12 @@
 (defmethod objectfromeditor ((self scorePanel)) 
   (object (editor self)))
 
+
+;===========UPDAT-PANEL
+
 (defvar *redraw-diamonds* nil)
+(defvar *updatescorepanel* nil)
+(defvar *updateref* nil)
 
 #|
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
@@ -1800,6 +1812,7 @@
    (om-invalidate-view self)))
 |#
 
+#|
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
@@ -1832,6 +1845,90 @@
       (report-modifications (editor self)))
     (setf *redraw-diamonds* t)
     (om-invalidate-view self)))
+|#
+
+
+
+#+macosx
+(defmethod update-panel ((self scorePanel) &optional (updateref nil))
+  (setf *updatescorepanel* t)
+  (when updateref
+    (setf *updateref* t)))
+
+
+#+(or linux win32)
+(defmethod update-panel ((self scorePanel) &optional (updateref nil))
+  (set-editor-tonality self)
+  (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
+        (linespace (/ (staff-size self) 4)))
+    (setf (graphic-obj self) 
+          (if (score-page-mode self)
+              (make-pages-form-obj self (objectfromeditor self) 0
+                                   120 linespace 
+                                   (staff-mode self)
+                                   (get-approx-scale self)
+                                   (selection? self) (staff-sys self) (show-stems self) )
+            (make-graph-form-obj (objectfromeditor self) 0
+                                 120 linespace 
+                                 (staff-mode self)
+                                 (get-approx-scale self)
+                                 (selection? self) (staff-sys self) (show-stems self))))
+   
+    (when (and (graphic-obj self) (not (score-page-mode self)))
+      (let ((sboxf (remove nil 
+                           (loop for i in (get-subframes self)
+                                 collect (if (scoreboxframe-p i) 
+                                             (let ((out (car (outframes i))))
+                                               (list (om-view-container out) out)))))))
+        (space-objects (graphic-obj self) (* 4 linespace))
+        (set-graph-rectangles (graphic-obj self))
+        (cons-the-bpf-time self (graphic-obj self))
+        (loop  for i in sboxf
+               do (center-outfleche-sboxframe (car i) (second i)))))
+    (when (and (editor self) updateref)
+      (report-modifications (editor self)))
+    (setf *redraw-diamonds* t)
+    (om-invalidate-view self)))
+
+
+#+macosx
+(defmethod update-alt-panel ((self scorepanel) &optional (updateref nil))
+  (when updateref
+    (setf *updateref* t))
+  (set-editor-tonality self)
+  (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
+        (linespace (/ (staff-size self) 4)))
+    (setf (graphic-obj self) 
+          (if (score-page-mode self)
+              (make-pages-form-obj self (objectfromeditor self) 0
+                                   120 linespace 
+                                   (staff-mode self)
+                                   (get-approx-scale self)
+                                   (selection? self) (staff-sys self) (show-stems self) )
+            (make-graph-form-obj (objectfromeditor self) 0
+                                 120 linespace 
+                                 (staff-mode self)
+                                 (get-approx-scale self)
+                                 (selection? self) (staff-sys self) (show-stems self))))
+   
+    (when (and (graphic-obj self) (not (score-page-mode self)))
+      (let ((sboxf (remove nil 
+                           (loop for i in (get-subframes self)
+                                 collect (if (scoreboxframe-p i) 
+                                             (let ((out (car (outframes i))))
+                                               (list (om-view-container out) out)))))))
+        (space-objects (graphic-obj self) (* 4 linespace))
+        (set-graph-rectangles (graphic-obj self))
+        (cons-the-bpf-time self (graphic-obj self))
+        (loop  for i in sboxf
+               do (center-outfleche-sboxframe (car i) (second i)))))
+    (when (and (editor self) *updateref*)
+      (report-modifications (editor self)))
+    (setf *redraw-diamonds* t)
+    (om-invalidate-view self)
+    (setf *updateref* nil)
+    (setf *updatescorepanel* nil)
+    ))
 
 
 ;===========PORT CHANGE
@@ -1872,6 +1969,7 @@
      (setf (staff-sys self) (get-staff-system newsys))
      (set-edit-param (om-view-container self) 'staff newsys)
      (update-panel self t) ; t pour le sheet
+     #+macosx(update-slot-edit self)
      t))
     
 (defmethod change-editor-size ((self scorePanel) newsize)
@@ -1879,7 +1977,9 @@
     (setf (staff-size self) newsize)
     (om-set-font self (om-make-music-font *heads-font* newsize))
     (set-edit-param (editor self) 'fontsize  newsize)
-    (update-panel self) t))
+    (update-panel self) 
+    #+macosx(update-slot-edit self)
+    t))
 
 
 (defvar *mus-page-factors* '(("10%" 0.1) ("25%" 0.25) ("50%" 0.5) ("75%" 0.75) ("100%" 1) ("125%" 1.25)
@@ -1897,7 +1997,7 @@
   (unless (= newmode (score-mode self))
     (if (= 1 (score-mode self))
       (setf (score-action-boxes self) (cons-action-boxes-and-chords self))
-      (score-remove-subviews self)) 
+      (score-remove-subviews self))
     (setf (score-mode self) newmode)
     (when (get-edit-param (om-view-container self) 'score-mode)
       (set-edit-param (om-view-container self) 'score-mode newmode))
@@ -1927,8 +2027,8 @@
        (set-mini-ed-page (editor self) nil)
        (remove-panel-boxes self))
       )
-    #-macosx(update-panel self)
-    (om-invalidate-view self t); check if necessary
+    (update-panel self)
+    (om-invalidate-view self t)
     ))
 
 (defmethod change-editor-mode ((self scorePanel) newmode)
@@ -1987,6 +2087,7 @@
       (om-redraw-view self))
     (when (or (score-page-mode self) (in-patch-mode? self))
       (update-panel self )
+      #+macosx(update-slot-edit self); maybe also others, linux, etc.?
       )))
 
 #|
@@ -2057,13 +2158,17 @@
                  :approx-factor (third list)))
 
 (defmethod update-slot-edit ((self scorePanel))
-  (unless (score-page-mode self)
-    (let ((control (slotedit (ctr-view (om-view-container self))))
-          (slotmode (slots-mode self))
-          (firstnote nil))
+  (let* ((ed (om-view-container self))
+         (obj (object ed))
+         (control 
+          (if (or (chord-p obj) (note-p obj))
+              (sixth (om-subviews (ctr-view ed)))
+            (seventh (om-subviews (ctr-view ed)))));(slotedit (ctr-view (om-view-container self))))
+         (slotmode (slots-mode self))
+         (firstnote nil))
       (loop for obj in (reverse (selection? self)) while (not firstnote) do
             (setq firstnote (get-first-note obj)))
-      (enable-numbox control nil)
+      ;(enable-numbox control nil)
       (when firstnote ; (and (string-equal (obj-mode self) "note") firstnote)
         (enable-numbox control t)
         (set-value control nil)
@@ -2076,7 +2181,9 @@
                 #'(lambda (x)  
                     (loop for item in (selection? self) do
                           (set-dur item (value x)))
-                    (update-panel self))))
+                    #-macosx(update-panel self)
+                    #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                    )))
         ((equal slotmode 'port)
          (setf (min-val control) 0)
          (setf (max-val control) 255)
@@ -2085,7 +2192,9 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-port item (value x)))
-                   (update-panel self))))
+                   #-macosx(update-panel self)
+                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   )))
         
         ((equal slotmode 'offset)
          (setf (min-val control) -100000)
@@ -2095,7 +2204,9 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-offset-ms item (value x)))
-                   (update-panel self))))
+                   #-macosx(update-panel self)
+                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   )))
         ((equal slotmode 'onset)
 	 (enable-numbox control (if (string-equal (obj-mode self) "chord") t nil))
          (setf (min-val control) 0)
@@ -2107,7 +2218,9 @@
 		     (loop
 			for item in (selection? self)
 			do (set-chords-offset self item (value x)))
-		     (update-panel self)))))
+                     #-macosx(update-panel self)
+                     #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                     ))))
 	((equal slotmode 'dyn)
          (setf (min-val control) 0)
          (setf (max-val control) 127)
@@ -2116,7 +2229,9 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-vel item (value x)))
-                   (update-panel self))))
+                   #-macosx(update-panel self)
+                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   )))
         ((equal slotmode 'chan)
          (setf (min-val control) 1)
          (setf (max-val control) 16)
@@ -2125,7 +2240,9 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-channel item (value x)))
-                   (update-panel self))))
+                   #-macosx(update-panel self)
+                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   )))
         ((equal slotmode 'midic)
          (setf (min-val control) 0)
          (setf (max-val control) 12700)
@@ -2136,7 +2253,9 @@
                          ;(when (note-p item)
                         (change-midic item (value x)))
 					;);scroll edit fix
-                   (update-panel self))))
+                  #-macosx(update-panel self)
+                  #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                  )))
         ((equal slotmode 'chord-offset)
          (setf (min-val control) 0)
          (setf (max-val control) 1000000)
@@ -2146,7 +2265,8 @@
                    (all-chords-2-ms (parent (object (om-view-container self))))
                    (setf (offset (object (om-view-container self))) (max 0 (value x))) 
                    (normalize-chords-x (parent (object (om-view-container self))))
-                   (update-panel self t))))
+                   (update-panel self t)
+                   )))
         ((equal slotmode 'non)
          (setf (min-val control) 0)
          (setf (max-val control) 0)
@@ -2156,7 +2276,7 @@
                  (null (get-edit-param (editor self) 'scale))
                  (= 2 (get-edit-param (editor self) 'approx)))
         (set-edit-param (editor self) 'scale (make-scale *default-editor-scale*)))
-     (om-invalidate-view self t))))
+     (om-invalidate-view self t)))
 
 ;===================================================================
     
@@ -4667,15 +4787,20 @@
 ;KEY ACTIONS
 
 (defmethod move-selection ((self scorePanel) dir)
+
   (loop for item in (selection? self) do
-        (score-move-a item self (cond
-                                 ((om-shift-key-p) (if (= dir 0) 1200 -1200))
-                                 ((#+(or cocoa win32) om-command-key-p  #+linux om-option-key-p) 
-                                  (if (= dir 0) 700 -700))
-                                 (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
-                                      (if (= dir 0) factor
-                                        (* -1 factor)))))))
-  (update-panel self t))
+          (score-move-a item self (cond
+                                   ((om-shift-key-p) (if (= dir 0) 1200 -1200))
+                                   ((#+(or cocoa win32) om-command-key-p  #+linux om-option-key-p) 
+                                    (if (= dir 0) 700 -700))
+                                   (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
+                                        (if (= dir 0) factor
+                                          
+                                          (* -1 factor)))))))
+  #+(or linux win32)(update-panel self t)
+  #+macosx(unless (in-page-mode? self)
+    (update-alt-panel self))
+  )
 
 
 ;;; new : changer la duree avec les touche R/L

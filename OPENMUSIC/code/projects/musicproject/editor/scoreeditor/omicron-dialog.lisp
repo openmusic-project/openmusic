@@ -154,14 +154,30 @@
 
 ;;;
 
+(defun get-control-button (self)
+  "Returns 'approx' subview"
+(let* ((ed (om-view-container self))
+         (panel (panel ed))
+         (obj (object ed)))
+          (cond 
+           ((or (chord-seq-p obj)
+                (voice-p obj)
+                (multi-seq-p obj)
+                (poly-p obj))
+            (if (linear? panel) 10 10));same ?
+           ((chord-p  (if (linear? panel) 7 6)))
+           (t 7))))
 
-(defun om-micron (object controls &optional position)
+
+(defun om-micron (object controls &optional position) 
   (let* ((pos (or position (om-make-point 200 200)))
-         ;(approx (get-edit-param (om-view-container controls) 'approx))
          (approx (staff-tone (panel (om-view-container controls))))
          (index (find-indx approx))
          (indx1 (car index))
          (indx2 (second index))
+         (panel (panel (om-view-container controls)))
+         (mode (score-mode panel))
+         (*pmode* nil)
          (win (om-make-window 'omicron-dialog 
                               :size (om-make-point 740 400)
                               :position pos
@@ -180,7 +196,6 @@
                               ))
 
          )
-
     (when controls
     (setf (obj win) controls))
     (setf (title1 win) (om-make-dialog-item 'om-static-text (om-make-point 80 8) (om-make-point 150 50) "Tuning system"))
@@ -248,15 +263,11 @@
                                                        (om-set-selected-item-index (list2 win) 0)
                                                        (set-edit-param (om-view-container controls) 'approx
                                                                        (car (nth 0 (nth 1 *omicron-scales-list*))))
-                                                       #|
-                                                       (om-set-selected-item-index (nth 6 (om-subviews controls)) 
-                                                                                   (give-index-off-approx (car (nth 0 (nth 1 *omicron-scales-list*)))))
-                                                       |#
                                                        (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx 
                                                                                                                  (car (nth 0 (nth 6 *omicron-scales-list*)))
                                                                                                                  ))
                                                        (change-editor-tone (panel (om-view-container controls))
-                                                                           (car (nth 0 (nth 1 *omicron-scales-list*))))
+                                                                           (car (nth 0 (nth 6 *omicron-scales-list*))))
                                                        (om-close-window win)
                                                        )
                                           ))
@@ -269,27 +280,37 @@
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore item)) 
                                                        (progn
-                                                        ; (om-set-dialog-item-text (nth 11 (om-subviews (obj win))) 
-                                                        ;                          (third (nth indx2 (nth indx1 *omicron-scales-list*))))
+                                                           #+linux (when (in-page-mode? panel)
+                                                                   (change-score-mode (panel (om-view-container controls)) 0)
+                                                                   (setf *pmode* t))
                                                          (set-edit-param (om-view-container controls) 'approx
                                                                          (car (nth indx2 (nth indx1 *omicron-scales-list*))))
-                                                         (om-set-dialog-item-text (nth 10 (om-subviews controls)) (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name
-                                                         (change-editor-tone (panel (om-view-container controls))
+                                                         (om-set-dialog-item-text (nth (get-control-button controls) (om-subviews controls)) 
+                                                                                  (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name 10
+                                                         
+                                                         (change-editor-tone panel
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
+                                                         
                                                          (om-close-window win)
-                                                         ))))
+                                                         (om-invalidate-view controls t)
+                                                         #+linux (when *pmode*
+                                                                   (change-score-mode panel 2)
+                                                                   (setf *pmode* nil))
+                                                         (update-slot-edit panel)
+                                                         ))
+                                        
+))
                                                        
     (set-omicron-panel (list1 win) (mapcar 'car object))
     (om-set-selected-item-index (list1 win) indx1)
     (set-omicron-panel (list2 win) (nth indx1 (mapcar 'second object)))
     (om-set-selected-item-index (list2 win) indx2)
-   
-    ;(om-set-dialog-item-text (list3 win) (nth indx1 (mapcar 'car (mapcar 'third object))))
     (om-set-dialog-item-text (list3 win) (nth indx2 (nth indx1 (mapcar 'third object))))
     (om-add-subviews win (title1 win) (list1 win) (list2 win) (list3 win) (title1 win) (title2 win) (title3 win) (but1 win) (but2 win) (but3 win))
-    ;(setf (list1 win) (list1 win) (list2 win) (list2 win) (list3 win) (list3 win))
     #+cocoa(setf (capi::interface-menu-bar-items win)
                  (internal-window-class-menubar win))
-    (om-select-window win)))
+    (om-select-window win)
+ 
+    ))
 
 ;(om-micron *omicron-data* nil)
