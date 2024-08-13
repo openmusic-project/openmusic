@@ -4800,6 +4800,7 @@
   #+(or linux win32)(update-panel self t)
   #+macosx(unless (in-page-mode? self)
     (update-alt-panel self))
+  #+macosx(update-slot-edit self)
   )
 
 
