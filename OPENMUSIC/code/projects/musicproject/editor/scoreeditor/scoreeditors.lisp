@@ -1016,7 +1016,7 @@
           ;;; MARCHE PAS
           ((equal char #\.) (point-edit-cursor self))
           ))
-        
+        ((om-command-key-p) (scroll-pane self char))
         (t 
          (case char
            
@@ -1104,7 +1104,29 @@
          (when (editor self) (update-inspector (editor self) 0))
          )))
   
-
+(defmethod scroll-pane ((self scorepanel) char)
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+    (case char 
+      (:om-key-right 
+       (om-set-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-left
+       (om-set-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-up
+       (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-down
+       (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-esc 
+       (om-set-scroll-position self (om-make-point 0 0))
+       (oa::om-set-h-scroll-position self 0)
+       (oa::om-set-v-scroll-position self 0))
+      )))
 
 
 (defmethod set-color-to-mus-obj ((self scorePanel))

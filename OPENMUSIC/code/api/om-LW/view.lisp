@@ -43,6 +43,7 @@
           om-h-scroll-position
           om-v-scroll-position
           om-set-h-scroll-position
+          om-set-v-scroll-position
           om-view-scrolled
           update-for-subviews-changes
           om-view-contains-point-p
@@ -317,6 +318,9 @@
 
 (defmethod om-set-h-scroll-position ((self om-scroller) pos) 
   (capi::set-horizontal-scroll-parameters self :slug-position pos))
+
+(defmethod om-set-v-scroll-position ((self om-scroller) pos) 
+  (capi::set-vertical-scroll-parameters self :slug-position pos))
 
 ;;; au cas ou...
 (defmethod om-h-scroll-position ((self om-graphic-object)) 0)
