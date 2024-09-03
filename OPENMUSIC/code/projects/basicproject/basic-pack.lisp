@@ -29,7 +29,8 @@
 (defvar *list-package* (omNG-protect-object (omNG-make-new-package "List Processing")))
 (AddGenFun2Pack  '(last-elem last-n first-n  x-append flat create-list expand-lst iterate-list
                              mat-trans group-list n-group-list remove-dup remove-nth subs-posn interlock list-modulo
-                             list-explode list-filter table-filter band-filter range-filter posn-match apply-lambda-seq) *list-package*)
+                             list-explode list-filter table-filter band-filter range-filter posn-match apply-lambda-seq om-select) *list-package*)
+;(AddClass2Pack '(omselect) *list-package*)
 (AddPackage2Pack  *list-package* *basic-package*)
 
 (defvar *list-utils-package* (omNG-protect-object (omNG-make-new-package "Utilities")) "List utilities")
