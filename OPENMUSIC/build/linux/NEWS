@@ -12,7 +12,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
-- scoll shortcuts for patch and score panels
+- scoll shortcuts for patch and score panels (ctrl+shift+left/right arrows)
 - dragging selected elements in Score objects affects pitch change only with option key
 - save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
