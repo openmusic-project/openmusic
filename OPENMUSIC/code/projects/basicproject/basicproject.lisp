@@ -37,7 +37,8 @@
     "classes;board"    
     "classes;picture"    
     "classes;omgraphics"
-    "classes;om-select"	
+    ;"classes;om-select"	
+    "classes;om-choose"	
     ;-----------Functions--------------------------------
     "functions;combinatorial" 
     "functions;sets"  
