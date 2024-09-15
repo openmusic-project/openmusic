@@ -268,7 +268,7 @@ Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)"
   (setf (name (object self)) new-name)
   (call-next-method))
 
-(pushr 'om-choose *spec-new-boxes-types*)
+;(pushr 'om-choose *spec-new-boxes-types*)
 
 (defmethod get-new-box-from-type ((type (eql 'om-choose)) position container)
   (if (add-send-enabled container 'om-choose)
