@@ -1126,14 +1126,8 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod tie-chord ((self chord) mode)
   (loop for note in (inside self)
         do (setf (tie note) mode)))
-;TO BE TESTED
-(defmethod tie-chord ((self continuation-chord) mode)   
-"When VOICE receives chords, keep duration if <legato> is 0. Continuation-chords will 
-be taken into consideration"
-  (loop for note in (inside self)
-        do (progn 
-             (setf (tie note) mode)
-             (setf (dur note) 0))))
+
+
 
 (defmethod untie-chords ((self chord))
   (setf (inside self)
@@ -1157,6 +1151,18 @@ be taken into consideration"
 
 (defmethod cont-chord-p ((self continuation-chord)) t)
 (defmethod cont-chord-p ((self t)) nil)
+
+;TO BE TESTED
+
+(defmethod tie-chord ((self continuation-chord) mode)   
+"When VOICE receives chords, keep duration if <legato> is 0. Continuation-chords will 
+be taken into consideration"
+  (loop for note in (inside self)
+        do (progn 
+             (setf (tie note) mode)
+             (setf (dur note) 0))))
+
+
 
 (defmethod check-tree-for-contchord ((tree number) (self continuation-chord))
   (float tree))
