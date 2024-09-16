@@ -62,15 +62,15 @@
 
 ;(fmakunbound 'om-choose)
 
-(defmethod* om-choose  ((self t) &rest lst?) 
+(defmethod* om-choose  ((l1? t) (l2? t) &rest lst?) 
   :numouts 1 
-  :initvals '(1 nil) 
+  :initvals '(nil nil nil) 
   :indoc '("anything" "additional elements")
   :icon 235
   :doc "Repeats <n> times the evaluation of <self> and collects the <n> results into a list.
 
 Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)" 
- (apply 'list self (mapcar #'append lst?)))
+ (apply 'list l1? l2? (mapcar #'append lst?)))
 ;;;;;;;;;;;;
 
 (defmethod OpenEditorframe ((self omchoose)) (or (editorframe self) (set-choose-dialog self)))
