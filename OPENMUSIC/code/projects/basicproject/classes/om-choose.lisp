@@ -65,12 +65,12 @@
 (defmethod* om-choose  ((l1? t) (l2? t) &rest lst?) 
   :numouts 1 
   :initvals '(nil nil nil) 
-  :indoc '("anything" "additional elements")
+  :indoc '("first element" "second element" "additional elements")
   :icon 235
-  :doc "Repeats <n> times the evaluation of <self> and collects the <n> results into a list.
-
-Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)" 
+  :doc "Special box with editor (double click). It allows to choose/select items of a list to be outputed." 
  (apply 'list l1? l2? (mapcar #'append lst?)))
+
+
 ;;;;;;;;;;;;
 
 (defmethod OpenEditorframe ((self omchoose)) (or (editorframe self) (set-choose-dialog self)))
@@ -97,6 +97,12 @@ Ex. (repeat-n (+ 1 1) 4) ==> (2 2 2 2)"
                                  )))
     (setf (frame-position thechoose) posi)
     (setf (inputs thechoose) (list (make-instance 'input-funbox
+                                                :name (string name)
+                                                :value nil 
+                                                :box-ref thechoose
+                                                :doc-string nil
+                                                )
+                                   (make-instance 'input-funbox
                                                 :name (string name)
                                                 :value nil 
                                                 :box-ref thechoose
