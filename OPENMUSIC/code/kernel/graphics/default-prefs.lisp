@@ -498,7 +498,7 @@
                       (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 265) (+ posy 3)) (om-make-point 70 24) "mybox"
                                                          :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
 
-                                            (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify inputs/outputs"
+                                            (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify Inlets/Outlets"
                                            :font *controls-font*)
 
                       (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
