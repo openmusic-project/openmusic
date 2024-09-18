@@ -10,9 +10,12 @@ NEW FEATURES
 - Shortcut: selected boxes -> connected to a list (shift+click)
 - EDO scales
 - "Tunings" display in scoreeditors
+- Magnify Inlets/Outlets of Boxes when mouse swept on in preferences
+
 
 IMPROVEMENTS
 
+- connections are confirmed by line thickness and blue color
 - scroll shortcuts for patch and score panels (ctrl+shift+left/right arrows)
 - dragging selected elements in Score objects affects pitch change only with option key
 - save-as-midi for maquette object
