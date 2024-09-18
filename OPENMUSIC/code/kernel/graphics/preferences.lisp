@@ -152,7 +152,7 @@
   ((pref-id :accessor pref-id :initarg :pref-id :initform nil)))
 
 (defun get-pref-scroll-size () 
-  (om-make-point 800 500));Maybe adjust later
+  (om-make-point 800 530));Maybe adjust later
 
 (defmethod update-pref-scroll ((self ompref-window) &optional selection)
   (let* ((selec 0)

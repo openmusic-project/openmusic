@@ -379,7 +379,7 @@
    :boxname-font *om-default-font1*
    :folder-pres 0
    :patch-win-buttons t
-   :mag-in-out nil
+   :mag-in-out t
    :curved-connections nil
    :mv-font-size 20
 
