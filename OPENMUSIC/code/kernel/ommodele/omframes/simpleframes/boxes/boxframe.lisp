@@ -96,13 +96,16 @@
   t)
 
 
-(defmethod connection-drag ((self outfleche) pos prevpos)
-  (let* ((panel (panel (om-view-container self)))
-         (ppos (om-convert-coordinates pos self panel))
-         (myview (om-find-view-containing-point panel ppos)))
-    (if (input? myview)
-        (om-show-tooltip myview t t)
-      (om-hide-tooltip myview))))
+(defmethod connection-drag ((self outfleche) pos prevpos) 
+   (let* ((panel (panel (om-view-container self)))
+          (ppos (om-convert-coordinates pos self panel))
+          (myview (om-find-view-containing-point panel ppos)))
+     (when (and (input? myview) *mag-in-out*)
+       (om-view-mouse-enter-handler myview)
+       (redraw-frame (om-view-container myview)))
+     (if (input? myview)
+         (om-show-tooltip myview t t)
+       (om-hide-tooltip myview))))
 
 (defmethod release-connection-drag ((self outfleche) init-pos pos)
   (let* ((panel (panel (om-view-container self)))
@@ -133,6 +136,28 @@
               (om-make-color-alpha 0 0 0 0.5)
             (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos)))))))
  
+
+;Only for magnification
+(defmethod om-view-mouse-enter-handler ((self outfleche)) 
+  (when *mag-in-out*
+    (let* ((pos (om-view-position self))
+           (ypos (om-point-y pos))
+           (xpos (om-point-x pos)))
+      (om-set-view-size self (om-make-point 12 12))
+      (om-set-view-position self (om-make-point (- xpos 2) (+ ypos 0)))
+      )))
+
+(defmethod om-view-mouse-leave-handler ((self outfleche)) 
+  (when *mag-in-out*
+  (let* ((parsize (om-view-size (om-view-container self)))
+         (psizey (om-point-y parsize)))
+  (om-set-view-size self (om-make-point 8 8))
+  (om-set-view-position self (om-make-point (+ (om-point-x (om-view-position self)) 2) (- psizey 9)))
+  ;(redraw-frame (om-view-container self)) ;init all ?
+  )))
+
+
+
 
 ;--------------CONNECTION
 (defmethod connect-box ((self t) (ctrl t)) nil)

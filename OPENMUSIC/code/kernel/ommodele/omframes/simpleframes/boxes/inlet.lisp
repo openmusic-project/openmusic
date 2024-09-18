@@ -125,6 +125,7 @@
 ;;; new : textenterview container = panel 
 (defmethod om-view-mouse-enter-handler ((self input-funboxframe))
   ;(oa::print-point (om-view-position (om-view-container self))) 
+  (let ((txty (if *mag-in-out* -20 -16))) 
   (unless (or (and (connected? (object self)) (not (keyword-input-p (object self)))) (not *show-input-vals*))
      (om-without-interrupts
        (when (and self (om-view-container self))
@@ -135,22 +136,30 @@
              (exit-from-dialog (text-view container) (om-dialog-item-text (text-view container))))
           (setf (text-view container)
                  (om-make-dialog-item 'text-enter-view
-                                      (om-add-points (om-view-position (om-view-container self)) (om-make-point (- (x self) 4) -16))
+                                      (om-add-points (om-view-position (om-view-container self)) (om-make-point (- (x self) 4) txty))
                                       (om-make-point (get-name-size thetext) 20)
                                       thetext
                                       :container panel
                                       :font *om-default-font1*))
-          )))))
+          ))))
+  (when *mag-in-out*
+  (let* ((pos (om-view-position self))
+         (ypos (om-point-y pos))
+         (xpos (om-point-x pos)))
+    (om-set-view-size self (om-make-point 12 12))
+    (om-set-view-position self (om-make-point (- xpos 2) (- ypos 5)))))))
 
 ;;;new : text-view is on the panel
-(defmethod om-view-mouse-leave-handler ((self input-funboxframe))
-   (om-without-interrupts 
+(defmethod om-view-mouse-leave-handler ((self input-funboxframe)) 
+ ; (redraw-frame (om-view-container self)); peut-etre cela ?
+  (when *mag-in-out*
+    (om-set-view-size self (om-make-point 8 8))
+    (om-set-view-position self (om-make-point (+ (om-point-x (om-view-position self)) 2) 1)))
+  (om-without-interrupts 
     (let* ((container (editor (om-view-container (om-view-container self)))))
       (when (and container (text-view container) (equal (class-name (class-of (text-view container))) 'text-enter-view))
         (om-remove-subviews (panel container) (text-view container))
-        (setf (text-view container) nil)))
-    )
-   )
+        (setf (text-view container) nil)))))
 
 
 (defclass input-text-enter-view (edit-text-enter-view) ())

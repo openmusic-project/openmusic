@@ -48,7 +48,6 @@
 
 ;(defvar *tooltips* t)
 
-
 (defmethod get-def-vals ((iconID (eql :general)))
    (list :handle-errors t 
          :user-name "Guarigocha" 
@@ -306,6 +305,7 @@
 (defvar *ws-color* nil)
 (defvar *default-folder-pres* 0)
 (defvar *patch-show-win-buttons* t)
+(defvar *mag-in-out* t)
 (defvar *curved-connections* nil)
 
 ;sets om-white-color and rest except *workspace-color*
@@ -342,6 +342,7 @@
     (setf *icon-size-factor* (get-pref modulepref :box-fact))
     (setf *ombox-font* (or (eval (get-pref modulepref :boxname-font)) *om-default-font1*))
     (setf *patch-show-win-buttons* (get-pref modulepref :patch-win-buttons))
+    (setf *mag-in-out* (get-pref modulepref :mag-in-out))
     (setf *curved-connections* (get-pref modulepref :curved-connections))
     (setf *miniview-font-size* (get-pref modulepref :mv-font-size))
     
@@ -378,6 +379,7 @@
    :boxname-font *om-default-font1*
    :folder-pres 0
    :patch-win-buttons t
+   :mag-in-out nil
    :curved-connections nil
    :mv-font-size 20
 
@@ -452,13 +454,13 @@
                                                        
                       (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Curved connections"
                                            :font *controls-font*)
-
+                      
                       (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
                                            :font *controls-font*
                                            :checked-p (get-pref modulepref :curved-connections)
                                            :di-action (om-dialog-item-act item 
-                                                        (set-pref modulepref :curved-connections (om-checked-p item)))) 
-                                                       
+                                                        (set-pref modulepref :curved-connections (om-checked-p item))))
+                                                                             
   
                       (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 90 24) "Boxes"
                                            :font *om-default-font1b*)
@@ -469,7 +471,7 @@
                       (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 60) posy) (om-make-point 80 24) ""
                                            :range '("50%" "75%" "100%" "150%" "200%")
                                            :value (cond ((<= (get-pref modulepref :box-fact) 0.5) "50%")
-                                                        ((< (get-pref modulepref :box-fact) 0.8) "75%")
+                                                        ((< (get-pref modulepref :box-fact) 0.75) "75%")
                                                         ((>= (get-pref modulepref :box-fact) 2) "200%")
                                                         ((>= (get-pref modulepref :box-fact) 1.5) "150%")
                                                         (t "100%"))
@@ -493,10 +495,20 @@
                                                             (om-invalidate-view thescroll))))
                                            :font *controls-font*)
 
-                      (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 260) posy) (om-make-point 70 24) "mybox"
+                      (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 265) (+ posy 3)) (om-make-point 70 24) "mybox"
                                                          :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
+
+                                            (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify inputs/outputs"
+                                           :font *controls-font*)
+
+                      (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
+                                           :font *controls-font*
+                                           :checked-p (get-pref modulepref :mag-in-out)
+                                           :di-action (om-dialog-item-act item 
+                                                        (set-pref modulepref :mag-in-out (om-checked-p item))))
+
                      
-                     
+
                       (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 90 24) "Comments"
                                            :font *om-default-font1b*)
                      
