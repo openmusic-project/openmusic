@@ -439,7 +439,6 @@
         ((= (mod midic 100) 27) 4)
         ((= (mod midic 100) 36) 5)
         ((= (mod midic 100) 45) 6)
-        ((= (mod midic 100) 35) 7)
         (t 0)
             ))
        ((= approx 310) 
