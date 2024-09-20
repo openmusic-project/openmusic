@@ -42,11 +42,15 @@
 (defmethod player-params ((player (eql :fluidsynth))) nil)   ;;; the default values for the player params
 (defmethod player-type ((player (eql :fluidsynth))) :midi)   ;;; communication protocol (:midi / :udp)
 
-
+#|
 (defun get-gen-port (self)
   (let ((ports (remove-duplicates  (flat (get-port self)))))
     (if (= 1 (length ports)) (car ports))))
+|#
 
+(defun get-gen-port (self)
+  (let ((ports (remove-duplicates  (flat (get-port self)))))
+    (car ports)))
 
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)
   (let ((approx (if (find :approx params)
