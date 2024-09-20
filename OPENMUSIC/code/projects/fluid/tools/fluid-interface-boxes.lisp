@@ -47,10 +47,7 @@
 
 (defmethod get-slot-in-out-names ((self fl-microtune))
   (values '("items" "port") 
-          '(("1" "1#" "1/2" "1/3" 
-             "1/3#" "1/4" "1/5" "1/5#"
-             "1/6" "1/7" "1/7#" "1/8" 
-             "1/10" "1/12" "1/14" "1/16") nil)
+          '(*edo-names-0* nil)
           '("Tunings" "Port")
           '(nil nil)))
 
@@ -63,10 +60,7 @@
 
 (defmethod get-super-default-value ((type (eql 'fl-microtune)))
   (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point 50 20) "untitled" 
-                       :range '("1" "1#" "1/2" "1/3" 
-                                "1/3#" "1/4" "1/5" "1/5#"
-                                "1/6" "1/7" "1/7#" "1/8" 
-                                "1/10" "1/12" "1/14" "1/16")))
+                       :range *edo-names-0*))
 
 (defmethod update-di-size ((self fl-microtune) container) 
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
@@ -90,12 +84,15 @@
       (om-remove-subviews boxframe self)
       (om-add-subviews boxframe newpop)
       (om-set-dialog-item-action-function newpop #'(lambda (x) 
-                                                (let ((tuning (om-get-selected-item newpop))
-                                                      (port (omNG-box-value (second (inputs self)))))
-                                                  (if port
-                                                      (change-tuning port tuning)
-                                                    (change-tuning 0 tuning)
-                                                    ))))
+                                                     (let* ((tuning (om-get-selected-item newpop))
+                                                            (pos (position tuning *edo-list* :test 'equal :key #'car))
+                                                            (tun-num (second (nth pos *edo-list*)))
+                                                            (port (omNG-box-value (second (inputs self)))))
+                                                       (if port
+                                                      (change-tuning port tun-num)
+                                                    (change-tuning 0 tun-num)
+                                                    )
+                                                  )))
       (update-di-size newpop boxframe)) 
     newpop))
 
@@ -107,12 +104,15 @@
 
 (defmethod (setf value) :after ((value fl-microtune) (self FLDIntbox)) ; (self OMBoxEditCall)) 
   (om-set-dialog-item-action-function value #'(lambda (x) 
-                                                (let ((tuning (om-get-selected-item value))
-                                                      (port (omNG-box-value (second (inputs self)))))
+                                                (let* ((tuning (om-get-selected-item value))
+                                                       (pos (position tuning *edo-list* :test 'equal :key #'car))
+                                                       (tun-num (second (nth pos *edo-list*)))
+                                                       (port (omNG-box-value (second (inputs self)))))
                                                   (if port
-                                                      (change-tuning port tuning)
-                                                    (change-tuning 0 tuning)
-                                                    )))))
+                                                      (change-tuning port tun-num)
+                                                    (change-tuning 0 tun-num)
+                                                    )
+                                                  ))))
 
 
 ;=========================

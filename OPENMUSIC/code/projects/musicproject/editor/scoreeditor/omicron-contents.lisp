@@ -31,6 +31,45 @@
 
 (in-package :om)
 
+;;;;;;;;;;;;for small editors
+(defparameter *edo-names-0* 
+  (list
+   "5 edo"
+   "6 edo (1)"
+   "7 edo"
+   "8 edo"
+   "9 edo"
+   "10 edo"
+   "12 edo (1/2)"
+   "14 edo"
+   "15 edo"
+   "16 edo"
+   "17 edo"
+   "18 edo (1/3)"
+   "19 edo"
+   "22 edo"
+   "24 edo (1/4)"
+   "30 edo (1/5)"
+   "31 edo"
+   "36 edo (1/6)"
+   "42 edo (1/7)"
+   "48 edo (1/8)"
+   "60 edo (1/10)"
+   "72 edo (1/12)"
+   "84 edo (1/14)"
+   "96 edo (1/16)"
+   ))
+
+(defparameter *edo-val-list* 
+  (list 50 1 70 80 90 100 120 140 150 160 170 180 190 220 4 300 310 360 420 480 600 720 840 16))
+
+(defparameter *edo-list* nil)
+(setf *edo-list* (loop for i in *edo-names-0*
+                       for n in *edo-val-list*
+                       collect (list i n)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defparameter *edo-names* 
   (list
    "5 EDO"

@@ -36,7 +36,7 @@
   (let ((port self))
     (cond 
      ((or (= 2 value) (= 120.1 value))
-      (fluid-pitchwheel '(0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8) port))
+      (fluid-pitchwheel '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) port))
      ((or (= 3 value) (= 180.0 value) (= 180.1 value))
       (fluid-pitchwheel '(0 2730 5461 0 2730 5461 0 2730 5461 0 2730 5461) '(1 2 3 4 5 6 7 8 9 11 12 13) port))
      ((or (= 4 value) (= 240.1 value)) 

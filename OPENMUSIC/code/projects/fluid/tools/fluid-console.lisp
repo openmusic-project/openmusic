@@ -466,13 +466,20 @@ In this case, all internal events are sent simultaneously.
 
 ;(1- (midichannel (channelctr self))) ;; is the port of synth
 
-
+#|
 (defparameter *tuning-table*
       (loop for i in (editor-tone-list)
               collect (cons (car (reverse i)) i)))
 
 (defun get-tuning-val (val)
 (car (cassq val *tuning-table*)))
+|#
+
+
+
+(defun get-tuning-val (val)
+(car (nth val *edo-list*)))
+
 
 
 (defmethod do-initialize-channel ((self fluidPanel)) 
@@ -593,19 +600,19 @@ In this case, all internal events are sent simultaneously.
                                         :bg-color *controls-color*))
       (setf pos (+ pos 20))
       (setf scalapop (om-make-dialog-item 'om-pop-up-dialog-item 
-                                       (om-make-point 10 pos)
-                                       (om-make-point 80 20) ""
+                                       (om-make-point 5 pos)
+                                       (om-make-point 92 20) ""
                                        :di-action (om-dialog-item-act item
-                                                               (let ((newtone (cadr (nth (om-get-selected-item-index item) 
-                                                                                         (editor-tone-list)
+                                                               (let ((newtone (second (nth (om-get-selected-item-index item) 
+                                                                                           *edo-list*
                                                                                          ))))
                                                                  (progn 
                                                                    (setf (tuning (channelctr self)) newtone)
                                                                    (change-tuning self newtone)
                                                                    )
                                                                  ))
-                                       :font *om-default-font1*
-                                       :range (loop for item in (editor-tone-list)  collect (car item)) 
+                                       :font (om-make-font *om-def-font-face* 10) ;*om-default-font1*
+                                       :range *edo-names-0* ;(loop for item in (editor-tone-list)  collect (car item)) 
                                        :value (get-tuning-val (tuning (channelctr self)))
                                        ))
       
