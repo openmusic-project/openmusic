@@ -201,6 +201,7 @@
    (setf (nth 3 (connected? (object (nth (index self) (inputframes (thebox self))))))
          (ccolor self))
     #-(and cocoa lispworks8)(draw-connection self t)
+    #+(and cocoa lispworks8) (capi:redisplay-element (om-view-container (thebox self)))
     )
 
 (defmethod change-position ((self c-connection))
