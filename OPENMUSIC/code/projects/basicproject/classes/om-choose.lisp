@@ -62,6 +62,7 @@
 
 ;(fmakunbound 'om-choose)
 
+#|
 (defmethod* om-choose  ((l1? t) (l2? t) &rest lst?) 
   :numouts 1 
   :initvals '(nil nil nil) 
@@ -69,7 +70,17 @@
   :icon 235
   :doc "Special box with editor (double click). It allows to choose/select items of a list to be outputed." 
  (apply 'list l1? l2? (mapcar #'append lst?)))
+|#
 
+(defmethod* om-choose  ((l1? t) &rest lst?) 
+  :numouts 1 
+  :initvals '(nil nil) 
+  :indoc '("first element" "second element" "additional elements")
+  :icon 235
+  :doc "Special box with editor (double click). It allows to choose/select items of a list to be outputed." 
+  ;(apply 'append l1? (mapcar #'list! lst?))
+ (apply 'list l1? (mapcar #'append lst?))
+ )
 
 ;;;;;;;;;;;;
 
@@ -110,32 +121,31 @@
                                                 )))
     thechoose))
      
-
-#|
-(defmethod gen-code ((self omchoose) numout)
-   (declare (ignore numout))
-   (let ((theinput (loop for i in (inputs self)
-                           collect (connected? i))))
-     ;(print (list "gen" theinput))
-     (if theinput
-       (loop for i in theinput
-               do (gen-code (first i) (second i))) 'nil)))
-|#
-
-
-(defmethod gen-code ((self omchoose) numout)
-   "Generate Lisp code for the box 'self'."
-   (call-gen-code self numout))
-   
+;;;;code/decode
+(defmethod onechoice-choose ((self omchoose))
+  (if (= 1 (length (remove nil (choice self)))) (choice self)))
 
 (defmethod call-gen-code ((self omchoose) numout)
-   (if (zerop numout)
-     (gen-code-call self)
-     `(nth ,numout (multiple-value-list ,(gen-code-call self)))))
+  (gen-code-call self))
 
 (defmethod gen-code-call ((self omchoose) &optional args)
-   `(om-choose ,.(decode self)))
+  (cond
+   ((unaire-p (list (decode self)))  `(car (om-choose ,(decode self))))
+   ((onechoice-choose self)  `(car (om-choose ,(decode self))))
+   (t  `(om-choose ,.(decode self)))))
 
+
+(defmethod decode ((self omchoose))
+   "Generation of lisp code for inputs of the box 'self'."
+   (let ((res (remove nil (loop for input in (inputs self)
+                                         for c in (choice self)
+                                collect (if c (gen-code input 0))))))
+    
+     (cond
+      ((unaire-p res) (car res))
+      ((onechoice-choose self) (car res))
+      (t res))))
+;;;;;
 
 (defun om-load-boxchoose (name indice position docu inputs &optional fname val fsize keyref id value choice)
   (let ((newbox (make-new-choose name indice (om-correct-point position) nil)))
