@@ -111,21 +111,31 @@
     thechoose))
      
 
-(defmethod gen-code ((self omchoose) numout)
-   (declare (ignore numout)) 
-   (let ((theinput (connected? (car (inputs self)))))
-     (if theinput
-       (gen-code (first theinput) (second theinput)) 'nil)))
-
-
+#|
 (defmethod gen-code ((self omchoose) numout)
    (declare (ignore numout))
    (let ((theinput (loop for i in (inputs self)
                            collect (connected? i))))
-     (print (list "gen" theinput))
+     ;(print (list "gen" theinput))
      (if theinput
        (loop for i in theinput
                do (gen-code (first i) (second i))) 'nil)))
+|#
+
+
+(defmethod gen-code ((self omchoose) numout)
+   "Generate Lisp code for the box 'self'."
+   (call-gen-code self numout))
+   
+
+(defmethod call-gen-code ((self omchoose) numout)
+   (if (zerop numout)
+     (gen-code-call self)
+     `(nth ,numout (multiple-value-list ,(gen-code-call self)))))
+
+(defmethod gen-code-call ((self omchoose) &optional args)
+   `(om-choose ,.(decode self)))
+
 
 (defun om-load-boxchoose (name indice position docu inputs &optional fname val fsize keyref id value choice)
   (let ((newbox (make-new-choose name indice (om-correct-point position) nil)))
@@ -304,6 +314,7 @@
        )))
 
 
+
 (defmethod omNG-copy ((self omchoose))
   `(let ((copy (make-instance ',(class-name (class-of self))
                  :name ,(name self)
@@ -315,14 +326,16 @@
     ; (setf (frame-name copy) ,(frame-name self))
     ; (setf (docu copy) ,(docu self))
     ; (setf (defval copy) (put-quote ,(clone (defval self))))
-     (setf (inputs copy) (list (make-instance 'input-funbox
-                                               ; :name ,(string name)
-                                                :value nil 
-                                                :box-ref copy
-                                                :doc-string nil
-                                                )))
+     (setf (value copy) (list .,(loop for i in (value self) collect (omng-copy i))))
+     (setf (choice copy) (list .,(choice self)))
+     (setf (inputs copy) (list .,(loop for i in (inputs self)
+                                       collect (make-instance 'input-funbox
+                                                            ; :name ,(string name)
+                                                              :value nil 
+                                                            ;  :box-ref copy
+                                                              :doc-string nil
+                                                              ))))
      copy))
-
 
 
 ;ici en shift drag (comme slot) faire les receives...
