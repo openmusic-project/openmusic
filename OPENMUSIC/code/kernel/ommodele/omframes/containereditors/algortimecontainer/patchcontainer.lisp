@@ -92,7 +92,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
 (defmethod get-patchpanel ((self t)) (panel self))
 
-(defmethod om-view-click-handler ((view patchPanel) where)
+;(defparameter *current-panel* nil)
+
+(defmethod om-view-click-handler ((view patchPanel) where) 
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
     (cond (*adding-a-box*
@@ -121,13 +123,15 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
           (setf *new-obj-initial-pos* nil)
           ))
           ;;; adding "list/x-append box" and autoconnect with selected boxes
-          ((and (om-shift-key-p) (om-command-key-p) (om-option-key-p))
-           (let ((selected (get-actives view)))
-             (create-x-append-box view selected where)))
           ((and (om-shift-key-p) (om-command-key-p))
            (let ((selected (get-actives view)))
              (create-list-box view selected where)))
-          (t (call-next-method)))))
+          ((om-shift-key-p) ;(and (om-shift-key-p) (om-option-key-p)) ;maybe conflict!
+           (let ((selected (get-actives view)))
+             (create-x-append-box view selected where)))
+          (t (call-next-method))))
+  ;(setf *current-panel* view)
+  )
 
 
 (defmethod om-view-doubleclick-handler ((Self patchPanel) Where)
@@ -157,9 +161,12 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ("1-9" "connect/disconnect nth input of selected box")
                       ; #+(or linux win32)("ctrl+alt" "auto-connect outputs/inputs")
                       ; #+macosx("alt+cmd" "auto-connect outputs/inputs")
-                       ("shift+alt" "auto-connect all inputs")
+                      ;("shift+alt" "auto-connect all inputs")
                        #+(or linux win32)("shift+ctrl+alt" "disconnect all inputs")
                        #+macosx("shift+alt+cmd" "disconnect all inputs")
+                       (("X") "auto-connect all inputs")
+                       (("Z") "disconnect all inputs")
+
                        ;#+(or linux win32)
                        ("shift+ctrl+lrud" "resize box")
                        ;#+macosx("shift+cmd+lrud" "resize box")
@@ -239,19 +246,18 @@ because digit-char-p will not accept backspace and special om keys!"
 (defmethod handle-key-event ((self patchPanel) char) 
   (modify-patch self)
   (let* ((actives (get-actives self))
-         (activeboxes (mapcar 'object actives)))
+         (activeboxes (mapcar 'object actives))
+         (boxes
+          (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
     
     (when (and (char-num-p char) actives (not (equal char #\0)))
-      (let ((boxes
-             (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
         (loop for i in boxes
               do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
                    (when input
                      (if (connected? (object input))
                          (unless (member *target-out* (outframes i))
                            (disconnect-box i input))
-                       (connect-box *target-out* input))))) 
-        ))
+                       (connect-box *target-out* input))))))
 
     (when (om-command-key-p) 
       (scroll-pane self char))
@@ -262,6 +268,12 @@ because digit-char-p will not accept backspace and special om keys!"
       (#\c (if actives (edit-comment-box actives)
              (make-comment-box self (om-mouse-position self))))
       (#\x (create-comment-box self (om-mouse-position self)))
+      (#\X (loop for box in boxes
+                   do (loop for i in (inputframes box)
+                            do (connect-box *target-out* i))))
+      (#\Z (loop for box in boxes
+                   do (loop for i in (inputframes box)
+                            do (disconnect-box box i))))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
       (#\C  (patch-color self))
@@ -581,13 +593,13 @@ The order of listed boxes is spatial, ie. from left to right."
         (mapcar 'omg-unselect boxes)
         ))))
 
-(defmethod create-x-append-box ((self patchPanel) boxes pos)
+(defmethod create-x-append-box ((self patchPanel) boxes pos) 
   "Select boxes, then cmd+shift+click to connect them to a list object.
 The order of listed boxes is spatial, ie. from left to right."
-  (when boxes
+  (when (> (length boxes) 1)
     (let* ((newbox (omng-make-new-boxcall (make-instance 'omgenericfunction 
                                                          :name 'x-append
-                                                         :icon 235 ) (om-make-point 20 200) "x-append")) 
+                                                         :icon 235 ) pos "x-append")) 
            (new-frame (make-frame-from-callobj newbox))
            (order (mapcar 'second 
                           (sort-list 
