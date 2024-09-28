@@ -1356,6 +1356,12 @@ Applies a rotation of <n> positions to the pulses in <tree>.
        (rotatetreepulse tree n)
        (rotate-tree tree n)))
        
+(defmethod! rotatetree ((tree voice) (n t) 
+                        &optional (mode 'pulse))
+    (make-instance 'voice 
+                   :tree (rotatetree (tree tree) n mode)
+                   :chords (chords tree)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;ROTATE-PROPORTIONS;;;;;;;;;;;;;;;;;;;;;;;;
 
 
