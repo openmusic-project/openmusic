@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -48,11 +48,11 @@
   (:icon 491))
 
 (defmethod get-slot-in-out-names ((self graphic-object))
-   (values '("self" "graph-type" "graph-points" "graph-color" "graph-line" "graph-size" "graph-fill")
-           (list nil 'line nil *om-black-color* t 1 nil)
-           '("object" "type of graphics" "list of (x y)" "" "normal or 'dash" "" "")
+   (values '("self" "graph-type" "graph-points" "graph-color" "graph-line" "graph-size" "graph-fill" "graph-contents")
+           (list nil 'line nil *om-black-color* t 1 nil nil)
+           '("object" "type of graphics" "list of (x y)" "" "normal or 'dash" "" "" "")
            '(nil ((2 (("line" 'line) ("arrow" 'arrow) ("free shape" 'pen) ("circle" 'cercle) ("rectangle" 'rect) ("polygon" 'polyg) ("test" 'text))))
-                 nil nil nil nil nil)))
+                 nil nil nil nil nil nil)))
 
 
 (defmethod graphics ((self picture))
