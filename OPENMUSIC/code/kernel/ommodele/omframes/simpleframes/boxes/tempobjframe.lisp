@@ -326,13 +326,14 @@
 
 
 (defmethod score-draw-mini-view ((self tempobjframe) value)
+  (ignore-errors
   (if (equal *minipict-mode* :pianoroll)
       (draw-mini-piano-roll value self (mv-view-size value self))
     (if (minipict self)
         (let ((x0 (initx self)) (y0 (inity self)) (pictsize (om-get-picture-size (minipict self))))
           (om-draw-picture self (minipict self) :pos (om-make-point x0 y0) :size pictsize))
       (om-with-focused-view self
-        (draw-mini-obj value self (mv-font-size value) (mv-view-size value self))))))
+        (draw-mini-obj value self (mv-font-size value) (mv-view-size value self)))))))
 
 
 (defmethod om-draw-contents ((self outtempobj))

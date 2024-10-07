@@ -766,53 +766,70 @@
                                          (om-new-leafmenu "Open Value" #'(lambda () 
                                                                            (let ((ed (or (editorframe (object self))
                                                                                          (editor (make-editor-window (get-editor-class (get-mus-ob (object self)))
-                                                                                                           (get-mus-ob (object self)) (name (object self)) (object self))))))
+                                                                                                                     (get-mus-ob (object self)) (name (object self)) (object self))))))
                                                                              (setf (editorframe (object self)) ed)
                                                                              (om-select-window (window ed))))
                                                           nil (Class-has-editor-p (get-mus-ob (object self)))))
                                        (om-new-leafmenu "Get info" #'(lambda () (get-info-window (om-view-window self))))
                                        ))
-                        
+                         (list 
+                          (if (pianoroll? (object self))
+                              (om-new-leafmenu "Score view" #'(lambda () (let* ((obj (object self)))
+                                                                           (progn
+                                                                             (setf (pianoroll? obj) nil)
+                                                                             (setf *minipict-mode* :score)
+                                                                             (score-draw-mini-view self (car (value obj)))
+                                                                             (om-invalidate-view self)
+                                                                             ))))
+                            (om-new-leafmenu  "Pianoroll view" #'(lambda () 
+                                                                   (let* ((obj (object self)))
+                                                                     (progn
+                                                                       (setf (pianoroll? obj) t)
+                                                                       (setf *minipict-mode* :pianoroll)
+                                                                       (score-draw-mini-view self (car (value obj)))
+                                                                       (om-invalidate-view self)
+                                                                       ))))))
                          (if (and (pictu (object  self)) (thepict (pictu (object  self))))
-                              (list (setf items (list+ items (list (om-new-leafmenu "Change Picture"
-                                                                              #'(lambda () 
-                                                                                  (let ((newpict (get-picture-file)))
-                                                                                  (when newpict
-                                                                                    (mapcar #'(lambda (frame) 
-                                                                                                (setf (pictu (object frame)) 
-                                                                                                      (copy-picture newpict 'om-picture))
-                                                                                                (om-invalidate-view frame))
-                                                                                            (get-actives (om-view-container self)))
-                                                                                    ))))
-                                                                   (om-new-leafmenu "Remove Picture"
-                                                                              #'(lambda () 
-                                                                                  (mapcar #'(lambda (frame) 
-                                                                                              (setf (pictu (object frame)) nil)
-                                                                                              (om-invalidate-view frame))
-                                                                                          (get-actives (om-view-container self)))
-                                                                                  ))))))
-                             (list (setf items (list+ items (list (om-new-leafmenu "Set Picture"
-                                                                            #'(lambda () 
-                                                                                (let ((newpict (get-picture-file)))
-                                                                                  (when newpict
-                                                                                    (mapcar #'(lambda (frame) 
-                                                                                                (setf (pictu (object frame)) (copy-picture newpict 'om-picture))
-                                                                                                (om-invalidate-view frame))
-                                                                                            (get-actives (om-view-container self)))
-                                                                                    )))))))))
+                             (list (setf items (list+ items (list (om-new-leafmenu "Change Picture"
+                                                                                   #'(lambda () 
+                                                                                       (let ((newpict (get-picture-file)))
+                                                                                         (when newpict
+                                                                                           (mapcar #'(lambda (frame) 
+                                                                                                       (setf (pictu (object frame)) 
+                                                                                                             (copy-picture newpict 'om-picture))
+                                                                                                       (om-invalidate-view frame))
+                                                                                                   (get-actives (om-view-container self)))
+                                                                                           ))))
+                                                                  (om-new-leafmenu "Remove Picture"
+                                                                                   #'(lambda () 
+                                                                                       (mapcar #'(lambda (frame) 
+                                                                                                   (setf (pictu (object frame)) nil)
+                                                                                                   (om-invalidate-view frame))
+                                                                                               (get-actives (om-view-container self)))
+                                                                                       ))))))
+                           (list (setf items (list+ items (list (om-new-leafmenu "Set Picture"
+                                                                                 #'(lambda () 
+                                                                                     (let ((newpict (get-picture-file)))
+                                                                                       (when newpict
+                                                                                         (mapcar #'(lambda (frame) 
+                                                                                                     (setf (pictu (object frame)) (copy-picture newpict 'om-picture))
+                                                                                                     (om-invalidate-view frame))
+                                                                                                 (get-actives (om-view-container self)))
+                                                                                         )))))))))
+                         
                           
-                          (list (om-new-leafmenu "Player"
-                                                 #'(lambda () (select-maquette-player (object self)))))
+                         (list (om-new-leafmenu "Player"
+                                                #'(lambda () (select-maquette-player (object self)))))
 
-                       (list 
-                        (if (mute (object self))
-                            (om-new-leafmenu  "Mute Off" #'(lambda () 
-                                                             (setf (mute (object self)) nil)
-                                                             (om-invalidate-view self)))
-                          (om-new-leafmenu  "Mute" #'(lambda () 
-                                                       (setf (mute (object self)) t)
-                                                       (om-invalidate-view self)))
-                          )
+                         (list 
+                          (if (mute (object self))
+                              (om-new-leafmenu  "Mute Off" #'(lambda () 
+                                                               (setf (mute (object self)) nil)
+                                                               (om-invalidate-view self)))
+                            (om-new-leafmenu  "Mute" #'(lambda () 
+                                                         (setf (mute (object self)) t)
+                                                         (om-invalidate-view self)))
+                            )
                         ;(if (lock (object self))
                         ;    (om-new-leafmenu  "Unlock" #'(lambda () 
                         ;                                   (setf (lock (object self)) nil)
@@ -821,7 +838,7 @@
                         ;                               (setf (lock (object self)) t)
                         ;                               (om-invalidate-view self)))
                         ;  )
-                        ))))
+                          ))))
           
     items))
 

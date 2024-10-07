@@ -43,7 +43,8 @@
     ;;; (edition-params :initform (get-default-score-params t) :accessor edition-params)
     (ed-pictu-list :initform nil :accessor ed-pictu-list)
     (showpict :initform nil :accessor showpict)
-    (minieditor? :initform nil :accessor minieditor?))
+    (minieditor? :initform nil :accessor minieditor?)
+    (pianoroll? :initform nil :accessor pianoroll?))
    (:documentation "This is the class of the temporal boxes into a maquette with slots that user do not see."))
 
 ;-----------------------------------------------------------------
