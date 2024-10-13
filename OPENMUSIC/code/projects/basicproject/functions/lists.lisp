@@ -517,9 +517,9 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
   :initvals '('(1 2) 3 'until) 
   :indoc '("list" "length" "mode") 
   :icon 235
-  :menuins '((2 (("until" until) 
-                 ("last" last)
-                 ("first" first))))
+  :menuins '((2 (("until" 'until) 
+                 ("last" 'last)
+                 ("first" 'first))))
   :doc "Repeats <lst> nth times so it equals <length>. 
 mode: <until> iterates the list (default).
       <last>  iterates the last element of list.
