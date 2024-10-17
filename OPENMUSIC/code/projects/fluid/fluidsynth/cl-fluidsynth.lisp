@@ -109,7 +109,7 @@
       (setf *fluidsynth-settings* (new_fluid_settings))
       #+linux(if (equal om::*jack-alsa* "alsa")
                  (progn 
-                   (fluid_settings_setnum *fluidsynth-settings* "synth.sample-rate" (coerce om::*audio-sr* 'double-float))
+                   ;(fluid_settings_setnum *fluidsynth-settings* "synth.sample-rate" (coerce om::*audio-sr* 'double-float))
                    (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default");om::*audio-out-device*)
                    )
                (progn  
