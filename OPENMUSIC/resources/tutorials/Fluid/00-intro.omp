@@ -1,0 +1,4 @@
+; OM File Header - Saved 2024/10/19 17:58:15
+; (7.05 :patc (om-make-point 23 12) (om-make-point 0 0) (om-make-point 500 372) "" 183 0 "2024/10/19 17:56:58" "2024/10/19 17:58:15")
+; End File Header
+(in-package :om)(load-lib-for (quote nil))(setf *om-current-persistent* (om-load-patch1 "00-intro" (quote ((let ((box (om-load-boxcomment "comment" (om-make-point 128 38) (quote "IN PROGRESS") nil (om-make-point 190 123) nil (om-make-color 0 0 0) (om-make-font "Liberation Sans" 15.998697916666666D0 :family "Liberation Sans" :style (quote (:bold)) :mode (quote nil))))) (when (fboundp (quote set-active)) (set-active box nil)) box))) (quote nil) nil 7.05))
