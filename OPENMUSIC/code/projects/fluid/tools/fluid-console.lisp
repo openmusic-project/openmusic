@@ -114,13 +114,11 @@
 (defmethod initialize-instance :after ((self fluid-settings-ctrl) &rest l)
    (declare (ignore l))
    (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
-   (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
-
    (setf (channels-ctrl self) 
          (loop for i from 0 to (1- (nbtracks self))
                collect (make-instance (get-fluid-ctrl-class self)
-                                      :midiport i)))
-   )
+                                      :midiport i))))
+   
 
 ;===========================
 ; THE 'REAL' OBJECT USED IN OM
