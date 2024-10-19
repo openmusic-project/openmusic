@@ -37,8 +37,9 @@
          (def-path (om::get-pref modulepref :fluid-sf2))
          (info (loop for i from 0 to (1- nsynths)
                      collect (list (list i) (list def-path)))))
-    (print (list "setup" info))
-    (show-sf2-dialog info action)))
+   ; (print (list "setup" info))
+    (show-sf2-dialog info action)
+     ))
 
 
 (defparameter *sf2-setup-window* nil)
@@ -63,12 +64,15 @@
     (when buttons ;(car buttons) 
       (oa::om-set-view-position (car buttons) (oa::om-make-point (abs (- 680 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
       (oa::om-set-view-position (second buttons) (oa::om-make-point (abs (- 780 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
-      (oa::om-set-view-position (third buttons) (oa::om-make-point (abs (- 880 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
+      (oa::om-set-view-position (third buttons) (oa::om-make-point (abs (- 860 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
+      (oa::om-set-view-position (fourth buttons) (oa::om-make-point (abs (- 940 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
       )
     (when panel1
       (oa::om-set-view-size panel1 (oa::om-make-point  (abs (- 680 (abs ( - 120 (+ 770 w))))) ;770 
                                                       (- h 90))))
      ))
+
+
 
 ;(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
 
@@ -137,19 +141,22 @@
 (defun show-sf2-dialog (settings &optional action)
   (if *sf2-setup-window*
       (oa::om-select-window *sf2-setup-window*)
-    (let* ((dd (oa::om-make-window 'sf2-ports-dialog 
+    (let* ((num (length settings))
+           (dd (oa::om-make-window 'sf2-ports-dialog 
                                    :window-title "SF2 Port Setup"
                                    :bg-color oa::*om-light-gray-color*
                                    :size (oa::om-make-point 800 270)
                                    :resizable t
-                                  ; :external-min-width 800
+                                   :external-min-width 800
                                    :external-max-width 800
                                    :external-min-height 270 
                                    :settings settings
                                    ))
         
            (inv (oa::om-make-view 'sf2-ports-view :position (oa::om-make-point 10 40)
-                                  :size (oa::om-make-point 770 180) :scrollbars :v :retain-scrollbars nil
+                                  :size (oa::om-make-point 770 (+ 180 (* 45 num))) 
+                                  :scrollbars :v 
+                                  :retain-scrollbars t
                                   :direction :in)))
       (unless cl-fluid::*fl-synths*
         (om-add-subviews inv
@@ -199,6 +206,8 @@
       
       (setf *sf2-setup-window* dd)
       (oa:om-show-window dd)
+      ;(om-set-view-size dd (oa::om-make-point 800 270))
+      (om-set-view-size inv (oa::om-make-point 770 180))
       )))
 
 
