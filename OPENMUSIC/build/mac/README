@@ -42,13 +42,19 @@ NEW FEATURES
 - New Classes: 
 	-TRACKS Score object for multi microtone fluidsynth playback
 - New Methods:
+	-om-choose	
 	-Fluid: get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
+- autotuning option in preference
 - EDO scales
 - "Tunings" display in scoreeditors
+- Magnify Inlets/Outlets of Boxes when mouse swept on in preferences
+
 
 IMPROVEMENTS
 
+- connections are confirmed by line thickness and blue color
+- scroll shortcuts for patch and score panels (ctrl+shift+left/right arrows)
 - dragging selected elements in Score objects affects pitch change only with option key
 - save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
@@ -57,10 +63,11 @@ IMPROVEMENTS
 
 FIXES
 
+- fluid-synth-console now can have track > 16
+- Fixed scrolling in sf2-preference-setup
 - Page mode fixed
 - Fix GraphicDisplay error on mac (icon/list view)
 - Group selection
-
 
 
 
