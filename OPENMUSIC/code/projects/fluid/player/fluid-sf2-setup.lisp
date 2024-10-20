@@ -44,14 +44,14 @@
 
 (defparameter *sf2-setup-window* nil)
 
-(defclass sf2-ports-dialog (oa::om-window) 
+(defclass sf2-ports-dialog (om-window) 
   ((portviews :accessor portviews :initform nil :initarg :portviews)
    (settings :accessor settings :initform nil :initarg :settings)))
 
 (defmethod oa::om-window-close-event ((self sf2-ports-dialog))
   (setf *sf2-setup-window* NIL))
 
-(defclass sf2-ports-view (oa::om-scroller) 
+(defclass sf2-ports-view (om-scroller) 
   ((portlines :accessor portlines :initform nil :initarg :portlines)
    (direction :accessor direction :initform nil :initarg :direction)))
 
@@ -68,7 +68,7 @@
       (oa::om-set-view-position (fourth buttons) (oa::om-make-point (abs (- 940 (abs ( - 210 (+ 770 w))))) (abs (- (- h  20) 20))))
       )
     (when panel1
-      (oa::om-set-view-size panel1 (oa::om-make-point  (abs (- 680 (abs ( - 120 (+ 770 w))))) ;770 
+      (oa::om-set-view-size panel1 (oa::om-make-point (abs (- 680 (abs ( - 120 (+ 770 w))))) 
                                                       (- h 90))))
      ))
 
@@ -111,11 +111,11 @@
                                                               :position (oa::om-make-point 20 y)))
                                         sf2txt)
                                    (oa::om-add-subviews vv
-                                                        (setf sf2txt (om-make-dialog-item 'om-static-text  (om-make-point 120 i) (om-make-point 320 45)
+                                                        (setf sf2txt (om-make-dialog-item 'om-static-text  (om-make-point 120 (- (+ 3 i) (+ i 3)  )) (om-make-point 320 45)
                                                                                           (cl-fluid::sf2path synth)
                                                                                           :font *om-default-font1*))
-                                                        (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 20 3) (oa::om-make-point 30 20)
-                                                                                 (format nil "~D" i)
+                                                        (oa::om-make-dialog-item 'om-static-text (om-make-point 20 3) (om-make-point 30 20)
+                                                                                 (format nil "~D:" i)
                                                                                  :font oa::*om-default-font2b*)
                                                         (om-make-view 'om-icon-button 
                                                                       :icon1 "folder" :icon2 "folder-pushed"
@@ -154,10 +154,12 @@
                                    ))
         
            (inv (oa::om-make-view 'sf2-ports-view :position (oa::om-make-point 10 40)
-                                  :size (oa::om-make-point 770 (+ 180 (* 45 num))) 
+                                  :size (om-make-point 770 (+ 180 (* 45 num))) 
                                   :scrollbars :v 
                                   :retain-scrollbars t
-                                  :direction :in)))
+                                  :scroll-bar-type :always-visible
+                                  :direction :in
+                                  )))
       (unless cl-fluid::*fl-synths*
         (om-add-subviews inv
                          (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 250 75) (oa::om-make-point 280 120) "No FluidSynths loaded!"
@@ -206,8 +208,9 @@
       
       (setf *sf2-setup-window* dd)
       (oa:om-show-window dd)
-      ;(om-set-view-size dd (oa::om-make-point 800 270))
+      (om-set-view-size dd (oa::om-make-point 800 270))
       (om-set-view-size inv (oa::om-make-point 770 180))
+      (om-set-field-size inv (oa::om-make-point 770 (+ 180 (* 45 num))))
       )))
 
 
