@@ -144,5 +144,5 @@ and puts spaces between the elements."
            (sfpath (cl-fluid::sf2path synth)))
     (format *om-stream* "~% synth name: ~A~% sf2 file: ~A~% Programs:~%~%" name sfpath)
     (print-sf2-pgms sfpath ))
-    (om-message-dialog "No Fluidsynth instance found!"))))
+    (om-message-dialog "No FluidSynth instance loaded!"))))
 
