@@ -134,7 +134,7 @@ and puts spaces between the elements."
 
 
 (defmethod* get-fsynth-info ((nth-synth number))
-  :icon 912
+  :icon 924
   :indoc '("nth")
   :initvals '(0)
   :doc "Loads a soundFont file to the given <nth-synth> intance."
