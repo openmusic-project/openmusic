@@ -52,9 +52,10 @@
           '(nil nil)))
 
 (defmethod omng-save ((self fl-microtune) &optional (values? nil))
-  `(let ((rep (om-make-dialog-item 'fl-microtune (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
+  `(let ((rep (om-make-dialog-item 'fl-microtune (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self))
+                                   "untitled"
                                    :range ',(om-get-item-list self))))
-     (oa::om-set-selected-item-index rep ',(om-get-selected-item-index self))
+     (om-set-selected-item-index rep ',(om-get-selected-item-index self))
      rep))
 
 
@@ -62,9 +63,9 @@
   (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point 50 20) "untitled" 
                        :range *edo-names-0*))
 
-(defmethod update-di-size ((self fl-microtune) container) 
+(defmethod update-di-size ((self fl-microtune) container)
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-size self (om-make-point (- (w container) 20) 30))) ;24
 
 
 (defmethod om-dialog-item-action ((self fl-microtune)) 
@@ -94,7 +95,8 @@
                                                     )
                                                   )))
       (update-di-size newpop boxframe)) 
-    newpop))
+    newpop
+    ))
 
 (defmethod rep-editor ((self fl-microtune) num) 
   (cond
@@ -137,9 +139,10 @@
             '(nil nil nil))))
 
 (defmethod omng-save ((self fl-pgm) &optional (values? nil))
-  `(let ((rep (om-make-dialog-item 'fl-pgm (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
+  `(let ((rep (om-make-dialog-item 'fl-pgm (om-make-point 1 0 ) (om-make-point ,(om-width self) ,(om-height self))
+                                   "untitled"
                                    :range ',(om-get-item-list self))))
-     (oa::om-set-selected-item-index rep ',(om-get-selected-item-index self))
+     (om-set-selected-item-index rep ',(om-get-selected-item-index self))
      rep))
 
 
@@ -152,7 +155,7 @@
 
 (defmethod update-di-size ((self fl-pgm) container) 
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-size self (om-make-point (- (w container) 20) 30)));24
 
 
 (defmethod om-dialog-item-action ((self fl-pgm)) 
