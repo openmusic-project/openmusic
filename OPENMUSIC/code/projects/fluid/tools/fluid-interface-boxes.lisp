@@ -60,7 +60,9 @@
 
 
 (defmethod get-super-default-value ((type (eql 'fl-microtune)))
-  (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point 50 20) "untitled" 
+  (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point 50 20) 
+                       "untitled"
+                       :value (nth 6 *edo-names-0*)
                        :range *edo-names-0*))
 
 (defmethod update-di-size ((self fl-microtune) container)
@@ -77,9 +79,7 @@
   (let* ((boxframe (om-view-container self))
          (newpop (om-make-dialog-item 'fl-microtune (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
                                       "untitled" 
-                                      :range (if (and (pathnamep (car args)) (directoryp (car args)))
-                                                 (om-directory (car args))
-                                               (car args))))) 
+                                      :range *edo-names-0*))) 
  
     (when (om-view-container self)
       (om-remove-subviews boxframe self)

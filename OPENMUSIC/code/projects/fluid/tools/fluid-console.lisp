@@ -47,7 +47,7 @@
             (gain-ctrl :initform 32 :initarg :gain-ctrl :accessor gain-ctrl :type integer)
             (vol-ctrl :initform '(64 64 64 64 64 64 64 64 64 64 64 64 64 64 64 64) :initarg :vol-ctrl :accessor vol-ctrl :type list)
             (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)
-            (tuning :initform 2 :initarg :tuning :accessor tuning :type integer)
+            (tuning :initform 6 :initarg :tuning :accessor tuning :type integer)
             ;;reverb
             (rev-on :initform nil :initarg :rev-on  :accessor rev-on :type nil)
             (room-ctrl :initform 20 :initarg :room-ctrl  :accessor room-ctrl :type integer)
