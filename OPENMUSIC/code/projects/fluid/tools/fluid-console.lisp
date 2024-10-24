@@ -729,7 +729,7 @@ In this case, all internal events are sent simultaneously.
                                        :checked-p (rev-on (channelctr self))
                                        ))
       (setf revtitle (om-make-dialog-item 'om-static-text
-                                             (om-make-point 24 pos) 
+                                          (om-make-point 26 (+ pos 2)) ;(om-make-point 24 pos)
                                              (om-make-point 70 20)
                                              "Reverb"
                                              :font *om-default-font2*
@@ -865,7 +865,7 @@ In this case, all internal events are sent simultaneously.
                                           :checked-p (ch-on (channelctr self))
                                           ))
       (setf chorustitle (om-make-dialog-item 'om-static-text
-                                             (om-make-point 24 pos) 
+                                             (om-make-point 26 (+ pos 2)) ;(om-make-point 24 pos)
                                              (om-make-point 70 20)
                                              "Chorus"
                                              :font *om-default-font2*
