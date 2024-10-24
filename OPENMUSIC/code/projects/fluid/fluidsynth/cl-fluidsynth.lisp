@@ -111,19 +111,24 @@
                  (progn 
                    ;(fluid_settings_setnum *fluidsynth-settings* "synth.sample-rate" (coerce om::*audio-sr* 'double-float))
                    (fluid_settings_setstr *fluidsynth-settings* "audio.alsa.device" "default");om::*audio-out-device*)
+                   (fluid_settings_setint *fluidsynth-settings* "synth.midi-channels" 128)
                    )
                (progn  
                  (fluid_settings_setnum *fluidsynth-settings* "synth.sample-rate" (coerce om::*audio-sr* 'double-float))
                  (fluid_settings_setstr *fluidsynth-settings* "audio.driver" "jack")
                  (fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx))
                  (fluid_settings_setint *fluidsynth-settings* "audio.jack.autoconnect" 1)
+                 (fluid_settings_setint *fluidsynth-settings* "synth.midi-channels" 128)
                  ;(fluid_settings_setstr *fluidsynth-settings* "audio.jack.id" (format nil "OM_fluidsynth_~A" indx))
                  ))
     ;  #+darwin(fluid_settings_setstr *fluidsynth-settings* "audio.driver"
     ;                                 #+cl-jack "jack"
     ;                                 #+cocoa "coreaudio")
-      #+cocoa(fluid_settings_setstr *fluidsynth-settings* "audio.driver" "coreaudio"))
-    
+      #+cocoa(progn 
+               (fluid_settings_setstr *fluidsynth-settings* "audio.driver" "coreaudio")
+               (fluid_settings_setint *fluidsynth-settings* "synth.midi-channels" 128)
+               ))
+      
     (setf (synthname synth) name)
     (setf (settings synth) *fluidsynth-settings*)
     (setf (synthptr synth) (new_fluid_synth *fluidsynth-settings*))
