@@ -326,7 +326,7 @@
           (cond ((= modulo 67) 1)
                 ((= modulo 33) 2)
                 (t 0))))
-       #|
+       
        ((or (= 220 approx) (= 220.1 approx) (= 200.0 approx))
         (let ((modulo (mod midic 100)))
           (cond ((= modulo 55) 1)
@@ -340,7 +340,7 @@
                 ((= modulo 91) 10)
                 ((= modulo 45) 11)
                 (t 0))))
-       |#
+       
        ((or (= 300.1 approx) (= 300.0 approx))
         (let ((modulo (mod midic 100)))
           (cond ((= modulo 40) 1)
@@ -425,6 +425,7 @@
          ((= (mod midic 100) 11) 12)
          ((= (mod midic 100) 37) 13)
         (t 0)))
+       #|
        ((or (= approx 220) (= approx 220.1))
        (cond 
         ((or 
@@ -441,6 +442,7 @@
         ((= (mod midic 100) 45) 6)
         (t 0)
             ))
+       |#
        ((= approx 310) 
        (cond 
         ((or 

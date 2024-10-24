@@ -77,7 +77,7 @@
       (fluid-pitchwheel '(0 3072 2048 1024) 
                         '(1 2 3 4) port))
      ((or (= 170 value) (= 170.1 value))
-      (fluid-pitchwheel '(0 2908 1679 491 2170 982 2662 1433 245 1924 737 2416 1187)
+      (fluid-pitchwheel '(0 2907 1679 491 2170 982 2662 1433 245 1924 737 2416 1187)
                         '(1 2 3 4 5 6 7 8 9 11 12 13 14) port))
      ((or (= 180.0 value) (= 180.1 value))
       (fluid-pitchwheel '(0 2744 1352) 
@@ -87,14 +87,14 @@
                         '(1 2 3 4 5 6 7 8 9 11 12 13 14) port))
      ((or (= 16 value) (= 960.0 value) (= 960.1 value))
       (fluid-pitchwheel '(0 512 1024 1536 2048 2560 3072 3584) '(1 2 3 4 5 6 7 8) port))
-     #|
      ((or (= 220 value) (= 220.0 value) (= 220.1 value))
       (fluid-pitchwheel '(0 2253 369 2621 737 2990 1106 3359 1475 3727 1843) 
                         '(1 2 3 4 5 6 7 8 9 11 12) port))
-     |#
+     #|
      ((or (= 220 value) (= 220.1 value))
       (fluid-pitchwheel '(0 2253 368 737 1105 1474 1842) 
                         '(1 2 3 4 5 6 7) port))
+     |#
      ((or (= 300.0 value) (= 300.1 value))
       (fluid-pitchwheel '(0 1638 3277 819 2458) 
                         '(1 2 3 4 5) port))
