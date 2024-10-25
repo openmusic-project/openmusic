@@ -146,3 +146,24 @@ and puts spaces between the elements."
     (print-sf2-pgms sfpath ))
     (om-message-dialog "No FluidSynth instance loaded!"))))
 
+
+(defmethod* get-synth-channel-count ((nth-synth number))
+    :icon 924
+  :indoc '("nth")
+  :initvals '(0)
+  :doc "Returns the count of channels to the given <nth-synth> intance."
+  (let ((synth (nth nth-synth cl-fluid::*fl-synths*)))
+    (if synth
+        (cl-fluid::fluid_synth_count_midi_channels
+         (cl-fluid::synthptr synth))
+    (om-message-dialog "No FluidSynth instance loaded!"))))
+
+#|
+(defmethod* get-synth-channel-count ((nth-synth t))
+  :doc "Returns the count of channels to the given <nth-synth> intance."
+    (if cl-fluid::*fl-synths*
+        (loop for i in  cl-fluid::*fl-synths*
+       collect  (cl-fluid::fluid_synth_count_midi_channels
+         (cl-fluid::synthptr i)))
+    (om-message-dialog "No FluidSynth instance loaded!")))
+|#
