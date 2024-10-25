@@ -495,7 +495,9 @@ In this case, all internal events are sent simultaneously.
                                (om-make-point 76 12)
                                ""
                                :di-action (om-dialog-item-act item
-                                            (change-all-pgm self (second (nth (om-get-selected-item-index item) progList))))
+                                            ;(change-all-pgm self (second (nth (om-get-selected-item-index item) progList)))
+                                            (propagate-pgm-change self (second (nth (om-get-selected-item-index item) progList)))
+                                            )
                                :font *om-default-font1*
                                :range (loop for item in progList collect (first item))
                                :value (first (nth (car (program (channelctr self))) progList))
@@ -1136,8 +1138,10 @@ In this case, all internal events are sent simultaneously.
   (report-modifications self)))
 
 (defmethod propagate-pgm-change ((self fluidPanel) value)
-  (let ((port (midiport (channelctr self))))
-    (fluid-pgm-change value  '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+  (let* ((port (midiport (channelctr self)))
+        (nsynth (get-synth-channel-count 0))
+        (lst (arithm-ser 1 nsynth 1)))
+    (fluid-pgm-change value  lst :port port)
     (when (i-chans (channelctr self))
     (loop for i in (channels-ctrl (i-chans (channelctr self)))
           do (setf (program i) value)))))

@@ -39,6 +39,7 @@
 (defparameter *sf2-setup-list* nil)
 (defparameter *jack-alsa* "alsa")
 (defparameter *fluid-auto-microtune* nil)
+(defparameter *chan-count* 16)
 ;;;==============================================
 
 (defmethod put-preferences ((iconID (eql :fluid)))
@@ -54,6 +55,7 @@
         (load-sf-to-all))
       (setf *fluid-loaded* "Loaded!"))
     (setf *fluid-auto-microtune* (get-pref modulepref :fluid-auto-microtune))
+    (setf *chan-count* (get-pref modulepref :chan-count))
     (setf *jack-alsa* (get-pref modulepref :jack-alsa))
     #|
     (setf *sf2-setup-list* 
@@ -70,6 +72,7 @@
           :n-fsynth 1
           :fluid-autoload nil 
           :fluid-auto-microtune nil
+          :chan-count 16
           :sf2-setup-list nil
           :jack-alsa "alsa"
           ))
@@ -81,6 +84,7 @@
                   :n-fsynth ,*n-fsynth* 
                   :fluid-autoload ,*fluid-autoload*
                   :fluid-auto-microtune ,*fluid-auto-microtune*
+                  :chan-count ,*chan-count*
                   :sf2-setup-list ,*sf2-setup-list*
                   :jack-alsa ,*jack-alsa*
                        ) *om-version*))
@@ -199,7 +203,24 @@
                                                  (om-set-dialog-item-text fsynthtxt *fluid-loaded*)
                                                  (om-set-fg-color fsynthtxt *om-red-color*)
                                                  )))
-                      
+                       ;;;
+                       (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
+                                            "Number of Channels:" :font *controls-font*)
+                       (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 210 (- i 2)) 
+                                                    (om-make-point 80 20)
+                                                    ""
+                                                    :range '("16" "32" "64" "128" "256" "512")
+                                                    :value (number-to-string (get-pref modulepref :chan-count))
+                                                    :di-action (om-dialog-item-act item
+                                                                 (progn 
+                                                                   (setf *chan-count*  (read-from-string (om-get-selected-item item)))
+                                                                   (set-pref modulepref :chan-count
+                                                                              (read-from-string (om-get-selected-item item)))))
+                                                    :font *controls-font*)
+                       
+                       (om-make-dialog-item 'om-static-text (om-make-point 310 i) (om-make-point 190 100)
+                                            "(Use more than 16 if EDO 17,19 and 31 are required)" :font *controls-font*)
+                       ;;;
                        (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
                                             "Autoload Synths:" 
                                             :font *controls-font*)
