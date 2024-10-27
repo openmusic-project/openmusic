@@ -2256,7 +2256,7 @@
                    )))
         ((equal slotmode 'chan)
          (setf (min-val control) 1)
-         (setf (max-val control) 16)
+         (setf (max-val control) *chan-count*);16
          (set-value control (chan firstnote))
          (setf (afterfun control)
                #'(lambda (x) 
