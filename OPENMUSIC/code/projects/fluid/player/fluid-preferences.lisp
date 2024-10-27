@@ -209,7 +209,7 @@
                        (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 210 (- i 2)) 
                                                     (om-make-point 80 20)
                                                     ""
-                                                    :range '("16" "32" "64" "128" "256" "512")
+                                                    :range '("16" "32" "64" "128" "256")
                                                     :value (number-to-string (get-pref modulepref :chan-count))
                                                     :di-action (om-dialog-item-act item
                                                                  (progn 
