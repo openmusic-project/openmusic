@@ -60,7 +60,7 @@
 (defclass* fluid-ch-settings-ctrl (simple-score-element)
    ((midiport :initform nil :initarg :midiport :accessor midiport :type integer :documentation "output port number")
     (miditrack :initform 0 :accessor miditrack)
-    (nbtracks :initform 16 :initarg :nbtracks :accessor nbtracks :type integer :documentation "number of tracks")
+    (nbtracks :initform *chan-count* :initarg :nbtracks :accessor nbtracks :type integer :documentation "number of tracks")
     (channels-ctrl :initform nil :accessor channels-ctrl :type t))
   (:icon 918))
 
@@ -97,10 +97,10 @@
 
 
 
-(defmethod initialize-instance :after ((self fluid-ch-settings-ctrl) &rest l) 
+(defmethod initialize-instance :after ((self fluid-ch-settings-ctrl) &rest l)
    (declare (ignore l))
    (if (< (nbtracks self) 1) (setf (nbtracks self) 1))
-   (if (> (nbtracks self) 16) (setf (nbtracks self) 16))
+   (if (> (nbtracks self) *chan-count*) (setf (nbtracks self) *chan-count*))
    (setf (channels-ctrl self) 
          (loop for i from 1 to (nbtracks self) 
                collect (make-instance (get-fluid-ch-ctrl-class self)
@@ -233,7 +233,7 @@ In this case, all internal events are sent simultaneously.
 (defclass fluid-mixer (fluid-ch-mix-console OMBasicObject) 
   ((presets :accessor presets :initarg :presets :initform nil)
    (current-preset :accessor current-preset :initarg :current-preset :initform 0))
-  (:default-initargs :nbtracks 16))
+  (:default-initargs :nbtracks *chan-count*))
 
 (defun init-fluid-mixer (port &optional vals)
   (make-instance 'fluid-mixer 
@@ -270,22 +270,22 @@ In this case, all internal events are sent simultaneously.
       (let ((mixer (make-editor-window 'FLUIDMixerEditor (i-chans fsynth)
                                      "FLUID Channels Control"
                                      nil
-                                     :winsize (om-make-point (* *channel-w* 16) 580) ;(om-make-point (* *channel-w* 8) 580) 
-                                     :resize nil ;t
+                                     :winsize (om-make-point (* *channel-w* 16) 590) ;(om-make-point (* *channel-w* 8) 580) 
+                                     :resize nil
                                      :close-p t
                                      :winshow t
                                      )))
         (loop for i in (channels-ctrl (obj mixer))
-              do (send-all-to-fluids-ch i)) 
-        ;(om-set-view-size mixer (om-make-point (* *channel-w* 8) 598));size of major window!
-        (om-set-view-size mixer (om-make-point (* *channel-w* 16) 598));size of major window!
+              do (send-all-to-fluids-ch i))
+        ;(om-set-view-size mixer (om-make-point (* *channel-w* 16) 598));size of major window!
+        (om-set-view-size mixer (om-make-point (* *channel-w* 16) 620))
         )
     
     (let ((mixer (make-editor-window 'FLUIDMixerEditor (init-fluid-mixer port)
                                      "FLUID Channels Control"
                                      nil
                                      :winsize (om-make-point (* *channel-w* 16) 580) ;(om-make-point (* *channel-w* 8) 580)
-                                     :resize nil ;t
+                                     :resize nil
                                      :close-p t
                                      :winshow nil ; first time double click
                                      )))
@@ -295,7 +295,7 @@ In this case, all internal events are sent simultaneously.
         ;setting programs
        (let ((fmixer (obj mixer)))
             (loop for i in (channels-ctrl fmixer)
-                  for n from 0 to 15
+                  for n from 0 to (- *chan-count* 1)
                   do (progn
                        (setf (program i) (nth n (program (nfsynth i))))
                        (setf (pan-ctrl i) (nth n (pan-ctrl (nfsynth i))))
@@ -304,7 +304,7 @@ In this case, all internal events are sent simultaneously.
      
        (show-fluid-mixer-win port fsynth);attention recursivity!
        ;(om-set-view-size mixer (om-make-point (* *channel-w* 8) 598))
-       (om-set-view-size mixer (om-make-point (* *channel-w* 16) 598))
+       (om-set-view-size mixer (om-make-point (* *channel-w* 16) 590))
 )))
 
 
@@ -390,7 +390,7 @@ In this case, all internal events are sent simultaneously.
 
 ;=== The Editor will be a scrollable editor with fixed size 
 ;(defmethod get-win-ed-size ((self settings-ctrl)) (om-make-point (+ 6 (min (* *fl-channel-w* 6) (* *fl-channel-w* (nbtracks self)))) 560))
-(defmethod get-win-ed-size ((self fluid-ch-settings-ctrl)) (om-make-point (min (* *channel-w* 4) (* *channel-w* (nbtracks self))) 580)) ;760 ;860 height c'est la!
+(defmethod get-win-ed-size ((self fluid-ch-settings-ctrl)) (om-make-point (min (* *channel-w* 4) (* *channel-w* (nbtracks self))) 600)) ;760 ;860 height c'est la!
 
 (defmethod default-edition-params ((self fluid-ch-settings-ctrl))
   (pairlis '(winsize winpos) 
@@ -402,7 +402,7 @@ In this case, all internal events are sent simultaneously.
    (let ((win (call-next-method class object name ref 
                                 :winsize (get-win-ed-size object) 
                                 :winpos winpos 
-                                :resize t ;nil ;ICI!!
+                                :resize nil ;ICI!!
                                 :close-p t :winshow t
                                 )))   
     win))
@@ -418,7 +418,7 @@ In this case, all internal events are sent simultaneously.
 
 ;=== MAIN PANEL ===
 (defclass fluidchannelcontrollerPanel (om-scroller) ()
-  ;;;(:default-initargs :scrollbars :h :retain-scrollbars t)
+ ; (:default-initargs :scrollbars :h :retain-scrollbars t)
    )
 
 (defmethod editor ((self fluidchannelcontrollerPanel)) 
@@ -474,6 +474,7 @@ In this case, all internal events are sent simultaneously.
                                  (ch-panels self)))))
 
 
+
 (defmethod update-editor-after-eval ((self FluidChannelConsoleEditor) val)
   (setf (object self) val)
   (om-set-view-size (window self) (get-win-ed-size (object self)))
@@ -492,7 +493,8 @@ In this case, all internal events are sent simultaneously.
                                              :bg-color *om-light-gray-color*
                                              :position (om-make-point (* i *channel-w*) 0) 
                                              :size (om-make-point *channel-w* (- (h self) 15)
-                                                                  )))))
+                                                                  ))))
+)
   
 
 (defmethod simple-controls-only ((self Fluidchannelpanel)) nil)
@@ -1080,7 +1082,7 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod make-preset-view ((self FLUIDMixerEditor))
   (let* ((preset-view (om-make-view 'om-view 
-                                   :position (om-make-point (delta-tracks self) (- (h self) (delta-tracks self) 45)) 
+                                   :position (om-make-point (delta-tracks self) (- (h self) (delta-tracks self) 50)) ;(- (h self) (delta-tracks self) 45)
                                    :scrollbars nil
                                    :retain-scrollbars nil
                                    :field-size  (om-make-point (- (* *channel-w* 16) 5) 45)

@@ -34,18 +34,23 @@
 ;=== SYNTH CONTROLLER                     
 ;=== a single synth controller 
 ;================================================
+
+
+(defparameter *all-chans*  (arithm-ser 1 *chan-count* 1))
+
+
 (defclass* Fluid-Ctrl () 
            ((midiport :initform 0 :initarg :midiport :accessor midiport :type integer)
-            (midichannel :initform '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) :initarg :midichannel :accessor midichannel :type list)
-            (program :initform '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) :initarg :program :accessor program :type list)
+            (midichannel :initform *all-chans* :initarg :midichannel :accessor midichannel :type list)
+            (program :initform (repeat-n 0 *chan-count*) :initarg :program :accessor program :type list)
             (prg-main :initform t :initarg :prg-main  :accessor prg-main :type nil)
-            (pan-ctrl :initform '(64 64 64 64 64 64 64 64 64 64 64 64 64 64 64 64) :initarg :pan-ctrl  :accessor pan-ctrl :type list)
-            (control1-num :initform '(1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1) :initarg :control1-num :accessor control1-num :type list)
-            (control2-num :initform '(2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2) :initarg :control2-num :accessor control2-num :type list)
-            (control1-val :initform '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) :initarg :control1-val :accessor control1-val :type list)
-            (control2-val :initform '(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0) :initarg :control2-val :accessor control2-val :type list)
+            (pan-ctrl :initform (repeat-n 64 *chan-count*) :initarg :pan-ctrl  :accessor pan-ctrl :type list)
+            (control1-num :initform (repeat-n 1 *chan-count*) :initarg :control1-num :accessor control1-num :type list)
+            (control2-num :initform (repeat-n 2 *chan-count*) :initarg :control2-num :accessor control2-num :type list)
+            (control1-val :initform (repeat-n 0 *chan-count*) :initarg :control1-val :accessor control1-val :type list)
+            (control2-val :initform (repeat-n 0 *chan-count*) :initarg :control2-val :accessor control2-val :type list)
             (gain-ctrl :initform 32 :initarg :gain-ctrl :accessor gain-ctrl :type integer)
-            (vol-ctrl :initform '(64 64 64 64 64 64 64 64 64 64 64 64 64 64 64 64) :initarg :vol-ctrl :accessor vol-ctrl :type list)
+            (vol-ctrl :initform (repeat-n 64 *chan-count*) :initarg :vol-ctrl :accessor vol-ctrl :type list)
             (pitch-ctrl :initform 8192 :initarg :pitch-ctrl :accessor pitch-ctrl :type integer)
             (tuning :initform 6 :initarg :tuning :accessor tuning :type integer)
             ;;reverb
@@ -220,17 +225,21 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod* send-all-to-fluids ((self fluid-ctrl))
+  (when (i-chans self)
   (let* ((port (midiport self))
          (pgm (program self))
          (pan (pan-ctrl self))
          (vol (gain-ctrl self))
          (tuning (tuning self)))
     (progn 
-      (fluid-pgm-change pgm '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+      ;(fluid-pgm-change pgm '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+      (propagate-pgm-change port pgm)
       (fluid-gain (/ vol 127.0) port)
       (change-tuning self tuning)
       (fluid-pan (car pan) *all-chans* port)
       )
+    )
+    ;(om-message-dialog "No FluidSynth instance loaded!")
   ))
 
 ;;================================================================
@@ -380,16 +389,7 @@ In this case, all internal events are sent simultaneously.
                                                      :owner self
                                                      :position (om-make-point 0 0) 
                                                      :bg-color *om-light-gray-color* ;(om-make-color 0.5 0.5 0.5)
-                                                   ;  :default-width (h self)
-                                                   ;  :visible-min-width (h self)
-                                                    
-                                                   ;  :external-max-width 800
-                                                   ;  :external-min-height 270 
                                                      :scrollbars (first (metaobj-scrollbars-params self)) ;t
-                                                   ;  :retain-scrollbars t
-                                                   ;   :horizontal-scroll t
-                                                   ;  :scrollbars (first (metaobj-scrollbars-params self))
-                                                   ;  :retain-scrollbars (second (metaobj-scrollbars-params self))
                                                      :field-size  (om-make-point (* *fl-channel-w* (nbtracks (object self))) 540)
                                                      ;;;:size (om-make-point (w self) (- (h self) 15)))
                                                      :size (om-make-point (w self) (h self)))
@@ -1122,10 +1122,6 @@ In this case, all internal events are sent simultaneously.
 ;=== ACTIONS ON CHANNEL PANELS:
 ;==============================
 
-(defparameter *all-chans* 
-               '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16))
-
-
 
 (defmethod change-channel ((self fluidPanel) value)
   (setf (midichannel (channelctr self)) value)
@@ -1134,7 +1130,8 @@ In this case, all internal events are sent simultaneously.
 (defmethod change-all-pgm ((self fluidPanel) value)
   (let ((port (midiport (channelctr self))))
   (setf (program (channelctr self)) (repeat-n value 16))
-  (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+  ;(fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+  (propagate-pgm-change port value)
   (report-modifications self)))
 
 (defmethod propagate-pgm-change ((self fluidPanel) value)
@@ -1150,7 +1147,8 @@ In this case, all internal events are sent simultaneously.
 (defmethod change-program ((self fluidPanel) value)
   (let ((port (midiport (channelctr self))))
     (setf (program (channelctr self)) value)
-    (fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+    ;(fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
+    (propagate-pgm-change port value)
     (report-modifications self)))
 
 (defmethod change-volume ((self fluidPanel) value)
@@ -1177,8 +1175,8 @@ In this case, all internal events are sent simultaneously.
 
 (defmethod change-pan ((self fluidPanel) value)
   (let ((port (midiport (channelctr self))))
-  (setf (pan-ctrl (channelctr self)) (repeat-n value 16))
-  (fluid-pan (repeat-n value 16) *all-chans* port)
+  (setf (pan-ctrl (channelctr self)) (repeat-n value *chan-count*))
+  (fluid-pan (repeat-n value *chan-count*) *all-chans* port)
   (when (send-rt (editor self))
     (channel-send-pan (channelctr self)))
   (let* ((target (panVal self))
