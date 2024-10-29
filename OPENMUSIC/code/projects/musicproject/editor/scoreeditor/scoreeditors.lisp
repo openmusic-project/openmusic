@@ -634,7 +634,8 @@
          
          ;;;  EDO
          (edobut (om-make-dialog-item 'om-button
-                                       #+(or linux win32)(om-make-point l2 c2)
+                                       #+linux(om-make-point l2 c2)
+                                       #+win32(om-make-point l2 (- c2 3))
                                        #+macosx(om-make-point (- l2 5) (- c2 5))
                                        #+(or linux win32) (om-make-point 90 25)
                                        #+macosx(om-make-point 110 30)
