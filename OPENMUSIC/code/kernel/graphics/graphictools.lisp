@@ -408,7 +408,7 @@
    (setf *om-addbpf-cursor* (om-make-cursor "add-bpf-cursor" (om-make-point 2 10)))
    (setf *om-point-cursor* (om-make-cursor "point-cursor" (om-make-point 4 4)))
    (setf *om-hand-bpf-cursor* (om-make-cursor "main-bpf-cursor" (om-make-point 10 10)))
-   (setf *om-resize-cursor* (om-make-cursor "resize-cursor" (om-make-point 10 10)))
+   #+(or linux cocoa)(setf *om-resize-cursor* (om-make-cursor "resize-cursor" (om-make-point 10 10)))
    )
 
 (om-add-init-func 'init-curs)
