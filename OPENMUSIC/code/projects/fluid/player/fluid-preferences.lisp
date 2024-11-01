@@ -218,8 +218,8 @@
                                                                               (read-from-string (om-get-selected-item item)))))
                                                     :font *controls-font*)
                        
-                       (om-make-dialog-item 'om-static-text (om-make-point 310 i) (om-make-point 190 100)
-                                            "(Use more than 16 if EDO 17,19 and 31 are required)" :font *controls-font*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 300 (- i 3)) (om-make-point 160 100)
+                                            "(Use more than 16 if EDO 17,19 and 31 are required)" :font *om-default-font1*)
                        ;;;
                        (om-make-dialog-item 'om-static-text (om-make-point 20 (incf i 40)) (om-make-point 150 24)
                                             "Autoload Synths:" 
