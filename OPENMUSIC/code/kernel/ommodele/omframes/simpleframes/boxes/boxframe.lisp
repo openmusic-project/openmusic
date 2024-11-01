@@ -125,7 +125,7 @@
 (defmethod draw-connection-drag ((self om-view) init-pos pos) 
   (if (input? (om-find-view-containing-point self pos))
       (om-with-line-size 4
-        (om-with-line '(2 5) 
+        (om-with-line #+(or linux macosx) '(2 5) #+win32 '(1 1) 
           (om-with-fg-color self 
               (om-make-color-alpha 0 0 1 0.7)
             (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos)))))
