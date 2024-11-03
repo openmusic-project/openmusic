@@ -127,8 +127,9 @@
                                      :position (om-make-point 400 (- i 5)) :size (om-make-point 26 25) 
                                      :action (om-dialog-item-act item
                                                (declare (ignore item))
-                                               (let ((newsf2 (om-choose-file-dialog :directory
-                                                                                    (get-pref modulepref :fluid-sf2))))
+                                               (let ((newsf2 (om-choose-file-dialog )))
+                                                 ;:directory
+                                                 ;(get-pref modulepref :fluid-sf2))))
                                                  (when newsf2
                                                    (om-set-dialog-item-text sf2txt (om-namestring newsf2))
                                                    (setf *fluid-sf2* (om-namestring newsf2))
