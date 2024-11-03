@@ -133,6 +133,7 @@ and puts spaces between the elements."
     ))
 
 
+#|
 (defmethod* get-fsynth-info ((nth-synth number))
   :icon 924
   :indoc '("nth")
@@ -145,6 +146,43 @@ and puts spaces between the elements."
     (format *om-stream* "~% synth name: ~A~% sf2 file: ~A~% Programs:~%~%" name sfpath)
     (print-sf2-pgms sfpath ))
     (om-message-dialog "No FluidSynth instance loaded!"))))
+|#
+
+;;;new version
+
+(defun get-sfinfo (synthnum)
+  (remove nil
+          (loop for b from 0 to 128
+                collect 
+                  (remove nil  (loop for n from 0 to 128
+                                     collect      
+                                       (let ((ptr (cl-fluid::fluid_sfont_get_preset
+                                                   (cl-fluid::fluid_synth_get_sfont_by_id
+                                                    (cl-fluid::synthptr (nth synthnum cl-fluid::*fl-synths*)) 1)
+                                                   b n)))
+                                         (if (not (cffi::null-pointer-p ptr))
+                                             (list b n (cl-fluid::fluid_preset_get_name
+                                                        ptr))))))
+                  )))
+
+(defun organize-sfinfo (num)
+  (let ((info (get-sfinfo num)))
+    (loop for i in (flat-once info)
+    collect (format nil "~A" i))))
+
+
+(defmethod* get-fsynth-info ((nth-synth number))
+  :icon 924
+  :indoc '("nth")
+  :initvals '(0)
+  :doc "Returns the soundFont program bank, number and name for a given fluidsynth."
+  (let ((synth (nth nth-synth cl-fluid::*fl-synths*)))
+    (if synth
+      (organize-sfinfo nth-synth)
+    (om-message-dialog "No FluidSynth instance loaded!"))))
+
+
+
 
 
 (defmethod* get-synth-channel-count ((nth-synth number))
