@@ -41,11 +41,11 @@
       (fluid-pitchwheel '(0 1638 3277 819 2458) '(1 2 3 4 5) port))
 
 ;6 EDO
-     ((or (= 1 value) (= 60.1 value))
+     ((or (equal 1 value) (= 60.1 value))
       (fluid-pitchwheel '(0) '(1) port))
 
 ;6 EDO(t)
-     ((= 1.0 value)
+     ((equal 1.0 value)
       (fluid-pitchwheel '(4096) '(1) port))
 
 ;7 EDO   
@@ -89,11 +89,11 @@
        '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16 17 18) port))
 
 ;18 EDO    
-     ((or (= 3 value) (= 180.0 value) (= 180.1 value))
+     ((or (equal 3 value) (= 180.0 value) (= 180.1 value))
       (fluid-pitchwheel '(0 2731 1365) '(1 2 3) port))
 
 ;18 EDO(t)
-     ((= 3.0 value)
+     ((equal 3.0 value)
       (fluid-pitchwheel '(4096 6827 5461) '(1 2 3) port))
 
 ;19 EDO
@@ -111,11 +111,11 @@
       (fluid-pitchwheel '(0 2048) '(1 2) port))
 
 ;30 EDO
-     ((or (= 5 value) (= 300.0 value) (= 300.1 value)) 
+     ((or (equal 5 value) (= 300.0 value) (= 300.1 value)) 
       (fluid-pitchwheel '(0 1638 3277 819 2458) '(1 2 3 4 5) port))
 
 ;30 EDO(t)
-     ((= 5.0 value) 
+     ((equal 5.0 value) 
       (fluid-pitchwheel '(4096 5734 7373 4915 6554) '(1 2 3 4 5) port))
 
 ;31 EDO     
@@ -135,12 +135,12 @@
                         '(1 2 3) port))
 
 ;42 EDO
-     ((or (= 7 value) (= 420.0 value) (= 420.1 value))
+     ((or (equal 7 value) (= 420.0 value) (= 420.1 value))
       (fluid-pitchwheel '(0 1170 2341 3511 585 1755 2926)
                         '(1 2 3 4 5 6 7) port))
 
 ;42 EDO(t)
-     ((= 7.0 value)
+     ((equal 7.0 value)
       (fluid-pitchwheel '(4096 5266 6436 7607 4681 5852 7022)
                         '(1 2 3 4 5 6 7) port))
 
