@@ -554,3 +554,19 @@
       (setf (lonset chrdseq) (reverse ons))
       chrdseq))))
        
+
+(defmethod! chord-band-filter ((self voice) 
+                               (min number) 
+                               (max number)
+                               &key   
+                               (mode 'pass))
+  (let* ((chords (chords self))
+         (flt (loop for i in chords
+                      collect (chord-band-filter i min max :mode mode)))
+         (pos (remove nil (loop for i in flt
+                    for n from 0 to (length flt)
+                      collect (if i n)))))
+    (make-instance 'voice
+                   :tree (select-tree (tree self) pos)
+                   :chords (remove nil flt)
+                   :tempo (tempo self))))
