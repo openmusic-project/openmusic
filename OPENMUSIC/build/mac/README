@@ -45,6 +45,7 @@ NEW FEATURES
 	-om-choose	
 	-Fluid: get-fsynth-info
 - Shortcut: selected boxes -> connected to a list (shift+click)
+- Channel number can be set in preferences (fluid tab: 16, 32, 64, 128 and 256 per synth)
 - autotuning option in preference
 - EDO scales
 - "Tunings" display in scoreeditors
@@ -56,6 +57,7 @@ IMPROVEMENTS
 - connections are confirmed by line thickness and blue color
 - scroll shortcuts for patch and score panels (ctrl+shift+left/right arrows)
 - dragging selected elements in Score objects affects pitch change only with option key
+- VOICE method for chord-band-filter
 - save-as-midi for maquette object
 - Added accidentals (omicron.ttf)
 - soundeditor selection shortcut (TAB)
