@@ -2058,7 +2058,9 @@
   (unless (equal (staff-mode self) newmode)
     (setf (staff-mode self) newmode)
     (set-edit-param (om-view-container self) 'mode  newmode)
-    (update-panel self) t))
+    (update-panel self)
+    (om-invalidate-view self t)
+    t))
 
 (defmethod change-editor-tone ((self scorePanel) newtone)
   (unless (equal (staff-tone self) newtone)
