@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -64,6 +64,8 @@
 (defvar *score-drag-click* (om-make-point 0 0))
 (defvar *score-drag-object* nil)
 (defvar *drag-pitch* nil)
+(defvar *copy-pitch* nil)
+
 
 ;(defmethod om-drag-selection-p2 ((self scorePanel) where) 
 ;  (when (not (score-get-extra-mode))

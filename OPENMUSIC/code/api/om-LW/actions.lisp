@@ -362,7 +362,7 @@
         (mods (sys:gesture-spec-modifiers spec)))
      ;(print data)
      ;(print mods)
-     ; \E7a ne marche plus...
+     ; Ca ne marche plus...
      ;(capi::set-interface-focus self) 
      (set-meta-keys (get-om-spec-modifiers mods))
      (om-view-key-handler self (get-om-spec-character data))
