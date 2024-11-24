@@ -2940,19 +2940,25 @@
 
 
 (defmethod get-help-list ((self chordseqpanel)) 
-  (list '(("alt+clic" "Add Chord/Note")
+  (list '(
+          #+macosx("alt+clic" "Add Chord/Note")
+          #+(or linux win32)("ctrl+clic" "Add Chord/Note")
           ("del" "Delete Selection")
           ("tab" "Change Obj. Mode")
           (("z") "Obj/Time Selection")
           ("ud" "Transpose Selection")
           ("shift+ud" "Transpose Octave")
+          ("alt+ud" "Transpose Fifth")
+          ("alt+grab" "Transpose/Move Chord/Note")
+          ("shift+grab" "Duplicate Chord/Note")
           ("lr" "Change Offsets/Dur.")
           (("*") "Group Chords")
           (("+") "Union Chords (Group + Offset)")
           (("c") "Show Channel Color")
-          (("i") "Show Selection info")
-          (("g") "Show/Hide Grid"))
-        '((("G") "Edit Grid Step")
+          (("i") "Show Selection info"))
+         
+        '((("g") "Show/Hide Grid")
+          (("G") "Edit Grid Step")
           (("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
@@ -2965,6 +2971,7 @@
           (("w") "Stop Midi Record")
           ("esc" "Stop  + Reset")
 	  )))
+
 
 ;==========================================================
 ; multi-seq
