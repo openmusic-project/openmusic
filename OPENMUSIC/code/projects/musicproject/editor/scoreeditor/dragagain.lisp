@@ -65,7 +65,7 @@
 (defvar *score-drag-object* nil)
 (defvar *drag-pitch* nil)
 (defvar *copy-pitch* nil)
-
+(defvar *copy-pitch* nil)
 
 ;(defmethod om-drag-selection-p2 ((self scorePanel) where) 
 ;  (when (not (score-get-extra-mode))
@@ -115,6 +115,8 @@
 
 
 (defmethod om-drag-start ((view scorePanel))
+  (when (om-shift-key-p)
+        (setf *copy-pitch* t))
   (when (om-option-key-p)
     (setf *drag-pitch* t))
   (let ((theview (get-drag-object view)))
@@ -145,22 +147,22 @@
             (t (call-next-method)))
     (call-next-method)))
 
-(defmethod score-drag&drop ((D&DHandler omdrag-drop))
+(defmethod score-drag&drop ((D&DHandler omdrag-drop)) 
   (cond 
    ;;; pb : sur mac ca rentre jamais et si ca rentre ca plante : (object <note>) ;;;
    ;;; ((opt-key-p *OM-drag&drop-handler*) (score-duplicate-drop D&DHandler))    
     
-   ((and (eq (target-view  D&DHandler) (dragged-view  D&DHandler)) *drag-pitch*)
+   ((and (eq (target-view  D&DHandler) (dragged-view  D&DHandler)) *drag-pitch*) 
     (score-move-inside D&DHandler)
     (setf *drag-pitch* nil))
 
    ((opt-key-p D&DHandler) ;; score-change-view in the same view will simulate a copy
-    (score-change-view D&DHandler)
+    (score-change-view D&DHandler) 
     t)
-    
-    
-    
-   (t (score-change-view D&DHandler))
+    (*copy-pitch*
+     (score-change-view D&DHandler)
+     (setf *copy-pitch* nil))
+   (t (score-change-view D&DHandler));maybe nil
    ))
 
 (defmethod test-receptor ((self scorepanel) where)
@@ -297,9 +299,10 @@
         (cseq (reference (graphic-obj target)))
         (new-chord (clone dragged)))
     (setf pos (if (and pos (> pos 0)) pos 0))
-    (add-object-in-obj cseq new-chord (+ pos offset))
-    (update-panel target t)
-    
+    (when *copy-pitch*
+      (add-object-in-obj cseq new-chord (+ pos offset))
+      (update-panel target t)
+      (om-invalidate-view target))
     nil   ;;; return some-item-used??
     ))
 
