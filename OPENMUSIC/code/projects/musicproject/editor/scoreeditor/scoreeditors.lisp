@@ -1487,7 +1487,9 @@
    (loop for item in (selection? self) do
          (when (extra-p item)
            (move-in-x item (/ dir (round (staff-size self) 2)))))
-   (update-panel self t))
+   (update-panel self t)
+   (om-invalidate-view self)
+   )
 
 
 
@@ -2067,6 +2069,7 @@
     (setf (staff-tone self) newtone)
     (set-edit-param (om-view-container self) 'approx newtone)
     (update-panel self t) ;;; t pour le sheet
+    (om-invalidate-view self t)
     t))
 
 
@@ -2803,7 +2806,9 @@
      (all-chords-2-ms chordseq)
      (change-chords-in-x self chords (- delta)) 
      (normalize-chords-x chordseq)
-     (update-panel self t) t))
+     (update-panel self t)
+     (om-invalidate-view self)
+     t))
 
 
 (defmethod set-chords-offset ((self chordseqpanel) objects newoffset)
@@ -4054,14 +4059,17 @@
     (loop for obj in (selection? self) do
           (when (extra-p obj)
             (general-delete self obj)))
-    (update-panel self t)))
+    (update-panel self t)
+    (om-invalidate-view self)
+    ))
 
 (defmethod delete-selection ((self scorePanel))
   (unless (system? (car (selection? self)))
     (loop for obj in (selection? self) do
           (general-delete self obj))
     (setf (selection? self) nil)
-    (update-panel self t)))
+    (update-panel self t)
+    (om-invalidate-view self)))
 
 (defmethod delete-selection ((self voicePanel))
   (unless (system? (car (selection? self)))
@@ -4070,7 +4078,8 @@
            (general-delete self obj))
      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
      (setf (selection? self) nil)
-     (update-panel self t))))
+     (update-panel self t)
+     (om-invalidate-view self))))
 
 (defmethod delete-selection ((self polyPanel))
   (unless (system? (car (selection? self)))
@@ -4081,7 +4090,8 @@
       (loop for voice in (remove-duplicates (remove nil voices :test 'equal) :test 'equal) do
             (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
       (setf (selection? self) nil)
-      (update-panel self t))))
+      (update-panel self t)
+      (om-invalidate-view self))))
 
 (defmethod deep-delete-obj ((self t) container) t)
 
@@ -4764,7 +4774,9 @@
         (setf midic-transp (- midic-transp 6000))
         (loop for item in list do
               (transpose-a item midic-transp))
-        (update-panel self t) t))))
+        (update-panel self t)
+        (om-invalidate-view self)
+        t))))
 
 (defmethod transpose-drag ((self chordPanel) list first-mouse)
    (if (or (= (staff-mode self) 1) (= (staff-mode self) 2))
@@ -4833,6 +4845,7 @@
   #+macosx(unless (in-page-mode? self)
     (update-alt-panel self))
   #+macosx(update-slot-edit self)
+  (om-invalidate-view self)
   )
 
 
@@ -4850,6 +4863,7 @@
   ;;; pb: ca marche pas (plantages avec pgc dans QNormalize)
   ;;;(adjust-extent (object (editor self)))
   (update-panel self t)
+  (om-invalidate-view self)
   )
 
 
@@ -4860,6 +4874,7 @@
                                ((om-shift-key-p) (if (= dir 1) 1000 (- 1000))) 
                                (t (if (= dir 1) 100 (- 100))))))
     (update-panel self t)
+    (om-invalidate-view self)
     )
 
 
@@ -4889,6 +4904,7 @@
                                  ))
     (normalize-chords-x (object (om-view-container self)))
     (update-panel self t)
+    (om-invalidate-view self)
     ))
 
 (defmethod change-offset-to-note ((self container) val)
@@ -5742,7 +5758,8 @@
     (when newobj
       (record-undo self)
       (add-obj-in-editor newobj self)
-      (update-panel (panel self) t))))
+      (update-panel (panel self) t)
+      (om-invalidate-view (panel self) t))))
 
 (defmethod make-obj-for-target (obj target) (om-beep))
 (defmethod add-obj-in-editor ((obj t) (editor t)) (om-beep))
