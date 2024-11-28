@@ -32,6 +32,11 @@
 
 (defmacro cassq (item list) `(cdr (assoc ,item ,list :test #'eq)))
 ;(defmacro cassq (item list) `(cdr (assq ,item ,list)))
+;;maybe replace this with a function (the macro doesn't work with synbols)
+#|
+(defun cassq (sym l)
+  (cdr (assoc sym l)))
+|#
 
 (defvar *global-midi-approx* 2)
 (setf *global-midi-approx* 2)
