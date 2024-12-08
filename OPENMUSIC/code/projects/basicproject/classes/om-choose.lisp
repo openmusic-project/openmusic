@@ -30,16 +30,13 @@
 
 (in-package :om)
 
-;changer peut-etre le nom en gate
-;+ l'icone
-;ajouter en interface genfunc!
-;ajouter en plus un boutton choose all et delete all...
+
 ;--------------------------------------------------
 ;OMCHOOSE
 ;NEW Box as a method but with a dialog interface
 ;
 ;--------------------------------------------------
-(defclass omchoose (OMBoxcall)
+(defclass! omchoose (OMBoxcall)
    ((docu :initform "" :accessor docu)
     (defval :initform nil :accessor defval)
     (in-symbol :initform nil :accessor in-symbol)
@@ -48,9 +45,8 @@
     (id :initform nil :initarg :id :accessor id)
     (value :initform nil :initarg :value :accessor value)
     (choice :initform nil :initarg :choice :accessor choice))
-   (:documentation "Output boxes in a patch are instance of this class. #enddoc#
-#seealso# (omboxcall ompatch outFrame) #seealso#
-#indice# Used in order to sort all outputs in a patch. #indice#"))
+   (:documentation "Special box with editor (double click). 
+It allows to choose/select items of a list to be outputed."))
 
 
 (defmethod Class-has-editor-p  ((self omchoose)) t )
@@ -305,7 +301,8 @@
       newsend)
     (om-beep-msg (format nil "!!! OUT boxes not allowed in ~A" (type-of (object container))))))
 
-(defmethod show-big-doc ((self chooseframe)) nil)
+(defmethod show-big-doc ((self chooseframe)) 
+  (om-show-reference-doc 'omchoose))
 
 
 ;;;;;from patchcontainer
