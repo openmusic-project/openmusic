@@ -82,20 +82,20 @@
                                                            ))
                            evtList))
 
-    (if (voice-p self) (push (make-instance 'MidiEvent   
+    (if (measure-p self) (push (make-instance 'MidiEvent   
                                  :ev-type :Tempo
                                  :ev-date (if (parent self) (offset->ms self) 0)
                                  :ev-ref 0 
                                  :ev-port 0
                                  :ev-chan 1
-                                 :ev-fields (list (tempo-a-la-noire (car (tempo self)))))
+                                 :ev-fields (list (if (atom (qtempo self)) 
+                                                      (qtempo self) (cadar (qtempo self)))))
                            evtList))
     
     (loop for event in evtList do 
           (if (or (not test) (funcall test event)) (push event reponse)))
     
     (reverse reponse)))
-
 ;=========================================
 ;;; SCORE TO MIDI
 ;=========================================
