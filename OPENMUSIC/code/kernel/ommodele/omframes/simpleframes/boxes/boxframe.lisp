@@ -102,6 +102,7 @@
           (myview (om-find-view-containing-point panel ppos)))
      (when (and (input? myview) *mag-in-out*)
        (om-view-mouse-enter-handler myview)
+       (om-show-tooltip myview t t)
        (redraw-frame (om-view-container myview)))
      (if (input? myview)
          (om-show-tooltip myview t t)
@@ -113,7 +114,8 @@
          (ctrl (om-find-view-containing-point panel ppos)))
     (om-hide-tooltip ctrl)
     (setf *show-input-vals* t)
-    (connect-box self ctrl)))
+    (connect-box self ctrl)
+    (om-hide-tooltip panel)))
 #|
 (defmethod draw-connection-drag ((self om-view) init-pos pos)
   (om-with-line-size 2
