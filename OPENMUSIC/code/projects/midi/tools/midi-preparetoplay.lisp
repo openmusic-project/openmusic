@@ -363,7 +363,7 @@
 ;24 EDO
    ((or (= 4 approx) (= 240.1 approx))
     (let ((modulo (mod midic 100)))
-      (if (= 50 modulo) 1 0)))
+      (if (= 50 modulo) 2 0)))
 
 ;30 EDO
    ((or (= 5 approx) (= 5.0 approx)(= 300.1 approx) (= 300.0 approx))
