@@ -642,8 +642,8 @@ Workspace Panels contain icons of patches, maquettes and folders
 
 (defvar *wrkspchelp* '(
                        (#+(or linux win32)("Ctrl + 1") #+macosx("Cmd + 1") "New Patch")
-                       (#+(or linux win32)("Ctrl + 2") #+macosx("Cmd + 4") "New Maquette")
-                       (#+(or linux win32)("Ctrl + 3") #+macosx("Cmd + 3") "New Lisp Function")
+                       (#+(or linux win32)("Ctrl + 2") #+macosx("Cmd + 2") "New Maquette")
+                       (#+(or linux win32)("Ctrl + 3") #+macosx("Cmd + l") "New Lisp Function")
                        (("Ctrl + N") "New Folder")
                        ))
 
