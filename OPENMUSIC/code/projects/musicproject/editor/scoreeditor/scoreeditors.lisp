@@ -4850,6 +4850,31 @@
             (change-edit-mode (car (frames (associated-box (object (editor self))))))
             (change-edit-mode (car (frames (associated-box (object (editor self))))))))
 
+;For internal chord edition update (macosx)
+;Clean up
+(defmethod move-selection ((self chordPanel) dir)
+  (loop for item in (selection? self) do
+          (score-move-a item self (cond
+                                   (#+(or cocoa win32)(om-option-key-p)
+                                    #+linux(om-option-key-p) 
+                                    (if (= dir 0) 700 -700))
+                                   ((om-shift-key-p) (if (= dir 0) 1200 -1200))
+                                   (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
+                                        (if (= dir 0) factor
+                                          (* -1 factor)))))))
+  #+(or linux win32)(update-panel self t)
+  #+macosx(unless (in-page-mode? self)
+            (update-alt-panel self))
+  #+macosx(update-slot-edit self)
+  (om-invalidate-view self)
+  #+macosx
+  (let ((root (get-root-parent (real-internal-editor (object (editor self))))))
+    (progn
+      (change-edit-mode (car (frames (associated-box root))))
+      (change-edit-mode (car (frames (associated-box root))))
+      (om-invalidate-view (panel (editorframe (associated-box root))) t)
+      )))
+
 
 ;;; new : changer la duree avec les touche R/L
 (defmethod change-dur ((self chordseqpanel) dir)
