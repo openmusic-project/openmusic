@@ -6,10 +6,12 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Workspace scrolling shortcut
 - Tooltips for inputs when connection process
 
 FIXES
 
+- score objs miniview update (macosx) 
 - Various display fixes in score object (macosx) 
 
 
