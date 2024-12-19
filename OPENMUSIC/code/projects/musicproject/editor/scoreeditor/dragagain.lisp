@@ -65,7 +65,7 @@
 (defvar *score-drag-object* nil)
 (defvar *drag-pitch* nil)
 (defvar *copy-pitch* nil)
-(defvar *copy-pitch* nil)
+
 
 ;(defmethod om-drag-selection-p2 ((self scorePanel) where) 
 ;  (when (not (score-get-extra-mode))
@@ -309,12 +309,12 @@
 (defmethod do-score-change-view ((target chordseqPanel) (source scorePanel) (receptor t) (dragged note) &optional (offset 0))
   (let ((pos (pixel-toms target receptor))
         (cseq (reference (graphic-obj target)))
-        (new-chord (mki 'chord  :Lmidic (list (midic dragged)))))
-    
+        (new-chord (mki 'chord  :Lmidic (list (midic dragged)))))    
     (setf pos (if (and pos (> pos 0)) pos 0))
+    (when *copy-pitch*
     (add-object-in-obj cseq new-chord (+ pos offset))
     (update-panel target t)
-    
+    (om-invalidate-view target))
     nil   ;;; return some-item-used??
     ))
 
