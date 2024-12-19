@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -267,6 +267,8 @@ with the objects respectly associeted."))
 )
 
 (defmethod handle-key-event ((self nonrelationPanel) char) 
+  (when (om-command-key-p) 
+    (scroll-pane self char))
   (case char
     (:om-key-return 
      (when (= 1 (length (get-actives self)))
@@ -584,6 +586,31 @@ Workspace Panels contain icons of patches, maquettes and folders
        (3  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-creation-date))
        (4  (sort elements #'(lambda (a b) (if (null a) nil (if (null b) t (string-not-lessp a b)))) :key #'get-object-modification-date))
      ))
+
+
+(defmethod scroll-pane ((self workspacepanel) char)
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+    (case char 
+      (:om-key-right 
+       (om-set-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-left
+       (om-set-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-up
+       (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-down
+       (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-esc 
+       (om-set-scroll-position self (om-make-point 0 0))
+       (oa::om-set-h-scroll-position self 0)
+       (oa::om-set-v-scroll-position self 0))
+      )))
 
  
 (defun import-dragged-file (pane filename pos)
