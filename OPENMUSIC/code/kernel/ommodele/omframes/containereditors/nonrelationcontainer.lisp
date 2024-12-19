@@ -274,6 +274,9 @@ with the objects respectly associeted."))
      (when (= 1 (length (get-actives self)))
        (om-view-doubleclick-handler (nameview (car (get-actives self))) (om-make-point 1 1))
        ))
+    (#\h  (show-help-window (format nil "Commands for ~A Editor" 
+                                      (string-upcase (class-name (class-of (object (editor self))))))
+                            (get-help-list (editor self)) 410))
     (otherwise nil)))
 
  
@@ -637,6 +640,15 @@ Workspace Panels contain icons of patches, maquettes and folders
    (import-tutorial-menu self)
    (call-next-method)))
 
+(defvar *wrkspchelp* '(
+                       (#+(or linux win32)("Ctrl + 1") #+macosx("Cmd + 1") "New Patch")
+                       (#+(or linux win32)("Ctrl + 2") #+macosx("Cmd + 4") "New Maquette")
+                       (#+(or linux win32)("Ctrl + 3") #+macosx("Cmd + 3") "New Lisp Function")
+                       (("Ctrl + N") "New Folder")
+                       ))
+
+(defmethod get-help-list ((self workspacepanel)) 
+  (list *wrkspchelp* ))
 
 ;-----------------
 ;Folder's Editor

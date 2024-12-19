@@ -907,31 +907,30 @@ External Libraries:
 
 ;; pict = symbol --> picture
 ;; pict = list --> combinaison de symboles
+
 (defmethod initialize-instance :after ((self help-item-view) &rest initargs)
   (let ((textl 90))
   (if (consp (pict self))
     (progn
       (setf (keytxt self) (pict self))
-      (setf (pict self) (om-load-and-store-picture "bouton" 'full 
-                                                   (make-pathname :device (pathname-device *om-resources-folder*)
-                                                                  :directory (append (pathname-directory *om-resources-folder*) (list "help")))))
-      
+      (let ((but (if (> (length (car (keytxt self))) 1) "bouton1" "bouton")))
+        (setf (pict self) (om-load-and-store-picture but 'full 
+                                                     (make-pathname :device (pathname-device *om-resources-folder*)
+                                                                    :directory (append (pathname-directory *om-resources-folder*) (list "help"))))))
       (loop while (> (* (length (keytxt self)) (+ (om-point-h (om-get-picture-size (pict self))) 4)) textl)
-            do (setf textl (+ textl 20)))
-      )
+            do (setf textl (+ textl 20))))
     (progn
       (setf (pict self) (om-load-and-store-picture (string (pict self)) 'full 
                                                    (make-pathname :device (pathname-device *om-resources-folder*)
                                                                   :directory (append (pathname-directory *om-resources-folder*) (list "help")))))
-      (loop while (> (om-point-h (om-get-picture-size (pict self))) textl) do (setf textl (+ textl 20)))
-      )
-    )
+      (loop while (> (om-point-h (om-get-picture-size (pict self))) textl) do (setf textl (+ textl 20)))))
   (om-add-subviews self (om-make-dialog-item 'om-static-text 
-                                             (om-make-point textl 2) (om-make-point (- (w self) textl) 20) (text self)
+                                             (om-make-point textl 2) 
+                                             (om-make-point (- (w self) textl) 20) 
+                                             (text self)
                                              :font *om-default-font2b* 
                                              :bg-color *om-white-color* ;(om-make-color 0.9 0.9 0.9)
-                                             ))
-  ))
+                                             ))))
 
 
 
