@@ -124,6 +124,14 @@
 
 (defclass DIEditorframe ( omboxframe OMSimpleFrame om-transparent-view om-view-drag ) ())
 
+(defmethod dieditorframe-p ((self t)) nil)
+(defmethod dieditorframe-p ((self DIEditorframe)) self)
+
+(defmethod om-show-tooltip ((self input-funboxframe) &optional (remove nil) (short nil)) 
+  "prevenrting tooltips for interface boxes"
+  (unless (dieditorframe-p (om-view-container self))
+  (call-next-method)))
+
 
 (defmethod show-fun-code ((self DIEditorframe))
   (edit-definition (class-name (reference (object self)))))
