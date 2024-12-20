@@ -162,7 +162,7 @@
                       (values (or w capi:%width%) (or h capi:%height%))))
               ))
           #+linux (capi::redraw-pinboard-layout self 0 0 100000 100000 nil)
- 	  ;(capi::redraw-pinboard-object (animation self))
+          #+linux(capi:manipulate-pinboard self (animation self) :add-top)
           ))
     ))
 

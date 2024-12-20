@@ -689,10 +689,9 @@
       (setf dest (+ time durview))
       (if (> dest dur)
           (setf pixel (time-to-pixels self (- dur durview))))
-      (scroll-play-view self (- pixel (get-key-space self)))
-      ;(om-invalidate-view self)
-      )
+      (scroll-play-view self (- pixel (get-key-space self))))
     (om-update-transient-drawing self :x pixel :y y :h (h self))
+    #+macosx(om-invalidate-view self t)
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
