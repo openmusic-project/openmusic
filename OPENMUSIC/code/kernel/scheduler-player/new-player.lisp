@@ -691,7 +691,8 @@
           (setf pixel (time-to-pixels self (- dur durview))))
       (scroll-play-view self (- pixel (get-key-space self))))
     (om-update-transient-drawing self :x pixel :y y :h (h self))
-    (om-invalidate-view self t)
+    ;#+macosx
+    (om-invalidate-view self t);necessaire pour linux (scoreeditors)
     ))
 
 (defmethod scroll-play-view ((self cursor-play-view-mixin) &optional at-pixel)
