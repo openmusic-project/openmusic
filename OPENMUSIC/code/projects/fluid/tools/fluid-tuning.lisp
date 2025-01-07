@@ -108,7 +108,7 @@
                         '(1 2 3 4 5 6 7 8 9 11 12) port))
 ;24 EDO
      ((or (= 4 value) (= 240.1 value)) 
-      (fluid-pitchwheel '(0 2048) '(1 2) port))
+      (fluid-pitchwheel '(0 2048 0 2048 0 2048 0 2048 0 2048 0 2048 0 2048) '(1 3 2 4 5 7 6 8 9 11 12 14 13 15) port))
 
 ;30 EDO
      ((or (equal 5 value) (= 300.0 value) (= 300.1 value)) 
@@ -146,8 +146,8 @@
 
 ;48 EDO
      ((or (= 8 value) (= 480.0 value) (= 480.1 value))
-      (fluid-pitchwheel '(0 1024 2048 3072) 
-                        '(1 2 3 4) port))
+      (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2048 3072) 
+                        '(1 2 3 4 5 6 7 8) port))
 
 ;60 EDO
      ((or (= 10 value) (= 600.0 value) (= 600.1 value))
