@@ -161,8 +161,7 @@
                 (setf (capi:static-layout-child-size (animation self)) 
                       (values (or w capi:%width%) (or h capi:%height%))))
               ))
-         ; #+linux (capi::redraw-pinboard-layout self 0 0 100000 100000 nil)
-          #+linux(capi:manipulate-pinboard self (animation self) :add-top)
+          #+linux (capi::redraw-pinboard-layout self 0 0 100000 100000 nil)
           ))
     ))
 

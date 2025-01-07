@@ -404,16 +404,19 @@
    (do-editor-null-event self))
 
 (defmethod do-editor-null-event ((self soundEditor))
-
-  (when (om-view-contains-point-p (panel self) (om-mouse-position self))
-    
+  #+linux(when (equal (state (player self)) :play)
+           (capi:manipulate-pinboard (panel self) 
+                                     (slot-value (panel self) 'oa::animation)
+                                     :add-top)
+           (capi:manipulate-pinboard (slot-value self 'preview) 
+                                     (slot-value (slot-value self 'preview) 'oa::animation)
+                                     :add-top)
+          )
+  (when (om-view-contains-point-p (panel self) (om-mouse-position self))    
     (let* ((pixel (om-mouse-position (panel self)))
            (time (om-point-h (pixel2point (panel self) pixel))))
-      
       (when (and time (not (minusp time)))
-        
         (show-position-ms self time)
-        
         ))))
 
       
@@ -988,7 +991,7 @@
            pixtime
            pixprev pixtprev)
       (when data
-        (om-with-fg-color nil *om-steel-blue-color*
+        (om-with-fg-color nil *om-black-color* ;*om-steel-blue-color*
           ;(when smplevel    ;;;Use this "when" only when HQ display is used below
           (om-with-fg-color nil (om-make-color-alpha 0.41 0.54 0.67 0.5) ;;;=*om-steel-blue-color* with 50% transparency
             (dotimes (i nch)  
