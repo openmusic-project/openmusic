@@ -429,12 +429,12 @@
     ))
   )
 
-;;for linux updating cursor
+;;for linux and win32 updating cursor
 (defmethod editor-null-event-handler :after ((self maquetteEditor))
    (do-editor-null-event self))
 
 (defmethod do-editor-null-event ((self maquetteEditor))
-  #+linux(when (equal (state (player self)) :play)
+  #+(or linux win32)(when (equal (state (player self)) :play)
            (capi:manipulate-pinboard (panel self) 
                                      (slot-value (panel self) 'oa::animation)
                                      :add-top)))

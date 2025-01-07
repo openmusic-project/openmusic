@@ -368,7 +368,12 @@
         (when (split-tracks self) (om-draw-string 600 15 (format () "Track=~D" 
                                                                  (ceiling (om-point-v pixel) (floor (h (panel self)) (nb-tracks (rulery (panel self)))))))
           )
-        point))))
+        point)))
+  #+(or linux win32)(when (equal (state (player self)) :play)
+                      (capi:manipulate-pinboard (panel self) 
+                                                (slot-value (panel self) 'oa::animation)
+                                                :add-top))
+  )
 
 
 (defmethod update-subviews ((self MidiEditor))

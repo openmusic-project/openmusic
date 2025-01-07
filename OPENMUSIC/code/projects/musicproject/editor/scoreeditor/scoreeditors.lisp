@@ -2545,6 +2545,10 @@
 (defmethod get-score-class-panel ((self chordseqEditor)) 'chordseqPanel)
 
 (defmethod do-editor-null-event ((self chordseqEditor)) 
+  #+(or linux win32)(when (equal (state (player self)) :play)
+                      (capi:manipulate-pinboard (panel self) 
+                                                (slot-value (panel self) 'oa::animation)
+                                                :add-top))
   (when (om-view-contains-point-p (panel self) (om-mouse-position self))
     (show-position-ms self (pixel-toms (panel self) (om-mouse-position (panel self))))))
 
@@ -3226,7 +3230,11 @@
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
 
-(defmethod do-editor-null-event ((self voiceEditor)) nil)
+(defmethod do-editor-null-event ((self voiceEditor)) 
+  #+(or linux win32)(when (equal (state (player self)) :play)
+                      (capi:manipulate-pinboard (panel self) 
+                                                (slot-value (panel self) 'oa::animation)
+                                                :add-top)))
 
 
 
@@ -3469,7 +3477,11 @@
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
 
-(defmethod do-editor-null-event ((self polyEditor)) nil)
+(defmethod do-editor-null-event ((self polyEditor)) 
+  #+(or linux win32)(when (equal (state (player self)) :play)
+                      (capi:manipulate-pinboard (panel self) 
+                                                (slot-value (panel self) 'oa::animation)
+                                                :add-top)))
 
 
 ;PANEL
