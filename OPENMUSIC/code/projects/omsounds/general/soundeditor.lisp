@@ -991,7 +991,7 @@
            pixtime
            pixprev pixtprev)
       (when data
-        (om-with-fg-color nil *om-black-color* ;*om-steel-blue-color*
+        (om-with-fg-color nil *sound-wave-color* ;*om-steel-blue-color*
           ;(when smplevel    ;;;Use this "when" only when HQ display is used below
           (om-with-fg-color nil (om-make-color-alpha 0.41 0.54 0.67 0.5) ;;;=*om-steel-blue-color* with 50% transparency
             (dotimes (i nch)  
@@ -1010,10 +1010,18 @@
                           ;  (let ((colorval (- 1 (log (1+ (* (1- (exp 1)) (expt (abs val) 0.1)))))));(- 1 (expt (abs val) 0.2))));(expt (abs val) 0.2)))
                           ;    (om-with-fg-color nil (om-make-color-alpha 0.41 0.54 0.67 colorval)
                           ;      (om-draw-line pixtprev (- (+ (* c channels-h) offset-y) 10) pixtime (- (+ (* c channels-h) offset-y) 10)))))
+                          
+                          (if *sound-fill*
+                          (om-draw-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 9))
+                                             ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 9))
+                                             ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 9))
+                                             ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 9))))    
                           (om-fill-polygon `(,(om-make-point pixtprev (- (+ offset-y (* c channels-h) pixprev) 9))
                                              ,(om-make-point pixtime (- (+ offset-y (* c channels-h) pixpoint) 9))
                                              ,(om-make-point pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 9))
                                              ,(om-make-point pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 9)))))
+                          
+                          )
                       (om-draw-line pixtprev (- (+ offset-y (* c channels-h) (- pixprev)) 10) pixtime (- (+ offset-y (* c channels-h) (- pixpoint)) 10)))
                     (setq pixprev pixpoint pixtprev pixtime))))))))))
 

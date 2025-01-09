@@ -314,7 +314,8 @@
 (defvar *score-bg-color* nil)
 (defvar *bpf-bg-color* nil)
 (defvar *sound-bg-color* nil)
-
+(defvar *sound-wave-color* nil)
+(defvar *sound-fill* nil)
 
 ;;; ??
 (defun init-om-pref-color ()
@@ -337,6 +338,8 @@
     (setf om-lisp::*text-bg-color* (om-color-to-capi (get-pref modulepref :text-bg-color)))
     (setf *bpf-bg-color*      (eval (get-pref modulepref :bpf-bg-color)))
     (setf *sound-bg-color*      (eval(get-pref modulepref :sound-bg-color)))
+    (setf *sound-wave-color*      (eval(get-pref modulepref :sound-wave-color)))
+    (setf *sound-fill*      (eval(get-pref modulepref :sound-fill)))
     (when *om-workspace-win* (om-set-bg-color (panel *om-workspace-win*) *ws-color*))
     (setf *default-folder-pres*     (get-pref modulepref :folder-pres))
     (setf *icon-size-factor* (get-pref modulepref :box-fact))
@@ -376,6 +379,9 @@
    :bpf-bg-color  *om-white-color*
    :sound-bg-color  *om-white-color*
    
+   :sound-wave-color *om-black-color*
+   :sound-fill nil
+
    :boxname-font *om-default-font1*
    :folder-pres 0
    :patch-win-buttons t
@@ -409,260 +415,284 @@
         (dy #-linux 30 #+linux 35)
         test-wscolor test-comment boxfont)
     ;(print (list "modulepref" modulepref))
-     (om-add-subviews thescroll       
+    (om-add-subviews thescroll       
                       
-                      (om-make-dialog-item 'om-static-text (om-make-point l1 (setf posy 20)) (om-make-point 200 30) "Workspace / Folders"
-                                           :font *om-default-font2b*)
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 120 24) "Workspace Color"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point l1 (setf posy 20)) (om-make-point 200 30) "Workspace / Folders"
+                                          :font *om-default-font2b*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 120 24) "Workspace Color"
+                                          :font *controls-font*)
                      
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 170) posy) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :ws-color)
-                                    :color (get-pref modulepref :ws-color)
-                                    :after-fun #'(lambda (item) (set-pref modulepref :ws-color (color item))))
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 170) posy) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :ws-color)
+                                   :color (get-pref modulepref :ws-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :ws-color (color item))))
 
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Default Presentation"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Default Presentation"
+                                          :font *controls-font*)
 
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 170) posy) (om-make-point 80 24) ""
-                                           :range '("icons" "list")
-                                           :value (if (= 0 *default-folder-pres*) "icons" "list")
-                                           :di-action (om-dialog-item-act item 
-                                                        (let ((choice (om-get-selected-item item)))
-                                                          (set-pref modulepref :folder-pres
-                                                                    (if (string-equal choice "icons") 
-                                                                        (progn
-                                                                          (omG-change-presentation *om-workSpace-win* 0) 0)
-                                                                      (progn
-                                                                        (omG-change-presentation *om-workSpace-win* 1) 1)
-                                                                      ))))
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 170) posy) (om-make-point 80 24) ""
+                                          :range '("icons" "list")
+                                          :value (if (= 0 *default-folder-pres*) "icons" "list")
+                                          :di-action (om-dialog-item-act item 
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :folder-pres
+                                                                   (if (string-equal choice "icons") 
+                                                                       (progn
+                                                                         (omG-change-presentation *om-workSpace-win* 0) 0)
+                                                                     (progn
+                                                                       (omG-change-presentation *om-workSpace-win* 1) 1)
+                                                                     ))))
+                                          :font *controls-font*)
        
-                      (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 90 24) "Patches"
-                                           :font *om-default-font2b*)        
+                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 90 24) "Patches"
+                                          :font *om-default-font2b*)        
                     
 
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Show Input/Output buttons"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Show Input/Output buttons"
+                                          :font *controls-font*)
 
-                      (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
-                                           :font *controls-font*
-                                           :checked-p (get-pref modulepref :patch-win-buttons)
-                                           :di-action (om-dialog-item-act item 
-                                                        (set-pref modulepref :patch-win-buttons (om-checked-p item))))
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :patch-win-buttons)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :patch-win-buttons (om-checked-p item))))
                                                        
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Curved connections"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Curved connections"
+                                          :font *controls-font*)
                       
-                      (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
-                                           :font *controls-font*
-                                           :checked-p (get-pref modulepref :curved-connections)
-                                           :di-action (om-dialog-item-act item 
-                                                        (set-pref modulepref :curved-connections (om-checked-p item))))
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :curved-connections)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :curved-connections (om-checked-p item))))
                                                                              
   
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 90 24) "Boxes"
-                                           :font *om-default-font1b*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 90 24) "Boxes"
+                                          :font *om-default-font1b*)
                      
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 70 26) "Size"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 70 26) "Size"
+                                          :font *controls-font*)
                      
-                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 60) posy) (om-make-point 80 24) ""
-                                           :range '("50%" "75%" "100%" "150%" "200%")
-                                           :value (cond ((<= (get-pref modulepref :box-fact) 0.5) "50%")
-                                                        ((< (get-pref modulepref :box-fact) 0.75) "75%")
-                                                        ((>= (get-pref modulepref :box-fact) 2) "200%")
-                                                        ((>= (get-pref modulepref :box-fact) 1.5) "150%")
-                                                        (t "100%"))
-                                           :di-action (om-dialog-item-act item 
-                                                        (let ((choice (om-get-selected-item item)))
-                                                          (set-pref modulepref :box-fact
-                                                                    (cond ((string-equal choice "50%") 0.5)
-                                                                          ((string-equal choice "75%") 0.75)
-                                                                          ((string-equal choice "150%") 1.5)
-                                                                          ((string-equal choice "200%") 2)
-                                                                          (t 1)))))
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 60) posy) (om-make-point 80 24) ""
+                                          :range '("50%" "75%" "100%" "150%" "200%")
+                                          :value (cond ((<= (get-pref modulepref :box-fact) 0.5) "50%")
+                                                       ((< (get-pref modulepref :box-fact) 0.75) "75%")
+                                                       ((>= (get-pref modulepref :box-fact) 2) "200%")
+                                                       ((>= (get-pref modulepref :box-fact) 1.5) "150%")
+                                                       (t "100%"))
+                                          :di-action (om-dialog-item-act item 
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :box-fact
+                                                                   (cond ((string-equal choice "50%") 0.5)
+                                                                         ((string-equal choice "75%") 0.75)
+                                                                         ((string-equal choice "150%") 1.5)
+                                                                         ((string-equal choice "200%") 2)
+                                                                         (t 1)))))
+                                          :font *controls-font*)
                      
-                      (om-make-dialog-item 'om-button (om-make-point (+ l1 150) posy) (om-make-point 105 24) "Name Font"
-                                           :di-action (om-dialog-item-act item
-                                                        (declare (ignore button))
-                                                        (let* ((font (om-choose-font-dialog :font (get-pref modulepref :boxname-font))))
-                                                          (when font
-                                                            (set-pref modulepref :boxname-font font)
-                                                            (om-set-font boxfont font)
-                                                            (om-invalidate-view thescroll))))
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-button (om-make-point (+ l1 150) posy) (om-make-point 105 24) "Name Font"
+                                          :di-action (om-dialog-item-act item
+                                                       (declare (ignore button))
+                                                       (let* ((font (om-choose-font-dialog :font (get-pref modulepref :boxname-font))))
+                                                         (when font
+                                                           (set-pref modulepref :boxname-font font)
+                                                           (om-set-font boxfont font)
+                                                           (om-invalidate-view thescroll))))
+                                          :font *controls-font*)
 
-                      (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 265) (+ posy 3)) (om-make-point 70 24) "mybox"
-                                                         :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
+                     (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 265) (+ posy 3)) (om-make-point 70 24) "mybox"
+                                                        :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
 
-                      #+(or linux cocoa)(om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify Inlets/Outlets"
-                                           :font *controls-font*)
+                     #+(or linux cocoa)(om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify Inlets/Outlets"
+                                                            :font *controls-font*)
 
-                      #+(or linux cocoa)(om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
-                                           :font *controls-font*
-                                           :checked-p (get-pref modulepref :mag-in-out)
-                                           :di-action (om-dialog-item-act item 
-                                                        (set-pref modulepref :mag-in-out (om-checked-p item))))
+                     #+(or linux cocoa)(om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
+                                                            :font *controls-font*
+                                                            :checked-p (get-pref modulepref :mag-in-out)
+                                                            :di-action (om-dialog-item-act item 
+                                                                         (set-pref modulepref :mag-in-out (om-checked-p item))))
 
                      
 
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 90 24) "Comments"
-                                           :font *om-default-font1b*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 90 24) "Comments"
+                                          :font *om-default-font1b*)
                      
-                      (setf test-comment (om-make-dialog-item 'om-static-text (om-make-point (+ l1 40) (incf posy 25)) 
-                                                              (om-make-point 100 20) "My comment..."
-                                                              :font (get-pref modulepref :comment-font)
-                                                              :bg-color *om-white-color*
-                                                              :fg-color (get-pref modulepref :comment-color)))
+                     (setf test-comment (om-make-dialog-item 'om-static-text (om-make-point (+ l1 40) (incf posy 25)) 
+                                                             (om-make-point 100 20) "My comment..."
+                                                             :font (get-pref modulepref :comment-font)
+                                                             :bg-color *om-white-color*
+                                                             :fg-color (get-pref modulepref :comment-color)))
                      
-                      (om-make-dialog-item 'om-button (om-make-point (+ l1 150) (- posy 5)) (om-make-point 70 24) "Font"
-                                           :di-action (om-dialog-item-act item
-                                                        (declare (ignore button))
-                                                        (let* ((font (om-choose-font-dialog :font (get-pref modulepref :comment-font))))
-                                                          (when font
-                                                            (set-pref modulepref :comment-font font)
-                                                            (om-set-font test-comment font)
-                                                            (om-invalidate-view thescroll))))
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-button (om-make-point (+ l1 150) (- posy 5)) (om-make-point 70 24) "Font"
+                                          :di-action (om-dialog-item-act item
+                                                       (declare (ignore button))
+                                                       (let* ((font (om-choose-font-dialog :font (get-pref modulepref :comment-font))))
+                                                         (when font
+                                                           (set-pref modulepref :comment-font font)
+                                                           (om-set-font test-comment font)
+                                                           (om-invalidate-view thescroll))))
+                                          :font *controls-font*)
 
-                      (om-make-dialog-item 'om-button (om-make-point (+ l1 220) (- posy 5)) (om-make-point 70 24) "Color"
-                                           :di-action (om-dialog-item-act item
-                                                        (declare (ignore button))
-                                                        (let* ((newcolor (om-choose-color-dialog :color (get-pref modulepref :comment-color))))
-                                                          (when newcolor
-                                                            (set-pref modulepref :comment-color newcolor)
-                                                            (om-set-fg-color test-comment newcolor)
-                                                            (om-invalidate-view thescroll))))
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-button (om-make-point (+ l1 220) (- posy 5)) (om-make-point 70 24) "Color"
+                                          :di-action (om-dialog-item-act item
+                                                       (declare (ignore button))
+                                                       (let* ((newcolor (om-choose-color-dialog :color (get-pref modulepref :comment-color))))
+                                                         (when newcolor
+                                                           (set-pref modulepref :comment-color newcolor)
+                                                           (om-set-fg-color test-comment newcolor)
+                                                           (om-invalidate-view thescroll))))
+                                          :font *controls-font*)
 
 
-                      (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 240 44) "Editors Background Colors"
-                                           :font *om-default-font2b*)        
+                     (om-make-dialog-item 'om-static-text (om-make-point l1 (incf posy 40)) (om-make-point 240 44) "Editors Background Colors"
+                                          :font *om-default-font2b*)
                      
                       ;1c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "General:"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "General:"
+                                          :font *controls-font*)
                      
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :gen-bg-color)
-                                    :color (get-pref modulepref :gen-bg-color)
-                                    :after-fun #'(lambda (item) (progn 
-                                                                  (setf *om-white-color* (color item))
-                                                                  (set-pref modulepref :gen-bg-color (color item))
-                                                                  (set-pref modulepref :patch-bg-color (color item))
-                                                                  (set-pref modulepref :score-bg-color (color item))
-                                                                  (set-pref modulepref :text-bg-color (color item))
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :gen-bg-color)
+                                   :color (get-pref modulepref :gen-bg-color)
+                                   :after-fun #'(lambda (item) (progn 
+                                                                 (setf *om-white-color* (color item))
+                                                                 (set-pref modulepref :gen-bg-color (color item))
+                                                                 (set-pref modulepref :patch-bg-color (color item))
+                                                                 (set-pref modulepref :score-bg-color (color item))
+                                                                 (set-pref modulepref :text-bg-color (color item))
                                                                   ;(setf *text-bg-color* (om-color-to-capi (om-make-color 1.0 1.0 1.0)))
-                                                                  (set-bg-listener-color (om-color-to-capi *text-bg-color*))
-                                                                  (set-pref modulepref :bpf-bg-color (color item))
-                                                                  (set-pref modulepref :sound-bg-color (color item))
-                                                                  (when *om-listener* (om-close-window *om-listener*))
+                                                                 (set-bg-listener-color (om-color-to-capi *text-bg-color*))
+                                                                 (set-pref modulepref :bpf-bg-color (color item))
+                                                                 (set-pref modulepref :sound-bg-color (color item))
+                                                                 (when *om-listener* (om-close-window *om-listener*))
                                                                   
-                                                                  (setf *current-pref* (local-prefs (om-view-window item)))
-                                                                  (put-all-preferences)
-                                                                  (save-preferences)
-                                                                  (om-close-window *pref-window*)
-                                                                  (show-preferences-win)
+                                                                 (setf *current-pref* (local-prefs (om-view-window item)))
+                                                                 (put-all-preferences)
+                                                                 (save-preferences)
+                                                                 (om-close-window *pref-window*)
+                                                                 (show-preferences-win)
                                                                  
-                                                                  (show-listener-win)
-                                                                  )))
+                                                                 (show-listener-win)
+                                                                 )))
                                     
 
                       ;2c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "Text Ed.:"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "Text Ed.:"
+                                          :font *controls-font*)
                      
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :text-bg-color)
-                                    :color (get-pref modulepref :text-bg-color)
-                                    :after-fun #'(lambda (item) (progn
-                                                                  (set-pref modulepref :text-bg-color (color item))
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :text-bg-color)
+                                   :color (get-pref modulepref :text-bg-color)
+                                   :after-fun #'(lambda (item) (progn
+                                                                 (set-pref modulepref :text-bg-color (color item))
                                                                    ;(setf *text-bg-color* (om-color-to-capi (om-make-color 1.0 1.0 1.0)))
-                                                                  (set-bg-listener-color (om-color-to-capi *text-bg-color*))
-                                                                  (when *om-listener* (om-close-window *om-listener*))
+                                                                 (set-bg-listener-color (om-color-to-capi *text-bg-color*))
+                                                                 (when *om-listener* (om-close-window *om-listener*))
                                                                   ;needed to reopen listener again: 
-                                                                  (setf *current-pref* (local-prefs (om-view-window item)))
-                                                                  (put-all-preferences)
-                                                                  (save-preferences)
+                                                                 (setf *current-pref* (local-prefs (om-view-window item)))
+                                                                 (put-all-preferences)
+                                                                 (save-preferences)
                                                                   
-                                                                  (show-listener-win)
-                                                                  )))
-                                                                   
-                                                                         
+                                                                 (show-listener-win)
+                                                                 )))
 
                       ;3c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 380) (incf posy 0)) (om-make-point 120 24) "Reset:"
-                                           :font *controls-font*)
-
-                      (om-make-view 'om-icon-button 
-                                    :icon1 "stop" :icon2 "stop-pushed"
-                                    :position (om-make-point (+ l1 425) (- posy 3)) :size (om-make-point 26 25)
-                                    :action (om-dialog-item-act item
-                                              (declare (ignore item))
-                                              (progn 
-                                                (setf *om-white-color* (om-make-color 1.0 1.0 1.0))
-                                                (setf *patch-bg-color* *om-white-color*)
-                                                (setf *score-bg-color* *om-white-color*)
-                                                (setf *bpf-bg-color* *om-white-color*)
-                                                (setf *sound-bg-color* *om-white-color*)
-                                                (set-pref modulepref :gen-bg-color *om-white-color*)
-                                                (set-pref modulepref :patch-bg-color *om-white-color*)
-                                                (set-pref modulepref :score-bg-color *om-white-color*)
-                                                (set-pref modulepref :text-bg-color *om-white-color*)
-                                                (set-bg-listener-color (om-color-to-capi *om-white-color*))
-                                                (set-pref modulepref :bpf-bg-color *om-white-color* )
-                                                (set-pref modulepref :sound-bg-color *om-white-color* )
-                                                (setf *current-pref* (local-prefs (om-view-window item)))
-                                                (put-all-preferences)
-                                                (save-preferences)
-                                                (om-close-window *pref-window*)
-                                                (show-preferences-win)
-                                                                  
-                                                )))
-                      
-                      ;1c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Patch:"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) 355) (om-make-point 240 44) "Sound Display"
+                                          :font *om-default-font2b*)
                      
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :patch-bg-color)
-                                    :color (get-pref modulepref :patch-bg-color)
-                                    :after-fun #'(lambda (item) (set-pref modulepref :patch-bg-color (color item))))
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (incf posy 0)) (om-make-point 120 24) "Filled:"
+                                          :font *controls-font*)
+                     
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l2 100) (- posy 3)) (om-make-point 26 25) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :sound-fill) ;filled
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :sound-fill (om-checked-p item)))
+                                          )
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (+ posy 30)) (om-make-point 120 24) "Color:"
+                                                               :font *controls-font*)
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l2 80) (+ posy 30)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :sound-wave-color) ;sound-color
+                                   :color (get-pref modulepref :sound-wave-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :sound-wave-color (color item))))
+                     
+                      ;1c
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Patch:"
+                                          :font *controls-font*)
+                     
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :patch-bg-color)
+                                   :color (get-pref modulepref :patch-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :patch-bg-color (color item))))
                       
                        ;2c
-                       (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "BPF:"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "BPF:"
+                                          :font *controls-font*)
                        
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :bpf-bg-color)
-                                    :color (get-pref modulepref :bpf-bg-color)
-                                    :after-fun #'(lambda (item) (set-pref modulepref :bpf-bg-color (color item))))
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :bpf-bg-color)
+                                   :color (get-pref modulepref :bpf-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :bpf-bg-color (color item))))
                       ;1c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Score:"
-                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Score:"
+                                          :font *controls-font*)
                      
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :score-bg-color)
-                                    :color (get-pref modulepref :score-bg-color)
-                                    :after-fun #'(lambda (item) (set-pref modulepref :score-bg-color (color item))))
-                      ;2c
-                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "SOUND:"
-                                           :font *controls-font*)
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :score-bg-color)
+                                   :color (get-pref modulepref :score-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :score-bg-color (color item))))
                       
-                      (om-make-view 'om-color-view 
-                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
-                                    :bg-color (get-pref modulepref :sound-bg-color)
-                                    :color (get-pref modulepref :sound-bg-color)
-                                    :after-fun #'(lambda (item) (set-pref modulepref :sound-bg-color (color item))))
-                      )   
+
+
+                      ;2c
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)
+                                                                         ) (om-make-point 120 24) "SOUND:"
+                                          :font *controls-font*)
+                      
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :sound-bg-color)
+                                   :color (get-pref modulepref :sound-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :sound-bg-color (color item))))
+
+                      ;1c
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Reset:"
+                                          :font *controls-font*)
+
+                     (om-make-view 'om-icon-button 
+                                   :icon1 "stop" :icon2 "stop-pushed"
+                                   :position  (om-make-point (+ l1 100) (incf posy 0)) :size (om-make-point 26 25)
+                                   :action (om-dialog-item-act item
+                                             (declare (ignore item))
+                                             (progn 
+                                               (setf *om-white-color* (om-make-color 1.0 1.0 1.0))
+                                               (setf *patch-bg-color* *om-white-color*)
+                                               (setf *score-bg-color* *om-white-color*)
+                                               (setf *bpf-bg-color* *om-white-color*)
+                                               (setf *sound-bg-color* *om-white-color*)
+                                               (set-pref modulepref :gen-bg-color *om-white-color*)
+                                               (set-pref modulepref :patch-bg-color *om-white-color*)
+                                               (set-pref modulepref :score-bg-color *om-white-color*)
+                                               (set-pref modulepref :text-bg-color *om-white-color*)
+                                               (set-bg-listener-color (om-color-to-capi *om-white-color*))
+                                               (set-pref modulepref :bpf-bg-color *om-white-color* )
+                                               (set-pref modulepref :sound-bg-color *om-white-color* )
+                                               (setf *current-pref* (local-prefs (om-view-window item)))
+                                               (put-all-preferences)
+                                               (save-preferences)
+                                               (om-close-window *pref-window*)
+                                               (show-preferences-win)
+                                                                  
+                                               )))
+                     )   
 
      (om-add-subviews thescroll
                       
