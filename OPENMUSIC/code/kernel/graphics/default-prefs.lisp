@@ -412,7 +412,7 @@
                                  ))
         (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
         (posy 0)
-        (dy #-linux 30 #+linux 35)
+        (dy #-(or linux win32) 30 #+(or linux win32) 35)
         test-wscolor test-comment boxfont)
     ;(print (list "modulepref" modulepref))
     (om-add-subviews thescroll       
@@ -600,7 +600,7 @@
                                                                  )))
 
                       ;3c
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) 355) (om-make-point 240 44) "Sound Display"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) #+(or linux cocoa) 355 #-(or linux cocoa) (- posy 30)) (om-make-point 240 44) "Sound Display"
                                           :font *om-default-font2b*)
                      
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (incf posy 0)) (om-make-point 120 24) "Filled:"
