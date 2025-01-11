@@ -2,7 +2,7 @@
 
 NEW FEATURES
 
-
+- SOUND window custom waveshape color
 
 IMPROVEMENTS
 
@@ -11,6 +11,7 @@ IMPROVEMENTS
 
 FIXES
 
+- SOUND cursor (doesn't disappear)
 - fixed disappearing cursor-play-view
 - score objs miniview update (macosx) 
 - Various display fixes in score object (macosx) 
