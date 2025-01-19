@@ -206,11 +206,22 @@
                                               (mode-buttons (title-bar self))))))  
   )
 
-(defmethod update-mode-buttons ((self score-titlebar))
+(defmethod update-mode-buttons ((self score-titlebar)) 
   (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
-    (loop for b in (mode-buttons self)
-          for i = 0 then (+ i 1) do
-          (setf (selected-p b) (= i n)))
+    (if (not (internaleditor-p (om-view-container self)))
+        (loop for b in (mode-buttons self)
+              for i = 0 then (+ i 1) do
+                (setf (selected-p b) (= i n)))
+      (if  (equal (obj-mode (panel (om-view-container self))) "chord")
+          (loop 
+             for b in (mode-buttons self)
+             for i in '(nil t)
+             do (setf (selected-p b) i))
+        (loop 
+           for b in (mode-buttons self)
+           for i in '(t nil)
+           do (setf (selected-p b) i))
+        ))
     (om-invalidate-view self)))
 
 
