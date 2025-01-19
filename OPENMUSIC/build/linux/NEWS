@@ -11,6 +11,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Internal chord obj-mode selection
 - SOUND cursor (doesn't disappear)
 - fixed disappearing cursor-play-view
 - score objs miniview update (macosx) 
