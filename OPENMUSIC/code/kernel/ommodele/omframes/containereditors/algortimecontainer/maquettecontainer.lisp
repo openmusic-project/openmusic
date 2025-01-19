@@ -434,6 +434,7 @@
    (do-editor-null-event self))
 
 (defmethod do-editor-null-event ((self maquetteEditor))
+ ;#+linux (om-invalidate-view (panel self))
   #+(or linux win32)(when (equal (state (player self)) :play)
            (capi:manipulate-pinboard (panel self) 
                                      (slot-value (panel self) 'oa::animation)
