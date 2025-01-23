@@ -253,9 +253,9 @@
 
 (defevt2msg (event2tempo :Tempo)
   (make-instance 'midi:tempo-message
-		 :time (midi-evt-date ev) :tempo (first (midi-evt-fields ev))
+		 :time (midi-evt-date ev) 
+                 :tempo (first (midi-evt-fields ev))
 		 :status +tempo-opcode+))
-
 
 ;; TIME SIGNATURE
 
