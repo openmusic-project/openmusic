@@ -589,6 +589,49 @@
        (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                  (string-upcase (class-name (class-of (object (editor self)))))) 
                           (get-help-list (editor self))))
+              (#\g (progn
+              (grille-on-off self)
+              (let ((item (second
+                         (om-subviews
+                          (control
+                           (om-view-container self))))))
+                
+                (if (om-checked-p item) 
+                    (om-set-check-box item nil)
+                  (om-set-check-box item t))
+                )))
+       (#\l (progn
+              (let ((item (car
+                           (om-subviews
+                            (control
+                             (om-view-container self))))))
+                (if (om-checked-p item) 
+                    (progn 
+                      (setf (lines-p self) nil)
+                      (om-set-check-box item nil)
+                      (om-invalidate-view self t))
+                  (progn
+                    (setf (lines-p self) t)
+                  (om-set-check-box item t)
+                  (om-invalidate-view self t)))
+                )))
+       (#\s (progn
+              (let ((item (fifth
+                           (om-subviews
+                            (control
+                             (om-view-container self))))))
+                (if (om-checked-p item) 
+                    (progn 
+                      (set-spline-preview (spline (om-view-container self))
+                                          nil)
+                      (om-set-check-box item nil)
+                      (om-invalidate-view self t))
+                  (progn
+                   (set-spline-preview (spline (om-view-container self))
+                                       t)
+                  (om-set-check-box item t)
+                  (om-invalidate-view self t)))
+                )))
        (:om-key-delete 
          (cond
           ((null (selection? self))
@@ -673,6 +716,9 @@
                   ("del" "Delete selected points")
                   (("c") "Change BPF/BPC color")
                   (("p") "Show point indices")
+                  (("l") "Toggle Lines/Points")
+                  (("g") "Toggle Grid On/Off ")
+                  (("s") "Spline preview ")
                   )
                 (when (multibpf? self)
                   '(("alt+shift+clic" "Add BPF/BPC")

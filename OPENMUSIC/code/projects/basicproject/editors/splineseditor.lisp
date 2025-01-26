@@ -121,7 +121,7 @@
       (add-opt-items self 550)
       (compute-spline self))
     (remove-opt-items self))
-  (om-invalidate-view (panel (editor self)))
+  (om-invalidate-view (panel (editor self)) t)
   )
 
 (defparameter *max-spline-points* 300)
