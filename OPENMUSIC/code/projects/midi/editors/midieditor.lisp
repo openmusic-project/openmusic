@@ -539,6 +539,15 @@
   (update-subviews (om-view-container self)))
 
 
+#+linux
+(defmethod editor-null-event-handler  ((self midieditor))
+   (do-editor-null-event self))
+
+#+linux
+(defmethod do-editor-null-event ((self midieditor)) 
+ (om-invalidate-view (panel self) t)
+ (update-subviews self)
+ )
 ;=====================DRAW
 
 
