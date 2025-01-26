@@ -359,6 +359,16 @@
    (om-set-view-size (rulery (panel self)) (om-make-point 25 (- (h self) 25 (get-control-h self) *titlebars-h*)))
    (om-invalidate-view self))
 
+#+linux
+(defmethod editor-null-event-handler ((self bpfeditor))
+  (do-editor-null-event self))
+
+#+linux
+(defmethod do-editor-null-event ((self bpfeditor)) 
+  (om-invalidate-view (panel self) t)
+  (update-subviews self))
+
+
 ;------------------------------------
 ;Tools
 ;------------------------------------
@@ -567,140 +577,140 @@
   
 
 (defmethod handle-key-event ((Self bpfpanel) Char)
-    (let ((myobj (get-bpf-obj self)))
-     (case char
+  (let ((myobj (get-bpf-obj self)))
+    (case char
        
-       (:om-key-tab (when (multibpf? (editor self))
-                      (change-current-bpf self myobj)
-                      (om-invalidate-view (editor self) t)))
+      (:om-key-tab (when (multibpf? (editor self))
+                     (change-current-bpf self myobj)
+                     (om-invalidate-view (editor self) t)))
        ;(#\g (grille-on-off self))
-       (#\p (setf (show-point-indices self) (not (show-point-indices self)))
-            (om-invalidate-view self))
-       (#\c 
-         (let ((new-color (om-choose-color-dialog :color (bpfcolor (currentbpf self)))))
-           (when new-color
-             (fill-bpf-with-color self new-color))))
-       (#\n 
-        (when (multibpf? (editor self))
-          (let ((new-name (om-get-user-string "Object name:" :initial-string (get-name (currentbpf self)))))
+      (#\p (setf (show-point-indices self) (not (show-point-indices self)))
+           (om-invalidate-view self))
+      (#\c 
+       (let ((new-color (om-choose-color-dialog :color (bpfcolor (currentbpf self)))))
+         (when new-color
+           (fill-bpf-with-color self new-color))))
+      (#\n 
+       (when (multibpf? (editor self))
+         (let ((new-name (om-get-user-string "Object name:" :initial-string (get-name (currentbpf self)))))
            (when new-name
              (set-name (currentbpf self) new-name)
              (om-invalidate-view (editor self) t)))))
-       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
-                                 (string-upcase (class-name (class-of (object (editor self)))))) 
-                          (get-help-list (editor self))))
-              (#\g (progn
-              (grille-on-off self)
-              (let ((item (second
-                         (om-subviews
-                          (control
-                           (om-view-container self))))))
+      (#\h  (show-help-window (format nil "Commands for ~A Editor" 
+                                      (string-upcase (class-name (class-of (object (editor self)))))) 
+                              (get-help-list (editor self))))
+      (#\g (progn
+             (grille-on-off self)
+             (let ((item (second
+                          (om-subviews
+                           (control
+                            (om-view-container self))))))
                 
-                (if (om-checked-p item) 
-                    (om-set-check-box item nil)
-                  (om-set-check-box item t))
-                )))
-       (#\l (progn
-              (let ((item (car
-                           (om-subviews
-                            (control
-                             (om-view-container self))))))
-                (if (om-checked-p item) 
-                    (progn 
-                      (setf (lines-p self) nil)
-                      (om-set-check-box item nil)
-                      (om-invalidate-view self t))
-                  (progn
-                    (setf (lines-p self) t)
-                  (om-set-check-box item t)
-                  (om-invalidate-view self t)))
-                )))
-       (#\s (progn
-              (let ((item (fifth
-                           (om-subviews
-                            (control
-                             (om-view-container self))))))
-                (if (om-checked-p item) 
-                    (progn 
-                      (set-spline-preview (spline (om-view-container self))
-                                          nil)
-                      (om-set-check-box item nil)
-                      (om-invalidate-view self t))
-                  (progn
+               (if (om-checked-p item) 
+                   (om-set-check-box item nil)
+                 (om-set-check-box item t))
+               )))
+      (#\l (progn
+             (let ((item (car
+                          (om-subviews
+                           (control
+                            (om-view-container self))))))
+               (if (om-checked-p item) 
+                   (progn 
+                     (setf (lines-p self) nil)
+                     (om-set-check-box item nil)
+                     (om-invalidate-view self t))
+                 (progn
+                   (setf (lines-p self) t)
+                   (om-set-check-box item t)
+                   (om-invalidate-view self t)))
+               )))
+      (#\s (progn
+             (let ((item (fifth
+                          (om-subviews
+                           (control
+                            (om-view-container self))))))
+               (if (om-checked-p item) 
+                   (progn 
+                     (set-spline-preview (spline (om-view-container self))
+                                         nil)
+                     (om-set-check-box item nil)
+                     (om-invalidate-view self t))
+                 (progn
                    (set-spline-preview (spline (om-view-container self))
                                        t)
-                  (om-set-check-box item t)
-                  (om-invalidate-view self t)))
-                )))
-       (:om-key-delete 
-         (cond
-          ((null (selection? self))
-           (om-beep))
-          ((listp (selection? self))
-           (loop for point in (selection? self) do
-                     (remove-point (currentbpf self) point))
-           (update-panel self t))
-          ((selection? self)
-           (delete-current-bpf self)
-           (update-panel self t))
-          (t (om-beep)))
-        (setf (selection? self) nil))
-       (:om-key-up (cond
-                                ((null (selection? self))
-                                 (om-beep))
-                                ((listp (selection? self))
-                                 (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
-                                                                                                0 (zoom (rulery self)))))
-                                   (if moveds
-                                       (progn
-                                          (setf (selection? self) moveds)
-                                          (update-panel self t)
-                                          )
-                                     (om-beep-msg "I can not move these points"))))
-                                ((selection? self)
-                                 (move-bpf-in-x-y (currentbpf self) 0 (zoom (rulery self)))
-                                 (update-panel self t))
-                                (t (om-beep))))
-       (:om-key-down (cond
+                   (om-set-check-box item t)
+                   (om-invalidate-view self t)))
+               )))
+      (:om-key-delete 
+       (cond
+        ((null (selection? self))
+         (om-beep))
+        ((listp (selection? self))
+         (loop for point in (selection? self) do
+                 (remove-point (currentbpf self) point))
+         (update-panel self t))
+        ((selection? self)
+         (delete-current-bpf self)
+         (update-panel self t))
+        (t (om-beep)))
+       (setf (selection? self) nil))
+      (:om-key-up (cond
+                   ((null (selection? self))
+                    (om-beep))
+                   ((listp (selection? self))
+                    (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
+                                                      0 (zoom (rulery self)))))
+                      (if moveds
+                          (progn
+                            (setf (selection? self) moveds)
+                            (update-panel self t)
+                            )
+                        (om-beep-msg "I can not move these points"))))
+                   ((selection? self)
+                    (move-bpf-in-x-y (currentbpf self) 0 (zoom (rulery self)))
+                    (update-panel self t))
+                   (t (om-beep))))
+      (:om-key-down (cond
                      ((null (selection? self))
                       (om-beep))
                      ((listp (selection? self))
                       (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
                                                         0 (* -1 (zoom (rulery self))))))
                         (if moveds
-                          (progn
-                            (setf (selection? self) moveds)
-                            (update-panel self t))
+                            (progn
+                              (setf (selection? self) moveds)
+                              (update-panel self t))
                           (om-beep-msg "I can not move these points"))))
                      ((selection? self)
                       (move-bpf-in-x-y (currentbpf self) 0 (* -1 (zoom (rulery self))))
                       (update-panel self t))
                      (t (om-beep))))
-       (:om-key-right (cond
-                        ((null (selection? self))
-                         (om-beep))
-                        ((listp (selection? self))
-                         (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
-                                                           (zoom (rulerx self)) 0)))
-                           (if moveds
+      (:om-key-right (cond
+                      ((null (selection? self))
+                       (om-beep))
+                      ((listp (selection? self))
+                       (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
+                                                         (zoom (rulerx self)) 0)))
+                         (if moveds
                              (progn
                                (setf (selection? self) moveds)
                                (update-panel self t))
-                             (om-beep-msg "I can not move these points"))))
-                        ((selection? self)
-                         (move-bpf-in-x-y (currentbpf self) (zoom (rulerx self)) 0)
-                         (update-panel self t))
-                        (t (om-beep))))
-       (:om-key-left (cond
+                           (om-beep-msg "I can not move these points"))))
+                      ((selection? self)
+                       (move-bpf-in-x-y (currentbpf self) (zoom (rulerx self)) 0)
+                       (update-panel self t))
+                      (t (om-beep))))
+      (:om-key-left (cond
                      ((null (selection? self))
                       (om-beep))
                      ((listp (selection? self))
                       (let ((Moveds (move-points-in-bpf (currentbpf self) (selection? self) 
                                                         (* -1 (zoom (rulerx self))) 0)))
                         (if moveds
-                          (progn
-                            (setf (selection? self) moveds)
-                            (update-panel self t))
+                            (progn
+                              (setf (selection? self) moveds)
+                              (update-panel self t))
                           (om-beep-msg "I can not move these points"))))
                      ((selection? self)
                       (move-bpf-in-x-y (currentbpf self) (* -1 (zoom (rulerx self)))0 )
