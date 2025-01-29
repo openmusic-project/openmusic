@@ -985,15 +985,15 @@
                     :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
          (Xed (om-make-dialog-item (x-class-move-point self) 
                                    (if (equal (x-class-move-point self) 'om-static-text)
-                                       (om-make-point 25 11) (om-make-point 24 0))
-                                    (om-make-point xsize 15)
+                                       (om-make-point 25 21) (om-make-point 24 0))
+                                    (om-make-point xsize 45)
                                    (if (zerop dec) (format () "~D" (om-point-h point))
                                      (format () (format nil "~S,~DF" '~ dec) 
                                              (/ (om-point-h point) (expt 10.0 dec))))
                                    :font *om-default-font2*
                                   ))
          (Yed (om-make-dialog-item 'om-editable-text 
-                                    (om-make-point 24 26)
+                                    (om-make-point 24 47)
                                     (om-make-point xsize 15)
                                    (if (zerop dec) (format () "~D" (om-point-v point))
                                      (format () (format nil "~S,~DF" '~ dec) 
@@ -1001,19 +1001,19 @@
                                    :font *om-default-font2*)))
     
     (om-add-subviews mydialog 
-                     (om-make-dialog-item 'om-static-text (om-make-point 2 5 ) (om-make-point 20 20) (x-label self)
+                     (om-make-dialog-item 'om-static-text (om-make-point 4 12) (om-make-point 20 20) "X:" ;(x-label self)
                                           :font *om-default-font2*)
-                     (om-make-dialog-item 'om-static-text (om-make-point  2 30) (om-make-point 20 20) (y-label self)
+                     (om-make-dialog-item 'om-static-text (om-make-point 4 45) (om-make-point 20 20) "Y:" ;(y-label self)
                                           :font *om-default-font2*)
                      
                      xed yed
-                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 8) (om-make-point 70 15) (om-str :cancel)
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 6) (om-make-point 70 10) (om-str :cancel)
                                           :di-action (om-dialog-item-act item 
                                                        (declare (ignore item))
                                                        (om-return-from-modal-dialog mydialog ()))
                                           :focus nil
                                           :default-button nil)
-                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 34) (om-make-point 70 15) (om-str :ok)
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 40) (om-make-point 70 10) (om-str :ok)
                                           :di-action (om-dialog-item-act item 
                                                        (declare (ignore item))
                                                        (let ((xval (read-from-string (om-dialog-item-text xed)))
@@ -1039,6 +1039,7 @@
     (om-modal-dialog mydialog)
     ;(om-select-window mydialog)
     ))
+
 
 
 (defmethod editor-change-precision ((self bpfeditor) value) 

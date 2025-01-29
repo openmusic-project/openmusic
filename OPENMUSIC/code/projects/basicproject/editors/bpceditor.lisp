@@ -409,29 +409,30 @@
   
 
 
+;WARNING: other method defined for same class in projects/space/3D/traject-editor.lisp
 (defmethod special-move-point ((self bpcPanel) point i)
   (let* ((dec (decimals (get-bpf-obj self)))
          (xsize (max 50 (* 10 dec)))
          (mydialog (om-make-window 'om-dialog
-                                   :size (om-make-point (max 180 (+ 100 (* 12 dec))) 90)
+                                   :size (om-make-point (max 180 (+ 100 (* 12 dec))) 80)
                                    :window-title ""
                                    :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
-         (xed (om-make-dialog-item 'om-editable-text (om-make-point 30 5) (om-make-point xsize 10)
+         (xed (om-make-dialog-item 'om-editable-text (om-make-point 30 10) (om-make-point xsize 10)
                                    (if (zerop dec) (format () "~D" (om-point-h point))
                                        (format () (format nil "~S,~DF" '~ dec) 
                                                (/ (om-point-h point) (expt 10.0 dec))))
                                    ))
-         (yed (om-make-dialog-item 'om-editable-text (om-make-point 30 35) (om-make-point xsize 10)
+         (yed (om-make-dialog-item 'om-editable-text (om-make-point 30 40) (om-make-point xsize 10)
                                    (if (zerop dec) (format () "~D" (om-point-v point))
                                        (format () (format nil "~S,~DF" '~ dec) 
                                                (/ (om-point-v point) (expt 10.0 dec))))
                                    )))
     (om-add-subviews mydialog 
-                     (om-make-dialog-item 'om-static-text (om-make-point 5 9) (om-make-point 20 20) (x-label self) 
-                                          :font *om-default-font3b*
+                     (om-make-dialog-item 'om-static-text (om-make-point 5 9) (om-make-point 20 20) "X:" ;(x-label self) 
+                                          :font *om-default-font2*
                                           :bg-color *om-window-def-color*)
-                     (om-make-dialog-item 'om-static-text (om-make-point 5 39)  (om-make-point 20 20) (y-label self) 
-                                          :font *om-default-font3b*
+                     (om-make-dialog-item 'om-static-text (om-make-point 5 39)  (om-make-point 20 20) "Y:" ;(y-label self) 
+                                          :font *om-default-font2*
                                           :bg-color *om-window-def-color*)
                      xed yed
                      (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 5) (om-make-point 70 20) "Cancel"
