@@ -332,7 +332,10 @@
 
 (defmethod do-editor-null-event ((Self Bpfeditor))
    (when  (om-view-contains-point-p (panel self) (om-mouse-position self))
-     (show-position self)))
+     (show-position self)
+     #+linux(om-invalidate-view (panel self) t)
+     #+linux(update-subviews self)
+     ))
 
 (defmethod show-position ((Self Bpfeditor))
   (let* ((pixel (om-mouse-position (panel self))))
@@ -359,14 +362,6 @@
    (om-set-view-size (rulery (panel self)) (om-make-point 25 (- (h self) 25 (get-control-h self) *titlebars-h*)))
    (om-invalidate-view self))
 
-#+linux
-(defmethod editor-null-event-handler ((self bpfeditor))
-  (do-editor-null-event self))
-
-#+linux
-(defmethod do-editor-null-event ((self bpfeditor)) 
-  (om-invalidate-view (panel self) t)
-  (update-subviews self))
 
 
 ;------------------------------------
