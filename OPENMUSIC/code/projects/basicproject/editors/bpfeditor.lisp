@@ -978,7 +978,7 @@
   (let* ((Dec (bpf-decimals self))
          (Xsize (max 60 (* 10 dec)))
          (Mydialog (om-make-window 'om-dialog
-                    :size (om-make-point (+ xsize 140) 80)
+                    :size (om-make-point (+ xsize 140) #+macosx 100 #-macosx 80)
                     :window-title ""
                     :maximize nil :minimize nil :resizable nil
                     ;:bg-color *om-window-def-color*
