@@ -2,10 +2,12 @@
 
 NEW FEATURES
 
+- Marking, changing icons in workspace
 - SOUND window custom waveshape color
 
 IMPROVEMENTS
 
+- 'k' Shortcut for Clearing patches (forces deleting)
 - Workspace/folder scrolling shortcut
 - Tooltips for inputs when connection process
 
