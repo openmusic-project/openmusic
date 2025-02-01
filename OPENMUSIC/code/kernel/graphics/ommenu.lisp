@@ -241,7 +241,7 @@
                                                            (if (member "Paste" disable :test 'string-equal) nil t))
                                           (om-new-leafmenu "Duplicate" #'(lambda () (duplicate-window win)) "d" 
                                                            (if (member "Duplicate" disable :test 'string-equal) nil t))
-                                          (om-new-leafmenu "Clear" #'(lambda () (clear win)) nil 
+                                          (om-new-leafmenu "Clear" #'(lambda () (clear win)) "k" 
                                                            (if (member "Clear" disable :test 'string-equal) nil t))
                                           )
                                          (om-new-leafmenu "Select All" #'(lambda () (select-all win)) "a" 
