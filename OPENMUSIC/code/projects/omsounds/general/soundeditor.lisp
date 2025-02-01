@@ -417,7 +417,9 @@
            (time (om-point-h (pixel2point (panel self) pixel))))
       (when (and time (not (minusp time)))
         (show-position-ms self time)
-        ))))
+        )
+      #+linux (om-invalidate-view (panel self) t) 
+      )))
 
       
 ;;;================================
