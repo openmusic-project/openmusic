@@ -644,10 +644,62 @@ Workspace Panels contain icons of patches, maquettes and folders
                        (#+(or linux win32)("Ctrl + 2") #+macosx("Cmd + 2") "New Maquette")
                        (#+(or linux win32)("Ctrl + 3") #+macosx("Cmd + l") "New Lisp Function")
                        (("Ctrl + N") "New Folder")
+                       ("m" "Check/Uncheck selected items")
+                       ("c" "Open icon's dialog")
+                       ("i" "re-Init icons of selected items")
                        ))
 
 (defmethod get-help-list ((self workspacepanel)) 
   (list *wrkspchelp* ))
+
+
+(defmethod om-check-items ((self ombasicobject))
+  "Marks/unmakrs self's icon" 
+  (cond 
+   ((lisp-exp-p self) (print (list self "lispexp")))
+   ((maquette-p self) (omg-change-icon self (if (= (icon self) 1820) 182 1820)))
+   ((patch-p self)  (omg-change-icon self (if (= (icon self) 1830) 183 1830)))
+   ((folder-p self) (omg-change-icon self (if (= (icon self) 1860) 186 1860)))
+   (t nil)))
+
+(defmethod om-init-item-icon ((self ombasicobject))
+  "Sets self's icon to its original state"
+  (cond 
+   ((lisp-exp-p self) (omg-change-icon self 124))
+   ((maquette-p self) (omg-change-icon self 182))
+   ((patch-p self) (omg-change-icon self 183))
+   ((folder-p self) (omg-change-icon self 186))
+   (t nil)))
+
+(defmethod om-choose-icon-dialog ((objs list))
+  "Opens icon-dialog to set choosen icon"
+  (let* ((di (choose-resource-dialog :icon :kernel t :user t))
+         (icon (string-to-number (car di)))
+         (loc (last-elem di))
+         (path (if (equal loc 'user)
+                   (make-pathname :directory (append (pathname-directory (mypathname *current-workspace*)) 
+                                          (list "resources" "icon")))
+                 (make-pathname :directory (append (pathname-directory *om-resources-folder*) 
+                                          (list "icon"))))))
+    (print (list "infos" icon loc path objs))
+    (loop for i in objs
+          do (progn
+               (omg-change-icon i icon)))))
+
+(defmethod handle-key-event ((self workspacePanel) char)
+  (let ((sel (remove nil 
+                     (loop for i in (om-subviews self)
+                           collect (if  (active-mode i) (object i))))))  
+    (case char
+      (#\m 
+       (loop for i in sel
+             collect (om-check-items i)))
+      (#\c
+       (om-choose-icon-dialog sel))
+      (#\i
+       (loop for i in sel
+             do (om-init-item-icon i)))
+      (otherwise (call-next-method)))))
 
 ;-----------------
 ;Folder's Editor
@@ -707,6 +759,30 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
     (or (import-dragged-file self (pathname (car files)) (om-mouse-position self))
         (om-beep-msg (string+ "File: " (namestring (pathname (car files))) " can not be imported in the workspace.")))))
 
+
+;;same help as workspace
+(defmethod help-items ((self foldereditor)) 
+  (append
+   (import-tutorial-menu self)
+   (call-next-method)))
+
+(defmethod get-help-list ((self folderpanel)) 
+  (list *wrkspchelp* ))
+
+(defmethod handle-key-event ((self folderPanel) char)
+  (let ((sel (remove nil 
+                     (loop for i in (om-subviews self)
+                           collect (if  (active-mode i) (object i))))))  
+    (case char
+      (#\m 
+       (loop for i in sel
+             collect (om-check-items i)))
+      (#\c
+       (om-choose-icon-dialog sel))
+      (#\i
+       (loop for i in sel
+             do (om-init-item-icon i)))
+      (otherwise (call-next-method)))))
 
 ;;;=====================================
 ;;; PACKAGE BORWSER FRAMES
