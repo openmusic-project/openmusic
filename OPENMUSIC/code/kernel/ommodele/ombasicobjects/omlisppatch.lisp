@@ -47,6 +47,8 @@
 
 
 (defmethod lisp-exp-p ((self OMLispPatch)) t)
+(defmethod lisp-exp-p ((self t)) nil);ca manque
+
 
 ;;; convert to string (for old patches)
 ;;; restores line breaks
