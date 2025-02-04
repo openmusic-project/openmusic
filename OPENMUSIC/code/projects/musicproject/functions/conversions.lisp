@@ -57,9 +57,13 @@ Floating values are allowed for <approx>.
 <ref-midic> is a midicent that is subtracted from <midic> before computation: the computation can then be carried on an interval rather than an absolute pitch."
   (if (<= approx 0)
       midic
+    (round (* (floor (+ (* (- midic ref-midic) approx) 100) 200) 200) approx)
+    #|
     (if (> approx 100)
         (round (* (floor (+ (* (- midic ref-midic) (round approx)) 100) 1200) 1200) (round approx))
-      (round (* (floor (+ (* (- midic ref-midic) (round approx)) 100) 200) 200) (round approx)))))
+      (round (* (floor (+ (* (- midic ref-midic) (round approx)) 100) 200) 200) (round approx)))
+    |#
+))
 
 (defmethod* approx-m  ((self list) approx &optional (ref-midic 0))
   (if (<= approx 0)
