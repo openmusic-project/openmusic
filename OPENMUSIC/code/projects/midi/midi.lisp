@@ -47,6 +47,7 @@
         "tools;midi-conversions"
         "tools;midi-save"
         "tools;midi-preparetoplay"
+        "tools;midi-tuning"
         "tools;midi-send" ; => TODO !!
         "tools;midi-in" ; => TODO !!
      
