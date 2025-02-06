@@ -58,11 +58,6 @@ Floating values are allowed for <approx>.
   (if (<= approx 0)
       midic
     (round (* (floor (+ (* (- midic ref-midic) approx) 100) 200) 200) approx)
-    #|
-    (if (> approx 100)
-        (round (* (floor (+ (* (- midic ref-midic) (round approx)) 100) 1200) 1200) (round approx))
-      (round (* (floor (+ (* (- midic ref-midic) (round approx)) 100) 200) 200) (round approx)))
-    |#
 ))
 
 (defmethod* approx-m  ((self list) approx &optional (ref-midic 0))
@@ -72,7 +67,7 @@ Floating values are allowed for <approx>.
           collect (approx-m item approx ref-midic))))
 
 ;==================================
-;MIDIC conversionts
+;MIDIC conversions
 ;==================================
 
 (defvar *diapason-freq* 440.0)
