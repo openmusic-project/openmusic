@@ -25,6 +25,62 @@
 
 (in-package :om)
 
+;==================================
+;APPROX_EDO
+;==================================
+;Approximates to the nearest note of a given scale (EDO)
+
+
+(defmethod* gen-Edo-scale ((edo number) &optional (root 6000))
+  :numouts 1 
+  :initvals '(12 6000) 
+  :indoc '("division" "root note")
+  :icon 141
+  :doc "Generates edo midics"
+  (let* ((beg root)
+         (end (+ 1200 root))
+         (scale (arithm-ser beg end (/ 1200 edo))))
+    ;(om-round scale)
+    (mapcar 'round scale)
+    ))
+
+(defun trans-in-octave (note root)
+"transpose a note inside an octave"
+  (let ((rep note))
+    (if (< rep root)
+         (progn 
+           (setf rep (+ rep 1200))
+           (trans-in-octave rep root))
+      (if (> rep (+ root 1200))
+          (progn 
+            (setf rep (- rep 1200))
+            (trans-in-octave rep root))
+        rep))))
+
+;(trans-in-octave 38 6100)
+;(trans-in-octave 6038 7000)
+
+(defun closest-int-in-list (int edo)
+  "find the closest midic <int> to a ref scale <edo>"
+  (let* ((refscale (gen-edo-scale edo))
+         (trans (trans-in-octave int 6000))
+         (corr (- int trans))
+         (diff (om-abs (om- refscale trans)))
+         (pos (position (list-min diff) diff)))
+    (+ (nth pos refscale) corr)))
+
+;(closest-int-in-list1 4871 96)
+
+(defmethod* approx-edo ((midic number) (edo number))
+  :initvals '(6000 2) 
+  :indoc '("pitch list (midicents)" "edo div")
+  :icon 141
+  :doc "Approximates <midic> to a given <edo>"
+(closest-int-in-list midic edo))
+
+(defmethod* approx-edo ((midic list) (edo number))
+  (loop for i in midic
+        collect (approx-edo i edo)))
 
 ;==================================
 ;APPROX_M
@@ -41,6 +97,7 @@
 (defvar *global-midi-approx* 2)
 (setf *global-midi-approx* 2)
 
+#|
 (defmethod* approx-m  ((midic t) approx &optional (ref-midic 0))
   :numouts 1 
   :initvals '(6000 2 0) 
@@ -57,8 +114,30 @@ Floating values are allowed for <approx>.
 <ref-midic> is a midicent that is subtracted from <midic> before computation: the computation can then be carried on an interval rather than an absolute pitch."
   (if (<= approx 0)
       midic
-    (round (* (floor (+ (* (- midic ref-midic) approx) 100) 200) 200) approx)
-))
+    (round (* (floor (+ (* (- midic ref-midic) approx) 100) 200) 200) approx)))
+|#
+
+;;EDO compatibility
+(defmethod* approx-m  ((midic t) approx &optional (ref-midic 0))
+  :numouts 1 
+  :initvals '(6000 2 0) 
+  :indoc '("pitch list (midicents)" "tone division")
+  :icon 141
+  :doc "
+Returns an approximation of <midic> (in midicents) to the nearest tempered division of the octave.
+<approx> = 1 whole tones
+<approx> = 2 semi tones
+<approx> = 4 quarter tones
+<approx> = 8 eight tones
+
+Floating values are allowed for <approx>.
+<ref-midic> is a midicent that is subtracted from <midic> before computation: the computation can then be carried on an interval rather than an absolute pitch."
+  (cond ((<= approx 0) midic)
+        ((<= approx 16) 
+         (round (* (floor (+ (* (- midic ref-midic) approx) 100) 200) 200) approx))
+        ((> approx 16)  
+         (approx-edo (- midic ref-midic) (round (/ approx 10))))
+        (t midic)))
 
 (defmethod* approx-m  ((self list) approx &optional (ref-midic 0))
   (if (<= approx 0)
