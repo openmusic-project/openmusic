@@ -5409,6 +5409,7 @@
            (subdivise-figure  item subdiv))
      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
      (setf (selection? self) nil)
+     #+macosx(update-slot-edit self)
      (update-panel self t)))
 
 (defmethod do-subdivise ((self polyPanel) char)
@@ -5422,6 +5423,7 @@
      (loop for voice in (remove-duplicates voices :test 'equal) do
            (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
      (setf (selection? self) nil)
+     #+macosx(update-slot-edit self)
      (update-panel self t)))
 
 
