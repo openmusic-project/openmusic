@@ -527,10 +527,11 @@ Extraction methods.
   self)
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
-  (distribute-chords self chords)
+  ;(distribute-chords self chords)
   (when (> legato 0) (normalize-chord self legato))
   (set-ties self ties)
   (setf (tempo self) tempo)
+  (distribute-chords self chords);moved AFTER. legato is reseting all loffsets
   self)
 
 ;170624 KH fixes restfloat after float!
