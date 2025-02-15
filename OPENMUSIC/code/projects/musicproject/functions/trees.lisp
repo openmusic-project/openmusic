@@ -969,7 +969,7 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;REVERSETREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;The class is defined in order to access easily the try consecutives kind:
+;The class is defined in order to access easily the three consecutives kind:
 ;plusp integers, minusp integers and floats (pulse, rests and tied notes)
 
 

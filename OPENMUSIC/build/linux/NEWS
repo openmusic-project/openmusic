@@ -2,17 +2,21 @@
 
 NEW FEATURES
 
-- Marking, changing icons in workspace
+- Marking and changing icons in workspace
 - SOUND window custom waveshape color
 
 IMPROVEMENTS
 
+- score subdivision dialog
+- bpf-bpc shortcuts
 - 'k' Shortcut for Clearing patches (forces deleting)
 - Workspace/folder scrolling shortcut
 - Tooltips for inputs when connection process
 
 FIXES
 
+- gracenote offsets are taken into account 
+- approx-m compatible with EDOs
 - Internal chord obj-mode selection
 - SOUND cursor (doesn't disappear)
 - fixed disappearing cursor-play-view
