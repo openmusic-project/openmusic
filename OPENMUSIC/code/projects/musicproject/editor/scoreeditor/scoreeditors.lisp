@@ -1079,40 +1079,42 @@
            (:om-key-tab (change-obj-mode self 1))
            (:om-key-up  (move-selection self 0))
            (:om-key-down  (move-selection self 1))
-           (otherwise (if (selection? self)
-                          
-                          (if (char-is-digit char) 
-                              
-                              (do-subdivise self char)
-                            
-                            (case char
-                              (:om-key-left (cond ((extra-p (car (selection? self)))
-                                                   (advance-extras self -1))
-                                                  ((equal (slots-mode self) 'dur)
-                                                   (change-dur self -1))
-                                                  (t (change-x self -1))))
-                              (:om-key-right (cond ((extra-p (car (selection? self)))
-                                                    (advance-extras self 1))
-                                                   ((equal (slots-mode self) 'dur)
-                                                    (change-dur self 1))
-                                                   (t (change-x self 1))))
-                              (#\C  (set-color-to-mus-obj self))
+           (otherwise 
+            (if (selection? self)
+                
+                (if (char-is-digit char) 
+                    (do-subdivise self char)
+   
+                  (case char
+                    (#\1 (subdivide-more self)) 
+                    (:om-key-left (cond ((extra-p (car (selection? self)))
+                                         (advance-extras self -1))
+                                        ((equal (slots-mode self) 'dur)
+                                         (change-dur self -1))
+                                        (t (change-x self -1))))
+                    (:om-key-right (cond ((extra-p (car (selection? self)))
+                                          (advance-extras self 1))
+                                         ((equal (slots-mode self) 'dur)
+                                          (change-dur self 1))
+                                         (t (change-x self 1))))
+                    (#\C  (set-color-to-mus-obj self))
                            
-                              (:om-key-delete (delete-selection self))
-                              (#\+ (do-union self))
-                              (#\* (do-group self))
-                              (#\- (un-group self))
+                    (:om-key-delete (delete-selection self))
+                    (#\+ (do-union self))
+                    (#\* (do-group self))
+                    (#\- (un-group self))
                            ;(#\= (if (om-option-key-p) (untie-selection self) (tie-selection self)))
-                              (#\= (tie-selection self))
-                              (#\/ (untie-selection self))
-                              (#\o (open-internal-editor self))
-                              ;; (#\/ (subdivise-edit-cursor self)) ;a faire
+                    (#\= (tie-selection self))
+                    (#\/ (untie-selection self))
+                    (#\o (open-internal-editor self))
+                    ;; (#\/ (subdivise-edit-cursor self)) ;a faire
                            
-                              (otherwise (om-beep))))
-                        (case char
-                          (:om-key-esc (reset-cursor self)))
-                        ))
-           )
+                    (otherwise (om-beep))))
+                 )
+              (case char
+                (:om-key-esc (reset-cursor self)))
+              ))
+           
          (when (editor self) (update-inspector (editor self) 0))
          )))
 
@@ -3448,7 +3450,8 @@
           (("+") "Union Pulses")
           (("-") "Break Group (Group Mode)")
           ("esc" "Switch Note/Silence")
-          ("1-9" "Subdivise Pulse")
+          ("2-9" "Subdivise Pulse")
+          (("1") "Open Subdivision dialog")
           (("=") "Tie Selection")
           (("/") "Untie Selection")
           (("C") "Change Color")
@@ -3633,13 +3636,15 @@
           (("+") "Union Pulses")
           (("-") "Break Group (Group Mode)")
           ("esc" "Switch Note/Silence")
-          ("1-9" "Subdivise Pulse")
+          ("2-9" "Subdivise Pulse")
+          (("1") "Open Subdivision dialog")
           (("=") "Tie Selection")
           (("/") "Untie Selection")
           (("C") "Change Color")
           (("r") "Open RT Editor")
           (("m") "Open Tempo Editor")
           ;(.)
+          
           )
         '((("M") "Remove Tempo")
           (("x") "Extra Edition Palette")
@@ -5457,6 +5462,66 @@
            (parent newgroup) pere)
      (setf (nth pos (inside pere)) newgroup)
      (reverse (cons-container-path (car (inside newgroup))))))
+
+
+(defmethod do-subdivise-more ((self scorePanel) subdiv) t)
+
+(defmethod do-subdivise-more ((self voicePanel) subdiv)
+  (let* ((chords (loop for item in (selection? self)
+                       append (cons-chord&rest-list item)))
+         (voice (object (om-view-container self))))
+    (loop for item in chords do
+            (subdivise-figure item subdiv))
+    (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+    (setf (selection? self) nil)
+    #+macosx(update-slot-edit self)
+    (update-panel self t)))
+
+(defmethod do-subdivise-more ((self polyPanel) subdiv)
+  (let* ((chords (loop for item in (selection? self)
+                       append (cons-chord&rest-list item)))
+         (poly (object (om-view-container self))) voices)
+    (loop for item in chords do
+            (push (get-the-voice item) voices)
+            (subdivise-figure item subdiv))
+    (loop for voice in (remove-duplicates voices :test 'equal) do
+            (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+    (setf (selection? self) nil)
+    #+macosx(update-slot-edit self)
+    (update-panel self t)))
+
+
+
+;(fmakunbound 'subdivide-more)
+(defmethod subdivide-more ((self scorePanel))
+  (let* ((xsize 120)
+         (mydialog (om-make-window 'om-dialog
+                                   :size (om-make-point 180 90)
+                                   :window-title ""
+                                   :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
+         (subdv (om-make-dialog-item 'om-editable-text (om-make-point 30 45) (om-make-point 50 10) "1"
+                                     )))
+    (om-add-subviews mydialog 
+                     (om-make-dialog-item 'om-static-text (om-make-point 5 9) (om-make-point 90 20)
+                                          "subdivisions"
+                                          :font *om-default-font3b*
+                                          :bg-color *om-window-def-color*)
+                     subdv
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 5) (om-make-point 70 20) "Cancel"
+                                          :di-action (om-dialog-item-act item 
+                                                       (declare (ignore item))
+                                                       (om-return-from-modal-dialog mydialog ()))
+                                          :default-button nil)
+                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 40) (om-make-point 70 20) "OK"
+                                          :di-action (om-dialog-item-act item 
+                                                       (declare (ignore item))
+                                                       (let ((sub (read-from-string (om-dialog-item-text subdv))))
+                                                       (do-subdivise-more self sub))
+                                                       (om-return-from-modal-dialog mydialog ()))
+                                        
+                                          :default-button t))
+    (om-modal-dialog mydialog)))
+
 
 ;===========================
 (defun vocie-next-container (obj chords)
