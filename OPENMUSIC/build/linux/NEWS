@@ -7,6 +7,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Timesignatures and tempo are exported in MidiFiles
 - score subdivision dialog
 - bpf-bpc shortcuts
 - 'k' Shortcut for Clearing patches (forces deleting)
