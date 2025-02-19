@@ -77,7 +77,7 @@
 				      :type "midi")))
       (setf *last-saved-dir* (make-pathname :directory (pathname-directory pathname)))
       (let ((tempo (object-midi-tempo self)))
-        (when (save-midifile pathname self approx tempo (or format *def-midi-format*) retune-channels)
+        (when (om-save-midifile pathname self approx (or format *def-midi-format*) retune-channels)
           (namestring pathname))))))
 
 

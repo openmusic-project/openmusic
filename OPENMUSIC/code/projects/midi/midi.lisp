@@ -45,6 +45,7 @@
         
         ;;; UTILS AND FUNCTIONS
         "tools;midi-conversions"
+        "tools;midi-midifile-save"
         "tools;midi-save"
         "tools;midi-preparetoplay"
         "tools;midi-tuning"
