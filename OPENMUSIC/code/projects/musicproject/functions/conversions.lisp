@@ -66,9 +66,18 @@
          (trans (trans-in-octave int 6000))
          (corr (- int trans))
          (diff (om-abs (om- refscale trans)))
-         (pos (position (list-min diff) diff)))
+         (pos (position (list-min diff) diff :from-end t)))
     (+ (nth pos refscale) corr)))
-
+#|
+(defun closest-int-in-list (int edo)
+  "find the closest midic <int> to a ref scale <edo>"
+  (let* ((refscale (gen-edo-scale edo))
+         (trans (trans-in-octave int 6000))
+         (corr (- int trans))
+         (diff (om-abs (om- refscale trans)))
+         (pos (position (list-min diff) diff :from-end *approx-dir*)))
+    (+ (nth pos refscale) corr)))
+|#
 ;(closest-int-in-list1 4871 96)
 
 (defmethod* approx-edo ((midic number) (edo number))
