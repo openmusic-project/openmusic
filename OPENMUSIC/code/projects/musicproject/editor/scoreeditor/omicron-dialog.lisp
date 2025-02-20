@@ -209,8 +209,8 @@
                                            :callback-type '(:collection)
                                            :test-function 'string-equal
                                            :range nil
-                                           :action-callback #'(lambda (list)
-                                                                (print "OK ACTION!"))
+                                         ;  :action-callback #'(lambda (list)
+                                         ;                       (print "OK ACTION!"))
                                            :selection-callback #'(lambda (list) 
                                                                    (progn 
                                                                      (setf (selected win) (mapcar 'car *omicron-data*))

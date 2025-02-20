@@ -60,8 +60,11 @@
    "96 edo (1/16)"
    ))
 
+;(defparameter *edo-val-list* 
+;  (list 50 1 70 80 90 100 120 140 150 160 170 180 190 220 4 300 310 360 420 480 600 720 840 16))
+
 (defparameter *edo-val-list* 
-  (list 50 1 70 80 90 100 120 140 150 160 170 180 190 220 4 300 310 360 420 480 600 720 840 16))
+  (list 50 1 70 80 90 100 2 140 150 160 170 180 190 220 4 300 310 360 420 8 600 720 840 16))
 
 (defparameter *edo-list* nil)
 (setf *edo-list* (loop for i in *edo-names-0*
