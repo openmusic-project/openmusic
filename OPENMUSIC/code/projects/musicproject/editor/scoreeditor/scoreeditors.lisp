@@ -645,17 +645,17 @@
          
          ;;;  EDO
          (edobut (om-make-dialog-item 'om-button
-                                       #+linux(om-make-point l2 c2)
-                                       #+win32(om-make-point l2 (- c2 3))
-                                       #+macosx(om-make-point (- l2 5) (- c2 5))
-                                       #+(or linux win32) (om-make-point 90 25)
-                                       #+macosx(om-make-point 110 30)
-                                       (format nil "~A" (give-symbol-of-approx approx)) ;edoname
-                                       :font *om-default-font1*
-                                     :di-action (om-dialog-item-act item
-                                                  (declare (ignore item))
-                                                  (om-micron *omicron-data* self)
-                                                  )))
+                                      #+linux(om-make-point l2 c2)
+                                      #+win32(om-make-point l2 (- c2 3))
+                                      #+macosx(om-make-point (- l2 5) (- c2 5))
+                                      #+(or linux win32) (om-make-point 90 25)
+                                      #+macosx(om-make-point 110 30)
+                                      (format nil "~A" (give-symbol-of-approx approx)) ;edoname
+                                      :font *om-default-font1*
+                                      :di-action (om-dialog-item-act item
+                                                   (declare (ignore item))
+                                                   (om-micron *omicron-data* self)
+                                                   )))
          
            ;;; onset
          (onsetitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) "Onset"
