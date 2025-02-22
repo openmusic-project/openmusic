@@ -33,9 +33,80 @@
 
 
 ;=======================
-; DATA
+; Tools
 ;=======================
 
+
+(defmethod get-approx ((self note))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self chord))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self chord-seq))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self multi-seq))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self voice))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self poly))
+  (let* ((box (associated-box self))
+         (approx (get-edit-param box 'approx)))
+    approx))
+
+(defmethod get-approx ((self t)) nil)
+
+;;;;;;;;;;;
+
+;;must update editor controls!
+
+(defmethod set-approx ((self note) val)
+  (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+
+(defmethod set-approx ((self chord) val)
+   (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+(defmethod set-approx ((self chord-seq) val)
+   (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+(defmethod set-approx ((self multi-seq) val)
+   (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+(defmethod set-approx ((self voice) val)
+   (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+(defmethod set-approx ((self poly) val)
+   (let* ((box (associated-box self)))
+    (set-edit-param box 'approx val)))
+
+(defmethod set-approx ((self t) val) nil)
+
+
+(defmethod set-approx-scale ((self scorePanel) tone) ;tone =(get-approx object)
+  (let ((scale (get-current-scale tone)))
+    (setf (staff-tone self) scale)))
+
+;(position 100.1 *scales-list* :key #'car)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;=======================
 ; INSPECTOR
 ;=======================

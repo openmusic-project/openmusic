@@ -30,83 +30,7 @@
 ; for playing different microtonal
 ; scales using fluidsynth
 ;==================================
-
 (in-package :om)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TOOLS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod get-approx ((self note))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self chord))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self chord-seq))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self multi-seq))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self voice))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self poly))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
-
-(defmethod get-approx ((self t)) nil)
-
-;;;;;;;;;;;
-
-;;must update editor controls!
-
-(defmethod set-approx ((self note) val)
-  (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-
-(defmethod set-approx ((self chord) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-(defmethod set-approx ((self chord-seq) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-(defmethod set-approx ((self multi-seq) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-(defmethod set-approx ((self voice) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-(defmethod set-approx ((self poly) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
-
-(defmethod set-approx ((self t) val) nil)
-
-
-(defmethod set-approx-scale ((self scorePanel) tone) ;tone =(get-approx object)
-  (let ((scale (get-current-scale tone)))
-    (setf (staff-tone self) scale)))
-
-;(position 100.1 *scales-list* :key #'car)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;THE BOX ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -154,11 +78,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
  (when (and (editorframe self) (not (equal (allow-lock self) "x")))
     (om-close-window (om-view-window (editorframe self)))))
 
-
-
 (defmethod OpenObjectEditor :after ((self s-polybox)) nil)
-
-
 
 (defmethod omNG-save ((self tracks) &optional (values? nil)) 
   "Cons a Lisp expression that retuns a copy of self when it is evaluated."
@@ -168,6 +88,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                               ; :approx ',(approx self)
                               ; :from-file t
                                )))
+       ;(setf (voices self) ',(voices self))
        (setf (approx rep) ',(approx self))
        (setf (names rep) ',(names self))
        rep
@@ -184,6 +105,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
      rep
      ))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EDITOR;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -196,6 +118,9 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 (defmethod class-has-editor-p ((self tracks)) t)
 (defmethod get-editor-class ((self tracks)) 'tracks-editor)
+
+;; A VOIR
+
 (defmethod default-edition-params ((self tracks)) 
   (list ;(cons 'winsize (or (get-win-ed-size self) (om-make-point 370 280)))
         ;(cons 'winpos (or (get-win-ed-pos self) (om-make-point 400 20)))
@@ -310,10 +235,10 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 ;(om-make-point (w self) (- (h self) (get-control-h self)))
 
+             
 (defmethod initialize-instance :after ((self tracks-editor) &rest l)
   (declare (ignore l))
   ;(load-edition-params self)
-
   ;;;put panel in editor
   (let* ((ed-view (om-make-view (get-panel-class self)
                                 :owner self
@@ -324,52 +249,46 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                                 )))
     (setf (editor (object self)) self)
     (let* ((obj (object self))
-           ;(vx (clone (voices obj)))
            (vx (voices obj))
-           ;(names (loop for i in vx
-           ;             collect (name (associated-box i))))
            (dy 300)
            (posy 5))
-      
-      ;(setf (names self) names)
-      (setf (tunings self) (approx obj))) 
-    
-    (setf (panel self) ed-view)
+      (setf (panel self) ed-view)
     (update-tracks-panel ed-view)
     ;remove buttons from last hide-bar
     (om-remove-subviews (car (hide-buts (panel self))) 
-                        (om-subviews (car (hide-buts (panel self)))));apparement ne maec
-    ))
+                        (om-subviews (car (hide-buts (panel self)))))
+    )))
 
 
+(defmethod set-editor-tone ((self scorePanel) newtone)
+  (if newtone
+        (setf (staff-tone self) newtone)
+      (setf (staff-tone self) *global-midi-approx*)) 
+    (om-set-dialog-item-text (nth 10 (om-subviews  (ctr-view (editor self)))) 
+                             (give-symbol-of-approx newtone))
+    (update-panel self t) ;;; t pour le sheet
+    (om-invalidate-view self t)
+    t)
 
 (defmethod update-tracks-panel ((self trackspanel))
   (let* ((editor (om-view-container self))
          (tracksobj (object editor))
          (voices (voices tracksobj)))
-
-       
     (setf (groups self) 
           (loop for i from 1 to (length voices)
                                 collect (list i t)))
- 
-   ; (setf (editor (object self)) self)
-    (let* ((vx (mapcar #'clone voices))
+     (let* ((vx (mapcar #'clone voices))
            (dy 300)
            (posy 5))
-      ;(setf (tunings self) (loop for i in vx collect (get-approx i)))
-      (setf (tunings self) (approx tracksobj))
-
-      (loop for v in vx
-            do
-              (progn
-                
-                (push (om-make-view 'hide-bar :owner self :object v :ref (om::ref (editor self))
-                               :position (om-make-point 0 posy) :size (om-make-point 1100 15)
-                               :bg-color *azulote*)
-                      (hide-buts self))
-                (incf posy 15)
-                
+       (setf (tunings self) (approx tracksobj))
+       (loop for v in vx
+             do
+               (progn
+                 (push (om-make-view 'hide-bar :owner self :object v :ref (om::ref (editor self))
+                                     :position (om-make-point 0 posy) :size (om-make-point 1100 15)
+                                     :bg-color *azulote*)
+                       (hide-buts self))
+                 (incf posy 15)
                  (let ((panel (om-make-view (get-editor-class v) :owner  self :object v :ref (om::ref (editor self))
                                :position (om-make-point 0 posy) :size (om-make-point 1100 300))))
                    (push panel
@@ -396,31 +315,18 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
             )
 
       ;set tunnings for panel
-      (let ((approx-pos (loop for i in (tunings self)
-                              collect (position i *scales-list* :key #'car))))
+        (loop for i in (reverse (editors self))
+               do (set-edit-param i 'approx  (staff-tone (panel i))))
 
-    ;set approx and tunings in ctrl-panel
-        (loop for v in (reverse (editors self))
-              for i in approx-pos
-              for tun in (tunings self)
-              do (set-edit-param v 'approx tun)
-                 (set-edit-param v 'approx i) ;tun
-                 ;(om-set-dialog-item-text (nth 10 (om-subviews  (ctr-view v))) i)
-                 ;(om-set-dialog-item-text (nth 10 (om-subviews  (ctr-view v))) (give-symbol-of-approx tun))
-                 ;(om-select-item-index (nth 10 (om-subviews  (ctr-view v))) (give-symbol-of-approx i))
-                 (update-panel (panel v)))
-        
          ;set scales according to approx to panels        
         (loop for i in (reverse (editors self))
-              for a in approx-pos
               for tun in (tunings self)
               do 
                 (progn
-                 (set-approx-scale (panel i) tun) ;tun?
-                   (change-editor-tone (panel i) tun) ; orig: tone
-                   (update-panel (panel i))
-                   ))
-
+                  (set-editor-tone (panel i) tun) ; orig: tone
+                  (update-panel (panel i))
+                  ))
+        
       ;set ports for each panel
         
         (loop for i in (reverse (editors self))
@@ -431,11 +337,15 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
         (loop for i in (reverse (hide-buts self))
               for n in (names tracksobj)
               do (show-barname i n)) 
-      ;now should send autotuning
+        (loop for i in (reverse (editors self))
+               do (set-edit-param i 'approx  (staff-tone (panel i))))
+        (loop for i in (editors self)
+              do (update-panel (panel i)))
+       ;now should send autotuning
         (om-invalidate-view self t)
+        )))
 
-        ))))
-
+;(give-symbol-of-approx 54)
 
 ;;;;;;;;;;;;;;;;;;;;;INITIALIZATION
 
@@ -499,8 +409,8 @@ nil)
 
 ;; diplay-mode = :open / :close
 ;; => 2 default sizes
-(defmethod get-win-ed-size ((self tracks) ) (om-make-point 750 590))
-(defmethod get-win-ed-size2 ((self tracks)) (om-make-point 1500 590))
+(defmethod get-win-ed-size ((self tracks) ) (om-make-point 750 380))
+(defmethod get-win-ed-size2 ((self tracks)) (om-make-point 1500 380))
 
 
 ;;;; Key event handlers:
