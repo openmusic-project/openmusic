@@ -148,7 +148,12 @@
 ;(nth 12 *scales-list*)
 
 (defun give-symbol-of-approx (approx)
-  (last-elem (nth (give-index-off-approx approx) *scales-list*)))
+  (let ((indx (give-index-off-approx approx)))
+    (if indx
+        (last-elem (nth indx *scales-list*))
+      "12 EDO_#" ;put rather the *global-midi-approx* corresponding value
+      )))
+
 
 ;(give-symbol-of-approx 2)
 
