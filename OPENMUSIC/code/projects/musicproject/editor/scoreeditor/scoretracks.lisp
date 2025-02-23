@@ -73,10 +73,13 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 (defmethod s-polybox-p ((self s-polybox)) t)
 (defmethod s-polybox-p ((self t)) nil)
 
+
 (defmethod omng-box-value :before ((self s-polybox) &optional (numout 0))
   "To close the editor bevore re-evaluating the box"
  (when (and (editorframe self) (not (equal (allow-lock self) "x")))
     (om-close-window (om-view-window (editorframe self)))))
+
+
 
 (defmethod OpenObjectEditor :after ((self s-polybox)) nil)
 
@@ -201,6 +204,9 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 (defmethod editor ((self trackspanel)) 
   (om-view-container self))
+
+(defmethod trackspanel-p ((self trackspanel)) t)
+(defmethod trackspanel-p ((self t)) nil)
 
 (defmethod report-modifications ((self trackspanel))
   (report-modifications (om-view-container self)))
@@ -417,24 +423,22 @@ nil)
 
 (defparameter *clicked-panel* nil) ; A hack to catch key events on each editor.
 
-(defmethod om-view-click-handler :before ((self om::scorePanel) where)
-  (setf *clicked-panel* self))
+(defmethod om-view-click-handler :before ((self scorePanel) where)
+  (setf *clicked-panel* self)
+  (when (trackspanel-p (om-view-container (om-view-container self)))
+  (let* ((tpanel (om-view-container (om-view-container self)))
+         (obj (object (om-view-container tpanel)))
+         (panels (reverse (loop for i in (editors tpanel)
+                       collect (panel i))))
+         (pos (position *clicked-panel* panels)))
+    (setf (nth pos (voices obj))
+          (object (om-view-container (nth pos panels))))
+    )))
+
 
 (defmethod handle-key-event ((self tracks-editor) char) 
   (handle-key-event *clicked-panel* char))
 
-
-#|
-(defmethod handle-key-event ((self tracks-editor) char)
-  "Handles key events for a `quant-editor'. All the key events are redirected to each sub-editor, depending of the last clicked panel."
-  (cond ((equal *clicked-panel* (om::panel (chord-seq-editor self)))
-         (om::handle-key-event  (chord-seq-editor self) char))
-        ((equal *clicked-panel* (om::panel (voice-editor self)))
-         (om::handle-key-event (voice-editor self) char))
-        ((equal *clicked-panel* (om::panel (poly-editor self)))
-         (om::handle-key-event (poly-editor self) char))
-        (t (call-next-method))))
-|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;TITLE BAR AND MAIN CONTROLS
