@@ -323,9 +323,9 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
             do (setf (at-editor h) v)
                (setf (bef-editor h) b))
 
-      ;set tunnings for panel
-      ;  (loop for i in (reverse (editors self))
-      ;         do (set-edit-param i 'approx  (staff-tone (panel i))))
+      ;set tunnings for panel ;(check if necessary)
+        (loop for i in (reverse (editors self))
+               do (set-edit-param i 'approx  (staff-tone (panel i))))
 
          ;set scales according to approx to panels        
         (loop for i in (reverse (editors self))

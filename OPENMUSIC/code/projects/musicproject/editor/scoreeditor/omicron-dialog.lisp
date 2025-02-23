@@ -39,32 +39,32 @@
 (defmethod get-approx ((self note))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0))
+  *global-midi-approx*))
 
 (defmethod get-approx ((self chord))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0))
+  *global-midi-approx*))
 
 (defmethod get-approx ((self chord-seq))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0))
+  *global-midi-approx*))
 
 (defmethod get-approx ((self multi-seq))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0))
+  *global-midi-approx*))
 
 (defmethod get-approx ((self voice))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0)) ;2 marche mais pas bonne valeur 120.0 marhce pas???
+  *global-midi-approx*))
 
 (defmethod get-approx ((self poly))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
-  120.0))
+  *global-midi-approx*))
 
 (defmethod get-approx ((self t)) nil)
 

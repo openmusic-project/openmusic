@@ -232,7 +232,7 @@
     (list 100.0 *10-EDO_#* "10 EDO_#")
     (list 100.1 *10-EDO_b* "10 EDO_b"))
    (list
-    (list 120.0 *current-1/2-scale* "12 EDO_#")
+    (list 2 *current-1/2-scale* "12 EDO_#")
     (list 120.1 *12-EDO_b* "12 EDO_b"))
    (list
     (list 140.0 *14-EDO_^* "14 EDO_^")
