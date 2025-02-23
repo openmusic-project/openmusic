@@ -36,36 +36,35 @@
 ; Tools
 ;=======================
 
-
 (defmethod get-approx ((self note))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0))
 
 (defmethod get-approx ((self chord))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0))
 
 (defmethod get-approx ((self chord-seq))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0))
 
 (defmethod get-approx ((self multi-seq))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0))
 
 (defmethod get-approx ((self voice))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0)) ;2 marche mais pas bonne valeur 120.0 marhce pas???
 
 (defmethod get-approx ((self poly))
-  (let* ((box (associated-box self))
-         (approx (get-edit-param box 'approx)))
-    approx))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+  120.0))
 
 (defmethod get-approx ((self t)) nil)
 

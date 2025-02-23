@@ -49,19 +49,20 @@
   (:icon 954)
   (:documentation "
 tracks is a polyphonic object made of a superimposition of VOICE objects.
-")
-  )
+"))
+
 
 (defmethod initialize-instance ((self tracks)  &rest args) 
   (call-next-method)
   (let* ((approx (mapcar #'get-approx (voices self)))
-        (boxes (loop for i in (voices self)
+         (boxes (loop for i in (voices self)
                      collect (associated-box i)))
-        (names (loop for i in boxes
-                     collect (if i (name i) ""))))
-    (setf (approx self) approx)
-    (setf (names self) names)
-    ))
+         (names (loop for i in boxes
+                      collect (if i (name i) ""))))
+    (if (null (car approx))
+        (setf (approx self) '(120.0))
+      (setf (approx self) approx))
+    (setf (names self) names)))
 
 
 (defclass* s-polybox (OMBoxEditCall) ())
@@ -208,6 +209,9 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 (defmethod trackspanel-p ((self trackspanel)) t)
 (defmethod trackspanel-p ((self t)) nil)
 
+;(defmethod get-edit-param ((self trackspanel) param)
+;  (get-edit-param (editor self) param))
+
 (defmethod report-modifications ((self trackspanel))
   (report-modifications (om-view-container self)))
 
@@ -317,12 +321,11 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
             for v in (reverse (cons nil (editors self)))
             for b in (cons nil (reverse (editors self)))
             do (setf (at-editor h) v)
-               (setf (bef-editor h) b)
-            )
+               (setf (bef-editor h) b))
 
       ;set tunnings for panel
-        (loop for i in (reverse (editors self))
-               do (set-edit-param i 'approx  (staff-tone (panel i))))
+      ;  (loop for i in (reverse (editors self))
+      ;         do (set-edit-param i 'approx  (staff-tone (panel i))))
 
          ;set scales according to approx to panels        
         (loop for i in (reverse (editors self))
