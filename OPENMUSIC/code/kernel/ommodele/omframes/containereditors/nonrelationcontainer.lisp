@@ -643,7 +643,7 @@ Workspace Panels contain icons of patches, maquettes and folders
                        (#+(or linux win32)("Ctrl + 1") #+macosx("Cmd + 1") "New Patch")
                        (#+(or linux win32)("Ctrl + 2") #+macosx("Cmd + 2") "New Maquette")
                        (#+(or linux win32)("Ctrl + 3") #+macosx("Cmd + l") "New Lisp Function")
-                       (("Ctrl + N") "New Folder")
+                       (#+(or linux win32)("Ctrl + N") #+macosx("Cmd + N")"New Folder")
                        ("m" "Check/Uncheck selected items")
                        ("c" "Open icon's dialog")
                        ("i" "re-Init icons of selected items")
