@@ -252,7 +252,7 @@
          (indx2 (second index))
          (panel (panel (om-view-container controls)))
          (mode (score-mode panel))
-         (*pmode* nil)
+         (*pmode* nil); *pmode* meaning pagemode 
          (win (om-make-window 'omicron-dialog 
                               :size (om-make-point 740 400)
                               :position pos
@@ -365,7 +365,16 @@
                                                          
                                                          (change-editor-tone panel
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
-                                                         
+                                                        
+                                                         ;for tracks obj
+                                                         (when (trackspanel-p (om-view-container (om-view-container panel)))
+                                                           (let* ((trkpanel (om-view-container (om-view-container panel)))
+                                                                  (voices (reverse (loop for i in (editors trkpanel)
+                                                                                         collect (object i))))
+                                                                  (trked (om-view-container trkpanel))
+                                                                  (tracks (object trked))
+                                                                  (pos (position (object (om-view-container controls)) voices)))
+                                                             (setf (nth pos (approx tracks)) (caar (nth indx1 *omicron-scales-list*)))))
                                                          (om-close-window win)
                                                          (om-invalidate-view controls t)
                                                          #+linux (when *pmode*
@@ -389,3 +398,4 @@
     ))
 
 ;(om-micron *omicron-data* nil)
+
