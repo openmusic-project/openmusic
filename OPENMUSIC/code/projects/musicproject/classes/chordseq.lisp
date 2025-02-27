@@ -324,6 +324,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (cast-to-chords chordseq)
       (untie-chords chordseq)
       (adjust-extent chordseq)
+      (set-approx type (get-approx self));;Edo scale heritage
       chordseq)))
 
 
@@ -595,14 +596,17 @@ make-quanti
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
+  (set-approx type (get-approx self));;Edo scale heritage
   (reduce #'merger 
           (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
 
 ;;; POLY -> VOICE = just keeps the first voice of the poly
 (defmethod* Objfromobjs ((Self poly) (Type voice))
+  (set-approx type (get-approx self));;Edo scale heritage
     (ObjFromObjs (first (voices self)) type)) 
 
 (defmethod* Objfromobjs ((Self voice) (Type poly))
+  (set-approx type (get-approx self));;Edo scale heritage
     (make-instance (type-of type) :voices (list (clone self))))
 
 
@@ -803,9 +807,11 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type Chord-seq))
+  (set-approx type (get-approx self));;Edo scale heritage
   (reduce #'merger (inside self)))
 
 (defmethod* Objfromobjs ((Self chord-seq) (Type multi-seq))
+  (set-approx type (get-approx self));;Edo scale heritage
   (make-instance 'multi-seq :chord-seqs (list self)))
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type poly))
