@@ -112,6 +112,7 @@
 
 (defmethod get-box-tut-name ((self omreceive)) "send")
 
+
 ;KARIM TUTORIALS
 
 (defmethod special-name-for-tutorial ((self t)) nil)
@@ -161,9 +162,7 @@
 ;;;lists
 
 (defmethod special-name-for-tutorial ((self (eql 'last-n))) "last-first-n")
-
 (defmethod special-name-for-tutorial ((self (eql 'first-n))) "last-first-n")
-
 
 ;;lisp
 

@@ -92,6 +92,9 @@ It allows to choose/select items of a list to be outputed."))
 (defmethod omchoose-p ((self omchoose)) t)
 (defmethod omchoose-p ((self t )) nil )
 
+;online tutorial:
+(defmethod get-box-tut-name ((self omchoose)) "om-choose")
+
 ;make-new-editorcall
 (defun make-new-choose (name indice posi key-p &optional (icon 235) (class 'omchoose))
   (let* ((thechoose (make-instance class

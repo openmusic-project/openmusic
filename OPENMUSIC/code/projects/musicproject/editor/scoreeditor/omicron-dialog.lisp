@@ -76,7 +76,6 @@
   (let* ((box (associated-box self)))
     (set-edit-param box 'approx val)))
 
-
 (defmethod set-approx ((self chord) val)
    (let* ((box (associated-box self)))
     (set-edit-param box 'approx val)))
