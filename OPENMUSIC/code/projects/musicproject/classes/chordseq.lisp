@@ -324,7 +324,9 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (cast-to-chords chordseq)
       (untie-chords chordseq)
       (adjust-extent chordseq)
-      (set-approx type (get-approx self));;Edo scale heritage
+      ;(print (list "self" self type (get-approx self)))
+      ;not working for maquette! TODO
+      ;(set-approx type (get-approx self));;Edo scale heritage
       chordseq)))
 
 
