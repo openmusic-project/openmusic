@@ -706,7 +706,7 @@
                                         ))
 
          ;;;selection
-         (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 80) 
+         (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 50) 
                                         ""
                                          :font *om-default-font1*
                                          :bg-color *controls-color*))
