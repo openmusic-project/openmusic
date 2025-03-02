@@ -120,6 +120,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                                             :LChan (list! chan)
                                             )))
                             (setf (LPort chord) port)
+                            ;(setf (approx chord) (approx self))
                             chord) ))))
 
     (loop for chord in (inside self)
@@ -135,7 +136,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
     (when (> legato 0)
       (propagate-tempo self)
       (normalize-chord self legato)))
-  
   self)
 
 
@@ -326,7 +326,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (adjust-extent chordseq)
       ;(print (list "self" self type (get-approx self)))
       ;not working for maquette! TODO
-      ;(set-approx type (get-approx self));;Edo scale heritage
+      (set-approx type (approx self));;Edo scale heritage
       chordseq)))
 
 
@@ -492,7 +492,7 @@ make-quanti
 
 
 ;=== Conversion Chord-seq -> voice : dans le cas ou le chord-seq ne commence pas 0
-(defmethod* objFromObjs ((self chord-seq) (type voice))
+(defmethod* objFromObjs ((self chord-seq) (type voice)) (print (list "aadasd" (approx self)))
             (if (chords self)
                 (let* ((newchordseq (align-chords self *global-deltachords*))
                        (quantypar *quantify-def-params*)
@@ -511,7 +511,7 @@ make-quanti
                                                 :tempo (first quantypar)
                                                 :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq))))
-                  (set-approx type (get-approx self));;Edo scale heritage
+                  (set-approx type (approx self));;Edo scale heritage
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
@@ -598,17 +598,17 @@ make-quanti
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
+  (set-approx type (approx self));;Edo scale heritage
   (reduce #'merger 
           (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
 
 ;;; POLY -> VOICE = just keeps the first voice of the poly
 (defmethod* Objfromobjs ((Self poly) (Type voice))
-  (set-approx type (get-approx self));;Edo scale heritage
+  (set-approx type (approx self));;Edo scale heritage
     (ObjFromObjs (first (voices self)) type)) 
 
 (defmethod* Objfromobjs ((Self voice) (Type poly))
-  (set-approx type (get-approx self));;Edo scale heritage
+  (set-approx type (approx self));;Edo scale heritage
     (make-instance (type-of type) :voices (list (clone self))))
 
 
@@ -809,11 +809,11 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type Chord-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
+  (set-approx type (approx self));;Edo scale heritage
   (reduce #'merger (inside self)))
 
 (defmethod* Objfromobjs ((Self chord-seq) (Type multi-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
+  (set-approx type (approx self));;Edo scale heritage
   (make-instance 'multi-seq :chord-seqs (list self)))
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type poly))

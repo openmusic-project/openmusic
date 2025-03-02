@@ -37,34 +37,22 @@
 ;=======================
 
 (defmethod get-approx ((self note))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self chord))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self chord-seq))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self multi-seq))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self voice))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self poly))
-  (if (associated-box self)
-      (get-edit-param (associated-box self) 'approx)
-  *global-midi-approx*))
+  (approx self))
 
 (defmethod get-approx ((self t)) nil)
 
@@ -74,27 +62,39 @@
 
 (defmethod set-approx ((self note) val)
   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self chord) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self chord-seq) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+    (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self multi-seq) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self voice) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self poly) val)
-   (let* ((box (associated-box self)))
-    (set-edit-param box 'approx val)))
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+      (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self t) val) nil)
 
@@ -353,14 +353,15 @@
     (setf (but3 win) (om-make-dialog-item 'om-button (om-make-point 650 330) (om-make-point 80 20) "Apply"
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore item)) 
-                                                       (progn
-                                                           #+linux (when (in-page-mode? panel)
+                                                       (let ((approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))))
+                                                         (progn
+                                                         (setf (approx (object (om-view-container controls))) approx)
+                                                         #+linux (when (in-page-mode? panel)
                                                                    (change-score-mode (panel (om-view-container controls)) 0)
                                                                    (setf *pmode* t))
-                                                         (set-edit-param (om-view-container controls) 'approx
-                                                                         (car (nth indx2 (nth indx1 *omicron-scales-list*))))
+                                                         (set-edit-param (om-view-container controls) 'approx approx)
                                                          (om-set-dialog-item-text (nth (get-control-button controls) (om-subviews controls)) 
-                                                                                  (give-symbol-of-approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))));display button name 10
+                                                                                  (give-symbol-of-approx approx));display button name 10
                                                          
                                                          (change-editor-tone panel
                                                                              (car (nth indx2 (nth indx1 *omicron-scales-list*))))
@@ -380,7 +381,7 @@
                                                                    (change-score-mode panel 2)
                                                                    (setf *pmode* nil))
                                                          (update-slot-edit panel)
-                                                         ))
+                                                         )))
                                         
 ))
                                                        
