@@ -116,6 +116,7 @@ t)
 
 
 (defmethod get-only-chords ((self rest))
+;self
 nil)
 
 (defmethod get-only-chords ((self continuation-chord))
@@ -197,10 +198,12 @@ nil)
 
 
 (defmethod get-obj-info ((self voicepanel))
+  (if (selection? self)
   (let* ((selection (selection? self))
          (pere (parent (car selection)))
          (name (cond
-                ((rest-p (car selection)) "REST")
+                ((and (rest-p (car selection))
+                      (= 1 (length selection))) "REST")
                 ((cont-chord-p (car selection)) "TIE") 
                  (t (string-upcase (obj-mode self)))))
          (voice (object (om-view-container self)))
@@ -238,14 +241,16 @@ nil)
       (push ept (attached-editors (om-view-container self)))
       (setf (om-edit::ompanel ept) self)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
-    ))
+    )(om-beep-msg "Please select something...")))
 
 
 (defmethod get-obj-info ((self polypanel))
+  (if (selection? self)
    (let* ((selection (selection? self))
          (voice (get-the-voice (car selection)))
          (name (cond
-                ((rest-p (car selection)) "REST")
+                ((and (rest-p (car selection))
+                      (= 1 (length selection))) "REST")
                 ((cont-chord-p (car selection)) "TIE") 
                 (t (string-upcase (obj-mode self)))))
          (chords-only (get-only-chords selection))
@@ -282,11 +287,12 @@ nil)
       (push ept (attached-editors (om-view-container self)))
       (setf (om-edit::ompanel ept) self)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
-    ))
+    )(om-beep-msg "Please select something...")))
 
 
 ;NOTE, CHORD AND CHORDSEQ
 (defmethod get-obj-info ((self notepanel))
+  (if (selection? self)
   (let* ((selection (selection? self))
          (name (string-upcase (obj-mode self)))
          (slots (get-slots-info (car selection))))
@@ -305,12 +311,13 @@ nil)
       (push ept (attached-editors (om-view-container self)))
       (setf (om-edit::ompanel ept) self)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
-    ))
+    )(om-beep-msg "Please select something...")))
 
 
 
 
 (defmethod get-obj-info ((self chordpanel))
+  (if (selection? self)
   (let* ((selection (selection? self))
          (pere (parent (car selection)))
          (name (string-upcase (obj-mode self)))
@@ -330,7 +337,7 @@ nil)
     (push ept (attached-editors (om-view-container self)))
     (setf (om-edit::ompanel ept) self)
     (setf (om-edit::intfunc ept) #'om::set-obj-info))
-  ))
+  )(om-beep-msg "Please select something...")))
 
 
 
@@ -343,6 +350,7 @@ nil)
 
 
 (defmethod get-obj-info ((self chordseqpanel))
+  (if (selection? self)
   (let* ((selection (selection? self))
          (pere (parent (car selection)))
          (name (string-upcase (obj-mode self)))
@@ -377,7 +385,7 @@ nil)
       (push ept (attached-editors (om-view-container self)))
       (setf (om-edit::ompanel ept) self)
       (setf (om-edit::intfunc ept) #'om::set-obj-info))
-    ))
+    )(om-beep-msg "Please select something...")))
 
 
 
