@@ -3173,14 +3173,13 @@
             (clone (clone selection))
             (obj (object (om-view-container self)))
             (chrdseq (car (inside obj))))
-       ;(print (string-equal (obj-mode self) "chord"))
-       (if (string-equal (obj-mode self) "chord")
+       (if (and (string-equal (obj-mode self) "chord")
+                (not (equal (type-of self) 'polypanel)))
       (progn
        (merge-chord-in-chrdseq chrdseq clone)
        (delete-selection self)
        (update-panel self t))
-         (om-beep-msg "In order to merge, you must be in chord mode selection!")
-         )
+         (om-beep-msg "In order to merge, you must be in chord mode selection!"))
        ))
 
 
@@ -3211,6 +3210,7 @@
           (("i") "Show Selection info")
           (("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
+          (("1") "Merge notes to staff 1")
           )
         '((("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
@@ -5491,6 +5491,8 @@
 
 ;(fmakunbound 'subdivide-more)
 (defmethod subdivide-more ((self scorePanel))
+(when (or (equal (type-of self) 'voicepanel)
+          (equal (type-of self) 'polypanel))
   (let* ((xsize 120)
          (mydialog (om-make-window 'om-dialog
                                    :size (om-make-point 180 90)
@@ -5517,8 +5519,7 @@
                                                        (om-return-from-modal-dialog mydialog ()))
                                         
                                           :default-button t))
-    (om-modal-dialog mydialog)))
-
+    (om-modal-dialog mydialog))))
 
 ;===========================
 (defun vocie-next-container (obj chords)
