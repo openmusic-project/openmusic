@@ -287,10 +287,16 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 (defmethod* Objfromobjs ((Self chord) (Type Chord-seq)) 
-  (ObjFromObjs (list self) Type))
+(let ((chrdseq (ObjFromObjs (list self) Type)))
+  (set-approx type (approx self));;Edo scale heritage
+  (setf (approx chrdseq) (approx self))
+  chrdseq))
 
 (defmethod* Objfromobjs ((Self note) (Type Chord-seq)) 
-  (ObjFromObjs (list self) Type))
+(let ((chrdseq (ObjFromObjs (list self) Type)))
+  (set-approx type (approx self));;Edo scale heritage
+  (setf (approx chrdseq) (approx self))
+  chrdseq))
 
 
 (defmethod* Objfromobjs ((Self list) (Type Chord-seq))
@@ -327,6 +333,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       ;(print (list "self" self type (get-approx self)))
       ;not working for maquette! TODO
       (set-approx type (approx self));;Edo scale heritage
+      (setf (approx chordseq) (approx self))
       chordseq)))
 
 
@@ -512,6 +519,7 @@ make-quanti
                                                 :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq))))
                   (set-approx type (approx self));;Edo scale heritage
+                  (setf (approx newvoice) (approx self))
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
@@ -598,18 +606,25 @@ make-quanti
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
-  (set-approx type (approx self));;Edo scale heritage
-  (reduce #'merger 
-          (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
+  (let ((chordseq
+         (reduce #'merger 
+                 (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self)))))
+    (set-approx type (approx self));;Edo scale heritage
+    (setf (approx chordseq) (approx self))
+    chordseq))
 
 ;;; POLY -> VOICE = just keeps the first voice of the poly
 (defmethod* Objfromobjs ((Self poly) (Type voice))
-  (set-approx type (approx self));;Edo scale heritage
-    (ObjFromObjs (first (voices self)) type)) 
+  (let ((voice (ObjFromObjs (first (voices self)) type)))
+      (set-approx type (approx self));;Edo scale heritage
+      (setf (approx voice) (approx self))
+      voice)) 
 
 (defmethod* Objfromobjs ((Self voice) (Type poly))
+  (let ((poly (make-instance (type-of type) :voices (list (clone self)))))
   (set-approx type (approx self));;Edo scale heritage
-    (make-instance (type-of type) :voices (list (clone self))))
+  (setf (approx poly) (approx self))
+  poly))
 
 
 
@@ -809,22 +824,31 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type Chord-seq))
+  (let ((chordseq (reduce #'merger (inside self))))
   (set-approx type (approx self));;Edo scale heritage
-  (reduce #'merger (inside self)))
+  (setf (approx chordseq) (approx self))
+  chordseq))
 
 (defmethod* Objfromobjs ((Self chord-seq) (Type multi-seq))
+  (let ((multi (make-instance 'multi-seq :chord-seqs (list self))))
   (set-approx type (approx self));;Edo scale heritage
-  (make-instance 'multi-seq :chord-seqs (list self)))
+  (setf (approx multi) (approx self))
+  multi))
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type poly))
-  (let ((voice (make-instance 'voice)))
-    (make-instance 'poly :voices (mapcar #'(lambda (chseq) (objFromObjs chseq voice)) (inside self)))))
-
+  (let* ((voice (make-instance 'voice))
+         (poly (make-instance 'poly :voices (mapcar #'(lambda (chseq) (objFromObjs chseq voice)) (inside self)))))
+    (set-approx type (approx self));;Edo scale heritage
+    (setf (approx poly) (approx self))
+    poly))
 
 (defmethod* Objfromobjs ((Self poly) (Type multi-seq))
-  (make-instance 'multi-seq 
-    :chord-seqs (loop for voice in (inside self)
-                      collect (ObjFromObjs voice (make-instance 'chord-seq)))))
+  (let ((multi (make-instance 'multi-seq 
+                              :chord-seqs (loop for voice in (inside self)
+                                                collect (ObjFromObjs voice (make-instance 'chord-seq))))))
+    (set-approx type (approx self));;Edo scale heritage
+    (setf (approx multi) (approx self))
+    multi))
 
 
 (defmethod! align-chords ((self multi-seq) (delta integer))
