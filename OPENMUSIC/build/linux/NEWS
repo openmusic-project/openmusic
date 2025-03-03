@@ -16,6 +16,8 @@ IMPROVEMENTS
 
 FIXES
 
+- toggling a note from rest to note restitutes ports
+- Info for Scores obj fix
 - gracenote offsets are taken into account 
 - approx-m compatible with EDOs
 - Internal chord obj-mode selection
