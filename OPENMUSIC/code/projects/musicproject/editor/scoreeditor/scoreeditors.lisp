@@ -4283,20 +4283,25 @@
    self)
 |#
 
-;fix when previous is a group in previous measure 
+;fix when previous is a group in previous measure
+
 (defmethod toggle ((self rest)) 
-   (change-class self 'chord)
-   (setf (inside self) (list (make-instance 'note)))
-   (when (previous-real-chord self)
-   (loop for i in (inside (previous-real-chord self))
-           do (setf (tie i) nil)))
-   self)
+  (change-class self 'chord)
+  (setf (inside self) (list (make-instance 'note)))
+  (when (previous-real-chord self)
+    (loop for i in (inside (previous-real-chord self))
+          do (setf (tie i) nil)))
+  ;;;port fix
+  (let ((globalport (car (remove nil (flat  (get-port (parent self)))))))
+    (if globalport
+        (setf (lport self) (list globalport)) 
+      (setf (lport self) (list *def-midi-out*))) 
+    self)) 
 
 (defmethod toggle ((self chord))
    (untie-chord-2 self)
    (change-class self 'rest)
-   self
-   )
+   self)
 
 (defmethod toggle ((self group))
    (setf (inside self)
