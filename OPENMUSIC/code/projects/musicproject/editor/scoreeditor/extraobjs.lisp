@@ -44,7 +44,7 @@
 (defmethod extra-p ((self extra-objet)) t)
 (defmethod extra-p ((self t)) nil)
 
-(defmethod transpose-a ((self extra-objet) trans)
+(defmethod transpose-a ((self extra-objet) trans &optional panel)
   (setf (deltay self) 
         (+ (deltay self)
            (* -1 (if (plusp trans) (ceiling trans 1000) (floor trans 1000))))))

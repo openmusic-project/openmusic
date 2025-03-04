@@ -1057,6 +1057,7 @@
            (#\m (get-tempo-tree self)) 
            (#\M (remove-tempo self))
            (#\i (get-obj-info self))
+           (#\a (adjust-approx self))
            (#\I (show-inspector-window (panel self)))
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
@@ -2863,7 +2864,7 @@
       (case char
 	(#\g (set-unset-grille self))
 	(#\G (edit-step-grille self))
-	(#\a (if (equal (slots-mode self) 'dur)
+	(#\A (if (equal (slots-mode self) 'dur)
 		 (adjoust-grille-durs self)
 		 (adjoust-grille-chords self)))
 	(#\z (set-cursor-mode (editor self)))
@@ -2957,7 +2958,7 @@
          
         '((("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
-          (("a") "Adjust Chords/Durs to Grid")
+          (("A") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
@@ -3212,7 +3213,7 @@
           (("G") "Edit Grid Step")
           (("1") "Merge notes to staff 1")
           )
-        '((("a") "Adjust Chords/Durs to Grid")
+        '((("A") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
@@ -4802,6 +4803,12 @@
    (change-midic self (delta-to-name ssize pixel (midic self))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Dirty hack adding &optional panel
+;Should be changed once approx slot implemented
+;panel is necessary to acces approx value
+
+
 (defmethod change-midic ((self t) midic) t)
 
 (defmethod change-midic ((self container) midic)
@@ -4811,29 +4818,48 @@
 (defmethod change-midic ((self note) midic)
    (transpose-a self (- midic (midic self))))
 
-(defmethod transpose-a ((self t) trans) t)
 
 
+(defmethod transpose-a ((self t) trans &optional panel) t)
 
-(defmethod transpose-a ((self container) trans)
+(defmethod transpose-a ((self container) trans &optional panel)
    (loop for item in (inside self) do
-         (transpose-a item trans)))
+         (transpose-a item trans panel)))
 
 (defmethod transposable-p ((self note))
    (not (and (tie self) (not (equal (tie self) 'begin)))))
 
-(defmethod transpose-a ((self note) trans)
+(defmethod transpose-a ((self note) trans &optional panel)
    (when (transposable-p self) 
+     (if panel
+     (let ((approx (staff-tone panel)))
+     (when (and (prep-chord-p (parent self)) (equal (tie self) 'begin)) 
+       (loop for note in (loop for next = (next-tied-note self) then (next-tied-note next)
+                               while (and next (cont-chord-p (parent next)))
+                               collect next)
+             do  (setf (midic note) (approx-m (+ (midic note) trans) approx))))
+     (setf (midic self) (approx-m (+ (midic self) trans) approx)))
+     (progn 
      (when (and (prep-chord-p (parent self)) (equal (tie self) 'begin)) 
        (loop for note in (loop for next = (next-tied-note self) then (next-tied-note next)
                                while (and next (cont-chord-p (parent next)))
                                collect next)
              do  (setf (midic note) (+ (midic note) trans))))
      (setf (midic self) (+ (midic self) trans))
-     ))
+     )
+     )))
 
 (defmethod score-move-a  ((self simple-container) panel trans)
-  (transpose-a self trans))
+  (transpose-a self trans panel))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod adjust-approx ((self scorepanel))
+  "Adjust choosen approximation EDO scale when adding freehand notes"
+  (let ((approx (staff-tone self)))
+    (loop for i in (get-real-chords (object (om-view-container self)))
+          do (setf (lmidic i) (approx-m (lmidic i) approx)))
+    ))
 
 
 ;KEY ACTIONS

@@ -28,16 +28,16 @@
 ;;;==== ACTIONS ====
 
 ;;; quand on bouge une un truc dans l'editeur
-(defmethod transpose-a :after ((self tonal-object) trans)
+(defmethod transpose-a :after ((self tonal-object) trans &optional panel)
   (actualise-tonalite self))
 
 ;;; pour les notes on reinitialise leur tonalite
-(defmethod transpose-a :before ((self note) trans)
+(defmethod transpose-a :before ((self note) trans &optional panel)
   (set-tonalite self nil)
   (actualise-tonalite self)
   )
 
-(defmethod transpose-a :after ((self note) trans)
+(defmethod transpose-a :after ((self note) trans &optional panel)
   (when (and (parent self) (get-tonalite (parent self)))
     (set-degre-accord (parent self))
     ))
