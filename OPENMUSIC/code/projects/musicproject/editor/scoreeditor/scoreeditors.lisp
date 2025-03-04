@@ -1057,7 +1057,6 @@
            (#\m (get-tempo-tree self)) 
            (#\M (remove-tempo self))
            (#\i (get-obj-info self))
-           (#\a (adjust-approx self))
            (#\I (show-inspector-window (panel self)))
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
@@ -2057,6 +2056,7 @@
   (unless (equal (staff-tone self) newtone)
     (setf (staff-tone self) newtone)
     (set-edit-param (om-view-container self) 'approx newtone)
+    (adjust-approx self)
     (update-panel self t) ;;; t pour le sheet
     (om-invalidate-view self t)
     t))
@@ -2864,7 +2864,7 @@
       (case char
 	(#\g (set-unset-grille self))
 	(#\G (edit-step-grille self))
-	(#\A (if (equal (slots-mode self) 'dur)
+	(#\a (if (equal (slots-mode self) 'dur)
 		 (adjoust-grille-durs self)
 		 (adjoust-grille-chords self)))
 	(#\z (set-cursor-mode (editor self)))
@@ -2958,7 +2958,7 @@
          
         '((("g") "Show/Hide Grid")
           (("G") "Edit Grid Step")
-          (("A") "Adjust Chords/Durs to Grid")
+          (("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
@@ -3213,7 +3213,7 @@
           (("G") "Edit Grid Step")
           (("1") "Merge notes to staff 1")
           )
-        '((("A") "Adjust Chords/Durs to Grid")
+        '((("a") "Adjust Chords/Durs to Grid")
           (("C") "Change Color")
           (("S") "Set Editor Scale")
           (("t" "T") "Set/Remove Tonality")
@@ -4569,6 +4569,7 @@
                                 (* 100 (- (top-in-midi (staff-sys self)) 3))))
          (thenote (object (om-view-container self))))
     (setf (midic thenote) midic)
+    (adjust-approx self);a voir
     (update-panel self t)))
 
 (defmethod add-new-object ((self chordPanel) obj where graph-obj)
@@ -4595,7 +4596,7 @@
       
       (when *om-tonalite*
         (actualise-tonalite thechord))
-      
+      (adjust-approx self)
       (update-panel self t))))
 
 
@@ -4625,7 +4626,7 @@
            
           (when *om-tonalite*
             (actualise-tonalite new-chord))
-
+          (adjust-approx self)
           (update-panel self t))))))
 
 (defmethod system-from-chord ((self multiseqPanel) chord)
@@ -4854,12 +4855,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defmethod adjust-approx ((self notepanel))
+  (let ((note (object (om-view-container self))))
+    (print (list note (staff-tone self)))
+  (setf (midic note) (approx-m (midic note) (staff-tone self)))))
+
+(defmethod adjust-approx ((self chordpanel))
+  "Adjust choosen approximation EDO scale when adding freehand notes"
+  (let ((approx (staff-tone self)))
+    (loop for i in (inside (object (om-view-container self)))
+          do (setf (midic i) (approx-m (midic i) approx)))))
+
 (defmethod adjust-approx ((self scorepanel))
   "Adjust choosen approximation EDO scale when adding freehand notes"
   (let ((approx (staff-tone self)))
     (loop for i in (get-real-chords (object (om-view-container self)))
-          do (setf (lmidic i) (approx-m (lmidic i) approx)))
-    ))
+          do (setf (lmidic i) (approx-m (lmidic i) approx)))))
 
 
 ;KEY ACTIONS
