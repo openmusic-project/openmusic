@@ -273,7 +273,7 @@ It allows to choose/select items of a list to be outputed."))
     ;)
   ))
 
-
+#|
 ;peut-etre pas besoin
 (defmethod omg-remove-element ((self methodpanel) (box chooseframe))
    "Remove only for the generic function definition."
@@ -288,6 +288,7 @@ It allows to choose/select items of a list to be outputed."))
    (let* ((boxes (get-subframes self)) 
           (sends (find-class-boxes boxes 'chooseframe)))
      ))
+|#
 
 (defmethod omG-rename ((self chooseframe) new-name)
   (setf (name (object self)) new-name)
@@ -427,6 +428,8 @@ It allows to choose/select items of a list to be outputed."))
                                    :field-size  (om-make-point 450 5400)
                                    ;;;:size (om-make-point (w self) (- (h self) 15)))
                                    :size (om-make-point (w self) (h self))))
+  (let ((patcheditor (om-view-container (editorframe (mycontainer (object self))))))
+    (push self (attached-editors patcheditor)));so choose-editor closes with patch!
   ;;add check-boxes
   (let ((checks (checkbox-list self (value (object self)))))
     (when checks
