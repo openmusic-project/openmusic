@@ -1,4 +1,4 @@
-; OM File Header - Saved 2011/10/22 18:44:21
-; (6.010003 :patc (om-make-point 155 60) (om-make-point 87 54) (om-make-point 520 373) "No documentation " 183 0 nil nil)
+; OM File Header - Saved 2023/04/09 18:12:58
+; (6.010003 :patc (om-make-point 155 60) (om-make-point 87 54) (om-make-point 520 373) "No documentation " 183 0 nil "2023/04/09 18:12:58")
 ; End File Header
 (in-package :om)(load-lib-for (quote nil))(setf *om-current-persistent* (om-load-patch1 "factorial_patch" (quote ((om-load-boxcomment "comment1112" (om-make-point 317 37) (quote "TUTORIAL 38 - Recursive Patch (I)") "" (om-make-point 132 37) nil (om-make-color 0 0 0) (om-make-font "Verdana" 12 :family "Verdana" :style (quote (:bold)) :mode (quote nil))) (om-load-boxcall (quote bastype) "aux1" (quote t) (quote nil) (om-make-point 239 120) (om-make-point 28 29) 5 "5" nil) (om-load-boxcall (quote patch-box) "factorial" (quote ("elements" "tutorial patches" "tutorial_38" "factorial")) (quote ((om-load-inputfun (quote input-funbox) "no documentation" "n" nil))) (om-make-point 231 154) nil nil nil nil 1))) (quote ((1 0 2 0 nil 0))) nil 6.010003))
