@@ -191,7 +191,7 @@ Converts a (list of) midicent pitch(es) <midics> to frequencies (Hz).
      *diapason-midic*))
 
 
-(defmethod* f->mc  ((freq number) &optional (approx 100) (ref-midic 0))
+(defmethod* f->mc  ((freq number) &optional (approx nil) (ref-midic 0))
   :numouts 1 
   :initvals '(440 100 0) 
   :indoc '("frequency (Hz)" "approximation")
@@ -203,13 +203,15 @@ Approximation:
 - <approx> = 2 semi tones
 - <approx> = 4 quarter tones
 - <approx> = 8 eight tones
-- <approx> = 100 (default) = one midicent resolution
-Floating values are allowed for <approx>.
+- <approx> = 0 no approximation.
+- <approx> = nil (default) = rounded to one midicent resolution.
 
 <ref-midic> is a midicent that is subtracted from <midic> before computation: the computation can then be carried on an interval rather than an absolute pitch."
-  (approx-m (f->mf freq) approx ref-midic))
+  (if approx
+  (approx-m (f->mf freq) approx ref-midic)
+    (round (f->mf freq))))
 
-(defmethod* f->mc  ((freq list) &optional (approx 100) (ref-midic 0))
+(defmethod* f->mc  ((freq list) &optional (approx nil) (ref-midic 0))
   (loop for item in freq
         collect (f->mc item approx ref-midic)))
 
