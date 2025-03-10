@@ -129,14 +129,14 @@
                              'capi:menu-component
                              :items (remove nil (if (symbolp (car elt)) (cdr elt) elt))
                              :callback-type :item
-                             :interaction (if (equal :selection (car elt)) :multiple-selection :none)
+                             :interaction (if (equal :selection (car elt)) :multiple-selection :no-selection)
                              ))
                            ((functionp elt)
                             (make-instance 
                              'capi:menu-component
                              :items-function elt
                              :callback-type :item
-                             :interaction :none))
+                             :interaction :no-selection))
                            (t elt)))))
     (apply 'om-new-menu (cons title items))))
 
