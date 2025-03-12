@@ -32,7 +32,6 @@
 (in-package :om)
 
 
-
 ;;; used for possible dialog message translations
 (defun getstr (str) str)
 
@@ -965,12 +964,16 @@ External Libraries:
 
 (defvar *help-window* nil)
 
-(defclass help-window (om-window) ())
+;test to see if ok for macosx
+(defclass help-window (om-dialog) ())
 
+#|
 (defmethod om-window-class-menubar ((self help-window))
   (list (om-make-menu "File"
                       (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")))
         (make-om-menu 'windows :editor self)))
+|#
+
 
 (defun show-help-window (title helplist &optional panel-w)
   "Show the help window for a patch"
@@ -998,5 +1001,6 @@ External Libraries:
 						       :bg-color *om-white-color* ;(om-make-color 0.9 0.9 0.9)
 						       )))))
 	     )))
-    #-linux (om-add-menu-to-win *help-window*)
+    ;#-linux (om-add-menu-to-win *help-window*)
+    (om-select-window *help-window*)
     ))

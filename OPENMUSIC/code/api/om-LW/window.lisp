@@ -371,8 +371,7 @@
                                      ;:external-min-height 50 :external-min-width 50
                                      :no-character-palette t
                                      ;:menu-bar-items nil
-                                     #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
-                                    ;#+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      :window-styles style
                                      :font font
                                      :resizable resizable
@@ -399,7 +398,10 @@
        (set-not-resizable thewin w h))
      (unless (window-dialog-p thewin)
        (internal-display thewin))
-     
+     ;remove menus from linux dialogs
+     #+linux
+     (when (window-dialog-p thewin)
+       (setf (interface-activate-callback thewin) nil))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
      
