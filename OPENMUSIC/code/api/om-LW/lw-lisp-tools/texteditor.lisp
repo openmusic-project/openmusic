@@ -516,6 +516,7 @@
         (setf (capi::layout-description (capi::pane-layout win)) 
               (list (setf (ep win) (make-instance 'capi::editor-pane :echo-area t 
                                                   :font *def-text-edit-font*
+                                                  :line-numbers-p t ;make it optional in menu
                                                   ))))
         (push win *editor-files-open*)
         (setf (capi::simple-pane-background (ep win)) *text-bg-color*)
