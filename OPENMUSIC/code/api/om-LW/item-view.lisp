@@ -48,9 +48,9 @@
 (defmethod om-item-view-p ((self om-item-view)) t)
 
 
-#+cocoa
+#+(or linux cocoa)
 (defclass om-internal-view (om-transparent-view) ())
-#-cocoa
+#-(or linux cocoa)
 (defclass om-internal-view (om-item-view) ())
 
 

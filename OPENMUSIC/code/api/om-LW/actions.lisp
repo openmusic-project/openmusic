@@ -164,7 +164,7 @@
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
-    ;  #+lispworks8 (capi::update-drawing-with-cached-display self x y)
+      #+lispworks81 (capi::update-drawing-with-cached-display self x y)
       ))
    
 (defmethod om-click-motion-handler (self pos) t)
@@ -180,7 +180,7 @@
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
-    #+lispworks8 (update-for-subviews-changes self t) ;updates some widgets eg. text-box
+    #+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box ;;But not in Linux!
     ))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 

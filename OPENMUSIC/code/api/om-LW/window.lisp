@@ -181,7 +181,9 @@
 (defmethod om-resize-callback ((self om-abstract-window) x y w h)
   (unless (and (vw self) (= w (vw self)) (vh self) (= h (vh self)))
    (om-window-resized self (om-make-point w h)))
-  #-linux (call-next-method))
+ ; #-linux 
+  (call-next-method)
+)
 
 (defmethod om-window-resized ((self om-abstract-window) size)
   (declare (ignore self size))
@@ -370,6 +372,7 @@
                                      :no-character-palette t
                                      ;:menu-bar-items nil
                                      #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                    ;#+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      :window-styles style
                                      :font font
                                      :resizable resizable
@@ -388,7 +391,7 @@
                                ))))
     
     (when (setf layout (make-window-layout thewin bg-color))
-      #+cocoa(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
+      #+(or linux cocoa)(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
       (setf (capi::pane-layout thewin) layout))
      (when subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) subviews))
      (correct-win-h thewin)
@@ -506,7 +509,7 @@
 
 (defmethod make-window-layout ((self om-dialog) &optional color)
   (make-instance 'window-layout :internal-border nil :visible-border nil :accepts-focus-p nil
-                 #+cocoa :background #+cocoa :transparent
+                 #+(or linux cocoa) :background #+(or linux cocoa) :transparent
                  ))
 
 (defun om-modal-dialog (dialog &optional (owner nil))

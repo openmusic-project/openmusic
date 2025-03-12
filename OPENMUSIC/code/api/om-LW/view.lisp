@@ -121,7 +121,7 @@
                                :vx x :vy y :vw w :vh h
                                :vcontainer ,owner
                                :allow-other-keys t
-                               #+linux :foreground #+linux :black
+                               ;#+linux :foreground #+linux :black
                                ,.attributes
                                )))
      (when ,bg-color (om-set-bg-color view ,bg-color))
@@ -129,10 +129,10 @@
      (when ,subviews (mapc (lambda (sv) (om-add-subviews view sv)) ,subviews))
      
      (when (om-view-p view) 
-       #+(or win32 linux) (unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
-       #+(or win32 linux) (setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
-       #+(or win32 linux) (setf (capi::static-layout-child-size (main-pinboard-object view)) (values w h))
-       #+cocoa (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
+       #+win32(unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
+       #+win32(setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
+       #+win32(setf (capi::static-layout-child-size (main-pinboard-object view)) (values w h))
+       #+(or cocoa linux) (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
        )
      (when (scroller-p view) 
        (setf (capi::simple-pane-scroll-callback view) 'scroll-update)
@@ -191,13 +191,13 @@
 (defclass om-transparent-view (om-view) ()
   (:default-initargs :background :transparent))
 
-#-cocoa
+#-(or linux cocoa)
 (defmethod (setf vcontainer) :around ((cont om-graphic-object) (view om-transparent-view)) 
   (call-next-method)
   (om-set-bg-color view (om-get-bg-color cont))
   (mapc #'(lambda (v) (setf (vcontainer v) view)) (om-subviews view)))
 
-#-cocoa
+#-(or linux cocoa)
 (defmethod (setf vcontainer) :around ((cont om-graphic-object) (view om-view)) 
   (call-next-method)
   (when (or (null (om-get-bg-color view)) (equal :transparent (c (om-get-bg-color view))))
@@ -232,17 +232,17 @@
        (let ((x (om-h-scroll-position self))
              (y (om-v-scroll-position self)))
          (om-invalidate-rectangle self x y (vw self) (vh self))
-         #+(or linux win32) (setf (static-layout-child-position (main-pinboard-object self)) 
+         #+win32(setf (static-layout-child-position (main-pinboard-object self)) 
 				  (values x y))
          ))
      (om-view-scrolled self (car pos-list) (cadr pos-list)))
-    #+(or win32 linux) (:step
+    #+win32 (:step
 			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (om-h-scroll-position self) (om-h-scroll-position self))
 			;;(om-invalidate-view self)
 			)
-    #+(or win32 linux) (otherwise ;; :drag
+    #+win32 (otherwise ;; :drag
 			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (car pos-list) (cadr pos-list))
@@ -354,7 +354,7 @@
 
 ;;;(om-subtract-points (om-view-size self) (om-make-point 30 30))
 
-#+(or win32 linux)
+#+win32
 (defmethod om-interior-size ((self om-scroller))
   (om-subtract-points 
    (om-view-size self)

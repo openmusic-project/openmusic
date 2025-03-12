@@ -74,13 +74,13 @@
                                pane))
 
 
-;;; ONLY FOR COCOA
-(defmethod om-draw-contents-callback ((self om-graphic-object) x y w h)
+;;; ONLY FOR COCOA (now linux also for GTK3 ?)
+(defmethod om-draw-contents-callback ((self om-graphic-object) x y w h);(print "linux")
   (om-with-error-handle 
-    (set-graphics-port-coordinates (om-get-view self) :left 0 :top 0)
+   #+cocoa (set-graphics-port-coordinates (om-get-view self) :left 0 :top 0)
     ;(gp::clear-rectangle (om-get-view self) 0 0 (om-width self) (om-height self))
     (om-draw-contents self)
-    ;(print (list self (om-get-view self)))
+    ;(print (list self (om-get-view self) x y w h))
     (mapcar #'(lambda (po) 
                 ;(print (list po (item-x po) (item-y po)))
                 ;(gp::set-graphics-port-coordinates (om-get-view self) :left (- (item-x po)) :top (- (item-y po)))
@@ -95,7 +95,7 @@
     (when (highlight self) 
       (om-with-focused-view (om-get-view self)
         (om-draw-hilite-rect 0 0 (om-width self) (om-height self))))
-      ))
+    ))
 
 
 (defmethod item-draw-callback (pane (obj t) x y w h) nil)
@@ -125,8 +125,9 @@
                                      ;      (vw po) (vh po))
                                      :foreground (or (capi::pinboard-object-graphics-arg po :foreground) :black)
                                      :background 
-                                     #+linux (or (capi::pinboard-object-graphics-arg po :background) :white)
-                                     #-linux (capi::pinboard-object-graphics-arg po :background)
+                                     ;#+linux (or (capi::pinboard-object-graphics-arg po :background) :white)
+                                     ;#-linux 
+                                     (capi::pinboard-object-graphics-arg po :background)
                                      )
      ;(gp::set-graphics-port-coordinates pane :left (- x) :top (- y))
      (setf *curfocus* po) 
@@ -156,7 +157,7 @@
   (when (and (interface-visible-p self) (om-get-view self))
     ;(capi::with-atomic-redisplay ((om-get-view self))
     (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-    #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
+    #+win32 (mapcar 'om-invalidate-view (om-subviews self))
     ;)
     ))
 
@@ -200,7 +201,7 @@
      'gp::invalidate-rectangle 
      (om-get-view self) x y w h
      )
-     #+lispworks8(capi::update-drawing-with-cached-display self x y w h)
+     #+lispworks81(capi::update-drawing-with-cached-display self x y w h)
     ))
 
 (defmethod om-invalidate-rectangle ((self om-item-view) x y w h)
@@ -210,7 +211,7 @@
                               (+ (item-y self) y)
                               (+ (item-x self) w)
                               (+ (item-y self) h))
-     #+lispworks8(capi::update-drawing-with-cached-display self x y w h)
+     #+lispworks81(capi::update-drawing-with-cached-display self x y w h)
     ))
 
 

@@ -68,6 +68,7 @@ maquettes and hierarchical class editors.#enddoc#
      ;(om-window-resized newwindow (om-view-size newwindow))
      ;(om-invalidate-view (panel newwindow))
      ;(om-select-window newwindow)
+     #+linux(capi:redisplay-element (panel newwindow))
      newwindow))
 
 ;----------------------------------------------------
