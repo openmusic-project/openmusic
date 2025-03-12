@@ -184,6 +184,7 @@
      (perform-special-move-view D&DHandler)
      (make-move-after (om-view-container (target-view  D&DHandler)) (dragged-list-objs D&DHandler)))
     (t (perform-change-view D&DHandler)))
+  (om-invalidate-view (target-view  D&DHandler))
   )
 
 
