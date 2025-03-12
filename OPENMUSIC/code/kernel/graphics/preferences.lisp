@@ -168,7 +168,7 @@
                                   :size (get-pref-scroll-size)
                                   :selection selec))
           )
-    (om-remove-subviews self (tabs self))
+     #+linux(om-remove-subviews self (tabs self))
     (om-add-subviews self (setf (tabs self) newtl))
     ))
 
@@ -230,8 +230,9 @@
 											 (local-prefs win))))
                                                           (when module
                                                             (setf (cadr module) (get-def-vals (pref-id (om-current-view (tabs win)))))
-                                                            #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-							    #+linux (om-select-window *pref-window*)))))
+                                                            #-linux(update-pref-scroll win (pref-id (om-current-view (tabs win))))
+                                                            ;#+linux(om-select-window *pref-window*)
+                                                             ))))
 		      
                       (om-make-dialog-item 'om-button (om-make-point 130 b-posy) (om-make-point 80 22) "Apply" 
                                            :di-action (om-dialog-item-act item
@@ -239,8 +240,9 @@
 							  (setf *current-pref* (local-prefs win))
 							  (put-all-preferences)
                                                           (save-preferences)
-                                                          #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-                                                          #+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
+                                                          #-linux(update-pref-scroll win (pref-id (om-current-view (tabs win))))
+                                                         ; #+linux(om-select-window *pref-window*)
+                                                         ;#+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
                                                           )))
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 

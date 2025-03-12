@@ -60,7 +60,7 @@
                  (list (setf (om-lisp::ep self) 
                              (make-instance 'capi::editor-pane 
                                             :font om-lisp::*def-text-edit-font*
-                                            :line-numbers-p t ;make it optional in menu
+                                            :line-numbers-p *line-numbers*
                                             :echo-area (echoarea self)
                                             :change-callback 'texteditor-change-callback)))))
 
