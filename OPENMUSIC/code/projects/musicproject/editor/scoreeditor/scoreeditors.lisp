@@ -447,7 +447,8 @@
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     (init-draw self)
-    (init-boxes-in-score ed-view)))
+    (init-boxes-in-score ed-view)
+    #+macosx(update-alt-panel (panel self))))
 
 
 
@@ -1513,7 +1514,7 @@
 
 
 (defmethod om-draw-contents ((self scorePanel))
-  #+macosx(update-alt-panel self)
+  ;#+macosx(update-alt-panel self)
   (call-next-method)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
     (if (score-page-mode self)
