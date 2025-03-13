@@ -693,7 +693,8 @@ into the unaire-fun-view.#action#"))
        (when iconhdlr
          (om-with-focused-view self
            ;(print (list self iconhdlr))
-           (om-draw-picture self iconhdlr :size (om-view-size self)))
+           (om-draw-picture self iconhdlr :size (om-view-size self));c'est pour nos icones pas pour les check box LW car genere une erreur 
+           )
          ))
      (when (text self)
        (let* ((ff (or (font self) *om-default-font1*))

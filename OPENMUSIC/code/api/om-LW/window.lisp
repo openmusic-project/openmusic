@@ -401,7 +401,8 @@
      ;remove menus from linux dialogs
      #+linux
      (when (window-dialog-p thewin)
-       (setf (interface-activate-callback thewin) nil))
+       (setf (interface-activate-callback thewin) nil));ou nil
+             ; #'(lambda (win activate-p) (when activate-p (om-add-dummy-menu-to-win win)))))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
      
