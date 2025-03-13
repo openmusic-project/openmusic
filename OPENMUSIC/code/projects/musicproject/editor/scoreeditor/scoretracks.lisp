@@ -245,6 +245,10 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 ;(om-make-point (w self) (- (h self) (get-control-h self)))
 
+;;small utility while implementing approx
+(defmethod set-tracks-approx ((self tracks) (approx list))
+  (setf (approx self) approx))
+
              
 (defmethod initialize-instance :after ((self tracks-editor) &rest l)
   (declare (ignore l))
@@ -267,6 +271,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
     ;remove buttons from last hide-bar
     (om-remove-subviews (car (hide-buts (panel self))) 
                         (om-subviews (car (hide-buts (panel self)))))
+    (setf (tunings self) (approx (object self)))
     )))
 
 
