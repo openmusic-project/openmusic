@@ -60,7 +60,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
          (names (loop for i in boxes
                       collect (if i (name i) ""))))
     (when (null (car approx))
-        (setf (approx self) '(120.0)))
+      (setf (approx self) '(120.0)))
     (setf (names self) names)))
 
 
@@ -428,23 +428,107 @@ nil)
 
 ;;;; Key event handlers:
 
-(defparameter *clicked-panel* nil) ; A hack to catch key events on each editor.
+(defparameter *clicked-trk-panel* nil) ; A hack to catch key events on each editor.
 
 (defmethod om-view-click-handler :before ((self scorePanel) where)
-  (setf *clicked-panel* self)
+  (setf *clicked-trk-panel* self)
   (when (trackspanel-p (om-view-container (om-view-container self)))
   (let* ((tpanel (om-view-container (om-view-container self)))
          (obj (object (om-view-container tpanel)))
          (panels (reverse (loop for i in (editors tpanel)
                        collect (panel i))))
-         (pos (position *clicked-panel* panels)))
+         (pos (position *clicked-trk-panel* panels))
+         (hidebuts (reverse (hide-buts tpanel))))
+    ;;;;
+    (progn
+      (loop for i in hidebuts
+            do (progn 
+                 (setf (active i) nil)
+                 (setf (iconid (active-button i)) 956)))
+      (setf (active (nth pos hidebuts)) t)
+      (setf (iconid (active-button (nth pos hidebuts))) 955)
+      (om-invalidate-view tpanel t))
+    ;;;;
     (setf (nth pos (voices obj))
           (object (om-view-container (nth pos panels))))
     )))
 
 
+;;;;;;;;;SHORTCUTS
+
+(defmethod get-help-list ((self trackspanel))
+  (remove nil 
+          (list '(("lrud" "Scroll all panels")
+                  ("esc" "scroll all panels to start")
+                  (("ctrl" "lrud") "Scroll all panels")
+                  (("H") "Help for TRACKS panel")
+                  ("h" "help for selected panel")
+                  ))))
+
 (defmethod handle-key-event ((self tracks-editor) char) 
-  (handle-key-event *clicked-panel* char))
+  (if (om-command-key-p) 
+      (scroll-pane *clicked-trk-panel* char);score individual panel
+    (case char
+      (#\H (show-help-window (format nil "Commands for ~A Editor" 
+                                     (string-upcase (class-name (class-of (object self))))) 
+                             (get-help-list (panel self))))
+      ;;;scrolling
+      (:om-key-esc  (init-pos-panels self))
+      (:om-key-right (scroll-right-panels self))
+      (:om-key-left (scroll-left-panels self))
+      (:om-key-down (scroll-down-panel (panel self)))
+      (:om-key-up (scroll-up-panel (panel self)))))
+  (handle-key-event *clicked-trk-panel* char))
+
+;;;;;;;;;;;;;;;;scrolling
+
+(defmethod init-pos-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (progn
+               (om-set-scroll-position i (om-make-point 0 0))
+               (oa::om-set-h-scroll-position i 0)
+               (oa::om-set-v-scroll-position i 0)))))
+
+(defmethod scroll-right-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (let* ((pos (om-scroll-position i))
+                    (vpos (om-point-v pos))
+                    (hpos (om-point-h pos))
+                    (inc (if (om-shift-key-p) 500 50)))
+               (progn
+                 (om-set-scroll-position i (om-make-point (+ hpos inc) vpos))
+                 (om-set-h-scroll-position i  (om-point-h (om-scroll-position i))))))))
+
+
+(defmethod scroll-left-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (let* ((pos (om-scroll-position i))
+                    (vpos (om-point-v pos))
+                    (hpos (om-point-h pos))
+                    (inc (if (om-shift-key-p) 500 50)))
+               (progn
+                 (om-set-scroll-position i (om-make-point (- hpos inc) vpos))
+                 (om-set-h-scroll-position i  (om-point-h (om-scroll-position i))))))))
+
+(defmethod scroll-down-panel ((self trackspanel))
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+           (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self)))))
+
+(defmethod scroll-up-panel ((self trackspanel))
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+           (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+           (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self)))))
+      
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -569,8 +653,11 @@ nil)
     (control-p :initform nil :initarg :control-p :accessor control-p)
     (at-editor :initform nil  :accessor at-editor)
     (mute :initform nil  :accessor mute)
+    (active :initform nil  :initarg :active :accessor active)
+    (active-button :initform nil  :initarg :active-button :accessor active-button)
     (closed-p :initform nil  :accessor closed-p)
     (bef-editor :initform nil  :accessor bef-editor)))
+
 
 (defmethod get-panel ((self hide-bar))
    (om-view-container self))
@@ -581,35 +668,48 @@ nil)
         ))
 
 
-(defmethod initialize-instance :after  ((self hide-bar) &key open?) 
-    (let* ((barname (om-make-dialog-item 'om-static-text 
-                                    (om-make-point 60 -3) 
-                                    (om-make-point 200 100)
-                                    ""
+(defmethod initialize-instance :after  ((self hide-bar) &key open?)
+  (let* ((barname (om-make-dialog-item 'om-static-text 
+                                       (om-make-point 60 -3) 
+                                       (om-make-point 200 100)
+                                       ""
                                     ;:font *om-default-font4*
-                                    ))) 
-      (setf (barname self) barname)
-      (om-add-subviews self  
-     (om-make-view 'button-icon
-       :iconid (if open? 164 165)    
-       :action  #'(lambda (item) 
-                    (setf (iconid item) (if (= (iconid item) 164) 165 164))
-                    (show/hide-editor (om-view-container item)))
-       :position (om-make-point 3 3)
-       :size (om-make-point 11 11))
+                                       ))) 
+    (setf (barname self) barname)
+    (om-add-subviews self  
+                     (om-make-view 'button-icon
+                                   :iconid (if open? 164 165)    
+                                   :action  #'(lambda (item) 
+                                                (setf (iconid item) (if (= (iconid item) 164) 165 164))
+                                                (show/hide-editor (om-view-container item)))
+                                   :position (om-make-point 3 3)
+                                   :size (om-make-point 11 11))
      
-     (om-make-view 'button-icon
-       :iconid (if open? 952 951)    
-       :action  #'(lambda (item) 
-                    (setf (iconid item) (if (= (iconid item) 952) 951 952)) ;changer les icones-> boutons ronds vert rouge
-                    (if (= (iconid item) 952)
-                        (setf (mute self) t)
-                      (setf (mute self) nil)))
-       :position (om-make-point 20 2)
-       :size (om-make-point 11 11))
-     barname
-     
-     )))
+                     (om-make-view 'button-icon
+                                   :iconid (if open? 952 951)    
+                                   :action  #'(lambda (item) 
+                                                (setf (iconid item) (if (= (iconid item) 952) 951 952)) ;changer les icones-> boutons ronds vert rouge
+                                                (if (= (iconid item) 952)
+                                                    (setf (mute self) t)
+                                                  (setf (mute self) nil)))
+                                   :position (om-make-point 20 2)
+                                   :size (om-make-point 11 11))
+                     (setf (active-button self)
+                           (om-make-view 'button-icon
+                                         :iconid (if (active self) 955 956)    
+                                         #|
+                                         :action  #'(lambda (item) 
+                                                      (setf (iconid item) (if (= (iconid item) 955) 956 955)) ;changer les icones-> boutons ronds vert rouge
+                                                      (if (active self)
+                                                          (setf (iconid item) 956)
+                                                        (setf (iconid item) 955)
+                                                        ))
+                                         |#
+                                         :position (om-make-point 35 2)
+                                         :size (om-make-point 11 11)))
+                     barname
+                     )))
+
 
 
 (defmethod show-barname ((self hide-bar) name) 
