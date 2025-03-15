@@ -454,16 +454,18 @@ nil)
                   ))))
 
 (defmethod handle-key-event ((self tracks-editor) char) 
-  (case char
-    (#\H (show-help-window (format nil "Commands for ~A Editor" 
-                                   (string-upcase (class-name (class-of (object self))))) 
-                           (get-help-list (panel self))))
-    ;;;scrolling
-    (:om-key-esc  (init-pos-panels self))
-    (:om-key-right (scroll-right-panels self))
-    (:om-key-left (scroll-left-panels self))
-    (:om-key-down (scroll-down-panel (panel self)))
-    (:om-key-up (scroll-up-panel (panel self))))
+  (if (om-command-key-p) 
+      (scroll-pane *clicked-trk-panel* char);score individual panel
+    (case char
+      (#\H (show-help-window (format nil "Commands for ~A Editor" 
+                                     (string-upcase (class-name (class-of (object self))))) 
+                             (get-help-list (panel self))))
+      ;;;scrolling
+      (:om-key-esc  (init-pos-panels self))
+      (:om-key-right (scroll-right-panels self))
+      (:om-key-left (scroll-left-panels self))
+      (:om-key-down (scroll-down-panel (panel self)))
+      (:om-key-up (scroll-up-panel (panel self)))))
   (handle-key-event *clicked-trk-panel* char))
 
 ;;;;;;;;;;;;;;;;scrolling
