@@ -437,7 +437,18 @@ nil)
          (obj (object (om-view-container tpanel)))
          (panels (reverse (loop for i in (editors tpanel)
                        collect (panel i))))
-         (pos (position *clicked-trk-panel* panels)))
+         (pos (position *clicked-trk-panel* panels))
+         (hidebuts (reverse (hide-buts tpanel))))
+    ;;;;
+    (progn
+      (loop for i in hidebuts
+            do (progn 
+                 (setf (active i) nil)
+                 (setf (iconid (active-button i)) 956)))
+      (setf (active (nth pos hidebuts)) t)
+      (setf (iconid (active-button (nth pos hidebuts))) 955)
+      (om-invalidate-view tpanel t))
+    ;;;;
     (setf (nth pos (voices obj))
           (object (om-view-container (nth pos panels))))
     )))
@@ -447,8 +458,9 @@ nil)
 
 (defmethod get-help-list ((self trackspanel))
   (remove nil 
-          (list '(("lrud" "Scroll panels")
+          (list '(("lrud" "Scroll all panels")
                   ("esc" "scroll all panels to start")
+                  (("ctrl" "lrud") "Scroll all panels")
                   (("H") "Help for TRACKS panel")
                   ("h" "help for selected panel")
                   ))))
@@ -641,8 +653,11 @@ nil)
     (control-p :initform nil :initarg :control-p :accessor control-p)
     (at-editor :initform nil  :accessor at-editor)
     (mute :initform nil  :accessor mute)
+    (active :initform nil  :initarg :active :accessor active)
+    (active-button :initform nil  :initarg :active-button :accessor active-button)
     (closed-p :initform nil  :accessor closed-p)
     (bef-editor :initform nil  :accessor bef-editor)))
+
 
 (defmethod get-panel ((self hide-bar))
    (om-view-container self))
@@ -653,35 +668,48 @@ nil)
         ))
 
 
-(defmethod initialize-instance :after  ((self hide-bar) &key open?) 
-    (let* ((barname (om-make-dialog-item 'om-static-text 
-                                    (om-make-point 60 -3) 
-                                    (om-make-point 200 100)
-                                    ""
+(defmethod initialize-instance :after  ((self hide-bar) &key open?)
+  (let* ((barname (om-make-dialog-item 'om-static-text 
+                                       (om-make-point 60 -3) 
+                                       (om-make-point 200 100)
+                                       ""
                                     ;:font *om-default-font4*
-                                    ))) 
-      (setf (barname self) barname)
-      (om-add-subviews self  
-     (om-make-view 'button-icon
-       :iconid (if open? 164 165)    
-       :action  #'(lambda (item) 
-                    (setf (iconid item) (if (= (iconid item) 164) 165 164))
-                    (show/hide-editor (om-view-container item)))
-       :position (om-make-point 3 3)
-       :size (om-make-point 11 11))
+                                       ))) 
+    (setf (barname self) barname)
+    (om-add-subviews self  
+                     (om-make-view 'button-icon
+                                   :iconid (if open? 164 165)    
+                                   :action  #'(lambda (item) 
+                                                (setf (iconid item) (if (= (iconid item) 164) 165 164))
+                                                (show/hide-editor (om-view-container item)))
+                                   :position (om-make-point 3 3)
+                                   :size (om-make-point 11 11))
      
-     (om-make-view 'button-icon
-       :iconid (if open? 952 951)    
-       :action  #'(lambda (item) 
-                    (setf (iconid item) (if (= (iconid item) 952) 951 952)) ;changer les icones-> boutons ronds vert rouge
-                    (if (= (iconid item) 952)
-                        (setf (mute self) t)
-                      (setf (mute self) nil)))
-       :position (om-make-point 20 2)
-       :size (om-make-point 11 11))
-     barname
-     
-     )))
+                     (om-make-view 'button-icon
+                                   :iconid (if open? 952 951)    
+                                   :action  #'(lambda (item) 
+                                                (setf (iconid item) (if (= (iconid item) 952) 951 952)) ;changer les icones-> boutons ronds vert rouge
+                                                (if (= (iconid item) 952)
+                                                    (setf (mute self) t)
+                                                  (setf (mute self) nil)))
+                                   :position (om-make-point 20 2)
+                                   :size (om-make-point 11 11))
+                     (setf (active-button self)
+                           (om-make-view 'button-icon
+                                         :iconid (if (active self) 955 956)    
+                                         #|
+                                         :action  #'(lambda (item) 
+                                                      (setf (iconid item) (if (= (iconid item) 955) 956 955)) ;changer les icones-> boutons ronds vert rouge
+                                                      (if (active self)
+                                                          (setf (iconid item) 956)
+                                                        (setf (iconid item) 955)
+                                                        ))
+                                         |#
+                                         :position (om-make-point 35 2)
+                                         :size (om-make-point 11 11)))
+                     barname
+                     )))
+
 
 
 (defmethod show-barname ((self hide-bar) name) 
