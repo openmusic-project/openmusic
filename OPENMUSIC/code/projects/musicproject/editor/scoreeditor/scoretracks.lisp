@@ -431,7 +431,7 @@ nil)
 (defparameter *clicked-trk-panel* nil) ; A hack to catch key events on each editor.
 
 (defmethod om-view-click-handler :before ((self scorePanel) where)
-  (setf *clicked--trk-panel* self)
+  (setf *clicked-trk-panel* self)
   (when (trackspanel-p (om-view-container (om-view-container self)))
   (let* ((tpanel (om-view-container (om-view-container self)))
          (obj (object (om-view-container tpanel)))
