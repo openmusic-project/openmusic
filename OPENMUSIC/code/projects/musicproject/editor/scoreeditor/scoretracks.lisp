@@ -60,7 +60,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
          (names (loop for i in boxes
                       collect (if i (name i) ""))))
     (when (null (car approx))
-        (setf (approx self) '(120.0)))
+      (setf (approx self) '(120.0)))
     (setf (names self) names)))
 
 
@@ -428,23 +428,93 @@ nil)
 
 ;;;; Key event handlers:
 
-(defparameter *clicked-panel* nil) ; A hack to catch key events on each editor.
+(defparameter *clicked-trk-panel* nil) ; A hack to catch key events on each editor.
 
 (defmethod om-view-click-handler :before ((self scorePanel) where)
-  (setf *clicked-panel* self)
+  (setf *clicked--trk-panel* self)
   (when (trackspanel-p (om-view-container (om-view-container self)))
   (let* ((tpanel (om-view-container (om-view-container self)))
          (obj (object (om-view-container tpanel)))
          (panels (reverse (loop for i in (editors tpanel)
                        collect (panel i))))
-         (pos (position *clicked-panel* panels)))
+         (pos (position *clicked-trk-panel* panels)))
     (setf (nth pos (voices obj))
           (object (om-view-container (nth pos panels))))
     )))
 
 
+;;;;;;;;;SHORTCUTS
+
+(defmethod get-help-list ((self trackspanel))
+  (remove nil 
+          (list '(("lrud" "Scroll panels")
+                  ("esc" "scroll all panels to start")
+                  (("H") "Help for TRACKS panel")
+                  ("h" "help for selected panel")
+                  ))))
+
 (defmethod handle-key-event ((self tracks-editor) char) 
-  (handle-key-event *clicked-panel* char))
+  (case char
+    (#\H (show-help-window (format nil "Commands for ~A Editor" 
+                                   (string-upcase (class-name (class-of (object self))))) 
+                           (get-help-list (panel self))))
+    ;;;scrolling
+    (:om-key-esc  (init-pos-panels self))
+    (:om-key-right (scroll-right-panels self))
+    (:om-key-left (scroll-left-panels self))
+    (:om-key-down (scroll-down-panel (panel self)))
+    (:om-key-up (scroll-up-panel (panel self))))
+  (handle-key-event *clicked-trk-panel* char))
+
+;;;;;;;;;;;;;;;;scrolling
+
+(defmethod init-pos-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (progn
+               (om-set-scroll-position i (om-make-point 0 0))
+               (oa::om-set-h-scroll-position i 0)
+               (oa::om-set-v-scroll-position i 0)))))
+
+(defmethod scroll-right-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (let* ((pos (om-scroll-position i))
+                    (vpos (om-point-v pos))
+                    (hpos (om-point-h pos))
+                    (inc (if (om-shift-key-p) 500 50)))
+               (progn
+                 (om-set-scroll-position i (om-make-point (+ hpos inc) vpos))
+                 (om-set-h-scroll-position i  (om-point-h (om-scroll-position i))))))))
+
+
+(defmethod scroll-left-panels ((self tracks-editor))
+  (let ((panels (mapcar #'panel (editors (panel self)))))
+    (loop for i in panels 
+          do (let* ((pos (om-scroll-position i))
+                    (vpos (om-point-v pos))
+                    (hpos (om-point-h pos))
+                    (inc (if (om-shift-key-p) 500 50)))
+               (progn
+                 (om-set-scroll-position i (om-make-point (- hpos inc) vpos))
+                 (om-set-h-scroll-position i  (om-point-h (om-scroll-position i))))))))
+
+(defmethod scroll-down-panel ((self trackspanel))
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+           (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self)))))
+
+(defmethod scroll-up-panel ((self trackspanel))
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+           (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+           (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self)))))
+      
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
