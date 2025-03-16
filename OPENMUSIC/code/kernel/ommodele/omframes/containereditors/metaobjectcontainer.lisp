@@ -153,7 +153,7 @@ This class inherites from om-view-d-d, so all scrollers allow  drag and drop, wh
 (defmethod set-field-size ((self  t)) t)
 
 (defmethod set-field-size ((self metaobj-panel))
-  (let ((max-h 50) (max-v 50) bottom)
+  (let ((max-h 200) (max-v 150) bottom);((max-h 50) (max-v 150) bottom) 
     (mapcar 
      #'(lambda (view)
 	 (let ((bottom (om-add-points (om-view-position view) (om-view-size view))))
