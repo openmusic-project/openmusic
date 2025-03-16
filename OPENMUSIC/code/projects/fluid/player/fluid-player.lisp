@@ -52,19 +52,26 @@
   (let ((ports (remove-duplicates  (flat (get-port self)))))
     (car ports)))
 
-(defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)
-  (let ((approx (if (find :approx params)
-                    (nth (1+ (position :approx params)) params)
-                  (if (caller player) (get-edit-param (caller player) 'approx))))
-        ;(port (if (find :port params)
-        ;            (nth (1+ (position :port params)) params)
-        ;        (if (caller player) (get-edit-param (caller player) 'outport))))
-        ;(port (get-edit-param (caller player) 'outport)) ; avoir -> "error: objects of type null have no edition params!"
-        (port (get-gen-port object))
-        )
+(defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)  
+  (let ((approx (cond
+                 ((trackspanel-p (om-view-container (caller player)))
+                  (let* ((trackpanel (om-view-container (caller player)));tracks
+                         (trked (om-view-container trackpanel))
+                         (pos (position object (mapcar #'object (reverse (editors trackpanel))))))
+                    (nth pos (tunings trked))))
+                 ((find :approx params) (nth (1+ (position :approx params)) params))
+                 (t (get-edit-param (caller player) 'approx))))
+   
+        (port (if (trackspanel-p (om-view-container (caller player)))
+                  (let* ((trackpanel (om-view-container (caller player)));tracks
+                         (trked (om-view-container trackpanel)))
+                         (position object (mapcar #'object (reverse (editors trackpanel)))))
+                (get-gen-port object))))
+              
     ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
-    (when (and port *fluid-auto-microtune*)
-      (change-tuning port approx))
+    (if (and port *fluid-auto-microtune* approx)
+      (change-tuning port approx)
+      (change-tuning *def-midi-out* *global-midi-approx*))
     ; (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
@@ -83,6 +90,7 @@
                     ))
     (sort-events player)
     ))
+
 
 (defmethod player-start ((engine (eql :fluidsynth)) &optional play-list)
   (midi-start))
