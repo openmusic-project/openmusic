@@ -4858,7 +4858,7 @@
 
 (defmethod adjust-approx ((self notepanel))
   (let ((note (object (om-view-container self))))
-    (print (list note (staff-tone self)))
+    ;(print (list note (staff-tone self)))
   (setf (midic note) (approx-m (midic note) (staff-tone self)))))
 
 (defmethod adjust-approx ((self chordpanel))
