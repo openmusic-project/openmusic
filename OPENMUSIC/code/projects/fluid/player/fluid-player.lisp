@@ -97,6 +97,7 @@
 
 (defparameter *key-ons* (make-hash-table :test #'equal))
 
+#|
 (defun fluid-all-notes-off ()
   (loop for syn from 0 to (1- (length cl-fluidsynth::*fl-synths*))
           do
@@ -105,6 +106,15 @@
                 do (cl-fluidsynth::fluid_synth_all_notes_off 
                     (cl-fluidsynth::getsptr synth)
                     i)))))
+|#
+
+(defun fluid-all-notes-off ()
+  (let ((synths (loop for i in cl-fluid::*fl-synths*
+        collect (cl-fluid::getsptr i))))
+  (loop for i in synths
+        do  (cl-fluid::fluid_synth_all_notes_off
+           i
+           -1)))); -1 = all channels
 
 
 (defmethod player-stop ((engine (eql :fluidsynth)) &optional play-list)
