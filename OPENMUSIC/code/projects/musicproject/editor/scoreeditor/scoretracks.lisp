@@ -73,12 +73,12 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 (defmethod s-polybox-p ((self s-polybox)) t)
 (defmethod s-polybox-p ((self t)) nil)
 
-
+#|
 (defmethod omng-box-value :before ((self s-polybox) &optional (numout 0))
   "To close the editor bevore re-evaluating the box"
  (when (and (editorframe self) (not (equal (allow-lock self) "x")))
     (om-close-window (om-view-window (editorframe self)))))
-
+|#
 
 
 (defmethod OpenObjectEditor :after ((self s-polybox)) nil)
@@ -173,10 +173,10 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
 
 (defmethod get-titlebar-class ((self tracks-editor)) 'tracks-titlebar)
 
+;for cursor player
 (defmethod editor-null-event-handler :after ((self tracks-editor))
-  #+(and cocoa lispworks8) nil
-  ;#-(and cocoa lispworks8) (do-editor-null-event self)
-  )
+  (let ((editors (editors (panel self))))
+    (mapcar #'do-editor-null-event editors)))
 
 
 (defmethod metaobj-scrollbars-params ((self tracks-editor))  '(:v nil))
