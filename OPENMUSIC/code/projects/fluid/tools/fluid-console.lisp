@@ -205,7 +205,15 @@ In this case, all internal events are sent simultaneously.
        rep
        )))
 
-
+#|
+(defmethod omNG-save ((self fluid-ctrl) &optional (values? nil))
+  "Cons a Lisp expression that retuns a copy of self when it is evaluated."
+  `(when (find-class ',(type-of self) nil)
+     (let ((rep (make-instance ',(type-of self) 
+                               :i-chans ,(i-chans self) )))                      
+       rep
+       )))
+|#
 ;;;===============================
 ;;; FOR PLAY OR SAVE AS MIDI
 ;;;===============================
@@ -225,12 +233,12 @@ In this case, all internal events are sent simultaneously.
 
 
 (defmethod* send-all-to-fluids ((self fluid-ctrl))
-  (when (i-chans self)
+  ;(when (i-chans self)
   (let* ((port (midiport self))
          (pgm (program self))
          (pan (pan-ctrl self))
          (vol (gain-ctrl self))
-         (tuning (tuning self)))
+         (tuning (tuning self))) 
     (progn 
       ;(fluid-pgm-change pgm '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
       (propagate-pgm-change port pgm)
@@ -240,7 +248,8 @@ In this case, all internal events are sent simultaneously.
       )
     )
     ;(om-message-dialog "No FluidSynth instance loaded!")
-  ))
+  ;)
+)
 
 ;;================================================================
 ; EDITOR
@@ -471,13 +480,14 @@ In this case, all internal events are sent simultaneously.
 
 (defun get-tuning-val (val)
 (car (cassq val *tuning-table*)))
-|#
-
-
 
 (defun get-tuning-val (val)
 (car (nth val *edo-list*)))
+|#
 
+
+(defun get-tuning-val (val)
+(car (find val *edo-list* :test 'equal :key 'second))) 
 
 
 (defmethod do-initialize-channel ((self fluidPanel)) 
@@ -495,8 +505,8 @@ In this case, all internal events are sent simultaneously.
                                (om-make-point 76 12)
                                ""
                                :di-action (om-dialog-item-act item
-                                            ;(change-all-pgm self (second (nth (om-get-selected-item-index item) progList)))
-                                            (propagate-pgm-change self (second (nth (om-get-selected-item-index item) progList)))
+                                            (change-all-pgm self (second (nth (om-get-selected-item-index item) progList)))
+                                            ;(propagate-pgm-change self (second (nth (om-get-selected-item-index item) progList)))
                                             )
                                :font *om-default-font1*
                                :range (loop for item in progList collect (first item))
@@ -509,8 +519,8 @@ In this case, all internal events are sent simultaneously.
                                  :position (om-make-point 90 pos) :size (om-make-point 26 25) 
                                  :action (om-dialog-item-act item
                                            (declare (ignore item))
-                                           (propagate-pgm-change self (car (program (channelctr self))))
-                                           ;(change-all-pgm self (car (program (channelctr self))))
+                                           ;(propagate-pgm-change self (car (program (channelctr self))))
+                                           (change-all-pgm self (car (program (channelctr self))))
                                            )))
     (setf pos (+ pos 30))
 
@@ -1127,9 +1137,10 @@ In this case, all internal events are sent simultaneously.
   (setf (midichannel (channelctr self)) value)
   (report-modifications self))
 
-(defmethod change-all-pgm ((self fluidPanel) value)
+(defmethod change-all-pgm ((self fluidPanel) value) 
   (let ((port (midiport (channelctr self))))
-  (setf (program (channelctr self)) (repeat-n value 16))
+  (setf (program (channelctr self)) (repeat-n value *chan-count*))
+  ;(setf (i-chans (channelctr self)) (repeat-n value *chan-count*));ca beugue
   ;(fluid-pgm-change value '(1 2 3 4 5 6 7 8 9 11 12 13 14 15 16) :port port)
   (propagate-pgm-change port value)
   (report-modifications self)))
@@ -1139,9 +1150,11 @@ In this case, all internal events are sent simultaneously.
         (nsynth (get-synth-channel-count 0))
         (lst (arithm-ser 1 nsynth 1)))
     (fluid-pgm-change value  lst :port port)
-    (when (i-chans (channelctr self))
+    ;(when (i-chans (channelctr self))
     (loop for i in (channels-ctrl (i-chans (channelctr self)))
-          do (setf (program i) value)))))
+          do (setf (program i) value))
+    ;)
+    ))
        
 
 (defmethod change-program ((self fluidPanel) value)
