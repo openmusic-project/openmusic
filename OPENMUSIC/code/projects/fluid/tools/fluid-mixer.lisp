@@ -271,7 +271,7 @@ In this case, all internal events are sent simultaneously.
                                      "FLUID Channels Control"
                                      nil
                                      :winsize (om-make-point (* *channel-w* 16) 590) ;(om-make-point (* *channel-w* 8) 580) 
-                                     :resize nil
+                                     :resize t
                                      :close-p t
                                      :winshow t
                                      )))
@@ -285,26 +285,25 @@ In this case, all internal events are sent simultaneously.
                                      "FLUID Channels Control"
                                      nil
                                      :winsize (om-make-point (* *channel-w* 16) 580) ;(om-make-point (* *channel-w* 8) 580)
-                                     :resize nil
+                                     :resize t
                                      :close-p t
                                      :winshow nil ; first time double click
                                      )))
+      
       (setf (i-chans fsynth) (obj mixer)) ;orig mixer
       (loop for i in (channels-ctrl (obj mixer))
             do (setf (nfsynth i) fsynth))
         ;setting programs
        (let ((fmixer (obj mixer)))
-            (loop for i in (channels-ctrl fmixer)
+         (loop for i in (channels-ctrl fmixer)
                   for n from 0 to (- *chan-count* 1)
                   do (progn
                        (setf (program i) (nth n (program (nfsynth i))))
                        (setf (pan-ctrl i) (nth n (pan-ctrl (nfsynth i))))
                        (setf (vol-ctrl i) (nth n (vol-ctrl (nfsynth i))))
                        )))
-     
-       (show-fluid-mixer-win port fsynth);attention recursivity!
-       ;(om-set-view-size mixer (om-make-point (* *channel-w* 8) 598))
        (om-set-view-size mixer (om-make-point (* *channel-w* 16) 590))
+       (om-select-window mixer)
 )))
 
 
@@ -513,7 +512,7 @@ In this case, all internal events are sent simultaneously.
   (setf (channelBox self) (om-make-dialog-item 'numBox (om-make-point 26 25) (om-make-point 28 18) 
                                                        (format nil " ~D" (midichannel (channelctr self)))
                                                        :min-val 1
-                                                       :max-val 16
+                                                       :max-val *chan-count*
                                                        :value (midichannel (channelctr self))
                                                        :afterfun #'(lambda (item)
                                                                      (change-channel self (value item)))
