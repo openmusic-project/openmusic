@@ -7,6 +7,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- TRACKS: lots of improvements and fixes
 - Timesignatures and tempo are exported in MidiFiles
 - score subdivision dialog
 - bpf-bpc shortcuts
@@ -16,6 +17,7 @@ IMPROVEMENTS
 
 FIXES
 
+- subst-rhythm now doen't create extra groups
 - toggling a note from rest to note restitutes ports
 - Info for Scores obj fix
 - gracenote offsets are taken into account 
