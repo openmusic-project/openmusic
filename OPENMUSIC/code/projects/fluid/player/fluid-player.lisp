@@ -52,22 +52,23 @@
   (let ((ports (remove-duplicates  (flat (get-port self)))))
     (car ports)))
 
-(defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)  
-  (let ((approx (cond
-                 ((trackspanel-p (om-view-container (caller player)))
-                  (let* ((trackpanel (om-view-container (caller player)));tracks
-                         (trked (om-view-container trackpanel))
-                         (pos (position object (mapcar #'object (reverse (editors trackpanel))))))
-                    (nth pos (tunings trked))))
-                 ((find :approx params) (nth (1+ (position :approx params)) params))
-                 (t (get-edit-param (caller player) 'approx))))
-   
-        (port (if (trackspanel-p (om-view-container (caller player)))
-                  (let* ((trackpanel (om-view-container (caller player)));tracks
-                         (trked (om-view-container trackpanel)))
-                         (position object (mapcar #'object (reverse (editors trackpanel)))))
+(defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)
+  (let ((approx (if (caller player) 
+                    (cond 
+                     ((trackspanel-p (om-view-container (caller player)))
+                      (let* ((trackpanel (om-view-container (caller player)));tracks
+                             (trked (om-view-container trackpanel))
+                             (pos (position object (mapcar #'object (reverse (editors trackpanel))))))
+                        (nth pos (tunings trked))))
+                     (t (get-edit-param (caller player) 'approx)))
+                  (nth (1+ (position :approx params)) params)))
+        (port (if (caller player)
+                  (if (trackspanel-p (om-view-container (caller player)))
+                      (let* ((trackpanel (om-view-container (caller player)));tracks
+                             (trked (om-view-container trackpanel)))
+                        (position object (mapcar #'object (reverse (editors trackpanel))))))
                 (get-gen-port object))))
-              
+                (print (list "app" approx))                  
     ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
     (if (and port *fluid-auto-microtune* approx)
       (change-tuning port approx)
