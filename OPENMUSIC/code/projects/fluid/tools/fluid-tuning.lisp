@@ -179,6 +179,6 @@
   (let ((port (midiport (channelctr self))))
     (change-tuning port value)))
     
-(defmethod change-tuning ((self fluid-ctrl) value) (print value)
+(defmethod change-tuning ((self fluid-ctrl) value)
   (let ((port (midiport self)))
     (change-tuning port value)))

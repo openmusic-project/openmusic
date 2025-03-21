@@ -157,6 +157,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
     (;(edit-buttons :accessor edit-buttons :initarg :edit-buttons :initform nil)
      ;(play-buttons :accessor play-buttons :initarg :play-buttons :initform nil)
      ;(time-view :accessor time-view :initarg :time-view :initform nil)
+     (active-button :accessor active-button :initarg :active-button :initform nil)
      ))
 
 #|
@@ -430,28 +431,53 @@ nil)
 
 (defparameter *clicked-trk-panel* nil) ; A hack to catch key events on each editor.
 
+
+(defmethod close-editorFrame ((self tracks-editor)) 
+  (call-next-method)
+  (setf *clicked-trk-panel* nil))
+
+
+(defmethod unselect-panels ((self tracks-editor))
+  "Unselects focus on all subpanels of track"
+  (let* ((panel (panel self))
+         (hidebuts (hide-buts panel)))
+    (setf *clicked-trk-panel* nil)
+    (loop for i in hidebuts
+          do (progn
+               (setf (active i) nil)
+               (setf (iconid (active-button i)) 956)))
+    (setf (iconid (active-button (title-bar self))) 955)
+    (om-invalidate-view panel t)
+    ))
+  
+
 (defmethod om-view-click-handler :before ((self scorePanel) where)
-  (setf *clicked-trk-panel* self)
   (when (trackspanel-p (om-view-container (om-view-container self)))
-  (let* ((tpanel (om-view-container (om-view-container self)))
-         (obj (object (om-view-container tpanel)))
-         (panels (reverse (loop for i in (editors tpanel)
-                       collect (panel i))))
-         (pos (position *clicked-trk-panel* panels))
-         (hidebuts (reverse (hide-buts tpanel))))
-    ;;;;
-    (progn
-      (loop for i in hidebuts
-            do (progn 
-                 (setf (active i) nil)
-                 (setf (iconid (active-button i)) 956)))
-      (setf (active (nth pos hidebuts)) t)
-      (setf (iconid (active-button (nth pos hidebuts))) 955)
-      (om-invalidate-view tpanel t))
-    ;;;;
-    (setf (nth pos (voices obj))
-          (object (om-view-container (nth pos panels))))
-    )))
+    (setf *clicked-trk-panel* self)
+    (let* ((ed (om-view-container self))
+           (tpanel (om-view-container ed))
+           (obj (object (om-view-container tpanel)))
+           (panels (reverse (loop for i in (editors tpanel)
+                                  collect (panel i))))
+           (pos (position *clicked-trk-panel* panels))
+           (hidebuts (reverse (hide-buts tpanel))))
+      ;;;;
+      (progn
+        (loop for i in hidebuts
+              do (progn 
+                   (setf (active i) nil)
+                   (setf (iconid (active-button i)) 956)))
+        (setf (active (nth pos hidebuts)) t)
+        (setf (iconid (active-button (nth pos hidebuts))) 955)
+        (setf (iconid (active-button (title-bar (om-view-container tpanel)))) 956)
+        (om-invalidate-view tpanel t)
+        (om-invalidate-view (title-bar (om-view-container tpanel)) t)
+        )
+      ;;;;
+      (setf (nth pos (voices obj))
+            (object (om-view-container (nth pos panels))))
+      )))
+
 
 
 ;;;;;;;;;SHORTCUTS
@@ -467,8 +493,9 @@ nil)
                   ))))
 
 (defmethod handle-key-event ((self tracks-editor) char) 
-  (if (om-command-key-p) 
-      (scroll-pane *clicked-trk-panel* char);score individual panel
+  (if (om-command-key-p)
+      (when *clicked-trk-panel*
+      (scroll-pane *clicked-trk-panel* char));score individual panel
     (case char
       (#\H (show-help-window (format nil "Commands for ~A Editor" 
                                      (string-upcase (class-name (class-of (object self))))) 
@@ -487,6 +514,7 @@ nil)
 
 (defmethod init-pos-panels ((self tracks-editor))
   (let ((panels (mapcar #'panel (editors (panel self)))))
+    (editor-stop self)
     (loop for i in panels 
           do (progn
                (om-set-scroll-position i (om-make-point 0 0))
@@ -567,6 +595,15 @@ nil)
 
 (defmethod init-titlebar ((self tracks-editor))
   (call-next-method) 
+  (setf (active-button (title-bar self))
+        (om-make-view 'button-icon
+                      :iconid (if *clicked-trk-panel* 956 955)
+                      :action #'(lambda (item)
+                                  (setf (iconid item) (if (= (iconid item) 955) 956 955))
+                                  (if (= (iconid item) 955) 
+                                      (unselect-panels self)))
+                      :position (om-make-point 100 2)
+                      :size (om-make-point 22 22)))
   #|
   (setf (edit-buttons (title-bar self))
         (list (om-make-view 'om-icon-button :position (om-make-point 180 2) :size (om-make-point 22 22)
@@ -581,6 +618,7 @@ nil)
                             :selected-p (equal :interval (get-edit-param self 'cursor-mode))
                             :action #'(lambda (item) (set-cursor-mode self :interval)))))
   |#
+  
   ;240 + 21
   (setf (play-buttons (title-bar self))
         (list (om-make-view 'om-icon-button :position (om-make-point 240 2) :size (om-make-point 22 22)
@@ -596,7 +634,6 @@ nil)
               (om-make-view 'om-icon-button :position (om-make-point 282 2) :size (om-make-point 22 22)
                             :icon1 "stop" :icon2 "stop-pushed"
                             :action #'(lambda (item) 
-                                        
                                         (when (recording self)
                                           (stop-recording self)
                                           (setf (selected-p (nth 3 (play-buttons (title-bar self)))) nil)
@@ -616,8 +653,7 @@ nil)
                                         (setf (loop-play self)
                                               (not (loop-play self)))
                                         (setf (selected-p item) (loop-play self))
-                                        )
-                            )
+                                        ))
               
               (om-make-view 'om-icon-button :position (om-make-point 366 2) :size (om-make-point 22 22)
                             :icon1 "player" :icon2 "player-pushed"
@@ -641,6 +677,7 @@ nil)
   
   (apply 'om-add-subviews (cons (title-bar self) 
                                 (append
+                                 (list (active-button (title-bar self)))
                                  ;(edit-buttons (title-bar self))
                                  (play-buttons (title-bar self))
                                  (time-view (title-bar self))
@@ -904,6 +941,7 @@ nil)
             collect (unless i ed)))))
 
 (defmethod editor-play ((self tracks-editor))
+  (unselect-panels self) 
   (let* ((editors (editors (panel self)))
          (objs (mapcar 'object editors))
          (durs (mapcar #'object-dur objs))
@@ -913,32 +951,33 @@ nil)
       (when play-ed
         (mapcar #'editor-play play-ed)
         (setf  (state (player self)) :play))) 
-      ;(call-next-method)
-  (update-play-buttons (title-bar self))))
+    (update-play-buttons (title-bar self))))
 
-(defmethod editor-stop ((self tracks-editor))
+(defmethod editor-stop ((self tracks-editor)) 
   (let ((editors (editors (panel self))))
     (setf  (state (player self)) :stop)
     (mapcar #'editor-stop editors)
-  ;(call-next-method)
-))
+    (general-stop (player self))
+    (update-play-buttons (title-bar self))
+    ))  
+
 
 (defmethod editor-pause ((self tracks-editor))
   (let ((editors (editors (panel self))))
     (mapcar #'editor-pause editors)
     (setf  (state (player self)) :pause)
-      (call-next-method)
-  (update-play-buttons (title-bar self))))
+    (update-play-buttons (title-bar self))
+  ))
 
-(defmethod editor-play/stop ((self tracks-editor))
+(defmethod editor-play/stop ((self tracks-editor)) 
+  (unselect-panels self)
   (if (idle-p (player self))
       (progn (setf (state (player self)) :play)
         (editor-play self))
     (progn
-      (setf  (state (player self)) :stop)
+      (setf  (state (player self)) :pause)
       (editor-pause self))))
 
 (defmethod stop-editor-callback ((self tracks-editor))
-  (call-next-method)
   (update-play-buttons (title-bar self)))
 

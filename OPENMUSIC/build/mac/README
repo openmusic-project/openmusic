@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.5
+; OM 7.6
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -12,7 +12,7 @@ OpenMusic is a free software distributed under GNU LGPL license.
 - User group and support : http://forumnet.ircam.fr/fr/user-groups/openmusic/forum/
 - More info : http://repmus.ircam.fr/openmusic/
 ;------------------------------------
-; RELEASE NOTES:
+; GENERAL NOTES:
 ;------------------------------------
 Since OM 6.13 the distribution package is modified to conform with macOS security changes
 No more ressources are accessed with relative pathnames outside the .app bundle
@@ -33,6 +33,39 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+
+
+* RELEASE NOTES 7.6
+
+NEW FEATURES
+
+- Marking and changing icons in workspace
+- SOUND window custom waveshape color
+
+IMPROVEMENTS
+
+- TRACKS: lots of improvements and fixes
+- Timesignatures and tempo are exported in MidiFiles
+- score subdivision dialog
+- bpf-bpc shortcuts
+- 'k' Shortcut for Clearing patches (forces deleting)
+- Workspace/folder scrolling shortcut
+- Tooltips for inputs when connection process
+
+FIXES
+
+- subst-rhythm now doen't create extra groups
+- toggling a note from rest to note restitutes ports
+- Info for Scores obj fix
+- gracenote offsets are taken into account 
+- approx-m compatible with EDOs
+- Internal chord obj-mode selection
+- SOUND cursor (doesn't disappear)
+- fixed disappearing cursor-play-view
+- score objs miniview update (macosx) 
+- Various display fixes in score object (macosx) 
+
+
 
 
 * RELEASE NOTES 7.5
