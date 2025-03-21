@@ -1116,13 +1116,19 @@ outputed."
 ; and finally remove this option and put it by default in reduce mode
 ; for accurate computation!
 
+(defun subststreeobj (tree objs)
+  (loop for i in objs
+        for n in tree
+          do (setf (tvalue i) n)))
+
+
 
 (defmethod! subst-rhythm ((tree t) 
                               (pos list)
                               (elem list)
                               &optional 
                               (option 'reduce)
-                              (output 'optimized))
+                              (output 'not-optimized))
    :initvals '((? ((4//4 (1 (1 (1 2 1 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 1)))) nil (1 2) reduce optimized)
    :indoc '("a rhythm tree" "list of positions" "list of new items" "option" "output")
    :menuins '((3 (("reduce" 'reduce) 
@@ -1149,6 +1155,7 @@ sequentially by elements from <elem>."
           (tree2objclean (remove-if 'numberp (flat tree2obj)))
           (treeobjinverted 
            (substreeall tree2objclean position elem)))
+     (subststreeobj (mapcar #'tvalue tree2objclean) tree2objclean)
      (case output
        (optimized (optimize-tree (trans-obj tree2obj)))
        (not-optimized (trans-obj tree2obj)))))
@@ -1159,7 +1166,7 @@ sequentially by elements from <elem>."
                           (elem list)
                           &optional 
                           (option 'reduce)
-                          (output 'optimized))
+                          (output 'not-optimized))
   (setf n -1)
   (let* ((rt (tree tree))
          (subst(subst-rhythm rt pos elem option output)))
