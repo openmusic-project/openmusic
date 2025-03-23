@@ -66,13 +66,12 @@
                   (if (trackspanel-p (om-view-container (caller player)))
                       (let* ((trackpanel (om-view-container (caller player)));tracks
                              (trked (om-view-container trackpanel)))
-                        (position object (mapcar #'object (reverse (editors trackpanel))))))
-                (get-gen-port object))))
+                        (position object (mapcar #'object (reverse (editors trackpanel)))))
+                (get-gen-port object)))))
  ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
     (if (and port *fluid-auto-microtune* approx)
-      (change-tuning port approx)
-      (change-tuning *def-midi-out* *global-midi-approx*))
-    ; (if (equal port :default) (setf port *def-midi-out*))
+      (change-tuning port approx))
+ ; (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
                 (schedule-task player 
