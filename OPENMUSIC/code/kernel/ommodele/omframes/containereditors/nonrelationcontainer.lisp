@@ -681,7 +681,7 @@ Workspace Panels contain icons of patches, maquettes and folders
                                           (list "resources" "icon")))
                  (make-pathname :directory (append (pathname-directory *om-resources-folder*) 
                                           (list "icon"))))))
-    (print (list "infos" icon loc path objs))
+    ;(print (list "infos" icon loc path objs))
     (loop for i in objs
           do (progn
                (omg-change-icon i icon)))))
