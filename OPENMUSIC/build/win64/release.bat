@@ -1,5 +1,14 @@
+@ECHO OFF
 
-cd ..
+ECHO Compile, Pack OM? 
+
+PAUSE
+
+CHDIR ..\..\resources\lib\linux\
+
+DEL libsdif.so
+
+CHDIR ..\..\..\build
 
 "C:\\Program Files\\LispWorks\\lispworks-8-0-0-x64-windows.exe" -init deliver.lisp
 
@@ -7,3 +16,4 @@ cd ..
 
 cd win64
 
+ECHO DONE! 
