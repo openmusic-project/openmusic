@@ -562,7 +562,8 @@ this slot store a subview containing it subview if exists.#triangle#
 
 (defclass triangle-icon (icon-view)  
   ((open? :initform nil :accessor open?)
-   (icon-finder :initform nil :initarg :icon-finder :accessor icon-finder)))
+   (icon-finder :initform nil :initarg :icon-finder :accessor icon-finder)
+   (active-mode :initform nil :accessor active-mode)))
 
 
 (defmethod om-view-click-handler ((item triangle-icon) where)
