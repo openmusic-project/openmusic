@@ -60,6 +60,7 @@
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
    (chan :initform 1 :accessor chan :initarg :chan :type integer :documentation "MIDI channel (1-16)")
+   (approx :initform 2 :accessor approx  :type integer)
    (port :initform nil :accessor port)
    (tie :initform nil :accessor tie)
    (symb-info :initform nil :accessor symb-info))
@@ -107,6 +108,7 @@ A simple NOTE defined with :
    (LOffset :initform (list 0) :accessor LOffset :initarg :LOffset :type list :documentation "offsets (list of values in ms)")
    (Ldur :initform (list 1000) :accessor Ldur :initarg :Ldur :type list :documentation "durations (list of values in ms)")
    (LChan :initform (list 1) :accessor LChan :initarg :LChan :type list :documentation "MIDI channels (list of values 0-16)")
+   (approx :initform 2 :accessor approx  :type integer)
    ) 
   (:icon 139)
   
@@ -125,7 +127,8 @@ A CHORD object (set of simultaneous notes) defined with
 
 
 (defclass* poly (superposition tonal-object) 
-  ((voices :initform (list (make-instance 'voice )) :initarg :voices :accessor voices :type T :documentation "list of VOICE objects")) 
+  ((voices :initform (list (make-instance 'voice )) :initarg :voices :accessor voices :type T :documentation "list of VOICE objects")
+   (approx :initform 2 :accessor approx  :type integer)) 
   (:icon 224)
   (:documentation "
 POLY is a polyphonic object made of a superimposition of VOICE objects.
@@ -134,13 +137,15 @@ POLY is a polyphonic object made of a superimposition of VOICE objects.
 
 ;;; probleme de l'initialisation de tree. Tree devrait etre au niveau de sequence* !!
 (defclass* group (metric-sequence)  
-  ((tree :initform '(1/4 (1 1 1))  :initarg :tree :type list))
+  ((tree :initform '(1/4 (1 1 1))  :initarg :tree :type list)
+   (approx :initform 2 :accessor approx  :type integer))
   (:icon 226)
  (:documentation "
 An OM object representing a group in a rhythm.
 "))
 (defclass* measure (metric-sequence)  
-  ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)) 
+  ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)
+   (approx :initform 2 :accessor approx  :type integer)) 
   (:icon 228)
 (:documentation "
 An OM object representing a measure in a rhythm.
@@ -158,7 +163,8 @@ An OM object representing a measure in a rhythm.
    (legato :initform 100 :accessor legato :initarg :legato :type integer 
            :documentation "overlapping percentage between every successive chords, calculated from the second chord's duration")
    (ties :initform nil :accessor ties :initarg :ties :type list
-         :documentation "sub lists (one sub list per chord) indicating notes to be tied to notes of the same value, in a next chord"))
+         :documentation "sub lists (one sub list per chord) indicating notes to be tied to notes of the same value, in a next chord")
+   (approx :initform 2 :accessor approx  :type integer))
   (:icon 223)
   
   (:documentation "
@@ -397,6 +403,12 @@ Extraction methods.
         do (set-port note port))
   self)
 
+
+(defmethod (setf approx) ((approx number) (self chord))
+  (call-next-method)
+  (loop for chord in (inside self)
+        do (setf (approx chord)  approx))
+  self)
 
 ;;; CHORDS 
 
@@ -716,7 +728,7 @@ Extraction methods.
   (loop for sub in (inside self)
         when (not (cont-chord-p sub))
         if (note-or-chord-p sub) collect (ot-clone sub)
-        else if (container-p sub) append (chords sub)))
+          else if (container-p sub) append (chords sub)))
 
 ;---tempo
 (defmethod tempo-a-la-noire ((tempo number)) tempo)

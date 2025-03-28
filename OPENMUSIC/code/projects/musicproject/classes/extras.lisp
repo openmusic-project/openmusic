@@ -81,7 +81,7 @@
               (set-patch-pairs newobj ',patchlist)
               (set-name newobj ,(get-name self))
               (set-tonalite newobj ,(omng-save tonalite))  ;;; jb
-              (set-approx newobj ',(get-approx self)) ;;kh
+              ;(setapprox newobj ',(get-approx self)) ;;kh
               newobj))
          (let ((slots (mapcan #'(lambda (slot)
                                   (list (string2initarg (name slot)) 
@@ -95,7 +95,7 @@
                 (set-patch-pairs newobj ',patchlist)
                 (set-name newobj ,(get-name self))
                 (set-tonalite newobj ,(omng-save tonalite))  ;;; jb
-                (set-approx newobj ',(get-approx self)) ;;kh
+                ;(setapprox newobj ',(get-approx self)) ;;kh
                 newobj)))))))
 
 
@@ -112,7 +112,8 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (setf (gnotes thechord) (make-instance 'grace-notes
                                                      :glist ',(glist (gnotes self))
                                                      :thechord thechord))
@@ -121,7 +122,7 @@
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              (set-approx thechord ',(get-approx self))
+              ;(setapprox thechord ',(get-approx self))
               thechord))
           (tonlist
            `(let ((thechord (make-instance ',(type-of self)
@@ -129,13 +130,14 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (restore-tonalite thechord ',tonlist)
               (load-port-info thechord ',(get-port self))
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              (set-approx thechord ',(get-approx self))
+              ;(setapprox thechord ',(get-approx self))
               thechord))
           ((gnotes self)
            `(let ((thechord (make-instance ',(type-of self)
@@ -143,7 +145,8 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (setf (gnotes thechord) (make-instance 'grace-notes
                                                      :glist ',(glist (gnotes self))
                                                      :thechord thechord))
@@ -151,7 +154,7 @@
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              (set-approx thechord ',(get-approx self))
+              ;(setapprox thechord ',(get-approx self))
               thechord))
           (t `(let ((thechord (make-instance ',(type-of self)
                                              :LMidic ',(Lmidic self)
@@ -159,12 +162,13 @@
                                              :LVel ',(LVel self)
                                              :LOffset ',(LOffset self)
                                              :Lchan ',(Lchan self)
+                                             :approx ',(approx self)
                                              )))
                 (load-port-info thechord ',(get-port self))
                 (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
                 (set-extra-pairs thechord ',extralist)
                 (set-tonalite thechord ,(omng-save tonalite))
-                (set-approx thechord ',(get-approx self))
+                ;(setapprox thechord ',(get-approx self))
                 thechord))
           )))
 

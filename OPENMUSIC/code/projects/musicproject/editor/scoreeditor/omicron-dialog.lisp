@@ -104,6 +104,50 @@
     (setf (staff-tone self) scale)))
 
 ;(position 100.1 *scales-list* :key #'car)
+
+;;;;;;
+;;this is for saving approx slot
+(defmethod setapprox ((self note) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self chord) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self chord-seq) val)
+    (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self multi-seq) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self voice) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self poly) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+      (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self t) val) nil)
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;=======================
 ; INSPECTOR
