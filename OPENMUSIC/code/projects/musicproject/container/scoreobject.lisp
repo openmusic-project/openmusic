@@ -539,6 +539,7 @@ Extraction methods.
   self)
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
+  (print (list "do-init" self )) 
   (distribute-chords self chords)
   (when (> legato 0) (normalize-chord self legato))
   (set-ties self ties)
@@ -729,6 +730,39 @@ Extraction methods.
         when (not (cont-chord-p sub))
         if (note-or-chord-p sub) collect (ot-clone sub)
           else if (container-p sub) append (chords sub)))
+
+
+;;;;a voir
+#|
+(defmethod (setf approx) ((approx number) (self voice))
+  (call-next-method)
+  (loop for chord in (get-real-chords self)
+        do (setf (approx chord)  approx))
+  self)
+|#
+
+
+(defmethod (setf approx) ((approx number) (self voice))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
+
+(defmethod (setf approx) ((approx number) (self measure))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
+(defmethod (setf approx) ((approx number) (self group))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+;;;;
+
+
 
 ;---tempo
 (defmethod tempo-a-la-noire ((tempo number)) tempo)

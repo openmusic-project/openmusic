@@ -289,7 +289,7 @@
 
 (defun om-micron (object controls &optional position) 
   (let* ((pos (or position (om-make-point 200 200)))
-         (approx (staff-tone (panel (om-view-container controls))))
+         (approx (approx (object (om-view-container controls))));(staff-tone (panel (om-view-container controls))))
          (index (find-indx approx))
          (indx1 (car index))
          (indx2 (second index))

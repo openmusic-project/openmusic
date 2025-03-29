@@ -405,7 +405,7 @@
          (score-mode (or (get-edit-param self 'score-mode) 0))
          (noteaschan (get-edit-param self 'notechancolor?))
          (stemp (get-edit-param self 'show-stems))
-         (approx (get-edit-param self 'approx))
+         (approx (approx (object self)));(get-edit-param self 'approx))
          (ed-view (om-make-view (get-score-class-panel self) 
                                  :position (om-make-point 0 0) 
                                  :font (om-make-music-font *heads-font* size)

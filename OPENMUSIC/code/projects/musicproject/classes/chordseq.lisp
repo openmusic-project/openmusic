@@ -380,7 +380,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                      :Lchan chan-list
                      :Lvel vel-list
                      :Lport port-list
-                     :approx approx)))
+                     ;:approx approx 
+                     )))
     (setf (offset chord) t-time)
     chord))
 
@@ -536,7 +537,7 @@ make-quanti
 
 
 ;=== Conversion Chord-seq -> voice : dans le cas ou le chord-seq ne commence pas 0
-(defmethod* objFromObjs ((self chord-seq) (type voice)) (print (list "aadasd" (approx self)))
+(defmethod* objFromObjs ((self chord-seq) (type voice))
             (if (chords self)
                 (let* ((newchordseq (align-chords self *global-deltachords*)); PROB....
                        (quantypar *quantify-def-params*)
@@ -558,7 +559,6 @@ make-quanti
                                                 :approx (approx self))))
                   ;(setapprox type (approx self));;Edo scale heritage
                   ;(setf (approx newvoice) (approx self))
-                  (print (list "aadasssssssd" (approx self) (approx newvoice)))
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
@@ -683,7 +683,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 "
   (let ((note-seq (flatten-container self 'note 'chord-seq))
         (chseq (make-instance 'chord-seq :empty t)) 
-        note-list chord-list)
+        note-list chord-list) 
     (when (inside self)
       (setQValue note-seq 1000 :recursive t) 
       (setQValue chseq 1000 :recursive nil)
