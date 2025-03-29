@@ -308,7 +308,7 @@
 (load-om-projects '("omsounds"))
 (load-om-projects '("fluid"))
 (load-om-projects '("space"))
-;(load-om-projects '("harmonicproject"))
+(load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
 ;(load-om-projects '("fluid"))
 
