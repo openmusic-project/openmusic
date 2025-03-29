@@ -545,7 +545,8 @@ when :
        :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
        :tempo ',(tempo self)
        :legato ,(legato self)
-       :ties ',(ties self))))
+       :ties ',(ties self)
+       :approx ',(approx self))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

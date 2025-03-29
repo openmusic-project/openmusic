@@ -122,7 +122,6 @@
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              ;(setapprox thechord ',(get-approx self))
               thechord))
           (tonlist
            `(let ((thechord (make-instance ',(type-of self)
@@ -137,7 +136,6 @@
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              ;(setapprox thechord ',(get-approx self))
               thechord))
           ((gnotes self)
            `(let ((thechord (make-instance ',(type-of self)
@@ -154,7 +152,6 @@
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
               (set-extra-pairs thechord ',extralist)
               (set-tonalite thechord ,(omng-save tonalite))
-              ;(setapprox thechord ',(get-approx self))
               thechord))
           (t `(let ((thechord (make-instance ',(type-of self)
                                              :LMidic ',(Lmidic self)
@@ -168,7 +165,6 @@
                 (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
                 (set-extra-pairs thechord ',extralist)
                 (set-tonalite thechord ,(omng-save tonalite))
-                ;(setapprox thechord ',(get-approx self))
                 thechord))
           )))
 

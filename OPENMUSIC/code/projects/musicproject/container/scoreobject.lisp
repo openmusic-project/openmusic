@@ -60,9 +60,9 @@
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
    (chan :initform 1 :accessor chan :initarg :chan :type integer :documentation "MIDI channel (1-16)")
-   (approx :initform 2 :accessor approx  :type integer)
    (port :initform nil :accessor port)
    (tie :initform nil :accessor tie)
+   (approx :initform 2 :accessor approx :type integer)
    (symb-info :initform nil :accessor symb-info))
   (:icon 137)
   
@@ -311,7 +311,10 @@ Extraction methods.
   (setf (slot-value  self 'extent) dur )
   (QNormalize self)
   self)
-   
+
+(defmethod (setf approx) ((approx number) (self note))
+  (setf (slot-value self 'approx) approx)
+  self)
 
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
@@ -406,8 +409,8 @@ Extraction methods.
 
 (defmethod (setf approx) ((approx number) (self chord))
   (call-next-method)
-  (loop for chord in (inside self)
-        do (setf (approx chord)  approx))
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
   self)
 
 ;;; CHORDS 
