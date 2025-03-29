@@ -556,9 +556,9 @@ make-quanti
                                                 :tempo (first quantypar)
                                                 :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq)
-                                                :approx (approx self))))
-                  ;(setapprox type (approx self));;Edo scale heritage
-                  ;(setf (approx newvoice) (approx self))
+                                                ;:approx (approx self); ne suffit pas car ne propage pas!
+                                                )))
+                  (setf (approx newvoice) (approx self)); il faut utiliser la methode!
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
