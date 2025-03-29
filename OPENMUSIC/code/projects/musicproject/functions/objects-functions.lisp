@@ -301,7 +301,8 @@
           collect (make-instance 'voice 
                                  :tree i
                                  :chords k
-                                 :tempo tp))))
+                                 :tempo tp
+                                 :approx (approx self)))))
 
 
 ;(defmethod! voice->voices ((self poly))
@@ -379,8 +380,8 @@
      (make-instance 'voice
                     :tree conc-tree
                     :chords chords
-                    :tempo tempo)
-     ))
+                    :tempo tempo
+                    :approx (approx (car voices)))))
 
 (defmethod concatenate-polys ((liste list))
   (let* ((voices (mat-trans (loop for i in liste
