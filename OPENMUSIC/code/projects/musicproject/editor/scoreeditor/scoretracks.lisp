@@ -39,7 +39,7 @@
 
 (defclass! tracks () 
   ((voices :initform (list (make-instance 'voice)) :initarg :voices :accessor voices :type T :documentation "list of VOICE objects")
-   (approx :accessor approx :initform nil :initarg :approx :type t)
+   (approx :accessor approx :initform nil :type t)
    (names :accessor names :initform '("VOICE"))
    (parent :accessor parent :initform nil) ;always nil, added to prevent some bugs
    (editor :accessor editor :initform nil) ;reference to the editor (user interface)
@@ -59,8 +59,9 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                      collect (associated-box i)))
          (names (loop for i in boxes
                       collect (if i (name i) ""))))
-    (when (null (car approx))
-      (setf (approx self) '(120.0)))
+    (if (null (car approx))
+      (setf (approx self) '(120.0))
+      (setf (approx self) approx))
     (setf (names self) names)))
 
 
