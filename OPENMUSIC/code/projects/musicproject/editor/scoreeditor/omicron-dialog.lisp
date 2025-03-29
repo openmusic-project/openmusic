@@ -35,24 +35,37 @@
 ;=======================
 ; Tools
 ;=======================
+;;compat
 
 (defmethod get-approx ((self note))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self chord))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self chord-seq))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self multi-seq))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self voice))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self poly))
-  (approx self))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
 
 (defmethod get-approx ((self t)) nil)
 
