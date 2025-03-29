@@ -542,7 +542,6 @@ Extraction methods.
   self)
 
 (defmethod do-initialize ((self voice) &key tree chords tempo legato ties (PropagateExtent 4) (InternalCall nil))
-  (print (list "do-init" self )) 
   (distribute-chords self chords)
   (when (> legato 0) (normalize-chord self legato))
   (set-ties self ties)
