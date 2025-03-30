@@ -54,7 +54,7 @@
      rep))
 
 
-(defmethod omNG-save ((self simple-container) &optional (values? nil))
+(defmethod omNG-save ((self simple-container) &optional (values? nil)) 
    "Cons a Lisp expression that returns a copy of self when it is valuated."
    (when (omclass-p (class-of self))
      (let ((theclass (class-name (class-of self)))

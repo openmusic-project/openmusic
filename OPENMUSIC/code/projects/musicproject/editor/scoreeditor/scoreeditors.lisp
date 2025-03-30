@@ -405,7 +405,15 @@
          (score-mode (or (get-edit-param self 'score-mode) 0))
          (noteaschan (get-edit-param self 'notechancolor?))
          (stemp (get-edit-param self 'show-stems))
-         (approx (get-edit-param self 'approx));(approx (object self)))
+         (approx (approx (object self))) ;(get-edit-param self 'approx));(approx (object self)))
+         ;for compatibility
+         #|
+         (approx (if (not (equal (approx (object self)) (get-edit-param self 'approx)))
+                     (progn 
+                       (setf (approx (object self)) (get-edit-param self 'approx))
+                       (approx (object self)))
+                   (approx (object self))))
+         |#
          (ed-view (om-make-view (get-score-class-panel self) 
                                  :position (om-make-point 0 0) 
                                  :font (om-make-music-font *heads-font* size)
@@ -436,8 +444,9 @@
                                   :tone (car (find approx (editor-tone-list) :key 'cadr :test 'equal))))
     (setf (ctr-view self) controls)
     
-    (set-edit-param self 'approx (approx (object self)))
-    (change-editor-tone (panel self) (approx (object self)))
+    ;(set-edit-param self 'approx (approx (object self)));;;NOT GOOD!
+    ;(print (list "aaaaaaaa" (approx (object self))))
+    ;(change-editor-tone (panel self) (approx (object self)));;;NOT GOOD!
     ;;;;;;;
     (when *om-tonalite*
       (set-editor-tonality (panel self)))

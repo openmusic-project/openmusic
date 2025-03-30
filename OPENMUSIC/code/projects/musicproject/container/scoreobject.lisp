@@ -312,9 +312,11 @@ Extraction methods.
   (QNormalize self)
   self)
 
-(defmethod (setf approx) ((approx number) (self note))
-  (setf (slot-value self 'approx) approx)
-  self)
+;non sinon c'est default 2
+;(defmethod (setf approx) ((approx number) (self note))
+;  (call-next-method)
+;  (setf (slot-value self 'approx) approx)
+;  self)
 
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
@@ -415,7 +417,7 @@ Extraction methods.
 
 ;;; CHORDS 
 
-(defmethod initialize-instance ((self chord) &rest initargs  &key (Empty nil) (NoteType 'note) (LPort nil))
+(defmethod initialize-instance ((self chord) &rest initargs  &key (Empty nil) (NoteType 'note) (LPort nil)) 
   (declare (ignore initargs)) 
   (call-next-method)
   (unless Empty
@@ -734,15 +736,12 @@ Extraction methods.
           else if (container-p sub) append (chords sub)))
 
 
-;;;;a voir
-#|
-(defmethod (setf approx) ((approx number) (self voice))
+;;;
+(defmethod (setf approx) ((approx number) (self poly))
   (call-next-method)
-  (loop for chord in (get-real-chords self)
-        do (setf (approx chord)  approx))
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
   self)
-|#
-
 
 (defmethod (setf approx) ((approx number) (self voice))
   (call-next-method)

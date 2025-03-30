@@ -106,7 +106,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (setf (inside self) 
             (mapcar #'(lambda (object) (ObjfromObjs object (mki 'chord))) 
                     midics)))
-     (t
+     (t 
       (setf (inside self)
             (loop while (or midics vels durs offsets ports)
                   for midic = (or (pop midics) midic)
@@ -308,7 +308,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 (defmethod (setf approx) ((approx number) (self chord-seq))
   (call-next-method)
   (loop for chord in (inside self)
-        do (setf (approx chord)  approx))
+        do (setf (approx chord) approx))
   self)
 
 
@@ -364,7 +364,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (cast-to-chords chordseq)
       (untie-chords chordseq)
       (adjust-extent chordseq)
-      ;(print (list "self" self type (get-approx self)))
       ;not working for maquette! TODO
       ;(setapprox type (approx self));;Edo scale heritage
       (setf (approx chordseq) (approx self))
@@ -387,7 +386,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 
-(defmethod execption-save-p ((self chord-seq)) 'chord-seq)
+(defmethod execption-save-p ((self chord-seq)) 'chord-seq) 
 (defmethod save-exepcion ((self chord-seq))
   (let* ((list (get-tonal-values self)))
     (if list
@@ -844,6 +843,11 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 (defmethod (setf chord-seqs) ((chseqs list) (self multi-seq))
   (do-initialize self :chord-seqs chseqs)) 
 
+(defmethod (setf approx) ((approx number) (self multi-seq))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
 
 (defmethod om-assemble-into-multi ((self multi-seq) (s2 chord-seq))
   (setf s2 (clone s2))
