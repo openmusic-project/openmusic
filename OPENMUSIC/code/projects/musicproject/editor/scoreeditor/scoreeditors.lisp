@@ -446,6 +446,8 @@
     
     ;(set-edit-param self 'approx (approx (object self)));;;NOT GOOD!
     ;(print (list "aaaaaaaa" (approx (object self))))
+    (when (not (equal (approx (object self)) (get-edit-param self 'approx)))
+      (setf (approx (object self)) (get-edit-param self 'approx)))
     ;(change-editor-tone (panel self) (approx (object self)));;;NOT GOOD!
     ;;;;;;;
     (when *om-tonalite*
