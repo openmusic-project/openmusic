@@ -33,7 +33,7 @@
    (LOffset :initform (list 0) :accessor LOffset :initarg :LOffset :type t :documentation "offsets (ms): list or list of lists")
    (Lchan :initform (list 1) :accessor Lchan :initarg :Lchan :type t :documentation "MIDI channels (1-16): list or list of lists")
    (legato :initform 0 :accessor legato :initarg :legato :type integer :documentation "relative chords duration (0-100)")
-   (approx :initform 2 :accessor approx  :type integer))
+   (approx :initform *global-midi-approx* :accessor approx  :type integer))
   (:icon 138)
   (:documentation "
 A sequence of chords.
