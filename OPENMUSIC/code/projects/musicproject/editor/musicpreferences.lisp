@@ -45,14 +45,15 @@
 ;                                     (lines-list *2-tone-chromatic-scale*)
 ;                                     (approx-factor *2-tone-chromatic-scale*)))
 (defvar *default-editor-scale* nil)
-(defparameter *global-midi-approx* 2)
+(defvar *global-midi-approx* nil)
+(setf *global-midi-approx* 2)
 
 
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID))
          (defpref (get-def-vals id))) 
-     ;(setf *global-midi-approx* (get-pref modulepref :approx));non sinon ca ne marche pas!
+     (setf *global-midi-approx* (get-pref modulepref :approx))
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *system-color* (or (get-pref modulepref :sys-color) *om-black-color*))
@@ -153,7 +154,11 @@
 	(pos 0)
 	;(dy #-linux 30 #+linux 30);peut-etre pas necessaire...
 	(dy 30)
+        (approxval (get-pref modulepref :approx))
+        (indx (find-indx *global-midi-approx*));new
         )
+    (setf *micronpref-indx1* (car indx));new
+    (setf *micronpref-indx2* (second indx));new
     (om-add-subviews thescroll
 
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (setf pos 15)) (om-make-point 200 30) "Score Editors"
@@ -163,12 +168,14 @@
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-button
                                           (om-make-point 160 pos) (om-make-point 80 20)
-                                          (format nil "~A" (give-symbol-of-approx *global-midi-approx*)) ; :approx value
+                                          (format nil "~A" (give-symbol-of-approx *global-midi-approx*));*global-midi-approx*
+                                                  ;(give-symbol-of-approx approxval)) 
                                           :font *om-default-font1*
                                           :di-action (om-dialog-item-act item
                                                        (declare (ignore button))
                                                        (progn
                                                        (omicron-pref *omicron-data* item)
+                                                       (print (list "le resultat" *micronpref-indx1* *global-midi-approx*))
                                                        (set-pref modulepref :approx *global-midi-approx*)
                                                        ))
                                           )

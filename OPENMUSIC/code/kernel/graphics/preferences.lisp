@@ -230,8 +230,9 @@
 											 (local-prefs win))))
                                                           (when module
                                                             (setf (cadr module) (get-def-vals (pref-id (om-current-view (tabs win)))))
-                                                            #-linux (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-							    #+linux (om-select-window *pref-window*)))))
+                                                            #-linux(update-pref-scroll win (pref-id (om-current-view (tabs win))))
+							    #+linux (om-select-window *pref-window*)
+                                                            ))))
 		      
                       (om-make-dialog-item 'om-button (om-make-point 130 b-posy) (om-make-point 80 22) "Apply" 
                                            :di-action (om-dialog-item-act item
