@@ -40,12 +40,10 @@
                                            :range nil
                                            :selection-callback #'(lambda (list) 
                                                                    (progn 
-                                                                     (print (list "LIST" (capi::choice-selection list)))
                                                                      (setf (selected win) (mapcar 'car *omicron-data*))
                                                                      (setf indx1 (capi::choice-selection list))
                                                                      (setf *micronpref-indx1* indx1)
                                                                      (setf (index1 win) (capi::choice-selection list))
-                                                                     ;(print (list "selection" (capi::choice-selection list) "indx:" indx1))
                                                                      (set-omicron-panel (list2 win) 
                                                                                         (second (nth (capi::choice-selection list) *omicron-data*)))
                                                                      (setf indx2 0);init choix 2
@@ -68,7 +66,6 @@
                                            :test-function 'string-equal
                                            :range nil
                                            :selection-callback #'(lambda (list) 
-                                                                  ; (print (list "second"  (capi::choice-selection list)))
                                                                    (setf indx2 (capi::choice-selection list))
                                                                    (setf *micronpref-indx2* indx2)
                                                                    (setf (index2 win) (capi::choice-selection list))
@@ -107,24 +104,19 @@
                                                          (put-all-preferences)
                                                          (save-preferences)
                                                          (om-close-window win)
-                                                         #+linux(om-close-window *pref-window*);a voir apres avec 8.1
-                                                         #-linux(update-pref-scroll *pref-window*)
-                                                         ;(show-preferences-win)
-                                                         ;(om-select-window *pref-window*)
+                                                         (om-close-window *pref-window*)
                                                          (setf *pref-window* (om-select-window (make-preference-win)))
                                                          ))
                                           ))
    
     (set-omicron-panel (list1 win) (mapcar 'car object))
     (om-set-selected-item-index (list1 win) *micronpref-indx1*)
-    (print (list "out" (om-set-selected-item-index (list1 win) *micronpref-indx1*)))
     (set-omicron-panel (list2 win) (nth indx1 (mapcar 'second object)))
     (om-set-selected-item-index (list2 win) *micronpref-indx2*)
     (om-set-dialog-item-text (list3 win) (nth *micronpref-indx2* (nth indx1 (mapcar 'third object))))
     (om-add-subviews win (title1 win) (list1 win) (list2 win) (list3 win) (title1 win) (title2 win) (title3 win) (but2 win) (but3 win))
     #+cocoa(setf (capi::interface-menu-bar-items win)
                  (internal-window-class-menubar win))
-    (print (list "le dialog" *micronpref-indx1* *micronpref-indx2*))
     (om-select-window win)
     ))
 
