@@ -611,14 +611,15 @@
 
 (defmethod delete-all-inputs ((self omboxframe)) 
   (if (do-delete-all-inputs (object self))
-      (do-delete-one-input (object self)) 
-    (let* ((obj (object self))
-           (init (min-inp-number (reference obj)))
-           (curr (length (inputs obj))))
-      (loop while (not (= init curr))
-            do (progn 
-                 (delete-one-input self)
-                 (setf curr (length (inputs obj))))))))
+      (do-delete-one-input (object self))
+    (unless (equal (type-of  self) 'boxtypeframe) 
+      (let* ((obj (object self))
+             (init (min-inp-number (reference obj)))
+             (curr (length (inputs obj))))
+        (loop while (not (= init curr))
+              do (progn 
+                   (delete-one-input self)
+                   (setf curr (length (inputs obj)))))))))
 
 
 (defmethod add-keywords ((self omboxframe)) 
