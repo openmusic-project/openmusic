@@ -546,7 +546,7 @@ when :
        :tempo ',(tempo self)
        :legato ,(legato self)
        :ties ',(ties self)
-       :approx ',(approx self))))
+       :approx ,(approx self))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
