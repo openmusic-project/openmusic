@@ -171,11 +171,14 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 ;GET SLOTS
 (defmethod LMidic ((self chord-seq))
+  (setf (approx self) (get-approx self))
   (loop for chord in (inside self)
-        collect (Lmidic chord)))
+        collect (approx-m (Lmidic chord) (get-approx self))))
+
 (defmethod Lvel ((self chord-seq))
    (loop for chord in (inside self)
          collect (Lvel chord)))
+
 (defmethod LDur ((self chord-seq))
    (loop for chord in (inside self)
          collect (Ldur chord)))
@@ -183,7 +186,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 (defmethod LOffset ((self chord-seq))
    (loop for chord in (inside self)
          collect (LOffset chord)))
-
 
 (defmethod LOnset ((self chord-seq))
   (nconc (loop for chord in (inside self)

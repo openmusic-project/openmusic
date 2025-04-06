@@ -338,22 +338,27 @@ Extraction methods.
 
 ;;; CHORDS
 
-
 (defmethod LMidic ((self chord))
-  (loop for note in (inside self)
-        collect (midic note)))
+  (setf (approx self) (get-approx self))
+  (loop for chord in (inside self)
+        collect (approx-m (midic chord) (get-approx self))))
+
 (defmethod LChan ((self chord))
   (loop for note in (inside self)
         collect (chan note)))
+
 (defmethod Lvel ((self chord))
   (loop for note in (inside self)
         collect (vel note)))
+
 (defmethod LDur ((self chord))
   (loop for note in (inside self)
         collect (dur note)))
+
 (defmethod LOffset ((self chord))
   (loop for note in (inside self)
         collect (Offset->ms note)))
+
 (defmethod LPort ((self chord))
   (get-port self))
 
