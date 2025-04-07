@@ -441,7 +441,7 @@
       (setf (approx (object self)) (get-edit-param self 'approx))
       (setf (staff-tone (panel self)) (get-edit-param self 'approx))
       (om-set-dialog-item-text
-       (nth 10
+       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
             (om-subviews
              (ctr-view self)))
        (format nil "~A" (give-symbol-of-approx (approx (object self)))))) 
