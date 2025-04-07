@@ -694,6 +694,7 @@ Extraction methods.
   tree)
 
 (defmethod tree ((self metric-sequence))
+  (setf (approx self) (get-approx self));in order to retain approx
   (if (slot-value self 'tree)
     (slot-value self 'tree)
     (setf (slot-value self 'tree) (check-tree-for-contchord (build-tree self) self))))
@@ -732,6 +733,7 @@ Extraction methods.
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
 
 (defmethod chords ((self voice))
+  (setf (approx self) (get-approx self));in order to retain approx
   (call-next-method))
 
 (defmethod chords ((self sequence*)) 
