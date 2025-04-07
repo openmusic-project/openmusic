@@ -834,6 +834,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod chord-seqs ((self multi-seq))
+  (setf (approx self) (get-approx self));persistance
   (loop for c in (inside self) collect 
         (let ((c2 (clone c)))
           (setqvalue c2 1)

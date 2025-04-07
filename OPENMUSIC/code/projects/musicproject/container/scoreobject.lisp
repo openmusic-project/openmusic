@@ -55,7 +55,7 @@
     (call-next-method)))
 
 
-(defclass* note (simple-score-element tonal-object)
+(defclass* note (simple-score-element object-in-box tonal-object)
   ((midic :initform 6000 :accessor midic :initarg :midic :type number :documentation "pitch (midicents)")
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
@@ -299,6 +299,10 @@ Extraction methods.
 
 (defmethod dur ((self note))
   (extent->ms self))
+
+(defmethod midic ((self note))
+  (setf (approx self) (get-approx self))
+  (approx-m (slot-value self 'midic) (get-approx self)))
 
 ;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
@@ -993,6 +997,7 @@ of all its direct subcontainers (supposed adjacent)"
 
 
 (defmethod voices ((self poly))
+  (setf (approx self) (get-approx self));approx persistance
   (inside self))
            
 
