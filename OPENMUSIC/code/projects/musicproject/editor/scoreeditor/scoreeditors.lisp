@@ -457,7 +457,9 @@
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     (init-draw self)
-    (init-boxes-in-score ed-view)))
+    (init-boxes-in-score ed-view)
+    #+macosx(update-alt-panel (panel self))
+    ))
 
 
 
@@ -1523,7 +1525,7 @@
 
 
 (defmethod om-draw-contents ((self scorePanel))
-  #+macosx(update-alt-panel self)
+  ;#+macosx(update-alt-panel self)
   (call-next-method)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
     (if (score-page-mode self)
@@ -1871,15 +1873,15 @@
 |#
 
 
-
+#|
 #+macosx
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (setf *updatescorepanel* t)
   (when updateref
     (setf *updateref* t)))
+|#
 
-
-#+(or linux win32)
+;#+(or linux win32)
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
