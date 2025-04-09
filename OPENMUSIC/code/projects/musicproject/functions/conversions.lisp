@@ -103,8 +103,9 @@
   (cdr (assoc sym l)))
 |#
 
-(defvar *global-midi-approx* 2)
-(setf *global-midi-approx* 2)
+;moved to musicpreferences.lisp
+;(defvar *global-midi-approx* 2)
+;(setf *global-midi-approx* 2)
 
 #|
 (defmethod* approx-m  ((midic t) approx &optional (ref-midic 0))

@@ -55,13 +55,14 @@
     (call-next-method)))
 
 
-(defclass* note (simple-score-element tonal-object)
+(defclass* note (simple-score-element object-in-box tonal-object)
   ((midic :initform 6000 :accessor midic :initarg :midic :type number :documentation "pitch (midicents)")
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
    (chan :initform 1 :accessor chan :initarg :chan :type integer :documentation "MIDI channel (1-16)")
    (port :initform nil :accessor port)
    (tie :initform nil :accessor tie)
+   (approx :initform *global-midi-approx* :accessor approx :type integer)
    (symb-info :initform nil :accessor symb-info))
   (:icon 137)
   
@@ -107,6 +108,7 @@ A simple NOTE defined with :
    (LOffset :initform (list 0) :accessor LOffset :initarg :LOffset :type list :documentation "offsets (list of values in ms)")
    (Ldur :initform (list 1000) :accessor Ldur :initarg :Ldur :type list :documentation "durations (list of values in ms)")
    (LChan :initform (list 1) :accessor LChan :initarg :LChan :type list :documentation "MIDI channels (list of values 0-16)")
+   (approx :initform *global-midi-approx* :accessor approx  :type integer)
    ) 
   (:icon 139)
   
@@ -125,7 +127,8 @@ A CHORD object (set of simultaneous notes) defined with
 
 
 (defclass* poly (superposition tonal-object) 
-  ((voices :initform (list (make-instance 'voice )) :initarg :voices :accessor voices :type T :documentation "list of VOICE objects")) 
+  ((voices :initform (list (make-instance 'voice )) :initarg :voices :accessor voices :type T :documentation "list of VOICE objects")
+   (approx :initform *global-midi-approx* :accessor approx  :type integer)) 
   (:icon 224)
   (:documentation "
 POLY is a polyphonic object made of a superimposition of VOICE objects.
@@ -134,13 +137,15 @@ POLY is a polyphonic object made of a superimposition of VOICE objects.
 
 ;;; probleme de l'initialisation de tree. Tree devrait etre au niveau de sequence* !!
 (defclass* group (metric-sequence)  
-  ((tree :initform '(1/4 (1 1 1))  :initarg :tree :type list))
+  ((tree :initform '(1/4 (1 1 1))  :initarg :tree :type list)
+   (approx :initform *global-midi-approx* :accessor approx  :type integer))
   (:icon 226)
  (:documentation "
 An OM object representing a group in a rhythm.
 "))
 (defclass* measure (metric-sequence)  
-  ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)) 
+  ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)
+   (approx :initform *global-midi-approx* :accessor approx  :type integer)) 
   (:icon 228)
 (:documentation "
 An OM object representing a measure in a rhythm.
@@ -158,7 +163,8 @@ An OM object representing a measure in a rhythm.
    (legato :initform 100 :accessor legato :initarg :legato :type integer 
            :documentation "overlapping percentage between every successive chords, calculated from the second chord's duration")
    (ties :initform nil :accessor ties :initarg :ties :type list
-         :documentation "sub lists (one sub list per chord) indicating notes to be tied to notes of the same value, in a next chord"))
+         :documentation "sub lists (one sub list per chord) indicating notes to be tied to notes of the same value, in a next chord")
+   (approx :initform *global-midi-approx* :accessor approx  :type integer))
   (:icon 223)
   
   (:documentation "
@@ -294,6 +300,10 @@ Extraction methods.
 (defmethod dur ((self note))
   (extent->ms self))
 
+(defmethod midic ((self note))
+  (setf (approx self) (get-approx self))
+  (approx-m (slot-value self 'midic) (get-approx self)))
+
 ;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
   (setQValue self 1000)
@@ -305,7 +315,12 @@ Extraction methods.
   (setf (slot-value  self 'extent) dur )
   (QNormalize self)
   self)
-   
+
+;non sinon c'est default 2
+;(defmethod (setf approx) ((approx number) (self note))
+;  (call-next-method)
+;  (setf (slot-value self 'approx) approx)
+;  self)
 
 (defmethod initialize-instance ((self note) &rest initargs &key (empty nil))
   (declare (ignore initargs))
@@ -327,22 +342,27 @@ Extraction methods.
 
 ;;; CHORDS
 
-
 (defmethod LMidic ((self chord))
-  (loop for note in (inside self)
-        collect (midic note)))
+  (setf (approx self) (get-approx self))
+  (loop for chord in (inside self)
+        collect (approx-m (midic chord) (get-approx self))))
+
 (defmethod LChan ((self chord))
   (loop for note in (inside self)
         collect (chan note)))
+
 (defmethod Lvel ((self chord))
   (loop for note in (inside self)
         collect (vel note)))
+
 (defmethod LDur ((self chord))
   (loop for note in (inside self)
         collect (dur note)))
+
 (defmethod LOffset ((self chord))
   (loop for note in (inside self)
         collect (Offset->ms note)))
+
 (defmethod LPort ((self chord))
   (get-port self))
 
@@ -398,9 +418,15 @@ Extraction methods.
   self)
 
 
+(defmethod (setf approx) ((approx number) (self chord))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
 ;;; CHORDS 
 
-(defmethod initialize-instance ((self chord) &rest initargs  &key (Empty nil) (NoteType 'note) (LPort nil))
+(defmethod initialize-instance ((self chord) &rest initargs  &key (Empty nil) (NoteType 'note) (LPort nil)) 
   (declare (ignore initargs)) 
   (call-next-method)
   (unless Empty
@@ -672,6 +698,7 @@ Extraction methods.
   tree)
 
 (defmethod tree ((self metric-sequence))
+  (setf (approx self) (get-approx self));in order to retain approx
   (if (slot-value self 'tree)
     (slot-value self 'tree)
     (setf (slot-value self 'tree) (check-tree-for-contchord (build-tree self) self))))
@@ -710,13 +737,44 @@ Extraction methods.
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
 
 (defmethod chords ((self voice))
+  (setf (approx self) (get-approx self));in order to retain approx
   (call-next-method))
 
 (defmethod chords ((self sequence*)) 
   (loop for sub in (inside self)
         when (not (cont-chord-p sub))
         if (note-or-chord-p sub) collect (ot-clone sub)
-        else if (container-p sub) append (chords sub)))
+          else if (container-p sub) append (chords sub)))
+
+
+;;;
+(defmethod (setf approx) ((approx number) (self poly))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
+(defmethod (setf approx) ((approx number) (self voice))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
+
+(defmethod (setf approx) ((approx number) (self measure))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+
+(defmethod (setf approx) ((approx number) (self group))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
+;;;;
+
+
 
 ;---tempo
 (defmethod tempo-a-la-noire ((tempo number)) tempo)
@@ -939,6 +997,7 @@ of all its direct subcontainers (supposed adjacent)"
 
 
 (defmethod voices ((self poly))
+  (setf (approx self) (get-approx self));approx persistance
   (inside self))
            
 

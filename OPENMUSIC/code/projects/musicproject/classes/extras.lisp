@@ -54,7 +54,7 @@
      rep))
 
 
-(defmethod omNG-save ((self simple-container) &optional (values? nil))
+(defmethod omNG-save ((self simple-container) &optional (values? nil)) 
    "Cons a Lisp expression that returns a copy of self when it is valuated."
    (when (omclass-p (class-of self))
      (let ((theclass (class-name (class-of self)))
@@ -81,6 +81,7 @@
               (set-patch-pairs newobj ',patchlist)
               (set-name newobj ,(get-name self))
               (set-tonalite newobj ,(omng-save tonalite))  ;;; jb
+              ;(setapprox newobj ',(get-approx self)) ;;kh
               newobj))
          (let ((slots (mapcan #'(lambda (slot)
                                   (list (string2initarg (name slot)) 
@@ -94,6 +95,7 @@
                 (set-patch-pairs newobj ',patchlist)
                 (set-name newobj ,(get-name self))
                 (set-tonalite newobj ,(omng-save tonalite))  ;;; jb
+                ;(setapprox newobj ',(get-approx self)) ;;kh
                 newobj)))))))
 
 
@@ -110,7 +112,8 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (setf (gnotes thechord) (make-instance 'grace-notes
                                                      :glist ',(glist (gnotes self))
                                                      :thechord thechord))
@@ -126,7 +129,8 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (restore-tonalite thechord ',tonlist)
               (load-port-info thechord ',(get-port self))
               (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
@@ -139,7 +143,8 @@
                                            :Ldur ',(Ldur self)
                                            :LVel ',(LVel self)
                                            :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self))))
+                                           :Lchan ',(Lchan self)
+                                           :approx ',(approx self))))
               (setf (gnotes thechord) (make-instance 'grace-notes
                                                      :glist ',(glist (gnotes self))
                                                      :thechord thechord))
@@ -154,6 +159,7 @@
                                              :LVel ',(LVel self)
                                              :LOffset ',(LOffset self)
                                              :Lchan ',(Lchan self)
+                                             :approx ',(approx self)
                                              )))
                 (load-port-info thechord ',(get-port self))
                 (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))

@@ -2,6 +2,20 @@
 
 NEW FEATURES
 
+
+IMPROVEMENTS
+
+- Now each score object have its approx slot
+
+FIXES
+
+- delete-all-inputs fixed: when boxtypeframe selected no error
+
+
+* RELEASE NOTES 7.6
+
+NEW FEATURES
+
 - Marking and changing icons in workspace
 - SOUND window custom waveshape color
 

@@ -405,7 +405,7 @@
          (score-mode (or (get-edit-param self 'score-mode) 0))
          (noteaschan (get-edit-param self 'notechancolor?))
          (stemp (get-edit-param self 'show-stems))
-         (approx (get-edit-param self 'approx))
+         (approx (approx (object self))) ;(get-edit-param self 'approx));(approx (object self)))
          (ed-view (om-make-view (get-score-class-panel self) 
                                  :position (om-make-point 0 0) 
                                  :font (om-make-music-font *heads-font* size)
@@ -435,7 +435,17 @@
                                   :font-size (format nil "~D" size)
                                   :tone (car (find approx (editor-tone-list) :key 'cadr :test 'equal))))
     (setf (ctr-view self) controls)
-
+   ;(set-edit-param self 'approx (approx (object self)));;;NOT GOOD!
+     ;for compatibility
+    (when (not (equal (approx (object self)) (get-edit-param self 'approx)))
+      (setf (approx (object self)) (get-edit-param self 'approx))
+      (setf (staff-tone (panel self)) (get-edit-param self 'approx))
+      (om-set-dialog-item-text
+       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
+            (om-subviews
+             (ctr-view self)))
+       (format nil "~A" (give-symbol-of-approx (approx (object self)))))) 
+    ;(change-editor-tone (panel self) (approx (object self)));;;NOT GOOD!
     ;;;;;;;
     (when *om-tonalite*
       (set-editor-tonality (panel self)))

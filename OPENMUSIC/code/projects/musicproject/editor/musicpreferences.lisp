@@ -45,7 +45,8 @@
 ;                                     (lines-list *2-tone-chromatic-scale*)
 ;                                     (approx-factor *2-tone-chromatic-scale*)))
 (defvar *default-editor-scale* nil)
-
+(defvar *global-midi-approx* nil)
+(setf *global-midi-approx* 2)
 
 
 
@@ -153,7 +154,11 @@
 	(pos 0)
 	;(dy #-linux 30 #+linux 30);peut-etre pas necessaire...
 	(dy 30)
+        (approxval (get-pref modulepref :approx))
+        (indx (find-indx *global-midi-approx*));new
         )
+    (setf *micronpref-indx1* (car indx));new
+    (setf *micronpref-indx2* (second indx));new
     (om-add-subviews thescroll
 
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (setf pos 15)) (om-make-point 200 30) "Score Editors"
@@ -161,30 +166,19 @@
 
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos dy)) (om-make-point 150 20) "Default approx."
                                           :font *controls-font*)
-                     (om-make-dialog-item 'om-radio-button (om-make-point 140 pos) (om-make-point 80 20) "1/2 tone" 
+                     (om-make-dialog-item 'om-button
+                                          (om-make-point 160 pos) (om-make-point 80 20)
+                                          (format nil "~A" (give-symbol-of-approx *global-midi-approx*));*global-midi-approx*
+                                                  ;(give-symbol-of-approx approxval)) 
+                                          :font *om-default-font1*
                                           :di-action (om-dialog-item-act item
-                                                       (declare (ignore item))
-                                                       (set-pref modulepref :approx 2))
-                                          :checked-p (= (get-pref modulepref :approx) 2)  
-                                          :radio-button-cluster 'approx
-                                          :font *om-default-font2*)
-                     
-                     (om-make-dialog-item 'om-radio-button (om-make-point 220 pos) (om-make-point 80 20) "1/4 tone" 
-                                          :di-action (om-dialog-item-act item
-                                                       (declare (ignore item))
-                                                       (set-pref modulepref :approx 4))
-                                          :checked-p (= (get-pref modulepref :approx) 4)  
-                                          :radio-button-cluster 'approx
-                                          :font *om-default-font2*)
-                     
-                     (om-make-dialog-item 'om-radio-button (om-make-point 300 pos) (om-make-point 80 20) "1/8 tone" 
-                                          :di-action (om-dialog-item-act item
-                                                       (declare (ignore item))
-                                                       (set-pref modulepref :approx 8))
-                                          :checked-p (= (get-pref modulepref :approx) 8)  
-                                          :radio-button-cluster 'approx
-                                          :font *om-default-font2*)
-                     
+                                                       (declare (ignore button))
+                                                       (progn
+                                                       (omicron-pref *omicron-data* item)
+                                                       (print (list "le resultat" *micronpref-indx1* *global-midi-approx*))
+                                                       (set-pref modulepref :approx *global-midi-approx*)
+                                                       ))
+                                          )
                      
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Music Font Size"
                                           :font *controls-font*)

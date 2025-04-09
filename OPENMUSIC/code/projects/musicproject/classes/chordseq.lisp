@@ -32,7 +32,8 @@
    (LVel :initform (list 100) :accessor LVel :initarg :LVel :type t :documentation "velocities (0-127): list or list of lists")
    (LOffset :initform (list 0) :accessor LOffset :initarg :LOffset :type t :documentation "offsets (ms): list or list of lists")
    (Lchan :initform (list 1) :accessor Lchan :initarg :Lchan :type t :documentation "MIDI channels (1-16): list or list of lists")
-   (legato :initform 0 :accessor legato :initarg :legato :type integer :documentation "relative chords duration (0-100)"))
+   (legato :initform 0 :accessor legato :initarg :legato :type integer :documentation "relative chords duration (0-100)")
+   (approx :initform *global-midi-approx* :accessor approx  :type integer))
   (:icon 138)
   (:documentation "
 A sequence of chords.
@@ -68,7 +69,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                     :Ldur (slot-value self 'LDur) 
                     :Lonset (slot-value self 'LOnset) 
                     :LChan (slot-value self 'LChan) 
-                    :Legato (slot-value self 'legato) 
+                    :Legato (slot-value self 'legato)
+                    :approx (slot-value self 'approx)
                     :LPort LPort))
    (setf (slot-value self 'LMidic) nil  (slot-value self 'LVel) nil 
          (slot-value self 'LOffset) nil  (slot-value self 'LDur) nil
@@ -79,13 +81,14 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 
-(defmethod do-initialize ((self chord-seq)  &key LMidic LVel Loffset  Ldur  Lonset  LChan  Legato LPort)
+(defmethod do-initialize ((self chord-seq)  &key LMidic LVel Loffset  Ldur  Lonset  LChan  Legato LPort approx)
   (let ((midics (list! LMidic))
         (vels (list! LVel))
         (durs (list! LDur))
         (offsets (list! LOffset))
         (chans (list! LChan))
         (ports (list! LPort))
+        (approx approx)
         (defdelay (if (>= (length LOnset) 2)
                       (- (car (last LOnset))
                          (car (last LOnset 2)))
@@ -103,7 +106,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (setf (inside self) 
             (mapcar #'(lambda (object) (ObjfromObjs object (mki 'chord))) 
                     midics)))
-     (t
+     (t 
       (setf (inside self)
             (loop while (or midics vels durs offsets ports)
                   for midic = (or (pop midics) midic)
@@ -120,6 +123,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                                             :LChan (list! chan)
                                             )))
                             (setf (LPort chord) port)
+                            (setf (approx chord) approx)
+                            ;(setf (approx chord) (approx self))
                             chord) ))))
 
     (loop for chord in (inside self)
@@ -135,7 +140,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
     (when (> legato 0)
       (propagate-tempo self)
       (normalize-chord self legato)))
-  
   self)
 
 
@@ -167,11 +171,14 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 ;GET SLOTS
 (defmethod LMidic ((self chord-seq))
+  (setf (approx self) (get-approx self))
   (loop for chord in (inside self)
-        collect (Lmidic chord)))
+        collect (approx-m (Lmidic chord) (get-approx self))))
+
 (defmethod Lvel ((self chord-seq))
    (loop for chord in (inside self)
          collect (Lvel chord)))
+
 (defmethod LDur ((self chord-seq))
    (loop for chord in (inside self)
          collect (Ldur chord)))
@@ -179,7 +186,6 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 (defmethod LOffset ((self chord-seq))
    (loop for chord in (inside self)
          collect (LOffset chord)))
-
 
 (defmethod LOnset ((self chord-seq))
   (nconc (loop for chord in (inside self)
@@ -194,6 +200,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 (defmethod LPort ((self chord-seq))
   (get-port self))
 
+(defmethod approx ((self chord-seq))
+  (slot-value self 'approx))
 
 
 (defmethod notEndLOnset ((self chord-seq))
@@ -210,7 +218,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOffset (LOffset self)
                   :LDur (LDur self)
                   :LChan (LChan self)
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf LVel) ((LVel list) (self chord-seq))
   (do-initialize self 
@@ -221,7 +230,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOffset (LOffset self)
                   :LDur (LDur self)
                   :LChan (LChan self)
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf LOffset) ((LOffset list) (self chord-seq))
   (do-initialize self 
@@ -232,7 +242,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOnset (LOnset self)
                   :LDur (LDur self)
                   :LChan (LChan self)
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf LDur) ((Ldur list) (self chord-seq))
   (do-initialize self 
@@ -243,7 +254,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOffset (LOffset self)
                   :LDur lDur
                   :LChan (LChan self)
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf LOnset) ((LOnset list) (self chord-seq))
   (do-initialize self 
@@ -254,7 +266,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOnset LOnset
                   :LDur (LDur self)
                   :LChan (LChan self)
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf LChan) ((LChan list) (self chord-seq))
   (do-initialize self 
@@ -265,7 +278,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOnset (LOnset self)
                   :LDur (LDur self)
                   :LChan LChan
-                  :Legato (legato self)))
+                  :Legato (legato self)
+                  :approx (approx self)))
 
 (defmethod (setf Legato) ((Legato number) (self chord-seq))
   (do-initialize self 
@@ -276,7 +290,29 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LOnset (LOnset self)
                   :LDur (LDur self)
                   :LChan (LChan self)
-                  :Legato legato))
+                  :Legato legato
+                  :approx (approx self)))
+
+#|
+(defmethod (setf apprpx) ((approx number) (self chord-seq))
+  (do-initialize self 
+               :LPort (LPort self)
+                  :LMidic (LMidic self)
+                  :LVel (LVel self)
+                  :LOffset (LOffset self)
+                  :LOnset (LOnset self)
+                  :LDur (LDur self)
+                  :LChan (LChan self)
+                  :Legato (legato self)
+                  :approx approx ))
+|#
+
+(defmethod (setf approx) ((approx number) (self chord-seq))
+  (call-next-method)
+  (loop for chord in (inside self)
+        do (setf (approx chord) approx))
+  self)
+
 
 (defmethod (setf LPort) ((LPort list) (self chord-seq))
   (loop for ports in LPort
@@ -287,10 +323,16 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 
 (defmethod* Objfromobjs ((Self chord) (Type Chord-seq)) 
-  (ObjFromObjs (list self) Type))
+(let ((chrdseq (ObjFromObjs (list self) Type)))
+  (setapprox type (approx self));;Edo scale heritage
+  (setf (approx chrdseq) (approx self))
+  chrdseq))
 
 (defmethod* Objfromobjs ((Self note) (Type Chord-seq)) 
-  (ObjFromObjs (list self) Type))
+(let ((chrdseq (ObjFromObjs (list self) Type)))
+  (setapprox type (approx self));;Edo scale heritage
+  (setf (approx chrdseq) (approx self))
+  chrdseq))
 
 
 (defmethod* Objfromobjs ((Self list) (Type Chord-seq))
@@ -324,9 +366,9 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       (cast-to-chords chordseq)
       (untie-chords chordseq)
       (adjust-extent chordseq)
-      ;(print (list "self" self type (get-approx self)))
       ;not working for maquette! TODO
-      ;(set-approx type (get-approx self));;Edo scale heritage
+      ;(setapprox type (approx self));;Edo scale heritage
+      (setf (approx chordseq) (approx self))
       chordseq)))
 
 
@@ -338,13 +380,15 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                      :LOffset offset-list
                      :Lchan chan-list
                      :Lvel vel-list
-                     :Lport port-list)))
+                     :Lport port-list
+                     ;:approx approx 
+                     )))
     (setf (offset chord) t-time)
     chord))
 
 
 
-(defmethod execption-save-p ((self chord-seq)) 'chord-seq)
+(defmethod execption-save-p ((self chord-seq)) 'chord-seq) 
 (defmethod save-exepcion ((self chord-seq))
   (let* ((list (get-tonal-values self)))
     (if list
@@ -357,7 +401,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
                   :LVel ',(LVel self)
                   :LOffset ',(LOffset self)
                   :Lchan ',(Lchan self)
-                  :legato ,(legato self))))
+                  :legato ,(legato self)
+                  :approx ,(approx self))))
            (restore-tonalite rep ',list)
            rep))
       `(when (find-class ',(type-of self) nil)
@@ -368,7 +413,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
            :LVel ',(LVel self)
            :LOffset ',(LOffset self)
            :Lchan ',(Lchan self)
-           :legato ,(legato self)))
+           :legato ,(legato self)
+           :approx ,(approx self)))
       )))
 
 (defmethod get-tonal-values ((self chord-seq))
@@ -464,7 +510,7 @@ make-quanti
         if (<= (- (second (first note-list)) base-time) delta)
         do 
         (push (* 100 (first note)) pitch-list)
-        ;;; (push (first note) pitch-list) pour gérer les MC
+        ;;; (push (first note) pitch-list) pour gÃ©rer les MC
         (push (third note) dur-list)
         (push (fifth note) chan-list)
         (push (fourth note) vel-list)
@@ -494,7 +540,7 @@ make-quanti
 ;=== Conversion Chord-seq -> voice : dans le cas ou le chord-seq ne commence pas 0
 (defmethod* objFromObjs ((self chord-seq) (type voice))
             (if (chords self)
-                (let* ((newchordseq (align-chords self *global-deltachords*))
+                (let* ((newchordseq (align-chords self *global-deltachords*)); PROB....
                        (quantypar *quantify-def-params*)
                        (durs (append (butlast (x->dx (lonset newchordseq)))
                                      (list (extent->ms (car (last (chords newchordseq)))))))
@@ -510,8 +556,10 @@ make-quanti
                                                                    (sixth quantypar))
                                                 :tempo (first quantypar)
                                                 :legato 100 ;KH fix 240919
-                                                :chords  (chords newchordseq))))
-                  (set-approx type (get-approx self));;Edo scale heritage
+                                                :chords  (chords newchordseq)
+                                                ;:approx (approx self); ne suffit pas car ne propage pas!
+                                                )))
+                  (setf (approx newvoice) (approx self)); il faut utiliser la methode!
                   newvoice)
               (make-instance (type-of type)
                              :tree '(0 nil)
@@ -598,18 +646,25 @@ make-quanti
 
 
 (defmethod* Objfromobjs ((Self poly) (Type Chord-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
-  (reduce #'merger 
-          (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self))))
+  (let ((chordseq
+         (reduce #'merger 
+                 (mapcar #'(lambda (voice) (objFromObjs voice type)) (inside self)))))
+    ;(setapprox type (approx self));;Edo scale heritage
+    (setf (approx chordseq) (approx self))
+    chordseq))
 
 ;;; POLY -> VOICE = just keeps the first voice of the poly
 (defmethod* Objfromobjs ((Self poly) (Type voice))
-  (set-approx type (get-approx self));;Edo scale heritage
-    (ObjFromObjs (first (voices self)) type)) 
+  (let ((voice (ObjFromObjs (first (voices self)) type)))
+      ;(setapprox type (approx self));;Edo scale heritage
+      (setf (approx voice) (approx self))
+      voice)) 
 
 (defmethod* Objfromobjs ((Self voice) (Type poly))
-  (set-approx type (get-approx self));;Edo scale heritage
-    (make-instance (type-of type) :voices (list (clone self))))
+  (let ((poly (make-instance (type-of type) :voices (list (clone self)))))
+  ;(setapprox type (approx self));;Edo scale heritage
+  (setf (approx poly) (approx self))
+  poly))
 
 
 
@@ -629,7 +684,7 @@ Transforms <self> so that notes falling in a small time interval are grouped int
 "
   (let ((note-seq (flatten-container self 'note 'chord-seq))
         (chseq (make-instance 'chord-seq :empty t)) 
-        note-list chord-list)
+        note-list chord-list) 
     (when (inside self)
       (setQValue note-seq 1000 :recursive t) 
       (setQValue chseq 1000 :recursive nil)
@@ -779,6 +834,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod chord-seqs ((self multi-seq))
+  (setf (approx self) (get-approx self));persistance
   (loop for c in (inside self) collect 
         (let ((c2 (clone c)))
           (setqvalue c2 1)
@@ -790,6 +846,11 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 (defmethod (setf chord-seqs) ((chseqs list) (self multi-seq))
   (do-initialize self :chord-seqs chseqs)) 
 
+(defmethod (setf approx) ((approx number) (self multi-seq))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
 
 (defmethod om-assemble-into-multi ((self multi-seq) (s2 chord-seq))
   (setf s2 (clone s2))
@@ -809,22 +870,31 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type Chord-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
-  (reduce #'merger (inside self)))
+  (let ((chordseq (reduce #'merger (inside self))))
+  ;(setapprox type (approx self));;Edo scale heritage
+  (setf (approx chordseq) (approx self))
+  chordseq))
 
 (defmethod* Objfromobjs ((Self chord-seq) (Type multi-seq))
-  (set-approx type (get-approx self));;Edo scale heritage
-  (make-instance 'multi-seq :chord-seqs (list self)))
+  (let ((multi (make-instance 'multi-seq :chord-seqs (list self))))
+  ;(setapprox type (approx self));;Edo scale heritage
+  (setf (approx multi) (approx self))
+  multi))
 
 (defmethod* Objfromobjs ((Self multi-seq) (Type poly))
-  (let ((voice (make-instance 'voice)))
-    (make-instance 'poly :voices (mapcar #'(lambda (chseq) (objFromObjs chseq voice)) (inside self)))))
-
+  (let* ((voice (make-instance 'voice))
+         (poly (make-instance 'poly :voices (mapcar #'(lambda (chseq) (objFromObjs chseq voice)) (inside self)))))
+    ;(setapprox type (approx self));;Edo scale heritage
+    (setf (approx poly) (approx self))
+    poly))
 
 (defmethod* Objfromobjs ((Self poly) (Type multi-seq))
-  (make-instance 'multi-seq 
-    :chord-seqs (loop for voice in (inside self)
-                      collect (ObjFromObjs voice (make-instance 'chord-seq)))))
+  (let ((multi (make-instance 'multi-seq 
+                              :chord-seqs (loop for voice in (inside self)
+                                                collect (ObjFromObjs voice (make-instance 'chord-seq))))))
+    ;(setapprox type (approx self));;Edo scale heritage
+    (setf (approx multi) (approx self))
+    multi))
 
 
 (defmethod! align-chords ((self multi-seq) (delta integer))
@@ -838,7 +908,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 ;;;=============================================
 
-;;; !!! ça marche pas du tout !!!
+;;; !!! Ã§a marche pas du tout !!!
 (defmethod* mk-obj-from-list ((self list) (type chord-seq))
   (cond
    ((list-subtypep self '(chord note rest))

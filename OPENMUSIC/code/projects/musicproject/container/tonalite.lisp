@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -28,7 +28,8 @@
 ;;; soit comme ca soit en faisant deux classes diffŽrentes.. --> ?
 (defclass tonal-object ()
   ((tonalite :accessor tonalite :initarg :tonalite :initform nil)
-   (tonal-values :accessor tonal-values :initarg :tonal-values :initform nil)))
+   (tonal-values :accessor tonal-values :initarg :tonal-values :initform nil)
+   (approx :accessor approx :initarg :approx :initform *global-midi-approx*)))
 
 (defmethod tonal-object-p ((self t)) nil)
 (defmethod tonal-object-p ((self tonal-object)) t)
@@ -36,7 +37,6 @@
 
 ;;; si on demande la tonalite d'un objet qui n'est pas un tonal-object :
 (defmethod tonalite ((self t)) nil)
-
 (defmethod set-tonalite ((self t) (tonalite t)) nil)
 
 
