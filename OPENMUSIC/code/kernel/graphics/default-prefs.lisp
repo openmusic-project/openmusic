@@ -344,6 +344,7 @@
     (setf *default-folder-pres*     (get-pref modulepref :folder-pres))
     (setf *icon-size-factor* (get-pref modulepref :box-fact))
     (setf *ombox-font* (or (eval (get-pref modulepref :boxname-font)) *om-default-font1*))
+    (setf *line-numbers* (get-pref modulepref :line-numbers))
     (setf *patch-show-win-buttons* (get-pref modulepref :patch-win-buttons))
     (setf *mag-in-out* (get-pref modulepref :mag-in-out))
     (setf *curved-connections* (get-pref modulepref :curved-connections))
@@ -388,7 +389,8 @@
    :mag-in-out #-win32 t #+win32 nil
    :curved-connections nil
    :mv-font-size 20
-
+   :line-numbers t
+   
    :maq-color (om-make-color 0.85 0.85 0.83) 
    :patchtemp-color (om-make-color 0.5 0.5 0.6)
    :maqtemp-color (om-make-color 0.6 0.5 0.5)
@@ -581,7 +583,6 @@
                       ;2c
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "Text Ed.:"
                                           :font *controls-font*)
-                     
                      (om-make-view 'om-color-view 
                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
                                    :bg-color (get-pref modulepref :text-bg-color)
@@ -694,9 +695,18 @@
                                                )))
                      )   
 
-     (om-add-subviews thescroll
-                      
-                      (om-make-dialog-item 'om-static-text (om-make-point l2 (setf posy 20)) (om-make-point 330 30) "MiniViews"
+    (om-add-subviews thescroll
+                     (om-make-dialog-item 'om-static-text (om-make-point l2 (setf posy 20)) (om-make-point 330 30) "Text Editors"
+                                          :font *om-default-font2b*)
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 25)) (om-make-point 250 22) "Line Num."
+                                          :font *controls-font*)
+                     #+(or linux cocoa)(om-make-dialog-item 'om-check-box (om-make-point (+ l2 120) posy) (om-make-point 20 20) ""
+                                                            :font *controls-font*
+                                                            :checked-p (get-pref modulepref :line-numbers)
+                                                            :di-action (om-dialog-item-act item 
+                                                                         (set-pref modulepref :line-numbers (om-checked-p item))))
+                     
+                     (om-make-dialog-item 'om-static-text (om-make-point l2 (incf posy 25)) (om-make-point 330 30) "MiniViews"
                                           :font *om-default-font2b*)
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 25)) (om-make-point 250 22) "Font Size:"
@@ -706,7 +716,7 @@
                                           :range '("8" "10" "12" "14" "16" "18" "20" "24")
                                           :value (number-to-string (get-pref modulepref :mv-font-size))
                                           :di-action (om-dialog-item-act item 
-                                                          (set-pref modulepref :mv-font-size (read-from-string (om-get-selected-item item))))
+                                                       (set-pref modulepref :mv-font-size (read-from-string (om-get-selected-item item))))
 					  :font *controls-font*)
                      
                      (om-make-dialog-item 'om-static-text (om-make-point l2 (incf posy 40)) (om-make-point 330 30) "Maquette"
@@ -722,7 +732,7 @@
                                    :after-fun #'(lambda (item) (set-pref modulepref :maq-color (color item))))
 
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy 30)) (om-make-point 250 22) "Temporal Boxes Color:"
-                                           :font *controls-font*)
+                                          :font *controls-font*)
 
                      (om-make-view 'om-color-view 
                                    :position (om-make-point (+ l2 180) posy) :size (om-make-point 55 25) 
@@ -742,11 +752,11 @@
                                    :color (get-pref modulepref :objtemp-color)
                                    :after-fun #'(lambda (item) (set-pref modulepref :objtemp-color (color item))))
 
-                    (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 182) (incf posy 22)) (om-make-point 250 22) "patch"
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 182) (incf posy 22)) (om-make-point 250 22) "patch"
                                           :font *controls-font*)
 
-                    (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 240) posy) (om-make-point 250 22) "maquette"
-                                                             :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 240) posy) (om-make-point 250 22) "maquette"
+                                          :font *controls-font*)
                      
                      
 
@@ -764,12 +774,12 @@
                                                        ((equal (get-pref modulepref :temp-minipict-bg) :box) "Box Color")
                                                        (t "Transparent"))
                                           :di-action (om-dialog-item-act item 
-                                                        (let ((choice (om-get-selected-item item)))
-                                                          (set-pref modulepref :temp-minipict-bg
-                                                               (cond ((string-equal choice "White") :white)
-                                                                     ((string-equal choice "Box Color") :box)
-                                                                     (t nil))
-                                                               )))
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :temp-minipict-bg
+                                                                   (cond ((string-equal choice "White") :white)
+                                                                         ((string-equal choice "Box Color") :box)
+                                                                         (t nil))
+                                                                   )))
 					  :font *controls-font*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy dy)) (om-make-point 250 22) "Score Box Mode:"
@@ -781,12 +791,12 @@
                                                        ((equal (get-pref modulepref :temp-minipict-mode) :pianoroll) "Piano Roll")
                                                        (t "Score"))
                                           :di-action (om-dialog-item-act item 
-                                                        (let ((choice (om-get-selected-item item)))
-                                                          (set-pref modulepref :temp-minipict-mode
-                                                               (cond ((string-equal choice "Score") :score)
-                                                                     ((string-equal choice "Piano Roll") :pianoroll)
-                                                                     (t nil))
-                                                               )))
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :temp-minipict-mode
+                                                                   (cond ((string-equal choice "Score") :score)
+                                                                         ((string-equal choice "Piano Roll") :pianoroll)
+                                                                         (t nil))
+                                                                   )))
 					  :font *controls-font*)
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 20) (incf posy dy)) (om-make-point 250 22) "Show Box Icons:"

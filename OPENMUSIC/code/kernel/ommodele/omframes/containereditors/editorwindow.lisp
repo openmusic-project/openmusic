@@ -172,7 +172,8 @@
       (om-add-menu-to-win win)  
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
-      #-linux(om-set-view-size editor (om-interior-size win))
+      ;#-linux
+      (om-set-view-size editor (om-interior-size win))
 
       (cond
           ((scoreeditor-p object)
@@ -188,8 +189,10 @@
            ((typep object 'ompatch)
             (om-set-bg-color (panel (editor win)) *patch-bg-color*))
           (t ))
-      
-      win))
+      ;(print (list editor win))
+      win
+      )
+        )
 
 
 
@@ -235,7 +238,7 @@
   (when (editor self)
     (close-editor-before (editor self))))
 
-(defmethod om-window-close-event :after ((self EditorWindow)) 
+(defmethod om-window-close-event :around ((self EditorWindow)) 
    (when (editor self)
        (loop for ed in (attached-editors (editor self)) do
                  (om-close-window ed))
