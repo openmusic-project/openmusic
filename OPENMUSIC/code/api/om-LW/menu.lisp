@@ -228,6 +228,12 @@
     #'(lambda () (setf (capi::interface-menu-bar-items window) menubar)
         ))))
 
+(defun om-add-dummy-menu-to-win (window) 
+  "For linux dialogs - no menu please!"
+   (capi::execute-with-interface 
+    window
+    #'(lambda () (setf (capi::interface-menu-bar-items window) nil)
+        )))
 
 ;;;;===================
 ;;;; POP UP / CONTEXT MENU

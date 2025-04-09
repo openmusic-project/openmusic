@@ -245,13 +245,13 @@
 
 (defmethod om-set-bg-color ((self om-graphic-object) color)
   (let ((col (when color (c color))))
-    #-cocoa 
+    #-(or linux cocoa) 
     (if (and col (equal col :transparent) (om-view-container self))
         ;;;(c (om-get-bg-color (om-view-container self)))
         ;;; (setf col (c (om-get-bg-color (om-view-container self))))
         nil ;;; do nothing...
       (setf (simple-pane-background (om-get-view self)) col))
-    #+cocoa
+    #+(or linux cocoa)
     (setf (simple-pane-background (om-get-view self)) col)))
 
 (defmethod om-get-bg-color ((self om-graphic-object))
