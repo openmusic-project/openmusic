@@ -511,7 +511,7 @@ with the objects respectly associeted."))
       (om-set-scroll-position self (om-make-point (+ hpos 1) vpos))
       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       )
-    ))
+    )
 
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
