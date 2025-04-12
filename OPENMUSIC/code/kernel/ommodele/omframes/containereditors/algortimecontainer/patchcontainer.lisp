@@ -1050,4 +1050,8 @@ Elements of the list are list as (source-position source-output target-position 
 
 
 
+(defmethod editor-null-event-handler :after ((self patchEditor))
+   (do-editor-null-event self))
 
+(defmethod do-editor-null-event ((self patchEditor))
+  #+linux (om-invalidate-view (panel self)))

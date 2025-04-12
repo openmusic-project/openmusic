@@ -488,19 +488,30 @@ with the objects respectly associeted."))
   (om-init-motion-click view where 
                        :motion-draw 'draw-selection-rectangle 
                        :release-action 'release-selection
-                       :display-mode 2)
-  )
+                       :display-mode 2))
 
 (defmethod release-selection ((self om-view) initpos pos)
-    (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
-          (y1 (min (om-point-y pos) (om-point-y initpos)))
-          (x2 (max (om-point-x pos) (om-point-x initpos)))
-          (y2 (max (om-point-y pos) (om-point-y initpos))))
-      (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
-        (when (not (= 0 (caddr rect) (cadddr rect)))
-          (do-select-items-in-rect self rect))
-        (om-invalidate-view self))
-      ))
+  (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
+        (y1 (min (om-point-y pos) (om-point-y initpos)))
+        (x2 (max (om-point-x pos) (om-point-x initpos)))
+        (y2 (max (om-point-y pos) (om-point-y initpos))))
+    (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
+      (when (not (= 0 (caddr rect) (cadddr rect)))
+        (do-select-items-in-rect self rect))
+      (om-invalidate-view self t))
+    ;;lw81 scroll selection problem
+    (let* ((pos (om-scroll-position self))
+           (vpos (om-point-v pos))
+           (hpos (om-point-h pos))
+           (inc (if (om-shift-key-p) 500 50)))
+
+      (om-set-scroll-position self (om-make-point (- hpos 1) vpos))
+      (om-set-h-scroll-position self  (om-point-h (om-scroll-position self)))
+      
+      (om-set-scroll-position self (om-make-point (+ hpos 1) vpos))
+      (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      )
+    ))
 
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
