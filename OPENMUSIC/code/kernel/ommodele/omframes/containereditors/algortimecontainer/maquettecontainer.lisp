@@ -428,7 +428,7 @@
 
     ))
   )
-
+#|
 ;;for linux and win32 updating cursor
 (defmethod editor-null-event-handler :after ((self maquetteEditor))
    (do-editor-null-event self))
@@ -439,7 +439,7 @@
            (capi:manipulate-pinboard (panel self) 
                                      (slot-value (panel self) 'oa::animation)
                                      :add-top)))
-
+|#
 ;--------------------------
 ;PANEL
 ;--------------------------
