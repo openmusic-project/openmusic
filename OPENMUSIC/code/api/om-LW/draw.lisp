@@ -78,6 +78,7 @@
 (defmethod om-draw-contents-callback ((self om-graphic-object) x y w h);(print "linux")
   (om-with-error-handle 
    #+cocoa (set-graphics-port-coordinates (om-get-view self) :left 0 :top 0)
+   #-cocoa (set-graphics-port-coordinates (om-get-view self) :left 0 :top 0.1)
     ;(gp::clear-rectangle (om-get-view self) 0 0 (om-width self) (om-height self))
     (om-draw-contents self)
     ;(print (list self (om-get-view self) x y w h))
