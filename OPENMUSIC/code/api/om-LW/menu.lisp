@@ -239,8 +239,16 @@
 ;;;; POP UP / CONTEXT MENU
 ;;;;===================
 
+#+(or cocoa win32)
 (defun om-open-pop-up-menu (themenu self)
   (capi::display-popup-menu themenu :owner self))
+
+#+linux
+(defun om-open-pop-up-menu (themenu self)
+  (let* ((pos (om-mouse-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos)))
+    (capi::display-popup-menu themenu :owner self :x (+ 1 hpos) :y (+ 1 vpos))))
 
 ;;; DEFAULT BEHAVIOR
 ;;; right click -> open menu context
