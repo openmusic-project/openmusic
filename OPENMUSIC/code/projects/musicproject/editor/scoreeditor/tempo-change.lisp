@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -319,11 +319,11 @@
     (loop for item in mes
           for i = 0 then (+ i 1) do
           (when curtempo (change-qtempo item curtempo dynamic?))
-          ; (print i) (print list)
-          (loop while (and list (= i (caaar list))) do   ;;; 
-              (let ((chords (cons-chord&rest-list item)))
-               (setf curtempo (tempo-a-la-noire (list (first (second (first list))) (second (second (first list))))))
-                 (if (nth (second (caar list)) chords)
+            ;(print i) (print list)
+            (loop while (and list (= i (caaar list))) do   ;;; 
+                  (let ((chords (cons-chord&rest-list item)))
+                    (setf curtempo (tempo-a-la-noire (list (first (second (first list))) (second (second (first list))))))
+                    (if (nth (second (caar list)) chords)
                      (progn
                        (set-last-dyn-tempo curtempo (nth (second (caar list)) chords))
                        (setf dynamic? (third (second (first list))))
@@ -332,11 +332,17 @@
                        (change-qtempo-up (nth (second (caar list)) chords) nil curtempo dynamic? nil))
                    (remove-bad-tempi-change self (car list))) 
                  (setf list (cdr list)))))
+    ;;necessaire pour set la mesure intermediaire au cas ou c'est un tempo dynamique
+    (loop for m in mes
+          collect 
+            (let ((frst (car (loop for i in (inside m) collect (qtempo i)))))
+              (setf (qtempo m) frst)))
+    ;;;;;;
     (when *dynamic-tempo-list*
       (loop for list in (reverse *dynamic-tempo-list*) do
             (compute-dynamic-tempi list))
-      (correct-dyn-tempo self)
-      )))
+      (correct-dyn-tempo self))
+    ))
 
 
 ;==========================
