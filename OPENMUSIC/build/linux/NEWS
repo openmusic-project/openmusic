@@ -1,4 +1,4 @@
-* RELEASE NOTES 7.6
+* RELEASE NOTES 7.7
 
 NEW FEATURES
 
@@ -9,6 +9,7 @@ IMPROVEMENTS
 
 FIXES
 
+- dynamic tempo works if stops inside measure
 - delete-all-inputs fixed: when boxtypeframe selected no error
 
 
