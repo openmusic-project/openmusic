@@ -309,6 +309,14 @@
          (sort (sort-list clean :test '< :key 'caar)))
     (setf (qtempo self) sort)))
 
+(defmethod correct-dyn-tempo ((self measure))
+  (let ((qtempo (qtempo self)))
+    (if (atom qtempo)
+         qtempo
+      (let* ((clean (remove-duplicates qtempo :test 'equal :key 'car))
+         (sort (sort-list clean :test '< :key 'caar)))
+    (setf (qtempo self) sort)))))
+
 (defmethod make-voice-tempo-change ((self voice) tempi)
   (let* ((list tempi)
          (start (caar list))
@@ -332,18 +340,14 @@
                        (change-qtempo-up (nth (second (caar list)) chords) nil curtempo dynamic? nil))
                    (remove-bad-tempi-change self (car list))) 
                  (setf list (cdr list)))))
-    ;;necessaire pour set la mesure intermediaire au cas ou c'est un tempo dynamique
-    (loop for m in mes
-          collect 
-            (let ((frst (car (loop for i in (inside m) collect (qtempo i)))))
-              (setf (qtempo m) frst)))
-    ;;;;;;
     (when *dynamic-tempo-list*
       (loop for list in (reverse *dynamic-tempo-list*) do
             (compute-dynamic-tempi list))
       (correct-dyn-tempo self))
+    ;Should also correct the qtempo of measures AFTER the correction of qtempo of VOICE
+    (loop for m in mes
+            do (setf (qtempo m) (correct-dyn-tempo m)))
     ))
-
 
 ;==========================
 ;CHANGING TEMPO 
