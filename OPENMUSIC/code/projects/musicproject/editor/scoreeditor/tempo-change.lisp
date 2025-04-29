@@ -379,15 +379,24 @@
 (defun zeroplist (list)
   (null (remove 0 list)))
 
+(defun listcar< (elt1 elt2)
+  (let ((a (car elt1))
+        (b (car elt2)))
+  (cond ((null a) (not (null b)))
+        ((null b) nil)
+        ((= (first a) (first b)) (list< (rest a) (rest b)))
+        (t (< (first a) (first b))) )))
+
+;(sort (copy-seq *lst1*) #'listcar<)
+
 (defun set-tempo-list (self pos tempo)
   ;(print (list self pos tempo (qtempo self)))
   (setf (qtempo self) 
         (if (atom (qtempo self))
-            (if (zeroplist pos)
-                (list (list '(0) tempo))
-              (list (list '(0) (qtempo self)) (list pos tempo)))
-           ;(sort (remove-duplicates (append (qtempo self) (list (list pos tempo))) :test 'equal :key 'caar) '< :key 'caar)
-          (append (qtempo self) (list (list pos tempo)))
+              (if (zeroplist pos)
+                  (list (list '(0 0) tempo))
+                (list (list '(0 0) (qtempo self)) (list pos tempo)))
+          (sort (append (qtempo self) (list (list pos tempo))) #'listcar<)
           )))
 
 
