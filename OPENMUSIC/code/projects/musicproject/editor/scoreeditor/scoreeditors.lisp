@@ -1070,6 +1070,7 @@
            (#\M (remove-tempo self))
            (#\i (get-obj-info self))
            (#\I (show-inspector-window (panel self)))
+           (#\y (om-inspect (car (selection? self))))
            (#\c (note-chan-color self))
            (#\n (set-name-to-mus-obj self))
            (#\h (show-help-window (format nil "Commands for ~A Editor" 
