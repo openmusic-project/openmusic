@@ -284,20 +284,39 @@
   (setf (nth 0 *dynamic-tempo-list*)
           (append (nth 0 *dynamic-tempo-list*) (list obj))))
 
+(defmethod first-in-mesure ((self chord))
+  (let* ((parent (parent self))
+        (pos (position self (inside parent))))
+    (if (= 0 pos) t nil)))
+
+(defmethod first-in-mesure ((self rest))
+  (let* ((parent (parent self))
+        (pos (position self (inside parent))))
+    (if (= 0 pos) t nil)))
+
+(defmethod first-in-mesure ((self t)) nil)
+
+(defmethod first-in-mesure ((self group))
+  (let* ((parent (parent self))
+        (pos (position self (inside parent))))
+    (if (= 0 pos) t nil)))
+
 (defun compute-dynamic-tempi (list)
   (let ((tempo (car list)))
     (when (and (listp tempo) (not (= (first tempo) (second tempo))))
       (let* ((starttempo (first tempo))
-            (endtempo (second tempo))
-            (chords (cdr list))
-            (count 0) offsets bpf)
+             (endtempo (second tempo))
+             (chords (cdr list))
+             (frst (first-in-mesure (last-elem chords)))
+             (chords1 (if frst (butlast chords) chords));In case tempodyn ends in begining of next measure 
+             (count 0) offsets bpf)
         (setf offsets (loop for item in chords collect
-              (setf count (+ count (extent->ms item)))))
+                              (setf count (+ count (extent->ms item)))))
         (setf offsets (cons 0 (butlast offsets)))
         (setf bpf (simple-bpf-from-list (list 0 (car (last offsets))) (list starttempo endtempo) 'bpf 2))
         (loop for item in offsets
-              for chord in chords do
-               (change-qtempo-up chord nil (bpf-get-val bpf item) nil nil))))))
+              for chord in chords1 do
+                (change-qtempo-up chord nil (bpf-get-val bpf item) nil nil))))))
               
 (defmethod remove-bad-tempi-change ((self voice) tempi)
   (setf (slot-value self 'tempo)
@@ -309,13 +328,18 @@
          (sort (sort-list clean :test '< :key 'caar)))
     (setf (qtempo self) sort)))
 
+(defun dup-indice (elt)
+  "Not ot use for voice tempi"
+  (remove-duplicates (car elt)))
+
 (defmethod correct-dyn-tempo ((self measure))
   (let ((qtempo (qtempo self)))
     (if (atom qtempo)
-         qtempo
-      (let* ((clean (remove-duplicates qtempo :test 'equal :key 'car))
-         (sort (sort-list clean :test '< :key 'caar)))
-    (setf (qtempo self) sort)))))
+        qtempo
+      (let* ((clean (remove-duplicates qtempo :test 'equal :key 'dup-indice :from-end 't))
+             (sort (sort-list clean :test '< :key 'caar)))
+        (setf (qtempo self) sort)))))
+
 
 (defmethod make-voice-tempo-change ((self voice) tempi)
   (let* ((list tempi)
