@@ -247,40 +247,24 @@
   (if (string-equal dir "up") "dw" "up"))
 
 ;-------group
-;(fmakunbound 'make-group-grace)
+
 (defmethod make-group-grace ((self grace-notes) top staffsys linespace scale sel pere grc) 
   (let* ((list (mapcar 'lmidic (glist self)))
          (group (make-instance 'group :tree (list (/ (length list) 2) (make-list (length list) :initial-element 1))))
          new-group direstart)
-   
-     
-
-    ;;;;add   
-;Leprobleme c'est que sel c'est la selection et non le chord d'attachement!! utiliser -> (thechord self)
+  ;;;;add   
+ ;Leprobleme c'est que sel c'est la selection et non le chord d'attachement!! utiliser -> (thechord self)
     (setf (qvalue group) (qvalue (thechord self)))
     (setf (extent group) (extent (thechord self)))
     (setf (offset group) (offset (thechord self)))
     (setf (parent group) (parent (thechord self)))   
     (setf (qtempo group) (qtempo (thechord self)))
-    ;(print (list "glist self" (glist self)))
-    #|
-    (loop for i in (glist self)
-          do 
-            (progn 
-              (setf (qvalue i) (qvalue group))
-              (setf (extent i) (extent group))
-              (setf (offset i) (offset group))
-              (setf (parent i) (parent group))   
-              (setf (qtempo i) (qtempo group))))
-    |#          
-    (setf (inside group) (glist self));IMPORTANT pour pouvoir changer les notes des graces!!!!
-    #|
     
-    |#
+    (setf (inside group) (glist self));IMPORTANT pour pouvoir changer les notes des graces!!!!
+  
     (loop for item in (inside group)
           do (setf (qtempo item) (qtempo group)))    
-          ;;;;;
-
+    
     (setf new-group (make-instance 'g-grap-grace-notes
                                    :grc grc
                                    :reference group
@@ -288,17 +272,17 @@
        
     (setf (numdenom new-group)  nil)
     (loop for item in (inside group)
-          for chord in list do
-            (setf (lmidic item) chord))
+          for chord in list
+          for n from 0 to (length list)
+          do
+            (progn
+            (setf (offset item) n); allows us to display a group!
+            (setf (lmidic item) chord)))
 
     (setf (inside new-group) (loop for item in (inside group) 
                                    for i = 0 then (+ i 1)
                                    collect
-                                     (progn
-                                       ;(setf (parent item) group)
-                                       (make-graph-ryth-obj  item  top staffsys linespace  scale sel new-group 1/8))))
-    ;(print (list "inside newgrp" (inside new-group)))
-    ;(print (list "glist" (glist self) (inside new-group)))
+                                     (make-graph-ryth-obj  item  top staffsys linespace  scale sel new-group 1/8)))
     new-group))
 
 
@@ -552,86 +536,8 @@
             ;(setf (main-point i) (list (+ n count) nil)) ; ca decale le playing point...
             ;(setf (main-point i) (list 0 nil))
             (setf (main-point i) (list 0 nil))
-          )
-    )
+          ))
 
-
-
-#|
-;;;;;;
-;;IMPORTANT!
-;;to be put in extras.lisp
-;;;;;;
-(defmethod omng-save ((self chord)  &optional (values? nil))
-  (let ((tonlist (get-tonal-values self))
-        (tonalite (tonalite self))
-        extralist clist)
-     (unless (parent self)
-         (setf extralist (cons-extra-pairs self))
-         (setf clist (cons-mus-color self)))
-    (cond ((and (gnotes self) tonlist)
-           `(let ((thechord (make-instance ',(type-of self)
-                                           :LMidic ',(Lmidic self)
-                                           :Ldur ',(Ldur self)
-                                           :LVel ',(LVel self)
-                                           :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self)
-                                           :approx ',(approx self))))
-              (setf (gnotes thechord) (make-instance 'grace-notes
-                                                     :glist ',(glist (gnotes self))
-                                                     :thechord thechord))
-              (restore-tonalite thechord ',tonlist)
-              (load-port-info thechord ',(get-port self))
-              (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
-              (set-extra-pairs thechord ',extralist)
-              (set-tonalite thechord ,(omng-save tonalite))
-              thechord))
-          (tonlist
-           `(let ((thechord (make-instance ',(type-of self)
-                                           :LMidic ',(Lmidic self)
-                                           :Ldur ',(Ldur self)
-                                           :LVel ',(LVel self)
-                                           :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self)
-                                           :approx ',(approx self))))
-              (restore-tonalite thechord ',tonlist)
-              (load-port-info thechord ',(get-port self))
-              (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
-              (set-extra-pairs thechord ',extralist)
-              (set-tonalite thechord ,(omng-save tonalite))
-              thechord))
-          ((gnotes self)
-           `(let ((thechord (make-instance ',(type-of self)
-                                           :LMidic ',(Lmidic self)
-                                           :Ldur ',(Ldur self)
-                                           :LVel ',(LVel self)
-                                           :LOffset ',(LOffset self)
-                                           :Lchan ',(Lchan self)
-                                           :approx ',(approx self))))
-              (setf (gnotes thechord) (make-instance 'grace-notes
-                                                     :glist (list ,.(loop for i in (glist (gnotes self)) collect
-                                                                            (omNG-save i)))
-                                                     :thechord thechord))
-              (load-port-info thechord ',(get-port self))
-              (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
-              (set-extra-pairs thechord ',extralist)
-              (set-tonalite thechord ,(omng-save tonalite))
-              thechord))
-          (t `(let ((thechord (make-instance ',(type-of self)
-                                             :LMidic ',(Lmidic self)
-                                             :Ldur ',(Ldur self)
-                                             :LVel ',(LVel self)
-                                             :LOffset ',(LOffset self)
-                                             :Lchan ',(Lchan self)
-                                             :approx ',(approx self)
-                                             )))
-                (load-port-info thechord ',(get-port self))
-                (init-mus-color thechord ',(mapcar #'(lambda (item) (list (car item) (omng-save (cadr item)))) clist))
-                (set-extra-pairs thechord ',extralist)
-                (set-tonalite thechord ,(omng-save tonalite))
-                thechord))
-          )))
-|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;CARLOS GRACES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -660,82 +566,18 @@ An OM object representing a group in a rhythm.
 (defmethod initialize-instance ((self group-gn)
                                 &key (PropagateExtent 4) (InternalCall nil) (Empty nil))
   (declare (ignore initargs))
-
-  (call-next-method) )
-#|
-  (unless (or  Empty internalCall)
-    (do-initialize self))
-  (setf (slot-value self 'tree) nil)
-  self)
-    
-(defmethod do-initialize ((self group-gn) &key )
-  ;(distribute-chords self (list (mki 'chord)))
-  self)
-|#
+  (call-next-method))
 
 (defmethod (setf tree) ((tree list) (self group-gn))
   (do-initialize-metric-sequence self :tree tree )
   (do-initialize self )
   self)
 
-
 (defmethod (setf approx) ((approx number) (self group-gn))
   (call-next-method)
   (loop for i in (inside self)
         do (setf (approx i)  approx))
   self)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-(defmethod make-group-grace ((self grace-notes) top staffsys linespace scale sel pere grc) ;(print (list "aa"))
-  (let* ((list (mapcar 'lmidic (glist self)))
-         ;a voir si on utilise group ou group-gn
-         ;(group (make-instance 'group-gn :tree (list (/ (length list) 2) (make-list (length list) :initial-element 1))))
-         (group (make-instance 'group :tree (list (/ (length list) 2) (make-list (length list) :initial-element 1))))
-         new-group direstart)
-   
-    ;;;;add   
-;Leprobleme c'est que sel c'est la selection et non le chord d'attachement!! utiliser -> (thechord self)
-    ;;apparement la on en a plus besoin ???
-    ;;SI on en a besoin quand c'est a l'interieur d'un group!!!
-    (setf (qvalue group) (qvalue (thechord self)))
-    (setf (extent group) (extent (thechord self)))
-    (setf (offset group) (offset (thechord self)))
-    (setf (parent group) (parent (thechord self)))   
-    (setf (qtempo group) (qtempo (thechord self)))
-              
-    (setf (inside group) (glist self));IMPORTANT pour pouvoir changer les notes des graces!!!!
-    
-    (loop for item in (inside group)
-          do (setf (qtempo item) (qtempo group)))    
-          ;;;;;
-
-    (setf new-group (make-instance 'g-grap-grace-notes
-                                   :grc grc
-                                   :reference group
-                                   :parent self))
-       
-    (setf (numdenom new-group)  nil)
-    (loop for item in (inside group)
-          for chord in list do
-            (setf (lmidic item) chord))
-
-    (setf (inside new-group) (loop for item in (inside group) 
-                                   for i = 0 then (+ i 1)
-                                   collect
-                                     (progn
-                                       ;(setf (parent item) group)
-                                       (make-graph-ryth-obj  item  top staffsys linespace  scale sel new-group 1/8))))
-    ;(print (list "inside newgrp" (inside new-group)))
-    ;(print (list "glist" (glist self) (inside new-group)))
-    new-group))
-
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -913,11 +755,9 @@ An OM object representing a group in a rhythm.
 
 
 ;this must be added for our new class
-
-(defmethod make-graph-ryth-obj ((self group-gn) top staffsys linespace  scale sel pere durtot &optional ryth)
-
+;;apparement non utilisee pour le moment!
+(defmethod make-graph-ryth-obj ((self group-gn) top staffsys linespace  scale sel pere durtot &optional ryth) 
    (let* (new-group direstart)
-     
      (setf new-group (make-instance 'grap-group
                        :reference self
                        :parent pere))
@@ -963,7 +803,6 @@ An OM object representing a group in a rhythm.
           (unite (/ durtot denom))
           (sympli (/ num denom))
           new-group direstart)
-     
      (setf new-group (make-instance 'grap-group
                        :reference self
                        :parent pere))
@@ -1010,7 +849,7 @@ An OM object representing a group in a rhythm.
        (setf direstart (calcule-dir-et-start new-group (midicenter staffsys)))
        (set-dir-and-high new-group (car direstart) linespace)
        ;;; grace notes
-       
+       ;(print (list "group[" new-group (om-inspect (second (get-chord&rest-not-graces new-group)))))
        (loop for item in (get-chord&rest-not-graces new-group) do
              (when  (grap-grace-notes item)
                (set-graces-dir-after (grap-grace-notes item) item staffsys linespace)))
