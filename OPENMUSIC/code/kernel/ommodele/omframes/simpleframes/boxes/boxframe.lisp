@@ -50,7 +50,7 @@
 ; for autoconnections:
 (defparameter *target-out* nil)
 (defparameter *target-in* nil)
-
+(defparameter *auto-create-connect* nil)
 
 (defmethod om-view-click-handler ((self outfleche) where)
   (setf *make-connection* nil)
@@ -58,41 +58,51 @@
    ;((and (om-command-key-p) (om-option-key-p)) (setf *target-out* self)) ; for autoconnections 
    ((om-option-key-p) (setf *target-out* self)) ; for autoconnections 
    ((and (om-command-key-p) (om-shift-key-p))
-     (om-with-cursor *om-wait-cursor*
-       (om-eval-enqueue `(let (rep)
-			   (setf *cur-eval-panel* ,(panel (om-view-container self)))
-			   (setf rep (omNG-box-value ',(object (om-view-container self))  ',(index self)))
-			   (format *om-stream* "OM => ~S~%"  rep)
-			   (clear-ev-once ,(om-view-container (om-view-container self)))
-			   (make-graph-instance rep ,(om-view-container (om-view-container self)) 
-						,(om-make-point (x (om-view-container self))  
-								(+ 10 (y self) (y (om-view-container self)))) 
-						,(om-view-container self))))))
-    ((om-command-key-p) 
-     (om-with-cursor *om-wait-cursor*
-       (om-eval-enqueue `(let (rep)
-			   (handler-bind ((error #'(lambda (c) 
-						     (when *msg-error-label-on*
-						       (om-message-dialog (string+ "Error while evaluating the box " ,(string (name (object (om-view-container self)))) " : " 
-										   (om-report-condition c ))
-									  :size (om-make-point 300 200))
-						       (clear-after-error ,(object (om-view-container self)))
-						       (om-abort)
-						       ))))
-			     (setf *cur-eval-panel* ,(panel (om-view-container self)))
-			     (setf rep (omNG-box-value ',(object (om-view-container self))  ',(index self)))
-			     (format *om-stream* "OM => ~S~%"  rep)
-			     (clear-ev-once ,(om-view-container (om-view-container self)))
-			     )))))
-    (t (let* ((panel (panel (om-view-container self)))
-	      (initpoint (om-convert-coordinates where self panel)))
+    (om-with-cursor *om-wait-cursor*
+      (om-eval-enqueue `(let (rep)
+                          (setf *cur-eval-panel* ,(panel (om-view-container self)))
+                          (setf rep (omNG-box-value ',(object (om-view-container self))  ',(index self)))
+                          (format *om-stream* "OM => ~S~%"  rep)
+                          (clear-ev-once ,(om-view-container (om-view-container self)))
+                          (make-graph-instance rep ,(om-view-container (om-view-container self)) 
+                                               ,(om-make-point (x (om-view-container self))  
+                                                               (+ 10 (y self) (y (om-view-container self)))) 
+                                               ,(om-view-container self))))))
+   ((om-command-key-p) 
+    (om-with-cursor *om-wait-cursor*
+      (om-eval-enqueue `(let (rep)
+                          (handler-bind ((error #'(lambda (c) 
+                                                    (when *msg-error-label-on*
+                                                      (om-message-dialog (string+ "Error while evaluating the box " ,(string (name (object (om-view-container self)))) " : " 
+                                                                                  (om-report-condition c ))
+                                                                         :size (om-make-point 300 200))
+                                                      (clear-after-error ,(object (om-view-container self)))
+                                                      (om-abort)
+                                                      ))))
+                            (setf *cur-eval-panel* ,(panel (om-view-container self)))
+                            (setf rep (omNG-box-value ',(object (om-view-container self))  ',(index self)))
+                            (format *om-stream* "OM => ~S~%"  rep)
+                            (clear-ev-once ,(om-view-container (om-view-container self)))
+                            )))))
+   ((om-shift-key-p)
+    (let* ((panel (panel (om-view-container self)))
+           (initpoint (om-convert-coordinates where self panel)))
+      (om-init-motion-click self where
+                            :motion-draw 'draw-auto-connection-drag :draw-pane panel :display-mode 5
+                            :motion-action 'connection-drag
+                            :release-action 'release-auto-connection-drag
+                            )
+      (setf *show-input-vals* nil)))
+
+   (t (let* ((panel (panel (om-view-container self)))
+             (initpoint (om-convert-coordinates where self panel)))
        
-	 (om-init-motion-click self where
-                               :motion-draw 'draw-connection-drag :draw-pane panel :display-mode 5
-                               :motion-action 'connection-drag
-                               :release-action 'release-connection-drag
-                               )
-	 (setf *show-input-vals* nil))))
+        (om-init-motion-click self where
+                              :motion-draw 'draw-connection-drag :draw-pane panel :display-mode 5
+                              :motion-action 'connection-drag
+                              :release-action 'release-connection-drag
+                              )
+        (setf *show-input-vals* nil))))
   t)
 
 
@@ -138,6 +148,27 @@
               (om-make-color-alpha 0 0 0 0.5)
             (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos)))))))
  
+
+(defmethod draw-auto-connection-drag ((self om-view) init-pos pos)
+    (om-with-line-size 3
+        (om-with-line '(2 3) ; #+macosx '(2 5) #-macosx '(1 1)
+          (om-with-fg-color self 
+              (om-make-color-alpha 1 0 0 0.5)
+            (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos))))))
+
+
+(defmethod release-auto-connection-drag ((self outfleche) init-pos pos) 
+  (let* ((panel (panel (om-view-container self)))
+         (ppos (om-convert-coordinates pos self panel))
+         (ctrl (om-find-view-containing-point panel ppos)))
+    (setf *auto-create-connect* self)
+    (make-undefined-box panel ppos)
+    (om-hide-tooltip ctrl)
+    (setf *show-input-vals* t)
+    (connect-box self ctrl)
+    (om-hide-tooltip panel)
+    ))
+
 
 ;Only for magnification
 (defmethod om-view-mouse-enter-handler ((self outfleche)) 
