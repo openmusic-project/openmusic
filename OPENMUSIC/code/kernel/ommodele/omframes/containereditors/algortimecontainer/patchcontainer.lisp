@@ -166,7 +166,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        #+macosx("shift+alt+cmd" "disconnect all inputs")
                        (("X") "auto-connect all inputs")
                        (("Z") "disconnect all inputs")
-
+                       ("shift+box" "create new box and auto-connect it from output")
                        ;#+(or linux win32)
                        ("shift+ctrl+lrud" "resize box")
                        ;#+macosx("shift+cmd+lrud" "resize box")

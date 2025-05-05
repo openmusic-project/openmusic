@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Shift+drag from output: Create and auto-connect output to new box
 
 IMPROVEMENTS
 
@@ -9,7 +10,7 @@ IMPROVEMENTS
 
 FIXES
 
-- dynamic tempo works if stops inside measure
+- dynamic tempo fix
 - delete-all-inputs fixed: when boxtypeframe selected no error
 
 
