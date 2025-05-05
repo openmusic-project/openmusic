@@ -405,7 +405,18 @@
       
       (omG-add-element scroller (make-frame-from-callobj newbox)))
       (when (equal funname 'comment)
-        (reinit-size (car (frames newbox))))  
+        (reinit-size (car (frames newbox))))
+      
+      (when *auto-create-connect* 
+      (let ((input (car (om-subviews (car (frames newbox))))))
+        (if (typep input 'input-funboxframe)
+            (connect-box *auto-create-connect* input)
+          (progn
+            (add-one-input (car (frames newbox)))
+            (connect-box *auto-create-connect* 
+                         (car (om-subviews (car (frames newbox)))))))
+        (setf *auto-create-connect* nil)
+        ))
     newbox))  ;;; so validity of string as a new object can be tested
 
 (defmethod add-args-to-box (box args)
