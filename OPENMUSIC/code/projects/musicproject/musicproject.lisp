@@ -53,6 +53,7 @@
         
         ;-----------Functions--------------------------------
         "functions;trees"
+        "functions;gracetrees"
         "functions;objects-functions"
 
         ;-----------Editors--------------------------------
