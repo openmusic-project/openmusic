@@ -297,11 +297,12 @@
   (let ((space (get-chiffrage-space self size))
         (deltachiff (round size 5))
         (poly-p (poly-p (GET-ROOT-PARENT (reference self)))))
-    (let ((previous (car (inside self))))
+    (let ((previous (car (inside self)))) ;(print (list "previous" previous))
       (loop for item in (inside self) do
               (if (graces? item)
-                  (let ((off (* zoom (+ (car (main-point previous)) 8))))
-                    (draw-object-ryth item view (+ x space  off) y (/ zoom 10) minx maxx miny maxy slot size linear? staff chnote))
+                  (let ((off (* zoom (+ (car (main-point previous)) 0))));;;zero marche encore mieux que 8.
+                    (draw-object-ryth item view (+ x space off) y (/ zoom 10) 
+                                      minx maxx miny maxy slot size linear? staff chnote))
                 (draw-object-ryth item view (+ x space) y zoom minx maxx miny maxy slot size linear? staff chnote))
               ;;;=================
               (when (and *om-tonalite* (not *draw-mini-pict*))
@@ -417,10 +418,10 @@
   (let ((dire (dirgroup self)))
     (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
                   (group-draw-stems-gn self dire  x y (rectangle self)  zoom (round size *grace-factor*))
-                  (draw-beams-note-in-group self dire x -1 (rectangle self)  zoom (round size *grace-factor*))
+                  (draw-beams-note-in-group self dire (+ 2 x) -1 (rectangle self)  zoom (round size *grace-factor*))
                   (if (string-equal dire "up")
-                      (om-draw-char  (+ (car (rectangle self)) (round size 5)) (+ (second (rectangle self)) (round size 4)) (code-char 111) )
-                    (om-draw-char  (- (third (rectangle self)) (round size 2.9)) (+ (fourth (rectangle self)) (round size 5)) (code-char 111) )))))
+                      (om-draw-char  (+ (car (rectangle self)) (round size 3.8)) (+ (second (rectangle self)) (round size 2.6)) (code-char 111) )
+                    (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111) )))))
 
 
 ;==============STEMS
@@ -510,33 +511,6 @@
    (setf (stemdir self)  dir)
    (setf (stemhigh self) (round (max (* 3 linespace) (+ (* 2 linespace) (* (/ (beams-num self) 2)  linespace))))))
 
-;;;;;;;;;;;;ADDED
-;Find or Create these functions:
-; set-main-point
-; grace-notes-space
-
-(defmethod grace-notes-space ((self g-grap-grace-notes) size) 
-  (loop for item in (inside self) maximize  (third (rectangle item))))
-
-
-;a definir!
-
-
-;missing:
-;(defmethod set-main-point ((self s-grap-grace-notes) count) ;count est le car de main-point du chord des graces
-;  (setf (main-point self) (list 0 nil)))
-
-(defmethod set-main-point ((self g-grap-grace-notes) count) ;count est le car de main-point du chord des graces
-  ;(print (list "insd" self count (inside self)))
-    (loop for i in (inside self)
-          ;for n from 0 to (length (inside self))
-          for n = 0 then (+ n 1)
-          do ;(setf (main-point i) (list (+ n (- count 12)) nil))
-           ; (print (list "info" i))
-            ;(setf (main-point i) (list (+ n count) nil)) ; ca decale le playing point...
-            ;(setf (main-point i) (list 0 nil))
-            (setf (main-point i) (list 0 nil))
-          ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -861,66 +835,34 @@ An OM object representing a group in a rhythm.
 
 
 
-;;;;MISSING FUNCTIONS
-;;;a voir!
+;;;;;;;;;;;;;;;MISSING FUNCTIONS
+;;;;;;;;;;;;ADDED
+;Find or Create these functions:
+; set-main-point
+; grace-notes-space
 
 
+(defmethod grace-notes-space ((self s-grap-grace-notes) size) 
+  (third (rectangle self)))
 
-(defmethod space-size&offset ((self grap-rest) size) 
- (let ((gspace 0))
-   (when (grap-grace-notes self) 
-     (setf gspace 0 )
-    ; (grace-notes-space (grap-grace-notes self) size)
-   )
-   (list 0 0 gspace (third (rectangle self)))))
+(defmethod grace-notes-space ((self g-grap-grace-notes) size) 
+  (loop for item in (inside self) maximize (third (rectangle item))))
 
 
+(defmethod set-main-point ((self s-grap-grace-notes) count) ;count est le car de main-point du chord des graces
+  (setf (main-point self) (list count nil)))
 
-;Maybe ???
-(defmethod space-size&offset ((self grap-ryth-chord) size) ;size = size of font
-  (let ((gspace 0)
-        minalteration maxhead ) 
-    (setf minalteration 
-          (loop for item in (inside self) maximize 
-                (if (alteration item) (abs (* (- (alteration item) 1) (/ size 3))) 0)))
-    ;(print (list "deltaghead"   (loop for item in (inside self) collect (delta-head item))))
-    (setf maxhead 
-          (loop for item in (inside self) maximize 
-                (if (delta-head item) (* (/ size 4) (delta-head item)) 0)))
-    (when (points (car (inside self)))
-      (setf maxhead (+ maxhead (*  (+ 1 (points (car (inside self))))  (/ size 2)))))
-    (when (grap-grace-notes self) ; (print (list "grap" self (grap-grace-notes self)))
-      (setf gspace 0)
-      ;(grace-notes-space (grap-grace-notes self) size)
-      )
-    (list 0 0 (+ gspace minalteration) maxhead)))
+(defmethod set-main-point ((self g-grap-grace-notes) count) ;count est le car de main-point du chord des graces
+  (print (list "insd" self count))
+  ;(print (list "main-point" (om-inspect self) (reference self)))
+  (setf (main-point self) (list count nil));voire si c'est important car n'est pas alloue de main-point a g-grap
+    (loop for i in (inside self)
+          ;for n from 0 to (length (inside self))
+          for n = 0 then (+ n 1)
+          do ;(setf (main-point i) (list (+ n (- count 12)) nil))
+           ; (print (list "info" i))
+            (setf (main-point i) (list (+ n count) nil)) ; ca decale le playing point...
+            ;(setf (main-point i) (list 0 nil))
+            ;(setf (main-point i) (list 0 nil))
+          ))
 
-
-
-
-;;;;
-
-(defmethod do-space-object ((self grap-ryth-chord)  count  maxpixelclef maxpixelmeasure maxpixelgraces maxpixelsize size)  
- (setf (main-point self) (list (+ count  maxpixelclef maxpixelmeasure maxpixelgraces) (second (main-point self))))
-  (loop for item in (inside self) do
-        ;(setf (main-point item) (list (+ count (first (main-point item)) maxpixelclef maxpixelmeasure maxpixelgraces) (second (main-point item))))
-        (setf (main-point item) (list (+ count  maxpixelclef maxpixelmeasure maxpixelgraces (car (main-point item))) (second (main-point item)))))
-  (when (grap-grace-notes self) 
-        ;(setf (main-point i) (list (+ n 72)  (second (main-point self)))))
-    ;a voir!
-      ;(setf (main-point (grap-grace-notes self)) (list (- (car (main-point self)) 12) nil))
-          ;A FAIRE
-;(set-main-point (grap-grace-notes self) count)
-    ;Maybe this:
-    (setf (main-point (grap-grace-notes self)) (list (car (main-point self)) nil))
-    ;(set-main-point (grap-grace-notes self) count) ;good for the start of the group 
-
-    )
-  )
-
-
-(defmethod do-space-object ((self grap-rest)  count maxpixelclef maxpixelmeasure maxpixelgraces maxpixelsize size)
-  (setf (main-point self) (list (+ count  maxpixelclef maxpixelmeasure maxpixelgraces) (second (main-point self))))
-  ;(when (grap-grace-notes self) 
-  ;  (set-main-point (grap-grace-notes self) count))
-  )
