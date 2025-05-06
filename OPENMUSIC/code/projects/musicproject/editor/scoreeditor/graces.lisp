@@ -297,50 +297,44 @@
   (let ((space (get-chiffrage-space self size))
         (deltachiff (round size 5))
         (poly-p (poly-p (GET-ROOT-PARENT (reference self)))))
-    (let ((previous (car (inside self))));nil)) ;previous should be a grap-ryth-chord
-     
+    (let ((previous (car (inside self))))
       (loop for item in (inside self) do
               (if (graces? item)
-                  (progn ;(print (list "FUCK" (reference item) (car (main-point previous)))) ;item= grap-group-notes
-                    (let ((off (* zoom (+ (car (main-point previous)) 8)))); previous a regler pour les miniview de merde!
-                (draw-object-ryth item view (+ x space  off) y (/ zoom 10) minx maxx miny maxy slot size linear? staff chnote)
-                ;(print (list "item" item slot (main-point previous) chnote))
-                ))
+                  (let ((off (* zoom (+ (car (main-point previous)) 8))))
+                    (draw-object-ryth item view (+ x space  off) y (/ zoom 10) minx maxx miny maxy slot size linear? staff chnote))
                 (draw-object-ryth item view (+ x space) y zoom minx maxx miny maxy slot size linear? staff chnote))
-            ;;;=================
-            (when (and *om-tonalite* (not *draw-mini-pict*))
-              (setf previous (draw-modulation (parent self) item previous x y zoom size view))
-              ;(print (list "previous" (main-point previous)))
-              )
+              ;;;=================
+              (when (and *om-tonalite* (not *draw-mini-pict*))
+                (setf previous (draw-modulation (parent self) item previous x y zoom size view)))
             ;;;=================
             ))
     (collect-rectangles self)
     (setf (nth 0 (rectangle self)) (- (nth 0 (rectangle self)) space))
     (om-with-fg-color nil *system-color*
       (loop for thestaff in (staff-list staff) do
-            (let ((ys (+ y (line2pixel (posy thestaff) nil (/ size 4)))))
-              (setf (nth 1 (rectangle self)) (min (nth 1 (rectangle self)) ys))
-              (setf (nth 3 (rectangle self)) (max (nth 3 (rectangle self)) (+ ys (system-size-in-pix staff size))))
-              (om-with-font (get-font-to-draw 2)
-                            (cond 
-                             ((first-of-group? self)
-                              (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                              (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                              )
-                             ((show-chifrage self) 
-                              (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                              (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                              )
-                             (t (let ((previous-mes (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self)))))
-                                  (unless (equal (metric self) (metric previous-mes))
-                                    (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                                    (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                                    )))))
+              (let ((ys (+ y (line2pixel (posy thestaff) nil (/ size 4)))))
+                (setf (nth 1 (rectangle self)) (min (nth 1 (rectangle self)) ys))
+                (setf (nth 3 (rectangle self)) (max (nth 3 (rectangle self)) (+ ys (system-size-in-pix staff size))))
+                (om-with-font (get-font-to-draw 2)
+                              (cond 
+                               ((first-of-group? self)
+                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
+                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
+                                )
+                               ((show-chifrage self) 
+                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
+                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
+                                )
+                               (t (let ((previous-mes (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self)))))
+                                    (unless (equal (metric self) (metric previous-mes))
+                                      (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
+                                      (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
+                                      )))))
               
               
-              (unless (or (first-of-group? self) (subtypep (type-of view) 'polypanel)) ;; poly-p
-                (om-draw-line  (car (rectangle self))  ys 
-                               (car (rectangle self)) (+ ys size))))))
+                (unless (or (first-of-group? self) (subtypep (type-of view) 'polypanel)) ;; poly-p
+                  (om-draw-line  (car (rectangle self))  ys 
+                                 (car (rectangle self)) (+ ys size))))))
     
     
     (draw-extras self view size staff)
@@ -351,12 +345,12 @@
 
 (defmethod draw-object-ryth ((self grap-grace-notes) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   ;(print (list "grap" self (reference self) x))
-  (om-with-fg-color nil *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes
+  (om-with-fg-color nil *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (draw-grace-notes self x y zoom minx maxx miny maxy slot size linear?  staff chnote)))
 
 ;----simple
 (defmethod draw-grace-notes ((self s-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (om-with-fg-color nil (mus-color (reference self))
+  (om-with-fg-color nil  *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
            (thenotes (inside self)));(copy-list (inside self))))
       (loop for item in thenotes do
@@ -526,6 +520,12 @@
 
 
 ;a definir!
+
+
+;missing:
+;(defmethod set-main-point ((self s-grap-grace-notes) count) ;count est le car de main-point du chord des graces
+;  (setf (main-point self) (list 0 nil)))
+
 (defmethod set-main-point ((self g-grap-grace-notes) count) ;count est le car de main-point du chord des graces
   ;(print (list "insd" self count (inside self)))
     (loop for i in (inside self)
@@ -900,17 +900,21 @@ An OM object representing a group in a rhythm.
 
 ;;;;
 
-(defmethod do-space-object ((self grap-ryth-chord)  count  maxpixelclef maxpixelmeasure maxpixelgraces maxpixelsize size)
-  
+(defmethod do-space-object ((self grap-ryth-chord)  count  maxpixelclef maxpixelmeasure maxpixelgraces maxpixelsize size)  
  (setf (main-point self) (list (+ count  maxpixelclef maxpixelmeasure maxpixelgraces) (second (main-point self))))
   (loop for item in (inside self) do
         ;(setf (main-point item) (list (+ count (first (main-point item)) maxpixelclef maxpixelmeasure maxpixelgraces) (second (main-point item))))
         (setf (main-point item) (list (+ count  maxpixelclef maxpixelmeasure maxpixelgraces (car (main-point item))) (second (main-point item)))))
   (when (grap-grace-notes self) 
-            ;(setf (main-point i) (list (+ n 72)  (second (main-point self)))))
+        ;(setf (main-point i) (list (+ n 72)  (second (main-point self)))))
+    ;a voir!
       ;(setf (main-point (grap-grace-notes self)) (list (- (car (main-point self)) 12) nil))
-      ;A FAIRE
+          ;A FAIRE
 ;(set-main-point (grap-grace-notes self) count)
+    ;Maybe this:
+    (setf (main-point (grap-grace-notes self)) (list (car (main-point self)) nil))
+    ;(set-main-point (grap-grace-notes self) count) ;good for the start of the group 
+
     )
   )
 
