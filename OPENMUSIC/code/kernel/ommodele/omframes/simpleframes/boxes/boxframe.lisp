@@ -110,10 +110,12 @@
    (let* ((panel (panel (om-view-container self)))
           (ppos (om-convert-coordinates pos self panel))
           (myview (om-find-view-containing-point panel ppos)))
+     #|
      (when (and (input? myview) *mag-in-out*)
        (om-view-mouse-enter-handler myview)
        (om-show-tooltip myview t t)
        (redraw-frame (om-view-container myview)))
+     |#
      (if (input? myview)
          (om-show-tooltip myview t t)
        (om-hide-tooltip myview))))
@@ -125,7 +127,12 @@
     (om-hide-tooltip ctrl)
     (setf *show-input-vals* t)
     (connect-box self ctrl)
-    (om-hide-tooltip panel)))
+    (om-hide-tooltip panel)
+    #+linux
+    (when (and ctrl (typep ctrl 'input-funboxframe))
+      (update-miniview (iconview (om-view-container ctrl)) (value (object (om-view-container ctrl)))))
+    ))
+
 #|
 (defmethod draw-connection-drag ((self om-view) init-pos pos)
   (om-with-line-size 2
