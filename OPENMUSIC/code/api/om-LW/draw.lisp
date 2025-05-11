@@ -117,12 +117,8 @@
 		   (gp::graphics-state-font (gp::port-graphics-state pane))))) ;; when po class is text-enter-view returns nil for fff... AV
       (gp::with-graphics-state (pane :font fff 
                                      :mask 
-                                    ; #-linux
-                                     (list (item-x po) (item-y po) (vw po) (vh po))
-                                     ;(list (item-x po) (item-y po) 20 20)
-                                    ; #+linux nil
-                                     ;(list (- (item-x po) (om-h-scroll-position pane)) (- (item-y po) (om-v-scroll-position pane))
-                                     ;      (vw po) (vh po))
+                                     #-linux (list (item-x po) (item-y po) (vw po) (vh po))
+                                     #+linux nil
                                      :foreground (or (capi::pinboard-object-graphics-arg po :foreground) :black)
                                      :background 
                                      #+linux (or (capi::pinboard-object-graphics-arg po :background) :white)
