@@ -184,6 +184,7 @@
 ;(setf *grace-factor* 10/6)
 (setf *grace-factor* 5/4)
 
+
 (defmethod make-graces-from-list ((self grace-notes) top staffsys linespace scale sel pere grc)
   ;(print (list "get grc" grc (reference grc) (mapcar 'lmidic (glist self)) pere))
   (let ((list (mapcar 'lmidic (glist self))))
@@ -203,7 +204,7 @@
          (note-head-list (make-chord-zig-zag chord scale))
          (new-grace (make-instance 's-grap-grace-notes
                       :reference chord
-                      :parent self
+                      :parent pere
                       :grc grc))
          (maxw 0))
     (setf (inside new-grace)
@@ -268,7 +269,7 @@
     (setf new-group (make-instance 'g-grap-grace-notes
                                    :grc grc
                                    :reference group
-                                   :parent self))
+                                   :parent pere))
        
     (setf (numdenom new-group)  nil)
     (loop for item in (inside group)
@@ -383,7 +384,7 @@
       
       (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
                                    (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
-    (draw-auxiliar-lines self x y  size realpos headsizex)))
+    (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
 
 (defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams  dir size)
   (let* ((domaine (om+ y0 (get-min-max self)))
@@ -403,6 +404,26 @@
       (progn
         (draw-beam-string  xpos (round  yfin ) (beam-dwn) (selected self))
         (om-draw-char  xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112) )))))
+
+(defun draw-auxiliar-grace-lines (self x y  size realpos headsizex) 
+  (when (auxlines self)
+    (om-with-fg-color nil *om-red-color* ;*system-color* 
+      (let ((dir (car (auxlines self)))
+            (topy (+ (- y (round size 8)) (second (auxlines self))))        
+            (limy (+ (- y (round size 8)) (third (auxlines self)))))
+        (if (equal dir 'dw)
+          (progn
+            (setf topy (+ topy (round size 4))) 
+            (loop while (<= topy limy) do
+                  (om-draw-line (- realpos (round size 8)) topy 
+                                (+  headsizex  realpos) topy)
+                  (setf topy (+ topy (round size 4)))))
+          (progn
+            (setf topy (- topy (round size 4))) 
+            (loop while (>= topy limy) do
+                  (om-draw-line (- realpos (round size 8)) topy 
+                                (+  headsizex  realpos) topy)
+                  (setf topy (- topy (round size 4))))))))))
 
 ;-------group
 
@@ -853,7 +874,8 @@ An OM object representing a group in a rhythm.
   (setf (main-point self) (list count nil)))
 
 (defmethod set-main-point ((self g-grap-grace-notes) count) ;count est le car de main-point du chord des graces
-  (print (list "insd" self count))
+  ;(print (list "nexr" self))
+  ;(print (list "insd" self count))
   ;(print (list "main-point" (om-inspect self) (reference self)))
   (setf (main-point self) (list count nil));voire si c'est important car n'est pas alloue de main-point a g-grap
     (loop for i in (inside self)
