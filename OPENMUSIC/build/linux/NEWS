@@ -10,6 +10,7 @@ IMPROVEMENTS
 
 FIXES
 
+- fixed Patch connections issues (linux) 
 - dynamic tempo fix
 - delete-all-inputs fixed: when boxtypeframe selected no error
 
