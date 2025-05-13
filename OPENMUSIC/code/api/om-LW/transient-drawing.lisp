@@ -214,36 +214,39 @@
 (defmethod om-click-motion-handler :around ((self om-graphic-object) position)
   ;(print (list self position *click-motion-view*))
   (if *click-motion-action*
-    (let* ((view *click-motion-view*)
+      (let* ((view *click-motion-view*)
            ;(motion-info (temp-data view))
-           (motion-info (if view (temp-data view)))
-           (x (om-point-x position)) (y (om-point-y position))
-           (pane view))
-      (when motion-info
-        (destructuring-bind (motion-action release-action x0 y0 old-x old-y draw-pane)
-            motion-info 
-          (unless (and (= old-x x) (= old-y y))
-            (when motion-action
-              (capi::apply-in-pane-process (om-get-view view) motion-action view position (om-make-point old-x old-y)))
-            (setf (nth 4 (temp-data view)) x (nth 5 (temp-data view)) y))
-          (when draw-pane 
-            (let ((pp (om-convert-coordinates position self draw-pane)))
-              (setf pane draw-pane
-                    x (om-point-x pp)
-                    y (om-point-y pp))))
-          ))
-      (let ((dragging-info (if pane (capi:output-pane-cached-display-user-info pane))))
-        (when dragging-info
-          (destructuring-bind (mode x0 y0 old-x old-y)
-              dragging-info 
+             (motion-info (if view (temp-data view)))
+             (x (om-point-x position)) (y (om-point-y position))
+             (pane view))
+        (when motion-info
+          (destructuring-bind (motion-action release-action x0 y0 old-x old-y draw-pane)
+              motion-info 
             (unless (and (= old-x x) (= old-y y))
-              (if mode
+              (when motion-action
+                (capi::apply-in-pane-process (om-get-view view) motion-action view position (om-make-point old-x old-y)))
+              (setf (nth 4 (temp-data view)) x (nth 5 (temp-data view)) y))
+            (when draw-pane 
+              (let ((pp (om-convert-coordinates position self draw-pane)))
+                (setf pane draw-pane
+                      x (om-point-x pp)
+                      y (om-point-y pp))))))
+        (let ((dragging-info (if pane (capi:output-pane-cached-display-user-info pane))))
+          (when dragging-info
+            (destructuring-bind (mode x0 y0 old-x old-y)
+                dragging-info 
+              (unless (and (= old-x x) (= old-y y))
+                (if mode
+                    (capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display-from-points 
+                                                 pane x0 y0 x y 
+                                                 :extend (if (numberp mode) mode 0))
+                  ;(capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display pane)
                   (capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display-from-points 
                                                pane x0 y0 x y 
-                                               :extend (if (numberp mode) mode 0))
-                (capi::apply-in-pane-process (om-get-view view) 'capi:update-drawing-with-cached-display pane))
-              (setf (nth 3 dragging-info) x (nth 4 dragging-info) y))
-            ))))
+                                               :extend 10000 
+                                               ))
+                (setf (nth 3 dragging-info) x (nth 4 dragging-info) y))
+              ))))
     (call-next-method)))
 
 (defmethod om-click-release-handler :after ((self om-graphic-object) pos)
