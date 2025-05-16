@@ -259,7 +259,7 @@ because digit-char-p will not accept backspace and special om keys!"
                            (disconnect-box i input))
                        (connect-box *target-out* input))))))
 
-    (when (and (om-command-key-p) (not (om-shift-key-p))) 
+    (when (and (om-command-key-p) (not actives)) 
       (scroll-pane self char))
 
     (case char
