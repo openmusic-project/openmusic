@@ -292,13 +292,13 @@
 
 (defmethod draw-object-ryth ((self grap-grace-notes) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   ;(print (list "grap" self (reference self) x))
-  (om-with-fg-color nil *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
+  (om-with-fg-color nil *grace-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (draw-grace-notes self x y zoom minx maxx miny maxy slot size linear?  staff chnote)))
 
 ;-------------simple
 
 (defmethod draw-grace-notes ((self s-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (om-with-fg-color nil  *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
+  (om-with-fg-color nil  *grace-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
            (thenotes (inside self)));(copy-list (inside self))))
       (loop for item in thenotes do
@@ -322,7 +322,7 @@
          (str (headchar self))
          (headsizex (get-name-size str (om-make-font *music-font* size)));orig: new-size
          (note (reference self))
-         (note-color *om-red-color*);(get-mus-color note))
+         (note-color *grace-color*);(get-mus-color note))
          (altstr (string (alt-char self)))  
          tie)
     (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
@@ -384,7 +384,7 @@
 
 (defun draw-auxiliar-grace-lines (self x y  size realpos headsizex) 
   (when (auxlines self)
-    (om-with-fg-color nil *om-red-color* ;*system-color* 
+    (om-with-fg-color nil *grace-color* ;*system-color* 
       (let ((dir (car (auxlines self)))
             (topy (+ (- y (round size 8)) (second (auxlines self))))        
             (limy (+ (- y (round size 8)) (third (auxlines self)))))
@@ -437,7 +437,7 @@
          (str (headchar self))
          (headsizex (get-name-size str (om-make-font *music-font* new-size)))
          (note (reference self))
-         (note-color *om-red-color*);(get-mus-color note))
+         (note-color *grace-color*);(get-mus-color note))
          (altstr (string (alt-char self)))  
          tie)
     (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)

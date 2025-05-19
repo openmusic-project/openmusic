@@ -48,7 +48,7 @@
 (defvar *global-midi-approx* nil)
 (setf *global-midi-approx* 2)
 
-
+(defvar *grace-color* *om-red-color*)
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID))
@@ -58,6 +58,7 @@
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *system-color* (or (get-pref modulepref :sys-color) *om-black-color*))
      (setf *select-color* (or (get-pref modulepref :select-color) *om-gray-color*))
+     (setf *grace-color* (or (get-pref modulepref :grace-color) *om-red-color*))
      (setf *hide-stems* (get-pref modulepref :hide-stems))
      (setf *stem-size-fact* (get-pref modulepref :stem-size-fact))
      (setf *chord-stem-dir* (get-pref modulepref :chord-stem-dir))
@@ -92,6 +93,11 @@
                             (om-color-g *select-color*)
                             (om-color-b *select-color*)
                             ))
+                 ':grace-color ,(cons `om-make-color (list (om-color-r *grace-color*)
+                            (om-color-g *grace-color*)
+                            (om-color-b *grace-color*)
+                            ))
+                 :reactive ,*reactive-patches*
                  ':hide-stems ,*hide-stems*
                  ':stem-size-fact ,*stem-size-fact*
                  ':chord-stem-dir ,*chord-stem-dir*
@@ -109,6 +115,7 @@
   (list :approx 2 :fontsize 24 :staff 'g 
         :sys-color *om-black-color* 
         :select-color *om-gray-color* 
+        :grace-color *om-red-color* 
         :hide-stems nil
         :stem-size-fact 1
         :chord-stem-dir "neutral"
@@ -224,6 +231,17 @@
                                           :bg-color *om-white-color*
                                           :object  modulepref 
                                           :i :select-color)
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 80 20) "Grace Notes Colors"
+                                          :font *controls-font*)
+                     
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point 160 pos) 
+                                   :size (om-make-point 80 22)
+                                   :bg-color (get-pref modulepref :grace-color) 
+                                   :color (get-pref modulepref :grace-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :grace-color (color item))))
+
 
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 110 20) "Hide stems"
                                           :font *controls-font*)
