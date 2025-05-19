@@ -483,42 +483,74 @@
 
 (defmethod group-draw-stems ((self grap-grace-notes) dir x y rect zoom size) nil)
 
+;------Beams
+
 (defmethod draw-beams-note-in-group ((self g-grap-grace-notes) dir x y rect zoom size)
   (let ((atoms (inside self)))
     (loop for i from 0 to (- (length atoms) 1) do
-          (let* ((cur-atom (nth i atoms))
-                 (next-atom (nth (+ i 1) atoms))
-                 (prev-atom (unless (zerop i) (nth (- i 1) atoms))) )
-            (cond
-             ((or (= i 0) (first-of-group? cur-atom))
-              (setf shared-beams (if next-atom (set-shared-from-prev cur-atom next-atom) 0))
-              (setf propres-beams (- (beams-num cur-atom) shared-beams))
-              (when next-atom
-                (draw-n-long-beams  cur-atom shared-beams dir x (ceiling (* zoom  (- (x next-atom) (x cur-atom))))  y rect zoom size))
-              (draw-court-beams cur-atom propres-beams dir x y shared-beams rect zoom size))
-             ((= i (- (length atoms) 1))
-              (setf shared-beams (if prev-atom (set-shared-from-prev prev-atom cur-atom) 0))
-              (setf propres-beams (- (beams-num cur-atom) shared-beams))
-              (draw-court-beams cur-atom propres-beams dir (- x (* size 1/4)) y shared-beams rect zoom size))
-             (t
-              (cond 
-               ((or (last-of-group? cur-atom) (first-of-group? next-atom)) 
-                (setf shared-beams (if prev-atom (set-shared-from-prev prev-atom cur-atom) 0))
-                (setf propres-beams (- (beams-num cur-atom) shared-beams))
-                (draw-court-beams cur-atom propres-beams dir (- x (* size 1/4)) y shared-beams rect zoom size)
-                (setf shared-beams (min 1 (beams-num next-atom) (beams-num cur-atom)))
-                (draw-n-long-beams  cur-atom shared-beams  
-                                    dir x  (ceiling (* zoom  (-  (x next-atom) (x cur-atom))))  y rect zoom size))                
-               (t
+            (let* ((cur-atom (nth i atoms))
+                   (next-atom (nth (+ i 1) atoms))
+                   (prev-atom (unless (zerop i) (nth (- i 1) atoms))) )
+              (cond
+               ((or (= i 0) (first-of-group? cur-atom))
                 (setf shared-beams (if next-atom (set-shared-from-prev cur-atom next-atom) 0))
                 (setf propres-beams (- (beams-num cur-atom) shared-beams))
-                (draw-n-long-beams  cur-atom shared-beams  
-                                    dir x  (ceiling (* zoom  (-  (x next-atom) (x cur-atom) )))  y rect zoom size)
-                (if (and (<= (beams-num next-atom) (beams-num prev-atom)) (not (last-of-group? prev-atom))) 
+                (when next-atom
+                  (draw-n-long-grace-beams  cur-atom shared-beams dir x (ceiling (* zoom  (- (x next-atom) (x cur-atom))))  y rect zoom size))
+                (draw-court-beams cur-atom propres-beams dir x y shared-beams rect zoom size))
+               ((= i (- (length atoms) 1))
+                (setf shared-beams (if prev-atom (set-shared-from-prev prev-atom cur-atom) 0))
+                (setf propres-beams (- (beams-num cur-atom) shared-beams))
+                (draw-court-beams cur-atom propres-beams dir (- x (* size 1/4)) y shared-beams rect zoom size))
+               (t
+                (cond 
+                 ((or (last-of-group? cur-atom) (first-of-group? next-atom)) 
+                  (setf shared-beams (if prev-atom (set-shared-from-prev prev-atom cur-atom) 0))
+                  (setf propres-beams (- (beams-num cur-atom) shared-beams))
                   (draw-court-beams cur-atom propres-beams dir (- x (* size 1/4)) y shared-beams rect zoom size)
-                  (draw-court-beams cur-atom propres-beams dir x y shared-beams rect zoom size))))))))))
+                  (setf shared-beams (min 1 (beams-num next-atom) (beams-num cur-atom)))
+                  (draw-n-long-grace-beams  cur-atom shared-beams  
+                                            dir x  (ceiling (* zoom  (-  (x next-atom) (x cur-atom))))  y rect zoom size))                
+                 (t
+                  (setf shared-beams (if next-atom (set-shared-from-prev cur-atom next-atom) 0))
+                  (setf propres-beams (- (beams-num cur-atom) shared-beams))
+                  (draw-n-long-grace-beams  cur-atom shared-beams  
+                                            dir x  (ceiling (* zoom  (-  (x next-atom) (x cur-atom) )))  y rect zoom size)
+                  (if (and (<= (beams-num next-atom) (beams-num prev-atom)) (not (last-of-group? prev-atom))) 
+                      (draw-court-beams cur-atom propres-beams dir (- x (* size 1/4)) y shared-beams rect zoom size)
+                    (draw-court-beams cur-atom propres-beams dir x y shared-beams rect zoom size))))))))))
 
 
+
+(defmethod draw-n-long-grace-beams ((self grap-ryth-chord) n dir x sizex y rect zoom size)
+   (drawNlong-grace-beams self n dir x sizex y rect zoom size))
+
+(defmethod draw-n-long-grace-beams ((self grap-rest) n dir x sizex y rect zoom size)
+   (drawNlong-grace-beams self n dir x sizex y rect zoom size))
+
+(defun drawNlong-grace-beams (self n dir x sizex y rect zoom size) 
+  (let* ((ygroup (+ y (if (string-equal dir "up") (second rect) (fourth rect) )))
+         (xup (third (rectangle self)))
+         (xdwn (car (rectangle self)))
+         (xpos (if (string-equal dir "up")
+                   (round (+  x (/ size 3.5) (* zoom (x self))))
+                 (round (+  x  (* zoom (x self))))))
+         (spacesize (inter-beam-space size)))
+     ;(print (list "who grace?" self (parent self) x  xdwn xpos (x self) sizex ))
+    (loop for i from 0 to (- n 1) do
+            (if  (string-equal dir "up")
+                (draw-beam   (+ (car (rectangle (parent self))) sizex);xpos 
+                             (+ ygroup (* spacesize i))
+                             (- (third (rectangle (parent self))) (car (rectangle (parent self))))
+                             (round size 8) (selected self))
+              (draw-beam (car (rectangle (parent self)));xpos  
+                         (- ygroup (* spacesize i))
+                         (- (third (rectangle (parent self))) (car (rectangle (parent self))) sizex ) 
+                         (round size 8) (selected self))))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;afficher bien les groupes
 ;;afficher bien la talla de un grupo que contiene grace notes
