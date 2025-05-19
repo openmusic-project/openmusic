@@ -186,7 +186,6 @@
 
 
 (defmethod make-graces-from-list ((self grace-notes) top staffsys linespace scale sel pere grc)
-  ;(print (list "get grc" grc (reference grc) (mapcar 'lmidic (glist self)) pere))
   (let ((list (mapcar 'lmidic (glist self))))
     (when list
       (if (= (length list) 1)
@@ -253,97 +252,41 @@
   (let* ((list (mapcar 'lmidic (glist self)))
          (group (make-instance 'group :tree (list (/ (length list) 2) (make-list (length list) :initial-element 1))))
          new-group direstart)
-  ;;;;add   
- ;Leprobleme c'est que sel c'est la selection et non le chord d'attachement!! utiliser -> (thechord self)
-    (setf (qvalue group) (qvalue (thechord self)))
-    (setf (extent group) (extent (thechord self)))
-    (setf (offset group) (offset (thechord self)))
-    (setf (parent group) (parent (thechord self)))   
+    (setf (parent group) (thechord self))   
     (setf (qtempo group) (qtempo (thechord self)))
-    
-    (setf (inside group) (glist self));IMPORTANT pour pouvoir changer les notes des graces!!!!
-  
+    (setf (inside group) (glist self));IMPORTANT so we can edit grace notes!!
     (loop for item in (inside group)
           do (setf (qtempo item) (qtempo group)))    
-    
     (setf new-group (make-instance 'g-grap-grace-notes
                                    :grc grc
                                    :reference group
                                    :parent pere))
-       
     (setf (numdenom new-group)  nil)
     (loop for item in (inside group)
           for chord in list
           for n from 0 to (length list)
           do
             (progn
-            (setf (offset item) n); allows us to display a group!
-            (setf (lmidic item) chord)))
-
+              (setf (offset item) n); allows us to display a group!
+              (setf (lmidic item) chord)))
     (setf (inside new-group) (loop for item in (inside group) 
                                    for i = 0 then (+ i 1)
                                    collect
-                                     (make-graph-ryth-obj  item  top staffsys linespace  scale sel new-group 1/8)))
+                                     (make-graph-ryth-obj item  top staffsys linespace  scale sel new-group 1/8)))
     new-group))
 
+(defmethod get-grace-offset ((self grap-chord) father)
+  "In order to display correctly group-graces"
+  (let* ((realchord (thechord (reference self)))
+         (off (offset->ms realchord father))
+         (g-grp (parent self))
+         (lgt (length (inside g-grp)))
+         (pos (position self (inside g-grp))))
+    (- off (* *gdur* (+ 1 (- lgt pos))))))
 
-;==========================================
-;----------DRAW
-;==========================================
-
-
-;This one is a modified alternative from scoretools.lisp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#|
-(defmethod draw-object-ryth ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (let ((space (get-chiffrage-space self size))
-        (deltachiff (round size 5))
-        (poly-p (poly-p (GET-ROOT-PARENT (reference self)))))
-    (let ((previous (car (inside self)))) ;(print (list "previous" previous))
-      (loop for item in (inside self) do
-              (if (graces? item)
-                  (let ((off (* zoom (+ (car (main-point previous)) 0))));;;zero marche encore mieux que 8.
-                    (draw-object-ryth item view (+ x space off) y (/ zoom 10) 
-                                      minx maxx miny maxy slot size linear? staff chnote))
-                (draw-object-ryth item view (+ x space) y zoom minx maxx miny maxy slot size linear? staff chnote))
-              ;;;=================
-              (when (and *om-tonalite* (not *draw-mini-pict*))
-                (setf previous (draw-modulation (parent self) item previous x y zoom size view)))
-            ;;;=================
-            ))
-    (collect-rectangles self)
-    (setf (nth 0 (rectangle self)) (- (nth 0 (rectangle self)) space))
-    (om-with-fg-color nil *system-color*
-      (loop for thestaff in (staff-list staff) do
-              (let ((ys (+ y (line2pixel (posy thestaff) nil (/ size 4)))))
-                (setf (nth 1 (rectangle self)) (min (nth 1 (rectangle self)) ys))
-                (setf (nth 3 (rectangle self)) (max (nth 3 (rectangle self)) (+ ys (system-size-in-pix staff size))))
-                (om-with-font (get-font-to-draw 2)
-                              (cond 
-                               ((first-of-group? self)
-                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                                )
-                               ((show-chifrage self) 
-                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                                (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                                )
-                               (t (let ((previous-mes (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self)))))
-                                    (unless (equal (metric self) (metric previous-mes))
-                                      (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
-                                      (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
-                                      )))))
-              
-              
-                (unless (or (first-of-group? self) (subtypep (type-of view) 'polypanel)) ;; poly-p
-                  (om-draw-line  (car (rectangle self))  ys 
-                                 (car (rectangle self)) (+ ys size))))))
-    
-    
-    (draw-extras self view size staff)
-    ))
-|#
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;=====================================================================
+;-------------------------------DRAWING-------------------------------
+;=====================================================================
 
 
 (defmethod draw-object-ryth ((self grap-grace-notes) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
@@ -351,7 +294,8 @@
   (om-with-fg-color nil *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (draw-grace-notes self x y zoom minx maxx miny maxy slot size linear?  staff chnote)))
 
-;----simple
+;-------------simple
+
 (defmethod draw-grace-notes ((self s-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (om-with-fg-color nil  *om-red-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
@@ -362,56 +306,10 @@
       (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
                     (draw-chord-grace-stem self x y zoom (beams-num self) dir (round size *grace-factor*))))))
 
-#|
-(defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((new-size (round size *grace-factor*))
-         (realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
-         (realpos (round realrealpos))
-         (altpos (if (alteration self) 
-                   (round (- (+ realrealpos (* (- (alteration self) 1) (/ new-size 4))) (* (/ new-size 4) (delta-head self))))
-                   realpos))
-         (str (headchar self))
-         (headsizex (get-name-size str (om-make-font *music-font* new-size)))
-         (note (reference self))
-         (note-color *om-red-color*);(get-mus-color note))
-         (altstr (string (alt-char self)))  
-         tie)
-    (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
-      (om-with-font (om-make-music-font *heads-font* new-size) 
-                    (om-draw-string  realpos (+ y (y self))  str)) 
-      (when (alteration self)
-        (om-with-font (om-make-music-font *micron-font* new-size) 
-                      (om-draw-string altpos (+ y (y self)) altstr)))
-      
-      (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
-                                   (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
-    (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
-
-
-(defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams  dir size)
-  (let* ((domaine (om+ y0 (get-min-max self)))
-         (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
-         (yfin  (if (string-equal dir "up") 
-                  (- (car domaine)  taille)
-                  (+ (second domaine)  taille)))
-         (ystart (if (string-equal dir "up") (second domaine) (car domaine)))
-         (xpos (if (string-equal dir "up") 
-                 (round (+  1 x0 (/ size 3.5) (* zoom (x self))))
-                 (round (+  x0  (* zoom (x self)))))))
-    (draw-stem-no-group  xpos (selected self)  ystart  yfin)
-    (if  (string-equal dir "up")
-      (progn
-        (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) )) (beam-up) (selected self))
-        (om-draw-char  xpos (round (+ (+ yfin (* 1/2 size)) )) (code-char 111) ))
-      (progn
-        (draw-beam-string  xpos (round  yfin ) (beam-dwn) (selected self))
-        (om-draw-char  xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112) )))))
-|#
 
 ;make-graph
 ;(x self) = mainpoint of grap-chord de thechord 
-;size ici c'est le fontsize !
+;size here is the fontsize !
 (defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear? staff chnote) 
   (declare (ignore minx maxx miny maxy linear? grille-p))
   (let* ((new-size (round size *grace-factor*))
@@ -445,7 +343,7 @@
          (box (associated-box father)))
     (when (editorframe box) (panel (editorframe box)))))
 
-;bizarre pas d'heritage
+;bizarre no heritage
 (defmethod get-panel ((self grap-ryth-note))
   (let* ((ref (reference self))
          (father (get-root-parent ref))
@@ -456,8 +354,7 @@
 (defmethod alteration-p ((self grap-ryth-chord))
   (let* ((alts (loop for i in (inside self)
                      collect (alteration i))))
-    (member 0 alts)
-    ))
+    (member 0 alts)))
          
 (defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams dir size) 
   (let* ((domaine (om+ y0 (get-min-max self)))
@@ -504,16 +401,18 @@
                                 (+  headsizex  realpos) topy)
                   (setf topy (- topy (round size 4))))))))))
 
-;-------group
+
+;-------------------group
 
 (defmethod figure-?  ((self g-grap-grace-notes)) (call-next-method))
 
 (defmethod draw-grace-notes ((self g-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  ;(print (list "a;" (loop for ch in (inside self) collect (print (list (reference ch) ch)))))
   (loop for chord in (inside self) do
-        (loop for item in (inside chord) do
-              (draw-head-grace item (+ x 0) y zoom minx maxx miny maxy slot size linear? staff chnote))
-        (collect-rectangles chord))
+          (loop for item in (inside chord)
+                for n = (car (main-point self)) then (+ n 2)
+                do
+                  (draw-head-grace-gn item x y zoom minx maxx miny maxy slot size linear? staff chnote))
+          (collect-rectangles chord))
   (collect-rectangles self)
   (let ((dire (dirgroup self)))
     (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
@@ -524,13 +423,63 @@
                     (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111) )))))
 
 
+;---Heads
+
+(defmethod draw-head-grace-gn ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
+  (declare (ignore minx maxx miny maxy linear? grille-p))
+  (let* ((new-size (round size *grace-factor*))
+         (realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
+         (realpos (round realrealpos))
+         (altpos (if (alteration self) 
+                   (round (- (+ realrealpos (* (- (alteration self) 1) (/ new-size 4))) (* (/ new-size 4) (delta-head self))))
+                   realpos))
+         (str (headchar self))
+         (headsizex (get-name-size str (om-make-font *music-font* new-size)))
+         (note (reference self))
+         (note-color *om-red-color*);(get-mus-color note))
+         (altstr (string (alt-char self)))  
+         tie)
+    (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
+      (om-with-font (om-make-music-font *heads-font* new-size) 
+                    (om-draw-string  realpos (+ y (y self))  str)) 
+      (when (alteration self)
+        (om-with-font (om-make-music-font *micron-font* new-size) 
+                      (om-draw-string altpos (+ y (y self)) altstr)))
+      
+      (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
+                                   (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
+    (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
+
+
+
 ;==============STEMS
 
 (defmethod get-atoms-in-group ((self grap-grace-notes)) nil)
 
 (defmethod group-draw-stems-gn ((self g-grap-grace-notes) dir x y rect zoom size)
    (loop for item in (inside self) do
-         (group-draw-stems item dir x y rect zoom size)))
+         (group-draw-stems-gn item dir x y rect zoom size)))
+
+(defmethod group-draw-stems-gn ((self grap-ryth-chord) dir x y rect zoom size)
+  (when (and (stem self) (x self))
+    (let* ((note-min-max (om+ y (get-min-max self)))
+           (xup (third (rectangle self)))
+           (xdwn (car (rectangle self)))
+           (ystart (if (string-equal dir "up") (second note-min-max) (first note-min-max)))
+           (ygroup (if (string-equal dir "up") (second rect) (fourth rect) )))
+      (setf y 0)
+      #+(or linux win32) (setf xup (+ xup 2))
+      (draw-stem-no-group 
+       #|
+       (if (string-equal dir "up") 
+           (round (+  x (/ size 3.5) (* zoom (x self))))
+         (round (+  x (* zoom (x self))))) 
+       |#
+       (if (string-equal dir "up") (round (- xup (/ size 11.5))) xdwn)
+       (selected self)
+       (+ y ystart)
+       (+ y ygroup))
+      )))
 
 (defmethod group-draw-stems ((self grap-grace-notes) dir x y rect zoom size) nil)
 

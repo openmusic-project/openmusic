@@ -2199,8 +2199,14 @@
    (loop for item in (inside self)
          append (collect-temporal-objects item father)))
 
-(defmethod collect-temporal-objects ((self grap-chord) father)
-   (list (list (offset->ms (reference self) father) self)))
+;(defmethod collect-temporal-objects ((self grap-chord) father)
+;   (list (list (offset->ms (reference self) father) self)))
+
+(defmethod collect-temporal-objects ((self grap-chord) father) 
+  (if (and (typep (reference self) 'grace-chord)
+           (typep (parent self) 'g-grap-grace-notes))
+      (list (list (get-grace-offset self father) self))
+    (list (list (offset->ms (reference self) father) self))))
 
 (defmethod collect-temporal-objects ((self grap-rest) father) 
    (list (list (offset->ms (reference self) father) self)))
@@ -2815,6 +2821,14 @@
    (when (equal (reference self) obj) self))
 
   
+
+(defmethod get-previous-grap-cont ((self grap-container))
+  "not used but could be useful"
+  (let* ((parent (parent self))
+         (ins (inside parent))
+         (pos (position self ins)))
+    (if (= 0 pos) nil
+      (nth (- pos 1) ins))))
 ;===========FOR PRINT
 
 #|
