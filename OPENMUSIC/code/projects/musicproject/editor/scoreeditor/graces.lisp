@@ -65,7 +65,7 @@
                       :interval interval
                       :voice voice)))
    (call-next-method)))
-                
+               
 ;=======CLASS
 
 (defclass* grace-notes () 
@@ -292,8 +292,9 @@
 ;==========================================
 
 
-;This one is from scoretools.lisp
+;This one is a modified alternative from scoretools.lisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
 (defmethod draw-object-ryth ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (let ((space (get-chiffrage-space self size))
         (deltachiff (round size 5))
@@ -341,7 +342,7 @@
     
     (draw-extras self view size staff)
     ))
-
+|#
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -361,7 +362,8 @@
       (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
                     (draw-chord-grace-stem self x y zoom (beams-num self) dir (round size *grace-factor*))))))
 
-(defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote); (print (list "head" (reference self)))
+#|
+(defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
   (let* ((new-size (round size *grace-factor*))
          (realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
@@ -386,6 +388,7 @@
                                    (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
     (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
 
+
 (defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams  dir size)
   (let* ((domaine (om+ y0 (get-min-max self)))
          (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
@@ -404,6 +407,82 @@
       (progn
         (draw-beam-string  xpos (round  yfin ) (beam-dwn) (selected self))
         (om-draw-char  xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112) )))))
+|#
+
+;make-graph
+;(x self) = mainpoint of grap-chord de thechord 
+;size ici c'est le fontsize !
+(defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear? staff chnote) 
+  (declare (ignore minx maxx miny maxy linear? grille-p))
+  (let* ((new-size (round size *grace-factor*))
+         ;(realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
+         (realpos (round  (+  x -20  (* zoom (x self)))));;;GOOD!
+         (altpos (if (alteration self) 
+                   (round (- (+ realpos (* (- (alteration self) 1) (/ new-size 4))) (* (/ new-size 3.5) (delta-head self))))
+                   realpos))
+         (str (headchar self))
+         (headsizex (get-name-size str (om-make-font *music-font* size)));orig: new-size
+         (note (reference self))
+         (note-color *om-red-color*);(get-mus-color note))
+         (altstr (string (alt-char self)))  
+         tie)
+    (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
+      (om-with-font (om-make-music-font *heads-font* new-size) 
+                    (om-draw-string  realpos (+ y (y self))  str)) 
+      (when (alteration self)
+        (om-with-font (om-make-music-font *micron-font* new-size) 
+                      (om-draw-string altpos (+ y (y self)) altstr)))
+      
+      (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
+                                   (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
+    (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
+
+
+
+(defmethod get-panel ((self grap-container))
+  (let* ((ref (reference self))
+         (father (get-root-parent ref))
+         (box (associated-box father)))
+    (when (editorframe box) (panel (editorframe box)))))
+
+;bizarre pas d'heritage
+(defmethod get-panel ((self grap-ryth-note))
+  (let* ((ref (reference self))
+         (father (get-root-parent ref))
+         (box (associated-box father)))
+    (when (editorframe box) (panel (editorframe box)))))      
+
+;;attention il faut ajouter, car plus d'alteration + d'espace!   
+(defmethod alteration-p ((self grap-ryth-chord))
+  (let* ((alts (loop for i in (inside self)
+                     collect (alteration i))))
+    (member 0 alts)
+    ))
+         
+(defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams dir size) 
+  (let* ((domaine (om+ y0 (get-min-max self)))
+         (fontsize (if (get-panel self) (get-edit-param (get-panel self) 'fontsize) 24))
+         (alt (if (alteration-p self) 6 0))
+         (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
+         (yfin  (if (string-equal dir "up") 
+                  (- (car domaine)  taille)
+                  (+ (second domaine)  taille)))
+         (ystart (if (string-equal dir "up") (second domaine) (car domaine)))
+         
+         (xpos (if (string-equal dir "up") 
+                   (+ (car (rectangle self)) (+ (/ fontsize 4) alt))
+                 (- (+ (car (rectangle self)) (/ fontsize 4) ) (/ size 3.5))
+                 )))
+    ;(print (list "stem" self xpos taille domaine (alteration-p self)))
+    (draw-stem-no-group  xpos (selected self)  ystart  yfin)
+    (if  (string-equal dir "up")
+      (progn
+        (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) )) (beam-up) (selected self))
+        (om-draw-char  xpos (round (+ (+ yfin (* 1/2 size)) )) (code-char 111) ))
+      (progn
+        (draw-beam-string  xpos (round  yfin ) (beam-dwn) (selected self))
+        (om-draw-char  xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112) ))) ))
+
 
 (defun draw-auxiliar-grace-lines (self x y  size realpos headsizex) 
   (when (auxlines self)
@@ -751,6 +830,7 @@ An OM object representing a group in a rhythm.
 
 ;this must be added for our new class
 ;;apparement non utilisee pour le moment!
+;;Not called by graces, so no need to update.(REMOVE)
 (defmethod make-graph-ryth-obj ((self group-gn) top staffsys linespace  scale sel pere durtot &optional ryth) 
    (let* (new-group direstart)
      (setf new-group (make-instance 'grap-group
@@ -788,7 +868,7 @@ An OM object representing a group in a rhythm.
      new-group))
 
 
-
+;;Not called by graces, so no need to update.(REMOVE)
 (defmethod make-graph-ryth-obj ((self group)  top staffsys linespace  scale sel pere durtot &optional ryth)
    (let* ((group-ratio (get-group-ratio self))
           (num (or group-ratio (extent self)))
@@ -825,13 +905,13 @@ An OM object representing a group in a rhythm.
                                                          (setf dur-obj (* dur-obj (/ num (denominator operation))))
                                                          (* dur-obj unite))
                                                        )
-                                                      (unless (atom (second ryth))                   
-                                                     (list (/ (car (second ryth)) (first ryth))
-                                                           (nth i 
-                                                                ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
-                                                                (remove 0
-                                                                        (cadr (second ryth)))))
-                                                     )
+                                                     (unless (atom (second ryth)) ;;seule modification               
+                                                       (list (/ (car (second ryth)) (first ryth))
+                                                             (nth i 
+                                                                  ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
+                                                                  (remove 0
+                                                                          (cadr (second ryth)))))
+                                                       )
                                                      )))
                                       ;(print (list "whadda" item))
                                       newchord))
