@@ -281,8 +281,9 @@
          (off (offset->ms realchord father))
          (g-grp (parent self))
          (lgt (length (inside g-grp)))
-         (pos (position self (inside g-grp))))
-    (- off (* *gdur* (+ 1 (- lgt pos))))))
+         (pos (position self (inside g-grp)))
+         (dur 1))
+    (- off (* dur (+ 1 (- lgt pos))))))
 
 ;=====================================================================
 ;-------------------------------DRAWING-------------------------------
