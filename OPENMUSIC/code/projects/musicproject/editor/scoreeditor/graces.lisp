@@ -657,7 +657,7 @@ An OM object representing a group in a rhythm.
                          ((and (listp subtree) (equal 0 (car subtree)))
                           ;(print (list "info" (car subtree) subtree))
                           (loop for i in (second subtree)
-                                do (setf current-graces (cons  1 current-graces))) ;;regler l'affaire 0.0 = aftergrace
+                                do (setf current-graces (cons 1 current-graces))) ;;regler l'affaire 0.0 = aftergrace
                           )
                          ((numberp subtree)
                           (let ((object 
@@ -850,7 +850,7 @@ An OM object representing a group in a rhythm.
      new-group))
 
 
-;;Not called by graces, so no need to update.(REMOVE)
+;;update scoretools.lisp
 (defmethod make-graph-ryth-obj ((self group)  top staffsys linespace  scale sel pere durtot &optional ryth)
    (let* ((group-ratio (get-group-ratio self))
           (num (or group-ratio (extent self)))

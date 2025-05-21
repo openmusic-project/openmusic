@@ -214,12 +214,21 @@ a new tree accordingly:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;old version
+#|
 (defun remove-tree-graces (tree)
   "removes graces (0) from tree"
   (if (atom tree) 
       (unless (zerop tree) tree)
     (list (first tree) (remove nil (mapcar 'remove-tree-graces (second tree))))))
+|#
 
-;(remove-tree-graces (insert-graces *tree* '(0 2 3) '(3 1 2)))
+;new version
 
+(defun remove-tree-graces (tree)
+  "removes graces (0) and (0 ( 1 1 1)) from tree"  
+   (if (atom tree) 
+       (if (not (zerop tree)) tree)
+     (if (and (atom (car tree)) (zerop (car tree)))
+         nil
+    (list (first tree) (remove nil (mapcar 'remove-tree-graces (second tree)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
