@@ -850,7 +850,7 @@ Extraction methods.
       (make-voice-tempo-change self thetempi))
   tempolist))
 
-
+#|
 (defmethod init-seq-from-tree ((self metric-sequence) (tree list) &key (PropagateExtent 1)) 
   (let ((subtrees (second tree))
         (Extent (* (fullratio (first tree)) PropagateExtent))
@@ -895,7 +895,76 @@ Extraction methods.
              (setf (slot-value self 'inside) inside
                    (slot-value self 'extent) Extent)
              ))))
-  
+|#
+
+(defmethod init-seq-from-tree ((self metric-sequence) (tree list) &key (PropagateExtent 1)) 
+  (let ((subtrees (second tree)) 
+        (Extent (* (fullratio (first tree)) PropagateExtent))
+        (nbsubunits (reduce  
+                     #'(lambda (x y) (+  (abs x) (subtree-extent y))) 
+                     (second tree)
+                     :initial-value 0))
+        (curr-obj nil)
+        (current-graces nil) 
+        (current-note nil))
+    (remove NIL
+            (loop 
+               for subtree in subtrees
+               do (setf curr-obj 
+                        (cond
+                         ;;;for group graces!
+                         ((and (listp subtree) (equal 0 (car subtree)))
+                          (loop for i in (second subtree)
+                                do (setf current-graces (cons 1 current-graces))) ;;regler l'affaire 0.0 = aftergrace
+                          )
+                         ((numberp subtree)
+                          (let ((object 
+                                 (cond 
+                                  ((equal subtree 0) ;; BEFOR GRACE
+                                   (setf current-graces (cons 1 current-graces))
+                                   NIL)
+                                  
+                                  ((equal subtree 0.0) ;; AFTER GRACE 
+                                   (if current-note 
+                                       (setf (mus-const current-note) (append (list! (mus-const current-note)) '(1)))
+                                     )
+                                   NIL)
+                                   
+                                  ((> subtree 0)
+                                   (let ((note (make-instance 'note :empty t :extent (* (fullratio subtree) (/ Extent nbsubunits)))))
+                                     (when current-graces ;; add grace notes before ;;; avoir !
+                                       (setf (mus-const note) current-graces)
+                                       (setf current-graces nil)
+                                       )
+                                     (setf current-note note)
+                                     
+                                     note))
+                                  ((< subtree 0)
+                                   (let ((rest (make-instance 'rest :empty t :extent (* (abs (fullratio subtree)) (/ Extent nbsubunits)))))
+                                     (when current-graces ;; add grace notes before ;;; avoir !
+                                       (setf (mus-const rest) current-graces)
+                                       (setf current-graces nil))
+                                     (setf current-note rest)
+                                     rest))
+                                  )))
+                            (when (and (plusp subtree) (floatp subtree))
+                              (setf (tie object) 'continue))
+                            object))
+                         ((listp subtree)
+                          (make-instance (next-metric-class self)
+                                         :tree subtree 
+                                         :PropagateExtent (/ Extent nbsubunits)
+                                         :InternalCall t))
+                         ))
+               when curr-obj
+                 collect curr-obj
+                   into inside
+                 
+               finally 
+                 (setf (slot-value self 'inside) inside
+                       (slot-value self 'extent) Extent)
+               ))))
+
 
 (defmethod set-relative-offset ((self sequence*))
   "Computes the offsets of subcontainers from their extents. Offsets are relative
@@ -1113,6 +1182,7 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod distribute-chords  ((self score-element) (chords score-element))
   (distribute-chords self (collect-chords chords)))
 
+#|
 (defmethod distribute-chords ((self score-element) (chords list))
   (let ((fringe nil) 
         (chord-model (mki 'chord))
@@ -1180,6 +1250,89 @@ of all its direct subcontainers (supposed adjacent)"
                   ((not (eq item1 'tie))
                    (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
       ;(print (mapcar 'loffset (chords self)))
+      self)))
+|#
+
+(defmethod distribute-chords ((self score-element) (chords list))
+  (let ((fringe nil) 
+        (chord-model (mki 'chord))
+        (rest-model (mki 'rest))
+        (def-chord (or (last-elem chords) (mki 'chord))))
+    (labels ((distribute (self chords)
+               (setf (inside self)
+                     (loop for sub in (inside self)
+                           with chord
+                             ;with chord-model  = (mki 'chord)
+                             ;if (null chords) collect sub
+                           if (not (infra-group-p sub)) 
+                             do 
+                               (setf chords (distribute sub chords))
+                             and collect sub
+                           else do
+                               (cond
+                                ((and (note-p sub) (eq (tie sub) 'continue))
+                                 (progn (setf chord 
+                                              (objfromobjs 
+                                               (or (loop for c in fringe if (chord-p c) return c)
+                                                   (mki 'chord))
+                                               chord-model))
+                                   (change-class chord 'continuation-chord)))
+                                ;;;;;;;;;;;;;;;;;;;;;;;;
+                                ((mus-const sub) ;;; THERE ARE GRACE NOTES !!
+                                 (let* ((nnotes-before (count 1 (mus-const sub) :test '=)); ici c'etait -1 et c'est bien cela qui fout la merde....
+                                        (nnotes-after (count -1 (mus-const sub) :test '=))
+                                        (chords-before (loop for i from 1 to nnotes-before collect (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
+                                        (chords-after (loop for i from 1 to nnotes-after collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
+                                        (gchords (loop for i in chords-before collect (objfromobjs i (make-instance 'grace-chord)))))
+                                   
+                                   (if (rest-p sub)
+                                       (let ((main-chord (objfromobjs (clone def-chord) chord-model)))
+                                         (setf chord sub)
+                                         (loop for i in gchords do (setf (thechord i) sub))
+                                         (setf (gnotes sub) 
+                                               (make-instance 'grace-notes
+                                                              :glist gchords
+                                                              :thechord sub
+                                                              :before? t)))
+                                   
+                                     (let ((main-chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
+                                       (setf chord (objfromobjs (append (list main-chord)) chord-model))
+                                       (loop for i in gchords do (setf (thechord i) sub))
+                                       (setf (gnotes chord) 
+                                             (make-instance 'grace-notes
+                                                            :glist gchords
+                                                            :thechord sub
+                                                            :before? t))
+                                         
+                                       ))))
+                                 ;;;;;;;;;;;;;;;;;;;;;;;;
+                                 ((rest-p sub) 
+                                  (setf chord sub))
+                                 ;;;;;;;;;;;;;;;;;;;;;;;
+                                 (t 
+                                  (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))))
+                               
+                               (setf (offset chord) (offset sub))
+                               (InContext sub (setf (extent chord) (extent sub)))
+                               (when (and (note-p sub) (eq (tie sub) 'continue))  (push 'tie fringe))
+                               (push chord fringe)
+                             and collect chord))
+               chords))
+            
+      (distribute self chords)
+      
+      (setf fringe (nreverse fringe)) 
+      (loop for item1 in fringe
+            for item2 = (rest fringe) then (rest item2)
+            with state = 0
+            do
+              (cond ((eq (first item2) 'tie)
+                     (cond 
+                      ((= state 0) (tie-chord item1 'begin) (incf state))
+                      (t (tie-chord item1 'continue) (setf (state item1) 'continue))))
+                    ((not (eq item1 'tie))
+                     (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
+      
       self)))
 
 (defmethod tie-chord ((self chord) mode)
