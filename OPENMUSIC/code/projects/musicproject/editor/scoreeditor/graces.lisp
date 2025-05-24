@@ -28,8 +28,9 @@
 ;============ GRACES NOTES
 
 ;-------play
-(defvar *gdur* 20)
-(setf *gdur* 100)
+;now in preferences
+;(defvar *gdur* 20)
+;(setf *gdur* 100)
 
 
 

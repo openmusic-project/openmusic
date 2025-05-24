@@ -232,7 +232,7 @@
                                           :object  modulepref 
                                           :i :select-color)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 80 20) "Grace Notes Colors"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 120 20) "Grace Notes Color"
                                           :font *controls-font*)
                      
                      (om-make-view 'om-color-view 
@@ -418,9 +418,11 @@
 
 (defvar *quantify-def-params* '(60 (4 4) 8  0 nil 0.5))
 (defvar *global-deltachords* 100)
+(defvar *gdur* 20)
+(setf *gdur* 100)
 
 (defmethod get-def-vals ((iconID (eql :conversion)))
-   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5)))
+   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :gdur 100))
 
 (defun check-deltachords (delta)
   (let ((defval (nth (1+ (position :delta-chords (get-def-vals :conversion))) (get-def-vals :conversion))))
@@ -471,13 +473,15 @@
 (defmethod put-preferences ((iconID (eql :conversion)))
   (let* ((modulepref (find-pref-module iconID))
          (delta (get-pref modulepref :delta-chords))
-         (quantparams (get-pref modulepref :quantify)))
+         (quantparams (get-pref modulepref :quantify))
+         (gdur (get-pref modulepref :gdur)))
     
     (set-pref modulepref :quantify (check-quanti-par quantparams))
     (set-pref modulepref :delta-chords (check-deltachords delta))
     
     (setf *global-deltachords* (get-pref modulepref :delta-chords))
-    (setf *quantify-def-params* (get-pref modulepref :quantify))
+    (setf *quantify* (get-pref modulepref :quantify))
+    (setf *gdur* (get-pref modulepref :gdur))
     ))
 
 (defmethod make-new-pref-scroll ((num (eql :conversion)) modulepref)
@@ -496,19 +500,19 @@
                                           :font *om-default-font3b*)
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 50)) (om-make-point 120 22) "Delta Chords (ms):"
-                     :font *controls-font*)
+                                          :font *controls-font*)
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 20)) (om-make-point 350 22) "(Maximum interval for grouping notes in a same chord)"
-                     :font *om-default-font1*)
+                                          :font *om-default-font1*)
                      
                      (om-make-dialog-item 'om-editable-text (om-make-point 340 (- i 10)) (om-make-point 45 13)
                                           (format nil "~D" (get-pref modulepref :delta-chords)) 
                                           :modify-action (om-dialog-item-act item
                                                            (let* ((text (om-dialog-item-text item))
                                                                   number)
-                                                            (unless (string= "" text)
-                                                              (setq number (ignore-errors (read-from-string text)))
-                                                              (when number 
-                                                                (set-pref modulepref :delta-chords number)))))
+                                                             (unless (string= "" text)
+                                                               (setq number (ignore-errors (read-from-string text)))
+                                                               (when number 
+                                                                 (set-pref modulepref :delta-chords number)))))
                                           :font *om-default-font2*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 40)) (om-make-point 120 20) "Quantify:"
@@ -522,13 +526,13 @@
                      (om-make-dialog-item 'om-editable-text (om-make-point 150 i)  (om-make-point 37 13)
                                           (format nil "~D" (get-quantipar modulepref 0)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (when number 
-                                                                  (set-quantipar modulepref 0 number)
-                                                                ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (when number 
+                                                                 (set-quantipar modulepref 0 number)
+                                                                 ))))
                                           :font *om-default-font2*)
 
                      (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Forbidden Div."
@@ -536,73 +540,91 @@
                      (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
                                           (format nil "~D" (get-quantipar modulepref 4)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (when number
-                                                                  (set-quantipar modulepref 4 number)
-                                                                ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (when number
+                                                                 (set-quantipar modulepref 4 number)
+                                                                 ))))
                                           :font *om-default-font2*)
 
-                         (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Measure"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Measure"
                                           :font *controls-font*)
-                         (om-make-dialog-item 'om-editable-text (om-make-point 150 i)  (om-make-point 37 13)
-                                              (format nil "~D" (get-quantipar modulepref 1)) 
+                     (om-make-dialog-item 'om-editable-text (om-make-point 150 i)  (om-make-point 37 13)
+                                          (format nil "~D" (get-quantipar modulepref 1)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (if number
-                                                                  (set-quantipar modulepref 1 number)
-                                                               ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (if number
+                                                                   (set-quantipar modulepref 1 number)
+                                                                 ))))
                                           :font *om-default-font2*)
                          
-                         (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Precision"
-                                              :font *controls-font*)
-                         (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
-                                              (format nil "~D" (get-quantipar modulepref 5)) 
+                     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Precision"
+                                          :font *controls-font*)
+                     (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
+                                          (format nil "~D" (get-quantipar modulepref 5)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (if number
-                                                                  (set-quantipar modulepref 5 number)
-                                                                ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (if number
+                                                                   (set-quantipar modulepref 5 number)
+                                                                 ))))
                                           :font *om-default-font2*)
 
-                         (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Max. Division"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Max. Division"
                                           :font *controls-font*)
-                         (om-make-dialog-item 'om-editable-text (om-make-point 150 i) (om-make-point 37 13)
-                                              (format nil "~D" (get-quantipar modulepref 2)) 
+                     (om-make-dialog-item 'om-editable-text (om-make-point 150 i) (om-make-point 37 13)
+                                          (format nil "~D" (get-quantipar modulepref 2)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (if number
-                                                                  (set-quantipar modulepref 2 number)
-                                                                ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (if number
+                                                                   (set-quantipar modulepref 2 number)
+                                                                 ))))
                                           :font *om-default-font2*)
 
 
-                         (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Offset"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 230 i) (om-make-point 120 20) "Offset"
                                           :font *controls-font*)
-                         (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
-                                              (format nil "~D" (get-quantipar modulepref 3)) 
+                     (om-make-dialog-item 'om-editable-text (om-make-point 330 i) (om-make-point 37 13)
+                                          (format nil "~D" (get-quantipar modulepref 3)) 
                                           :modify-action (om-dialog-item-act item
-                                                          (let ((text (om-dialog-item-text item))
-                                                                number)
-                                                            (unless (string= "" text)
-                                                              (setf number (ignore-errors (read-from-string text)))
-                                                              (if number
-                                                                  (set-quantipar modulepref 3 number)
-                                                                ))))
+                                                           (let ((text (om-dialog-item-text item))
+                                                                 number)
+                                                             (unless (string= "" text)
+                                                               (setf number (ignore-errors (read-from-string text)))
+                                                               (if number
+                                                                   (set-quantipar modulepref 3 number)
+                                                                 ))))
+                                          :font *om-default-font2*)
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 40)) (om-make-point 120 20) "Grace Notes:"
+                                          :font *controls-font*)
+
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 50)) (om-make-point 120 22) "Duration (ms):"
+                                          :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 20)) (om-make-point 350 22) "(Grace notes playback duration)"
+                                          :font *om-default-font1*)
+                     (om-make-dialog-item 'om-editable-text (om-make-point 340 (- i 10)) (om-make-point 45 13)
+                                          (format nil "~D" (get-pref modulepref :gdur)) 
+                                          :modify-action (om-dialog-item-act item
+                                                           (let* ((text (om-dialog-item-text item))
+                                                                  number)
+                                                             (unless (string= "" text)
+                                                               (setq number (ignore-errors (read-from-string text)))
+                                                               (when number 
+                                                                 (set-pref modulepref :gdur number)))))
                                           :font *om-default-font2*)
                          
-                         )
+                     )
     thescroll))
 
 
