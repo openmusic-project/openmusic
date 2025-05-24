@@ -14,6 +14,7 @@
 (defmethod treeobj-p ((self treeobj)) t)
 (defmethod treeobj-p ((self t)) nil)
 
+#|
 (defmethod transpose-tree ((tree list))
   (setf *indx* 0)
     (trans-index-tree tree))
@@ -28,6 +29,31 @@ notes ,rests and tied notes. This version omits gnotes (0)."
             (make-instance 'treeobj :tvalue tree :tindex *indx*)
           (incf *indx*)))
     (list (first tree) (mapcar 'trans-index-tree (second tree)))))
+|#
+
+(defmethod transpose-tree ((tree list))
+  (setf *indx* 0)
+  (setf *r-indx* nil)
+  (trans-index-tree tree))
+
+(defun trans-index-tree (tree)
+"transforms a rhythm tree into a tree with objects in the place of musical events:
+notes ,rests and tied notes. This version omits gnotes (0)."
+(if (atom tree)
+    (cond 
+     ((or (zerop tree) (floatp tree)) tree)
+     ((minusp tree)
+      (if *r-indx*
+          tree
+        (prog1
+            (make-instance 'treeobj :tvalue tree :tindex *indx*)
+          (setf *r-indx* 't)
+          (incf *indx*))))
+      (t (prog1
+             (make-instance 'treeobj :tvalue tree :tindex *indx*)
+           (setf *r-indx* nil)
+           (incf *indx*))))
+     (list (first tree) (mapcar 'trans-index-tree (second tree)))))
 
 
 (defun insert-n-gn (tree pos n)
