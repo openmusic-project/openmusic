@@ -78,7 +78,8 @@
 (AddPackage2Pack *quantification-package* *scorepackage* :protect t)
 
 (AddGenFun2Pack '(OMquantify 
-                  gkant 
+                  omg-quantify
+                  ;gkant 
                   set-kant-analysis-segs
                   kant-voices
                   concatenate-kant-voices
