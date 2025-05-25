@@ -338,19 +338,19 @@
     (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
 
 
-
+;;marche pas...
 (defmethod get-panel ((self grap-container))
   (let* ((ref (reference self))
          (father (get-root-parent ref))
          (box (associated-box father)))
-    (when (editorframe box) (panel (editorframe box)))))
+    (when box (panel (editorframe box)))))
 
 ;bizarre no heritage
 (defmethod get-panel ((self grap-ryth-note))
   (let* ((ref (reference self))
          (father (get-root-parent ref))
          (box (associated-box father)))
-    (when (editorframe box) (panel (editorframe box)))))      
+    (when box (panel (editorframe box)))))      
 
 ;;attention il faut ajouter, car plus d'alteration + d'espace!   
 (defmethod alteration-p ((self grap-ryth-chord))
@@ -358,9 +358,10 @@
                      collect (alteration i))))
     (member 0 alts)))
          
-(defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams dir size) 
+(defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams dir size)
   (let* ((domaine (om+ y0 (get-min-max self)))
-         (fontsize (if (get-panel self) (get-edit-param (get-panel self) 'fontsize) 24))
+         (fontsize (round (/ (* size 19) 24))) 
+          ;(if (get-panel self) (get-edit-param (get-panel self) 'fontsize) 24))
          (alt (if (alteration-p self) 6 0))
          (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
          (yfin  (if (string-equal dir "up") 

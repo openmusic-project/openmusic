@@ -118,14 +118,6 @@ notes ,rests and tied notes. This version omits gnotes (0)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;Make grace-groups
 ;;doit venir toujours apres insert-graces..
-(defmethod* all-atoms? ((lst t)) nil)
-
-(defmethod* all-atoms? ((lst list))
-  :initvals '((list 1 2)) 
-  :indoc '("list")
-  :icon 660
-  :doc "Tests if a list is an all atoms list."
-  (list-subtypep lst 'atom))
 
 #|
 (defun groupsame (liste)
@@ -179,14 +171,7 @@ notes ,rests and tied notes. This version omits gnotes (0)."
       )))
 
 ;we add group-gn recursively
-(defun makegngtree (tree)
-  (cond 
-   ((atom tree) tree)
-   ((and (listp tree) (equal 0 (car tree))) 
-    (if (= (length (remove nil tree)) 1)
-        (car tree)
-        (list 1 (remove nil tree))))
-   (t (list (first tree) (mapcar 'makegngtree (second tree))))))
+
     
 (defun makegngtree (tree)
   (cond 
@@ -195,7 +180,7 @@ notes ,rests and tied notes. This version omits gnotes (0)."
     (if (= (length (remove nil tree)) 1)
         (car tree)
       (let* ((lgt (length (remove nil tree)))
-             (newtree (repeat-n 0 lgt)))
+             (newtree (repeat-n 1 lgt)))
         (list 0 newtree))))
    (t (list (first tree) (mapcar 'makegngtree (second tree))))))
 
@@ -212,8 +197,7 @@ notes ,rests and tied notes. This version omits gnotes (0)."
 
 
 (defun format-grace-notes (tree)
-  (format-gn-g-tree
-   (makegngtree (grpcnt (groupdazero tree)))))
+  (makegngtree (grpcnt (groupdazero tree))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #|
