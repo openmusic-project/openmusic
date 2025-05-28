@@ -1866,12 +1866,12 @@
                                                          (setf dur-obj (* dur-obj (/ num (denominator operation))))
                                                          (* dur-obj unite))
                                                        )
-                                                                         
+                                                    (unless (atom (second ryth))                     
                                                      (list (/ (car (second ryth)) (first ryth))
                                                            (nth i 
                                                                 ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
                                                                 (remove 0
-                                                                        (cadr (second ryth))))))))
+                                                                        (cadr (second ryth)))))))))
                                       newchord))
                                )
            )

@@ -595,6 +595,103 @@
    (setf (stemdir self)  dir)
    (setf (stemhigh self) (round (max (* 3 linespace) (+ (* 2 linespace) (* (/ (beams-num self) 2)  linespace))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;OBJFRIMOBJS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;For voice->chord-seq (handling grace notes)
+
+
+(defun check-grace-offsets (liste)
+  "if length grace notes (> (* *gdur*  lgt-gn) (- off1 off0)) 
+then adjust grace notes offsets accordingly. else return list with grace notes offsets.
+If no grace notes, return liste."
+  (let* ((objs (car liste))
+         (off0 (second liste))
+         (off1 (third liste)))
+    (if (caar liste)
+        (if (> (* *gdur*  (length (caar liste))) (- off1 off0))
+            (let ((int (floor (/ (- ( - off1 off0) 10) (length (caar liste))))));Ici voir si on mets par default 10ms
+              (list objs 
+                    (reverse (arithm-ser (- off1 int) 
+                                          (- (- off1 int) (* (1- (length (caar liste))) int)) 
+                                          (* -1 int)) )
+                  off1))
+          (list objs (reverse (arithm-ser (- off1 *gdur*) 
+                                          (- (- off1 *gdur*) (* (1- (length (caar liste))) *gdur*)) 
+                                          (* -1 *gdur*)) ) off1))
+      liste)))
+
+(defun parse-gnoffsets (liste)
+  (let (res)
+    (loop for i in liste
+            do (cond 
+                ((and (caar i) (not (rest-p (second (car i)))))
+                 (push (second i) res)
+                 (push (third i) res))
+                ((and (caar i) (rest-p (second (car i))))
+                 (push (second i) res))
+                ((not (rest-p (second (car i))))
+                 (push (third i) res))
+                (t nil)))
+    (flat (reverse res))))
+
+(defun parse-gnobjects (liste)
+  (let ((objs (remove nil 
+                      (flat (loop for i in liste 
+                                      collect (car i))))))
+    (remove-if #'rest-p objs)))
+
+
+(defmethod fit-graces-in-duration ((self voice))
+   (let* ((objects (collect-subcontainers self '(chord note rest)))
+          offsets allobjs data)
+    ;prepare data
+     (loop for i in objects do  
+            (if (gnotes i)
+                (progn
+                  (push (list (glist (gnotes i)) i) allobjs)
+                  (push (offset->ms i self) offsets))
+              (progn 
+                (push (list nil i) allobjs)
+                (push (offset->ms i self) offsets))))
+    ;data
+    (loop for obj in (reverse allobjs)
+          for on0 in (cons 0 (reverse offsets))
+          for on1 in (reverse offsets)
+            do (push (list obj on0 on1) data))
+    (let ((checkdata
+           (loop for i in (reverse data)
+                 collect (check-grace-offsets i)))
+          obj off)
+      
+      (list (parse-gnobjects checkdata)
+            (parse-gnoffsets checkdata))
+      )))
+
+
+(defmethod* Objfromobjs ((Self grace-chord) (Type Chord)) 
+  (setf (ldur self) (list *gdur*))
+  (ObjFromObjs  (list self) Type))
+
+(defmethod collect-and-tranform ((self voice) (below t))
+  (let* ((target (mki 'chord-seq :empty t))
+         (coll (fit-graces-in-duration self))
+         (cont0 (car coll))
+         (cont (loop for i in cont0
+                           collect (if (grace-chord-p i) (objfromobjs i (make-instance 'chord)) i)))
+         (offs (second coll)))
+    (setf (inside target) (mapcar 'copy-container cont)) 
+      (loop for object in (inside target) 
+            for offset in offs
+            do (setf (offset object) offset))
+      ;Important: remove gnotes from objects!
+      (loop for object in (inside target)
+              do (setf (gnotes object) nil))
+      (setf (QVAlue target) 1000)
+      (qnormalize target) 
+      (adjust-extent target)
+      target
+      ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -603,12 +700,11 @@
 
 
 ;;; with lots of redefined methods from other files, and lost missing methods
-;;; Indispensable.
 
 ;;graces should be notated as 0
-;;grace grous as (0 (1 1 1 ))
+;;grace grous as (0 (1 1 1))
 
-
+;Not used...
 (defclass* group-gn (metric-sequence)  
            ((tree :initform '(0 (1 1 1))  :initarg :tree :type list)
             (approx :initform *global-midi-approx* :accessor approx  :type integer))
