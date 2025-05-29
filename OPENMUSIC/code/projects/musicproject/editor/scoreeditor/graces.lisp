@@ -88,7 +88,7 @@
   (make-instance 'grace-chord
                  :lmidic (lmidic self)
                  :lvel (lvel self)
-                 :ldur (ldur self)
+                 :ldur (list *gdur*)
                  :lchan (lchan self)
                  :approx (approx self)))
 ;(objfromobjs (make-instance 'chord) (make-instance 'grace-chord))
@@ -96,6 +96,14 @@
 (defmethod offset->ms ((self grace-notes) &optional grandparent)
   (let ((thechord (thechord self)))
      (- (offset->ms thechord) 1)  ))
+
+(defmethod offset->ms ((self grace-chord) &optional grandparent)
+  (if (group-p (parent self))
+      (let* ((lgt (length (inside (parent self))))
+             (offinit (* lgt *gdur*)))
+        (- (offset->ms (thechord self) (get-voice (thechord self))) (- offinit (* (offset self) *gdur*))))    
+  (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*)))
+
 
 (defmethod! set-grace-notes ((self simple-container) chords before?)
   (setf (gnotes self) (make-instance 'grace-notes
@@ -317,7 +325,7 @@
   (declare (ignore minx maxx miny maxy linear? grille-p))
   (let* ((new-size (round size *grace-factor*))
          ;(realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
-         (realpos (round  (+  x -20  (* zoom (x self)))));;;GOOD!
+         (realpos (round  (+  x 5  (* zoom (x self)))));;; (cf. if 5 is a good value)
          (altpos (if (alteration self) 
                    (round (- (+ realpos (* (- (alteration self) 1) (/ new-size 4))) (* (/ new-size 3.5) (delta-head self))))
                    realpos))
