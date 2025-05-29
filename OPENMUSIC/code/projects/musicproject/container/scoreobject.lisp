@@ -1297,11 +1297,11 @@ of all its direct subcontainers (supposed adjacent)"
                                    
                                      (let ((main-chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
                                        (setf chord (objfromobjs (append (list main-chord)) chord-model))
-                                       (loop for i in gchords do (setf (thechord i) sub))
+                                       (loop for i in gchords do (setf (thechord i) chord))
                                        (setf (gnotes chord) 
                                              (make-instance 'grace-notes
                                                             :glist gchords
-                                                            :thechord sub
+                                                            :thechord chord
                                                             :before? t))
                                          
                                        ))))
