@@ -301,14 +301,13 @@
 
 
 (defmethod draw-object-ryth ((self grap-grace-notes) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  ;(print (list "grap" self (reference self) x))
-  (om-with-fg-color nil *grace-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
+  (om-with-fg-color nil *grace-color*
     (draw-grace-notes self x y zoom minx maxx miny maxy slot size linear?  staff chnote)))
 
 ;-------------simple
 
 (defmethod draw-grace-notes ((self s-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (om-with-fg-color nil  *grace-color* ;(mus-color (reference self)) ;ca c'est les hampes (provisoire)
+  (om-with-fg-color nil  *grace-color*
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
            (thenotes (inside self)));(copy-list (inside self))))
       (loop for item in thenotes do
@@ -370,32 +369,31 @@
 (defmethod draw-chord-grace-stem ((self grap-ryth-chord) x0 y0 zoom numbeams dir size)
   (let* ((domaine (om+ y0 (get-min-max self)))
          (fontsize (round (/ (* size 19) 24))) 
-          ;(if (get-panel self) (get-edit-param (get-panel self) 'fontsize) 24))
-         (alt (if (alteration-p self) 6 0))
+         (alt (if (alteration-p self) (round (/ (* size 6) 24)) 0))
          (taille (round (max (+ (/ size 4) (* (- numbeams 1) (/ size 3))) (* size 7/8)))) 
          (yfin  (if (string-equal dir "up") 
-                  (- (car domaine)  taille)
+                    (- (car domaine)  taille)
                   (+ (second domaine)  taille)))
          (ystart (if (string-equal dir "up") (second domaine) (car domaine)))
-         
          (xpos (if (string-equal dir "up") 
-                   (+ (car (rectangle self)) (+ (/ fontsize 4) alt))
-                 (- (+ (car (rectangle self)) (/ fontsize 4) ) (/ size 3.5))
+                   (+ (car (rectangle self)) (+ (/ fontsize 3) alt));ici 3 au lieu de 4
+                 (- (+ (car (rectangle self)) (+ (/ fontsize 3) alt));ici 3 au lieu de 4
+                    (/ size 3.5))
                  )))
-    ;(print (list "stem" self xpos taille domaine (alteration-p self)))
-    (draw-stem-no-group  xpos (selected self)  ystart  yfin)
+    (draw-stem-no-group xpos (selected self) ystart yfin)
     (if  (string-equal dir "up")
+        (progn
+          (draw-beam-string xpos (round (+ (+ yfin (* 1/4 size)))) (beam-up) (selected self))
+          (om-draw-char xpos (round (+ (+ yfin (* 1/2 size)))) (code-char 111)))
       (progn
-        (draw-beam-string  xpos (round (+ (+ yfin (* 1/4 size)) )) (beam-up) (selected self))
-        (om-draw-char  xpos (round (+ (+ yfin (* 1/2 size)) )) (code-char 111) ))
-      (progn
-        (draw-beam-string  xpos (round  yfin ) (beam-dwn) (selected self))
-        (om-draw-char  xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112) ))) ))
+        (draw-beam-string xpos (round  yfin) (beam-dwn) (selected self))
+        (om-draw-char xpos (round (+ (+ yfin 0) (* 1/8 size))) (code-char 112))))))
 
 
-(defun draw-auxiliar-grace-lines (self x y  size realpos headsizex) 
+;;Good ,ais peut-mieux faire par rapport a la fontsize...
+(defun draw-auxiliar-grace-lines (self x y  size realpos headsizex)
   (when (auxlines self)
-    (om-with-fg-color nil *grace-color* ;*system-color* 
+    (om-with-fg-color nil *grace-color*
       (let ((dir (car (auxlines self)))
             (topy (+ (- y (round size 8)) (second (auxlines self))))        
             (limy (+ (- y (round size 8)) (third (auxlines self)))))
@@ -403,15 +401,16 @@
           (progn
             (setf topy (+ topy (round size 4))) 
             (loop while (<= topy limy) do
-                  (om-draw-line (- realpos (round size 8)) topy 
-                                (+  headsizex  realpos) topy)
+                  (om-draw-line (- realpos (round size 8) -4) topy 
+                                (+  headsizex  realpos -8) topy)
                   (setf topy (+ topy (round size 4)))))
           (progn
             (setf topy (- topy (round size 4))) 
             (loop while (>= topy limy) do
-                  (om-draw-line (- realpos (round size 8)) topy 
-                                (+  headsizex  realpos) topy)
+                  (om-draw-line (- realpos (round size 8) -4) topy 
+                                (+  headsizex  realpos -4) topy);here should find a scaling factor related to fontsize
                   (setf topy (- topy (round size 4))))))))))
+
 
 
 ;-------------------group
@@ -475,18 +474,16 @@
 (defmethod group-draw-stems-gn ((self grap-ryth-chord) dir x y rect zoom size)
   (when (and (stem self) (x self))
     (let* ((note-min-max (om+ y (get-min-max self)))
-           (xup (third (rectangle self)))
-           (xdwn (car (rectangle self)))
+           (fontsize (round (/ (* size 19) 24)))
+           (alt (if (alteration-p self) (round (/ (* size 6) 24)) 0))
+           (xup (+ (car (rectangle self)) (+ (/ fontsize 3) alt)))
+           (xdwn (- (+ (car (rectangle self)) (+ (/ fontsize 3) alt))
+                    (/ size 3.5)))
            (ystart (if (string-equal dir "up") (second note-min-max) (first note-min-max)))
            (ygroup (if (string-equal dir "up") (second rect) (fourth rect) )))
       (setf y 0)
       #+(or linux win32) (setf xup (+ xup 2))
       (draw-stem-no-group 
-       #|
-       (if (string-equal dir "up") 
-           (round (+  x (/ size 3.5) (* zoom (x self))))
-         (round (+  x (* zoom (x self))))) 
-       |#
        (if (string-equal dir "up") (round (- xup (/ size 11.5))) xdwn)
        (selected self)
        (+ y ystart)
@@ -541,24 +538,34 @@
    (drawNlong-grace-beams self n dir x sizex y rect zoom size))
 
 (defun drawNlong-grace-beams (self n dir x sizex y rect zoom size) 
-  (let* ((ygroup (+ y (if (string-equal dir "up") (second rect) (fourth rect) )))
-         (xup (third (rectangle self)))
-         (xdwn (car (rectangle self)))
-         (xpos (if (string-equal dir "up")
-                   (round (+  x (/ size 3.5) (* zoom (x self))))
-                 (round (+  x  (* zoom (x self))))))
-         (spacesize (inter-beam-space size)))
-     ;(print (list "who grace?" self (parent self) x  xdwn xpos (x self) sizex ))
-    (loop for i from 0 to (- n 1) do
-            (if  (string-equal dir "up")
-                (draw-beam   (+ (car (rectangle (parent self))) sizex);xpos 
-                             (+ ygroup (* spacesize i))
-                             (- (third (rectangle (parent self))) (car (rectangle (parent self))))
-                             (round size 8) (selected self))
-              (draw-beam (car (rectangle (parent self)));xpos  
-                         (- ygroup (* spacesize i))
-                         (- (third (rectangle (parent self))) (car (rectangle (parent self))) sizex ) 
-                         (round size 8) (selected self))))))
+   (let* ((ygroup (+ y (if (string-equal dir "up") (second rect) (fourth rect))))
+          (fontsize (round (/ (* size 19) 24)))
+          (xup (if (and (string-equal dir "up") 
+                        (first-of-group-p (reference self))
+                        (alteration-p self))
+                   (+ (car (rectangle self)) (+ (/ fontsize 4) 8))
+                 (+ (car (rectangle self)) (+ (/ fontsize 4) 0))))
+          (xdwn (if (and (string-equal dir "dw") 
+                         (first-of-group-p (reference self))
+                         (alteration-p self))
+                    (+ (car (rectangle self)) (- (/ fontsize 4) 0))
+                  (+ (car (rectangle self)) (- (/ fontsize 4) 8))
+                  ))
+          (xpos (if (string-equal dir "up")
+                    (round (+  x (/ size 3.5) (* zoom (x self))))
+                  (round (+  x  (* zoom (x self))))))
+          (spacesize (inter-beam-space size)))
+     (loop for i from 0 to (- n 1) do
+             (if  (string-equal dir "up")
+                 (draw-beam   (+  xup sizex)
+                              (+ ygroup (* spacesize i ))
+                              (- (third (rectangle (parent self))) xup (/ fontsize 6))
+                              (round size 8) (selected self))
+               (draw-beam 
+                (+ xdwn sizex)
+                (- ygroup (* spacesize i ))
+                (- (third (rectangle (parent self))) xdwn (/ fontsize 2))
+                (round size 8) (selected self))))))
 
 
 
