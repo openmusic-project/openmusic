@@ -303,7 +303,7 @@
                                      (make-graph-ryth-obj item  top staffsys linespace  scale sel new-group 1/8)))
     new-group))
 
-;not used ?
+
 (defmethod get-grace-offset ((self grap-chord) father)
   "In order to display correctly group-graces"
   (let* ((realchord (thechord (reference self)))

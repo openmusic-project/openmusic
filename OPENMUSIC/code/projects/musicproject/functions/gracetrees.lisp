@@ -234,8 +234,11 @@ a new tree accordingly:
 
 ;new version
 
-(defun remove-tree-graces (tree)
-  "removes graces (0) and (0 ( 1 1 1)) from tree"  
+(defmethod! remove-tree-graces ((tree  list))
+  :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
+  :indoc '("a rhythm tree")
+  :icon 225
+  :doc "removes graces (0) and (0 ( 1 1 1)) from tree"  
    (if (atom tree) 
        (if (not (zerop tree)) tree)
      (if (and (atom (car tree)) (zerop (car tree)))

@@ -100,6 +100,15 @@
         (port (lport self)))
     (list midic vel dur chan off port)))
 
+(defmethod get-slots-info ((self grace-chord))
+  (let ((midic (lmidic self))
+        (vel (lvel self))
+        (dur (ldur self))
+        (chan (lchan self))
+        (off (loffset self))
+        (port (lport self)))
+    (list midic vel dur chan off port)))
+
 (defmethod get-slots-info ((self continuation-chord))
   nil)
 
@@ -137,7 +146,6 @@ nil)
     (let* ((inside (inside self)))
     (remove nil (flat (mapcar #'get-only-chords inside)))))
 
-
 (defun get-voice (self)
   "starting from an inside obj of voice, returns voice."
   (let ((pere (parent self)))
@@ -158,6 +166,8 @@ nil)
 (defmethod evt-pos ((self group))
 nil)
 
+(defmethod evt-pos ((self grace-chord))
+nil)
 
 (defmethod evt-pos ((self chord))
   (let* ((voice (get-voice self))
@@ -205,7 +215,8 @@ nil)
          (name (cond
                 ((and (rest-p (car selection))
                       (= 1 (length selection))) "REST")
-                ((cont-chord-p (car selection)) "TIE") 
+                ((cont-chord-p (car selection)) "TIE")
+                ((grace-chord-p (car selection)) "GRACE-CHORD")
                  (t (string-upcase (obj-mode self)))))
          (voice (object (om-view-container self)))
          (chords-only (get-only-chords selection))
