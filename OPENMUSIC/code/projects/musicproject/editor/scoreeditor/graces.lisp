@@ -78,7 +78,8 @@
 
 (defclass* grace-chord (chord) 
            ((pos :initform 0 :accessor pos  :initarg :pos); avoir si c'est necessaire
-            (thechord :initform nil :accessor thechord  :initarg :thechord)))
+            (thechord :initform nil :accessor thechord  :initarg :thechord))
+           (:icon 957))
 
 (defmethod grace-chord-p ((self grace-chord)) t)
 (defmethod grace-chord-p ((self t)) nil)
@@ -97,12 +98,25 @@
   (let ((thechord (thechord self)))
      (- (offset->ms thechord) 1)  ))
 
+#|
 (defmethod offset->ms ((self grace-chord) &optional grandparent)
   (if (group-p (parent self))
       (let* ((lgt (length (inside (parent self))))
              (offinit (* lgt *gdur*)))
         (- (offset->ms (thechord self) (get-voice (thechord self))) (- offinit (* (offset self) *gdur*))))    
   (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*)))
+|#
+
+;when just an isolated object in a patch:
+(defmethod offset->ms ((self grace-chord) &optional grandparent)
+  (cond 
+   ((group-p (parent self))
+      (let* ((lgt (length (inside (parent self))))
+             (offinit (* lgt *gdur*)))
+        (- (offset->ms (thechord self) (get-voice (thechord self))) (- offinit (* (offset self) *gdur*)))))
+   ((thechord self)
+    (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*))
+   (t 0)))
 
 
 (defmethod! set-grace-notes ((self simple-container) chords before?)
@@ -151,7 +165,8 @@
 ;(defmethod add-grace-notes-dialog ((self simple-container))
 ;  (set-grace-notes self '((6000 6500 7200) (7400 7900 8100) (5400 5700)) t))
 
-;just for testing purposes
+#|
+;TODO!
 (defmethod add-grace-notes-dialog ((self simple-container))
   (set-grace-notes self 
                    (loop for i in '((6000 6500 7200) (7400 7900 8100) (5400 5700))
@@ -159,6 +174,10 @@
                                    (setf (thechord chord) self)
                                    chord))
                    t))
+|#
+
+(defmethod add-grace-notes-dialog ((self simple-container))
+  (om-message-dialog "Not yet, Kameraden! Not yet!"))
 
 (defmethod delete-grace-notes ((self simple-container))
   (setf (gnotes self) nil))

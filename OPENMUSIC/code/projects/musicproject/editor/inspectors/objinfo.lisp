@@ -137,6 +137,7 @@ nil)
     (let* ((inside (inside self)))
     (remove nil (flat (mapcar #'get-only-chords inside)))))
 
+
 (defun get-voice (self)
   "starting from an inside obj of voice, returns voice."
   (let ((pere (parent self)))
