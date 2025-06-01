@@ -419,10 +419,11 @@
 (defvar *quantify-def-params* '(60 (4 4) 8  0 nil 0.5))
 (defvar *global-deltachords* 100)
 (defvar *gdur* 20)
+(defvar *quant-grace* 't)
 (setf *gdur* 100)
 
 (defmethod get-def-vals ((iconID (eql :conversion)))
-   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :gdur 100))
+   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :quant-grace 't :gdur 100))
 
 (defun check-deltachords (delta)
   (let ((defval (nth (1+ (position :delta-chords (get-def-vals :conversion))) (get-def-vals :conversion))))
@@ -481,6 +482,7 @@
     
     (setf *global-deltachords* (get-pref modulepref :delta-chords))
     (setf *quantify* (get-pref modulepref :quantify))
+    (setf *quant-grace* (get-pref modulepref :quant-grace))
     (setf *gdur* (get-pref modulepref :gdur))
     ))
 
@@ -520,7 +522,15 @@
                      
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 20)) (om-make-point 350 20) "(Default OM quantification parameters)"
                                           :font *om-default-font1*)
+                     (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Grace Notes"
+                                          :font *controls-font*)
                      
+                     (om-make-dialog-item 'om-check-box (om-make-point 150 i) (om-make-point 25 22) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :quant-grace)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :quant-grace (om-checked-p item))))
+
                      (om-make-dialog-item 'om-static-text  (om-make-point 50 (incf i 30)) (om-make-point 120 20) "Tempi"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-editable-text (om-make-point 150 i)  (om-make-point 37 13)

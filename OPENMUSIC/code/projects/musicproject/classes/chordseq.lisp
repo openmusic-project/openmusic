@@ -548,13 +548,24 @@ make-quanti
                        (durs (if (zerop (car (lonset newchordseq)))
                                  durs (cons (* (car (lonset newchordseq)) -1) durs)))
                        (newvoice (make-instance (type-of type)
-                                                :tree (omquantify  durs
-                                                                   (first quantypar)
-                                                                   (second quantypar)
-                                                                   (third quantypar)
-                                                                   (fifth quantypar)
-                                                                   (fourth quantypar) ;bug utiliser onset
-                                                                   (sixth quantypar))
+                                                :tree (if *quant-grace* 
+                                                          (omg-quantify  
+                                                           durs
+                                                           (first quantypar)
+                                                           (second quantypar)
+                                                           (third quantypar)
+                                                           (fifth quantypar)
+                                                           (fourth quantypar) ;bug utiliser onset
+                                                           (sixth quantypar))
+                                                        (omquantify  
+                                                         durs
+                                                         (first quantypar)
+                                                         (second quantypar)
+                                                         (third quantypar)
+                                                         (fifth quantypar)
+                                                         (fourth quantypar) ;bug utiliser onset
+                                                         (sixth quantypar)))
+                                                        
                                                 :tempo (first quantypar)
                                                 :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq)

@@ -341,7 +341,7 @@ box."
           (setq atimes nil))))
     (unless (zerop *unquantized-notes*)
       (if result
-        (when *om-verbose* 
+          (when (and *om-verbose* (not *quant-grace*)) 
           (format *om-stream*
                   "Warning: with the given constraints, ~D notes are lost while quantizing ~%"
                   *unquantized-notes*))
