@@ -234,14 +234,15 @@ a new tree accordingly:
 
 ;new version
 
-(defmethod! remove-tree-graces ((tree  list))
+(defmethod! remove-tree-graces ((tree t))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
   :indoc '("a rhythm tree")
   :icon 225
-  :doc "removes graces (0) and (0 ( 1 1 1)) from tree"  
+  :doc "removes non-destructively graces (0) and (0 ( 1 1 1)) from tree"  
    (if (atom tree) 
        (if (not (zerop tree)) tree)
      (if (and (atom (car tree)) (zerop (car tree)))
          nil
     (list (first tree) (remove nil (mapcar 'remove-tree-graces (second tree)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
