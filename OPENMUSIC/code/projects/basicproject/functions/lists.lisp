@@ -413,7 +413,7 @@ Ex. (subs-posn '(0 1 2 3) '(1 3) '(a b))  => (0 a 2 b)
           ))
 
 
-
+(defmethod* all-atoms? ((lst t)) nil)
 
 (defmethod* all-atoms? ((lst list))
   :initvals '((list 1 2)) 

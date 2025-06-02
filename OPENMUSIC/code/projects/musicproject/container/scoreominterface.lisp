@@ -534,7 +534,18 @@ when :
   (loop for item in (collect-chords self)
         when (and (chord-p item) (not (cont-chord-p item))) collect item))
 
-  
+
+;for graces
+
+(defmethod collect-chords-graces ((self container))
+  (loop for object in (inside self)
+        if (infra-group-p object) collect  
+            (if (gnotes object) (x-append  (glist (gnotes object)) object) object)
+        else append (collect-chords-graces object)))
+
+(defmethod get-real-chords-and-graces (self)
+  (loop for item in (flat (collect-chords-graces self))
+        when (and (chord-p item) (not (cont-chord-p item))) collect item))  
 
 
 (defmethod execption-save-p ((self voice)) 'voice)
@@ -542,7 +553,7 @@ when :
   `(when (find-class ',(type-of self) nil)
      (make-instance ',(type-of self)
        :tree ',(tree self)
-       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
+       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords-and-graces self))))
        :tempo ',(tempo self)
        :legato ,(legato self)
        :ties ',(ties self)
