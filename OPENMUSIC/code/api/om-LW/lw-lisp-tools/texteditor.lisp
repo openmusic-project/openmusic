@@ -712,6 +712,7 @@
                                    :if-exists :prompt
                                    :operation :save))
           (buffer (editor-pane-buffer ep)))
+      (om-set-window-title self (namestring path))
       (with-open-file (s path :direction :output :if-exists :supersede)
       (write-string (editor::points-to-string 
                      (editor::buffers-start buffer) 
