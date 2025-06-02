@@ -373,3 +373,48 @@ For more info, see omquantify help."
    (let ((durs (true-durations self))
          (chords (if chords chords (chords self))))
      (gkant durs chords tempi measures max/ forbid offset precis)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;OMG-QUANTIFY;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmethod! omg-quantify  ((self list) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+   :initvals '((100) 60 (4 4) 8  nil 0 0.5)
+   :icon 252
+   :indoc '("durations" "Tempo" "measures" "maximum division"  "forbidden
+divisions" "grace-notes?"
+            "precission")
+   :doc "Same as omquantify but displays gracenotes.
+For more info, see omquantify help."
+   (let* ((tree (omquantify self tempi measures max/ forbid offset precis))
+          (graces (get-n-grace self tempi measures max/ forbid offset precis))
+          (lgt (length graces))
+          (pos (om- graces (arithm-ser 0 lgt 1)))
+          (ins (insert-graces tree pos (repeat-n 1 lgt))))
+     (format-grace-notes ins)))
+
+
+(defmethod! omg-quantify  ((self voice) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+  
+  (let* ((durs (true-durations self))
+          (chords (chords self))
+          (tree (omg-quantify durs tempi measures max/ forbid offset precis)))
+     (make-instance 'voice
+                    :tree tree
+                    :chords chords
+                    :tempo tempi)))
+        
+
+
+

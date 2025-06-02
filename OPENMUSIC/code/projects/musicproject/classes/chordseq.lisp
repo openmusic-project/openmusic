@@ -361,7 +361,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 (defmethod* Objfromobjs ((Self sequence*) (Type Chord-seq))
   (if (subtypep (type-of self) (type-of type))
     (call-next-method)
-    (let ((chordseq  (flatten-container self '(chord note) (type-of type))))
+    (let (;(chordseq  (flatten-container self '(chord note) (type-of type)))
+          (chordseq  (collect-and-tranform self '(chord note rest))));for grace notes compat
       (SET-TEMPO chordseq 60) ; in case we come from a voice in a diff tempo
       (cast-to-chords chordseq)
       (untie-chords chordseq)
@@ -547,13 +548,24 @@ make-quanti
                        (durs (if (zerop (car (lonset newchordseq)))
                                  durs (cons (* (car (lonset newchordseq)) -1) durs)))
                        (newvoice (make-instance (type-of type)
-                                                :tree (omquantify  durs
-                                                                   (first quantypar)
-                                                                   (second quantypar)
-                                                                   (third quantypar)
-                                                                   (fifth quantypar)
-                                                                   (fourth quantypar) ;bug utiliser onset
-                                                                   (sixth quantypar))
+                                                :tree (if *quant-grace* 
+                                                          (omg-quantify  
+                                                           durs
+                                                           (first quantypar)
+                                                           (second quantypar)
+                                                           (third quantypar)
+                                                           (fifth quantypar)
+                                                           (fourth quantypar) ;bug utiliser onset
+                                                           (sixth quantypar))
+                                                        (omquantify  
+                                                         durs
+                                                         (first quantypar)
+                                                         (second quantypar)
+                                                         (third quantypar)
+                                                         (fifth quantypar)
+                                                         (fourth quantypar) ;bug utiliser onset
+                                                         (sixth quantypar)))
+                                                        
                                                 :tempo (first quantypar)
                                                 :legato 100 ;KH fix 240919
                                                 :chords  (chords newchordseq)

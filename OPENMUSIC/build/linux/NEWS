@@ -3,6 +3,7 @@
 NEW FEATURES
 
 - Shift+drag from output: Create and auto-connect output to new box
+- Grace notes
 
 IMPROVEMENTS
 
@@ -10,7 +11,7 @@ IMPROVEMENTS
 
 FIXES
 
-- fixed displau of resize-bug in a scrolled patch
+- fixed display of resize-bug in a scrolled patch
 - fixed Patch connections issues (linux) 
 - dynamic tempo fix
 - delete-all-inputs fixed: when boxtypeframe selected no error
