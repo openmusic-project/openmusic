@@ -1866,12 +1866,12 @@
                                                          (setf dur-obj (* dur-obj (/ num (denominator operation))))
                                                          (* dur-obj unite))
                                                        )
-                                                                         
+                                                    (unless (atom (second ryth))                     
                                                      (list (/ (car (second ryth)) (first ryth))
                                                            (nth i 
                                                                 ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
                                                                 (remove 0
-                                                                        (cadr (second ryth))))))))
+                                                                        (cadr (second ryth)))))))))
                                       newchord))
                                )
            )
@@ -2199,8 +2199,14 @@
    (loop for item in (inside self)
          append (collect-temporal-objects item father)))
 
-(defmethod collect-temporal-objects ((self grap-chord) father)
-   (list (list (offset->ms (reference self) father) self)))
+;(defmethod collect-temporal-objects ((self grap-chord) father)
+;   (list (list (offset->ms (reference self) father) self)))
+
+(defmethod collect-temporal-objects ((self grap-chord) father) 
+  (if (and (typep (reference self) 'grace-chord)
+           (typep (parent self) 'g-grap-grace-notes))
+      (list (list (get-grace-offset self father) self))
+    (list (list (offset->ms (reference self) father) self))))
 
 (defmethod collect-temporal-objects ((self grap-rest) father) 
    (list (list (offset->ms (reference self) father) self)))
@@ -2815,6 +2821,14 @@
    (when (equal (reference self) obj) self))
 
   
+
+(defmethod get-previous-grap-cont ((self grap-container))
+  "not used but could be useful"
+  (let* ((parent (parent self))
+         (ins (inside parent))
+         (pos (position self ins)))
+    (if (= 0 pos) nil
+      (nth (- pos 1) ins))))
 ;===========FOR PRINT
 
 #|

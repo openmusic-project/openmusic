@@ -41,7 +41,7 @@
    (QTempo :initform 60)
    (offset :initform 0)   
    (extent :initform 1)
-   (mus-const :initform nil)  ;may be it does nothing
+   (mus-const :initform nil)  ;used for grace notes (cf. scoreobject.lisp init-seq-from-tree)
    (mus-patch :initform nil)
    (mus-color :initform *om-black-color*)
    (tuplet-info :initform ())
