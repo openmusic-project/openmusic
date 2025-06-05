@@ -31,10 +31,15 @@ notes ,rests and tied notes. This version omits gnotes (0)."
     (list (first tree) (mapcar 'trans-index-tree (second tree)))))
 |#
 
+;(setf *tree* '(3/2 (((6 4) (1 -1 1 2.0 (1 (1 1 1)))))))
+
 (defmethod transpose-tree ((tree list))
   (setf *indx* 0)
   (setf *r-indx* nil)
-  (trans-index-tree tree))
+  (prog1
+  (trans-index-tree tree)
+    (setf *indx* 0)
+    (setf *r-indx* nil)))
 
 (defun trans-index-tree (tree)
 "transforms a rhythm tree into a tree with objects in the place of musical events:
@@ -244,5 +249,30 @@ a new tree accordingly:
      (if (and (atom (car tree)) (zerop (car tree)))
          nil
     (list (first tree) (remove nil (mapcar 'remove-tree-graces (second tree)))))))
+
+
+
+(defun gracenotes-insert (tree pos n)
+   (render-grace 
+    (trans-obj (insert-n-gn (transpose-tree tree) pos n))))
+
+
+(defmethod add-tree-graces ((tree list) (pos list) (num list))
+  "where tree is a tree, 
+pos are position of chords and rests not cont-chords!
+num is number of graces BEFORE pos" 
+  (let ((res tree))
+    (loop for p in pos
+          for n in num
+          do 
+            (setf res (gracenotes-insert res p n)))
+    (format-grace-notes res)))
+
+;(add-tree-graces *tree* '(1 2 4 5) '(1 3 6 4))
+;(add-tree-graces *tree* '(1 2 3) '(1 3 4))
+;(add-tree-graces *tree* '(1 3 4 5) '(1 3 4 5))
+;(add-tree-graces *tree* '(1 2 3) '(1 3 4 ))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
