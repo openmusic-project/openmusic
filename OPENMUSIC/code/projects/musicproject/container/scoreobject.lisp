@@ -711,7 +711,7 @@ Extraction methods.
 
 (defmethod tree ((self voice)) 
   (when (graces-in? self)
-    (let* ((chrds (collect-chords-graces self))
+    (let* ((chrds (collect-chords-rest-graces self))
            (pos (remove nil
                         (loop for i in chrds
                               for n from 0 to (length chrds)
@@ -722,6 +722,7 @@ Extraction methods.
       (setf (slot-value self 'tree)
             (add-tree-graces 
              (remove-tree-graces (slot-value self 'tree))
+             ;(slot-value self 'tree)
              pos lgt))))
   (slot-value self 'tree))
 ;;;
@@ -759,19 +760,21 @@ Extraction methods.
 (defmethod (setf legato) ((legato integer) (self voice))
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
 
-#|
+
 (defmethod chords ((self voice))
   (setf (approx self) (get-approx self));in order to retain approx
   (call-next-method))
-|#
+
 
 ;outputs also grace notes
+;A revoir!
+#|
 (defmethod chords ((self voice))
   (setf (approx self) (get-approx self));in order to retain approx
   (if (graces-in? self)
     (setf (slot-value self 'chords) (get-real-chords-and-graces self))
     (call-next-method)))
-
+|#
 
 (defmethod chords ((self sequence*)) 
   (loop for sub in (inside self)
