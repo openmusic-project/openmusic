@@ -212,12 +212,15 @@
     (list '? (buildmeasure-seq abs-rhythms timesignseq))))
 
 
-
-(defun better-predefined-subdiv? (sub-tree)
-  (let* ((proportional-list (cadr sub-tree))
-        (pauses (mapcar #'(lambda (value) (if (< value 0) -1 1)) proportional-list))
-        (abs-proportional-list (mapcar 'abs proportional-list))
-        abs-answer)
+(defun better-predefined-subdiv? (sub-tree) 
+  (let* ((proportional-list
+          (if (and (equal 0 (second (cadr sub-tree))) 
+                   (not (equal 0 (caadr sub-tree))))
+              (remove 0 (cadr sub-tree))
+            (cadr sub-tree)));removes the annoying pre-graces in tree 
+         (pauses (mapcar #'(lambda (value) (if (< value 0) -1 1)) proportional-list))
+         (abs-proportional-list (mapcar 'abs proportional-list))
+         abs-answer)
     (setf abs-answer
           (cond ((equal abs-proportional-list '(2 2 2 3 3))
                  (list (list 2 (list (first pauses)(second pauses)(third pauses)))(fourth pauses)(fifth pauses)))
@@ -243,6 +246,7 @@
                  (list (list 1 (list (first pauses)(second pauses)(third pauses)))(fourth pauses)))
                 (t proportional-list)))
     (list 1 abs-answer)))
+
 
 
 ;************************
