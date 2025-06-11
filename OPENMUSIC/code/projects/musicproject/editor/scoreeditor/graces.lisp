@@ -162,22 +162,61 @@
 ; GRAPHIC
 ;**************************************************************
 
-;(defmethod add-grace-notes-dialog ((self simple-container))
-;  (set-grace-notes self '((6000 6500 7200) (7400 7900 8100) (5400 5700)) t))
 
-#|
-;TODO!
-(defmethod add-grace-notes-dialog ((self simple-container))
-  (set-grace-notes self 
-                   (loop for i in '((6000 6500 7200) (7400 7900 8100) (5400 5700))
-                         collect (let ((chord (make-instance 'grace-chord :lmidic i :thechord self)))
-                                   (setf (thechord chord) self)
-                                   chord))
-                   t))
-|#
+;;;;ADD GRACE NOTES
+
+;;We use a chord-seq panel.
+(defclass* grace-note-seq (chord-seq)()) 
+
+(defclass graceEditor (chordseqEditor) ())
+
+(defmethod Class-has-editor-p  ((self grace-note-seq)) t)
+(defmethod get-editor-class ((self grace-note-seq)) 'graceEditor)
+
 
 (defmethod add-grace-notes-dialog ((self simple-container))
-  (om-message-dialog "Not yet, Kameraden! Not yet!"))
+  (open-add-grace-panel (get-voice self) self))
+
+(defmethod open-add-grace-panel ((self voice) thing)
+  (let* ((editor (editorframe (associated-box self)))
+         (chrdseq (make-instance 'grace-note-seq))
+         (internal (obj-for-internal-editor chrdseq))
+         (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
+    (push win (attached-editors editor))))
+
+
+(defmethod convert-chord-graces ((self voice))
+  (loop for item in (get-real-chords-and-graces self)
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
+(defmethod convert-chordlist-graces ((self list))
+  (loop for item in self
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
+
+(defmethod close-editor-after ((self graceEditor))
+  (let* ((obj (object self))
+         (chords (inside obj))
+         (voice (object (ref self)))
+         (sel (car (selection? (panel (ref self)))))
+         (pos (1- (evt-pos sel)))
+         (graces (loop for i in chords
+                       collect 
+                         (objfromobjs i (make-instance 'grace-chord)))))
+    (loop for i in graces do (setf (thechord i) sel))
+    (setf (gnotes sel) 
+          (make-instance 'grace-notes
+                         :glist graces
+                         :thechord sel
+                         :before? t))
+    (report-modifications (ref self))
+    (update-panel (panel (ref self)))))
+
+;;;;DELETE GRACE NOTES
 
 (defmethod delete-grace-notes ((self simple-container))
   (setf (gnotes self) nil))

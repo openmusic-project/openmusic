@@ -5491,6 +5491,7 @@
 (defmethod subdivise-figure ((self chord) subdiv)
    (let* ((pere (parent self))
           (pos (position self (inside pere) :test 'equal))
+          (gnotes (gnotes self))
           (newgroup (make-instance 'group 
                       :tree (list (extent self) 
                                   (create-list subdiv (if (cont-chord-p self) 1.0 1))))))
@@ -5503,6 +5504,7 @@
                  (LVel item) (LVel self)
                  (LOffset item) (LOffset self)
                  (LChan item) (LChan self)))
+     (setf (gnotes (car (inside newgroup))) gnotes)
      (setf (nth pos (inside pere)) newgroup)
      (reverse (cons-container-path (car (inside newgroup))))))
 

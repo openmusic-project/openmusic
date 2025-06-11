@@ -703,6 +703,30 @@ Extraction methods.
     (slot-value self 'tree)
     (setf (slot-value self 'tree) (check-tree-for-contchord (build-tree self) self))))
 
+;;outputs correctly grace trees after editing
+(defmethod graces-in? ((self voice))
+  (let ((chords (flat (collect-chords-graces self))))
+    (find-if #'grace-chord-p chords)))
+
+
+(defmethod tree ((self voice)) 
+  (when (graces-in? self)
+    (let* ((chrds (collect-chords-rest-graces self))
+           (pos (remove nil
+                        (loop for i in chrds
+                              for n from 0 to (length chrds)
+                              collect (if (listp i) n))))
+           (lgt (remove nil
+                        (loop for i in chrds
+                              collect (if (listp i) (1- (length i)))))))
+      (setf (slot-value self 'tree)
+            (add-tree-graces 
+             (remove-tree-graces (slot-value self 'tree))
+             ;(slot-value self 'tree)
+             pos lgt))))
+  (slot-value self 'tree))
+;;;
+
 (defmethod (setf tree) ((tree list) (self metric-sequence))
   (initialize-instance self :tree tree ))
 
@@ -736,9 +760,21 @@ Extraction methods.
 (defmethod (setf legato) ((legato integer) (self voice))
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
 
+
 (defmethod chords ((self voice))
   (setf (approx self) (get-approx self));in order to retain approx
   (call-next-method))
+
+
+;outputs also grace notes
+;A revoir!
+#|
+(defmethod chords ((self voice))
+  (setf (approx self) (get-approx self));in order to retain approx
+  (if (graces-in? self)
+    (setf (slot-value self 'chords) (get-real-chords-and-graces self))
+    (call-next-method)))
+|#
 
 (defmethod chords ((self sequence*)) 
   (loop for sub in (inside self)
@@ -747,6 +783,30 @@ Extraction methods.
           else if (container-p sub) append (chords sub)))
 
 
+;;redifinition for grace-notes....
+;in order to have the gracetree output after edition
+;but doesn't work!
+
+(defmethod note-chord-or-rest-p ((self T)) 
+  (or (chord-p self) (rest-p self) (note-p self)))
+#|
+(defmethod chords ((self sequence*)) 
+  (let ((chords 
+         (remove nil 
+                 (flat (loop for sub in (inside self)
+                             when (not (cont-chord-p sub))
+                               if (note-chord-or-rest-p sub) 
+                                 collect (cond 
+                                          ((and (rest-p sub) (gnotes sub)) (glist (gnotes sub)))
+                                          ((gnotes sub) (x-append (glist (gnotes sub)) (ot-clone sub)))
+                                          ((not (rest-p sub)) (ot-clone sub))
+                                          (t nil))
+                               else if (container-p sub) append (chords sub))))))
+    (loop for i in chords
+          collect (if (grace-chord-p i)
+                      (objfromobjs i (make-instance 'chord))
+                    i))))
+|#
 ;;;
 (defmethod (setf approx) ((approx number) (self poly))
   (call-next-method)
@@ -1369,6 +1429,7 @@ of all its direct subcontainers (supposed adjacent)"
 (defmethod tie-chord ((self continuation-chord) mode)   
 "When VOICE receives chords, keep duration if <legato> is 0. Continuation-chords will 
 be taken into consideration"
+(setf (gnotes self) nil);if gnotes before
   (loop for note in (inside self)
         do (progn 
              (setf (tie note) mode)

@@ -171,9 +171,12 @@
                 (car (om-midi::midi-evt-fields object))
                 ))
               ((equal (om-midi::midi-evt-type object) :lyric)
+               ;doesn't work!
+               #|
                (unless (or (= 10 (car (om-midi::midi-evt-fields object)))
                            (= 13 (car (om-midi::midi-evt-fields object))))
                  (print (ascii->string (om-midi::midi-evt-fields object))))
+               |#
                ))))))
 
  
