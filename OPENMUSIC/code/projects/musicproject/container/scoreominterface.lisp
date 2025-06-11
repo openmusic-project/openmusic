@@ -537,6 +537,15 @@ when :
 
 ;for graces
 
+(defmethod collect-chords-rest-graces ((self container))
+  "returns chords and rest (WITHOUT  cont-chords) with grace-notes appended"
+  (remove nil
+          (loop for object in (inside self)
+                if (infra-group-p object) collect  
+                    (if (gnotes object) (x-append  (glist (gnotes object)) object) 
+                      (if (not (cont-chord-p object)) object))
+                else append (collect-chords-rest-graces object))))
+
 (defmethod collect-chords-graces ((self container))
   (loop for object in (inside self)
         if (infra-group-p object) collect  

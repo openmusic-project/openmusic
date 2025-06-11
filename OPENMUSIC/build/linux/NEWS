@@ -2,8 +2,9 @@
 
 NEW FEATURES
 
+- New methods: omg-quantify and remove-tree-graces
+- Grace notes support
 - Shift+drag from output: Create and auto-connect output to new box
-- Grace notes
 
 IMPROVEMENTS
 
@@ -11,6 +12,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Buffer edit fix (macosx)
 - fixed display of resize-bug in a scrolled patch
 - fixed Patch connections issues (linux) 
 - dynamic tempo fix

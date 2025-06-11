@@ -481,7 +481,7 @@
     (set-pref modulepref :delta-chords (check-deltachords delta))
     
     (setf *global-deltachords* (get-pref modulepref :delta-chords))
-    (setf *quantify* (get-pref modulepref :quantify))
+    (setf *quantify-def-params* (get-pref modulepref :quantify))
     (setf *quant-grace* (get-pref modulepref :quant-grace))
     (setf *gdur* (get-pref modulepref :gdur))
     ))
