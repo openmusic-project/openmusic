@@ -164,7 +164,8 @@
   (unless (equal *clicked-view* :abort)
     (if *clicked-view* (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
-      #+lispworks81 (capi::update-drawing-with-cached-display self x y)
+     ; #+lispworks81 (capi::update-drawing-with-cached-display self x y) ;pour linux ca arrange le doubleclic pour creation de boite.
+    ;oui mais empeche bizarrement les graces notes de s'afficher en add grace notes n'a rien av oir !
       ))
    
 (defmethod om-click-motion-handler (self pos) t)
@@ -180,7 +181,7 @@
     (if *clicked-view* 
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
-    #+(and cocoa lispworks8) (update-for-subviews-changes self t) ;updates some widgets eg. text-box ;;But not in Linux!
+    #+(and cocoa linux lispworks8)(update-for-subviews-changes self t) ;updates some widgets eg. text-box ;;But not in Linux!A VOIR
     ))
 
 (defmethod om-click-release-handler ((self om-graphic-object) pos) nil) 
@@ -203,7 +204,8 @@
 (defmethod om-view-doubleclick-handler :before ((self om-graphic-object) pos)
   ;(setf *click-motion-view* nil) ;to be tested
   ;(setf *click-motion-action* nil) ;to be tested
-  (setf *clicked-view* nil))
+ #-linux(setf *clicked-view* nil);enlever pour linux (A VOIR)
+)
 
 ;;;=================
 ;;; MOVE
@@ -222,7 +224,8 @@
 
 (defmethod internal-motion-callback ((self om-graphic-object) pos)
   (update-view-cursor self)
-  #+cocoa(when (tooltip-key-down) (om-show-tooltip self))
+  #+(or cocoa linux)
+  (when (tooltip-key-down) (om-show-tooltip self))
   (unless (equal *last-containing-view* self)
     (when *last-containing-view*
       (om-view-mouse-leave-handler *last-containing-view*)
@@ -232,7 +235,8 @@
       ;;#+win32(when *last-containing-view* (om-hide-tooltip *last-containing-view*))
       )
     (om-view-mouse-enter-handler self)
-    #+(or win32 linux) (when (tooltip-key-down) (om-show-tooltip self))
+    ;#+(or win32 linux) 
+    #+win32(when (tooltip-key-down) (om-show-tooltip self))
     ;(capi::call-HELP-CALLBACK (om-view-window self) (om-get-view self) :tooltip t)  
     (setf *last-containing-view* self))
   (when (om-view-window self)

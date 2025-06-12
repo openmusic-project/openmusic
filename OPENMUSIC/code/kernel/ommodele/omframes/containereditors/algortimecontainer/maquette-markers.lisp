@@ -195,7 +195,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
        (let* ((container (om-view-container (car (frames self))))
               (sys-etat (get-system-etat container))
               (new-pos (point2pixel container  (om-make-big-point offset 0) sys-etat)))
-         (OMGMoveOffsetObject (car (frames self)) new-pos)
+         (OMGMoveOffsetObject (car (frames self)) new-pos offset)
          (setf (offset self) offset))
        (setf (offset self) offset))
      (om-beep-msg "incorrect offset value")))

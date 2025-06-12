@@ -388,7 +388,7 @@
    (cursor-mode (panel self)))
 
 (defmethod update-subviews ((self MaquetteEditor))
-  (call-next-method)
+  #+(or macosx win32)(call-next-method)
   (let ((pane (panel self)))
     (om-with-delayed-redraw pane
       (om-set-view-size (rulerx pane) (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) x-ruler-h))

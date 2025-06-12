@@ -101,7 +101,7 @@
 (defmethod editor-minimum-size ((self arrayeditor))
   (om-make-point 200 100))
 
-(defmethod get-control-h ((self arrayeditor)) 45)
+(defmethod get-control-h ((self arrayeditor)) 45 #+linux 70)
 
 
 (defclass array-titlebar (editor-titlebar) 

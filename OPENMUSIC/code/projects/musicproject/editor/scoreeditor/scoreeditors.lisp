@@ -388,7 +388,7 @@
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
 
-(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 70)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
 (defparameter *second-row-y* #-linux 25 #+linux 35)
@@ -915,6 +915,12 @@
 
 (defmethod set-field-size ((self scorepanel)) 
    t)
+
+
+;pour empecher les micro scroll sous linux
+#+linux
+(defmethod om-set-scroll-position ((self scorepanel) pos) nil)
+
 
 (defmethod om-add-subviews ((self scorepanel) &rest subviews)
   "Adds subviews to a graphicbject"

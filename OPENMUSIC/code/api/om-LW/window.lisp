@@ -119,11 +119,18 @@
   (setf (vy self) (om-point-v pos-point))
   )
 
+
+;A VOIR -rev
 (defmethod om-view-size ((self om-abstract-window))
   (if (interface-visible-p self)
       (let ((point (capi::interface-geometry self)))
         #+win32 (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
         #+(or cocoa linux) (om-make-point (third point) (fourth point)))
+    
+    ;#+(or linux win32) (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
+    ;#+cocoa (om-make-point (third point) (fourth point)))
+    
+
       (om-make-point (vw self) (vh self))))
 
 
@@ -391,7 +398,10 @@
                                ))))
     
     (when (setf layout (make-window-layout thewin bg-color))
-      #+(or linux cocoa)(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
+      ;A VOIR rev
+      #+(or linux cocoa)
+      ;#+cocoa
+      (if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
       (setf (capi::pane-layout thewin) layout))
      (when subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) subviews))
      (correct-win-h thewin)

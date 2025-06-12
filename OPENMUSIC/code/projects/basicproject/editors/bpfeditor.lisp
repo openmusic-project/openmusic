@@ -62,8 +62,8 @@
                                                      (let ((pane (panel (om-view-container (om-view-container item)))))
                                                        (setf (grille-p pane) (om-checked-p item))
                                                        (if (grille-p pane)
-                                                           #-(and cocoa lispworks8)(draw-grille pane)
-                                                         #+(and cocoa lispworks8) (om-invalidate-view pane)
+                                                           #-(or cocoa linux)(draw-grille pane)
+                                                         #+(or cocoa linux) (om-invalidate-view pane)
                                                           (om-invalidate-view pane))
                                                        ))
                                         :font *om-default-font1*
@@ -257,7 +257,7 @@
 (defmethod get-panel-class ((Self Bpfeditor)) 'bpfPanel)
 (defmethod get-control-class ((Self Bpfeditor)) 'control-bpf)
 
-(defmethod get-control-h ((self Bpfeditor)) 45)
+(defmethod get-control-h ((self Bpfeditor)) #+(or cocoa win32) 45 #+linux 70)
 
 (defmethod initialize-instance :after ((Self Bpfeditor) &rest L) 
    (declare (ignore l))

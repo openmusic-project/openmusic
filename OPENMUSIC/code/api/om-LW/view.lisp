@@ -161,7 +161,7 @@
                (setf (vx self) x) (setf (vy self) y)))))
   (om-make-point (vx self) (vy self)))
 
-(defmethod om-set-view-size ((self om-graphic-object) size-point) 
+(defmethod om-set-view-size ((self om-graphic-object) size-point)
   (let ((w (or (om-point-h size-point) (vw self)))
         (h (or (om-point-v size-point) (vh self))))
     (capi:apply-in-pane-process self 
@@ -220,8 +220,8 @@
    )
 
 ;;; :simple-pane-scroll-callback
-(defmethod scroll-update ((self om-scroller) dimension operation pos-list &rest options)
-  ;(print (list dimension operation pos-list))
+(defmethod scroll-update ((self om-scroller) dimension operation pos-list &rest options) 
+  ;(print (list self dimension operation pos-list))
   (case dimension
     (:vertical (setf pos-list (list 0 pos-list)))
     (:horizontal (setf pos-list (list pos-list 0)))
@@ -255,7 +255,7 @@
 (defmethod om-view-size ((self om-scroller)) 
   (call-next-method))
 
-(defmethod om-set-view-size ((self om-scroller) size-point) 
+(defmethod om-set-view-size ((self om-scroller) size-point)
   (capi:apply-in-pane-process self  #'(lambda ()
        (setf (static-layout-child-size self) (values (om-point-h size-point) (om-point-v size-point)))
        ;; pas la peine ??
@@ -304,12 +304,19 @@
 
 (defmethod om-set-scroll-position ((self t) pos) nil)
 
+;#+(or cocoa win32)
 (defmethod om-set-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
    self
    'capi::scroll self :pan :move 
    (list (om-point-h pos) (om-point-v pos))))
 
+#|
+#+linux
+(defmethod om-set-scroll-position ((self om-scroller) pos) 
+(print (list self))
+nil)
+|#
 (defmethod om-h-scroll-position ((self om-scroller))
   (or (capi::get-horizontal-scroll-parameters self :slug-position) 0))
 
