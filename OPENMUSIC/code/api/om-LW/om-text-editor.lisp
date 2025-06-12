@@ -20,7 +20,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Jean Bresson, Carlos Agon
+; Authors: Jean Bresson, Carlos Agon, Karim Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -132,11 +132,17 @@
 
 (defmethod om-lisp::lisp-operations-enabled ((self om-lisp-edit-window)) t)
 
+;had to import this from lispmode.lisp version 8.1/src/editor
+(defun current-form-as-read (start-point)
+  (editor::with-point ((spoint start-point))
+    (when (editor:form-offset spoint 1)
+      (editor::read-form-from-region start-point spoint))))
+
 (defmethod om-get-lisp-expression ((self om-lisp-edit-window))
   (let ((textbuffer (om-lisp::buffer (om-lisp::editor-buffer self))))
     (editor::use-buffer textbuffer
       ;; (editor::SKIP-LISP-READER-WHITESPACE (editor:buffers-start textbuffer) textbuffer)
-      (editor::current-form-as-read (editor:buffers-start textbuffer))
+      (current-form-as-read (editor:buffers-start textbuffer))
       )))
 
 ;(defmethod test-lisp-form ((self om-text-edit-window))
