@@ -211,13 +211,16 @@
   (let ((abs-rhythms (dx-x-pause-ok 1 (append rhythmseq '(-100)))))
     (list '? (buildmeasure-seq abs-rhythms timesignseq))))
 
+(defun remove-grace-echo (tree)
+  (if (or (and (equal 0 (caadr tree))
+               (not (equal 0 (car (reverse (cadr tree))))))
+          (and (not (equal 0 (caadr tree)))
+               (not (equal 0 (car (reverse (cadr tree)))))))
+      (cadr tree)
+    (remove 0 (cadr tree))))
 
 (defun better-predefined-subdiv? (sub-tree) 
-  (let* ((proportional-list
-          (if (and (equal 0 (second (cadr sub-tree))) 
-                   (not (equal 0 (caadr sub-tree))))
-              (remove 0 (cadr sub-tree))
-            (cadr sub-tree)));removes the annoying pre-graces in tree 
+  (let* ((proportional-list (remove-grace-echo sub-tree));removes the annoying pre-graces in tree 
          (pauses (mapcar #'(lambda (value) (if (< value 0) -1 1)) proportional-list))
          (abs-proportional-list (mapcar 'abs proportional-list))
          abs-answer)
