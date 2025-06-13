@@ -5,9 +5,9 @@
 # @author   Karim Haddad
 #==============================================================================
 
-OM_VERSION="7.7"
+OM_VERSION="8.0"
 
-VERSION="7.7"
+VERSION="8.0"
 REVISION="1"
 ARCH="amd64"
 DEB_VERSION=${VERSION}-${REVISION}_${ARCH}
@@ -57,7 +57,7 @@ mkdir ${DEB_DIR}/usr/bin
 
 
 # copy binaries to folders
-cp ${BIN_PATH}/OM_7.7 ${DEB_DIR}/usr/bin/
+cp ${BIN_PATH}/OM_8.0 ${DEB_DIR}/usr/bin/
 cp -r ${BIN_PATH}/build/linux ${DEB_DIR}/usr/share/openmusic
 cp ${BIN_PATH}/build/linux/OM.desktop ${DEB_DIR}/usr/share/applications
 cp ${BIN_PATH}/build/linux/omlogo.png ${DEB_DIR}/usr/share/pixmaps
@@ -87,7 +87,7 @@ cp "control" ${DEB_DIR}/DEBIAN
 #chown root:root -R ${BUILD_DIR}/'OM_'${OM_VERSION}
 
 #Make a symbolic link to image
-ln -r -s ${DEB_DIR}/usr/bin/OM_7.7 ${DEB_DIR}/usr/bin/openmusic
+ln -r -s ${DEB_DIR}/usr/bin/OM_8.0 ${DEB_DIR}/usr/bin/openmusic
 
 
 #It's here that fucks up!!!!
@@ -95,7 +95,7 @@ ln -r -s ${DEB_DIR}/usr/bin/OM_7.7 ${DEB_DIR}/usr/bin/openmusic
 #chown root:root -R ${BUILD_DIR}/'OM_'${OM_VERSION}
 
 #Change the script's permissions:
-chmod 0755 ${DEB_DIR}/usr/bin/OM_7.7
+chmod 0755 ${DEB_DIR}/usr/bin/OM_8.0
 chmod 0755 ${DEB_DIR}/usr/bin/openmusic
 
 
