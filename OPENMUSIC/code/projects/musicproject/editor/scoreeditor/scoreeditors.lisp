@@ -387,6 +387,11 @@
 
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
+(defmethod set-attached-editor ((self scoreeditor)) 
+  (let ((ref (ref self)))
+    (when (equal (type-of ref) 'omboxeditcall)
+      (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
+        (push self (attached-editors patcheditor))))))
 
 (defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
@@ -458,6 +463,7 @@
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     (init-draw self)
     (init-boxes-in-score ed-view)
+    (set-attached-editor self)
     #+macosx(update-alt-panel (panel self))
     ))
 
@@ -915,11 +921,6 @@
 
 (defmethod set-field-size ((self scorepanel)) 
    t)
-
-
-;pour empecher les micro scroll sous linux
-#+linux
-(defmethod om-set-scroll-position ((self scorepanel) pos) nil)
 
 
 (defmethod om-add-subviews ((self scorepanel) &rest subviews)

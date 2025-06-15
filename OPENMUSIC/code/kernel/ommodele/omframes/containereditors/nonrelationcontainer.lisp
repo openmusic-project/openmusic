@@ -537,22 +537,24 @@ with the objects respectly associeted."))
          (inc (if (om-shift-key-p) 500 50)))
     (case char 
       (:om-key-right 
-       (om-set-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (+ hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-left
-       (om-set-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (- hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-up
-       (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (- vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-down
-       (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (+ vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-esc 
-       (om-set-scroll-position self (om-make-point 0 0))
+       (om-move-scroll-position self (om-make-point 0 0))
        (oa::om-set-h-scroll-position self 0)
        (oa::om-set-v-scroll-position self 0))
-      )))
+      )
+      (capi::update-drawing-with-cached-display self);linux
+    ))
 
 
 
@@ -613,6 +615,7 @@ Workspace Panels contain icons of patches, maquettes and folders
  
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
+
 
 (defmethod sort-subframes ((self nonrelationPanel) elements)
  (case (presentation (om-view-container self))

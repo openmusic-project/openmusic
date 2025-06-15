@@ -234,17 +234,33 @@
 
 (defmethod editor-close? ((self t)) t)
 
+#|
 (defmethod om-window-close-event :before ((self EditorWindow))
   (when (editor self)
     (close-editor-before (editor self))))
+|#
 
-(defmethod om-window-close-event :around ((self EditorWindow)) 
-   (when (editor self)
-       (loop for ed in (attached-editors (editor self)) do
-                 (om-close-window ed))
-       (close-editorFrame (editor self))
-       (close-editor-after (editor self))
-       ))
+;;a voir  (around -> after);no good!
+#|
+(defmethod om-window-close-event :after ((self EditorWindow)) 
+  (when (editor self)
+    (loop for ed in (attached-editors (editor self)) do
+            (om-close-window ed))
+    (close-editorFrame (editor self))
+    (close-editor-after (editor self))
+    ))
+|#
+
+;before est necessaire ici
+(defmethod om-window-close-event :before ((self EditorWindow))
+  (when (editor self)
+        (loop for ed in (attached-editors (editor self)) do
+            (om-close-window ed))
+    (close-editorFrame (editor self))
+    (close-editor-after (editor self))
+    (close-editor-before (editor self))
+))
+
 
 (defmethod om-view-key-handler :around ((self EditorWindow) char)
    (if (and char (editor self) (key-event-around (editor self) char))

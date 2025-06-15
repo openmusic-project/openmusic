@@ -259,6 +259,13 @@
 
 (defmethod get-control-h ((self Bpfeditor)) #+(or cocoa win32) 45 #+linux 70)
 
+(defmethod set-attached-editor ((self bpfeditor))
+    (let ((ref (ref self)))
+    (when (equal (type-of ref) 'omboxeditcall)
+      (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
+        (push self (attached-editors patcheditor))))))
+
+
 (defmethod initialize-instance :after ((Self Bpfeditor) &rest L) 
    (declare (ignore l))
    (unless (bpf-p (object self))
@@ -302,7 +309,7 @@
     (set-control self control)
     (when (multibpf? self) (add-multibpf-controls (control self)))
     )
-   
+   (set-attached-editor self)
    (init-spline-manager self))
 
 

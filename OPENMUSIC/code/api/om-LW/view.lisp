@@ -40,6 +40,7 @@
           om-set-field-size
           om-scroll-position
           om-set-scroll-position
+          om-move-scroll-position
           om-h-scroll-position
           om-v-scroll-position
           om-set-h-scroll-position
@@ -304,19 +305,25 @@
 
 (defmethod om-set-scroll-position ((self t) pos) nil)
 
-;#+(or cocoa win32)
+#+(or cocoa win32)
 (defmethod om-set-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
    self
    'capi::scroll self :pan :move 
    (list (om-point-h pos) (om-point-v pos))))
 
-#|
 #+linux
-(defmethod om-set-scroll-position ((self om-scroller) pos) 
-(print (list self))
-nil)
-|#
+;pour empecher les micro-scroll sous linux
+(defmethod om-set-scroll-position ((self om-scroller) pos) nil)
+
+;#+linux
+;for scrolling shortcuts only
+(defmethod om-move-scroll-position ((self om-scroller) pos)
+  (capi::apply-in-pane-process 
+   self
+   'capi::scroll self :pan :move 
+   (list (om-point-h pos) (om-point-v pos))))
+
 (defmethod om-h-scroll-position ((self om-scroller))
   (or (capi::get-horizontal-scroll-parameters self :slug-position) 0))
 
