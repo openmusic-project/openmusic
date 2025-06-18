@@ -171,9 +171,8 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 ;GET SLOTS
 (defmethod LMidic ((self chord-seq))
-  (setf (approx self) (get-approx self))
   (loop for chord in (inside self)
-        collect (approx-m (Lmidic chord) (get-approx self))))
+        collect (approx-m (Lmidic chord) (approx self))))
 
 (defmethod Lvel ((self chord-seq))
    (loop for chord in (inside self)
@@ -362,7 +361,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
   (if (subtypep (type-of self) (type-of type))
     (call-next-method)
     (let (;(chordseq  (flatten-container self '(chord note) (type-of type)))
-          (chordseq  (collect-and-tranform self '(chord note rest))));for grace notes compat
+          (chordseq  (collect-and-transform self '(chord note rest))));for grace notes compat
       (SET-TEMPO chordseq 60) ; in case we come from a voice in a diff tempo
       (cast-to-chords chordseq)
       (untie-chords chordseq)
@@ -846,7 +845,7 @@ MULTI-SEQ is a polyphonic object made of a superimposition of CHORD-SEQ objects.
 
 
 (defmethod chord-seqs ((self multi-seq))
-  (setf (approx self) (get-approx self));persistance
+  (setf (approx self) (approx self));persistance
   (loop for c in (inside self) collect 
         (let ((c2 (clone c)))
           (setqvalue c2 1)

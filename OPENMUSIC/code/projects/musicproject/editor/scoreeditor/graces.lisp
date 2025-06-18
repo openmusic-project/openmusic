@@ -84,6 +84,89 @@
 (defmethod grace-chord-p ((self grace-chord)) t)
 (defmethod grace-chord-p ((self t)) nil)
 
+;;voir si c'est necessaire
+#|
+(defmethod LMidic ((self grace-chord))
+  (setf (approx self) (get-approx self))
+  (loop for chord in (inside self)
+        collect (approx-m (midic chord) (get-approx self))))
+
+(defmethod LChan ((self grace-chord))
+  (loop for note in (inside self)
+        collect (chan note)))
+
+(defmethod Lvel ((self grace-chord))
+  (loop for note in (inside self)
+        collect (vel note)))
+
+(defmethod LDur ((self grace-chord))
+  (loop for note in (inside self)
+        collect (dur note)))
+
+(defmethod LOffset ((self grace-chord))
+  (loop for note in (inside self)
+        collect (Offset->ms note)))
+
+(defmethod LPort ((self grace-chord))
+  (get-port self))
+
+(defmethod (setf Lmidic) ((LMidic list) (self grace-chord))
+  (do-initialize self 
+                 :LMidic LMidic
+                 :LVel (LVel self)
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
+
+(defmethod (setf LChan) ((LChan list) (self grace-chord))
+  (do-initialize self 
+                 :LMidic (LMidic self)
+                 :LVel (LVel self)
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan LChan
+                 :LPort (LPort self)))
+
+(defmethod (setf LVel) ((LVel list) (self grace-chord))
+  (do-initialize self 
+                 :LMidic (LMidic self)
+                 :LVel LVel
+                 :LOffset (LOffset self)
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
+
+(defmethod (setf LOffset) ((LOffset list) (self grace-chord))
+  (do-initialize self 
+                 :LMidic (LMidic self)
+                 :LVel (LVel self)
+                 :LOffset LOffset
+                 :LDur (LDur self)
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
+
+(defmethod (setf LDur) ((Ldur list) (self grace-chord))
+  (do-initialize self 
+                 :LMidic (LMidic self) 
+                 :LVel  (LVel self) 
+                 :LOffset (LOffset self)
+                 :LDur LDur
+                 :LChan (LChan self)
+                 :LPort (LPort self)))
+
+(defmethod (setf LPort) ((LPort list) (self grace-chord))
+  (loop for port in LPort
+        for note in (inside self)
+        do (set-port note port))
+  self)
+|#
+
+(defmethod (setf approx) ((approx number) (self grace-chord))
+  (call-next-method)
+  (loop for i in (inside self)
+        do (setf (approx i)  approx))
+  self)
 
 (defmethod* Objfromobjs ((Self chord) (Type grace-chord)) 
   (make-instance 'grace-chord
@@ -182,6 +265,7 @@
          (chrdseq (make-instance 'grace-note-seq))
          (internal (obj-for-internal-editor chrdseq))
          (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
+    (setf (approx chrdseq) (approx self));ADD
     (push win (attached-editors editor))))
 
 
@@ -743,11 +827,19 @@ If no grace notes, return liste."
       )))
 
 
-(defmethod* Objfromobjs ((Self grace-chord) (Type Chord)) 
-  (setf (ldur self) (list *gdur*))
-  (ObjFromObjs  (list self) Type))
 
-(defmethod collect-and-tranform ((self voice) (below t))
+(defmethod* Objfromobjs ((Self grace-chord) (Type chord)) 
+  (let ((chord
+         (make-instance 'chord
+                 :lmidic (lmidic self)
+                 :lvel (lvel self)
+                 :ldur (list *gdur*)
+                 :lchan (lchan self)
+                 :approx (approx self))))
+    (setf (approx chord) (approx self))
+    chord))
+
+(defmethod collect-and-transform ((self voice) (below t))
   (let* ((target (mki 'chord-seq :empty t))
          (coll (fit-graces-in-duration self))
          (cont0 (car coll))
@@ -948,3 +1040,62 @@ An OM object representing a group in a rhythm.
             ;(setf (main-point i) (list 0 nil))
           ))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod make-graph-ryth-obj ((self grace-chord) top staffsys linespace scale sel pere durtot &optional ryth)
+  (let* ((thenotes (sort (copy-list (inside self)) '< :key 'midic))
+         (onlyhead (note-head-and-points durtot))  ;(onlyhead (/ (second ryth) (first ryth))))
+         (points (second onlyhead))
+         (onlyhead (first onlyhead))
+         (beams (get-number-of-beams durtot)) 
+         (beams-num (if (listp beams) (car beams) beams))
+         (zigzag-list (make-alt-zig-zag self scale))
+         (note-head-list (make-chord-zig-zag self scale))
+         (new-chr (make-instance 'grap-ryth-chord
+                                 :reference self
+                                 :parent pere
+                                 :durtot durtot
+                                 :stem ;(and 
+                                 (not (or (listp onlyhead) (equal onlyhead (head-4)) (equal onlyhead (head-8)) 
+                                          (equal onlyhead (head-2)) (equal onlyhead (head-1))))
+                           ;(round (* 3 linespace))) ;;;; JB: stem must be a size for draw-object....??
+                                 :selected (member self sel :test 'equal)))
+         (maxw 0) )
+    (when (listp  onlyhead)
+      (setf (bigchord new-chr) (car onlyhead))
+      (setf onlyhead (head-8)))
+    (setf (inside new-chr)
+          (loop for item in thenotes
+                for pos in note-head-list
+                for i = 0 then (+ i 1)
+                collect
+                  (progn 
+                    (setf (approx item) (approx self));important for accidentals!
+                    (let ((notegrap (make-graph-ryth-obj item top staffsys linespace scale sel new-chr nil nil))
+                          (alt-char (get-alt-char item scale (armure staffsys)))
+                          notew)
+                      ;(print (list "grace-chord" item (approx item) (approx self) alt-char scale self durtot  ))
+                      (setf (points notegrap) 0)
+                      (setf (delta-head notegrap) (round pos *grace-factor*))
+                      (setf (headchar notegrap) onlyhead)
+                      (when alt-char
+                        (setf (alt-char notegrap) alt-char))
+                      (when (natural-alt-char notegrap)
+                        (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list))))
+                      (setf notew (round (* 2 (max (* linespace pos)
+                                                   (* linespace (if (alteration notegrap) (* -1 (- (alteration notegrap) 1)) 0)))) *grace-factor*))
+                      (setf (rectangle notegrap) (list 0 0 notew (round linespace)))
+                      (setf (nth 0 (main-point notegrap)) (round (* linespace pos) *grace-factor*))
+                      (setf maxw (max maxw notew))
+                      notegrap))))
+    
+    (setf (beams-num new-chr) beams-num)
+    (setf (propre-group new-chr) (if (listp beams) (second beams)))
+    (when (and (stem new-chr) (not (group-p (parent self))))
+      (setf (stemdir new-chr) (chord-direction new-chr (midicenter staffsys)))
+      (setf (stemhigh new-chr) (round (* 3 linespace))))
+    (setf (rectangle new-chr)  (list 0 0 maxw 0))
+    (make-graphic-extras new-chr)
+    (if (gnotes self)
+        (list (grap-grace-notes new-chr) new-chr)
+      new-chr)))
