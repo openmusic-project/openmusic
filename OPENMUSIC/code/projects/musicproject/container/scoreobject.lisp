@@ -1431,14 +1431,18 @@ of all its direct subcontainers (supposed adjacent)"
                                                chord-model))
                                    (change-class chord 'continuation-chord)))
                                 ;;;;;;;;;;;;;;;;;;;;;;;;
-                                ((mus-const sub) ;;; THERE ARE GRACE NOTES !!
+                                ((mus-const sub) ;;; THERE ARE GRACE NOTES !! 
                                  (let* ((nnotes-before (count 1 (mus-const sub) :test '=)); ici c'etait -1 et c'est bien cela qui fout la merde....
                                         (nnotes-after (count -1 (mus-const sub) :test '=))
                                         ;(chords-before (loop for i from 1 to nnotes-before collect (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
                                         (chords-after (loop for i from 1 to nnotes-after collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
                                         ;(gchords (loop for i in chords-before collect (objfromobjs i (make-instance 'grace-chord))))
-                                        (gchords (glist (gnotes (car chords))))
-                                        )
+                                        (gchords (if (or (numberp (car chords)) (null chords))
+                                                     (loop for i in 
+                                                           (loop for i from 1 to nnotes-before 
+                                                                 collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
+                                                         collect (objfromobjs i (make-instance 'grace-chord)))
+                                                   (glist (gnotes (car chords))))))
                                    (if (rest-p sub)
                                        (let ((main-chord (objfromobjs (clone def-chord) chord-model)))
                                          (setf chord sub)
