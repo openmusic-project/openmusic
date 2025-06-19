@@ -435,17 +435,6 @@
                                   :font-size (format nil "~D" size)
                                   :tone (car (find approx (editor-tone-list) :key 'cadr :test 'equal))))
     (setf (ctr-view self) controls)
-   ;(set-edit-param self 'approx (approx (object self)));;;NOT GOOD!
-     ;for compatibility
-    (when (not (equal (approx (object self)) (get-edit-param self 'approx)))
-      (setf (approx (object self)) (get-edit-param self 'approx))
-      (setf (staff-tone (panel self)) (get-edit-param self 'approx))
-      (om-set-dialog-item-text
-       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
-            (om-subviews
-             (ctr-view self)))
-       (format nil "~A" (give-symbol-of-approx (approx (object self)))))) 
-    ;(change-editor-tone (panel self) (approx (object self)));;;NOT GOOD!
     ;;;;;;;
     (when *om-tonalite*
       (set-editor-tonality (panel self)))
@@ -456,6 +445,16 @@
     (setf (obj-mode ed-view) (nth obj-mode (object-order self)))
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
+    ;to insure all objs get the correct approx (graces)
+    (unless (graceeditor-p self)
+    (progn
+      (setf (approx (object self)) approx)
+      (setf (staff-tone (panel self)) approx)
+      (om-set-dialog-item-text
+       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
+            (om-subviews
+             (ctr-view self)))
+       (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
     (init-draw self)
     (init-boxes-in-score ed-view)))
 
@@ -4878,13 +4877,21 @@
   (let ((approx (staff-tone self)))
     (loop for i in (inside (object (om-view-container self)))
           do (setf (midic i) (approx-m (midic i) approx)))))
-
+#|
 (defmethod adjust-approx ((self scorepanel))
   "Adjust choosen approximation EDO scale when adding freehand notes"
   (let ((approx (staff-tone self)))
     (loop for i in (get-real-chords (object (om-view-container self)))
           do (setf (lmidic i) (approx-m (lmidic i) approx)))))
-
+|#
+(defmethod adjust-approx ((self scorepanel))
+  "Adjust choosen approximation EDO scale when adding freehand notes"
+  (let ((approx (staff-tone self)))
+    (loop for i in (get-real-chords-and-graces (object (om-view-container self)))
+          do (progn
+               (setf (approx i) approx)
+              ;(setf (lmidic i) (approx-m (lmidic i) approx))
+              ))))
 
 ;KEY ACTIONS
 
