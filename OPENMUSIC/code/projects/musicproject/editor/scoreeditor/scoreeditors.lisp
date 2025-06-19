@@ -435,19 +435,6 @@
                                   :font-size (format nil "~D" size)
                                   :tone (car (find approx (editor-tone-list) :key 'cadr :test 'equal))))
     (setf (ctr-view self) controls)
-   ;(set-edit-param self 'approx (approx (object self)));;;NOT GOOD!
-     ;for compatibility
-    #|
-    (when (not (equal (approx (object self)) (get-edit-param self 'approx)))
-      (setf (approx (object self)) (get-edit-param self 'approx))
-      (setf (staff-tone (panel self)) (get-edit-param self 'approx))
-      (om-set-dialog-item-text
-       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
-            (om-subviews
-             (ctr-view self)))
-       (format nil "~A" (give-symbol-of-approx (approx (object self)))))) 
-    |#
-    ;(change-editor-tone (panel self) (approx (object self)));;;NOT GOOD!
     ;;;;;;;
     (when *om-tonalite*
       (set-editor-tonality (panel self)))
@@ -459,6 +446,7 @@
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     ;to insure all objs get the correct approx (graces)
+    (unless (graceeditor-p self)
     (progn
       (setf (approx (object self)) approx)
       (setf (staff-tone (panel self)) approx)
@@ -466,7 +454,7 @@
        (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
             (om-subviews
              (ctr-view self)))
-       (format nil "~A" (give-symbol-of-approx (approx (object self))))))
+       (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
     (init-draw self)
     (init-boxes-in-score ed-view)))
 
@@ -4902,7 +4890,8 @@
     (loop for i in (get-real-chords-and-graces (object (om-view-container self)))
           do (progn
                (setf (approx i) approx)
-              (setf (lmidic i) (approx-m (lmidic i) approx))))))
+              ;(setf (lmidic i) (approx-m (lmidic i) approx))
+              ))))
 
 ;KEY ACTIONS
 

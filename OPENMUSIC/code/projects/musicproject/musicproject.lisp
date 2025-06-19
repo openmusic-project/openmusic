@@ -75,6 +75,7 @@
 	"editor;scoreeditor;extrapalette-editor"    
         
         "editor;scoreeditor;graces"
+        "editor;scoreeditor;graceeditor"
         "editor;scoreeditor;tempo-change"
         
         "editor;scoreeditor;dragagain"     
