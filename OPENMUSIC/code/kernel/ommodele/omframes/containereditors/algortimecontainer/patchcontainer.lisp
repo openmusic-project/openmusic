@@ -174,7 +174,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ("alt+box" "box and connection selection")
                        ))
 
-(defvar *patchhelp2* '(
+(defvar *patchhelp2* '((("'" "|") "Zoom in/out Class Boxes")
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
                        (("g") "output lisp expression in listener")
@@ -264,6 +264,10 @@ because digit-char-p will not accept backspace and special om keys!"
 
     (case char
       (:om-key-delete (delete-general self))
+      (#\' (resize-box-down actives))
+      (#\\ (resize-box-up actives))
+      (#\" (resize-box-down-plus actives))
+      (#\| (resize-box-up-plus actives))
       (#\f (make-undefined-funct-box self (om-mouse-position self)))
       (#\c (if actives (edit-comment-box actives)
              (make-comment-box self (om-mouse-position self))))
@@ -1048,6 +1052,55 @@ Elements of the list are list as (source-position source-output target-position 
 ;;;===============================================
 ;;;===============================================
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;RESIZE BOXFRAME;;;;;;;;;;;;;;;;;;;;;;;;;;
+;resizes box classes
+
+(defmethod get-frame-size ((self omboxeditcall))
+  (frame-size self))
+
+(defmethod get-frame-size ((self t)) nil)
+
+(defmethod resize-box-up ((self list))
+             (loop for ob in self
+                   do
+                     (let* ((siz (get-frame-size (object ob))))
+                      (when siz
+                        (let* ((x (round (* (om-point-x siz) 1.1)))
+                               (y (round (* (om-point-y siz) 1.1))))
+                     (change-boxframe-size (car (frames (object ob))) (om-make-point x y)))))))
+
+
+(defmethod resize-box-down ((self list))
+             (loop for ob in self
+                   do
+                     (let* ((siz (get-frame-size (object ob))))
+                      (when siz
+                        (let* ((x (round (* (om-point-x siz) 0.9)))
+                               (y (round (* (om-point-y siz) 0.9))))
+                     (change-boxframe-size (car (frames (object ob))) (om-make-point x y)))))))
+
+(defmethod resize-box-up-plus ((self list))
+             (loop for ob in self
+                   do
+                     (let* ((siz (get-frame-size (object ob))))
+                      (when siz
+                        (let* ((x (round (* (om-point-x siz) 1.2)))
+                               (y (round (* (om-point-y siz) 1.2))))
+                     (change-boxframe-size (car (frames (object ob))) (om-make-point x y)))))))
+
+
+(defmethod resize-box-down-plus ((self list))
+             (loop for ob in self
+                   do
+                     (let* ((siz (get-frame-size (object ob))))
+                      (when siz
+                        (let* ((x (round (* (om-point-x siz) 0.8)))
+                               (y (round (* (om-point-y siz) 0.8))))
+                     (change-boxframe-size (car (frames (object ob))) (om-make-point x y)))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
