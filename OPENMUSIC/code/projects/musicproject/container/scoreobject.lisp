@@ -301,8 +301,8 @@ Extraction methods.
   (extent->ms self))
 
 (defmethod midic ((self note))
-  (setf (approx self) (get-approx self))
-  (approx-m (slot-value self 'midic) (get-approx self)))
+  ;(setf (approx self) (get-approx self))
+  (approx-m (slot-value self 'midic) (approx self)))
 
 ;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
@@ -343,9 +343,10 @@ Extraction methods.
 ;;; CHORDS
 
 (defmethod LMidic ((self chord))
-  (setf (approx self) (get-approx self))
+  (loop for i in (inside self)
+        collect (setf (approx i) (approx self)))
   (loop for chord in (inside self)
-        collect (approx-m (midic chord) (get-approx self))))
+        collect (approx-m (midic chord) (approx self))))
 
 (defmethod LChan ((self chord))
   (loop for note in (inside self)
@@ -420,6 +421,11 @@ Extraction methods.
 
 (defmethod (setf approx) ((approx number) (self chord))
   (call-next-method)
+  #|
+  (when (gnotes self)
+    (loop for i in (glist (gnotes self))
+            do (setf (approx i) approx)))
+  |#
   (loop for i in (inside self)
         do (setf (approx i)  approx))
   self)
@@ -441,6 +447,7 @@ Extraction methods.
   (setf (slot-value self 'LMidic) nil (slot-value self 'LVel) nil 
         (slot-value self 'LOffset) nil  (slot-value self 'LDur) nil 
         (slot-value self 'LChan) nil)
+  (loop for i in (inside self) do (setf (approx i) (approx self)))
   self)
 
 
@@ -762,7 +769,9 @@ Extraction methods.
 
 
 (defmethod chords ((self voice))
-  (setf (approx self) (get-approx self));in order to retain approx
+  (loop for i in (slot-value self 'chords)
+        do (setf (approx i) (approx self)))
+  ;(setf (approx self) (get-approx self));in order to retain approx
   (call-next-method))
 
 
@@ -1313,6 +1322,7 @@ of all its direct subcontainers (supposed adjacent)"
       self)))
 |#
 
+#|
 (defmethod distribute-chords ((self score-element) (chords list))
   (let ((fringe nil) 
         (chord-model (mki 'chord))
@@ -1394,6 +1404,95 @@ of all its direct subcontainers (supposed adjacent)"
                      (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
       
       self)))
+|#
+
+(defmethod distribute-chords ((self score-element) (chords list))
+  (let ((fringe nil) 
+        (chord-model (mki 'chord))
+        (rest-model (mki 'rest))
+        (def-chord (or (last-elem chords) (mki 'chord))))
+    (labels ((distribute (self chords)
+               (setf (inside self)
+                     (loop for sub in (inside self)
+                           with chord
+                             ;with chord-model  = (mki 'chord)
+                             ;if (null chords) collect sub
+                           if (not (infra-group-p sub)) 
+                             do 
+                               (setf chords (distribute sub chords))
+                             and collect sub
+                           else do
+                               (cond
+                                ((and (note-p sub) (eq (tie sub) 'continue))
+                                 (progn (setf chord 
+                                              (objfromobjs 
+                                               (or (loop for c in fringe if (chord-p c) return c)
+                                                   (mki 'chord))
+                                               chord-model))
+                                   (change-class chord 'continuation-chord)))
+                                ;;;;;;;;;;;;;;;;;;;;;;;;
+                                ((mus-const sub) ;;; THERE ARE GRACE NOTES !! 
+                                 (let* ((nnotes-before (count 1 (mus-const sub) :test '=)); ici c'etait -1 et c'est bien cela qui fout la merde....
+                                        (nnotes-after (count -1 (mus-const sub) :test '=))
+                                        ;(chords-before (loop for i from 1 to nnotes-before collect (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
+                                        (chords-after (loop for i from 1 to nnotes-after collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model)))
+                                        ;(gchords (loop for i in chords-before collect (objfromobjs i (make-instance 'grace-chord))))
+                                        (gchords (if (or (numberp (car chords)) (null chords))
+                                                     (loop for i in 
+                                                           (loop for i from 1 to nnotes-before 
+                                                                 collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
+                                                         collect (objfromobjs i (make-instance 'grace-chord)))
+                                                   (glist (gnotes (car chords))))))
+                                   (if (rest-p sub)
+                                       (let ((main-chord (objfromobjs (clone def-chord) chord-model)))
+                                         (setf chord sub)
+                                         (loop for i in gchords do (setf (thechord i) sub))
+                                         (setf (gnotes sub) 
+                                               (make-instance 'grace-notes
+                                                              :glist gchords
+                                                              :thechord sub
+                                                              :before? t)))
+                                   
+                                     (let ((main-chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
+                                       (setf chord (objfromobjs (append (list main-chord)) chord-model))
+                                       (loop for i in gchords do (setf (thechord i) chord))
+                                       (setf (gnotes chord) 
+                                             (make-instance 'grace-notes
+                                                            :glist gchords
+                                                            :thechord chord
+                                                            :before? t))
+                                         
+                                       ))))
+                                 ;;;;;;;;;;;;;;;;;;;;;;;;
+                                 ((rest-p sub) 
+                                  (setf chord sub))
+                                 ;;;;;;;;;;;;;;;;;;;;;;;
+                                 (t 
+                                  (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))))
+                               
+                               (setf (offset chord) (offset sub))
+                               (InContext sub (setf (extent chord) (extent sub)))
+                               (when (and (note-p sub) (eq (tie sub) 'continue))  (push 'tie fringe))
+                               (push chord fringe)
+                             and collect chord))
+               chords))
+            
+      (distribute self chords)
+      
+      (setf fringe (nreverse fringe)) 
+      (loop for item1 in fringe
+            for item2 = (rest fringe) then (rest item2)
+            with state = 0
+            do
+              (cond ((eq (first item2) 'tie)
+                     (cond 
+                      ((= state 0) (tie-chord item1 'begin) (incf state))
+                      (t (tie-chord item1 'continue) (setf (state item1) 'continue))))
+                    ((not (eq item1 'tie))
+                     (cond ((> state 0) (tie-chord item1 'end) (setf state 0 (state item1) 'end))))))
+      
+      self)))
+
 
 (defmethod tie-chord ((self chord) mode)
   (loop for note in (inside self)

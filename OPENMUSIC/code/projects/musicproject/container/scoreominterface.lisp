@@ -558,11 +558,24 @@ when :
 
 
 (defmethod execption-save-p ((self voice)) 'voice)
+
+#|
 (defmethod save-exepcion ((self voice))
   `(when (find-class ',(type-of self) nil)
      (make-instance ',(type-of self)
        :tree ',(tree self)
        :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords-and-graces self))))
+       :tempo ',(tempo self)
+       :legato ,(legato self)
+       :ties ',(ties self)
+       :approx ,(approx self))))
+|#
+;orig
+(defmethod save-exepcion ((self voice))
+  `(when (find-class ',(type-of self) nil)
+     (make-instance ',(type-of self)
+       :tree ',(tree self)
+       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
        :tempo ',(tempo self)
        :legato ,(legato self)
        :ties ',(ties self)
