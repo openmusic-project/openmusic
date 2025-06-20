@@ -174,7 +174,9 @@
                                                                :default-height (om-point-v size-point)))
                                     ))
     (setf (vw self) w)
-    (setf (vh self) h)))
+    (setf (vh self) h))
+#+linux(om-invalidate-view self t)
+)
 
 (defmethod om-view-size ((self om-graphic-object)) 
   (if (interface-visible-p self)

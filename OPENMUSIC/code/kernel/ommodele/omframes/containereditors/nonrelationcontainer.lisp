@@ -553,7 +553,8 @@ with the objects respectly associeted."))
        (oa::om-set-h-scroll-position self 0)
        (oa::om-set-v-scroll-position self 0))
       )
-      (capi::update-drawing-with-cached-display self);linux
+    (om-invalidate-view self t)
+      ;(capi::update-drawing-with-cached-display self);linux
     ))
 
 
