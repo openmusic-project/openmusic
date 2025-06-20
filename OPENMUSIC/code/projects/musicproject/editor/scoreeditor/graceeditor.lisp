@@ -494,8 +494,12 @@
 
 ;;;this is for grace panel:
 
-(defmethod add-grace-notes-dialog ((self simple-container))
-  (open-add-grace-panel (get-voice self) self))
+(defmethod add-grace-notes-dialog ((self simple-container)) 
+  (let ((root (get-root-parent self)))
+    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self))
+          ((poly-p root) (open-add-grace-panel (get-poly self) self));(print "NOT YET KAMARADEN!"))
+          (t (print "Only for VOICE and POLY editors!")))))
+
 
 (defmethod open-add-grace-panel ((self voice) thing)
   (let* ((gnotes (gnotes thing))
@@ -509,3 +513,15 @@
     (setf (approx chrdseq) (approx self));ADD
     (push win (attached-editors editor))))
 
+
+(defmethod open-add-grace-panel ((self poly) thing)
+  (let* ((gnotes (gnotes thing))
+         (editor (editorframe (associated-box self)))
+         (chrdseq (make-instance 'grace-note-seq 
+                                 :approx (approx self); C'est la!!
+                                 :lmidic (if gnotes (mapcar 'lmidic (glist gnotes)) '(6000))
+                                 ))
+         (internal (obj-for-internal-editor chrdseq))
+         (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
+    (setf (approx chrdseq) (approx self));ADD
+    (push win (attached-editors editor))))

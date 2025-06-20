@@ -256,7 +256,7 @@
 (defmethod Class-has-editor-p  ((self grace-note-seq)) t)
 (defmethod get-editor-class ((self grace-note-seq)) 'graceEditor)
 
-
+#|
 (defmethod add-grace-notes-dialog ((self simple-container))
   (open-add-grace-panel (get-voice self) self))
 
@@ -267,7 +267,7 @@
          (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
     (setf (approx chrdseq) (approx self));ADD
     (push win (attached-editors editor))))
-
+|#
 
 (defmethod convert-chord-graces ((self voice))
   (loop for item in (get-real-chords-and-graces self)
