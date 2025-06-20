@@ -1442,7 +1442,14 @@ of all its direct subcontainers (supposed adjacent)"
                                                            (loop for i from 1 to nnotes-before 
                                                                  collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
                                                          collect (objfromobjs i (make-instance 'grace-chord)))
-                                                   (glist (gnotes (car chords))))))
+                                                   (if (gnotes (car chords))
+                                                   (glist (gnotes (car chords)))
+                                                     ;compat
+                                                     (loop for i in 
+                                                           (loop for i from 1 to nnotes-before 
+                                                                 collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
+                                                         collect (objfromobjs i (make-instance 'grace-chord)))
+                                                     ))))
                                    (if (rest-p sub)
                                        (let ((main-chord (objfromobjs (clone def-chord) chord-model)))
                                          (setf chord sub)

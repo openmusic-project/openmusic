@@ -1105,7 +1105,11 @@
                     (do-subdivise self char)
    
                   (case char
-                    (#\1 (subdivide-more self)) 
+                    (#\1 (subdivide-more self))
+                    (#\0 (add-grace-notes-dialog (car (selection? self))))
+                    (#\. (progn 
+                           (delete-grace-notes (car (selection? self)))
+                           (update-panel self)))
                     (:om-key-left (cond ((extra-p (car (selection? self)))
                                          (advance-extras self -1))
                                         ((equal (slots-mode self) 'dur)
@@ -3476,23 +3480,26 @@
           (("=") "Tie Selection")
           (("/") "Untie Selection")
           (("C") "Change Color")
+          (("r") "Open RT Editor")
           )
-        '((("r") "Open RT Editor")
-           (("m") "Open Tempo Editor")
-           (("M") "Remove Tempo")
-           (("x") "Extra Edition Palette")
-           (("s") "Toggle Normal/Patch Mode ")
-           (("S") "Set Editor Scale")
-           (("t" "T") "Set/Remove Tonality")
-           (("n") "Set Voice Name")
-           (("o") "Open Internal Editor")
-           (("c") "Show Channel Color")
-           (("i") "Show Selection info")
-           ("space" "Play/Stop")
-           (("q") "Start Midi Record")
-           (("w") "Stop Midi Record")
-           ("esc" "Stop  + Reset")
-           )))
+        '((("m") "Open Tempo Editor")
+          (("0") "Open Grace Notes Editor")
+          ((".") "Remove Grace Notes")
+          (("M") "Remove Tempo")
+          (("x") "Extra Edition Palette")
+          (("s") "Toggle Normal/Patch Mode ")
+          (("S") "Set Editor Scale")
+          (("t" "T") "Set/Remove Tonality")
+          (("n") "Set Voice Name")
+          (("o") "Open Internal Editor")
+          (("c") "Show Channel Color")
+          (("i") "Show Selection info")
+          ("space" "Play/Stop")
+          (("q") "Start Midi Record")
+          (("w") "Stop Midi Record")
+          ("esc" "Stop  + Reset")
+          )))
+
 
 ;==============================================
 ;POLY
@@ -3643,7 +3650,6 @@
 (defmethod panel-save-as-xml ((self polypanel)) 
   (export-musicxml (object (om-view-container self)) '((G 2)) (staff-tone self)))
 
-
 (defmethod get-help-list ((self polypanel)) 
   (list '(("alt+clic" "Add Note/Chord/Measure/Voice")
           ("ctrl+clic" "Add rhythm figure")
@@ -3664,6 +3670,8 @@
           )
         '((("m") "Open Tempo Editor")
           (("M") "Remove Tempo")
+           (("0") "Open Grace Notes Editor")
+          ((".") "Remove Grace Notes")
           (("x") "Extra Edition Palette")
           (("s") "Toggle Normal/Patch Mode ")
           (("S") "Set Editor Scale")
@@ -3676,6 +3684,7 @@
           (("q") "Start Midi Record")
           (("w") "Stop Midi Record")
           )))
+
 
 
 
