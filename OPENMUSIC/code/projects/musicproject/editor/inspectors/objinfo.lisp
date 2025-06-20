@@ -153,6 +153,12 @@ nil)
         pere 
       (get-voice pere))))
 
+(defun get-poly (self)
+  "starting from an inside obj of poly, returns poly."
+  (let ((pere (parent self)))
+    (if (poly-p pere) 
+        pere 
+      (get-poly pere))))
 
 (defmethod evt-pos ((self rest))
 nil)
