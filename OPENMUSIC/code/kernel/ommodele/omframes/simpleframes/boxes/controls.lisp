@@ -222,7 +222,7 @@
                                                                      (progn (capi::beep-pane) :destroy)))
                                :completion 'box-name-completion
                                :complete-do-action t ;confirms completion with return
-                               #+linux :bg-color *om-light-blue-color*
+                               #+linux :bg-color *om-lgray-color* ;*om-light-blue-color*
                                ))
     ;#+linux(format *terminal-io* "typing: ~%") ; it seems this fixes the problem...?
     (capi:redisplay-element container)

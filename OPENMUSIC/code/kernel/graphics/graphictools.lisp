@@ -105,6 +105,7 @@
   (setf *om-white-color* (om-make-color 1 1 1))
   (setf *om-black-color* (om-make-color 0 0 0))
   (setf *om-gray-color* (om-make-color 0.5 0.5 0.5))
+  (setf *om-lgray-color* (om-make-color 0.9 0.9 0.9))
   (setf *om-red-color* (om-make-color 1 0 0))
   (setf *om-red2-color* (om-make-color 0.7 0.3 0.3)) 
   (setf *om-blue-color* (om-make-color 0 0 1))

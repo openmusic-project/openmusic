@@ -237,9 +237,9 @@
 (defun om-front-window () 
   #+(or darwin macos macosx)
   (capi:screen-active-interface (capi:convert-to-screen))
-  #-(or darwin macos macosx)
-  ; --> ça plante (parfois)
-  (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible))
+  #-(or darwin macos macosx linux)
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
 )
 
 (defun om-get-all-windows (class)
