@@ -302,7 +302,18 @@
 (defmethod InternalEditor-p ((self EditorView)) 
    (EditorView-p (ref self)))
 
-(defmethod window ((self EditorView)) (om-view-window self))
+;(defmethod window ((self EditorView)) (om-view-window self))
+
+(defmethod set-attached-editor ((self EditorView)) 
+  (let ((ref (ref self)))
+    (when ref 
+      (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
+        (push self (attached-editors patcheditor))))))
+
+(defmethod window ((self EditorView))
+  (when (ref self) (set-attached-editor self))
+  (om-view-window self))
+
 
 (defmethod editor ((self EditorView)) self)
 
@@ -383,9 +394,12 @@
   (om-add-points (om-view-position self) where))
 
 (defmethod om-set-view-size ((self editorView) size)
-   (declare (ignore size))
-   (call-next-method)
-   (update-subviews self))
+  (declare (ignore size))
+  (call-next-method)
+  (update-subviews self)
+  #+linux(when (ref self) 
+           (set-win-size (ref self) size));macosx?
+  )
 
 (defmethod handle-key-event ((self EditorView) char)
    (if (text-view self)
