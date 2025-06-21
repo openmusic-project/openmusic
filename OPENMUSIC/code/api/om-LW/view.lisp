@@ -170,12 +170,12 @@
                                     (setf (static-layout-child-size self) (values  w h))
                                     #+win32(setf (static-layout-child-size (main-pinboard-object self)) (values w h))
                                     
-                                    (set-hint-table self (list :default-width (om-point-h size-point) 
+                                    (set-hint-table self (list :default-width (om-point-h size-point)
                                                                :default-height (om-point-v size-point)))
                                     ))
     (setf (vw self) w)
-    (setf (vh self) h))
-#+linux(om-invalidate-view self t)
+    (setf (vh self) #-linux h #+linux (-  h 25)));;ICI
+  #+linux(om-invalidate-view self t);;;ICI
 )
 
 (defmethod om-view-size ((self om-graphic-object)) 

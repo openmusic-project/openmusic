@@ -101,8 +101,8 @@
 (defmethod editor-minimum-size ((self arrayeditor))
   (om-make-point 200 100))
 
-(defmethod get-control-h ((self arrayeditor)) 45 #+linux 70)
-
+;(defmethod get-control-h ((self arrayeditor)) 45 #+linux 70)
+(defmethod get-control-h ((self arrayeditor)) 45)
 
 (defclass array-titlebar (editor-titlebar) 
     ((mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)))

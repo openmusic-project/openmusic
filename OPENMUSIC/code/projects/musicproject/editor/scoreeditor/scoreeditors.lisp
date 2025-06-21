@@ -393,7 +393,9 @@
       (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
         (push self (attached-editors patcheditor))))))
 
-(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
+;(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 65)
+;#+linux(defmethod editor-minimum-size ((self scoreeditor)) (om-make-point 475 280))
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
 (defparameter *second-row-y* #-linux 25 #+linux 35)
@@ -463,7 +465,7 @@
     (init-draw self)
     (init-boxes-in-score ed-view)
     (set-attached-editor self)
-    #+macosx(update-alt-panel (panel self))
+    #+macosx(update-alt-panel (panel self));a voir
     ))
 
 
@@ -507,6 +509,7 @@
   (om-set-view-position  (panel self ) (om-make-point 0 *titlebars-h*))
   (om-set-view-size  (ctr-view self) (om-make-point (w self) (get-control-h self)))
   (om-set-view-position (ctr-view self) (om-make-point 0 (- (h self) (get-control-h self))))
+  #+linux(set-win-size (ref self) (om-interior-size (om-view-container self)));macosx?
   (om-invalidate-view self))
 
 

@@ -257,7 +257,9 @@
 (defmethod get-panel-class ((Self Bpfeditor)) 'bpfPanel)
 (defmethod get-control-class ((Self Bpfeditor)) 'control-bpf)
 
-(defmethod get-control-h ((self Bpfeditor)) #+(or cocoa win32) 45 #+linux 70)
+;(defmethod get-control-h ((self Bpfeditor)) #+(or cocoa win32) 45 #+linux 70)
+(defmethod get-control-h ((self Bpfeditor)) 45)
+;#+linux(defmethod editor-minimum-size ((self bpfeditor)) (om-make-point 340 330))
 
 (defmethod set-attached-editor ((self bpfeditor))
     (let ((ref (ref self)))

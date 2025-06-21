@@ -143,7 +143,7 @@
                                            :external-min-height h :external-max-height h))))
           self))
 
-(defmethod om-set-view-size ((self om-abstract-window) size-point) 
+(defmethod om-set-view-size ((self om-abstract-window) size-point); (print (list "set" self size-point))
   (let ((wi (or (om-point-h size-point) (om-width self)))
         (he (or (om-point-v size-point) (om-height self))))
     (execute-with-interface self 
@@ -188,7 +188,7 @@
 (defmethod om-resize-callback ((self om-abstract-window) x y w h)
   (unless (and (vw self) (= w (vw self)) (vh self) (= h (vh self)))
    (om-window-resized self (om-make-point w h)))
- ; #-linux 
+  ;#-linux 
   (call-next-method)
 )
 

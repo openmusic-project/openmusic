@@ -172,9 +172,7 @@
       (om-add-menu-to-win win)  
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
-      ;#-linux
       (om-set-view-size editor (om-interior-size win))
-
       (cond
           ((scoreeditor-p object)
            (om-set-bg-color (panel (editor win)) *score-bg-color*))
@@ -192,7 +190,7 @@
       ;(print (list editor win))
       win
       )
-        )
+   )
 
 
 
@@ -200,8 +198,7 @@
   (declare (ignore size))
   (when (editor self)
     (call-next-method)
-    (om-set-view-size (editor self) (om-interior-size self)))
-)
+    (om-set-view-size (editor self) (om-interior-size self))))
 
 
 (defmethod om-set-view-size ((self EditorWindow) size) 
