@@ -731,7 +731,9 @@ Extraction methods.
              (remove-tree-graces (slot-value self 'tree))
              ;(slot-value self 'tree)
              pos lgt))))
-  (slot-value self 'tree))
+  ;(slot-value self 'tree)
+  (call-next-method)
+  )
 ;;;
 
 (defmethod (setf tree) ((tree list) (self metric-sequence))
