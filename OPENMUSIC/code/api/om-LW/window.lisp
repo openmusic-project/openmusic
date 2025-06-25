@@ -233,14 +233,42 @@
   (om-make-point (capi::screen-width (capi:convert-to-screen nil))
                  (capi::screen-height (capi:convert-to-screen nil))))
 
+
 ;; test, parfois collect-interfaces plante...
+
 (defun om-front-window () 
   #+(or darwin macos macosx)
   (capi:screen-active-interface (capi:convert-to-screen))
-  #-(or darwin macos macosx linux)
+  #-(or darwin macos macosx)
   ; --> ca plante (parfois)
  (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
 )
+
+
+#|
+(defun om-front-window () 
+  #+(or darwin macos macosx)
+  (capi:screen-active-interface (capi:convert-to-screen))
+  #+win32
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
+ #+linux
+ (car (reverse (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)))
+)
+|#
+
+#|
+(defun om-front-window () 
+  #+(or darwin macos macosx linux)
+  (capi:screen-active-interface (capi:convert-to-screen))
+  #+win32
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
+; #+linux
+ ;(car (reverse (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)))
+)
+|#
+
 
 (defun om-get-all-windows (class)
   (capi::collect-interfaces class))
@@ -410,9 +438,11 @@
      (unless (window-dialog-p thewin)
        (internal-display thewin))
      ;remove menus from linux dialogs
+     
      #+linux
      (when (window-dialog-p thewin)
        (setf (interface-activate-callback thewin) nil));ou nil
+     
              ; #'(lambda (win activate-p) (when activate-p (om-add-dummy-menu-to-win win)))))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
@@ -528,9 +558,23 @@
 
 (defun om-modal-dialog (dialog &optional (owner nil))
   (update-for-subviews-changes dialog t)
-  ;(print (list (vsubviews self)))
-  (capi::display-dialog dialog :owner (or owner (om-front-window) (capi:convert-to-screen)) 
+  (capi::display-dialog dialog 
+                        :owner (or owner (om-front-window) (capi:convert-to-screen)) 
                         :position-relative-to :owner :x (vx dialog) :y (vy dialog)))
+
+
+#|
+(defun om-modal-dialog (dialog &optional (owner nil))
+  (update-for-subviews-changes dialog t)
+  ;(print (list (vsubviews self)))
+  #-linux
+  (capi::display-dialog dialog 
+                        :owner (or owner (om-front-window) (capi:convert-to-screen)) 
+                        :position-relative-to :owner :x (vx dialog) :y (vy dialog))
+  #+linux (capi::display-dialog dialog)
+  )
+|#
+
 
 (defun om-return-from-modal-dialog (dialog val) 
   (capi::exit-dialog val))

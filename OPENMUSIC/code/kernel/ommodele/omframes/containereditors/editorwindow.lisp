@@ -232,22 +232,23 @@
 (defmethod editor-close? ((self t)) t)
 
 #|
+;maybe for macosx?
 (defmethod om-window-close-event :before ((self EditorWindow))
   (when (editor self)
     (close-editor-before (editor self))))
-|#
 
-;;a voir  (around -> after);no good!
-#|
 (defmethod om-window-close-event :after ((self EditorWindow)) 
-  (when (editor self)
-    (loop for ed in (attached-editors (editor self)) do
-            (om-close-window ed))
-    (close-editorFrame (editor self))
-    (close-editor-after (editor self))
-    ))
+   (when (editor self)
+       (loop for ed in (attached-editors (editor self)) do
+                 (om-close-window ed))
+       (close-editorFrame (editor self))
+       (close-editor-after (editor self))
+       ))
 |#
 
+
+;MA MODIF VERS 8.0
+;maybe only for linux?
 ;before est necessaire ici
 (defmethod om-window-close-event :before ((self EditorWindow))
   (when (editor self)
@@ -311,7 +312,7 @@
         (push self (attached-editors patcheditor))))))
 
 (defmethod window ((self EditorView))
-  (when (ref self) (set-attached-editor self))
+ ; (when (ref self) (set-attached-editor self)) ;modif vers 8.0
   (om-view-window self))
 
 

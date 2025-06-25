@@ -75,9 +75,17 @@ maquettes and hierarchical class editors.#enddoc#
 ;MCL Events
 ;----------------------------------------------------
 
+#|
 (defmethod close-editor-before ((self relationEditor))  
    (call-next-method)
    (mapc #'(lambda (frame) (close-frame frame)) (get-subframes (panel self))))
+|#
+
+(defmethod close-editor-before ((self relationEditor))  
+   (mapc #'(lambda (frame) (close-frame frame)) (get-subframes (panel self)))
+   (call-next-method))
+
+
 
 (defmethod close-editor-after ((self relationEditor)) 
    (call-next-method)
