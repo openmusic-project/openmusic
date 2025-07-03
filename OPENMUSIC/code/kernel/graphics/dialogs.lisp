@@ -161,7 +161,7 @@ Carlos Agon, Gerard Assayag, Jean Bresson, Karim Haddad
 
 Linux support and development: Anders Vinjar, Karim Haddad
 
-Documentation: K. Haddad, C. Diatkin, J. Jakes-Schauer
+Documentation: K. Haddad, C. Diatkin
 
 Contributions and code from: 
 E. Amiot, M. Andreatta, S. Ball, D. Bouche, O. Delerue, N. Ellis, J. Garcia, G. Holbrook, M. Laurson, S. Lemouton, M. Malt, G. Nouno, J. Podrazik, C. Rueda, M. Schumacher, S. Socha, M. Stroppa, 
