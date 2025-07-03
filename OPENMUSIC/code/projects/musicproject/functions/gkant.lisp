@@ -399,6 +399,8 @@ For more info, see omquantify help."
           (ins (insert-graces tree pos (repeat-n 1 lgt))))
      (format-grace-notes ins)))
 
+;;; VOICE => VOICE
+
 
 (defmethod! omg-quantify  ((self voice) (tempi t) (measures list)
                              (max/ t)
@@ -415,6 +417,25 @@ For more info, see omquantify help."
                     :chords chords
                     :tempo tempi)))
         
+
+;;; CHORD-SEQ => VOICE
+
+(defmethod* omg-quantify ((self chord-seq) 
+                        (tempi t) (measures list)
+                        (max/ t)
+                        &optional
+                        forbid
+                        offset
+                        precis)
+  (let ((tree
+         (omg-quantify (true-durations self)
+                     tempi measures max/ forbid offset precis))
+        (chords (get-chords self))
+        (tempo (if (atom tempi) (list tempi) tempi)))
+    (make-instance 'voice
+                   :tree tree
+                   :chords chords
+                   :tempo (format-omtempo 1/4 tempo))))
 
 
 

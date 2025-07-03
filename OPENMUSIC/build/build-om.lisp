@@ -57,7 +57,7 @@
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if show-beta
-		     (format nil ".~d" beta)
+		     (format nil ".~db" beta)
                      "")
                  )))
 
