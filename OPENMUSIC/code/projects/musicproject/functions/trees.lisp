@@ -1766,3 +1766,41 @@ Returns the positions of the rests in <tree>.
      (remove-all #'(lambda (x) (and (listp x) (null (cdr x))))
                  (remove-all #'null (trans-obj filt-tree))
                  ))))
+
+;;;;;;;;;;;;
+
+(defmethod! get-leaves ((tree list))
+   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))))
+   :indoc '("a rhythm tree")
+   :icon 661
+   :doc "
+Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
+"
+  (let ((res nil))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn
+                     (push tree res)
+                     tree)
+                 (list (car tree) (mapcar #'get-leaf (second tree))))))
+      (get-leaf tree)
+     (grouper1 (reverse res)))))
+
+
+(defmethod! get-leaves ((tree voice))
+   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))))
+   :indoc '("a rhythm tree")
+   :icon 661
+   :doc "
+Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
+"
+  (let ((tree (tree tree))
+        (res nil))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn
+                     (push tree res)
+                     tree)
+                 (list (car tree) (mapcar #'get-leaf (second tree))))))
+      (get-leaf tree)
+     (grouper1 (reverse res)))))
