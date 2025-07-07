@@ -3,7 +3,7 @@
 NEW FEATURES
 
 - Grace editor
-- New methods: omg-quantify and remove-tree-graces
+- New methods: omg-quantify, remove-tree-graces, get-leaves, insert-prop, remove-prop
 - Grace notes support
 - Shift+drag from output: Create and auto-connect output to new box
 

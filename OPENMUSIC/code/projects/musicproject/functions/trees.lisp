@@ -1747,7 +1747,7 @@ Returns the positions of the rests in <tree>.
         (car tree)
       (remove nil (mapcar 'remall tree)))))
 
-
+;not good. We leave for compat
 (defmethod! remove-pulses ((tree list) (pos list) &optional (mode :pulses))
   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) '(0 1) :pulses)
   :indoc '("a rhythm tree" "positions" "mode")
@@ -1766,3 +1766,130 @@ Returns the positions of the rests in <tree>.
      (remove-all #'(lambda (x) (and (listp x) (null (cdr x))))
                  (remove-all #'null (trans-obj filt-tree))
                  ))))
+
+;;;;;;;;;;;;
+
+(defmethod! get-leaves ((tree list))
+   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))))
+   :indoc '("a rhythm tree")
+   :icon 661
+   :doc "
+Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
+"
+  (let ((res nil))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn
+                     (push tree res)
+                     tree)
+                 (list (car tree) (mapcar #'get-leaf (second tree))))))
+      (get-leaf tree)
+     (grouper1 (reverse res)))))
+
+
+(defmethod! get-leaves ((tree voice))
+   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))))
+   :indoc '("a rhythm tree")
+   :icon 661
+   :doc "
+Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
+"
+  (let ((tree (tree tree))
+        (res nil))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn
+                     (push tree res)
+                     tree)
+                 (list (car tree) (mapcar #'get-leaf (second tree))))))
+      (get-leaf tree)
+     (grouper1 (reverse res)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;INSERT PROP;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun RT-p (list)
+  (listp (cadr list)))
+
+
+(defun flat-inserted (lst)
+(let (res)
+(loop for i in lst
+      do (if (atom i) 
+             (push i res)
+           (if (RT-p i) 
+               (push i res)
+           (mapcar #'(lambda (x) (push x res)) i))))
+(reverse res)))
+
+
+(defmethod flat-inserted-prop (tree)
+  (if (atom tree) 
+      tree
+    (list (car tree) (mapcar #'flat-inserted-prop (flat-inserted (second tree))))))
+
+
+
+(defmethod! insert-prop ((tree list) (prop t) (pos number))
+  :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) 1 0)
+  :indoc '("a rhythm tree" "prop" "pos")
+  :icon 225
+  :doc "
+inserts <prop> in <tree> at position <pos>.
+<prop> could be an integer or an RT such as (1 (1 1 1))
+"
+  (let ((tree (reduce-rt tree))
+        (n -1))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn 
+                     (incf n)
+                     (if (= pos n) (list prop tree) tree))
+               (list (car tree) (mapcar #'get-leaf (second tree))))))
+      
+       (flat-inserted-prop (get-leaf tree))
+      )))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;REMOVE PROP;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun rem-nil-grp (lst)
+(let (res)
+(loop for i in lst
+      do (if (atom i) 
+             (push i res)
+           (if (second i)
+               (push i res))))
+         (reverse res)))
+
+
+(defmethod rem-group-if-nil (tree)
+  (if (atom tree) 
+      tree
+    (list (car tree) (mapcar #'rem-group-if-nil (rem-nil-grp (second tree))))))
+
+
+    
+(defmethod! remove-prop ((tree list) (pos list))
+  :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) '(0 1))
+  :indoc '("a rhythm tree" "pos")
+  :icon 661
+  :doc "
+inserts <prop> in <tree> at position <pos>.
+<prop> could be an integer or an RT such as (1 (1 1 1))
+"
+  (let ((n -1))
+    (labels ((get-leaf (tree)
+               (if (atom tree) 
+                   (progn 
+                     (incf n)
+                     (if (not (member n pos))  tree))
+               (list (car tree) (remove nil (mapcar #'get-leaf (remove nil (second tree))))))))
+      (rem-group-if-nil (get-leaf tree))
+      )))
+
+
+
+
+
