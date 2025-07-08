@@ -1831,7 +1831,7 @@ Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
 
 
 
-(defmethod! insert-prop ((tree list) (prop t) (pos number))
+(defmethod! insert-prop ((self list) (prop t) (pos number))
   :initvals '((? ((4//4 (1 (1 (1 2.0 1.0 1)) 1 1)) (4//4 (1 (1 (1 2 1 1)) -1 -1)))) 1 0)
   :indoc '("a rhythm tree" "prop" "pos")
   :icon 225
@@ -1839,7 +1839,7 @@ Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
 inserts <prop> in <tree> at position <pos>.
 <prop> could be an integer or an RT such as (1 (1 1 1))
 "
-  (let ((tree (reduce-rt tree))
+  (let ((tree (reduce-rt self))
         (n -1))
     (labels ((get-leaf (tree)
                (if (atom tree) 
@@ -1850,6 +1850,14 @@ inserts <prop> in <tree> at position <pos>.
       
        (flat-inserted-prop (get-leaf tree))
       )))
+
+(defmethod! insert-prop ((self voice) (prop t) (pos number))
+  (let* ((clone (clone self))
+         (tree (reduce-rt (tree self)))
+         (ins (insert-prop tree prop pos)))
+    (setf (tree clone) ins)
+    clone))
+    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;REMOVE PROP;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
