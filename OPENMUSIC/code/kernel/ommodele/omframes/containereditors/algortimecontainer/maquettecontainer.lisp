@@ -572,7 +572,7 @@
 (defmethod release-maquette-new-box ((self MaquettePanel) initpos pos)
   (let ((p1 (om-make-point (min (om-point-x initpos) (om-point-x pos)) (min (om-point-y initpos) (om-point-y pos))))
         (p2 (om-make-point (max (om-point-x initpos) (om-point-x pos)) (max (om-point-y initpos) (om-point-y pos)))))
-    (if (om-shift-key-p)
+    (if (om-option-key-p);shift conflict with list/append shortcut
         (make-maq-tempobj self p1 p2)
       (make-tempobj self p1 p2))))
 
@@ -1052,9 +1052,9 @@
 (defmethod get-help-list ((self maquettepanel))
   (list '(("space" "Play / Stop")
           #+cocoa ("cmd+box" "Create Temporal Patch")
-          #+cocoa("cmd+shift+box" "Create Internal Maq.")
+          #+cocoa("cmd+alt+box" "Create Internal Maq.")
           #+(or linux win32)("ctrl+box" "Create Temporal Patch")
-          #+(or linux win32)("ctrl+shift+box" "Create Internal Maq.")
+          #+(or linux win32)("ctrl+alt+box" "Create Internal Maq.")
           ("lrud" "Move")
           ("shift+lrud" "Move faster")
           ("del" "Delete")

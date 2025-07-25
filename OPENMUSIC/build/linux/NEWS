@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- insert box in connection
 - Grace editor
 - New methods: omg-quantify, remove-tree-graces, get-leaves, insert-prop, remove-prop
 - Grace notes support
@@ -9,11 +10,14 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Select multiple connection with alt/option
+- Red color for confirmation when mouse on output in temporal patch
 - Zoom in/out of Class boxes
 - Now each score object have its approx slot
 
 FIXES
 
+- temporal connection fix (linux)
 - Buffer edit fix (macosx)
 - fixed display of resize-bug in a scrolled patch
 - fixed Patch connections issues (linux) 
