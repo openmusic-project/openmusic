@@ -326,52 +326,57 @@ Patches, maquettes and hierarchical class editors are sub-classes of this class.
 
 
 (defmethod click-in-connection ((self relationPanel) where)
-   "Called by 'view-click-event-handler' this method verify if you click on a connection. If this is the case
+  "Called by 'view-click-event-handler' this method verify if you click on a connection. If this is the case
 this method set the select flag of the connection to T and return a list with the selected connections."
-   (let ((controls (get-subframes self))
-         rep)
-     (loop for box in  controls 
-           while (not rep) do
-           (let* ((connection (connections box)))
-             (loop for oneconnection in connection 
-                   while (not rep) do
-                       (let* ((where-click (point-in-connection oneconnection self where)))
-                     (cond
-                      ((numberp where-click)
-                       ; #-(and cocoa lispworks8)(draw-connection oneconnection nil)
-                       (unless (selected? oneconnection)
-                         (unless (om-shift-key-p)
-                           (mapc #'(lambda (control) 
-                                     (deactivate-connect control)) 
-                                 (remove oneconnection (get-connections self) :test 'equal)))
-                         (setf (selected? oneconnection) t))
-                       (cond 
-                        ((om-shift-key-p)
-                         (if (member (nth where-click (points oneconnection)) (point-sel oneconnection))
-                           (setf (point-sel oneconnection) 
-                                 (remove (nth where-click (points oneconnection))
-                                         (point-sel oneconnection)))
-                           (progn
-                             (push (nth where-click (points oneconnection)) (point-sel oneconnection))
-                             (scroll-points oneconnection))))
-                        (t (unless (member (nth where-click (points oneconnection)) (point-sel oneconnection))
-                             (setf (point-sel oneconnection)  (list (nth where-click (points oneconnection)))))
-                           (scroll-points oneconnection)))
-                       ; #-(and cocoa lispworks8)(draw-connection oneconnection t)
-                       (setf rep t))
-                      (where-click
-                       (select-connection oneconnection)
-                       (unless (om-shift-key-p)
-                         (mapc #'(lambda (control) 
-                                   (deactivate-connect control)) 
-                               (remove oneconnection (get-connections self) :test 'equal)))
-                       (setf rep t))
-                      (t nil)))))) rep))
+  (let ((controls (get-subframes self))
+        rep)
+    (loop for box in controls 
+           ;while (not rep)
+          do
+            (let* ((connection (connections box)))
+              (loop for oneconnection in connection 
+                    while (not rep) do
+                      (let* ((where-click (point-in-connection oneconnection self where)))
+                        (cond
+                         ((numberp where-click)
+                          (unless (selected? oneconnection)
+                            (unless (om-shift-key-p)
+                               
+                              (mapc #'(lambda (control) 
+                                        (deactivate-connect control)) 
+                                    (remove oneconnection (get-connections self) :test 'equal))
+                              )
+                            (setf (selected? oneconnection) t))
+                          (cond 
+                           (;(om-option-key-p)
+                            (om-shift-key-p)
+                            (if (member (nth where-click (points oneconnection)) (point-sel oneconnection))
+                                (setf (point-sel oneconnection) 
+                                      (remove (nth where-click (points oneconnection))
+                                              (point-sel oneconnection)))
+                              (progn
+                                (push (nth where-click (points oneconnection)) (point-sel oneconnection))
+                                (scroll-points oneconnection))))
+                           (t (unless (member (nth where-click (points oneconnection)) (point-sel oneconnection))
+                                (setf (point-sel oneconnection)  (list (nth where-click (points oneconnection)))))
+                              (scroll-points oneconnection)))
+                          (setf rep t))
+                         (where-click
+                          (select-connection oneconnection)
+                          (unless (om-option-key-p);HERE
+                             ;(om-shift-key-p)
+                            (mapc #'(lambda (control) 
+                                      (deactivate-connect control)) 
+                                  (remove oneconnection (get-connections self) :test 'equal)))
+                          (setf rep t))
+                         (t nil))))
+              )) 
+    rep))
+
 
 
 (defmethod make-move-after ((self relationPanel) dragged)
-  (redraw-after self dragged)
-  )
+  (redraw-after self dragged))
 
 (defmethod redraw-after ((self relationPanel) dragged)
   "This method is called after moving one or more boxes, it redraw the connections involving in the moving operation."
@@ -439,10 +444,7 @@ it redraw the connections involving in the deleying operation."
 ;;;;Click on the scroller not in a subview.
 (defmethod control-actives ((view relationPanel) where)
   (close-enter-dialog (editor view)) 
-  (if (click-in-connection view where)
-      (mapc #'(lambda (control) 
-                (omG-unselect control)) (get-actives  view))
-    
+  (unless (click-in-connection view where)
     (let* ((float (om-subtract-points (om-mouse-position view) where)))
       (unless (om-shift-key-p)
         (mapc #'(lambda (control) 
@@ -451,6 +453,7 @@ it redraw the connections involving in the deleying operation."
        ((and (om-command-key-p) (not (om-option-key-p))) ;to avoid auto-connect
         (make-undefined-box view where))
        (t (call-next-method))))))
+
 
 
 (defmethod do-select-items-in-rect ((self relationPanel) rect)
