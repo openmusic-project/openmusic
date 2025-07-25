@@ -139,6 +139,12 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
     (make-undefined-box self where)
     ))
 
+(defmethod do-click-event-handler ((self patchPanel) where)
+  (unless (om-option-key-p); (om-shift-key-p) 
+    (mapc #'(lambda (control) 
+              (omG-unselect control)) (get-actives self)))
+  (control-actives self where)
+  self)
 
 
 (defvar *patchhelp1* '(("lrud" "Move")
@@ -246,19 +252,29 @@ because digit-char-p will not accept backspace and special om keys!"
 (defmethod handle-key-event ((self patchPanel) char) 
   (modify-patch self)
   (let* ((actives (get-actives self))
+         (connections (get-actives-connections self))
          (activeboxes (mapcar 'object actives))
          (boxes
           (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
-    
-    (when (and (char-num-p char) actives (not (equal char #\0)))
-        (loop for i in boxes
+    ;;;auto connections
+    (cond 
+    ((and (char-num-p char) actives (not (equal char #\0)) (om-option-key-p))
+     (insert-connect-box (car actives) (car connections) (digit-char-p char)))
+     ((and actives (equal char #\0))
+      (loop for i in boxes
+            do (loop for box in (inputframes i)
+                     do (disconnect-box i box))))
+     ((and (char-num-p char) actives (not (equal char #\0)))
+      (loop for i in boxes
               do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
                    (when input
                      (if (connected? (object input))
                          (unless (member *target-out* (outframes i))
                            (disconnect-box i input))
                        (connect-box *target-out* input))))))
-
+     (t nil))
+    
+    ;;;;;;;
     (when (and (om-command-key-p) (not actives)) 
       (scroll-pane self char))
 
@@ -275,9 +291,6 @@ because digit-char-p will not accept backspace and special om keys!"
       (#\X (loop for box in boxes
                    do (loop for i in (inputframes box)
                             do (connect-box *target-out* i))))
-      (#\Z (loop for box in boxes
-                   do (loop for i in (inputframes box)
-                            do (disconnect-box box i))))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
       (#\C  (patch-color self))
@@ -384,6 +397,7 @@ because digit-char-p will not accept backspace and special om keys!"
                       (unless hotbox 
                         (om-beep)			    ;no boxes have specialized handle-key-event methods
                         ))))))
+
 
 
 

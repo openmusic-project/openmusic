@@ -387,6 +387,24 @@
     (om-make-point x  y )))
 
 
+
+(defmethod insert-connect-box ((self boxframe) (cord c-connection) (nth number))
+  "Insert a box whithin a connection.nth is the nth input of inserted box"
+  (let* ((out *target-out*)
+         (indx (index cord))
+         (inbox (thebox cord))
+         ;;
+         (inputs (connected? (object (nth indx (inputframes inbox)))))
+         (n-out (second inputs))
+         (outbox (car (frames (car inputs))))
+         (output (nth n-out (reverse (outframes outbox)))))
+    (connect-box out (nth indx (inputframes inbox)))
+    (connect-box output (nth (1- nth) (inputframes self)))
+    (setf *target-out* nil
+          *target-in* nil)
+    ))
+
+
 ;=======Maquettes
 ;connections in maquettes are relatives
 (defclass maq-connection (c-connection) ())

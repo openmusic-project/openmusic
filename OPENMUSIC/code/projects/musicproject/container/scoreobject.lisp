@@ -1543,6 +1543,8 @@ be taken into consideration"
              (setf (tie note) mode)
              (setf (dur note) 0))))
 
+;to prevent (rest begin) issue
+(defmethod tie-chord ((self t) mode))
 
 
 (defmethod check-tree-for-contchord ((tree number) (self continuation-chord))

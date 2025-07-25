@@ -129,7 +129,7 @@
     (connect-box self ctrl)
     (om-hide-tooltip panel)
     #+linux
-    (when (and ctrl (typep ctrl 'input-funboxframe))
+    (when (and ctrl (typep ctrl 'input-funboxframe)(not (typep panel 'maquettepanel)))
       (update-miniview (iconview (om-view-container ctrl)) (value (object (om-view-container ctrl)))))
     ))
 
@@ -223,6 +223,7 @@
       (om-beep-msg "Impossible to connect, this would create a cycle."))))
 
     
+
 
 ;==================================================
 ; The main icon in a box
