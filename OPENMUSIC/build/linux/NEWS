@@ -10,6 +10,9 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Possibility not to automatically displaying sound wave in patches
+  for faster loading patches with big sound files 
+  (preferences/appearence/auto-load sound image option)
 - Select multiple connection with alt/option
 - Red color for confirmation when mouse on output in temporal patch
 - Zoom in/out of Class boxes
