@@ -400,7 +400,8 @@ Press 'space' to play/stop the sound file.
         (progn 
           (setf sound (make-instance 'sound :filename name))
           ;;; (setf (player-data sound) (juce::makeAudioSourceFromFile (namestring name))) ;; => do it at preparetoPlay
-          (build-display-array sound)
+          (when *auto-load-sf*
+            (build-display-array sound))
           (setf (extent sound) nil))
       ;;; (om-supported-audio-format (om-sound-format thesound)))
       (progn 
@@ -844,6 +845,12 @@ Press 'space' to play/stop the sound file.
         for i = 0 then (+ i 1) collect
         (if (and (nth i inputs) (string-equal (name input) (name (nth i inputs))))
             (nth i inputs) input)))
+
+
+(defmethod OpenEditorframe ((self omaifffilebox))
+  (unless (pict-sound (value self))
+    (build-display-array (value self)))
+  (call-next-method))
 
 (defmethod get-frame-class ((self OMaiffFilebox)) 'boxsoundframe)
 

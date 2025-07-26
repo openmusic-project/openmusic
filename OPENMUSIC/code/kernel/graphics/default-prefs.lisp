@@ -317,6 +317,7 @@
 (defvar *sound-bg-color* nil)
 (defvar *sound-wave-color* nil)
 (defvar *sound-fill* nil)
+(defvar *auto-load-sf* nil)
 
 ;;; ??
 (defun init-om-pref-color ()
@@ -341,6 +342,7 @@
     (setf *sound-bg-color*      (eval(get-pref modulepref :sound-bg-color)))
     (setf *sound-wave-color*      (eval(get-pref modulepref :sound-wave-color)))
     (setf *sound-fill*      (eval(get-pref modulepref :sound-fill)))
+    (setf *auto-load-sf*      (eval(get-pref modulepref :auto-load-sf)))
     (when *om-workspace-win* (om-set-bg-color (panel *om-workspace-win*) *ws-color*))
     (setf *default-folder-pres*     (get-pref modulepref :folder-pres))
     (setf *icon-size-factor* (get-pref modulepref :box-fact))
@@ -383,6 +385,7 @@
    
    :sound-wave-color *om-black-color*
    :sound-fill nil
+   :auto-load-sf nil
 
    :boxname-font *om-default-font1*
    :folder-pres 0
@@ -602,23 +605,35 @@
                                                                  )))
 
                       ;3c
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) #+(or linux cocoa) 355 #-(or linux cocoa) (- posy 30)) (om-make-point 240 44) "Sound Display"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 0) #+(or linux cocoa) 355 #-(or linux cocoa) (- posy 30)) 
+                                          (om-make-point 240 44) "Sound Display"
                                           :font *om-default-font2b*)
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (incf posy 0)) (om-make-point 120 24) "Filled:"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (incf posy 0)) 
+                                                               (om-make-point 180 24) "Auto-load Sound image:"
+                                                               :font *controls-font*)
+                     
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l2 175) (- posy 3)) (om-make-point 26 25) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :auto-load-sf)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :auto-load-sf (om-checked-p item)))
+                                          )
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (+ posy 30)) 
+                                          (om-make-point 120 24) "Filled:"
                                           :font *controls-font*)
                      
-                     (om-make-dialog-item 'om-check-box (om-make-point (+ l2 100) (- posy 3)) (om-make-point 26 25) ""
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l2 175) (+ posy 30)) (om-make-point 26 25) ""
                                           :font *controls-font*
                                           :checked-p (get-pref modulepref :sound-fill) ;filled
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :sound-fill (om-checked-p item)))
                                           )
                      
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (+ posy 30)) (om-make-point 120 24) "Color:"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l2 20) (+ posy 60)) (om-make-point 120 24) "Color:"
                                                                :font *controls-font*)
                      (om-make-view 'om-color-view 
-                                   :position (om-make-point (+ l2 80) (+ posy 30)) :size (om-make-point 60 25) 
+                                   :position (om-make-point (+ l2 180) (+ posy 60)) :size (om-make-point 60 25) 
                                    :bg-color (get-pref modulepref :sound-wave-color) ;sound-color
                                    :color (get-pref modulepref :sound-wave-color)
                                    :after-fun #'(lambda (item) (set-pref modulepref :sound-wave-color (color item))))

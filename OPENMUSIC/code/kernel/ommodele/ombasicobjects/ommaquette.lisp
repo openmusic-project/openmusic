@@ -126,13 +126,25 @@
               (update-patches-pile)
               (setf *om-current-persistent* nil))
             (om-abort)))))))
+
+(defmethod get-sound-in-maquette ((self t)) nil)
   
+(defmethod get-sound-in-maquette ((self ommaquette))
+  (let* ((elts (get-elements self))
+         (objs (remove nil (loop for i in elts
+                                 collect (let ((tp (car (value i))))
+                                           (if (sound-p tp) tp)
+                                           )))))
+    (loop for i in objs
+          do  (unless (pict-sound i)
+                       (build-display-array i)))))
 
 (defmethod OpenEditorframe ((self OMMaquette))
   "Open the maquette editor, this method open too all persistantes objects referenced into the maquette."
   (declare (special *om-current-persistent*)) 
   (load-maquette self)
-
+  (unless  *auto-load-sf*
+    (get-sound-in-maquette self))
   (or (editorframe self)
       (panel (open-new-RelationFrame self (if (saved? self) (name self) 
                                               (string+ "^" (name self))) 
@@ -519,16 +531,29 @@ So red maquettes can not be sharing.#enddoc#
 (defmethod set-win-position ((self OMMaqAbs) newpos) 
   (setf (w-pos self) newpos))
 
+(defmethod get-sound-in-maquette ((self ommaqabs))
+  (let* ((elts (get-elements self))
+         (objs (remove nil (loop for i in elts
+                                 collect (let ((tp (car (value i))))
+                                           (if (sound-p tp) tp)
+                                           )))))
+    (loop for i in objs
+          do  (unless (pict-sound i)
+                       (build-display-array i)))))
+
 (defmethod OpenEditorframe ((self OMMaqAbs))
   "Open the maquette editor, this method open too all persistantes objects referenced into the maquette."
   (declare (special *om-current-persistent*)) 
   (load-maquette self)
+  (unless  *auto-load-sf*
+    (get-sound-in-maquette self))
   (or (editorframe self)
       (panel (open-new-RelationFrame self (if (saved? self) (name self) (string+ "^" (name self)))
                                      (get-elements self)
                                      nil
                                      (w-pos self) (w-size self)
                                      ))))
+
 
 (defmethod om-save ((self OMMaqAbs) &optional (values? nil))
    "Generation of code to save the maquette 'self'."
