@@ -551,9 +551,9 @@
            (mapc #'(lambda (control) 
                      (deactivate-connect control)) (get-connections view))
            (when (selected-mark-lines view)
-             (draw-mark-lines view nil)
+             ;(draw-mark-lines view nil) ;not good for macosx
              (setf (selected-mark-lines view) nil)
-             (draw-mark-lines view)
+             ;(draw-mark-lines view) ;not good for macosx
              )
            (cond 
             ((om-command-key-p)

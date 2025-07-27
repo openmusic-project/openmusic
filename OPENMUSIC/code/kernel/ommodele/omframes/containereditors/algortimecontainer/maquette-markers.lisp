@@ -107,14 +107,14 @@
                                            (om-make-point (if begin (x tempframe) (x+w tempframe)) (y+h tempframe)) 4)
                        (setf rep (list (object marker) tempobj))))))
      (when rep
-       (draw-mark-lines self nil)
+       ;(draw-mark-lines self nil) ;not good for macosx
        (cond 
         ((om-shift-key-p)
          (if (member rep (selected-mark-lines self) :test 'equal)
            (setf (selected-mark-lines self) (remove rep (selected-mark-lines self) :test 'equal))
            (push rep (selected-mark-lines self))))
         (t (setf (selected-mark-lines self) (list rep))))
-       (draw-mark-lines self)
+       ;(draw-mark-lines self) ;not good for macosx
        )
      (om-invalidate-view self)
      rep))
