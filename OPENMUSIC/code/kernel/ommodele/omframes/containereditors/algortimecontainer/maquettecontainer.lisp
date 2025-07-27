@@ -532,7 +532,7 @@
     ((equal (cursor-mode view) :zoom) (zoom-system view where))
     ((equal (cursor-mode view) :move) (scroll-system view where))
     ((equal (cursor-mode view) :interval) (new-interval-cursor view where))
-    (t ; (equal (cursor-mode view) :normal)
+    (t #+macosx (equal (cursor-mode view) :normal)
      (cond
       ((and (show-con? view) (click-in-connection view where))
        (mapc #'(lambda (control) 
@@ -559,7 +559,8 @@
             ((om-command-key-p)
               (om-init-motion-click view where :motion-draw  'draw-newbox-rectangle :display-mode 2 
                                     :release-action 'release-maquette-new-box))
-            (t (call-next-method)))))))))
+            (t (call-next-method))))))))
+   (om-invalidate-view view t))
 
 (defmethod draw-newbox-rectangle ((self maquettepanel) p1 p2)
   (draw-selection-rectangle self p1 p2)
