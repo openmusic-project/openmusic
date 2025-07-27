@@ -101,16 +101,13 @@
 
 
 ;Only for magnification
+#|
 (defmethod om-view-mouse-enter-handler ((self input-tempobj-frame)) 
   (when *mag-in-out*
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos))
            (frame (om-view-container self)))
-      (om-with-focused-view frame
-        (om-with-line-size 3
-          (om-with-fg-color frame *om-red-color*
-            (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
       (om-invalidate-view frame t)
       )))
 
@@ -124,7 +121,7 @@
           (om-with-fg-color frame *om-black-color*
             (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
   )))
-
+|#
 ;===========================
 ;OUTPUTS
 ;===========================

@@ -603,13 +603,21 @@
       (loop for item in frames do
             (change-colorframe item new-color)))))
 
-
+#|
 (defun maquette-color (maquettepanel)
   "If there are selected boxes set their frame color to 'newcolor', else set the back color of 'self' to newcolor."
   (let ((new-color (om-choose-color-dialog :color (om-get-bg-color maquettepanel))))
     (when new-color
       (change-colorframe maquettepanel new-color))))
+|#
 
+(defmethod maquette-color ((self maquettepanel))
+  "If there are selected boxes set their frame color to 'newcolor', else set the back color of 'self' to newcolor."
+  (if (get-actives-connections self)
+          (color-connections self)
+          (let ((new-color (om-choose-color-dialog :color (om-get-bg-color self))))
+    (when new-color
+      (change-colorframe self new-color)))))
 
 (defmethod move-and-not-action ((self MaquettePanel) (cible MaquettePanel)) t)
 (defmethod move-and-not-action ((self MaquettePanel) (cible t)) nil)
