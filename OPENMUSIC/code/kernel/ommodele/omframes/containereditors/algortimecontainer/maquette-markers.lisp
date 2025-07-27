@@ -361,6 +361,7 @@ boxes attached to the flag, the car of each element say if the box is attached a
          ctrl)
     (setf ctrl (om-find-view-containing-point panel (om-make-point rx ry)))
     (connect-box (om-view-container self) ctrl)
+    (capi:redisplay-element panel)
     ))
 
 (defmethod init-size&position ((self markerframe) container)
