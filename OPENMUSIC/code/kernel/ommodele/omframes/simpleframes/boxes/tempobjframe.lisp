@@ -101,16 +101,13 @@
 
 
 ;Only for magnification
+#|
 (defmethod om-view-mouse-enter-handler ((self input-tempobj-frame)) 
   (when *mag-in-out*
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos))
            (frame (om-view-container self)))
-      (om-with-focused-view frame
-        (om-with-line-size 3
-          (om-with-fg-color frame *om-red-color*
-            (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
       (om-invalidate-view frame t)
       )))
 
@@ -124,7 +121,7 @@
           (om-with-fg-color frame *om-black-color*
             (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
   )))
-
+|#
 ;===========================
 ;OUTPUTS
 ;===========================
@@ -145,16 +142,14 @@
        (doubleclick-in-temp-box (om-view-container self) (om-add-points (om-view-position self) where))))
 
 ;Only for magnification
-(defmethod om-view-mouse-enter-handler ((self outtempobj)) (print (list "mouse1" self (om-view-container self)))
+(defmethod om-view-mouse-enter-handler ((self outtempobj))
   (when *mag-in-out*
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos))
            (frame (om-view-container self)))
-      (om-with-focused-view frame
-        (om-with-line-size 3
-          (om-with-fg-color frame *om-red-color*
-            (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
+      (om-set-fg-color frame *om-red-color*)
+      (omG-select frame)
       (om-set-view-size self (om-make-point 12 12))
       (om-set-view-position self (om-make-point (- xpos 2) (+ ypos 0)))
       )))
@@ -164,11 +159,9 @@
   (let* ((parsize (om-view-size (om-view-container self)))
          (psizey (om-point-y parsize))
          (frame (om-view-container self)))
-    (om-with-focused-view frame
-        (om-with-line-size 3
-          (om-with-fg-color frame *om-black-color*
-            (om-draw-rect 1 1 (- (w frame) 2) (- (h frame) 2)))))
-  (om-set-view-size self (om-make-point 8 8))
+    (omg-unselect frame)
+    (om-set-fg-color frame *om-black-color*)
+    (om-set-view-size self (om-make-point 8 8))
   (om-set-view-position self (om-make-point (+ (om-point-x (om-view-position self)) 2) (- psizey 9)))
   ;(redraw-frame (om-view-container self)) ;init all ?
   )))
