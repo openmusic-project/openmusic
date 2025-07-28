@@ -262,7 +262,8 @@ because digit-char-p will not accept backspace and special om keys!"
           (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
     ;;;auto connections
     (cond 
-    ((and (char-num-p char) actives (not (equal char #\0)) (om-option-key-p))
+    (#-macosx(and (char-num-p char) actives (not (equal char #\0)) (om-option-key-p))
+     #+macosx(and (char-num-p char) actives (not (equal char #\0)) (om-command-key-p))
      (insert-connect-box (car actives) (car connections) (digit-char-p char)))
      ((and actives (equal char #\0))
       (loop for i in boxes

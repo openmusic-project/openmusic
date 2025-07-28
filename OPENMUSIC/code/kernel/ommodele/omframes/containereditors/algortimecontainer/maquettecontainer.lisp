@@ -532,7 +532,7 @@
     ((equal (cursor-mode view) :zoom) (zoom-system view where))
     ((equal (cursor-mode view) :move) (scroll-system view where))
     ((equal (cursor-mode view) :interval) (new-interval-cursor view where))
-    (t ; (equal (cursor-mode view) :normal)
+    (t #+macosx (equal (cursor-mode view) :normal)
      (cond
       ((and (show-con? view) (click-in-connection view where))
        (mapc #'(lambda (control) 
@@ -551,15 +551,16 @@
            (mapc #'(lambda (control) 
                      (deactivate-connect control)) (get-connections view))
            (when (selected-mark-lines view)
-             (draw-mark-lines view nil)
+             ;(draw-mark-lines view nil) ;not good for macosx
              (setf (selected-mark-lines view) nil)
-             (draw-mark-lines view)
+             ;(draw-mark-lines view) ;not good for macosx
              )
            (cond 
             ((om-command-key-p)
               (om-init-motion-click view where :motion-draw  'draw-newbox-rectangle :display-mode 2 
                                     :release-action 'release-maquette-new-box))
-            (t (call-next-method)))))))))
+            (t (call-next-method))))))))
+   (om-invalidate-view view t))
 
 (defmethod draw-newbox-rectangle ((self maquettepanel) p1 p2)
   (draw-selection-rectangle self p1 p2)
@@ -603,13 +604,21 @@
       (loop for item in frames do
             (change-colorframe item new-color)))))
 
-
+#|
 (defun maquette-color (maquettepanel)
   "If there are selected boxes set their frame color to 'newcolor', else set the back color of 'self' to newcolor."
   (let ((new-color (om-choose-color-dialog :color (om-get-bg-color maquettepanel))))
     (when new-color
       (change-colorframe maquettepanel new-color))))
+|#
 
+(defmethod maquette-color ((self maquettepanel))
+  "If there are selected boxes set their frame color to 'newcolor', else set the back color of 'self' to newcolor."
+  (if (get-actives-connections self)
+          (color-connections self)
+          (let ((new-color (om-choose-color-dialog :color (om-get-bg-color self))))
+    (when new-color
+      (change-colorframe self new-color)))))
 
 (defmethod move-and-not-action ((self MaquettePanel) (cible MaquettePanel)) t)
 (defmethod move-and-not-action ((self MaquettePanel) (cible t)) nil)
