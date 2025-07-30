@@ -206,15 +206,17 @@
 
 
 (defmethod propagate-pgm-change ((self number) value) ;self -> port, value -> pgm number
-  (let* ((nsynth (get-synth-channel-count 0))
-         (lst (arithm-ser 1 nsynth 1)))
-    (fluid-pgm-change value  lst :port self)))
+  (let ((nsynth (get-synth-channel-count 0)))
+    (when (numberp nsynth)
+      (let ((lst (arithm-ser 1 nsynth 1)))
+        (fluid-pgm-change value  lst :port self)))))
 
 (defmethod propagate-pgm-change ((self list) value) ;self -> port, value -> pgm number
-  (let* ((nsynth (get-synth-channel-count 0))
-         (lst (arithm-ser 1 nsynth 1)))
-  (loop for i in self
-        do (fluid-pgm-change value lst :port i))))
+  (let ((nsynth (get-synth-channel-count 0)))
+        (when (numberp nsynth)
+          (let ((lst (arithm-ser 1 nsynth 1)))
+            (loop for i in self
+                  do (fluid-pgm-change value lst :port i))))))
 
 ;==================
 ;FLUID-GAIN
