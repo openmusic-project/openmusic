@@ -52,13 +52,14 @@
          (v (read-from-string (subseq str 0 pos)))
          (rest (subseq str (+ 1 pos)))
          (v2 (read-from-string (subseq rest 0 2)))
-         (v3 (read-from-string (subseq rest 2 (min 4 (length rest)))))
-         (beta (if (> (length rest) 4) (read-from-string (subseq rest 4)))))
+         (v3 (read-from-string (subseq rest 2 (min 3 (length rest)))))
+         ;(beta (if (> (length rest) 4) (read-from-string (subseq rest 4))))
+         )
     (concatenate 'string (format nil "~d.~d" v v2) 
                  (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if show-beta
-		     (format nil ".~db" beta)
-                     "")
+                     "b" ;(format nil ".~db" v3)
+                   "")
                  )))
 
 (setf *version-str* (version-to-string *version* nil *beta-release*))
