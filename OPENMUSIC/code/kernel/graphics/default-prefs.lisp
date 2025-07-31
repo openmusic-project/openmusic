@@ -389,7 +389,7 @@
    :boxname-font *om-default-font1*
    :folder-pres 0
    :patch-win-buttons t
-   :mag-in-out #-win32 t #+win32 nil
+   :mag-in-out t
    :curved-connections nil
    :mv-font-size 20
    :line-numbers t
@@ -509,10 +509,10 @@
                      (setf boxfont (om-make-dialog-item 'om-static-text (om-make-point (+ l1 265) (+ posy 3)) (om-make-point 70 24) "mybox"
                                                         :font (get-pref modulepref :boxname-font) :bg-color *om-white-color*))
 
-                     #+(or linux cocoa)(om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify Inlets/Outlets"
+                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 35)) (om-make-point 200 26) "Magnify Inlets/Outlets"
                                                             :font *controls-font*)
 
-                     #+(or linux cocoa)(om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
+                     (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
                                                             :font *controls-font*
                                                             :checked-p (get-pref modulepref :mag-in-out)
                                                             :di-action (om-dialog-item-act item 
