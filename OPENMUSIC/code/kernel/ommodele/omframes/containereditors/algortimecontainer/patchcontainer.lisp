@@ -262,21 +262,20 @@ because digit-char-p will not accept backspace and special om keys!"
           (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
     ;;;auto connections
     (cond 
-    (#-macosx(and (char-num-p char) actives (not (equal char #\0)) (om-option-key-p))
-     #+macosx(and (char-num-p char) actives (not (equal char #\0)) (om-command-key-p))
-     (insert-connect-box (car actives) (car connections) (digit-char-p char)))
+     ((and (char-num-p char) actives (not (equal char #\0))  #+linux(om-option-key-p) #-linux(om-command-key-p))
+      (insert-connect-box (car actives) (car connections) (digit-char-p char)))
      ((and actives (equal char #\0))
       (loop for i in boxes
             do (loop for box in (inputframes i)
                      do (disconnect-box i box))))
      ((and (char-num-p char) actives (not (equal char #\0)))
       (loop for i in boxes
-              do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
-                   (when input
-                     (if (connected? (object input))
-                         (unless (member *target-out* (outframes i))
-                           (disconnect-box i input))
-                       (connect-box *target-out* input))))))
+            do (let ((input (nth (1- (digit-char-p char)) (inputframes i))))
+                 (when input
+                   (if (connected? (object input))
+                       (unless (member *target-out* (outframes i))
+                         (disconnect-box i input))
+                     (connect-box *target-out* input))))))
      (t nil))
     
     ;;;;;;;
@@ -294,8 +293,8 @@ because digit-char-p will not accept backspace and special om keys!"
              (make-comment-box self (om-mouse-position self))))
       (#\x (create-comment-box self (om-mouse-position self)))
       (#\X (loop for box in boxes
-                   do (loop for i in (inputframes box)
-                            do (connect-box *target-out* i))))
+                 do (loop for i in (inputframes box)
+                          do (connect-box *target-out* i))))
       (#\d  (mapc 'show-big-doc actives))
       (#\D (mapc 'update-doc actives))
       (#\C  (patch-color self))
