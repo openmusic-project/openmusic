@@ -5,9 +5,9 @@
 # @author   Karim Haddad
 #==============================================================================
 
-OM_VERSION="8.0"
+OM_VERSION="7.7.1b"
 
-VERSION="8.0"
+VERSION="7.7.1b"
 REVISION="1"
 ARCH="amd64"
 DEB_VERSION=${VERSION}-${REVISION}_${ARCH}
