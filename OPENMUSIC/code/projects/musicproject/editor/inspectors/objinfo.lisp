@@ -146,6 +146,23 @@ nil)
     (let* ((inside (inside self)))
     (remove nil (flat (mapcar #'get-only-chords inside)))))
 
+
+(defun get-until-measure (self)
+  "starting from an inside obj of voice, returns the obj contained in measure.
+Practical to get groups"
+  (when self
+  (let ((pere (parent self)))
+    (if (measure-p pere) 
+        self 
+      (get-until-measure pere)))))
+
+(defun get-measure (self)
+  "starting from an inside obj of voice, returns measure."
+  (let ((pere (parent self)))
+    (if (measure-p pere) 
+        pere 
+      (get-measure pere))))
+
 (defun get-voice (self)
   "starting from an inside obj of voice, returns voice."
   (let ((pere (parent self)))

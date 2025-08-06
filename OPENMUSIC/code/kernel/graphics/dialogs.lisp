@@ -151,6 +151,7 @@
 ;;;=======================
 
 (defparameter *splash-screen* nil)
+(defparameter *xtra-splash-screen* nil)
 
 (defparameter *credits-1* 
 "Design and development: 
@@ -199,6 +200,8 @@ External Libraries:
 
 (defmethod om-window-close-event ((self about-window))
   (setf *splash-screen* nil)
+  (om-close-window *xtra-splash-screen*)
+  (setf *xtra-splash-screen* nil)
   (call-next-method))
 
 
@@ -256,15 +259,18 @@ External Libraries:
                                                                   :bg-color backcolor
                                                                   )
                                              )
-                             )))
+                             ))
+         (hiddenbutton (om-make-view 'om-icon-button 
+                                     :icon1 "splbut" :icon2 "splbut"
+                                     :position (om-make-point 198 255) :size (om-make-point 26 25) 
+                                     :action (om-dialog-item-act item
+                                               (declare (ignore item))
+                                               (show-extra-credits)    
+                                               )))
+         )
     (when credits 
       (om-add-subviews view
-                       ;(om-make-dialog-item 'om-static-text  
-                       ;                     (om-make-point 490 16) (om-make-point 210 600) 
-                       ;                     *credits-1*
-                       ;                     :font boldfont
-                       ;                     :fg-color textcolor
-                       ;                     :bg-color backcolor)
+                       hiddenbutton
                        (om-make-dialog-item 'om-static-text  
                                             (om-make-point 390 20)
                                             (om-make-point 342 600) ;here
@@ -293,7 +299,45 @@ External Libraries:
         )))
 
 ; (show-kero-pict t)
+;;;;;
+;;Xtra credits
 
+(defclass about-xtra-window (om-window) ())
+
+(defmethod om-window-close-event ((self about-xtra-window))
+  (setf *xtra-splash-screen* nil)
+  (call-next-method))
+
+(defclass xtra-splash-screen (om-view) 
+  ((thepict :initform nil :initarg :thepict :accessor thepict)))
+    
+(defmethod om-draw-contents ((self xtra-splash-screen)) 
+  (om-draw-picture self (thepict self) :pos (om-make-point 0 0))
+  (call-next-method))
+
+(defun show-extra-credits ()
+       (let* ((view (om-make-view 'xtra-splash-screen
+                             :thepict *graph-extra-pres*
+                             :bg-color *om-red-color*
+                             :size (om-make-point 745 595)
+                             ))
+           (win (om-make-window 'about-xtra-window 
+                                :window-title "OpenMusic's people"
+                                :close t
+                                :minimize nil
+                                :maximize nil
+                                :resizable nil
+                                :position :centered 
+                                :size (om-view-size view))))
+	(om-add-subviews win view)
+	(setf *xtra-splash-screen* win)
+	(om-show-window win)
+        win
+        ))
+
+
+
+;;;;;
 ;;;=======================
 ;;; MESSAGE WIN
 ;;;=======================
