@@ -1115,9 +1115,10 @@
                            
                     (:om-key-delete (delete-selection self))
                     (#\+ (do-union self))
-                    (#\* (do-group self))
                     (#\- (un-group self))
+                    (#\_ (do-group self))
                            ;(#\= (if (om-option-key-p) (untie-selection self) (tie-selection self)))
+                    (#\* (push-group-up self))
                     (#\= (tie-selection self))
                     (#\/ (untie-selection self))
                     (#\o (open-internal-editor self))
@@ -5705,7 +5706,8 @@
        (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
        (setf (selection? self) nil)
        (update-panel self t))
-      (t (om-beep)))))
+      (t (om-beep)))
+     (om-invalidate-view self t)))
 
 
 (defmethod un-group ((self polyPanel))
@@ -5719,7 +5721,8 @@
                   (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
             (setf (selection? self) nil)
             (update-panel self t))
-           (t (om-beep)))))
+           (t (om-beep)))
+     (om-invalidate-view self t)))
 
 
 (defmethod free-group ((self group) gobj)
@@ -5734,6 +5737,59 @@
                    (parent item) pere)
              (setf (inside pere) (insert-in-list (inside pere) item pos))
              (setf pos (+ pos 1))))))
+;========
+
+(defmethod push-group-up ((self scorePanel)) (om-beep))
+
+(defmethod push-group-up ((self voicePanel))
+  "When <self> (group) is irrational,  moves selected group up one rhytmic level. 
+The rhythm is unchanged!"
+   (let ((obj (grap-class-from-type  (obj-mode self)))
+         (gobj (graphic-obj self))
+         (voice (object (om-view-container self))))
+     (cond
+      ((equal obj 'grap-group)
+       (loop for item in (selection? self) do
+             (free-group1 item gobj))
+       (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+       (setf (selection? self) nil)
+       (update-panel self t))
+      (t (om-beep)))
+     (om-invalidate-view self t)))
+
+
+(defmethod push-group-up ((self polyPanel))
+   (let ((obj (grap-class-from-type  (obj-mode self)))
+         (gobj (graphic-obj self)) voices)
+     (cond ((equal obj 'grap-group)
+            (loop for item in (selection? self) do
+                  (push (get-the-voice item) voices) 
+                  (free-group1 item gobj))
+            (loop for voice in (remove-duplicates voices :test 'equal) do
+                  (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+            (setf (selection? self) nil)
+            (update-panel self t))
+           (t (om-beep)))
+     (om-invalidate-view self t)))
+
+(defmethod free-group1 ((self group) gobj)
+   (let* ((ggroup (get-correspond-grap gobj  self))
+          (pere (parent self))
+          (pos (position self (inside pere) :test 'equal)))
+     ;(print (list "group" self gobj ggroup pere pos))
+     (if (numdenom ggroup)
+         (progn
+           (change-qvalue pere (qvalue self) (qvalue pere)) 
+           (setf (inside pere) (remove self (inside pere) :test 'equal))
+           (loop for item in (inside self) do
+                   (setf (offset item) (+ (offset item) (offset self))
+                         (parent item) pere)
+                   (setf (inside pere) (insert-in-list (inside pere) item pos))
+                   (setf pos (+ pos 1))))
+       (om-beep-msg "Sorry, we can ungroup only rational groups!")
+       )))
+
+
 ;========
 (defmethod change-signature ((panel scorepanel) (self measure) sign)
    (let ((voice (parent self)) pos) 
