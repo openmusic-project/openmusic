@@ -2,6 +2,8 @@
 
 NEW FEATURES
 
+- Group ungrouped (score editors) 
+- Move group up (score editors)
 - insert box in connection
 - Grace editor
 - New methods: omg-quantify, remove-tree-graces, get-leaves, insert-prop, remove-prop
