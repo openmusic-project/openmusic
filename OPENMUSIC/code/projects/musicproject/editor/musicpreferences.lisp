@@ -420,10 +420,10 @@
 (defvar *global-deltachords* 100)
 (defvar *gdur* 20)
 (defvar *quant-grace* 't)
-(setf *gdur* 100)
+(setf *gdur* 30)
 
 (defmethod get-def-vals ((iconID (eql :conversion)))
-   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :quant-grace 't :gdur 100))
+   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :quant-grace 't :gdur 30))
 
 (defun check-deltachords (delta)
   (let ((defval (nth (1+ (position :delta-chords (get-def-vals :conversion))) (get-def-vals :conversion))))
