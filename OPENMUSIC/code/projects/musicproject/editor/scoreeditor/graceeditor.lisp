@@ -493,11 +493,21 @@
 
 
 ;;;this is for grace panel:
-
+#|
 (defmethod add-grace-notes-dialog ((self simple-container)) 
   (let ((root (get-root-parent self)))
     (cond ((voice-p root) (open-add-grace-panel (get-voice self) self))
-          ((poly-p root) (open-add-grace-panel (get-poly self) self));(print "NOT YET KAMARADEN!"))
+          ((poly-p root) (open-add-grace-panel (get-poly self) self))
+          (t (print "Only for VOICE and POLY editors!")))))
+|#
+
+(defmethod add-grace-notes-dialog ((self t))
+  (om-message-dialog "Please choose CHORD selection mode only!"))
+  
+(defmethod add-grace-notes-dialog ((self chord))
+  (let ((root (get-root-parent self)))
+    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self))
+          ((poly-p root) (open-add-grace-panel (get-poly self) self))
           (t (print "Only for VOICE and POLY editors!")))))
 
 
