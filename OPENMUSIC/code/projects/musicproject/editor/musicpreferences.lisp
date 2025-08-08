@@ -251,11 +251,11 @@
                                           :checked-p (get-pref modulepref :hide-stems)
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :hide-stems (om-checked-p item))))
-                     (om-make-dialog-item 'om-static-text  (om-make-point (+ 20 200) pos) (om-make-point 110 20) "stems size fact."
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 110 20) "stems size fact."
                                           :font *controls-font*)
                      
                      (om-make-dialog-item 'om-editable-text 
-                                          (om-make-point (+ 20 300) pos)
+                                          (om-make-point 160 pos)
                                           (om-make-point 60 13)
                                           (format nil "~D" (get-pref modulepref :stem-size-fact)) 
                                           :modify-action (om-dialog-item-act item
@@ -337,6 +337,7 @@
                        )
 
     thescroll))
+
 
 
 ;=======================================================
