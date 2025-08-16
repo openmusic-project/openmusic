@@ -251,11 +251,11 @@
                                           :checked-p (get-pref modulepref :hide-stems)
                                           :di-action (om-dialog-item-act item 
                                                        (set-pref modulepref :hide-stems (om-checked-p item))))
-                     (om-make-dialog-item 'om-static-text  (om-make-point (+ 20 200) pos) (om-make-point 110 20) "stems size fact."
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 110 20) "stems size fact."
                                           :font *controls-font*)
                      
                      (om-make-dialog-item 'om-editable-text 
-                                          (om-make-point (+ 20 300) pos)
+                                          (om-make-point 160 pos)
                                           (om-make-point 60 13)
                                           (format nil "~D" (get-pref modulepref :stem-size-fact)) 
                                           :modify-action (om-dialog-item-act item
@@ -339,6 +339,7 @@
     thescroll))
 
 
+
 ;=======================================================
 ;Dynamic table
 ;======================================================
@@ -420,10 +421,10 @@
 (defvar *global-deltachords* 100)
 (defvar *gdur* 20)
 (defvar *quant-grace* 't)
-(setf *gdur* 100)
+(setf *gdur* 30)
 
 (defmethod get-def-vals ((iconID (eql :conversion)))
-   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :quant-grace 't :gdur 100))
+   (list :delta-chords 100 :quantify '(60 (4 4) 8 0 nil 0.5) :quant-grace 't :gdur 30))
 
 (defun check-deltachords (delta)
   (let ((defval (nth (1+ (position :delta-chords (get-def-vals :conversion))) (get-def-vals :conversion))))

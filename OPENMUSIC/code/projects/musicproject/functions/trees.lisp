@@ -211,6 +211,7 @@
   (let ((abs-rhythms (dx-x-pause-ok 1 (append rhythmseq '(-100)))))
     (list '? (buildmeasure-seq abs-rhythms timesignseq))))
 
+#|
 (defun remove-grace-echo (tree)
   (if (or (and (equal 0 (caadr tree))
                (not (equal 0 (car (reverse (cadr tree))))))
@@ -218,6 +219,19 @@
                (not (equal 0 (car (reverse (cadr tree)))))))
       (cadr tree)
     (remove 0 (cadr tree))))
+|#
+
+(defun remove-grace-echo (tree)
+  "Remove only trailing zeros after the last positive value in the tree."
+  (let ((lst (cadr tree)))
+    (if (or (numberp lst)
+            (not (zerop (last-elem lst))))
+        lst
+      (let ((count-zeros (loop for el in (reverse lst)
+                               for x from 0
+                               when (not (zerop el))
+                               do (return x))))
+        (butlast lst count-zeros)))))
 
 (defun better-predefined-subdiv? (sub-tree) 
   (let* ((proportional-list (remove-grace-echo sub-tree));removes the annoying pre-graces in tree 
