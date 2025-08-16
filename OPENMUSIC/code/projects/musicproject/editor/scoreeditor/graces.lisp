@@ -451,9 +451,14 @@
 (defmethod draw-grace-notes ((self s-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (om-with-fg-color nil  *grace-color*
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
-           (thenotes (inside self)));(copy-list (inside self))))
+           (thenotes (inside self))
+           (off (cond 
+                 ((and (= (offset (reference self)) 0) (= (offset (reference (parent self))) 0))
+                  (round  (* 25  zoom )))
+                 ((= (offset (reference self)) 0) (round  (*  35   zoom )))
+                 ( t 0))))
       (loop for item in thenotes do
-            (draw-head-grace item x y zoom minx maxx miny maxy slot size linear? staff chnote))
+              (draw-head-grace item (+ x off) y zoom minx maxx miny maxy slot size linear? staff chnote))
       (collect-rectangles self)
       (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
                     (draw-chord-grace-stem self x y zoom (beams-num self) dir (round size *grace-factor*))))))
@@ -560,20 +565,28 @@
 (defmethod figure-?  ((self g-grap-grace-notes)) (call-next-method))
 
 (defmethod draw-grace-notes ((self g-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (loop for chord in (inside self) do
-          (loop for item in (inside chord)
-                for n = (car (main-point self)) then (+ n 2)
-                do
-                  (draw-head-grace-gn item x y zoom minx maxx miny maxy slot size linear? staff chnote))
-          (collect-rectangles chord))
-  (collect-rectangles self)
-  (let ((dire (dirgroup self)))
-    (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
-                  (group-draw-stems-gn self dire  x y (rectangle self)  zoom (round size *grace-factor*))
-                  (draw-beams-note-in-group self dire (+ 2 x) -1 (rectangle self)  zoom (round size *grace-factor*))
-                  (if (string-equal dire "up")
-                      (om-draw-char  (+ (car (rectangle self)) (round size 3.8)) (+ (second (rectangle self)) (round size 2.6)) (code-char 111) )
-                    (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111) )))))
+  (let ((off (cond 
+              ((and (= (position self (inside (parent self))) 0) 
+                    (= (offset (reference self)) 0) 
+                    (= (offset (reference (parent self))) 0))
+               (round  (* 25  zoom )))
+              ((= (position self (inside (parent self))) 0)
+               (round  (* 35  zoom )))
+              ( t 0))))
+    (loop for chord in (inside self) do
+            (loop for item in (inside chord)
+                  for n = (car (main-point self)) then (+ n 2)
+                  do (draw-head-grace-gn item (+ x off) y zoom minx maxx miny maxy slot size linear? staff chnote))
+            (collect-rectangles chord))
+    (collect-rectangles self)
+    (let ((dire (dirgroup self)))
+      (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
+                    (group-draw-stems-gn self dire  x y (rectangle self)  zoom (round size *grace-factor*))
+                    (draw-beams-note-in-group self dire (+ 2 x) -1 (rectangle self)  zoom (round size *grace-factor*))
+                    (if (string-equal dire "up")
+                        (om-draw-char  (+ (car (rectangle self)) (round size 3.8)) (+ (second (rectangle self)) (round size 2.6)) (code-char 111))
+                      (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111)))))))
+
 
 
 ;---Heads
