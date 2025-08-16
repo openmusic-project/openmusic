@@ -110,8 +110,10 @@
             (equal (find-package :oa) (symbol-package name))) 
         (string-downcase name)
       (let* ((pkg (string-downcase
-                   (package-name
-                    (symbol-package name)))))
+                    ;(package-name (symbol-package name))
+                   ;for Libraries, use nickname instead:
+                   (car (package-nicknames (symbol-package name)))
+                   )))
         (format nil "~A::~A" pkg name)))))
 
 
