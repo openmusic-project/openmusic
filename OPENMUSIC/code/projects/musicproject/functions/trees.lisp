@@ -274,6 +274,7 @@
 (defun get-ratio-duration (l)
   (loop for item in l sum (abs item)))
 
+#|
 (defmethod! mktree ((rhythm list) (timesigns list)) 
   :initvals '((1/4 1/4 1/4 1/4) (4 4))
   :indoc '("list of integer ratios" "list of time signatures")
@@ -297,9 +298,47 @@ The output rhythm tree is intended for the <tree> input of a 'voice' factory box
              (nbmes (if (integerp nbmesreal) nbmesreal (1+ (truncate nbmesreal)))))
         (simple->tree rhythm (make-list nbmes :initial-element timesigns)))
   ))
+|#
 
+(defun get-zero-pos (lst)
+  (let ((n 0)
+        res)
+    (loop for i in lst
+          collect (if (= 0 i)
+                      (push n res)
+                    (progn (incf n))))
+    (reverse res)
+    ))
 
+;(get-zero-pos '(1/4 0 0 0 1/4 0 1/4 1/4))
 
+(defmethod! mktree ((rhythm list) (timesigns list)) 
+  :initvals '((1/4 1/4 1/4 1/4) (4 4))
+  :indoc '("list of integer ratios" "list of time signatures")
+  :doc "
+Builds a hierarchical rhythm tree from a simple list of note values (<rhythm>).
+1/4 is the quarter note.
+
+<timesigns> is a list of time signatures, e.g. ( (4 4) (3 4) (5 8) ... )
+If a single time signature is given (e.g. (4 4)), it is extended as much as required
+by the 'rhythm' length.
+
+The output rhythm tree is intended for the <tree> input of a 'voice' factory box.
+"
+  :icon 254
+  (let* ((rt (remove 0 rhythm))
+         (pos (get-zero-pos rhythm))
+         (tree (if (typep (car timesigns) 'list)
+                   (simple->tree  rt timesigns)
+                 (let* ((nbmesreal (* (/ (get-ratio-duration rt) 
+                                         (car timesigns))
+                                      (cadr timesigns)))
+                        (nbmes (if (integerp nbmesreal) nbmesreal (1+ (truncate nbmesreal)))))
+                   (simple->tree rt (make-list nbmes :initial-element timesigns)))
+                 )))
+    (add-tree-graces tree pos (repeat-n 1 (length pos)))
+    ))
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;TREE-OPTIMIZATION;;;;;;;;;;;;;;;;;;;;
