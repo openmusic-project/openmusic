@@ -35,11 +35,13 @@
 (export '(om-table-window
           open-new-table-editor
           *table-help-window*
+          import-csv-file
+          export-csv-file
           om-vector
           make-vector
           set-vector-elt
           get-vector-elt
-         ) :om-edit)
+          ) :om-edit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;equivalent a om-text-edit-window
@@ -63,8 +65,8 @@
    :title "OM-TABLE"
    :layout (make-instance 'capi:simple-layout)))
 
-;(defmethod om-select-window ((self om-table-editor)) 
-;  (capi::display self))
+(defmethod om-select-window ((self om-table-editor)) 
+  (capi::display self))
 
 (defmethod internal-window-class-menubar ((self om-table-editor)) 
   (list (make-instance 'capi::menu 

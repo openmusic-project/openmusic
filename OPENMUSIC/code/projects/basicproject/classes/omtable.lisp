@@ -30,7 +30,7 @@
    ((rows :initform nil :initarg :rows :accessor rows)
     (cols :initform nil :initarg :cols :accessor cols)
     (data :initform nil :initarg :data :accessor data))
-   (:icon 135)
+   (:icon 958)
    (:documentation "etc."))
 
 
@@ -169,9 +169,31 @@ nil)
    "If miniview show a picture we must kill it."   
    (setf (frames (object box)) nil))
 
+(defmethod om-get-menu-context ((object tableeditorframe))
+   "Uhmmm If this method had been specialized by the class and not by the frame ?"
+   (list+  (boxframe-default-list object)
+           (list (list 
+                  (om-new-leafmenu "Import Csv From File" #'(lambda () (import-csv-in-box (object object))))
+                  (om-new-leafmenu "Export Csv To File" #'(lambda () (export-csv-from-box (object object))))
+                  ))))
+
+(defmethod import-csv-in-box ((self OMTablebox))
+  (let ((name (om-choose-file-dialog)))
+      (when name 
+        (let ((data  (import-csv-file name)))
+          (setf (data (value self)) data)
+          (open-new-table-editor nil nil data)))))
+
+(defmethod export-csv-from-box ((self OMTablebox))
+  (let ((name (om-choose-new-file-dialog :prompt "Export Csv file")))
+    (when name
+      (delete-file-protection name)
+      (when name 
+        (export-csv-file (data (value self)) name)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod OpenObjectEditor ((self OMTablebox)) 
+(defmethod OpenObjectEditor ((self OMTablebox)) (print (list "self"))
   "If there is a EditorFrame open for SELF select the window of EditorFrame, 
 else create a new Editor frame, and select its window."
   (setf (EditorFrame self) (OpenEditorframe self))
