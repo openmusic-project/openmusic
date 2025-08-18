@@ -63,8 +63,8 @@
    :title "OM-TABLE"
    :layout (make-instance 'capi:simple-layout)))
 
-(defmethod om-select-window ((self om-table-editor)) 
-  (capi::display self))
+;(defmethod om-select-window ((self om-table-editor)) 
+;  (capi::display self))
 
 (defmethod internal-window-class-menubar ((self om-table-editor)) 
   (list (make-instance 'capi::menu 
@@ -562,8 +562,6 @@ is replaced with replacement."
           )))))
 
 
-;(defmethod om-select-window ((self om-table-editor))  (print (list "self" self ))
-;  (capi::find-interface (type-of self) :name (capi::capi-object-name self)))
 
 (defmethod import-csv-from-file ((self om-table-editor) &optional path)
   (with-slots (ep) self
@@ -576,7 +574,7 @@ is replaced with replacement."
       (setf (contents ep) data)
       (setf (columns ep) (loop for i from 1 to (length data) collect i))
       (oa::om-close-window ep)
-      ;(display self)
+      (open-new-table-editor nil nil data)
       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
