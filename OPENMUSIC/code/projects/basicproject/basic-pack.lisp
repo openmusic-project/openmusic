@@ -93,6 +93,11 @@
 (AddClass2Pack '(TextFile) *file-package*)
 (addgenfun2pack '(string->ascii ascii->string eval-textfile save-data) *file-package*)
 
+;;; OM-TABLE
+(defvar *table-package* (omNG-protect-object (omNG-make-new-package "Table")))
+(addpackage2pack *table-package* *basic-package*)
+(AddClass2Pack '(om-table) *table-package*)
+;(addgenfun2pack '(string->ascii ascii->string eval-textfile save-data) *table-package*)
 
 
 ;;; PICT

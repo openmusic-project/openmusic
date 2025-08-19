@@ -29,6 +29,7 @@
 ;;===========================================================================
 
 (defpackage "OM-EDIT"
+  (:nicknames "OE")
   (:use "COMMON-LISP" "CL-USER" "CAPI" "LISPWORKS" "OM-LISP"))
 
 (in-package :om-edit)
@@ -40,7 +41,7 @@
 (mapc #'(lambda (filename) (om-lisp::compile-if-needed-and-load 
                             (make-pathname :directory *lw-score-edit-directory* 
                                            :name filename))) 
-      '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor" "commenteditor"))
+      '("treeeditor" "tempoeditor" "infoeditor" "treetempoeditor" "commenteditor" "om-table-editor"))
 
 
 
