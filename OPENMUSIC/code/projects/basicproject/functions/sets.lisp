@@ -27,7 +27,7 @@
 ;-------UNION---------
 
 (defun noRep-union (lists oper test key)
-  (let ((the-union (list! (car lists))))
+  (let ((the-union (clone (list! (car lists)))))
   (dolist (one-in (cdr lists))
       (setq the-union (funcall oper the-union (list!  one-in)  :test test :key key)))
   the-union))
