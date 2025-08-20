@@ -27,7 +27,7 @@
 ;-------UNION---------
 
 (defun noRep-union (lists oper test key)
-  (let ((the-union (clone (list! (car lists)))))
+  (let ((the-union (list! (car lists))))
   (dolist (one-in (cdr lists))
       (setq the-union (funcall oper the-union (list!  one-in)  :test test :key key)))
   the-union))
@@ -61,7 +61,7 @@ Ex. (x-union '(1 2 3 4 5) '(4 5 6 7 8)) => (8 7 6 1 2 3 4 5)
 
 Ex. (x-intersect '(1 2 3 4 5) '(4 5 6 7 8)) => (4 5)"
   :icon 191
-  (nreverse (noRep-union (list* l1? l2? (and list (list! list))) 'intersection test key)))
+  (reverse (noRep-union (list* l1? l2? (and list (list! list))) 'intersection test key)))
 
 ;-------XOR---------
 
@@ -78,9 +78,9 @@ XOR keeps only the elements present in one list and not in the other one(s).
 
 Ex. (x-xor '(1 2 3 4 5) '(4 5 6 7 8)) => (1 2 3 6 7 8)"
   :icon 191
-  (nreverse (noRep-union (list* l1? l2? (and list (list! list))) 'set-exclusive-or test key)))
+  (reverse (noRep-union (list* l1? l2? (and list (list! list))) 'set-exclusive-or test key)))
 
-(x-xor '(1 2 3 4 5) '(4 5 6 7 8))
+;(x-xor '(1 2 3 4 5) '(4 5 6 7 8))
 
 ;-------XDIFF---------
 
@@ -98,7 +98,7 @@ Ex. (x-xor '(1 2 3 4 5) '(4 5 6 7 8)) => (1 2 3 6 7 8)"
 
 Ex. (x-diff '(1 2 3 4 5) '(4 5 6 7 8)) => (1 2 3)"
   :icon 191
-  (nreverse (noRep-union (list* l1? l2? (and list (list! list))) 'set-difference test key)))
+  (reverse (noRep-union (list* l1? l2? (and list (list! list))) 'set-difference test key)))
 
 ;------INCLUDED?------
 
