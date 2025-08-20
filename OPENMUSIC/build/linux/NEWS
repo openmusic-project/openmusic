@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- New Classes: OM-TABLE
 - Group ungrouped (score editors) 
 - Move group up (score editors)
 - insert box in connection
@@ -22,6 +23,7 @@ IMPROVEMENTS
 
 FIXES
 
+- x-intersect fix
 - temporal connection fix (linux)
 - Buffer edit fix (macosx)
 - fixed display of resize-bug in a scrolled patch
