@@ -284,10 +284,15 @@
   (setf (nth 0 *dynamic-tempo-list*)
           (append (nth 0 *dynamic-tempo-list*) (list obj))))
 
+;apparement c'est pas bon
 (defmethod first-in-mesure ((self chord))
   (let* ((parent (parent self))
         (pos (position self (inside parent))))
     (if (= 0 pos) t nil)))
+
+(defmethod first-in-mesure ((self grace-chord))
+  (let ((thechord (thechord self)))
+    (first-in-mesure thechord)))
 
 (defmethod first-in-mesure ((self rest))
   (let* ((parent (parent self))
