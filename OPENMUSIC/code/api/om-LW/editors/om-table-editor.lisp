@@ -68,6 +68,12 @@
 (defmethod om-select-window ((self om-table-editor)) 
   (capi::display self))
 
+(defmethod om-view-window ((self om-table-editor)) self)
+
+(defmethod om-set-window-title ((self om-table-editor) (title string))
+  (setf (capi::interface-title self) title))
+
+
 (defmethod internal-window-class-menubar ((self om-table-editor)) 
   (list (make-instance 'capi::menu 
                        :title "File"
