@@ -90,7 +90,7 @@
 (defconstant +lyric-opcode+		#xFF)
 (defconstant +marker-opcode+		#xFF)
 (defconstant +cue-point-opcode+		#xFF)
-
+(defconstant +sysex-opcode+ #xFF)
 
 
 
@@ -307,6 +307,26 @@
 			     :status +midi-port-opcode+)))
     (setf (slot-value inst 'midi::port) (midi-evt-fields ev))
     inst))
+
+;;
+;; SYSEX MESSAGE
+;;
+
+
+(defmethod midi-message-type ((msg midi::system-exclusive-message)) :Sysex)
+
+(defmethod midi-message-fields ((msg midi::system-exclusive-message))
+  ;(list (slot-value msg 'midi::data))
+  (coerce (slot-value msg 'midi::data) 'list)
+  )
+
+(defevt2msg (event2sysex :Sysex)
+  (let ((inst (make-instance 'midi::system-exclusive-message :time (midi-evt-date ev)
+			     :status +sysex-opcode+)));a creer
+    (setf (slot-value inst 'midi::data) (midi-evt-fields ev))
+    inst))
+
+
 
 ;;; SUPERCLASS FOR ALL MODE MESSAGES
 

@@ -175,6 +175,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (:ProgChange #b1100)
     (:ChanPress #b1101)
     (:PitchBend #b1110)
+    (:sysex #b1111)
     ))
 
 (defvar *midi-meta-types*
@@ -182,10 +183,10 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     :InstrName :Lyric :Marker :CuePoint :ChanPrefi
     :EndTrack :Tempo :SMPTEOffset :TimeSign :KeySign
     :MidiPortMsg :EndOfTrackMsg :ResetAllControllers
-    :Specific :AllNotesOff))
+    :Specific :AllNotesOff :sysex))
 
 ; (type-to-midi :resetallcontrollers)
-(defun type-to-midi (type)
+(defun type-to-midi (type) (print (list (find type *midi-typenum-table* :key 'car :test 'equal)))
   (or (cadr (find type *midi-typenum-table* :key 'car :test 'equal))
       (and (find type *midi-meta-types*) #xFF)
       (progn (print (format nil "PORTMIDI API - MESSAGE TYPE NOT SUPPORTED: ~S" type)) nil)
@@ -250,7 +251,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (when type-ref (apply 'make-message* (list type-ref channel v1 v2)))))
 
 ;;; exported call
-(defun portmidi-send-evt (evt)
+(defun portmidi-send-evt (evt) (print (list "send" evt (midi-evt-fields evt)))
   (send-bytes 
    (make-midi-bytes (midi-evt-type evt) 
                     (1- (midi-evt-chan evt)) 
