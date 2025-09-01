@@ -149,7 +149,7 @@
                              )))
         
         (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op om-lisp::*om-listener*))) *listener-font*)
-        (set-bg-listener-color *text-bg-color*)
+        ;(set-bg-listener-color *text-bg-color*);remove?
         ;(setf (capi::simple-pane-background (op *om-listener*)) *text-editor-bg-color*);here
         ;(when (ip om-lisp::*om-listener*)
         ;  (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)
