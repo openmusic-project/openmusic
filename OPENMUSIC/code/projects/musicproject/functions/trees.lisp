@@ -1837,7 +1837,7 @@ Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
                      tree)
                  (list (car tree) (mapcar #'get-leaf (second tree))))))
       (get-leaf tree)
-     (grouper1 (reverse res)))))
+     (reverse res))))
 
 
 (defmethod! get-leaves ((tree voice))
@@ -1856,7 +1856,7 @@ Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
                      tree)
                  (list (car tree) (mapcar #'get-leaf (second tree))))))
       (get-leaf tree)
-     (grouper1 (reverse res)))))
+     (reverse res))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;INSERT PROP;;;;;;;;;;;;;;;;;;;

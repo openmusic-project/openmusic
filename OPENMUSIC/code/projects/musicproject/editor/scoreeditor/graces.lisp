@@ -227,6 +227,37 @@
           for n in pos
           do (setf self (set-grace-notes (nth n chords) i t)))))
 
+;;;;;;;;;;;;;;;;;;;;
+
+(defmethod first-of-meas-p ((self t))
+  nil)
+
+(defmethod first-of-meas-p ((self group))
+  (let ((parent (parent self)))
+    (if (not (measure-p parent))
+        (first-of-meas-p (parent self))
+      (if (and (measure-p parent)
+               (equal self (car (inside (parent self)))))
+          t))))
+
+(defmethod first-of-meas-p ((self chord))
+  (let ((parent (parent self)))
+    (if (not (measure-p parent))
+        (first-of-meas-p (parent self))
+      (if (and (measure-p parent)
+               (equal self (car (inside (parent self)))))
+          t))))
+
+(defmethod first-of-meas-p ((self grace-chord))
+  (first-of-meas-p (thechord self)))
+
+(defmethod first-of-meas-p ((self rest))
+  (let ((parent (parent self)))
+    (if (not (measure-p parent))
+        (first-of-meas-p (parent self))
+      (if (and (measure-p parent)
+               (equal self (car (inside (parent self)))))
+          t))))
 
 ;=======GRAPHIC CLASS
 
@@ -453,9 +484,12 @@
     (let* ((dir (not-stem-dir (stemdir  (grc self))))
            (thenotes (inside self))
            (off (cond 
-                 ((and (= (offset (reference self)) 0) (= (offset (reference (parent self))) 0))
+                 ((and (= (offset (reference self)) 0) 
+                       (= (offset (reference (parent self))) 0))
                   (round  (* 25  zoom )))
-                 ((= (offset (reference self)) 0) (round  (*  35   zoom )))
+                 ;pour la first in measure (suivante pas mesure initiale!)
+                 ((and (= (offset (reference self)) 0) (first-of-meas-p (reference self)))    
+                       (round  (*  35   zoom )))
                  ( t 0))))
       (loop for item in thenotes do
               (draw-head-grace item (+ x off) y zoom minx maxx miny maxy slot size linear? staff chnote))
@@ -565,12 +599,13 @@
 (defmethod figure-?  ((self g-grap-grace-notes)) (call-next-method))
 
 (defmethod draw-grace-notes ((self g-grap-grace-notes) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
-  (let ((off (cond 
+  (let* ((frst (reference (car (inside self))))
+        (off (cond 
               ((and (= (position self (inside (parent self))) 0) 
                     (= (offset (reference self)) 0) 
                     (= (offset (reference (parent self))) 0))
                (round  (* 25  zoom )))
-              ((= (position self (inside (parent self))) 0)
+              ((and (= (position self (inside (parent self))) 0) (first-of-meas-p frst))
                (round  (* 35  zoom )))
               ( t 0))))
     (loop for chord in (inside self) do

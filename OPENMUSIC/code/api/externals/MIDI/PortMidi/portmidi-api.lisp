@@ -372,7 +372,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 (pm::pm-write-short *midi-out* 0 (make-midi-bytes :keyoff 0 '(62 100)))
 
-(pm:pm-close *midi-out*)
+(pm::pm-close *midi-out*)
 
 ;;; TEST IN
 
