@@ -1881,7 +1881,8 @@
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (setf *updatescorepanel* t)
   (when updateref
-    (setf *updateref* t)))
+    (setf *updateref* t))
+  (om-invalidate-view self))
 
 
 #+(or linux win32)
