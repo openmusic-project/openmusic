@@ -307,18 +307,20 @@
 
 (defmethod om-set-scroll-position ((self t) pos) nil)
 
-#+(or cocoa win32)
+;#+(or cocoa win32)
 (defmethod om-set-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
    self
    'capi::scroll self :pan :move 
    (list (om-point-h pos) (om-point-v pos))))
 
+#|
 #+linux
 ;pour empecher les micro-scroll sous linux
 (defmethod om-set-scroll-position ((self om-scroller) pos) nil)
+|#
 
-;#+linux
+#+linux
 ;for scrolling shortcuts only
 (defmethod om-move-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
