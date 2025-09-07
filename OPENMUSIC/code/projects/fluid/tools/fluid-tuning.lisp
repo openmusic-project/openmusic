@@ -216,11 +216,12 @@
 
 ;;All other EDOs deactivate otcave tuning:
 (defmethod oct-tun-off ((port number) (chan list))
+  (when cl-fluid::*fl-synths*
   (loop for i in chan
         do (cl-fluid::fluid_synth_deactivate_tuning
             (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*)); 0 -> port
             i ;chan
-            1)))
+            1))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
