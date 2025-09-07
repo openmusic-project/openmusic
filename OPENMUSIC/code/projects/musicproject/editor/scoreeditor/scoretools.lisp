@@ -1142,8 +1142,8 @@
 (defmethod draw-object ((self grap-poly) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
    (let* ( (posy y) 
             positions
-            (meas-list (cdr (get-aligne-measures (reference self))))
-            )
+            (meas-list (cdr (get-aligne-measures (reference self)))))
+     (om-with-fg-color nil *system-color* ;measure bars and num always in black! 
       (loop for item in (inside self)
             for i = 0 then (+ i 1) 
             for system in staff do
@@ -1159,7 +1159,7 @@
       (last-aling-measures self  minx maxx zoom)
       (draw-aligned-measures self meas-list staff size  positions)
       (draw-extras self view size staff)
-      ))
+      )))
 
 
 (defmethod last-aling-measures ((self grap-poly) minx maxx zoom)
@@ -1277,6 +1277,7 @@
   (let* ((posy y)
          (thetempi (get-voice-tempilist (reference self)))
          dynamicpos)
+    (om-with-fg-color nil *system-color* ;measure bars and num always in black! 
     (loop for i from 0 to (- (length (inside self)) 1) 
           do (let ((cur-mes (nth i (inside self)))
                    (next-mes (nth (+ i 1) (inside self)))) 
@@ -1289,7 +1290,7 @@
                  (unless (or (parent self) (= i 0))
                    (om-with-font (get-font-to-draw 6)
                                  (om-draw-string  (car (rectangle cur-mes)) (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)) (/ size -8)) 
-                                                  (format () "~D" (+ i 1))))))))
+                                                  (format () "~D" (+ i 1)))))))))
     (collect-rectangles self)
     (remake-measures (inside self))
     (when thetempi
