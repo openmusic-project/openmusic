@@ -1880,15 +1880,15 @@
 |#
 
 
-#|
+
 #+macosx
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (setf *updatescorepanel* t)
   (when updateref
     (setf *updateref* t)))
-|#
 
-;#+(or linux win32)
+
+#+(or linux win32)
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
