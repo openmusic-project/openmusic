@@ -144,7 +144,9 @@
   do (fluid_synth_set_gain (synthptr i) 0.0));to be on the safe side
   (loop for i in *fl-synths*
   do (fluid_synth_set_gain (synthptr i) 0.25))
-  )
+  (loop for i from 0 to (1- (length *fl-synths*))
+        do (om::init-edos-octave-tunings i)))
+
 
 ;(add-n-fsynths 1)
 
