@@ -42,6 +42,7 @@
 
 (defvar *g-key* (make-instance 'OMkey))
 (defvar *f-key* (make-instance 'OMkey :key #\? :keyline 4))
+(defvar *f-key-down* (make-instance 'OMkey :key (code-char 64) :keyline 4))
 (defvar *g2-key* (make-instance 'OMkey :octave '(15 -4.5)))
 (defvar *f2-key* (make-instance 'OMkey :octave '(15 4) :key #\? :keyline 4))
 (defvar *g-key-8-down* (make-instance 'OMkey :key #\%))
@@ -313,6 +314,7 @@
                  :staff-list
                  (cond
                   ((equal symbol 'F) (list (make-instance 'OMstaff :key-obj  *f-key* :posy 17.5 :range '(43 57))))
+                  ((equal symbol 'F_8) (list (make-instance 'OMstaff :key-obj  *f-key-down* :posy 21 :range '(31 46))))
                   ((equal symbol 'G) (list (make-instance 'OMstaff :key-obj  *g-key* :posy 11.5 :range'(64 77))))
                   ((equal symbol 'C1) (list (make-instance 'OMstaff :key-obj  *c1-key* :posy 12.5 :range'(61 74))))
                   ((equal symbol 'C3) (list (make-instance 'OMstaff :key-obj  *c3-key* :posy 14.5 :range'(53 67))))

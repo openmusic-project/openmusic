@@ -1248,6 +1248,15 @@
       (let ((staff-selection? (click-in-key? (graphic-obj self) (staff-sys self) (om-h-scroll-position self)  
                                              (* (staff-size self) (score-top-margin self)) 
                                              (w self) (staff-size self) self where)))
+        
+      ;updating Staff popup for poly and multi-seq
+        (when (and staff-selection? (or (typep self 'polypanel) (typep self 'multiseqpanel)))
+          (let* ((sys (sysname staff-selection?))
+                 (but (nth 2 (om-subviews (ctr-view (om-view-container self)))))
+                 (pos (position sys *chord-satff-om* :test 'equal :key 'second)))
+            (om-select-item-index but pos)
+            (update-panel self t)))
+        
         (if (and staff-selection? (not (cursor-p self)))
 
             (progn 
@@ -1287,9 +1296,9 @@
                        :call-next-method
                        )
                     ))
-                   ((and (cursor-p self) (not (om-add-key-p)))
-                    (om-with-focused-view self (control-actives self where)))
-                   ;;; ANALYSIS / SEGMENTATION MODE
+                  ((and (cursor-p self) (not (om-add-key-p)))
+                   (om-with-focused-view self (control-actives self where)))
+                  ;;; ANALYSIS / SEGMENTATION MODE
                    ;((analysis-mode? self)
                    ; (off-selection self)
                    ; (if (om-add-key-p)
@@ -1302,63 +1311,63 @@
                    ;     ))  
                    ; )
 
-                   ;;; NORMAL MODE OR ANALYSIS
-                   (t
-                    (if (analysis-mode? self) 
-                      (progn
-                        (when (and (om-shift-key-p) (om-command-key-p))
-                          (handle-add-kant-click self))
-                        (off-analysis-selection self)
-                        (setf segment (click-in-segment self where))
-                        ;;; segment = (analysis segment)
-                        )
-                      (cond 
-                       ((not graph-obj)   ;(and (not graph-obj) (extra-palette self))
-                        (setf graph-obj (click-in-extra-p (graphic-obj self) where)))
-                       ((and graph-obj (not (om-add-key-p)) (extra-palette-action? self))
-                        (make-new-extra-mode self graph-obj)
-                        (setf graph-obj nil)))
-                      )
-                    (cond 
-                     ((om-add-key-p) 
-                      (if (analysis-mode? self)
-                          (handle-add-click-analysis self where)
-                        (add-new-object self mode-obj where graph-obj))
-                      (when (editor self) (update-inspector (editor self) 0)))
-                     ((and (grap-extra-p graph-obj) double-click-p) 
-                      (open-extra-editor self graph-obj))
-                     
-                     ((or graph-obj segment)
-                      ;;; new 
-                      (if double-click-p
-                          (if (and (analysis-mode? self) segment)
-                              (handle-doubleclick-analysis segment self where)
-                            (progn 
-                              (off-selection self)
-                              (select-note self graph-obj)
-                              (open-internal-editor self)))
-                        ;;;
-                        (if (and (analysis-mode? self) (not graph-obj) segment)
-                            (handle-click-analysis segment self where)
-                          (if (om-shift-key-p) 
-                              (omselect-with-shift self graph-obj)
-                            (when (not (member (reference graph-obj) (selection? self) :test 'equal))
-                              (off-selection self)
-                              (select-note self graph-obj)
-                              (get-inspector (editor self))))
-                          )
-                        )
-                      (setf (edit-cursor self) nil))
-                     (t (om-with-focused-view self (control-actives self where))
-                        (when (edit-cursor self)
-                          (setf (edit-cursor self) nil)
-                          (om-invalidate-view self))
-                        (get-inspector (editor self)))
+                  ;;; NORMAL MODE OR ANALYSIS
+                  (t
+                   (if (analysis-mode? self) 
+                       (progn
+                         (when (and (om-shift-key-p) (om-command-key-p))
+                           (handle-add-kant-click self))
+                         (off-analysis-selection self)
+                         (setf segment (click-in-segment self where))
+                         ;;; segment = (analysis segment)
+                         )
+                     (cond 
+                      ((not graph-obj)   ;(and (not graph-obj) (extra-palette self))
+                       (setf graph-obj (click-in-extra-p (graphic-obj self) where)))
+                      ((and graph-obj (not (om-add-key-p)) (extra-palette-action? self))
+                       (make-new-extra-mode self graph-obj)
+                       (setf graph-obj nil)))
                      )
-                    (update-slot-edit self)
+                   (cond 
+                    ((om-add-key-p) 
+                     (if (analysis-mode? self)
+                         (handle-add-click-analysis self where)
+                       (add-new-object self mode-obj where graph-obj))
+                     (when (editor self) (update-inspector (editor self) 0)))
+                    ((and (grap-extra-p graph-obj) double-click-p) 
+                     (open-extra-editor self graph-obj))
+                     
+                    ((or graph-obj segment)
+                     ;;; new 
+                     (if double-click-p
+                         (if (and (analysis-mode? self) segment)
+                             (handle-doubleclick-analysis segment self where)
+                           (progn 
+                             (off-selection self)
+                             (select-note self graph-obj)
+                             (open-internal-editor self)))
+                       ;;;
+                       (if (and (analysis-mode? self) (not graph-obj) segment)
+                           (handle-click-analysis segment self where)
+                         (if (om-shift-key-p) 
+                             (omselect-with-shift self graph-obj)
+                           (when (not (member (reference graph-obj) (selection? self) :test 'equal))
+                             (off-selection self)
+                             (select-note self graph-obj)
+                             (get-inspector (editor self))))
+                         )
+                       )
+                     (setf (edit-cursor self) nil))
+                    (t (om-with-focused-view self (control-actives self where))
+                       (when (edit-cursor self)
+                         (setf (edit-cursor self) nil)
+                         (om-invalidate-view self))
+                       (get-inspector (editor self)))
                     )
+                   (update-slot-edit self)
                    )
-                  )))))
+                  )
+            )))))
 
 
 
@@ -1885,7 +1894,8 @@
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (setf *updatescorepanel* t)
   (when updateref
-    (setf *updateref* t)))
+    (setf *updateref* t))
+  (om-invalidate-view self))
 
 
 #+(or linux win32)
