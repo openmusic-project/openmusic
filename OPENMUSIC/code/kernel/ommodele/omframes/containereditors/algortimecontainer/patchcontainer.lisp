@@ -98,6 +98,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 
 ;(defparameter *current-panel* nil)
 
+
 (defmethod om-view-click-handler ((view patchPanel) where) 
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
@@ -127,10 +128,10 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
           (setf *new-obj-initial-pos* nil)
           ))
           ;;; adding "list/x-append box" and autoconnect with selected boxes
-          ((and (om-shift-key-p) (om-command-key-p))
+          ((and (om-option-key-p) (om-command-key-p))
            (let ((selected (get-actives view)))
              (create-list-box view selected where)))
-          ((om-shift-key-p) ;(and (om-shift-key-p) (om-option-key-p)) ;maybe conflict!
+          ((om-option-key-p) ;(and (om-shift-key-p) (om-option-key-p)) ;maybe conflict!
            (let ((selected (get-actives view)))
              (create-x-append-box view selected where)))
           (t (call-next-method))))
@@ -143,13 +144,15 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
     (make-undefined-box self where)
     ))
 
+#|
+;no!
 (defmethod do-click-event-handler ((self patchPanel) where)
   (unless (om-option-key-p); (om-shift-key-p) 
     (mapc #'(lambda (control) 
               (omG-unselect control)) (get-actives self)))
   (control-actives self where)
   self)
-
+|#
 
 (defvar *patchhelp1* '(("lrud" "Move")
                        ("shift+lrud" "Move faster")
@@ -174,8 +177,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                       ;("shift+alt" "auto-connect all inputs")
                        #+(or linux win32)("shift+ctrl+alt" "disconnect all inputs")
                        #+macosx("shift+alt+cmd" "disconnect all inputs")
-                       (("X") "auto-connect all inputs")
-                       (("Z") "disconnect all inputs")
+                       ;(("X") "auto-connect all inputs")
+                       ("alt+shift+clic" "auto-connect all inputs")
+                       (("0") "disconnect all inputs")
                        ("shift+box" "create new box and auto-connect it from output")
                        ;#+(or linux win32)
                        ("shift+ctrl+lrud" "resize box")
