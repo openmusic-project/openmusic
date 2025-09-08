@@ -408,6 +408,7 @@
                                      ;:menu-bar-items nil
                                      ;#+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+cocoa :color-mode #+cocoa nil
                                      :window-styles style
                                      :font font
                                      :resizable resizable
