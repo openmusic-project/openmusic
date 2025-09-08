@@ -188,13 +188,14 @@
 
 
 (defmethod deactivate-connect ((self c-connection))
+  (unless (om-shift-key-p)
   (when (selected? self)
     (draw-connection self nil)
     (setf (point-sel self) nil)
     (setf (selected? self ) nil)
     (invalidate-connection-region self (connection-container (thebox self)))
     #-(and cocoa lispworks8)(draw-connection self t) t)
-  )
+  ))
   
 (defmethod new-color-connection ((self c-connection))
    (setf (ccolor self) (mod (1+ (ccolor self)) 17)) ;; 0 and [1-16] are supported
@@ -390,6 +391,7 @@
 
 (defmethod insert-connect-box ((self boxframe) (cord c-connection) (nth number))
   "Insert a box whithin a connection.nth is the nth input of inserted box"
+  (setf *target-out* (car (outframes self)))
   (let* ((out *target-out*)
          (indx (index cord))
          (inbox (thebox cord))
@@ -401,8 +403,7 @@
     (connect-box out (nth indx (inputframes inbox)))
     (connect-box output (nth (1- nth) (inputframes self)))
     (setf *target-out* nil
-          *target-in* nil)
-    ))
+          *target-in* nil)))
 
 
 ;=======Maquettes
