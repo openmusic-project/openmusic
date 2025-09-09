@@ -182,10 +182,10 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ;#+macosx("shift+cmd+lrud" "resize box")
                        (("I") "reInitialize size/connection")
                        ("alt+box" "box and connection selection")
+                       (("'" "|") "Zoom in/out Class Boxes")
                        ))
 
-(defvar *patchhelp2* '((("'" "|") "Zoom in/out Class Boxes")
-                       (("d") "show Documentation")
+(defvar *patchhelp2* '((("d") "show Documentation")
                        (("e") "Edit lisp code")
                        (("g") "output lisp expression in listener")
                        (("t") "show Tutorial patch")
@@ -205,6 +205,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        (("E" "U") "Encapsulation/de-encap.")
                        ("space" "Play / Pause")
                        (("p" "s") "Play / Stop")
+                       ("esc" "Load Sound miniview")
                        ))
 
 
@@ -376,7 +377,9 @@ because digit-char-p will not accept backspace and special om keys!"
         (t
          (progn (mapc #'(lambda (item) (move-frame-delta item 2)) actives)
            (make-move-after self actives)))))
-
+      (:om-key-esc 
+       (loop for i in actives do
+               (load-sound-miniview i)))
       (#\< (mapc #'(lambda (item) (delete-one-input item)) actives))
       (#\> (mapc #'(lambda (item) (add-one-input item)) actives))
       

@@ -931,6 +931,14 @@ Press 'space' to play/stop the sound file.
   (sound-get-pict self))
 
 
+(defmethod load-sound-miniview ((self t)) nil)
+
+(defmethod load-sound-miniview ((self boxsoundframe))
+  (let ((sound (value (object self))))
+    (build-display-array sound)
+    (om-invalidate-view self)))
+
+
 ;;;============================================
 ;;; EXPORT VERS BPC-LIB  A PARTIR DU SOUND FILE
 ;;;===========================================
