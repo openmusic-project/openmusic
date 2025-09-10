@@ -846,11 +846,30 @@ Press 'space' to play/stop the sound file.
         (if (and (nth i inputs) (string-equal (name input) (name (nth i inputs))))
             (nth i inputs) input)))
 
-
+#|
 (defmethod OpenEditorframe ((self omaifffilebox))
   (unless (pict-sound (value self))
     (build-display-array (value self)))
   (call-next-method))
+|#
+
+(defmethod OpenEditorframe ((self omaifffilebox))
+  (unless (pict-sound (value self))
+    (build-display-array (value self)))
+  ;from patchboxes.lisp
+  (if (and (value self) (good-val-p? (value self)))
+               (let ((size (get-edit-param self 'winsize))
+                     (pos (get-edit-param self 'winpos)))
+                 (editor (make-editor-window (get-editor-class (value self)) (value self)
+                                             (name self)
+                                             self
+                                             :winsize (if (om-point-p size) size)  
+                                             :winpos (if (om-point-p pos) pos)
+                                             )))
+             (om-beep-msg (string+ "Bad instance for class " (name (reference self))
+                                ". Try to re-evaluate the box in order to create a valid instance.")))
+  ;(call-next-method)
+  )
 
 (defmethod get-frame-class ((self OMaiffFilebox)) 'boxsoundframe)
 
