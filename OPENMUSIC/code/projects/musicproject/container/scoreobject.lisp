@@ -300,9 +300,15 @@ Extraction methods.
 (defmethod dur ((self note))
   (extent->ms self))
 
+#|
 (defmethod midic ((self note))
   ;(setf (approx self) (get-approx self))
   (approx-m (slot-value self 'midic) (approx self)))
+|#
+
+(defmethod midic ((self note))
+  (slot-value self 'midic))
+
 
 ;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
@@ -341,12 +347,20 @@ Extraction methods.
   self)
 
 ;;; CHORDS
-
+#|
 (defmethod LMidic ((self chord))
   (loop for i in (inside self)
         collect (setf (approx i) (approx self)))
   (loop for chord in (inside self)
         collect (approx-m (midic chord) (approx self))))
+|#
+
+(defmethod LMidic ((self chord))
+  (loop for i in (inside self)
+        collect (setf (approx i) (approx self)))
+  (loop for note in (inside self)
+        collect (midic note)))
+
 
 (defmethod LChan ((self chord))
   (loop for note in (inside self)
