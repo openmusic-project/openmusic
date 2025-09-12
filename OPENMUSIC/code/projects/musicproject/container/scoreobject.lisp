@@ -1998,9 +1998,15 @@ Returns the list of all measure in <self>.
 "
   (inside self))
 
+#|
 (defmethod! get-measures ((self poly))
   (loop for voice in self
         append (get-measures voice)))
+|#
+
+(defmethod! get-measures ((self poly))
+  (loop for voice in (inside self)
+        collect (get-measures voice)))
 
 (defmethod! get-measures ((self t)) nil)
 
