@@ -37,9 +37,11 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 7.071000)
+(defparameter *version* 7.072000)
+
 
 (defparameter *beta-release* t) 
+;(defparameter *rc-release* nil)
 (defparameter *version-str* "")
 (defparameter *version-str-full* "")
 (defparameter *release-language* :en)
@@ -55,10 +57,10 @@
          (v3 (read-from-string (subseq rest 2 (min 3 (length rest)))))
          ;(beta (if (> (length rest) 4) (read-from-string (subseq rest 4))))
          )
-    (concatenate 'string (format nil "~d.~d" v v2) 
-                 (if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
+    (concatenate 'string (format nil "~d.~d" v v2)
+                 ;(if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
                  (if show-beta
-                     "b" ;(format nil ".~db" v3)
+                     (format nil "-b.~d" v3)
                    "")
                  )))
 
