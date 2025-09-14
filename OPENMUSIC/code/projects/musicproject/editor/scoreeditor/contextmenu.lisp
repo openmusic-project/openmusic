@@ -179,7 +179,7 @@
                                                        (update-panel panel)))))))
      (setf graces (list (om-new-leafmenu "Edit grace notes"
                                                  #'(lambda () 
-                                                     (add-grace-notes-dialog (reference object))
+                                                     (add-grace-notes-dialog (reference object) panel)
                                                      (update-panel panel)))))
      (when (gnotes (reference object))
        (setf graces (append graces (list (om-new-leafmenu "Suppr. grace notes"
@@ -205,7 +205,7 @@
                                                            (update-panel panel)))))))
     (setf graces (list (om-new-leafmenu "Edit grace notes"
                                         #'(lambda () 
-                                            (add-grace-notes-dialog (reference object))
+                                            (add-grace-notes-dialog (reference object) panel)
                                             (update-panel panel)))))
     (when (gnotes (reference object))
       (setf graces (append graces (list (om-new-leafmenu "Suppr. grace notes"

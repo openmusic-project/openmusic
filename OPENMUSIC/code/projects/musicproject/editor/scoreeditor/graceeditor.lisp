@@ -501,19 +501,19 @@
           (t (print "Only for VOICE and POLY editors!")))))
 |#
 
-(defmethod add-grace-notes-dialog ((self t))
+(defmethod add-grace-notes-dialog ((self t) (panel t))
   (om-message-dialog "Please choose CHORD selection mode only!"))
   
-(defmethod add-grace-notes-dialog ((self chord))
+(defmethod add-grace-notes-dialog ((self chord) (panel scorepanel))
   (let ((root (get-root-parent self)))
-    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self))
-          ((poly-p root) (open-add-grace-panel (get-poly self) self))
+    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
+          ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
           (t (print "Only for VOICE and POLY editors!")))))
 
 
-(defmethod open-add-grace-panel ((self voice) thing)
+(defmethod open-add-grace-panel ((self voice) thing panel)
   (let* ((gnotes (gnotes thing))
-         (editor (editorframe (associated-box self)))
+         (editor (om-view-container panel))
          (chrdseq (make-instance 'grace-note-seq 
                                  :approx (approx self); C'est la!!
                                  :lmidic (if gnotes (mapcar 'lmidic (glist gnotes)) '(6000))
@@ -524,9 +524,9 @@
     (push win (attached-editors editor))))
 
 
-(defmethod open-add-grace-panel ((self poly) thing)
+(defmethod open-add-grace-panel ((self poly) thing panel)
   (let* ((gnotes (gnotes thing))
-         (editor (editorframe (associated-box self)))
+         (editor (om-view-container panel))
          (chrdseq (make-instance 'grace-note-seq 
                                  :approx (approx self); C'est la!!
                                  :lmidic (if gnotes (mapcar 'lmidic (glist gnotes)) '(6000))
