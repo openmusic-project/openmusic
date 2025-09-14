@@ -107,9 +107,16 @@ Ex. (x-append '(1 2 3) 4 '(5 6 7)) => (1 2 3 4 5 6 7)
 (defmethod flat-low ((list list)) 
   (lo-flat list))
 
+#|
 (defmethod flat-once ((list list))
   (if (consp (car list))
     (apply 'append list) list))
+|#
+
+;in order to avoid "list too long to be applied"
+(defmethod flat-once ((list list))
+  (if (consp (car list))
+    (reduce 'append list) list))
 
 (defmethod flat-one ((list list))
   (loop for item in list
