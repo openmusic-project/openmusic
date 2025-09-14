@@ -510,6 +510,11 @@
           ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
           (t (print "Only for VOICE and POLY editors!")))))
 
+(defmethod add-grace-notes-dialog ((self rest) (panel scorepanel))
+  (let ((root (get-root-parent self)))
+    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
+          ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
+          (t (print "Only for VOICE and POLY editors!")))))
 
 (defmethod open-add-grace-panel ((self voice) thing panel)
   (let* ((gnotes (gnotes thing))
