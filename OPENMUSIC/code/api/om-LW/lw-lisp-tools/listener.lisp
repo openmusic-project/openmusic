@@ -84,7 +84,7 @@
   ((ip :accessor ip :initarg :ip)
    (op :accessor op :initarg :op))
   (:default-initargs 
-  ; :color-mode :aqua)
+   :color-mode :aqua)
   )
 
 
