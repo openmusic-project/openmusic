@@ -1101,7 +1101,7 @@
    
                   (case char
                     (#\1 (subdivide-more self))
-                    (#\0 (add-grace-notes-dialog (car (selection? self))))
+                    (#\0 (add-grace-notes-dialog (car (selection? self)) self))
                     (#\. (progn 
                            (delete-grace-notes (car (selection? self)))
                            (update-panel self)))

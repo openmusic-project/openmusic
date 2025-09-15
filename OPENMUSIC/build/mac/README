@@ -1,5 +1,5 @@
 ;=====================================
-; OM 7.6
+; OM 7.7
 ;=====================================
 
 To install, just drag "OM 7.x.app" into your Applications/ directory.
@@ -33,6 +33,43 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+
+
+* RELEASE NOTES 7.7
+
+NEW FEATURES
+
+- F_8 clef
+- New Classes: OM-TABLE
+- Group ungrouped (score editors) 
+- Move group up (score editors)
+- insert box in connection
+- Grace editor
+- New methods: omg-quantify, remove-tree-graces, get-leaves, insert-prop, remove-prop
+- Grace notes support
+- Shift+drag from output: Create and auto-connect output to new box
+
+IMPROVEMENTS
+
+- Clef changes update in Poly and Multi-seq
+- Tunings in fluidsynth uses now octave tuning system
+- Possibility not to automatically displaying sound wave in patches
+  for faster loading patches with big sound files 
+  (preferences/appearence/auto-load sound image option)
+- Select multiple connection with alt/option
+- Red color for confirmation when mouse on output in temporal patch
+- Zoom in/out of Class boxes
+- Now each score object have its approx slot
+
+FIXES
+
+- x-intersect fix
+- temporal connection fix (linux)
+- Buffer edit fix (macosx)
+- fixed display of resize-bug in a scrolled patch
+- fixed Patch connections issues (linux) 
+- dynamic tempo fix
+- delete-all-inputs fixed: when boxtypeframe selected no error
 
 
 * RELEASE NOTES 7.6
