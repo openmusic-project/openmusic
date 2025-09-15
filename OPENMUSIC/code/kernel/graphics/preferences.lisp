@@ -235,7 +235,7 @@
                                                             ;#-linux
                                                             (update-pref-scroll win (pref-id (om-current-view (tabs win))))
 							    ;#+linux (om-select-window *pref-window*)
-                                                            #+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
+                                                            ;#+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
                                                             ))))
 		      
                       (om-make-dialog-item 'om-button (om-make-point 130 b-posy) (om-make-point 80 22) "Apply" 
@@ -246,7 +246,7 @@
                                                           (save-preferences)
                                                           ;#-linux 
                                                           (update-pref-scroll win (pref-id (om-current-view (tabs win))))
-                                                          #+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
+                                                          ;#+linux (update-pref-to-apply win (pref-id (om-current-view (tabs win))))
                                                           )))
 
                       (om-make-dialog-item 'om-button (om-make-point (- (om-point-h (get-pref-scroll-size)) 185) b-posy) (om-make-point 80 22) "Cancel" 
