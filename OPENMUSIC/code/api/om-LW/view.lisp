@@ -320,7 +320,7 @@
 (defmethod om-set-scroll-position ((self om-scroller) pos) nil)
 |#
 
-#+linux
+;#+linux
 ;for scrolling shortcuts only
 (defmethod om-move-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
