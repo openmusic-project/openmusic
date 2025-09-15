@@ -89,6 +89,9 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 ;#+linux
 ;(defmethod om-set-scroll-position ((self patchpanel) pos) nil)
 
+(defmethod set-field-size ((self patchpanel)) 
+  (om-set-field-size self (panel-size (editor self))))
+
 
 (defmethod om-view-click-handler :before ((self patchPanel) where)
    (declare (ignore where))
