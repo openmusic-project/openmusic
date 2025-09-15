@@ -32,7 +32,8 @@
 ;;                      $Date: 2015/10/05 Jean Bresson $
 ;;                           $Revision: 3.0 $
 ;;                      $Date: 2021/12/10 Karim Haddad $
-
+;;                           $Revision: 3.2 $
+;;                      $Date: 2025/13/09 Karim Haddad $
 ;;
 
 
@@ -894,19 +895,27 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                       (list (format nil "<beats>~D</beats>" (car signature))
                                             (format nil "<beat-type>~D</beat-type>" (cadr signature)))
                                       "</time>")
-                                (and key
-                                     (list "<clef>"
-                                           (list (format nil "<sign>~:@(~a~)</sign>" (car key))
-                                                 (format nil "<line>~D</line>" (cadr key)))
-                                           "</clef>"
-                                           ))
+
+                                (when (= mesnum 1)
+                                  (and key
+                                       (list "<clef>"
+                                             (remove nil
+                                                     (list (format nil "<sign>~:@(~a~)</sign>" (car key))
+                                                           (format nil "<line>~D</line>" (cadr key))
+                                                           (when (third key) 
+                                                             (format nil "<clef-octave-change>~D</clef-octave-change>" (third key))
+                                                             )))
+                                             "</clef>"
+                                             )))
+
+
                                 "</attributes>"))
                   (loop for obj in inside ;for fig in (cadr (dursdivisions self))  ;;;;;transmetre les note-types
                         append
-                        (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
-                               (factor (/ (* 1/4 dur-obj-noire) real-beat-val))) 
-                          (cons-xml-expr obj :free (* symb-beat-val factor) :approx approx :part part) ;;; NOTE: KEY STOPS PROPAGATING HERE
-                          )))
+                          (let* ((dur-obj-noire (/ (om::extent obj) (om::qvalue obj)))
+                                 (factor (/ (* 1/4 dur-obj-noire) real-beat-val))) 
+                            (cons-xml-expr obj :free (* symb-beat-val factor) :approx approx :part part) ;;; NOTE: KEY STOPS PROPAGATING HERE
+                            )))
           "</measure>"
           "<!--=======================================================-->")))
 
@@ -1010,11 +1019,22 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
       (write-xml-file (mxml::cons-xml-expr self :free 0 :key keys :approx approx) pathname)
       pathname)))
 
+(defun clefs->xml (s)
+  (cond 
+   ((eq s 'f) '(F 4))
+   ((eq s 'f_8) '(F 4 -1))
+   ((eq s 'g) '(G 2))
+   ((eq s 'g_8) '(G 2 -1))
+   ((eq s 'g^8) '(G 2 1))
+   ((eq s 'c1) '(C 1))
+   ((eq s 'c3) '(C 3))
+   ((eq s 'c4) '(C 4))
+   (t '(G 2))))
 
-(defmethod! export-musicxml ((self t) &optional (keys '((G 2))) (approx 2) (path nil))
+(defmethod! export-musicxml ((self t) &optional (keys nil) (approx 2) (path nil))
   :icon 351
   :indoc '("a VOICE or POLY object" "list of voice keys" "tone subdivision approximation" "a target pathname")
-  :initvals '(nil ((G 2)) 2 nil)
+  :initvals '(nil '((G 2)) 2 nil)
   :doc "
 Exports <self> to MusicXML format.
 
@@ -1022,9 +1042,14 @@ Exports <self> to MusicXML format.
 - <approx> is the microtonal pitch approximation
 - <path> is a pathname to write the file in
 "
-  (xml-export self :keys keys :approx approx :path path))
+  (let* ((staff (get-edit-param (associated-box self) 'staff))
+         (clefs (loop for i in staff
+                      collect (clefs->xml i))))
+  (xml-export self :keys (if clefs clefs '((G 2)))
+              :approx approx :path path)))
 
-(defmethod! export-musicxml ((self poly) &optional (keys '(("G" 2))) (approx 2) (path nil)) (call-next-method))
+
+(defmethod! export-musicxml ((self poly) &optional (keys '((G 2))) (approx 2) (path nil)) (call-next-method))
 
 ;;;  UTILS 
 

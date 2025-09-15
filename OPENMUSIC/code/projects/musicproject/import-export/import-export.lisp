@@ -222,7 +222,10 @@
   (etf-export object :approx (or (get-param params 'approx) 2) :name name))
 
 (defmethod score-export ((format (eql 'xml)) object params name)
-  (xml-export object :keys '((G 2)) :approx (or (get-param params 'approx) 2) :name name))
+  (let* ((staff (get-param params 'staff))
+         (clefs (loop for i in staff
+                     collect (clefs->xml i))))
+    (xml-export object :keys clefs :approx (or (get-param params 'approx) 2) :name name)))
 
 (defmethod score-export ((format (eql 'finale)) object params name)
   (export-nap object (or (get-param params 'approx) 2) name))
