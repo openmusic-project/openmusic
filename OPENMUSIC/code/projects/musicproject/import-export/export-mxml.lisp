@@ -1048,6 +1048,21 @@ Exports <self> to MusicXML format.
   (xml-export self :keys (if clefs clefs '((G 2)))
               :approx approx :path path)))
 
+(defmethod! export-musicxml ((self voice) &optional (keys nil) (approx 2) (path nil))
+  :icon 351
+  :indoc '("a VOICE or POLY object" "list of voice keys" "tone subdivision approximation" "a target pathname")
+  :initvals '(nil ((G 2)) 2 nil)
+  :doc "
+Exports <self> to MusicXML format.
+
+- <keys> defines the staff
+- <approx> is the microtonal pitch approximation
+- <path> is a pathname to write the file in
+"
+  (let* ((staff (get-edit-param (associated-box self) 'staff))
+         (clefs (list (clefs->xml staff))))
+  (xml-export self :keys (if clefs clefs '((G 2)))
+              :approx approx :path path)))
 
 (defmethod! export-musicxml ((self poly) &optional (keys '((G 2))) (approx 2) (path nil)) (call-next-method))
 
