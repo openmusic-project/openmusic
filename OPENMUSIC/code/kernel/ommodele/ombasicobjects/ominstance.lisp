@@ -125,30 +125,35 @@ if the instance is a list or a constant a subclass of OMInstance will be create.
 (defmethod obj-file-extension ((self OMInstance)) "omi")
 
 (defmethod OpenEditorframe ((self OMInstance))
-   "For instance there are to type of Editorframe:
+  "For instance there are to type of Editorframe:
 if the instance's class have an editor (for exemple note) you can open this editor,
 but in all case you can open an editor for the instance slots, see the class InstanceWinFrame."
-   (setf (saved? self) nil)
-   (cond
-    ;; ???
-    ((om-command-key-p)
-     (if (editorframe self)
-       (if (instsroller-p (editorframe self)) (editorframe self)
-           (progn
-             (om-close-window (window (editorframe self)))
-             (open-struct-editor self)))
-       (open-struct-editor self)))
-    ((Class-has-editor-p (instance self))
-     (if (editorframe self)
-       (if (instsroller-p (editorframe self))
-         (progn
-           (om-close-window (window (editorframe self)))
-           (editor (make-editor-window (get-editor-class (instance self)) (instance self)
-                                       (name self) self)))
-         (editorframe self))
-       (editor (make-editor-window (get-editor-class (instance self)) (instance self)
-                                   (name self) self))))
-    (t (or (editorframe self) (open-struct-editor self)))))
+  (setf (saved? self) nil)
+  (cond
+   ;; ???
+   ((om-command-key-p)
+    (if (editorframe self)
+        (if (instsroller-p (editorframe self)) (editorframe self)
+          (progn
+            (om-close-window (window (editorframe self)))
+            (open-struct-editor self)))
+      (open-struct-editor self)))
+   ((Class-has-editor-p (instance self))
+    (if (editorframe self)
+        (if (instsroller-p (editorframe self))
+            (progn
+              (om-close-window (window (editorframe self)))
+              (editor (make-editor-window (get-editor-class (instance self)) (instance self)
+                                          (name self) self)))
+          (editorframe self))
+      (editor (make-editor-window (get-editor-class (instance self)) (instance self)
+                                  (name self) self)))
+    (if (equal (get-editor-class (instance self)) 'soundeditor)
+        (progn
+          (unless (pict-sound (instance self))
+            (build-display-array (instance self)))
+          nil)))
+   (t (or (editorframe self) (open-struct-editor self)))))
 
 
 (defmethod make-slots-ins-boxes ((self OMInstance))
