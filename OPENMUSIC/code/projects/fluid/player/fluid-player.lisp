@@ -67,7 +67,8 @@
                       (let* ((trackpanel (om-view-container (caller player)));tracks
                              (trked (om-view-container trackpanel)))
                         (position object (mapcar #'object (reverse (editors trackpanel)))))
-                (get-gen-port object)))))
+                (get-gen-port object))
+                (get-gen-port object))));peut mieux faire...
  ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
     (if (and port *fluid-auto-microtune* approx)
       (change-tuning port approx))
