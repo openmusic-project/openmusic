@@ -14,6 +14,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- MusicXml exports editors clefs
 - Clef changes update in Poly and Multi-seq
 - Tunings in fluidsynth uses now octave tuning system
 - Possibility not to automatically displaying sound wave in patches

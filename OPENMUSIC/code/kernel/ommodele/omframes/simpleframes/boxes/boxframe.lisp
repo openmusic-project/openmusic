@@ -439,7 +439,7 @@
           when (not (car i))
             return (second i))))
 
-(defmethod om-view-click-handler ((self omboxframe) where) ;(om-inspect self)
+(defmethod om-view-click-handler ((self omboxframe) where)
   ;(print (first-not-connected-input self))
   (do-click-inbox self where)
   (cond 
