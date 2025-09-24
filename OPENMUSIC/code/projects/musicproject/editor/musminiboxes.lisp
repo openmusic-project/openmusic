@@ -374,7 +374,7 @@
    (draw-mini-view view self)
    (draw-carre view))
 
-;-----voice
+;-----chord-seq
 (defmethod draw-editor-mode ((self chord-seq) view) 
    (draw-mini-view view self)
    (draw-carre view))

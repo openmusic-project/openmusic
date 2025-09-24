@@ -5,7 +5,7 @@ Priority: optional
 Architecture: amd64
 Maintainer: Karim Haddad <karim.haddad@ircam.fr>
 Installed-Size: 136000
-Depends: libsndfile1, libportmidi0, libsamplerate0, libgtk2.0-0, gtk2-engines-murrine, libcanberra-gtk-module, fontconfig, media-types, desktop-file-utils, libcurl4
+Depends: libsndfile1, libportmidi0, libsamplerate0, libgtk2.0-0, gtk2-engines-murrine, libcanberra-gtk3-module, fontconfig, media-types, desktop-file-utils, libcurl4
 Homepage: https://openmusic-project.github.io/
 Description:  A graphical programming environment for musical composition. 
  .
