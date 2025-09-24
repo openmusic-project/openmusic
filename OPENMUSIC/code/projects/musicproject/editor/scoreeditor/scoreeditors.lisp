@@ -1885,16 +1885,16 @@
 |#
 
 
-
+#|
 #+macosx
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (setf *updatescorepanel* t)
   (when updateref
     (setf *updateref* t))
   (om-invalidate-view self))
+|#
 
-
-#+(or linux win32)
+;#+(or linux win32)
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
@@ -1928,7 +1928,7 @@
     (setf *redraw-diamonds* t)
     (om-invalidate-view self)))
 
-
+;maybe not needed anymore...
 #+macosx
 (defmethod update-alt-panel ((self scorepanel) &optional (updateref nil))
   (when updateref
@@ -4916,7 +4916,7 @@
               ))))
 
 ;KEY ACTIONS
-
+#|
 (defmethod move-selection ((self scorePanel) dir)
 
   (loop for item in (selection? self) do
@@ -4961,7 +4961,35 @@
       (change-edit-mode (car (frames (associated-box root))))
       (om-invalidate-view (panel (editorframe (associated-box root))) t)
       )))
+|#
 
+(defmethod move-selection ((self scorePanel) dir) (print (list "sss" self))
+
+  (loop for item in (selection? self) do
+          (score-move-a item self (cond
+                                   (#+(or cocoa win32)(om-option-key-p)
+                                    #+linux(om-option-key-p) 
+                                    (if (= dir 0) 700 -700))
+                                   ((om-shift-key-p) (if (= dir 0) 1200 -1200))
+                                   (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
+                                        (if (= dir 0) factor
+                                          (* -1 factor)))))))
+ 
+  (update-panel self t)
+  (om-invalidate-view self t))
+
+(defmethod move-selection ((self chordPanel) dir)
+  (loop for item in (selection? self) do
+          (score-move-a item self (cond
+                                   (#+(or cocoa win32)(om-option-key-p)
+                                    #+linux(om-option-key-p) 
+                                    (if (= dir 0) 700 -700))
+                                   ((om-shift-key-p) (if (= dir 0) 1200 -1200))
+                                   (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
+                                        (if (= dir 0) factor
+                                          (* -1 factor)))))))
+
+  (update-panel self t))
 
 ;;; new : changer la duree avec les touche R/L
 (defmethod change-dur ((self chordseqpanel) dir)
