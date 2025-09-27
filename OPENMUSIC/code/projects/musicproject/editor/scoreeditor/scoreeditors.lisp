@@ -4967,8 +4967,7 @@
       )))
 |#
 
-(defmethod move-selection ((self scorePanel) dir) (print (list "sss" self))
-
+(defmethod move-selection ((self scorePanel) dir)
   (loop for item in (selection? self) do
           (score-move-a item self (cond
                                    (#+(or cocoa win32)(om-option-key-p)
@@ -4978,7 +4977,6 @@
                                    (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
                                         (if (= dir 0) factor
                                           (* -1 factor)))))))
- 
   (update-panel self t)
   (om-invalidate-view self t))
 
