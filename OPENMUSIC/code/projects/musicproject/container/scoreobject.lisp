@@ -1478,16 +1478,16 @@ of all its direct subcontainers (supposed adjacent)"
                                         ;(gchords (loop for i in chords-before collect (objfromobjs i (make-instance 'grace-chord))))
                                         (gchords (if (or (numberp (car chords)) (null chords))
                                                      (loop for i in 
-                                                           (loop for i from 1 to nnotes-before 
-                                                                 collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
-                                                         collect (objfromobjs i (make-instance 'grace-chord)))
+                                                             (loop for i from 1 to nnotes-before 
+                                                                   collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
+                                                           collect (objfromobjs i (make-instance 'grace-chord)))
                                                    (if (gnotes (car chords))
-                                                   (glist (gnotes (car chords)))
+                                                       (glist (gnotes (car chords)))
                                                      ;compat
                                                      (loop for i in 
-                                                           (loop for i from 1 to nnotes-before 
-                                                                 collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
-                                                         collect (objfromobjs i (make-instance 'grace-chord)))
+                                                             (loop for i from 1 to nnotes-before 
+                                                                   collect (objfromobjs  (or (pop chords) (clone def-chord)) chord-model))
+                                                           collect (objfromobjs i (make-instance 'grace-chord)))
                                                      ))))
                                    (if (rest-p sub)
                                        (let ((main-chord (objfromobjs (clone def-chord) chord-model)))
@@ -1509,12 +1509,15 @@ of all its direct subcontainers (supposed adjacent)"
                                                             :before? t))
                                          
                                        ))))
-                                 ;;;;;;;;;;;;;;;;;;;;;;;;
-                                 ((rest-p sub) 
-                                  (setf chord sub))
-                                 ;;;;;;;;;;;;;;;;;;;;;;;
-                                 (t 
-                                  (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))))
+                                ;;;;;;;;;;;;;;;;;;;;;;;;
+                                ((rest-p sub) 
+                                 (setf chord sub))
+                                ;;;;;;;;;;;;;;;;;;;;;;;
+                                (t 
+                                 (prog1
+                                     (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))
+                                   ;remove grace notes if any
+                                   (setf (gnotes chord) nil))))
                                
                                (setf (offset chord) (offset sub))
                                (InContext sub (setf (extent chord) (extent sub)))
