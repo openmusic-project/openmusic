@@ -506,15 +506,31 @@
   
 (defmethod add-grace-notes-dialog ((self chord) (panel scorepanel))
   (let ((root (get-root-parent self)))
-    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
-          ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
-          (t (print "Only for VOICE and POLY editors!")))))
+    (cond 
+     ((measure-p root) (open-add-grace-panel (get-measure self) self panel))
+     ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
+     ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
+     (t (print "Only for MEASURE, VOICE and POLY editors!")))))
 
 (defmethod add-grace-notes-dialog ((self rest) (panel scorepanel))
   (let ((root (get-root-parent self)))
-    (cond ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
-          ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
-          (t (print "Only for VOICE and POLY editors!")))))
+    (cond 
+     ((measure-p root) (open-add-grace-panel (get-measure self) self panel))
+     ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
+     ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
+     (t (print "Only for MEASURE, VOICE and POLY editors!")))))
+
+(defmethod open-add-grace-panel ((self measure) thing panel)
+  (let* ((gnotes (gnotes thing))
+         (editor (om-view-container panel))
+         (chrdseq (make-instance 'grace-note-seq 
+                                 :approx (approx self); C'est la!!
+                                 :lmidic (if gnotes (mapcar 'lmidic (glist gnotes)) '(6000))
+                                 ))
+         (internal (obj-for-internal-editor chrdseq))
+         (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
+    (setf (approx chrdseq) (approx self));ADD
+    (push win (attached-editors editor))))
 
 (defmethod open-add-grace-panel ((self voice) thing panel)
   (let* ((gnotes (gnotes thing))

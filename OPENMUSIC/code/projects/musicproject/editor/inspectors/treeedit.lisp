@@ -113,8 +113,16 @@
   (let* ((tree (cadr (tree self)))
          (repl (replace-in-list tree item n)))
     (list '? repl)))
-         
 
+         
+(defmethod set-tree ((self measurepanel) tree)
+  (if (selection? self)
+      (let* ((selection (car (selection? self)))
+             (voice (object (om-view-container self))))
+            (setf (tree voice) (resolve-? (car (str->list tree))))
+        (update-panel self t))
+    (om-beep-msg "Please select a voice or a measure") 
+    ))
 
 
 (defmethod set-tree ((self voicepanel) tree)

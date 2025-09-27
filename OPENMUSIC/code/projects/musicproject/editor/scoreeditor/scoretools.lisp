@@ -1098,7 +1098,9 @@
         (first-of-group? self)))
 
 (defmethod first-of-group?  ((self t)) 
-   (equal self (car (inside (parent self)))))
+  (if (parent self)
+   (equal self (car (inside (parent self))))
+    t))
 
 (defmethod last-of-group?  ((self t)) 
    (equal self (car (last (inside (parent self))))))
@@ -1354,6 +1356,10 @@
 (defmethod grap-measure-p ((self grap-measure)) t)
 (defmethod grap-measure-p ((self t)) nil)
 
+(defmethod make-graph-form-obj ((self measure)  x top linespace mode scale sel system stem)
+   (let ((graph-obj (make-graph-ryth-obj self top system linespace scale sel nil nil nil)))
+     graph-obj))
+
 (defmethod make-graph-ryth-obj ((self measure) top staffsys linespace  scale sel pere durtot &optional ryth)
    (declare (ignore ryth))
    (let* ((tree (tree self))
@@ -1374,6 +1380,39 @@
      (setf (inside themes) inside)
      (make-graphic-extras themes)
      themes))
+
+
+;draw all
+(defmethod draw-object ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
+  (let* ((posy y)
+         (thetempi) ;(get-voice-tempilist (reference self)));a faire
+         dynamicpos)
+
+                 (om-with-font (get-font-to-draw 0)
+                               (draw-object-ryth self view x y zoom minx maxx miny maxy slot size linear? staff chnote))
+                 (collect-rectangles self)
+    (remake-measures (inside self))
+    (when thetempi
+      (loop for i from 0 to (- (length (inside self)) 1)  do
+            (setf dynamicpos (draw-tempi-in-mes self i (copy-list thetempi)  (nth i (inside self)) size staff y dynamicpos (car (rectangle (nth i (inside self))))))
+            ))
+    (when (and (name (reference self)) (stringp (name (reference self))))
+      (om-with-font (get-font-to-draw 6)
+                    (om-draw-string (- x 10) (+ y (line2pixel (+ 8 (posy (last-elem (staff-list staff))))
+                                                              t (/ size 4)) (/ size -8))
+                                    (name (reference self)))))
+    (draw-extras self view size staff)))
+
+;;; GRILLE
+(defmethod draw-object :before ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
+  (when (and grille-p (> (time-to-pixels view grille-p) 1))
+      (setf endxms (* (ceiling (pixels-to-time view (round (- maxx x))) 1000) 1000))
+      (om-with-fg-color view *om-gray-color* 
+        (om-with-line '(2 2)
+          (loop for time from 0 to endxms by grille-p do
+                (let ((posx (time-to-pixels view time)))
+                  (om-with-font (get-font-to-draw 6) (om-draw-string posx 10 (number-to-string time)))
+                  (om-draw-line posx  miny  posx  maxy)))))))
 
 
 
@@ -1452,6 +1491,23 @@
 (defun remake-measures (list)
   (loop for i from 0 to (- (length list) 2) do
         (setf (nth 2 (rectangle (nth i list))) (nth 0 (rectangle (nth (+ i 1) list))))))
+
+
+
+(defmethod draw-rectangle ((self grap-measure) system size &optional fill)
+  (let* ((rec (rectangle self))
+         (mesrect (rectangle (car (inside self))))
+         (rect
+          (list (- (car mesrect) 4) 
+                (- (second mesrect) 4)
+                (+ (third rec) 4 ) 
+                (+ (fourth mesrect) 4) 
+                )))
+    (draw-h-rectangle rect 
+                      :fill fill
+                      :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
+                      )))
+
 
 
 ;=========================================
@@ -2237,6 +2293,9 @@
 
 (defmethod space-objects ((self t) size ) t)
 
+(defmethod space-objects ((self grap-measure) size ) 
+  (do-space-objects (get-temporal-objects self) size))
+
 (defmethod space-objects ((self grap-voice) size ) 
   (do-space-objects (get-temporal-objects self) size))
 
@@ -2350,6 +2409,10 @@
 
 (defmethod collect-bpftime-objects ((self grap-chord) father size)
    (list (list (offset->ms (reference self) father)  (car (main-point self)))))
+
+(defmethod collect-bpftime-objects ((self grap-measure) father size)
+   (loop for item in (inside self)
+         append (collect-bpftime-objects item father (car (main-point item)))))
 
 ;===============
 
