@@ -57,6 +57,11 @@
       (get-edit-param (associated-box self) 'approx)
     (approx self)))
 
+(defmethod get-approx ((self measure))
+  (if (associated-box self)
+      (get-edit-param (associated-box self) 'approx)
+    (approx self)))
+
 (defmethod get-approx ((self voice))
   (if (associated-box self)
       (get-edit-param (associated-box self) 'approx)
@@ -92,6 +97,12 @@
     (set-edit-param box 'approx val))))
 
 (defmethod set-approx ((self multi-seq) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod set-approx ((self measure) val)
   (let* ((box (associated-box self)))
     (setf (approx self) val)
     (when box
@@ -139,6 +150,12 @@
     (set-edit-param box 'approx val))))
 
 (defmethod setapprox ((self multi-seq) val)
+  (let* ((box (associated-box self)))
+    (setf (approx self) val)
+    (when box
+    (set-edit-param box 'approx val))))
+
+(defmethod setapprox ((self measure) val)
   (let* ((box (associated-box self)))
     (setf (approx self) val)
     (when box
@@ -292,6 +309,7 @@
          (obj (object ed)))
           (cond 
            ((or (chord-seq-p obj)
+                (measure-p obj)
                 (voice-p obj)
                 (multi-seq-p obj)
                 (poly-p obj))

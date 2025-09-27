@@ -557,6 +557,17 @@ when :
         when (and (chord-p item) (not (cont-chord-p item))) collect item))  
 
 
+(defmethod execption-save-p ((self measure)) 'measure)
+
+(defmethod save-exepcion ((self measure))
+  `(when (find-class ',(type-of self) nil)
+     (make-instance ',(type-of self)
+       :tree ',(tree self)
+       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
+       :tempo ',(qtempo self)
+       :approx ,(approx self))))
+
+
 (defmethod execption-save-p ((self voice)) 'voice)
 
 #|
@@ -606,6 +617,13 @@ when :
 
 (defmethod update-obj ((self multi-seq))
 (let ((box (associated-box self)))
+    (when box
+      (let ((editor (editorframe box))) 
+        (when editor
+            (update-panel (panel editor)))))))
+
+(defmethod update-obj ((self measure))
+  (let ((box (associated-box self))) 
     (when box
       (let ((editor (editorframe box))) 
         (when editor

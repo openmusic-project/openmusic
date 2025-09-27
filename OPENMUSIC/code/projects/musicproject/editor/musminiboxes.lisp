@@ -177,6 +177,9 @@
 (defmethod cons-maq-mini-obj ((self voice) (view t) sizefont size)
   (cons-maq-mini-obj (objfromobjs self (make-instance 'chord-seq)) view sizefont size))
 
+(defmethod cons-maq-mini-obj ((self measure) (view t) sizefont size)
+  (cons-maq-mini-obj (objfromobjs self (make-instance 'chord-seq)) view sizefont size))
+
 (defmethod cons-maq-mini-obj ((self chord) (view t) sizefont size)
   (cons-maq-mini-obj (objfromobjs self (make-instance 'chord-seq)) view sizefont size))
 
@@ -235,9 +238,10 @@
 (defmethod update-miniview ((self t) (value group)) (om-invalidate-view self t))
 (defmethod draw-obj-in-rect ((self  group) x x1 y y1 edparams  view) t)
 
-(defmethod draw-mini-view ((self t) (value measure)) t)
-(defmethod update-miniview ((self t) (value measure)) (om-invalidate-view self t))
-(defmethod draw-obj-in-rect ((self  measure) x x1 y y1 edparams  view) t)
+;to be removed...
+;(defmethod draw-mini-view ((self t) (value measure)) t)
+;(defmethod update-miniview ((self t) (value measure)) (om-invalidate-view self t))
+;(defmethod draw-obj-in-rect ((self  measure) x x1 y y1 edparams  view) t)
 
 
 ;------------------------------
@@ -261,6 +265,12 @@
 ;-----------------------
 (defmethod Class-has-editor-p  ((self chord)) t)
 (defmethod get-editor-class ((self chord)) 'chordEditor)
+
+;------------------------------
+;measure
+;------------------------------
+(defmethod Class-has-editor-p  ((self measure)) t)
+(defmethod get-editor-class ((self measure)) 'measureEditor)
 
 ;------------------------------
 ;voice
@@ -359,8 +369,14 @@
 (defmethod draw-editor-mode ((self note) view) 
    (draw-mini-view view self)
    (draw-carre view))
+
 ;-----chord
 (defmethod draw-editor-mode ((self chord) view) 
+   (draw-mini-view view self)
+   (draw-carre view))
+
+;-----measure
+(defmethod draw-editor-mode ((self measure) view) 
    (draw-mini-view view self)
    (draw-carre view))
 
@@ -460,6 +476,7 @@
 
 (defmethod default-obj-box-size      ((self note))         (om-make-point 60 60))
 (defmethod default-obj-box-size      ((self chord))        (om-make-point 60 90))
+(defmethod default-obj-box-size      ((self measure))      (om-make-point 75 70))
 (defmethod default-obj-box-size      ((self voice))        (om-make-point 130 70))
 (defmethod default-obj-box-size      ((self chord-seq))    (om-make-point 130 70))
 (defmethod default-obj-box-size      ((self multi-seq))    (om-make-point 100 70))

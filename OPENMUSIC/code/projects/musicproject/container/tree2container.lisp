@@ -190,6 +190,24 @@
                               (t mes)))))
                    measures))))
 
+;this one is used for measure in do-initialize-metric-sequence
+(defun list-meas-first-layer (tree)
+  (let* ((mes tree))
+  (if (measure-single? mes) mes 
+    (let* ((signature (car mes))
+           (subdivs (apply '+ (measure-repartition mes)))
+           (ratio1 (/ subdivs (car signature))))
+      (cond
+       ((and (integerp ratio1) (power-of-two-p ratio1)) mes)
+       ((and (power-of-two-p subdivs) 
+             (or (power-of-two-p (car signature))
+                 (and (integerp ratio1) (modulo3-p (car signature))))) mes)
+       ((not (integerp (/ (car signature) subdivs))) 
+        (list signature (list (list (car signature) (cadr mes)))))
+       ((and (= (numerator ratio1) 1) (not (power-of-two-p (denominator ratio1))) mes)
+        (list signature (list (list (car signature) (cadr mes)))))
+       (t mes))))))
+
 ;================RULER5=====================
 ;a verfier
 

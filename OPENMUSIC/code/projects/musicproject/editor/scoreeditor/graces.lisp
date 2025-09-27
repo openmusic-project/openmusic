@@ -190,16 +190,28 @@
   (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*)))
 |#
 
-;when just an isolated object in a patch:
+;;;;;;;;;;;
+;;when just an isolated object in a patch:
+(defun get-until-voice (self)
+  (let ((rep self))
+    (if (voice-p rep)
+        self
+      (progn
+        (loop while (or (parent rep) (voice-p (parent rep))) 
+              do (setf rep (parent rep)))
+        rep))))
+
 (defmethod offset->ms ((self grace-chord) &optional grandparent)
   (cond 
    ((group-p (parent self))
       (let* ((lgt (length (inside (parent self))))
              (offinit (* lgt *gdur*)))
-        (- (offset->ms (thechord self) (get-voice (thechord self))) (- offinit (* (offset self) *gdur*)))))
+        (- (offset->ms (thechord self) (get-until-voice (thechord self))) (- offinit (* (offset self) *gdur*)))))
    ((thechord self)
-    (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*))
+    (- (offset->ms (thechord self) (get-until-voice (thechord self))) *gdur*))
    (t 0)))
+;;;;;;;;;;;;
+
 
 
 (defmethod! set-grace-notes ((self simple-container) chords before?)
@@ -208,6 +220,14 @@
                        ; :gchords (loop for i in chords collect (make-instance 'grace-chord :lmidic (lmidic i)))
                         :thechord self
                         :before? before?)))
+
+(defmethod! add-grace-notes ((self measure) chord-pos pitches)
+  (let* ((mesure (nth  (car chord-pos)  (inside self)))
+         (chords (cons-chord&rest-list mesure))
+         (thechord (nth (second chord-pos) chords)))
+    (when thechord
+      (set-grace-notes thechord pitches t))
+    self))
 
 (defmethod! add-grace-notes ((self voice) chord-pos pitches)
   (let* ((mesure (nth  (car chord-pos)  (inside self)))
@@ -218,9 +238,15 @@
     self))
 
 (defmethod! add-grace-notes ((self t) chord pitches)
-  (om-beep-msg (format nil "~D is not a VOICE or a POLY" self)))
+  (om-beep-msg (format nil "~D is not a MEASURE, VOICE or a POLY" self)))
 
 ;;ajout
+(defmethod! insert-grace-note ((self measure) (pos list) (pitches list))
+  (let ((chords (real-chords self)))
+    (loop for i in pitches
+          for n in pos
+          do (setf self (set-grace-notes (nth n chords) i t)))))
+
 (defmethod! insert-grace-note ((self voice) (pos list) (pitches list))
   (let ((chords (real-chords self)))
     (loop for i in pitches
@@ -300,6 +326,12 @@
     (push win (attached-editors editor))))
 |#
 
+(defmethod convert-chord-graces ((self measure))
+  (loop for item in (get-real-chords-and-graces self)
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
 (defmethod convert-chord-graces ((self voice))
   (loop for item in (get-real-chords-and-graces self)
         collect
@@ -313,12 +345,12 @@
               (objfromobjs item (make-instance 'chord)) item)))
 
 
-(defmethod close-editor-after ((self graceEditor))
+(defmethod close-editor-after ((self graceEditor)) 
   (let* ((obj (object self))
          (chords (inside obj))
          (voice (object (ref self)))
          (sel (car (selection? (panel (ref self)))))
-         (pos (1- (evt-pos sel)))
+         (pos (position sel (inside voice) :test 'equal)) ;(1- (evt-pos sel)))
          (graces (loop for i in chords
                        collect 
                          (objfromobjs i (make-instance 'grace-chord)))))
@@ -330,6 +362,7 @@
                          :before? t))
     (report-modifications (ref self))
     (update-panel (panel (ref self)))))
+
 
 ;;;;DELETE GRACE NOTES
 
@@ -848,6 +881,31 @@ If no grace notes, return liste."
     (remove-if #'rest-p objs)))
 
 
+(defmethod fit-graces-in-duration ((self measure))
+   (let* ((objects (collect-subcontainers self '(chord note rest)))
+          offsets allobjs data)
+    ;prepare data
+     (loop for i in objects do  
+            (if (gnotes i)
+                (progn
+                  (push (list (glist (gnotes i)) i) allobjs)
+                  (push (offset->ms i self) offsets))
+              (progn 
+                (push (list nil i) allobjs)
+                (push (offset->ms i self) offsets))))
+    ;data
+    (loop for obj in (reverse allobjs)
+          for on0 in (cons 0 (reverse offsets))
+          for on1 in (reverse offsets)
+            do (push (list obj on0 on1) data))
+    (let ((checkdata
+           (loop for i in (reverse data)
+                 collect (check-grace-offsets i)))
+          obj off)
+      (list (parse-gnobjects checkdata)
+            (parse-gnoffsets checkdata))
+      )))
+
 (defmethod fit-graces-in-duration ((self voice))
    (let* ((objects (collect-subcontainers self '(chord note rest)))
           offsets allobjs data)
@@ -886,6 +944,26 @@ If no grace notes, return liste."
                  :approx (approx self))))
     (setf (approx chord) (approx self))
     chord))
+
+(defmethod collect-and-transform ((self measure) (below t))
+  (let* ((target (mki 'chord-seq :empty t))
+         (coll (fit-graces-in-duration self))
+         (cont0 (car coll))
+         (cont (loop for i in cont0
+                           collect (if (grace-chord-p i) (objfromobjs i (make-instance 'chord)) i)))
+         (offs (second coll)))
+    (setf (inside target) (mapcar 'copy-container cont)) 
+      (loop for object in (inside target) 
+            for offset in offs
+            do (setf (offset object) offset))
+      ;Important: remove gnotes from objects!
+      (loop for object in (inside target)
+              do (setf (gnotes object) nil))
+      (setf (QVAlue target) 1000)
+      (qnormalize target) 
+      (adjust-extent target)
+      target
+      ))
 
 (defmethod collect-and-transform ((self voice) (below t))
   (let* ((target (mki 'chord-seq :empty t))
