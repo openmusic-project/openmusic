@@ -96,6 +96,9 @@ A simple NOTE defined with :
 (defclass gn-object ()
   ((gnotes :accessor gnotes :initarg :gnotes :initform nil)))
 
+;when VOICE chords are entered as a list of list
+(defmethod gnotes ((self list)) nil)
+
 (om-with-redefinitions
  (defclass* rest (simple-score-element tonal-object gn-object) () 
   (:icon 142)))
