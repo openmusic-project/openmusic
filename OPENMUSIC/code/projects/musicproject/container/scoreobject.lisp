@@ -143,13 +143,18 @@ POLY is a polyphonic object made of a superimposition of VOICE objects.
  (:documentation "
 An OM object representing a group in a rhythm.
 "))
-(defclass* measure (metric-sequence)  
+
+(defclass* measure (metric-sequence named-score-object)  
   ((tree :initform '((4 4) (1 1 1 1))  :initarg :tree :type list)
+   (chords :initform (list  (make-instance 'chord))
+           :accessor chords :initarg :chords :type t 
+           :documentation "a chord object, a list of chords, a list of midics, a list of lists of midics...");should make the chord slot for saving
    (approx :initform *global-midi-approx* :accessor approx  :type integer)) 
   (:icon 228)
 (:documentation "
 An OM object representing a measure in a rhythm.
 "))
+
 
 (defclass* voice (metric-sequence named-score-object) 
   ((tree :initform '(? (((4 4) (1 1 1 1))))
@@ -584,6 +589,29 @@ Extraction methods.
 ;such as  (? (((4 4) (2 (1 (1 -5)) -1)))) -> ((4 4) (2 (1 (1 -4 -1.0)) -1)) 
 ; should be -> ((4 4) (2 (1 (1 -4 -1)) -1))
 
+(defmethod do-initialize-metric-sequence ((self measure) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
+  (cond
+   ((and tree (not empty))
+    (setf (slot-value self 'QValue ) 1)
+    (init-seq-from-tree  
+     self 
+     (if InternalCall  
+       tree
+       (progn
+         (setf tree (list-meas-first-layer tree))
+         (setf (slot-value self 'tree) tree);(normalize-tree (reducetree tree)))
+         ;(setf tree (add-ties-to-tree tree))
+         (setf (slot-value self 'tree) tree)
+         ;(setf (slot-value self 'tree) (normalize-tree (reducetree tree)))
+         )
+         ) ;!!!!
+     :PropagateExtent PropagateExtent)
+    (unless InternalCall
+      (set-relative-offset self)
+      (integerize self)
+      (QNormalize self)))
+   (t (setf (slot-value self 'tree) nil))))
+
 (defmethod do-initialize-metric-sequence ((self voice) &key tree  (Empty nil) (PropagateExtent 4) (InternalCall nil) )
   (cond
    ((and tree (not empty))
@@ -665,17 +693,22 @@ Extraction methods.
                                 &key (PropagateExtent 4) (InternalCall nil) (Empty nil))
   (declare (ignore initargs))
   (call-next-method) 
-  (unless (or  Empty internalCall)
-    (do-initialize self))
+  (unless (or Empty internalCall) ;important sinon breaks compat in qnormalize
+    (do-initialize self 
+                   :tree (slot-value self 'tree) 
+                   :chords (slot-value self 'chords)
+                   :qtempo (qtempo self)
+                   ))
+  ;(setf (slot-value self 'chords) nil)
   self)
-    
 
+   
 ;(defmethod do-initialize ((self measure) &key )
 ;  (distribute-chords self (list (mki 'chord)))
 ;  self)
 
 ;to be tested!
-(defmethod do-initialize ((self measure) &key chords)
+(defmethod do-initialize ((self measure) &key tree chords qtempo) 
   (distribute-chords self chords)
   (normalize-chord self 100)
   self)
@@ -788,15 +821,23 @@ Extraction methods.
 
 
 (defmethod (setf tree) ((tree list) (self measure))
-  (do-initialize-metric-sequence self :tree tree )
-  (do-initialize self )
-  self)
+  (let* ((chords (chords self))
+         (box (associated-box self))
+         (editor (if box (editorframe box))))
+    (do-initialize-metric-sequence self :tree tree )
+    (do-initialize self :chords chords :qtempo (qtempo self) :tree tree)
+    (when editor
+      (update-panel (panel editor)))
+    self))
 
 (defmethod (setf tree) ((tree list) (self group))
   (do-initialize-metric-sequence self :tree tree )
   (do-initialize self )
   self)
 
+(defmethod (setf chords) ((chords list) (self measure))
+  (do-initialize self :chords chords :qtempo (qtempo self) :tree (tree self))
+  (setf (tree self) (tree self)))
 
 (defmethod (setf chords) ((chords list) (self voice))
   (do-initialize self :chords chords :tempo (tempo self) :tree (tree self) :legato (legato self) :ties (ties self))
@@ -806,6 +847,10 @@ Extraction methods.
 (defmethod (setf legato) ((legato integer) (self voice))
   (do-initialize self :chords (chords self) :tempo (tempo self) :tree (tree self) :legato legato  :ties (ties self)))
 
+(defmethod chords ((self measure))
+  (loop for i in (slot-value self 'chords)
+        do (setf (approx i) (approx self)))
+  (call-next-method))
 
 (defmethod chords ((self voice))
   (loop for i in (slot-value self 'chords)
@@ -899,6 +944,7 @@ Extraction methods.
      ((tempo-list-p tempo) tempo)))
 
 
+(defmethod get-voice-tempilist ((self measure)))
 
 (defmethod get-voice-tempilist ((self voice)) 
   (second (tempo self)))

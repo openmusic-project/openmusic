@@ -136,6 +136,15 @@
            (t))
           ))
     ))
+
+;a completer
+(defmethod get-tempo-tree ((self measurepanel)) 
+  (let* ((selection (selection? self)))
+        (if selection
+            (let ((obj selection))
+              (qtempo->tempo (qtempo (car obj)))))))
+
+
 ;;;remove tempo [legacy pane] wrapper
 
 (defmethod remove-tempo ((self t)) nil)

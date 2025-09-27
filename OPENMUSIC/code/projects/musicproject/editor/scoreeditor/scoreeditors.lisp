@@ -206,6 +206,7 @@
                                               (mode-buttons (title-bar self))))))  
   )
 
+#|
 (defmethod update-mode-buttons ((self score-titlebar)) 
   (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
     (if (not (internaleditor-p (om-view-container self)))
@@ -223,7 +224,15 @@
            do (setf (selected-p b) i))
         ))
     (om-invalidate-view self)))
+|#
 
+;;La c'est plus simple et mieux!
+(defmethod update-mode-buttons ((self score-titlebar)) 
+  (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
+        (loop for b in (mode-buttons self)
+              for i = 0 then (+ i 1) do
+                (setf (selected-p b) (= i n)))
+    (om-invalidate-view self)))
 
 (defmethod update-cursor-mode-buttons ((self score-titlebar))
   (let ((mode (get-edit-param (om-view-container self) 'cursor-mode)))
@@ -726,7 +735,7 @@
          
     (setf (slotedit self) minied)
     (cond 
-     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
+     ((or (measure-p obj) (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
                                                        minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
                                                                 minied sizebut onsetitem onset-ms edobut))
@@ -3256,6 +3265,188 @@
 
 
 ;==========================================================
+; Measure
+;==========================================================
+
+;measure
+
+;pas la peine idem de celle de voice
+;CONTROLS
+(defclass measure-controls-view (chordseq-controls-view) ())
+
+(defmethod GET-slot-LIST ((self measure-controls-view)) 
+   '(("midic" midic) ("channel" chan) ("dyn" dyn) ("port" port)))
+
+
+;VIEW
+(defclass measureEditor (chordseqEditor) ())
+
+(defmethod get-score-class-ctrls ((self measureEditor)) 'measure-controls-view)
+(defmethod get-score-class-panel ((self measureEditor)) 'measurepanel)
+
+
+;PANEL
+
+
+;(defclass voicepanel (rythmicpanel chordseqPanel) ())
+
+(defclass measurepanel  (chordseqPanel) ())
+
+ 
+(defmethod draw-view-contents ((self measurepanel))
+  (let* ((x0  (om-h-scroll-position self))
+         (y0  (om-v-scroll-position self))
+         (size (staff-size self))
+         (deltax (get-key-space self))
+         (deltay (round (* size (score-top-margin self)))))
+    (when (and (linear? self) (cursor-p self))
+      (draw-interval-cursor self))
+    (om-with-focused-view self
+      (om-with-font (om-make-font *heads-font* size)  
+                    (draw-system-only self)
+                    (when (graphic-obj self)
+                      (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
+                        (draw-object (graphic-obj self) self deltax 
+                                     (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
+                                     (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
+                                     (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self))
+                        ;#+linux (draw-system-only self)              
+                        (if (analysis-mode? self) (draw-analysis self))
+                        (draw-score-selection (graphic-obj self) (selection? self) (staff-sys self) size)
+                        (draw-edit-cursor self deltay))
+                      )))))
+
+        
+;ACTIONS
+
+;(defmethod set-unset-grille ((self voicepanel)) (om-beep))
+;(defmethod edit-step-grille ((self voicepanel)) t)
+(defmethod translate-chords-p ((self measurepanel)) nil)
+
+(defmethod change-editor-measure ((self measurePanel) measnum)
+  (unless (= (staff-meas self) measnum)
+    (setf (staff-meas self) measnum)
+    (set-edit-param (om-view-container self) 'measure  measnum)
+    (let* ((zoom (float (staff-zoom self)))
+           (measpos (loop for i in (inside (graphic-obj self))
+                          collect (car (main-point i))))
+           (lgt (length measpos))
+           (n (if (> measnum lgt) lgt measnum)) 
+           (pos (* zoom (nth (1- n) measpos))))
+      (om-set-h-scroll-position self pos)
+      (update-panel self t)
+      )))
+
+(defmethod change-ties-too ((self measurePanel) chord)
+   (let ((pointer (next-container chord '(chord))))
+     (if (cont-chord-p pointer) 
+       (tie-chord chord 'begin)
+       (setf pointer nil))
+     (loop while pointer do
+           (interchange-chords  pointer chord)
+           (tie-chord pointer (state pointer))
+           (setf pointer (next-container pointer '(chord)))
+           (unless (cont-chord-p pointer) (setf pointer nil)))
+     (update-panel self t)))
+
+(defmethod omselect-with-shift ((self measurePanel) note)
+   (unless (and (note-p (reference note)) (cont-chord-p (parent (reference note))))
+     (call-next-method)))
+
+
+(defmethod select-note ((self measurePanel) note)
+   (unless (and (note-p (reference note)) (cont-chord-p (parent (reference note))))
+     (call-next-method)))
+
+(defmethod push-select-note ((self measurePanel) note)
+   (unless (or (and (note-p (reference note)) (cont-chord-p (parent (reference note))))
+               (and (group-p (reference note)) (group-p (parent (reference note)))))
+     (call-next-method)))
+
+
+(defmethod show-tempo ((self measurepanel)) 
+  (qtempo (object (om-view-container self))))
+
+
+(defmethod adjoust-grille-chords ((self measurepanel)) t)
+
+(defmethod edit-preferences ((self measurepanel))
+   (om-beep-msg "No mode page for this editor"))
+
+(defmethod panel-save-as-etf ((self measurePanel))
+   (save-as-etf (object (om-view-container self)) (staff-tone self)))
+
+(defmethod panel-save-as-xml ((self measurePanel))
+   (export-musicxml (object (om-view-container self)) '((G 2)) (staff-tone self)))
+
+
+(defmethod get-help-list ((self measurepanel)) 
+  (list '(("cmd+clic" "Add Note/Chord")
+          ("ctrl+clic" "Add rhythm figure")
+          ("del" "Delete Selection")
+          ("tab" "Change Obj. Mode")
+          (("z") "Obj/Time Selection")
+          ("ud" "Transpose Selection")
+          ("shift+ud" "Transpose Octave")
+          (("+") "Union Pulses")
+          (("-") "Break Group (Group Mode)")
+          (("_") "Group Objs")
+          (("*") "Move Group Up (Group Mode)")
+          ("esc" "Switch Note/Silence")
+          ("2-9" "Subdivise Pulse")
+          (("1") "Open Subdivision dialog")
+          (("=") "Tie Selection")
+          (("/") "Untie Selection")
+          (("C") "Change Color")
+          )
+        '( (("r") "Open RT Editor")
+           (("m") "Open Tempo Editor")
+           (("0") "Open Grace Notes Editor")
+           ((".") "Remove Grace Notes")
+           (("M") "Remove Tempo")
+           (("x") "Extra Edition Palette")
+           (("s") "Toggle Normal/Patch Mode ")
+           (("S") "Set Editor Scale")
+           (("t" "T") "Set/Remove Tonality")
+           (("n") "Set Measure Name")
+           (("o") "Open Internal Editor")
+           (("c") "Show Channel Color")
+           (("i") "Show Selection info")
+           ("space" "Play/Stop")
+           (("q") "Start Midi Record")
+           (("w") "Stop Midi Record")
+           ("esc" "Stop  + Reset")
+           )))
+
+
+(defmethod add-obj-in-editor ((obj list) (editor measureeditor))
+  (let* ((editor-obj (object editor)))
+    editor-obj))
+
+
+(defmethod handle-internal-open ((self measurePanel) type obj add-info)
+  (unless (equal type 'measureEditor)
+    (let ((win (make-editor-window  type obj add-info (om-view-container self))))
+      (push win (attached-editors (om-view-container self)))
+      )))
+
+(defmethod open-internal-editor ((self measurePanel))
+  (loop for item in (real-internal-editor-list (selection? self)) do
+        (let ((int-info (obj-for-internal-editor item)))
+          (when int-info 
+            (handle-internal-open self (first int-info) item (second int-info))))))
+
+
+(defmethod object-order ((self measureeditor)) '("note" "chord" "group" "measure"))
+
+(defmethod set-name-to-mus-obj ((self measurepanel))
+  (let ((name (om-get-user-string "Measure name:" :initial-string (or (get-name (object (editor self))) ""))))
+    (when name
+      (set-name (object (editor self)) name)
+      (om-invalidate-view self t))))
+
+
+;==========================================================
 ; VOICE
 ;==========================================================
 
@@ -4290,6 +4481,14 @@
 
 (defmethod toggle-selection ((self scorePanel)) (om-beep))
 
+(defmethod toggle-selection ((self measurePanel))
+   (let* ((voice (object (om-view-container self))))
+     (loop for obj in (selection? self) do
+           (general-toggle self obj))
+     (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+     (setf (selection? self) nil)
+     (update-panel self t)))
+
 (defmethod toggle-selection ((self voicePanel))
    (let* ((voice (object (om-view-container self))))
      (loop for obj in (selection? self) do
@@ -4365,6 +4564,12 @@
                collect (toggle item)))
    self)
 
+
+(defmethod general-toggle ((view measurePanel) (self note)) t)
+
+(defmethod general-toggle ((view measurePanel) (self t))
+   (toggle self))
+
 (defmethod general-toggle ((view voicePanel) (self note)) t)
 
 (defmethod general-toggle ((view voicePanel) (self t))
@@ -4388,6 +4593,14 @@
 
 
 (defmethod untie-selection ((self scorePanel)) (om-beep))
+
+(defmethod untie-selection ((self measurePanel))
+  (let ((voice (object (om-view-container self))))
+   (loop for obj in (selection? self) do
+           (untie-chord  obj))
+     (setf (selection? self) nil)
+     (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+     (update-panel self t)))
 
 (defmethod untie-selection ((self voicePanel))
   (let ((voice (object (om-view-container self))))
@@ -4479,6 +4692,11 @@
 
 (defmethod tie-selection ((self scorePanel)) (om-beep))
 
+(defmethod tie-selection ((self measurePanel))
+   (tie-a-voice (object (om-view-container self)) (selection? self))
+   (setf (selection? self) nil)
+   (update-panel self t))
+
 (defmethod tie-selection ((self voicePanel))
    (tie-a-voice (object (om-view-container self)) (selection? self))
    (setf (selection? self) nil)
@@ -4537,12 +4755,12 @@
 (defmethod obj-for-internal-editor ((self note)) (list 'chordEditor "internal chord"))
 (defmethod obj-for-internal-editor ((self chord)) (list 'chordEditor "internal chord"))
 (defmethod obj-for-internal-editor ((self chord-seq)) (list 'chordseqEditor  "internal chord-seq"))
+(defmethod obj-for-internal-editor ((self measure)) (list 'measureEditor  "internal measure"))
 (defmethod obj-for-internal-editor ((self voice)) (list 'voiceEditor  "internal voice"))
 
 (defmethod obj-for-internal-editor ((self continuation-chord)) nil)
 (defmethod obj-for-internal-editor ((self rest)) nil)
 (defmethod obj-for-internal-editor ((self group)) nil)
-(defmethod obj-for-internal-editor ((self measure)) nil)
 (defmethod obj-for-internal-editor ((self t)) nil)
 
 (defmethod real-internal-editor ((self note)) (parent self))
@@ -5516,6 +5734,18 @@
 
 (defmethod do-subdivise ((self scorePanel) char) t)
 
+(defmethod do-subdivise ((self measurePanel) char)
+   (let* ((subdiv (char-as-digit char))
+          (chords (loop for item in (selection? self)
+                        append (cons-chord&rest-list item)))
+          (voice (object (om-view-container self))))
+     (loop for item in chords do
+           (subdivise-figure  item subdiv))
+     (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+     (setf (selection? self) nil)
+     #+macosx(update-slot-edit self)
+     (update-panel self t)))
+
 (defmethod do-subdivise ((self voicePanel) char)
    (let* ((subdiv (char-as-digit char))
           (chords (loop for item in (selection? self)
@@ -5579,6 +5809,17 @@
 
 (defmethod do-subdivise-more ((self scorePanel) subdiv) t)
 
+(defmethod do-subdivise-more ((self measurePanel) subdiv)
+  (let* ((chords (loop for item in (selection? self)
+                       append (cons-chord&rest-list item)))
+         (voice (object (om-view-container self))))
+    (loop for item in chords do
+            (subdivise-figure item subdiv))
+    (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+    (setf (selection? self) nil)
+    #+macosx(update-slot-edit self)
+    (update-panel self t)))
+
 (defmethod do-subdivise-more ((self voicePanel) subdiv)
   (let* ((chords (loop for item in (selection? self)
                        append (cons-chord&rest-list item)))
@@ -5607,35 +5848,36 @@
 
 ;(fmakunbound 'subdivide-more)
 (defmethod subdivide-more ((self scorePanel))
-(when (or (equal (type-of self) 'voicepanel)
-          (equal (type-of self) 'polypanel))
-  (let* ((xsize 120)
-         (mydialog (om-make-window 'om-dialog
-                                   :size (om-make-point 180 90)
-                                   :window-title ""
-                                   :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
-         (subdv (om-make-dialog-item 'om-editable-text (om-make-point 30 45) (om-make-point 50 10) "1"
-                                     )))
-    (om-add-subviews mydialog 
-                     (om-make-dialog-item 'om-static-text (om-make-point 5 9) (om-make-point 90 20)
-                                          "subdivisions"
-                                          :font *om-default-font3b*
-                                          :bg-color *om-window-def-color*)
-                     subdv
-                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 5) (om-make-point 70 20) "Cancel"
-                                          :di-action (om-dialog-item-act item 
-                                                       (declare (ignore item))
-                                                       (om-return-from-modal-dialog mydialog ()))
-                                          :default-button nil)
-                     (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 40) (om-make-point 70 20) "OK"
-                                          :di-action (om-dialog-item-act item 
-                                                       (declare (ignore item))
-                                                       (let ((sub (read-from-string (om-dialog-item-text subdv))))
-                                                       (do-subdivise-more self sub))
-                                                       (om-return-from-modal-dialog mydialog ()))
+  (when (or (equal (type-of self) 'measurepanel) 
+            (equal (type-of self) 'voicepanel)
+            (equal (type-of self) 'polypanel))
+    (let* ((xsize 120)
+           (mydialog (om-make-window 'om-dialog
+                                     :size (om-make-point 180 90)
+                                     :window-title ""
+                                     :position (om-add-points (om-view-position (window self)) (om-mouse-position self))))
+           (subdv (om-make-dialog-item 'om-editable-text (om-make-point 30 45) (om-make-point 50 10) "1"
+                                       )))
+      (om-add-subviews mydialog 
+                       (om-make-dialog-item 'om-static-text (om-make-point 5 9) (om-make-point 90 20)
+                                            "subdivisions"
+                                            :font *om-default-font3b*
+                                            :bg-color *om-window-def-color*)
+                       subdv
+                       (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 5) (om-make-point 70 20) "Cancel"
+                                            :di-action (om-dialog-item-act item 
+                                                         (declare (ignore item))
+                                                         (om-return-from-modal-dialog mydialog ()))
+                                            :default-button nil)
+                       (om-make-dialog-item 'om-button (om-make-point (- (w mydialog) 80) 40) (om-make-point 70 20) "OK"
+                                            :di-action (om-dialog-item-act item 
+                                                         (declare (ignore item))
+                                                         (let ((sub (read-from-string (om-dialog-item-text subdv))))
+                                                           (do-subdivise-more self sub))
+                                                         (om-return-from-modal-dialog mydialog ()))
                                         
-                                          :default-button t))
-    (om-modal-dialog mydialog))))
+                                            :default-button t))
+      (om-modal-dialog mydialog))))
 
 ;===========================
 (defun vocie-next-container (obj chords)
@@ -5958,6 +6200,13 @@ The rhythm is unchanged!"
   ;(setf *a* (timebpf self))
   )
 
+#|
+(defmethod cons-the-bpf-time ((self measurePanel) graph-obj) 
+  (setf (timebpf self) (make-score-bpf-time self 
+                                            (collect-bpftime-objects graph-obj (reference graph-obj) (staff-size self))
+                                            )))
+|#
+
 (defmethod make-score-bpf-time ((self scorePanel) list)
   (when list
   (let (lx ly)
@@ -5967,6 +6216,16 @@ The rhythm is unchanged!"
           (push (second item) ly))
     (simple-bpf-from-list (reverse (cons (+ 1000 (car lx)) lx))  (reverse (cons (+ 20 (car ly)) ly))))))
 
+#|
+(defmethod make-score-bpf-time ((self measurePanel) list)
+  (when list
+  (let (lx ly)
+    (setf list (sort (remove-duplicates list :key 'first) '< :key 'first))
+    (loop for item in list do
+          (push (first item) lx)
+          (push (second item) ly))
+    (simple-bpf-from-list (reverse (cons (+ 1000 (car lx)) lx))  (reverse (cons (+ 20 (car ly)) ly))))))
+|#
 
 (defmethod get-x-pos ((self t) (time number) zoom)
   (get-x-pos self (round time) zoom))
