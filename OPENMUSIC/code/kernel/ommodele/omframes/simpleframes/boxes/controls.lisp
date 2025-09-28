@@ -337,7 +337,8 @@
         (om-invalidate-view (panel theeditor))))))
 
 
-      
+;Paulo 28-09-2025
+;enabeling symbols      
 (defun add-box-in-patch-panel (str scroller pos)      
   (let ((*package* (find-package :om))
         (funname (read-from-string str))
@@ -384,10 +385,17 @@
                    (setf newbox (omNG-make-new-boxcall (find-class funname) pos boxname))
                    (if text (setf (show-name newbox) t))))
               ))
-       ((not (fboundp funname))
-        (if (equal funname '??)
-            (om-beep)
-          (om-beep-msg  (string+ "function " str " does not exist!"))))
+       ((not (fboundp funname)) ;<== ADDED THIS BLOCK
+	    (cond ((equal funname '??)
+                   (om-beep))
+		  (t		
+		   (setf newbox (omNG-make-new-boxcall (get-basic-type 'list) pos (mk-unique-name scroller "list")))
+		   (setf (value newbox) funname)
+		   (setf (thestring newbox) str)
+		   (setf (frame-size newbox) nil))))
+        ;(if (equal funname '??) ;<== REMOVED HERE
+        ;    (om-beep)
+        ;  (om-beep-msg  (string+ "function " str " does not exist!"))))
        ((OMGenfun-p (fdefinition funname))
 	(setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
                                             (mk-unique-name scroller (string funname))))
@@ -405,7 +413,7 @@
       
       (omG-add-element scroller (make-frame-from-callobj newbox)))
       (when (equal funname 'comment)
-        (reinit-size (car (frames newbox))))
+        (reinit-size (car (frames newbox))))  
       
       (when *auto-create-connect* 
       (let ((input (car (om-subviews (car (frames newbox))))))
