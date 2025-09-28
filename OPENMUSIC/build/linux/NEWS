@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- MEASURE editor
 - F_8 clef
 - New Classes: OM-TABLE
 - Group ungrouped (score editors) 
@@ -14,6 +15,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Symbols are allowed to be typed in patch (P. Rapposo)
 - MusicXml exports editors clefs
 - Clef changes update in Poly and Multi-seq
 - Tunings in fluidsynth uses now octave tuning system
@@ -27,6 +29,8 @@ IMPROVEMENTS
 
 FIXES
 
+- Approx persistance
+- Grace notes display
 - x-intersect fix
 - temporal connection fix (linux)
 - Buffer edit fix (macosx)
