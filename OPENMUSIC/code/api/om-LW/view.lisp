@@ -242,7 +242,7 @@
     #+win32 (:step
 			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
-			(om-view-scrolled self (om-h-scroll-position self) (om-h-scroll-position self))
+			(om-view-scrolled self (om-h-scroll-position self) (om-v-scroll-position self))
 			;;(om-invalidate-view self)
 			)
     #+win32 (otherwise ;; :drag
