@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MATHTOOLS by C. Agon, M. Andreatta et al.
@@ -5317,7 +5317,8 @@
     (reverse list)))
 
 (defmethod! mult-mult ((list list))
-  :initvals '(5 6) :indoc '("list of nth cyclo polynomials")
+  :initvals '((5 6)) 
+  :indoc '("list of nth cyclo polynomials")
   :doc "It makes the product of cyclotomic polynomials indexed by their position on the table. For example the product of the fifth and sixth cyclotomic polynomial gives the polynomial 1+x^2+x^3+x^4+x^6 which can be represented by its list of coefficients (1 0 1 1 1 0 1)" 
   :icon 425
   (let* ((polys (loop for item in list collect (cyclo item)))
@@ -5376,10 +5377,27 @@
         
   
 ;;probleme ici: pas de fun combinations!  
+#|
 (defmethod! get-subsets ((list list))
   :icon 420
   (cons list (loop for i from 1 to (length list)
         append (combinations list i))))
+|#
+
+;Paulo Raposo 28-09-2025
+(screamer::defun a-subset-of (x)
+ (if (null x)
+      nil
+     (let ((y (a-subset-of (cdr x))))
+	  (screamer::either (cons (first x) y) y))))
+	  
+(defmethod! get-subsets ((list list))
+ :icon 420
+ (sort (screamer::all-values (a-subset-of list)) #'> :key 'length))
+
+
+
+
 
 (defmethod! get-canon-n (n)
   :icon 425
