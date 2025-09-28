@@ -472,6 +472,23 @@ Converts a symbolic rhythmic beat division into the corresponding duration in mi
   )
 
 
+;;;;;;;;;;;;;;;;;;;;;
+
+;By Paulo Raposo 
+(defmethod* ms->ratios ((durs list) (tempo number)) 
+  :initvals '((1000) 60) 
+  :indoc '("durations" "tempo <qtempo>")
+  :icon 141
+  :doc "Converts milliseconds <durs> into ratios (symbolic figures) according to tempo <tempo>."
+  (let ((whole-note (/ 240000 tempo))
+        (grace-epsilon 1/100))
+    (mapcar #'(lambda (x)
+                (let ((ratio (rationalize (coerce x 'double-float))))
+                  (if (> ratio grace-epsilon)
+                      ratio
+                    0)))
+            (om/ durs whole-note))))
+
 ;;;=======================================
 ;;; from OM2Csound
 ;;;=======================================

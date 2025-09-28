@@ -5,6 +5,7 @@ NEW FEATURES
 - MEASURE editor
 - F_8 clef
 - New Classes: OM-TABLE
+- New Functions: ms->ratios (by Paulo Raposo) 
 - Group ungrouped (score editors) 
 - Move group up (score editors)
 - insert box in connection
