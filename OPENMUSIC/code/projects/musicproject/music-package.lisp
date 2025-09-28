@@ -109,7 +109,7 @@
 (defvar *conversion-package* (omNG-protect-object (omNG-make-new-package "Conversions")))
 (addPackage2Pack *conversion-package* *scorepackage*)
 
-(addGenFun2Pack '(approx-m mc->f mc->n f->mc n->mc) *conversion-package*)
+(addGenFun2Pack '(approx-m mc->f mc->n f->mc n->mc ms->ratios) *conversion-package*)
 
 
 ;-------------------
