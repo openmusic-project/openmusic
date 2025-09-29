@@ -135,7 +135,7 @@ Class methods are the init-instance method and slot reader and writer. #class-me
                                                         (string+ "(:" (string (car (method-qualifiers self))) ")")
                                                       ""))
                                             (graph-fun self)))
-             (not (dialog-message (format nil "This is a Lisp method. It can not be open as a visual program.~% [If it is available, you can access the source code of this function or method using the shortcut 'e' in the patch editors]"))))))))
+             (not (dialog-message (format nil "This is a Lisp method. It cannot be opened as a visual program.~% [If it is available, you can access the source code of this function or method using the shortcut 'e' in the patch editors]"))))))))
 
 ;--------------------------------------------------
 ;Other Methods
