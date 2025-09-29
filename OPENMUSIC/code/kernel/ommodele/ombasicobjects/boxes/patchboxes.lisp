@@ -1365,7 +1365,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod OpenEditorframe ((self OMBoxlispCall))
   ;(print (reference self))
-   (not (dialog-message (format nil "This is a compiled Lisp Function. It can not be open in graphical editor.~% [If it is available, you can access the source code of this function using the shortcut 'e']"))))
+   (not (dialog-message (format nil "This is a compiled Lisp Function. It cannot be opened in a graphical editor.~% [If it is available, you can access the source code of this function using the shortcut 'e']"))))
 
 
 ;-----------------------------------------------------------------

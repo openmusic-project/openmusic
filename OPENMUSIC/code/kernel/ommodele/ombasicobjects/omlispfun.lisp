@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -50,7 +50,7 @@
 
 (defmethod OpenEditorframe ((self OMLispFun))
    "You can not visualize lisp funtions"
-   (not (dialog-message (format nil "This is a compiled Lisp Function. It can not be open in graphical editor."))))
+   (not (dialog-message (format nil "This is a compiled Lisp Function. It cannot be opened in a graphical editor."))))
 
 (defmethod get-documentation ((self OMLispFun))
    (documentation (funname self) 'function))
