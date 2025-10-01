@@ -769,28 +769,8 @@ Extraction methods.
   (let ((chords (flat (collect-chords-graces self))))
     (find-if #'grace-chord-p chords)))
 
-(defmethod tree ((self voice)) 
-  (when (graces-in? self)
-    (let* ((chrds (collect-chords-rest-graces self))
-           (pos (remove nil
-                        (loop for i in chrds
-                              for n from 0 to (length chrds)
-                              collect (if (listp i) n))))
-           (lgt (remove nil
-                        (loop for i in chrds
-                              collect (if (listp i) (1- (length i)))))))
-      (setf (slot-value self 'tree)
-            (add-tree-graces 
-             (remove-tree-graces (slot-value self 'tree))
-             ;(slot-value self 'tree)
-             pos lgt))))
-  ;(slot-value self 'tree)
-  (call-next-method)
-  )
-
-
 (defmethod tree ((self measure)) 
-  (when (graces-in? self)
+  (if (graces-in? self)
     (let* ((chrds (collect-chords-rest-graces self))
            (pos (remove nil
                         (loop for i in chrds
@@ -802,11 +782,28 @@ Extraction methods.
       (setf (slot-value self 'tree)
             (add-tree-graces 
              (remove-tree-graces (slot-value self 'tree))
-             ;(slot-value self 'tree)
-             pos lgt))))
-  ;(slot-value self 'tree)
-  (call-next-method)
-  )
+             pos lgt)))
+          (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
+  (call-next-method))
+
+(defmethod tree ((self voice)) 
+  (if (graces-in? self)
+    (let* ((chrds (collect-chords-rest-graces self))
+           (pos (remove nil
+                        (loop for i in chrds
+                              for n from 0 to (length chrds)
+                              collect (if (listp i) n))))
+           (lgt (remove nil
+                        (loop for i in chrds
+                              collect (if (listp i) (1- (length i)))))))
+      (setf (slot-value self 'tree)
+            (add-tree-graces 
+             (remove-tree-graces (slot-value self 'tree))
+             pos lgt)))
+          (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
+  (call-next-method))
+
+
 ;;;
 
 (defmethod (setf tree) ((tree list) (self metric-sequence))
