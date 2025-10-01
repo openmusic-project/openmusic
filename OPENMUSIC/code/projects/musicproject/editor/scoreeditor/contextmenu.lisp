@@ -173,7 +173,7 @@
                                                      (add-tempo-change-extra (reference object) )
                                                      (update-panel panel)))))
     (when (voice-has-tempi? (reference object))
-      (setf rep (append rep (list (om-new-leafmenu "Suppr. Tempo Change"
+      (setf rep (append rep (list (om-new-leafmenu "Remove Tempo Change"
                                                    #'(lambda () 
                                                        (rmv-tempo-change-extra (reference object) )
                                                        (update-panel panel)))))))
@@ -182,7 +182,7 @@
                                                      (add-grace-notes-dialog (reference object) panel)
                                                      (update-panel panel)))))
      (when (gnotes (reference object))
-       (setf graces (append graces (list (om-new-leafmenu "Suppr. grace notes"
+       (setf graces (append graces (list (om-new-leafmenu "Remove grace notes"
                                                    #'(lambda () 
                                                        (delete-grace-notes (reference object) )
                                                        (update-panel panel)))))))
@@ -199,7 +199,7 @@
                                            (add-tempo-change-extra (reference object) )
                                            (update-panel panel)))))
     (when (voice-has-tempi? (reference object))
-      (setf tempi (append tempi (list (om-new-leafmenu "Suppr. Tempo Change"
+      (setf tempi (append tempi (list (om-new-leafmenu "Remove Tempo Change"
                                                        #'(lambda () 
                                                            (rmv-tempo-change-extra (reference object) )
                                                            (update-panel panel)))))))
@@ -208,7 +208,7 @@
                                             (add-grace-notes-dialog (reference object) panel)
                                             (update-panel panel)))))
     (when (gnotes (reference object))
-      (setf graces (append graces (list (om-new-leafmenu "Suppr. grace notes"
+      (setf graces (append graces (list (om-new-leafmenu "Remove grace notes"
                                                          #'(lambda () 
                                                              (delete-grace-notes (reference object) )
                                                              (update-panel panel)))))))

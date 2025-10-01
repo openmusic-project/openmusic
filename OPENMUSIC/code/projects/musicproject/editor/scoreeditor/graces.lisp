@@ -839,7 +839,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;For voice->chord-seq (handling grace notes)
 
-
+(defun check-grace-offsets (liste) liste)
+#|
+;to do since 10ms is problematic in case of short durations.
 (defun check-grace-offsets (liste)
   "if length grace notes (> (* *gdur*  lgt-gn) (- off1 off0)) 
 then adjust grace notes offsets accordingly. else return list with grace notes offsets.
@@ -859,6 +861,7 @@ If no grace notes, return liste."
                                           (- (- off1 *gdur*) (* (1- (length (caar liste))) *gdur*)) 
                                           (* -1 *gdur*)) ) off1))
       liste)))
+|#
 
 (defun parse-gnoffsets (liste)
   (let (res)

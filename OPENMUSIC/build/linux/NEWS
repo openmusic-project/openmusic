@@ -16,6 +16,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Mktree handles end grace-notes and adds extra measures for given duration if needed
 - Symbols are allowed to be typed in patch (P. Rapposo)
 - MusicXml exports editors clefs
 - Clef changes update in Poly and Multi-seq
