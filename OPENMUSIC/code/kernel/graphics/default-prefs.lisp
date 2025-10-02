@@ -178,12 +178,14 @@
 
                      (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Keep Listener in Front" 
                                           :di-action (om-dialog-item-act item 
+                                                       #+linux(when *om-listener* (om-close-window *om-listener*))
                                                        (set-pref modulepref :listener-on-top (if (om-checked-p item) :yes :no)))
                                           :font *controls-font*
                                           :checked-p (equal :yes (get-pref modulepref :listener-on-top)))
                      
                      (om-make-dialog-item 'om-check-box (om-make-point l1 (incf posy dy)) (om-make-point 200 15) " Enable Listener input" 
                                           :di-action (om-dialog-item-act item 
+                                                       #+linux(when *om-listener* (om-close-window *om-listener*))
                                                        (set-pref modulepref :listener-input (om-checked-p item)))
                                           :font *controls-font*
                                           :checked-p (get-pref modulepref :listener-input))
@@ -280,8 +282,7 @@
                                                                                    (merge-pathnames 
                                                                                     (make-pathname :directory '(:relative "in-files")) 
                                                                                     (mypathname *current-workspace*))))
-                                               #-linux (update-pref-scroll *pref-window*)
-                                               #+linux(update-pref-to-apply *pref-window*)
+                                               (update-pref-scroll *pref-window*)
                                                (setf *current-pref* (local-prefs *pref-window*))
                                                (put-all-preferences)
                                                (save-preferences)
