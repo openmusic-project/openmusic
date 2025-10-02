@@ -168,13 +168,11 @@
                                   :size (get-pref-scroll-size)
                                   :selection selec))
           )
-    #+linux(setf *pref-position* (om-view-position self))
-    (om-remove-subviews self (tabs self))
-    (om-add-subviews self (setf (tabs self) newtl))
-    #+linux(om-close-window *pref-window*)
-    #+linux(om-select-window *pref-window*)
+      #-linux (om-remove-subviews self (tabs self))
+      #-linux(om-add-subviews self (setf (tabs self) newtl))
     ))
 
+#|
 #+linux    
 (defmethod om-select-window ((self ompref-window))
    (when (and (oa::window-dialog-p self) (not (oa::initialized-p self)))
@@ -186,6 +184,8 @@
     )
   (om-set-view-position self *pref-position*)
   self)
+|#
+
 
 (defun make-preference-win ()
    (let* ((prefs (sort-pref-items (clone *current-pref*)))
