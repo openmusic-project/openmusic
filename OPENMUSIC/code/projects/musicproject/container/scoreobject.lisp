@@ -783,6 +783,7 @@ Extraction methods.
             (add-tree-graces 
              (remove-tree-graces (slot-value self 'tree))
              pos lgt)))
+     ;removes the remnant last graces if any
           (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
   (call-next-method))
 
@@ -800,6 +801,7 @@ Extraction methods.
             (add-tree-graces 
              (remove-tree-graces (slot-value self 'tree))
              pos lgt)))
+    ;removes the remnant last graces if any
           (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
   (call-next-method))
 
@@ -1560,10 +1562,7 @@ of all its direct subcontainers (supposed adjacent)"
                                  (setf chord sub))
                                 ;;;;;;;;;;;;;;;;;;;;;;;
                                 (t 
-                                 (prog1
-                                     (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))
-                                   ;remove grace notes if any
-                                   (setf (gnotes chord) nil))))
+                                 (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))))
                                
                                (setf (offset chord) (offset sub))
                                (InContext sub (setf (extent chord) (extent sub)))

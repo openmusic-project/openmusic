@@ -564,7 +564,7 @@ when :
      (make-instance ',(type-of self)
        :tree ',(tree self)
        :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
-       :tempo ',(qtempo self)
+       ;:qtempo ',(qtempo self)
        :approx ,(approx self))))
 
 
