@@ -51,7 +51,7 @@
       (aliasclasses *scorepackage*))
 
 ;;; !!! Midifile? aussi dans MidiPackage...
-(AddClass2Pack '(note chord chord-seq multi-seq voice poly tracks) 
+(AddClass2Pack '(note chord chord-seq multi-seq measure voice poly tracks) 
                *scorepackage* 
                :position (list (om-make-point  8 133) (om-make-point 55 133) (om-make-point 273 131) (om-make-point 227 285) (om-make-point 290 285) 
                                (om-make-point 165 285) (om-make-point 417 131) (om-make-point 108 133) (om-make-point 433 285) (om-make-point 329 131)))
