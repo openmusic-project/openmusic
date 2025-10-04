@@ -152,6 +152,9 @@ An OM object representing a group in a rhythm.
    (chords :initform (list  (make-instance 'chord))
            :accessor chords :initarg :chords :type t 
            :documentation "a chord object, a list of chords, a list of midics, a list of lists of midics...");should make the chord slot for saving
+   (tempo :initform 60
+          :accessor tempo :initarg :tempo :type t
+          :documentation "frequency of the quarter-note (default 60/mn)")
    (approx :initform *global-midi-approx* :accessor approx  :type integer)) 
   (:icon 228)
 (:documentation "
@@ -700,7 +703,7 @@ Extraction methods.
     (do-initialize self 
                    :tree (slot-value self 'tree) 
                    :chords (slot-value self 'chords)
-                   :qtempo (qtempo self)
+                   :tempo (tempo self)
                    ))
   ;(setf (slot-value self 'chords) nil)
   self)
@@ -711,8 +714,9 @@ Extraction methods.
 ;  self)
 
 ;to be tested!
-(defmethod do-initialize ((self measure) &key tree chords qtempo) 
+(defmethod do-initialize ((self measure) &key tree chords tempo) 
   (distribute-chords self chords)
+  (setf (tempo self) tempo)
   (normalize-chord self 100)
   self)
 
@@ -827,7 +831,7 @@ Extraction methods.
          (box (associated-box self))
          (editor (if box (editorframe box))))
     (do-initialize-metric-sequence self :tree tree )
-    (do-initialize self :chords chords :qtempo (qtempo self) :tree tree)
+    (do-initialize self :chords chords :tempo (tempo self) :tree tree)
     (when editor
       (update-panel (panel editor)))
     self))
@@ -838,7 +842,7 @@ Extraction methods.
   self)
 
 (defmethod (setf chords) ((chords list) (self measure))
-  (do-initialize self :chords chords :qtempo (qtempo self) :tree (tree self))
+  (do-initialize self :chords chords :tempo (tempo self) :tree (tree self))
   (setf (tree self) (tree self)))
 
 (defmethod (setf chords) ((chords list) (self voice))
@@ -946,10 +950,14 @@ Extraction methods.
      ((tempo-list-p tempo) tempo)))
 
 
-(defmethod get-voice-tempilist ((self measure)))
+(defmethod get-voice-tempilist ((self measure))
+(second (tempo self)))
 
 (defmethod get-voice-tempilist ((self voice)) 
   (second (tempo self)))
+
+(defmethod set-voice-tempilist ((self measure) list) 
+  (setf (nth 1 (tempo self)) list))
 
 (defmethod set-voice-tempilist ((self voice) list) 
   (setf (nth 1 (tempo self)) list))
@@ -992,6 +1000,22 @@ Extraction methods.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod (setf tempo) ((tempo t) (self voice))
+  (let (thetempi tempolist)
+    (cond 
+     ((numberp tempo)
+      (setf tempolist (list (convert-tempo-to-list tempo) nil)))
+     ((tempo-list-p tempo) (setf tempolist (list tempo nil)))
+     (t (setf tempolist (list (convert-tempo-to-list (car tempo)) (second tempo)))))
+    (setf (slot-value self 'Qtempo) (tempo-a-la-noire (car tempolist)))
+    (propagate-tempo self)
+    (setf (slot-value self 'tempo) tempolist)
+    (setf thetempi (get-voice-tempilist self))
+    (when thetempi
+      (make-voice-tempo-change self thetempi))
+  tempolist))
+
+
+(defmethod (setf tempo) ((tempo t) (self measure))
   (let (thetempi tempolist)
     (cond 
      ((numberp tempo)

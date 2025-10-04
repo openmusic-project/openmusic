@@ -99,7 +99,7 @@
 
 (defmethod voice-has-tempi? ((self simple-container))
   "T if the voice has a tempo-change at this object"
-  (let* ((voice (get-the-voice self))
+  (let* ((voice (get-until-voice self))
          (list (get-voice-tempilist voice)))
     (when list
          (let* ((mes (get-the-measure self))
@@ -110,6 +110,10 @@
 
 (defmethod voice-has-tempi? ((self voice))
   "T if the voice has tempi-changes"
+  (get-voice-tempilist self))
+
+(defmethod voice-has-tempi? ((self measure))
+  "T if the measure has tempi-changes"
   (get-voice-tempilist self))
   
 (defmethod add-tempo-change-extra ((self simple-container))
