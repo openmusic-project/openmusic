@@ -245,11 +245,10 @@ a new tree accordingly:
   :icon 225
   :doc "removes non-destructively graces (0) and (0 ( 1 1 1)) from tree"  
    (if (atom tree) 
-       (if (not (zerop tree)) tree)
-     (if (and (atom (car tree)) (zerop (car tree)))
+       (if (not (eq 0 tree)) tree)
+     (if (and (atom (car tree)) (eq 0 (car tree)))
          nil
     (list (first tree) (remove nil (mapcar 'remove-tree-graces (second tree)))))))
-
 
 
 (defun gracenotes-insert (tree pos n)
