@@ -403,11 +403,11 @@
     (loop for i from (+ pos 1) to (- (length (inside self)) 1) do
           (change-qtempo (nth i (inside self)) tempo dynamic?))
     (change-qtempo-up (parent self) self tempo dynamic? (cons pos path))
-    (set-tempo-list self (cons pos path) tempo)))
+    (set-qtempo-list self (cons pos path) tempo)))
 
 (defmethod change-qtempo-up ((self voice) chord tempo dynamic? path) 
   (let ((pos (position chord (inside self) :test 'equal)))
-    (set-tempo-list self (cons pos path) tempo)))
+    (set-qtempo-list self (cons pos path) tempo)))
 
 (defun zeroplist (list)
   (null (remove 0 list)))
@@ -420,17 +420,19 @@
         ((= (first a) (first b)) (list< (rest a) (rest b)))
         (t (< (first a) (first b))) )))
 
+;(setf *test* '((4) (0 4) (2) (5 4) (6 3 4) (3) (0) (1 3 1 4) (1 3 5 3) (1 2 3 4)))
 ;(sort (copy-seq *lst1*) #'listcar<)
 
-(defun set-tempo-list (self pos tempo)
+(defun set-qtempo-list (self pos tempo)
   ;(print (list self pos tempo (qtempo self)))
   (setf (qtempo self) 
+        (remove-duplicates
         (if (atom (qtempo self))
               (if (zeroplist pos)
                   (list (list '(0 0) tempo))
                 (list (list '(0 0) (qtempo self)) (list pos tempo)))
           (sort (append (qtempo self) (list (list pos tempo))) #'listcar<)
-          )))
+          ) :test #'equal)))
 
 
 
