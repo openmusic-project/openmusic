@@ -596,15 +596,8 @@
                                       :font *om-default-font1*
                                       :bg-color *om-white-color*
                                       :help-spec ""
-                                      ))
+                                      ))         
          
-         
-         
-         ;(slotitem (om-make-dialog-item 'om-static-text 
-         ;                               (om-make-point 2 24) 
-         ;                               (om-make-point 40 20) "View"
-         ;                               :font *controls-font*
-         ;                              :bg-color *controls-color*))
          (slotbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point 5 c1) 
                                        (om-make-point 80 22)
@@ -615,7 +608,7 @@
                                        :di-action 
                                        (om-dialog-item-act item
                                          (let ((newslot (cadr (nth (om-get-selected-item-index item) (GET-slot-LIST self)))))
-                                           (change-slot-edit (panel (om-view-container self)) newslot)))
+                                           (change-slot-edit panel newslot)))
                                        
                                        ))
          ;;; Font Size
@@ -629,8 +622,8 @@
                                        (om-make-point 56 22)
                                        ""
                                        :di-action (om-dialog-item-act item
-                                                               (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
-                                                                 (change-editor-size (panel (om-view-container self)) newsize)))
+                                                    (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
+                                                      (change-editor-size panel newsize)))
                                        
                                        :font di-font 
                                        :range (loop for item in *mus-font-size* collect (car item)) 
@@ -643,18 +636,18 @@
                                          :bg-color *controls-color*))
          
          (staffbut (om-make-dialog-item 'om-pop-up-dialog-item 
-                                       (om-make-point l2 c1) 
-                                       #+(or linux win32)(om-make-point 90 22)
-                                       #+macosx(om-make-point 102 22)
-                                       ""
-                                       :di-action (om-dialog-item-act item
-                                                               (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
-                                                                 (change-system (panel (om-view-container self)) newstaff)))
+                                        (om-make-point l2 c1) 
+                                        #+(or linux win32)(om-make-point 90 22)
+                                        #+macosx(om-make-point 102 22)
+                                        ""
+                                        :di-action (om-dialog-item-act item
+                                                     (let ((newstaff (cadr (nth (om-get-selected-item-index item) (GET-staff-LIST self)))))
+                                                       (change-system panel newstaff)))
                                        
-                                       :font di-font
-                                       :range (loop for item in (GET-staff-LIST self) collect (car item)) 
-                                       :value (car (find (get-edit-param (editor (om-view-container self)) 'staff) (GET-staff-LIST self) :key 'cadr :test 'equal))
-                                       ))   
+                                        :font di-font
+                                        :range (loop for item in (GET-staff-LIST self) collect (car item)) 
+                                        :value (car (find (get-edit-param editor 'staff) (GET-staff-LIST self) :key 'cadr :test 'equal))
+                                        ))   
          ;;; approx
          
          (toneitem (om-make-dialog-item 'om-static-text (om-make-point (- l2 50) (+ c2 2)) (om-make-point 52 20) "Approx"
@@ -675,7 +668,7 @@
                                                    (om-micron *omicron-data* self)
                                                    )))
          
-           ;;; onset
+         ;;; onset
          (onsetitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) "Onset"
                                          :font *om-default-font1*
                                          :bg-color *controls-color*))
@@ -683,57 +676,56 @@
                                         (format nil " ~D" onsetval) ;needed for init. A simple string doesn't work!
                                         :di-action (om-dialog-item-act item
                                                      (progn
-                                                     (change-editor-onset (panel (om-view-container (om-view-container item))) (value item))
-                                                     ))
+                                                       (change-editor-onset panel (value item))
+                                                       ))
                                         
                                         :min-val 0
                                         :font *om-default-font1*
                                         :bg-color *om-white-color*
                                         :afterfun #'(lambda (item)
                                                       (progn
-                                                      (change-editor-onset (panel (om-view-container (om-view-container item))) (value item))
-                                                      (update-for-subviews-changes (panel (om-view-container (om-view-container self))) t)))
+                                                        (change-editor-onset panel (value item))
+                                                        (update-for-subviews-changes panel t)))
                                      ;  :help-spec ""
                                         :value onsetval
                                         ))
-           ;;; measure
+         ;;; measure
          (measureitem (om-make-dialog-item 'om-static-text (om-make-point (- l3 5) (+ c1 2)) (om-make-point 60 20) 
                                            ;(om-make-point (- l3 10) (+ c2 2)) (om-make-point 60 20) 
                                            "Measure"
-                                         :font *om-default-font1*
-                                         :bg-color *controls-color*))
-         (meas-num (om-make-dialog-item 'edit-numbox (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18)
-                                        ;(om-make-point (+ l3 45)  (+ c2 2)) (om-make-point 46 18) 
+                                           :font *om-default-font1*
+                                           :bg-color *controls-color*))
+         
+         (meas-num (om-make-dialog-item 'edit-numbox
+                                        (om-make-point (+ l3 45)  (+ c1 2)) (om-make-point 46 18)
                                         (format nil " ~D" measnumval)
                                         :di-action (om-dialog-item-act item
-                                                     (progn
-                                                     (change-editor-measure (panel (om-view-container (om-view-container self))) (value item))
-                                                     (update-panel (panel (om-view-container (om-view-container self))))
-                                                     (capi:redisplay-element (panel (om-view-container (om-view-container self)))))
-                                                     )
-                                       
-
+                                                     (progn 
+                                                       (setf measnumval (value item))
+                                                       (change-editor-measure panel (value item))
+                                                       (capi:redisplay-element panel)))
                                         :font *om-default-font1*
                                         :bg-color *om-white-color*
                                         :value measnumval
                                         :afterfun #'(lambda (item)
-                                                    (progn
-                                                     (change-editor-measure (panel (om-view-container (om-view-container self))) (value item))
-                                                     (update-for-subviews-changes (panel (om-view-container (om-view-container self))) t)))
+                                                      (progn  
+                                                        (setf measnumval (value item))
+                                                        (change-editor-measure panel (value item))
+                                                        (update-for-subviews-changes panel t)))
                                         :min-val 1
                                         ))
 
          ;;;selection
          (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 50) 
                                         ""
-                                         :font *om-default-font1*
-                                         :bg-color *controls-color*))
+                                        :font *om-default-font1*
+                                        :bg-color *controls-color*))
          )
-         
+             
     (setf (slotedit self) minied)
     (cond 
      ((or (measure-p obj) (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
-                                                       minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
+                                                                       minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
                                                                 minied sizebut onsetitem onset-ms edobut))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem 
@@ -743,7 +735,7 @@
     
     (om-set-bg-color self *controls-color*)
     )
-)
+  )
 
 
 
@@ -3319,6 +3311,7 @@
 ;(defmethod edit-step-grille ((self voicepanel)) t)
 (defmethod translate-chords-p ((self measurepanel)) nil)
 
+;should remove
 (defmethod change-editor-measure ((self measurePanel) measnum)
   (unless (= (staff-meas self) measnum)
     (setf (staff-meas self) measnum)
@@ -3765,21 +3758,17 @@
   (unless (= (staff-meas self) measnum)
     (setf (staff-meas self) measnum)
     (set-edit-param (om-view-container self) 'measure  measnum)
-    (let* ((voices (inside (object (om-view-container self))))
-           (selection (selection? self))
-           (pos (if selection (position (car selection) voices))))
       (let* ((zoom (float (staff-zoom self)))
-             (objs (if selection 
-                       (nth pos (inside (graphic-obj self))) 
-                     (car (inside (graphic-obj self)))))
+             (objs (car (inside (graphic-obj self))))
              (measpos (loop for i in (inside objs)
                             collect (car (main-point i))))
              (lgt (length measpos))
              (n (if (> measnum lgt) lgt measnum)) 
              (pos (* zoom (nth (1- n) measpos))))
         (om-set-h-scroll-position self pos)
+        (setf (selection? self) nil)
         (update-panel self t)
-        ))))
+        )))
  
 (defmethod draw-view-contents ((self polypanel))
   (let* ((x0  (om-h-scroll-position self))
