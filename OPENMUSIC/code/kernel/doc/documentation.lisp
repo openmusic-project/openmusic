@@ -340,7 +340,9 @@ NULL is also the name of a class (the 'class of NIL'), and can be used in OM to 
 (defmethod help-items ((self editorview)) 
   (let ((funref (om-make-pathname :directory *om-reference-dir*
                                   :name "index" :type "html"))
-        (usermanual "http://support.ircam.fr/docs/om/om6-manual/"))
+        ;(usermanual "http://support.ircam.fr/docs/om/om6-manual/")
+        (usermanual "https://openmusic-project.github.io/openmusic/doc/om-manual/OM-Documentation")
+        )
     (list 
      (list 
    ;(om-new-leafmenu "Box Info" #'(lambda() (editor-show-infowindow self)))
