@@ -285,24 +285,29 @@
 ;  (setf (obj-mode (panel self)) (nth n (object-order self)))
 ;  (set-edit-param self 'obj-mode n))
 
+(defmethod update-int-mode-buttons ((self score-titlebar) n)
+  (loop for b in (mode-buttons self)
+              for i = 0 then (+ i 1) do
+                (setf (selected-p b) (= i n)))
+    (om-invalidate-view self))
+
 (defmethod set-obj-mode ((self scoreeditor) n)
   (let* ((obj (object self))
          (parent (get-obj-parent obj)))
-    (if (or (not parent) 
-         (equal obj parent))
-        (progn
+    (if (or (not parent) (equal obj parent))
+        (progn 
           (setf (obj-mode (panel self)) (nth n (object-order self)))
-          (set-edit-param self 'obj-mode n)
-          )
-      (progn
+          (set-edit-param self 'obj-mode n))
+      (progn 
         (setf (obj-mode (panel self)) (nth n (object-order self)))
         (set-edit-param self 'obj-mode n) 
-        (update-mode-buttons (title-bar (editor (panel self))))        
         (update-panel (panel self))
-        (when (associated-box parent)
-            (set-obj-mode (ref (editor (panel self))) n))
-          )
-          )))
+        (if (internalscoreeditor-p self)
+            (update-int-mode-buttons (title-bar (editor (panel self))) n)
+          (update-mode-buttons (title-bar (editor (panel self)))))
+        (update-panel (panel self))
+        (when (and (associated-box parent) (ref (editor (panel self))));Here
+            (set-obj-mode (ref (editor (panel self))) n))))))
 
 (defun grap-class-from-type (str)
    (cond
@@ -2184,7 +2189,7 @@
     ))
 |#
 
- (defmethod change-obj-mode ((self scorePanel) val)
+(defmethod change-obj-mode ((self scorePanel) val)
   (let* ((list (object-order (editor self)))
          (oldval (position (obj-mode self) list :test 'string-equal))
          (newval (mod (+ val (position (obj-mode self) list :test 'string-equal)) (length list)))
@@ -2197,16 +2202,21 @@
           (set-edit-param (om-view-container self) 'obj-mode newval)
           (make-unselect self)
           (update-mode-buttons (title-bar (om-view-container self)))
-          (update-panel self))
+          ;(update-panel self)
+          )
       (progn 
         (setf (obj-mode self) (nth newval list))
         (set-edit-param (om-view-container self) 'obj-mode newval)
-          (when (associated-box parent)
-          (set-obj-mode (ref (editor self)) newval))
+        (if (internalscoreeditor-p (editor self))
+          (update-int-mode-buttons (title-bar (editor self)) newval)
+          (update-mode-buttons (title-bar (om-view-container self))))
+          ;(update-panel (panel self))
+        (when (associated-box parent)
+          (set-obj-mode (editor self) newval))
           (make-unselect self)
-        (update-mode-buttons (title-bar (om-view-container self)))
-        (update-panel self)))
-    ))
+        ;(update-panel self)
+        ))
+    )) 
   
 (defmethod change-slot-edit ((self scorePanel) slotedit)
    (setf (slots-mode self) slotedit)
@@ -4808,11 +4818,25 @@
 ;=========================
 ;OPEN INTERNAL EDITOR
 ;=========================
-(defmethod obj-for-internal-editor ((self note)) (list 'chordEditor "internal chord"))
-(defmethod obj-for-internal-editor ((self chord)) (list 'chordEditor "internal chord"))
+(defclass intchordeditor (chordeditor) 
+  ((att-ed :initform nil :initarg :att-ed :accessor att-ed)
+   (orig :initform nil :initarg :orig :accessor orig)))
+
+(defclass intmeasureeditor (measureeditor) 
+  ((att-ed :initform nil :initarg :att-ed :accessor att-ed)
+   (orig :initform nil :initarg :orig :accessor orig)))
+
+(defclass intvoiceeditor (voiceeditor)
+  ((att-ed :initform nil :initarg :att-ed :accessor att-ed)
+   (orig :initform nil :initarg :orig :accessor orig)))
+
+
+
+(defmethod obj-for-internal-editor ((self note)) (list 'intchordeditor "internal chord"))
+(defmethod obj-for-internal-editor ((self chord)) (list 'intchordeditor "internal chord"))
 (defmethod obj-for-internal-editor ((self chord-seq)) (list 'chordseqEditor  "internal chord-seq"))
-(defmethod obj-for-internal-editor ((self measure)) (list 'measureEditor  "internal measure"))
-(defmethod obj-for-internal-editor ((self voice)) (list 'voiceEditor  "internal voice"))
+(defmethod obj-for-internal-editor ((self measure)) (list 'intmeasureeditor "internal measure"))
+(defmethod obj-for-internal-editor ((self voice)) (list 'intvoiceeditor "internal voice"))
 
 (defmethod obj-for-internal-editor ((self continuation-chord)) nil)
 (defmethod obj-for-internal-editor ((self rest)) nil)
@@ -4826,6 +4850,146 @@
    (remove-duplicates (loop for item in self collect (real-internal-editor item)) :test 'equal))
 
 
+(defmethod internalscoreeditor-p ((self t)) nil)
+(defmethod internalscoreeditor-p ((self intchordeditor)) t)
+(defmethod internalscoreeditor-p ((self intmeasureeditor)) t)
+(defmethod internalscoreeditor-p ((self intvoiceeditor)) t)
+
+
+
+(defmethod set-omicron-approx ((self scoreeditor) approx)
+  "sets editor's approx and  omicron button to <approx>"
+  (setf (approx (object self)) approx)
+  (setf (staff-tone (panel self)) approx)
+  (om-set-dialog-item-text
+   (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
+        (om-subviews
+         (ctr-view self)))
+   (format nil "~A" (give-symbol-of-approx (approx (object self))))))
+
+
+
+
+(defmethod make-editor-window ((class (eql 'intchordeditor)) object name ref &key 
+                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               (wintype nil))
+  
+   (declare (ignore retain-scroll))
+   (let* ((sizewin (or (and (om-point-p winsize) winsize)
+                       (get-win-ed-size object)))
+          (poswin (or (and (om-point-p winpos) winpos)
+                      (get-win-ed-pos object)))
+          (win (om-make-window 'EditorWindow
+                               :window-title name
+                               :position poswin 
+                               :close close-p
+                               :resizable resize
+                               :maximize resize
+                               :window-show winshow
+                               :toolbox (member :toolbox wintype) 
+                               :size sizewin
+                               :obj (editor-object-from-value object)))
+          (editor (om-make-view class
+                                ;:ref ref ;--> c'est la poly ;if commented, we loose continuation-chords
+                                :owner win
+                                :object (editor-object-from-value object)
+                                :position (om-make-point 0 0)
+                               :size (om-interior-size win)
+                                )))
+     (setf (editor win) editor)
+      (om-add-menu-to-win win)  
+      #+win32(sleep 0.1)
+      (when winshow (om-select-window win))
+      
+      #-linux(om-set-view-size editor (om-interior-size win))
+      (setf (att-ed editor) ref)
+      (setf (attached-editors editor) ref)  
+      (set-omicron-approx editor (get-approx (object ref)))
+      win))
+
+
+
+(defmethod make-editor-window ((class (eql 'intmeasureeditor)) object name ref &key 
+                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               (wintype nil))
+  
+   (declare (ignore retain-scroll))
+   (let* ((sizewin (or (and (om-point-p winsize) winsize)
+                       (get-win-ed-size object)))
+          (poswin (or (and (om-point-p winpos) winpos)
+                      (get-win-ed-pos object)))
+          (win (om-make-window 'EditorWindow
+                               :window-title name
+                               :position poswin 
+                               :close close-p
+                               :resizable resize
+                               :maximize resize
+                               :window-show winshow
+                               :toolbox (member :toolbox wintype) 
+                               :size sizewin
+                               :obj (editor-object-from-value object)))
+          (editor (om-make-view class
+                                ;:ref ref ;--> c'est la poly
+                                :owner win
+                                :object (editor-object-from-value object)
+                                :position (om-make-point 0 0)
+                                :size (om-interior-size win)
+                                )))
+     (setf (orig editor) object);for ties
+     (setf (editor win) editor)
+      (om-add-menu-to-win win)  
+      #+win32(sleep 0.1)
+      (when winshow 
+        (om-select-window win))
+      #-linux(om-set-view-size editor (om-interior-size win))
+      (setf (att-ed editor) ref)
+      (setf (attached-editors editor) ref)     
+      (set-omicron-approx editor (get-approx (object ref)))
+      win))
+
+(defmethod make-editor-window ((class (eql 'intvoiceeditor)) object name ref &key 
+                               winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
+                               (wintype nil))
+  
+   (declare (ignore retain-scroll))
+   (let* ((sizewin (or (and (om-point-p winsize) winsize)
+                       (get-win-ed-size object)))
+          (poswin (or (and (om-point-p winpos) winpos)
+                      (get-win-ed-pos object)))
+          (win (om-make-window 'EditorWindow
+                               :window-title name
+                               :position poswin 
+                               :close close-p
+                               :resizable resize
+                               :maximize resize
+                               :window-show winshow
+                               :toolbox (member :toolbox wintype) 
+                               :size sizewin
+                               :obj (editor-object-from-value object)))
+          (editor (om-make-view class
+                               ; :ref ref ;--> c'est la poly
+                                :owner win
+                                :object (editor-object-from-value object)
+                                :position (om-make-point 0 0)
+                               :size (om-interior-size win)
+                                )))
+     (setf (editor win) editor)
+      (om-add-menu-to-win win)  
+      #+win32(sleep 0.1)
+      (when winshow (om-select-window win))
+      #-linux(om-set-view-size editor (om-interior-size win))
+      (setf (att-ed editor) ref)
+      (setf (attached-editors editor) ref)
+      (set-omicron-approx editor (get-approx (object ref)))
+      win))
+
+
+
+
+
+
+
+
 (defmethod open-internal-editor ((self scorePanel)) (om-beep))
 
 (defmethod open-internal-editor ((self chordseqPanel))
@@ -4834,6 +4998,7 @@
            (when (and int-info (not (equal (car int-info) 'chordseqEditor)))
              (let ((win (make-editor-window (first int-info) item (second int-info) (om-view-container self))))
                (push win (attached-editors (om-view-container self)))
+               (update-panel (panel (editor win)) t)
                )))))
 
 (defmethod open-internal-editor ((self multiseqPanel))
@@ -4843,15 +5008,21 @@
             (when int-info
               (let ((win (make-editor-window (first int-info) item (second int-info) ms-editor)))
                 (push win (attached-editors ms-editor))
-                )))
-          )
-    ))
+                (update-panel (panel (editor win)) t)
+                ))))))
 
+(defmethod handle-internal-open ((self measurePanel) type obj add-info)
+  (unless (equal type 'voiceEditor)
+    (let ((win (make-editor-window  type obj add-info (om-view-container self))))
+      (push win (attached-editors (om-view-container self)))
+      (update-panel (panel (editor win)) t)
+      )))
 
 (defmethod handle-internal-open ((self voicePanel) type obj add-info)
   (unless (equal type 'voiceEditor)
     (let ((win (make-editor-window  type obj add-info (om-view-container self))))
       (push win (attached-editors (om-view-container self)))
+      (update-panel (panel (editor win)) t)
       )))
 
 (defmethod open-internal-editor ((self voicePanel))
@@ -4860,13 +5031,34 @@
           (when int-info 
             (handle-internal-open self (first int-info) item (second int-info))))))
 
-(defmethod open-internal-editor ((self polyPanel))
+(defmethod open-internal-editor ((self polyPanel)) 
    (loop for item in (real-internal-editor-list (selection? self)) do
          (let ((int-info (obj-for-internal-editor item)))
            (when int-info
              (let ((win (make-editor-window (first int-info) item (second int-info) (om-view-container self))))
                (push win (attached-editors (om-view-container self)))
-               )))))
+               (update-panel (panel (editor win)) t))
+               ))))
+
+
+(defmethod next-cont-chord-p ((self measure))
+  (let ((last (last-elem (cons-chord&rest-list self)))
+        (first (car (cons-chord&rest-list (next-container self '(measure))))))
+  (if (cont-chord-p first) first)))
+
+(defmethod close-editor-before ((self intchordeditor))
+  (setf (ref self) (att-ed self))
+  (tie-selection (panel (ref self)))
+  (update-panel (panel (ref self)) t))
+
+(defmethod close-editor-before ((self intmeasureeditor))
+  (setf (ref self) (att-ed self))
+  (tie-a-voice (parent (orig self)) (list (next-cont-chord-p (orig self))))
+  (update-panel (panel (ref self)) t))
+
+(defmethod close-editor-before ((self intvoiceeditor))
+  (setf (ref self) (att-ed self))
+  (update-panel (panel (ref self)) t))
 
 
 ;=========================
