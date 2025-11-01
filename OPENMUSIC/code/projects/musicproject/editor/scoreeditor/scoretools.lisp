@@ -1163,7 +1163,7 @@
       (draw-extras self view size staff)
       )))
 
-
+#|
 (defmethod last-aling-measures ((self grap-poly) minx maxx zoom)
   (loop for item in (inside self) do
         (loop for mes in (inside item)
@@ -1173,6 +1173,16 @@
                           (< (round (* zoom (x mes) )) maxx))
                 (setf (nth 2 (rectangle mes))
                       (first (rectangle nextmes)))))))
+|#
+
+;maybe this simpler and safer??
+(defmethod last-aling-measures ((self grap-poly) minx maxx zoom)
+  (loop for item in (inside self) do
+          (loop for mes in (inside item)
+                for nextmes in (cdr (inside item)) do
+
+                      (setf (nth 2 (rectangle mes))
+                            (first (rectangle nextmes))))))
 
 
 (defmethod get-aligne-measures ((self poly))
@@ -1384,25 +1394,65 @@
 
 
 ;draw all
+
 (defmethod draw-object ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (let* ((posy y)
-         (thetempi) ;(get-voice-tempilist (reference self)));a faire
+         (thetempi (get-voice-tempilist (reference self)))
+         (atoms (cons-gchord&rest-list self))
          dynamicpos)
-
-                 (om-with-font (get-font-to-draw 0)
-                               (draw-object-ryth self view x y zoom minx maxx miny maxy slot size linear? staff chnote))
-                 (collect-rectangles self)
+    ;notes
+    (om-with-font (get-font-to-draw 0)
+                  (draw-object-ryth self view x y zoom minx maxx miny maxy slot size linear? staff chnote))
+    (collect-rectangles self)
     (remake-measures (inside self))
+    ;extra tempo
+    
     (when thetempi
-      (loop for i from 0 to (- (length (inside self)) 1)  do
-            (setf dynamicpos (draw-tempi-in-mes self i (copy-list thetempi)  (nth i (inside self)) size staff y dynamicpos (car (rectangle (nth i (inside self))))))
-            ))
+      (loop for i from 0 to (- (length atoms) 1)  
+            do
+              (setf dynamicpos (draw-tempi-for-mes self i (copy-list thetempi) (nth i atoms) size staff y dynamicpos (car (rectangle (nth i atoms)))))))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
                     (om-draw-string (- x 10) (+ y (line2pixel (+ 8 (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) (/ size -8))
                                     (name (reference self)))))
+    
     (draw-extras self view size staff)))
+
+(defun draw-tempi-for-mes (self mesnum tempilist cur-mes size staff y dynamicpos last-dyn-x)
+  (let ((pos (position mesnum tempilist :key 'caar))
+        showtempo dynamic?)
+     (loop while pos do
+            (let* ((changeitem (nth pos tempilist))
+                   (chordpos (caar changeitem))
+                   (figlist (cons-gfig-tempo-list cur-mes ))
+                   (thechord (car figlist));(nth chordpos figlist)) 
+                   ypos)
+              (setf dynamic? (third (second changeitem)))
+              (when dynamicpos
+                (draw-dynamic-line last-dyn-x (- dynamicpos (/ size 4))  (car (rectangle thechord)) ))
+              (cond
+               ((and dynamic? (not dynamicpos))
+                (setf ypos (compute-next-dynamic-pos self tempilist staff size y))
+                (setf dynamicpos ypos))
+               ((and (not dynamic?) dynamicpos)
+                (setf ypos (setf ypos dynamicpos))
+                (setf dynamicpos nil))
+               ((not dynamic?) (setf ypos (+ (min (+ y (line2pixel (posy (car (staff-list staff))) nil (/ size 4)))
+                                                  (second (rectangle thechord))) (/ size -2)))
+                (setf dynamicpos nil))
+               (dynamicpos (setf ypos dynamicpos)))
+              (setf showtempo (second (nth pos tempilist)))
+              (draw-tempo (car showtempo) (second showtempo)  (car (rectangle thechord)) 
+                          ypos size nil)
+              (when dynamic?
+                (setf last-dyn-x (+ (third (rectangle thechord)) (round size 2))))
+              (setf tempilist (remove changeitem tempilist :test 'equal))
+              (setf pos (position mesnum tempilist :key 'caar))))
+    (when dynamic?
+      (draw-dynamic-line last-dyn-x (- dynamicpos (/ size 4)) (third (rectangle cur-mes))  ))
+    dynamicpos))
+
 
 ;;; GRILLE
 (defmethod draw-object :before ((self grap-measure) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
@@ -1414,6 +1464,7 @@
                 (let ((posx (time-to-pixels view time)))
                   (om-with-font (get-font-to-draw 6) (om-draw-string posx 10 (number-to-string time)))
                   (om-draw-line posx  miny  posx  maxy)))))))
+
 
 
 
@@ -2986,6 +3037,29 @@
 (defmethod cons-gchord&rest-list ((self grap-container)) 
    (loop for item in (inside self) append (cons-gchord&rest-list item)))
 
+
+(defmethod click-in-grap-measure? ((self grap-group) where)
+   (let ((x (om-point-h where))
+         (y (om-point-v where))rep)
+     (loop for item in (inside self)
+           while (not rep) do
+           (let ((x0 (car (rectangle item)))
+                 (x1 (third (rectangle item))))
+             (when (and (> x x0) (< x x1) (> y (second (rectangle item))) (< y (fourth (rectangle item))))
+               (setf rep item))))
+     rep))
+
+
+(defmethod click-in-grap-measure? ((self grap-measure) where)
+   (let ((x (om-point-h where))
+         (y (om-point-v where))rep)
+     (loop for item in (inside self)
+           while (not rep) do
+           (let ((x0 (car (rectangle item)))
+                 (x1 (third (rectangle item))))
+             (when (and (> x x0) (< x x1) (> y (second (rectangle item))) (< y (fourth (rectangle item))))
+               (setf rep item))))
+     rep))
 
 
 (defmethod click-in-grap-measure? ((self grap-voice) where)

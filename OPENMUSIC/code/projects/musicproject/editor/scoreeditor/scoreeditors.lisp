@@ -3389,10 +3389,9 @@
                (and (group-p (reference note)) (group-p (parent (reference note)))))
      (call-next-method)))
 
-
 (defmethod show-tempo ((self measurepanel)) 
-  (qtempo (object (om-view-container self))))
-
+  (let ((tp (tempo (object (om-view-container self)))))
+    (if (listp tp)  (car tp) tp)))
 
 (defmethod adjoust-grille-chords ((self measurepanel)) t)
 

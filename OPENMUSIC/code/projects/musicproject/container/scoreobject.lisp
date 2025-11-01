@@ -708,12 +708,6 @@ Extraction methods.
   ;(setf (slot-value self 'chords) nil)
   self)
 
-   
-;(defmethod do-initialize ((self measure) &key )
-;  (distribute-chords self (list (mki 'chord)))
-;  self)
-
-;to be tested!
 (defmethod do-initialize ((self measure) &key tree chords tempo) 
   (distribute-chords self chords)
   (setf (tempo self) tempo)
@@ -951,7 +945,10 @@ Extraction methods.
 
 
 (defmethod get-voice-tempilist ((self measure))
-(second (tempo self)))
+  (if (atom (tempo self)) 
+      ;(list (list 1/4 (tempo self)) nil) ;rafistollage!
+      nil
+    (second (tempo self))))
 
 (defmethod get-voice-tempilist ((self voice)) 
   (second (tempo self)))
@@ -998,6 +995,155 @@ Extraction methods.
                          (list (list i 0) (list note-fig temp nil)))))))
     (list first-tempo restliste)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;TEMPO FOR MEASURE AND VOICE
+(defmethod temp-meas-changes ((self list))
+  "returns all tempi of each measures even if no changes. Editing utility."
+  (let* ((tempo self)
+         (format-tempo (cons (list '(0 0) (car tempo))
+                             (cadr tempo)))
+         (res (list (car format-tempo)))
+         (curtempo (second (car res)))
+         (curmeas (caaar res)))
+    (pop format-tempo)
+    (loop while format-tempo
+          do (cond 
+              ((= curmeas (caar (car format-tempo)))
+               (progn
+                 (push (car format-tempo) res)
+                 (setf curtempo (second (car format-tempo)))
+                 (pop format-tempo)
+                 ))
+              ((and (= (1+ curmeas) (caar (car format-tempo)))
+                    (= 0 (second (car (car format-tempo)))))
+               (progn
+                 (push (car format-tempo) res)
+                 (setf curmeas (caar (car format-tempo)))
+                 (setf curtempo (second (car format-tempo)))
+                 (pop format-tempo)
+                 ))
+              ((= (1+ curmeas) (caar (car format-tempo)))
+               (progn
+                 (push (list (list (+ curmeas 1) 0) curtempo) res)
+                 (push (car format-tempo) res)
+                 (setf curmeas (caar (car format-tempo)))
+                 (setf curtempo (second (car format-tempo)))
+                 (pop format-tempo)
+                 ))
+              (t (progn 
+                   (push (list (list (+ curmeas 1) 0) curtempo) res)
+                   (setf curmeas (1+ curmeas)))
+                 )))
+    (reverse res)))
+
+
+(defmethod temp-meas-changes ((self voice))
+  "returns all tempi of each measures even if no changes. Editing utility."
+  (let* ((tempo (slot-value self 'tempo))
+         (inside (inside self))
+         (format-tempo (cons (list '(0 0) (car tempo))
+                             (cadr tempo))))
+         
+
+    (if (= 1 (length format-tempo))
+        (loop for i from 0 to (- (length inside) 1)
+              collect (list (car tempo)
+                            (cadr tempo)))
+      (let* ((res (list (car format-tempo)))
+             (curtempo (second (car res)))
+             (curmeas (caaar res)))
+        (pop format-tempo)
+        (loop while format-tempo
+              do (cond 
+                  ((= curmeas (caar (car format-tempo)))
+                   (progn
+                     (push (car format-tempo) res)
+                     (setf curtempo (second (car format-tempo)))
+                     (pop format-tempo)
+                     ))
+                  ((and (= (1+ curmeas) (caar (car format-tempo)))
+                        (= 0 (second (car (car format-tempo)))))
+                   (progn
+                     (push (car format-tempo) res)
+                     (setf curmeas (caar (car format-tempo)))
+                     (setf curtempo (second (car format-tempo)))
+                     (pop format-tempo)
+                     ))
+                  ((= (1+ curmeas) (caar (car format-tempo)))
+                   (progn
+                     (push (list (list (+ curmeas 1) 0) curtempo) res)
+                     (push (car format-tempo) res)
+                     (setf curmeas (caar (car format-tempo)))
+                     (setf curtempo (second (car format-tempo)))
+                     (pop format-tempo)
+                     ))
+                  (t (progn 
+                       (push (list (list (+ curmeas 1) 0) curtempo) res)
+                       (setf curmeas (1+ curmeas)))
+                     )))
+        (reverse res)))))
+
+
+(defmethod grp-tempo-measures ((self list))
+  (let ((clone (clone (cdr self))) 
+        (res (list (list (car self)))))
+    (loop while clone
+          do  (if (= (car (caaar res)) (caaar clone))
+                       (progn 
+                         (push (car clone) (car res))
+                         (pop clone))
+                     (progn 
+                       (push (list (car clone)) res)
+                       (pop clone))))
+    (mapcar #'reverse 
+    (reverse res))))
+
+
+;meme structure de tempo que la voice.....
+
+(defmethod tempo-voice->measures ((self list))
+  (loop for i in self
+          collect (cond 
+                   ((= (length i) 1) (list (cadar i) nil))
+                   (t (append (list (second (car i))) (list (cdr i)))))))
+
+(defun remove-meas-indx (lst)
+  (loop for i in lst
+      collect  (if i
+                   (loop for n in i
+                         collect (x-append (list (cdar n)) (cdr n))))))
+
+(defmethod export-voice-tempo ((self list))
+  (let* ((format (temp-meas-changes self))
+         (grp (grp-tempo-measures format))
+         (rem (remove-meas-indx grp)))
+    (tempo-voice->measures rem)))
+             
+(defmethod export-voice-tempo ((self voice))
+  (if (second (slot-value self 'tempo))
+  (let* ((format (temp-meas-changes self))
+         (grp (grp-tempo-measures format))
+         (rem (remove-meas-indx grp)))
+    (tempo-voice->measures rem))
+    (temp-meas-changes self)
+    ))
+
+(defmethod tempo->qtempo ((self measure))
+  (let ((tempo (slot-value self 'tempo)))
+    (if (numberp tempo) tempo
+      (let* ((head (list '(0) (tempo-a-la-noire (car tempo))))
+             (suite (cadr tempo))
+             (corr (loop for i in suite
+                         collect (list (car i)
+                              (tempo-a-la-noire (second i))))))
+        (x-append (list head) corr)))))
+
+(defmethod tempo ((self measure))
+  (let ((tp (slot-value self 'tempo)))
+    (unless (parent self)
+    (setf (qtempo self) (tempo->qtempo self)))
+    (slot-value self 'tempo)))
+
+
 
 (defmethod (setf tempo) ((tempo t) (self voice))
   (let (thetempi tempolist)
@@ -1007,7 +1153,7 @@ Extraction methods.
      ((tempo-list-p tempo) (setf tempolist (list tempo nil)))
      (t (setf tempolist (list (convert-tempo-to-list (car tempo)) (second tempo)))))
     (setf (slot-value self 'Qtempo) (tempo-a-la-noire (car tempolist)))
-    (propagate-tempo self)
+    (propagate-tempo self) ;required!
     (setf (slot-value self 'tempo) tempolist)
     (setf thetempi (get-voice-tempilist self))
     (when thetempi
@@ -1020,7 +1166,8 @@ Extraction methods.
     (cond 
      ((numberp tempo)
       (setf tempolist (list (convert-tempo-to-list tempo) nil)))
-     ((tempo-list-p tempo) (setf tempolist (list tempo nil)))
+     ((tempo-list-p tempo) 
+      (setf tempolist (list tempo nil)))
      (t (setf tempolist (list (convert-tempo-to-list (car tempo)) (second tempo)))))
     (setf (slot-value self 'Qtempo) (tempo-a-la-noire (car tempolist)))
     (propagate-tempo self)
