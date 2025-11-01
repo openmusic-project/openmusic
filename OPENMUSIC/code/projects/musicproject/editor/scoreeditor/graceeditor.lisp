@@ -398,8 +398,9 @@
                 #'(lambda (x)  
                     (loop for item in (selection? self) do
                           (set-dur item (value x)))
-                    #-macosx(update-panel self)
-                    #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   ; #-macosx
+                    (update-panel self)
+                   ; #+macosx(unless (in-page-mode? self) (update-alt-panel self))
                     )))
         ((equal slotmode 'port)
          (setf (min-val control) 0)
@@ -409,8 +410,9 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-port item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   ;#-macosx
+                   (update-panel self)
+                   ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                    )))
         
         ((equal slotmode 'offset)
@@ -421,8 +423,9 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-offset-ms item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   ;#-macosx
+                   (update-panel self)
+                   ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                    )))
         ((equal slotmode 'onset)
 	 (enable-numbox control (if (string-equal (obj-mode self) "chord") t nil))
@@ -435,8 +438,9 @@
 		     (loop
 			for item in (selection? self)
 			do (set-chords-offset self item (value x)))
-                     #-macosx(update-panel self)
-                     #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                     ;#-macosx
+                     (update-panel self)
+                     ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                      ))))
 	((equal slotmode 'dyn)
          (setf (min-val control) 0)
@@ -446,8 +450,9 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-vel item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   ;#-macosx
+                   (update-panel self)
+                   ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                    )))
         ((equal slotmode 'chan)
          (setf (min-val control) 1)
@@ -457,8 +462,9 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-channel item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   ;#-macosx
+                   (update-panel self)
+                   ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                    )))
         ((equal slotmode 'midic)
          (setf (min-val control) 0)
@@ -470,8 +476,9 @@
                          ;(when (note-p item)
                         (change-midic item (value x)))
 					;);scroll edit fix
-                  #-macosx(update-panel self)
-                  #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                  ;#-macosx
+                   (update-panel self)
+                  ;#+macosx(unless (in-page-mode? self) (update-alt-panel self))
                   )))
         ((equal slotmode 'chord-offset)
          (setf (min-val control) 0)
