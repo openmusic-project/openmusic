@@ -331,6 +331,10 @@
   (setf (slot-value self 'tempo)
         (list (car (tempo self)) (remove tempi (second (tempo self)) :test 'equal))))
 
+(defmethod remove-bad-tempi-change ((self measure) tempi)
+  (setf (slot-value self 'tempo)
+        (list (car (tempo self)) (remove tempi (second (tempo self)) :test 'equal))))
+
 (defmethod correct-dyn-tempo ((self voice))
   (let* ((qtempo (qtempo self))
          (clean (remove-duplicates qtempo :test 'equal :key 'car))
@@ -348,6 +352,9 @@
       (let* ((clean (remove-duplicates qtempo :test 'equal :key 'dup-indice :from-end 't))
              (sort (sort-list clean :test '< :key 'caar)))
         (setf (qtempo self) sort)))))
+
+(defmethod correct-dyn-tempo ((self t))
+  (qtempo self))
 
 
 (defmethod make-voice-tempo-change ((self voice) tempi)
@@ -382,6 +389,37 @@
             do (setf (qtempo m) (correct-dyn-tempo m)))
     ))
 
+
+(defmethod make-voice-tempo-change ((self measure) tempi)
+  (let* ((list tempi)
+         (start (caar list))
+         (mes (inside self))
+         (curtempo (tempo-a-la-noire (car (tempo self))))
+         dynamic?)
+    (setf *dynamic-tempo-list* nil)
+    (loop for item in mes
+          for i = 0 then (+ i 1) do
+          (when curtempo (change-qtempo item curtempo dynamic?))
+            ;(print i) (print list)
+            (loop while (and list (= i (caaar list))) do   ;;; 
+                  (let ((chords (cons-chord&rest-list (parent item))))
+                    (setf curtempo (tempo-a-la-noire (list (first (second (first list))) (second (second (first list))))))
+                    (if (nth (caaar list) chords)
+                     (progn
+                       (set-last-dyn-tempo curtempo (nth (caaar list) chords))
+                       (setf dynamic? (third (second (first list))))
+                       (when dynamic?
+                         (push (list curtempo) *dynamic-tempo-list*))
+                       (change-qtempo-up (nth (caaar list) chords) nil curtempo dynamic? nil))
+                   (remove-bad-tempi-change self (car list))) 
+                 (setf list (cdr list)))))
+    (when *dynamic-tempo-list*
+      (loop for list in (reverse *dynamic-tempo-list*) do
+            (compute-dynamic-tempi list))
+      ;(correct-dyn-tempo self)
+      )))
+
+
 ;==========================
 ;CHANGING TEMPO 
 ;==========================
@@ -408,6 +446,27 @@
 (defmethod change-qtempo-up ((self voice) chord tempo dynamic? path) 
   (let ((pos (position chord (inside self) :test 'equal)))
     (set-qtempo-list self (cons pos path) tempo)))
+
+(defmethod change-qtempo-up ((self measure) chord tempo dynamic? path)
+  (let ((pos (position chord (inside self) :test 'equal)))
+    (loop for i from (+ pos 1) to (- (length (inside self)) 1) do
+          (change-qtempo (nth i (inside self)) tempo dynamic?))
+    (when (parent self)
+    (change-qtempo-up (parent self) self tempo dynamic? (cons pos path)));;changed!
+    (set-meas-qtempo-list self (cons pos path) tempo)
+    ))
+
+(defun set-meas-qtempo-list (self pos tempo) 
+  (setf (qtempo self) 
+        (remove-duplicates
+        (if (atom (qtempo self))
+              (if (zeroplist pos)
+                  (list (list '(0) tempo))
+                (list (list '(0) (qtempo self)) (list pos tempo)))
+          (sort (append (qtempo self) (list (list pos tempo))) #'listcar<)
+          )
+        :test 'equal)
+        ))
 
 (defun zeroplist (list)
   (null (remove 0 list)))

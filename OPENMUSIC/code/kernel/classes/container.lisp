@@ -351,7 +351,7 @@ Is used to make 2 containers comparable w/regard to time scale."
 
 (defmethod Extent->ms ((self simple-container))
   "Converts the extent of <self> to milliseconds"
-  (if (or (voice-p self) (poly-p self))
+  (if (or (measure-p self) (voice-p self) (poly-p self))
       (let ((chrdseq (objfromobjs self (make-instance 'chord-seq))))
         (round (* 1000 (/ (extent chrdseq) (QValue chrdseq)))))
   (round (* 1000 (/ 60 (Qtempo self)) (/ (extent self) (QValue self))))))
