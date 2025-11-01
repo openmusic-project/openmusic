@@ -39,6 +39,7 @@
           om-field-size
           om-set-field-size
           om-scroll-position
+          scroll-update
           om-set-scroll-position
           om-h-scroll-position
           om-v-scroll-position

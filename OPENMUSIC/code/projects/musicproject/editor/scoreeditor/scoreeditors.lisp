@@ -715,6 +715,21 @@
                                         :min-val 1
                                         ))
 
+         (meas-max (om-make-dialog-item 'om-static-text 
+                                        #-macosx(om-make-point (- l3 5) (- c2 12)) 
+                                        #+macosx(om-make-point (- l3 5) (- c2 2)) 
+                                        (om-make-point 80 20) 
+                                        (format nil  "Max:")
+                                        :font *om-default-font1*
+                                        :bg-color *controls-color*))
+         (meas-count (om-make-dialog-item 'om-static-text 
+                                         #-macosx(om-make-point (+ l3 45) (- c2 12)) 
+                                         #+macosx(om-make-point (+ l3 45) (- c2 2)) 
+                                          (om-make-point 80 20) 
+                                        (format nil  "~A" (meas-count obj))
+                                        :font *om-default-font1*
+                                        :bg-color *controls-color*))
+
          ;;;selection
          (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 50) 
                                         ""
@@ -724,8 +739,10 @@
              
     (setf (slotedit self) minied)
     (cond 
-     ((or (measure-p obj) (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
-                                                                       minied sizebut  measureitem meas-num edobut));duration must comes first in order to setf the duration-time
+     ((measure-p obj) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
+                                       minied sizebut  measureitem meas-num edobut))
+     ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
+                                                       minied sizebut  measureitem meas-num edobut meas-max meas-count));duration must comes first in order to setf the duration-time
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
                                                                 minied sizebut onsetitem onset-ms edobut))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem 
@@ -736,6 +753,15 @@
     (om-set-bg-color self *controls-color*)
     )
   )
+
+(defmethod meas-count ((self t)))
+
+(defmethod meas-count ((self voice))
+  (length (inside self)))
+
+(defmethod meas-count ((self poly))
+  (let ((frst (car (inside self))))
+    (length (inside frst))))
 
 
 
@@ -877,7 +903,8 @@
     (grille-step :initform 1000 :accessor grille-step)
     (timebpf :accessor timebpf :initarg :timebpf :initform nil))
    (:default-initargs :field-size (om-make-point 20000 10000)
-    :scrollbars t))
+    :scrollbars t
+    :scroll-bar-type :always-visible))
 
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
 
@@ -1504,9 +1531,15 @@
    (om-invalidate-view self)
    )
 
+;;;;;
 
+;in ordre to resize and enlarge the field size according to monstous poly...
+; do the same for voice, chord-seq and multi-seq
 
-
+(defmethod change-editor-onset ((self scorePanel) newonset) ;to do (for chordseq and multi-seq)
+  (let ((pos (+ 0 (time-to-pixels self newonset))))
+    (om-set-h-scroll-position self (- pos 72))
+    (update-panel self)))
 
 ;;;==========================
 ;;; DRAW
@@ -1920,7 +1953,7 @@
                                              (let ((out (car (outframes i))))
                                                (list (om-view-container out) out)))))))
         (space-objects (graphic-obj self) (* 4 linespace))
-        (set-graph-rectangles (graphic-obj self))
+        ;(set-graph-rectangles (graphic-obj self));uncommenting fixes weird rest stems
         (cons-the-bpf-time self (graphic-obj self))
         (loop  for i in sboxf
                do (center-outfleche-sboxframe (car i) (second i)))))
@@ -2224,8 +2257,8 @@
                 #'(lambda (x)  
                     (loop for item in (selection? self) do
                           (set-dur item (value x)))
-                    #-macosx(update-panel self)
-                    #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                    (update-panel self)
+                   
                     )))
         ((equal slotmode 'port)
          (setf (min-val control) 0)
@@ -2235,8 +2268,8 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-port item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   (update-panel self)
+                  
                    )))
         
         ((equal slotmode 'offset)
@@ -2247,8 +2280,8 @@
                #'(lambda (x)  
                    (loop for item in (selection? self) do
                          (set-offset-ms item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   (update-panel self)
+                 
                    )))
         ((equal slotmode 'onset)
 	 (enable-numbox control (if (string-equal (obj-mode self) "chord") t nil))
@@ -2261,8 +2294,8 @@
 		     (loop
 			for item in (selection? self)
 			do (set-chords-offset self item (value x)))
-                     #-macosx(update-panel self)
-                     #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                     (update-panel self)
+                    
                      ))))
 	((equal slotmode 'dyn)
          (setf (min-val control) 0)
@@ -2272,8 +2305,8 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-vel item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   (update-panel self)
+                  
                    )))
         ((equal slotmode 'chan)
          (setf (min-val control) 1)
@@ -2283,8 +2316,8 @@
                #'(lambda (x) 
                    (loop for item in (selection? self) do
                          (set-channel item (value x)))
-                   #-macosx(update-panel self)
-                   #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   (update-panel self)
+                 
                    )))
         ((equal slotmode 'midic)
          (setf (min-val control) 0)
@@ -2296,8 +2329,8 @@
                          ;(when (note-p item)
                         (change-midic item (value x)))
 					;);scroll edit fix
-                  #-macosx(update-panel self)
-                  #+macosx(unless (in-page-mode? self) (update-alt-panel self))
+                   (update-panel self)
+                 
                   )))
         ((equal slotmode 'chord-offset)
          (setf (min-val control) 0)
@@ -3530,7 +3563,7 @@
 ;(defmethod edit-step-grille ((self voicepanel)) t)
 (defmethod translate-chords-p ((self voicepanel)) nil)
 
-(defmethod change-editor-measure ((self voicePanel) measnum)
+(defmethod change-editor-measure ((self voicePanel) measnum);to do
   (unless (= (staff-meas self) measnum)
     (setf (staff-meas self) measnum)
     (set-edit-param (om-view-container self) 'measure  measnum)
@@ -3540,9 +3573,27 @@
            (lgt (length measpos))
            (n (if (> measnum lgt) lgt measnum)) 
            (pos (* zoom (nth (1- n) measpos))))
+      (om-set-field-size self
+                         (om-make-point (+ 1000 (round (last-elem measpos))) 20000))
       (om-set-h-scroll-position self pos)
+      ;(setf (selection? self) nil)
       (update-panel self t)
       )))
+
+(defmethod scroll-update ((self voicepanel) dimension operation pos-list &rest options)
+  (let* ((zoom (float (staff-zoom self)))
+         (objs (graphic-obj self))
+         (measpos (loop for i in (inside objs)
+                        collect (car (main-point i))))
+         (scrollpos (om-h-scroll-position self))
+         (pos  (position-if #'(lambda (x) (>= x scrollpos)) measpos))
+         (pos (if (= 0 pos) 1 pos))
+         (numbox (nth 9 (om-subviews (ctr-view (om-view-container self))))))
+     (setf (staff-meas self) pos)
+     (set-edit-param (om-view-container self) 'measure pos)
+     (om-set-dialog-item-text numbox (format nil "~D" pos))
+     (setf (value numbox) pos)
+     (call-next-method)))
 
 (defmethod change-ties-too ((self voicePanel) chord)
    (let ((pointer (next-container chord '(chord))))
@@ -3765,10 +3816,27 @@
              (lgt (length measpos))
              (n (if (> measnum lgt) lgt measnum)) 
              (pos (* zoom (nth (1- n) measpos))))
-        (om-set-h-scroll-position self pos)
-        (setf (selection? self) nil)
+        (om-set-field-size self
+                        (om-make-point (+ 1000 (round (last-elem measpos))) 20000))
+        (om-set-h-scroll-position self (round pos))
+        ;(setf (selection? self) nil)
         (update-panel self t)
         )))
+
+(defmethod scroll-update ((self polypanel) dimension operation pos-list &rest options)
+  (let* ((zoom (float (staff-zoom self)))
+         (objs (car (inside (graphic-obj self))))
+         (measpos (loop for i in (inside objs)
+                        collect (car (main-point i))))
+         (scrollpos (om-h-scroll-position self))
+         (pos  (position-if #'(lambda (x) (>= x scrollpos)) measpos))
+         (pos (if (= 0 pos) 1 pos))
+         (numbox (nth 9 (om-subviews (ctr-view (om-view-container self))))))
+     (setf (staff-meas self) pos)
+     (set-edit-param (om-view-container self) 'measure pos)
+     (om-set-dialog-item-text numbox (format nil "~D" pos))
+     (setf (value numbox) pos)
+     (call-next-method)))
  
 (defmethod draw-view-contents ((self polypanel))
   (let* ((x0  (om-h-scroll-position self))
