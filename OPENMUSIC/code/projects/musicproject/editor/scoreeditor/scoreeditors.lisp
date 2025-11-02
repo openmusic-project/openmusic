@@ -3596,7 +3596,10 @@
                         collect (car (main-point i))))
          (scrollpos (om-h-scroll-position self))
          (pos  (position-if #'(lambda (x) (>= x scrollpos)) measpos))
-         (pos (if (= 0 pos) 1 pos))
+         (pos (cond 
+               ((null pos) (length (inside objs)))
+               ((= 0 pos) 1 )
+               (t pos)))
          (numbox (nth 9 (om-subviews (ctr-view (om-view-container self))))))
      (setf (staff-meas self) pos)
      (set-edit-param (om-view-container self) 'measure pos)
