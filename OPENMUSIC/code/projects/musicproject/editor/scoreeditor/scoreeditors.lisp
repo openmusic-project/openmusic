@@ -720,20 +720,20 @@
                                         :min-val 1
                                         ))
 
-         (meas-max (om-make-dialog-item 'om-static-text 
-                                        #-macosx(om-make-point (- l3 5) (- c2 12)) 
-                                        #+macosx(om-make-point (- l3 5) (- c2 2)) 
+         (meas-max (om-make-dialog-item 'om-static-text
+                                        #+linux(om-make-point (- l3 5) (- c2 12)) 
+                                        #+(or win32 macosx)(om-make-point (- l3 5) (- c2 2))  
                                         (om-make-point 80 20) 
                                         (format nil  "Max:")
                                         :font *om-default-font1*
                                         :bg-color *controls-color*))
-         (meas-count (om-make-dialog-item 'om-static-text 
-                                         #-macosx(om-make-point (+ l3 45) (- c2 12)) 
-                                         #+macosx(om-make-point (+ l3 45) (- c2 2)) 
+         (meas-count (om-make-dialog-item 'om-static-text
+                                          #+linux(om-make-point (+ l3 45) (- c2 12)) 
+                                          #+(or win32 macosx)(om-make-point (+ l3 45) (- c2 2))  
                                           (om-make-point 80 20) 
-                                        (format nil  "~A" (meas-count obj))
-                                        :font *om-default-font1*
-                                        :bg-color *controls-color*))
+                                          (format nil  "~A" (meas-count obj))
+                                          :font *om-default-font1*
+                                          :bg-color *controls-color*))
 
          ;;;selection
          (duration (om-make-dialog-item 'om-static-text (om-make-point (+ l4 5) (+ c1 2)) (om-make-point 260 50) 
@@ -754,10 +754,7 @@
                          minied sizebut edobut)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
-    
-    (om-set-bg-color self *controls-color*)
-    )
-  )
+    (om-set-bg-color self *controls-color*)))
 
 (defmethod meas-count ((self t)))
 
@@ -3596,7 +3593,10 @@
                         collect (car (main-point i))))
          (scrollpos (om-h-scroll-position self))
          (pos  (position-if #'(lambda (x) (>= x scrollpos)) measpos))
-         (pos (if (= 0 pos) 1 pos))
+         (pos (cond 
+               ((null pos) (length (inside objs)))
+               ((= 0 pos) 1 )
+               (t pos)))
          (numbox (nth 9 (om-subviews (ctr-view (om-view-container self))))))
      (setf (staff-meas self) pos)
      (set-edit-param (om-view-container self) 'measure pos)
