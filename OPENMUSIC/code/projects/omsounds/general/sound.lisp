@@ -924,7 +924,7 @@ Press 'space' to play/stop the sound file.
                       (om-draw-line pos y pos y1)))))
         (if (om-sound-n-channels self) 
             (om-with-font *om-default-font1*
-                          (om-draw-string 5 14 "Sound File")
+                          (om-draw-string 5 14 (format nil "~A" (file-namestring (filename self))))
                           (om-draw-string 5 28 (format nil "~A channels" (om-sound-n-channels self))))
           (let ((path (om-sound-file-name self)))
             (when path
