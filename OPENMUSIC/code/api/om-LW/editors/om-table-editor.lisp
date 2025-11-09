@@ -46,15 +46,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;equivalent a om-text-edit-window
 
-(defclass om-table-window (om-table-editor om-abstract-window) ;ajoute om-table-editor
+(defclass om-table-window (om-table-editor oa::om-abstract-window) ;ajoute om-table-editor
   ((save-callback :accessor save-callback :initarg :save-callback :initform nil)))
 
+(defmethod oa::om-view-window ((self om-table-window)) self)
 ;;;;;;;;;;
 
 
 
 ;;this is the direct LW editor.
-(defclass om-table-editor (capi::interface)
+(defclass om-table-editor (capi::interface); oa::om-abstract-window)
   ((ep :initform nil :accessor ep :initarg :ep)
    (table :initform nil :accessor table :initarg :table)
    (columns :initform nil :accessor columns :initarg :columns)
@@ -68,7 +69,7 @@
 (defmethod om-select-window ((self om-table-editor)) 
   (capi::display self))
 
-(defmethod om-view-window ((self om-table-editor)) self)
+(defmethod oa::om-view-window ((self om-table-editor)) self)
 
 (defmethod om-set-window-title ((self om-table-editor) (title string))
   (setf (capi::interface-title self) title))
@@ -353,12 +354,12 @@
     rows and columns lists."
   (let* ((sequence 
           (if rows
-          (loop for i in seq
-                for n in rows
-                collect (cons n i))
-           (loop for i in seq
-                for n from 1 to (length seq)
-                 collect (cons n i))))
+              (loop for i in seq
+                    for n in rows
+                    collect (cons n i))
+            (loop for i in seq
+                  for n from 1 to (length seq)
+                  collect (cons n i))))
          (cols (if columns columns (loop for i from 1 to (length (matrans seq)) collect i)))
          (table (make-instance 'capi:multi-column-list-panel 
                                :interaction :single-selection
@@ -393,7 +394,6 @@
          (win (make-instance 'om-table-editor
                              :contents sequence
                              :layout (make-instance 'capi:column-layout :description (list table)))))
-    
     (setf (ep win) win)
     (setf (capi::interface-menu-bar-items win) 
           (append (internal-window-class-menubar win)
@@ -413,6 +413,8 @@
    ;val: om-table 
    )
 |#
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;edit-cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
