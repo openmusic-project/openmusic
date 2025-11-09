@@ -119,7 +119,7 @@
 (defmethod update-editor-after-eval ((self oe::om-table-editor) val)
   (setf (oe::box self) val)
   (setf (oe::contents self) (data val))
-  (print (list "update prob" self val))
+ ; (print (list "update prob" self val))
 nil)
 
 ;==================BOX EDITOR================
@@ -137,19 +137,14 @@ nil)
 
 
 
-
-(defmethod OpenEditorframe ((self OMTablebox)) 
-  (when (editorframe self)
-    (when (oe::contents (editorframe self))
-      (setf (data (value self)) (mapcar 'cdr (oe::contents (editorframe self)))))
-    )
+(defmethod OpenEditorframe ((self OMTablebox))
   (let* ((val (value self))
          (rows (rows val))
          (cols (cols val))
          (data (data val)))
   (unless (lock-button (car (frames self)))
     (add-lock-button (car (frames self))))
-  (open-new-table-editor rows cols data )))
+  (open-new-table-editor rows cols data)))
 
 
 (defmethod objfromobjs ((self textfile) (type om-table))
@@ -193,7 +188,7 @@ nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod OpenObjectEditor ((self OMTablebox)) (print (list "self"))
+(defmethod OpenObjectEditor ((self OMTablebox))
   "If there is a EditorFrame open for SELF select the window of EditorFrame, 
 else create a new Editor frame, and select its window."
   (setf (EditorFrame self) (OpenEditorframe self))
@@ -215,23 +210,8 @@ else create a new Editor frame, and select its window."
   (list '((#-macosx("Ctrl + o") #+macosx("Cmd + o") "Import CSV file")
           (#-macosx("Ctrl + e") #+macosx("Cmd + e") "Export CSV file")
           (#-macosx("Ctrl + i") #+macosx("Cmd + i") "Get Info")
-          ("cmd+clic" "Add Note/Chord/Measure")
-          ("ctrl+clic" "Add rhythm figure")
-          ("del" "Delete Selection")
-          ("tab" "Change Obj. Mode")
-          (("z") "Obj/Time Selection")
-          ("ud" "Transpose Selection")
-          ("shift+ud" "Transpose Octave")
-          (("+") "Union Pulses")
-          (("-") "Break Group (Group Mode)")
-          (("_") "Group Objs")
-          (("*") "Move Group Up (Group Mode)")
-          ("esc" "Switch Note/Silence")
-          ("2-9" "Subdivise Pulse")
-          (("1") "Open Subdivision dialog")
-          (("=") "Tie Selection")
-          (("/") "Untie Selection")
-          (("C") "Change Color")
+          ("ctrl+clic" "Edit cell")
+          ;("del" "Delete Selection")
           )
         ))
 
