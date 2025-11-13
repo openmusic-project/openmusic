@@ -1959,7 +1959,7 @@
                                              (let ((out (car (outframes i))))
                                                (list (om-view-container out) out)))))))
         (space-objects (graphic-obj self) (* 4 linespace))
-        ;(set-graph-rectangles (graphic-obj self));uncommenting fixes weird rest stems
+        (set-graph-rectangles (graphic-obj self))
         (cons-the-bpf-time self (graphic-obj self))
         (loop  for i in sboxf
                do (center-outfleche-sboxframe (car i) (second i)))))
