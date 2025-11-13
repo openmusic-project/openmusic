@@ -18,6 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
+; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;===========================================================================
 
 
@@ -192,7 +193,7 @@
 |#
 
 (defmethod prepare-to-play ((engine (eql :om-audio)) (player omplayer) object at interval params)
-  (when (loaded object)
+  (when (om-sound-file-name object) ;(loaded object)
     (let* ((off (if (equal (type-of (caller player)) 'soundeditor) 0 at))
            (newinterval  (get-internal-interval interval object off)))
       (unless (player-data object)
