@@ -2618,6 +2618,7 @@
                          finally (return (list ymin ymax))))
        (when moyen 
          (setf moyen (+ (min (car moyen) (second moyen)) (round (abs (- (car moyen) (second moyen))) 2))))
+       #|
        (loop for item in atoms do
              (when (is-rest-? item)
                (when moyen
@@ -2629,7 +2630,9 @@
                    (progn
                      (setf (nth 1 (main-point item)) moyen)
                      (setf (nth 3 (rectangle item)) moyen)
-                     (setf (nth 1 (rectangle item)) (nth 1 (main-point item)))))))))))
+                     (setf (nth 1 (rectangle item)) (nth 1 (main-point item))))))))
+       |#
+       )))
 
 
 (defmethod set-graph-rectangles ((self grap-container)) 
