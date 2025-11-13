@@ -1028,7 +1028,7 @@
                   (om-draw-line posx  miny  posx  maxy))))))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
-                    (om-draw-string (- x 12) (+ y (line2pixel (+ 10 (posy (last-elem (staff-list staff))))
+                    (om-draw-string (+ (- x 12) (om-h-scroll-position view)) (+ y (line2pixel (+ 10 (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) 
                                                 (/ size -8))
                                     (name (reference self)))))
@@ -1310,7 +1310,7 @@
             ))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
-                    (om-draw-string (- x 10) (+ y (line2pixel (+ 8 (posy (last-elem (staff-list staff))))
+                    (om-draw-string (+ (- x 10) (om-h-scroll-position view)) (+ y (line2pixel (+ 8 (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) (/ size -8))
                                     (name (reference self)))))
     (draw-extras self view size staff)))
@@ -2618,6 +2618,7 @@
                          finally (return (list ymin ymax))))
        (when moyen 
          (setf moyen (+ (min (car moyen) (second moyen)) (round (abs (- (car moyen) (second moyen))) 2))))
+       #|
        (loop for item in atoms do
              (when (is-rest-? item)
                (when moyen
@@ -2629,7 +2630,9 @@
                    (progn
                      (setf (nth 1 (main-point item)) moyen)
                      (setf (nth 3 (rectangle item)) moyen)
-                     (setf (nth 1 (rectangle item)) (nth 1 (main-point item)))))))))))
+                     (setf (nth 1 (rectangle item)) (nth 1 (main-point item))))))))
+       |#
+       )))
 
 
 (defmethod set-graph-rectangles ((self grap-container)) 
