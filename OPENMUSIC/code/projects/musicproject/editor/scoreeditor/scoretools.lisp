@@ -2323,9 +2323,10 @@
 ;(defmethod collect-temporal-objects ((self grap-chord) father)
 ;   (list (list (offset->ms (reference self) father) self)))
 
-(defmethod collect-temporal-objects ((self grap-chord) father) 
-  (if (and (typep (reference self) 'grace-chord)
+(defmethod collect-temporal-objects ((self grap-chord) father)
+  (if (or (and (typep (reference self) 'grace-chord)
            (typep (parent self) 'g-grap-grace-notes))
+          (typep self 's-grap-grace-notes))
       (list (list (get-grace-offset self father) self))
     (list (list (offset->ms (reference self) father) self))))
 
