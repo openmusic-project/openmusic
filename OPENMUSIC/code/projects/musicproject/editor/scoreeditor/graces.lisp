@@ -490,7 +490,7 @@
                                      (make-graph-ryth-obj item  top staffsys linespace  scale sel new-group 1/8)))
     new-group))
 
-
+;maybe also for rest???
 (defmethod get-grace-offset ((self grap-chord) father)
   "In order to display correctly group-graces"
   (let* ((realchord (thechord (reference self)))
@@ -501,6 +501,18 @@
          (dur 1))
     (- off (* dur (+ 1 (- lgt pos))))))
 
+;fix for internal measure display with graces
+(defmethod get-grace-offset ((self grap-chord) (father measure)) 
+  "In order to display correctly group-graces"
+  (let* ((realchord (thechord (reference self)))
+         (off (offset->ms realchord 
+                          (get-measure (thechord (reference self)))
+                          ))
+         (g-grp (parent self))
+         (lgt (length (inside g-grp)))
+         (pos (position self (inside g-grp)))
+         (dur 1))
+    (- off (* dur (+ 1 (- lgt pos))))))
 ;=====================================================================
 ;-------------------------------DRAWING-------------------------------
 ;=====================================================================
