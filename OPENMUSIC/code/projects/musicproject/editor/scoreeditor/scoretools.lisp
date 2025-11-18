@@ -1006,7 +1006,8 @@
      newc-s))
 
 (defmethod draw-object ((self grap-chord-seq) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
-  (let* (endxms previous)
+  (let* ((namedir (if (= 0 *staff-name-dir*) 6 0))
+         endxms previous)
     (om-with-font (get-font-to-draw 0)
        (loop for i from 0 to (- (length (inside self)) 1)
              do (let ((cur-chord (nth i (inside self)))
@@ -1028,7 +1029,7 @@
                   (om-draw-line posx  miny  posx  maxy))))))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
-                    (om-draw-string (+ (- x 12) (om-h-scroll-position view)) (+ y (line2pixel (+ 10 (posy (last-elem (staff-list staff))))
+                    (om-draw-string (+ (- x 12) (om-h-scroll-position view)) (+ y (line2pixel (+ namedir (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) 
                                                 (/ size -8))
                                     (name (reference self)))))
@@ -1288,6 +1289,7 @@
 (defmethod draw-object ((self grap-voice) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (let* ((posy y)
          (thetempi (get-voice-tempilist (reference self)))
+         (namedir (if (= 0 *staff-name-dir*) 6 0))
          dynamicpos)
     (loop for i from 0 to (- (length (inside self)) 1) 
           do (let ((cur-mes (nth i (inside self)))
@@ -1310,7 +1312,7 @@
             ))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
-                    (om-draw-string (+ (- x 10) (om-h-scroll-position view)) (+ y (line2pixel (+ 8 (posy (last-elem (staff-list staff))))
+                    (om-draw-string (+ (- x 10) (om-h-scroll-position view)) (+ y (line2pixel (+ namedir (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) (/ size -8))
                                     (name (reference self)))))
     (draw-extras self view size staff)))
@@ -1344,6 +1346,7 @@
    (draw-extras self view size staff)
   )
 
+#|
 (defmethod draw-rectangle ((self grap-voice) system size &optional fill)
   (let* ((rec (rectangle self))
          (mesrect (rectangle (car (inside self))))
@@ -1357,7 +1360,16 @@
                       :fill fill
                       :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
                       )))
+|#
 
+(defmethod draw-rectangle ((self grap-voice) system size &optional fill )
+  (draw-h-rectangle (list (- (car (rectangle self)) 8) 
+                          (- (+ (fourth (rectangle self)) 0) 60)
+                          (+ (third (rectangle self)) 8) 
+                          (+ (fourth (rectangle self)) 0)) 
+                    :fill fill
+                    :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
+                    ))
     
 ;=========================================
 (defclas grap-measure (grap-container) 
@@ -2311,9 +2323,10 @@
 ;(defmethod collect-temporal-objects ((self grap-chord) father)
 ;   (list (list (offset->ms (reference self) father) self)))
 
-(defmethod collect-temporal-objects ((self grap-chord) father) 
-  (if (and (typep (reference self) 'grace-chord)
+(defmethod collect-temporal-objects ((self grap-chord) father)
+  (if (or (and (typep (reference self) 'grace-chord)
            (typep (parent self) 'g-grap-grace-notes))
+          (typep self 's-grap-grace-notes))
       (list (list (get-grace-offset self father) self))
     (list (list (offset->ms (reference self) father) self))))
 
