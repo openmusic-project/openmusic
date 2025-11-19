@@ -512,20 +512,22 @@
   (om-message-dialog "Please choose CHORD selection mode only!"))
   
 (defmethod add-grace-notes-dialog ((self chord) (panel scorepanel))
-  (let ((root (get-root-parent self)))
     (cond 
-     ((measure-p root) (open-add-grace-panel (get-measure self) self panel))
-     ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
-     ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
-     (t (print "Only for MEASURE, VOICE and POLY editors!")))))
+     ((typep panel 'measurepanel) 
+      (open-add-grace-panel (get-measure self) self panel))
+     ((typep panel 'voicepanel) 
+      (open-add-grace-panel (get-voice self) self panel))
+     ((typep panel 'polypanel) (open-add-grace-panel (get-poly self) self panel))
+     (t (print "Only for MEASURE, VOICE and POLY editors!"))))
 
 (defmethod add-grace-notes-dialog ((self rest) (panel scorepanel))
-  (let ((root (get-root-parent self)))
     (cond 
-     ((measure-p root) (open-add-grace-panel (get-measure self) self panel))
-     ((voice-p root) (open-add-grace-panel (get-voice self) self panel))
-     ((poly-p root) (open-add-grace-panel (get-poly self) self panel))
-     (t (print "Only for MEASURE, VOICE and POLY editors!")))))
+     ((typep panel 'measurepanel) 
+      (open-add-grace-panel (get-measure self) self panel))
+     ((typep panel 'voicepanel) 
+      (open-add-grace-panel (get-voice self) self panel))
+     ((typep panel 'polypanel) (open-add-grace-panel (get-poly self) self panel))
+     (t (print "Only for MEASURE, VOICE and POLY editors!"))))
 
 (defmethod open-add-grace-panel ((self measure) thing panel)
   (let* ((gnotes (gnotes thing))
