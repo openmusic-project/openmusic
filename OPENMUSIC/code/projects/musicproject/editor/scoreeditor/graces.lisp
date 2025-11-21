@@ -213,6 +213,38 @@
 ;;;;;;;;;;;;
 
 
+#|
+(defmethod add-grace-notes-dialog ((self simple-container))
+  (open-add-grace-panel (get-voice self) self))
+
+(defmethod open-add-grace-panel ((self voice) thing)
+  (let* ((editor (editorframe (associated-box self)))
+         (chrdseq (make-instance 'grace-note-seq))
+         (internal (obj-for-internal-editor chrdseq))
+         (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
+    (setf (approx chrdseq) (approx self));ADD
+    (push win (attached-editors editor))))
+|#
+
+(defmethod convert-chord-graces ((self measure))
+  (loop for item in (get-real-chords-and-graces self)
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
+(defmethod convert-chord-graces ((self voice))
+  (loop for item in (get-real-chords-and-graces self)
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
+(defmethod convert-chordlist-graces ((self list))
+  (loop for item in self
+        collect
+          (if (grace-chord-p item) 
+              (objfromobjs item (make-instance 'chord)) item)))
+
+
 
 (defmethod! set-grace-notes ((self simple-container) chords before?)
   (setf (gnotes self) (make-instance 'grace-notes
@@ -252,6 +284,37 @@
     (loop for i in pitches
           for n in pos
           do (setf self (set-grace-notes (nth n chords) i t)))))
+
+;;;;;;;;;;;;;;;;;;;
+
+(defmethod add-graces-to-tree ((self measure))
+  (let* ((chrds (collect-chords-rest-graces self))
+         (pos (remove nil
+                      (loop for i in chrds
+                            for n from 0 to (length chrds)
+                            collect (if (listp i) n)))) 
+         (lgt (remove nil
+                      (loop for i in chrds
+                            collect (if (listp i) (1- (length i)))))))
+    (setf (slot-value self 'tree)
+          (add-tree-graces
+           (remove-tree-graces (slot-value self 'tree))
+           pos lgt))))
+
+
+(defmethod add-graces-to-tree ((self voice))
+  (let* ((chrds (collect-chords-rest-graces self))
+         (pos (remove nil
+                      (loop for i in chrds
+                            for n from 0 to (length chrds)
+                            collect (if (listp i) n))))
+         (lgt (remove nil
+                      (loop for i in chrds
+                            collect (if (listp i) (1- (length i)))))))
+    (setf (slot-value self 'tree)
+            (add-tree-graces 
+             (remove-tree-graces (slot-value self 'tree))
+             pos lgt))))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -312,82 +375,6 @@
 
 (defmethod Class-has-editor-p  ((self grace-note-seq)) t)
 (defmethod get-editor-class ((self grace-note-seq)) 'graceEditor)
-
-#|
-(defmethod add-grace-notes-dialog ((self simple-container))
-  (open-add-grace-panel (get-voice self) self))
-
-(defmethod open-add-grace-panel ((self voice) thing)
-  (let* ((editor (editorframe (associated-box self)))
-         (chrdseq (make-instance 'grace-note-seq))
-         (internal (obj-for-internal-editor chrdseq))
-         (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
-    (setf (approx chrdseq) (approx self));ADD
-    (push win (attached-editors editor))))
-|#
-
-(defmethod convert-chord-graces ((self measure))
-  (loop for item in (get-real-chords-and-graces self)
-        collect
-          (if (grace-chord-p item) 
-              (objfromobjs item (make-instance 'chord)) item)))
-
-(defmethod convert-chord-graces ((self voice))
-  (loop for item in (get-real-chords-and-graces self)
-        collect
-          (if (grace-chord-p item) 
-              (objfromobjs item (make-instance 'chord)) item)))
-
-(defmethod convert-chordlist-graces ((self list))
-  (loop for item in self
-        collect
-          (if (grace-chord-p item) 
-              (objfromobjs item (make-instance 'chord)) item)))
-
-
-(defmethod close-editor-after ((self graceEditor)) 
-  (let* ((obj (object self))
-         (chords (inside obj))
-         (voice (object (ref self)))
-         (sel (car (selection? (panel (ref self)))))
-         (pos (position sel (inside voice) :test 'equal)) ;(1- (evt-pos sel)))
-         (graces (loop for i in chords
-                       collect 
-                         (objfromobjs i (make-instance 'grace-chord)))))
-    (loop for i in graces do (setf (thechord i) sel))
-    (setf (gnotes sel) 
-          (make-instance 'grace-notes
-                         :glist graces
-                         :thechord sel
-                         :before? t))
-    (report-modifications (ref self))
-    (update-panel (panel (ref self)))))
-
-;necessary for internal "detached" editors
-(defmethod close-editor-before ((self graceeditor))
-(let* ((obj (object self))
-         (chords (inside obj))
-         (voice (object (ref self)))
-         (sel (car (selection? (panel (ref self)))))
-         (pos (position sel (inside voice) :test 'equal)) ;(1- (evt-pos sel)))
-         (graces (loop for i in chords
-                       collect 
-                         (objfromobjs i (make-instance 'grace-chord)))))
-  (loop for i in graces do (setf (thechord i) sel))
-    (setf (gnotes sel) 
-          (make-instance 'grace-notes
-                         :glist graces
-                         :thechord sel
-                         :before? t))
-    (report-modifications (ref self))
-    (update-panel (panel (ref self)))))
-
-;;;;DELETE GRACE NOTES
-
-(defmethod delete-grace-notes ((self simple-container))
-  (setf (gnotes self) nil))
-
-;=================================
 
 ; ----------------a borrar
 ;;pas utilise!

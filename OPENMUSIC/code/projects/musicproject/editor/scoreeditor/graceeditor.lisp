@@ -15,6 +15,53 @@
 (defmethod get-editor-class ((self grace-note-seq)) 'graceEditor)
 
 
+(defmethod close-editor-after ((self graceEditor)) 
+  (let* ((obj (object self))
+         (chords (inside obj))
+         (voice (object (ref self)))
+         (sel (car (selection? (panel (ref self)))))
+         (pos (position sel (inside voice) :test 'equal))
+         (graces (loop for i in chords
+                       collect 
+                         (objfromobjs i (make-instance 'grace-chord)))))
+    (loop for i in graces do (setf (thechord i) sel))
+    (setf (gnotes sel) 
+          (make-instance 'grace-notes
+                         :glist graces
+                         :thechord sel
+                         :before? t))
+    (add-graces-to-tree voice)
+    (report-modifications (ref self))
+    (update-panel (panel (ref self)))))
+
+
+;necessary for internal "detached" editors
+(defmethod close-editor-before ((self graceeditor))
+(let* ((obj (object self))
+         (chords (inside obj))
+         (voice (object (ref self)))
+         (sel (car (selection? (panel (ref self)))))
+         (pos (position sel (inside voice) :test 'equal)) ;(1- (evt-pos sel)))
+         (graces (loop for i in chords
+                       collect 
+                         (objfromobjs i (make-instance 'grace-chord)))))
+  (loop for i in graces do (setf (thechord i) sel))
+    (setf (gnotes sel) 
+          (make-instance 'grace-notes
+                         :glist graces
+                         :thechord sel
+                         :before? t))
+    (report-modifications (ref self))
+    (update-panel (panel (ref self)))))
+
+;;;;DELETE GRACE NOTES
+
+(defmethod delete-grace-notes ((self simple-container))
+  (setf (gnotes self) nil))
+
+;=================================
+
+
 ;CONTROLS
 (defclass grace-controls-view (gracecontrols-view) ())
 

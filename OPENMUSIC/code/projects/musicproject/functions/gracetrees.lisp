@@ -48,12 +48,10 @@ notes ,rests and tied notes. This version omits gnotes (0)."
     (cond 
      ((or (zerop tree) (floatp tree)) tree)
      ((minusp tree)
-      (if *r-indx*
-          tree
-        (prog1
+      (prog1
             (make-instance 'treeobj :tvalue tree :tindex *indx*)
           (setf *r-indx* 't)
-          (incf *indx*))))
+          (incf *indx*)))
       (t (prog1
              (make-instance 'treeobj :tvalue tree :tindex *indx*)
            (setf *r-indx* nil)

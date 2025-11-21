@@ -766,7 +766,7 @@ Extraction methods.
 (defmethod graces-in? ((self measure))
   (let ((chords (flat (collect-chords-graces self))))
     (find-if #'grace-chord-p chords)))
-
+#|
 (defmethod tree ((self measure)) 
   (if (graces-in? self)
     (let* ((chrds (collect-chords-rest-graces self))
@@ -784,7 +784,9 @@ Extraction methods.
      ;removes the remnant last graces if any
           (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
   (call-next-method))
+|#
 
+#|
 (defmethod tree ((self voice)) 
   (if (graces-in? self)
     (let* ((chrds (collect-chords-rest-graces self))
@@ -802,7 +804,16 @@ Extraction methods.
     ;removes the remnant last graces if any
           (setf (slot-value self 'tree) (remove-tree-graces (slot-value self 'tree))))
   (call-next-method))
+|#
 
+
+(defmethod tree ((self measure)) 
+  (call-next-method)
+  (add-graces-to-tree self))
+
+(defmethod tree ((self voice)) 
+  (call-next-method)
+  (add-graces-to-tree self))
 
 ;;;
 
