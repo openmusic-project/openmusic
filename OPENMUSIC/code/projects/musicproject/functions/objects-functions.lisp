@@ -289,7 +289,7 @@
 
   (let* ((measures (reset-offsets (inside (clone self))))
          (chords (loop for i in measures
-                       collect (get-chords i)))
+                       collect (chords i)))
          (trees (loop for i in measures
                       collect (list '?
                                     (list (tree i)))))
@@ -351,24 +351,6 @@
            (cdr res))
     ))
    
-
-#|
-(defmethod! concat-voices ((liste list))
-   :initvals (list t) 
-   :indoc '("list of voices")
-   :icon 217
-   :doc "concatenates a list of voices into one voice."
-   (let* ((trees (mapcar #'tree liste))
-          (conc-tree (list '? (flat-once (flat-once (mapcar 'cdr trees)))))
-          (chords (remove 'nil (flat (mapcar 'chords liste))))
-          (tempo (concatenate-tempi liste))
-          )
-     (make-instance 'voice
-                    :tree conc-tree
-                    :chords chords
-                    :tempo tempo)
-     ))
-|#
 
 (defmethod concatenate-voices ((liste list))
    (let* ((voices (flat (mapcar #'voice->voices liste)));;important if a voice contains more than one measure.

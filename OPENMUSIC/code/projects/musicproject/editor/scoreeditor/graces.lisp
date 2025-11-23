@@ -192,6 +192,7 @@
 
 ;;;;;;;;;;;
 ;;when just an isolated object in a patch:
+#|
 (defun get-until-voice (self)
   (let ((rep self))
     (if (voice-p rep)
@@ -200,6 +201,17 @@
         (loop while (or (parent rep) (voice-p (parent rep))) 
               do (setf rep (parent rep)))
         rep))))
+|#
+
+
+(defun get-until-voice (self)
+    (let ((rep self))
+    (if (voice-p rep)
+        self
+      (progn
+        (setf rep (parent self))
+        (get-until-voice rep)))))
+
 
 (defmethod offset->ms ((self grace-chord) &optional grandparent)
   (cond 
@@ -1050,40 +1062,40 @@ An OM object representing a group in a rhythm.
 ;;apparement non utilisee pour le moment!
 ;;Not called by graces, so no need to update.(REMOVE)
 (defmethod make-graph-ryth-obj ((self group-gn) top staffsys linespace  scale sel pere durtot &optional ryth) 
-   (let* (new-group direstart)
-     (setf new-group (make-instance 'grap-group
-                       :reference self
-                       :parent pere))
-     (setf (inside new-group) (flat ;;; FLAT or not flat ?
-                               (loop for item in (inside self) 
-                                    for i = 0 then (+ i 1)
-                                    collect
-                                    (let ((newchord (make-graph-ryth-obj 
-                                                     item top staffsys linespace  scale sel new-group 
+  (let* (new-group direstart)
+    (setf new-group (make-instance 'grap-group
+                                   :reference self
+                                   :parent pere))
+    (setf (inside new-group) (flat ;;; FLAT or not flat ?
+                                   (loop for item in (inside self) 
+                                         for i = 0 then (+ i 1)
+                                         collect
+                                           (let ((newchord (make-graph-ryth-obj 
+                                                            item top staffsys linespace  scale sel new-group 
                                                      
-                                                     (let* ;((dur-obj (/ (/ (extent item) (qvalue item)) 
+                                                            (let* ;((dur-obj (/ (/ (extent item) (qvalue item)) 
                                                            ;                 (/ (extent self) (qvalue self)))))
-                                                       ((dur-obj 100))
+                                                                ((dur-obj 100))
                                                            ;(* dur-obj durtot)
-                                                       (print (list "durtot GN" durtot (/ (car (second ryth)) (first ryth))))
-                                                           (* 100 1/4)
-                                                           )
+                                                       ;(print (list "durtot GN" durtot (/ (car (second ryth)) (first ryth))))
+                                                              (* 100 1/4)
+                                                              )
                                                      
-                                                     (list (/ (car (second ryth)) (first ryth))
-                                                           (nth i 
-                                                                ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
-                                                                (remove 0
-                                                                        (cadr (second ryth)))))
+                                                            (list (/ (car (second ryth)) (first ryth))
+                                                                  (nth i 
+                                                                       ;;; dirty fix when 0 (grace notes) are misplaced in the tree..
+                                                                       (remove 0
+                                                                               (cadr (second ryth)))))
 
-                                                     )))
-                                      newchord))
-                               ))
+                                                            )))
+                                             newchord))
+                                   ))
      
-     (when (figure-? new-group)
-       (setf direstart (calcule-dir-et-start new-group (midicenter staffsys)))
-       (set-dir-and-high new-group (car direstart) linespace))
-     (make-graphic-extras new-group)
-     new-group))
+    (when (figure-? new-group)
+      (setf direstart (calcule-dir-et-start new-group (midicenter staffsys)))
+      (set-dir-and-high new-group (car direstart) linespace))
+    (make-graphic-extras new-group)
+    new-group))
 
 
 ;;update scoretools.lisp

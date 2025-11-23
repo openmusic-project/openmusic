@@ -51,6 +51,7 @@
                          :glist graces
                          :thechord sel
                          :before? t))
+    (add-graces-to-tree voice)
     (report-modifications (ref self))
     (update-panel (panel (ref self)))))
 

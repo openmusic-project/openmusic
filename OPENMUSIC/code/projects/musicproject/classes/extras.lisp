@@ -61,11 +61,11 @@
            (exeption-p (execption-save-p self))
            ;;; jb 
            (tonalite (tonalite self))
-           extralist patchlist muslist)
+           extralist patchlist muslist) 
        (unless (parent self)
          (setf extralist (cons-extra-pairs self))
          (setf muslist (cons-mus-color self))
-         (setf patchlist (cons-patch-pairs self)))
+         (setf patchlist (cons-patch-pairs self))) 
        (if exeption-p
          (let* ((intslots (set-difference (get-all-initargs-of-class theclass) (get-all-initargs-of-class exeption-p)
                                           :test 'string-equal :key 'name))
@@ -169,7 +169,7 @@
           )))
 |#
 
-(defmethod omng-save ((self chord)  &optional (values? nil))
+(defmethod omng-save ((self chord)  &optional (values? nil)) 
   (let ((tonlist (get-tonal-values self))
         (tonalite (tonalite self))
         extralist clist)
@@ -238,6 +238,12 @@
                 (set-tonalite thechord ,(omng-save tonalite))
                 thechord))
           )))
+
+
+
+
+
+
 
 ;;;;
 #|
