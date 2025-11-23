@@ -1556,8 +1556,7 @@ of all its direct subcontainers (supposed adjacent)"
                                      (let ((main-chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model)))
                                        (setf chord (objfromobjs (append (list main-chord)) chord-model))
                                        (setf (mus-const chord) (mus-const sub))
-                                       ;(print (list "chordchord" chord (gnotes chord) (mus-const sub) (mus-const chord)
-                                                    ))
+                                       ;(print (list "chordchord" chord (gnotes chord) (mus-const sub) (mus-const chord)))
                                        (setf (gnotes chord) 
                                              (make-instance 'grace-notes
                                                             :glist gchords
