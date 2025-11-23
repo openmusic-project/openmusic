@@ -45,8 +45,8 @@
 ;                                     (lines-list *2-tone-chromatic-scale*)
 ;                                     (approx-factor *2-tone-chromatic-scale*)))
 (defvar *default-editor-scale* nil)
-(defvar *global-midi-approx* nil)
-(setf *global-midi-approx* 2)
+;(defvar *global-midi-approx* nil)
+;(setf *global-midi-approx* 2)
 
 (defvar *grace-color* *om-red-color*)
 (defvar *staff-name-dir* 0)
