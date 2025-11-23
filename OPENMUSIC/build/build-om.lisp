@@ -59,7 +59,7 @@
          )
     (concatenate 'string (format nil "~d.~d" v v2)
                  ;(if (and (zerop v3) (null full)) "" (format nil ".~d" v3))
-                 (if show-beta
+                 (if (and show-beta *beta-release*)
                      (format nil "-b.~d" v3)
                    "")
                  )))
