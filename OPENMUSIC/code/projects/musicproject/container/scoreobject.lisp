@@ -112,6 +112,7 @@ A simple NOTE defined with :
    (Ldur :initform (list 1000) :accessor Ldur :initarg :Ldur :type list :documentation "durations (list of values in ms)")
    (LChan :initform (list 1) :accessor LChan :initarg :LChan :type list :documentation "MIDI channels (list of values 0-16)")
    (approx :initform *global-midi-approx* :accessor approx  :type integer)
+   (grace? :initform nil :accessor grace?  :type t)
    ) 
   (:icon 139)
   

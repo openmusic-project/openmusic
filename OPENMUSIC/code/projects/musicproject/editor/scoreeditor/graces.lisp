@@ -239,6 +239,8 @@
 |#
 
 (defmethod convert-chord-graces ((self measure))
+  "converts grace-chord into chords with a flagged grace? t and
+returns them with real chords"
   (loop for item in (get-real-chords-and-graces self)
         collect
           (if (grace-chord-p item) 
@@ -973,9 +975,13 @@ If no grace notes, return liste."
                  :lvel (lvel self)
                  :ldur (list *gdur*)
                  :lchan (lchan self)
-                 :approx (approx self))))
+                 :approx (approx self)
+                 :grace? t
+                 )))
     (setf (approx chord) (approx self))
+    (setf (grace? chord) t)
     chord))
+
 
 (defmethod collect-and-transform ((self measure) (below t))
   (let* ((target (mki 'chord-seq :empty t))
