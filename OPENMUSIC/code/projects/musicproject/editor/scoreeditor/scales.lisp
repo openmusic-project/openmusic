@@ -35,14 +35,21 @@
 (defvar *mus-font-size* '(("8" 8) ("12" 12) ("16" 16) ("20" 20) ("24" 24) ("28" 28)
                             ("36" 36) ("48" 48) ("60" 60) ("72" 72)))
 
+(defvar *global-midi-approx* nil)
+(setf *global-midi-approx* 2)
 
 (defclass* scale ()
     ((alteration-list :initform (list  nil (diese) nil (diese) nil nil (diese) nil (diese) nil (diese) nil) 
                       :initarg :alteration-list :accessor alteration-list)
      (lines-list :initform (list  0 0 1 1 2 3 3 4 4 5 5 6) 
                  :initarg :lines-list :accessor lines-list)
-     (approx-factor :initform 100 :initarg :approx-factor :accessor approx-factor))
+     (approx-factor :initform 100 :initarg :approx-factor :accessor approx-factor)
+     (approx :initform *global-midi-approx* :accessor approx  :type integer))
    (:icon 262))
+
+(defmethod (setf approx) ((approx number) (self scale))
+  (setf (slot-value self 'approx) approx))
+
 
 (defmethod get-slot-in-out-names ((self scale))
    (values '("self" "alteration-list" "lines-list" "approx-factor")
@@ -850,6 +857,9 @@
               ((ref-chord :initarg :ref-chord :accessor ref-chord 
                       :initform (make-instance 'chord))))
 
+(defmethod scaleeditor-p ((self scaleeditor)) t)
+(defmethod scaleeditor-p ((self t)) nil)
+
 (defmethod playosc? ((self scaleeditor)) nil)
 (defmethod slotsedit? ((self scaleeditor)) nil)
 (defmethod special-tone ((self scaleeditor)) (approx2tone (approx-factor (object self))))
@@ -879,6 +889,8 @@
 
 (defmethod objectfromeditor ((self scalepanel)) 
    (ref-chord (editor self)))
+
+(defmethod adjust-approx ((self scalepanel)) nil)
 
 (defmethod get-approx-scale ((self scalepanel))  
   (object (editor self)))

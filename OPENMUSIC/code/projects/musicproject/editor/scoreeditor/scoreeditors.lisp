@@ -421,19 +421,19 @@
          (stemp (get-edit-param self 'show-stems))
          (approx (get-edit-param self 'approx));(approx (object self)))
          (ed-view (om-make-view (get-score-class-panel self) 
-                                 :position (om-make-point 0 0) 
-                                 :font (om-make-music-font *heads-font* size)
-                                 :field-size (get-editor-field-size self)
-                                 :scrollbars (first (metaobj-scrollbars-params self))
-                                 :owner self
-                                 ;;;:size (om-make-point (- (w self) 15) (- (h self) 40))
-                                 :size (om-make-point (w self) (- (h self) (get-control-h self)))
-                                 :staff-tone approx
-                                 :noteaschan? noteaschan
-                                 :staff-zoom zoom
-                                 :staff-mode mode
-                                 :edition-values (correct-page-par self (get-edit-param self 'cmnpref))
-                                 :staff-size size))
+                                :position (om-make-point 0 0) 
+                                :font (om-make-music-font *heads-font* size)
+                                :field-size (get-editor-field-size self)
+                                :scrollbars (first (metaobj-scrollbars-params self))
+                                :owner self
+                                ;;;:size (om-make-point (- (w self) 15) (- (h self) 40))
+                                :size (om-make-point (w self) (- (h self) (get-control-h self)))
+                                :staff-tone approx
+                                :noteaschan? noteaschan
+                                :staff-zoom zoom
+                                :staff-mode mode
+                                :edition-values (correct-page-par self (get-edit-param self 'cmnpref))
+                                :staff-size size))
          controls staff)
     ;(om-set-field-size ed-view (get-editor-field-size self))
     (setf (show-stems ed-view) stemp)
@@ -460,15 +460,17 @@
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     ;to insure all objs get the correct approx (graces)
-    (unless (graceeditor-p self)
-    (progn
-      (setf (approx (object self)) approx)
-      (setf (staff-tone (panel self)) approx)
-      (om-set-dialog-item-text
-       (nth (if (or (chord-p (object self)) (note-p (object self))) 7 10)
-            (om-subviews
-             (ctr-view self)))
-       (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
+    (unless (or (graceeditor-p self) (scaleeditor-p self))
+      (progn
+        (setf (approx (object self)) approx)
+        (setf (staff-tone (panel self)) approx)
+        (om-set-dialog-item-text
+         (nth (if (or (chord-p (object self)) 
+                      ;(typep self 'scaleeditor)
+                      (note-p (object self))) 7 10)
+              (om-subviews
+               (ctr-view self)))
+         (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
     (init-draw self)
     (init-boxes-in-score ed-view)))
 
