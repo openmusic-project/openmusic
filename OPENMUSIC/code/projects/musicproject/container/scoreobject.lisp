@@ -1649,6 +1649,7 @@ be taken into consideration"
 (defmethod prep-chord-p ((self chord)) (cont-chord-p (next-container self '(chord))))
 (defmethod prep-chord-p ((self t)) nil)
 
+
 (defmethod con-chord-p ((self chord)) (and (cont-chord-p self) (not (cont-chord-p (next-container self '(chord))))))
 (defmethod con-chord-p ((self t)) nil)
 

@@ -223,7 +223,8 @@
     (- (offset->ms (thechord self) (get-until-voice (thechord self))) *gdur*))
    (t 0)))
 ;;;;;;;;;;;;
-
+;fixes transposition of grace-chord BEFORE rest
+(defmethod prep-chord-p ((self grace-chord)) nil)
 
 #|
 (defmethod add-grace-notes-dialog ((self simple-container))
