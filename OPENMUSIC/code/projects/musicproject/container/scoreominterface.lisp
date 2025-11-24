@@ -552,9 +552,15 @@ when :
             (if (gnotes object) (x-append  (glist (gnotes object)) object) object)
         else append (collect-chords-graces object)))
 
-(defmethod get-real-chords-and-graces (self)
+(defmethod collect-chords-graces ((self poly))
+  (mapcar #'collect-chords-graces (inside self)))
+
+(defmethod get-real-chords-and-graces ((self container))
   (loop for item in (flat (collect-chords-graces self))
         when (and (chord-p item) (not (cont-chord-p item))) collect item))  
+
+(defmethod get-real-chords-and-graces ((self poly))
+  (mapcar #'get-real-chords-and-graces (inside self)))
 
 
 (defmethod execption-save-p ((self measure)) 'measure)
@@ -563,25 +569,16 @@ when :
   `(when (find-class ',(type-of self) nil)
      (make-instance ',(type-of self)
        :tree ',(tree self)
-       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords self))))
+       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (convert-chord-graces self))))
        :tempo ',(tempo self)
        :approx ,(approx self))))
 
 
 (defmethod execption-save-p ((self voice)) 'voice)
 
-#|
-(defmethod save-exepcion ((self voice))
-  `(when (find-class ',(type-of self) nil)
-     (make-instance ',(type-of self)
-       :tree ',(tree self)
-       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (get-real-chords-and-graces self))))
-       :tempo ',(tempo self)
-       :legato ,(legato self)
-       :ties ',(ties self)
-       :approx ,(approx self))))
-|#
+
 ;orig
+#|
 (defmethod save-exepcion ((self voice))
   `(when (find-class ',(type-of self) nil)
      (make-instance ',(type-of self)
@@ -591,7 +588,17 @@ when :
        :legato ,(legato self)
        :ties ',(ties self)
        :approx ,(approx self))))
+|#
 
+(defmethod save-exepcion ((self voice))
+  `(when (find-class ',(type-of self) nil)
+     (make-instance ',(type-of self)
+       :tree ',(tree self)
+       :chords (load-obj-list-from-save '(,.(mapcar #'(lambda (x) (omNG-save x)) (convert-chord-graces self))))
+       :tempo ',(tempo self)
+       :legato ,(legato self)
+       :ties ',(ties self)
+       :approx ,(approx self))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;       TOOLS     ;;;;;;;;;;;;;
