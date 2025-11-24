@@ -934,25 +934,25 @@
   (setf (ref-chord self) (make-instance 'chord :lmidic (arithm-ser 6000 (- 7200 (approx-factor (object self)))  
                                                                    (approx-factor (object self))))))
 
-(defmethod report-modifications ((self scaleeditor)) ;(om-inspect self)
-  (let ((refscale (object self))) ;(get-current-scale (get-edit-param self 'approx))))
-    (setf (approx-factor (object self)) (/ 200 (get-edit-param self 'approx)))
+(defmethod report-modifications ((self scaleeditor))
+  (let ((refscale (get-current-scale (get-edit-param self 'approx))))
+    ;(setf (approx-factor (object self)) (/ 200 (get-edit-param self 'approx)));No!
     (setf (alteration-list (object self)) (copy-list (alteration-list refscale)))
     (setf (lines-list (object self)) (copy-list (lines-list refscale)))
-    ;(print (lines-list (object self)))
     (loop for note in (inside (ref-chord self))
           for i = 0 then (+ i 1) do
             (when (tonalite note)
               (setf (nth i (lines-list (object self))) (+ (nth i (lines-list refscale)) 
                                                           (line-diff (nth i (alteration-list refscale))
                                                                      (alt-2-str (tonalt (tonalite note))))))
-              (setf (nth i (alteration-list (object self))) (string (alt-2-str (tonalt (tonalite note))))))
-            )
+              (setf (nth i (alteration-list (object self))) (string (alt-2-str (tonalt (tonalite note)))))))
+    
     (when (and (ref self) (subtypep (type-of (ref self)) 'scoreeditor))
       (update-panel (panel (ref self))))
     (when (not (subtypep (type-of (ref self)) 'scoreeditor))
       (setf *default-editor-scale* (list (alteration-list (object self)) (lines-list (object self)) (approx-factor (object self))))
       (save-preferences))
+    (update-panel (panel self))
     ))
 
 
