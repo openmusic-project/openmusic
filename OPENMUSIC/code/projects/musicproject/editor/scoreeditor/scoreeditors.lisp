@@ -2360,11 +2360,12 @@
          (setf (min-val control) 0)
          (setf (max-val control) 0)
          (setf (afterfun control) 
-               #'(lambda (x) (declare (ignore x)) (om-beep))))))             
-      (when (and (car *default-editor-scale*) 
-                 (null (get-edit-param (editor self) 'scale))
-                 (= 2 (get-edit-param (editor self) 'approx)))
-        (set-edit-param (editor self) 'scale (make-scale *default-editor-scale*)))
+               #'(lambda (x) (declare (ignore x)) (om-beep))))))
+       (if (and (car *default-editor-scale*) 
+               (null (get-edit-param (editor self) 'scale))
+               (= 2 (get-edit-param (editor self) 'approx)))
+        (set-edit-param (editor self) 'scale (make-scale *default-editor-scale*))
+        (set-edit-param (editor self) 'scale nil));when scales are impemented for microtonal create a method to change correct scale
      (om-invalidate-view self t)))
 
 ;===================================================================

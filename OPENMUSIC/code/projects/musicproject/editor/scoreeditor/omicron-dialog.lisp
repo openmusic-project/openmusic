@@ -460,6 +460,7 @@
                                                                    (setf *pmode* nil))
                                                          |#
                                                          (update-slot-edit panel)
+                                                         (update-panel panel t)
                                                          )))
                                         
 ))

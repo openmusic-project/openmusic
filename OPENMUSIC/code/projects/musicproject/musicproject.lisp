@@ -123,7 +123,7 @@
         "editor;scoreeditor;pagination"
         "editor;omicronpref-dialog"
         "editor;musicpreferences"
-
+        
         "music-package"  
         ))
 
