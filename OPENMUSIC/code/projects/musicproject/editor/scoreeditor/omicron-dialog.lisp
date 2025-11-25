@@ -456,6 +456,7 @@
                                                                    (change-score-mode panel 2)
                                                                    (setf *pmode* nil))
                                                          (update-slot-edit panel)
+                                                         (update-panel panel t)
                                                          )))
                                         
 ))
