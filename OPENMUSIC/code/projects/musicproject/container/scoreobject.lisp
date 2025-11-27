@@ -746,6 +746,19 @@ Extraction methods.
               for subself in (inside self)
               collect (check-tree-for-contchord subtree subself))))
 
+;for graces when editing
+;TODO:
+;still must do for measure but after effect if editing voice!
+(defmethod check-tree-for-contchord ((tree list) (self voice))
+  (let ((pos (get-grace-pos self)))
+    (add-tree-graces
+  (list (first tree)
+        (loop for subtree in (second tree)
+              for subself in (inside self)
+              collect (check-tree-for-contchord subtree subself))) 
+   (car pos) (second pos))))
+
+
 (defmethod check-tree-for-contchord ((tree number) (self chord))
   tree)
 

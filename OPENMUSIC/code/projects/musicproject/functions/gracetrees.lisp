@@ -269,7 +269,16 @@ num is number of graces BEFORE pos"
 ;(add-tree-graces *tree* '(1 2 3) '(1 3 4))
 ;(add-tree-graces *tree* '(1 3 4 5) '(1 3 4 5))
 ;(add-tree-graces *tree* '(1 2 3) '(1 3 4 ))
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod get-grace-pos ((self voice))
+  (let* ((objs (collect-chords-and-rests self))
+         (gtrees 
+          (loop for i in objs 
+                       collect (if (mus-const i) (length (mus-const i)))))
+         (pos (remove nil 
+                      (loop for i in gtrees
+                            for n from 0 to (length gtrees)
+                             collect  (if i n))))) 
+    (when pos
+    (list pos (remove nil gtrees)))))
