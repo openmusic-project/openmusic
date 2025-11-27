@@ -2331,7 +2331,8 @@
         ((equal slotmode 'midic)
          (setf (min-val control) 0)
          (setf (max-val control) 12700)
-         (set-value control (midic firstnote))
+         ;(set-value control (midic firstnote))
+         (set-value control (approx-m (midic firstnote) (staff-tone self)))
          (setf (afterfun control) 
                #'(lambda (x) 
                    (loop for item in (selection? self) do
@@ -2361,8 +2362,9 @@
                (null (get-edit-param (editor self) 'scale))
                (= 2 (get-edit-param (editor self) 'approx)))
         (set-edit-param (editor self) 'scale (make-scale *default-editor-scale*))
-        (set-edit-param (editor self) 'scale nil));when scales are impemented for microtonal create a method to change correct scale
+        (set-edit-param (editor self) 'scale nil));when scales are implemented for microtonal create a method to change correct scale
      (om-invalidate-view self t)))
+
 
 ;===================================================================
     
