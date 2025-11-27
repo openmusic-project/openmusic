@@ -31,6 +31,7 @@
                          :thechord sel
                          :before? t))
     (add-graces-to-tree voice)
+    (setf (mus-const sel) (repeat-n 1 (length graces)))
     (report-modifications (ref self))
     (update-panel (panel (ref self)))))
 
@@ -52,12 +53,14 @@
                          :thechord sel
                          :before? t))
     (add-graces-to-tree voice)
+    (setf (mus-const sel) (repeat-n 1 (length graces)))
     (report-modifications (ref self))
     (update-panel (panel (ref self)))))
 
 ;;;;DELETE GRACE NOTES
 
 (defmethod delete-grace-notes ((self simple-container))
+  (setf (mus-const self) nil)
   (setf (gnotes self) nil))
 
 ;=================================
@@ -180,7 +183,8 @@
                                       :di-action 
                                       (om-dialog-item-act item
                                                        (declare (ignore item)) 
-                                                        (om-close-window editor))
+                                                        (om-close-window editor)
+                                                        (update-panel (panel (ref editor))));update voice panel when first created
                                       ))
          
                   
