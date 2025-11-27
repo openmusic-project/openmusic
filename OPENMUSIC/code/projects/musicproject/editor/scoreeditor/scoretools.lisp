@@ -3048,7 +3048,9 @@
 
 
 (defmethod cons-gchord&rest-list ((self t)) nil)
-(defmethod cons-gchord&rest-list ((self grap-chord)) (list self))
+;(defmethod cons-gchord&rest-list ((self grap-chord)) (list self))
+;pour eviter les grace-notes pour le tempo!
+(defmethod cons-gchord&rest-list ((self grap-chord)) (unless (grace-chord-p (reference self))(list self)))
 (defmethod cons-gchord&rest-list ((self grap-rest)) (list self))
 (defmethod cons-gchord&rest-list ((self grap-container)) 
    (loop for item in (inside self) append (cons-gchord&rest-list item)))

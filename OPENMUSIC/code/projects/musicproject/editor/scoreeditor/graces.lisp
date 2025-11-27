@@ -206,7 +206,7 @@
 
 (defun get-until-voice (self)
     (let ((rep self))
-    (if (voice-p rep)
+    (if (or (voice-p rep) (null (parent self)))
         self
       (progn
         (setf rep (parent self))
