@@ -282,3 +282,15 @@ num is number of graces BEFORE pos"
                              collect  (if i n))))) 
     (when pos
     (list pos (remove nil gtrees)))))
+
+(defmethod get-grace-pos ((self measure))
+  (let* ((objs (collect-chords-and-rests self))
+         (gtrees 
+          (loop for i in objs 
+                       collect (if (mus-const i) (length (mus-const i)))))
+         (pos (remove nil 
+                      (loop for i in gtrees
+                            for n from 0 to (length gtrees)
+                             collect  (if i n))))) 
+    (when pos
+      (list pos (remove nil gtrees)))))
