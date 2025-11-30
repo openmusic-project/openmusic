@@ -19,12 +19,13 @@
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;===========================================================================
-
+; Authors: G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;======================================================
 ;SND Process boxes
 ; THIS FILE USES LISPWORKS-SPECIFIC TOOLS FOR MEMORY ALLOCATION AND RELEASE
 ;======================================================
 ; D. Bouche 2013
+; K. Haddad 2025
 ;======================================================
 ; List of available methods :
 ;   - sound-silence
@@ -377,6 +378,13 @@
             ;(declare (type fixnum beg end))
             (sound-cut (get-om-sound-data s) beg end))
 
+(defmethod! sound-cut ((s pathname) (beg t) (end t))
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-cut thesound beg end)))
+
+(defmethod! sound-cut ((s string) (beg t) (end t))
+  (when (probe-file (pathname s))
+    (sound-cut (pathname s) beg end)))
 
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL///////////////

@@ -740,6 +740,9 @@ Press 'space' to play/stop the sound file.
        (float (/ (om-sound-n-samples sound) (om-sound-sample-rate sound)))
      0))
 
+(defmethod! sound-dur ((sound om-sound-data))
+  (/ (size sound) (/ (sr sound) 1.0)))
+
 
 (defmethod! sound-dur-ms ((sound t))
   :initvals '(nil)
