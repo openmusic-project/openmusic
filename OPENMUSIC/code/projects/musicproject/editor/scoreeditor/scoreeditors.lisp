@@ -4597,11 +4597,11 @@
 
 (defmethod toggle ((self rest)) 
   (change-class self 'chord)
-  (setf (lmidic self) '(6000))
- ;(setf (inside self) (list (make-instance 'note)))
- ; (when (previous-real-chord self)
- ;   (loop for i in (inside (previous-real-chord self))
- ;         do (setf (tie i) nil)))
+ ; (setf (lmidic self) '(6000))
+ (setf (inside self) (list (make-instance 'note)))
+  (when (previous-real-chord self)
+    (loop for i in (inside (previous-real-chord self))
+          do (setf (tie i) nil)))
   ;;;port fix (preserves the port)
   (let ((globalport (car (remove nil (flat  (get-port (parent self)))))))
     (if globalport
