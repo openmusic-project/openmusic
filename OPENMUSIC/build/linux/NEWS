@@ -17,6 +17,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Added methods for pathname and string for sound processing methods (for batch usage)
 - Staff names placement in POLY now can be set in preferences
 - Mktree handles end grace-notes and adds extra measures for given duration if needed
 - Symbols are allowed to be typed in patch (P. Rapposo)
@@ -33,6 +34,7 @@ IMPROVEMENTS
 
 FIXES
 
+- fix sound-normalize
 - Approx persistance
 - Grace notes display
 - x-intersect fix
