@@ -20,10 +20,10 @@
 ;
 ;===========================================================================
 ; Authors: G. Assayag, C. Agon, J. Bresson, K. Haddad
-;======================================================
+;===========================================================================
 ;SND Process boxes
 ; THIS FILE USES LISPWORKS-SPECIFIC TOOLS FOR MEMORY ALLOCATION AND RELEASE
-;======================================================
+;==========================================================================
 ; D. Bouche 2013
 ; K. Haddad 2025
 ;======================================================
@@ -111,7 +111,7 @@
                            ("Zero-Order Hold" 3)
                            ("Linear" 4))))
             :indoc '("a sound or sound-data buffer" "new sample rate in Hz" "resampling method")
-            "Resamples a sound <s>."
+            :doc "Resamples a sound <s>."
             (cond ((null (buffer s))
                    (om-beep-msg "Error: null sound buffer"))
                   ((and (= (mod sample-rate 1) 0) (> (/ sample-rate (sr s) 1.0) (/ 1.0 256)) (< (/ sample-rate (sr s) 1.0) 256))
@@ -150,6 +150,16 @@
    (sound-resample (get-om-sound-data s) sample-rate method))
 
 
+(defmethod! sound-resample ((s pathname) sample-rate &optional (method 0))
+  (when (probe-file s)
+  (let ((thesound (make-instance 'sound :filename s)))
+      (sound-resample thesound sample-rate method))))
+
+(defmethod! sound-resample ((s string) sample-rate &optional (method 0))  
+(when (probe-file (pathname s))
+      (sound-resample (pathname s) sample-rate method)))
+ 
+
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-NORMALIZE/////////
 (defmethod! sound-normalize ((s om-sound-data) &key (level 0) (method 0))
             :icon 109
@@ -157,7 +167,7 @@
             :menuins '((2 (("Peak" 0)
                            ("Peak RMS / Hard limiting" 1))))
             :indoc '("a sound" "a normalization method")
-            "Normalizes a sound <s>.
+            :doc "Normalizes a sound <s>.
 
 <method> is a normalization method. Choose between Peak detection or Peak RMS detection."
               (if (null (buffer s))
@@ -220,8 +230,16 @@
 
 (defmethod! sound-normalize ((s sound) &key (level 0) (method 0))
             ;(declare (type fixnum method))
-            (sound-normalize (get-om-sound-data s) level method))
+  (sound-normalize (get-om-sound-data s) :level level :method method))
 
+(defmethod! sound-normalize ((s pathname) &key (level 0) (method 0))
+  (when (probe-file s)
+  (let ((thesound (make-instance 'sound :filename s)))
+    (sound-normalize thesound  :level level :method method))))
+
+(defmethod! sound-normalize ((s string) &key (level 0) (method 0))
+  (when (probe-file (pathname s))
+    (sound-normalize (pathname s)  :level level :method method)))
 
 
 ;;; USE THIS AS DEFAULT NORMALIZER..
@@ -250,8 +268,8 @@
                              :buffer (om-make-pointer (* nsmpl ch) :type *default-internal-sample-size* :clear t)
                              :size nsmpl
                              :nch ch
-                             :sr sample-rate))
-            )
+                             :sr sample-rate)))
+            
 
 (defmethod! sound-silence ((dur integer) &optional (channels 1) (sample-rate *audio-sr*))
    (sound-silence (* dur 0.001) channels sample-rate))
@@ -264,7 +282,7 @@
             :icon 102
             :initvals '(nil 100 100)
             :indoc '("a om-sound-data" "fade in duration" "fade out duration")
-            "Generates a fade-in and/or fade-out effect on <s>.
+            :doc "Generates a fade-in and/or fade-out effect on <s>.
 
              <in> and <out> can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
             (if (null (buffer s))
@@ -305,13 +323,21 @@
 (defmethod! sound-fade ((s sound) in out)
     (sound-fade (get-om-sound-data s) in out))
 
+(defmethod! sound-fade ((s pathname) (in float) (out float))
+(when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-fade thesound in out))))
+
+(defmethod! sound-fade ((s string) (in float) (out float))
+(when (probe-file (pathname s))
+  (sound-fade (pathname s) in out)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-LOOP//////////////
 (defmethod! sound-loop ((s om-sound-data) n)
             :icon 103
             :initvals '(nil 3)
             :indoc '("a sound" "a number")
-            "Generates a <n>-times repetition of <s>."
+            :doc "Generates a <n>-times repetition of <s>."
             (if (null (buffer s))
                 (om-beep-msg "Error: null sound buffer")
               (let* ((nch (nch s))
@@ -336,14 +362,21 @@
             ;(declare (type fixnum n))
             (sound-loop (get-om-sound-data s) n))
 
+(defmethod! sound-loop ((s pathname) n)
+  (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-loop thesound n))))
 
+(defmethod! sound-loop ((s string) n)
+  (when (probe-file (pathname s))
+    (sound-loop (pathname s) n)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-CUT///////////////
 (defmethod! sound-cut ((s om-sound-data) (beg float) (end float))
             :icon 104
             :initvals '(nil 0 1000)
             :indoc '("a sound" "begin time" "end time")
-            "Cuts and returns an extract between <beg> and <end> in <s>.
+            :doc "Cuts and returns an extract between <beg> and <end> in <s>.
 
             <beg> and <end> can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
             (if (null (buffer s))
@@ -379,8 +412,9 @@
             (sound-cut (get-om-sound-data s) beg end))
 
 (defmethod! sound-cut ((s pathname) (beg t) (end t))
+  (when (probe-file s)
     (let ((thesound (make-instance 'sound :filename s)))
-      (sound-cut thesound beg end)))
+      (sound-cut thesound beg end))))
 
 (defmethod! sound-cut ((s string) (beg t) (end t))
   (when (probe-file (pathname s))
@@ -392,7 +426,7 @@
             :icon 106
             :initvals '(nil 1.0 1 1)
             :indoc '("a sound" "a gain value" "fade in duration" "fade out duration")
-            "Adds gain effect (volume) on <s>. 
+            :doc "Adds gain effect (volume) on <s>. 
 
 <gain> is a multiplicative factor to the sound sample values.
 <in> and <out> determine fade-in / fade-out periods for the gain effect. They can be in seconds (floats, e.g. 0.3) or milliseconds (integer, e.g. 300)."
@@ -433,57 +467,77 @@
             ;(declare (type fixnum in out))
    (sound-vol (get-om-sound-data s) gain in out))
 
+(defmethod! sound-vol ((s pathname) gain &optional (in 1) (out 1))
+  (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-vol thesound gain in out))))
 
+(defmethod! sound-vol ((s string) gain &optional (in 1) (out 1))
+  (when (probe-file (pathname s))
+    (sound-vol (pathname s) gain in out)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-VOL-CURVE///////////////
 (defmethod! sound-vol-curve ((s om-sound-data) (curve bpf))
-            :icon 106
-            :initvals '(nil nil)
-            :indoc '("a sound" "a gain value BPF")
-            "Apply a BPF to a sound as a volume curve.
+  :icon 106
+  :initvals '(nil nil)
+  :indoc '("a sound" "a gain value BPF")
+  :doc "Apply a BPF to a sound as a volume curve. <curve> is a BPF scaled using bpf-scale method with these arguments:
 
-<curve> is a BPF."
-            (if (null (buffer s))
-                (om-beep-msg "Error: null sound buffer")
+        x1= start time of sound in ms
+        x2= end time in ms or total duration of sound in ms using (get-obj-dur sound)
+        y1= 0.0
+        y2=1.0 (where 1 is maximux vol!)
+"            
+  (if (null (buffer s))
+      (om-beep-msg "Error: null sound buffer")
 
-              (let* ((datatype (smpl-type s))
-                     (nch (nch s))
-                     (sr (sr s))
-                     (size (size s))
-                     (size2 (* size nch))
-                     (y-list (mapcar #'(lambda (x) (coerce x 'single-float))
-                                     (interpole (x-points curve)
-                                                (y-points curve)
-                                                (car (x-points curve))
-                                                (last-elem (x-points curve))
-                                                (floor (* (get-obj-dur curve) (/ sr 1000))))))
-                     (lasty (last-elem y-list))
-                     (final-buffer (om-make-pointer size2 :type (smpl-type s) :clear t))
-                     index)
-                (if (> size (length y-list))
-                    (setq y-list (append y-list (make-list (- size (length y-list)) :initial-element lasty))))
-                (loop for i from 0 to (1- size)
-                      for y in y-list
-                      do
-                      (dotimes (n nch)
-                        (setf (fli:dereference final-buffer :index (+ (* i nch) n))
-                              (* (fli:dereference (buffer s) :index (+ (* i nch) n)) y))))
+    (let* ((datatype (smpl-type s))
+           (nch (nch s))
+           (sr (sr s))
+           (size (size s))
+           (size2 (* size nch))
+           (y-list (mapcar #'(lambda (x) (coerce x 'single-float))
+                           (interpole (x-points curve)
+                                      (y-points curve)
+                                      (car (x-points curve))
+                                      (last-elem (x-points curve))
+                                      (floor (* (get-obj-dur curve) (/ sr 1000))))))
+           (lasty (last-elem y-list))
+           (final-buffer (om-make-pointer size2 :type (smpl-type s) :clear t))
+           index)
+      (if (> size (length y-list))
+          (setq y-list (append y-list (make-list (- size (length y-list)) :initial-element lasty))))
+      (loop for i from 0 to (1- size)
+            for y in y-list
+            do
+              (dotimes (n nch)
+                (setf (fli:dereference final-buffer :index (+ (* i nch) n))
+                       (* (fli:dereference (buffer s) :index (+ (* i nch) n)) y))))
                   
-                (make-instance 'om-sound-data 
-                               :buffer final-buffer
-                               :size (round size2 nch)
-                               :nch nch
-                               :sr sr))))
+      (make-instance 'om-sound-data 
+                     :buffer final-buffer
+                     :size (round size2 nch)
+                     :nch nch
+                     :sr sr))))
 
 (defmethod! sound-vol-curve ((s sound) (curve bpf))
    (sound-vol-curve (get-om-sound-data s) curve))
+
+(defmethod! sound-vol-curve ((s pathname) (curve bpf))
+  (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-vol thesound curve))))
+
+(defmethod! sound-vol-curve ((s string) (curve bpf))
+  (when (probe-file (pathname s))
+    (sound-vol (pathname s) curve)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MONO-TO-STEREO///
 (defmethod! sound-mono-to-stereo ((s om-sound-data) &optional (pan 0))
             :icon 111
             :initvals '(nil 0)
             :indoc '("a sound" "a panoramic value between -100 and 100")
-            "Stereo-ize a mono sound with possible panoramic <s>.
+            :doc "Stereo-ize a mono sound with possible panoramic <s>.
 
 <pan> is a panoramic value between -100 (Left channel) and 100 (Right channel)."
             
@@ -522,15 +576,21 @@
             ;(declare (type fixnum pan))
             (sound-mono-to-stereo (get-om-sound-data s) pan))
 
+(defmethod! sound-mono-to-stereo ((s pathname) &optional (pan 0))
+    (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-mono-to-stereo thesound pan))))
 
-
+(defmethod! sound-mono-to-stereo ((s string) &optional (pan 0))
+(when (probe-file (pathname s))
+  (sound-mono-to-stereo (pathname s) pan)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-STEREO-TO-MONO///
 (defmethod! sound-stereo-to-mono ((s om-sound-data))
             :icon 112
             :initvals '(nil)
             :indoc '("a sound")
-            "Mono-ize a stereo sound."
+            :doc "Mono-ize a stereo sound."
             (cond ((null (buffer s))
                    (om-beep-msg "Error: null sound buffer"))
                   ((= (nch s) 2)
@@ -557,13 +617,21 @@
 (defmethod! sound-stereo-to-mono ((s sound))
   (sound-stereo-to-mono (get-om-sound-data s)))
 
+(defmethod! sound-stereo-to-mono ((s pathname))
+  (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-stereo-to-mono thesound))))
 
-;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
+(defmethod! sound-stereo-to-mono ((s string))
+(when (probe-file (pathname s))
+  (sound-stereo-to-mono (pathname s))))
+
+;/////////////////////////////////////////////////////////////////////////////OM-SOUND-PAN//////////////
 (defmethod! sound-stereo-pan ((s om-sound-data) left right)
             :icon 113
             :initvals '(nil -100 100)
             :indoc '("a sound" "a left channel pan value" "a right channel pan value")
-            "Pan a stereo sound.
+            :doc "Pan a stereo sound.
 
 <left> is a panoramic value for the left channel between -100 (full left) and 100 (full right).
 <right> is a panoramic value for the right channel between -100 (full left) and 100 (full right)."
@@ -601,6 +669,14 @@
  ;(declare (type fixnum left right))
  (sound-stereo-pan (get-om-sound-data s) left right))
 
+(defmethod! sound-stereo-pan ((s pathname) left right)
+    (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-stereo-pan thesound left right))))
+
+(defmethod! sound-stereo-pan ((s string) left right)
+  (when (probe-file (pathname s))
+    (sound-stereo-pan (pathname s) left right)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-MIX///////////////
 (defmethod! sound-mix ((s1 om-sound-data) (s2 om-sound-data) &optional (method 0))
@@ -670,13 +746,22 @@
             ;(declare (type fixnum method))
             (sound-mix (get-om-sound-data s1) s2 method))
 
+(defmethod! sound-mix ((s1 pathname) (s2 pathname) &optional (method 0))
+  (when (and (probe-file s1) (probe-file s2))
+    (let ((thesound1 (make-instance 'sound :filename s1))
+          (thesound2 (make-instance 'sound :filename s2)))
+      (sound-mix thesound1 thesound2 method))))
+
+(defmethod! sound-mix ((s1 string) (s2 string) &optional (method 0))
+  (when (and (probe-file (pathname s1)) (probe-file (pathname s2)))
+    (sound-mix (pathname s1) (pathname s2) method)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-SEQ///////////////
 (defmethod! sound-seq ((s1 om-sound-data) (s2 om-sound-data) &optional (crossfade 0))
             :icon 100
             :initvals '(nil nil 0)
             :indoc '("a sound" "a sound" "cross-fading duration (ms)")
-            "Concatenates <s1> and <s2>. 
+            :doc "Concatenates <s1> and <s2>. 
 <crossfade> (duration in seconds/flots or milliseconds/int) determines a fade-in/fade out overlapping between the sounds."
             (cond ((or (null (buffer s1)) (null (buffer s2)))
                    (om-beep-msg "Error : buffer(s) not initialized."))
@@ -728,13 +813,22 @@
             ;(declare (type fixnum crossfade))
             (sound-seq (get-om-sound-data s1) (get-om-sound-data s2) crossfade))
 
+(defmethod! sound-seq ((s1 pathname) (s2 pathname) &optional (crossfade 0))
+    (when (and (probe-file s1) (probe-file s2))
+    (let ((thesound1 (make-instance 'sound :filename s1))
+          (thesound2 (make-instance 'sound :filename s2)))
+      (sound-seq thesound1 thesound2 crossfade))))
+
+(defmethod! sound-seq ((s1 string) (s2 string) &optional (crossfade 0))
+  (when (and (probe-file (pathname s1)) (probe-file (pathname s2)))
+    (sound-seq (pathname s1) (pathname s2) crossfade)))
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////OM-SOUND-REVERSE///////////////
 (defmethod! sound-reverse ((s om-sound-data))
             :icon 115
             :initvals '(nil)
             :indoc '("a sound")
-            "Reverse a sound."
+            :doc "Reverse a sound."
 
             (if (null (buffer s))
                 (om-beep-msg "Error: null sound buffer"))
@@ -754,5 +848,12 @@
 (defmethod! sound-reverse ((s sound))
    (sound-reverse (get-om-sound-data s)))
 
+(defmethod! sound-reverse ((s pathname))
+  (when (probe-file s)
+    (let ((thesound (make-instance 'sound :filename s)))
+      (sound-reverse thesound))))
 
+(defmethod! sound-reverse ((s string))
+(when (probe-file (pathname s))
+  (sound-reverse (pathname s))))
 

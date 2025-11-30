@@ -94,7 +94,7 @@
 (defvar *sndprocpackage* (omNG-protect-object (omNG-make-new-package "Processing")))
 (addPackage2Pack *sndprocpackage* *audiopackage*)
 (AddGenFun2Pack '(sound-silence 
-                  sound-fade sound-normalize sound-vol sound-stereo-pan
+                  sound-fade sound-normalize sound-vol sound-vol-curve sound-stereo-pan
                   sound-resample sound-mono-to-stereo sound-stereo-to-mono
                   sound-cut sound-loop
                   sound-mix sound-seq     
