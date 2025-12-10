@@ -603,8 +603,14 @@
                                       :font *om-default-font1*
                                       :bg-color *om-white-color*
                                       :help-spec ""
-                                      ))         
-         
+                                      ))   
+         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 50 15)
+                                          "" 
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-edit-param (associated-box obj) 'approx? (om-checked-p item)))         
+                                          :font *controls-font*
+                                          :checked-p (get-edit-param (associated-box obj) 'approx?);*global-approx-midics?*
+                                          ))
          (slotbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point 5 c1) 
                                        (om-make-point 80 22)
@@ -747,13 +753,13 @@
     (setf (slotedit self) minied)
     (cond 
      ((measure-p obj) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
-                                       minied sizebut  measureitem meas-num edobut))
+                                       minied sizebut  measureitem meas-num edobut realmidics))
      ((or (voice-p obj) (poly-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
-                                                       minied sizebut  measureitem meas-num edobut meas-max meas-count));duration must comes first in order to setf the duration-time
+                                                       minied sizebut  measureitem meas-num edobut meas-max meas-count realmidics));duration must comes first in order to setf the duration-time
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
-                                                                minied sizebut onsetitem onset-ms edobut))
+                                                                minied sizebut onsetitem onset-ms edobut realmidics))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem 
-                         minied sizebut edobut)))
+                         minied sizebut edobut realminied)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     (om-set-bg-color self *controls-color*)))
@@ -2249,6 +2255,12 @@
           (if (or (chord-p obj) (note-p obj))
               (sixth (om-subviews (ctr-view ed)))
             (seventh (om-subviews (ctr-view ed)))));(slotedit (ctr-view (om-view-container self))))
+         (approxmidic (cond 
+                     ((or (chord-seq-p obj) (multi-seq-p obj) (measure-p obj))
+                       (om-checked-p (nth 11 (om-subviews (ctr-view ed)))))
+                     ((or (voice-p obj) (poly-p obj))
+                       (om-checked-p (nth 13 (om-subviews (ctr-view ed)))))
+                     (t (om-checked-p (nth 8 (om-subviews (ctr-view ed)))))))
          (slotmode (slots-mode self))
          (firstnote nil))
       (loop for obj in (reverse (selection? self)) while (not firstnote) do
@@ -2332,7 +2344,9 @@
          (setf (min-val control) 0)
          (setf (max-val control) 12700)
          ;(set-value control (midic firstnote))
+         (if approxmidic
          (set-value control (approx-m (midic firstnote) (staff-tone self)))
+           (set-value control (midic firstnote)))
          (setf (afterfun control) 
                #'(lambda (x) 
                    (loop for item in (selection? self) do
