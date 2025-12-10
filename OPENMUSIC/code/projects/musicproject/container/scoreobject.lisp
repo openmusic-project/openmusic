@@ -360,11 +360,7 @@ Extraction methods.
 
 ;;; CHORDS
 
-(defmethod LMidic ((self chord))
-  (loop for i in (inside self)
-        collect (setf (approx i) (approx self)))
-  (loop for chord in (inside self)
-        collect (approx-m (midic chord) (approx self))))
+
 
 #|
 (defmethod LMidic ((self chord))
@@ -373,6 +369,29 @@ Extraction methods.
   (loop for note in (inside self)
         collect (midic note)))
 |#
+#|
+(defmethod LMidic ((self chord))
+  (loop for i in (inside self)
+        collect (setf (approx i) (approx self)))
+  (loop for chord in (inside self)
+        collect (approx-m (midic chord) (approx self))))
+|#
+
+;a voir (en tous les cas cela marche avec chord-seq)
+(defmethod LMidic ((self chord))
+  (let* ((box (associated-box self))
+         (approx (if box (get-approx-from-edparam self) (approx self))))
+    (setf (approx self) approx)
+    (loop for i in (inside self)
+          collect (setf (approx i) (approx self)))
+    (if box
+        (if (get-edit-param box 'approx?)
+            (loop for chord in (inside self)
+                  collect (approx-m (midic chord) (approx self)))
+          (loop for note in (inside self)
+                collect (midic note))))
+      (loop for note in (inside self)
+            collect (midic note))))
 
 (defmethod LChan ((self chord))
   (loop for note in (inside self)

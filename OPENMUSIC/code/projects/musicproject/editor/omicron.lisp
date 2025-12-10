@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 ;;===========================================================================
@@ -146,6 +146,7 @@
 (defun d-6/7 () (code-char 37)) 
 
 
+(defun t-F13 () (code-char 47))
 (defun t-F12 () (code-char 94))
 (defun t-F11 () (code-char 181))
 (defun t-F10 () (code-char 171))
@@ -172,6 +173,7 @@
 (defun t-S10 () (code-char 178))
 (defun t-S11 () (code-char 188))
 (defun t-S12 () (code-char 48))
+(defun t-S13 () (code-char 45))
 
 (defun t-F1sc () (code-char 190))
 (defun t-S1sc () (code-char 191))

@@ -47,14 +47,17 @@
 (defvar *default-editor-scale* nil)
 ;(defvar *global-midi-approx* nil)
 ;(setf *global-midi-approx* 2)
-
+;(defvar *global-approx-midics?* nil)
 (defvar *grace-color* *om-red-color*)
 (defvar *staff-name-dir* 0)
+
+
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID))
          (defpref (get-def-vals id))) 
      (setf *global-midi-approx* (get-pref modulepref :approx))
+     (setf *global-approx-midics?* (get-pref modulepref :global-approx-midics?))
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *staff-name-dir* (get-pref modulepref :staff-name-dir))
@@ -85,6 +88,7 @@
 (defmethod save-pref-module ((iconID (eql :score)) values)
   (list iconID `(list
                  ':approx ,*global-midi-approx*
+                 ':global-approx-midics? ,*global-approx-midics?*
                  ':font-size ,*music-fontsize*
                  ':staff ',*default-satff*
                  ':staff-name-dir ',*staff-name-dir*
@@ -115,7 +119,8 @@
 
 
 (defmethod get-def-vals ((iconID (eql :score)))
-  (list :approx 2 :fontsize 24 :staff 'g 
+  (list :approx 2 :global-approx-midics? nil 
+        :fontsize 24 :staff 'g 
         :sys-color *om-black-color* 
         :select-color *om-gray-color* 
         :grace-color *om-red-color* 
@@ -190,7 +195,13 @@
                                                          (set-pref modulepref :approx *global-midi-approx*)
                                                          ))
                                           )
-                     
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos dy)) (om-make-point 110 20) "Auto Approx."
+                                          :font *controls-font*)
+                     (om-make-dialog-item 'om-check-box (om-make-point 160 pos) (om-make-point 25 22) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :global-approx-midics?)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :global-approx-midics? (om-checked-p item))))
                      (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Music Font Size"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
