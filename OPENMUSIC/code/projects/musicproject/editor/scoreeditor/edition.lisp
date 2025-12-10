@@ -25,6 +25,8 @@
 
 (in-package :om)
 
+(defparameter *global-approx-midics?* nil)
+(defparameter *approx-midics?* *global-approx-midics?*)
 
 (defmethod editor-compatible-params-p ((ed1 scoreeditor) (ed2 scoreeditor)) t)
 
@@ -33,23 +35,23 @@
   (get-default-score-params self))
 
 (defmethod get-default-score-params ((self t))
-  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
+  (pairlis '(approx? approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
+           (list *approx-midics?* *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 1 :normal t nil 0 1)))
 
 (defmethod get-default-score-params ((self chord))
-  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
+  (pairlis '(approx? approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
+           (list *approx-midics?* *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) 
                  nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 400 20) 0 0 :normal t nil nil nil)))
 
 (defmethod get-default-score-params ((self note))
-  (pairlis '(approx fontsize staff cmnpref deltapict outport inport player
+  (pairlis '(approx? approx fontsize staff cmnpref deltapict outport inport player
              zoom notechancolor? grillestep mode winsize winpos score-mode obj-mode cursor-mode show-stems scale onset measure) 
-           (list *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil nil *default-score-player*
+           (list *approx-midics?* *global-midi-approx* *music-fontsize* *default-satff* (make-instance 'edition-values) (om-make-point 0 0) nil nil *default-score-player*
                  1 nil 1000 0 (om-make-point 370 280) (om-make-point 300 20) 0 0 :normal t nil nil nil)))
 
 ;(defmethod set-edition-params ((self simple-container) box)

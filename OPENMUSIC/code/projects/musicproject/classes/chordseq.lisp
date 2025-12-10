@@ -171,15 +171,34 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
 
 ;GET SLOTS
 
-(defmethod LMidic ((self chord-seq))
-  (loop for chord in (inside self)
-        collect (approx-m (Lmidic chord) (approx self))))
 
 #|
 (defmethod LMidic ((self chord-seq))
   (loop for chord in (inside self)
         collect (Lmidic chord)))
 |#
+#|
+(defmethod LMidic ((self chord-seq))
+  (loop for chord in (inside self)
+        collect (approx-m (Lmidic chord) (approx self))))
+|#
+
+;Returns or not realinput of midics or the editor's approx
+
+(defmethod LMidic ((self chord-seq))
+  (let* ((box (associated-box self))
+         (approx (if box (get-approx-from-edparam self) (approx self))))
+    (setf (approx self) approx)
+    
+    (if box
+        (if (get-edit-param box 'approx?)
+              (loop for chord in (inside self)
+                    collect (approx-m (Lmidic chord) approx))
+            (loop for chord in (inside self)
+                  collect (Lmidic chord)))
+      (loop for chord in (inside self)
+            collect (Lmidic chord)))))
+
 (defmethod Lvel ((self chord-seq))
    (loop for chord in (inside self)
          collect (Lvel chord)))
