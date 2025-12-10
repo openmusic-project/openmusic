@@ -26,6 +26,50 @@
 (in-package :om)
 
 ;==================================
+;DEV UTILITY
+;==================================
+
+
+(defmethod const-oct-tuning ((self number))
+  "returns a list of pitch tuning values according to edo <self>"
+  (let* ((edo (butlast (gen-edo-scale self)))
+         (mod (multiple-value-list (om// edo 100)))
+         (lst (mat-trans (list (car mod) (second mod))))
+         (res (list (car lst))))
+    
+    (loop for i in (cdr lst)
+        do (if (= (car i) (caar res))
+               (setf (car res) (x-append (car res) (second i)))
+             (push i res)))
+    (reverse res)))
+
+(defun fill-list-with-0 (lst)
+  (let ((res lst)
+        (lgt (list-max (mapcar 'length lst)))) 
+    (loop for i from 0 to (1- (length res))
+            do
+            (loop while (< (length (nth i res)) lgt)
+                  do (setf (nth i res) (x-append (nth i res) 0))))
+    res))
+
+
+(defun distribute-oct-tuning (lst)
+  (let ((res (cdr (mat-trans lst))))
+    (loop for i in res
+          collect (mapcar 'float i))))
+
+  
+(defmethod* octave-tuning-scales ((self number))
+  :numouts 1 
+  :initvals '(12) 
+  :indoc '("division")
+  :icon 141
+  :doc " Developement utility: returns the octave tunings needed for some EDO's."
+  (let* ((const (const-oct-tuning self))
+         (fill (fill-list-with-0 const)))
+    (distribute-oct-tuning fill)))
+
+;==================================
 ;APPROX_EDO
 ;==================================
 ;Approximates to the nearest note of a given scale (EDO)
