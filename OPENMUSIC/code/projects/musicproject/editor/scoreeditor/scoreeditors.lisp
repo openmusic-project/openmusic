@@ -759,7 +759,7 @@
      ((or (chord-seq-p obj) (multi-seq-p obj)) (om-add-subviews self duration staffitem staffbut sizeitem slotbut toneitem 
                                                                 minied sizebut onsetitem onset-ms edobut realmidics))
      (t (om-add-subviews self  staffitem staffbut sizeitem slotbut toneitem 
-                         minied sizebut edobut realminied)))
+                         minied sizebut edobut realmidics)))
     ;;(additional-port-menu (title-bar (om-view-container self)) :pos (om-make-point 300 4) :color *editor-bar-color*)
     (add-zoom2control self zoom (om-make-point l1 c1))
     (om-set-bg-color self *controls-color*)))

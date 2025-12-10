@@ -203,6 +203,11 @@ Floating values are allowed for <approx>.
 ;EDITOR's APPROX
 ;==================================
 
+(defmethod get-approx-from-edparam ((self chord))
+  (let ((box (associated-box self)))
+    (when box 
+      (cdr (assoc 'approx (edition-params box))))))
+
 (defmethod get-approx-from-edparam ((self chord-seq))
   (let ((box (associated-box self)))
     (when box 
@@ -213,6 +218,10 @@ Floating values are allowed for <approx>.
     (when box 
       (cdr (assoc 'approx (edition-params box))))))
 
+(defmethod real-midics ((self chord))
+  (let* ((chords (inside self)))
+    (loop for i in chords
+          collect (mapcar 'midic (inside i)))))
 
 (defmethod real-midics ((self chord-seq))
   (let* ((chords (inside self)))
@@ -224,6 +233,12 @@ Floating values are allowed for <approx>.
     (loop for i in chords
           collect (mapcar 'midic (inside i)))))
 
+(defmethod approx-midics ((self chord))
+  (let* ((box (get-approx-from-edparam self))
+         (apprx (if box box (approx self)))
+         (chords (inside self)))
+    (loop for i in chords
+          collect (approx-m (midic i) apprx))))
 
 (defmethod approx-midics ((self chord-seq))
   (let* ((box (get-approx-from-edparam self))
