@@ -615,6 +615,47 @@
 :lines-list (list 0 0 1 1 1 1 1 1 2 2 2 2 2 2 3 3 3 4 4 4 4 4 4 5 5 5 5 5 5 6 6 6 6 6 6 7)
 :approx-factor 1200/36))
 
+;=====41 EDO=====
+
+(defvar *41-EDO*
+(make-instance 'scale
+:alteration-list
+(list nil (t-S1) (t-F9) (t-F8) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1))
+:lines-list (list 0 0 1 1 0 0 1 1 1 2 2 1 1 2 2 2 3 3 3 4 4 3 3 4 4 4 5 5 4 4 5 5 5 6 6 5 5 6 6 6 7)
+:approx-factor 1200/41))
+
+
+(defvar *41-EDO_#_1*
+(make-instance 'scale
+:alteration-list
+(list nil (t-S1) (t-S2) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S2) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1) nil (t-S1) (t-S2) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S2) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S2) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1))
+:lines-list (list 0 0 0 0 0 0 1 1 1 1 1 1 1 2 2 2 3 3 3 3 3 3 3 4 4 4 4 4 4 4 5 5 5 5 5 5 5 6 6 6 7)
+:approx-factor 1200/41))
+
+
+(defvar *41-EDO_#_2*
+(make-instance 'scale
+:alteration-list
+(list nil (t-S1) (t-S4) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S4) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1) nil (t-S1) (t-S4) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S4) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-S4) (t-S7) (t-S8) (t-S9) (t-F1) nil (t-S1) (t-F1))
+:lines-list (list 0 0 0 0 0 0 1 1 1 1 1 1 1 2 2 2 3 3 3 3 3 3 3 4 4 4 4 4 4 4 5 5 5 5 5 5 5 6 6 6 6)
+:approx-factor 1200/41))
+
+
+(defvar *41-EDO_b_1*
+(make-instance 'scale
+:alteration-list
+(list nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F2) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F2) (t-F1) nil (t-S1) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F2) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F2) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F2) (t-F1) nil (t-S1) (t-F1))
+:lines-list (list 0 0 1 1 1 1 1 1 1 2 2 2 2 2 2 2 3 3 3 4 4 4 4 4 4 4 5 5 5 5 5 5 5 6 6 6 6 6 6 6 7)
+:approx-factor 1200/41))
+
+
+(defvar *41-EDO_b_2*
+(make-instance 'scale
+:alteration-list
+(list nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F4) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F4) (t-F1) nil (t-S1) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F4) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F4) (t-F1) nil (t-S1) (t-F9) (t-F8) (t-F7) (t-F4) (t-F1) nil (t-S1) (t-F1))
+:lines-list (list 0 0 1 1 1 1 1 1 1 2 2 2 2 2 2 2 3 3 3 4 4 4 4 4 4 4 5 5 5 5 5 5 5 6 6 6 6 6 6 6 7)
+:approx-factor 1200/41))
+
 ;=====42 EDO=====
 
 (defvar *42-EDO_#*
@@ -787,6 +828,11 @@
                              (list 360.0 *36-EDO_#* "36 EDO_#")
                              (list 360.1 *36-EDO_b* "36 EDO_b")
                              (list 6 *6-tone-chromatic-scale* "36 EDO_om")
+                             (list 410.0 *41-EDO* "41 EDO")
+                             (list 410.1 *41-EDO_#_1* "41 EDO_#(a)")
+                             (list 410.2 *41-EDO_#_2* "41 EDO_#(b)")
+                             (list 410.3 *41-EDO_b_1* "41 EDO_b(a)")
+                             (list 410.4 *41-EDO_b_2* "42 EDO_b(b)")
                              (list 420.0 *42-EDO_#* "42 EDO_#")
                              (list 420.1 *42-EDO_b* "42 EDO_b")
                              (list 7 *7-tone-chromatic-scale* "42 EDO_om")

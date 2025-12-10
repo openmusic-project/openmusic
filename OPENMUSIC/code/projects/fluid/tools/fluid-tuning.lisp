@@ -34,100 +34,141 @@
 ;;;;;;;;;;;;;;;;;;;;;;;OCTAVE TUNINGS;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;for EDOs 17, 19, 22 and 31
+;for EDOs 17, 19, 22, 31 and 41
 
 ;;;INIT
 
 (defun init-edos-octave-tunings (port)
   (progn
-;edo 17
-      (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   0 0 "EDO_17a" 
-   (let ((data (loop for i in '(0.0 41.0 12.0 53.0 24.0 65.0 35.0 6.0 47.0 18.0 59.0 29.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   1 0 "EDO_17b" 
-   (let ((data (loop for i in '(71.0 0.0 82.0 0.0 94.0 0.0 0.0 76.0 0.0 88.0 0.0 0.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
-;edo 19
+;===17 EDO===
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   0 1 "EDO_19a" 
-   (let ((data (loop for i in '(0.0 26.0 53.0 16.0 42.0 5.0 32.0 58.0 21.0 47.0 11.0 37.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 0 "EDO_17a" 
+     (let ((data (loop for i in '(0.0 41.0 12.0 53.0 24.0 65.0 35.0 6.0 47.0 18.0 59.0 29.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
 
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 0 "EDO_17b" 
+     (let ((data (loop for i in '(71.0 0.0 82.0 0.0 94.0 0.0 0.0 76.0 0.0 88.0 0.0 0.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
+;===19 EDO===
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   1 1 "EDO_19b" 
-   (let ((data (loop for i in '(63.0 89.0 0.0 79.0 0.0 68.0 95.0 0.0 84.0 0.0 74.0 0.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)    
-;edo 22
-
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   0 2 "EDO_22a" 
-   (let ((data (loop for i in '(0.0 9.0 18.0 27.0 36.0 45.0 0.0 9.0 18.0 27.0 36.0 45.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 1 "EDO_19a" 
+     (let ((data (loop for i in '(0.0 26.0 53.0 16.0 42.0 5.0 32.0 58.0 21.0 47.0 11.0 37.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
 
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   1 2 "EDO_22b" 
-   (let ((data (loop for i in '(55.0 64.0 73.0 82.0 91.0 0.0 55.0 64.0 73.0 82.0 91.0 0.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 1 "EDO_19b" 
+     (let ((data (loop for i in '(63.0 89.0 0.0 79.0 0.0 68.0 95.0 0.0 84.0 0.0 74.0 0.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)    
+;===22 EDO===
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 2 "EDO_22a" 
+     (let ((data (loop for i in '(0.0 9.0 18.0 27.0 36.0 45.0 0.0 9.0 18.0 27.0 36.0 45.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
+
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 2 "EDO_22b" 
+     (let ((data (loop for i in '(55.0 64.0 73.0 82.0 91.0 0.0 55.0 64.0 73.0 82.0 91.0 0.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
     
-;edo31
+;===31 EDO===
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   0 3 "EDO_31a" 
-   (let ((data (loop for i in '(0.0 16.0 32.0 10.0 26.0 3.0 19.0 35.0 13.0 29.0 6.0 23.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 3 "EDO_31a" 
+     (let ((data (loop for i in '(0.0 16.0 32.0 10.0 26.0 3.0 19.0 35.0 13.0 29.0 6.0 23.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
 
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   1 3 "EDO_31b" 
-   (let ((data (loop for i in '(39.0 55.0 71.0 48.0 65.0 42.0 58.0 74.0 52.0 68.0 45.0 61.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 3 "EDO_31b" 
+     (let ((data (loop for i in '(39.0 55.0 71.0 48.0 65.0 42.0 58.0 74.0 52.0 68.0 45.0 61.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
 
-  (cl-fluid::fluid_synth_activate_octave_tuning
-   (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
-   2 3 "EDO_31c" 
-   (let ((data (loop for i in '(77.0 94.0 0.0 87.0 0.0 81.0 97.0 0.0 90.0 0.0 84.0 0.0)
-                     collect (coerce i 'double-float))))
-     (cffi:foreign-alloc :double 
-                         :count (length data)
-                         :initial-contents data)) 1)
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     2 3 "EDO_31c" 
+     (let ((data (loop for i in '(77.0 94.0 0.0 87.0 0.0 81.0 97.0 0.0 90.0 0.0 84.0 0.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double 
+                           :count (length data)
+                           :initial-contents data)) 1)
+
+;===41 EDO===
+
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 4 "41-EDO_a"
+     (let ((data (loop for i in '(0.0 17.0 5.0 22.0 10.0 27.0 15.0 2.0 20.0 7.0 24.0 12.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double
+                           :count (length data)
+                           :initial-contents data)) 1)
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 4 "41-EDO_b"
+     (let ((data (loop for i in '(29.0 46.0 34.0 51.0 39.0 56.0 44.0 32.0 49.0 37.0 54.0 41.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double
+                           :count (length data)
+                           :initial-contents data)) 1)
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     2 4 "41-EDO_c"
+     (let ((data (loop for i in '(59.0 76.0 63.0 80.0 68.0 85.0 73.0 61.0 78.0 66.0 83.0 71.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double
+                           :count (length data)
+                           :initial-contents data)) 1)
+
+    (cl-fluid::fluid_synth_activate_octave_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     3 4 "41-EDO_d"
+     (let ((data (loop for i in '(88.0 0.0 93.0 0.0 98.0 0.0 0.0 90.0 0.0 95.0 0.0 0.0)
+                       collect (coerce i 'double-float))))
+       (cffi:foreign-alloc :double
+                           :count (length data)
+                           :initial-contents data)) 1)
 
     ))
 
@@ -140,7 +181,13 @@
 
 ;;;;;;;;;;;;
 
+(defmacro fluidloaded? (&body body)
+  `(if (not cl-fluid::*fl-synths*)
+      (om-message-dialog "No fluidsynth loaded!")
+    ,@body))
+
 (defmethod activate-17edo ((port number))
+  (fluidloaded? 
   (progn 
         (cl-fluid::fluid_synth_activate_tuning
          (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
@@ -155,9 +202,10 @@
          1 ;bank
          0 ;prog 
          1)
-        ))
+        )))
 
 (defmethod activate-19edo ((port number))
+  (fluidloaded? 
   (progn
     (cl-fluid::fluid_synth_activate_tuning
        (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
@@ -171,9 +219,10 @@
        1 ;chan
        1 ;bank
        1 ;prog 
-       1)))
+       1))))
 
 (defmethod activate-22edo ((port number))  
+  (fluidloaded? 
   (progn
     (cl-fluid::fluid_synth_activate_tuning
      (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
@@ -187,9 +236,10 @@
      1 ;chan
      1 ;bank
      2 ;prog 
-     1)))
+     1))))
 
 (defmethod activate-31edo ((port number))  
+  (fluidloaded? 
   (progn
     (cl-fluid::fluid_synth_activate_tuning
      (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
@@ -211,7 +261,40 @@
      2 ;bank
      3 ;prog 
      1) 
-    ))
+    )))
+
+(defmethod activate-41edo ((port number))  
+  (fluidloaded? 
+  (progn
+    (cl-fluid::fluid_synth_activate_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     0 ;chan
+     0 ;bank
+     4 ;prog 
+     1)
+
+    (cl-fluid::fluid_synth_activate_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     1 ;chan
+     1 ;bank
+     4 ;prog 
+     1)
+
+    (cl-fluid::fluid_synth_activate_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     2 ;chan
+     2 ;bank
+     4 ;prog 
+     1)
+
+    (cl-fluid::fluid_synth_activate_tuning
+     (cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+     3 ;chan
+     3 ;bank
+     4 ;prog 
+     1)
+
+    )))
 
 
 ;;All other EDOs deactivate otcave tuning:
@@ -311,6 +394,7 @@
 ;30 EDO(t)
      ((equal 5.0 value) 
       (fluid-pitchwheel '(4096 5734 7373 4915 6554) '(1 2 3 4 5) port))
+
 ;31 EDO     
      ((= 310 value) (activate-31edo port))
      
@@ -318,6 +402,11 @@
      ((or (= 6 value) (= 360.0 value) (= 360.1 value))
       (fluid-pitchwheel '(0 1365 2731) 
                         '(1 2 3) port))
+
+;41 EDO     
+     ((or (= 410.0 value) (= 410.1 value) (= 410.2 value) (= 410.3 value) (= 410.4 value))
+      (activate-41edo port))
+
 
 ;42 EDO
      ((or (equal 7 value) (= 420.0 value) (= 420.1 value))
