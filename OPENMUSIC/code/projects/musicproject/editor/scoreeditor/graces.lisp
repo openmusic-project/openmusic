@@ -174,7 +174,9 @@
                  :lvel (lvel self)
                  :ldur (list *gdur*)
                  :lchan (lchan self)
-                 :approx (approx self)))
+                 :approx (approx self)
+                 :thechord self))
+
 ;(objfromobjs (make-instance 'chord) (make-instance 'grace-chord))
 
 (defmethod offset->ms ((self grace-notes) &optional grandparent)
@@ -282,6 +284,16 @@ returns them with real chords"
          (thechord (nth (second chord-pos) chords)))
     (when thechord
       (set-grace-notes thechord pitches t))
+    self))
+
+(defmethod! add-grace-notes ((self chord) chord-pos (pitches list))
+  (let ((gn (if (list-subtypep pitches 'chord) 
+                (loop for i in pitches
+                  collect (objfromobjs i (make-instance 'grace-chord)))
+              (loop for i in pitches
+                  collect (objfromobjs (make-instance 'chord :lmidic (list i))
+                                       (make-instance 'grace-chord))))))
+      (set-grace-notes self gn t)
     self))
 
 (defmethod! add-grace-notes ((self t) chord pitches)
