@@ -978,27 +978,31 @@ Extraction methods.
 (defmethod (setf approx) ((approx number) (self poly))
   (call-next-method)
   (loop for i in (inside self)
-        do (setf (approx i)  approx))
+        do (setf (approx i) approx))
   self)
 
 (defmethod (setf approx) ((approx number) (self voice))
   (call-next-method)
   (loop for i in (inside self)
-        do (setf (approx i)  approx))
+        do (setf (approx i) approx))
   self)
 
 
 (defmethod (setf approx) ((approx number) (self measure))
   (call-next-method)
   (loop for i in (inside self)
-        do (setf (approx i)  approx))
+        do (setf (approx i) approx))
   self)
 
 (defmethod (setf approx) ((approx number) (self group))
   (call-next-method)
   (loop for i in (inside self)
-        do (setf (approx i)  approx))
+        do (setf (approx i) approx))
   self)
+
+(defmethod (setf approx) ((approx number) (self list))
+  (loop for i in self
+        do (setf (approx i) approx)))
 ;;;;
 
 
