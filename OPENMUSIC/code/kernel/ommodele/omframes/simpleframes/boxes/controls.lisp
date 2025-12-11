@@ -101,7 +101,7 @@
                       (mapcar 'class-name (classes self))
                         (loop for item in (subpackages self) append (get-all-symbol-names item)))))
 
-
+#|
 (defun prefix-symb-names (name)
   "remove om:: prefix and adds external package prefixes"
   (let ((name (if (symbolp name) name (read-from-string name))))
@@ -115,8 +115,20 @@
                    (car (package-nicknames (symbol-package name)))
                    )))
         (format nil "~A::~A" pkg name)))))
+|#
 
-
+;reverting to this
+(defun prefix-symb-names (name)
+  "remove om:: prefix and adds external package prefixes"
+  (let ((name (if (symbolp name) name (read-from-string name))))
+    (if (or (equal (find-package :om) (symbol-package name)) 
+            (equal (find-package :common-lisp) (symbol-package name))
+            (equal (find-package :oa) (symbol-package name))) 
+        (string-downcase name)
+      (let* ((pkg (string-downcase
+                   (package-name
+                    (symbol-package name)))))
+        (format nil "~A::~A" pkg name)))))
 
 
 (defun get-cl-defs ()
