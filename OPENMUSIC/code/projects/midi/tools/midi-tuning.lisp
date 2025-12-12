@@ -138,7 +138,7 @@
           1 0))
 
 ;22 EDO
-     ((or (= 220 approx) (= 220.1 approx) (= 200.0 approx))
+     ((or (= 220 approx) (= 220.1 approx) (= 220.0 approx))
       (if (or (= modulo 55)
                 (= modulo 64)
                 (= modulo 73)
