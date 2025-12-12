@@ -191,7 +191,7 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
     (setf (approx self) approx)
     
     (if box
-        (if (get-edit-param box 'approx?)
+        (if (equal (get-edit-param box 'approx?) 1)
               (loop for chord in (inside self)
                     collect (approx-m (Lmidic chord) approx))
             (loop for chord in (inside self)

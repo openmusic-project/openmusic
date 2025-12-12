@@ -607,9 +607,13 @@
          (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 50 15)
                                           "" 
                                           :di-action (om-dialog-item-act item 
-                                                       (set-edit-param (associated-box obj) 'approx? (om-checked-p item)))         
+                                                       (set-edit-param (associated-box obj) 'approx? (if (om-checked-p item) 1 0)))         
                                           :font *controls-font*
-                                          :checked-p (get-edit-param (associated-box obj) 'approx?);*global-approx-midics?*
+                                          :checked-p 
+                                          (let ((app (get-edit-param (associated-box obj) 'approx?)))
+                                          (if app
+                                              (if (equal 1 app) t nil) 
+                                                        *global-approx-midics?*))
                                           ))
          (slotbut (om-make-dialog-item 'om-pop-up-dialog-item 
                                        (om-make-point 5 c1) 
@@ -622,7 +626,6 @@
                                        (om-dialog-item-act item
                                          (let ((newslot (cadr (nth (om-get-selected-item-index item) (GET-slot-LIST self)))))
                                            (change-slot-edit panel newslot)))
-                                       
                                        ))
          ;;; Font Size
          (sizeitem (om-make-dialog-item 'om-static-text 
