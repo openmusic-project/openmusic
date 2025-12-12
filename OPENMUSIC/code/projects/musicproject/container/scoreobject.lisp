@@ -385,7 +385,7 @@ Extraction methods.
     (loop for i in (inside self)
           collect (setf (approx i) (approx self)))
     (if box
-        (if (get-edit-param box 'approx?)
+        (if (euqal (get-edit-param box 'approx?) 1)
             (loop for chord in (inside self)
                   collect (approx-m (midic chord) (approx self)))
           (loop for note in (inside self)
