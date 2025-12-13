@@ -604,7 +604,7 @@
                                       :bg-color *om-white-color*
                                       :help-spec ""
                                       ))   
-         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 50 15)
+         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 25 15)
                                           "" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-edit-param (associated-box obj) 'approx? (if (om-checked-p item) 1 0)))         
