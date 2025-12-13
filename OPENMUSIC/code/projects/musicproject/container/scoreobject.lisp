@@ -382,8 +382,9 @@ Extraction methods.
   (let* ((box (associated-box self))
          (approx (if box (get-approx-from-edparam self) (approx self))))
     (setf (approx self) approx)
-    (loop for i in (inside self)
-          collect (setf (approx i) (approx self)))
+    ;not needed!
+   ; (loop for i in (inside self)
+   ;       collect (setf (approx i) (approx self)))
     (if box
         (if (equal (get-edit-param box 'approx?) 1)
             (loop for chord in (inside self)

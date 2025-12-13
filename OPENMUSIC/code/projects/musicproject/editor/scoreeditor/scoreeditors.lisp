@@ -5380,7 +5380,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;NOT GOOD, changes NOTE's midic!
+#|
 (defmethod adjust-approx ((self notepanel))
   (let ((note (object (om-view-container self))))
     ;(print (list note (staff-tone self)))
@@ -5391,6 +5392,11 @@
   (let ((approx (staff-tone self)))
     (loop for i in (inside (object (om-view-container self)))
           do (setf (midic i) (approx-m (midic i) approx)))))
+|#
+
+(defmethod adjust-approx ((self notepanel)))
+(defmethod adjust-approx ((self chordpanel)))
+
 #|
 (defmethod adjust-approx ((self scorepanel))
   "Adjust choosen approximation EDO scale when adding freehand notes"
