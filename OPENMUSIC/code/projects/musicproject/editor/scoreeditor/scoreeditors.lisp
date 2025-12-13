@@ -604,7 +604,7 @@
                                       :bg-color *om-white-color*
                                       :help-spec ""
                                       ))   
-         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 50 15)
+         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 25 15)
                                           "" 
                                           :di-action (om-dialog-item-act item 
                                                        (set-edit-param (associated-box obj) 'approx? (if (om-checked-p item) 1 0)))         
@@ -5380,7 +5380,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;NOT GOOD, changes NOTE's midic!
+#|
 (defmethod adjust-approx ((self notepanel))
   (let ((note (object (om-view-container self))))
     ;(print (list note (staff-tone self)))
@@ -5391,6 +5392,11 @@
   (let ((approx (staff-tone self)))
     (loop for i in (inside (object (om-view-container self)))
           do (setf (midic i) (approx-m (midic i) approx)))))
+|#
+
+(defmethod adjust-approx ((self notepanel)))
+(defmethod adjust-approx ((self chordpanel)))
+
 #|
 (defmethod adjust-approx ((self scorepanel))
   "Adjust choosen approximation EDO scale when adding freehand notes"
