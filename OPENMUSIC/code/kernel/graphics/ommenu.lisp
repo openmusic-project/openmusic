@@ -265,7 +265,7 @@
                                               (om-new-leafmenu "Editor Command Keys..." #'(lambda() (when editor
                                                                                                       (let ((obj (string-upcase (class-name (class-of (object editor))))))
                                                                                                         (show-help-window (format nil "Commands for ~A Editor" obj) 
-                                                                                                                          (get-help-list editor))))) 
+                                                                                                                          (get-help-list editor) 410)))) 
                                                                "H" (and (not (find "Commands" disable :test 'string-equal))
                                                                         (get-help-list editor) t)))
                                              (help-items editor)))
@@ -427,7 +427,7 @@
         (make-om-menu 'edit :disable '("Undo") :editor self)  
         (make-om-menu 'presentation :editor self) 
         (make-om-menu 'windows :disable '("Workspace") :editor self)
-        (make-om-menu 'help :disable '("Commands") :editor self)))
+        (make-om-menu 'help :disable '() :editor self)))
 
 (defvar *new-menu-items* nil)
 
@@ -451,7 +451,7 @@
         (make-om-menu 'edit :disable '("Undo") :editor self)  
         (make-om-menu 'presentation :editor self) 
         (make-om-menu 'windows :disable '() :editor self)
-        (make-om-menu 'help :disable '("Commands") :editor self)))
+        (make-om-menu 'help :disable '() :editor self)))
 
 (defmethod make-new-menu ((self FolderEditor))
   (list 

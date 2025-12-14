@@ -260,6 +260,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                                 :field-size (get-editor-field-size self)
                                 :position (om-make-point 0 *poly-ruler-width*) 
                                 :scrollbars (first (metaobj-scrollbars-params self))
+                                :bg-color *om-gray1-color*
                                 :size (om-make-point (w self) (- (h self) *poly-ruler-width*)) ;20
                                 )))
     (setf (editor (object self)) self)
@@ -302,7 +303,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                (progn
                  (push (om-make-view 'hide-bar :owner self :object v :ref (om::ref (editor self))
                                      :position (om-make-point 0 posy) :size (om-make-point 1100 15)
-                                     :bg-color *azulote*)
+                                     :bg-color *om-gray1-color*)
                        (hide-buts self))
                  (incf posy 15)
                  (let ((panel (om-make-view (get-editor-class v) :owner  self :object v :ref (om::ref (editor self))
@@ -313,7 +314,7 @@ tracks is a polyphonic object made of a superimposition of VOICE objects.
                 ))
       (push 
        (om-make-view 'hide-bar :owner self :object (last-elem vx) :ref (om::ref (editor self))
-                     :position (om-make-point 0 posy) :size (om-make-point 1100 15) :bg-color *azulote*) (hide-buts self))
+                     :position (om-make-point 0 posy) :size (om-make-point 1100 15) :bg-color *om-gray1-color*) (hide-buts self))
       (apply 'om-add-subviews (cons self (x-append (hide-buts self) 
                                                    (editors self) 
                                                    )))
