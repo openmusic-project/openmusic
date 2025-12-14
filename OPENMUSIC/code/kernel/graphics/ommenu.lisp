@@ -427,7 +427,7 @@
         (make-om-menu 'edit :disable '("Undo") :editor self)  
         (make-om-menu 'presentation :editor self) 
         (make-om-menu 'windows :disable '("Workspace") :editor self)
-        (make-om-menu 'help :disable '("Commands") :editor self)))
+        (make-om-menu 'help :disable '() :editor self)))
 
 (defvar *new-menu-items* nil)
 
@@ -451,7 +451,7 @@
         (make-om-menu 'edit :disable '("Undo") :editor self)  
         (make-om-menu 'presentation :editor self) 
         (make-om-menu 'windows :disable '() :editor self)
-        (make-om-menu 'help :disable '("Commands") :editor self)))
+        (make-om-menu 'help :disable '() :editor self)))
 
 (defmethod make-new-menu ((self FolderEditor))
   (list 
