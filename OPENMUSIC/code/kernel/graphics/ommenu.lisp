@@ -265,7 +265,7 @@
                                               (om-new-leafmenu "Editor Command Keys..." #'(lambda() (when editor
                                                                                                       (let ((obj (string-upcase (class-name (class-of (object editor))))))
                                                                                                         (show-help-window (format nil "Commands for ~A Editor" obj) 
-                                                                                                                          (get-help-list editor))))) 
+                                                                                                                          (get-help-list editor) 410)))) 
                                                                "H" (and (not (find "Commands" disable :test 'string-equal))
                                                                         (get-help-list editor) t)))
                                              (help-items editor)))
