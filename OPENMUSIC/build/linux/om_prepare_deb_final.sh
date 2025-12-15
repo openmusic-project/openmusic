@@ -101,7 +101,7 @@ chmod 0755 ${DEB_DIR}/usr/bin/openmusic
 
 
 #Finally, you can run: 
-dpkg -b ${DEB_DIR}
+dpkg-deb --root-owner-group -b ${DEB_DIR}
 
 
 #Remove build working folder
