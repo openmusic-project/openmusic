@@ -39,6 +39,7 @@ inside the .app bundle's resources.
 
 NEW FEATURES
 
+- Added Edo 41 (Steven Socha)
 - "Detached" Internal score editors
 - MEASURE editor
 - F_8 clef
@@ -54,6 +55,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Score editors optionally outputs approximated midics or non-approximated 
 - Added methods for pathname and string for sound processing methods (for batch usage)
 - Staff names placement in POLY now can be set in preferences
 - Mktree handles end grace-notes and adds extra measures for given duration if needed
