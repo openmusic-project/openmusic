@@ -338,7 +338,7 @@
     (list 410.1 *41-EDO_#_1* "41 EDO_#(a)")
     (list 410.2 *41-EDO_#_2* "41 EDO_#(b)")
     (list 410.3 *41-EDO_b_1* "41 EDO_b(a)")
-    (list 410.4 *41-EDO_b_2* "42 EDO_b(b)")
+    (list 410.4 *41-EDO_b_2* "41 EDO_b(b)")
     )
    (list
     (list 420.0 *42-EDO_#* "42 EDO_#")
