@@ -144,7 +144,7 @@
 
 (defmethod make-editor-window ((class t) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
-                               (wintype nil))
+                               (wintype nil) (topmost nil))
    (declare (ignore retain-scroll))
    (let* ((sizewin (or (and (om-point-p winsize) winsize)
                        (get-win-ed-size object)))
@@ -157,7 +157,8 @@
                                :resizable resize
                                :maximize resize
                                :window-show winshow
-                               :toolbox (member :toolbox wintype) 
+                               :toolbox (member :toolbox wintype)
+                               :topmost topmost
                                :size sizewin
                                :obj (editor-object-from-value object)))
           (editor (om-make-view class
