@@ -237,12 +237,15 @@
    (om-make-point (+ (om-point-h point1) (om-point-h point2))
                   (+ (om-point-v point1) (om-point-v point2))))
 
-
+#|
 (defmethod om-subtract-points (point1 point2)
    (om-make-point (- (om-point-h point1) (om-point-h point2))
                   (- (om-point-v point1) (om-point-v point2))))
+|#
 
-
+(defmethod om-subtract-points (point1 point2)
+   (om-make-point (round (- (om-point-h point1) (om-point-h point2)))
+                  (round (- (om-point-v point1) (om-point-v point2)))))
 
 (defun om-add-big-points (point1 point2)
   (om-add-points point1 point2))
