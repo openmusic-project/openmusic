@@ -232,9 +232,22 @@
 
 (defmethod editor-close? ((self t)) t)
 
+#|
 (defmethod om-window-close-event :before ((self EditorWindow))
   (when (editor self)
     (close-editor-before (editor self))))
+|#
+
+;;;;IMPORTANT: pour pouvoir reouvrir les patchs!!!!!
+(defmethod om-window-close-event :before ((self EditorWindow))
+  (when (editor self)
+        (loop for ed in (attached-editors (editor self)) do
+            (om-close-window ed))
+    (close-editorFrame (editor self))
+    (close-editor-after (editor self))
+    (close-editor-before (editor self))
+))
+ 
 
 (defmethod om-window-close-event :after ((self EditorWindow)) 
    (when (editor self)
