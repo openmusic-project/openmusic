@@ -89,7 +89,8 @@
 (defvar *om-pict-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp"))
 
 (defvar *om-cursor-type* nil)
-#-win32(setf *om-cursor-type* '("tif" "tiff"))
+;#-win32(setf *om-cursor-type* '("tif" "tiff"))
+#-win32(setf *om-cursor-type* '("png"))
 #+win32(setf *om-cursor-type* '("cur" "ani"))
 
 (defun om-set-default-resource-folder (resource-type path)
