@@ -227,6 +227,11 @@
                      collect (clefs->xml i))))
     (xml-export object :keys clefs :approx (or (get-param params 'approx) 2) :name name)))
 
+(defmethod score-export ((format (eql 'xml)) (object voice) params name)
+  (let* ((staff (get-param params 'staff))
+         (clefs (list (clefs->xml staff))))
+    (xml-export object :keys clefs :approx (or (get-param params 'approx) 2) :name name)))
+
 (defmethod score-export ((format (eql 'finale)) object params name)
   (export-nap object (or (get-param params 'approx) 2) name))
 
