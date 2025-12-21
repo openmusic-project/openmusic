@@ -318,7 +318,7 @@ As output it returns the contents of the text buffer as a list formatted accordi
                                           :editor-file (file-name self)
                                            ))
 
-  (om-set-bg-color (editorframe box) *text-bg-color*)
+  ;(om-set-bg-color (editorframe box) *text-bg-color*)
   (om-add-menu-to-win (editorframe box))
   (editorframe box))
 
