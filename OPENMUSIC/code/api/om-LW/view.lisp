@@ -175,7 +175,7 @@
                                                                :default-height (om-point-v size-point)))
                                     ))
     (setf (vw self) w)
-    (setf (vh self) #-linux h #+linux (-  h 25)));;ICI
+    (setf (vh self) h))
   #+linux(om-invalidate-view self t);;;ICI
 )
 
