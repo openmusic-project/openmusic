@@ -341,9 +341,9 @@ box."
           (setq atimes nil))))
     (unless (zerop *unquantized-notes*)
       (if result
-          (when (and *om-verbose* (not *quant-grace*)) 
+          (when *om-verbose* ;(and *om-verbose* (not *quant-grace*)) 
           (format *om-stream*
-                  "Warning: with the given constraints, ~D notes are lost while quantizing ~%"
+                  "Warning: with the given constraints, ~D GRACE NOTES are rendered while quantizing. ~%NOTE: Using omquantify will omit them. ~%"
                   *unquantized-notes*))
         (om-beep-msg "cannot quantize with the given constraints"))
       )
@@ -780,7 +780,7 @@ current-atimes) list tmin beat-dur)
 
 ;;;; jean
 ;;;  a faire sur un chord-seq avant que le quantifier 
-;;;  met ds un meme accord les accords simultanés ouy séparés de - de delta
+;;;  met ds un meme accord les accords simultanes ou separes de - de delta
 (defmethod merge-chords ((self chord-seq) &optional (delta 0))
   (let ((len (length (inside self)))
         tmpchord tmplist)
