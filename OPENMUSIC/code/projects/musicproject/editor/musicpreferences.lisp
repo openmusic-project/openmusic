@@ -50,7 +50,7 @@
 ;(defvar *global-approx-midics?* nil)
 (defvar *grace-color* *om-red-color*)
 (defvar *staff-name-dir* 0)
-
+(defvar *on-all-staves* 0)
 
 
 (defmethod put-preferences ((id (eql :score)))
@@ -61,6 +61,7 @@
      (setf *music-fontsize* (get-pref modulepref :fontsize))
      (setf *default-satff* (get-pref modulepref :staff))
      (setf *staff-name-dir* (get-pref modulepref :staff-name-dir))
+     (setf *on-all-staves* (get-pref modulepref :on-all-staves))
      (setf *system-color* (or (get-pref modulepref :sys-color) *om-black-color*))
      (setf *select-color* (or (get-pref modulepref :select-color) *om-gray-color*))
      (setf *grace-color* (or (get-pref modulepref :grace-color) *om-red-color*))
@@ -92,6 +93,7 @@
                  ':font-size ,*music-fontsize*
                  ':staff ',*default-satff*
                  ':staff-name-dir ',*staff-name-dir*
+                 ':on-all-staves ',*on-all-staves*
                  ':sys-color ,(cons `om-make-color (list (om-color-r *system-color*)
                             (om-color-g *system-color*)
                             (om-color-b *system-color*)
@@ -125,6 +127,7 @@
         :select-color *om-gray-color* 
         :grace-color *om-red-color* 
         :staff-name-dir 0
+        :on-all-staves 0
         :hide-stems nil
         :stem-size-fact 1
         :chord-stem-dir "neutral"
@@ -240,6 +243,19 @@
                                                         (let ((choice (om-get-selected-item item)))
                                                           (set-pref modulepref :staff-name-dir
                                                                     (if (string-equal choice "down") 0 1)
+                                                                    )))
+                                           :font *controls-font*)
+                     (om-make-dialog-item 'om-static-text (om-make-point 20 (incf pos dy)) (om-make-point 120 20) "Staff Num."
+                                          :font *controls-font*)
+                     
+                     (om-make-dialog-item  'om-pop-up-dialog-item (om-make-point 160 pos) (om-make-point 80 20)
+                                           ""
+                                           :range '("top" "all")
+                                           :value (if (equal *on-all-staves* 0) "top" "all")
+                                           :di-action (om-dialog-item-act item 
+                                                        (let ((choice (om-get-selected-item item)))
+                                                          (set-pref modulepref ::on-all-staves
+                                                                    (if (string-equal choice "top") 0 1)
                                                                     )))
                                            :font *controls-font*)
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 80 20) "Staff Colors"
