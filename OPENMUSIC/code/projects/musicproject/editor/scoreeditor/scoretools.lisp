@@ -1215,23 +1215,30 @@
 
 (defmethod draw-aligned-measures ((self grap-poly) list staff size positions)
   (loop for group in list do
-        (let* ((measures (loop for item in group collect 
-                               (nth (first item) (inside (nth (second item) (inside self))))))
-               (min (loop for item in measures minimize (first (rectangle item)))) subgroups)
-          (loop for item in measures do
-                (setf (nth 0 (rectangle item)) min))
-          (setf subgroups (make-aligned-groups group))
-          (loop for bar in subgroups do
-                (let* ((firstm (car bar))
-                       (lastm (car (last bar)))
-                       (realmes (nth (first firstm) (inside (nth (second firstm) (inside self)))))
-                       (ys (round (or (nth (second firstm) positions) 0)))
-                       (ysf (round (or (nth (second lastm) positions) 0))))
-                  (om-with-font (get-font-to-draw 5)
-                                (om-draw-string  (- (car (rectangle realmes)) (round size 4)) (- ys (round size 4)) 
-                                                 (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1))))
-                  (om-draw-line  (car (rectangle realmes))  ys 
-                                 (car (rectangle realmes)) (+ ysf (get-system-size (nth (second  lastm) staff) size))))))))
+          (let* ((measures (loop for item in group collect 
+                                   (nth (first item) (inside (nth (second item) (inside self))))))
+                 (min (loop for item in measures minimize (first (rectangle item)))) subgroups)
+            (loop for item in measures do
+                    (setf (nth 0 (rectangle item)) min))
+            (setf subgroups (make-aligned-groups group))
+            (loop for bar in subgroups do
+                    (let* ((firstm (car bar))
+                           (lastm (car (last bar)))
+                           (realmes (nth (first firstm) (inside (nth (second firstm) (inside self)))))
+                           (ys (round (or (nth (second firstm) positions) 0)))
+                           (ysf (round (or (nth (second lastm) positions) 0))))
+                      (if (= *on-all-staves* 0)
+                          (om-with-font (get-font-to-draw 5)
+                                        (om-draw-string  (- (car (rectangle realmes)) (round size 4)) (- ys (round size 4)) 
+                                                         (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1))))
+                        (loop for p in positions
+                              do 
+                                (om-with-font (get-font-to-draw 5)
+                                              (om-draw-string  (+ 15 (- (car (rectangle realmes)) (round size 4))) (- p (round size 4)) 
+                                                               (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1)))))
+                        )
+                      (om-draw-line  (car (rectangle realmes))  ys 
+                                     (car (rectangle realmes)) (+ ysf (get-system-size (nth (second  lastm) staff) size))))))))
 
 ;=========================================
 (defclas grap-voice (grap-container)  
