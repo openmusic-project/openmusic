@@ -177,6 +177,10 @@
    (:documentation "Simple frame for temporalbox boxes in maquettes. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
 
+(defmethod tempobjframe-p ((self tempobjframe)) t)
+(defmethod tempobjframe-p ((self t)) nil)
+
+
 (defmethod close-frame ((box tempobjframe))
   "Close all editors and kill pictures if 'box' is in pict mode."
   (when (reference (object box))

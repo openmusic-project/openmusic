@@ -130,7 +130,7 @@
 (defmethod get-sound-in-maquette ((self t)) nil)
   
 (defmethod get-sound-in-maquette ((self ommaquette))
-  (let* ((elts (get-elements self))
+  (let* ((elts (remove-if-not #'temporalbox-p (get-elements self)))
          (objs (remove nil (loop for i in elts
                                  collect (let ((tp (car (value i))))
                                            (if (sound-p tp) tp)
@@ -138,6 +138,7 @@
     (loop for i in objs
           do  (unless (pict-sound i)
                        (build-display-array i)))))
+
 
 (defmethod OpenEditorframe ((self OMMaquette))
   "Open the maquette editor, this method open too all persistantes objects referenced into the maquette."
@@ -532,7 +533,7 @@ So red maquettes can not be sharing.#enddoc#
   (setf (w-pos self) newpos))
 
 (defmethod get-sound-in-maquette ((self ommaqabs))
-  (let* ((elts (get-elements self))
+  (let* ((elts (remove-if-not #'temporalbox-p (get-elements self)))
          (objs (remove nil (loop for i in elts
                                  collect (let ((tp (car (value i))))
                                            (if (sound-p tp) tp)
@@ -540,6 +541,7 @@ So red maquettes can not be sharing.#enddoc#
     (loop for i in objs
           do  (unless (pict-sound i)
                        (build-display-array i)))))
+
 
 (defmethod OpenEditorframe ((self OMMaqAbs))
   "Open the maquette editor, this method open too all persistantes objects referenced into the maquette."
