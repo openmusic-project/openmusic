@@ -144,6 +144,7 @@
 ;Only for magnification
 (defmethod om-view-mouse-enter-handler ((self outtempobj))
   (when *mag-in-out*
+    (setf (iconid self) 1550)
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos))
@@ -156,6 +157,7 @@
 
 (defmethod om-view-mouse-leave-handler ((self outtempobj)) 
   (when *mag-in-out*
+    (setf (iconid self) 185)
   (let* ((parsize (om-view-size (om-view-container self)))
          (psizey (om-point-y parsize))
          (frame (om-view-container self)))
@@ -165,6 +167,7 @@
   (om-set-view-position self (om-make-point (+ (om-point-x (om-view-position self)) 2) (- psizey 9)))
   ;(redraw-frame (om-view-container self)) ;init all ?
   )))
+
 
 
 ;===========================
