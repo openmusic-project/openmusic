@@ -75,6 +75,8 @@ They have accessible graphical and temporal properties (slots <offest>, <extend>
 
 A TemporalBox is supposed to yield a musical result to integrate in a temporal context (a maquette). This result is stored AS A LIST in the slot <value>."))
 
+(defmethod temporalbox-p ((self temporalbox)) t)
+(defmethod temporalbox-p ((self t)) nil)
 
 ;;This class is kept for compatibility with old maquettes
 (defclass* OMBOXTEMPOBJ (TemporalBox) ()

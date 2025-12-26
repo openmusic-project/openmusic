@@ -699,6 +699,14 @@
                  (push frame rep))) list) 
      rep))
 
+(defmethod get-subframes ((self maquettePanel))
+  "Return a list with the boxes (boxframe's instances) subviews of 'self'."
+   (let* ((subviews (remove-if-not #'tempobjframe-p (om-subviews self)))
+          rep)
+     (mapc #'(lambda (icon)
+               (if (boxframe-p icon)
+                 (push icon rep))) subviews)
+     rep))
 
 (defmethod omg-remove-element ((self MaquettePanel) frame)
    "Frame can be a tempobjframe or a marker."
