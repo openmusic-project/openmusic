@@ -142,13 +142,15 @@
 |#
 
 (defmethod draw-connection-drag ((self om-view) init-pos pos) 
-  (if (input? (om-find-view-containing-point self pos))
-      (om-with-line-size 4
+  (if (and *mag-in-out*(input? (om-find-view-containing-point self pos)))
+      (progn
+        (om-with-line-size 4
         (om-with-line #+(or linux macosx) '(2 5) #+win32 '(1 1) 
           (om-with-fg-color self 
               (om-make-color-alpha 0 0 1 0.7)
             (om-draw-line (om-point-x init-pos) (om-point-y init-pos) (om-point-x pos) (om-point-y pos)))))
-
+      (om-draw-picture self (om-load-icon 1550) :pos (om-make-point (- (om-point-x pos) 5) (- (om-point-y pos) 10))
+                       :size (om-make-point 12 12)))
     (om-with-line-size 2
         (om-with-line '(2 3) ; #+macosx '(2 3) #-macosx '(1 1)
           (om-with-fg-color self 
@@ -177,9 +179,11 @@
     ))
 
 
+
 ;Only for magnification
-(defmethod om-view-mouse-enter-handler ((self outfleche)) 
+(defmethod om-view-mouse-enter-handler ((self outfleche))
   (when *mag-in-out*
+    (setf (iconid self) 1550)
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos)))
@@ -189,14 +193,13 @@
 
 (defmethod om-view-mouse-leave-handler ((self outfleche)) 
   (when *mag-in-out*
+    (setf (iconid self) 185)
   (let* ((parsize (om-view-size (om-view-container self)))
          (psizey (om-point-y parsize)))
   (om-set-view-size self (om-make-point 8 8))
   (om-set-view-position self (om-make-point (+ (om-point-x (om-view-position self)) 2) (- psizey 9)))
   ;(redraw-frame (om-view-container self)) ;init all ?
   )))
-
-
 
 
 ;--------------CONNECTION

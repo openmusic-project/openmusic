@@ -144,6 +144,7 @@
 ;Only for magnification
 (defmethod om-view-mouse-enter-handler ((self outtempobj))
   (when *mag-in-out*
+    (setf (iconid self) 1550)
     (let* ((pos (om-view-position self))
            (ypos (om-point-y pos))
            (xpos (om-point-x pos))
@@ -156,6 +157,7 @@
 
 (defmethod om-view-mouse-leave-handler ((self outtempobj)) 
   (when *mag-in-out*
+    (setf (iconid self) 185)
   (let* ((parsize (om-view-size (om-view-container self)))
          (psizey (om-point-y parsize))
          (frame (om-view-container self)))
@@ -167,6 +169,7 @@
   )))
 
 
+
 ;===========================
 ;FRAME
 ;===========================
@@ -176,6 +179,10 @@
     (minipict :initform nil :accessor minipict))
    (:documentation "Simple frame for temporalbox boxes in maquettes. #enddoc#
 #seealso# (OMBoxEditCall) #seealso#"))
+
+(defmethod tempobjframe-p ((self tempobjframe)) t)
+(defmethod tempobjframe-p ((self t)) nil)
+
 
 (defmethod close-frame ((box tempobjframe))
   "Close all editors and kill pictures if 'box' is in pict mode."
