@@ -47,7 +47,7 @@
 ;; security :(
 (defmethod edition-params ((self t))  nil)
 (defmethod get-edit-param ((self t) param) 
-  (print (format nil "error: objects of type ~A have no edition params!" (type-of self)))
+  ;(print (format nil "error: objects of type ~A have no edition params!" (type-of self)))
   nil)
 
 (defun get-param (editparams param)

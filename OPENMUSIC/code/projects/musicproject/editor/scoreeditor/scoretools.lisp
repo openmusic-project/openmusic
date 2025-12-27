@@ -873,9 +873,9 @@
 	 (list (sort (lmidic (parent (reference self))) '<))
 	 (note-pos (position note list :test 'equal)))
     (cond ((= (length list) 1) (if (> note center-note-staff) "up" "down"))
-	  ((if (>= note-pos (/ (length list) 2))
+	  ((when note-pos (if (>= note-pos (/ (length list) 2))
 	       "up" "down" ; not quite right: if odd number of notes, then "majority away from stem"
-	       )))))
+	       ))))))
 
 (defun write-note-points (self x y  size)
   (loop for i from 1 to (points self) do

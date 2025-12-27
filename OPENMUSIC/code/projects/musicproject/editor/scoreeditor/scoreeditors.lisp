@@ -4898,44 +4898,45 @@
    (format nil "~A" (give-symbol-of-approx (approx (object self))))))
 
 
-
-
 (defmethod make-editor-window ((class (eql 'intchordeditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil))
-  
-   (declare (ignore retain-scroll))
-   (let* ((sizewin (or (and (om-point-p winsize) winsize)
-                       (get-win-ed-size object)))
-          (poswin (or (and (om-point-p winpos) winpos)
-                      (get-win-ed-pos object)))
-          (win (om-make-window 'EditorWindow
-                               :window-title name
-                               :position poswin 
-                               :close close-p
-                               :resizable resize
-                               :maximize resize
-                               :window-show winshow
-                               :toolbox (member :toolbox wintype) 
-                               :size sizewin
-                               :obj (editor-object-from-value object)))
-          (editor (om-make-view class
+  (declare (ignore retain-scroll))
+  (let* ((sizewin (or (and (om-point-p winsize) winsize)
+                      (get-win-ed-size object)))
+         (poswin (or (and (om-point-p winpos) winpos)
+                     (get-win-ed-pos object)))
+         (win (om-make-window 'EditorWindow
+                              :window-title name
+                              :position poswin 
+                              :close close-p
+                              :resizable resize
+                              :maximize resize
+                              :window-show winshow
+                              :toolbox (member :toolbox wintype) 
+                              :size sizewin
+                              :obj (editor-object-from-value object)
+                              ))                               
+         (editor (om-make-view class
                                 ;:ref ref ;--> c'est la poly ;if commented, we loose continuation-chords
-                                :owner win
-                                :object (editor-object-from-value object)
-                                :position (om-make-point 0 0)
+                               :owner win
+                               :object (editor-object-from-value object)
+                               :position (om-make-point 0 0)
                                :size (om-interior-size win)
-                                )))
-     (setf (editor win) editor)
-      (om-add-menu-to-win win)  
-      #+win32(sleep 0.1)
-      (when winshow (om-select-window win))
-      
-      #-linux(om-set-view-size editor (om-interior-size win))
-      (setf (att-ed editor) ref)
-      (setf (attached-editors editor) ref)  
-      (set-omicron-approx editor (get-approx (object ref)))
-      win))
+                               )))
+    (setf (editor win) editor)
+    (om-add-menu-to-win win)  
+    #+win32(sleep 0.1)
+    (when winshow (om-select-window win))
+    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win));pour om8 (lw8.1) enlever le -linux!
+    (setf (orig editor) object);ADD
+    (setf (att-ed editor) ref)
+    ;(setf (attached-editors editor) ref)  
+    (push win (attached-editors ref))
+    (set-omicron-approx editor (get-approx (object ref)))
+    win))
+
+
 
 
 
@@ -5014,12 +5015,6 @@
       win))
 
 
-
-
-
-
-
-
 (defmethod open-internal-editor ((self scorePanel)) (om-beep))
 
 (defmethod open-internal-editor ((self chordseqPanel))
@@ -5076,10 +5071,18 @@
         (first (car (cons-chord&rest-list (next-container self '(measure))))))
   (if (cont-chord-p first) first)))
 
-(defmethod close-editor-before ((self intchordeditor))
+(defmethod close-editor-before  ((self intchordeditor))
   (setf (ref self) (att-ed self))
-  (tie-selection (panel (ref self)))
-  (update-panel (panel (ref self)) t))
+  (let* ((voice (object (att-ed self)))
+         (sel (selection? (panel (att-ed self))))
+         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
+         (pos (loop for i in sel1
+                    collect (position i  (get-all-chords voice)))))
+    (tie-continuation-if (panel (ref self)) (orig self))
+    (update-panel (panel (ref self)) t))
+  (setf (attached-editors self) (attached-editors (att-ed self)))
+  (setf (attached-editors (att-ed self)) nil); in order to close all intchord (om-close-window is recursive !)
+  )
 
 (defmethod close-editor-before ((self intmeasureeditor))
   (setf (ref self) (att-ed self))
@@ -5090,6 +5093,22 @@
   (setf (ref self) (att-ed self))
   (update-panel (panel (ref self)) t))
 
+
+(defmethod tie-continuation-if ((self voicepanel) (chord chord))
+  (let* ((voice (object (om-view-container self)))
+         (sel (selection? self))
+         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
+         (chords (x-append chord (get-all-continuation-chords chord))))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+      (update-panel self t))))
+
+(defmethod tie-continuation-if ((self polypanel) (chord chord))
+  (let ((chords (x-append chord (get-all-continuation-chords chord)))
+        (voice (get-voice chord)))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+    (update-panel self t)))
 
 ;=========================
 ;ADD
