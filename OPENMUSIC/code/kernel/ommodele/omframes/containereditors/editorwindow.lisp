@@ -251,14 +251,14 @@
 ;MA MODIF VERS 8.0
 ;maybe only for linux?
 ;before est necessaire ici
-(defmethod om-window-close-event :before ((self EditorWindow))
+(defmethod om-window-close-event :around ((self EditorWindow)) 
   (when (editor self)
-        (loop for ed in (attached-editors (editor self)) do
-            (om-close-window ed))
-    (close-editorFrame (editor self))
     (close-editor-after (editor self))
+    (close-editorFrame (editor self))
     (close-editor-before (editor self))
-))
+    (loop for ed in (attached-editors (editor self)) do
+                 (om-close-window ed))
+    (setf (Editorframe (object (panel self))) nil)))
 
 
 (defmethod om-view-key-handler :around ((self EditorWindow) char)
