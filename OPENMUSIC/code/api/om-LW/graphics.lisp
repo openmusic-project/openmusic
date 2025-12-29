@@ -801,8 +801,9 @@
                                          )
      ,@body))
 
+
+;#+linux
 #|
-#+linux
 (defmacro om-with-font (font &rest body)
   `(gp::with-graphics-state (*curstream* :font (if (gp::font-description-p ,font)
                                                    (gp::find-best-font *curstream* ,font)
