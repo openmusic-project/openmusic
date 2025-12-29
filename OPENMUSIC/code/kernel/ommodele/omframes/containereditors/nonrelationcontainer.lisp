@@ -617,9 +617,9 @@ Workspace Panels contain icons of patches, maquettes and folders
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
 
-;Standby
-;(defmethod set-field-size ((self workspacepanel))
-;  (om-set-field-size self (panel-size (editor self))))
+
+(defmethod set-field-size ((self workspacepanel))
+  (om-set-field-size self (panel-size (editor self))))
 
 (defmethod sort-subframes ((self nonrelationPanel) elements)
  (case (presentation (om-view-container self))
