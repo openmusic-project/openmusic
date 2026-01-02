@@ -262,13 +262,15 @@
                                   :selected-item nil
                                   :allow-other-keys t)
                             attributes))))
-    #-linux
+    ;#-linux
     (when (or bg-color (special-bg di))
       (om-set-bg-color di (or bg-color (special-bg di))))
+    #|
     #+linux
     (when (or bg-color (special-bg di))
       (om-set-bg-color di bg-color)
       (om-set-fg-color di *om-black-color*))
+    |#
     (setf (vx di) (om-point-h position)
           (vy di) (om-point-v position)
           (vw di) (om-point-h size) 
