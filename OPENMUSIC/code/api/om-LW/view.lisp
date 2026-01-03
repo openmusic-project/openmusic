@@ -255,7 +255,7 @@
     ))
 
 (defmethod om-view-scrolled ((self om-scroller) x y)
-#+linux(om-invalidate-view self t)
+;#+linux(om-invalidate-view self t)
  nil)
 
 (defmethod om-view-size ((self om-scroller)) 
