@@ -79,6 +79,7 @@
    :auto-menus nil
    :activate-callback 'om-activate-callback
    :confirm-destroy-function 'om-confirm-destroy-function
+   :color-mode :light
    ;; :help-callback 'om-help-callback
    ))
 
@@ -408,7 +409,7 @@
                                      ;:menu-bar-items nil
                                      #+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      ;#+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
-                                     #+cocoa :color-mode #+cocoa nil
+                                     #+cocoa :color-mode #+cocoa :light
                                      :window-styles style
                                      :font font
                                      :resizable resizable
