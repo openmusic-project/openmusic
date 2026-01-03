@@ -84,7 +84,7 @@
   ((ip :accessor ip :initarg :ip)
    (op :accessor op :initarg :op))
   (:default-initargs 
-   :color-mode :aqua)
+   :color-mode :light)
   )
 
 
@@ -143,7 +143,7 @@
                              :best-x (or x 100)
                              :best-y (or y (round (- (capi::screen-height (capi:convert-to-screen)) 250)))
                              :best-width (or width 360) :best-height (or height 200)
-                             #+cocoa :color-mode #+cocoa nil
+                             #+cocoa :color-mode #+cocoa :light
                              :destroy-callback (lambda (window) (setf om-lisp::*om-listener* nil))
                              #+macos :activate-callback 
                              #+macos(lambda (window activatep) 
