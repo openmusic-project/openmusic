@@ -290,7 +290,10 @@ Evaluate or connect the output to get the current contents of the box.
 (defmethod rep-editor ((self text-box) num)
   (let* ((rep nil)
         (noerror (ignore-errors (setf rep (read-from-string (om-dialog-item-text self))) t)))
-    (if noerror rep (om-dialog-item-text self))))
+    (prog1
+    (if noerror rep (om-dialog-item-text self))
+    #+linux(update-for-subviews-changes (om-view-container self) t)
+    )))
 
 
 (defmethod update-di-size ((self text-box) container)
