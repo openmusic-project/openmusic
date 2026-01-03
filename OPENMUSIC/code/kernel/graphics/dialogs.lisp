@@ -342,7 +342,7 @@ External Libraries:
 ;;;=======================
 (defvar *message-win* nil)
 
-(defclass om-message-win (om-windoid)
+(defclass om-message-win (om-dialog)
   ((pane :initarg :pane :accessor pane :initform nil)
    (label :initarg :label :accessor label :initform nil)))
 
