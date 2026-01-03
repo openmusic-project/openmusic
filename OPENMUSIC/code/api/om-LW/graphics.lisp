@@ -920,7 +920,7 @@
       (convert-rectangle-args x y w h)
     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he :filled t 
                        #+(or linux cocoa) :foreground #+(or linux cocoa) (simple-pane-background *curstream*)
-                       #-(or linuc cocoa) :operation #-(or linux cocoa) boole-eqv
+                       #-(or linux cocoa) :operation #-(or linux cocoa) boole-eqv
                        )))
 
 (defun om-erase-rect (x &optional y (w 0) (h 0))
