@@ -11,7 +11,7 @@
 SHELL		= /bin/sh
 
 LISPFLAGS	= -build
-LISP		= $(HOME)/bin/lw-console $(LISPFLAGS)
+LISP		= $(HOME)/bin/lw8-console $(LISPFLAGS)
 
 INSTALL_PROGRAM	= install
 
