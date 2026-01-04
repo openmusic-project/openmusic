@@ -55,11 +55,12 @@
                     (om-beep-msg (string+ "I can not construct a " (string (type-of (value self))) " with these parameters"))
                     (om-abort))
                 (progn
+                  #+linux(when (om-view-container (value self))
+                           (update-for-subviews-changes (om-view-container (value self)) t))
                   (setf (value self) rep)
                   (rep-editor (value self) numout)
                   )))))
-     )
-     ))
+     )))
 
 (defmethod gen-code-call ((self OMDIebox) &optional args)
    `(apply 'set-dialog-item-params (list ,(value self) ,self (list ,.(decode self)))))
@@ -197,6 +198,7 @@
      (update-di-size (value (object view)) view)
      (om-invalidate-view view)
      (om-invalidate-view (om-view-container view))
+     #+linux(update-for-subviews-changes (om-view-container view) t)
      ))
 
 (defmethod reinit-size ((self DIEditorframe)) 
@@ -209,7 +211,8 @@
    (om-make-point (max 30 (om-point-h new-pos )) (max 40 (om-point-v new-pos ))))
 
 (defmethod add-subview-extra ((self DIEditorframe))
-  (update-di-size (value (object self)) self))
+  (update-di-size (value (object self)) self)
+  #+linux(update-for-subviews-changes (om-view-container self) t))
 
 (defmethod om-view-doubleclick-handler ((self DIEditorframe) pos) nil)
 
@@ -290,15 +293,21 @@ Evaluate or connect the output to get the current contents of the box.
 (defmethod rep-editor ((self text-box) num)
   (let* ((rep nil)
         (noerror (ignore-errors (setf rep (read-from-string (om-dialog-item-text self))) t)))
-    (prog1
-    (if noerror rep (om-dialog-item-text self))
-    #+linux(update-for-subviews-changes (om-view-container self) t)
-    )))
+    (if noerror rep (om-dialog-item-text self))))
 
 
+ 
 (defmethod update-di-size ((self text-box) container)
-  (om-set-view-position self #+win32(om-make-point 12 12) #-win32(om-make-point 12 10))
-  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 28 20))))
+  (om-set-view-position self 
+                        #+win32(om-make-point 12 12) 
+                        #+macosx(om-make-point 12 10)
+                        #+linux(om-make-point 12 15)
+                        )
+  (om-set-view-size self (om-subtract-points (om-view-size container) 
+                                             #+win32(om-make-point 28 24) 
+                                             #+macosx(om-make-point 28 20)
+                                             #+linux(om-make-point 28 30)
+                                             )))
 
 
 ;==================
@@ -331,12 +340,22 @@ Evaluate or connect the output to get the current contents of the box.
      rep))
 
 (defmethod get-super-default-value ((type (eql 'text-view)))
-  (om-make-dialog-item 'text-view (om-make-point 1 1 ) (om-make-point 50 20 ) "untitled"))
-
+  (om-make-dialog-item 'text-view (om-make-point 1 1) 
+                       #-linux(om-make-point 50 20) 
+                       #+linux(om-make-point 50 25) 
+                       "untitled"))
 
 (defmethod update-di-size ((self text-view) container)
-  (om-set-view-position self #+win32(om-make-point 12 12) #-win32(om-make-point 12 10))
-  (om-set-view-size self (om-subtract-points (om-view-size container) #+win32(om-make-point 28 24) #-win32(om-make-point 24 20))))
+  (om-set-view-position self 
+                        #+win32(om-make-point 12 12) 
+                        #+macosx(om-make-point 12 10)
+                        #+linux(om-make-point 12 15)
+                        )
+  (om-set-view-size self (om-subtract-points (om-view-size container) 
+                                             #+win32(om-make-point 28 24) 
+                                             #+macosx(om-make-point 28 20)
+                                             #+linux(om-make-point 28 30)
+                                             )))
 
 
 (defmethod rep-editor ((self text-view) num) 
@@ -644,6 +663,10 @@ Any selection in the menu will automatically call this function or patch passing
            '("list of choices" "a function or box in lambda mode")
            '(nil nil)))
 
+#+linux
+(defmethod default-obj-box-size ((self pop-up-menu)) (om-make-point 130 65))
+
+
 (defmethod omng-save ((self pop-up-menu) &optional (values? nil))
   `(let ((rep (om-make-dialog-item 'pop-up-menu (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
                                    :range ',(om-get-item-list self))))
@@ -651,15 +674,21 @@ Any selection in the menu will automatically call this function or patch passing
      rep))
 
 (defmethod get-super-default-value ((type (eql 'pop-up-menu)))
-  (om-make-dialog-item 'pop-up-menu (om-make-point 1 4) (om-make-point 50 20) "untitled" :range '("yes" "no")))
+  (om-make-dialog-item 'pop-up-menu (om-make-point 1 4) 
+                       #-linux (om-make-point 50 20) #+linux (om-make-point 50 30) 
+                       "untitled" :range '("yes" "no")))
 
 (defmethod update-di-size ((self pop-up-menu) container)
   (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-size self 
+                    #-linux(om-make-point (- (w container) 20) 24)
+                    #+linux(om-make-point (- (w container) 20) 34)
+                    ))
 
-(defmethod set-dialog-item-params ((self pop-up-menu) box args)
+(defmethod set-dialog-item-params  ((self pop-up-menu) box args)
   (let* ((boxframe (om-view-container self))
-        (newpop (om-make-dialog-item 'pop-up-menu (om-make-point 1 4) (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
+        (newpop (om-make-dialog-item 'pop-up-menu (om-make-point 1 4) 
+                                     (om-make-point (if boxframe (- (w boxframe) 20) 80) #-linux 20 #+linux 30) 
                                      "untitled" 
                                      :range (if (and (pathnamep (car args)) (directoryp (car args)))
                                                 (om-directory (car args))
