@@ -1026,7 +1026,10 @@ External Libraries:
     (let ((maxl (loop for l in helplist maximize (length l)))
           (panew (or panel-w 310)))
       (setf *help-window* (om-make-window 'help-window :window-title title 
-                                          :size (om-make-point (+ 4 (* (+ 4 panew) (length helplist))) (+ 12 (* 30 maxl)))
+                                          :size (om-make-point (+ 4 (* (+ 4 panew) (length helplist))) 
+                                                               #-macosx(+ 12 (* 30 maxl))
+                                                               #+macosx(+ 22 (* 30 maxl))
+                                                               )
                                           :resizable nil :maximize nil :minimize nil
                                           :bg-color *om-light-gray-color*))
       (om-with-delayed-update *help-window*
