@@ -1,3 +1,17 @@
+* RELEASE NOTES 8.0
+
+NEW FEATURES
+
+- Code ported to LW 8.1.x
+
+IMPROVEMENTS
+
+- Linux's API: Display-callback same as Cocoa as recommended by LW  
+
+FIXES
+
+
+
 * RELEASE NOTES 7.7
 
 NEW FEATURES
