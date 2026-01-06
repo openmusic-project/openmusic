@@ -77,11 +77,13 @@
                                :position (frame-position self)
                                :object self)))
     
-     (unless (frame-size self) 
-       (setf (frame-size self) (om-make-point 
-                                (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
-                                (om-point-v defsize)))
-       )
+     #-linux(unless (frame-size self) 
+              (setf (frame-size self) (om-make-point 
+                                       (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
+                                       (om-point-v defsize))))
+     #+linux(setf (frame-size self) (om-make-point 
+                                       (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
+                                       (+ (om-point-v defsize) 10)))
 
      (setf (inputframes module) (mapcar #'(lambda (input)
                                             
