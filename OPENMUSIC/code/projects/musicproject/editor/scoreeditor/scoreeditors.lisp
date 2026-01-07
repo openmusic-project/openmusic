@@ -616,7 +616,8 @@
                                                          ))
                                           :font *controls-font*
                                           :checked-p 
-                                          (let ((app (get-edit-param (associated-box obj) 'approx?)))
+                                          (let ((app (if (not (typep obj 'scale))
+                                                         (get-edit-param (associated-box obj) 'approx?))))
                                             (if app
                                                 (if (equal 1 app) t nil) 
                                               *global-approx-midics?*))
