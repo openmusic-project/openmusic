@@ -44,6 +44,7 @@
           om-set-bg-color
           om-get-editor-panel
           om-destroy-callback
+          *line-numbers*
          ) :om-lisp)
 
 ;; ERRORS HANDLING from S. Ball
@@ -57,6 +58,7 @@
                  :type "log" 
                  #+(or win32 macosx) :defaults #+(or win32 macosx) (sys:get-folder-path :local-appdata)
                  ))
+
 
 ;; this causes errors in the interface process to be displayed in a message box
 (defun report-ae-error (cc)
@@ -487,6 +489,7 @@
 ;;;=====================
 
 (defvar *editor-class* 'om-text-editor)
+(defparameter *line-numbers* t)
 
 ;;; NEW EDITOR
 ;;; (called from menu "New")
@@ -516,6 +519,7 @@
         (setf (capi::layout-description (capi::pane-layout win)) 
               (list (setf (ep win) (make-instance 'capi::editor-pane :echo-area t 
                                                   :font *def-text-edit-font*
+                                                  :line-numbers-p *line-numbers*
                                                   ))))
         (push win *editor-files-open*)
         (setf (capi::simple-pane-background (ep win)) *text-bg-color*)

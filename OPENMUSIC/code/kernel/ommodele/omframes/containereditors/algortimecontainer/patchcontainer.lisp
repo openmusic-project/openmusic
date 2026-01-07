@@ -85,6 +85,14 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
              (setf rep box)))
      rep))
 
+;pour empecher les micro scroll sous linux
+;#+linux
+;(defmethod om-set-scroll-position ((self patchpanel) pos) nil)
+
+
+;(defmethod set-field-size ((self patchpanel)) 
+;  (om-set-field-size self (panel-size (editor self))))
+
 
 (defmethod om-view-click-handler :before ((self patchPanel) where)
    (declare (ignore where))
@@ -753,22 +761,25 @@ The order of listed boxes is spatial, ie. from left to right."
          (inc (if (om-shift-key-p) 500 50)))
     (case char 
       (:om-key-right 
-       (om-set-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (+ hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-left
-       (om-set-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (- hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-up
-       (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (- vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-down
-       (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (+ vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-esc 
-       (om-set-scroll-position self (om-make-point 0 0))
+       (om-move-scroll-position self (om-make-point 0 0))
        (oa::om-set-h-scroll-position self 0)
        (oa::om-set-v-scroll-position self 0))
-      )))
+      )
+    (om-invalidate-view self t)
+    ;(capi::update-drawing-with-cached-display self);linux
+    ))
 
 ;--------------------------------
 ;Tools

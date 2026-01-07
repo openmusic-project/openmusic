@@ -11,12 +11,12 @@
 SHELL		= /bin/sh
 
 LISPFLAGS	= -build
-LISP		= $(HOME)/bin/lw-console $(LISPFLAGS)
+LISP		= $(HOME)/bin/lw8-console $(LISPFLAGS)
 
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-IMAGENAME	= OM_7.7
+IMAGENAME	= OM_8.0-b.1
 
 path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))

@@ -41,6 +41,7 @@
           om-scroll-position
           scroll-update
           om-set-scroll-position
+          om-move-scroll-position
           om-h-scroll-position
           om-v-scroll-position
           om-set-h-scroll-position
@@ -122,7 +123,7 @@
                                :vx x :vy y :vw w :vh h
                                :vcontainer ,owner
                                :allow-other-keys t
-                               #+linux :foreground #+linux :black
+                               ;#+linux :foreground #+linux :black
                                ,.attributes
                                )))
      (when ,bg-color (om-set-bg-color view ,bg-color))
@@ -130,10 +131,10 @@
      (when ,subviews (mapc (lambda (sv) (om-add-subviews view sv)) ,subviews))
      
      (when (om-view-p view) 
-       #+(or win32 linux) (unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
-       #+(or win32 linux) (setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
-       #+(or win32 linux) (setf (capi::static-layout-child-size (main-pinboard-object view)) (values w h))
-       #+cocoa (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
+       #+win32(unless (or ,bg-color (simple-pane-background view)) (om-set-bg-color view *om-white-color*))
+       #+win32(setf (main-pinboard-object view) (make-instance 'om-view-pinboard-object))
+       #+win32(setf (capi::static-layout-child-size (main-pinboard-object view)) (values w h))
+       #+(or cocoa linux) (setf (capi::output-pane-display-callback view) 'om-draw-contents-callback)
        )
      (when (scroller-p view) 
        (setf (capi::simple-pane-scroll-callback view) 'scroll-update)
@@ -162,7 +163,7 @@
                (setf (vx self) x) (setf (vy self) y)))))
   (om-make-point (vx self) (vy self)))
 
-(defmethod om-set-view-size ((self om-graphic-object) size-point) 
+(defmethod om-set-view-size ((self om-graphic-object) size-point)
   (let ((w (or (om-point-h size-point) (vw self)))
         (h (or (om-point-v size-point) (vh self))))
     (capi:apply-in-pane-process self 
@@ -170,11 +171,13 @@
                                     (setf (static-layout-child-size self) (values  w h))
                                     #+win32(setf (static-layout-child-size (main-pinboard-object self)) (values w h))
                                     
-                                    (set-hint-table self (list :default-width (om-point-h size-point) 
+                                    (set-hint-table self (list :default-width (om-point-h size-point)
                                                                :default-height (om-point-v size-point)))
                                     ))
     (setf (vw self) w)
-    (setf (vh self) h)))
+    (setf (vh self) h))
+  #+linux(om-invalidate-view self t);;;ICI
+)
 
 (defmethod om-view-size ((self om-graphic-object)) 
   (if (interface-visible-p self)
@@ -192,13 +195,13 @@
 (defclass om-transparent-view (om-view) ()
   (:default-initargs :background :transparent))
 
-#-cocoa
+#-(or linux cocoa)
 (defmethod (setf vcontainer) :around ((cont om-graphic-object) (view om-transparent-view)) 
   (call-next-method)
   (om-set-bg-color view (om-get-bg-color cont))
   (mapc #'(lambda (v) (setf (vcontainer v) view)) (om-subviews view)))
 
-#-cocoa
+#-(or linux cocoa)
 (defmethod (setf vcontainer) :around ((cont om-graphic-object) (view om-view)) 
   (call-next-method)
   (when (or (null (om-get-bg-color view)) (equal :transparent (c (om-get-bg-color view))))
@@ -221,8 +224,8 @@
    )
 
 ;;; :simple-pane-scroll-callback
-(defmethod scroll-update ((self om-scroller) dimension operation pos-list &rest options)
-  ;(print (list dimension operation pos-list))
+(defmethod scroll-update ((self om-scroller) dimension operation pos-list &rest options) 
+  ;(print (list self dimension operation pos-list))
   (case dimension
     (:vertical (setf pos-list (list 0 pos-list)))
     (:horizontal (setf pos-list (list pos-list 0)))
@@ -233,17 +236,17 @@
        (let ((x (om-h-scroll-position self))
              (y (om-v-scroll-position self)))
          (om-invalidate-rectangle self x y (vw self) (vh self))
-         #+(or linux win32) (setf (static-layout-child-position (main-pinboard-object self)) 
+         #+win32(setf (static-layout-child-position (main-pinboard-object self)) 
 				  (values x y))
          ))
      (om-view-scrolled self (car pos-list) (cadr pos-list)))
-    #+(or win32 linux) (:step
+    #+win32 (:step
 			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (om-h-scroll-position self) (om-v-scroll-position self))
 			;;(om-invalidate-view self)
 			)
-    #+(or win32 linux) (otherwise ;; :drag
+    #+win32 (otherwise ;; :drag
 			(setf (static-layout-child-position (main-pinboard-object self)) 
 			      (values (om-h-scroll-position self) (om-v-scroll-position self)))
 			(om-view-scrolled self (car pos-list) (cadr pos-list))
@@ -251,12 +254,14 @@
 			)
     ))
 
-(defmethod om-view-scrolled ((self om-scroller) x y) nil)
+(defmethod om-view-scrolled ((self om-scroller) x y)
+;#+linux(om-invalidate-view self t)
+ nil)
 
 (defmethod om-view-size ((self om-scroller)) 
   (call-next-method))
 
-(defmethod om-set-view-size ((self om-scroller) size-point) 
+(defmethod om-set-view-size ((self om-scroller) size-point)
   (capi:apply-in-pane-process self  #'(lambda ()
        (setf (static-layout-child-size self) (values (om-point-h size-point) (om-point-v size-point)))
        ;; pas la peine ??
@@ -300,12 +305,35 @@
    pl))
 |#
 
+;;MICRO-SCROLL ISSUE:
+;pour empecher les micro-scroll sous linux -- a voir...
+
+#-linux
 (defmethod om-scroll-position ((self om-scroller))
   (om-make-point (om-h-scroll-position self) (om-v-scroll-position self)))
 
+#+linux
+(defmethod om-set-scroll-position ((self om-scroller) pos) nil)
+
+
 (defmethod om-set-scroll-position ((self t) pos) nil)
 
+;#+(or cocoa win32)
 (defmethod om-set-scroll-position ((self om-scroller) pos)
+  (capi::apply-in-pane-process 
+   self
+   'capi::scroll self :pan :move 
+   (list (om-point-h pos) (om-point-v pos))))
+
+#|
+#+linux
+;pour empecher les micro-scroll sous linux
+(defmethod om-set-scroll-position ((self om-scroller) pos) nil)
+|#
+
+;#+linux
+;for scrolling shortcuts only
+(defmethod om-move-scroll-position ((self om-scroller) pos)
   (capi::apply-in-pane-process 
    self
    'capi::scroll self :pan :move 
@@ -355,7 +383,7 @@
 
 ;;;(om-subtract-points (om-view-size self) (om-make-point 30 30))
 
-#+(or win32 linux)
+#+win32
 (defmethod om-interior-size ((self om-scroller))
   (om-subtract-points 
    (om-view-size self)

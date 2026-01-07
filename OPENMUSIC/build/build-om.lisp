@@ -37,10 +37,10 @@
 ;;;=======================================
 (defparameter *app-name* "OM")
 
-(defparameter *version* 7.070000)
+(defparameter *version* 8.001000)
 
 
-(defparameter *beta-release* nil) 
+(defparameter *beta-release* t) 
 ;(defparameter *rc-release* nil)
 (defparameter *version-str* "")
 (defparameter *version-str-full* "")
@@ -339,6 +339,7 @@
   (oa::om-init-funcall)
     
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
+  #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (om::show-workspaces-dialog)
   (when om::*om-workspace-win* (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om))))
   (setf om::*om-startup* nil)

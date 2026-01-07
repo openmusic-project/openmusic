@@ -84,7 +84,8 @@
   ((ip :accessor ip :initarg :ip)
    (op :accessor op :initarg :op))
   (:default-initargs 
-   :color-mode :aqua))
+   :color-mode :light)
+  )
 
 
 (defclass om-listener-in-pane (capi::listener-pane) ())
@@ -142,6 +143,7 @@
                              :best-x (or x 100)
                              :best-y (or y (round (- (capi::screen-height (capi:convert-to-screen)) 250)))
                              :best-width (or width 360) :best-height (or height 200)
+                             #+cocoa :color-mode #+cocoa :light
                              :destroy-callback (lambda (window) (setf om-lisp::*om-listener* nil))
                              #+macos :activate-callback 
                              #+macos(lambda (window activatep) 
@@ -149,7 +151,7 @@
                              )))
         
         (setf (capi::simple-pane-font (capi::editor-pane-echo-area (op om-lisp::*om-listener*))) *listener-font*)
-        (set-bg-listener-color *text-bg-color*)
+        ;(set-bg-listener-color *text-bg-color*);remove?
         ;(setf (capi::simple-pane-background (op *om-listener*)) *text-editor-bg-color*);here
         ;(when (ip om-lisp::*om-listener*)
         ;  (setf (capi::simple-pane-font (capi::editor-pane-echo-area (ip om-lisp::*om-listener*))) *listener-font*)

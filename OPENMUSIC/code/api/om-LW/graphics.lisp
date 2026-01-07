@@ -588,17 +588,19 @@
 (defvar *om-window-def-color* "The default background color for windows")
 (setf *om-window-def-color* 
       #+win32  (make-instance 'omcolor :c (color::get-color-spec :gray90))
-      #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent))
-      #+cocoa (make-instance 'omcolor :c :transparent)
+      ;#+linux (make-instance 'omcolor :c (color::get-color-spec :transparent))
+      #+(or linux cocoa) (make-instance 'omcolor :c (color::get-color-spec :transparent))
+      ;#+cocoa(make-instance 'omcolor :c :transparent)
       )
 
  
 (defvar *om-transparent-color*
-  #-linux (make-instance 'omcolor :c :transparent)
-  #+linux (make-instance 'omcolor :c (color::get-color-spec :transparent)))
+  ;#-linux (make-instance 'omcolor :c :transparent)
+  ;#+linux 
+  (make-instance 'omcolor :c (color::get-color-spec :transparent)))
 
 ;(om-choose-color-dialog :color (om-make-color 0.803 0.854 0.855))
-
+;(color:get-all-color-names)
 
 ;;;=========================
 ;;;FONTS
@@ -790,7 +792,7 @@
 (defun om-get-current-port ()
   *curstream*)
 
-#+(or cocoa win32)
+;#+(or cocoa win32)
 (defmacro om-with-font (font &rest body)
   `(gp::with-graphics-state (*curstream* :font (if (gp::font-description-p ,font)
                                                    (gp::find-best-font *curstream* ,font)
@@ -800,7 +802,8 @@
      ,@body))
 
 
-#+linux
+;#+linux
+#|
 (defmacro om-with-font (font &rest body)
   `(gp::with-graphics-state (*curstream* :font (if (gp::font-description-p ,font)
                                                    (gp::find-best-font *curstream* ,font)
@@ -808,21 +811,24 @@
                                          :mask nil
                                          )
      ,@body))
-
+|#
 
 ; TESTR AVEC CAPI::AREA-VISIBLE-P ?
 
-#+cocoa
+;#+cocoa
+#+(or linux cocoa)
 (defmacro om-with-clip-rect (view rect &body body)
   `(gp::with-graphics-state ((om-get-view ,view) :mask (list (+ *pox* (om-rect-left ,rect)) (+ *poy* (om-rect-top ,rect))
                                                              ;(- (om-rect-left ,rect) *posx*) (- (om-rect-top ,rect) *posy*) 
                                                               (om-rect-w ,rect) (om-rect-h ,rect)))
      ,@body))
 
-#+linux
+
+;#+linux
 (defmacro om-with-clip-rect (view rect &body body)
 `(gp::with-graphics-state ((om-get-view ,view) :mask nil)
      ,@body))
+
 
 #+win32
 (defmacro om-with-clip-rect (view rect &body body)
@@ -863,16 +869,16 @@
 
 (defun om-draw-line (x1 y1 x2 y2  &key (erasable nil))  
   (gp:draw-line *curstream* (+ x1 *pox* 0.5) (+ y1 *poy* 0.5) (+ x2 *pox* 0.5) (+ y2 *poy* 0.5)
-		#-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+		#-(or linux cocoa) :operation #-(or linux cocoa) (if erasable boole-eqv boole-1)
                 :shape-mode :best
-                #+linux :mask #+linux nil
+                ;#+linux :mask #+linux nil
 		))
 
 
 (defun om-erase-line (x1 y1 x2 y2) 
   (gp:draw-line *curstream* (+ x1 *pox*) (+ y1 *poy*) (+ x2 *pox*) (+ y2 *poy*)
-                #+cocoa :foreground #+cocoa (simple-pane-background *curstream*) 
-                #+cocoa :thickness #+cocoa 4
+                #+(or linux cocoa) :foreground  #+(or linux cocoa) (simple-pane-background *curstream*) 
+                #+(or linux cocoa) :thickness  #+(or linux cocoa) 4
                 #-cocoa :operation #-cocoa boole-eqv
                 ))
 
@@ -890,8 +896,8 @@
   (multiple-value-bind (left top wi he)
       (convert-rectangle-args x y w h)
     (gp::with-graphics-state (*curstream* :thickness pensize)
-      (gp:draw-rectangle *curstream* (+ left *pox* 0.5) (+ top *poy* 0.5) wi he :filled nil
-                         #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+      (gp:draw-rectangle *curstream* (+ left *pox* 0.5) (+ top *poy* 0.5) wi he :filled nil 
+                         #-(or cocoa linux) :operation #-(or linux cocoa) (if erasable boole-eqv boole-1)
                          ))))
 
 (defun om-draw-rect-outline (x y w h &optional (pensize 1))
@@ -903,7 +909,9 @@
       (convert-rectangle-args x y w h)
     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
 		       :filled t
-		       #-cocoa :operation #-cocoa (if erasable boole-eqv boole-1))))
+                       ;#-cocoa :operation #-cocoa (if erasable boole-eqv boole-1)
+                       #-(or linux cocoa) :operation #-(or linux cocoa) (if erasable boole-eqv boole-1)
+                       )))
 
 
 
@@ -911,16 +919,16 @@
   (multiple-value-bind (left top wi he)
       (convert-rectangle-args x y w h)
     (gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he :filled t 
-                       #+cocoa :foreground #+cocoa (simple-pane-background *curstream*)
-                       #-cocoa :operation #-cocoa boole-eqv
+                       #+(or linux cocoa) :foreground #+(or linux cocoa) (simple-pane-background *curstream*)
+                       #-(or linux cocoa) :operation #-(or linux cocoa) boole-eqv
                        )))
 
 (defun om-erase-rect (x &optional y (w 0) (h 0))
   (multiple-value-bind (left top wi he)
       (convert-rectangle-args x y w h)
-    #+cocoa(gp:draw-rectangle *curstream* (- (+ left *pox*) 1) (- (+ top *poy*) 1) (+ wi 3) (+ he 3) 
+    #+(or linux cocoa)(gp:draw-rectangle *curstream* (- (+ left *pox*) 1) (- (+ top *poy*) 1) (+ wi 3) (+ he 3) 
                               :filled t :foreground (simple-pane-background *curstream*))
-    #-cocoa(gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
+    #-(or linux cocoa)(gp:draw-rectangle *curstream* (+ left *pox*) (+ top *poy*) wi he
                               :filled nil :operation boole-eqv
                               )))
 

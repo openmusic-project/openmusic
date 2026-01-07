@@ -368,8 +368,9 @@
     (if (equal new-text-item "")
       (om-add-subviews (object self) (nameView (object self)))
       (omG-rename (object self) new-text-item))
+    (ignore-errors ;maybe not that good but still works!
     (setf (text-view theeditor) nil)
-    (om-remove-subviews (panel theeditor) self)))
+    (om-remove-subviews (panel theeditor) self))))
 
 
 
@@ -709,6 +710,7 @@
                                                      :focus t
                                                      :object self
                                                      :container (panel container)
+                                                     #+linux :bg-color *om-lgray-color* ;*om-light-blue-color*
                                                      :font *om-default-font1*))
     (om-remove-subviews self selftext)
     ))

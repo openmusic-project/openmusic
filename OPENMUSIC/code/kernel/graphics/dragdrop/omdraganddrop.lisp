@@ -56,11 +56,12 @@
 
 (defmethod om-draw-contents-for-drag ((self om-view-drag))
   ;;; actually draws what's in (dragged-list-objs *OM-drag&drop-handler*) 
-  (om-with-fg-color nil (om-make-color-alpha 0.7 0.7 0.6 #+linux 0.8 #-linux 0.3) 
+  (om-with-fg-color nil (om-make-color-alpha 0.7 0.7 0.6 #+linux 0.3 #-linux 0.3) 
     (mapcar #'(lambda (v)
 		(let ((drag-obj (get-drag-object v)))
-		  #-linux(om-fill-rect (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj))
-		  #+linux(om-draw-rect-outline (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj) 3)
+		  ;#-linux
+                  (om-fill-rect (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj))
+		  ;#+linux(om-draw-rect-outline (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj) 3)
 		  ))
 	    (dragged-list-objs *OM-drag&drop-handler*))))
 
@@ -183,6 +184,7 @@
      (perform-special-move-view D&DHandler)
      (make-move-after (om-view-container (target-view  D&DHandler)) (dragged-list-objs D&DHandler)))
     (t (perform-change-view D&DHandler)))
+  (om-invalidate-view (target-view  D&DHandler))
   )
 
 

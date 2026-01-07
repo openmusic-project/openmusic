@@ -401,8 +401,9 @@
 
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
-
-(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 70)
+;(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 65)
+;#+linux(defmethod editor-minimum-size ((self scoreeditor)) (om-make-point 475 280))
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
 (defparameter *second-row-y* #-linux 25 #+linux 35)
@@ -472,7 +473,9 @@
                (ctr-view self)))
          (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
     (init-draw self)
-    (init-boxes-in-score ed-view)))
+    (init-boxes-in-score ed-view)
+    #+macosx(update-alt-panel (panel self));a voir
+    ))
 
 
 
@@ -957,6 +960,7 @@
 
 (defmethod set-field-size ((self scorepanel)) 
    t)
+
 
 (defmethod om-add-subviews ((self scorepanel) &rest subviews)
   "Adds subviews to a graphicbject"
@@ -1588,7 +1592,7 @@
 
 
 (defmethod om-draw-contents ((self scorePanel))
-  #+macosx(update-alt-panel self)
+  ;#+macosx(update-alt-panel self)
   (call-next-method)
   (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self))))
     (if (score-page-mode self)
@@ -4938,8 +4942,6 @@
 
 
 
-
-
 (defmethod make-editor-window ((class (eql 'intmeasureeditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil))
@@ -5093,6 +5095,21 @@
   (setf (ref self) (att-ed self))
   (update-panel (panel (ref self)) t))
 
+(defmethod tie-continuation-if ((self voicepanel) (chord chord))
+  (let* ((voice (object (om-view-container self)))
+         (sel (selection? self))
+         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
+         (chords (x-append chord (get-all-continuation-chords chord))))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+      (update-panel self t))))
+
+(defmethod tie-continuation-if ((self polypanel) (chord chord))
+  (let ((chords (x-append chord (get-all-continuation-chords chord)))
+        (voice (get-voice chord)))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+    (update-panel self t)))
 
 (defmethod tie-continuation-if ((self voicepanel) (chord chord))
   (let* ((voice (object (om-view-container self)))

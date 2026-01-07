@@ -79,6 +79,7 @@
    :auto-menus nil
    :activate-callback 'om-activate-callback
    :confirm-destroy-function 'om-confirm-destroy-function
+   :color-mode :light
    ;; :help-callback 'om-help-callback
    ))
 
@@ -119,11 +120,18 @@
   (setf (vy self) (om-point-v pos-point))
   )
 
+
+;A VOIR -rev
 (defmethod om-view-size ((self om-abstract-window))
   (if (interface-visible-p self)
       (let ((point (capi::interface-geometry self)))
         #+win32 (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
         #+(or cocoa linux) (om-make-point (third point) (fourth point)))
+    
+    ;#+(or linux win32) (om-make-point (- (third point) (car point)) (- (fourth point) (cadr point)))
+    ;#+cocoa (om-make-point (third point) (fourth point)))
+    
+
       (om-make-point (vw self) (vh self))))
 
 
@@ -136,7 +144,7 @@
                                            :external-min-height h :external-max-height h))))
           self))
 
-(defmethod om-set-view-size ((self om-abstract-window) size-point) 
+(defmethod om-set-view-size ((self om-abstract-window) size-point); (print (list "set" self size-point))
   (let ((wi (or (om-point-h size-point) (om-width self)))
         (he (or (om-point-v size-point) (om-height self))))
     (execute-with-interface self 
@@ -181,7 +189,9 @@
 (defmethod om-resize-callback ((self om-abstract-window) x y w h)
   (unless (and (vw self) (= w (vw self)) (vh self) (= h (vh self)))
    (om-window-resized self (om-make-point w h)))
-  #-linux (call-next-method))
+  ;#-linux 
+  (call-next-method)
+)
 
 (defmethod om-window-resized ((self om-abstract-window) size)
   (declare (ignore self size))
@@ -224,14 +234,42 @@
   (om-make-point (capi::screen-width (capi:convert-to-screen nil))
                  (capi::screen-height (capi:convert-to-screen nil))))
 
+
 ;; test, parfois collect-interfaces plante...
+
 (defun om-front-window () 
   #+(or darwin macos macosx)
   (capi:screen-active-interface (capi:convert-to-screen))
   #-(or darwin macos macosx)
-  ; --> ça plante (parfois)
-  (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible))
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
 )
+
+
+#|
+(defun om-front-window () 
+  #+(or darwin macos macosx)
+  (capi:screen-active-interface (capi:convert-to-screen))
+  #+win32
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
+ #+linux
+ (car (reverse (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)))
+)
+|#
+
+#|
+(defun om-front-window () 
+  #+(or darwin macos macosx linux)
+  (capi:screen-active-interface (capi:convert-to-screen))
+  #+win32
+  ; --> ca plante (parfois)
+ (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
+; #+linux
+ ;(car (reverse (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)))
+)
+|#
+
 
 (defun om-get-all-windows (class)
   (capi::collect-interfaces class))
@@ -369,7 +407,9 @@
                                      ;:external-min-height 50 :external-min-width 50
                                      :no-character-palette t
                                      ;:menu-bar-items nil
-                                     #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     ;#+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+cocoa :color-mode #+cocoa :light
                                      :window-styles style
                                      :font font
                                      :resizable resizable
@@ -388,7 +428,10 @@
                                ))))
     
     (when (setf layout (make-window-layout thewin bg-color))
-      #+cocoa(if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
+      ;A VOIR rev
+      #+(or linux cocoa)
+      ;#+cocoa
+      (if (drawable-layout layout) (setf (capi::output-pane-display-callback layout) 'om-draw-contents-callback))
       (setf (capi::pane-layout thewin) layout))
      (when subviews (mapc (lambda (sv) (om-add-subviews thewin sv)) subviews))
      (correct-win-h thewin)
@@ -396,7 +439,13 @@
        (set-not-resizable thewin w h))
      (unless (window-dialog-p thewin)
        (internal-display thewin))
+     ;remove menus from linux dialogs
      
+     #+linux
+     (when (window-dialog-p thewin)
+       (setf (interface-activate-callback thewin) nil));ou nil
+     
+             ; #'(lambda (win activate-p) (when activate-p (om-add-dummy-menu-to-win win)))))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
      
@@ -506,14 +555,28 @@
 
 (defmethod make-window-layout ((self om-dialog) &optional color)
   (make-instance 'window-layout :internal-border nil :visible-border nil :accepts-focus-p nil
-                 #+cocoa :background #+cocoa :transparent
+                 #+(or linux cocoa) :background #+(or linux cocoa) :transparent
                  ))
 
 (defun om-modal-dialog (dialog &optional (owner nil))
   (update-for-subviews-changes dialog t)
-  ;(print (list (vsubviews self)))
-  (capi::display-dialog dialog :owner (or owner (om-front-window) (capi:convert-to-screen)) 
+  (capi::display-dialog dialog 
+                        :owner (or owner (om-front-window) (capi:convert-to-screen)) 
                         :position-relative-to :owner :x (vx dialog) :y (vy dialog)))
+
+
+#|
+(defun om-modal-dialog (dialog &optional (owner nil))
+  (update-for-subviews-changes dialog t)
+  ;(print (list (vsubviews self)))
+  #-linux
+  (capi::display-dialog dialog 
+                        :owner (or owner (om-front-window) (capi:convert-to-screen)) 
+                        :position-relative-to :owner :x (vx dialog) :y (vy dialog))
+  #+linux (capi::display-dialog dialog)
+  )
+|#
+
 
 (defun om-return-from-modal-dialog (dialog val) 
   (capi::exit-dialog val))

@@ -388,7 +388,7 @@
    (cursor-mode (panel self)))
 
 (defmethod update-subviews ((self MaquetteEditor))
-  (call-next-method)
+  #+(or macosx win32)(call-next-method)
   (let ((pane (panel self)))
     (om-with-delayed-redraw pane
       (om-set-view-size (rulerx pane) (om-make-point (- (w self) (+ y-ruler-w y-scroll-w)) x-ruler-h))
@@ -428,7 +428,7 @@
 
     ))
   )
-
+#|
 ;;for linux and win32 updating cursor
 (defmethod editor-null-event-handler :after ((self maquetteEditor))
    (do-editor-null-event self))
@@ -439,7 +439,7 @@
            (capi:manipulate-pinboard (panel self) 
                                      (slot-value (panel self) 'oa::animation)
                                      :add-top)))
-
+|#
 ;--------------------------
 ;PANEL
 ;--------------------------

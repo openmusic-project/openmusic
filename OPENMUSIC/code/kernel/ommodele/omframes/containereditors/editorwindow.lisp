@@ -29,8 +29,8 @@
 
 ;;; Notes :
 
-;;; - ccl::window-close-nicely definition commentée
-;;; - drag-receive-dropped-flavor definition commentée
+;;; - ccl::window-close-nicely definition commentÃ©e
+;;; - drag-receive-dropped-flavor definition commentÃ©e
 
 (in-package :om)
 
@@ -173,8 +173,7 @@
       (om-add-menu-to-win win)  
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
-      #-linux(om-set-view-size editor (om-interior-size win))
-
+      (om-set-view-size editor (om-interior-size win))
       (cond
           ((scoreeditor-p object)
            (om-set-bg-color (panel (editor win)) *score-bg-color*))
@@ -189,8 +188,10 @@
            ((typep object 'ompatch)
             (om-set-bg-color (panel (editor win)) *patch-bg-color*))
           (t ))
-      
-      win))
+      ;(print (list editor win))
+      win
+      )
+   )
 
 
 
@@ -198,8 +199,7 @@
   (declare (ignore size))
   (when (editor self)
     (call-next-method)
-    (om-set-view-size (editor self) (om-interior-size self)))
-)
+    (om-set-view-size (editor self) (om-interior-size self))))
 
 
 (defmethod om-set-view-size ((self EditorWindow) size) 
@@ -233,6 +233,7 @@
 (defmethod editor-close? ((self t)) t)
 
 #|
+;maybe for macosx?
 (defmethod om-window-close-event :before ((self EditorWindow))
   (when (editor self)
     (close-editor-before (editor self))))
@@ -246,7 +247,11 @@
        ))
 |#
 
-(defmethod om-window-close-event :around ((self EditorWindow))
+
+;MA MODIF VERS 8.0
+;maybe only for linux?
+;before est necessaire ici
+(defmethod om-window-close-event :around ((self EditorWindow)) 
   (when (editor self)
     (close-editor-after (editor self))
     (close-editorFrame (editor self))
@@ -254,6 +259,7 @@
     (loop for ed in (attached-editors (editor self)) do
                  (om-close-window ed))
     (setf (Editorframe (object (panel self))) nil)))
+
 
 (defmethod om-view-key-handler :around ((self EditorWindow) char)
    (if (and char (editor self) (key-event-around (editor self) char))
@@ -298,7 +304,18 @@
 (defmethod InternalEditor-p ((self EditorView)) 
    (EditorView-p (ref self)))
 
-(defmethod window ((self EditorView)) (om-view-window self))
+;(defmethod window ((self EditorView)) (om-view-window self))
+
+(defmethod set-attached-editor ((self EditorView)) 
+  (let ((ref (ref self)))
+    (when ref 
+      (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
+        (push self (attached-editors patcheditor))))))
+
+(defmethod window ((self EditorView))
+ ; (when (ref self) (set-attached-editor self)) ;modif vers 8.0
+  (om-view-window self))
+
 
 (defmethod editor ((self EditorView)) self)
 
@@ -379,9 +396,12 @@
   (om-add-points (om-view-position self) where))
 
 (defmethod om-set-view-size ((self editorView) size)
-   (declare (ignore size))
-   (call-next-method)
-   (update-subviews self))
+  (declare (ignore size))
+  (call-next-method)
+  (update-subviews self)
+  #+linux(when (ref self) 
+           (set-win-size (ref self) size));macosx?
+  )
 
 (defmethod handle-key-event ((self EditorView) char)
    (if (text-view self)

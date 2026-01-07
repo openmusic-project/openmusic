@@ -71,7 +71,8 @@
   (om-draw-contents self))
 
 (defmethod om-drag-reference-view ((self t)) self)
-(defmethod om-drag-container-view ((self t)) (om-view-container (om-drag-reference-view self)))
+(defmethod om-drag-container-view ((self t)) 
+(om-view-container (om-drag-reference-view self)))
 
 (defmethod build-d&d-image ((dragged om-drag-view) pane)
   (let* ((size (om-view-size (om-drag-container-view (om-drag-reference-view dragged))))
@@ -79,6 +80,7 @@
 				    ;; 50 50
 				    (om-point-x size) (om-point-y size) 
 				    :clear t
+                                    ;:foreground :transparent
 				    :background :transparent 
 				    ;; :background (color:make-rgb 0.8 0.8 0.8 0.9)
 				    ))
@@ -98,6 +100,7 @@
 	   (values (gp:make-image-from-port pp) 
 	   	   (om-point-x posi) 
 	   	   (round (om-point-y posi)))
+           
 	   )
       (gp:destroy-pixmap-port pp)
       )))

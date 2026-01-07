@@ -32,7 +32,6 @@
 (in-package :om)
 
 
-
 ;;; used for possible dialog message translations
 (defun getstr (str) str)
 
@@ -343,7 +342,7 @@ External Libraries:
 ;;;=======================
 (defvar *message-win* nil)
 
-(defclass om-message-win (om-windoid)
+(defclass om-message-win (om-dialog)
   ((pane :initarg :pane :accessor pane :initform nil)
    (label :initarg :label :accessor label :initform nil)))
 
@@ -1009,12 +1008,16 @@ External Libraries:
 
 (defvar *help-window* nil)
 
-(defclass help-window (om-window) ())
+;test to see if ok for macosx
+(defclass help-window (om-dialog) ())
 
+#|
 (defmethod om-window-class-menubar ((self help-window))
   (list (om-make-menu "File"
                       (list (om-new-leafmenu "Close" #'(lambda () (om-close-window self)) "w")))
         (make-om-menu 'windows :editor self)))
+|#
+
 
 (defun show-help-window (title helplist &optional panel-w)
   "Show the help window for a patch"
@@ -1023,7 +1026,10 @@ External Libraries:
     (let ((maxl (loop for l in helplist maximize (length l)))
           (panew (or panel-w 310)))
       (setf *help-window* (om-make-window 'help-window :window-title title 
-                                          :size (om-make-point (+ 4 (* (+ 4 panew) (length helplist))) (+ 12 (* 30 maxl)))
+                                          :size (om-make-point (+ 4 (* (+ 4 panew) (length helplist))) 
+                                                               #-macosx(+ 12 (* 30 maxl))
+                                                               #+macosx(+ 22 (* 30 maxl))
+                                                               )
                                           :resizable nil :maximize nil :minimize nil
                                           :bg-color *om-light-gray-color*))
       (om-with-delayed-update *help-window*
@@ -1042,5 +1048,6 @@ External Libraries:
 						       :bg-color *om-white-color* ;(om-make-color 0.9 0.9 0.9)
 						       )))))
 	     )))
-    #-linux (om-add-menu-to-win *help-window*)
+    ;#-linux (om-add-menu-to-win *help-window*)
+    (om-select-window *help-window*)
     ))

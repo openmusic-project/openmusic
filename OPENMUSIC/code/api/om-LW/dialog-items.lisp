@@ -262,8 +262,15 @@
                                   :selected-item nil
                                   :allow-other-keys t)
                             attributes))))
+    ;#-linux
     (when (or bg-color (special-bg di))
       (om-set-bg-color di (or bg-color (special-bg di))))
+    #|
+    #+linux
+    (when (or bg-color (special-bg di))
+      (om-set-bg-color di bg-color)
+      (om-set-fg-color di *om-black-color*))
+    |#
     (setf (vx di) (om-point-h position)
           (vy di) (om-point-v position)
           (vw di) (om-point-h size) 
@@ -499,7 +506,9 @@
    :visible-border :outline
    :callback 'om-dialog-item-action
    ;; 2017-02-09: navigation-callback not implemented on linux 
-   #-linux :navigation-callback #-linux 'text-edit-special-action
+   ;#-linux :navigation-callback #-linux 'text-edit-special-action
+   ;; 2025-06-15: navigation-callback not implemented on linux 
+   :navigation-callback 'text-edit-special-action
    :change-callback 'text-edit-changed-action
    :editing-callback 'text-edited-action
    :gesture-callbacks '((#\Tab . text-input-pane-complete-text))
@@ -533,7 +542,10 @@
   (call-next-method self (om-get-text-edit-size size-point)))
 
 
-(defmethod special-bg ((self  om-editable-text)) *om-white-color*)
+(defmethod special-bg ((self om-editable-text)) 
+  #-linux *om-white-color*
+  #+linux *om-gray1-color*)
+
 
 (defun text-edit-special-action (self action)
   ;(print (list "edit special" action (capi::text-input-allows-newline-p self)))
@@ -561,7 +573,8 @@
 
 (defun text-edited-action (self action)
   ;(print (list "edited" action))
-  #+(or linux win32)(setf *edited-self* self)
+  ;#+(or linux win32)(setf *edited-self* self)
+  #+win32(setf *edited-self* self)
   (if (equal action :end) (om-dialog-item-after-action self)))
  
 (defun text-edit-changed-action (text self win position)
@@ -627,7 +640,10 @@
 ;;; navigation callback does not work
 
 
-(defmethod special-bg ((self om-text-edit-view)) *om-white-color*)
+(defmethod special-bg ((self om-text-edit-view)) 
+  #-linux *om-white-color*
+  #+linux *om-gray1-color*)
+
 
 (defmethod om-dialog-item-text ((self om-text-edit-view))
  (capi::text-input-pane-text self))
@@ -744,7 +760,10 @@
                              :external-min-height (vh self) :external-max-height (vh self)
                              )))
 
-(defmethod special-bg ((self om-item-list)) *om-white-color*)
+(defmethod special-bg ((self om-item-list)) 
+  #-linux *om-white-color*
+  #+linux *om-gray1-color*
+  )
 
 (defun vector-col-to-list (v)
   (loop for i from 0 to (- (length v) 1) collect (elt v i)))

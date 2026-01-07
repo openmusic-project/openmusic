@@ -431,9 +431,11 @@
                                                        (let ((approx (car (nth indx2 (nth indx1 *omicron-scales-list*)))))
                                                          (progn
                                                          (setf (approx (object (om-view-container controls))) approx)
+                                                         #|
                                                          #+linux (when (in-page-mode? panel)
                                                                    (change-score-mode (panel (om-view-container controls)) 0)
                                                                    (setf *pmode* t))
+                                                         |#
                                                          (set-edit-param (om-view-container controls) 'approx approx)
                                                          (om-set-dialog-item-text (nth (get-control-button controls) (om-subviews controls)) 
                                                                                   (give-symbol-of-approx approx));display button name 10
@@ -452,9 +454,11 @@
                                                              (setf (nth pos (approx tracks)) (caar (nth indx1 *omicron-scales-list*)))))
                                                          (om-close-window win)
                                                          (om-invalidate-view controls t)
+                                                         #|
                                                          #+linux (when *pmode*
                                                                    (change-score-mode panel 2)
                                                                    (setf *pmode* nil))
+                                                         |#
                                                          (update-slot-edit panel)
                                                          (update-panel panel t)
                                                          )))

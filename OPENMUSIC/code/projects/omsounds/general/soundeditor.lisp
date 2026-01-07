@@ -237,6 +237,7 @@
 
 
 (defmethod get-panel-class ((self soundEditor)) 'soundpanel)
+;(defmethod get-control-h ((self soundEditor)) #+(or cocoa win32) 36 #+linux 61)
 (defmethod get-control-h ((self soundEditor)) 36)
 (defmethod get-titlebar-class ((self soundeditor)) 'sound-titlebar)
 

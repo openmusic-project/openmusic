@@ -521,9 +521,9 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 (defmethod grille-on-off  ((self view-with-ruler-mixin))
    (setf (grille-p self) (not (grille-p self)))
    (if (grille-p self)
-       #-(and cocoa lispworks8)(draw-grille self)
-     #+(and cocoa lispworks8) (om-invalidate-view self)
-     (om-invalidate-view self)))
+       #-(or  cocoa linux)(draw-grille self)
+     #+(or cocoa linux) (om-invalidate-view self t)
+     (om-invalidate-view self t)))
 
 
 ;------------

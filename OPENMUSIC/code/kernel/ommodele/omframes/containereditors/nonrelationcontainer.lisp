@@ -492,15 +492,26 @@ with the objects respectly associeted."))
   )
 
 (defmethod release-selection ((self om-view) initpos pos)
-    (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
-          (y1 (min (om-point-y pos) (om-point-y initpos)))
-          (x2 (max (om-point-x pos) (om-point-x initpos)))
-          (y2 (max (om-point-y pos) (om-point-y initpos))))
-      (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
-        (when (not (= 0 (caddr rect) (cadddr rect)))
-          (do-select-items-in-rect self rect))
-        (om-invalidate-view self))
-      ))
+  (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
+        (y1 (min (om-point-y pos) (om-point-y initpos)))
+        (x2 (max (om-point-x pos) (om-point-x initpos)))
+        (y2 (max (om-point-y pos) (om-point-y initpos))))
+    (let ((rect (list x1 y1 (- x2 x1) (- y2 y1))))
+      (when (not (= 0 (caddr rect) (cadddr rect)))
+        (do-select-items-in-rect self rect))
+      (om-invalidate-view self))
+    ;;lw81 scroll selection problem fix
+    #+linux(let* ((pos (om-scroll-position self))
+                  (vpos (om-point-v pos))
+                  (hpos (om-point-h pos)))
+             (progn
+               (om-set-scroll-position self (om-make-point (- hpos 1) vpos))
+               (om-set-h-scroll-position self  (om-point-h (om-scroll-position self)))
+      
+               (om-set-scroll-position self (om-make-point (+ hpos 1) vpos))
+               (om-set-h-scroll-position self  (om-point-h (om-scroll-position self)))
+               ))
+    ))
 
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
@@ -526,22 +537,25 @@ with the objects respectly associeted."))
          (inc (if (om-shift-key-p) 500 50)))
     (case char 
       (:om-key-right 
-       (om-set-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (+ hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-left
-       (om-set-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-move-scroll-position self (om-make-point (- hpos inc) vpos))
        (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
       (:om-key-up
-       (om-set-scroll-position self (om-make-point hpos (- vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (- vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-down
-       (om-set-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (om-move-scroll-position self (om-make-point hpos (+ vpos inc)))
        (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
       (:om-key-esc 
-       (om-set-scroll-position self (om-make-point 0 0))
+       (om-move-scroll-position self (om-make-point 0 0))
        (oa::om-set-h-scroll-position self 0)
        (oa::om-set-v-scroll-position self 0))
-      )))
+      )
+    (om-invalidate-view self t)
+      ;(capi::update-drawing-with-cached-display self);linux
+    ))
 
 
 
@@ -602,6 +616,10 @@ Workspace Panels contain icons of patches, maquettes and folders
  
 (defmethod set-panel-color ((self workSpacePanel))
   (om-set-bg-color self *ws-color*))
+
+
+;(defmethod set-field-size ((self workspacepanel))
+;  (om-set-field-size self (panel-size (editor self))))
 
 (defmethod sort-subframes ((self nonrelationPanel) elements)
  (case (presentation (om-view-container self))
