@@ -4902,8 +4902,6 @@
    (format nil "~A" (give-symbol-of-approx (approx (object self))))))
 
 
-
-
 (defmethod make-editor-window ((class (eql 'intchordeditor)) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil))
@@ -5019,12 +5017,6 @@
       win))
 
 
-
-
-
-
-
-
 (defmethod open-internal-editor ((self scorePanel)) (om-beep))
 
 (defmethod open-internal-editor ((self chordseqPanel))
@@ -5102,6 +5094,22 @@
 (defmethod close-editor-before ((self intvoiceeditor))
   (setf (ref self) (att-ed self))
   (update-panel (panel (ref self)) t))
+
+(defmethod tie-continuation-if ((self voicepanel) (chord chord))
+  (let* ((voice (object (om-view-container self)))
+         (sel (selection? self))
+         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
+         (chords (x-append chord (get-all-continuation-chords chord))))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
+      (update-panel self t))))
+
+(defmethod tie-continuation-if ((self polypanel) (chord chord))
+  (let ((chords (x-append chord (get-all-continuation-chords chord)))
+        (voice (get-voice chord)))
+    (when (member-if #'con-chord-p chords)
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+    (update-panel self t)))
 
 (defmethod tie-continuation-if ((self voicepanel) (chord chord))
   (let* ((voice (object (om-view-container self)))
