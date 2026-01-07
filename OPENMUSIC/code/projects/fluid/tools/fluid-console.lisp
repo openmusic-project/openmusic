@@ -84,7 +84,7 @@
     (miditrack :initform 0 :accessor miditrack)
     (nbtracks :initform (length cl-fluid::*fl-synths*) :initarg :nbtracks :accessor nbtracks :type integer :documentation "number of tracks")
     (channels-ctrl :initform nil :accessor channels-ctrl :type t))
-  (:icon 918))
+  (:icon 917))
 
 ;;; miditrack useful for QT player
 (defmethod! set-track ((self fluid-settings-ctrl) tracks)
@@ -131,7 +131,7 @@
 ;===========================
 
 (defclass* fluid-synth-console (fluid-settings-ctrl) ()
-  (:icon 918)
+  (:icon 917)
 (:documentation "
    MIDI-MIX-CONSOLE represents a set of control events (volume, pan, program change, etc.) on <nbtracks> channels.
 
