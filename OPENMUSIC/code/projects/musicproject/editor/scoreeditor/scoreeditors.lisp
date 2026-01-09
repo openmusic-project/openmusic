@@ -3801,13 +3801,13 @@
 (defmethod get-score-class-ctrls ((self polyEditor)) 'poly-controls-view)
 (defmethod get-score-class-panel ((self polyEditor)) 'polypanel)
 
+
 (defmethod do-editor-null-event ((self polyEditor))
   #+linux (om-invalidate-view (panel self))
   #+(or linux win32)(when (equal (state (player self)) :play)
                       (capi:manipulate-pinboard (panel self) 
                                                 (slot-value (panel self) 'oa::animation)
                                                 :add-top)))
-
 
 ;PANEL
 
