@@ -488,8 +488,7 @@ with the objects respectly associeted."))
   (om-init-motion-click view where 
                        :motion-draw 'draw-selection-rectangle 
                        :release-action 'release-selection
-                       :display-mode 2)
-  )
+                       :display-mode 2))
 
 (defmethod release-selection ((self om-view) initpos pos)
   (let ((x1 (min (om-point-x pos) (om-point-x initpos)))
@@ -500,6 +499,9 @@ with the objects respectly associeted."))
       (when (not (= 0 (caddr rect) (cadddr rect)))
         (do-select-items-in-rect self rect))
       (om-invalidate-view self))
+))
+
+#|
     ;;lw81 scroll selection problem fix
     #+linux(let* ((pos (om-scroll-position self))
                   (vpos (om-point-v pos))
@@ -512,6 +514,7 @@ with the objects respectly associeted."))
                (om-set-h-scroll-position self  (om-point-h (om-scroll-position self)))
                ))
     ))
+|#
 
 (defmethod do-select-items-in-rect ((self nonrelationPanel) rect) 
    (let (user-rect scratch-rect-i scratch-rect-n i-rect n-rect)
