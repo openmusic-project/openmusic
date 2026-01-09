@@ -55,12 +55,15 @@
 
 (defmethod update-for-subviews-changes ((self om-text-edit-window) &optional (recursive nil)) nil)
 
+(setf *line-color-numbers* (om-make-color 0.772 0.855 0.788))
+
 (defmethod make-window-layout ((self om-text-edit-window) &optional color) 
   (make-instance 'simple-layout :description
                  (list (setf (om-lisp::ep self) 
                              (make-instance 'capi::editor-pane 
                                             :font om-lisp::*def-text-edit-font*
                                             :line-numbers-p *line-numbers*
+                                            :line-numbers-background (om-color-to-capi *line-color-numbers*)
                                             :echo-area (echoarea self)
                                             :change-callback 'texteditor-change-callback)))))
 

@@ -45,6 +45,7 @@
           om-get-editor-panel
           om-destroy-callback
           *line-numbers*
+          *line-color-numbers*
          ) :om-lisp)
 
 ;; ERRORS HANDLING from S. Ball
@@ -490,6 +491,7 @@
 
 (defvar *editor-class* 'om-text-editor)
 (defparameter *line-numbers* t)
+(defparameter *line-color-numbers* t)
 
 ;;; NEW EDITOR
 ;;; (called from menu "New")
@@ -520,6 +522,7 @@
               (list (setf (ep win) (make-instance 'capi::editor-pane :echo-area t 
                                                   :font *def-text-edit-font*
                                                   :line-numbers-p *line-numbers*
+                                                  ;:line-numbers-background (om::om-color-to-capi *line-color-numbers*)
                                                   ))))
         (push win *editor-files-open*)
         (setf (capi::simple-pane-background (ep win)) *text-bg-color*)
