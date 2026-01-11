@@ -308,12 +308,12 @@
 ;;MICRO-SCROLL ISSUE:
 ;pour empecher les micro-scroll sous linux -- a voir...
 
-#-linux
+;#-linux
 (defmethod om-scroll-position ((self om-scroller))
   (om-make-point (om-h-scroll-position self) (om-v-scroll-position self)))
 
-#+linux
-(defmethod om-set-scroll-position ((self om-scroller) pos) nil)
+;#+linux
+;(defmethod om-set-scroll-position ((self om-scroller) pos) nil)
 
 
 (defmethod om-set-scroll-position ((self t) pos) nil)
