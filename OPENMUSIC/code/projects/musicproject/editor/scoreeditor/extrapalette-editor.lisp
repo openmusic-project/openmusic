@@ -31,7 +31,7 @@
 
 ;;c'est mieux om-window pour avoir la main apres
 
-(defclass extra-pal-win (om-window) 
+(defclass extra-pal-win (om-dialog) 
   ((extramanager :initform nil :initarg :extramanager :accessor extramanager)
    (buttons :initform nil :initarg :buttons :accessor buttons)
    (extraitems :initform nil :initarg :extraitems :accessor extraitems)
@@ -126,7 +126,8 @@
     (setf (current-editor *extramanager*) self)
     ;;necessary to close palette when editor is closed
     (push win (attached-editors (om-view-container (current-editor *extramanager*))))
-    (om-show-window win)
+    ;(om-show-window win)
+    (om-select-window win)
     )
     )
 
