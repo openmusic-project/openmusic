@@ -31,7 +31,7 @@
 ;;;============================
 ;;; SCORE INSPECTOR :
 
-(defclass score-inspector-window (om-window) 
+(defclass score-inspector-window (om-dialog) 
               ((inspector :initform nil :initarg :inspector :accessor inspector)))
 
 (defclass score-inspector ()
@@ -313,7 +313,7 @@
                                                                 (setf (tempo self) (list (value x) (second (tempo self))))
                                                                 (update-panel panel)))
                (om-make-dialog-item 'om-check-box  (om-make-point 170 2) (om-make-point 80 20)
-                                    " Mute" :font *controls-font* :enable nil)
+                                    " Mute" :font *controls-font* :enable t)
                )))
 
 (defmethod get-inspector-info ((panel scorepanel) (self chord-seq) index p0)
@@ -333,7 +333,7 @@
                
                
                (om-make-dialog-item 'om-check-box  (om-make-point 170 10) (om-make-point 80 20)
-                                    " Mute" :font *controls-font* :enable nil)
+                                    " Mute" :font *controls-font* :enable t)
                )))
 
 (defmethod get-inspector-info ((panel scorepanel) (self poly) index p0)
@@ -373,7 +373,7 @@
                                                                 (om-set-fg-color x *om-black-color*)
                                                                 (update-panel panel)))
                       (om-make-dialog-item 'om-check-box (om-make-point 208 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
-                                           :font *controls-font* :enable nil)
+                                           :font *controls-font* :enable t)
                       
                       ))))))
 
@@ -405,7 +405,7 @@
                                                                 (om-set-fg-color x *om-black-color*)
                                                                 (update-panel panel)))
                       (om-make-dialog-item 'om-check-box (om-make-point 208 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
-                                           :font *controls-font* :enable nil)
+                                           :font *controls-font* :enable t)
                       
                       ))))))
 
