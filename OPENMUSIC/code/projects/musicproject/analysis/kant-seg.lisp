@@ -166,7 +166,9 @@
    
                           
 (defmethod kant-data-window ((kdata kant-data))
-  (let ((win (om-make-window 'om-dialog :position :centered 
+  (let ((win (om-make-window 'om-dialog 
+                             :position :centered 
+                             :window-title "Quantification Parameters"
                              :size (om-make-point 430 200)))
         (pane (om-make-view 'om-view
                             :size (om-make-point 400 180)

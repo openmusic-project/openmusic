@@ -153,8 +153,9 @@
 
 
 (defmethod ts-data-window ((kdata time-segment))
-  (let ((win (om-make-window 'om-window 
+  (let ((win (om-make-window 'om-dialog ;'om-window 
                              :position :centered 
+                             :window-title "Time Segment Info"
                              :size (om-make-point 430 200)
                              :resizable nil
                              ))
@@ -250,7 +251,9 @@
                                               )))
          )
         (om-add-subviews win pane)
-        win))))
+        (om-select-window win)
+        ;win
+        ))))
 
 
 
