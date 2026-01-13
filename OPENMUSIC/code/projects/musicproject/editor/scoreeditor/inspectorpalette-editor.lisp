@@ -31,7 +31,7 @@
 ;;;============================
 ;;; SCORE INSPECTOR :
 
-(defclass score-inspector-window (om-dialog) 
+(defclass score-inspector-window #+macosx(om-window) #-macosx(om-dialog)
               ((inspector :initform nil :initarg :inspector :accessor inspector)))
 
 (defclass score-inspector ()
