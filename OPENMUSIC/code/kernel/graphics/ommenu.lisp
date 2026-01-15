@@ -140,10 +140,10 @@
                                      (list 
                                       ;;;old panels  
                                       (when (score-tools-palettes-p editor)
-                                        (om-new-leafmenu "Score Inspector"  #'(lambda () (show-inspector-from-menu (panel editor)))))
+                                        (om-new-leafmenu "Score Inspector"  #'(lambda () (show-inspector-from-menu (panel editor))) "I"))
                                                                                                                
                                       (when (score-tools-palettes-p editor)
-                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools (panel editor)))))
+                                        (om-new-leafmenu "Extra Edition Palette" #'(lambda () (show-extra-palette-tools (panel editor))) "X"))
                                       )
                                       
                                      (list 
