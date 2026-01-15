@@ -101,6 +101,7 @@
     (setf (current-editor *scoreinspector*) self)
     (push win (attached-editors (om-view-container (current-editor *scoreinspector*))))
     ;(om-show-window win)
+    (om-set-view-position win (om-make-point 500 500))
     ))
 
 (defmethod close-inspector-win ((self score-inspector-window)) 
