@@ -532,7 +532,7 @@
   (mapcar #'(lambda (view) (update-cursor view (start-position view)))
           (cursor-panes self)))
 
-(defmethod close-editor-before ((self play-editor-mixin))
+(defmethod close-editor-before :around ((self play-editor-mixin))
   (general-stop (player self))
   (call-next-method))
 
