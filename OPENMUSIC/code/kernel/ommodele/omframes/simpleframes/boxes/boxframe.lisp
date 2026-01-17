@@ -1283,11 +1283,16 @@
 
 (defmethod om-dialog-item-action ((self commentview)) (call-next-method))
 
-
+#|
 (defmethod om-view-doubleclick-handler ((self commentview) where)
   (declare (ignore where))
   (comment-box-edit (icon-finder self))
   self)
+|#
+
+(defmethod om-view-doubleclick-handler ((self commentview) where)
+  (declare (ignore where))
+  (edit-comment-box (list (om-view-container self))))
 
 ;;; container de text-view = panel
 (defmethod comment-box-edit ((self commentboxframe))
