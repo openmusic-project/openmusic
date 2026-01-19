@@ -55,6 +55,7 @@
    "41 edo"
    "42 edo (1/7)"
    "48 edo (1/8)"
+"53 edo"
    "60 edo (1/10)"
    "72 edo (1/12)"
    "84 edo (1/14)"
@@ -62,7 +63,7 @@
    ))
 
 (defparameter *edo-val-list* 
-  (list 50 1 70 80 90 100 2 140 150 160 170 180 190 220 4 300 310 360 410 420 8 600 720 840 16))
+  (list 50 1 70 80 90 100 2 140 150 160 170 180 190 220 4 300 310 360 410 420 8 530 600 720 840 16))
 
 (defparameter *edo-list* nil)
 (setf *edo-list* (loop for i in *edo-names-0*
@@ -94,6 +95,7 @@
    "41 EDO"
    "42 EDO (1/7 tones)"
    "48 EDO (1/8 tones)"
+"53 EDO"
    "60 EDO (1/10 tones)"
    "72 EDO (1/12 tones)"
    "84 EDO (1/14 tones)"
@@ -166,6 +168,9 @@
 
 ;===48 EDO===
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")
+
+;===53 EDO===
+  (list "Chain of fifths" "Chain of fifths, sharps only" "Chain of fifths, flats only")
 
 ;===60 EDO===
   (list "Offset chains of fifths, sharps only" "Offset chains of fifths, flats only" "OM legacy")
@@ -245,7 +250,13 @@
    (list (format nil "48 equal divisions of the octave~%~%Step size = 25 cents~%~%Fifth size = 700 cents~%~%Notated as two interlocking sets of 24 EDO offset by 1 step of 48 EDO (25 cents).~%~%Arrows raise/lower the pitch by 1 step.~%~%Example chromatic sequence: C C^ C+ C#v C# C#^ C#+ Dv D...etc.")
          (format nil "48 equal divisions of the octave~%~%Step size = 25 cents~%~%Fifth size = 700 cents~%~%Notated as two interlocking sets of 24 EDO offset by 1 step of 48 EDO (25 cents).~%~%Arrows raise/lower the pitch by 1 step.~%~%Example chromatic sequence: C C^ Ddb Dbv Db Db^ Dd Dv D...etc.")
          (format nil "48 equal divisions of the octave~%~%Step size = 25 cents~%~%Fifth size = 700 cents~%~%Notated using OpenMusic's legacy accidentals"))
-   (list (format nil "60 equal divisions of the octave~%~%Step size = 20 cents~%~%Fifth size = 700 cents~%~%Notated as five interlocking sets of 12 EDO offset by 1 step of 60 EDO (20 cents).~%~%Arrows raise/lower the pitch by 1 step.")
+
+(list (format nil "53 equal divisions of the octave~%~%Step size ~~ 22.6 cents~%Fifth size ~~ 701.9 cents~%~%Notated as a chain of ascending fifths from Gb. Pitches beyond A# in the chain are respelled with arrow-attached accidentals (e.g. E# = F^).~%~%Arrows lower/raise the pitch by 1 step.~%~%Example chromatic sequence: C C^ C^^ Dbv Db C# C#^ Dvv Dv D...etc.")
+	(format nil "53 equal divisions of the octave~%~%Step size ~~ 22.6 cents~%Fifth size ~~ 701.9 cents~%~%Notated as a chain of ascending fifths from F. Pitches beyond A# in the chain are respelled with arrow-attached accidentals (e.g. E# = F^).~%~%Arrows lower/raise the pitch by 1 step.~%~%Example chromatic sequence: C C^ C^^ C#vv C#v C# C#^ C#^^ Dv D...etc.")
+	(format nil "53 equal divisions of the octave~%~%Step size ~~ 22.6 cents~%Fifth size ~~ 701.9 cents~%~%Notated as a chain of ascending fifths from Gb. Pitches beyond B in the chain are respelled with arrow-attached accidentals (e.g. F# = Gb^).~%~%Arrows lower/raise the pitch by 1 step.~%~%Example chromatic sequence: C C^ Dbvv Dbv Db Db^ Db^^ Dvv Dv D...etc.")
+)
+
+(list (format nil "60 equal divisions of the octave~%~%Step size = 20 cents~%~%Fifth size = 700 cents~%~%Notated as five interlocking sets of 12 EDO offset by 1 step of 60 EDO (20 cents).~%~%Arrows raise/lower the pitch by 1 step.")
          (format nil "60 equal divisions of the octave~%~%Step size = 20 cents~%~%Fifth size = 700 cents~%~%Notated as five interlocking sets of 12 EDO offset by 1 step of 60 EDO (20 cents).~%~%Arrows raise/lower the pitch by 1 step.")
          (format nil "60 equal divisions of the octave~%~%Step size = 20 cents~%~%Fifth size = 700 cents~%~%Notated using OpenMusic's legacy accidentals"))
  
@@ -338,7 +349,7 @@
     (list 410.1 *41-EDO_#_1* "41 EDO_#(a)")
     (list 410.2 *41-EDO_#_2* "41 EDO_#(b)")
     (list 410.3 *41-EDO_b_1* "41 EDO_b(a)")
-    (list 410.4 *41-EDO_b_2* "41 EDO_b(b)")
+    (list 410.4 *41-EDO_b_2* "42 EDO_b(b)")
     )
    (list
     (list 420.0 *42-EDO_#* "42 EDO_#")
@@ -351,6 +362,11 @@
     (list 480.1 *48-EDO_b* "48 EDO_b")
     (list 8 *current-1/8-scale* "48 EDO_om")
     )
+(list
+(list 530.0 *53-EDO* "53 EDO")
+(list 530.1 *53-EDO_#* "53 EDO_#")
+(list 530.2 *53-EDO_b* "53 EDO_b")
+)
    (list
     (list 600.0 *60-EDO_#* "60 EDO_#")
     (list 600.1 *60-EDO_b* "60 EDO_b")

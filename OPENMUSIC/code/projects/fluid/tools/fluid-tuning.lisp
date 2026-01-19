@@ -170,7 +170,54 @@
                            :count (length data)
                            :initial-contents data)) 1)
 
-    ))
+;===53 EDO===
+
+(cl-fluid::fluid_synth_activate_octave_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+0 5 "53-EDO_a"
+(let ((data (loop for i in '(0.0 13.0 4.0 17.0 8.0 21.0 11.0 2.0 15.0 6.0 19.0 9.0)
+collect (coerce i 'double-float))))
+(cffi:foreign-alloc :double
+:count (length data)
+:initial-contents data)) 1)
+
+(cl-fluid::fluid_synth_activate_octave_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+1 5 "53-EDO_b"
+(let ((data (loop for i in '(23.0 36.0 26.0 40.0 30.0 43.0 34.0 25.0 38.0 28.0 42.0 32.0)
+collect (coerce i 'double-float))))
+(cffi:foreign-alloc :double
+:count (length data)
+:initial-contents data)) 1)
+
+(cl-fluid::fluid_synth_activate_octave_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+2 5 "53-EDO_c"
+(let ((data (loop for i in '(45.0 58.0 49.0 62.0 53.0 66.0 57.0 47.0 60.0 51.0 64.0 55.0)
+collect (coerce i 'double-float))))
+(cffi:foreign-alloc :double
+:count (length data)
+:initial-contents data)) 1)
+
+(cl-fluid::fluid_synth_activate_octave_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+3 5 "53-EDO_d"
+(let ((data (loop for i in '(68.0 81.0 72.0 85.0 75.0 89.0 79.0 70.0 83.0 74.0 87.0 77.0)
+collect (coerce i 'double-float))))
+(cffi:foreign-alloc :double
+:count (length data)
+:initial-contents data)) 1)
+
+(cl-fluid::fluid_synth_activate_octave_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+4 5 "53-EDO_e"
+(let ((data (loop for i in '(91.0 0.0 94.0 0.0 98.0 0.0 0.0 92.0 0.0 96.0 0.0 0.0)
+collect (coerce i 'double-float))))
+(cffi:foreign-alloc :double
+:count (length data)
+:initial-contents data)) 1)
+
+))
 
 ;a INITIALISER quand on charge les synths et selon number of synths:
 ; a mettre dans fluid-preferences juste apres (load-sf-to-all)
@@ -295,6 +342,46 @@
      1)
 
     )))
+
+(defmethod activate-53edo ((port number))  
+  (fluidloaded? 
+  (progn
+(cl-fluid::fluid_synth_activate_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+0 ;chan
+0 ;bank
+5 ;prog
+1)
+
+(cl-fluid::fluid_synth_activate_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+1 ;chan
+1 ;bank
+5 ;prog
+1)
+
+(cl-fluid::fluid_synth_activate_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+2 ;chan
+2 ;bank
+5 ;prog
+1)
+
+(cl-fluid::fluid_synth_activate_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+3 ;chan
+3 ;bank
+5 ;prog
+1)
+
+(cl-fluid::fluid_synth_activate_tuning
+(cl-fluid::synthptr (nth port cl-fluid::*fl-synths*))
+4 ;chan
+4 ;bank
+5 ;prog
+1)
+
+)))
 
 
 ;;All other EDOs deactivate otcave tuning:
@@ -422,6 +509,10 @@
      ((or (= 8 value) (= 480.0 value) (= 480.1 value))
       (fluid-pitchwheel '(0 1024 2048 3072 0 1024 2048 3072) 
                         '(1 2 3 4 5 6 7 8) port))
+
+;53 EDO
+     ((or (= 530.0 value) (= 530.1 value) (= 530.2 value))
+      (activate-53edo port))
 
 ;60 EDO
      ((or (= 10 value) (= 600.0 value) (= 600.1 value))

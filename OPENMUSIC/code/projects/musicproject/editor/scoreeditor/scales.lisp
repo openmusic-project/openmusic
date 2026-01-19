@@ -691,6 +691,29 @@
 :lines-list (list 0 0 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 3 3 3 3 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 7 7)
 :approx-factor 1200/48))
 
+;=====53 EDO=====
+
+(defvar *53-EDO*
+(make-instance 'scale
+:alteration-list
+(list () (t-S1) (t-S2) (t-F9) (t-F8) (t-S8) (t-S9) (t-F2) (t-F1) () (t-S1) (t-S2) (t-F9) (t-F8) (t-S8) (t-S9) (t-F2) (t-F1) () (t-S1) (t-S2) (t-F1) () (t-S1) (t-S2) (t-F9) (t-F8) (t-S8) (t-S9) (t-F2) (t-F1) () (t-S1) (t-S2) (t-F9) (t-F8) (t-S8) (t-S9) (t-F2) (t-F1) () (t-S1) (t-S2) (t-F9) (t-F8) (t-S8) (t-S9) (t-F2) (t-F1) () (t-S1) (t-S2) (t-F1))
+:lines-list (list 0 0 0 1 1 0 0 1 1 1 1 1 2 2 1 1 2 2 2 2 2 3 3 3 3 4 4 3 3 4 4 4 4 4 5 5 4 4 5 5 5 5 5 6 6 5 5 6 6 6 6 6 7)
+:approx-factor 1200/53))
+
+(defvar *53-EDO_#*
+(make-instance 'scale
+:alteration-list
+(list () (t-S1) (t-S2) (t-S6) (t-S7) (t-S8) (t-S9) (t-S10) (t-F1) () (t-S1) (t-S2) (t-S6) (t-S7) (t-S8) (t-S9) (t-S10) (t-F1) () (t-S1) (t-S2) (t-F1) () (t-S1) (t-S2) (t-S6) (t-S7) (t-S8) (t-S9) (t-S10) (t-F1) () (t-S1) (t-S2) (t-S6) (t-S7) (t-S8) (t-S9) (t-S10) (t-F1) () (t-S1) (t-S2) (t-S6) (t-S7) (t-S8) (t-S9) (t-S10) (t-F1) () (t-S1) (t-S2) (t-F1))
+:lines-list (list 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 2 2 2 2 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 6 6 6 6 7)
+:approx-factor 1200/53))
+
+(defvar *53-EDO_b*
+(make-instance 'scale
+:alteration-list
+(list () (t-S1) (t-F10) (t-F9) (t-F8) (t-F7) (t-F6) (t-F2) (t-F1) () (t-S1) (t-F10) (t-F9) (t-F8) (t-F7) (t-F6) (t-F2) (t-F1) () (t-S1) (t-F2) (t-F1) () (t-S1) (t-F10) (t-F9) (t-F8) (t-F7) (t-F6) (t-F2) (t-F1) () (t-S1) (t-F10) (t-F9) (t-F8) (t-F7) (t-F6) (t-F2) (t-F1) () (t-S1) (t-F10) (t-F9) (t-F8) (t-F7) (t-F6) (t-F2) (t-F1) () (t-S1) (t-F2) (t-F1))
+:lines-list (list 0 0 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 3 3 3 3 4 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 6 7 7)
+:approx-factor 1200/53))
+
 ;=====60 EDO=====
 
 (defvar *60-EDO_#*
@@ -832,7 +855,7 @@
                              (list 410.1 *41-EDO_#_1* "41 EDO_#(a)")
                              (list 410.2 *41-EDO_#_2* "41 EDO_#(b)")
                              (list 410.3 *41-EDO_b_1* "41 EDO_b(a)")
-                             (list 410.4 *41-EDO_b_2* "41 EDO_b(b)")
+                             (list 410.4 *41-EDO_b_2* "42 EDO_b(b)")
                              (list 420.0 *42-EDO_#* "42 EDO_#")
                              (list 420.1 *42-EDO_b* "42 EDO_b")
                              (list 7 *7-tone-chromatic-scale* "42 EDO_om")
@@ -840,6 +863,9 @@
                              (list 480.0 *48-EDO_#* "48 EDO_#")
                              (list 480.1 *48-EDO_b* "48 EDO_b")
                              (list 8 *current-1/8-scale* "48 EDO_om")
+			(list 530.0 *53-EDO* "53 EDO")
+                        (list 530.1 *53-EDO_#* "53 EDO_#")
+                        (list 530.2 *53-EDO_b* "53 EDO_b")
                              (list 600.0 *60-EDO_#* "60 EDO_#")
                              (list 600.1 *60-EDO_b* "60 EDO_b")
                              (list 10 *10-tone-chromatic-scale* "60 EDO_om")
