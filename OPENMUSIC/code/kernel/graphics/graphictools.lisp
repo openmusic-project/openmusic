@@ -671,20 +671,26 @@ into the unaire-fun-view.#action#"))
 (defmethod om-view-doubleclick-handler ((self om-icon-button) where)
   (om-view-click-handler self where))
  
-(defmethod om-view-click-handler ((self om-icon-button) where)
-   "this function call the slot action of SELF with the parameter SELF"
-   (declare (ignore where))
-   (when (enabled self)
-     (setf (selected-p self) t)
-     (om-redraw-view self)
-     (om-init-motion-click self where 
-                          :release-action #'(lambda (view p1 p2) 
-                                              (declare (ignore view p1 p2))
-                                              (when (action self) (om-with-error-handle (apply (action self) (list self))))
-                                              (unless (lock-push self) (setf (selected-p self) nil))
-                                              (om-invalidate-view self)))
-     t
-     ))
+(defmethod om-view-click-handler ((self om-icon-button) where) 
+  "this function call the slot action of SELF with the parameter SELF"
+   ;(declare (ignore where))
+  (let* ((panel (om-view-container self))
+         (pos (om-mouse-position panel))
+         (zone (om-make-rect 3 1 52 30))
+         (ok (om-point-in-rect-p pos zone)))
+     ;(print (list "icon" self where pos ok))
+    (when (and (enabled self) ok)
+      (setf (selected-p self) t)
+      (om-redraw-view self)
+      (om-init-motion-click self where 
+                              :release-action #'(lambda (view p1 p2) 
+                                                  (declare (ignore view p1 p2))
+                                                  (when (action self) (om-with-error-handle (apply (action self) (list self))))
+                                                  (unless (lock-push self) (setf (selected-p self) nil))
+                                                  (om-invalidate-view self)
+                                                  ))
+      t)))
+
 
 (defmethod om-draw-contents ((self om-icon-button))
    (call-next-method)

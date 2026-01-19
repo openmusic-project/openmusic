@@ -483,12 +483,15 @@ with the objects respectly associeted."))
    self)
    
 
-(defmethod control-actives ((view nonrelationPanel) where)
+(defmethod control-actives ((view nonrelationPanel) where) (print (list "control" view (get-actives view)))
   (close-enter-dialog (editor view))
+  (unless *comment-edit*
   (om-init-motion-click view where 
                        :motion-draw 'draw-selection-rectangle 
                        :release-action 'release-selection
                        :display-mode 2))
+  (setf *comment-edit* nil))
+
 
 (defmethod release-selection ((self om-view) initpos pos)
   (let ((x1 (min (om-point-x pos) (om-point-x initpos)))

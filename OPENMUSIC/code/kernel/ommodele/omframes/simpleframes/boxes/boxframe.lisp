@@ -1283,9 +1283,11 @@
 
 (defmethod om-dialog-item-action ((self commentview)) (call-next-method))
 
+(defparameter *comment-edit* nil)
 
 (defmethod om-view-doubleclick-handler ((self commentview) where)
   (declare (ignore where))
+  (setf *comment-edit* t)
   (comment-box-edit (icon-finder self))
   self)
 
