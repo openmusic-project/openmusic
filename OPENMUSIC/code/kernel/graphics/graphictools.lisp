@@ -680,31 +680,34 @@ into the unaire-fun-view.#action#"))
          (zone (om-make-rect 3 1 52 30))
          (ok (om-point-in-rect-p pos zone)))
      ;(print (list "icon" self where pos ok))
+    (print (list "pathc?" (typep (om-view-container self) 'patchpanel) ok))
     (when (enabled self)
-      (if (and (typep (om-view-container self) 'patchpanel) ok)
-        (progn
-          (setf (selected-p self) t)
-          (om-redraw-view self)
-          (om-init-motion-click self where 
-                                :release-action #'(lambda (view p1 p2) 
-                                                    (declare (ignore view p1 p2))
-                                                    (when (action self) (om-with-error-handle (apply (action self) (list self))))
-                                                    (unless (lock-push self) (setf (selected-p self) nil))
-                                                    (om-invalidate-view self)
-                                                    ))
-          t)
-      (progn
-          (setf (selected-p self) t)
-          (om-redraw-view self)
-          (om-init-motion-click self where 
-                                :release-action #'(lambda (view p1 p2) 
-                                                    (declare (ignore view p1 p2))
-                                                    (when (action self) (om-with-error-handle (apply (action self) (list self))))
-                                                    (unless (lock-push self) (setf (selected-p self) nil))
-                                                    (om-invalidate-view self)
-                                                    ))
-          t)
-      ))))
+      (cond 
+       ((and (typep (om-view-container self) 'patchpanel) ok)
+        
+        (setf (selected-p self) t)
+        (om-redraw-view self)
+        (om-init-motion-click self where 
+                              :release-action #'(lambda (view p1 p2) 
+                                                  (declare (ignore view p1 p2))
+                                                  (when (action self) (om-with-error-handle (apply (action self) (list self))))
+                                                  (unless (lock-push self) (setf (selected-p self) nil))
+                                                  (om-invalidate-view self)
+                                                  ))
+        t)
+       ((not (typep (om-view-container self) 'patchpanel))
+       
+        (setf (selected-p self) t)
+        (om-redraw-view self)
+        (om-init-motion-click self where 
+                              :release-action #'(lambda (view p1 p2) 
+                                                  (declare (ignore view p1 p2))
+                                                  (when (action self) (om-with-error-handle (apply (action self) (list self))))
+                                                  (unless (lock-push self) (setf (selected-p self) nil))
+                                                  (om-invalidate-view self)
+                                                  ))
+        t)
+       (t )))))
 
 
 (defmethod om-draw-contents ((self om-icon-button))
