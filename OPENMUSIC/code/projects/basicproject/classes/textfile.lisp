@@ -376,7 +376,7 @@ As output it returns the contents of the text buffer as a list formatted accordi
     (add-lock-button (car (frames self))))
   (or (editorframe self) (open-new-textedit (value self) self)))
 
- (defmethod OpenObjectEditor ((self OMTextFilebox)) 
+(defmethod OpenObjectEditor ((self OMTextFilebox)) 
    "If there is a EditorFrame open for SELF select the window of EditorFrame, 
 else create a new Editor frame, and select its window."
    (setf (EditorFrame self) (OpenEditorframe self))
