@@ -710,7 +710,7 @@
                                                      :focus t
                                                      :object self
                                                      :container (panel container)
-                                                     #+linux :bg-color *om-lgray-color* ;*om-light-blue-color*
+                                                     #+linux :bg-color #+linux *om-lgray-color* ;*om-light-blue-color*
                                                      :font *om-default-font1*))
     (om-remove-subviews self selftext)
     ))

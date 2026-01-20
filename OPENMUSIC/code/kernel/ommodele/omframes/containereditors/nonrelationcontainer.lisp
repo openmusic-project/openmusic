@@ -483,7 +483,7 @@ with the objects respectly associeted."))
    self)
    
 
-(defmethod control-actives ((view nonrelationPanel) where) (print (list "control" view (get-actives view)))
+(defmethod control-actives ((view nonrelationPanel) where)
   (close-enter-dialog (editor view))
   (unless *comment-edit*
   (om-init-motion-click view where 
