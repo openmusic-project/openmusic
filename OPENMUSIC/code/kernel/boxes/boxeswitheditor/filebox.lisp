@@ -187,6 +187,9 @@
      (om-beep-msg "These boxes can not be erased")
      (call-next-method)))
 
+;a voir
+(defmethod patchpanel-p ((self openfilepanel)) nil)
+
 (defmethod add-window-buttons  ((self openfilePanel))
    "Add iterator and accumulator buttons to the patch."
    (call-next-method)

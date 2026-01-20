@@ -240,6 +240,8 @@
      (om-beep-msg "These boxes can not be erased")
      (call-next-method)))
 
+;a voir
+(defmethod patchpanel-p ((self looppanel)) nil)
 
 (defmethod add-output-enabled ((self looppanel) type) nil)
 (defmethod add-input-enabled ((self looppanel) type) t)
