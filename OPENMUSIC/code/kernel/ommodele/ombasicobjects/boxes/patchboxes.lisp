@@ -1586,7 +1586,7 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
    (when (EditorFrame self)
      (om-select-window (window (Editorframe self)))))
 
-
+#|
 (defmethod OpenObjectEditor ((self OMInstance)) 
   (setf (EditorFrame self) (OpenEditorframe self))
   (when (EditorFrame self)
@@ -1596,7 +1596,11 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
         (push (editorframe (object (car (frames self))))
               (attached-editors (om-view-container (om-view-container (car (frames self))))))
       )))
+|#
 
+(defmethod OpenObjectEditor ((self OMInstance)) 
+  (OpenEditorframe self)
+  (setf (EditorFrame self) t))
 
 ;--------------Evaluation
 (defmethod omNG-box-value ((self OMBoxInstance) &optional (numout 0))

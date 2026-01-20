@@ -680,7 +680,6 @@ into the unaire-fun-view.#action#"))
          (zone (om-make-rect 3 1 52 30))
          (ok (om-point-in-rect-p pos zone)))
      ;(print (list "icon" self where pos ok))
-    (print (list "pathc?" (om-view-container self) (patchpanel-p (om-view-container self)) ok))
     (when (enabled self)
       (cond 
        ((and (patchpanel-p (om-view-container self)) ok)

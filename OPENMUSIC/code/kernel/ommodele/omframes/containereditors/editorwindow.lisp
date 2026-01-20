@@ -306,11 +306,14 @@
 
 ;(defmethod window ((self EditorView)) (om-view-window self))
 
+;TEST
+
 (defmethod set-attached-editor ((self EditorView)) 
   (let ((ref (ref self)))
     (when ref 
       (let ((patcheditor (om-view-container(editorframe (mycontainer ref)))))
         (push self (attached-editors patcheditor))))))
+
 
 (defmethod window ((self EditorView))
  ; (when (ref self) (set-attached-editor self)) ;modif vers 8.0
