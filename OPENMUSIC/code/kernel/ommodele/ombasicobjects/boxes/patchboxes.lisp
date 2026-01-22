@@ -1600,7 +1600,8 @@ for all boxes in the patch after an evaluation.#ev-once-p#")
 
 (defmethod OpenObjectEditor ((self OMInstance)) 
   (OpenEditorframe self)
-  (setf (EditorFrame self) t))
+ ; (setf (EditorFrame self) t)
+)
 
 ;--------------Evaluation
 (defmethod omNG-box-value ((self OMBoxInstance) &optional (numout 0))

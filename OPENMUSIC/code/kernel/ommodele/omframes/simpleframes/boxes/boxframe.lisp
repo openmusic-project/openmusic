@@ -1094,14 +1094,16 @@
     (setf (name (reference (object self))) new-name)
     (setf (name (object self)) new-name)
     new-name)
-#|  
+
 (defmethod close-frame ((self instBoxframe))
   "Called when you delete an instboxframe will close listeditor."
   (when (attached-objs (object self)) 
     (mapcar #'om-close-window (attached-objs (object self))))
+  (om-close-window (editorframe (reference (object self))))
   (setf (frames (object self)) nil))
-|#
 
+
+#|
 (defmethod close-frame ((self instBoxframe))
   "Called when you delete an instboxframe will close listeditor."
   (let ((objs (attached-objs (object self))))
@@ -1118,7 +1120,7 @@
           (om-close-window (editorframe (reference (object self))))))))
    (om-close-window (editorframe (reference (object self))))
    (setf (frames (object self)) nil)))
-
+|#
 ;----------------------------------------
 
 (defclass slotboxFrame (boxframe) ()

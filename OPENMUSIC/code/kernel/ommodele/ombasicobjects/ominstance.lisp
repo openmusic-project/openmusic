@@ -124,7 +124,7 @@ if the instance is a list or a constant a subclass of OMInstance will be create.
 (defmethod obj-file-type ((self OMInstance)) :INST)
 (defmethod obj-file-extension ((self OMInstance)) "omi")
 
-(defmethod OpenEditorframe ((self OMInstance))
+(defmethod OpenEditorframe ((self OMInstance)) 
   "For instance there are to type of Editorframe:
 if the instance's class have an editor (for exemple note) you can open this editor,
 but in all case you can open an editor for the instance slots, see the class InstanceWinFrame."
@@ -141,13 +141,14 @@ but in all case you can open an editor for the instance slots, see the class Ins
    ((Class-has-editor-p (instance self))
     (if (editorframe self)
         (if (instsroller-p (editorframe self))
-            (progn
+            (progn 
               (om-close-window (window (editorframe self)))
               (editor (make-editor-window (get-editor-class (instance self)) (instance self)
                                           (name self) self)))
           (editorframe self))
-      (editor (make-editor-window (get-editor-class (instance self)) (instance self)
-                                  (name self) self)))
+      (setf (editorframe self) (panel 
+                                  (make-editor-window (get-editor-class (instance self)) (instance self)
+                                  (name self) self))))
     (if (equal (get-editor-class (instance self)) 'soundeditor)
         (progn
           (unless (pict-sound (instance self))
