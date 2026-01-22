@@ -103,7 +103,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 ;(defparameter *current-panel* nil)
 
 
-(defmethod om-view-click-handler ((view patchPanel) where) 
+(defmethod om-view-click-handler ((view patchPanel) where) (print (list "click " (editor view)))
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
     (cond (*adding-a-box*
@@ -131,13 +131,13 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
           (setf *adding-a-box* nil)
           (setf *new-obj-initial-pos* nil)
           ))
-          ;;; adding "list/x-append box" and autoconnect with selected boxes
-          ((and (om-option-key-p) (om-command-key-p))
-           (let ((selected (get-actives view)))
-             (create-list-box view selected where)))
-          ((om-option-key-p) ;(and (om-shift-key-p) (om-option-key-p)) ;maybe conflict!
+          ((and (om-shift-key-p) (om-option-key-p) (om-command-key-p)) ;maybe conflict!
            (let ((selected (get-actives view)))
              (create-x-append-box view selected where)))
+          ;;; adding "list/x-append box" and autoconnect with selected boxes
+          ((and (om-shift-key-p) (om-command-key-p))
+           (let ((selected (get-actives view)))
+             (create-list-box view selected where)))
           (t (call-next-method))))
   ;(setf *current-panel* view)
   )
