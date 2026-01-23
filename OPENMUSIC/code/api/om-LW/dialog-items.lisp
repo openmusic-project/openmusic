@@ -266,12 +266,17 @@
     (when (or bg-color (special-bg di))
       (om-set-bg-color di (or bg-color (special-bg di))))
     
-    ;when light mode forced
+    #|
     #+linux
     (when (or bg-color (special-bg di))
      ;(om-set-bg-color di bg-color)
       (om-set-fg-color di *om-black-color*))
-    
+    |#
+    ;when light mode forced
+    #+linux
+    (when (or bg-color (special-bg di))
+      (om-set-bg-color di *om-lightgray-pattern*))
+
     (setf (vx di) (om-point-h position)
           (vy di) (om-point-v position)
           (vw di) (om-point-h size) 
