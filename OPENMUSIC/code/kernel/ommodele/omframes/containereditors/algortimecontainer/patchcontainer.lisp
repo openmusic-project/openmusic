@@ -103,7 +103,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 ;(defparameter *current-panel* nil)
 
 
-(defmethod om-view-click-handler ((view patchPanel) where) (print (list "click " (editor view)))
+(defmethod om-view-click-handler ((view patchPanel) where)
   (unless (and (get-selected-picts view)
                (handle-patch-pictures view (car (get-selected-picts view)) where))
     (cond (*adding-a-box*
