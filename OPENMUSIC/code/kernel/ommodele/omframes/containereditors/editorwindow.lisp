@@ -266,6 +266,8 @@
      (call-next-method))
    t)
 
+
+
 ;;;(defmethod window-null-event-handler ((self EditorWindow) position)
 ;;;   (call-next-method)
 ;;;   (editor-null-event-handler (editor self)))

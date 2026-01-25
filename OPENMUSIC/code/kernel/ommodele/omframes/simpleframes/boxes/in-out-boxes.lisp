@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -567,7 +567,7 @@
 #seealso# (OMIN) #seealso#")
    (:default-initargs :view-font (list *signs-font* 18)))
 
-;;;le numero sur la fleche : transféré dans inout-icon-box
+;;;le numero sur la fleche : transfere dans inout-icon-box
 ;;;(defmethod om-draw-contents ((self outFrame))
 ;;;   (call-next-method)
 ;;;   (with-font-focused-view self
@@ -733,6 +733,35 @@
 (defmethod editor-paste ((self inputEditor))
    nil)
 
+;;;LINUX version
+
+(defclass inputEd (om-dialog) 
+  ((object :initform nil :accessor object)
+   (docu :initform nil :accessor docu)))
+
+
+(defmethod editor-set-help-action ((self inputEd) txt)
+  (let ((boxframe (car (frames (object self))))) 
+         (setf (docu (object self)) txt)
+         (om-view-set-help boxframe txt)
+         (om-view-set-help (iconview boxframe) txt)))
+
+
+(defmethod editor-set-defval-action ((self inputEd) val inst-p)
+   (handler-bind ((error #'(lambda (c) (declare (ignore c)) 
+                                               (om-beep-msg "error : bad default value form")
+                                               ;(om-set-dialog-item-text (defval-item self) (format () "~S" (eval (defval (object self)))))
+                                               (om-abort)
+                                               )))
+     (let* ((*package* (find-package :om))
+            (input (object self))
+            newval)
+       (if inst-p
+         (setf newval val)
+         (setf newval `',(read-from-string val)))
+       (setf (defval input) newval))))
+
+
 
 ;---------------------------------------------------------------
 ;A special class for defval,
@@ -805,13 +834,22 @@
 (defmethod get-editor-class ((self OMIn)) 'InputEditor)
 
 (defun set-input-dialog (theinput)
-  (let* ((dialog (make-editor-window 'inputEditor theinput (or (frame-name theinput) (name theinput)) nil
+  (let* (
+         #-linux(dialog (make-editor-window 'inputEditor theinput (or (frame-name theinput) (name theinput)) nil
                                      :winpos :centered
                                      :winsize (om-make-point 210 #+linux 190 #+(or macosx win32)175)
                                      :resize nil))
-         (doc-scroller (om-make-dialog-item 'om-text-edit-view
+
+         
+         #+linux(dialog (om-make-window 'inputEd
+                                 :size (om-make-point 210 #+linux 190 #+(or macosx win32)175)
+                                 :window-title (name theinput)
+                                 ))
+         
+         (doc-scroller (om-make-dialog-item  'om-text-edit-view  
                                             (om-make-point 107 50) (om-make-point 100 75)
                                             (docu theinput)
+                                            :allows-newline-p t
                                             :save-buffer-p t
                                             :scrollbars :v
                                             :allow-returns t
@@ -824,7 +862,7 @@
                                                :item defvalitem
                                                :scrollbars :v
                                                :font *om-default-font2*
-                                               ;:allow-returns t
+                                               :allow-returns t
                                                :help-spec "double click to edit initform <command> to see"
                                                ))
          (dropzone (om-make-view 'defval-drop 
@@ -844,8 +882,7 @@
         (setf (instance-p defvalitem) t)
         (setf (droppedval dropzone) v)
         (setf (icn dropzone) (get&corrige-icon (icon (class-of v))))
-        )
-      )
+        ))
 
     (om-set-bg-color (editor dialog) *azulito*)
     (om-set-bg-color dialog *azulito*)
@@ -869,11 +906,14 @@
                                           :di-action (om-dialog-item-act item 
                                                        (editor-set-help-action (editor dialog) (om-dialog-item-text doc-scroller))
                                                        (editor-set-defval-action (editor dialog)
-                                                                                 (if (instance-p defvalitem) (droppedval dropzone)
-                                                                                     (om-dialog-item-text defval-scroller))
+                                                                                 (if (instance-p defvalitem) 
+                                                                                     (droppedval dropzone)
+                                                                                   (om-dialog-item-text defval-scroller))
                                                                                  (instance-p defvalitem))
+                                                       (om-close-window (editor dialog))
                                                        ))
                      )
+    #+linux(setf (object (editor dialog)) theinput)
     dialog))
 
 
@@ -897,7 +937,7 @@
                                               (format () "~S" (eval (defval thein)))
                                               :item defvalitem
                                               :font *om-default-font2*
-                                              :allow-returns t
+                                              ;:allow-returns t
                                               :scrollbars :v
                                               :help-spec "double click to edit initform <command> to see"
                                               ))
