@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson. Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -43,12 +43,23 @@
 
 (defmethod obj-file-type ((self OMFolder)) :FOLD)
 
-(defmethod header-comment-from-obj ((self OMFolder)) 
+(defmethod format-folder-size ((self omfolder))
+  (let* ((size (om-view-size (editorframe self)))
+         (x (om-point-x size))
+         (y (om-point-y size)))
+    (format nil "(om-make-point ~D ~D)" x y)))
+      
+(defmethod header-comment-from-obj ((self OMFolder))
   (let* ((icon (icon self))
          (ftype (obj-file-type self))
          (version  *om-version*)
          (wspar (om-save-point-list (ensure-ws-params self)))
-         (params (list version ftype (first wspar) (second wspar) (third wspar) (str-without-nl (doc self)) (save-icon icon) (presentation self)
+         (size (if (editorframe self) 
+                   (read-from-string (format-folder-size self))
+                 (third wspar)))
+         (params (list version ftype (first wspar) (second wspar) 
+                       size
+                       (str-without-nl (doc self)) (save-icon icon) (presentation self)
                        (car (create-info self)) nil)))
     (string+ ";" (format nil " ~S" params))))
 
@@ -66,11 +77,33 @@
 
 (defmethod get-editor-class ((self OMFolder)) 'FolderEditor)
 
-(defmethod OpenEditorframe ((self OMFolder))
+(defmethod OpenEditorframe ((self OMFolder)) 
    "Show the folder as a container."
    (or (editorframe self) 
-       (panel (open-new-nonrelationFrame self (name self) (get-elements self)))
+       (panel (open-new-folder self (name self) (get-elements self)))
        ))
+
+(defun open-new-folder (object name elements)
+     (let* ((i 0) newwindow)
+       (setf newwindow (make-editor-window (get-editor-class object)
+                                           object name nil 
+                                           :winsize `,(eval (fifth (get-finder-comment (mypathname object)))) ;(get-win-size object)
+                                           :winpos (get-win-position object)
+                                           :winshow nil
+                                           :wintype (wintype-from-obj object)))
+       (set-editor-presentation (editor newwindow))
+       (om-with-delayed-redraw (panel newwindow)
+         (mapc #'(lambda (elem)
+                  (add-icon-finder (make-icon-from-object elem  
+                                                           (om-point-h (get-icon-pos elem)) (om-point-v (get-icon-pos elem)) 
+                                                           1 (+ i 1))
+                                    (panel newwindow))
+                   (incf i)) (sort-subframes (panel newwindow) elements))
+         (set-field-size (panel newwindow)))
+       (setf (changed-wsparams? object) nil)
+       newwindow
+       ))
+
 
 ;--------------------------------------------------
 ;Other Methods

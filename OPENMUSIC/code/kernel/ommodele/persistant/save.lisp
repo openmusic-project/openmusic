@@ -1196,19 +1196,17 @@
 
 
 (defmethod omNG-save-ws ((self OMFolder))
-  ;(hide-message-win)
-  ;(let ((oldmess (print (change-message-win (string+ "Saving Folder " (name self) "...")))))
+  (setf (third (wsparams self)) `,(eval (fifth (get-finder-comment (mypathname self)))))
   (change-message-win (string+ "Saving folder " (name self) "..."))
-  ;(show-message-win (print (change-message-win (string+ "Saving Folder " (name self) "..."))))
-  ;(show-message-win nil)
-  ;(sleep 0.1)
   (mapcar #'(lambda (elem) (omNG-save-ws elem)) (elements self))
-  (when (changed-wsparams? self)
-      (when (create-info self) (setf (cadr (create-info self)) (om-get-date)))
-      (set-finder-comment (mypathname self) self)
-      (setf (changed-wsparams? self) nil)) 
-    ;(change-message-win oldmess))
-    )
+  (when (changed-wsparams? self) 
+    (header-comment-from-obj self)
+    (when (create-info self) 
+      ;(header-comment-from-obj self)
+      (setf (cadr (create-info self)) (om-get-date)))
+    (set-finder-comment (mypathname self) self)
+    (setf (changed-wsparams? self) nil)
+    ))
 
 
 (defvar *save-apply-all* nil)

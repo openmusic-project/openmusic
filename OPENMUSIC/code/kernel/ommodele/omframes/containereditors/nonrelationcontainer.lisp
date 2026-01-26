@@ -736,7 +736,9 @@ Workspace Panels contain icons of patches, maquettes and folders
 
 (defmethod get-editor-panel-class ((self folderEditor))  'folderPanel)
 
-
+(defmethod om-set-view-size ((self foldereditor) size)
+  (setf (changed-wsparams? (object self)) t)
+(call-next-method))
 
 (defmethod editor-save ((self folderEditor)) 
   (show-message-win "Saving folder...")
