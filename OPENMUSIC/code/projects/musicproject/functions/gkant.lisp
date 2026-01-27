@@ -416,6 +416,19 @@ For more info, see omquantify help."
                     :tree tree
                     :chords chords
                     :tempo tempi)))
+
+(defmethod! omg-quantify  ((self poly) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+  (let* ((voices (inside self))
+         (quants (loop for i in voices
+                         collect (omg-quantify i tempi measures max/ forbid offset precis))))
+
+     (make-instance 'poly
+                    :voices quants)))
         
 
 ;;; CHORD-SEQ => VOICE
