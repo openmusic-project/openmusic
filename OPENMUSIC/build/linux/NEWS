@@ -4,6 +4,7 @@ NEW FEATURES
 
 - 53 EDO (S.Socha)
 - Code ported to LW 8.1.x
+- Added poly method for omng-quantify
 
 IMPROVEMENTS
 
@@ -11,6 +12,8 @@ IMPROVEMENTS
 
 FIXES
 
+- fixed unfortunate drags when double-clicking on patches/folder, etc
+- folders size are really saved in workspace
 
 
 * RELEASE NOTES 7.7
