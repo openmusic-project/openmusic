@@ -281,35 +281,36 @@
          (connectlist (save-connections target-frame (container-view D&DHandler) list-objs))
          (some-item-used nil)
          (correctmove t))
-   (loop for item in (dragged-list-objs D&DHandler)
+    (loop for item in (dragged-list-objs D&DHandler)
           while correctmove do
-          (setf correctmove (drop-allow-p D&DHandler (object item) (object target-frame))))
-   (if correctmove
-      (progn 
-        ;; removes the connections to other boxes. problem if we want to restore them (e.g. externalize)
-        (make-delete-before (container-view D&DHandler) (dragged-list-objs D&DHandler) target-frame)
-        (if (allow-drag-list (object target-frame))
-          (setf some-item-used (perform-drop-list D&DHandler (dragged-list-objs D&DHandler) target-frame
-                                                  (om-add-points
-                                                   (om-subtract-points (get-position (car (dragged-list-objs D&DHandler))) pos0) 
-                                                   (om-subtract-points (drop-mouse-pos D&DHandler) (initial-mouse-pos D&DHandler)))
-                                                  
-                                                  ))
-          (mapc #'(lambda (dragged-frame)
-                    (setf some-item-used (perform-drop D&DHandler dragged-frame target-frame
-                                                      (om-add-points  (drop-mouse-pos D&DHandler)
-                                                                       (om-subtract-points 
-                                                                        (get-position dragged-frame)
-                                                                        (initial-mouse-pos D&DHandler)))
-                                                      )
-                          ))
-                (dragged-list-objs D&DHandler))
-          )
-        ;; c'etait en comment
-        (remake-draggeds-connections target-frame (container-view D&DHandler)  list-objs connectlist)
-        ;;; new attention a tester...
-        (when (patchpanel-p target-frame) (modify-patch target-frame))
-        )
+            (setf correctmove (drop-allow-p D&DHandler (object item) (object target-frame))))
+    (if correctmove
+        (progn 
+          ;; removes the connections to other boxes. problem if we want to restore them (e.g. externalize)
+          (make-delete-before (container-view D&DHandler) (dragged-list-objs D&DHandler) target-frame)
+          (if (allow-drag-list (object target-frame))
+              (setf some-item-used (perform-drop-list D&DHandler (dragged-list-objs D&DHandler) target-frame
+                                                      (om-add-points
+                                                       (om-subtract-points (get-position (car (dragged-list-objs D&DHandler))) pos0) 
+                                                       (om-subtract-points (drop-mouse-pos D&DHandler) (initial-mouse-pos D&DHandler)))))
+            (progn
+              (loop for i in list-objs
+                    do (when (typep i 'omtextfilebox)
+                         (let* ((subframes (list i))
+                                (copies (mapcar #'(lambda (frame)
+                                                    (eval (omNG-copy frame))) subframes)))
+                           (setf some-item-used (perform-duplicate-list D&DHandler (object target-frame) target-frame subframes copies pos0)))))
+              (mapc #'(lambda (dragged-frame)
+                        (setf some-item-used (perform-drop D&DHandler dragged-frame target-frame
+                                                           (om-add-points  (drop-mouse-pos D&DHandler)
+                                                                           (om-subtract-points 
+                                                                            (get-position dragged-frame)
+                                                                            (initial-mouse-pos D&DHandler))))))
+                    (dragged-list-objs D&DHandler))))
+          ;; c'etait en comment
+          (remake-draggeds-connections target-frame (container-view D&DHandler)  list-objs connectlist)
+          ;;; new attention a tester...
+          (when (patchpanel-p target-frame) (modify-patch target-frame)))
       (om-beep))
     (om-invalidate-view target-frame) 
     some-item-used))
