@@ -290,9 +290,6 @@
      (setf (frame-position (object new)) (borne-position position))
      t))
 
-(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged texteditorframe)
-                           (target patchPanel) position)
-  (omg-remove-element (om-view-container dragged) dragged))
 
 (defmethod perform-drop ((D&DHandler omdrag-drop) (dragged icon-method) 
                          (target patchPanel) position)

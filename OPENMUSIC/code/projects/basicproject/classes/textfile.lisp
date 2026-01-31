@@ -527,6 +527,10 @@ else create a new Editor frame, and select its window."
                                       #'(lambda () (free-editor-from-file (object object)))))) 
            )))
 
+(defmethod perform-drop ((D&DHandler omdrag-drop) (dragged texteditorframe)
+                           (target patchPanel) position)
+  (omg-remove-element (om-view-container dragged) dragged))
+
 
 ; miniview
 ;;;======================================
