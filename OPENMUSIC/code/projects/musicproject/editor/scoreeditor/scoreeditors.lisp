@@ -6822,6 +6822,8 @@ The rhythm is unchanged!"
 
 ;;;THIS REPLACES MEASURES STARTING FROM SELECTION
 ;;; ============================================================
+;;
+;;from Mauro Lanza
 
 (defun polyeditor-selected-measures (ed)
   "Return selected MEASURE objects (not grap-measure)."

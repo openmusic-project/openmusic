@@ -9,6 +9,7 @@ NEW FEATURES
 IMPROVEMENTS
 
 - Linux's API: Display-callback same as Cocoa as recommended by LW  
+- Copy/paste measures in poly (Mauro Lanza)
 
 FIXES
 
