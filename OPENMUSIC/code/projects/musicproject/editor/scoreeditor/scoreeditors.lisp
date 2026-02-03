@@ -6812,6 +6812,149 @@ The rhythm is unchanged!"
 (defmethod make-obj-for-target ((obj list) (target poly)) 
   (remove nil (loop for item in obj append (make-obj-for-target item target))))
 
+;;; ============================================================
+;;; POLY EDITOR : ATOMIC REWRITE PASTE FOR MEASURES (FIXED+CONTCHORD)
+;;; - Works for single/multiple measures, repeated pastes
+;;; - Keeps continuation-chords (ties/legature di valore) working
+;;;   by:
+;;;     1) repairing parent pointers on cloned objects
+;;;     2) rebuilding the VOICE tree with check-tree-for-contchord
+
+;;;THIS REPLACES MEASURES STARTING FROM SELECTION
+;;; ============================================================
+
+(defun polyeditor-selected-measures (ed)
+  "Return selected MEASURE objects (not grap-measure)."
+  (let ((sel (selection? (panel ed))))
+    (cond
+      ((and sel (list-subtypep sel 'measure))
+       sel)
+      ((and sel
+            (listp sel)
+            (typep (car sel) 'grap-measure)
+            (slot-exists-p (car sel) 'reference))
+       (remove nil
+               (mapcar #'(lambda (gm)
+                           (and (typep gm 'grap-measure)
+                                (slot-exists-p gm 'reference)
+                                (reference gm)))
+                       sel)))
+      (t nil))))
+
+(defun clipboard-measures-fresh (clip)
+  "Return a fresh list of cloned MEASUREs from clipboard, or NIL."
+  (cond
+    ((typep clip 'measure)
+     (list (clone clip)))
+    ((and (listp clip) (list-subtypep clip 'measure))
+     (mapcar #'clone clip))
+    (t nil)))
+
+(defun poly-reparent-recursively (obj new-parent)
+  "Ensure OBJ and all its descendants have correct (parent ...) pointers.
+
+This is important for continuation-chords because many navigation utilities
+(next-container, etc.) depend on proper parent links."
+  (when (and obj (typep obj 'standard-object) (slot-exists-p obj 'parent))
+    (setf (parent obj) new-parent))
+  (when (and obj (typep obj 'standard-object) (slot-exists-p obj 'inside))
+    (let ((kids (ignore-errors (inside obj))))
+      (when (listp kids)
+        (dolist (k kids)
+          (poly-reparent-recursively k obj)))))
+  obj)
+
+(defun poly-reparent-voice-measures (voice)
+  "Repair parents for all measures and their contents in VOICE."
+  (when (and (typep voice 'voice) (slot-exists-p voice 'inside))
+    (dolist (m (inside voice))
+      (poly-reparent-recursively m voice)))
+  voice)
+
+(defun poly-rebuild-voice-tree (voice)
+  "Rebuild VOICE rhythm tree, keeping continuation-chords consistent." 
+  (when (typep voice 'voice)
+    ;; IMPORTANT: build-tree alone is not enough when there are continuation-chords
+    ;; (they must be floated/normalized via check-tree-for-contchord)
+    (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
+  voice)
+
+(defun atomic-rewrite-measures-into-voice (voice start-index replace-count new-measures)
+  "Atomically replace REPLACE-COUNT measures starting at START-INDEX in VOICE.
+
+Also repairs parents and rebuilds the tree with continuation-chords support."
+  (let* ((old (inside voice))
+         (len (length old))
+         (s (max 0 (min start-index len)))
+         (e (max 0 (min (+ s (max 0 replace-count)) len)))
+         (new (append (subseq old 0 s)
+                      new-measures
+                      (subseq old e))))
+    (setf (inside voice) new)
+
+    ;; 1) parent pointers must match the new structure (clones may keep old parents)
+    (poly-reparent-voice-measures voice)
+
+    ;; 2) tree must be rebuilt with continuation-chords support
+    (poly-rebuild-voice-tree voice)
+
+    voice))
+
+(defun min-selected-index-in-voice (voice sel-meas)
+  "Return the minimal index of selected measures in VOICE (or NIL)."
+  (let ((idxs (remove nil
+                      (mapcar #'(lambda (m)
+                                  (position m (inside voice) :test 'equal))
+                              sel-meas))))
+    (when idxs (apply #'min idxs))))
+
+(defmethod editor-paste :around ((self polyeditor))
+  (let ((clip *score-clipboard*))
+    (cond
+
+      ;; ========================================================
+      ;; CASE: clipboard contains MEASURE(S)
+      ;; ========================================================
+      ((or (typep clip 'measure)
+           (and (listp clip) (list-subtypep clip 'measure)))
+
+       (let* ((sel-meas (polyeditor-selected-measures self))
+              (any (and sel-meas (car sel-meas)))
+              (voice (and any (parent any)))
+              (new-meas (clipboard-measures-fresh clip)))
+
+         ;; Need destination voice from current selection
+         (unless (and (typep voice 'voice) new-meas)
+           (om-beep)
+           (return-from editor-paste nil))
+
+         (record-undo self)
+
+         ;; Clipboard order in OM selection is often reversed -> restore expected order
+         (setf new-meas (reverse new-meas))
+
+         (let* ((start (or (min-selected-index-in-voice voice sel-meas)
+                           (length (inside voice))))
+                (replace-count (length sel-meas)))
+
+           ;; Atomic rewrite at the true start position
+           (atomic-rewrite-measures-into-voice
+            voice start replace-count new-meas)
+
+           ;; Clear UI selection (optional, but avoids weird UI state)
+           (when (and sel-meas (list-subtypep sel-meas 'measure))
+             (delete-selection (panel self)))
+
+           (update-panel (panel self) t)
+           (om-invalidate-view (panel self) t)
+           (return-from editor-paste voice))))
+
+      ;; ========================================================
+      ;; OTHERWISE: default OM behavior
+      ;; ========================================================
+      (t
+       (call-next-method)))))
+
 
 ;; paste in VOICE editor
 
