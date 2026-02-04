@@ -5303,35 +5303,72 @@
        (setf (selection? self) nil)
        (update-panel self t)))))
 
+;mauro tempo fix 04/02/26
 (defmethod add-new-object ((self polypanel) obj where graph-obj)
-   (cond
-    ((or (equal obj 'grap-note) (equal obj 'grap-chord) (equal obj 'grap-group))
-     (let ((whichmeasure (click-in-grap-measure? (graphic-obj self) where)) system)
-       (when whichmeasure
-         (setf system (system-from-measure self whichmeasure))
-         (setf (edit-cursor self) 
-               (create-edit-cursor self (if graph-obj (chord-to-edit (reference graph-obj))) 
-                                   (om-point-h where) (* 100 (midicenter system)) t 
-                                   (position system (staff-sys self) :test 'equal) whichmeasure))
-         (make-unselect self))))
-    ((equal obj 'grap-measure)
-     (let* ((poly (object (om-view-container self)) )
-            (pos (if graph-obj (position graph-obj (inside (parent graph-obj)) :test 'equal) 
-                     (length (inside (car (inside poly)))))))
-       (loop for voice in (inside poly) do
-             (add-measure-in-voice voice pos))
-       (setf (selection? self) nil)
-       (update-panel self)))
-    ((or (equal obj 'grap-voice) (equal obj 'grap-poly))
-     (let* ((poly (object (om-view-container self)))
-            (ind (click-in-which-voice? self where)) newtree)
-       (when ind
-         (setf newtree (tree (nth ind (inside poly))))
-         (setf newtree (tree-from-sign (sign-from-tree newtree)))
-         (setf (inside poly) (insert-in-list (inside poly) 
-                                             (make-instance 'voice :tree newtree) ind)) 
-         (change-multi-inside self (inside poly))
-         (update-panel self t))))))
+  (cond
+   ;; ----------------------------
+   ;; NOTE / CHORD / GROUP
+   ;; ----------------------------
+   ((or (equal obj 'grap-note)
+        (equal obj 'grap-chord)
+        (equal obj 'grap-group))
+    (let ((whichmeasure (click-in-grap-measure? (graphic-obj self) where))
+          system)
+      (when whichmeasure
+        (setf system (system-from-measure self whichmeasure))
+        (setf (edit-cursor self)
+              (create-edit-cursor
+               self
+               (if graph-obj (chord-to-edit (reference graph-obj)))
+               (om-point-h where)
+               (* 100 (midicenter system))
+               t
+               (position system (staff-sys self) :test 'equal)
+               whichmeasure))
+        (make-unselect self))))
+
+   ;; ----------------------------
+   ;; ADD MEASURE
+   ;; ----------------------------
+   ((equal obj 'grap-measure)
+    (let* ((poly (object (om-view-container self)))
+           (pos (if graph-obj
+                    (position graph-obj (inside (parent graph-obj)) :test 'equal)
+                    (length (inside (car (inside poly)))))))
+      (loop for voice in (inside poly) do
+            (add-measure-in-voice voice pos))
+      (setf (selection? self) nil)
+      (update-panel self)))
+
+   ;; ----------------------------
+   ;; ADD STAFF (Cmd+click)
+   ;; ----------------------------
+   ((or (equal obj 'grap-voice)
+        (equal obj 'grap-poly))
+    (let* ((poly (object (om-view-container self)))
+           (ind (click-in-which-voice? self where))
+           newtree
+           ref-voice)
+      (when ind
+        ;; voice di riferimento
+        (setf ref-voice (nth ind (inside poly)))
+
+        ;; duplica struttura metrica
+        (setf newtree (tree ref-voice))
+        (setf newtree (tree-from-sign (sign-from-tree newtree)))
+
+        ;; INSERIMENTO STAFF CON TEMPO COPIATO
+        (setf (inside poly)
+              (insert-in-list
+               (inside poly)
+               (make-instance 'voice
+                              :tree newtree
+                              :tempo (tempo ref-voice))
+               ind))
+
+        (change-multi-inside self (inside poly))
+        (update-panel self t))))))
+
 
 (defun sign-from-tree (tree)
   (loop for item in (second tree)
