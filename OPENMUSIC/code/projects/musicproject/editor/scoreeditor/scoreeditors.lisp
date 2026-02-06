@@ -6995,6 +6995,119 @@ Also repairs parents and rebuilds the tree with continuation-chords support."
        (call-next-method)))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;CHORD COPY/PASTE
+;;;From  mauro
+;;; -------------------------------
+;;; Helpers
+;;; -------------------------------
+
+(defun %clipboard-first-chord (clip)
+  "Return a CHORD from the score clipboard, or NIL.
+CLIP can be a chord, or a list containing (at least) one chord." 
+  (cond
+    ((typep clip 'chord) clip)
+    ((and (listp clip)
+          (find-if (lambda (x) (typep x 'chord)) clip))
+     (find-if (lambda (x) (typep x 'chord)) clip))
+    (t nil)))
+
+(defun %maybe-copy-slot (slot target source)
+  "Copy SLOT value from SOURCE to TARGET if it exists on both.
+Uses SLOT-VALUE guarded by IGNORE-ERRORS to stay robust across subclasses." 
+  (let ((ok-target (ignore-errors (slot-boundp target slot)))
+        (ok-source (ignore-errors (slot-boundp source slot))))
+    (when (and ok-target ok-source)
+      (ignore-errors
+        (setf (slot-value target slot)
+              (clone (slot-value source slot)))))))
+
+(defun overwrite-chord-like (target source)
+  "Overwrite the MUSICAL CONTENT of TARGET chord with SOURCE chord.
+Keeps TARGET identity (so no new chord is created).
+Does NOT modify dur/time/parent/continuation etc." 
+  ;; Core: pitches/notes are in (inside chord)
+  (setf (inside target) (clone (inside source)))
+  ;; Common expressive slots if present (safe: ignore-errors)
+  ;; Many of these are on NOTE objects, but chord subclasses may store extras.
+  (%maybe-copy-slot 'dyn target source)
+  (%maybe-copy-slot 'vel target source)
+  (%maybe-copy-slot 'chan target source)
+  (%maybe-copy-slot 'port target source)
+  target)
+;;; -------------------------------
+;;; Patch: editor-paste for chord mode
+;;; -------------------------------
+
+
+(defun cycle-or-truncate (sources n)
+  "Return a list of length N by cycling or truncating SOURCES."
+  (let ((len (length sources)))
+    (loop for i from 0 below n
+          collect (nth (mod i len) sources))))
+
+(defmethod editor-paste :around ((self scoreeditor))
+  (let* ((panel (panel self))
+         (mode  (obj-mode panel))
+         (sel   (selection? panel))
+         (clip  *score-clipboard*))
+    (if (and sel clip (equalp mode "chord"))
+        (let* (;; OM: ultimo copiato in testa -> invertiamo
+               (raw-sources (reverse
+                             (remove-if-not
+                              (lambda (x) (typep x 'om::chord))
+                              clip)))
+               (targets (reverse
+                         (remove-if-not
+                          (lambda (x) (typep x 'om::chord))
+                          sel)))
+               (sources (cycle-or-truncate raw-sources (length targets)))
+               (pairs (mapcar #'list targets sources))
+               (voices-to-rebuild '()))
+          (record-undo self)
+          (dolist (pair pairs)
+            (let* ((tgt (first pair))
+                   (src (second pair)))
+              (when (and tgt src)
+                ;; usa SEMPRE il valore di ritorno
+                (let ((real tgt))
+                  (overwrite-chord-like real src)
+                  ;; determina quale voice rebuildare
+                  (let ((obj (object self)))
+                    (cond
+                     ;; POLY editor
+                     ((typep obj 'om::poly)
+                      (let ((voice (find-if
+                                    (lambda (v)
+                                      (find-if (lambda (m)
+                                                 (member real (inside m)))
+                                               (inside v)))
+                                    (voices obj))))
+                        (when voice
+                          (pushnew voice voices-to-rebuild :test #'eq))))
+                     ;; VOICE editor
+                     ((typep obj 'om::voice)
+                      (pushnew obj voices-to-rebuild :test #'eq))))))))
+          ;; rebuild SOLO delle voice toccate
+          (dolist (v voices-to-rebuild)
+            (setf (tree v)
+                  (check-tree-for-contchord
+                   (build-tree v)
+                   v)))
+          (update-panel panel t)
+          (om-invalidate-view panel t))
+      (call-next-method))))
+
+;;;; ============================================================
+;;;; End
+;;;; ============================================================
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 ;; paste in VOICE editor
 
 (defmethod make-obj-for-target ((obj note) (target voice))
