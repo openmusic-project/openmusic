@@ -10,6 +10,7 @@ IMPROVEMENTS
 
 - Linux's API: Display-callback same as Cocoa as recommended by LW  
 - Copy/paste measures in poly (Mauro Lanza)
+- Copy/paste chords in scoreeditors (Mauro Lanza)
 
 FIXES
 
