@@ -147,11 +147,6 @@
      (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" time))))
 
 
-(defmethod update-cursor ((self maquettepanel) time &optional y1 y2) 
-  (show-position-ms (editor self) time) 
-  (call-next-method))
-
-
 (defvar *maquette-play* nil)
 
 (defmethod editor-play ((self MaquetteEditor))
@@ -528,6 +523,7 @@
   (call-next-method)
   (update-scrollers self))
 
+
 ;-------------------------------
 ;MCL methods
 ;-------------------------------
@@ -541,6 +537,11 @@
      (:move *om-hand-cursor*)
      (:interval *om-i-beam-cursor*)
      (otherwise *om-arrow-cursor*)))
+
+(defmethod update-cursor ((self maquettepanel) time &optional y1 y2) 
+  (show-position-ms (editor self) time) 
+  (call-next-method))
+
 
 (defmethod om-view-doubleclick-handler ((Self maquettepanel) Where) nil)
 
