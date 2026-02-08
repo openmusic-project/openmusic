@@ -60,6 +60,11 @@
                              (trked (om-view-container trackpanel))
                              (pos (position object (mapcar #'object (reverse (editors trackpanel))))))
                         (nth pos (tunings trked))))
+                     ((or (maquette-p (object (caller player)))
+                          (om-maquette-abs-p (object (caller player))))
+                      ;*global-midi-approx*
+                      (approx object)
+                      )
                      (t (get-edit-param (caller player) 'approx)))
                   (nth (1+ (position :approx params)) params)))
         (port (if (caller player)
