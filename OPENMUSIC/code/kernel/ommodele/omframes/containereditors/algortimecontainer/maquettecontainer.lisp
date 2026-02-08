@@ -38,7 +38,8 @@
 
 (defclass maquette-titlebar (editor-titlebar) 
   ((play-buttons :accessor play-buttons :initarg :play-buttons :initform nil)
-   (mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)))
+   (mode-buttons :accessor mode-buttons :initarg :mode-buttons :initform nil)
+   (time-view :accessor time-view :initform nil)))
 
 ;-------------------------------------------------
 ;EDITOR
@@ -104,7 +105,14 @@
                                           (om-invalidate-view self)))
                 )))
 
+  (setf (time-view (title-bar self)) 
+        (om-make-dialog-item 'om-static-text 
+                             (om-make-point 400 5) 
+                             (om-make-point 200 15)
+                             ""))
+
   (apply 'om-add-subviews (cons (title-bar self)
+                                (cons (time-view (title-bar self))
                                 (append (play-buttons (title-bar self))
                                         (mode-buttons (title-bar self))
                                         (list 
@@ -128,8 +136,20 @@
                                                                     `(eval-maquette ,(panel self)) (panel self))
                                                                     ))
                                          )
-                                        )))
+                                        ))))
   )
+
+
+
+
+(defmethod show-position-ms ((self maquetteeditor) time)
+   (when (and time (not (minusp time)))
+     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" time))))
+
+
+(defmethod update-cursor ((self maquettepanel) time &optional y1 y2) 
+  (show-position-ms (editor self) time) 
+  (call-next-method))
 
 
 (defvar *maquette-play* nil)
