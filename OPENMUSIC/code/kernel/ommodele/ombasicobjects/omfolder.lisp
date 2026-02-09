@@ -84,25 +84,25 @@
        ))
 
 (defun open-new-folder (object name elements)
-     (let* ((i 0) newwindow)
-       (setf newwindow (make-editor-window (get-editor-class object)
-                                           object name nil 
-                                           :winsize `,(eval (fifth (get-finder-comment (mypathname object)))) ;(get-win-size object)
-                                           :winpos (get-win-position object)
-                                           :winshow nil
-                                           :wintype (wintype-from-obj object)))
-       (set-editor-presentation (editor newwindow))
-       (om-with-delayed-redraw (panel newwindow)
-         (mapc #'(lambda (elem)
-                  (add-icon-finder (make-icon-from-object elem  
-                                                           (om-point-h (get-icon-pos elem)) (om-point-v (get-icon-pos elem)) 
-                                                           1 (+ i 1))
-                                    (panel newwindow))
-                   (incf i)) (sort-subframes (panel newwindow) elements))
-         (set-field-size (panel newwindow)))
-       (setf (changed-wsparams? object) nil)
-       newwindow
-       ))
+  (let* ((i 0) newwindow)
+    (setf newwindow (make-editor-window (get-editor-class object)
+                                        object name nil 
+                                        :winsize `,(eval (fifth (get-finder-comment (mypathname object)))) ;(get-win-size object)
+                                        :winpos (get-win-position object)
+                                        :winshow nil
+                                        :wintype (wintype-from-obj object)))
+    (set-editor-presentation (editor newwindow))
+    (om-with-delayed-redraw (panel newwindow)
+      (mapc #'(lambda (elem)
+                (add-icon-finder (make-icon-from-object elem  
+                                                        (om-point-h (get-icon-pos elem)) (om-point-v (get-icon-pos elem)) 
+                                                        1 (+ i 1))
+                                 (panel newwindow))
+                (incf i)) (sort-subframes (panel newwindow) elements))
+      (om-set-field-size (panel newwindow) (om-view-size (panel newwindow))))
+    (setf (changed-wsparams? object) nil)
+    newwindow
+    ))
 
 
 ;--------------------------------------------------
