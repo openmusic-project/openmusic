@@ -107,18 +107,18 @@
   (setf (mode-buttons (title-bar self))
         (loop for mode in (object-order self) 
               for x = 240 then (+ x 21) for 
-              n = 0 then (+ n 1) 
+                                          n = 0 then (+ n 1) 
               collect
-              (om-make-view 'om-icon-button
-                            :lock-push t
-                            :position (om-make-point x 2)
-                            :selected-p (and (get-edit-param self 'obj-mode) (= (get-edit-param self 'obj-mode) n))
-                            :size (om-make-point 22 22)
-                            :action (let ((m n))
-                                      #'(lambda (item)
-                                          (set-obj-mode self m)
-                                          (update-mode-buttons (title-bar self))))
-                            :icon1 mode :icon2 (string+ mode "-pushed"))))
+                (om-make-view 'om-icon-button
+                              :lock-push t
+                              :position (om-make-point x 2)
+                              :selected-p (and (get-edit-param self 'obj-mode) (= (get-edit-param self 'obj-mode) n))
+                              :size (om-make-point 22 22)
+                              :action (let ((m n))
+                                        #'(lambda (item)
+                                            (set-obj-mode self m)
+                                            (update-mode-buttons (title-bar self))))
+                              :icon1 mode :icon2 (string+ mode "-pushed"))))
 
   (setf (play-buttons (title-bar self))
         (list (om-make-view 'om-icon-button :position (om-make-point 400 2) :size (om-make-point 22 22)
@@ -195,9 +195,9 @@
 
   (setf (time-view (title-bar self)) 
         (om-make-dialog-item 'om-static-text 
-                                                    (om-make-point 600 5) 
-                                                    (om-make-point 200 15)
-                                                    ""))
+                             (om-make-point 600 5) 
+                             (om-make-point 200 15)
+                             ""))
 
   (apply 'om-add-subviews (cons (title-bar self) 
                                 (cons (time-view (title-bar self))
