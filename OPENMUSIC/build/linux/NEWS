@@ -5,6 +5,7 @@ NEW FEATURES
 - 53 EDO (S.Socha)
 - Code ported to LW 8.1.x
 - Added poly method for omng-quantify
+- Optional time stampl display in min:sec:ms or only in ms
 
 IMPROVEMENTS
 

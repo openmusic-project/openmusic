@@ -2448,8 +2448,12 @@
 
 
 (defmethod show-position-ms ((self scoreeditor) time)
-   (when (and time (not (minusp time)))
-     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" time))))
+  (when (and time (not (minusp time)))
+      (om-set-dialog-item-text (time-view (title-bar self)) 
+                               (if *show-in-milliseconds*
+                               (format () "t: ~D ms" time)
+                               (format-ms time)))))
+
 
 (defmethod update-cursor ((self scorepanel) time &optional y1 y2)
 

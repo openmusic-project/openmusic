@@ -904,3 +904,31 @@
                        (not (om-maquette-abs-p (object (editor self)))))
       ))))
 
+;;;;;;;;;
+;;;;FOR TIMESTAMP OF EDITORS
+
+(defmethod om-get-menu-context ((self om-static-text))
+  (when (or (typep (om-view-container self) 'score-titlebar)
+            (typep (om-view-container self) 'sound-control-view)
+            (typep (om-view-container self) 'maquette-titlebar))
+    (let ((obj (object (om-view-container (om-view-container self)))))
+      (unless (or (typep obj 'chord) (typep obj 'note)) 
+    (let* ((tv (time-view (om-view-container self)))
+           (size (om-view-size tv))
+           (pos (om-view-position tv)))
+      (when
+          (om-point-in-rect-p (om-mouse-position (om-view-container self))
+                              (om-make-rect (om-point-h pos)
+                                            0 
+                                            (+ (om-point-h pos) (om-point-h size)) 
+                                            (+ (om-point-v pos) (om-point-v size))))
+        (list 
+         (om-new-leafmenu "mm:ss+ms" #'(lambda () 
+                                         (setf *show-in-milliseconds* nil)
+                                         (om-invalidate-view (om-view-container self))
+                                         ))
+         (om-new-leafmenu "milliseconds" #'(lambda () 
+                                             (setf *show-in-milliseconds* t)
+                                             (om-invalidate-view (om-view-container self))
+                                             ))
+         )))))))

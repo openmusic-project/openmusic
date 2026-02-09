@@ -141,11 +141,23 @@
 
 
 
+(defmethod format-ms ((self number))
+  "converts millisecond into mm:ss+ms format"
+  (let* ((frstmod (multiple-value-list (om// self 1000)))
+         (secondmod (multiple-value-list(om// (car frstmod) 60)))
+         (minutes (first secondmod))
+         (seconds (second secondmod))
+         (ms (second frstmod)))
+    (format nil "~D m. ~D s. ~D ms" minutes seconds ms)))
+
+(defparameter *show-in-milliseconds* nil)
 
 (defmethod show-position-ms ((self maquetteeditor) time)
    (when (and time (not (minusp time)))
-     (om-set-dialog-item-text (time-view (title-bar self)) (format () "t: ~D ms" time))))
-
+     (om-set-dialog-item-text (time-view (title-bar self)) 
+                               (if *show-in-milliseconds*
+                               (format () "t: ~D ms" time)
+                               (format-ms time)))))
 
 (defvar *maquette-play* nil)
 

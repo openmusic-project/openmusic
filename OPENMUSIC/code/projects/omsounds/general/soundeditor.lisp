@@ -118,18 +118,16 @@
 
     (setf (time-view self) 
           (om-make-dialog-item 'om-static-text 
-                               (om-make-point 100 8) (om-make-point 100 26)
+                               (om-make-point 600 5) 
+                               (om-make-point 200 15)
                                ""))
 
     (apply 'om-add-subviews self
            (append (play-buttons self)
                    (mode-buttons self)
-                   (list (time-view self))))     
-    )
+                   (list (time-view self)))))
   
 
-      
-    
 (defmethod update-controls ((self sound-control-view))
   (let ((player (get-edit-param (editor self) 'player)))
     ;(om-set-selected-item (player-control self) (audio-player-name player))
@@ -394,11 +392,10 @@
 
 
 (defmethod show-position-ms ((self soundeditor) time)
-  (let ((timestr (if (= 1000 (timeunit self)) 
-                     (format () "t: ~4D s" (/ time 1000.0))
-                   (format () "t: ~D ms" time))))
-    (om-set-dialog-item-text (time-view (control self)) timestr))
-  )
+  (let ((timestr (if *show-in-milliseconds*
+                     (format () "t: ~D ms" time)
+                   (format-ms time))))
+    (om-set-dialog-item-text (time-view (control self)) timestr)))
 
 
 (defmethod editor-null-event-handler :after ((self soundEditor))
