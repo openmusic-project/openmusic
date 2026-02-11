@@ -51,7 +51,7 @@
 (defvar *grace-color* *om-red-color*)
 (defvar *staff-name-dir* 0)
 (defvar *on-all-staves* 0)
-
+(defvar *show-in-milliseconds* nil)
 
 (defmethod put-preferences ((id (eql :score)))
    (let ((modulepref (find-pref-module ID))
@@ -75,6 +75,7 @@
      ;(setf *current-1/8-scale* (or (nth 10 (defvals modulepref)) *8-tone-chromatic-scale*)  ) 
      (setf *diapason-freq* (get-pref modulepref :diapason))
      (setf *default-editor-scale* (get-pref modulepref :scale))
+     (setf *show-in-milliseconds* (get-pref modulepref :show-in-milliseconds))
      ))
 
 
@@ -116,6 +117,7 @@
                  ':scale (list ,(cons `list(car *default-editor-scale*)) 
                               ,(cons `list(second *default-editor-scale*)) 
                               ,(third *default-editor-scale*))
+                 ':show-in-milliseconds ,*show-in-milliseconds*
 		 ) *om-version*))
 
 
@@ -138,6 +140,7 @@
        ;                              (lines-list *2-tone-chromatic-scale*)
        ;                              (approx-factor *2-tone-chromatic-scale*));(list (list nil) (list nil) (list nil))
         :scale nil
+        :show-in-milliseconds nil
         ))
 
 
@@ -160,16 +163,23 @@
   (declare (ignore where))
   (om-dialog-item-action self))
 
+;use this when prefs list grows for scroll
+(defun get-pref-mus-scroll-size () 
+  (om-make-point 800 800)); #+(or linux win32) 560 #-(or linux win32) 580))
+
 (defmethod make-new-pref-scroll ((num (eql :score)) modulepref)
   (let ((thescroll (om-make-view 'preference-pane
                                  :pref-id num
                                  :name "Score"
-                                 :size (get-pref-scroll-size)
+                                 :size (get-pref-mus-scroll-size)
                                  :position (om-make-point 66 0)
                                  :scrollbars :v 
+                                ; :vertical-scroll t ;uncomment to activate scroll
+                                 :retain-scrollbars nil
+                                ; :field-size (get-pref-mus-scroll-size) ;uncomment to activate scroll
                                  :bg-color *om-light-gray-color*
                                  :retain-scrollbars t))
-        (l1 20) (l2 (round (om-point-h (get-pref-scroll-size)) 2))
+        (l1 20) (l2 (round (om-point-h (get-pref-mus-scroll-size)) 2))
 	(pos 0)
 	;(dy #-linux 30 #+linux 30);peut-etre pas necessaire...
 	(dy 30)
@@ -354,7 +364,16 @@
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* dy 1.2))) (om-make-point 350 22) 
                                           "(Frequency of the A4, used for freq-MIDI conversions)"
                                           :font *om-default-font1*)
-
+                     ;;;
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf pos (* 1.2 dy))) (om-make-point 180 20) "Time in ms."
+                                          :font *controls-font*)
+                     
+                     (om-make-dialog-item 'om-check-box (om-make-point 160 pos) (om-make-point 25 22) ""
+                                          :font *controls-font*
+                                          :checked-p (get-pref modulepref :show-in-milliseconds)
+                                          :di-action (om-dialog-item-act item 
+                                                       (set-pref modulepref :show-in-milliseconds (om-checked-p item))))
+                     ;;;
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l2 30) 45) (om-make-point 80 20) "Dynamics"
                                           :font *controls-font*)
                      (om-make-view 'dynamics-view :position (om-make-point (+ l2 30) 70) :size (om-make-point 140 160) 

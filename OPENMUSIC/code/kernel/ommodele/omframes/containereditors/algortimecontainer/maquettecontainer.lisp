@@ -150,7 +150,7 @@
          (ms (second frstmod)))
     (format nil "~D m. ~D s. ~D ms" minutes seconds ms)))
 
-(defparameter *show-in-milliseconds* nil)
+;(defparameter *show-in-milliseconds* nil)
 
 (defmethod show-position-ms ((self maquetteeditor) time)
    (when (and time (not (minusp time)))
