@@ -19,7 +19,7 @@ FIXES
 - fixed unfortunate drags when double-clicking on patches/folder, etc
 - folders size are really saved in workspace
 - Maquette plays default tuning (preferences) whne fluidsynth player
-
+- fix overflow of strings in miniview (linux)
 
 * RELEASE NOTES 7.7
 
