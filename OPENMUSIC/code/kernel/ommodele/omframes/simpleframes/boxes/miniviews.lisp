@@ -186,7 +186,7 @@
 (defmethod draw-mini-view  ((self t) (value t)) 
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
-#+cocoa
+#-linux
 (defmethod draw-obj-in-rect ((self t) x x1 y y1 edparams view)
    (declare (ignore edparams))
    (om-with-focused-view view
@@ -207,7 +207,7 @@
 
 ;fix the overflooding strings from classes miniview
 ;width = 5 * (characters + whitespaces) approximatively
-#-cocoa
+#+linux
 (defmethod draw-obj-in-rect ((self t) x x1 y y1 edparams view)
   (declare (ignore edparams))
   (om-with-focused-view view

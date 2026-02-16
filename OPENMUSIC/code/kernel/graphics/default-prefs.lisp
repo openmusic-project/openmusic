@@ -963,7 +963,7 @@
                                            :font *om-default-font1*)
                       
                       (setf libslist (om-make-view 'loadlibs-view :position (om-make-point l2 75) :size (om-make-point 360 425) ;386
-                                                   :prefobject modulepref :scrollbars :v :bg-color *om-transparent-color* ;*om-white-color*
+                                                   :prefobject modulepref :scrollbars :v :bg-color #-win32 *om-transparent-color* #+win32 *om-white-color*
                                                    :field-size (om-make-point 360 (* 20 (+ 1 (round (length (get-elements *library-package*)) 2))))
                                                    ))
                       
