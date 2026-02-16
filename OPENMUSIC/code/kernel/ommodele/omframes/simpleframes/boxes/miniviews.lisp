@@ -186,6 +186,7 @@
 (defmethod draw-mini-view  ((self t) (value t)) 
    (draw-obj-in-rect value 0 (w self) 0  (h self) (view-get-ed-params self) self))
 
+#+cocoa
 (defmethod draw-obj-in-rect ((self t) x x1 y y1 edparams view)
    (declare (ignore edparams))
    (om-with-focused-view view
@@ -202,6 +203,32 @@
                    (om-draw-line x y x1 y)))
                (setf y (+ y 15))))
        (om-draw-string (+ x 2) (+ y (round (- y1 y) 2) 4) (format nil "~D"  self)))))
+
+
+;fix the overflooding strings from classes miniview
+;width = 5 * (characters + whitespaces) approximatively
+#-cocoa
+(defmethod draw-obj-in-rect ((self t) x x1 y y1 edparams view)
+  (declare (ignore edparams))
+  (om-with-focused-view view
+    (if (omclass-p (class-of (class-of self)))
+        (let* ((thelist (name-values-list self))
+               (length (length thelist))
+               (y (+ y 15)))
+          (loop for item in thelist
+                for i = 0 then (+ i 1)
+                while (< y y1) do
+                  (let* ((strg (format nil "~D : ~D" (car item) (second item)))
+                         (lgt (length strg)))
+                    (if (> (* lgt 5) x1)
+                        (om-draw-string (+ x 3) (- y 3) strg :end (- (floor (/ x1 5)) 3))
+                      (om-draw-string (+ x 3) (- y 3) strg))
+                    (unless (= i (- length 1))
+                      (om-with-fg-color view *om-gray-color*   
+                        (om-draw-line x y x1 y)))
+                    (setf y (+ y 15)))))
+      (om-draw-string (+ x 2) (+ y (round (- y1 y) 2) 4) (format nil "~D"  self)))))
+
 
 (defmethod print-mini-view  ((self t) (value t) tl br)
   (draw-obj-in-rect value (om-point-h tl) (om-point-h br) (om-point-v tl)  (om-point-v br) (view-get-ed-params self) self))
