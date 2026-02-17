@@ -55,7 +55,7 @@
                     (om-beep-msg (string+ "I can not construct a " (string (type-of (value self))) " with these parameters"))
                     (om-abort))
                 (progn
-                  #+linux(when (om-view-container (value self))
+                  (when (om-view-container (value self))
                            (update-for-subviews-changes (om-view-container (value self)) t))
                   (setf (value self) rep)
                   (rep-editor (value self) numout)
@@ -77,14 +77,16 @@
                                :position (frame-position self)
                                :object self)))
     
-     #-linux(unless (frame-size self) 
+     ;#-linux
+     (unless (frame-size self) 
               (setf (frame-size self) (om-make-point 
                                        (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
                                        (om-point-v defsize))))
+     #|
      #+linux(setf (frame-size self) (om-make-point 
                                        (apply #'max (list (om-point-h defsize) (* 8 numouts) (* 8 numins))) 
                                        (+ (om-point-v defsize) 10)))
-
+     |#
      (setf (inputframes module) (mapcar #'(lambda (input)
                                             
                                             (setf index (+ index 1))
@@ -818,6 +820,30 @@ Evaluating the 5th output will also call and get the result of the function with
 (defmethod (setf value) :after ((value slider) (self omdiebox)) 
   (set-function value (omNG-box-value (fifth (inputs self))) self))
 
+
+;;;LATEST FIXES FOR MACOSX
+
+
+
+(defmethod om-set-dialog-item-text ((self text-box) text)
+  (capi::apply-in-pane-process self 
+  (lambda (pane) (progn
+                   (setf (capi::text-input-pane-text pane) text)
+                   ))  self))
+
+(defmethod om-set-item-list ((self single-item-list) names)
+  (capi::apply-in-pane-process self 
+  (lambda (pane) (setf (capi::collection-items self) names))
+                   self))
+  
+(defmethod om-set-item-list ((self multi-item-list) names)
+  (capi::apply-in-pane-process self 
+  (lambda (pane) (setf (capi::collection-items self) names))
+                   self))
+
+(defmethod om-set-dialog-item-text ((self text-view) text) (print self)
+(capi::apply-in-pane-process self 
+  (lambda (pane) (setf (capi::text-input-pane-text pane) text)) self))
 
 
 
