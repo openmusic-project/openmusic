@@ -598,7 +598,9 @@
  (capi::text-input-pane-text self))
 
 (defmethod om-set-dialog-item-text ((self om-editable-text) text)
- (setf (capi::text-input-pane-text self) text))
+(capi::apply-in-pane-process 
+ self 
+ (lambda (pane) (setf (capi::text-input-pane-text pane) text)) self))
 
 (defmethod om-enable-dialog-item ((self om-editable-text) t-or-nil)
   (setf (capi::text-input-pane-enabled self) t-or-nil))
@@ -655,7 +657,8 @@
  (capi::text-input-pane-text self))
 
 (defmethod om-set-dialog-item-text ((self om-text-edit-view) text)
- (setf (capi::text-input-pane-text self) text))
+(capi::apply-in-pane-process self 
+  (lambda (pane) (setf (capi::text-input-pane-text pane) text)) self))
 
 (defmethod om-enable-dialog-item ((self om-text-edit-view) t-or-nil)
   (setf (capi::text-input-pane-enabled self) t-or-nil))
@@ -775,7 +778,10 @@
   (loop for i from 0 to (- (length v) 1) collect (elt v i)))
 
 (defmethod om-set-item-list ((self om-item-list) names)
-  (setf (capi::collection-items self) names))
+  (capi::apply-in-pane-process 
+   self 
+   (lambda (pane) (setf (capi::collection-items self) names))
+   self))
 
 (defmethod om-get-item-list ((self om-item-list))
   (vector-col-to-list (capi::collection-items self )))

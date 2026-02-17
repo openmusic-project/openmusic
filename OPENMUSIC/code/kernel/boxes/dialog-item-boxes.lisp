@@ -821,29 +821,4 @@ Evaluating the 5th output will also call and get the result of the function with
   (set-function value (omNG-box-value (fifth (inputs self))) self))
 
 
-;;;LATEST FIXES FOR MACOSX
-
-
-
-(defmethod om-set-dialog-item-text ((self text-box) text)
-  (capi::apply-in-pane-process self 
-  (lambda (pane) (progn
-                   (setf (capi::text-input-pane-text pane) text)
-                   ))  self))
-
-(defmethod om-set-item-list ((self single-item-list) names)
-  (capi::apply-in-pane-process self 
-  (lambda (pane) (setf (capi::collection-items self) names))
-                   self))
-  
-(defmethod om-set-item-list ((self multi-item-list) names)
-  (capi::apply-in-pane-process self 
-  (lambda (pane) (setf (capi::collection-items self) names))
-                   self))
-
-(defmethod om-set-dialog-item-text ((self text-view) text) (print self)
-(capi::apply-in-pane-process self 
-  (lambda (pane) (setf (capi::text-input-pane-text pane) text)) self))
-
-
 
