@@ -348,20 +348,17 @@ Evaluate or connect the output to get the current contents of the box.
 
 (defmethod get-super-default-value ((type (eql 'text-view)))
   (om-make-dialog-item 'text-view (om-make-point 1 1) 
-                       #-linux(om-make-point 50 20) 
-                       #+linux(om-make-point 50 25) 
+                       (om-make-point 50 20) 
                        "untitled"))
 
 (defmethod update-di-size ((self text-view) container)
   (om-set-view-position self 
                         #+win32(om-make-point 12 12) 
-                        #+macosx(om-make-point 12 10)
-                        #+linux(om-make-point 12 15)
+                        #-win32(om-make-point 12 10)
                         )
   (om-set-view-size self (om-subtract-points (om-view-size container) 
                                              #+win32(om-make-point 28 24) 
-                                             #+macosx(om-make-point 28 20)
-                                             #+linux(om-make-point 28 30)
+                                             #-win32(om-make-point 28 20)
                                              )))
 
 
