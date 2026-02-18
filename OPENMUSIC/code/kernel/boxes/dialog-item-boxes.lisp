@@ -287,7 +287,10 @@ Evaluate or connect the output to get the current contents of the box.
                        :font *om-default-font1* 
                        ))
 
-(defmethod default-obj-box-size ((self text-box)) (om-make-point 130 45))
+(defmethod default-obj-box-size ((self text-box)) 
+  #-linux(om-make-point 130 45)
+  #+linux(om-make-point 130 60)
+  )
 
 (defmethod omng-save ((self text-box) &optional (values? nil))
   `(om-make-dialog-item 'text-box (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self)) ,(om-dialog-item-text self)
@@ -305,12 +308,12 @@ Evaluate or connect the output to get the current contents of the box.
   (om-set-view-position self 
                         #+win32(om-make-point 12 12) 
                         #+macosx(om-make-point 12 10)
-                        #+linux(om-make-point 12 15)
+                        #+linux(om-make-point 12 20)
                         )
   (om-set-view-size self (om-subtract-points (om-view-size container) 
                                              #+win32(om-make-point 28 24) 
                                              #+macosx(om-make-point 28 20)
-                                             #+linux(om-make-point 28 30)
+                                             #+linux(om-make-point 28 40)
                                              )))
 
 
