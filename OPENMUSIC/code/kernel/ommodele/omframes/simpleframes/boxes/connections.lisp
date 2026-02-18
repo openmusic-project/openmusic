@@ -89,6 +89,7 @@
         (t (unless (selected? self)
              (setf (selected? self ) t))))
   #-(and cocoa lispworks8)(draw-connection self t)
+  #+cocoa(invalidate-connection-region self (connection-container (thebox self)))
   )
 
 
