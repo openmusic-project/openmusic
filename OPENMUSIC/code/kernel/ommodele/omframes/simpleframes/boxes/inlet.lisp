@@ -160,7 +160,9 @@
     (let* ((container (editor (om-view-container (om-view-container self)))))
       (when (and container (text-view container) (equal (class-name (class-of (text-view container))) 'text-enter-view))
         (om-remove-subviews (panel container) (text-view container))
-        (setf (text-view container) nil)))))
+        (setf (text-view container) nil))))
+  #+win32(update-for-subviews-changes (om-view-container self) t)
+  )
 
 
 (defclass input-text-enter-view (edit-text-enter-view) ())
