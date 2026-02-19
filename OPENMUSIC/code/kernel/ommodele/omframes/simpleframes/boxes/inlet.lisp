@@ -147,7 +147,9 @@
              (ypos (om-point-y pos))
              (xpos (om-point-x pos)))
         (om-set-view-size self (om-make-point 12 12))
-        (om-set-view-position self (om-make-point (- xpos 2) (- ypos 5)))))))
+        (om-set-view-position self (om-make-point (- xpos 2) (- ypos 5))))))
+  #+win32(update-for-subviews-changes (om-view-container self) t)
+  )
 
 ;;;new : text-view is on the panel
 (defmethod om-view-mouse-leave-handler ((self input-funboxframe)) 
