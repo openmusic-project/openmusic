@@ -1,5 +1,5 @@
 Package: OpenMusic
-Version: 8.0-b.1
+Version: 8.0
 Section: Sound
 Priority: optional
 Architecture: amd64

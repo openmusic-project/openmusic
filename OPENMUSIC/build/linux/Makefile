@@ -16,7 +16,7 @@ LISP		= $(HOME)/bin/lw8-console $(LISPFLAGS)
 INSTALL_PROGRAM	= install
 
 DISTDIR		= /tmp/OM/BUILD
-IMAGENAME	= OM_8.0-b.1
+IMAGENAME	= OM_8.0
 
 path_to_omroot	= ../..
 thisfile	= $(lastword $(MAKEFILE_LIST))
