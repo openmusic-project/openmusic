@@ -140,7 +140,6 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
              (create-list-box view selected where)))
           (t (call-next-method))))
   ;(setf *current-panel* view)
-   #+win32(update-for-subviews-changes view t)
    )
 
 

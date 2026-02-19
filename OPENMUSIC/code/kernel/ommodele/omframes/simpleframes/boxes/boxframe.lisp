@@ -131,8 +131,6 @@
     #+linux
     (when (and ctrl (typep ctrl 'input-funboxframe)(not (typep panel 'maquettepanel)))
       (update-miniview (iconview (om-view-container ctrl)) (value (object (om-view-container ctrl)))))
-    #+win32(update-for-subviews-changes (om-view-container (om-view-container self)) t)
-    #+win32(om-invalidate-view (om-view-container (om-view-container self)) t)
     ))
 
 #|
@@ -190,10 +188,8 @@
            (ypos (om-point-y pos))
            (xpos (om-point-x pos)))
       (om-set-view-size self (om-make-point 12 12))
-      (om-set-view-position self (om-make-point (- xpos 2) (+ ypos 0)))
-      ) 
-  #+win32(update-for-subviews-changes (om-view-container self) t)
-  ))
+      (om-set-view-position self (om-make-point (- xpos 2) (+ ypos 0)))) 
+    ))
 
 (defmethod om-view-mouse-leave-handler ((self outfleche)) 
   (when *mag-in-out*
