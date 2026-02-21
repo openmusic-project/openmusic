@@ -1933,6 +1933,21 @@ inserts <prop> in <tree> at position <pos>.
          (ins (insert-prop tree prop pos)))
     (setf (tree clone) ins)
     clone))
+
+
+;to be refined
+;FIX group-pulses that doesn't accept any RT such as '(1 (1 1 1)). it should!
+
+(defmethod! insert-prop ((self list) (prop list) (pos list))
+  (let ((res self)
+        (prp (mapcar #'(lambda (x) (list 1 (list x))) prop))
+        (n 0))
+    (loop for i in prp
+          for p in pos
+          do (progn
+               (setf res (insert-prop res i (+ p n)))
+               (setf n (+ n (n-pulses i)))))
+    res))
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;REMOVE PROP;;;;;;;;;;;;;;;;;;;
