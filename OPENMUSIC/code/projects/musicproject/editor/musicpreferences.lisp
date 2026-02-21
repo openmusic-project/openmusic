@@ -679,14 +679,14 @@
                                                                  ))))
                                           :font *om-default-font2*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 40)) (om-make-point 120 20) "Grace Notes:"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 60)) (om-make-point 120 20) "Grace Notes:"
                                           :font *controls-font*)
 
-                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 50)) (om-make-point 120 22) "Duration (ms):"
+                     (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 30)) (om-make-point 120 22) "Duration (ms):"
                                           :font *controls-font*)
                      (om-make-dialog-item 'om-static-text  (om-make-point 20 (incf i 20)) (om-make-point 350 22) "(Grace notes playback duration)"
                                           :font *om-default-font1*)
-                     (om-make-dialog-item 'om-editable-text (om-make-point 340 (- i 10)) (om-make-point 45 13)
+                     (om-make-dialog-item 'om-editable-text (om-make-point 340 (- i 20)) (om-make-point 45 13)
                                           (format nil "~D" (get-pref modulepref :gdur)) 
                                           :modify-action (om-dialog-item-act item
                                                            (let* ((text (om-dialog-item-text item))
