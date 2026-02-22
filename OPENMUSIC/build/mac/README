@@ -1,8 +1,8 @@
 ;=====================================
-; OM 7.7
+; OM 8.0
 ;=====================================
 
-To install, just drag "OM 7.x.app" into your Applications/ directory.
+To install, just drag "OM 8.x.app" into your Applications/ directory.
 
 OpenMusic is a free software distributed under GNU LGPL license.
 (c) IRCAM 1997-2018
@@ -33,6 +33,30 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+
+* RELEASE NOTES 8.0
+
+NEW FEATURES
+
+- 53 EDO (S.Socha)
+- Code ported to LW 8.1.x
+- Added poly method for omng-quantify
+- Optional time stampl display in min:sec:ms or only in ms
+
+IMPROVEMENTS
+
+- Linux's API: Display-callback same as Cocoa as recommended by LW  
+- Copy/paste measures in poly (Mauro Lanza)
+- Copy/paste chords in scoreeditors (Mauro Lanza)
+- Maquette have now time indicator in title-bar
+- n-pulses re-written
+
+FIXES
+
+- fixed unfortunate drags when double-clicking on patches/folder, etc
+- folders size are really saved in workspace
+- Maquette plays default tuning (preferences) whne fluidsynth player
+- fix overflow of strings in miniview (linux)
 
 
 * RELEASE NOTES 7.7
