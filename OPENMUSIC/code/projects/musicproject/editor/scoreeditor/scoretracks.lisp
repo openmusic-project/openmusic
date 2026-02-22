@@ -886,9 +886,11 @@ nil)
 
 (defmethod show-position-ms ((self tracks-editor) time) 
   (when (and time (not (minusp time)))
-    (om-set-dialog-item-text (car (time-view (title-bar self))) 
-                             (format () "t : ~D ms" time))
-    ))
+      (let ((timestr (if *show-in-milliseconds*
+                     (format () "t: ~D ms" time)
+                       (format-ms time))))
+    (om-set-dialog-item-text (car (time-view (title-bar self))) timestr)
+    )))
 
 (defmethod update-cursor ((self scorepanel) time &optional y1 y2) 
   (show-position-ms (editor self) time) 
@@ -903,14 +905,10 @@ nil)
             
             (om-update-transient-drawing self :x (car rect-event) :y (- (om-rect-top rect-line) (round (staff-size self) 2))
                                          :w 4 :h (- (om-rect-bottom rect-line) (om-rect-top rect-line)))
-            ))
-        
-        )    
+            )))    
     (call-next-method))
   (when (tracks-editor-p (editor (om-view-container (om-view-container  self))))
-    (show-position-ms (editor (om-view-container (om-view-container self))) time))
-   
-  )
+    (show-position-ms (editor (om-view-container (om-view-container self))) time)))
 
 ;IMPORTANT!
 ;to add in fluid-player.lisp
