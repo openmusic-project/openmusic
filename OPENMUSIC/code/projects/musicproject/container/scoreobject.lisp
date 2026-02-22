@@ -601,7 +601,11 @@ Extraction methods.
                    :chords (slot-value self 'chords)
                    :tempo (tempo self)
                    :legato (slot-value self 'legato)
-                   :ties (slot-value self 'ties) ))
+                   :ties (slot-value self 'ties)))
+  ;initialize measures tempo slot
+  (loop for i in (inside self)
+        for tp in (export-voice-tempo self)
+        do (setf (tempo i) tp))
   (setf (slot-value self 'chords) nil  (slot-value self 'ties) nil)
   self)
 
@@ -1216,6 +1220,7 @@ Extraction methods.
                               (tempo-a-la-noire (second i))))))
         (x-append (list head) corr)))))
 
+;maybe not necessary - should check for deletion!
 (defmethod tempo ((self measure))
   (let ((tp (slot-value self 'tempo)))
     (unless (parent self)
