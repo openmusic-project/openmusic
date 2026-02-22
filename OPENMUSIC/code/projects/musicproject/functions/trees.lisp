@@ -992,8 +992,7 @@ Converts all rests to notes.
 
 (defun pulses (mesures)
             "retourne le nombre de pulses (pas les pauses) d'une RTM"
-  
-    (flat (mapcar #'(lambda (x) (pulse (list x))) mesures)))
+            (flat (mapcar #'(lambda (x) (pulse (list x))) mesures)))
 
 (defun om-pulses (tlist)
   (mapcar #'(lambda (x)
@@ -1031,7 +1030,7 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
     (group-list the-pulses
                     (x->dx the-pos)
                     'linear))))
-
+#|
 
 (defmethod! n-pulses ((self list))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
@@ -1041,6 +1040,54 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
     (length
      (remove nil
              (mapcar #'(lambda(x) (if (> (first x) 0) x nil)) (group-pulses self)))))
+
+(defmethod! n-pulses ((self voice))
+  (let ((tree (tree self)))
+    (n-pulses tree)))
+
+(defmethod! n-pulses ((self poly))
+  (let ((voices (inside self)))
+    (mapcar #'n-pulses voices)))
+|#
+
+;;;;;;;;;;;;;;;;;;;
+;;;;;Better Version
+;;;;;;;;;;;;;;;;;;;
+;KH 22/02/26 
+
+(defun RT-p (list)
+  (listp (cadr list)))
+
+(defun countpulses (tree)
+  (if (rt-p tree)
+      (let ((n 0))
+        (labels ((get-leaf (tree)
+                   (if (atom tree)
+                       (progn
+                         (if (and (plusp tree) (not (floatp tree)))
+                             (setf  n (1+ n)))
+                         tree)
+                     (list (first tree)
+                           (mapcar #'get-leaf (second tree))))))
+          (get-leaf tree))
+        n)
+    (om-message-dialog (format nil "~D NOT an RT !" tree))))
+
+;(countpulses '(1 (1 1 1 -1 1.0)))
+;(countpulses '(1 (((4 4) (1 1 1 1)))))
+;(countpulses '(? (((4 4) (1 1 1 1)))))
+;(countpulses '((60 4) ((21 (3 3.0)) (5 (-3 2)) (34 (-1 8 -8 -3)))))
+;not an rt!
+;(countpulses '(1 -1 1.0))
+
+
+  
+(defmethod! n-pulses ((self list))
+  :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
+  :indoc '("self")
+  :icon 225
+  :doc "Returns the number of pulses in <self>. <self> could be a Rhythm Tree, a VOICE or a POLY,"
+  (countpulses self))
 
 (defmethod! n-pulses ((self voice))
   (let ((tree (tree self)))
@@ -1885,8 +1932,7 @@ Outputs the leaves of a tree, ie. all integers that are the 'S' part of a RT.
 ;;;;;;;;;;;;;;;;;;;;;;;;INSERT PROP;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun RT-p (list)
-  (listp (cadr list)))
+
 
 
 (defun flat-inserted (lst)
@@ -1935,20 +1981,16 @@ inserts <prop> in <tree> at position <pos>.
     clone))
 
 
-;to be refined
-;FIX group-pulses that doesn't accept any RT such as '(1 (1 1 1)). it should!
-
-(defmethod! insert-prop ((self list) (prop list) (pos list))
+(defmethod! insert-prop ((self list) (prop t) (pos list))
   (let ((res self)
-        (prp (mapcar #'(lambda (x) (list 1 (list x))) prop))
         (n 0))
-    (loop for i in prp
+    (loop for i in prop
           for p in pos
           do (progn
                (setf res (insert-prop res i (+ p n)))
                (setf n (+ n (n-pulses i)))))
     res))
-    
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;REMOVE PROP;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
