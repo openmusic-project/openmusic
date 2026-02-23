@@ -228,17 +228,26 @@
 
 ;;La c'est plus simple et mieux!
 (defmethod update-mode-buttons ((self score-titlebar)) 
-  (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
-        (loop for b in (mode-buttons self)
-              for i = 0 then (+ i 1) do
-                (setf (selected-p b) (= i n)))
-    (om-invalidate-view self)))
+  (unless (internalscoreeditor-p (om-view-container self))
+    (let ((n (get-edit-param (om-view-container self) 'obj-mode)))
+      (loop for b in (mode-buttons self)
+            for i = 0 then (+ i 1) do
+              (setf (selected-p b) (= i n)))))
+  (om-invalidate-view self))
 
-(defmethod update-cursor-mode-buttons ((self score-titlebar))
-  (let ((mode (get-edit-param (om-view-container self) 'cursor-mode)))
-    (setf (selected-p (car (edit-buttons self))) (equal mode :normal)
-          (selected-p (cadr (edit-buttons self))) (equal mode :interval))
-    (om-invalidate-view self)))
+(defmethod update-cursor-mode-buttons ((self score-titlebar)) 
+  (if (internalscoreeditor-p (om-view-container self))
+      (let ((mode (cursor-mode (panel (om-view-container self)))))
+        (setf (selected-p (car (edit-buttons self))) (equal mode :normal)
+              (selected-p (cadr (edit-buttons self))) (equal mode :interval))
+        (if (equal mode :normal)
+            (set-pushed (om-view-container self) "mousecursor" t)  
+          (set-pushed (om-view-container self) "beamcursor" t)))
+    (let ((mode (get-edit-param (om-view-container self) 'cursor-mode)))
+      (setf (selected-p (car (edit-buttons self))) (equal mode :normal)
+            (selected-p (cadr (edit-buttons self))) (equal mode :interval))))
+  (om-invalidate-view self))
+
 
 (defmethod update-play-buttons ((self om-view))
   (let ((state (state (player (editor self)))))
