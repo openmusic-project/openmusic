@@ -3347,6 +3347,14 @@
 (defmethod get-score-class-ctrls ((self measureEditor)) 'measure-controls-view)
 (defmethod get-score-class-panel ((self measureEditor)) 'measurepanel)
 
+(defmethod do-editor-null-event ((self measureEditor))
+  #+linux (om-invalidate-view (panel self)) 
+  #+(or linux win32)(when (equal (state (player self)) :play)
+                      (capi:manipulate-pinboard (panel self) 
+                                                (slot-value (panel self) 'oa::animation)
+                                                :add-top))
+  (when (om-view-contains-point-p (panel self) (om-mouse-position self))
+    (show-position-ms self (pixel-toms (panel self) (om-mouse-position (panel self))))))
 
 ;PANEL
 
@@ -3518,12 +3526,15 @@
 (defmethod get-score-class-ctrls ((self voiceEditor)) 'voice-controls-view)
 (defmethod get-score-class-panel ((self voiceEditor)) 'voicepanel)
 
+
 (defmethod do-editor-null-event ((self voiceEditor))
   #+linux (om-invalidate-view (panel self)) 
   #+(or linux win32)(when (equal (state (player self)) :play)
                       (capi:manipulate-pinboard (panel self) 
                                                 (slot-value (panel self) 'oa::animation)
-                                                :add-top)))
+                                                :add-top))
+  (when (om-view-contains-point-p (panel self) (om-mouse-position self))
+    (show-position-ms self (pixel-toms (panel self) (om-mouse-position (panel self))))))
 
 
 
@@ -3798,8 +3809,10 @@
   #+linux (om-invalidate-view (panel self))
   #+(or linux win32)(when (equal (state (player self)) :play)
                       (capi:manipulate-pinboard (panel self) 
-                                                (slot-value (panel self) 'oa::animation)
-                                                :add-top)))
+                                                (slot-value (panel self) 'oa::animation)                                                :add-top))
+  (when (om-view-contains-point-p (panel self) (om-mouse-position self))
+    (show-position-ms self (pixel-toms (panel self) (om-mouse-position (panel self))))))
+
 
 ;PANEL
 
