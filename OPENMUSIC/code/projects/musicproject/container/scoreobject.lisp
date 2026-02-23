@@ -1220,13 +1220,6 @@ Extraction methods.
                               (tempo-a-la-noire (second i))))))
         (x-append (list head) corr)))))
 
-;maybe not necessary - should check for deletion!
-(defmethod tempo ((self measure))
-  (let ((tp (slot-value self 'tempo)))
-    (unless (parent self)
-    (setf (qtempo self) (tempo->qtempo self)))
-    (slot-value self 'tempo)))
-
 
 
 (defmethod (setf tempo) ((tempo t) (self voice))

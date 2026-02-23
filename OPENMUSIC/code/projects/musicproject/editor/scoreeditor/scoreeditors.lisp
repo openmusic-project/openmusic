@@ -3386,20 +3386,8 @@
 ;(defmethod edit-step-grille ((self voicepanel)) t)
 (defmethod translate-chords-p ((self measurepanel)) nil)
 
-;should remove
-(defmethod change-editor-measure ((self measurePanel) measnum)
-  (unless (= (staff-meas self) measnum)
-    (setf (staff-meas self) measnum)
-    (set-edit-param (om-view-container self) 'measure  measnum)
-    (let* ((zoom (float (staff-zoom self)))
-           (measpos (loop for i in (inside (graphic-obj self))
-                          collect (car (main-point i))))
-           (lgt (length measpos))
-           (n (if (> measnum lgt) lgt measnum)) 
-           (pos (* zoom (nth (1- n) measpos))))
-      (om-set-h-scroll-position self pos)
-      (update-panel self t)
-      )))
+
+(defmethod change-editor-measure ((self measurePanel) measnum) nil)
 
 (defmethod change-ties-too ((self measurePanel) chord)
    (let ((pointer (next-container chord '(chord))))
