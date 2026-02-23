@@ -139,6 +139,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
            (let ((selected (get-actives view)))
              (create-list-box view selected where)))
           (t (call-next-method))))
+  (om-invalidate-view view t) ;;Solution (linux only?)
   ;(setf *current-panel* view)
    )
 
