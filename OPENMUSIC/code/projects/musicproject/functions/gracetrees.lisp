@@ -46,7 +46,7 @@ notes ,rests and tied notes. This version omits gnotes (0)."
 notes ,rests and tied notes. This version omits gnotes (0)."
 (if (atom tree)
     (cond 
-     ((or (zerop tree) (floatp tree)) tree)
+     ((or (zerop tree) (and (floatp tree) (not (minusp tree)))) tree);IMPORTANT FIX HERE!
      ((minusp tree)
       (prog1
             (make-instance 'treeobj :tvalue tree :tindex *indx*)

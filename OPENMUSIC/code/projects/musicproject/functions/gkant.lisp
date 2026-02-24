@@ -378,7 +378,7 @@ For more info, see omquantify help."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;OMG-QUANTIFY;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+#|
 (defmethod! omg-quantify  ((self list) (tempi t) (measures list)
                              (max/ t)
                              &optional
@@ -398,6 +398,38 @@ For more info, see omquantify help."
           (pos (om- graces (arithm-ser 0 lgt 1)))
           (ins (insert-graces tree pos (repeat-n 1 lgt))))
      (format-grace-notes ins)))
+|#
+
+
+(defun getgnpos (lst)
+  (remove nil 
+          (loop for n from 0 to (length lst)
+                for i in lst
+                collect (if (and (chord-p i)
+                                 (> (length (lmidic i)) 1))
+                            (list n (1- (length (lmidic i))))))))
+
+;Uses gkant which avoids the rest quantification problem.
+
+(defmethod! omg-quantify  ((self list) (tempi t) (measures list)
+                             (max/ t)
+                             &optional
+                             forbid
+                             offset
+                             precis)
+   :initvals '((100) 60 (4 4) 8  nil 0 0.5)
+   :icon 252
+   :indoc '("durations" "Tempo" "measures" "maximum division"  "forbidden
+divisions" "grace-notes?"
+            "precission")
+   :doc "Same as omquantify but displays gracenotes.
+For more info, see omquantify help."
+   (let* ((voice (gkant self nil tempi measures max/ forbid offset precis))
+          (tree (tree voice))
+          (chords (collect-chords-and-rests voice))
+          (gnpos (mat-trans (getgnpos chords))))
+     (add-tree-graces tree (car gnpos) (second gnpos))))
+
 
 ;;; VOICE => VOICE
 

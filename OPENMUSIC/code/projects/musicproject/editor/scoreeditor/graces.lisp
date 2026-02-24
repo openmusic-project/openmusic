@@ -262,7 +262,8 @@ returns them with real chords"
               (objfromobjs item (make-instance 'chord)) item)))
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;outdated should be removed
 (defmethod! set-grace-notes ((self simple-container) chords before?)
   (setf (gnotes self) (make-instance 'grace-notes
                         :glist chords
@@ -312,7 +313,7 @@ returns them with real chords"
           for n in pos
           do (setf self (set-grace-notes (nth n chords) i t)))))
 
-;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod add-graces-to-tree ((self measure))
   (let* ((chrds (collect-chords-rest-graces self))

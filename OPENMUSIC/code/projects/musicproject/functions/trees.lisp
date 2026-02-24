@@ -1074,13 +1074,15 @@ Collects every pulses (expressed durations, including tied notes) from <tree>.
     (om-message-dialog (format nil "~D NOT an RT !" tree))))
 
 ;(countpulses '(1 (1 1 1 -1 1.0)))
+;Warning counts also gns
+;(countpulses '(1 (1 1 (0 (1 1 1)) 1 -1 1.0)))
 ;(countpulses '(1 (((4 4) (1 1 1 1)))))
 ;(countpulses '(? (((4 4) (1 1 1 1)))))
 ;(countpulses '((60 4) ((21 (3 3.0)) (5 (-3 2)) (34 (-1 8 -8 -3)))))
 ;not an rt!
 ;(countpulses '(1 -1 1.0))
 
-
+;maybe add key or optional with/without GNs
   
 (defmethod! n-pulses ((self list))
   :initvals '((? (((4 4) (1 (1 (1 2 1 1)) 1 1)) ((4 4) (1 (1 (1 2 1 1)) -1 1))))) 
