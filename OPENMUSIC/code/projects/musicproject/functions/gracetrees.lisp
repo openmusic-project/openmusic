@@ -146,10 +146,8 @@ notes ,rests and tied notes. This version omits gnotes (0)."
            )))
 
 ;;we concat every zero
-;(setf *conne* '(1 (1 (1 1 1)) (0) (0) (0) (0) (0) 1 1 1))
-;(setf *conne* '((1 (1 1 1)) 1 (0) (0) (0) (0) (0) 1 1 1))
-;(setf *conne* '((1 (1 1 1)) 1 (0) (0) (0) (0) (0) 1 1 (0) 1 1))
-;(setf *conne* '((1 (1 1 (0) (0) 1)) (0) (0) (0) 1 1 (0) 1))
+;(setf *conzer* '(1 (1 (1 1 1)) (0) (0) (0) (0) (0) 1 1 1))
+;(setf *conzer* '((1 (1 1 1)) 1 (0) (0) (0) (0) (0) 1 1 (0) 1 1))
 
 (defun concatzero (tree)
   (let ((res))
@@ -161,7 +159,7 @@ notes ,rests and tied notes. This version omits gnotes (0)."
                  (push (car i) (car res)))))
     (reverse res)))
 
-;(concatzero *conne*)
+;(concatzero *conzer*)
 
 ;we concat recursively
 (defun grpcnt (tree)
