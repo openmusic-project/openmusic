@@ -1354,7 +1354,7 @@
    (draw-extras self view size staff)
   )
 
-#|
+
 (defmethod draw-rectangle ((self grap-voice) system size &optional fill)
   (let* ((rec (rectangle self))
          (mesrect (rectangle (car (inside self))))
@@ -1368,8 +1368,8 @@
                       :fill fill
                       :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
                       )))
-|#
 
+#|
 (defmethod draw-rectangle ((self grap-voice) system size &optional fill )
   (draw-h-rectangle (list (- (car (rectangle self)) 8) 
                           (- (+ (fourth (rectangle self)) 0) 60)
@@ -1378,7 +1378,7 @@
                     :fill fill
                     :color (get-object-selection-color (reference self) (get-root-parent (reference self)))
                     ))
-    
+ |#   
 ;=========================================
 (defclas grap-measure (grap-container) 
    ((metric :initform nil)))
