@@ -730,7 +730,7 @@ Extraction methods.
                    :chords (slot-value self 'chords)
                    :tempo (tempo self)
                    ))
-  ;(setf (slot-value self 'chords) nil)
+  (setf (slot-value self 'chords) nil)
   self)
 
 (defmethod do-initialize ((self measure) &key tree chords tempo) 

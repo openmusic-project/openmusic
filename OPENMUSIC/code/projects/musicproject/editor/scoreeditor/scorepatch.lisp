@@ -465,6 +465,9 @@ unless option+shift keys."
 (defmethod pixel2point ((self scorepanel) pixel)
    (om-make-point (pixel-toms self pixel) (om-point-v pixel)))
 
+(defmethod pixel2point ((self measurepanel) pixel)
+   (om-make-point (pixels-to-time self (om-point-x pixel)) (om-point-v pixel)))
+
 (defmethod pixel2point ((self voicepanel) pixel)
    (om-make-point (pixels-to-time self (om-point-x pixel)) (om-point-v pixel)))
 
