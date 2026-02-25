@@ -398,23 +398,23 @@
                                                           :font *controls-font*)
           (om-make-dialog-item 'om-radio-button (om-make-point 10 31) (om-make-point 20 20) ""      
                                :di-action (om-dialog-item-act x 
-                                            (setf (meaure-edition-mode panel) 0)
+                                            (setf (measure-edition-mode panel) 0)
                                             (om-select-window (window panel)))
                                :radio-button-cluster 'insert-mode
-                               :checked-p (= (meaure-edition-mode panel) 0))
+                               :checked-p (= (measure-edition-mode panel) 0))
           (om-make-dialog-item 'om-radio-button (om-make-point 10 52) (om-make-point 20 20) ""
                                :di-action (om-dialog-item-act x 
-                                            (setf (meaure-edition-mode panel) 2)
+                                            (setf (measure-edition-mode panel) 2)
                                             (om-select-window (window panel)))                                                
                                :radio-button-cluster 'insert-mode
-                               :checked-p (= (meaure-edition-mode panel) 2))
+                               :checked-p (= (measure-edition-mode panel) 2))
           (om-make-dialog-item 'om-radio-button (om-make-point 10 73) (om-make-point 20 20) "" 
                                :di-action (om-dialog-item-act x 
-                                            (setf (meaure-edition-mode panel) 1)
+                                            (setf (measure-edition-mode panel) 1)
                                             (om-select-window (window panel))
                                             )
                                :radio-button-cluster 'insert-mode
-                               :checked-p (= (meaure-edition-mode panel) 1))
+                               :checked-p (= (measure-edition-mode panel) 1))
           (om-make-view 'picture-view
                         :pict *insertmodes*
                         :position (om-make-point 40 32)

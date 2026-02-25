@@ -921,7 +921,7 @@
     (score-mode :initform 0  :accessor score-mode)
     (show-stems :initform t  :accessor show-stems)
     (def-subdiv :initform 3  :accessor def-subdiv)
-    (meaure-edition-mode :initform 2  :accessor meaure-edition-mode)
+    (measure-edition-mode :initform 2  :accessor measure-edition-mode)
     (edit-cursor :initform nil  :accessor edit-cursor)
     (object :initform nil :accessor object)
     (extra-palette :initform nil :accessor extra-palette)
@@ -5866,7 +5866,7 @@
 
 (defmethod point-edit-cursor ((self scorePanel))
    (when (assoc-chord (edit-cursor self))
-     (let* ((mtmode (meaure-edition-mode self))
+     (let* ((mtmode (measure-edition-mode self))
             (measure (reference (grap-measure-assoc (edit-cursor self))))
             (assoc-chord (assoc-chord (edit-cursor self)))
             (newfig (* (/ (val-in-noires assoc-chord) 4) 3/2))
@@ -5881,7 +5881,7 @@
 
 
 (defmethod add-or-replace-in-measure ((self scorePanel) char)
-   (let* ((mtmode (meaure-edition-mode self))
+   (let* ((mtmode (measure-edition-mode self))
           (newfig (/ (char-as-noir char) 4))
           (measure (reference (grap-measure-assoc (edit-cursor self))))
           (assoc-chord (assoc-chord (edit-cursor self)))
