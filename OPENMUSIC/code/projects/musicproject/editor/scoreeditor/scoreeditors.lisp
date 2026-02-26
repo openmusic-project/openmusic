@@ -3396,6 +3396,28 @@
                         (draw-edit-cursor self deltay))
                       )))))
 
+;For interval-cursor
+
+(defmethod get-key-space ((self measurePanel))
+   (* (get-deltax (staff-sys self)) (staff-size self) 1.0))
+
+(defmethod draw-interval-cursor ((self measurepanel))
+  (let* ((off (+ 20 (get-key-space self)))
+         (cursor-pos-pix (- (time-to-pixels self (cursor-pos self)) off ))
+         (interval (cursor-interval self)))
+    (om-with-focused-view self
+      (when interval
+        (draw-h-rectangle (list (- (time-to-pixels self (car interval)) off)  0 
+                                (- (time-to-pixels self (cadr interval)) off) (h self)) :fill t))
+       
+      ;;; start pos
+      (om-with-fg-color self *om-red2-color*
+        (om-with-dashline 
+            (om-with-line-size 2 
+              (om-draw-line cursor-pos-pix 0 cursor-pos-pix (h self))
+              )))
+      )))
+
         
 ;ACTIONS
 
