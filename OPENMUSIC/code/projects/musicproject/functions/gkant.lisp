@@ -409,7 +409,52 @@ For more info, see omquantify help."
                                  (> (length (lmidic i)) 1))
                             (list n (1- (length (lmidic i))))))))
 
-;Uses gkant which avoids the rest quantification problem.
+;Uses gkant strategy avoiding the rest quantification problem.
+
+(defmethod pre-kant ((self list))
+  (let* ((durs (om-abs self))
+         (chords (loop for i in self
+                       collect (if (minusp i)
+                                   (make-zero-chord)
+                                 (make-instance 'chord :lmidic '(6000))))))
+    (list durs chords)))
+
+
+
+(defmethod post-kant ((self voice))
+  (let* ((chords (get-real-chords self))
+         (pos (remove nil 
+                      (loop for i in chords
+                            for n from 0 to (length chords)
+                            collect (if (= 0 (car (lmidic i))) n))))
+         (tree (filtertree (remove-tree-graces (tree self)) pos))
+         (vx1
+          (make-instance 'voice 
+                         :tree tree
+                         :tempo (tempo self)))
+         (chrd1 (collect-chords-graces self))
+         (chrd2 (collect-chords-graces vx1))
+         gnpos
+         gnnum)
+    
+    (loop for i in chrd1
+          for n from 0 to (length chrd1)
+          do (if (listp i) 
+                 (progn 
+                   (push n gnpos)
+                   (push (1- (length i)) gnnum))))
+         
+    (loop for i in gnpos
+          for n in gnnum
+          do (setf (gnotes (nth i chrd2))
+                   (make-instance 'grace-notes
+                                  :glist (repeat-n (make-instance 'grace-chord) n)
+                                  :thechord (nth i chrd2)
+                                  :before? t)))
+    (add-grace-notes vx1 gnpos (loop for i in gnnum collect (repeat-n 6000 i)))
+    (make-instance 'voice :tree (tree vx1) :tempo (tempo self))
+    ))
+
 
 (defmethod! omg-quantify  ((self list) (tempi t) (measures list)
                              (max/ t)
@@ -424,12 +469,22 @@ divisions" "grace-notes?"
             "precission")
    :doc "Same as omquantify but displays gracenotes.
 For more info, see omquantify help."
-   (let* ((voice (gkant self nil tempi measures max/ forbid offset precis))
-          (tree (tree voice))
-          (chords (collect-chords-and-rests voice))
-          (gnpos (mat-trans (getgnpos chords))))
-     (add-tree-graces tree (car gnpos) (second gnpos))))
-
+   (let* ((pre (pre-kant self))
+          (durs (car pre))
+          (chords (second pre))
+          (tree (omquantify durs tempi measures max/ forbid offset precis))
+          (graces (get-n-grace durs tempi measures max/ forbid offset precis))
+          (lgt (length graces))
+          (pos (om- graces (arithm-ser 0 lgt 1)))
+          (ins (insert-graces tree pos (repeat-n 1 lgt)))
+          (format (format-grace-notes ins))
+          (voice (make-instance 'voice 
+                                :tree format
+                                :tempo tempi
+                                :chords chords))
+          (post (post-kant voice)))
+     (tree post)))
+          
 
 ;;; VOICE => VOICE
 
