@@ -529,6 +529,7 @@ because digit-char-p will not accept backspace and special om keys!"
           (new-frame (make-frame-from-callobj new-box)))
      (om-select-window (window self))
      (omG-add-element self new-frame)
+     (open-ttybox (iconview new-frame))
      ))
 
 
