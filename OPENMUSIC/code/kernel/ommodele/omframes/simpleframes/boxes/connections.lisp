@@ -437,17 +437,19 @@
   (let ((con (connected? (object self))))
     (if con (car (frames (car con))))))
 
-
 (defmethod switch-input-connection ((self c-connection) (n number))
   (let* ((boxframe (thebox self))
          (indx (index self)) 
          (inputs (inputframes boxframe))
+         (mod (mod (+ n indx) (length inputs)))
          (connected (remove nil (mapcar #'connected-p inputs))))
-    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth (+ n indx) inputs))
+    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth mod inputs))
     (disconnect-box boxframe (nth indx inputs))
     (select-connection (car (connections boxframe)))
     ))
 
+
+#|
 (defmethod switch-input-connection ((self c-connection) (n character)) 
   (let* ((boxframe (thebox self))
          (indx (index self)); index of connected input 
@@ -458,4 +460,4 @@
     (disconnect-box boxframe (nth indx inputs))
     (select-connection (car (connections boxframe)))
     ))
-
+|#

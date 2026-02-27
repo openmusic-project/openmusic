@@ -277,8 +277,8 @@ because digit-char-p will not accept backspace and special om keys!"
      ((and (char-num-p char) actives (not (equal char #\0))  
            #+linux(om-option-key-p) #-linux(om-command-key-p))
       (insert-connect-box (car actives) (car connections) (digit-char-p char)))
-     ((and (char-num-p char) connections (not actives)) 
-      (switch-input-connection (car connections) char))
+     ;((and (char-num-p char) connections (not actives)) 
+     ; (switch-input-connection (car connections) char))
      ((and actives (equal char #\0))
       (loop for i in boxes
             do (loop for box in (inputframes i)
