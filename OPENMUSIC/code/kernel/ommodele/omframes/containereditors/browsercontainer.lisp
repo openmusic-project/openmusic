@@ -427,3 +427,16 @@ Packages panels contains icons of sub-packages, classes and sometimes slots.#end
 ;------------------------------------
 ;PANEL 3 : methods
 ;------------------------------------
+
+
+
+;------------------------------------
+;
+;------------------------------------
+
+;To enable reoppening (linux editor)
+
+#+linux
+(defmethod close-editorFrame ((self packageeditor)) 
+      (setf (Editorframe (object self)) nil)
+    (call-next-method))
