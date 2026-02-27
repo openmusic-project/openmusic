@@ -426,3 +426,36 @@
 
 
    
+
+
+;-------------switch connection input
+
+(defmethod connected-p ((self t)) nil)
+
+(defmethod connected-p ((self input-funboxframe))
+  "returns the boxframe from where the connection starts"
+  (let ((con (connected? (object self))))
+    (if con (car (frames (car con))))))
+
+
+(defmethod switch-input-connection ((self c-connection) (n number))
+  (let* ((boxframe (thebox self))
+         (indx (index self)) 
+         (inputs (inputframes boxframe))
+         (connected (remove nil (mapcar #'connected-p inputs))))
+    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth (+ n indx) inputs))
+    (disconnect-box boxframe (nth indx inputs))
+    (select-connection (car (connections boxframe)))
+    ))
+
+(defmethod switch-input-connection ((self c-connection) (n character)) 
+  (let* ((boxframe (thebox self))
+         (indx (index self)); index of connected input 
+         (pos (digit-char-p n))
+         (inputs (inputframes boxframe))
+         (connected (remove nil (mapcar #'connected-p inputs))))
+    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth (1- pos) inputs))
+    (disconnect-box boxframe (nth indx inputs))
+    (select-connection (car (connections boxframe)))
+    ))
+

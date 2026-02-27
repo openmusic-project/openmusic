@@ -6,6 +6,7 @@ NEW FEATURES
 - Code ported to LW 8.1.x
 - Added poly method for omng-quantify
 - Optional time stampl display in min:sec:ms or only in ms
+- Switch input's connection (alt+arrows)
 
 IMPROVEMENTS
 

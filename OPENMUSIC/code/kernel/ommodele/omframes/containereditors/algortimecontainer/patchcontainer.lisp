@@ -274,8 +274,11 @@ because digit-char-p will not accept backspace and special om keys!"
           (remove-if-not #'(lambda (item) (or (boxframe-p item) (boxeditorframe-p item))) actives)))
     ;;;auto connections
     (cond 
-     ((and (char-num-p char) actives (not (equal char #\0))  #+linux(om-option-key-p) #-linux(om-command-key-p))
+     ((and (char-num-p char) actives (not (equal char #\0))  
+           #+linux(om-option-key-p) #-linux(om-command-key-p))
       (insert-connect-box (car actives) (car connections) (digit-char-p char)))
+     ((and (char-num-p char) connections (not actives)) 
+      (switch-input-connection (car connections) char))
      ((and actives (equal char #\0))
       (loop for i in boxes
             do (loop for box in (inputframes i)
@@ -368,7 +371,9 @@ because digit-char-p will not accept backspace and special om keys!"
            (mapc #'(lambda (item) (move-frame-delta item 1)) actives)
            (make-move-after self actives))))
       (:om-key-left
-       (cond 
+       (cond
+        ((and (om-option-key-p) connections (not actives))
+         (switch-input-connection (car connections) -1))
         ((om-option-key-p)
          (mapc #'(lambda (item) (delete-all-inputs item) t) actives))
         ((and (om-command-key-p) (om-shift-key-p))
@@ -380,7 +385,9 @@ because digit-char-p will not accept backspace and special om keys!"
            ))
         ))
       (:om-key-right 
-       (cond 
+       (cond
+        ((and (om-option-key-p) connections (not actives))
+         (switch-input-connection (car connections) 1))
         ((om-option-key-p)
          (mapc #'(lambda (item) (add-all-inputs item)) actives))
         ((and (om-command-key-p) (om-shift-key-p))
