@@ -280,6 +280,10 @@ Patches, maquettes and hierarchical class editors are sub-classes of this class.
    (omNG-add-element (object self) (object frame))
    (om-add-subviews self frame)
    (add-subview-extra frame)
+   ;resize boxes without names
+   (when (and (typep frame 'boxframe)
+            (member (reference (object frame)) *function-without-name*))
+     (om-set-view-size frame (om-make-point 36 36)))
    ;; dans om-add-subviews
    ;;(set-field-size self)
    )

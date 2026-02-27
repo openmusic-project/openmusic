@@ -422,7 +422,9 @@
    (om-with-focused-view self
      (draw-before-box self)
      (call-next-method)
-     (draw-after-box self)
+     (if (active-mode self)
+         (draw-selected-box self)
+       (draw-after-box self))
    ;;;(if (nameview self) (om-invalidate-view (nameview self)))
    ))
 
@@ -431,6 +433,13 @@
   (when (frame-size (object self))
     (om-with-focused-view self
       (om-with-fg-color nil (om-make-color 0.921 0.921 0.921)
+        (om-fill-rect 0 8 (w self) (- (h self) 17)))
+      )))
+
+(defmethod draw-selected-box ((self omboxframe))
+  (when (frame-size (object self))
+    (om-with-focused-view self
+      (om-with-fg-color nil (om-make-color .821 0.821 0.821)
         (om-fill-rect 0 8 (w self) (- (h self) 17))))))
     
 (defmethod draw-after-box ((self omboxframe)) nil)
