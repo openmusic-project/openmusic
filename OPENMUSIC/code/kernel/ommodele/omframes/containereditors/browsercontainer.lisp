@@ -106,8 +106,8 @@
           (vsize (om-view-size (nth 0 scroll-list)))
           (size (om-make-point (* lgt-scroll (om-point-h vsize)) (* lgt-scroll (om-point-h vsize)))))
   
-     (om-set-interior-size (window self) size)
-     (om-set-view-size self size)
+     #-linux(om-set-interior-size (window self) size)
+     #-linux(om-set-view-size self size)
      (om-invalidate-view self)
      ))
 
@@ -163,7 +163,7 @@
 (defmethod panel-size ((self PackageEditor)) 
    (om-make-point (w self) (h self)))
 
-(defmethod editor-minimum-size ((self packageeditor)) (om-make-point 200 300))
+(defmethod editor-minimum-size ((self packageeditor)) (om-make-point 400 300))
 
 (defmethod make-new-scroll ((self t)) 
    "Open a new editor containing the simple frames elements of 'self'."
