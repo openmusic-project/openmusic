@@ -451,7 +451,7 @@ For more info, see omquantify help."
                                   :glist (repeat-n (make-instance 'grace-chord) n)
                                   :thechord (nth i chrd2)
                                   :before? t)))
-    (add-grace-notes vx1 gnpos (loop for i in gnnum collect (repeat-n 6000 i)))
+    ;(add-grace-notes vx1 gnpos (loop for i in gnnum collect (repeat-n 6000 i)))
     (make-instance 'voice :tree (tree vx1) :tempo (tempo self))
     ))
 
