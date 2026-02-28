@@ -174,7 +174,7 @@
 ;FRAME
 ;===========================
 ; boxframe
-(defclass tempobjframe (om-view-drag boxframe om-view-drop) 
+(defclass tempobjframe (boxframe om-view-drop) ;(om-view-drag boxframe om-view-drop) 
    ((mode :initform 'normal :accessor mode)
     (minipict :initform nil :accessor minipict))
    (:documentation "Simple frame for temporalbox boxes in maquettes. #enddoc#
@@ -378,6 +378,13 @@
 
   (when (show-con? self)
     (call-next-method)))
+
+;when selected in maquette
+(defmethod draw-selected-box ((self tempobjframe))
+  (when (frame-size (object self))
+    (om-with-focused-view self
+      (om-with-fg-color nil *om-black-color*
+        (om-draw-rect 1 1 (- (w self) 2) (- (h self) 2))  :pensize 5))))
 
 
 (defmethod score-draw-mini-view ((self tempobjframe) value)

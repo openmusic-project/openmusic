@@ -404,7 +404,10 @@
 ;(defclass boxframe (omboxframe OMCompoundFrame) ())
 ;(defclass simpleboxframe (omboxframe OMAtomicFrame) ())
 
-(defclass boxframe (omboxframe OMAtomicFrame) ())
+
+;(defclass boxframe (omboxframe OMAtomicFrame) ())
+;added om-view-drag to boxframe, but see if that doesn't conflict with icon-box as dble-dragged
+(defclass boxframe (omboxframe OMAtomicFrame om-view-drag) ())
 
 (defmethod get-box-frame ((self omboxframe)) self)
 
