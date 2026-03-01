@@ -2968,12 +2968,67 @@
       (om-modal-dialog mydilog))))
 
 
+(defmethod edit-cursor-interval ((self chordseqPanel)) 
+  (let ((Mydilog (om-make-window 'om-dialog
+                                   :size (om-make-point 260 140)
+                                   :window-title "Cursor Interval"
+                                   :resizable nil :maximize nil :minimize nil
+                                   :font *om-default-font1*
+                                   :window-show nil
+                                   :position :centered))
+          
+          (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
+                                     (format () (format nil "~D" (cursor-pos self)))
+                                     :font *om-default-font1*
+                                     :focus nil))
+          (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
+                                    (format () (format nil "~D" (second (cursor-interval self))))
+                                     :font *om-default-font1*
+                                     :focus nil)))
+          
+      
+      (om-add-subviews mydilog 
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 5) (om-make-point 80 18) "Start [ms]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 70) (om-make-point 80 18) "End [ms]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       
+                       (om-make-dialog-item 'om-button (om-make-point 140 36) (om-make-point 80 20) "Cancel"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item)) (om-return-from-modal-dialog mydilog ())))
+                       (om-make-dialog-item 'om-button (om-make-point 140 76) (om-make-point 80 20) "OK"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item))
+                                                         (when (not (equal "" (om-dialog-item-text start))) 
+                                                           (let ((repstart (read-from-string (om-dialog-item-text start)))
+                                                                 (repend (read-from-string (om-dialog-item-text end))))
+                                                             (if (and (integerp repstart) (> repstart 0))
+                                                                 (progn
+                                                                   (setf (cursor-pos self) repstart)
+                                                                 ;(set-edit-param (om-view-container self) 'grillestep  rep)
+                                                                   (if  (and repend (> repend repstart))
+                                                                       (setf (cursor-interval self) (list repstart repend))
+                                                                     (om-beep-msg (string+ "Bad end value ! (" (om-dialog-item-text end) ") should be > than (om-dialog-item-text start)" )))
+                                                                   (om-invalidate-view self t))
+                                                               (om-beep-msg (string+ "Bad start value ! (" (om-dialog-item-text start) ")" )))))
+                                                         (om-return-from-modal-dialog mydilog ()))
+                                            ;:focus t
+                                            :default-button t
+                                            )
+                       start end)
+      (om-modal-dialog mydilog)))
+
+
+
 (defmethod handle-key-event ((self chordseqPanel) char)
   (if (analysis-mode? self)
       (analysis-handle-key-event self char)
       (case char
 	(#\g (set-unset-grille self))
 	(#\G (edit-step-grille self))
+        (#\v (edit-cursor-interval self))
 	(#\a (if (equal (slots-mode self) 'dur)
 		 (adjoust-grille-durs self)
 		 (adjoust-grille-chords self)))
