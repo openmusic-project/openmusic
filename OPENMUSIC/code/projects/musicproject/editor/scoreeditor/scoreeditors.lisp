@@ -2923,6 +2923,7 @@
     (normalize-chords-x (object (om-view-container self)))
     (update-panel self t)))
 
+;;;GRID STEP DIALOG
 
 (defmethod set-unset-grille ((self chordseqPanel))
    (setf (grille-p self) (not (grille-p self)))
@@ -2932,7 +2933,7 @@
   (when (grille-p self) 
     (let ((Mydilog (om-make-window 'om-dialog
                                    :size (om-make-point 190 80)
-                                   :window-title "Grille step"
+                                   :window-title "Grid step"
                                    :resizable nil :maximize nil :minimize nil
                                    :font *om-default-font1*
                                    :window-show nil
@@ -2967,31 +2968,66 @@
                        step)
       (om-modal-dialog mydilog))))
 
+;;;CURSOR INTERVAL DIALOG
 
-(defmethod edit-cursor-interval ((self chordseqPanel)) 
-  (let ((Mydilog (om-make-window 'om-dialog
-                                   :size (om-make-point 260 140)
-                                   :window-title "Cursor Interval"
-                                   :resizable nil :maximize nil :minimize nil
-                                   :font *om-default-font1*
-                                   :window-show nil
-                                   :position :centered))
+(defmethod edit-cursor-interval ((self chordseqPanel))
+  (let* ((Mydilog (om-make-window 'om-dialog
+                                 :size (om-make-point 260 220)
+                                 :window-title "Cursor Interval"
+                                 :resizable nil :maximize nil :minimize nil
+                                 :font *om-default-font1*
+                                 :window-show nil
+                                 :position :centered))
+         (diff (if (cursor-interval self)
+                   (- (second (cursor-interval self))
+                      (car (cursor-interval self))) 0))
           
-          (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
-                                     (format () (format nil "~D" (cursor-pos self)))
-                                     :font *om-default-font1*
-                                     :focus nil))
-          (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
-                                    (format () (format nil "~D" (second (cursor-interval self))))
-                                     :font *om-default-font1*
-                                     :focus nil)))
+        (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
+                                    (format nil "~D" (cursor-pos self))
+                                    :font *om-default-font1*
+                                    :focus nil))
+        (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
+                                  (format nil (format nil "~D" (second (cursor-interval self))))
+                                  :value (format nil "~D" (second (cursor-interval self)))
+                                  ;:value (second (cursor-interval self))
+                                  :enabled t
+                                  :font *om-default-font1*
+                                  :focus nil))
           
-      
+        (intvl (om-make-dialog-item 'edit-numbox (om-make-point 20 164) (om-make-point 90 20) " " ;numbox
+                                    :value (if (cursor-interval self)
+                                               (- (second (cursor-interval self))
+                                                  (car (cursor-interval self))))
+                                    :allow-returns nil
+                                    :di-action (om-dialog-item-act item
+                                                 (let* ((val (parse-integer (om-dialog-item-text item)))
+                                                        (last (parse-integer (om-dialog-item-text end)))
+                                                        (beg (parse-integer (om-dialog-item-text start))))
+                                                   (om-set-dialog-item-text end (format nil "~D" (+ (- val  diff) last)))
+                                                   (setf diff val)
+                                                   )
+                                                 (om-invalidate-view self t))
+                                    :afterfun #'(lambda (item) (progn
+                                                                 (setf (cursor-interval self)
+                                                                     (list (parse-integer (om-dialog-item-text start))
+                                                                           (+ (parse-integer (om-dialog-item-text start))
+                                                                              (parse-integer (om-dialog-item-text item)))))
+                                                                 (om-invalidate-view self t)
+                                                                 ))
+                                                                    
+                                    :enabled t
+                                    :font *om-default-font1*
+                                    :focus nil)))
+          
+       
       (om-add-subviews mydilog 
                        (om-make-dialog-item 'om-static-text (om-make-point 25 5) (om-make-point 80 18) "Start [ms]:"           
                                             :font *om-default-font2*
                                             :bg-color *om-window-def-color*)
                        (om-make-dialog-item 'om-static-text (om-make-point 25 70) (om-make-point 80 18) "End [ms]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 135) (om-make-point 80 18) "Int. [ms]:"           
                                             :font *om-default-font2*
                                             :bg-color *om-window-def-color*)
                        
@@ -3017,7 +3053,12 @@
                                             ;:focus t
                                             :default-button t
                                             )
-                       start end)
+                       start end intvl
+                       )
+      ;to display value of numbox
+      (set-value intvl (if (cursor-interval self)
+                           (- (second (cursor-interval self))
+                              (car (cursor-interval self)))))
       (om-modal-dialog mydilog)))
 
 
