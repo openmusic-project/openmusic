@@ -253,11 +253,12 @@
 ;before est necessaire ici
 (defmethod om-window-close-event :around ((self EditorWindow)) 
   (when (editor self)
+    ;first close attached!
+    (loop for ed in (attached-editors (editor self)) do
+            (om-close-window ed))
     (close-editor-after (editor self))
     (close-editorFrame (editor self))
     (close-editor-before (editor self))
-    (loop for ed in (attached-editors (editor self)) do
-                 (om-close-window ed))
     (setf (Editorframe (object (panel self))) nil)))
 
 
