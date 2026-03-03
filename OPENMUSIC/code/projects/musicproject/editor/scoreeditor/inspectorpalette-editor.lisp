@@ -22,6 +22,7 @@
 ;;; Music package 
 ;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
+;;replaces inspectorpalette.lisp
 
 (in-package :om)
 
@@ -44,16 +45,17 @@
    ))
 
 (defvar *scoreinspector* nil)
-(setf *scoreinspector* (make-instance 'score-inspector))
+;(setf *scoreinspector* (make-instance 'score-inspector))
 ;(defvar *show-scoreinspector* nil)
 
-
-(defmethod om-window-close-event :after ((self score-inspector-window)) 
+(defmethod om-window-close-event :around ((self score-inspector-window))
   (setf (winpos *scoreinspector*) (om-view-position self))
   (setf (win *scoreinspector*) nil)
   (setf (show *scoreinspector*) nil)
   (setf (current-editor *scoreinspector*) nil)
-  )
+  (setf *scoreinspector* nil) 
+  (om-close-window (win *scoreinspector*)))
+
 
 
 #|
@@ -89,30 +91,40 @@
 (defmethod get-inspector ((self t)) t)
 (defmethod show-inspector ((self t)) t) ;for test reasons
 
-(defmethod show-inspector ((self scorepanel))
+(defmethod show-inspector ((self scorepanel)) 
+  (setf *scoreinspector* (make-instance 'score-inspector))
   (let ((win (om-make-window 'score-inspector-window :window-title "Score Inspector"
                              :inspector *scoreinspector*
                              :resizable nil :maximize nil :minimize nil
                              :window-show nil
-                             :size (om-make-point 250 54))))
+                             :size (om-make-point 250 254)
+                             )))
     
-    (update-selection self 0)
+    (setf *scoreinspector* (inspector win))
     (setf (win *scoreinspector*) win)
+    (update-selection self 0)
     (setf (current-editor *scoreinspector*) self)
     (push win (attached-editors (om-view-container (current-editor *scoreinspector*))))
     ;(om-show-window win)
-    (om-set-view-position win (om-make-point 500 500))
+    (om-set-view-position win  (om-make-point 500 500))
     ))
 
-(defmethod close-inspector-win ((self score-inspector-window)) 
-  (om-close-window self))
+(defmethod close-inspector-win ((self score-inspector-window))
+  (om-close-window self)
+  (setf *scoreinspector* nil)
+  )
 
+#|
 (defmethod show-inspector-window ((self scorepanel))
   (if (win *scoreinspector*)
       (progn 
         (close-inspector-win (win *scoreinspector*))
         (show-inspector self))
     (show-inspector self)))
+|#
+
+(defmethod show-inspector-window ((self scorepanel))
+    (show-inspector self))
 
 (defmethod show-inspector-from-menu ((self scorepanel))
   (if (win *scoreinspector*)
@@ -153,15 +165,18 @@
             ;;;   (add-buttons-fleches (title-bar self)))
             (om-set-window-title inspectwin (format nil "~A Inspector" 
                                                     (string-upcase (string (obj-mode (panel self))))))
-            (when (car controls) (om-set-view-size inspectwin (om-make-point 250 (car controls))))
+            (when (car controls) (om-set-view-size inspectwin (om-make-point 300 (car controls)))) ;205-> 300 width
             (if selection
                 (if (> (length selection) 1)
                     (unable-inspector-section inspectwin "(Multiple selection)")
                   (show-inspector-section inspectwin))
               (unable-inspector-section inspectwin "(No selection)")
-              ))
-        (when (win *scoreinspector*) (om-hide-window (win *scoreinspector*)))
-        ))))
+              )
+            (om-set-view-position (win *scoreinspector*)  (om-make-point 500 500));here!
+            )
+        (when (win *scoreinspector*) (om-hide-window (win *scoreinspector*))))
+      (setf *scoreinspector* nil)
+      )))
 
 
 (defmethod add-buttons-fleches ((self score-inspector))
@@ -287,14 +302,27 @@
                                    "Time Signature"
                                    :font *controls-font*)
            h-sig l-sig
-           ))))
+           ))
+    ))
 
 (defmethod get-inspector-info ((panel scorepanel) (self voice) index p0)
-  (list 50 self
+  (list 72 ;high of window
+        self
         (list  
                (om-make-dialog-item 'om-static-text (om-make-point 20 4) (om-make-point 80 20)
+                                    "Tempo" :font *controls-font*)
+               (om-make-dialog-item 'numbox (om-make-point 90 6) (om-make-point 30 18) 
+                                                  (format nil " ~D" (tempo-a-la-noire (car (tempo self))))
+                                                  :font *om-default-font2*
+                                                  :value (tempo-a-la-noire (car (tempo self))) :min-val 10 :max-val 1000
+                                                  :bg-color *om-white-color*
+                                                  :afterfun #'(lambda (x) 
+                                                                (setf (tempo self) (list (value x) (second (tempo self))))
+                                                                (update-panel panel)))
+               (om-make-dialog-item 'om-static-text (om-make-point 20 26) (om-make-point 80 20) 
                                     "Channel" :font *controls-font*)
-               (om-make-dialog-item 'numbox (om-make-point 90 6) (om-make-point 30 18) " ..."
+               (om-make-dialog-item 'numbox (om-make-point 90 28) (om-make-point 40 18) 
+                                    " ..." ;prendre la valeur globale de la voix
                                     :fg-color *om-gray-color*
                                     :font *om-default-font2*
                                     :value 0 :min-val 1 :max-val 16
@@ -303,25 +331,30 @@
                                                   (set-channel self (value x))
                                                   (om-set-fg-color x *om-black-color*)
                                                   (update-panel panel)))
-               (om-make-dialog-item 'om-static-text (om-make-point 20 26) (om-make-point 80 20)
-                                    "Tempo" :font *controls-font*)
-               (om-make-dialog-item 'numbox (om-make-point 90 28) (om-make-point 40 18)
-                                                  (format nil " ~D" (tempo-a-la-noire (car (tempo self))))
-                                                  :font *om-default-font2*
-                                                  :value (tempo-a-la-noire (car (tempo self))) :min-val 10 :max-val 1000
-                                                  :bg-color *om-white-color*
-                                                  :afterfun #'(lambda (x) 
-                                                                (setf (tempo self) (list (value x) (second (tempo self))))
-                                                                (update-panel panel)))
+               
+                (om-make-dialog-item 'om-static-text (om-make-point 20 48) (om-make-point 80 20)
+                                     "Port" :font *controls-font*)
+               (om-make-dialog-item 'numbox (om-make-point 90 50) (om-make-point 30 18) 
+                                    " ..."
+                                    :fg-color *om-gray-color*
+                                    :font *om-default-font2*
+                                    :value 0 :min-val 1 :max-val 16
+                                    :bg-color *om-white-color*
+                                    :afterfun #'(lambda (x) 
+                                                  (set-port self (value x))
+                                                  (om-set-fg-color x *om-black-color*)
+                                                  (update-panel panel)))
                (om-make-dialog-item 'om-check-box  (om-make-point 170 2) (om-make-point 80 20)
                                     " Mute" :font *controls-font* :enable t)
                )))
 
 (defmethod get-inspector-info ((panel scorepanel) (self chord-seq) index p0)
-  (list 50 self
+  (list 72 self
         (list  
          (om-make-dialog-item 'om-static-text (om-make-point 20 12) (om-make-point 80 20)
                               "Channel" :font *controls-font*)
+         (om-make-dialog-item 'om-static-text (om-make-point 20 38) (om-make-point 80 20)
+                              "Port" :font *controls-font*)
          (om-make-dialog-item 'numbox (om-make-point 90 14) (om-make-point 30 18) " ..."
                                     :fg-color *om-gray-color*
                                     :font *om-default-font2*
@@ -329,6 +362,16 @@
                                     :bg-color *om-white-color*
                                     :afterfun #'(lambda (x) 
                                                   (set-channel self (value x))
+                                                  (om-set-fg-color x *om-black-color*)
+                                                  (update-panel panel)))
+         (om-make-dialog-item 'numbox (om-make-point 90 40) (om-make-point 30 18) 
+                                    " ..."
+                                    :fg-color *om-gray-color*
+                                    :font *om-default-font2*
+                                    :value 0 :min-val 1 :max-val 16
+                                    :bg-color *om-white-color*
+                                    :afterfun #'(lambda (x) 
+                                                  (set-port self (value x))
                                                   (om-set-fg-color x *om-black-color*)
                                                   (update-panel panel)))
                
@@ -340,7 +383,7 @@
 (defmethod get-inspector-info ((panel scorepanel) (self poly) index p0)
   (let* ((numvoices (length (inside self)))
          (delta 24) (i0 30))
-    (list (+ i0 (* numvoices delta) 4) self
+    (list  (+ i0 (* numvoices delta) 4) self
           (append 
            (list 
              (om-make-dialog-item 'om-static-text (om-make-point 10 5) (om-make-point 50 18)
@@ -349,8 +392,11 @@
                                   "Tempo" :font *controls-font*)
              (om-make-dialog-item 'om-static-text (om-make-point 135 5) (om-make-point 70 18)
                                   "Channel" :font *controls-font*)
-             (om-make-dialog-item 'om-static-text (om-make-point 200 5) (om-make-point 50 18)
-                                  "Mute" :font *controls-font* :fg-color *om-gray-color*)
+             (om-make-dialog-item 'om-static-text (om-make-point 200 5) (om-make-point 70 18)
+                                  "Port" :font *controls-font*)
+             (om-make-dialog-item 'om-static-text (om-make-point 246 5) (om-make-point 50 18)
+                                  "Mute" :font *controls-font* ;:fg-color *om-gray-color*
+                                  )
              )
           (loop for voice in (inside self) 
                 for i = 0 then (+ i 1) append 
@@ -373,7 +419,17 @@
                                                                 (set-channel voice (value x))
                                                                 (om-set-fg-color x *om-black-color*)
                                                                 (update-panel panel)))
-                      (om-make-dialog-item 'om-check-box (om-make-point 208 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
+                      
+                      (om-make-dialog-item 'numbox (om-make-point 200 (+ 2 (+ i0 (* i delta)))) (om-make-point 30 18) " ..."
+                                                  :font *om-default-font2*
+                                                  :fg-color *om-gray-color* :bg-color *om-white-color*
+                                                  :value 0 :min-val 1 :max-val 16
+                                                  :afterfun #'(lambda (x) 
+                                                                (set-port voice (value x))
+                                                                (om-set-fg-color x *om-black-color*)
+                                                                (update-panel panel)))
+                      
+                      (om-make-dialog-item 'om-check-box (om-make-point 244 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
                                            :font *controls-font* :enable t)
                       
                       ))))))
@@ -389,8 +445,11 @@
                                            "Voice #" :font *om-default-font2b*)
             (om-make-dialog-item 'om-static-text (om-make-point 120 5) (om-make-point 70 18)
                                   "Channel" :font *controls-font*)
-             (om-make-dialog-item 'om-static-text (om-make-point 200 5) (om-make-point 50 18)
-                                  "Mute" :font *controls-font* :fg-color *om-gray-color*)
+            (om-make-dialog-item 'om-static-text (om-make-point 200 5) (om-make-point 70 18)
+                                 "Port" :font *controls-font*)
+             (om-make-dialog-item 'om-static-text (om-make-point 246 5) (om-make-point 50 18)
+                                  "Mute" :font *controls-font* ;:fg-color *om-gray-color*
+                                  )
              )
           (loop for voice in (inside self) 
                 for i = 0 then (+ i 1) append 
@@ -405,7 +464,16 @@
                                                                 (set-channel voice (value x))
                                                                 (om-set-fg-color x *om-black-color*)
                                                                 (update-panel panel)))
-                      (om-make-dialog-item 'om-check-box (om-make-point 208 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
+                    (om-make-dialog-item 'numbox (om-make-point 200 (+ 2 (+ i0 (* i delta)))) (om-make-point 30 18) " ..."
+                                                  :font *om-default-font2*
+                                                  :fg-color *om-gray-color* :bg-color *om-white-color*
+                                                  :value 0 :min-val 1 :max-val 16
+                                                  :afterfun #'(lambda (x) 
+                                                                (set-port voice (value x))
+                                                                (om-set-fg-color x *om-black-color*)
+                                                                (update-panel panel)))
+                    
+                      (om-make-dialog-item 'om-check-box (om-make-point 244 (- (+ i0 (* i delta)) 2)) (om-make-point 20 20) "" 
                                            :font *controls-font* :enable t)
                       
                       ))))))
