@@ -5,8 +5,9 @@ NEW FEATURES
 - 53 EDO (S.Socha)
 - Code ported to LW 8.1.x
 - Added poly method for omng-quantify
-- Optional time stampl display in min:sec:ms or only in ms
+- Optional time stamp display in min:sec:ms or only in ms
 - Switch input's connection (alt+arrows)
+- Cursor Interval selection dialog for score editors
 
 IMPROVEMENTS
 
@@ -15,6 +16,8 @@ IMPROVEMENTS
 - Copy/paste chords in scoreeditors (Mauro Lanza)
 - Maquette have now time indicator in title-bar
 - n-pulses re-written
+- Visible selection of boxes
+- Score inspectors have Port access
 
 FIXES
 
