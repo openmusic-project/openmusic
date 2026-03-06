@@ -65,7 +65,7 @@
                   set-obj-pitch set-obj-vel set-obj-chan set-obj-port set-obj-tempo
                              ;mask 
                   merger select chord-filter chord-band-filter split-voices 
-                  voice->voices concat-score-objs maquette2obj) 
+                  voice->voices concat-score-objs verticalize-pitch maquette2obj) 
                 *scorefun-package*)
 
 (AddPackage2Pack *scorefun-package* *scorepackage* :protect t)

@@ -531,6 +531,8 @@ when :
         collect (eval item)))
 
 (defmethod get-real-chords (self)
+"returns only chords of <self> omitting grace notes. grace notes will still be in the 
+gnotes slot of chord"
   (loop for item in (collect-chords self)
         when (and (chord-p item) (not (cont-chord-p item))) collect item))
 
