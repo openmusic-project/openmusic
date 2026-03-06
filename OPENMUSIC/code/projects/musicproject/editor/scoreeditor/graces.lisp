@@ -192,6 +192,24 @@
   (- (offset->ms (thechord self) (get-voice (thechord self))) *gdur*)))
 |#
 
+
+;Updating thechord for grace-chords 
+(defmethod propagate-tempo ((Self chord)) 
+  (loop for object in (inside self)
+        do (setf (Qtempo object) (Qtempo self))
+           (propagate-tempo object))
+  (when (gnotes self) 
+    (loop for i in (glist (gnotes self))
+          do  (setf (Qtempo i) (Qtempo self))
+              (setf (thechord i) self)
+              (propagate-tempo i))))
+
+;to apply on notes inside grace-chords
+(defmethod propagate-tempo ((Self grace-chord))
+  (loop for object in (inside self)
+        do (setf (Qtempo object) (Qtempo self))
+           (propagate-tempo object)))
+
 ;;;;;;;;;;;
 ;;when just an isolated object in a patch:
 #|
