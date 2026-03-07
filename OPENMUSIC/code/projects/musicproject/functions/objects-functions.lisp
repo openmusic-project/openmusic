@@ -1330,20 +1330,17 @@ Further more, in voice method, if list inputed, it will change all notes accordi
 (defmethod! set-obj-pitch ((self voice) 
                            (newpitch list) 
                            &key 
-                           (mode 'clone)
-                           (nth nil)) 
-  :initvals '(t '(6000 6100) 'clone nil) 
-  :indoc '("self" "newpitch" "mode" "nth")
-  :menuins '((2 (("clone" clone) 
-                 ("destructive" destructive))))
+                           (mode :clone))
+                           
+  :initvals '(t '(6000 6100) :clone) 
+  :indoc '("self" "newpitch" "mode")
+  :menuins '((2 (("clone" :clone) 
+                 ("destructive" :destructive))))
   :icon 355
   :doc  "Changes pitches in a voice or poly object. 
-<mode> keyword can be clone, <self> isunchanged. If :mode = destructive, <self> will be mnodified.
-If <self> is a poly object
-if key <nth> is specified, nth voices will be changed. 
-If <nth> is nil (default), the pitches will be distributed vertically in the poly."
+<mode> keyword can be clone, <self> is unchanged. If :mode = destructive, <self> will be mnodified."
 
-  (if (equal mode 'clone)
+  (if (not (equal mode :destructive))
       (make-instance 'voice 
                      :tree (tree self) 
                      :chords newpitch
@@ -1352,58 +1349,39 @@ If <nth> is nil (default), the pitches will be distributed vertically in the pol
     
 
 (defmethod! set-obj-pitch ((self voice) 
-                           (newpitch number) 
-                           &key 
-                           (mode 'clone) 
-                           (nth nil))
-   (let* ((npuls (n-pulses (tree self)))
-          (pitch (repeat-n newpitch npuls)))
-     (if (equal mode 'clone)
-     (make-instance 'voice 
-                    :tree (tree self) 
-                    :chords pitch
-                    :tempo (tempo self))
-
-     (setf (chords self) pitch))))
-
-
-(defmethod! set-obj-pitch ((self voice) 
                            (newpitch chord-seq) 
                            &key 
-                           (mode 'clone) 
-                           (nth nil))
+                           (mode :clone)) 
+                          
   (let ((chords (inside newpitch)))
-  (if (equal mode 'clone)
-      (make-instance 'voice 
-                     :tree (tree self) 
-                     :chords chords
-                     :tempo (tempo self))
+    (if (not (equal mode :destructive))
+        (make-instance 'voice 
+                       :tree (tree self) 
+                       :chords chords
+                       :tempo (tempo self))
 
-    (setf (chords self) chords))))
+      (setf (chords self) chords))))
 
 
 (defmethod! set-obj-pitch ((self poly) 
                            (newpitch list)
                            &key 
-                           (mode 'clone)
-                           (nth nil))
-  (if (equal mode 'clone)
-      (let* ((newself (clone self)))
-        (if nth
-            (progn
-              (mapcar #'(lambda (nth-voices pitches) 
-                          (setf (nth nth-voices (inside newself))
-                                (set-obj-pitch (nth nth-voices (inside newself)) pitches)))
-                      nth newpitch)
-              newself)
-        (verticalize-pitch newself newpitch)))
-        (if nth
-            (mapcar #'(lambda (nth-voices pitches) 
-                (setf (nth nth-voices (inside self))
-                      (set-obj-pitch (nth nth-voices (inside self)) pitches)))
-            nth newpitch)
-          (verticalize-pitch self newpitch))
-        ))
+                           (mode 'clone))
+                          
+  (if (not (equal mode :destructive))
+      (let ((clone (clone self)))
+        (make-instance 'poly
+                       :voices (loop for i in (inside clone)
+                                     for p in newpitch
+                                     collect (set-obj-pitch i p :mode :destructive))))
+    (loop for i in (inside self)
+          for p in newpitch
+          collect (set-obj-pitch i p :mode :destructive))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;    VERTICALIZE-PITCH  ;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod! verticalize-pitch ((self poly) (pitch list))
    :initvals (list t '(6000 6100)) 
