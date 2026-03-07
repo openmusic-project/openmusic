@@ -559,6 +559,26 @@
 ;;;;;;;;       TOOLS     ;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmethod get-cont-chords (self)
+"returns only chords of <self> omitting grace notes. grace notes will still be in the 
+gnotes slot of chord"
+  (loop for item in (collect-chords self)
+        when (cont-chord-p item) collect item))
+
+(defmethod fix-contchord ((self voice))
+  (let ((chords (get-cont-chords self)))
+    (loop for i in chords
+          do (let* ((prev (previous-container i '(chord)))
+                    (chan (lchan prev))
+                    (port (lport prev)))
+               (setf (lchan i) chan 
+                     (lport i) port)
+               (loop for n in (inside i) do (setf (tie n) (state i)))))))
+
+(defmethod fix-contchord ((self poly))
+  (mapcar #'fix-contchord (inside self)))
+
+
 (defmethod update-obj ((self t)) t)
 
 (defmethod update-obj ((self chord))
@@ -626,36 +646,49 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod! set-obj-tempo ((self voice) tempo &key (mode 'clone))
-  :initvals '(t '((1/4 60) nil) 'clone)
+(defmethod! set-obj-tempo ((self voice) tempo &key (mode :clone))
+  :initvals '(t '((1/4 60) nil) :clone)
   :indoc '("voice or poly" "tempo" "mode")
-  :menuins '((2 (("clone" clone) 
-                 ("destructive" destructive))))
+  :menuins '((2 (("clone" :clone) 
+                 ("destructive" :destructive))))
   :icon 355
   :doc "Changes tempo of <self>. 
 If <mode> is clone, this will output a new voice (default).
 If <mode> is destructive, tempo of <self> will be destructively changed." 
   (let ((tempo (qtempo->tempo tempo))) 
-    (if (equal mode 'destructive)
+    (if (not (equal mode :destructive))
+        (let ((new (clone self)))
+        (setf (tempo new) tempo)
+        new)
         (progn 
           (setf (tempo self) tempo)
-          (update-obj self))
-      (let ((new (clone self)))
-        (setf (tempo new) tempo)
-        new))))
+          (update-obj self)))))
 
 
-(defmethod! set-obj-tempo ((self poly) tempo  &key (mode 'clone))
-  (if (equal mode 'clone)
-      (make-instance 'poly
-                     :voices  (loop for i in (inside self)
-                                    for tp in tempo
-                                    collect (set-obj-tempo i tp :mode 'clone)))
-    (progn
-      (loop for i in (inside self)
-            for tp in tempo
-            do (set-obj-tempo i tp :mode 'destructive))
-      (update-obj self))))
+(defmethod! set-obj-tempo ((self poly) tempo  &key (mode :clone))
+  (if (listp (caar tempo))
+      (if (not (equal mode :destructive))
+          (let ((clone (clone self)))
+            (loop for i in (inside clone)
+                  for tp in tempo
+                  do (set-obj-tempo i tp :mode :destructive))
+            clone)
+        (progn
+          (loop for i in (inside self)
+                for tp in tempo
+                do (set-obj-tempo i tp :mode :destructive))
+          (update-obj self)))
+    (if (not (equal mode :destructive))
+        (let ((clone (clone self)))
+          (loop for i in (inside clone)
+                do (set-obj-tempo i tempo :mode :destructive))
+          clone)
+      (progn
+        (loop for i in (inside self)
+              do (set-obj-tempo i tempo :mode :destructive))
+        (update-obj self)))
+    
+    ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
