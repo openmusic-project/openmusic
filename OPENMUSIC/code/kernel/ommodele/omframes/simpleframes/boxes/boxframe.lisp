@@ -1097,6 +1097,12 @@
 ;     (om-draw-rect-outline 0 0 (- (w self) 1) (- (h self) 9) 
 ;                           (if (selected-p (iconview self)) 2 1))))
 
+(defmethod draw-selected-box ((self instboxframe)) 
+  (when (frame-size (object self))
+    (om-with-focused-view self
+      (om-with-fg-color nil (om-make-color 0.68 0.79 0.9) 
+        (om-fill-rect 0 0 (w self) (- (h self) 12))))))
+
 (defmethod change-name-box ((self instBoxframe))
    "If 'self is a global variable you can not change its name."
    (if (mypathname (reference (object  self)))
