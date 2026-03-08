@@ -141,11 +141,9 @@
   (om-view-click-handler (capi::top-level-interface self) position)
   t)
 
-;(defmethod om-view-click-handler :before ((self om-graphic-object) position)
-; (setf *clicked-view* self))
-
-(defmethod om-view-click-handler :after ((self om-graphic-object) position)
+(defmethod om-view-click-handler :before ((self om-graphic-object) position)
  (setf *clicked-view* self))
+
 ;;;=================
 ;;; CLIC + MOVE
 ;;;=================
