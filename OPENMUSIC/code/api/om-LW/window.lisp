@@ -36,6 +36,7 @@
           om-set-window-title
           om-interior-size
           om-set-interior-size
+          om-resize-callback
           om-def-higher-level-win
           om-front-window
           om-get-all-windows

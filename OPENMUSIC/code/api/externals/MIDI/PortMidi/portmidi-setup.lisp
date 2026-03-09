@@ -80,6 +80,7 @@
   ((portlines :accessor portlines :initform nil :initarg :portlines)
    (direction :accessor direction :initform nil :initarg :direction)))
 
+#-linux
 (defmethod oa::om-resize-callback ((self portmidi-ports-dialog) x y w h)
   (call-next-method)
   (let ((buttons (reverse (oa:om-subviews self)))
@@ -96,6 +97,21 @@
       (oa::om-set-view-size panel1 (oa::om-make-point 380 (- h 90))))
     (when panel2
       (oa::om-set-view-size panel2 (oa::om-make-point 380 (- h 90))))))
+
+#+linux
+(defmethod oa::om-resize-callback ((self portmidi-ports-dialog) x y w h)
+  (call-next-method)
+  (let ((buttons (reverse (oa:om-subviews self)))
+        (panel1 (car (portviews self)))
+        (panel2 (second (portviews self))))
+    (when (car buttons) 
+      (oa::om-set-view-position (car buttons) (oa::om-make-point 680 (abs (- (- h  20) 40)))))
+    (when (second buttons) 
+      (oa::om-set-view-position (second buttons) (oa::om-make-point 575 (abs (- (- h  20) 40)))))
+    (when panel1
+      (oa::om-set-view-size panel1 (oa::om-make-point 380 (- h 120))))
+    (when panel2
+      (oa::om-set-view-size panel2 (oa::om-make-point 380 (- h 120))))))
 
 (defmethod set-portmidi-connection-view ((self portmidi-ports-view) dialog)
   (let* ((devices (remove nil (loop for ref in (list-devices) 
@@ -152,7 +168,7 @@
 
 
 
-
+#-linux
 (defun show-portmidi-dialog (settings &optional action)
   (if *portmidi-setup-window*
       (oa::om-select-window *portmidi-setup-window*)
@@ -246,7 +262,107 @@
       )))
 
 
+#+linux
+(defun show-portmidi-dialog (settings &optional action)
+  (if *portmidi-setup-window*
+      (oa::om-select-window *portmidi-setup-window*)
+    (let* ((dd (oa::om-make-window 'portmidi-ports-dialog 
+                                   :window-title "PortMIDI Setup"
+                                   :bg-color oa::*om-light-gray-color*
+                                   :size (oa::om-make-point 800 350) ;270
+                                   :resizable t
+                                   :external-min-width 800
+                                   :external-max-width 800
+                                   :external-min-height 350 ;270 
+                                   :settings settings
+                                   ))
+        
+           (inv (oa::om-make-view 'portmidi-ports-view :position (oa::om-make-point 10 50)
+                                  :size (oa::om-make-point 380 120) 
+                                  :scrollbars :v 
+                                  :retain-scrollbars t
+                                  :scroll-bar-type :always-visible
+                                  :direction :in))
 
+           (outv (oa::om-make-view 'portmidi-ports-view :position (oa::om-make-point 400 50)
+                                   :size (oa::om-make-point 380 120) 
+                                   :scrollbars :v 
+                                   :retain-scrollbars t
+                                   :scroll-bar-type :always-visible
+                                   :direction :out))
+
+           )
+    
+      (oa::om-add-subviews dd 
+                           (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 85 10) (oa::om-make-point 80 20) "In"
+                                                    :font oa::*om-default-font2b*)
+                         
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 20 5) (oa::om-make-point 40 20) "+"
+                                                    :di-action #'(lambda (item) 
+                                                                   (let ((newport 0))
+                                                                     (loop while (find newport (car (settings dd)) :test '= :key 'car)
+                                                                           do (setf newport (1+ newport)))
+                                                                     (setf (settings dd) (list 
+                                                                                          (append (car (settings dd)) (list (list newport nil)))
+                                                                                          (cadr (settings dd))))
+                                                                     (set-portmidi-connection-view inv dd)
+                                                                     )))
+                         
+                           (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 120 10) (oa::om-make-point 120 20) "Input Devices"
+                                                    :font oa::*om-default-font2b*)
+                           )
+      (oa::om-add-subviews dd 
+                           (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 470 10) (oa::om-make-point 80 20) "Out"
+                                                    :font oa::*om-default-font2b*)
+                         
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 420 5) (oa::om-make-point 40 20) "+"
+                                                    :di-action #'(lambda (item) 
+                                                                   (let ((newport 0))
+                                                                     (loop while (find newport (cadr (settings dd)) :test '= :key 'car)
+                                                                           do (setf newport (1+ newport)))
+                                                                     (setf (settings dd) (list 
+                                                                                          (car (settings dd))
+                                                                                          (append (cadr (settings dd)) (list (list newport nil)))
+                                                                                          ))
+                                                                     (set-portmidi-connection-view outv dd)
+                                                                     )))
+                         
+                           (oa::om-make-dialog-item 'oa::om-static-text (oa::om-make-point 520 10) (oa::om-make-point 120 20) "Output Devices"
+                                                    :font oa::*om-default-font2b*)
+                           )
+
+      (setf (portviews dd) (list inv outv))
+      (oa::om-add-subviews dd inv outv) 
+      (set-portmidi-connection-view inv dd)
+      (set-portmidi-connection-view outv dd)
+  
+      (oa::om-add-subviews dd 
+                           ;;; DOES NOT WORK...
+                           ;(oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 10 230) (oa::om-make-point 130 20) 
+                           ;                         "Refresh Devices"
+                           ;                         :di-action #'(lambda (item) 
+                           ;                                        ;;;(portmidi-restart)
+                           ;                                        (when action (funcall action (settings dd)))
+                           ;                                        (portmidi-connect-ports (settings dd))
+                           ;                                        (set-portmidi-connection-view inv dd)
+                           ;                                        (set-portmidi-connection-view outv dd)
+                           ;                                        ))
+                                                  
+                           (oa::om-make-dialog-item 'oa::om-button (oa::om-make-point 575 190) (oa::om-make-point 100 20) "Apply"
+                                                    :di-action #'(lambda (item) (when action (funcall action (settings dd))))
+                                                    )
+                           (oa::om-make-dialog-item 'oa::om-button  (oa::om-make-point 680 190) (oa::om-make-point 80 22) "OK" 
+                                           :di-action #'(lambda (item) (progn 
+                                                                         (when action (funcall action (settings dd)))
+                                                                         (oa::om-close-window (oa::om-view-window item))))
+
+                                           )
+                           )
+      
+      (setf *portmidi-setup-window* dd)
+      (oa:om-show-window dd)
+      (oa::om-set-field-size inv (oa::om-make-point 380 120))
+      )))
 
 
 

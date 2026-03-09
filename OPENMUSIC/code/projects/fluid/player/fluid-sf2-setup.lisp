@@ -46,7 +46,8 @@
 
 (defclass sf2-ports-dialog (om-window) 
   ((portviews :accessor portviews :initform nil :initarg :portviews)
-   (settings :accessor settings :initform nil :initarg :settings)))
+   (settings :accessor settings :initform nil :initarg :settings)
+   (buttons :accessor buttons :initform nil :initarg :buttons)))
 
 (defmethod oa::om-window-close-event ((self sf2-ports-dialog))
   (setf *sf2-setup-window* NIL))
@@ -55,7 +56,8 @@
   ((portlines :accessor portlines :initform nil :initarg :portlines)
    (direction :accessor direction :initform nil :initarg :direction)))
 
-(defmethod oa::om-resize-callback ((self sf2-ports-dialog) x y w h)
+#-linux
+(defmethod om-resize-callback ((self sf2-ports-dialog) x y w h)
   (call-next-method)
   (let ((buttons (reverse (oa:om-subviews self)))
         (panel1 (car (portviews self)))
@@ -72,6 +74,22 @@
                                                       (- h 90))))
      ))
 
+#+linux
+(defmethod om-resize-callback ((self sf2-ports-dialog) x y w h)
+  (call-next-method)
+  (let ((buttons (buttons self))
+        (panel1 (car (portviews self)))
+        (panel2 (second (portviews self)))
+        )
+    (when buttons 
+      (om-set-view-position (car buttons) (om-make-point (abs (- 680 (abs ( - 210 (+ 770 w))))) (abs (- (- h  25) 45))))
+      (om-set-view-position (second buttons) (om-make-point (abs (- 780 (abs ( - 210 (+ 770 w))))) (abs (- (- h  25) 45))))
+      (om-set-view-position (third buttons) (om-make-point (abs (- 860 (abs ( - 210 (+ 770 w))))) (abs (- (- h  25) 45))))
+      (om-set-view-position (fourth buttons) (om-make-point (abs (- 940 (abs ( - 210 (+ 770 w))))) (abs (- (- h  25) 45))))
+      )
+    (when panel1
+      (om-set-view-size panel1 (om-make-point (abs (- 680 (abs ( - 120 (+ 770 w))))) 
+                                                      (- h 110))))))
 
 
 ;(cl-fluid::name-fsynths cl-fluid::*fl-synths*)
@@ -137,7 +155,7 @@
                                    vv))))))))
 
 
-
+#-linux
 (defun show-sf2-dialog (settings &optional action)
   (if *sf2-setup-window*
       (oa::om-select-window *sf2-setup-window*)
@@ -214,7 +232,84 @@
       )))
 
 
+#+linux
+(defun show-sf2-dialog (settings &optional action)
+  (if *sf2-setup-window*
+      (om-select-window *sf2-setup-window*)
+    (let* ((num (length settings))
+           (dd (om-make-window 'sf2-ports-dialog 
+                                   :window-title "SF2 Port Setup"
+                                   :bg-color oa::*om-light-gray-color*
+                                   :size (oa::om-make-point 800 350)
+                                   :resizable t
+                                   :external-min-width 800
+                                   :external-max-width 800
+                                   :external-min-height 350 ;270 
+                                   :settings settings
+                                   ))
+        
+           (inv (om-make-view 'sf2-ports-view :position (oa::om-make-point 10 25)
+                                  :size (om-make-point 770 (+ 130 (* 45 num)))
+                                  :scrollbars :v 
+                                  :retain-scrollbars t
+                                  :scroll-bar-type :always-visible
+                                  :direction :in
+                                  ))
+            (reset (om-make-dialog-item 'om-button (om-make-point 420 160) (om-make-point 80 22) "Reset"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (reset-sf2-settings inv))))
+                                                    
+            (load (om-make-dialog-item 'om-button (om-make-point 500 160) (om-make-point 80 22) "Load"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (load-sf2-settings inv))))
+                                                    
+            (save (om-make-dialog-item 'om-button (om-make-point 580 160) (om-make-point 80 22) "Save"
+                                                    :di-action #'(lambda (item) 
+                                                                   (declare (ignore item))
+                                                                   (save-sf2-settings inv))
+                                                                   
+                                                                   ;(when action (funcall action (settings dd))))
+                                                    ))
 
+            (ok (om-make-dialog-item 'om-button  (om-make-point 680 160) (om-make-point 80 22) "OK" 
+                                                    :di-action #'(lambda (item) (progn 
+                                                                                  (when action (funcall action (settings dd)))
+                                                                                 ; (get-latest-sf2-list settings)
+                                                                                  (om-close-window (om-view-window item)))))))
+          
+      (unless cl-fluid::*fl-synths*
+        (om-add-subviews inv
+                         (om-make-dialog-item 'om-static-text (om-make-point 250 75) (om-make-point 280 120) "No FluidSynths loaded!"
+                                                  :font *om-default-font4b*
+                                                  :fg-color *om-red-color*
+                                                  )
+                         ))
+      (om-add-subviews dd 
+                          
+                           (om-make-dialog-item 'om-static-text (om-make-point 40 5) (om-make-point 120 20) "Ports"
+                                                    :font *om-default-font2b*)
+                           (om-make-dialog-item 'om-static-text (om-make-point 180 5) (om-make-point 120 20) "Paths"
+                                                    :font *om-default-font2b*)
+                           
+                           )
+
+
+      (setf (portviews dd) (list inv))
+      (om-add-subviews dd inv ) 
+      (set-sf2-directory-view inv dd)
+  
+      (om-add-subviews dd reset load save ok)
+      (push reset (buttons dd))
+      (push load (buttons dd))
+      (push save (buttons dd))
+      (push ok (buttons dd))
+      (setf *sf2-setup-window* dd)
+      (oa:om-show-window dd)
+      (om-set-field-size inv (om-make-point 770 (+ 110 (* 45 num))))
+      (om-invalidate-view dd t)
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;SAVING SF2 LOAD SETTINGS INTO A TXT FILE
