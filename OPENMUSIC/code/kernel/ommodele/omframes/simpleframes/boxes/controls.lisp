@@ -358,79 +358,82 @@
         (text (cadr (multiple-value-list (string-until-char str " "))))   
         newbox)
     (cond
-       ((or (listp funname) (numberp funname) (stringp funname))
-        (setf newbox (omNG-make-new-boxcall (get-basic-type 'list) pos (mk-unique-name scroller "list")))
-        (setf (value newbox) funname)
-        (setf (thestring newbox) str)
-        (setf (frame-size newbox) nil)) ; (get-good-size newtext *om-default-font2*)))
-       ((special-form-p funname)
-        (om-beep-msg  (string+ "Special Lisp form " str)))
+     ((or (listp funname) (numberp funname) (stringp funname))
+      (setf newbox (omNG-make-new-boxcall (get-basic-type 'list) pos (mk-unique-name scroller "list")))
+      (setf (value newbox) funname)
+      (setf (thestring newbox) str)
+      (setf (frame-size newbox) nil)) ; (get-good-size newtext *om-default-font2*)))
+     ((special-form-p funname)
+      (om-beep-msg  (string+ "Special Lisp form " str)))
        
-       ((equal funname 'patch)
-        (setf newbox (omNG-make-new-boxcall 
-                      (make-instance 'OMPatchAbs 
-                        :name (mk-unique-name scroller "mypatch") :icon 210) 
-                      pos 
-                      (mk-unique-name scroller "mypatch"))))
-       ((equal funname 'lisp)
-        (setf newbox (omNG-make-new-boxcall 
-                      (make-instance 'OMLispPatchAbs 
-                        :name (mk-unique-name scroller "lispfunction")
-                        :icon 123)
-                      pos 
-                      (mk-unique-name scroller "lispfunction"))))
-       ((member funname *spec-new-boxes-types*)
-        (setf newbox (get-new-box-from-type funname pos scroller)))
-       ((equal funname 'maquette)
-        (setf newbox (omNG-make-new-boxcall 
-                      (make-instance 'OMMaqAbs 
-                                     :name (mk-unique-name scroller "mymaquette") :icon 265) 
-                      pos 
-                      (mk-unique-name scroller "mymaquette"))))
-       ((equal funname 'comment)
-        (setf newbox (omNG-make-new-boxcall funname pos "comment"))
-        (setf (reference newbox) (or text "Type your comments here")))
-       ((and (find-class funname nil) (not (equal funname 'list)) (omclass-p (class-of (find-class funname nil))))
-        (cond ((om-shift-key-p)
-               (setf newbox  (omNG-make-new-boxcall-slots (find-class funname nil) pos (mk-unique-name scroller "slots"))))
-              (t (let ((boxname (or text (mk-unique-name scroller (string funname)))))
-                   (setf newbox (omNG-make-new-boxcall (find-class funname) pos boxname))
-                   (if text (setf (show-name newbox) t))))
-              ))
-       ((not (fboundp funname)) ;<== ADDED THIS BLOCK
-	    (cond ((equal funname '??)
-                   (om-beep))
-		  (t		
-		   (setf newbox (omNG-make-new-boxcall (get-basic-type 'list) pos (mk-unique-name scroller "list")))
-		   (setf (value newbox) funname)
-		   (setf (thestring newbox) str)
-		   (setf (frame-size newbox) nil))))
+     ((equal funname 'patch)
+      (setf newbox (omNG-make-new-boxcall 
+                    (make-instance 'OMPatchAbs 
+                                   :name (mk-unique-name scroller "mypatch") :icon 210) 
+                    pos 
+                    (mk-unique-name scroller "mypatch"))))
+     ((equal funname 'lisp)
+      (setf newbox (omNG-make-new-boxcall 
+                    (make-instance 'OMLispPatchAbs 
+                                   :name (mk-unique-name scroller "lispfunction")
+                                   :icon 123)
+                    pos 
+                    (mk-unique-name scroller "lispfunction"))))
+     ((member funname *spec-new-boxes-types*)
+      (setf newbox (get-new-box-from-type funname pos scroller)))
+     ((equal funname 'maquette)
+      (setf newbox (omNG-make-new-boxcall 
+                    (make-instance 'OMMaqAbs 
+                                   :name (mk-unique-name scroller "mymaquette") :icon 265) 
+                    pos 
+                    (mk-unique-name scroller "mymaquette"))))
+     ((equal funname 'comment)
+      (setf newbox (omNG-make-new-boxcall funname pos "comment"))
+      (setf (reference newbox) (or text "Type your comments here")))
+     ((and (find-class funname nil) (not (equal funname 'list)) (omclass-p (class-of (find-class funname nil))))
+      (cond ((om-shift-key-p)
+             (setf newbox  (omNG-make-new-boxcall-slots (find-class funname nil) pos (mk-unique-name scroller "slots"))))
+            (t (let ((boxname (or text (mk-unique-name scroller (string funname)))))
+                 (setf newbox (omNG-make-new-boxcall (find-class funname) pos boxname))
+                 (if text (setf (show-name newbox) t))))
+            ))
+     ((not (fboundp funname)) ;<== ADDED THIS BLOCK
+      (cond ((equal funname '??)
+             (om-beep))
+            (t		
+             (setf newbox (omNG-make-new-boxcall (get-basic-type 'list) pos (mk-unique-name scroller "list")))
+             (setf (value newbox) funname)
+             (setf (thestring newbox) str)
+             (setf (frame-size newbox) nil))))
         ;(if (equal funname '??) ;<== REMOVED HERE
         ;    (om-beep)
         ;  (om-beep-msg  (string+ "function " str " does not exist!"))))
-       ((OMGenfun-p (fdefinition funname))
-	(setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
-                                            (mk-unique-name scroller (string funname))))
-        (when args (add-args-to-box newbox args))
-        )
+     ((OMGenfun-p (fdefinition funname))
+      (setf newbox (omNG-make-new-boxcall (fdefinition funname) pos 
+                                          (mk-unique-name scroller (string funname))))
+      (when args (add-args-to-box newbox args))
+      )
        
-       (t (setf newbox (omNG-make-new-lispboxcall funname pos 
-                                                  (mk-unique-name scroller (string funname))))
-          (when args (add-args-to-box newbox args)))
-       )
+     (t (setf newbox (omNG-make-new-lispboxcall funname pos 
+                                                (mk-unique-name scroller (string funname))))
+        (when args (add-args-to-box newbox args)))
+     )
 
     (when (and newbox (box-allowed-p newbox scroller))
       (when (and (allow-rename newbox) (car args))
         (set-patch-box-name newbox text))
       
       (omG-add-element scroller (make-frame-from-callobj newbox)))
-      (when (equal funname 'comment)
-        (reinit-size (car (frames newbox))))  
+    (when (equal funname 'comment)
+      (reinit-size (car (frames newbox))))  
       
-      (when *auto-create-connect* 
+    (when *auto-create-connect* 
       (let ((input (car (om-subviews (car (frames newbox))))))
         (if (typep input 'input-funboxframe)
-            (connect-box *auto-create-connect* input)
+            (progn
+              (connect-box *auto-create-connect* input)
+              (select-connection (car (connections  (om-view-container input))))
+              (capi::set-pane-focus scroller))
           (progn
             (add-one-input (car (frames newbox)))
             (connect-box *auto-create-connect* 
