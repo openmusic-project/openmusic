@@ -432,7 +432,7 @@
         (if (typep input 'input-funboxframe)
             (progn
               (connect-box *auto-create-connect* input)
-              (select-connection (car (connections  (om-view-container input))))
+              (select-connection (car (connections (om-view-container input))))
               (capi::set-pane-focus scroller))
           (progn
             (add-one-input (car (frames newbox)))
