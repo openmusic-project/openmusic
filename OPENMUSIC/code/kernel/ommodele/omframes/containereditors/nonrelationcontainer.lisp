@@ -763,6 +763,7 @@ Workspace Panels contain icons of patches, maquettes and folders
    (import-tutorial-menu self)
    (call-next-method)))
 
+
 ;--------------------------
 ;PANEL
 ;--------------------------
