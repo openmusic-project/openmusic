@@ -50,7 +50,9 @@
           
           om-view-cursor
           om-set-view-cursor
-
+          
+          om-char-spec-callback
+          
           ) :om-api)
 
 
@@ -380,8 +382,7 @@
 
 (defmethod om-char-spec-callback ((self om-view) x y spec)
   (om-char-spec-callback (om-view-window self) x y spec)
-  ;(capi::set-pane-focus self); test this commented out
-  )
+  (capi::set-pane-focus self))
 
 (defmethod capi::accepts-focus-p ((self om-view))
   (om-view-key-handler (om-view-window self) nil))

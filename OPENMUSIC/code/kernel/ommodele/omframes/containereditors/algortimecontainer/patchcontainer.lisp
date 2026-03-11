@@ -94,6 +94,11 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
 ;  (om-set-field-size self (panel-size (editor self))))
 
 
+(defmethod om-char-spec-callback ((self patchpanel) x y spec)
+  (om-char-spec-callback (om-view-window self) x y spec)
+  ;(capi::set-pane-focus self); to permit interaction of tty shortcut interaction
+  )
+
 (defmethod om-view-click-handler :before ((self patchPanel) where)
    (declare (ignore where))
    (modify-patch self))
