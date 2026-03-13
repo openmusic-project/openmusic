@@ -297,6 +297,71 @@
    ;;;(om-invalidate-view self)
    )
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+;   DIALOG
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+;Same as above but for the 'f' shortcut
+
+(defclass apply-text-enter-view (edit-text-enter-view) ())
+
+(defvar *tty-window* nil)
+
+(defclass omtty-window (om-dialog)())
+
+(defun make-tty-win (editor frame)
+  (let* ((win (om-make-window 'omtty-window 
+                              :window-title "OM Func" 
+                              :size (om-make-point 320 20) 
+                              :position (om-make-point 0 0)
+                              :close t 
+                              :resizable nil
+                              ))
+         (textview (om-make-dialog-item 'apply-text-enter-view 
+                                        (om-make-point 10 15)
+                                        (om-make-point 300 15)
+                                        ""
+                                        :allow-returns nil ;t ;(text-enter-multiline-p self)
+                                        :focus t
+                                        :object frame
+                                        :font *om-default-font3*
+                                        :in-place-completion-function #'(lambda (item str)
+                                                                          (declare (ignore item))
+                                                                          (or (funcall 'box-name-completion str)
+                                                                              (progn (capi::beep-pane) :destroy)))
+                                        :completion 'box-name-completion
+                                        :complete-do-action t ;confirms completion with return
+                                        )))
+    
+    (om-add-subviews win textview)
+    (setf *tty-window* (om-select-window  win))
+    ))
+
+
+(defmethod exit-from-dialog ((self apply-text-enter-view) str)
+  (handler-bind ((error #'(lambda (err) 
+                            (when (om-view-container (object self))
+			      (setf (text-view (editor (om-view-container (object self)))) nil)
+			      (om-remove-subviews (object self) self))
+                            (om-beep)
+                            (print (format nil "An error of type ~a occurred: ~a" (type-of err) (format nil "~A" err)))
+                            (om-abort)
+                            )))
+    (let* ((box (om-view-container (object self)))
+           (pos (om-view-position box))
+           (scroller (om-view-container box))
+           (theeditor (editor (om-view-container box))))
+      (unwind-protect 
+          (add-box-in-patch-panel str scroller pos)
+        (omG-remove-element scroller box)
+        (setf (text-view theeditor) nil)
+        (om-remove-subviews (panel theeditor) self)
+        (om-close-window *tty-window*)
+        (setf *tty-window* nil)
+        (om-invalidate-view (panel theeditor))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;-----------EDITION
 
