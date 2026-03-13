@@ -938,10 +938,11 @@
 
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
 
+#|
 (defmethod om-char-spec-callback ((self scorepanel) x y spec)
   (om-char-spec-callback (om-view-window self) x y spec)
   (capi::set-pane-focus self))
-
+|#
 
 (defmethod start-position ((self scorepanel)) 
   (if (equal (get-edit-param (om-view-container self) 'cursor-mode) :normal)
