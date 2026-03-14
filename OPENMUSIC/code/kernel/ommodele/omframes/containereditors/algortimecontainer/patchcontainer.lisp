@@ -533,11 +533,10 @@ because digit-char-p will not accept backspace and special om keys!"
   (let* ((thename (mk-unique-name self "undefined"))
           (new-box (omNG-make-new-boxcall 'undefined pos thename))
           (new-frame (make-frame-from-callobj new-box)))
-     (om-select-window (window self))
-     (omG-add-element self new-frame)
-     ;(open-ttybox (iconview new-frame))
-     (make-tty-win (om-view-container self) (iconview new-frame))
-     ))
+    (omG-add-element self new-frame)
+    (make-tty-win (om-view-container self) (iconview new-frame) pos)
+    (om-modal-dialog *tty-window*)
+    ))
 
 
 (defmethod create-comment-box ((self patchPanel) pos)

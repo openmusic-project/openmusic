@@ -309,11 +309,12 @@
 
 (defclass omtty-window (om-dialog)())
 
-(defun make-tty-win (editor frame)
+(defun make-tty-win (editor frame pos)
   (let* ((win (om-make-window 'omtty-window 
-                              :window-title "OM Func" 
-                              :size (om-make-point 320 20) 
-                              :position (om-make-point 0 0)
+                              :window-title "" 
+                              :size #-cocoa(om-make-point 330 20) #+cocoa(om-make-point 330 70)
+                              :position pos ;(om-make-point 0 0)
+                              :maximize nil :minimize nil
                               :close t 
                               :resizable nil
                               ))
@@ -334,7 +335,7 @@
                                         )))
     
     (om-add-subviews win textview)
-    (setf *tty-window* (om-select-window  win))
+    (setf *tty-window* win)
     ))
 
 
