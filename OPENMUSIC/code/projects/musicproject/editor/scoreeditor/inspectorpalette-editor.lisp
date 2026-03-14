@@ -385,11 +385,13 @@
 
 (defmethod get-first-chan ((self voice))
   (let ((chords (chords self)))
-        (car (lchan (car chords)))))
+    (when chords
+        (car (lchan (car chords))))))
 
 (defmethod get-first-port ((self voice))
   (let ((chords (chords self)))
-    (car (lport (car chords)))))
+    (when chords
+    (car (lport (car chords))))))
 
 (defmethod get-first-chan ((self chord-seq))
         (caar (lchan self)))
