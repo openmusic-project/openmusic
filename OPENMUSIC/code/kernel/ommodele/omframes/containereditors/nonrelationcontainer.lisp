@@ -475,13 +475,18 @@ with the objects respectly associeted."))
 (defmethod om-view-click-handler ((self nonrelationPanel) where)
   (do-click-event-handler self where))
 
+;changed for LW 8.1
+
 (defmethod do-click-event-handler ((self nonrelationPanel) where)
    (unless (om-shift-key-p) 
      (mapc #'(lambda (control) 
                (omG-unselect control)) (get-actives self)))
-   (control-actives self where)
+   ;(control-actives self where)
    self)
    
+(defmethod om-click-motion-handler ((self nonrelationPanel) pos)
+  (control-actives self pos))
+
 
 (defmethod control-actives ((view nonrelationPanel) where)
   (close-enter-dialog (editor view))
