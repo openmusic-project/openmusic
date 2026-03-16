@@ -18,6 +18,7 @@ IMPROVEMENTS
 - n-pulses re-written
 - Visible selection of boxes
 - Score inspectors have Port access
+- Picture object loads  picture folder and views them
 
 FIXES
 
