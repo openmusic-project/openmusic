@@ -197,7 +197,8 @@
 					     (- (capi::drop-object-pane-y drop-object)
 						(om-point-y (om-drag-view-cursor-pos dragged-view))))
 			      (capi:drop-object-drop-effect drop-object))
-		       (setf (capi:drop-object-drop-effect drop-object) nil)))
+		       ;(setf (capi:drop-object-drop-effect drop-object) nil)
+                       ))
 		   )))))
           
 	))))
