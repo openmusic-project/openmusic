@@ -5249,6 +5249,10 @@
       (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
       (update-panel self t))))
 
+(defmethod tie-continuation-if ((self chordseqpanel) (chord chord)) nil)
+
+(defmethod tie-continuation-if ((self multiseqpanel) (chord chord)) nil)
+
 (defmethod tie-continuation-if ((self polypanel) (chord chord))
   (let ((chords (x-append chord (get-all-continuation-chords chord)))
         (voice (get-voice chord)))

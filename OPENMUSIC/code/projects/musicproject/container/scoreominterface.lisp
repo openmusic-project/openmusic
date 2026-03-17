@@ -24,6 +24,7 @@
 ;=========================================================================
 
 (in-package :om)
+
 ;==========================================================================
 ; OpenMusic : ScoreOMInterface.lisp
 ;==========================================================================
@@ -249,6 +250,14 @@ self)
 
 (defmethod* get-all-chords ((self t))
 t)
+
+(defmethod* get-all-chords ((self chord-seq))
+  (inside self))
+
+(defmethod* get-all-chords ((self multi-seq))
+(loop for i in (inside self)
+      collect (get-all-chords i)))
+
 
 (defmethod get-chords&cont-chords ((self measure))
   (let ((chords (get-all-chords self)))
