@@ -312,7 +312,7 @@
 (defun make-tty-win (editor frame pos)
   (let* ((win (om-make-window 'omtty-window 
                               :window-title "" 
-                              :size #-cocoa(om-make-point 330 20) #+cocoa(om-make-point 330 70)
+                              :size #+linux(om-make-point 330 20) #-linux(om-make-point 330 70)
                               :position pos ;(om-make-point 0 0)
                               :maximize nil :minimize nil
                               :close t 

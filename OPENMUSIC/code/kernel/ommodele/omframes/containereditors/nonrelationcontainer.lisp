@@ -731,7 +731,7 @@ Workspace Panels contain icons of patches, maquettes and folders
       (otherwise (call-next-method)))))
 
 
-
+#-win32
 (defmethod do-click-event-handler ((self workspacePanel) where)
    (unless (om-shift-key-p) 
      (mapc #'(lambda (control) 
@@ -739,7 +739,7 @@ Workspace Panels contain icons of patches, maquettes and folders
       ;(control-actives self where)
    self)
 
-
+#-win32
 (defmethod om-click-motion-handler ((self workspacePanel) pos)
   (control-actives self pos))
 
@@ -830,7 +830,7 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
              do (om-init-item-icon i)))
       (otherwise (call-next-method)))))
 
-
+#-win32
 (defmethod do-click-event-handler ((self folderPanel) where)
    (unless (om-shift-key-p) 
      (mapc #'(lambda (control) 
@@ -838,7 +838,7 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
       ;(control-actives self where)
    self)
 
-
+#-win32
 (defmethod om-click-motion-handler ((self folderPanel) pos)
   (control-actives self pos))
 
