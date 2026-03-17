@@ -307,7 +307,8 @@
 
 (defvar *tty-window* nil)
 
-(defclass omtty-window (om-dialog)())
+(defclass omtty-window (om-dialog)
+  ((textview :accessor textview :initarg :textview :initform nil)))
 
 (defun make-tty-win (editor frame pos)
   (let* ((win (om-make-window 'omtty-window 
@@ -316,6 +317,7 @@
                               :position pos ;(om-make-point 0 0)
                               :maximize nil :minimize nil
                               :close t 
+                              :topmost t
                               :resizable nil
                               ))
          (textview (om-make-dialog-item 'apply-text-enter-view 
@@ -333,11 +335,25 @@
                                         :completion 'box-name-completion
                                         :complete-do-action t ;confirms completion with return
                                         )))
-    
+    (om-set-bg-color win *om-white-color*)
     (om-add-subviews win textview)
+    (setf (textview win) textview)
     (setf *tty-window* win)
     ))
 
+(defmethod om-window-close-event :after ((self omtty-window))
+  (let* ((objtext (textview self))
+         (text (om-dialog-item-text objtext))
+         (box (om-view-container (object objtext)))
+         (pos (om-view-position box))
+         (scroller (om-view-container box))) 
+  (if (string-equal text "")
+      (progn 
+        (omg-select box)
+        (omg-unselect box)
+        (om-invalidate-view scroller t)
+        ))
+  (call-next-method)))
 
 (defmethod exit-from-dialog ((self apply-text-enter-view) str)
   (handler-bind ((error #'(lambda (err) 
