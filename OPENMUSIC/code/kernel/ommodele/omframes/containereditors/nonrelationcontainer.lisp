@@ -730,6 +730,20 @@ Workspace Panels contain icons of patches, maquettes and folders
              do (om-init-item-icon i)))
       (otherwise (call-next-method)))))
 
+
+
+(defmethod do-click-event-handler ((self workspacePanel) where)
+   (unless (om-shift-key-p) 
+     (mapc #'(lambda (control) 
+               (omG-unselect control)) (get-actives self)))
+      ;(control-actives self where)
+   self)
+
+
+(defmethod om-click-motion-handler ((self workspacePanel) pos)
+  (control-actives self pos))
+
+
 ;-----------------
 ;Folder's Editor
 ;-----------------
@@ -815,6 +829,20 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
        (loop for i in sel
              do (om-init-item-icon i)))
       (otherwise (call-next-method)))))
+
+
+(defmethod do-click-event-handler ((self folderPanel) where)
+   (unless (om-shift-key-p) 
+     (mapc #'(lambda (control) 
+               (omG-unselect control)) (get-actives self)))
+      ;(control-actives self where)
+   self)
+
+
+(defmethod om-click-motion-handler ((self folderPanel) pos)
+  (control-actives self pos))
+
+
 
 ;;;=====================================
 ;;; PACKAGE BORWSER FRAMES
