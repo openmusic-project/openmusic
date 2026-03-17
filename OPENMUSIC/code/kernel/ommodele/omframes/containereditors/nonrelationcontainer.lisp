@@ -481,11 +481,11 @@ with the objects respectly associeted."))
    (unless (om-shift-key-p) 
      (mapc #'(lambda (control) 
                (omG-unselect control)) (get-actives self)))
-   ;(control-actives self where)
+   (control-actives self where)
    self)
    
-(defmethod om-click-motion-handler ((self nonrelationPanel) pos)
-  (control-actives self pos))
+;(defmethod om-click-motion-handler ((self nonrelationPanel) pos)
+;  (control-actives self pos))
 
 
 (defmethod control-actives ((view nonrelationPanel) where)

@@ -288,7 +288,6 @@ Patches, maquettes and hierarchical class editors are sub-classes of this class.
    ;;(set-field-size self)
    )
 
-(defmethod om-click-motion-handler ((self relationPanel) pos) nil)
 
 (defmethod omg-remove-element ((self relationPanel) frame)
    "Remove a boxframe from the scroller, this method call the 'omng-remove-element' method with the objects referenced by 'self' and 'frame'."
