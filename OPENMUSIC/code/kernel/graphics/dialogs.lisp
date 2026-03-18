@@ -319,7 +319,7 @@ External Libraries:
        (let* ((view (om-make-view 'xtra-splash-screen
                              :thepict *graph-extra-pres*
                              :bg-color *om-red-color*
-                             :size (om-make-point 745 595)
+                             :size (om-make-point 745 598)
                              ))
            (win (om-make-window 'about-xtra-window 
                                 :window-title "OpenMusic's people"
