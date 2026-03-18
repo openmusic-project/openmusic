@@ -195,7 +195,7 @@ External Libraries:
   (om-draw-picture self (thepict self) :pos (om-make-point 0 50))
   (call-next-method))
 
-(defclass about-window (om-window) ())
+(defclass about-window (om-dialog) ())
 
 (defmethod om-window-close-event ((self about-window))
   (setf *splash-screen* nil)
@@ -289,11 +289,12 @@ External Libraries:
                                 :minimize nil
                                 :maximize nil
                                 :resizable nil
-                                :position :centered 
+                                ;:position :centered 
                                 :size (om-view-size view))))
 	(om-add-subviews win view)
 	(setf *splash-screen* win)
-	(om-show-window win)
+        ;(om-show-window win)
+        (om-select-window win)
         win
         )))
 
@@ -301,7 +302,7 @@ External Libraries:
 ;;;;;
 ;;Xtra credits
 
-(defclass about-xtra-window (om-window) ())
+(defclass about-xtra-window (om-dialog) ())
 
 (defmethod om-window-close-event ((self about-xtra-window))
   (setf *xtra-splash-screen* nil)
@@ -326,11 +327,12 @@ External Libraries:
                                 :minimize nil
                                 :maximize nil
                                 :resizable nil
-                                :position :centered 
+                               ; :position :centered 
                                 :size (om-view-size view))))
 	(om-add-subviews win view)
 	(setf *xtra-splash-screen* win)
-	(om-show-window win)
+	;(om-show-window win)
+        (om-select-window win)
         win
         ))
 
