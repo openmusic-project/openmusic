@@ -253,6 +253,7 @@
            
 
 (defmethod set-data-panel ((self sdif-data-panel))
+  (get-selected-sdif-data self (selection (editor self)))
   (unless (menuitem self)
     (om-add-subviews self (setf (menuitem self)
                                 (om-make-dialog-item 'om-pop-up-dialog-item
@@ -274,7 +275,7 @@
                                               :position (om-make-point 20 40)
                                               :size (om-make-point (- (w self) 45) (- (h self) 60))
                                               ))))
-  (get-selected-sdif-data self (selection (editor self)))
+  ;(get-selected-sdif-data self (selection (editor self)))
   )
 
 (defmethod update-subviews ((self sdif-data-panel))
