@@ -42,6 +42,8 @@ NEW FEATURES
 - Code ported to LW 8.1.x
 - Added poly method for omng-quantify
 - Optional time stampl display in min:sec:ms or only in ms
+- Switch input's connection (alt+arrows)
+- Cursor Interval selection dialog for score editors
 
 IMPROVEMENTS
 
@@ -50,6 +52,9 @@ IMPROVEMENTS
 - Copy/paste chords in scoreeditors (Mauro Lanza)
 - Maquette have now time indicator in title-bar
 - n-pulses re-written
+- Visible selection of boxes
+- Score inspectors have Port access
+- Picture object loads  picture folder and views them
 
 FIXES
 
