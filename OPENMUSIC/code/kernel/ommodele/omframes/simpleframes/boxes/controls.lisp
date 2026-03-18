@@ -353,6 +353,7 @@
         (omg-unselect box)
         (om-invalidate-view scroller t)
         ))
+  (setf *tty-window* nil)
   (call-next-method)))
 
 (defmethod exit-from-dialog ((self apply-text-enter-view) str)
