@@ -273,9 +273,12 @@
       (om-set-fg-color di *om-black-color*))
     |#
     ;when light mode forced
-    #+linux
-    (when (or bg-color (special-bg di))
-      (om-set-bg-color di *om-lightgray-pattern*))
+
+
+    ;a voir lately!
+    ;#+linux
+    ;(when (or bg-color (special-bg di))
+    ;  (om-set-bg-color di *om-lightgray-pattern*))
 
     (setf (vx di) (om-point-h position)
           (vy di) (om-point-v position)
