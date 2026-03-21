@@ -442,11 +442,13 @@
          (indx (index self)) 
          (inputs (inputframes boxframe))
          (mod (mod (+ n indx) (length inputs)))
-         (connected (remove nil (mapcar #'connected-p inputs))))
-    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth mod inputs))
+         (connected (remove nil (mapcar #'connected-p inputs)))
+         (objouts (reverse (outframes (car connected))));outputs are in reverse order!
+         (nout (nth indx (loop for i in inputs
+                               collect (second (connected? (object i)))))))
+    (connect-box (nth nout objouts) (nth mod inputs))
     (disconnect-box boxframe (nth indx inputs))
-    (select-connection (car (connections boxframe)))
-    ))
+    (select-connection (car (connections boxframe)))))
 
 
 #|
