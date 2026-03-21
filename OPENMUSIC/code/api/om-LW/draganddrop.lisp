@@ -105,10 +105,11 @@
       (gp:destroy-pixmap-port pp)
       )))
 
+
+;original
+#|
 (defun internal-drag-start (self)
   (and (om-drag-start self)
-       *click-motion-view*
-       *clicked-view*
        (capi:drag-pane-object  
         ;(om-get-view self)  
         (capi::pane-layout (capi::top-level-interface self))
@@ -117,6 +118,23 @@
         :operations '(:move :copy)
         :image-function #'(lambda (pane) (build-d&d-image self pane))
         )))
+|#
+
+
+(defun internal-drag-start (self)
+  (and (om-drag-start self)
+       *click-motion-view*
+       ;*clicked-view*
+       (capi:drag-pane-object  
+        ;(om-get-view self)  
+        (capi::pane-layout (capi::top-level-interface self))
+        self 
+        :plist (list :om-object self) ; :string "OM" 
+        :operations '(:move :copy)
+        :image-function #'(lambda (pane) (build-d&d-image self pane))
+        )))
+
+
 
 (defmethod om-click-motion-handler :before ((self om-drag-view) pos)
   (unless *click-motion-action* ;; cf. transient-drawing.lisp

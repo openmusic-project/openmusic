@@ -827,6 +827,7 @@ Elements in these editors are patch-icon-frame maquette-icon-frame or folder-ico
       (otherwise (call-next-method)))))
 
 
+
 #-win32
 (defmethod do-click-event-handler ((self folderPanel) where)
    (unless (om-shift-key-p) 
