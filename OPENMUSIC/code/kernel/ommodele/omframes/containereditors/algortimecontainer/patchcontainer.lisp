@@ -361,9 +361,14 @@ because digit-char-p will not accept backspace and special om keys!"
       (#\n (mapc 'set-show-box-name actives))
       (#\M (change-edit-mode-all (get-subframes self)))
       (#\z (if *curved-connections*
-               (setf *curved-connections* nil)
-             (setf *curved-connections* t)))
-      
+               (progn
+                 (setf *curved-connections* nil)
+                 (capi::update-drawing-with-cached-display self)
+                 (om-invalidate-view self t))
+             (progn
+                 (setf *curved-connections* t)
+                 (capi::update-drawing-with-cached-display self)
+                 (om-invalidate-view self t))))
       (:om-key-up 
        (if (and (om-command-key-p) (om-shift-key-p))
            (mapc 'box-resize-y-minus actives)
