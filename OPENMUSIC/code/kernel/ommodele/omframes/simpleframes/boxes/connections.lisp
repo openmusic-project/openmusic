@@ -46,14 +46,14 @@
     (let* ((width (abs (- x2 x1)))
          ;calculate 'mirrored' y2 (a clipped linear function)
            (anti-y2 (om-max 
-                     (+ (* -1/3 y2)
-                        (* 4/3 (+ y1 (* 1/2 width))))
+                     (+ (* -1/1 y2) ;;orig -1/3
+                        (* 4/2 (+ y1 (* 1/2 width)))) ;;orig 4/3
                      y2)
                     ))
 
       (loop for k from 0 to resolution
-            for rad = (om-scale k -1.57 1.57 0 resolution)
-            for ramp = (* (* (+ (sin (om-scale k -1.57 1.57 0 resolution)) 1) 0.5) ;; 0 to 1 half-sine-curve 
+            for rad = (om-scale k -1.57 1.57 0 resolution) 
+            for ramp = (* (* (+ (sin (om-scale k -1.57 1.57 0 resolution)) 1) 0.5) ;; 0 to 1 half-sine-curve   ;;;1.57
                           (- anti-y2 y2)) ;; positive number
             collect
             (om-make-point (om-scale (sin rad) x1 x2 -1 1)
@@ -61,8 +61,12 @@
                               ramp
                               ))))))
 
-(defparameter *curve-draw-resolution* 50)
-(defparameter *curve-detect-resolution* 250)
+
+;(defparameter *curve-draw-resolution* 50)
+;(defparameter *curve-detect-resolution* 250)
+
+(defparameter *curve-draw-resolution* 1024)
+(defparameter *curve-detect-resolution* 2000)
 
 (defmethod class-of-connection ((self t)) 'c-connection)
 (defmethod get-graph-points ((self c-connection))
