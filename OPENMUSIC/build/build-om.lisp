@@ -83,7 +83,6 @@
 #+win32(editor::bind-key "Find Source" "Control-." :global :pc)
 
 
-
 (defvar *remove-error-fasl* nil)
 
 ;;; equivalent to LW'w CURRENT-PATHNAME, allowing other reference path like in om-relative-path
