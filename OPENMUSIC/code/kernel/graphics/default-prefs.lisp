@@ -308,6 +308,8 @@
 (defvar *patch-show-win-buttons* t)
 (defvar *mag-in-out* t)
 (defvar *curved-connections* nil)
+(defvar *straight-connections* nil)
+(defvar *connection-style* 0)
 
 ;define in texteditor.lisp
 ;(defvar *line-numbers* nil)
@@ -355,7 +357,7 @@
     (setf *line-color-numbers* (get-pref modulepref :line-color-numbers))
     (setf *patch-show-win-buttons* (get-pref modulepref :patch-win-buttons))
     (setf *mag-in-out* (get-pref modulepref :mag-in-out))
-    (setf *curved-connections* (get-pref modulepref :curved-connections))
+    (setf *connection-style* (get-pref modulepref :connection-style))
     (setf *miniview-font-size* (get-pref modulepref :mv-font-size))
     
     ;;; maquette
@@ -396,7 +398,7 @@
    :folder-pres 0
    :patch-win-buttons t
    :mag-in-out t
-   :curved-connections nil
+   :connection-style 0
    :mv-font-size 20
    :line-numbers t
    :line-color-numbers *azulito*
@@ -472,12 +474,50 @@
                                                        
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 25)) (om-make-point 200 26) "Curved connections"
                                           :font *controls-font*)
-                      
-                     (om-make-dialog-item 'om-check-box (om-make-point (+ l1 220) posy) (om-make-point 20 20) ""
-                                          :font *controls-font*
-                                          :checked-p (get-pref modulepref :curved-connections)
+                     
+                     (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point (+ l1 170) posy) (om-make-point 80 24) ""
+                                          :range '("classic" "curved" "straight")
+                                          :value (cond 
+                                                  ((= 0 (get-pref modulepref :connection-style)) "classic")
+                                                  ((= 1 (get-pref modulepref :connection-style)) "curved")
+                                                  ( t "straight"))
                                           :di-action (om-dialog-item-act item 
-                                                       (set-pref modulepref :curved-connections (om-checked-p item))))
+                                                       (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :connection-style
+                                                                   (cond 
+                                                                    ((string-equal choice "classic") 
+                                                                     (setf *curved-connections* nil)
+                                                                     (setf *straight-connections* nil)
+                                                                     0)
+                                                                    ((string-equal choice "curved") 
+                                                                     (setf *curved-connections* t)
+                                                                     (setf *straight-connections* nil)
+                                                                     1) 
+                                                                   
+                                                                    (t
+                                                                     (setf *curved-connections* nil)
+                                                                     (setf *straight-connections* t)
+                                                                     2))
+                                                                   )))
+                                          :after-fun #'(lambda (item) 
+                                                         (let ((choice (om-get-selected-item item)))
+                                                         (set-pref modulepref :connection-style
+                                                                   (cond 
+                                                                    ((string-equal choice "classic") 
+                                                                     (setf *curved-connections* nil)
+                                                                     (setf *straight-connections* nil)
+                                                                     0)
+                                                                    ((string-equal choice "curved") 
+                                                                     (setf *curved-connections* t)
+                                                                     (setf *straight-connections* nil)
+                                                                     1) 
+                                                                   
+                                                                    (t
+                                                                     (setf *curved-connections* nil)
+                                                                     (setf *straight-connections* t)
+                                                                     2))
+                                                                   )))
+                                          :font *controls-font*)
                                                                              
   
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 90 24) "Boxes"

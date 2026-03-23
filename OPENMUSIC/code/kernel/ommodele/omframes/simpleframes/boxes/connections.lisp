@@ -70,8 +70,18 @@
 
 (defmethod class-of-connection ((self t)) 'c-connection)
 (defmethod get-graph-points ((self c-connection))
-   (if *curved-connections*
-       (get-ramped-sine-pts (points self) *curve-draw-resolution*)
+  (cond 
+   ((= 2 *connection-style*) 
+    (setf *straight-connections* t)
+    (setf *curved-connections* nil))
+   ((= 1 *connection-style*) 
+    (setf *straight-connections* nil)
+    (setf *curved-connections* t))
+   (t (setf *straight-connections* nil)
+      (setf *curved-connections* nil)))
+  
+   (if (= 1 *connection-style*) ;*curved-connections*
+       (get-ramped-sine-pts (points self) *curve-draw-resolution*) 
      (points self)))
 
 (defmethod get-graph-point-sel ((self c-connection))
@@ -104,7 +114,7 @@
 (defvar *init-con-rect* nil)
 
 (defmethod scroll-points ((self c-connection))
-  (unless *curved-connections*
+  (when (= 0 *connection-style*); (unless *curved-connections*
     (let* ((pane (panel (thebox self)))
            (where (om-mouse-position pane)))
       (setf *con-first-click* where)
@@ -260,7 +270,7 @@
                     (when thepoints
                       (if (member prim (point-sel self))
                           (om-fill-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw))
-                        (when (and sel? (not *curved-connections*))
+                        (when (and sel? (not (= 1 *connection-style*))) ;(not *curved-connections*
                           (om-draw-rect (- (om-point-h  prim) 2) (- (om-point-v  prim) 2) 4 4 :erasable (equal val 'redraw)))
                         ))
                     )
@@ -339,27 +349,33 @@
     (get-rect-connection x1 y1 xi yi)))
 
 (defun get-rect-connection (x1 y1 xi yi)
-  (let ((midx (round (abs (- xi x1)) 2))
-        (midy (round (abs (- yi y1)) 2)))
-    (cond
-     ((< y1 yi)
+  (if (= 2 *connection-style*) ;*straight-connections*
       (list (om-make-point x1  y1)
-            (om-make-point x1 (+ y1 midy))
-            (om-make-point xi (+ y1 midy))
-            (om-make-point xi yi)))
-     ((>= x1 xi) 
-      (list (om-make-point x1  y1)
-            (om-make-point (- x1 midx) y1)
-            (om-make-point (- x1 midx) (- yi 5))
-            (om-make-point xi (- yi 5))
-            (om-make-point xi yi)))
-     (t
-      (list (om-make-point x1  y1)
-            (om-make-point (+ x1 midx) y1)
-            (om-make-point (+ x1 midx) (- yi 5))
-            (om-make-point xi (- yi 5))
-            (om-make-point xi yi))))
-    ))
+            (om-make-point x1 y1)
+            (om-make-point xi yi)
+            (om-make-point xi yi))
+    
+    (let ((midx (round (abs (- xi x1)) 2))
+          (midy (round (abs (- yi y1)) 2)))
+      (cond
+       ((< y1 yi)
+        (list (om-make-point x1  y1)
+              (om-make-point x1 (+ y1 midy))
+              (om-make-point xi (+ y1 midy))
+              (om-make-point xi yi)))
+       ((>= x1 xi) 
+        (list (om-make-point x1  y1)
+              (om-make-point (- x1 midx) y1)
+              (om-make-point (- x1 midx) (- yi 5))
+              (om-make-point xi (- yi 5))
+              (om-make-point xi yi)))
+       (t
+        (list (om-make-point x1  y1)
+              (om-make-point (+ x1 midx) y1)
+              (om-make-point (+ x1 midx) (- yi 5))
+              (om-make-point xi (- yi 5))
+              (om-make-point xi yi))))
+      )))
 
 (defun get-line-connection (x1 y1 xi yi)
   (list (om-make-point x1 y1) (om-make-point xi yi)))

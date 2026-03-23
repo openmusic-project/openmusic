@@ -177,7 +177,7 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ((">" "<") "add/remove One optional input")
                        ("alt+lr" "add/remove All optional inputs")
                        (("k" "K") "add/remove Keyword inputs")
-                       (("z") "toggle curved/straight connections")
+                       (("z") "toggle connections style")
                       ; #+(or linux win32)("ctrl+alt" "auto-connect outputs/inputs")
                       ; #+macosx("alt+cmd" "auto-connect outputs/inputs")
                       ; ("alt+clic" "connect output of selected box")
@@ -360,15 +360,7 @@ because digit-char-p will not accept backspace and special om keys!"
       (#\m (mapc 'change-edit-mode actives))
       (#\n (mapc 'set-show-box-name actives))
       (#\M (change-edit-mode-all (get-subframes self)))
-      (#\z (if *curved-connections*
-               (progn
-                 (setf *curved-connections* nil)
-                 (capi::update-drawing-with-cached-display self)
-                 (om-invalidate-view self t))
-             (progn
-                 (setf *curved-connections* t)
-                 (capi::update-drawing-with-cached-display self)
-                 (om-invalidate-view self t))))
+      (#\z (toggle-connection-mode self))
       (:om-key-up 
        (if (and (om-command-key-p) (om-shift-key-p))
            (mapc 'box-resize-y-minus actives)
@@ -674,6 +666,35 @@ The order of listed boxes is spatial, ie. from left to right."
                    (connect-box (car (outframes i)) n)))
         (mapcar 'omg-unselect boxes)
         ))))
+;------------------------------
+
+(defmethod reset-connections ((self patchPanel))
+   "Updates  connections shape."
+   (let* ((connections (get-connections self)))
+     (mapc #'(lambda (box) 
+               (reinit-connection box)) connections)
+     (capi::update-drawing-with-cached-display self)
+     (om-invalidate-view self t)
+     ))
+
+
+(defmethod toggle-connection-mode ((self patchPanel))
+  (cond
+   ((= 0 *connection-style*)
+    (setf *straight-connections* nil)
+    (setf *curved-connections* t)
+    (setf *connection-style* 1)
+    (reset-connections self))
+   ((= 1 *connection-style*)
+    (setf *straight-connections* t)
+    (setf *curved-connections* nil)
+    (setf *connection-style* 2)
+    (reset-connections self))
+   
+   (t (setf *curved-connections* nil)
+      (setf *straight-connections* nil)
+      (setf *connection-style* 0)
+      (reset-connections self))))      
 
 ;------------------------------
 
