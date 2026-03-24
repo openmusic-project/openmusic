@@ -85,6 +85,7 @@
    ))
 
 
+
 (defmethod om-activate-callback (self activatep))
 
 (defun om-confirm-destroy-function (self)
@@ -449,7 +450,7 @@
              ; #'(lambda (win activate-p) (when activate-p (om-add-dummy-menu-to-win win)))))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
-     
+     #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
      thewin))
 
 (defmethod internal-display ((self t))

@@ -304,7 +304,7 @@
 
   (oa::om-init-funcall)
   
-  
+
   (setf dspec::*active-finders* (append dspec::*active-finders*
                                         (list (merge-pathnames 
                                                #+macosx(concatenate 'string *app-name+version* ".app/Contents/Resources/dspec-database." oa::*om-compiled-type*)
