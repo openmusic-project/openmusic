@@ -734,7 +734,7 @@
 
 (defmethod get-subframes ((self maquettePanel))
   "Return a list with the boxes (boxframe's instances) subviews of 'self'."
-   (let* ((subviews (remove-if-not #'tempobjframe-p (om-subviews self)))
+   (let* ((subviews (remove-if #'commentframep (om-subviews self)))
           rep)
      (mapc #'(lambda (icon)
                (if (boxframe-p icon)
