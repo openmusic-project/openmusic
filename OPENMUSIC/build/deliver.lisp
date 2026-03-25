@@ -315,7 +315,9 @@
   #+cocoa(setf system::*stack-overflow-behaviour* nil)
 
   (in-package :om)
+  #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (om::show-workspaces-dialog)
+  ;#+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (oa::om-select-window om::*om-workspace-win*)
   (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om)))
   (setf om::*om-startup* nil)

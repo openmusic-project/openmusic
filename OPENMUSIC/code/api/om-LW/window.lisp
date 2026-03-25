@@ -146,7 +146,7 @@
                                            :external-min-height h :external-max-height h))))
           self))
 
-(defmethod om-set-view-size ((self om-abstract-window) size-point); (print (list "set" self size-point))
+(defmethod om-set-view-size ((self om-abstract-window) size-point) ;(print (list "set" self size-point))
   (let ((wi (or (om-point-h size-point) (om-width self)))
         (he (or (om-point-v size-point) (om-height self))))
     (execute-with-interface self 
@@ -450,7 +450,6 @@
              ; #'(lambda (win activate-p) (when activate-p (om-add-dummy-menu-to-win win)))))
      ;; fixes geometry when x and y are out of the primary screen region
      (om-set-view-position thewin (om-make-point x y))
-     #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
      thewin))
 
 (defmethod internal-display ((self t))

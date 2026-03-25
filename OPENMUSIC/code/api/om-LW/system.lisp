@@ -118,6 +118,7 @@
 #+win32(setf *om-os* :win)
 #+linux(setf *om-os* :linux)
 
+
 (defparameter *lw-version* 
   (read-from-string (subseq (lisp-implementation-version) 0 1)))
 

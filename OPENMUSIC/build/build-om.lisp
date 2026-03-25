@@ -322,7 +322,6 @@
 
 (defun start-openmusic ()
   (setf om::*om-startup* t)
-  #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (oa::om-api-init)
   (om-lisp::set-om-debugger)
   (om::load-modif-patches)
@@ -339,7 +338,7 @@
   (oa::om-init-funcall)
     
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
-  ;#+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
+  #+linux (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (om::show-workspaces-dialog)
   (when om::*om-workspace-win* (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om))))
   (setf om::*om-startup* nil)
