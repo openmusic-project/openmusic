@@ -237,8 +237,19 @@
                  (capi::screen-height (capi:convert-to-screen nil))))
 
 
-;; test, parfois collect-interfaces plante...
 
+
+
+(defun om-front-window () 
+  #+(or darwin macos macosx)
+  (capi:screen-active-interface (capi:convert-to-screen))
+  #-(or darwin macos macosx)
+  (car (capi::collect-interfaces 'capi:interface))
+ )
+
+
+;; test, parfois collect-interfaces plante...
+#|
 (defun om-front-window () 
   #+(or darwin macos macosx)
   (capi:screen-active-interface (capi:convert-to-screen))
@@ -246,7 +257,7 @@
   ; --> ca plante (parfois)
  (car (capi::collect-interfaces 'capi:interface :screen :any :sort-by :visible)) ;A VOIR
 )
-
+|#
 
 #|
 (defun om-front-window () 
@@ -409,8 +420,8 @@
                                      ;:external-min-height 50 :external-min-width 50
                                      :no-character-palette t
                                      ;:menu-bar-items nil
-                                     #+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
-                                     ;#+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     ;#+(or linux cocoa) :activate-callback #+(or linux cocoa) #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
+                                     #+cocoa :activate-callback #+cocoa #'(lambda (win activate-p) (when activate-p (om-add-menu-to-win win)))
                                      #+cocoa :color-mode #+cocoa :light
                                      :window-styles style
                                      :font font
