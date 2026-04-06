@@ -145,53 +145,55 @@
 (defmethod make-editor-window ((class t) object name ref &key 
                                winsize winpos (close-p t) (winshow t) (resize t) (retain-scroll nil)
                                (wintype nil) (topmost nil))
-   (declare (ignore retain-scroll))
-   (let* ((sizewin (or (and (om-point-p winsize) winsize)
-                       (get-win-ed-size object)))
-          (poswin (or (and (om-point-p winpos) winpos)
-                      (get-win-ed-pos object)))
-          (win (om-make-window 'EditorWindow
-                               :window-title name
-                               :position poswin 
-                               :close close-p
-                               :resizable resize
-                               :maximize resize
-                               :window-show winshow
-                               :toolbox (member :toolbox wintype)
-                               :topmost topmost
-                               :size sizewin
-                               :obj (editor-object-from-value object)))
-          (editor (om-make-view class
-                                :ref ref
-                                :owner win
-                                :object (editor-object-from-value object)
-                                :position (om-make-point 0 0)
+  (declare (ignore retain-scroll))
+  (let* ((sizewin (or (and (om-point-p winsize) winsize)
+                      (get-win-ed-size object)))
+         (poswin (or (and (om-point-p winpos) winpos)
+                     (get-win-ed-pos object)))
+         (win (om-make-window 'EditorWindow
+                              :window-title name
+                              :position poswin 
+                              :close close-p
+                              :resizable resize
+                              :maximize resize
+                              :window-show winshow
+                              :toolbox (member :toolbox wintype)
+                              :topmost topmost
+                              :size sizewin
+                              :obj (editor-object-from-value object)))
+         (editor (om-make-view class
+                               :ref ref
+                               :owner win
+                               :object (editor-object-from-value object)
+                               :position (om-make-point 0 0)
                                :size (om-interior-size win)
-                                ))
-          )
-      (setf (editor win) editor)
-      (om-add-menu-to-win win)  
-      #+win32(sleep 0.1)
-      (when winshow (om-select-window win))
-      (om-set-view-size editor (om-interior-size win))
-      (cond
-          ((scoreeditor-p object)
-           (om-set-bg-color (panel (editor win)) *score-bg-color*))
-          ((sound-p object)
-           (om-set-bg-color (panel (editor win)) *sound-bg-color*))
-          ((or (3dc-p object) (3dc-lib-p object)) t)  
-          ((or (bpf-p object) (bpflib-p object))
-           (om-set-bg-color (panel (editor win)) *bpf-bg-color*))
-          ((maquette-p object) t)
+                               ))
+         )
+    (setf (editor win) editor)
+    (om-add-menu-to-win win)  
+    #+win32(sleep 0.1)
+    (when winshow (om-select-window win))
+     #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
+     ;fix pour la taille a l'ouverture (linux lw81)
+     #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
+    (cond
+     ((scoreeditor-p object)
+      (om-set-bg-color (panel (editor win)) *score-bg-color*))
+     ((sound-p object)
+      (om-set-bg-color (panel (editor win)) *sound-bg-color*))
+     ((or (3dc-p object) (3dc-lib-p object)) t)  
+     ((or (bpf-p object) (bpflib-p object))
+      (om-set-bg-color (panel (editor win)) *bpf-bg-color*))
+     ((maquette-p object) t)
          ;  (progn (print (maq-color (params object))) 
          ;  (om-set-bg-color (panel (editor win)) *maq-color*)))
-           ((typep object 'ompatch)
-            (om-set-bg-color (panel (editor win)) *patch-bg-color*))
-          (t ))
+     ((typep object 'ompatch)
+      (om-set-bg-color (panel (editor win)) *patch-bg-color*))
+     (t ))
       ;(print (list editor win))
-      win
-      )
-   )
+    win
+    )
+  )
 
 
 

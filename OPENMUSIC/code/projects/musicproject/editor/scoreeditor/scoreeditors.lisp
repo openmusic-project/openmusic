@@ -411,7 +411,7 @@
 (defmethod editor-palettes ((self scoreEditor)) '(inspector extrapal))
 
 ;(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 90)
-(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 65)
+(defmethod get-control-h ((self scoreEditor)) #-linux 50 #+linux 68)
 ;#+linux(defmethod editor-minimum-size ((self scoreeditor)) (om-make-point 475 280))
 (defmethod get-editor-field-size ((self scoreEditor)) (om-make-point 300000 20000))
 
@@ -5077,7 +5077,8 @@
     (om-add-menu-to-win win)  
     #+win32(sleep 0.1)
     (when winshow (om-select-window win))
-    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win));pour om8 (lw8.1) enlever le -linux!
+    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
+    #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
     (setf (orig editor) object);ADD
     (setf (att-ed editor) ref)
     ;(setf (attached-editors editor) ref)  
@@ -5119,7 +5120,8 @@
       #+win32(sleep 0.1)
       (when winshow 
         (om-select-window win))
-      #-linux(om-set-view-size editor (om-interior-size win))
+    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
+    #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
       (setf (att-ed editor) ref)
       (setf (attached-editors editor) ref)     
       (set-omicron-approx editor (get-approx (object ref)))
@@ -5155,7 +5157,8 @@
       (om-add-menu-to-win win)  
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
-      #-linux(om-set-view-size editor (om-interior-size win))
+    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
+    #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
       (setf (att-ed editor) ref)
       (setf (attached-editors editor) ref)
       (set-omicron-approx editor (get-approx (object ref)))
