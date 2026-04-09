@@ -61,7 +61,7 @@
 		(let ((drag-obj (get-drag-object v)))
 		  ;#-linux
                   (om-fill-rect (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj))
-		  ;#+linux(om-draw-rect-outline (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj) 3)
+		  #+linux(om-draw-rect-outline (x drag-obj) (y drag-obj) (w drag-obj) (h drag-obj) 3)
 		  ))
 	    (dragged-list-objs *OM-drag&drop-handler*))))
 
