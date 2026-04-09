@@ -623,7 +623,8 @@
        
       (:om-key-tab (when (multibpf? (editor self))
                      (change-current-bpf self myobj)
-                     (om-invalidate-view (editor self) t)))
+                     (update-panel self)
+                     ))
        ;(#\g (grille-on-off self))
       (#\i (setf (show-point-indices self) (not (show-point-indices self)))
            (om-invalidate-view self))
