@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/capi.lisp,v 1.29.1.1 2014/05/27 20:56:57 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/capi.lisp,v 1.30.3.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 
 (in-package "OPENGL")
@@ -157,6 +157,11 @@
   (%resize-opengl-context (capi-internals:representation opengl-pane)
                           (context opengl-pane)
                           width height))
+
+(defun update-opengl-pane-after-scrolling (opengl-pane)
+  (rendering-on (opengl-pane)
+    (%update-opengl-pane-after-scrolling (capi-internals:representation opengl-pane)
+                                         (context opengl-pane))))
 
 (defmacro with-matrix-pushed (&body body)
   `(unwind-protect

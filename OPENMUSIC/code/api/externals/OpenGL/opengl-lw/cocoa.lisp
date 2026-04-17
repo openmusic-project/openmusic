@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.8.2.2 2021/11/22 20:35:11 martin Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/cocoa.lisp,v 1.9.1.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2021 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 ;; Support for OpenGL with CAPI/Cocoa.
 ;; Symbols in the CAPI-COCOA-LIB package are not part of a supported API.

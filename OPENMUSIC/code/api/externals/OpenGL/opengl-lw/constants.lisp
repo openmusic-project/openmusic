@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/constants.lisp,v 1.6.1.1 2014/05/27 20:56:56 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/constants.lisp,v 1.6.4.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 
 (in-package "OPENGL")

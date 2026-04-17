@@ -1,9 +1,9 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/xfns.lisp,v 1.6.3.1 2014/05/27 20:56:57 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/xfns.lisp,v 1.7.1.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
-
+(fli:define-foreign-type opengl-boolean () :int-boolean) ; Bool 
 
 ;; Names for attributes to glXGetConfig.
 (defconstant *GLX-USE-GL*		1)	;; support GLX rendering */
@@ -119,7 +119,7 @@
     ((dpy x-display-pointer)
      (vis x-visual-info-pointer)
      (share-list glxcontext)
-     (direct :boolean))
+     (direct opengl-boolean))
   :result-type (:wrapper glxcontext
                 :foreign-to-lisp (lambda (x) (if (fli:null-pointer-p x) nil x)))
   :language :ansi-c)
@@ -160,28 +160,28 @@
 (fli:define-foreign-function (glx-is-direct "glXIsDirect" :source)
     ((dpy x-display-pointer) 
      (ctx glxcontext))
-  :result-type :boolean
+  :result-type opengl-boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-make-current "glXMakeCurrent" :source)
     ((dpy x-display-pointer)
      (drawable glxdrawable)
      (ctx glxcontext))
-  :result-type :boolean
+  :result-type opengl-boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-extension "glXQueryExtension" :source)
     ((dpy x-display-pointer)
      (error-base (:pointer (:signed :int)))
      (event-base (:pointer (:signed :int))))
-  :result-type :boolean
+  :result-type opengl-boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-query-version "glXQueryVersion" :source)
     ((dpy x-display-pointer)
      (major (:pointer (:signed :int)))
      (minor (:pointer (:signed :int))))
-  :result-type :boolean
+  :result-type opengl-boolean
   :language :ansi-c)
 
 (fli:define-foreign-function (glx-swap-buffers "glXSwapBuffers" :source)

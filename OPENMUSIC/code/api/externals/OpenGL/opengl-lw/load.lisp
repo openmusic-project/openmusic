@@ -1,11 +1,11 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/load.lisp,v 1.11.13.1 2014/05/27 20:56:57 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/load.lisp,v 1.12.2.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 (in-package "CL-USER")
 
 (load (current-pathname "defsys"))
 
-(compile-system "OPENGL" :load t)
+(compile-system "OPENGL" :load t :target-directory (get-temp-directory))
 
 

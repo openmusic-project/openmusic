@@ -1,6 +1,6 @@
-;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/gtk-lib.lisp,v 1.5.3.1 2014/05/27 20:56:57 davef Exp $" -*-
+;; -*- Mode: Lisp; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/gtk-lib.lisp,v 1.7 2026/04/14 15:17:15 yeh Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2026 LispWorks Ltd. All rights reserved.
 
 (in-package "OPENGL")
 
@@ -11,6 +11,26 @@
                       (lwgtk:gdk-x11-display-get-display-address
                        (cg-lib::display-representation-display display-rep)))))
 
+
+;;; On GTK3 the drawable is a window (and there is no gdk-drawable)
+(defun get-drawable-visual (drawable)
+  (if (lwgtk:gtk-3-p)
+      (lwgtk::gdk-window-get-visual drawable)
+    (lwgtk:gdk-drawable-get-visual drawable)))
+
+
+(fli:define-foreign-function (gdk-x11-window-get-xid "gdk_x11_window_get_xid")
+    ((visual (lwgtk::gobject-pointer lwgtk:gdk-window)))
+  :result-type (:unsigned :long) ;;; xid
+  )
+
+(defun get-drawable-xid (drawable)
+  (if (lwgtk:gtk-3-p)
+      (gdk-x11-window-get-xid drawable)
+    (lwgtk:gdk-x11-drawable-get-xid  drawable)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod %make-context ((representation cg-lib::widget-representation) opengl-configuration)
   (when-let (SETUP-GLX-COLOR-MAP-error (capi:capi-object-property (cg-lib::representation-element representation)
@@ -34,13 +54,12 @@
                                                  (lwgtk:gdk-x11-display-get-display-address
                                                   (cg-lib::display-representation-display display-rep))))
                      (visual (lwgtk:gdk-x11-visual-get-xvisual 
-                              (lwgtk:gdk-drawable-get-visual drawable))))
-                 (call-glx-create-context xdisplay visual 
-                                          (let ((share (getf opengl-configuration :share)))
+                              (get-drawable-visual drawable)))
+                     (shared (let ((share (getf opengl-configuration :share)))
                                             (if (and share (typep share 'glxcontext))
                                                 share 
-                                              nil))
-                                          directp)))))
+                                              nil))))
+                  (call-glx-create-context xdisplay visual  shared directp)))))
         (unless context
           (error "Failed to create GLX Context for ~s" representation))
         context))))
@@ -61,8 +80,8 @@
 (defmethod %start-rendering ((rep cg-lib::output-pane-representation) context)
   (when (gp::gdk-port-gdkdrawable rep)
     (lwgtk:lock-gdk-lock)
-    (let ((xid (lwgtk:gdk-x11-drawable-get-xid (gp::gdk-port-gdkdrawable rep)))
-                (xdisplay (gtk-representation-x-display rep)))
+    (let ((xid (get-drawable-xid (gp::gdk-port-gdkdrawable rep)))
+          (xdisplay (gtk-representation-x-display rep)))
       (let ((cg-lib::*last-x-error-string* nil))
         (values (glx-make-current xdisplay xid context)
                 cg-lib::*last-x-error-string*)))))
@@ -76,10 +95,11 @@
     (lwgtk:unlock-gdk-lock)))
 
 
+
 (defmethod %swap-buffers ((rep cg-lib::output-pane-representation) context)
   (declare (ignore context))
   (lwgtk:with-gdk-locked ()
-    (let ((xid (lwgtk:gdk-x11-drawable-get-xid (gp::gdk-port-gdkdrawable rep)))
+    (let ((xid (get-drawable-xid (gp::gdk-port-gdkdrawable rep)))
           (xdisplay (gtk-representation-x-display rep)))
       (glx-swap-buffers xdisplay xid))))
 
@@ -101,7 +121,7 @@
                                                (cg-lib::display-representation-display display-rep))))
                   
                   (visual (lwgtk:gdk-x11-visual-get-xvisual 
-                           (lwgtk:gdk-drawable-get-visual (gp::gdk-port-gdkdrawable rep))))
+                           (get-drawable-visual(gp::gdk-port-gdkdrawable rep))))
                   (x-visual-info (x-visual-info-from-visual xdisplay visual)))
              (prog1 
                  (let ((directp (glx-is-direct xdisplay context)))
@@ -129,36 +149,37 @@
 ;; be used inside lock. 
 
 (defun setup-glx-color-map (rep pane widget)
-  (let* ((screen-rep (cg-lib::representation-screen-representation rep))
-         (display-rep  (cg-lib::screen-representation-display screen-rep))
-         (xdisplay (fli:make-pointer :address
-                                     (lwgtk:gdk-x11-display-get-display-address
-                                      (cg-lib::display-representation-display display-rep))))
-         (gdk-screen (cg-lib::screen-representation-screen screen-rep))
-         (screen-number (lwgtk:gdk-screen-get-number gdk-screen))
-         (configuration (slot-value pane 'configuration))
+  (when (color::using-gdk-color-p) ; no colormap on GTK3 (and not needed whenever using cairo)
+    (let* ((screen-rep (cg-lib::representation-screen-representation rep))
+           (display-rep  (cg-lib::screen-representation-display screen-rep))
+           (xdisplay (fli:make-pointer :address
+                                       (lwgtk:gdk-x11-display-get-display-address
+                                        (cg-lib::display-representation-display display-rep))))
+           (gdk-screen (cg-lib::screen-representation-screen screen-rep))
+           (screen-number (lwgtk:gdk-screen-get-number gdk-screen))
+           (configuration (slot-value pane 'configuration))
          
-         )
-    (when-let (error
-               (if-let  (xvi (call-glx-choose-visual xdisplay screen-number configuration))
-                   (prog1
-                       (if-let (gdk-visual (lwgtk:gdk-x11-screen-lookup-visual 
-                                            gdk-screen 
-                                            (fli::foreign-slot-value xvi 'visualid)))
-                           (let ((color-map (lwgtk:gdk-colormap-new gdk-visual nil)))
-                             (lwgtk:gtk-widget-set-colormap widget
-                                                            color-map)
-                             (lwgtk:g-object-unref color-map)
-                             nil)  ;;; no error
-                         "failed to lookup visual")
-                     (x-free xvi))
-                 "glXChooseVisual failed"))
-      (format nil
-              "~a for display ~a.~d with configuration ~s"
-              error
-              (cg-lib::display-representation-display-spec display-rep)
-              screen-number 
-              configuration))))
+           )
+      (when-let (error
+                 (if-let  (xvi (call-glx-choose-visual xdisplay screen-number configuration))
+                     (prog1
+                         (if-let (gdk-visual (lwgtk:gdk-x11-screen-lookup-visual 
+                                              gdk-screen 
+                                              (fli::foreign-slot-value xvi 'visualid)))
+                             (let ((color-map (lwgtk:gdk-colormap-new gdk-visual nil)))
+                               (lwgtk:gtk-widget-set-colormap widget
+                                                              color-map)
+                               (lwgtk:g-object-unref color-map)
+                               nil)  ;;; no error
+                           "failed to lookup visual")
+                       (x-free xvi))
+                   "glXChooseVisual failed"))
+        (format nil
+                "~a for display ~a.~d with configuration ~s"
+                error
+                (cg-lib::display-representation-display-spec display-rep)
+                screen-number 
+                configuration)))))
 
 
 
@@ -171,3 +192,4 @@
       (setf (capi:capi-object-property pane 'SETUP-GLX-COLOR-MAP-error) err-string) ;; block %make-context
       (cg-lib::gtk-error err-string))
     widget))
+

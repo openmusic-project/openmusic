@@ -1,6 +1,6 @@
-;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/doc.txt,v 1.10.1.2 2014/06/06 13:20:20 martin Exp $" -*-
+;; -*- Mode: Text; rcs-header: "$Header: /hope/lwhope1-cam/hope.0/compound/61/LISPopengl/RCS/doc.txt,v 1.13.1.1 2024/10/04 11:59:32 martin Exp $" -*-
 
-;; Copyright (c) 1987--2015 LispWorks Ltd. All rights reserved.
+;; Copyright (c) 1987--2025 LispWorks Ltd. All rights reserved.
 
 
 LispWorks OpenGL interface
@@ -42,6 +42,23 @@ There is an example of a simple CAPI interface to display an
 OPENGL:OPENGL-PANE at the bottom of the capi.lisp file.  There is a
 more complete example in the sub-directory examples (see the comment
 at the top of examples/icosahedron.lisp).
+
+The drawing in OPENGL:OPENGL-PANE must be done only using OpenGL
+functions, rather than any Graphics Ports functions (e.g.
+gp:draw-string) which are normally used to draw in CAPI:OUTPUT-PANE.
+
+On Cocoa the display callback is never called, so after any event that
+causes the display to change, you need to immediately draw everything.
+On other systems the display-callback is needed, and needs to draw
+everything. For example, in the example ./examples/icosahedron.lisp,
+the function REDISPLAY-CANVAS is used both as the display-callback of
+the OPENGL:OPENGL-PANE, and is also called anywhere when a change
+happened.
+
+In ./examples/icosahedron.lisp, the initial drawing on Cocoa happens
+because there is always an initial resize, which calls the
+resize-callback RESIZE-CANVAS, which calls REDISPLAY-CANVAS.
+
 
 
 OpenGL Pane Configuration
