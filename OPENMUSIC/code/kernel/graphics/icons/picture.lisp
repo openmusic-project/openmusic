@@ -87,7 +87,8 @@
                     :thepict ,pict-data
                     :storemode ,(storemode self)
                     :draw-params ',(draw-params self)
-                    :extraobjs ,(omng-save (extraobjs self)))))
+                    :extraobjs ,(omng-save (extraobjs self))
+                    :folder ,(om-save-pathname (folder self)))))
 
 
 
@@ -100,6 +101,7 @@
      (setf (pict-pathname newpict) ,(pict-pathname self))
      (setf (storemode newpict) ,(storemode self))
      (setf (draw-params newpict) ',(draw-params self))
+     (setf (folder newpict) ',(folder self))
      newpict))
 
 (defmethod copy-picture ((self internepicture) &optional type)
