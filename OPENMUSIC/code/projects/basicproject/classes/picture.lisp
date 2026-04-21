@@ -905,7 +905,13 @@ Exports as a raw bitmap (TIF format)
     (om-message-dialog "No Picture Folder selected!")
     ))
 
-
+(defmethod update-miniview ((self t) (type picture)) 
+  (when (and (folder type) (name type))
+    (let* ((pict (thepict type))
+           (name (name type)))
+      (setf (thepict type) (om-load-and-store-picture name  'full (pathname (folder type))))
+      ))
+  (om-invalidate-view self t))
 
 ;=====================
 (defclass pict-controls (3Dborder-view)  
