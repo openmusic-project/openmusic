@@ -353,6 +353,12 @@ Note values are lists of (pitch date dur vel chan).
 (defmethod get-obj-from-file ((type (eql 'midi)) filename)
   (load-midifile filename))
 
+
+(defmethod OpenObjectEditor ((self OMMidiFilebox)) 
+  (call-next-method)
+  (if (fileseq (value self)) (call-next-method)
+    (om-message-dialog "NO MIDIFILE LOADED!")))
+
 ;======================================================
 ; MINIVIEW
 ;======================================================

@@ -143,7 +143,10 @@ Lock the box ('b') to keep the current file.
         ))
 
 
-
+(defmethod OpenObjectEditor ((self sdifFilebox)) 
+  (call-next-method)
+  (if (loaded (value self)) (call-next-method)
+    (om-message-dialog "NO SDIFFILE LOADED!")))
 
 
 

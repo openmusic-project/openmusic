@@ -208,9 +208,10 @@ Exports as a raw bitmap (TIF format)
 
 (defmethod OpenObjectEditor ((self OMPictureBox))
   (call-next-method)
-  (when (folder (value self))
+  (if (folder (value self))
   (get-picts-from-folder (editorframe self) (folder (value self)))
-  ))
+    (call-next-method)
+    ))
 
 ;---------
 ;FRAME
@@ -417,13 +418,13 @@ Exports as a raw bitmap (TIF format)
               (let ((indx (index (controlview (om-view-container self)))))
                 (setf (value indx) (1+ (value indx)))
                 (load-pict-from-stack (om-view-container self) (value indx))
-                (om-set-dialog-item-text indx (format nil "~S" (1+ (mod (value indx) (length *picture-stack*)))))
+                (om-set-dialog-item-text indx (format nil "~S" (1+ (mod (value indx) (length (stack (om-view-container self)))))))
                 ))
              (:om-key-left 
               (let ((indx (index (controlview (om-view-container self)))))
                 (setf (value indx) (1- (value indx)))
                 (load-pict-from-stack (om-view-container self) (value indx))
-                (om-set-dialog-item-text indx (format nil "~S" (1+ (mod (value indx) (length *picture-stack*)))))
+                (om-set-dialog-item-text indx (format nil "~S" (1+ (mod (value indx) (length (stack (om-view-container self)))))))
                 ))
              )))
   (om-invalidate-view self))
@@ -855,60 +856,6 @@ Exports as a raw bitmap (TIF format)
 ;=====================
 ;slide show
 
-#|
-(defparameter *picture-stack* nil)
-
-(defun get-picts-in-folder (pathfile)
-  (let ((abort-import nil)
-        (name (name-of-directory pathfile)))
-     (unless abort-import
-       (setf *import-log* nil)
-       (setf *error-files* nil)
-       (show-message-win (string+ "Importing pictures from: " (namestring pathfile)))
-       (let* ((sub-elts (sort (om-directory pathfile :files t :directories t :type *om-pict-type*)
-                              #'string< :key #'pathname-name)))
-         (setf *picture-stack*
-         (loop for i in sub-elts
-               for n from 0 to (length sub-elts)
-               collect (make-instance 'picture
-                                      :name (pathname-name i)
-                                      :thepict (om-load-and-store-picture 
-                                                (pathname-name i)
-                                                'full
-                                                (namestring (make-pathname :directory (pathname-directory i))))
-                                      :pict-pathname (namestring (make-pathname :directory (pathname-directory i)))
-                                      )))
-         (hide-message-win)
-         t))))
-
-
-(defun load-pict-folder ()
-  (catch-cancel
-     (let ((dir (om-choose-directory-dialog :directory *last-imported*)))
-    (when (and dir (directoryp dir))
-      (setf *last-imported* (om-make-pathname :directory (butlast (pathname-directory dir))
-                                              :device (pathname-device dir)  :host (pathname-host dir)))
-      (get-picts-in-folder dir)
-      ))))
-
-;(load-pict-folder)
-
-
-(defmethod load-pict-from-stack ((self picteditor) n)
-  (if *picture-stack*
-  (let ((tmppict (car (rotate *picture-stack* n))))
-    (when (and tmppict (thepict tmppict))
-      (setf (thepict (object self)) (thepict tmppict))
-      (setf (name (object self)) (name tmppict))
-      (setf (source (object self)) (source tmppict))
-      (setf (storemode (object self)) :external)
-      (om-invalidate-view (panel self))
-      (om-add-menu-to-win (om-view-window self))))
-    (om-message-dialog "No Picture Folder selected!")
-    ))
-|#
-
-
 (defun get-picts-from-folder (editor pathfile)
   (let ((abort-import nil)
         (name (name-of-directory pathfile)))
@@ -930,6 +877,7 @@ Exports as a raw bitmap (TIF format)
                                             :pict-pathname (namestring (make-pathname :directory (pathname-directory i)))
                                             )))
          (hide-message-win)
+         (load-pict-from-stack editor 0)
          t))))
 
 
@@ -940,7 +888,6 @@ Exports as a raw bitmap (TIF format)
       (setf *last-imported* (om-make-pathname :directory (butlast (pathname-directory dir))
                                               :device (pathname-device dir)  :host (pathname-host dir)))
       (setf (folder (object editor)) dir)
-      (print (list "dolssss" (folder (object editor))))
       (get-picts-from-folder editor dir)
       ))))
 
@@ -1069,7 +1016,7 @@ Exports as a raw bitmap (TIF format)
                                      (setf i (1- i))
                                      (load-pict-from-stack (om-view-container self) i)
                                      (when (stack (om-view-container self))
-                                     (om-set-dialog-item-text indx (format nil "~S" (1+ (mod i (length (stack(om-view-container self))))))))
+                                     (om-set-dialog-item-text indx (format nil "~S" (1+ (mod i (length (stack (om-view-container self))))))))
                                      (om-invalidate-view self)))
                          
            (om-make-view 'om-icon-button :position (om-make-point (+ graphics-begin 480) 6) :size (om-make-point 28 28)
@@ -1080,7 +1027,7 @@ Exports as a raw bitmap (TIF format)
                                      (setf i (1+ i))
                                      (load-pict-from-stack (om-view-container self) i)
                                      (when (stack (om-view-container self))
-                                     (om-set-dialog-item-text indx (format nil "~S" (1+ (mod i (length (stack(om-view-container self))))))))
+                                     (om-set-dialog-item-text indx (format nil "~S" (1+ (mod i (length (stack (om-view-container self))))))))
                                      (om-invalidate-view self)))
            
            (om-make-view 'om-icon-button :position (om-make-point (+ graphics-begin 510) 6) :size (om-make-point 28 28)
@@ -1088,9 +1035,9 @@ Exports as a raw bitmap (TIF format)
                          :lock-push nil
                          :selected-p (and (om-view-container self) (equal m (mode (om-view-container self))))
                          :action #'(lambda (item) 
-                                     (load-pict-from-stack (om-view-container self) (1- (length (stack(om-view-container self)))))
+                                     (load-pict-from-stack (om-view-container self) (1- (length (stack (om-view-container self)))))
                                      (setf i (1- (length *picture-stack*)))
-                                     (om-set-dialog-item-text indx (format nil "~S" (length (stack(om-view-container self)))))
+                                     (om-set-dialog-item-text indx (format nil "~S" (length (stack (om-view-container self)))))
                                      (om-invalidate-view self)))
 
            indx
