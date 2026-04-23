@@ -1413,7 +1413,7 @@ Inverts <tree> : every note becomes a rest and every rest becomes a note.
 Converts <tree> into a list of ratio where 
 1/4 is a quarter note, 1/8 is an eight note etc.
 "
-  (correct-measurefloats tree))
+  (correct-measurefloats (resolve-? tree)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;ROTATE-TREE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
