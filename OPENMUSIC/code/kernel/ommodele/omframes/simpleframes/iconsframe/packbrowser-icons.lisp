@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -56,7 +56,9 @@
        ;(progn
        ;  (remove-scrolls editor)
        ;  (UpDateScrollers editor))
-       )))
+       )
+     (UpDateScrollers editor)
+     ))
 
 ;;; special behavior:
 ;;; in case of multiple selection, click on one package unselects the others
@@ -87,7 +89,8 @@
                     (or (not (equal (type-of (object icn-finder)) 'ompackage))
                         t ;(>= (om-point-v where) 10)
                         ))
-           (open-icon-scroller icn-finder))
+           ;(open-icon-scroller icn-finder)
+           )
          ))
      t))
 

@@ -10,7 +10,8 @@ IMPROVEMENTS
 
 FIXES
 
-
+- tree2ratio old format tree issue fixed
+- package browser (libraries loading)fixed panel
 
 
 * RELEASE NOTES 8.0

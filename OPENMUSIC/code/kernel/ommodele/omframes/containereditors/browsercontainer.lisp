@@ -106,8 +106,8 @@
           (vsize (om-view-size (nth 0 scroll-list)))
           (size (om-make-point (* lgt-scroll (om-point-h vsize)) (* lgt-scroll (om-point-h vsize)))))
   
-     #-linux(om-set-interior-size (window self) size)
-     #-linux(om-set-view-size self size)
+     (om-set-interior-size (window self) size)
+     (om-set-view-size self size)
      (om-invalidate-view self)
      ))
 
