@@ -72,6 +72,8 @@
 (defun resolve-? (list)
   (cond 
    ((numberp list) list)
+   ((and (numberp (first list)) (minusp (first list)) (listp (second list)))
+    (list (abs (first list)) (second list)))
    ((or (numberp (first list)) (listp (first list)))
     (if (listp (second list)) 
         (list (first list) (mapcar #'resolve-? (second list)))
