@@ -27,8 +27,7 @@
 ;;; OM OBJECT
 (defclass! picture (internepicture) 
    ((background :initarg :background :initform nil :accessor background :documentation "main background: external picture pathname or RGB array")
-    (graphics :initarg :graphics :initform nil :accessor graphics :documentation "list of vectorial graphics")
-    (folder :initarg :folder :initform nil :accessor folder :documentation "slide's folder path"))
+    (graphics :initarg :graphics :initform nil :accessor graphics :documentation "list of vectorial graphics"))
    (:icon 491)
    (:documentation "
 The PICTURE box allows to display external images and draw simple graphics.

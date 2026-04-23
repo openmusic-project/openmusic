@@ -39,7 +39,8 @@
     (pict-pathname :initform nil :accessor pict-pathname :initarg :pict-pathname)
     (extraobjs :initform nil :accessor extraobjs :initarg :extraobjs)
     (storemode :initform :external :accessor storemode :initarg :storemode)   
-    (draw-params :initform '(p 0 0 100 100) :accessor draw-params :initarg :draw-params)))
+    (draw-params :initform '(p 0 0 100 100) :accessor draw-params :initarg :draw-params)
+    (folder :initarg :folder :initform nil :accessor folder :documentation "slide's folder path")))
 
 ;;; extraobjs = (tool points params)
 ;;; params (color size line fill/font)

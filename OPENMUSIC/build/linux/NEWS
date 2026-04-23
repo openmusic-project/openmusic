@@ -12,7 +12,7 @@ FIXES
 
 - tree2ratio old format tree issue fixed
 - package browser (libraries loading)fixed panel
-
+- fix when tree have (minusp D)
 
 * RELEASE NOTES 8.0
 
