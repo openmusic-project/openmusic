@@ -66,7 +66,9 @@
                       (approx object)
                       )
                      (t (get-edit-param (caller player) 'approx)))
-                  (nth (1+ (position :approx params)) params)))
+                  ;(nth (1+ (position :approx params)) params)
+                  (approx object)
+                  ))
         (port (if (caller player)
                   (if (trackspanel-p (om-view-container (caller player)))
                       (let* ((trackpanel (om-view-container (caller player)));tracks
