@@ -1196,7 +1196,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
       ;;; (om-new-movable-points-geometry score (extra-movable-edit-class self) pixpoints)
       t)))
 
-(defmethod drag-points-slur ((self scorepanel) pos)
+(defmethod drag-points-slur ((self scorepanel) pos prev-pos)
   (let ((diff-point (om-subtract-points *comp-last-click* pos)))
        (cond
         ((=  *which-point* -1)
@@ -1213,7 +1213,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   ;(om-update-points-geometry self *pixpoints*)
 ))
 
-(defmethod release-points-slur ((self scorepanel) pos) 
+(defmethod release-points-slur ((self scorepanel) pos  prev-pos) 
   (let* ((gobj (gobject (graphic-frame *which-slur*)))
          (x0 (car (rectangle gobj)))
          (y0 (second (rectangle gobj)))
