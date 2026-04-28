@@ -1996,13 +1996,6 @@
                do (center-outfleche-sboxframe (car i) (second i)))))
     (when (and (editor self) updateref)
       (report-modifications (editor self)))
-    #+(and lispworks8.1 linux)
-    (when *extramanager*
-      (setf (win *extramanager*) nil)
-      (setf (show *extramanager*) nil)
-      (setf (edit-mode *extramanager*) nil)
-      (remove *extramanager* (attached-editors  (om-view-container self)))
-      (setf (current-editor *extramanager*) nil))
     (setf *redraw-diamonds* t)
     (om-invalidate-view self)))
 
