@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson, K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -1096,6 +1096,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                     :b-s-p nil))
           (push newextrab (extra-obj-list *start-extra-obj-click*))
           (push newextrae (extra-obj-list (reference target)))
+          ;(setf *start-extra-obj-click* nil)
           (update-panel self t))
       (om-beep))))
 
@@ -1224,6 +1225,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (setf (p-points *which-extra*) (convert-points-to-delta x1 y1 (list (third *pixpoints*) (fourth *pixpoints*)) (staff-size self)))
   (om-invalidate-view self)))
 
+(defmethod general-delete ((view voicePanel) (self slur)) 
+  (let ((init-slur (get-init-slur self)))
+    (setf (extra-obj-list (object (reference init-slur))) (remove (reference init-slur) (extra-obj-list (reference (gobject init-slur))) :test 'equal))
+    (setf (extra-obj-list (object self)) (remove self (extra-obj-list (object self)) :test 'equal))))
+
+(defmethod general-delete ((view polyPanel) (self slur)) 
+  (let ((init-slur (get-init-slur self)))
+    (setf (extra-obj-list (object (reference init-slur))) (remove (reference init-slur) (extra-obj-list (reference (gobject init-slur))) :test 'equal))
+    (setf (extra-obj-list (object self)) (remove self (extra-obj-list (object self)) :test 'equal))))
 ;***************
 ;PICTS
 ;***************

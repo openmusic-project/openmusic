@@ -133,15 +133,22 @@
 
 
 
-
+#|
 (defmethod om-window-close-event :after ((self extra-pal-win))
-  (let ((panel (current-editor *extramanager*)))
-    #+macosx(setf (winpos *extramanager*) (om-view-position self))
+  (setf (winpos *extramanager*) (om-view-position self))
   (setf (win *extramanager*) nil)
   (setf (show *extramanager*) nil)
   (setf (edit-mode *extramanager*) nil)
+  (setf (current-editor *extramanager*) nil))
+|#
+
+(defmethod om-window-close-event :after ((self extra-pal-win)) 
+  (let ((panel (current-editor *extramanager*)))
+  #+macosx(setf (winpos *extramanager*) (om-view-position self))
   (setf (current-editor *extramanager*) nil)
-  (om-invalidate-view panel t))
+  (setf (win *extramanager*) nil)
+  (setf *extramanager* nil)
+  (om-invalidate-view panel t)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
