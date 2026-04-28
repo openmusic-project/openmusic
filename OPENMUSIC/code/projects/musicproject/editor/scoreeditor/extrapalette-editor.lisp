@@ -133,7 +133,7 @@
 
 
 
-
+#|
 (defmethod om-window-close-event :after ((self extra-pal-win))
   (setf (winpos *extramanager*) (om-view-position self))
   (setf (win *extramanager*) nil)
@@ -141,7 +141,13 @@
   (setf (edit-mode *extramanager*) nil)
   (setf (current-editor *extramanager*) nil)
   )
+|#
 
+(defmethod om-window-close-event :after ((self extra-pal-win)) 
+  (update-panel (panel (current-editor *extramanager*)) t)
+  (setf (winpos *extramanager*) (om-view-position self))
+  (setf (current-editor *extramanager*) nil)
+  (setf *extramanager* nil))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
