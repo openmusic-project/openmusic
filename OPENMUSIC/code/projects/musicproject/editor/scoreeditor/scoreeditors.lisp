@@ -3487,6 +3487,7 @@
          (size (staff-size self))
          (deltax (get-key-space self))
          (deltay (round (* size (score-top-margin self)))))
+    (setf *extra-with-pairs-list* nil)
     (when (and (linear? self) (cursor-p self))
       (draw-interval-cursor self))
     (om-with-focused-view self
@@ -3720,6 +3721,7 @@
          (size (staff-size self))
          (deltax (get-key-space self))
          (deltay (round (* size (score-top-margin self)))))
+    (setf *extra-with-pairs-list* nil)
     (when (and (linear? self) (cursor-p self))
       (draw-interval-cursor self))
     (om-with-focused-view self
@@ -4035,6 +4037,7 @@
          (size (staff-size self))
          (deltax (get-key-space self))
          (deltay (round (* size (score-top-margin self)))))
+    (setf *extra-with-pairs-list* nil)
     (when (and (linear? self) (cursor-p self))
       (draw-interval-cursor self))
     (om-with-focused-view self
