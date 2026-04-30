@@ -1023,10 +1023,19 @@
     (when (and grille-p (> (ms2pixel grille-p (/ size 4) zoom) 1))
       (setf endxms (* (ceiling (pixel2ms (- maxx x)  (/ size 4) zoom) 1000) 1000))
       (om-with-fg-color view *om-gray-color* 
+        #|
         (om-with-line '(2 2)
           (loop for i from 0 to endxms  by grille-p do
                 (let ((posx (+ x (ms2pixel i (/ size 4) zoom))))
-                  (om-draw-line posx  miny  posx  maxy))))))
+                  (om-draw-line posx  miny  posx  maxy))))
+        |#
+        (om-with-line '(2 2)
+          (loop for time from 0 to endxms by grille-p do
+                (let ((posx (time-to-pixels view time)))
+                  (om-with-fg-color view *om-black-color*
+                  (om-with-font (get-font-to-draw 6) (om-draw-string posx 10 (number-to-string time))))
+                  (om-draw-line posx  miny  posx  maxy))))
+        ))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
                     (om-draw-string (+ (- x 12) (om-h-scroll-position view)) (+ y (line2pixel (+ namedir (posy (last-elem (staff-list staff))))
@@ -1328,12 +1337,13 @@
 ;;; GRILLE
 (defmethod draw-object :before ((self grap-voice) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
   (when (and grille-p (> (time-to-pixels view grille-p) 1))
-      (setf endxms (* (ceiling (pixels-to-time view (round (- maxx x))) 1000) 1000))
-      (om-with-fg-color view *om-gray-color* 
-        (om-with-line '(2 2)
-          (loop for time from 0 to endxms by grille-p do
+    (setf endxms (* (ceiling (pixels-to-time view (round (- maxx x))) 1000) 1000))
+    (om-with-fg-color view *om-gray-color* 
+      (om-with-line '(2 2)
+        (loop for time from 0 to endxms by grille-p do
                 (let ((posx (time-to-pixels view time)))
-                  (om-with-font (get-font-to-draw 6) (om-draw-string posx 10 (number-to-string time)))
+                  (om-with-fg-color view *om-black-color*
+                    (om-with-font (get-font-to-draw 6) (om-draw-string posx 10 (number-to-string time))))
                   (om-draw-line posx  miny  posx  maxy)))))))
 
 

@@ -6,7 +6,7 @@ NEW FEATURES
 IMPROVEMENTS
 
 - Empty SDIFFILE, MIDIFILE obj warning on double-click 
-
+- Now grid view in CHORD-SEQ shows milliseconds
 
 FIXES
 
