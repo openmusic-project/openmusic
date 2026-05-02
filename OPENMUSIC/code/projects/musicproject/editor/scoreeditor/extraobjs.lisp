@@ -486,7 +486,8 @@ If <dynamics>
 
 (defclass compose-extra-object (extra-objet) 
   ((p-points :initform nil :initarg :p-points  :accessor p-points)
-   (gparams :initform nil :initarg :gparams  :accessor gparams)))
+   (gparams :initform nil :initarg :gparams  :accessor gparams)
+   (msoffsets :initform nil :initarg :msoffsets  :accessor msoffsets)))
 
 (defmethod compose-extra-p ((self compose-extra-object)) t)
 (defmethod compose-extra-p ((self t)) nil)
@@ -496,12 +497,14 @@ If <dynamics>
   `(let ((copy ,(call-next-method)))
      (setf (p-points copy) ,(omng-save (p-points self)))
      (setf (gparams copy) ,(omng-save (gparams self)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
    copy))
 
 (defmethod omNG-copy ((self compose-extra-object))
   `(let ((copy ,(call-next-method)))
      (setf (p-points copy) ,(omng-copy (p-points self)))
      (setf (gparams copy) ,(omng-copy (gparams self)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
      copy))
 
 (defmethod extra-movable-edit-class ((self compose-extra-object))
@@ -1059,6 +1062,13 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
             (b-s-p :initform t :initarg :b-s-p  :accessor b-s-p))
            (:icon 490))
 
+(defmethod slur-p ((self slur)) t)
+(defmethod slur-p ((self t)) nil)
+
+(defmethod slur-init-p ((self slur)) 
+  (if (b-s-p self) t nil))
+(defmethod slur-init-p ((self t)) nil)
+
 (defmethod extra-movable-edit-class ((self slur)) 'movable-extra-slur)
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'slur)) dc)
@@ -1094,6 +1104,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                     :p-points points1
                                     :gparams (copy-list (score-get-extra-params) )
                                     :b-s-p nil))
+          (setf (msoffsets newextrab) (list (offset->ms *start-extra-obj-click*)
+                                            (offset->ms (reference target))))
           (push newextrab (extra-obj-list *start-extra-obj-click*))
           (push newextrae (extra-obj-list (reference target)))
           ;(setf *start-extra-obj-click* nil)
@@ -1159,6 +1171,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           while (not rep) do
           (when (and (equal (slurname (reference item)) (slurname end-slur))
                      (b-s-p (reference item)))
+            (setf rep item)))
+    rep))
+
+(defun get-end-slur (beg-slur)
+  (let (rep)
+    (loop for item in *extra-with-pairs-list* 
+          while (not rep) do
+          (when (and (equal (slurname (reference item)) (slurname beg-slur))
+                     (not (b-s-p (reference item))))
             (setf rep item)))
     rep))
 
@@ -1234,6 +1255,13 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (let ((init-slur (get-init-slur self)))
     (setf (extra-obj-list (object (reference init-slur))) (remove (reference init-slur) (extra-obj-list (reference (gobject init-slur))) :test 'equal))
     (setf (extra-obj-list (object self)) (remove self (extra-obj-list (object self)) :test 'equal))))
+
+(defmethod get-slur-offsets ((self chord))
+  (let* ((extras (extra-obj-list self))
+         (initslur (car (member-if #'slur-init-p extras))))
+    (if initslur (msoffsets initslur))))
+
+
 ;***************
 ;PICTS
 ;***************
