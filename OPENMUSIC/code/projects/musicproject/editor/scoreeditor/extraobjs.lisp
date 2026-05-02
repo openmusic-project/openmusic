@@ -435,7 +435,7 @@ If <dynamics>
 (defmethod add-vel-extra ((self t)) 
   (when (get-extras self "vel")
     (remove-extras self "vel" nil))
-  (let* ((newextra (make-instance 'vel-extra :object self))
+  (let* ((newextra (make-instance 'vel-extra :object self :deltay 1))
          (vel (get-object-vel self))
          (dyn (get-dyn-from-vel vel)))
   ;(setf (dynamics newextra) dyn)
