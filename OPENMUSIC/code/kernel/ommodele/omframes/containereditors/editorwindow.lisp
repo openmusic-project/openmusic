@@ -29,8 +29,8 @@
 
 ;;; Notes :
 
-;;; - ccl::window-close-nicely definition commentée
-;;; - drag-receive-dropped-flavor definition commentée
+;;; - ccl::window-close-nicely definition commentee
+;;; - drag-receive-dropped-flavor definition commentee
 
 (in-package :om)
 
@@ -308,6 +308,10 @@
 
 (defmethod InternalEditor-p ((self EditorView)) 
    (EditorView-p (ref self)))
+
+(defmethod om-get-interface ((self editorview))
+  "returns capi::interface"
+  (slot-value self 'capi::interface))
 
 ;(defmethod window ((self EditorView)) (om-view-window self))
 

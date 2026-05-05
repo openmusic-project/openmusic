@@ -50,7 +50,8 @@
 (defmethod show-extra-palette-tools ((self t)) nil)
 (defmethod show-extra-palette-tools ((self scorepanel))
   (let ((win (om-make-window 'extra-pal-win :window-title "Extra Edition Palette"
-                             :size (om-make-point 156 26) 
+                             :size (om-make-point 182 26) 
+                             :position (om-view-position (om-view-container self)) ;(om-make-point 0 0)
                              :resizable nil :maximize nil :minimize nil
                              :window-show nil
                              :destroy-callback #'(lambda (interface) (om-window-close-event interface))
@@ -72,13 +73,13 @@
                                    :position (om-make-point 26 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item) (extra-pal-action item :dyn))
-                                   :icon1 "vel" ;:icon2 "vel-pushed"
+                                   :icon1 "vel" :icon2 "vel-pushed";uncommented
                                    :owner win)
                    
                      ;;; figure
                      (om-make-view 'om-icon-button
                                    ;:lock-push t
-                                   :position (om-make-point 26 0)
+                                   :position (om-make-point 52 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item)
                                                (extra-pal-action item :figure))
@@ -87,7 +88,7 @@
                      ;;; lines
                      (om-make-view 'om-icon-button
                                    ;:lock-push t
-                                   :position (om-make-point 52 0)
+                                   :position (om-make-point 78 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item)
                                                (extra-pal-action item :lines))
@@ -96,7 +97,7 @@
                      ;;; pict
                      (om-make-view 'om-icon-button
                                    ;:lock-push t
-                                   :position (om-make-point  78 0)
+                                   :position (om-make-point  104 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item)
                                                (extra-pal-action item :pict))
@@ -105,7 +106,7 @@
                      ;;; text
                      (om-make-view 'om-icon-button
                                    ;:lock-push t
-                                   :position (om-make-point 104 0)
+                                   :position (om-make-point 130 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item)
                                                (extra-pal-action item :text))
@@ -114,7 +115,7 @@
                      ;;; graphics
                      (om-make-view 'om-icon-button
                                    ;:lock-push t
-                                   :position (om-make-point 130 0)
+                                   :position (om-make-point 156 0)
                                    :size (om-make-point 26 25)
                                    :action #'(lambda (item)
                                                (extra-pal-action item :graphics))
@@ -128,19 +129,9 @@
     (push win (attached-editors (om-view-container (current-editor *extramanager*))))
     #+macosx(om-show-window win)
     #-macosx(om-select-window win)
-    )
-    )
+    ))
+    
 
-
-
-#|
-(defmethod om-window-close-event :after ((self extra-pal-win))
-  (setf (winpos *extramanager*) (om-view-position self))
-  (setf (win *extramanager*) nil)
-  (setf (show *extramanager*) nil)
-  (setf (edit-mode *extramanager*) nil)
-  (setf (current-editor *extramanager*) nil))
-|#
 
 (defmethod om-window-close-event :after ((self extra-pal-win)) 
   (let ((panel (current-editor *extramanager*)))
@@ -148,50 +139,59 @@
   (setf (current-editor *extramanager*) nil)
   (setf (win *extramanager*) nil)
   (setf *extramanager* nil)
-  (om-invalidate-view panel t)))
+  (om-invalidate-view panel t)
+  ))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  
-(defun extra-pal-action (button value)
-  (let ((win (om-view-container button)))
-      (unless (and (equal (edit-mode *extramanager*) value)
-                   (extraitems win))
-        (loop for b in (buttons win) do
+
+(defun extra-pal-action (button value) 
+  (let* ((win (om-view-container button))
+         (pos (om-view-position (om-get-interface (current-editor *extramanager*))));pos of editor interface (on screen!)
+         (x (om-point-x pos))
+         (y (om-point-y pos))
+         )
+    (unless (and (equal (edit-mode *extramanager*) value)
+                 (extraitems win))
+      (loop for b in (buttons win) do
               (when (selected-p b)
                 (setf (selected-p b) nil)
                 (om-invalidate-view b t)))
-        (when (extraitems win) (mapc #'(lambda (sv) (om-remove-subviews win sv)) (extraitems win)))
-        (when (preview win) (om-remove-subviews win (preview win)))
-        (setf (selected-p button) t)
-        (om-invalidate-view button t)
-        (setf (edit-mode *extramanager*) value)
-        (when (and value (not (get-extra-param *extramanager* value)))
-          (set-extra-param *extramanager* value (extraedit-def-params value)))
-        (let ((extraedit (get-extra-items value)))
-          (om-set-view-size win (om-make-point (om-point-h (om-interior-size win)) (car extraedit)))
-          (setf (extraitems win) (cdr extraedit))
-          (when (extraitems win) (mapc #'(lambda (sv) (om-add-subviews win sv)) (extraitems win)))
-          (when (preview-p value) (add-extra-preview win))
-          )
-        ;(print ;(om-window-visible-p 
-        ;        (interface (current-editor *extramanager*)));;should retrieve the window info...
-        )))
-
+      (when (extraitems win) (mapc #'(lambda (sv) (om-remove-subviews win sv)) (extraitems win)))
+      (when (preview win) (om-remove-subviews win (preview win)))
+      (setf (selected-p button) t)
+      (om-invalidate-view button t)
+      (setf (edit-mode *extramanager*) value)
+      (when (and value (not (get-extra-param *extramanager* value)))
+        (set-extra-param *extramanager* value (extraedit-def-params value)))
+      (let ((extraedit (get-extra-items value)))
+        (om-set-view-size win (om-make-point (om-point-h (om-interior-size win)) (car extraedit)))
+        (setf (extraitems win) (cdr extraedit))
+        (when (extraitems win) (mapc #'(lambda (sv) (om-add-subviews win sv)) (extraitems win)))
+        (when (preview-p value) (add-extra-preview win))
+        )
+      (om-set-view-position win (om-make-point (- x 182) y))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defclass extra-preview (om-view) ())
 
+;des probleme de taille de la fenetre elle-meme
+;Faire le preview aussi des dynamiques OU
+;; ne garder le preview que pour le text
+
 (defmethod om-draw-contents ((self extra-preview))
   (let* ((value (edit-mode *extramanager*))
          (params (get-extra-param *extramanager* value)))
+    (print (list "params" params))
     (case value
      (:figure
        ;;; char size color
        (om-with-focused-view self
-         (om-with-font (om-make-music-font *extras-font* (nth 1 params))
+         (om-with-font (om-make-music-font *extras-font* 24);(nth 1 params))
                        (om-with-fg-color self (nth 2 params) 
                          (om-draw-string (round (w self) 2) 30 (string (nth 0 params))))))
       )
+     #|
       (:lines 
        ;;; fig dash linesize color
        (om-with-focused-view self
@@ -220,6 +220,7 @@
                              (om-draw-line (- (w self) 20) 20 (- (w self) 20) 30))
                      )
                )))))
+      |#
       (:pict
        ;;; pict
        nil)
@@ -262,7 +263,7 @@
                  ('rect (if (nth 4 params) 
                             (om-fill-rect 30 15 (- (w self) 60) (- (h self) 30))
                           (om-draw-rect 30 15 (- (w self) 60) (- (h self) 30))))
-                 ('line (om-draw-line 20 20 (- (w self) 20) (- (h self) 20)))
+                 ;('line (om-draw-line 20 20 (- (w self) 20) (- (h self) 20)))
                  ('polyg (if (nth 4 params) 
                                 (oa::om-fill-polygon (list (om-make-point 60 0) (om-make-point 90 60) (om-make-point 30 60)))
                                 (oa::om-draw-polygon (list (om-make-point 60 0) (om-make-point 90 60) (om-make-point 30 60))))
@@ -271,22 +272,21 @@
                )))))
      (otherwise nil))))
 
-
+;commented out some falied previews!
 (defun preview-p (value)
-  (or (equal value :graphics)
-      (equal value :lines)
-      (equal value :figure)
+  (or ;(equal value :graphics)
+      ;(equal value :lines)
+      ;(equal value :figure)
       (equal value :text)))
 
 
-(defun add-extra-preview (win)
+(defun add-extra-preview (win) 
   (setf (preview win) (om-make-view 'extra-preview :position (om-make-point 20 (h win))
                                     :size (om-make-point (- (w win) 40) 60)))
   (om-set-view-size win (om-make-point (om-point-h (om-interior-size win)) (+ (h win) 70)))
   (om-add-subviews win (preview win)))
 
 (defun extra-action (button value)
-
   (let ((win (om-view-container button)))
       (unless (and (equal (edit-mode *extramanager*) value)
                    (extraitems win))
@@ -314,7 +314,7 @@
   (when (find id (params em) :key 'car)
     (cadr (find id (params em) :key 'car))))
 
-(defun set-extra-param (em id val)
+(defun set-extra-param (em id val) (print (list "toto" em id val))
   (let ((pos (position id (params em) :key 'car)))
     (if pos
         (setf (cadr (nth pos (params em))) val)
@@ -323,9 +323,9 @@
 
 (defun extraedit-def-params (value)
   (case value
-    ;(:dyn
-    ; ;;; size char color
-    ; (list nil 12 *om-black-color*))
+    (:dyn
+     ;;; size char color
+     (list nil 12 *om-black-color*))
     (:figure
      ;;; size char color
      (list (code-char 113) 12 *om-black-color*))
@@ -359,14 +359,31 @@
                                   (string (code-char 80)))
                                               (loop for i from 94 to 105 collect (string (code-char i))))))
     (list 180
-          (om-make-dialog-item 'om-static-text (om-make-point 20 30)
+          (om-make-dialog-item 'om-static-text (om-make-point 45 30) ;(om-make-point 20 30)
                                (om-make-point 160 20) "Score Selection"
                                :fg-color *om-dark-gray-color*
                                :font *om-default-font1b*)
-          (om-make-dialog-item 'om-static-text (om-make-point 10 60)
+                    
+          (om-make-dialog-item 'om-static-text (om-make-point 10 60) ;(om-make-point 10 90)
+                               (om-make-point 100 20) "Heads"
+                               :font *om-default-font1*)
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 75 62) ;(om-make-point 70 80)
+                               (om-make-point 70 5) ""
+                               :range heads-list
+                               :value (string (code-char 173))
+                               :font (om-make-music-font *heads-font* 24)
+                               :di-action (om-dialog-item-act item
+                                            (when (selection? (panel (current-editor *extramanager*)))
+                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                    (when (or (container-p obj) (simple-container-p obj))
+                                                      (if (= (om-get-selected-item-index item) 0)
+                                                        (delete-extras (get-extras obj "head"))
+                                                        (add-head-extra obj (nth (om-get-selected-item-index item) heads-list)))))
+                                              (update-panel (panel (current-editor *extramanager*))))))
+          (om-make-dialog-item 'om-static-text (om-make-point 10 120) ;(om-make-point 10 60)
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
-          (om-make-view 'om-color-view :position (om-make-point 75 62)
+          (om-make-view 'om-color-view :position (om-make-point 75 120)
                                :size (om-make-point 65 16) 
                                :color *om-black-color*
                                :after-fun #'(lambda (item)
@@ -379,46 +396,7 @@
                                                                (set-mus-color obj c)))
                                                         (update-panel (panel (current-editor *extramanager*)))))
                                                   (om-beep)))))
-          
-          (om-make-dialog-item 'om-static-text (om-make-point 10 90)
-                               (om-make-point 100 20) "Heads"
-                               :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 80)
-                               (om-make-point 70 20) ""
-                               :range heads-list
-                               :value (string (code-char 173))
-                               :font (om-make-music-font *heads-font* 20)
-                               :di-action (om-dialog-item-act item
-                                            (when (selection? (panel (current-editor *extramanager*)))
-                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (when (or (container-p obj) (simple-container-p obj))
-                                                      (if (= (om-get-selected-item-index item) 0)
-                                                        (delete-extras (get-extras obj "head"))
-                                                        (add-head-extra obj (nth (om-get-selected-item-index item) heads-list)))))
-                                              (update-panel (panel (current-editor *extramanager*))))))
-          (om-make-dialog-item 'om-static-text (om-make-point 10 130)
-                               (om-make-point 100 20) "Dynamics"
-                               :font *om-default-font1*)
-          
-          (om-make-dialog-item 'om-button (om-make-point 70 118)
-                               (om-make-point 65 20) "Show"
-                               :di-action (om-dialog-item-act item
-                                            (when (selection? (panel (current-editor *extramanager*)))
-                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                   (when (or (container-p obj) (simple-container-p obj))
-                                                     (add-vel-extra obj)))
-                                              (update-panel (panel (current-editor *extramanager*)))
-                                            )))
-          (om-make-dialog-item 'om-button (om-make-point 70 140)
-                               (om-make-point 65 20) "Hide"
-                               :di-action (om-dialog-item-act item
-                                            (when (selection? (panel (current-editor *extramanager*)))
-                                            (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (when (or (container-p obj) (simple-container-p obj))
-                                                      (delete-extras (get-extras obj "vel"))))
-                                            (update-panel (panel (current-editor *extramanager*)))
-                                            )))
-    )))
+          )))
 
 
 (defmethod get-extra-items ((value (eql :pict))) 
@@ -451,7 +429,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 0 params) (nth (om-get-selected-item-index item) '(rect circ line polyg)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 90)
                                (om-make-point 100 20) "Line"
                                :font *om-default-font1*)
@@ -462,7 +441,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 1 params) (nth (om-get-selected-item-index item) '(plain dash)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 120)
                                (om-make-point 100 20) "Pen Size"
                                :font *om-default-font1*)
@@ -473,7 +453,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 2 params) (nth (om-get-selected-item-index item) '(1 2 3 4 5 6 7 8)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 150)
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
@@ -485,7 +466,8 @@
                                               (when c 
                                                 (setf (nth 3 params) c)
                                                 (set-extra-param *extramanager* value params)
-                                                (om-invalidate-view (preview (win *extramanager*)))))))
+                                                ;(om-invalidate-view (preview (win *extramanager*)))
+                                                ))))
           (om-make-dialog-item 'om-static-text (om-make-point 10 180)
                                (om-make-point 100 20) "Fill"
                                :font *om-default-font1*)
@@ -495,7 +477,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 4 params) (om-checked-p item))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           )))
 
 (defmethod get-extra-items ((value (eql :lines))) 
@@ -516,7 +499,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 0 params) (nth (om-get-selected-item-index item) '(slur cresc decresc brack)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 90)
                                (om-make-point 100 20) "Line"
                                :font *om-default-font1*)
@@ -527,7 +511,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 1 params) (nth (om-get-selected-item-index item) '(plain dash)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 120)
                                (om-make-point 100 20) "Pen Size"
                                :font *om-default-font1*)
@@ -538,7 +523,8 @@
                                :di-action (om-dialog-item-act item
                                             (setf (nth 2 params) (nth (om-get-selected-item-index item) '(1 2 3 4 5 6 7 8)))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
+                                            ))
           (om-make-dialog-item 'om-static-text (om-make-point 10 150)
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
@@ -550,7 +536,8 @@
                                               (when c 
                                                 (setf (nth 3 params) c)
                                                 (set-extra-param *extramanager* value params)
-                                                (om-invalidate-view (preview (win *extramanager*)))))))
+                                               ; (om-invalidate-view (preview (win *extramanager*)))
+                                                ))))
           
          )))
 
@@ -610,50 +597,77 @@
                                                       (add-extra obj (make-text-extra textinput) nil nil)))
                                               (update-panel (panel (current-editor *extramanager*)))
                                             
-                                            )
-                                            ))
-                                               
-         
-          )
+                                            ))))
     ))
 
 
 (defmethod get-extra-items ((value (eql :figure))) 
   (let ((params (cadr (find value (params *extramanager*) :key 'car))))
-    (list 100 
+    (list 120 
           (om-make-dialog-item 'om-static-text (om-make-point 20 30)
                                (om-make-point 160 20) "Articulation Symbols"
                                :fg-color *om-dark-gray-color*
                                :font *om-default-font1b*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 20 60)
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 55) ;(om-make-point 20 60)
                                (om-make-point 70 20) ""
-                               :range (loop for i from 113 to 125 collect (string (code-char i)))
-                               :value (string (nth 0 params))
+                               :range (append (list (string (code-char 173))) (loop for i from 113 to 125 collect (string (code-char i))))
+                               :value (string (code-char 173)) ;(string (nth 0 params))
                                :font (om-make-music-font *extras-font* 24)
                                :di-action (om-dialog-item-act item
                                             (setf (nth 0 params) (elt (om-get-selected-item item) 0))
                                             (set-extra-param *extramanager* value params)
-                                            (om-invalidate-view (preview (win *extramanager*)))
+                                            ;(om-invalidate-view (preview (win *extramanager*)))
                                             ))
           )))
 
-#|
+
+
 (defmethod get-extra-items ((value (eql :dyn))) 
-  (let ((params (cadr (find value (params *extramanager*) :key 'car))))
-    (list 100 
+  (let ((params (cadr (find value (params *extramanager*) :key 'car)))
+        (vels (mapcar #'(lambda (d) (string (cadr d))) *dynamics-symbols-list*))
+        )
+    (list 250 
 
           (om-make-dialog-item 'om-static-text (om-make-point 45 30)
                                (om-make-point 160 20) "Extra Dynamics"
                                :fg-color *om-dark-gray-color*
                                :font *om-default-font1b*)
+          
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 50 55)
                                (om-make-point 70 20) ""
-                               :range (append '("unspecific" "-") (mapcar #'(lambda (d) (string (cadr d))) *dynamics-list*))
-                               :value (string (nth 0 params))
+                               :range vels
+                               :value (string (code-char 173)) ;(string (nth 0 params))
                                :font (om-make-music-font *extras-font* 24)
                                :di-action (om-dialog-item-act item
-                                            (setf (nth 0 params) (elt (om-get-selected-item item) 0))
-                                            (set-extra-param *extramanager* value params))))))
-|#
+                                            (when (selection? (panel (current-editor *extramanager*)))
+                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                      (when (or (container-p obj) (simple-container-p obj))
+                                                        (setf (vel obj) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*)))
+                                                        (add-vel-extra obj)))
+                                              (update-panel (panel (current-editor *extramanager*)))))
+                               )
+          
+          
+          (om-make-dialog-item 'om-button (om-make-point 50 118)
+                               (om-make-point 65 20) "Show"
+                               :di-action (om-dialog-item-act item
+                                            (when (selection? (panel (current-editor *extramanager*)))
+                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                   (when (or (container-p obj) (simple-container-p obj))
+                                                     (add-vel-extra obj)))
+                                              (update-panel (panel (current-editor *extramanager*)))
+                                            )))
+          
+          (om-make-dialog-item 'om-button (om-make-point 50 150)
+                               (om-make-point 65 20) "Hide"
+                               :di-action (om-dialog-item-act item
+                                            (when (selection? (panel (current-editor *extramanager*)))
+                                            (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                    (when (or (container-p obj) (simple-container-p obj))
+                                                      (delete-extras (get-extras obj "vel"))))
+                                            (update-panel (panel (current-editor *extramanager*)))
+                                            )))
+          )))
+
 
 
