@@ -146,7 +146,7 @@
 
 (defun extra-pal-action (button value) 
   (let* ((win (om-view-container button))
-         (pos (om-view-position (om-get-interface (current-editor *extramanager*))));pos of editor interface (on screen!)
+         (pos (om-view-position (om-get-interface (om-view-container (current-editor *extramanager*)))));pos of editor interface (on screen!)
          (x (om-point-x pos))
          (y (om-point-y pos))
          )
@@ -182,7 +182,7 @@
 (defmethod om-draw-contents ((self extra-preview))
   (let* ((value (edit-mode *extramanager*))
          (params (get-extra-param *extramanager* value)))
-    (print (list "params" params))
+    ;(print (list "params" params))
     (case value
      (:figure
        ;;; char size color
@@ -314,7 +314,7 @@
   (when (find id (params em) :key 'car)
     (cadr (find id (params em) :key 'car))))
 
-(defun set-extra-param (em id val) (print (list "toto" em id val))
+(defun set-extra-param (em id val)
   (let ((pos (position id (params em) :key 'car)))
     (if pos
         (setf (cadr (nth pos (params em))) val)
@@ -642,12 +642,13 @@
                                             (when (selection? (panel (current-editor *extramanager*)))
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
                                                       (when (or (container-p obj) (simple-container-p obj))
-                                                        (setf (vel obj) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*)))
+                                                        (if (container-p obj) 
+                                                           (loop for i in (inside obj) 
+                                                                   do (setf (vel i) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
+                                                        (setf (vel obj) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
                                                         (add-vel-extra obj)))
-                                              (update-panel (panel (current-editor *extramanager*)))))
-                               )
-          
-          
+                                              (update-panel (panel (current-editor *extramanager*))))))
+                                         
           (om-make-dialog-item 'om-button (om-make-point 50 118)
                                (om-make-point 65 20) "Show"
                                :di-action (om-dialog-item-act item

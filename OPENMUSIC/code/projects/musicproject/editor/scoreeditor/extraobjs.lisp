@@ -442,6 +442,15 @@ If <dynamics>
   (push newextra (extra-obj-list self))
   (set-vel self vel)))
 
+(defmethod add-vel-extra ((self chord))
+  (when (get-extras self "vel")
+    (remove-extras self "vel" nil))
+  (let* ((newextra (make-instance 'vel-extra :object self :deltay 2))
+         (vel (get-object-vel self))
+         (dyn (get-dyn-from-vel vel)))
+  ;(setf (dynamics newextra) dyn)
+  (push newextra (extra-obj-list self))
+  (set-vel self vel)))
 
 (defmethod set-extra-in-list ((extra vel-extra) (self t))
    (setf (object extra) self)
