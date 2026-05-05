@@ -1104,8 +1104,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                     :p-points points1
                                     :gparams (copy-list (score-get-extra-params) )
                                     :b-s-p nil))
-          (setf (msoffsets newextrab) (list (offset->ms *start-extra-obj-click*)
-                                            (offset->ms (reference target))))
+          (setf (msoffsets newextrab) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
+                                            (offset->ms (reference target) (object (om-view-container self)))))
           (push newextrab (extra-obj-list *start-extra-obj-click*))
           (push newextrae (extra-obj-list (reference target)))
           ;(setf *start-extra-obj-click* nil)
