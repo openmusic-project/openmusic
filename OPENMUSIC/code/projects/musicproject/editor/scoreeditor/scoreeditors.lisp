@@ -1393,7 +1393,8 @@
                     ((om-add-key-p) 
                      (if (analysis-mode? self)
                          (handle-add-click-analysis self where)
-                       (add-new-object self mode-obj where graph-obj))
+                       (unless *extramanager* ;avoiding conflict when extra editor is active
+                         (add-new-object self mode-obj where graph-obj)))
                      (when (editor self) (update-inspector (editor self) 0)))
                     ((and (grap-extra-p graph-obj) double-click-p) 
                      (open-extra-editor self graph-obj))
