@@ -875,8 +875,8 @@
          minied)
     (if page?
         (setf minied (om-make-dialog-item 'om-pop-up-dialog-item
-                                          #+(or linux win32)(om-make-point 96 35) 
-                                          #+macosx(om-make-point 92 26) 
+                                          #+linux(om-make-point 96 35) 
+                                          #-linux(om-make-point 92 26) 
                                           (om-make-point 70 18) " "
                                           :di-action (om-dialog-item-act item
                                                        (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-page-factors*))))
